@@ -861,20 +861,9 @@ const FunctionTestDataPanel = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
     const dataState = functionTestSuiteState.dataState;
-    const hasIngestOrDataProductAccessors =
-      functionTestSuiteState.functionTestableState
-        .resolvedIngestOrDataProductAccessors.length > 0;
     const hasTestData = Boolean(dataState.dataHolder.testData?.length);
 
     const addStoreTestData = (): void => {
-      if (!dataState.availableElementsToAdd.length) {
-        functionTestSuiteState.editorStore.applicationStore.notificationService.notifyWarning(
-          hasIngestOrDataProductAccessors
-            ? `All referenced elements' data is already present`
-            : `No elements available to add`,
-        );
-        return;
-      }
       dataState.setShowAddElementModal(true);
     };
 
@@ -923,7 +912,9 @@ const FunctionTestDataPanel = observer(
                         tabIndex={-1}
                       >
                         <div className="testable-test-explorer__item__label__text">
-                          {td.element.value.path}
+                          <span title={td.element.value.path}>
+                            {td.element.value.name}
+                          </span>
                         </div>
                         <div className="mapping-test-explorer__item__actions">
                           <button
@@ -1076,26 +1067,6 @@ const FunctionTestsPanel = observer(
 const FunctionTestSuiteEditor = observer(
   (props: { functionTestSuiteState: FunctionTestSuiteState }) => {
     const { functionTestSuiteState } = props;
-    const hasTestData = Boolean(
-      functionTestSuiteState.dataState.dataHolder.testData?.length,
-    );
-    const hasIngestOrDataProductAccessors =
-      functionTestSuiteState.functionTestableState
-        .resolvedIngestOrDataProductAccessors.length > 0;
-    const showTestDataPanel =
-      functionTestSuiteState.functionTestableState.containsRuntime ||
-      hasIngestOrDataProductAccessors ||
-      hasTestData;
-
-    if (!showTestDataPanel) {
-      // No test data — just show the tests panel full width
-      return (
-        <div className="service-test-suite-editor">
-          <FunctionTestsPanel functionTestSuiteState={functionTestSuiteState} />
-        </div>
-      );
-    }
-
     return (
       <div className="service-test-suite-editor">
         <ResizablePanelGroup orientation="horizontal">
