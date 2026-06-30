@@ -601,7 +601,7 @@ export class DataProductAPGState {
   /**
    * Check if a given user is a member of the specified RMS org.
    */
-  async checkOrgMembership(
+  private async checkOrgMembership(
     getOrgMembers: NonNullable<
       DataProductDataAccess_LegendApplicationPlugin_Extension['getOrgMembers']
     >,
