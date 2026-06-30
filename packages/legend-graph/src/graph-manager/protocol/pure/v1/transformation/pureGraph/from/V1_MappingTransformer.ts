@@ -183,7 +183,10 @@ import { V1_PackageableElementPointer } from '../../../model/packageableElements
 import type { RelationFunctionInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import { RelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
 import { V1_RelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
+import { V1_RelationFunctionEmbeddedPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionEmbeddedPropertyMapping.js';
 import { V1_RelationFunctionClassMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
+import type { EmbeddedRelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
+import type { InlineEmbeddedRelationFunctionPropertyMapping } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
 import { isStubbed_RelationColumn } from '../../../../../../../graph/helpers/STO_RelationFunction_Helper.js';
 
@@ -786,9 +789,11 @@ const transformAggregationAwarePropertyMapping = (
 
 const transformRelationFunctionPropertyMapping = (
   element: RelationFunctionPropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
 ): V1_RelationFunctionPropertyMapping => {
   const propertyMapping = new V1_RelationFunctionPropertyMapping();
   propertyMapping.column = element.column.name;
+  propertyMapping.enumMappingId = element.transformer?.valueForSerialization;
   if (element.bindingTransformer?.binding) {
     const bindingTransformer = new V1_BindingTransformer();
     bindingTransformer.binding = guaranteeNonEmptyString(
@@ -796,7 +801,11 @@ const transformRelationFunctionPropertyMapping = (
     );
     propertyMapping.bindingTransformer = bindingTransformer;
   }
-  propertyMapping.property = V1_transformPropertyReference(element.property);
+  propertyMapping.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+    isTransformingLocalPropertyMapping: Boolean(element.localMappingProperty),
+  });
   propertyMapping.source =
     element.sourceSetImplementation.valueForSerialization;
   propertyMapping.target =
@@ -808,6 +817,44 @@ const transformRelationFunctionPropertyMapping = (
   }
   propertyMapping.column = element.column.name;
   return propertyMapping;
+};
+
+const transformRelationFunctionEmbeddedPropertyMapping = (
+  element: EmbeddedRelationFunctionPropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
+  context: V1_GraphTransformerContext,
+): V1_RelationFunctionEmbeddedPropertyMapping => {
+  const embedded = new V1_RelationFunctionEmbeddedPropertyMapping();
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
+  embedded.source = element.sourceSetImplementation.valueForSerialization;
+  embedded.target = element.targetSetImplementation?.valueForSerialization;
+  // @discrepancy grammar-roundtrip
+  embedded.class = undefined;
+  embedded.propertyMappings = transformClassMappingPropertyMappings(
+    element.propertyMappings,
+    true,
+    context,
+  );
+  return embedded;
+};
+
+const transformInlineEmbeddedRelationFunctionPropertyMapping = (
+  element: InlineEmbeddedRelationFunctionPropertyMapping,
+  isTransformingEmbeddedPropertyMapping: boolean,
+): V1_RelationFunctionEmbeddedPropertyMapping => {
+  const embedded = new V1_RelationFunctionEmbeddedPropertyMapping();
+  embedded.property = V1_transformPropertyReference(element.property, {
+    isTransformingEmbeddedPropertyMapping:
+      isTransformingEmbeddedPropertyMapping,
+  });
+  embedded.source = element.sourceSetImplementation.valueForSerialization;
+  embedded.target = element.targetSetImplementation?.valueForSerialization;
+  embedded.id = element.inlineSetImplementation.id.value;
+  embedded.propertyMappings = [];
+  return embedded;
 };
 
 class PropertyMappingTransformer
@@ -933,7 +980,29 @@ class PropertyMappingTransformer
   visit_RelationFunctionPropertyMapping(
     propertyMapping: RelationFunctionPropertyMapping,
   ): V1_PropertyMapping {
-    return transformRelationFunctionPropertyMapping(propertyMapping);
+    return transformRelationFunctionPropertyMapping(
+      propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
+    );
+  }
+
+  visit_RelationFunctionEmbeddedPropertyMapping(
+    propertyMapping: EmbeddedRelationFunctionPropertyMapping,
+  ): V1_PropertyMapping {
+    return transformRelationFunctionEmbeddedPropertyMapping(
+      propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
+      this.context,
+    );
+  }
+
+  visit_InlineEmbeddedRelationFunctionPropertyMapping(
+    propertyMapping: InlineEmbeddedRelationFunctionPropertyMapping,
+  ): V1_PropertyMapping {
+    return transformInlineEmbeddedRelationFunctionPropertyMapping(
+      propertyMapping,
+      this.isTransformingEmbeddedPropertyMapping,
+    );
   }
 }
 

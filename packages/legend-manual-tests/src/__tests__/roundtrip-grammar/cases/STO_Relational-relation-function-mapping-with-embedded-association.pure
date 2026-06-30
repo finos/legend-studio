@@ -1,0 +1,113 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    STREET VARCHAR(200),
+    CITY VARCHAR(100),
+    FIRMID INTEGER
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100)
+  )
+)
+
+
+###Pure
+Class my::Address
+{
+  street: String[1];
+  city: String[1];
+}
+
+Class my::PersonWithAddressAndFirm
+{
+  firstName: String[1];
+  age: Integer[1];
+  address: my::Address[1];
+}
+
+Class my::Firm
+{
+  legalName: String[1];
+}
+
+Association my::PersonWithAddressAndFirm_Firm
+{
+  employeesWithAddr: my::PersonWithAddressAndFirm[*];
+  firmOfAddr: my::Firm[1];
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#->select(~[FIRSTNAME, AGE, STREET, CITY, FIRMID])
+}
+
+function my::firmFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.firmTable}#->select(~[ID, LEGALNAME])
+}
+
+
+###Mapping
+Mapping my::relationFunctionMapping
+(
+  *my::PersonWithAddressAndFirm[personAddr]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    +firmId: Integer[1]: FIRMID,
+    address
+    (
+      street: STREET,
+      city: CITY
+    )
+  }
+  *my::Firm[firm]: Relation
+  {
+    ~func my::firmFunction():Relation<Any>[1]
+    legalName: LEGALNAME,
+    +id: Integer[1]: ID
+  }
+
+  my::PersonWithAddressAndFirm_Firm: XStore
+  {
+    employeesWithAddr[firm, personAddr]: $this.id == $that.firmId,
+    firmOfAddr[personAddr, firm]: $this.firmId == $that.id
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection my::conn
+{
+  store: my::testDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime my::runtime
+{
+  mappings:
+  [
+    my::relationFunctionMapping
+  ];
+  connections:
+  [
+    my::testDB:
+    [
+      connection_1: my::conn
+    ]
+  ];
+}

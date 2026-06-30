@@ -1,0 +1,80 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    STREET VARCHAR(200),
+    CITY VARCHAR(100)
+  )
+)
+
+
+###Pure
+Class my::Address
+{
+  street: String[1];
+  city: String[1];
+}
+
+Class my::PersonWithAddress
+{
+  firstName: String[1];
+  age: Integer[1];
+  address: my::Address[1];
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#->select(~[FIRSTNAME, AGE, STREET, CITY])
+}
+
+
+###Mapping
+Mapping my::relationFunctionMapping
+(
+  *my::PersonWithAddress[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    address() Inline[addressSet]
+  }
+  *my::Address[addressSet]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    street: STREET,
+    city: CITY
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection my::conn
+{
+  store: my::testDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime my::runtime
+{
+  mappings:
+  [
+    my::relationFunctionMapping
+  ];
+  connections:
+  [
+    my::testDB:
+    [
+      connection_1: my::conn
+    ]
+  ];
+}

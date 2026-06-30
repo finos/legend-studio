@@ -41,6 +41,7 @@ import type { PropertyMappingsImplementation } from '../PropertyMappingsImplemen
 import type { SetImplementationReference } from '../SetImplementationReference.js';
 import type { RelationColumn } from '../../relation/RelationType.js';
 import type { BindingTransformer } from '../../externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
+import type { EnumerationMappingReference } from '../../mapping/EnumerationMappingReference.js';
 
 export class RelationFunctionPropertyMapping
   extends PropertyMapping
@@ -48,6 +49,7 @@ export class RelationFunctionPropertyMapping
 {
   column: RelationColumn;
   bindingTransformer?: BindingTransformer | undefined;
+  transformer?: EnumerationMappingReference | undefined;
 
   constructor(
     owner: PropertyMappingsImplementation,
@@ -66,6 +68,7 @@ export class RelationFunctionPropertyMapping
       super.hashCode,
       this.column.name,
       this.bindingTransformer ?? '',
+      this.transformer?.valueForSerialization ?? '',
     ]);
   }
 
