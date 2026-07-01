@@ -309,17 +309,34 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       if (task.action === V1_WorkflowTaskAction.REJECTED) {
         return 'denied';
       }
-      if (
-        task.status === V1_WorkflowTaskStatus.CLOSED ||
-        task.status === V1_WorkflowTaskStatus.OBSOLETE
-      ) {
-        return 'complete';
-      }
       return fallback;
     };
 
     const pmStepStatus = getTaskStepStatus(pmTask, 'skipped');
-    const doStepStatus = getTaskStepStatus(doTask, 'upcoming');
+    let doStepStatus = getTaskStepStatus(doTask, 'upcoming');
+
+    // When PM approver is the same as DO approver, the server does not create
+    // a separate DataOwnerApprovalTask. Once PM approves, DO should be shown
+    // as auto-completed.
+    if (!doTask && pmStepStatus === 'complete') {
+      doStepStatus = 'complete';
+    } else if (doTask) {
+      // If both tasks exist but share the same assignees, auto-complete DO on PM approval
+      const pmAssigneesSet = new Set(
+        getEffectiveAssignees(pmTask, pmWorkflowTask) ?? [],
+      );
+      const doAssigneesSet = new Set(
+        getEffectiveAssignees(doTask, doWorkflowTask) ?? [],
+      );
+      const pmAndDoSameApprover =
+        pmAssigneesSet.size > 0 &&
+        doAssigneesSet.size > 0 &&
+        pmAssigneesSet.size === doAssigneesSet.size &&
+        [...pmAssigneesSet].every((a) => doAssigneesSet.has(a));
+      if (pmAndDoSameApprover && pmStepStatus === 'complete') {
+        doStepStatus = 'complete';
+      }
+    }
 
     const isEscalated = pmTask?.action === V1_WorkflowTaskAction.ESCALATED;
     const showEscalateButton =
@@ -394,7 +411,7 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
       {
         key: 'complete',
         status:
-          doTask?.action === V1_WorkflowTaskAction.APPROVED
+          doStepStatus === 'complete'
             ? ('complete' as const)
             : ('upcoming' as const),
         label: { title: 'Complete' },

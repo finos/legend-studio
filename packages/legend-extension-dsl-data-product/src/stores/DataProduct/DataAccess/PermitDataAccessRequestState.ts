@@ -378,7 +378,27 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       pmLikeTasks[pmLikeTasks.length - 1];
 
     const pmStepStatus = getStepStatus(pmTask, 'skipped');
-    const doStepStatus = getStepStatus(doTask, 'upcoming');
+    let doStepStatus = getStepStatus(doTask, 'upcoming');
+
+    // When PM approver is the same as DO approver, the server does not create
+    // a separate DataOwnerApprovalTask. Once PM approves, DO should be shown
+    // as auto-completed.
+    if (!doTask && pmStepStatus === 'complete') {
+      doStepStatus = 'complete';
+    } else if (doTask) {
+      // If both tasks exist but share the same assignees, auto-complete DO on PM approval
+      const pmAssigneesSet = new Set(pmTask?.assignees ?? []);
+      const doAssigneesSet = new Set(doTask.assignees ?? []);
+      const pmAndDoSameApprover =
+        pmAssigneesSet.size > 0 &&
+        doAssigneesSet.size > 0 &&
+        pmAssigneesSet.size === doAssigneesSet.size &&
+        [...pmAssigneesSet].every((a) => doAssigneesSet.has(a));
+      if (pmAndDoSameApprover && pmStepStatus === 'complete') {
+        doStepStatus = 'complete';
+      }
+    }
+
     const isEscalated = pmLikeTasks.some(
       (task) => task.action === V1_WorkflowTaskAction.ESCALATED,
     );
@@ -446,10 +466,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       },
       {
         key: 'complete',
-        status:
-          doTask?.action === V1_WorkflowTaskAction.APPROVED
-            ? 'complete'
-            : 'upcoming',
+        status: doStepStatus === 'complete' ? 'complete' : 'upcoming',
         label: { title: 'Complete' },
       },
     ];
