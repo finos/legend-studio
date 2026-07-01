@@ -2607,3 +2607,381 @@ export const TEST_DATA__RelationFunctionMappingEmptyPrimaryKey = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+export const TEST_DATA__RelationFunctionMappingWithEnum = [
+  {
+    path: 'my::EmployeeType',
+    content: {
+      _type: 'Enumeration',
+      name: 'EmployeeType',
+      package: 'my',
+      values: [{ value: 'CONTRACT' }, { value: 'FULL_TIME' }],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Enumeration',
+  },
+  {
+    path: 'my::PersonWithEmployeeType',
+    content: {
+      _type: 'class',
+      name: 'PersonWithEmployeeType',
+      package: 'my',
+      properties: [
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'firstName',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+          },
+        },
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'age',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'Integer' },
+          },
+        },
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'employeeType',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'my::EmployeeType',
+            },
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::personWithEnumFunction__Relation_1_',
+    content: {
+      _type: 'function',
+      body: [],
+      name: 'personWithEnumFunction__Relation_1_',
+      package: 'my',
+      parameters: [],
+      postConstraints: [],
+      preConstraints: [],
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'meta::pure::metamodel::relation::Relation',
+        },
+      },
+      returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::PersonWithEmployeeType',
+          id: 'person',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: {
+                class: 'my::PersonWithEmployeeType',
+                property: 'firstName',
+              },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'AGE',
+              property: {
+                class: 'my::PersonWithEmployeeType',
+                property: 'age',
+              },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'EMPLOYEE_TYPE',
+              enumMappingId: 'employeeTypeMapping',
+              property: {
+                class: 'my::PersonWithEmployeeType',
+                property: 'employeeType',
+              },
+              source: 'person',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personWithEnumFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [
+        {
+          enumeration: {
+            path: 'my::EmployeeType',
+            type: 'ENUMERATION',
+          },
+          enumValueMappings: [
+            {
+              enumValue: 'CONTRACT',
+              sourceValues: [{ _type: 'stringSourceValue', value: 'C' }],
+            },
+            {
+              enumValue: 'FULL_TIME',
+              sourceValues: [{ _type: 'stringSourceValue', value: 'F' }],
+            },
+          ],
+          id: 'employeeTypeMapping',
+        },
+      ],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
+const TEST_DATA__RelationFunctionMappingEmbeddedCommonEntities = [
+  {
+    path: 'my::Address',
+    content: {
+      _type: 'class',
+      name: 'Address',
+      package: 'my',
+      properties: [
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'street',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+          },
+        },
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'city',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::PersonWithAddress',
+    content: {
+      _type: 'class',
+      name: 'PersonWithAddress',
+      package: 'my',
+      properties: [
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'firstName',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'String' },
+          },
+        },
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'age',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'Integer' },
+          },
+        },
+        {
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          name: 'address',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'my::Address' },
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'my::personWithAddressFunction__Relation_1_',
+    content: {
+      _type: 'function',
+      body: [],
+      name: 'personWithAddressFunction__Relation_1_',
+      package: 'my',
+      parameters: [],
+      postConstraints: [],
+      preConstraints: [],
+      returnGenericType: {
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'meta::pure::metamodel::relation::Relation',
+        },
+      },
+      returnMultiplicity: { lowerBound: 1, upperBound: 1 },
+    },
+    classifierPath:
+      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  },
+];
+
+export const TEST_DATA__RelationFunctionMappingWithEmbedded = [
+  ...TEST_DATA__RelationFunctionMappingEmbeddedCommonEntities,
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::PersonWithAddress',
+          id: 'person',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: {
+                class: 'my::PersonWithAddress',
+                property: 'firstName',
+              },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'AGE',
+              property: {
+                class: 'my::PersonWithAddress',
+                property: 'age',
+              },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionEmbeddedPropertyMapping',
+              property: {
+                class: 'my::PersonWithAddress',
+                property: 'address',
+              },
+              propertyMappings: [
+                {
+                  _type: 'relationFunctionPropertyMapping',
+                  column: 'STREET',
+                  property: { property: 'street' },
+                  source: 'person',
+                },
+                {
+                  _type: 'relationFunctionPropertyMapping',
+                  column: 'CITY',
+                  property: { property: 'city' },
+                  source: 'person',
+                },
+              ],
+              source: 'person',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personWithAddressFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
+export const TEST_DATA__RelationFunctionMappingWithInlineEmbedded = [
+  ...TEST_DATA__RelationFunctionMappingEmbeddedCommonEntities,
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::PersonWithAddress',
+          id: 'personWithAddr',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: {
+                class: 'my::PersonWithAddress',
+                property: 'firstName',
+              },
+              source: 'personWithAddr',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'AGE',
+              property: {
+                class: 'my::PersonWithAddress',
+                property: 'age',
+              },
+              source: 'personWithAddr',
+            },
+            {
+              _type: 'relationFunctionEmbeddedPropertyMapping',
+              id: 'addressSet',
+              property: {
+                class: 'my::PersonWithAddress',
+                property: 'address',
+              },
+              propertyMappings: [],
+              source: 'personWithAddr',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personWithAddressFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+        {
+          _type: 'relationFunction',
+          class: 'my::Address',
+          id: 'addressSet',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'STREET',
+              property: { class: 'my::Address', property: 'street' },
+              source: 'addressSet',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'CITY',
+              property: { class: 'my::Address', property: 'city' },
+              source: 'addressSet',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personWithAddressFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];

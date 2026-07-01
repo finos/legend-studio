@@ -1,0 +1,79 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100),
+    AGE INTEGER,
+    EMPLOYEE_TYPE VARCHAR(20)
+  )
+)
+
+
+###Pure
+Enum my::EmployeeType
+{
+  CONTRACT,
+  FULL_TIME
+}
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+  employeeType: my::EmployeeType[1];
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#->select(~[FIRSTNAME, AGE, EMPLOYEE_TYPE])
+}
+
+
+###Mapping
+Mapping my::relationFunctionMapping
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    firstName: FIRSTNAME,
+    age: AGE,
+    employeeType: EnumerationMapping employeeTypeMapping: EMPLOYEE_TYPE
+  }
+
+  my::EmployeeType: EnumerationMapping employeeTypeMapping
+  {
+    CONTRACT: ['CONTRACT'],
+    FULL_TIME: ['SALARY', 'FULL_TIME']
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection my::conn
+{
+  store: my::testDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime my::runtime
+{
+  mappings:
+  [
+    my::relationFunctionMapping
+  ];
+  connections:
+  [
+    my::testDB:
+    [
+      connection_1: my::conn
+    ]
+  ];
+}
