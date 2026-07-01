@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.26
+
+### Patch Changes
+
+- [#5290](https://github.com/finos/legend-studio/pull/5290) [`6411f98`](https://github.com/finos/legend-studio/commit/6411f98a04d00989c6d48b5def4b4cdafbaf0fed) ([@bojja-gs](https://github.com/bojja-gs)) - Remove the Data Product Type filter section on the data products search results page.
+
 ## 0.2.25
 
 ### Patch Changes
