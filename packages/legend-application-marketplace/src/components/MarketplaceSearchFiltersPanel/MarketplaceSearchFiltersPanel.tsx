@@ -28,7 +28,6 @@ import {
 import type { TaxonomyNode } from '@finos/legend-server-marketplace';
 import {
   type LegendMarketplaceSearchResultsStore,
-  DataProductTypeFilter,
   DataProductSourceFilter,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import { useAuth } from 'react-oidc-context';
@@ -417,37 +416,6 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
           </CubesLoadingIndicator>
         ) : (
           <>
-            <FilterSection title="Data Product Type">
-              {Object.values(DataProductTypeFilter).map((value) => (
-                <FilterCheckboxOption
-                  key={value}
-                  label={
-                    value === DataProductTypeFilter.LAKEHOUSE
-                      ? 'Lakehouse'
-                      : 'Legacy'
-                  }
-                  checked={store.selectedDataProductTypes.has(value)}
-                  count={
-                    value === DataProductTypeFilter.LAKEHOUSE
-                      ? store.filterCounts.lakehouse_count
-                      : store.filterCounts.legacy_count
-                  }
-                  onChange={() => {
-                    const isSelected =
-                      store.selectedDataProductTypes.has(value);
-                    store.toggleDataProductType(value);
-                    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-                      baseStore.applicationStore.telemetryService,
-                      'dataProductType',
-                      value,
-                      isSelected ? 'deselect' : 'select',
-                      store.searchQuery,
-                    );
-                    triggerSearch();
-                  }}
-                />
-              ))}
-            </FilterSection>
             <FilterSection title="Source">
               {Object.values(DataProductSourceFilter).map((value) => (
                 <FilterCheckboxOption
