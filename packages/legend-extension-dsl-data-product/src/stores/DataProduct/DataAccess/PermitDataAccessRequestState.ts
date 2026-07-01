@@ -388,7 +388,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     } else if (doTask) {
       // If both tasks exist but share the same assignees, auto-complete DO on PM approval
       const pmAssigneesSet = new Set(pmTask?.assignees ?? []);
-      const doAssigneesSet = new Set(doTask.assignees ?? []);
+      const doAssigneesSet = new Set(doTask.assignees);
       const pmAndDoSameApprover =
         pmAssigneesSet.size > 0 &&
         doAssigneesSet.size > 0 &&
