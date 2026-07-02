@@ -80,7 +80,7 @@ describe(unitTest('computeKeyMetrics'), () => {
     expect(uniqueMetric.value).toBe('3');
   });
 
-  test('caps at 4 metrics', () => {
+  test('caps at 6 metrics', () => {
     const grid = makeGridData(
       ['name', 'val1', 'val2'],
       [
@@ -90,7 +90,7 @@ describe(unitTest('computeKeyMetrics'), () => {
       ],
     );
     const metrics = computeKeyMetrics(grid);
-    expect(metrics.length).toBeLessThanOrEqual(4);
+    expect(metrics.length).toBeLessThanOrEqual(6);
   });
 
   test('omits range detail when all values are equal', () => {
@@ -524,5 +524,136 @@ describe(unitTest('analyzeGridData'), () => {
     const analysis = analyzeGridData(grid);
     expect(analysis.metrics.length).toBeGreaterThan(0);
     expect(analysis.chartType).toBe(LegendAIChartType.NONE);
+  });
+
+  test('returns categoryColumnName for categorical data', () => {
+    const grid = makeGridData(
+      ['region', 'amount'],
+      [
+        { region: 'US', amount: 100 },
+        { region: 'EU', amount: 200 },
+        { region: 'US', amount: 150 },
+        { region: 'APAC', amount: 300 },
+      ],
+    );
+    const analysis = analyzeGridData(grid);
+    expect(analysis.categoryColumnName).toBe('region');
+  });
+});
+
+describe(unitTest('LINE chart inference'), () => {
+  test('returns LINE for date + numeric columns', () => {
+    const grid = makeGridData(
+      ['tradeDate', 'amount'],
+      [
+        { tradeDate: '2024-01-01', amount: 100 },
+        { tradeDate: '2024-01-02', amount: 200 },
+        { tradeDate: '2024-01-03', amount: 300 },
+      ],
+    );
+    expect(inferChartType(grid)).toBe(LegendAIChartType.LINE);
+  });
+
+  test('returns LINE for ISO datetime values', () => {
+    const grid = makeGridData(
+      ['timestamp', 'value'],
+      [
+        { timestamp: '2024-01-15T10:30:00', value: 50 },
+        { timestamp: '2024-01-15T11:30:00', value: 60 },
+        { timestamp: '2024-01-15T12:30:00', value: 70 },
+      ],
+    );
+    expect(inferChartType(grid)).toBe(LegendAIChartType.LINE);
+  });
+
+  test('does not return LINE for non-date strings + numeric', () => {
+    const grid = makeGridData(
+      ['name', 'value'],
+      [
+        { name: 'Alpha', value: 10 },
+        { name: 'Beta', value: 20 },
+        { name: 'Gamma', value: 30 },
+      ],
+    );
+    expect(inferChartType(grid)).toBe(LegendAIChartType.PIE);
+  });
+
+  test('does not return LINE for single row date data', () => {
+    const grid = makeGridData(
+      ['date', 'val'],
+      [{ date: '2024-01-01', val: 100 }],
+    );
+    expect(inferChartType(grid)).toBe(LegendAIChartType.NONE);
+  });
+
+  test('analyzeGridData returns LINE with trend title for date series', () => {
+    const grid = makeGridData(
+      ['tradeDate', 'revenue'],
+      [
+        { tradeDate: '2024-01-01', revenue: 1000 },
+        { tradeDate: '2024-02-01', revenue: 1500 },
+        { tradeDate: '2024-03-01', revenue: 1200 },
+      ],
+    );
+    const analysis = analyzeGridData(grid);
+    expect(analysis.chartType).toBe(LegendAIChartType.LINE);
+    expect(analysis.chartData.length).toBeGreaterThan(0);
+    expect(analysis.numericColumnName).toBe('revenue');
+  });
+});
+
+describe(unitTest('enhanced metrics'), () => {
+  test('includes second numeric column avg', () => {
+    const grid = makeGridData(
+      ['region', 'revenue', 'cost'],
+      [
+        { region: 'US', revenue: 1000, cost: 400 },
+        { region: 'EU', revenue: 2000, cost: 800 },
+        { region: 'APAC', revenue: 3000, cost: 1200 },
+      ],
+    );
+    const metrics = computeKeyMetrics(grid);
+    const avgCost = metrics.find((m) => m.label === 'Avg cost');
+    expect(avgCost).toBeDefined();
+  });
+
+  test('includes date range metric for date data', () => {
+    const grid = makeGridData(
+      ['tradeDate', 'amount'],
+      [
+        { tradeDate: '2024-01-15', amount: 100 },
+        { tradeDate: '2024-06-20', amount: 200 },
+        { tradeDate: '2024-12-31', amount: 300 },
+      ],
+    );
+    const metrics = computeKeyMetrics(grid);
+    const dateRange = metrics.find((m) => m.label === 'Date Range');
+    expect(dateRange).toBeDefined();
+    expect(dateRange?.value).toContain('2024-01-15');
+    expect(dateRange?.value).toContain('2024-12-31');
+  });
+
+  test('includes concentration metric when top values dominate', () => {
+    const rows = [
+      ...Array.from({ length: 80 }, () => ({ region: 'US', val: 10 })),
+      ...Array.from({ length: 15 }, () => ({ region: 'EU', val: 10 })),
+      ...Array.from({ length: 5 }, () => ({ region: 'APAC', val: 10 })),
+    ];
+    const grid = makeGridData(['region', 'val'], rows);
+    const metrics = computeKeyMetrics(grid);
+    const concentration = metrics.find((m) => m.label.startsWith('Top'));
+    expect(concentration).toBeDefined();
+    expect(concentration?.value).toContain('%');
+  });
+
+  test('omits concentration metric when evenly distributed', () => {
+    const rows = Array.from({ length: 30 }, (_, i) => ({
+      region: `region${i % 10}`,
+      val: 10,
+    }));
+    const grid = makeGridData(['region', 'val'], rows);
+    const metrics = computeKeyMetrics(grid);
+    const concentration = metrics.find((m) => m.label.startsWith('Top'));
+    expect(concentration).toBeUndefined();
   });
 });

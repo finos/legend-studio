@@ -35,7 +35,6 @@ import {
   finishWithThinkingError,
 } from '../LegendAIChatProcessors.js';
 import {
-  type LegendAIAssistantMessage,
   type LegendAIMessage,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
@@ -54,6 +53,7 @@ import {
   TEST_DATA__legendAIConfig,
   TEST_DATA__legendAIMetadata,
   TEST_DATA__legendAIServices,
+  TEST__getAssistantMessage,
 } from '../../__test-utils__/LegendAITestUtils.js';
 
 const TEST_DATA__coordinates: LegendAIOrchestratorDataProductCoordinates = {
@@ -223,7 +223,7 @@ describe(unitTest('analyzeOrchestratorResults'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toContain('Analysis summary');
     expect(msg.suggestedQueries).toEqual(['Follow up 1', 'Follow up 2']);
     expect(msg.isProcessing).toBe(false);
@@ -256,7 +256,7 @@ describe(unitTest('analyzeOrchestratorResults'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toContain('I retrieved 2 rows');
     expect(msg.textAnswer).toContain('Net Sentiment Score');
     expect(msg.suggestedQueries).toEqual([]);
@@ -267,7 +267,7 @@ describe(unitTest('analyzeOrchestratorResults'), () => {
 // ─── executePureQueryAndReport — error path ──────────────────────────────────
 
 describe(unitTest('executePureQueryAndReport — error handling'), () => {
-  test('catches execution errors and returns empty result', async () => {
+  test('catches execution errors and returns undefined', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
@@ -286,9 +286,8 @@ describe(unitTest('executePureQueryAndReport — error handling'), () => {
       Date.now(),
     );
 
-    expect(result.columns).toEqual([]);
-    expect(result.rows).toEqual([]);
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    expect(result).toBeUndefined();
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Connection timeout');
     expect(msg.isProcessing).toBe(false);
   });
@@ -330,7 +329,7 @@ describe(unitTest('executeSqlAndReport — access point execution'), () => {
 
     expect(executeLakehouseSql).toHaveBeenCalledTimes(1);
     expect(executeSql).not.toHaveBeenCalled();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
 
@@ -353,7 +352,7 @@ describe(unitTest('executeSqlAndReport — access point execution'), () => {
     );
 
     expect(result).toBeUndefined();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Column');
     expect(msg.error).toContain('Available columns');
   });
@@ -384,7 +383,7 @@ describe(unitTest('processQuestion — error handling'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Unexpected classification error');
     expect(msg.isProcessing).toBe(false);
   });
@@ -411,19 +410,19 @@ describe(unitTest('processQuestion — error handling'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Product description here');
   });
 
-  test('uses fast metadata guard even if plugin classifier returns data_query', async () => {
+  test('always classifies via LLM and respects METADATA result', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const classifyQuestionIntent = createMock().mockResolvedValue(
-      LegendAIQuestionIntent.DATA_QUERY,
+      LegendAIQuestionIntent.METADATA,
     );
     const plugin = TEST__createMockLegendAIPlugin({
       classifyQuestionIntent,
-      callLLM: createMock().mockResolvedValue('Metadata answer from guard'),
+      callLLM: createMock().mockResolvedValue('Metadata answer from LLM'),
     });
 
     await processQuestion(
@@ -439,20 +438,19 @@ describe(unitTest('processQuestion — error handling'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.textAnswer).toBe('Metadata answer from guard');
-    expect(classifyQuestionIntent).not.toHaveBeenCalled();
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
+    expect(msg.textAnswer).toBe('Metadata answer from LLM');
+    // LLM-first: classifyQuestionIntent is always called
+    expect(classifyQuestionIntent).toHaveBeenCalled();
   });
 
-  test('uses metadata-plus-query fallback for ambiguous intent', async () => {
+  test('routes to SQL-only when LLM classifier returns DATA_QUERY for ambiguous intent', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const classifyQuestionIntent = createMock().mockResolvedValue(
       LegendAIQuestionIntent.DATA_QUERY,
     );
-    const callLLM = createMock()
-      .mockResolvedValueOnce('Metadata context answer')
-      .mockResolvedValue('SQL generation answer');
+    const callLLM = createMock().mockResolvedValue('SQL generation answer');
     const plugin = TEST__createMockLegendAIPlugin({
       classifyQuestionIntent,
       callLLM,
@@ -481,12 +479,12 @@ describe(unitTest('processQuestion — error handling'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.textAnswer).toContain('### Metadata context');
-    expect(msg.textAnswer).toContain('Metadata context answer');
-    expect(msg.textAnswer).toContain('### Query analysis');
-    expect(msg.textAnswer).toContain('Query analysis summary');
-    expect(classifyQuestionIntent).not.toHaveBeenCalled();
+    expect(classifyQuestionIntent).toHaveBeenCalled();
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
+    // LLM returns DATA_QUERY → SQL only, no metadata context prepended
+    expect(msg.textAnswer).toBe('Query analysis summary');
+    expect(msg.textAnswer).not.toContain('### Metadata context');
+    expect(msg.gridData).toBeDefined();
   });
 });
 
@@ -514,7 +512,7 @@ describe(unitTest('processQuestionWithIntent — metadata intent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Metadata answer');
   });
 
@@ -546,7 +544,7 @@ describe(unitTest('processQuestionWithIntent — metadata intent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBeDefined();
     expect(msg.fallbackAction).toBeDefined();
     expect(msg.fallbackAction?.label).toBe('Try Legend AI Orchestrator');
@@ -577,7 +575,7 @@ describe(unitTest('processQuestionWithIntent — metadata intent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
@@ -610,6 +608,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     const history = buildConversationHistory(messages);
@@ -638,6 +637,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     const history = buildConversationHistory(messages);
@@ -645,7 +645,7 @@ describe(unitTest('buildConversationHistory'), () => {
     expect(history[0]?.intent).toBe(LegendAIQuestionIntent.METADATA);
   });
 
-  test('skips messages without sql or textAnswer', () => {
+  test('includes generation failures in history', () => {
     const messages: LegendAIMessage[] = [
       { id: '1', role: LegendAIMessageRole.USER, text: 'test' },
       {
@@ -665,10 +665,13 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     const history = buildConversationHistory(messages);
-    expect(history).toHaveLength(0);
+    expect(history).toHaveLength(1);
+    expect(history[0]?.sql).toBe('(generation failed)');
+    expect(history[0]?.resultSummary).toBe('ERROR: error');
   });
 });
 
@@ -684,7 +687,7 @@ describe(unitTest('updateLastAssistant'), () => {
       isProcessing: false,
     }));
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Updated answer');
     expect(msg.isProcessing).toBe(false);
   });
@@ -712,7 +715,7 @@ describe(unitTest('thinking step utilities'), () => {
     addThinkingStep(setter, 'Step 1');
     addThinkingStep(setter, 'Step 2');
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.thinkingSteps).toHaveLength(2);
     expect(msg.thinkingSteps[0]?.label).toBe('Step 1');
     expect(msg.thinkingSteps[0]?.status).toBe('done');
@@ -727,7 +730,7 @@ describe(unitTest('thinking step utilities'), () => {
     addThinkingStep(setter, 'Active step');
     completeThinkingSteps(setter);
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.thinkingSteps[0]?.status).toBe('done');
   });
 
@@ -738,7 +741,7 @@ describe(unitTest('thinking step utilities'), () => {
 
     finishWithThinkingError(setter, 'Something went wrong', Date.now());
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toBe('Something went wrong');
     expect(msg.errorType).toBeNull();
     expect(msg.isProcessing).toBe(false);
@@ -757,7 +760,7 @@ describe(unitTest('thinking step utilities'), () => {
       LegendAIErrorType.PERMISSION,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toBe('Permission denied');
     expect(msg.errorType).toBe(LegendAIErrorType.PERMISSION);
   });
@@ -785,7 +788,7 @@ describe(unitTest('handleMetadataQuestion'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Product info here');
     expect(msg.isProcessing).toBe(false);
   });
@@ -812,7 +815,7 @@ describe(unitTest('handleMetadataQuestion'), () => {
       true,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Answer text');
     expect(msg.suggestedQueries).toEqual(['Query one?', 'Query two?']);
   });
@@ -839,7 +842,7 @@ describe(unitTest('handleMetadataQuestion'), () => {
       false,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.suggestedQueries).toEqual([]);
   });
 });
@@ -984,7 +987,7 @@ describe(unitTest('executeSqlAndReport — success'), () => {
 
     expect(result).toBeDefined();
     expect(result?.columns).toEqual(['id', 'name', 'id_2']);
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.gridData?.rowData).toHaveLength(1);
     expect(msg.isProcessing).toBe(false);
   });

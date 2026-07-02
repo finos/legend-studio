@@ -104,6 +104,19 @@ describe(unitTest('classifyQuestionIntentFast — metadata questions'), () => {
     expect(result.ambiguous).toBe(false);
   });
 
+  test('capability discovery overrides financial term in product name', () => {
+    const result = classifyQuestionIntentFast(
+      'What data does Bloomberg Fund Holdings offer and how can I use it?',
+      true,
+    );
+    expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
+    // "Fund" in the product name triggers a data signal, but capability
+    // discovery phrases should override that and keep it non-ambiguous.
+    expect(result.metaScore).toBeGreaterThan(0);
+    expect(result.dataScore).toBeGreaterThan(0);
+    expect(result.ambiguous).toBe(false);
+  });
+
   test('how are services related → metadata', () => {
     const result = classifyQuestionIntentFast(
       'How are these 2 services related and is there any way we can join them?',

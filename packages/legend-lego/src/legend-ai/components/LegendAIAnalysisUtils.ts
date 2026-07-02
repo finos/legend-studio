@@ -26,15 +26,17 @@ const CHART_PALETTE_COUNT = 10;
 const MAX_CHART_ITEMS = 10;
 const TOP_N_ITEMS = 5;
 const MAX_PROFILE_SAMPLE = 1000;
-const MAX_KEY_METRICS = 4;
+const MAX_KEY_METRICS = 6;
 const MAX_METRIC_COLUMNS = 5;
 const MAX_BAR_CHART_ROWS = 20;
 const MAX_PIE_CHART_ROWS = 6;
+const CONCENTRATION_THRESHOLD = 0.6;
 
 interface ColumnProfile {
   name: string;
   isNumeric: boolean;
   isString: boolean;
+  isDate: boolean;
   uniqueCount: number;
   nonNullCount: number;
   numericValues: number[];
@@ -45,6 +47,52 @@ export interface LegendAIGridAnalysis {
   chartType: LegendAIChartType;
   chartData: LegendAIChartDataPoint[];
   numericColumnName: string | undefined;
+  categoryColumnName: string | undefined;
+}
+
+const DATE_NAME_PATTERN = /(?:date|time|timestamp)|(?:_dt$)/i;
+
+function looksLikeDateValue(v: unknown): boolean {
+  if (!isString(v)) {
+    return false;
+  }
+  // ISO date patterns: 2024-01-15, 2024-01-15T10:30:00, etc.
+  return /^\d{4}-\d{2}-\d{2}/.test(v);
+}
+
+function profileRowValues(
+  rows: Record<string, unknown>[],
+  field: string,
+): {
+  nonNullCount: number;
+  stringCount: number;
+  dateCount: number;
+  numericValues: number[];
+  unique: Set<string>;
+} {
+  let nonNullCount = 0;
+  let stringCount = 0;
+  let dateCount = 0;
+  const numericValues: number[] = [];
+  const unique = new Set<string>();
+  for (const r of rows) {
+    const v = r[field];
+    if (v === null || v === undefined) {
+      continue;
+    }
+    nonNullCount++;
+    unique.add(isString(v) ? v : JSON.stringify(v));
+    if (isNumber(v)) {
+      numericValues.push(v);
+    }
+    if (isString(v)) {
+      stringCount++;
+      if (looksLikeDateValue(v)) {
+        dateCount++;
+      }
+    }
+  }
+  return { nonNullCount, stringCount, dateCount, numericValues, unique };
 }
 
 function profileColumns(gridData: LegendAIGridData): ColumnProfile[] {
@@ -55,29 +103,16 @@ function profileColumns(gridData: LegendAIGridData): ColumnProfile[] {
 
   return gridData.columnDefs.map((col) => {
     const field = col.field ?? col.colId ?? '';
-    let nonNullCount = 0;
-    let stringCount = 0;
-    const numericValues: number[] = [];
-    const unique = new Set<string>();
-
-    for (const r of rows) {
-      const v = r[field];
-      if (v !== null && v !== undefined) {
-        nonNullCount++;
-        unique.add(String(v));
-        if (isNumber(v)) {
-          numericValues.push(v);
-        }
-        if (isString(v)) {
-          stringCount++;
-        }
-      }
-    }
-
+    const { nonNullCount, stringCount, dateCount, numericValues, unique } =
+      profileRowValues(rows, field);
+    const isDateCol =
+      (dateCount > 0 && dateCount >= nonNullCount * 0.8) ||
+      (nonNullCount === 0 && DATE_NAME_PATTERN.test(field));
     return {
       name: field,
       isNumeric: numericValues.length === nonNullCount && nonNullCount > 0,
       isString: nonNullCount > 0 && stringCount === nonNullCount,
+      isDate: isDateCol,
       uniqueCount: unique.size,
       nonNullCount,
       numericValues,
@@ -143,9 +178,76 @@ function computeNumericMetrics(
   }
 }
 
+function computeConcentrationMetric(
+  profiles: ColumnProfile[],
+  gridData: LegendAIGridData,
+): LegendAIKeyMetric | undefined {
+  const catCol = findBestCategoricalColumn(profiles, gridData.rowData.length);
+  if (!catCol || catCol.uniqueCount < 3) {
+    return undefined;
+  }
+  const freqMap = new Map<string, number>();
+  for (const row of gridData.rowData) {
+    const val = String(row[catCol.name] ?? '');
+    if (val.length > 0) {
+      freqMap.set(val, (freqMap.get(val) ?? 0) + 1);
+    }
+  }
+  const sorted = [...freqMap.values()].sort((a, b) => b - a);
+  const topCount = Math.min(3, sorted.length);
+  let topSum = 0;
+  for (let i = 0; i < topCount; i++) {
+    const count = sorted[i];
+    if (count !== undefined) {
+      topSum += count;
+    }
+  }
+  const pct = topSum / gridData.rowData.length;
+  if (pct >= CONCENTRATION_THRESHOLD) {
+    return {
+      label: `Top ${topCount} ${catCol.name}`,
+      value: `${Math.round(pct * 100)}%`,
+      detail: 'of all records',
+    };
+  }
+  return undefined;
+}
+
+function computeDateRangeMetric(
+  profiles: ColumnProfile[],
+  gridData: LegendAIGridData,
+): LegendAIKeyMetric | undefined {
+  const dateCol = profiles.find((c) => c.isDate);
+  if (!dateCol) {
+    return undefined;
+  }
+  let minDate: string | undefined;
+  let maxDate: string | undefined;
+  for (const row of gridData.rowData) {
+    const v = row[dateCol.name];
+    if (isString(v) && v.length >= 10) {
+      const d = v.slice(0, 10);
+      if (!minDate || d < minDate) {
+        minDate = d;
+      }
+      if (!maxDate || d > maxDate) {
+        maxDate = d;
+      }
+    }
+  }
+  if (minDate && maxDate && minDate !== maxDate) {
+    return {
+      label: 'Date Range',
+      value: `${minDate} – ${maxDate}`,
+    };
+  }
+  return undefined;
+}
+
 function computeKeyMetricsFromProfiles(
   profiles: ColumnProfile[],
   rowCount: number,
+  gridData?: LegendAIGridData,
 ): LegendAIKeyMetric[] {
   const metrics: LegendAIKeyMetric[] = [];
 
@@ -154,9 +256,11 @@ function computeKeyMetricsFromProfiles(
     value: rowCount.toLocaleString(),
   });
 
-  const numericCol = profiles.find(
+  // Primary numeric column
+  const numericCols = profiles.filter(
     (c) => c.isNumeric && c.numericValues.length > 0,
   );
+  const numericCol = numericCols[0];
   if (numericCol) {
     computeNumericMetrics(numericCol, metrics);
   }
@@ -171,6 +275,36 @@ function computeKeyMetricsFromProfiles(
     });
   }
 
+  // Second numeric column (if distinct from primary)
+  const secondNumeric = numericCols[1];
+  if (secondNumeric && metrics.length < MAX_KEY_METRICS) {
+    let sum2 = 0;
+    for (const n of secondNumeric.numericValues) {
+      sum2 += n;
+    }
+    const avg2 = sum2 / secondNumeric.numericValues.length;
+    metrics.push({
+      label: `Avg ${secondNumeric.name}`,
+      value: formatNumber(avg2),
+    });
+  }
+
+  // Date range metric
+  if (gridData && metrics.length < MAX_KEY_METRICS) {
+    const dateMetric = computeDateRangeMetric(profiles, gridData);
+    if (dateMetric) {
+      metrics.push(dateMetric);
+    }
+  }
+
+  // Concentration metric (top-3 share)
+  if (gridData && metrics.length < MAX_KEY_METRICS) {
+    const concentrationMetric = computeConcentrationMetric(profiles, gridData);
+    if (concentrationMetric) {
+      metrics.push(concentrationMetric);
+    }
+  }
+
   return metrics.slice(0, MAX_KEY_METRICS);
 }
 
@@ -180,6 +314,7 @@ export function computeKeyMetrics(
   return computeKeyMetricsFromProfiles(
     profileColumns(gridData),
     gridData.rowData.length,
+    gridData,
   );
 }
 
@@ -189,6 +324,12 @@ function inferChartTypeFromProfiles(
 ): LegendAIChartType {
   const numericCols = profiles.filter((c) => c.isNumeric);
   const stringCols = profiles.filter((c) => c.isString && c.uniqueCount > 1);
+  const dateCols = profiles.filter((c) => c.isDate);
+
+  // Date + numeric → LINE chart (time series)
+  if (dateCols.length >= 1 && numericCols.length >= 1 && rowCount > 1) {
+    return LegendAIChartType.LINE;
+  }
 
   if (
     stringCols.length >= 1 &&
@@ -318,6 +459,20 @@ export function findNumericColumnName(
   return findNumericColumnNameFromProfiles(profileColumns(gridData), gridData);
 }
 
+function findCategoryColumnNameFromProfiles(
+  profiles: ColumnProfile[],
+  gridData: LegendAIGridData,
+): string | undefined {
+  const catCol = findBestCategoricalColumn(profiles, gridData.rowData.length);
+  if (!catCol) {
+    return undefined;
+  }
+  const colDef = gridData.columnDefs.find(
+    (c) => (c.field ?? c.colId ?? '') === catCol.name,
+  );
+  return colDef?.headerName ?? colDef?.field;
+}
+
 export function analyzeGridData(
   gridData: LegendAIGridData,
 ): LegendAIGridAnalysis {
@@ -325,12 +480,13 @@ export function analyzeGridData(
   const rowCount = gridData.rowData.length;
   const chartType = inferChartTypeFromProfiles(profiles, rowCount);
   return {
-    metrics: computeKeyMetricsFromProfiles(profiles, rowCount),
+    metrics: computeKeyMetricsFromProfiles(profiles, rowCount, gridData),
     chartType,
     chartData:
       chartType === LegendAIChartType.NONE
         ? []
         : computeChartDataFromProfiles(profiles, gridData),
     numericColumnName: findNumericColumnNameFromProfiles(profiles, gridData),
+    categoryColumnName: findCategoryColumnNameFromProfiles(profiles, gridData),
   };
 }

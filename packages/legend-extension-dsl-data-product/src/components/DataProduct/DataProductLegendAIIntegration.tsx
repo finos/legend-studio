@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   V1_ServiceExecutableInfo,
@@ -30,6 +30,7 @@ import {
   type QueryExplicitExecutionContextInfo,
   extractElementNameFromPath,
   V1_getGenericTypeFullPath,
+  V1_CInteger,
 } from '@finos/legend-graph';
 import {
   LegendAIChat,
@@ -42,6 +43,7 @@ import {
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
+  extractModelContext,
   type TDSColumnSchema,
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -51,10 +53,16 @@ import {
   type LegendAIServiceSummary,
   type LegendAIAccessPointInfo,
   type LegendAIAccessPointRelationship,
+  type LegendAIModelContext,
 } from '@finos/legend-lego/legend-ai';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
 import type { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
+import { type DataProductAPGState } from '../../stores/DataProduct/DataProductAPGState.js';
+import { DSL_DATAPRODUCT_EVENT } from '../../__lib__/DSL_DataProduct_Event.js';
+import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
+import { useAuth } from 'react-oidc-context';
 import { getIngestDeploymentServerConfigName } from '@finos/legend-server-lakehouse';
 
 /**
@@ -80,6 +88,14 @@ function extractColumnsFromRelationType(
       column.type = extractElementNameFromPath(
         V1_getGenericTypeFullPath(col.genericType),
       );
+      // Derive relationalType from genericType + typeVariableValues.
+      // Single integer arg: VARCHAR(32). Two integer args: DECIMAL(18,4).
+      const intArgs = col.genericType.typeVariableValues
+        .filter((v): v is V1_CInteger => v instanceof V1_CInteger)
+        .map((v) => String(v.value));
+      if (intArgs.length > 0) {
+        column.relationalType = `${column.type.toUpperCase()}(${intArgs.join(',')})`;
+      }
       if (col.multiplicity.lowerBound === 0) {
         column.nullable = true;
       }
@@ -347,8 +363,10 @@ export async function extractTDSServicesFromDataProduct(
         if (extracted.length > 0) {
           preFilters = extracted;
         }
-      } catch {
-        /* pre-filter extraction is best-effort */
+      } catch (error) {
+        assertErrorThrown(error);
+        // pre-filter extraction is best-effort — a service without pre-filters
+        // still works, the AI just won't know about hardcoded constraints.
       }
 
       const entry: TDSServiceSchema = {
@@ -570,8 +588,14 @@ const DataProductLegendAIIntegrationInner = observer(
             setServices(result);
           }
         })
-        .catch(() => {
-          /* noop — services stay empty; AI panel simply won't render */
+        .catch((error) => {
+          assertErrorThrown(error);
+          dataProductViewerState.applicationStore.logService.warn(
+            LogEvent.create(
+              DSL_DATAPRODUCT_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+            ),
+            error,
+          );
         });
       return () => {
         cancelled = true;
@@ -600,22 +624,15 @@ const DataProductLegendAIIntegrationInner = observer(
       };
     }, [projectGAV, dataProductViewerState.product.path]);
 
-    const metadata = useMemo(() => {
-      try {
-        return extractMetadataFromDataProduct(
+    const metadata = useMemo(
+      () =>
+        extractMetadataFromDataProduct(
           dataProductViewerState,
           coordinates,
           services,
-        );
-      } catch {
-        return {
-          name: 'Unknown',
-          coordinates,
-          serviceSummaries: [],
-          accessPointGroups: [],
-        };
-      }
-    }, [dataProductViewerState, coordinates, services]);
+        ),
+      [dataProductViewerState, coordinates, services],
+    );
 
     const pureExecutionContext = useMemo(():
       | QueryExplicitExecutionContextInfo
@@ -636,6 +653,17 @@ const DataProductLegendAIIntegrationInner = observer(
       return { mapping, runtime };
     }, [dataProductViewerState.dataProductArtifact]);
 
+    const modelContext: LegendAIModelContext | undefined = useMemo(() => {
+      const elementDocs =
+        dataProductViewerState.nativeModelAccessDocumentationState
+          ?.elementDocs ?? [];
+      if (elementDocs.length === 0) {
+        return undefined;
+      }
+      const ctx = extractModelContext(elementDocs);
+      return ctx.entities.length > 0 ? ctx : undefined;
+    }, [dataProductViewerState.nativeModelAccessDocumentationState]);
+
     const resolvedUserEnv = dataProductDataAccessState?.resolvedUserEnv;
     const resolvedConfig = useMemo((): LegendAIConfig => {
       if (!resolvedUserEnv) {
@@ -648,6 +676,44 @@ const DataProductLegendAIIntegrationInner = observer(
       return { ...config, lakehouseEnvironment: envName };
     }, [config, resolvedUserEnv]);
 
+    const auth = useAuth();
+
+    const findApgStateByTitle = useCallback(
+      (title: string): DataProductAPGState | undefined =>
+        dataProductViewerState.apgStates.find(
+          (s) => (s.apg.title ?? s.apg.id) === title,
+        ),
+      [dataProductViewerState.apgStates],
+    );
+
+    const handleRequestAccess = useCallback(
+      (accessPointGroupTitle: string): void => {
+        if (!dataProductDataAccessState) {
+          return;
+        }
+        const apgState = findApgStateByTitle(accessPointGroupTitle);
+        if (apgState) {
+          dataProductDataAccessState.setContractCreatorAPG(apgState.apg);
+        }
+      },
+      [findApgStateByTitle, dataProductDataAccessState],
+    );
+
+    // Resolve which APG state the currently-open contract dialog belongs to
+    const contractCreatorApgState: DataProductAPGState | undefined =
+      useMemo(() => {
+        const creatorAPG = dataProductDataAccessState?.contractCreatorAPG;
+        if (!creatorAPG) {
+          return undefined;
+        }
+        return dataProductViewerState.apgStates.find(
+          (s) => s.apg === creatorAPG,
+        );
+      }, [
+        dataProductDataAccessState?.contractCreatorAPG,
+        dataProductViewerState.apgStates,
+      ]);
+
     if (!config.enabled || !legendAIPlugin) {
       return null;
     }
@@ -656,18 +722,36 @@ const DataProductLegendAIIntegrationInner = observer(
       dataProductViewerState.product.title ?? 'this Data Product';
 
     return (
-      <LegendAIChat
-        services={services}
-        coordinates={coordinates}
-        config={resolvedConfig}
-        metadata={metadata}
-        title={`Ask ${productTitle}`}
-        plugin={legendAIPlugin}
-        {...(dataProductCoordinates ? { dataProductCoordinates } : {})}
-        {...(pureExecutionContext ? { pureExecutionContext } : {})}
-        {...(onClose ? { onClose } : {})}
-        {...(onMinimize ? { onMinimize } : {})}
-      />
+      <>
+        <LegendAIChat
+          services={services}
+          coordinates={coordinates}
+          config={resolvedConfig}
+          metadata={metadata}
+          title={`Ask ${productTitle}`}
+          plugin={legendAIPlugin}
+          contextBannerMessage="You can query data from the available access points in this data product."
+          {...(dataProductCoordinates ? { dataProductCoordinates } : {})}
+          {...(pureExecutionContext ? { pureExecutionContext } : {})}
+          {...(modelContext ? { modelContext } : {})}
+          {...(onClose ? { onClose } : {})}
+          {...(onMinimize ? { onMinimize } : {})}
+          {...(dataProductDataAccessState
+            ? { onRequestAccess: handleRequestAccess }
+            : {})}
+        />
+        {dataProductDataAccessState && contractCreatorApgState && (
+          <EntitlementsDataContractCreator
+            open={true}
+            onClose={() =>
+              dataProductDataAccessState.setContractCreatorAPG(undefined)
+            }
+            apgState={contractCreatorApgState}
+            dataAccessState={dataProductDataAccessState}
+            tokenProvider={() => auth.user?.access_token}
+          />
+        )}
+      </>
     );
   },
 );

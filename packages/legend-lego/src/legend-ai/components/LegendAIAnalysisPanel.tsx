@@ -18,7 +18,11 @@ import { useMemo } from 'react';
 import { LegendAIChartType } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { LegendAIGridData } from '../LegendAITypes.js';
 import { analyzeGridData } from './LegendAIAnalysisUtils.js';
-import { LegendAIBarChart, LegendAIDonutChart } from './LegendAICharts.js';
+import {
+  LegendAIBarChart,
+  LegendAIDonutChart,
+  LegendAILineChart,
+} from './LegendAICharts.js';
 
 export const LegendAIAnalysisPanel = (props: {
   gridData: LegendAIGridData;
@@ -27,20 +31,41 @@ export const LegendAIAnalysisPanel = (props: {
 }): React.ReactNode => {
   const { gridData, summary, SummaryRenderer } = props;
 
-  const { metrics, chartType, chartData, numericColumnName } = useMemo(
-    () => analyzeGridData(gridData),
-    [gridData],
-  );
+  const {
+    metrics,
+    chartType,
+    chartData,
+    numericColumnName,
+    categoryColumnName,
+  } = useMemo(() => analyzeGridData(gridData), [gridData]);
 
-  let chartTitle: string | undefined;
-  if (numericColumnName !== undefined) {
-    chartTitle =
-      chartType === LegendAIChartType.PIE
+  const chartTitle = useMemo(() => {
+    if (chartType === LegendAIChartType.LINE && numericColumnName) {
+      return categoryColumnName
+        ? `${numericColumnName} over ${categoryColumnName}`
+        : `${numericColumnName} Trend`;
+    }
+    if (numericColumnName !== undefined) {
+      return chartType === LegendAIChartType.PIE
         ? `${numericColumnName} Distribution`
         : `Top ${chartData.length} by ${numericColumnName}`;
-  }
+    }
+    if (categoryColumnName !== undefined) {
+      return `${categoryColumnName} Distribution`;
+    }
+    return undefined;
+  }, [chartType, numericColumnName, categoryColumnName, chartData.length]);
 
   const chartTitleProp = chartTitle === undefined ? {} : { title: chartTitle };
+
+  let chartElement: React.ReactNode;
+  if (chartType === LegendAIChartType.LINE) {
+    chartElement = <LegendAILineChart data={chartData} {...chartTitleProp} />;
+  } else if (chartType === LegendAIChartType.PIE) {
+    chartElement = <LegendAIDonutChart data={chartData} {...chartTitleProp} />;
+  } else {
+    chartElement = <LegendAIBarChart data={chartData} {...chartTitleProp} />;
+  }
 
   return (
     <div className="legend-ai-analysis">
@@ -65,13 +90,7 @@ export const LegendAIAnalysisPanel = (props: {
       )}
 
       {chartData.length > 0 && (
-        <div className="legend-ai-analysis__chart-section">
-          {chartType === LegendAIChartType.PIE ? (
-            <LegendAIDonutChart data={chartData} {...chartTitleProp} />
-          ) : (
-            <LegendAIBarChart data={chartData} {...chartTitleProp} />
-          )}
-        </div>
+        <div className="legend-ai-analysis__chart-section">{chartElement}</div>
       )}
 
       <div className="legend-ai-analysis__narrative">

@@ -21,10 +21,7 @@ import {
   processQuestionWithIntent,
   executePureQueryAndReport,
 } from '../LegendAIChatProcessors.js';
-import {
-  type LegendAIAssistantMessage,
-  LegendAIQuestionIntent,
-} from '../../LegendAITypes.js';
+import { LegendAIQuestionIntent } from '../../LegendAITypes.js';
 import type { LegendAIOrchestratorDataProductCoordinates } from '../../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
 import {
@@ -34,6 +31,7 @@ import {
   TEST_DATA__legendAIConfig,
   TEST_DATA__legendAIMetadata,
   TEST_DATA__legendAIServices,
+  TEST__getAssistantMessage,
 } from '../../__test-utils__/LegendAITestUtils.js';
 
 const TEST_DATA__coordinates: LegendAIOrchestratorDataProductCoordinates = {
@@ -81,8 +79,10 @@ describe(unitTest('processQuestionViaOrchestrator'), () => {
       TEST_DATA__executionContext,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.sql).toBe('#>{my::Store.trades}#->filter(x|x.amount > 100)');
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
+    expect(msg.sql).toBe(
+      '#>{my::Store.trades}#->filter(x|x.amount > 100)->take(1000)',
+    );
     expect(msg.gridData).toBeDefined();
     expect(msg.gridData?.rowData).toHaveLength(1);
     expect(msg.isProcessing).toBe(false);
@@ -122,7 +122,7 @@ describe(unitTest('processQuestionViaOrchestrator'), () => {
       TEST_DATA__executionContext,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     const entityStep = msg.thinkingSteps.find((s) =>
       s.label.includes('TradeEntity'),
     );
@@ -162,7 +162,7 @@ describe(unitTest('processQuestionViaOrchestrator'), () => {
       undefined, // no execution context
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('No execution context available');
     expect(msg.isProcessing).toBe(false);
     expect(msg.isExecuting).toBe(false);
@@ -193,7 +193,7 @@ describe(unitTest('processQuestionViaOrchestrator'), () => {
       TEST_DATA__executionContext,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Search API unavailable');
     expect(msg.isProcessing).toBe(false);
   });
@@ -220,7 +220,7 @@ describe(unitTest('processQuestionWithIntent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Product description here');
     expect(msg.isProcessing).toBe(false);
   });
@@ -250,7 +250,7 @@ describe(unitTest('processQuestionWithIntent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData?.rowData).toHaveLength(1);
     expect(msg.isProcessing).toBe(false);
@@ -288,7 +288,7 @@ describe(unitTest('processQuestionWithIntent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
@@ -312,7 +312,7 @@ describe(unitTest('processQuestionWithIntent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('No TDS services available');
   });
 
@@ -342,7 +342,7 @@ describe(unitTest('processQuestionWithIntent'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toContain('No TDS services available');
     expect(msg.fallbackAction).toBeDefined();
   });
@@ -371,10 +371,10 @@ describe(unitTest('executePureQueryAndReport'), () => {
       Date.now(),
     );
 
-    expect(result.columns).toEqual(['name', 'value']);
-    expect(result.rows).toHaveLength(2);
+    expect(result?.columns).toEqual(['name', 'value']);
+    expect(result?.rows).toHaveLength(2);
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.gridData).toBeDefined();
     expect(msg.gridData?.columnDefs).toHaveLength(2);
     expect(msg.gridData?.rowData).toHaveLength(2);
@@ -383,7 +383,7 @@ describe(unitTest('executePureQueryAndReport'), () => {
     expect(msg.execTime).toBeDefined();
   });
 
-  test('returns empty results on execution failure', async () => {
+  test('returns undefined on execution failure', async () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     const plugin = TEST__createMockLegendAIPlugin({
@@ -402,10 +402,9 @@ describe(unitTest('executePureQueryAndReport'), () => {
       Date.now(),
     );
 
-    expect(result.columns).toEqual([]);
-    expect(result.rows).toEqual([]);
+    expect(result).toBeUndefined();
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Engine unavailable');
     expect(msg.isProcessing).toBe(false);
     expect(msg.isExecuting).toBe(false);

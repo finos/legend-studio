@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { createMock } from '@finos/legend-shared/test';
 import type {
   MessageSetter,
@@ -72,6 +73,7 @@ export const TEST__makeAssistantMessage = (
   isExecuting: false,
   suggestedQueries: [],
   fallbackAction: null,
+  queriedAccessPointGroups: [],
   ...overrides,
 });
 export const TEST__seedAssistant = (setter: MessageSetter): void => {
@@ -80,6 +82,27 @@ export const TEST__seedAssistant = (setter: MessageSetter): void => {
     TEST__makeAssistantMessage(),
   ]);
 };
+
+/**
+ * Retrieve a message by index and assert it is an assistant message,
+ * narrowing the type via the discriminated `role` field without a cast.
+ */
+export const TEST__getAssistantMessage = (
+  messages: LegendAIMessage[],
+  index: number,
+): LegendAIAssistantMessage => {
+  const msg = guaranteeNonNullable(
+    messages[index],
+    `Expected message at index ${index}`,
+  );
+  if (msg.role !== LegendAIMessageRole.ASSISTANT) {
+    throw new Error(
+      `Expected assistant message at index ${index}, got role '${msg.role}'`,
+    );
+  }
+  return msg;
+};
+
 export const TEST_DATA__legendAIConfig: LegendAIConfig = {
   enabled: true,
   llmServiceUrl: 'http://localhost/llm',
@@ -140,13 +163,18 @@ export const TEST__createMockLegendAIPlugin = (
       _q: string,
       _s: TDSServiceSchema[],
       _h?: LegendAIConversationTurn[],
+      _m?: string,
     ) => 'ap generator prompt',
     buildAccessPointJudgePrompt: (
       _sql: string,
       _q: string,
       _s: TDSServiceSchema[],
       _h?: LegendAIConversationTurn[],
+      _m?: string,
     ) => 'ap judge prompt',
+    preWarmSchemaAnalysis: () => {
+      /* no-op in test */
+    },
     callLLM: createMock(),
     executeSql: createMock(),
     extractSqlFromResponse: (_a: string): LegendAISqlExtractionResult => ({

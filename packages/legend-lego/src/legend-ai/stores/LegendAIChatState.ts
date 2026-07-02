@@ -25,6 +25,7 @@ import {
   type LegendAIProductMetadata,
   type LegendAIScopeItem,
   type LegendAIQuestionIntent,
+  type LegendAIModelContext,
   LegendAIMessageRole,
 } from '../LegendAITypes.js';
 import {
@@ -48,6 +49,7 @@ export const useLegendAIChatState = (
   plugin: LegendAI_LegendApplicationPlugin_Extension,
   dataProductCoordinates?: LegendAIOrchestratorDataProductCoordinates,
   pureExecutionContext?: QueryExplicitExecutionContextInfo,
+  modelContext?: LegendAIModelContext,
 ): LegendAIChatState => {
   const LEGEND_AI_MCP_SCOPE_ID = 'legend-ai-mcp';
   const [questionText, setQuestionText] = useState('');
@@ -196,37 +198,39 @@ export const useLegendAIChatState = (
 
   const askQuestion = useCallback(
     (): void =>
-      dispatchQuestion(questionText, (trimmed, history) =>
-        selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
-        configForRequest.orchestratorUrl &&
-        dataProductCoordinates
-          ? processQuestionViaOrchestrator(
-              trimmed,
-              dataProductCoordinates,
-              metadata,
-              {
-                config: configForRequest,
-                plugin,
-                history,
-                setMessages,
-              },
-              pureExecutionContext,
-            )
-          : processQuestion(
-              trimmed,
-              services,
-              coordinates,
-              metadata,
-              {
-                config: configForRequest,
-                plugin,
-                history,
-                setMessages,
-              },
-              dataProductCoordinates,
-              pureExecutionContext,
-            ),
-      ),
+      dispatchQuestion(questionText, (trimmed, history) => {
+        const operationContext = {
+          config: configForRequest,
+          plugin,
+          history,
+          setMessages,
+        };
+        if (
+          selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
+          configForRequest.orchestratorUrl &&
+          dataProductCoordinates
+        ) {
+          return processQuestionViaOrchestrator(
+            trimmed,
+            dataProductCoordinates,
+            metadata,
+            operationContext,
+            pureExecutionContext,
+            undefined,
+            modelContext,
+          );
+        }
+        return processQuestion(
+          trimmed,
+          services,
+          coordinates,
+          metadata,
+          operationContext,
+          dataProductCoordinates,
+          pureExecutionContext,
+          modelContext,
+        );
+      }),
     [
       questionText,
       dispatchQuestion,
@@ -238,49 +242,52 @@ export const useLegendAIChatState = (
       dataProductCoordinates,
       pureExecutionContext,
       selectedScopes,
+      modelContext,
     ],
   );
 
   const askQuestionWithIntent = useCallback(
     (text: string, intent: LegendAIQuestionIntent): void =>
-      dispatchQuestion(text, (trimmed, history) =>
-        selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
-        configForRequest.orchestratorUrl &&
-        dataProductCoordinates
-          ? processQuestionViaOrchestrator(
-              trimmed,
-              dataProductCoordinates,
-              metadata,
-              {
-                config: configForRequest,
-                plugin,
-                history,
-                setMessages,
-              },
-              pureExecutionContext,
-            )
-          : processQuestionWithIntent(
-              trimmed,
-              intent,
-              services,
-              coordinates,
-              metadata,
-              {
-                config: configForRequest,
-                plugin,
-                history,
-                setMessages,
-              },
-              dataProductCoordinates
-                ? {
-                    dataProductCoordinates,
-                    ...(pureExecutionContext === undefined
-                      ? {}
-                      : { pureExecutionContext }),
-                  }
-                : undefined,
-            ),
-      ),
+      dispatchQuestion(text, (trimmed, history) => {
+        const operationContext = {
+          config: configForRequest,
+          plugin,
+          history,
+          setMessages,
+        };
+        if (
+          selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
+          configForRequest.orchestratorUrl &&
+          dataProductCoordinates
+        ) {
+          return processQuestionViaOrchestrator(
+            trimmed,
+            dataProductCoordinates,
+            metadata,
+            operationContext,
+            pureExecutionContext,
+            undefined,
+            modelContext,
+          );
+        }
+        return processQuestionWithIntent(
+          trimmed,
+          intent,
+          services,
+          coordinates,
+          metadata,
+          operationContext,
+          dataProductCoordinates
+            ? {
+                dataProductCoordinates,
+                ...(pureExecutionContext === undefined
+                  ? {}
+                  : { pureExecutionContext }),
+              }
+            : undefined,
+          modelContext,
+        );
+      }),
     [
       dispatchQuestion,
       services,
@@ -291,6 +298,7 @@ export const useLegendAIChatState = (
       dataProductCoordinates,
       pureExecutionContext,
       selectedScopes,
+      modelContext,
     ],
   );
 
@@ -338,6 +346,8 @@ export const useLegendAIChatState = (
           setMessages,
         },
         pureExecutionContext,
+        undefined,
+        modelContext,
       )
         .catch(noop)
         .finally(() => {
@@ -353,6 +363,7 @@ export const useLegendAIChatState = (
       plugin,
       dataProductCoordinates,
       pureExecutionContext,
+      modelContext,
     ],
   );
 

@@ -22,9 +22,10 @@ import {
   isDateColumn,
   buildSuggestedQueries,
 } from '../LegendAIChatHelpers.js';
-import type {
-  TDSServiceSchema,
-  LegendAIProductMetadata,
+import {
+  type TDSServiceSchema,
+  type LegendAIProductMetadata,
+  TDSServiceSourceType,
 } from '../../LegendAITypes.js';
 
 describe(unitTest('isStringColumn'), () => {
@@ -32,7 +33,11 @@ describe(unitTest('isStringColumn'), () => {
     expect(isStringColumn({ name: 'region', type: 'String' })).toBe(true);
   });
 
-  test('returns false for non-primitive varchar type', () => {
+  test('returns true for precise-primitive Varchar type', () => {
+    expect(isStringColumn({ name: 'name', type: 'Varchar' })).toBe(true);
+  });
+
+  test('returns false for unknown uppercase varchar variant', () => {
     expect(isStringColumn({ name: 'name', type: 'VARCHAR' })).toBe(false);
   });
 
@@ -62,8 +67,12 @@ describe(unitTest('isNumericColumn'), () => {
     expect(isNumericColumn({ name: 'price', type: 'Float' })).toBe(true);
   });
 
-  test('returns false for non-primitive double type', () => {
-    expect(isNumericColumn({ name: 'val', type: 'Double' })).toBe(false);
+  test('returns true for precise-primitive double type', () => {
+    expect(isNumericColumn({ name: 'val', type: 'Double' })).toBe(true);
+  });
+
+  test('returns true for precise-primitive Int type', () => {
+    expect(isNumericColumn({ name: 'count', type: 'Int' })).toBe(true);
   });
 
   test('returns true for decimal type', () => {
@@ -119,7 +128,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(result[2]).toBe('Describe the data model and key entities');
   });
 
-  test('generates distinct-values suggestion for string column', () => {
+  test('generates aggregation suggestion for string+numeric columns', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'Svc',
@@ -132,12 +141,13 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, metadata);
+    // Should generate a top-N ranking or distribution suggestion
     expect(
-      result.some((s) => s.includes('distinct region values from Svc')),
+      result.some((s) => s.includes('region') && s.includes('amount')),
     ).toBe(true);
   });
 
-  test('generates total suggestion when only numeric columns', () => {
+  test('generates show-records suggestion when only numeric columns', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'Svc',
@@ -147,10 +157,10 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, metadata);
-    expect(result.some((s) => s.includes('total amount'))).toBe(true);
+    expect(result).toContain('Show 10 records from Svc');
   });
 
-  test('generates second-service suggestion when multiple services', () => {
+  test('generates cross-service suggestion when multiple services', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'SvcA',
@@ -172,9 +182,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, metadata);
-    expect(result.some((s) => s.includes('Show 10 records from SvcB'))).toBe(
-      true,
-    );
+    expect(result.some((s) => s.includes('SvcB'))).toBe(true);
   });
 
   test('limits to MAX_SUGGESTED_QUERIES (8)', () => {
@@ -245,10 +253,11 @@ describe(unitTest('buildSuggestedQueries'), () => {
     ];
     const result = buildSuggestedQueries(services, metadata);
     expect(result.some((s) => s.includes('userId'))).toBe(false);
-    expect(result.some((s) => s.includes('total amount'))).toBe(true);
+    // Should still reference the service even without a string column
+    expect(result.some((s) => s.includes('Svc'))).toBe(true);
   });
 
-  test('includes insight and second-service suggestions with rich schema', () => {
+  test('includes insight and cross-service suggestions with rich schema', () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'Trades',
@@ -272,11 +281,248 @@ describe(unitTest('buildSuggestedQueries'), () => {
       },
     ];
     const result = buildSuggestedQueries(services, metadata);
+    // Should include a suggestion using region and amount from Trades
     expect(
-      result.some((s) => s.includes('distinct region values from Trades')),
+      result.some((s) => s.includes('region') && s.includes('Trades')),
     ).toBe(true);
-    expect(result.some((s) => s.includes('Show 10 records from Risks'))).toBe(
-      true,
-    );
+    // Should include a cross-service suggestion for Risks
+    expect(result.some((s) => s.includes('Risks'))).toBe(true);
+  });
+
+  test('generates category-based suggestions for access point services', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'MetaDir Enterprise',
+        pattern: '/METADIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GIVENNAME', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'GSDEPARTMENTNAME', type: 'Varchar' },
+          { name: 'GSREGION', type: 'Varchar' },
+          { name: 'TITLE', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should include aggregation/grouping queries using category columns
+    expect(
+      result.some(
+        (s) =>
+          s.includes('GSDIVISIONNAME') ||
+          s.includes('GSREGION') ||
+          s.includes('GSDEPARTMENTNAME'),
+      ),
+    ).toBe(true);
+    // Should have at least overview + 2 data queries
+    expect(result.length).toBeGreaterThanOrEqual(3);
+  });
+
+  test('generates cross-AP suggestion for multi-AP data products', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'MetaDir',
+        pattern: '/METADIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+      {
+        title: 'CorpDir',
+        pattern: '/CORPDIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'GSLEGALTITLE', type: 'Varchar' },
+          { name: 'GSHRDIVISIONNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should include at least one suggestion referencing CorpDir
+    expect(result.some((s) => s.includes('CorpDir'))).toBe(true);
+  });
+
+  test('generates cross-AP JOIN suggestion using unique columns', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'MetaDir',
+        pattern: '/METADIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'GSDEPARTMENTNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+      {
+        title: 'CorpDir',
+        pattern: '/CORPDIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'GSLEGALTITLE', type: 'Varchar' },
+          { name: 'GSBUILDINGNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should suggest a cross-AP query using a column unique to CorpDir
+    expect(
+      result.some(
+        (s) =>
+          s.includes('CorpDir') &&
+          (s.includes('GSLEGALTITLE') || s.includes('GSBUILDINGNAME')),
+      ),
+    ).toBe(true);
+  });
+
+  test('generates comparison query when APs share category columns', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'MetaDir',
+        pattern: '/METADIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+      {
+        title: 'CorpDir',
+        pattern: '/CORPDIR',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should suggest comparing counts between APs
+    expect(
+      result.some(
+        (s) =>
+          s.includes('Compare') ||
+          s.includes('between') ||
+          s.includes('CorpDir'),
+      ),
+    ).toBe(true);
+  });
+
+  test('caps AP suggestions at MAX_SUGGESTED_QUERIES', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'AP1',
+        pattern: '/ap1',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'GSDEPARTMENTNAME', type: 'Varchar' },
+          { name: 'GSREGION', type: 'Varchar' },
+          { name: 'TITLE', type: 'Varchar' },
+          { name: 'GSWORKERTYPE', type: 'Varchar' },
+          { name: 'GSBUSINESSUNIT', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+      {
+        title: 'AP2',
+        pattern: '/ap2',
+        columns: [
+          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'GSFLOORNUMBER', type: 'Varchar' },
+          { name: 'GSBUILDINGNAME', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    expect(result.length).toBeLessThanOrEqual(8);
+  });
+
+  test('generates date-based suggestions for calendar APs', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'NYSE Calendar',
+        pattern: '/NYSE',
+        columns: [
+          { name: 'DATE', type: 'StrictDate' },
+          { name: 'CALENDAR_NAME', type: 'Varchar' },
+          { name: 'IS_HOLIDAY', type: 'Varchar' },
+          { name: 'NAME_OF_DAY', type: 'Varchar' },
+          { name: 'REGION', type: 'Varchar' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should generate suggestions using category columns
+    expect(result.some((s) => s.includes('NYSE Calendar'))).toBe(true);
+    expect(result.length).toBeGreaterThanOrEqual(3);
+  });
+
+  test('generates numeric-based suggestions for financial APs', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'Trade Summary',
+        pattern: '/trades',
+        columns: [
+          { name: 'TRADE_ID', type: 'Varchar' },
+          { name: 'AMOUNT', type: 'Double' },
+          { name: 'PRICE', type: 'Double' },
+          { name: 'COUNTERPARTY', type: 'Varchar' },
+          { name: 'TRADE_DATE', type: 'StrictDate' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should generate top-N or aggregation using numeric columns
+    expect(
+      result.some(
+        (s) =>
+          s.includes('AMOUNT') ||
+          s.includes('PRICE') ||
+          s.includes('COUNTERPARTY'),
+      ),
+    ).toBe(true);
+    expect(result.length).toBeGreaterThanOrEqual(3);
+  });
+
+  test('generates fallback for AP with only ID columns', () => {
+    const apServices: TDSServiceSchema[] = [
+      {
+        title: 'Mapping Table',
+        pattern: '/mapping',
+        columns: [
+          { name: 'SOURCE_ID', type: 'Varchar' },
+          { name: 'TARGET_ID', type: 'Varchar' },
+          { name: 'VERSION', type: 'Int' },
+        ],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+    const result = buildSuggestedQueries(apServices, metadata);
+    // Should still produce at least the overview + one data suggestion
+    expect(result.length).toBeGreaterThanOrEqual(2);
+    expect(result[0]).toContain('Trade Analytics');
   });
 });
