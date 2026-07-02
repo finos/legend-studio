@@ -26,10 +26,7 @@ import {
   isValidSqlCorrection,
   attachMetadataOverview,
 } from '../LegendAIChatProcessors.js';
-import {
-  type LegendAIAssistantMessage,
-  LegendAIQuestionIntent,
-} from '../../LegendAITypes.js';
+import { LegendAIQuestionIntent } from '../../LegendAITypes.js';
 import {
   type LegendAIJudgeResult,
   LegendAIJudgeVerdict,
@@ -41,6 +38,7 @@ import {
   TEST_DATA__legendAIConfig,
   TEST_DATA__legendAIMetadata,
   TEST_DATA__legendAIServices,
+  TEST__getAssistantMessage,
 } from '../../__test-utils__/LegendAITestUtils.js';
 
 const TEST_DATA__coordinates = {
@@ -80,7 +78,7 @@ describe(unitTest('handleMetadataQuestion — suggested queries'), () => {
       true,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Answer text here');
     expect(msg.suggestedQueries).toHaveLength(3);
     expect(msg.suggestedQueries[0]).toBe('Show top trades');
@@ -108,7 +106,7 @@ describe(unitTest('handleMetadataQuestion — suggested queries'), () => {
       false, // hasQueryableServices = false
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.suggestedQueries).toEqual([]);
   });
 
@@ -137,7 +135,7 @@ describe(unitTest('handleMetadataQuestion — suggested queries'), () => {
       false,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.suggestedQueries).toHaveLength(1);
   });
 });
@@ -236,7 +234,7 @@ describe(unitTest('executeSqlAndReport — duplicate columns'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     const colNames = msg.gridData?.columnDefs.map((c) => c.headerName);
     expect(colNames).toEqual(['name', 'name_2', 'name_3']);
   });
@@ -276,7 +274,7 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
       TEST_DATA__executionContext,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
@@ -307,7 +305,7 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     // Should have fallen through to SQL generation path
     expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData?.rowData).toHaveLength(1);
@@ -338,7 +336,7 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
       TEST_DATA__executionContext,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBeDefined();
     expect(msg.fallbackAction).toBeDefined();
     expect(msg.fallbackAction?.label).toBe('Try Legend AI Orchestrator');
@@ -375,7 +373,7 @@ describe(unitTest('processQuestion — orchestrator branches'), () => {
       TEST_DATA__executionContext,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('parse error');
     expect(msg.isProcessing).toBe(false);
   });
@@ -411,7 +409,7 @@ describe(
         },
       );
 
-      const msg = getMessages()[1] as LegendAIAssistantMessage;
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
       // Should have fallen through to SQL generation
       expect(msg.sql).toBe('SELECT * FROM t');
     });
@@ -437,7 +435,7 @@ describe(
         },
       );
 
-      const msg = getMessages()[1] as LegendAIAssistantMessage;
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
       expect(msg.error).toContain('network error');
       expect(msg.isProcessing).toBe(false);
     });
@@ -468,7 +466,7 @@ describe(
         },
       );
 
-      const msg = getMessages()[1] as LegendAIAssistantMessage;
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
       expect(msg.textAnswer).toContain('No TDS services available');
       expect(msg.fallbackAction).toBeDefined();
       expect(msg.isProcessing).toBe(false);
@@ -512,7 +510,7 @@ describe(
         TEST_DATA__executionContext,
       );
 
-      const msg = getMessages()[1] as LegendAIAssistantMessage;
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
       expect(msg.textAnswer).toContain('0 rows');
       expect(msg.fallbackAction).toBeDefined();
       expect(msg.isProcessing).toBe(false);
@@ -600,9 +598,10 @@ describe(unitTest('attachMetadataOverview'), () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     attachMetadataOverview(setter, '   ');
-    const last = getMessages()[
-      getMessages().length - 1
-    ] as LegendAIAssistantMessage;
+    const last = TEST__getAssistantMessage(
+      getMessages(),
+      getMessages().length - 1,
+    );
     expect(last.textAnswer).toBeNull();
   });
 
@@ -610,9 +609,10 @@ describe(unitTest('attachMetadataOverview'), () => {
     const { setter, getMessages } = TEST__createMockSetter();
     TEST__seedAssistant(setter);
     attachMetadataOverview(setter, 'Product overview here');
-    const last = getMessages()[
-      getMessages().length - 1
-    ] as LegendAIAssistantMessage;
+    const last = TEST__getAssistantMessage(
+      getMessages(),
+      getMessages().length - 1,
+    );
     expect(last.textAnswer).toContain('Product overview here');
   });
 
@@ -621,9 +621,10 @@ describe(unitTest('attachMetadataOverview'), () => {
     TEST__seedAssistant(setter);
     attachMetadataOverview(setter, 'First overview');
     attachMetadataOverview(setter, 'Second overview');
-    const last = getMessages()[
-      getMessages().length - 1
-    ] as LegendAIAssistantMessage;
+    const last = TEST__getAssistantMessage(
+      getMessages(),
+      getMessages().length - 1,
+    );
     expect(last.textAnswer).toContain('First overview');
   });
 });

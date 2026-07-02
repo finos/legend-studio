@@ -24,7 +24,6 @@ import {
   generateAndJudgeAccessPointSql,
 } from '../LegendAIChatProcessors.js';
 import {
-  type LegendAIAssistantMessage,
   type TDSServiceSchema,
   TDSServiceSourceType,
   LegendAIQuestionIntent,
@@ -41,6 +40,7 @@ import {
   TEST_DATA__legendAIConfig,
   TEST_DATA__legendAIMetadata,
   TEST_DATA__legendAIServices,
+  TEST__getAssistantMessage,
 } from '../../__test-utils__/LegendAITestUtils.js';
 
 describe(unitTest('generateAndJudgeSql'), () => {
@@ -70,7 +70,7 @@ describe(unitTest('generateAndJudgeSql'), () => {
     );
 
     expect(result).toBeNull();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Could not parse');
     expect(msg.error).toContain('Try instead: "Try simpler query"');
   });
@@ -100,7 +100,7 @@ describe(unitTest('generateAndJudgeSql'), () => {
     );
 
     expect(result).toBeNull();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Could not extract SQL');
   });
 
@@ -248,10 +248,10 @@ describe(unitTest('processQuestion'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
-    expect(msg.textAnswer).toContain('### Metadata context');
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
+    // LLM classifier resolves ambiguity → pure metadata, no SQL
     expect(msg.textAnswer).toContain('Product info here');
-    expect(msg.isProcessing).toBeTruthy();
+    expect(msg.isProcessing).toBeFalsy();
   });
 
   test('handles no services available', async () => {
@@ -276,7 +276,7 @@ describe(unitTest('processQuestion'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBeDefined();
     expect(msg.isProcessing).toBe(false);
   });
@@ -305,7 +305,7 @@ describe(unitTest('processQuestion'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.sql).toBe('SELECT * FROM t');
     expect(msg.gridData).toBeDefined();
     expect(msg.gridData?.rowData).toHaveLength(1);
@@ -333,7 +333,7 @@ describe(unitTest('processQuestion'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('LLM timeout');
     expect(msg.isProcessing).toBe(false);
   });
@@ -361,7 +361,7 @@ describe(unitTest('processQuestion'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Connection refused');
     expect(msg.isProcessing).toBe(false);
     expect(msg.isExecuting).toBe(false);
@@ -390,7 +390,7 @@ describe(unitTest('executeSqlAndReport'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.gridData).toBeDefined();
     expect(msg.gridData?.columnDefs).toHaveLength(2);
     expect(msg.gridData?.columnDefs[0]?.headerName).toBe('name');
@@ -420,7 +420,7 @@ describe(unitTest('executeSqlAndReport'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     const rowStep = msg.thinkingSteps.find((s) =>
       s.label.includes('Retrieved 1 row'),
     );
@@ -447,7 +447,7 @@ describe(unitTest('executeSqlAndReport'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     const rowStep = msg.thinkingSteps.find((s) =>
       s.label.includes('Retrieved 3 rows'),
     );
@@ -472,7 +472,7 @@ describe(unitTest('executeSqlAndReport'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('Query timeout exceeded');
     expect(msg.execTime).toBeDefined();
     expect(msg.isProcessing).toBe(false);
@@ -495,7 +495,7 @@ describe(unitTest('executeSqlAndReport'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     const failStep = msg.thinkingSteps.find((s) =>
       s.label.includes('Execution failed'),
     );
@@ -526,7 +526,7 @@ describe(unitTest('handleMetadataQuestion'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('This product provides trade data');
     expect(msg.isProcessing).toBe(false);
     expect(msg.thinkingDuration).toBeDefined();
@@ -551,7 +551,7 @@ describe(unitTest('handleMetadataQuestion'), () => {
       Date.now(),
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     const metaStep = msg.thinkingSteps.find((s) =>
       s.label.includes('metadata'),
     );
@@ -587,6 +587,51 @@ describe(unitTest('handleMetadataQuestion'), () => {
       'follow up',
       TEST_DATA__legendAIMetadata,
       history,
+      undefined,
+      undefined,
+    );
+  });
+
+  test('passes services to buildMetadataPrompt when provided', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const buildMetadataPrompt = jest
+      .fn<() => string>()
+      .mockReturnValue('prompt');
+    const plugin = TEST__createMockLegendAIPlugin({
+      buildMetadataPrompt,
+      callLLM: createMock().mockResolvedValue('answer'),
+    });
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'TestAP',
+        pattern: '/test',
+        columns: [{ name: 'id', type: 'String' }],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+
+    await handleMetadataQuestion(
+      'what access points are available?',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+      true,
+      services,
+    );
+
+    expect(buildMetadataPrompt).toHaveBeenCalledWith(
+      'what access points are available?',
+      TEST_DATA__legendAIMetadata,
+      [],
+      services,
+      undefined,
     );
   });
 });
@@ -637,7 +682,7 @@ describe(unitTest('executeSqlAndReport — execution'), () => {
 
     expect(executeLakehouseSql).toHaveBeenCalledTimes(1);
     expect(executeSql).not.toHaveBeenCalled();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.gridData?.rowData).toHaveLength(1);
     expect(msg.gridData?.columnDefs[0]?.headerName).toBe('positionId');
   });
@@ -684,7 +729,7 @@ describe(unitTest('executeSqlAndReport — execution'), () => {
       TEST_DATA__dataProductCoordinates,
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toContain('SQL execution timeout');
     expect(msg.execTime).toBeDefined();
     expect(msg.isProcessing).toBe(false);
@@ -722,6 +767,7 @@ describe(unitTest('generateAndJudgeAccessPointSql'), () => {
       'show prices',
       TEST_DATA__accessPointServices,
       [],
+      undefined,
     );
     expect(buildAPJudge).toHaveBeenCalled();
   });
@@ -750,7 +796,7 @@ describe(unitTest('generateAndJudgeAccessPointSql'), () => {
     );
 
     expect(result).toBeNull();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.error).toBeDefined();
   });
 
@@ -834,7 +880,7 @@ describe(unitTest('processQuestion — access point routing'), () => {
 
     // Should have used AP-specific prompt, not the generic one
     expect(buildAPGen).toHaveBeenCalled();
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.gridData?.rowData).toHaveLength(1);
   });
 
@@ -909,7 +955,7 @@ describe(unitTest('processQuestion — access point routing'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBeDefined();
   });
 
@@ -935,7 +981,7 @@ describe(unitTest('processQuestion — access point routing'), () => {
       },
     );
 
-    const msg = getMessages()[1] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.textAnswer).toBe('Product info here');
   });
 });

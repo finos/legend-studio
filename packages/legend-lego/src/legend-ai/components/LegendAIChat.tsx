@@ -31,7 +31,9 @@ import {
   LikeIcon,
   DislikeIcon,
   ExternalLinkIcon,
+  InfoCircleIcon,
   MarkdownTextViewer,
+  clsx,
 } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
 import {
@@ -45,6 +47,7 @@ import {
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
+  TDSServiceSourceType,
   classifyQuestionIntentFast,
 } from '../LegendAITypes.js';
 import { useLegendAIChatState } from '../stores/LegendAIChatState.js';
@@ -56,6 +59,36 @@ import { buildSuggestedQueries } from './LegendAIChatHelpers.js';
 export const LEGEND_AI_ANCHOR_ID = 'legend-ai-anchor';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
+const CONTEXT_BANNER_AUTO_DISMISS_MS = 20000;
+
+const LegendAIContextBanner = (props: {
+  message: string;
+  onDismiss: () => void;
+}): React.ReactNode => {
+  const { message, onDismiss } = props;
+
+  useEffect(() => {
+    const timer = setTimeout(onDismiss, CONTEXT_BANNER_AUTO_DISMISS_MS);
+    return (): void => clearTimeout(timer);
+  }, [onDismiss]);
+
+  return (
+    <div className="legend-ai__context-banner">
+      <div className="legend-ai__context-banner-icon">
+        <InfoCircleIcon />
+      </div>
+      <div className="legend-ai__context-banner-text">{message}</div>
+      <button
+        type="button"
+        className="legend-ai__context-banner-close"
+        aria-label="Dismiss"
+        onClick={onDismiss}
+      >
+        <TimesIcon />
+      </button>
+    </div>
+  );
+};
 const METADATA_CONTEXT_HEADING = '### Metadata context';
 const QUERY_ANALYSIS_HEADING = '### Query analysis';
 
@@ -178,6 +211,21 @@ export function renderStepStatusIcon(
   );
 }
 
+/**
+ * Determines whether an execution error message indicates an access/permission
+ * problem (as opposed to a SQL compilation or schema error). Only access-like
+ * errors should show the "Request Access" button.
+ */
+const ACCESS_ERROR_PATTERN =
+  /insufficient privileges|access.*denied|permission.*denied|not authorized|unauthorized|403|entitlement/i;
+
+function looksLikeAccessError(errorMsg: string | undefined): boolean {
+  if (!errorMsg) {
+    return false;
+  }
+  return ACCESS_ERROR_PATTERN.test(errorMsg);
+}
+
 const AssistantMessageView = (props: {
   msg: LegendAIAssistantMessage;
   questionText: string;
@@ -192,6 +240,7 @@ const AssistantMessageView = (props: {
   onFallbackAction?: (messageId: string) => void;
   enghubDocUrl?: string;
   enthubRequestAccessUrl?: string;
+  onRequestAccess?: (accessPointGroupTitle: string) => void;
 }): React.ReactNode => {
   const {
     msg,
@@ -205,6 +254,7 @@ const AssistantMessageView = (props: {
     onFallbackAction,
     enghubDocUrl,
     enthubRequestAccessUrl,
+    onRequestAccess,
   } = props;
 
   const hasPermissionAccessLinks =
@@ -298,7 +348,10 @@ const AssistantMessageView = (props: {
                 {visibleThinkingSteps.map((step) => (
                   <div
                     key={step.id}
-                    className={`legend-ai__thinking-step legend-ai__thinking-step--${step.status}`}
+                    className={clsx(
+                      'legend-ai__thinking-step',
+                      `legend-ai__thinking-step--${step.status}`,
+                    )}
                   >
                     <span className="legend-ai__thinking-step-icon">
                       {renderStepStatusIcon(step.status)}
@@ -393,6 +446,31 @@ const AssistantMessageView = (props: {
                         <span>Request Access</span>
                       </a>
                     )}
+                  </div>
+                </div>
+              )}
+            {msg.errorType === LegendAIErrorType.EXECUTION &&
+              onRequestAccess &&
+              msg.queriedAccessPointGroups.length > 0 &&
+              looksLikeAccessError(msg.error) && (
+                <div className="legend-ai__permission-error-action">
+                  <span className="legend-ai__permission-error-note">
+                    {msg.queriedAccessPointGroups.length === 1
+                      ? 'You may not have access to this data. You can request access below.'
+                      : `This query uses ${msg.queriedAccessPointGroups.length} access point groups. You can request access to each one below.`}
+                  </span>
+                  <div className="legend-ai__permission-error-btns">
+                    {msg.queriedAccessPointGroups.map((apgTitle) => (
+                      <button
+                        key={apgTitle}
+                        type="button"
+                        className="legend-ai__permission-error-btn legend-ai__permission-error-btn--primary"
+                        onClick={(): void => onRequestAccess(apgTitle)}
+                      >
+                        <ExternalLinkIcon />
+                        <span>Request Access — {apgTitle}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -491,12 +569,11 @@ const AssistantMessageView = (props: {
             <div className="legend-ai__message-feedback-actions">
               <button
                 type="button"
-                className={`legend-ai__message-feedback-btn${
-                  selectedFeedbackRating ===
-                  LegendAIMessageFeedbackRating.THUMBS_UP
-                    ? 'legend-ai__message-feedback-btn--selected'
-                    : ''
-                }`}
+                className={clsx('legend-ai__message-feedback-btn', {
+                  'legend-ai__message-feedback-btn--selected':
+                    selectedFeedbackRating ===
+                    LegendAIMessageFeedbackRating.THUMBS_UP,
+                })}
                 title="Thumbs up"
                 aria-label="Thumbs up"
                 onClick={(): void =>
@@ -508,12 +585,11 @@ const AssistantMessageView = (props: {
               </button>
               <button
                 type="button"
-                className={`legend-ai__message-feedback-btn${
-                  selectedFeedbackRating ===
-                  LegendAIMessageFeedbackRating.THUMBS_DOWN
-                    ? 'legend-ai__message-feedback-btn--selected'
-                    : ''
-                }`}
+                className={clsx('legend-ai__message-feedback-btn', {
+                  'legend-ai__message-feedback-btn--selected':
+                    selectedFeedbackRating ===
+                    LegendAIMessageFeedbackRating.THUMBS_DOWN,
+                })}
                 title="Thumbs down"
                 aria-label="Thumbs down"
                 onClick={(): void =>
@@ -541,10 +617,13 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     plugin,
     dataProductCoordinates,
     pureExecutionContext,
+    modelContext,
     availableScopes,
     onMessageFeedback,
     onClose,
     onMinimize,
+    onRequestAccess,
+    contextBannerMessage,
   } = props;
   const state = useLegendAIChatState(
     services,
@@ -554,6 +633,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     plugin,
     dataProductCoordinates,
     pureExecutionContext,
+    modelContext,
   );
   const suggestedQueries = useMemo(
     () => buildSuggestedQueries(services, metadata),
@@ -566,8 +646,13 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
       classifyQuestionIntentFast(query, hasServices).intent,
     [hasServices],
   );
+  const isDataProduct = services.some(
+    (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
+  );
+  const [showContextBanner, setShowContextBanner] = useState(true);
+  const dismissBanner = useCallback(() => setShowContextBanner(false), []);
   const hasMessages = state.messages.length > 0;
-  const scopes = availableScopes ?? DEFAULT_SCOPES;
+  const scopes = isDataProduct ? [] : (availableScopes ?? DEFAULT_SCOPES);
   const [feedbackByMessageId, setFeedbackByMessageId] = useState<
     Map<string, LegendAIMessageFeedbackRating>
   >(new Map());
@@ -654,6 +739,13 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
         </div>
       </div>
 
+      {showContextBanner && contextBannerMessage && (
+        <LegendAIContextBanner
+          message={contextBannerMessage}
+          onDismiss={dismissBanner}
+        />
+      )}
+
       <div className="legend-ai__conversation" ref={state.conversationRef}>
         {!hasMessages && (
           <div className="legend-ai__empty-state">
@@ -716,6 +808,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
               {...(config.enthubRequestAccessUrl === undefined
                 ? {}
                 : { enthubRequestAccessUrl: config.enthubRequestAccessUrl })}
+              {...(onRequestAccess ? { onRequestAccess } : {})}
               onFallbackAction={(messageId): void =>
                 state.runFallbackAction(messageId)
               }

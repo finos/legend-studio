@@ -713,7 +713,7 @@
     }
 
     &--failed {
-      color: var(--ai-accent-red);
+      color: var(--ai-text-secondary, inherit);
     }
   }
 
@@ -974,20 +974,19 @@
   }
 
   .legend-ai__exec-error {
-    padding: 1.2rem 1.6rem;
     font-size: 1.35rem;
-    color: var(--ai-text-error);
-    background: var(--ai-bg-error);
-    border: 1px solid var(--ai-border-error);
-    border-radius: 0.8rem;
-    line-height: 1.5;
+    font-family: Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--ai-text-primary, var(--qai-text-primary, inherit));
   }
 
   .legend-ai__permission-error-action {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
-    margin-top: 1rem;
+    margin-top: 1.2rem;
+    padding-top: 1.2rem;
+    border-top: 0.1rem solid var(--ai-border-action, var(--qai-border-light));
     font-family: Roboto, sans-serif;
     font-size: 1.3rem;
     line-height: 1.5;
@@ -1011,33 +1010,44 @@
     padding: 0.8rem 1.6rem;
     font-size: 1.3rem;
     font-weight: 500;
-    color: var(--ai-accent);
-    background: var(--ai-bg-action);
-    border: 1px solid var(--ai-border-action);
-    border-radius: 0.8rem;
+    letter-spacing: 0.02em;
+    color: var(--ai-text-secondary, var(--qai-text-secondary, inherit));
+    background: var(
+      --ai-bg-secondary,
+      var(--qai-bg-secondary, rgb(255 255 255 / 6%))
+    );
+    border: 1px solid var(--ai-border-action, var(--qai-border));
+    border-radius: 0.6rem;
     cursor: pointer;
     text-decoration: none;
     transition:
-      background 0.15s ease,
-      border-color 0.15s ease;
+      color 0.2s ease,
+      border-color 0.2s ease,
+      background 0.2s ease;
 
     svg {
-      width: 1.4rem;
-      height: 1.4rem;
+      width: 1.3rem;
+      height: 1.3rem;
     }
 
     &:hover {
-      background: var(--ai-bg-action-hover);
-      border-color: var(--ai-border-action-hover);
+      color: var(--ai-accent, var(--qai-accent));
+      border-color: var(--ai-accent, var(--qai-accent));
+      background: var(--ai-bg-action-hover, var(--qai-accent-subtle));
     }
 
     &--primary {
-      color: var(--color-white);
-      background: var(--ai-accent);
-      border-color: var(--ai-accent);
+      color: var(--ai-text-secondary, var(--qai-text-secondary, inherit));
+      background: var(
+        --ai-bg-secondary,
+        var(--qai-bg-secondary, rgb(255 255 255 / 6%))
+      );
+      border-color: var(--ai-border-action, var(--qai-border));
 
       &:hover {
-        background: var(--ai-bg-action-primary-hover);
+        color: var(--ai-accent, var(--qai-accent));
+        border-color: var(--ai-accent, var(--qai-accent));
+        background: var(--ai-bg-action-hover, var(--qai-accent-subtle));
       }
     }
   }

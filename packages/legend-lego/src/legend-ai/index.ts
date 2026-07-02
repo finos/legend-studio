@@ -56,22 +56,36 @@ export {
   cleanLlmSqlResponse,
   isValidSqlCorrection,
   sanitizeJoinOrderBy,
+  sanitizeJoinSameKeyColumns,
   sanitizeLiteralColumns,
   stripGuessedNonDateServiceParams,
   ensureDateParameters,
   detectMissingServiceParams,
   buildMissingParamsWarning,
   ensureSafeLimit,
-  preFilterServicesByRelevance,
+  ensurePureSafetyLimit,
+  detectUnsupportedEnginePattern,
+  type UnsupportedEnginePattern,
+  supplementMissingCoverage,
+  normalizeQuestion,
+  applyMultiTurnBias,
+  categorizeExecutionError,
+  ExecutionErrorCategory,
   type MessageSetter,
   type LegendAIOperationContext,
   type MissingParamInfo,
 } from './stores/LegendAIChatProcessors.js';
+export {
+  preFilterServicesByRelevance,
+  isFuzzyMatch,
+  levenshteinDistance,
+} from './LegendAIServiceRetrieval.js';
 export { LegendAIResultGrid } from './components/LegendAIResultGrid.js';
 export { LegendAIAnalysisPanel } from './components/LegendAIAnalysisPanel.js';
 export {
   LegendAIBarChart,
   LegendAIDonutChart,
+  LegendAILineChart,
 } from './components/LegendAICharts.js';
 export {
   type LegendAIGridAnalysis,
@@ -88,4 +102,11 @@ export {
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
   formatPreFiltersForContext,
+  extractModelContext,
+  buildEnrichedBusinessContext,
+  buildModelContextEnrichmentText,
+  findBestAlternateRoot,
+  resolveEntitiesDeterministic,
+  buildSemanticPropertyIndex,
+  splitIdentifierTokens,
 } from './LegendAIDocEnrichment.js';

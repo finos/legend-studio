@@ -15,7 +15,7 @@
  */
 
 import type React from 'react';
-import { assertErrorThrown, uuid } from '@finos/legend-shared';
+import { assertErrorThrown, isPlainObject, uuid } from '@finos/legend-shared';
 import {
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -24,12 +24,13 @@ import {
   type LegendAIMessage,
   type LegendAIConversationTurn,
   type LegendAIProductMetadata,
-  classifyQuestionIntentFast,
+  type LegendAIModelContext,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
   LegendAIServiceError,
+  LegendAIUnsupportedEngineShapeError,
   TDSServiceSourceType,
   buildColumnDefsFromNames,
   LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
@@ -46,20 +47,40 @@ import {
   type QueryExplicitExecutionContextInfo,
   extractElementNameFromPath,
 } from '@finos/legend-graph';
+import {
+  buildEnrichedBusinessContext,
+  buildModelContextEnrichmentText,
+  findBestAlternateRoot,
+  splitIdentifierTokens,
+  tokenizeText,
+} from '../LegendAIDocEnrichment.js';
+import {
+  isFuzzyMatch,
+  preFilterServicesByRelevance,
+} from '../LegendAIServiceRetrieval.js';
+import {
+  isNumericColumn,
+  isStringColumn,
+} from '../components/LegendAIChatHelpers.js';
 
 const MAX_ERROR_MESSAGE_LENGTH = 500;
 const MAX_THINKING_ERROR_PREVIEW_LENGTH = 200;
 const DEFAULT_MAX_JUDGE_ATTEMPTS = 5;
 const DEFAULT_MAX_EXECUTION_RETRIES = 3;
 const ANALYSIS_TIMEOUT_MS = 15_000;
+const ORCHESTRATOR_GENERATION_TIMEOUT_MS = 120_000;
+const EXECUTION_TIMEOUT_MS = 300_000;
 const ANALYSIS_PREVIEW_ROW_LIMIT = 3;
 const ANALYSIS_PREVIEW_VALUE_LIMIT = 40;
 const MAX_NON_SQL_PASS_ATTEMPTS = 2;
-const ALIAS_DOT_COL_PATTERN = /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"/gi;
 const JOIN_PATTERN = /\bJOIN\b/i;
 const ORDER_BY_SPLIT = /\bORDER\s+BY\b/i;
 const UNION_ALL_PATTERN = /\bUNION\s+ALL\b/i;
 const LITERAL_COL_PATTERN = /,\s*'[^']*'\s+AS\s+(?:"[^"]+"|[a-z]\w*)/gi;
+const SELECT_ALIAS_PATTERN =
+  /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"\s+AS\s+(?:"(?<qAlias>[^"]+)"|(?<uAlias>\w+))/gi;
+const ALIAS_DOT_COL_PATTERN = /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"/gi;
+const SERVICE_CALL_PATTERN = /\bservice\s*\([^()]*\)/gi;
 const DEFAULT_SAFETY_LIMIT = 1000;
 const HAS_LIMIT_PATTERN = /\bLIMIT\s+\d+/i;
 const HAS_AGGREGATION_PATTERN =
@@ -75,6 +96,7 @@ const SERVICE_PARAM_DATE_LIKE_PATTERNS: readonly RegExp[] = [
   /effective|valid|settle|trade|maturity|expir|inception|close|open/i,
   /start|end|from|until|begin|report|cutoff|valuation|pricing/i,
 ];
+const GENERIC_TABLE_PATTERNS = /combined|consolidated|all|master|summary/i;
 
 function isLikelySqlQuery(text: string): boolean {
   const trimmed = text.trim().toLowerCase();
@@ -143,6 +165,7 @@ export function createMessagePair(
       isExecuting: false,
       suggestedQueries: [],
       fallbackAction: null,
+      queriedAccessPointGroups: [],
     },
   ];
 }
@@ -207,6 +230,64 @@ export function classifyError(error: Error): LegendAIErrorType {
   return LegendAIErrorType.GENERAL;
 }
 
+export enum ExecutionErrorCategory {
+  INFRASTRUCTURE = 'INFRASTRUCTURE',
+  SQL_FIXABLE = 'SQL_FIXABLE',
+  ACCESS = 'ACCESS',
+  NONE = 'NONE',
+}
+
+const EXECUTION_ERROR_RULES: ReadonlyArray<{
+  category: ExecutionErrorCategory;
+  patterns: readonly RegExp[];
+}> = [
+  {
+    category: ExecutionErrorCategory.ACCESS,
+    patterns: [
+      /\binsufficient privileges\b/i,
+      /\baccess denied\b/i,
+      /\bpermission denied\b/i,
+      /\bunauthorized\b/i,
+      /\bentitlement\b/i,
+    ],
+  },
+  {
+    category: ExecutionErrorCategory.INFRASTRUCTURE,
+    patterns: [/__lake_action/i, /__lake/i],
+  },
+  {
+    category: ExecutionErrorCategory.SQL_FIXABLE,
+    patterns: [
+      /\binvalid identifier\b/i,
+      /\bambiguous column\b/i,
+      /\bdoes not exist\b/i,
+      /\bsql compilation error\b/i,
+      /\bnot found\b/i,
+    ],
+  },
+];
+
+export function categorizeExecutionError(
+  errMsg: string,
+  error?: Error,
+): ExecutionErrorCategory {
+  if (error instanceof LegendAIUnsupportedEngineShapeError) {
+    return ExecutionErrorCategory.SQL_FIXABLE;
+  }
+  if (
+    error instanceof LegendAIServiceError &&
+    error.errorType === LegendAIErrorType.PERMISSION
+  ) {
+    return ExecutionErrorCategory.ACCESS;
+  }
+  for (const rule of EXECUTION_ERROR_RULES) {
+    if (rule.patterns.some((pattern) => pattern.test(errMsg))) {
+      return rule.category;
+    }
+  }
+  return ExecutionErrorCategory.NONE;
+}
+
 export function finishWithThinkingError(
   setMessages: MessageSetter,
   errorMsg: string,
@@ -236,7 +317,9 @@ function buildTurnFromAssistant(
       sql: asstMsg.sql,
       intent: LegendAIQuestionIntent.DATA_QUERY,
     };
-    if (asstMsg.gridData) {
+    if (asstMsg.error) {
+      turn.resultSummary = `ERROR: ${asstMsg.error.slice(0, 200)}`;
+    } else if (asstMsg.gridData) {
       turn.rowCount = asstMsg.gridData.rowData.length;
       const colNames = asstMsg.gridData.columnDefs
         .map((c) => c.headerName ?? c.colId ?? '')
@@ -252,6 +335,14 @@ function buildTurnFromAssistant(
       question: userText,
       sql: asstMsg.textAnswer,
       intent: LegendAIQuestionIntent.METADATA,
+    };
+  }
+  if (asstMsg.error && !asstMsg.sql) {
+    return {
+      question: userText,
+      sql: '(generation failed)',
+      resultSummary: `ERROR: ${asstMsg.error.slice(0, 200)}`,
+      intent: LegendAIQuestionIntent.DATA_QUERY,
     };
   }
   return undefined;
@@ -323,7 +414,21 @@ export function buildGenerationFailureMessage(
 }
 
 function buildFallbackSuggestions(services: TDSServiceSchema[]): string[] {
-  return services.slice(0, 3).map((svc) => `Show 10 records from ${svc.title}`);
+  const result: string[] = [];
+  for (const svc of services.slice(0, 3)) {
+    const strCol = svc.columns.find(isStringColumn);
+    const numCol = svc.columns.find(isNumericColumn);
+    if (numCol && strCol) {
+      result.push(
+        `What are the top 10 ${strCol.name} values by ${numCol.name} in ${svc.title}?`,
+      );
+    } else if (strCol) {
+      result.push(`Show the breakdown by ${strCol.name} in ${svc.title}`);
+    } else {
+      result.push(`Show 10 records from ${svc.title}`);
+    }
+  }
+  return result;
 }
 
 function appendFallbackSuggestions(
@@ -336,6 +441,39 @@ function appendFallbackSuggestions(
       suggestedQueries: suggestions,
     }));
   }
+}
+
+function buildSnowflakeSqlError(
+  rawError: string,
+  services: TDSServiceSchema[],
+): string {
+  const lowerError = rawError.toLowerCase();
+  const coreMatch =
+    /SnowflakeSQLException:\s*(?<core>SQL compilation error[^"]*?)(?:\\n|\n|$)/i.exec(
+      rawError,
+    );
+  const coreMsg = coreMatch?.groups?.core?.trim() ?? 'SQL compilation error';
+  if (lowerError.includes('__lake_action') || lowerError.includes('__lake')) {
+    return [
+      `Lakehouse SQL execution failed: ${coreMsg}`,
+      '\nThis is an internal engine error with this access point — it may not be fully supported yet.',
+      '\nTry querying a different access point, or contact the data product team.',
+    ].join('');
+  }
+  if (
+    lowerError.includes('invalid identifier') ||
+    lowerError.includes('does not exist')
+  ) {
+    const svcCols = services.map(
+      (s) => `${s.title}: ${s.columns.map((c) => c.name).join(', ')}`,
+    );
+    return [
+      `Lakehouse SQL execution failed: ${coreMsg}`,
+      `\nAvailable columns:\n${svcCols.join('\n')}`,
+      '\nTry rephrasing your question so the AI can pick the correct columns.',
+    ].join('');
+  }
+  return `Lakehouse SQL execution failed: ${coreMsg}`;
 }
 
 export function buildExecutionErrorMessage(
@@ -367,7 +505,30 @@ export function buildExecutionErrorMessage(
     return errParts.join('');
   }
 
+  if (errLower.includes('rename(~')) {
+    return [
+      'Cross-access-point JOINs on columns with the same name are not yet supported by the execution engine.',
+      '\nTry querying each access point separately, or ask a metadata question instead.',
+    ].join('');
+  }
+
+  if (
+    /can't find a match for function '\w+\(Timestamp/i.test(errStr) &&
+    errLower.includes('string')
+  ) {
+    return [
+      'Date comparison type mismatch: a Timestamp column was compared with a plain string literal.',
+      '\nPlease rephrase your question so the AI can regenerate the query with the correct date format.',
+    ].join('');
+  }
+
+  // Snowflake SQL compilation errors — extract the core message from the trace
+  if (errLower.includes('snowflakesqlexception: sql compilation error')) {
+    return buildSnowflakeSqlError(errStr, services);
+  }
+
   errParts.push(errStr.slice(0, MAX_ERROR_MESSAGE_LENGTH));
+
   if (
     errLower.includes('column') &&
     (errLower.includes('not found') ||
@@ -408,11 +569,55 @@ function parseSuggestedQueries(rawAnswer: string): {
   return { answer, suggestedQueries };
 }
 
+const COVERAGE_STOPWORDS = new Set([
+  'show',
+  'give',
+  'join',
+  'combine',
+  'merge',
+  'columns',
+  'column',
+  'results',
+  'result',
+  'data',
+  'services',
+  'service',
+  'access',
+  'points',
+  'point',
+  'table',
+  'tables',
+  'query',
+  'rows',
+  'records',
+  'values',
+  'list',
+  'display',
+  'fetch',
+  'retrieve',
+  'return',
+  'from',
+  'with',
+  'that',
+  'this',
+  'what',
+  'which',
+  'where',
+  'have',
+  'each',
+  'both',
+  'first',
+  'last',
+  'some',
+  'available',
+  'possible',
+]);
+
 function tokenizeQuestionForCoverage(question: string): string[] {
-  return question
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 4);
+  return tokenizeText(question, {
+    minLength: 4,
+    stopwords: COVERAGE_STOPWORDS,
+  });
 }
 
 function buildQuestionCoverageNote(
@@ -447,9 +652,51 @@ function formatPreviewValue(value: unknown): string {
   return `${raw.slice(0, ANALYSIS_PREVIEW_VALUE_LIMIT)}...`;
 }
 
+function buildJoinDiagnosticNote(
+  query: string,
+  columns: string[],
+  rows: unknown[],
+): string {
+  if (!/\bJOIN\b/i.test(query) || rows.length === 0 || columns.length < 2) {
+    return '';
+  }
+
+  const allNullColumns: string[] = [];
+  const someDataColumns: string[] = [];
+  for (const col of columns) {
+    const allNull = rows.every((row) => {
+      if (isPlainObject(row)) {
+        const val = row[col];
+        return val === null || val === undefined;
+      }
+      return true;
+    });
+    if (allNull) {
+      allNullColumns.push(col);
+    } else {
+      someDataColumns.push(col);
+    }
+  }
+
+  if (
+    allNullColumns.length > 0 &&
+    someDataColumns.length > 0 &&
+    allNullColumns.length >= 2
+  ) {
+    return (
+      `Note: ${allNullColumns.length} columns (${allNullColumns.slice(0, 3).join(', ')}${allNullColumns.length > 3 ? ', ...' : ''}) ` +
+      'returned entirely NULL values. This typically means the joined services do not share ' +
+      'overlapping values for the join key. The services may track different records. ' +
+      'Try querying each service separately to explore their data independently.'
+    );
+  }
+
+  return '';
+}
+
 function buildDeterministicResultSummary(
   question: string,
-  _query: string,
+  query: string,
   columns: string[],
   rows: unknown[],
 ): string {
@@ -458,11 +705,8 @@ function buildDeterministicResultSummary(
   const previewRows = rows
     .slice(0, ANALYSIS_PREVIEW_ROW_LIMIT)
     .map((row, index) => {
-      if (row && typeof row === 'object' && !Array.isArray(row)) {
-        const entries = Object.entries(row as Record<string, unknown>).slice(
-          0,
-          4,
-        );
+      if (isPlainObject(row)) {
+        const entries = Object.entries(row).slice(0, 4);
         const formattedEntries = entries.map(
           ([key, value]) => `${key}: ${formatPreviewValue(value)}`,
         );
@@ -473,11 +717,15 @@ function buildDeterministicResultSummary(
     .join('\n');
 
   const coverageNote = buildQuestionCoverageNote(question, columns);
+  const joinDiagnostic = buildJoinDiagnosticNote(query, columns, rows);
   const parts = [
     `I retrieved ${rowCount} row${rowCount === 1 ? '' : 's'} for your question using this query.`,
     `Columns returned: ${selectedColumns}.`,
     `Sample rows:\n${previewRows || 'No sample rows available.'}`,
   ];
+  if (joinDiagnostic) {
+    parts.push(joinDiagnostic);
+  }
   if (coverageNote) {
     parts.push(coverageNote);
   }
@@ -536,6 +784,8 @@ export async function handleMetadataQuestion(
   context: LegendAIOperationContext,
   startTime: number,
   hasQueryableServices?: boolean,
+  services?: TDSServiceSchema[],
+  modelContextEnrichment?: string,
 ): Promise<void> {
   const { config, plugin, history, setMessages } = context;
   addThinkingStep(setMessages, 'Answering from product metadata...');
@@ -543,6 +793,8 @@ export async function handleMetadataQuestion(
     question,
     metadata,
     history,
+    services,
+    modelContextEnrichment,
   );
   const rawAnswer = await plugin.callLLM(metadataPromptText, config);
   const { answer, suggestedQueries: parsedSuggestions } =
@@ -668,6 +920,7 @@ export async function generateAndJudgeSql(
   context: LegendAIOperationContext,
   startTime: number,
   metadata?: LegendAIProductMetadata,
+  modelContextEnrichment?: string,
 ): Promise<string | null> {
   const { plugin, config, history, setMessages } = context;
   addThinkingStep(setMessages, 'Building context from service schemas...');
@@ -677,6 +930,7 @@ export async function generateAndJudgeSql(
     coordinates,
     history,
     metadata,
+    modelContextEnrichment,
   );
   addThinkingStep(setMessages, 'Generating SQL query...');
 
@@ -727,13 +981,16 @@ export async function generateAndJudgeAccessPointSql(
   accessPoints: TDSServiceSchema[],
   context: LegendAIOperationContext,
   startTime: number,
+  modelContextEnrichment?: string,
 ): Promise<string | null> {
   const { plugin, config, history, setMessages } = context;
   addThinkingStep(setMessages, 'Building context from access point schemas...');
+  plugin.preWarmSchemaAnalysis(accessPoints, config);
   const prompt = plugin.buildAccessPointGeneratorPrompt(
     question,
     accessPoints,
     history,
+    modelContextEnrichment,
   );
   addThinkingStep(setMessages, 'Generating SQL query for access points...');
 
@@ -769,7 +1026,13 @@ export async function generateAndJudgeAccessPointSql(
   return runJudgeLoop(
     generatedSql,
     (sql) =>
-      plugin.buildAccessPointJudgePrompt(sql, question, accessPoints, history),
+      plugin.buildAccessPointJudgePrompt(
+        sql,
+        question,
+        accessPoints,
+        history,
+        modelContextEnrichment,
+      ),
     context,
   );
 }
@@ -810,13 +1073,13 @@ export async function executeSqlAndReport(
 ): Promise<LegendAISqlExecutionResultData | undefined> {
   const execStartTime = Date.now();
   try {
-    const isAccessPoint = services.some(
-      (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
+    const rawResult = await executeSqlForServices(
+      sql,
+      services,
+      dataProductCoordinates,
+      plugin,
+      config,
     );
-    const rawResult =
-      isAccessPoint && dataProductCoordinates
-        ? await plugin.executeLakehouseSql(sql, dataProductCoordinates, config)
-        : await plugin.executeSql(sql, config);
     return reportExecutionResult(
       rawResult,
       setMessages,
@@ -846,6 +1109,30 @@ export async function executeSqlAndReport(
   }
 }
 
+const HAS_PURE_AGGREGATION_PATTERN =
+  /->groupBy\(|->distinct\(|->count\(\)|->sum\(\)|->average\(\)|->olapGroupBy\(/;
+
+const HAS_PURE_TAKE_PATTERN = /->take\(\s*\d+\s*\)/;
+
+const PURE_LIMIT_PATTERN = /->limit\(\s*(?<count>\d+)\s*\)/g;
+
+export function ensurePureSafetyLimit(
+  pureQuery: string,
+  limit: number = DEFAULT_SAFETY_LIMIT,
+): string {
+  const normalized = pureQuery.replaceAll(
+    PURE_LIMIT_PATTERN,
+    (_match, n) => `->take(${n})`,
+  );
+  if (HAS_PURE_TAKE_PATTERN.test(normalized)) {
+    return normalized;
+  }
+  if (HAS_PURE_AGGREGATION_PATTERN.test(normalized)) {
+    return normalized;
+  }
+  return `${normalized.trimEnd()}->take(${limit})`;
+}
+
 export async function executePureQueryAndReport(
   pureQuery: string,
   pureExecutionContext: QueryExplicitExecutionContextInfo,
@@ -854,16 +1141,25 @@ export async function executePureQueryAndReport(
   plugin: LegendAI_LegendApplicationPlugin_Extension,
   setMessages: MessageSetter,
   startTime: number,
-): Promise<LegendAISqlExecutionResultData> {
+): Promise<LegendAISqlExecutionResultData | undefined> {
   const execStartTime = Date.now();
+  const safeQuery = ensurePureSafetyLimit(pureQuery);
   try {
     addThinkingStep(setMessages, 'Executing Pure query...');
-    const rawResult = await plugin.executePureQuery(
-      pureQuery,
-      pureExecutionContext,
-      dataProductCoordinates,
-      config,
+    const rawResult = await withTimeout(
+      plugin.executePureQuery(
+        safeQuery,
+        pureExecutionContext,
+        dataProductCoordinates,
+        config,
+      ),
+      EXECUTION_TIMEOUT_MS,
     );
+    if (!rawResult) {
+      throw new Error(
+        'Query execution timed out after 5 minutes. The dataset may be too large — try adding more filters or reducing the result set.',
+      );
+    }
     return reportExecutionResult(
       rawResult,
       setMessages,
@@ -889,7 +1185,7 @@ export async function executePureQueryAndReport(
           : execErrorType,
       thinkingDuration: elapsedSeconds(startTime),
     }));
-    return { columns: [], rows: [] };
+    return undefined;
   }
 }
 
@@ -950,6 +1246,95 @@ export async function analyzeOrchestratorResults(
   }
 }
 
+async function retryWithAlternateRoot(
+  question: string,
+  alternateRoot: string,
+  resolvedEntities: LegendAIResolvedEntities,
+  orchestratorOptions: Required<LegendAIOrchestratorOptionsParam>,
+  metadata: LegendAIProductMetadata,
+  context: LegendAIOperationContext,
+  options: {
+    startTime: number;
+    modelContext?: LegendAIModelContext;
+  },
+): Promise<boolean> {
+  const { startTime, modelContext } = options;
+  const { dataProductCoordinates, pureExecutionContext } = orchestratorOptions;
+  const { config, plugin, setMessages } = context;
+  addThinkingStep(
+    setMessages,
+    `No results with ${extractElementNameFromPath(resolvedEntities.rootEntity)}, retrying with ${extractElementNameFromPath(alternateRoot)}...`,
+  );
+  try {
+    const retryRelated = resolvedEntities.relatedEntities.filter(
+      (e) => e !== alternateRoot,
+    );
+    const retryEnriched = modelContext
+      ? buildEnrichedBusinessContext(
+          question,
+          alternateRoot,
+          retryRelated,
+          modelContext,
+        )
+      : undefined;
+    const retryResponse = await withTimeout(
+      plugin.generateQueryViaOrchestrator(
+        {
+          user_question: question,
+          semantic_search_resolution_details: {
+            data_product_coordinates: dataProductCoordinates,
+            root_entity: alternateRoot,
+            related_entities: retryRelated,
+            ...(retryEnriched
+              ? { enriched_business_context: retryEnriched }
+              : {}),
+          },
+        },
+        config,
+      ),
+      ORCHESTRATOR_GENERATION_TIMEOUT_MS,
+    );
+    if (!retryResponse) {
+      addThinkingStep(setMessages, 'Retry query generation timed out');
+      return false;
+    }
+    const retrySafeQuery = ensurePureSafetyLimit(retryResponse.legend_query);
+    updateLastAssistant(setMessages, () => ({
+      sql: retrySafeQuery,
+      sqlGenTime: elapsedSeconds(startTime, 2),
+      isExecuting: true,
+    }));
+    const retryResult = await executePureQueryAndReport(
+      retrySafeQuery,
+      pureExecutionContext,
+      dataProductCoordinates,
+      config,
+      plugin,
+      setMessages,
+      startTime,
+    );
+    if (retryResult && retryResult.rows.length > 0) {
+      await analyzeOrchestratorResults(
+        question,
+        retryResponse.legend_query,
+        retryResult,
+        metadata,
+        context,
+        startTime,
+      );
+      return true;
+    }
+    return false;
+  } catch (retryError) {
+    assertErrorThrown(retryError);
+    addThinkingStep(
+      setMessages,
+      `Retry with alternate entity failed: ${retryError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+    );
+    return false;
+  }
+}
+
 async function handleEmptyOrchestratorResults(
   question: string,
   legendQuery: string,
@@ -957,65 +1342,34 @@ async function handleEmptyOrchestratorResults(
   metadata: LegendAIProductMetadata,
   resolvedEntities: LegendAIResolvedEntities,
   context: LegendAIOperationContext,
-  startTime: number,
+  options: {
+    startTime: number;
+    modelContext?: LegendAIModelContext;
+  },
 ): Promise<void> {
-  const { dataProductCoordinates, pureExecutionContext } = orchestratorOptions;
+  const { startTime, modelContext } = options;
   const { config, plugin, setMessages } = context;
 
   if (resolvedEntities.relatedEntities.length > 0) {
-    const alternateRoot = resolvedEntities.relatedEntities[0];
+    const alternateRoot = modelContext
+      ? findBestAlternateRoot(
+          resolvedEntities.rootEntity,
+          resolvedEntities.relatedEntities,
+          modelContext,
+        )
+      : resolvedEntities.relatedEntities[0];
     if (alternateRoot) {
-      addThinkingStep(
-        setMessages,
-        `No results with ${extractElementNameFromPath(resolvedEntities.rootEntity)}, retrying with ${extractElementNameFromPath(alternateRoot)}...`,
+      const succeeded = await retryWithAlternateRoot(
+        question,
+        alternateRoot,
+        resolvedEntities,
+        orchestratorOptions,
+        metadata,
+        context,
+        { startTime, ...(modelContext === undefined ? {} : { modelContext }) },
       );
-
-      try {
-        const retryResponse = await plugin.generateQueryViaOrchestrator(
-          {
-            user_question: question,
-            semantic_search_resolution_details: {
-              data_product_coordinates: dataProductCoordinates,
-              root_entity: alternateRoot,
-              related_entities: resolvedEntities.relatedEntities.slice(1),
-            },
-          },
-          config,
-        );
-
-        updateLastAssistant(setMessages, () => ({
-          sql: retryResponse.legend_query,
-          sqlGenTime: elapsedSeconds(startTime, 2),
-          isExecuting: true,
-        }));
-
-        const retryResult = await executePureQueryAndReport(
-          retryResponse.legend_query,
-          pureExecutionContext,
-          dataProductCoordinates,
-          config,
-          plugin,
-          setMessages,
-          startTime,
-        );
-
-        if (retryResult.rows.length > 0) {
-          await analyzeOrchestratorResults(
-            question,
-            retryResponse.legend_query,
-            retryResult,
-            metadata,
-            context,
-            startTime,
-          );
-          return;
-        }
-      } catch (retryError) {
-        assertErrorThrown(retryError);
-        addThinkingStep(
-          setMessages,
-          `Retry with alternate entity failed: ${retryError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-        );
+      if (succeeded) {
+        return;
       }
     }
   }
@@ -1024,9 +1378,7 @@ async function handleEmptyOrchestratorResults(
     setMessages,
     'No results returned \u2014 building contextual guidance...',
   );
-  updateLastAssistant(setMessages, () => ({
-    isProcessing: true,
-  }));
+  updateLastAssistant(setMessages, () => ({ isProcessing: true }));
   const fallback = await withTimeout(
     plugin.buildNoResultsFallback(question, legendQuery, metadata, config),
     ANALYSIS_TIMEOUT_MS,
@@ -1042,6 +1394,98 @@ async function handleEmptyOrchestratorResults(
   }
 }
 
+async function resolveOrchestrationEntities(
+  question: string,
+  dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
+  context: LegendAIOperationContext,
+  pureExecutionContext?: QueryExplicitExecutionContextInfo,
+  preResolvedEntities?: LegendAIResolvedEntities,
+  modelContext?: LegendAIModelContext,
+): Promise<LegendAIResolvedEntities> {
+  const { config, plugin, setMessages } = context;
+  if (preResolvedEntities) {
+    addThinkingStep(
+      setMessages,
+      `Using pre-resolved root entity: ${extractElementNameFromPath(preResolvedEntities.rootEntity)}`,
+    );
+    return preResolvedEntities;
+  }
+  addThinkingStep(setMessages, 'Resolving entities for your query...');
+  const resolvedEntities = await plugin.resolveEntitiesForQuery(
+    question,
+    dataProductCoordinates,
+    config,
+    pureExecutionContext,
+    modelContext,
+  );
+  addThinkingStep(
+    setMessages,
+    `Found root entity: ${extractElementNameFromPath(resolvedEntities.rootEntity)}`,
+  );
+  return resolvedEntities;
+}
+
+function extractUserErrorFromMessage(errorMessage: string): string {
+  const marker = 'with error:';
+  const idx = errorMessage.toLowerCase().indexOf(marker);
+  if (idx !== -1) {
+    const after = errorMessage.slice(idx + marker.length).trimStart();
+    const newlineIdx = after.indexOf('\n');
+    const reason = (
+      newlineIdx === -1 ? after : after.slice(0, newlineIdx)
+    ).trim();
+    if (reason.length > 0) {
+      return reason.slice(0, MAX_ERROR_MESSAGE_LENGTH);
+    }
+  }
+  return errorMessage.slice(0, MAX_ERROR_MESSAGE_LENGTH);
+}
+
+async function handleOrchestratorError(
+  error: Error,
+  startTime: number,
+  question: string,
+  metadata: LegendAIProductMetadata,
+  context: LegendAIOperationContext,
+): Promise<void> {
+  const { config, plugin, setMessages } = context;
+  const orchErrorType = classifyError(error);
+  const genTime = elapsedSeconds(startTime, 2);
+  addThinkingStep(
+    setMessages,
+    `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+  );
+  try {
+    addThinkingStep(
+      setMessages,
+      'Building guidance from available metadata...',
+    );
+    const fallbackText = await withTimeout(
+      plugin.buildFailureFallback(question, error.message, metadata, config),
+      ANALYSIS_TIMEOUT_MS,
+    );
+    if (fallbackText) {
+      completeThinkingSteps(setMessages);
+      updateLastAssistant(setMessages, () => ({
+        dataContext: fallbackText,
+        sqlGenTime: genTime,
+        error: extractUserErrorFromMessage(error.message),
+        errorType: LegendAIErrorType.GENERATION,
+        isProcessing: false,
+        thinkingDuration: elapsedSeconds(startTime),
+      }));
+      return;
+    }
+  } catch (fallbackError) {
+    assertErrorThrown(fallbackError);
+    addThinkingStep(
+      setMessages,
+      `Fallback guidance failed: ${fallbackError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+    );
+  }
+  finishWithThinkingError(setMessages, error.message, startTime, orchErrorType);
+}
+
 export async function processQuestionViaOrchestrator(
   question: string,
   dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
@@ -1049,31 +1493,20 @@ export async function processQuestionViaOrchestrator(
   context: LegendAIOperationContext,
   pureExecutionContext?: QueryExplicitExecutionContextInfo,
   preResolvedEntities?: LegendAIResolvedEntities,
+  modelContext?: LegendAIModelContext,
 ): Promise<void> {
   const { config, plugin, setMessages } = context;
   const startTime = Date.now();
 
   try {
-    let resolvedEntities: LegendAIResolvedEntities;
-    if (preResolvedEntities) {
-      resolvedEntities = preResolvedEntities;
-      addThinkingStep(
-        setMessages,
-        `Using pre-resolved root entity: ${extractElementNameFromPath(resolvedEntities.rootEntity)}`,
-      );
-    } else {
-      addThinkingStep(setMessages, 'Resolving entities for your query...');
-      resolvedEntities = await plugin.resolveEntitiesForQuery(
-        question,
-        dataProductCoordinates,
-        config,
-        pureExecutionContext,
-      );
-      addThinkingStep(
-        setMessages,
-        `Found root entity: ${extractElementNameFromPath(resolvedEntities.rootEntity)}`,
-      );
-    }
+    const resolvedEntities = await resolveOrchestrationEntities(
+      question,
+      dataProductCoordinates,
+      context,
+      pureExecutionContext,
+      preResolvedEntities,
+      modelContext,
+    );
 
     if (resolvedEntities.relatedEntities.length > 0) {
       addThinkingStep(
@@ -1083,23 +1516,43 @@ export async function processQuestionViaOrchestrator(
     }
 
     addThinkingStep(setMessages, 'Generating Legend query via orchestrator...');
-    const orchestratorResponse = await plugin.generateQueryViaOrchestrator(
-      {
-        user_question: question,
-        semantic_search_resolution_details: {
-          data_product_coordinates: dataProductCoordinates,
-          root_entity: resolvedEntities.rootEntity,
-          related_entities: resolvedEntities.relatedEntities,
+    const enrichedContext = modelContext
+      ? buildEnrichedBusinessContext(
+          question,
+          resolvedEntities.rootEntity,
+          resolvedEntities.relatedEntities,
+          modelContext,
+        )
+      : undefined;
+    const orchestratorResponse = await withTimeout(
+      plugin.generateQueryViaOrchestrator(
+        {
+          user_question: question,
+          semantic_search_resolution_details: {
+            data_product_coordinates: dataProductCoordinates,
+            root_entity: resolvedEntities.rootEntity,
+            related_entities: resolvedEntities.relatedEntities,
+            ...(enrichedContext
+              ? { enriched_business_context: enrichedContext }
+              : {}),
+          },
         },
-      },
-      config,
+        config,
+      ),
+      ORCHESTRATOR_GENERATION_TIMEOUT_MS,
     );
 
-    const queryGenTime = elapsedSeconds(startTime, 2);
+    if (!orchestratorResponse) {
+      throw new Error(
+        'Query generation timed out. The orchestrator took too long to respond. Try a simpler question.',
+      );
+    }
+
+    const safeQuery = ensurePureSafetyLimit(orchestratorResponse.legend_query);
     completeThinkingSteps(setMessages);
     updateLastAssistant(setMessages, () => ({
-      sql: orchestratorResponse.legend_query,
-      sqlGenTime: queryGenTime,
+      sql: safeQuery,
+      sqlGenTime: elapsedSeconds(startTime, 2),
       isExecuting: true,
       isProcessing: true,
     }));
@@ -1117,7 +1570,7 @@ export async function processQuestionViaOrchestrator(
     }
 
     const execResult = await executePureQueryAndReport(
-      orchestratorResponse.legend_query,
+      safeQuery,
       pureExecutionContext,
       dataProductCoordinates,
       config,
@@ -1126,11 +1579,15 @@ export async function processQuestionViaOrchestrator(
       startTime,
     );
 
+    if (!execResult) {
+      return;
+    }
+
     try {
       if (execResult.rows.length > 0) {
         await analyzeOrchestratorResults(
           question,
-          orchestratorResponse.legend_query,
+          safeQuery,
           execResult,
           metadata,
           context,
@@ -1139,12 +1596,15 @@ export async function processQuestionViaOrchestrator(
       } else {
         await handleEmptyOrchestratorResults(
           question,
-          orchestratorResponse.legend_query,
+          safeQuery,
           { dataProductCoordinates, pureExecutionContext },
           metadata,
           resolvedEntities,
           context,
-          startTime,
+          {
+            startTime,
+            ...(modelContext === undefined ? {} : { modelContext }),
+          },
         );
       }
     } catch (analysisError) {
@@ -1162,43 +1622,12 @@ export async function processQuestionViaOrchestrator(
     }
   } catch (error) {
     assertErrorThrown(error);
-    const orchErrorType = classifyError(error);
-    addThinkingStep(
-      setMessages,
-      `Error: ${error.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-    );
-
-    try {
-      addThinkingStep(
-        setMessages,
-        'Building guidance from available metadata...',
-      );
-      const fallbackText = await withTimeout(
-        plugin.buildFailureFallback(question, error.message, metadata, config),
-        ANALYSIS_TIMEOUT_MS,
-      );
-      if (fallbackText) {
-        completeThinkingSteps(setMessages);
-        updateLastAssistant(setMessages, () => ({
-          dataContext: fallbackText,
-          isProcessing: false,
-          thinkingDuration: elapsedSeconds(startTime),
-        }));
-        return;
-      }
-    } catch (fallbackError) {
-      assertErrorThrown(fallbackError);
-      addThinkingStep(
-        setMessages,
-        `Fallback guidance failed: ${fallbackError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-      );
-    }
-
-    finishWithThinkingError(
-      setMessages,
-      error.message,
+    await handleOrchestratorError(
+      error,
       startTime,
-      orchErrorType,
+      question,
+      metadata,
+      context,
     );
   }
 }
@@ -1236,10 +1665,7 @@ export function sanitizeJoinOrderBy(sql: string): string {
   const afterOrderBy = parts.slice(1).join('ORDER BY').replace(/^\s+/, '');
 
   const selectAliases = new Map<string, string>();
-  const aliasRegex =
-    /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"\s+AS\s+(?:"(?<qAlias>[^"]+)"|(?<uAlias>\w+))/gi;
-  let m: RegExpExecArray | null;
-  while ((m = aliasRegex.exec(beforeOrderBy)) !== null) {
+  for (const m of beforeOrderBy.matchAll(SELECT_ALIAS_PATTERN)) {
     const tableAlias = (m.groups?.tbl ?? '').toLowerCase();
     const colName = (m.groups?.col ?? '').toLowerCase();
     const asAlias = m.groups?.qAlias ?? m.groups?.uAlias ?? '';
@@ -1250,23 +1676,113 @@ export function sanitizeJoinOrderBy(sql: string): string {
     return sql;
   }
 
+  // Build a lookup of the original alias.col text → its SELECT alias replacement.
+  // matchAll exposes typed `.groups`, so no cast is needed.
+  const replacements = new Map<string, string>();
+  for (const m of afterOrderBy.matchAll(ALIAS_DOT_COL_PATTERN)) {
+    const tbl = (m.groups?.tbl ?? '').toLowerCase();
+    const col = (m.groups?.col ?? '').toLowerCase();
+    const alias = selectAliases.get(`${tbl}.${col}`);
+    if (alias) {
+      replacements.set(m[0], `"${alias}"`);
+    }
+  }
+
+  if (replacements.size === 0) {
+    return sql;
+  }
+
   const rewritten = afterOrderBy.replaceAll(
     ALIAS_DOT_COL_PATTERN,
-    (...args) => {
-      const groups = args[args.length - 1] as {
-        tbl: string;
-        col: string;
-      };
-      const key = `${groups.tbl.toLowerCase()}.${groups.col.toLowerCase()}`;
-      const alias = selectAliases.get(key);
-      return alias ? `"${alias}"` : String(args[0]);
-    },
+    (match) => replacements.get(match) ?? match,
   );
 
   if (rewritten === afterOrderBy) {
     return sql;
   }
   return `${beforeOrderBy}ORDER BY ${rewritten}`;
+}
+
+export function sanitizeJoinSameKeyColumns(
+  sql: string,
+  services?: TDSServiceSchema[],
+): string {
+  if (!JOIN_PATTERN.test(sql)) {
+    return sql;
+  }
+
+  const joinRegex =
+    /\bJOIN\s{1,5}p\(\s{0,5}'(?<pId>[^']{1,200})'\s{0,5}\)\s{1,5}AS\s{1,5}(?<rAlias>[a-z]\w{0,63})\s{1,5}ON\s{1,5}(?<onClause>[^\n]{1,500})/gi;
+
+  let result = sql;
+  let match: RegExpExecArray | null;
+
+  while ((match = joinRegex.exec(sql)) !== null) {
+    const pId = match.groups?.pId ?? '';
+    const rightAlias = match.groups?.rAlias ?? '';
+    const onClause = (match.groups?.onClause ?? '').slice(0, 500);
+
+    const sameKeyMatch =
+      /(?<lAlias>[a-z]\w{0,63}) {0,5}\. {0,5}"(?<lCol>[^"]{1,200})" {0,5}= {0,5}(?<rAl>[a-z]\w{0,63}) {0,5}\. {0,5}"(?<rCol>[^"]{1,200})"/i.exec(
+        onClause,
+      );
+    if (!sameKeyMatch) {
+      continue;
+    }
+
+    const leftCol = sameKeyMatch.groups?.lCol ?? '';
+    const rightCol = sameKeyMatch.groups?.rCol ?? '';
+    const matchedRightAlias = sameKeyMatch.groups?.rAl ?? '';
+
+    if (
+      leftCol.toLowerCase() !== rightCol.toLowerCase() ||
+      matchedRightAlias.toLowerCase() !== rightAlias.toLowerCase()
+    ) {
+      continue;
+    }
+
+    const renamedKey = `${rightAlias}_${rightCol}`;
+    const columnList = buildSubqueryColumnList(
+      pId,
+      rightCol,
+      renamedKey,
+      services,
+    );
+    const originalFragment = `p('${pId}') AS ${rightAlias}`;
+    const subqueryFragment = `(SELECT ${columnList} FROM p('${pId}')) AS ${rightAlias}`;
+
+    const oldOnRef = `${rightAlias}."${rightCol}"`;
+    const newOnRef = `${rightAlias}."${renamedKey}"`;
+
+    result = result.replace(originalFragment, subqueryFragment);
+    result = result.replaceAll(oldOnRef, newOnRef);
+  }
+
+  return result;
+}
+
+function buildSubqueryColumnList(
+  pId: string,
+  originalKey: string,
+  renamedKey: string,
+  services?: TDSServiceSchema[],
+): string {
+  const svc = services?.find(
+    (s) =>
+      s.dataProductPath &&
+      s.pattern &&
+      pId === `${s.dataProductPath}.${s.pattern.replace(/^\//, '')}`,
+  );
+  if (!svc || svc.columns.length === 0) {
+    return `"${originalKey}" AS "${renamedKey}", *`;
+  }
+  return svc.columns
+    .map((c) =>
+      c.name.toLowerCase() === originalKey.toLowerCase()
+        ? `"${c.name}" AS "${renamedKey}"`
+        : `"${c.name}"`,
+    )
+    .join(', ');
 }
 
 export function sanitizeLiteralColumns(sql: string): string {
@@ -1347,8 +1863,7 @@ export function ensureDateParameters(
 
   const today = getTodayISO();
 
-  const serviceCallPattern = /\bservice\s*\([^()]*\)/gi;
-  return sql.replaceAll(serviceCallPattern, (match) => {
+  return sql.replaceAll(SERVICE_CALL_PATTERN, (match) => {
     let patched = match;
     for (const param of dateParams) {
       if (new RegExp(String.raw`\b${param}\s*=>`, 'i').test(patched)) {
@@ -1450,6 +1965,111 @@ export function buildMissingParamsWarning(
   ].join('\n');
 }
 
+const NESTED_P_IN_CLAUSE = /\bIN\s*\(\s*SELECT\b[^)]*\bFROM\s+p\s*\(/i;
+const NESTED_P_CROSS_JOIN =
+  /\bCROSS\s+JOIN\s*\(\s*SELECT\b[^)]*\bFROM\s+p\s*\(/i;
+const NESTED_P_SCALAR =
+  /\(\s*SELECT\s+(?:COUNT|SUM|AVG|MIN|MAX)\s*\([^)]*\)\s+(?:AS\s+\w+\s+)?FROM\s+p\s*\(/i;
+
+export function hasNestedPCalls(sql: string): boolean {
+  return (
+    NESTED_P_IN_CLAUSE.test(sql) ||
+    NESTED_P_CROSS_JOIN.test(sql) ||
+    NESTED_P_SCALAR.test(sql)
+  );
+}
+
+const NESTED_AGGREGATE_PATTERN =
+  /\b(?:SUM|AVG|MIN|MAX|COUNT)\s*\(\s*(?:SUM|AVG|MIN|MAX|COUNT)\s*\(/i;
+const OVER_CLAUSE_PATTERN = /\bOVER\s*\(/i;
+
+const AGGREGATE_IN_WINDOW_ARGS_PATTERN =
+  /\bOVER\s*\((?:[^()]|\([^()]*\)){0,300}\b(?:SUM|AVG|MIN|MAX|COUNT)\s*\(/i;
+
+const NON_WINDOW_SCALAR_FUNCTIONS: ReadonlySet<string> = new Set([
+  'ROUND',
+  'CAST',
+  'COALESCE',
+  'CEIL',
+  'CEILING',
+  'FLOOR',
+  'ABS',
+  'CONCAT',
+  'NULLIF',
+  'IFNULL',
+  'GREATEST',
+  'LEAST',
+  'TRUNC',
+  'TRUNCATE',
+  'MOD',
+  'POWER',
+  'SQRT',
+  'LN',
+  'LOG',
+  'EXP',
+  'SUBSTR',
+  'SUBSTRING',
+  'TO_CHAR',
+  'TO_NUMBER',
+  'TO_DATE',
+]);
+const FUNCTION_CALL_WITH_OVER_PATTERN =
+  /\b(?<fn>[A-Z_]{1,32})\s*\((?:[^()]|\([^()]*\)){0,200}\bOVER\s*\(/gi;
+
+function hasWindowInsideNonWindowFunctionCall(sql: string): boolean {
+  FUNCTION_CALL_WITH_OVER_PATTERN.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = FUNCTION_CALL_WITH_OVER_PATTERN.exec(sql)) !== null) {
+    const fn = match.groups?.fn?.toUpperCase();
+    if (fn && NON_WINDOW_SCALAR_FUNCTIONS.has(fn)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const LATERAL_SUBQUERY_PATTERN =
+  /\b(?:CROSS|INNER|LEFT|RIGHT)?\s*JOIN\s+LATERAL\b|\bLATERAL\s*\(/i;
+
+export interface UnsupportedEnginePattern {
+  kind:
+    | 'NESTED_AGGREGATE_IN_WINDOW'
+    | 'AGGREGATE_IN_WINDOW_ARGS'
+    | 'WINDOW_INSIDE_FUNCTION_CALL'
+    | 'LATERAL_SUBQUERY';
+  hint: string;
+}
+
+export function detectUnsupportedEnginePattern(
+  sql: string,
+): UnsupportedEnginePattern | undefined {
+  if (NESTED_AGGREGATE_PATTERN.test(sql) && OVER_CLAUSE_PATTERN.test(sql)) {
+    return {
+      kind: 'NESTED_AGGREGATE_IN_WINDOW',
+      hint: "The engine's SQL→Pure translator cannot combine an aggregate function with a window function in the same SELECT (e.g. SUM(COUNT(*)) OVER ()). Move the aggregation into a CTE first, then apply the window over the CTE.",
+    };
+  }
+  if (AGGREGATE_IN_WINDOW_ARGS_PATTERN.test(sql)) {
+    return {
+      kind: 'AGGREGATE_IN_WINDOW_ARGS',
+      hint: "The engine's SQL→Pure translator cannot evaluate an aggregate function inside an OVER clause's PARTITION BY or ORDER BY at the same level as GROUP BY (e.g. ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC)). Materialize the aggregate into a CTE column first, then reference that column from the window — for example: SELECT col, cnt, ROW_NUMBER() OVER (ORDER BY cnt DESC) AS rn FROM (SELECT col, COUNT(*) AS cnt FROM p('…') GROUP BY col) agg.",
+    };
+  }
+  if (hasWindowInsideNonWindowFunctionCall(sql)) {
+    return {
+      kind: 'WINDOW_INSIDE_FUNCTION_CALL',
+      hint: "The engine's SQL→Pure translator cannot evaluate a window function inside another function call (e.g. ROUND(SUM(x) OVER (), 2)). Materialize the window expression into its own column in a subquery or CTE, then apply the wrapping function in the outer SELECT — for example: SELECT col, ROUND(cnt * 100.0 / total, 2) FROM (SELECT col, cnt, SUM(cnt) OVER () AS total FROM (SELECT col, COUNT(*) AS cnt FROM p('…') GROUP BY col) agg) windowed.",
+    };
+  }
+  if (LATERAL_SUBQUERY_PATTERN.test(sql)) {
+    return {
+      kind: 'LATERAL_SUBQUERY',
+      hint: "The engine's SQL parser does not support LATERAL subqueries (CROSS JOIN LATERAL (...)). Rewrite using ROW_NUMBER() OVER (PARTITION BY ...) in a CTE and filter on the rank, or use a correlated subquery.",
+    };
+  }
+  return undefined;
+}
+
 /**
  * Appends a safety LIMIT to queries that lack one, preventing unbounded
  * result sets on large services. Skips aggregation queries since those
@@ -1465,6 +2085,29 @@ export function ensureSafeLimit(
   return `${sql.trimEnd()}\nLIMIT ${limit}`;
 }
 
+function prepareSafeSql(sql: string, services: TDSServiceSchema[]): string {
+  const safeSql = ensureSafeLimit(
+    ensureDateParameters(
+      sanitizeLiteralColumns(
+        sanitizeJoinSameKeyColumns(sanitizeJoinOrderBy(sql), services),
+      ),
+      services,
+    ),
+  );
+  const unsupported = detectUnsupportedEnginePattern(safeSql);
+  if (unsupported) {
+    throw new LegendAIUnsupportedEngineShapeError(unsupported.hint);
+  }
+  return safeSql;
+}
+
+/**
+ * The single execution chokepoint for SQL in this module. Every code
+ * path that needs to run SQL — primary orchestrator, retry-with-fix,
+ * exported `executeSqlAndReport`, internal helpers — calls through
+ * here. No other code in this file may call `plugin.executeLakehouseSql`
+ * or `plugin.executeSql` directly.
+ */
 async function executeSqlForServices(
   sql: string,
   services: TDSServiceSchema[],
@@ -1474,12 +2117,7 @@ async function executeSqlForServices(
   plugin: LegendAI_LegendApplicationPlugin_Extension,
   config: LegendAIConfig,
 ): Promise<LegendAISqlExecutionResultData> {
-  const safeSql = ensureSafeLimit(
-    ensureDateParameters(
-      sanitizeLiteralColumns(sanitizeJoinOrderBy(sql)),
-      services,
-    ),
-  );
+  const safeSql = prepareSafeSql(sql, services);
   const isAccessPoint = services.some(
     (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
   );
@@ -1808,51 +2446,150 @@ async function reportQueryResults(
   }
 }
 
-/**
- * Scores each service against the user question by counting keyword
- * overlap between the question tokens and the service title, description,
- * column names, and parameter names. Returns services sorted by
- * descending relevance score.
- */
-export function preFilterServicesByRelevance(
+export function supplementMissingCoverage(
   question: string,
-  services: TDSServiceSchema[],
-  limit: number,
+  selected: TDSServiceSchema[],
+  allServices: TDSServiceSchema[],
+  maxTotal: number = 4,
 ): TDSServiceSchema[] {
-  const queryTokens = question
-    .toLowerCase()
-    .split(/[\s,.:;!?'"()\-/]+/)
-    .filter((t) => t.length > 2);
-  if (queryTokens.length === 0) {
-    return services.slice(0, limit);
+  if (selected.length >= maxTotal || allServices.length <= selected.length) {
+    return selected;
   }
-  const scored = services.map((svc) => {
-    const haystack = [
-      svc.title,
-      svc.description ?? '',
-      svc.pattern,
-      ...svc.columns.slice(0, 30).map((c) => c.name),
-      ...svc.parameters,
-      ...(svc.preFilters ?? []).flatMap((pf) => {
-        const parts = [pf.property, pf.operator];
-        if (pf.value !== undefined) {
-          parts.push(String(pf.value));
+  const questionTokens = tokenizeText(question);
+  if (questionTokens.length === 0) {
+    return selected;
+  }
+
+  const coveredTokens = new Set<string>();
+  for (const svc of selected) {
+    for (const col of svc.columns) {
+      for (const token of splitIdentifierTokens(col.name)) {
+        coveredTokens.add(token);
+      }
+      coveredTokens.add(col.name.toLowerCase());
+    }
+    for (const token of splitIdentifierTokens(svc.title)) {
+      coveredTokens.add(token);
+    }
+  }
+
+  const coveredArray = Array.from(coveredTokens);
+  const uncovered = questionTokens.filter(
+    (t) =>
+      !coveredTokens.has(t) &&
+      !(t.length >= 4 && coveredArray.some((ct) => isFuzzyMatch(t, ct))),
+  );
+  if (uncovered.length === 0) {
+    return selected;
+  }
+
+  const selectedSet = new Set(selected.map((s) => s.pattern));
+  const supplementCandidates = allServices
+    .filter((svc) => !selectedSet.has(svc.pattern))
+    .map((svc) => {
+      const svcTokens = new Set<string>();
+      for (const col of svc.columns) {
+        svcTokens.add(col.name.toLowerCase());
+        for (const token of splitIdentifierTokens(col.name)) {
+          svcTokens.add(token);
         }
-        return parts;
-      }),
-    ]
-      .join(' ')
-      .toLowerCase();
-    let score = 0;
-    for (const token of queryTokens) {
-      if (haystack.includes(token)) {
-        score += 1;
+      }
+      for (const token of splitIdentifierTokens(svc.title)) {
+        svcTokens.add(token);
+      }
+      const coverCount = uncovered.filter((t) => svcTokens.has(t)).length;
+      const isGeneric = GENERIC_TABLE_PATTERNS.test(svc.title) ? 1 : 0;
+      return { svc, coverCount, isGeneric };
+    })
+    .filter((c) => c.coverCount > 0)
+    .sort((a, b) => b.coverCount - a.coverCount || a.isGeneric - b.isGeneric);
+
+  const result = [...selected];
+  for (const candidate of supplementCandidates) {
+    if (result.length >= maxTotal) {
+      break;
+    }
+    result.push(candidate.svc);
+  }
+  return result;
+}
+
+// ─── Question Normalization ──────────────────────────────────────────────────
+
+/** Delegates to the plugin's LLM to fix natural-language typos in the user's question before AP selection; falls back to the original on failure. */
+export async function normalizeQuestion(
+  question: string,
+  plugin: LegendAI_LegendApplicationPlugin_Extension,
+  config: LegendAIConfig,
+): Promise<string> {
+  try {
+    return await plugin.normalizeQuestion(question, config);
+  } catch (error) {
+    assertErrorThrown(error);
+    return question;
+  }
+}
+
+// ─── Multi-Turn AP Bias ──────────────────────────────────────────────────────
+
+/**
+ * Extracts AP patterns that were successfully used in previous conversation
+ * turns. When the user asks a follow-up question, these APs should be
+ * preferred since they're likely still relevant.
+ */
+function extractPreviousTurnAPPatterns(
+  history: LegendAIConversationTurn[],
+): Set<string> {
+  const patterns = new Set<string>();
+  for (const turn of history) {
+    const pCallPattern = /p\(\s*'(?<pId>[^']+)'\s*\)/g;
+    let pCall: RegExpExecArray | null;
+    while ((pCall = pCallPattern.exec(turn.sql)) !== null) {
+      const pattern = pCall.groups?.pId;
+      if (pattern) {
+        const lastDot = pattern.lastIndexOf('.');
+        if (lastDot >= 0) {
+          patterns.add(pattern.slice(lastDot + 1).toLowerCase());
+        }
+        patterns.add(pattern.toLowerCase());
       }
     }
-    return { svc, score };
+  }
+  return patterns;
+}
+
+/**
+ * Applies a scoring boost to services whose patterns appeared in previous
+ * conversation turns, biasing the pre-filter toward continuity when the
+ * user asks follow-up questions about the same data.
+ */
+export function applyMultiTurnBias(
+  services: TDSServiceSchema[],
+  history: LegendAIConversationTurn[],
+): TDSServiceSchema[] {
+  if (history.length === 0) {
+    return services;
+  }
+  const previousAPs = extractPreviousTurnAPPatterns(history);
+  if (previousAPs.size === 0) {
+    return services;
+  }
+
+  // Sort so that previously-used APs come first, preserving relative order
+  const biased = [...services].sort((a, b) => {
+    const aUsed =
+      previousAPs.has(a.pattern.replace(/^\//, '').toLowerCase()) ||
+      previousAPs.has(a.title.toLowerCase())
+        ? 1
+        : 0;
+    const bUsed =
+      previousAPs.has(b.pattern.replace(/^\//, '').toLowerCase()) ||
+      previousAPs.has(b.title.toLowerCase())
+        ? 1
+        : 0;
+    return bUsed - aUsed;
   });
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, limit).map((s) => s.svc);
+  return biased;
 }
 
 async function selectBestServices(
@@ -1860,27 +2597,66 @@ async function selectBestServices(
   services: TDSServiceSchema[],
   context: LegendAIOperationContext,
 ): Promise<TDSServiceSchema[]> {
-  const { plugin, config, setMessages } = context;
+  const { plugin, config, setMessages, history } = context;
   if (services.length <= 1) {
     return services;
   }
 
-  let candidates = services;
-  if (services.length > MAX_SERVICES_FOR_LLM_SELECTION) {
+  // ── Step 0: Normalize the question (expand abbreviations, fix typos) ──
+  addThinkingStep(setMessages, 'Normalizing question...');
+  const normalizedQuestion = await normalizeQuestion(question, plugin, config);
+  if (normalizedQuestion !== question) {
+    addThinkingStep(setMessages, `Normalized: "${normalizedQuestion}"`);
+  }
+
+  // ── Step 0b: Apply multi-turn bias if this is a follow-up ──
+  let inputServices = services;
+  if (history.length > 0) {
+    inputServices = applyMultiTurnBias(services, history);
+  }
+
+  let candidates = inputServices;
+  if (inputServices.length > MAX_SERVICES_FOR_LLM_SELECTION) {
     candidates = preFilterServicesByRelevance(
-      question,
-      services,
+      normalizedQuestion,
+      inputServices,
       MAX_SERVICES_FOR_LLM_SELECTION,
     );
+    const topNames = candidates
+      .slice(0, 5)
+      .map((s) => `${s.title} (${s.columns.length} cols)`)
+      .join(', ');
     addThinkingStep(
       setMessages,
-      `Pre-filtered ${services.length} services to ${candidates.length} candidates`,
+      `Pre-filtered ${services.length} services to ${candidates.length} candidates. Top: ${topNames}`,
     );
   }
 
   try {
     addThinkingStep(setMessages, 'Selecting best service for your query...');
-    return await plugin.selectRelevantServices(question, candidates, config);
+    const selected = await plugin.selectRelevantServices(
+      normalizedQuestion,
+      candidates,
+      config,
+    );
+    const selectedNames = selected.map((s) => s.title).join(', ');
+    addThinkingStep(setMessages, `LLM selected: ${selectedNames}`);
+    const validated = supplementMissingCoverage(
+      normalizedQuestion,
+      selected,
+      candidates,
+    );
+    if (validated.length > selected.length) {
+      const supplemented = validated
+        .slice(selected.length)
+        .map((s) => s.title)
+        .join(', ');
+      addThinkingStep(
+        setMessages,
+        `Supplemented with ${supplemented} for column coverage`,
+      );
+    }
+    return validated;
   } catch (selectionError) {
     assertErrorThrown(selectionError);
     addThinkingStep(
@@ -1952,6 +2728,121 @@ async function tryRecoverZeroRows(
   return { sql: recoveredSql, result: recoveredResult };
 }
 
+async function resolveNestedPCalls(
+  sql: string,
+  question: string,
+  selectedAPs: TDSServiceSchema[],
+  context: LegendAIOperationContext,
+  modelContextEnrichment?: string,
+): Promise<string> {
+  if (!hasNestedPCalls(sql)) {
+    return sql;
+  }
+  const { plugin, config, setMessages } = context;
+  addThinkingStep(setMessages, 'Detected nested p() call — rewriting query...');
+  const fixPrompt = plugin.buildAccessPointErrorCorrectionPrompt(
+    sql,
+    question,
+    'The SQL contains p() inside a subquery (IN clause, CROSS JOIN, or scalar subquery). p() can ONLY appear directly after FROM or JOIN.',
+    selectedAPs,
+    context.history,
+    modelContextEnrichment,
+  );
+  try {
+    const fixResponse = await plugin.callLLM(fixPrompt, config);
+    const fixResult = plugin.extractJudgeResult(fixResponse);
+    const corrected = fixResult.correctedSql;
+    if (corrected && !hasNestedPCalls(corrected)) {
+      return corrected;
+    }
+  } catch (fixError) {
+    assertErrorThrown(fixError);
+    addThinkingStep(
+      setMessages,
+      `Could not rewrite query: ${fixError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}. Proceeding with original SQL.`,
+    );
+  }
+  return sql;
+}
+
+interface AccessPointSqlFixOptions {
+  failedSql: string;
+  question: string;
+  errMsg: string;
+  selectedAPs: TDSServiceSchema[];
+  dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates;
+  modelContextEnrichment?: string;
+  startTime: number;
+}
+
+async function retryAccessPointSqlFix(
+  options: AccessPointSqlFixOptions,
+  context: LegendAIOperationContext,
+  metadata: LegendAIProductMetadata,
+): Promise<boolean> {
+  const {
+    failedSql,
+    question,
+    errMsg,
+    selectedAPs,
+    dataProductCoordinates,
+    modelContextEnrichment,
+    startTime,
+  } = options;
+  const { plugin, config, setMessages } = context;
+  addThinkingStep(
+    setMessages,
+    'SQL error detected — asking LLM to fix the query on the same access points...',
+  );
+  const fixPrompt = plugin.buildAccessPointErrorCorrectionPrompt(
+    failedSql,
+    question,
+    errMsg.slice(0, MAX_ERROR_MESSAGE_LENGTH),
+    selectedAPs,
+    context.history,
+    modelContextEnrichment,
+  );
+  try {
+    const fixResponse = await plugin.callLLM(fixPrompt, config);
+    const fixResult = plugin.extractJudgeResult(fixResponse);
+    const correctedSql = fixResult.correctedSql;
+    if (correctedSql) {
+      addThinkingStep(setMessages, 'Re-executing corrected SQL...');
+      updateLastAssistant(setMessages, () => ({
+        sql: correctedSql,
+        isExecuting: true,
+      }));
+      const retryResult = await executeSqlForServices(
+        correctedSql,
+        selectedAPs,
+        dataProductCoordinates,
+        plugin,
+        config,
+      );
+      await reportQueryResults(
+        {
+          currentSql: correctedSql,
+          sqlResult: retryResult,
+          question,
+          services: selectedAPs,
+        },
+        metadata,
+        context,
+        startTime,
+        false,
+      );
+      return true;
+    }
+  } catch (retryError) {
+    assertErrorThrown(retryError);
+    addThinkingStep(
+      setMessages,
+      `SQL correction also failed: ${retryError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+    );
+  }
+  return false;
+}
+
 /**
  * Dedicated query flow for data product access points.
  * Unlike processDataQuery this:
@@ -1965,9 +2856,9 @@ async function processAccessPointQuery(
   context: LegendAIOperationContext,
   startTime: number,
   dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
+  modelContextEnrichment?: string,
 ): Promise<void> {
   const { config, plugin, setMessages } = context;
-  const hasOrchestratorFallback = Boolean(config.orchestratorUrl);
 
   addThinkingStep(setMessages, 'Found relevant access points to query');
 
@@ -1978,6 +2869,7 @@ async function processAccessPointQuery(
     selectedAPs,
     context,
     startTime,
+    modelContextEnrichment,
   );
 
   if (!judgedSql) {
@@ -1988,7 +2880,7 @@ async function processAccessPointQuery(
     handleSqlGenerationFailure(
       setMessages,
       startTime,
-      hasOrchestratorFallback,
+      false,
       SQL_GENERATION_FAILURE_WITH_ORCHESTRATOR,
       SQL_GENERATION_FAILURE_NO_ORCHESTRATOR,
       LegendAIErrorType.GENERATION,
@@ -1999,24 +2891,34 @@ async function processAccessPointQuery(
 
   const sqlGenTimeValue = elapsedSeconds(startTime, 2);
   completeThinkingSteps(setMessages);
+
+  const finalSql = await resolveNestedPCalls(
+    judgedSql,
+    question,
+    selectedAPs,
+    context,
+    modelContextEnrichment,
+  );
+
   updateLastAssistant(setMessages, () => ({
-    sql: judgedSql,
+    sql: finalSql,
     sqlGenTime: sqlGenTimeValue,
     isExecuting: true,
   }));
 
   const execStartTime = Date.now();
   try {
-    const safeSql = ensureSafeLimit(judgedSql);
-    const rawResult = await plugin.executeLakehouseSql(
-      safeSql,
+    const rawResult = await executeSqlForServices(
+      finalSql,
+      selectedAPs,
       dataProductCoordinates,
+      plugin,
       config,
     );
 
     await reportQueryResults(
       {
-        currentSql: judgedSql,
+        currentSql: finalSql,
         sqlResult: rawResult,
         question,
         services: selectedAPs,
@@ -2024,35 +2926,60 @@ async function processAccessPointQuery(
       metadata,
       context,
       startTime,
-      hasOrchestratorFallback,
+      false,
     );
   } catch (executeError) {
     assertErrorThrown(executeError);
     const execErrorType = classifyError(executeError);
+    const errMsg = executeError.message;
+    const errorCategory = categorizeExecutionError(errMsg, executeError);
+
     addThinkingStep(
       setMessages,
-      `Execution failed: ${executeError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+      `Execution failed: ${errMsg.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
+
+    if (errorCategory === ExecutionErrorCategory.SQL_FIXABLE) {
+      const retried = await retryAccessPointSqlFix(
+        {
+          failedSql: finalSql,
+          question,
+          errMsg,
+          selectedAPs,
+          dataProductCoordinates,
+          ...(modelContextEnrichment === undefined
+            ? {}
+            : { modelContextEnrichment }),
+          startTime,
+        },
+        context,
+        metadata,
+      );
+      if (retried) {
+        return;
+      }
+    }
+
     finishWithThinkingError(
       setMessages,
-      buildExecutionErrorMessage(executeError.message, selectedAPs),
+      buildExecutionErrorMessage(errMsg, selectedAPs),
       startTime,
       execErrorType === LegendAIErrorType.GENERAL
         ? LegendAIErrorType.EXECUTION
         : execErrorType,
     );
+    const queriedGroups = [
+      ...new Set(
+        selectedAPs
+          .map((ap) => ap.accessPointGroupTitle)
+          .filter((t): t is string => t !== undefined),
+      ),
+    ];
     updateLastAssistant(setMessages, () => ({
       execTime: elapsedSeconds(execStartTime, 2),
       isExecuting: false,
       suggestedQueries: buildFallbackSuggestions(selectedAPs),
-      ...(hasOrchestratorFallback
-        ? {
-            fallbackAction: {
-              label: ORCHESTRATOR_FALLBACK_LABEL,
-              actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-            },
-          }
-        : {}),
+      queriedAccessPointGroups: queriedGroups,
     }));
   }
 }
@@ -2065,6 +2992,7 @@ async function processDataQuery(
   context: LegendAIOperationContext,
   startTime: number,
   orchestratorOptions?: LegendAIOrchestratorOptionsParam,
+  modelContextEnrichment?: string,
 ): Promise<void> {
   const { config, setMessages } = context;
   const dataProductCoordinates = orchestratorOptions?.dataProductCoordinates;
@@ -2099,6 +3027,7 @@ async function processDataQuery(
     context,
     startTime,
     metadata,
+    modelContextEnrichment,
   );
 
   if (!judgedSql) {
@@ -2242,6 +3171,7 @@ async function routeToAccessPointOrData(
   context: LegendAIOperationContext,
   startTime: number,
   orchestratorOpts: LegendAIOrchestratorOptionsParam | undefined,
+  modelContextEnrichment?: string,
 ): Promise<void> {
   const dataProductCoordinates = orchestratorOpts?.dataProductCoordinates;
   const { tdsServices, accessPoints } = splitServicesByType(services);
@@ -2257,6 +3187,7 @@ async function routeToAccessPointOrData(
       context,
       startTime,
       dataProductCoordinates,
+      modelContextEnrichment,
     );
   } else {
     await processDataQuery(
@@ -2267,56 +3198,8 @@ async function routeToAccessPointOrData(
       context,
       startTime,
       orchestratorOpts,
+      modelContextEnrichment,
     );
-  }
-}
-
-async function handleAmbiguousIntent(
-  question: string,
-  services: TDSServiceSchema[],
-  coordinates: string,
-  metadata: LegendAIProductMetadata,
-  context: LegendAIOperationContext,
-  startTime: number,
-  orchestratorOpts: LegendAIOrchestratorOptionsParam | undefined,
-): Promise<void> {
-  const { setMessages } = context;
-  addThinkingStep(
-    setMessages,
-    'Intent is ambiguous, providing metadata context and querying data...',
-  );
-  let metadataOverview: string | undefined;
-  try {
-    addThinkingStep(setMessages, 'Building metadata context...');
-    metadataOverview = await buildMetadataOverview(question, metadata, context);
-  } catch (metadataError) {
-    assertErrorThrown(metadataError);
-    addThinkingStep(
-      setMessages,
-      `Metadata context failed: ${metadataError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-    );
-  }
-
-  try {
-    await routeToAccessPointOrData(
-      question,
-      services,
-      coordinates,
-      metadata,
-      context,
-      startTime,
-      orchestratorOpts,
-    );
-    if (metadataOverview) {
-      attachMetadataOverview(setMessages, metadataOverview);
-    }
-  } catch (queryError) {
-    assertErrorThrown(queryError);
-    addThinkingStep(
-      setMessages,
-      'Query failed, answering from product metadata...',
-    );
-    await handleMetadataQuestion(question, metadata, context, startTime, true);
   }
 }
 
@@ -2328,9 +3211,13 @@ export async function processQuestion(
   context: LegendAIOperationContext,
   dataProductCoordinates?: LegendAIOrchestratorDataProductCoordinates,
   pureExecutionContext?: QueryExplicitExecutionContextInfo,
+  modelContext?: LegendAIModelContext,
 ): Promise<void> {
   const { config, plugin, setMessages } = context;
   const startTime = Date.now();
+  const modelContextEnrichment = modelContext
+    ? buildModelContextEnrichmentText(modelContext, services)
+    : undefined;
 
   try {
     addThinkingStep(setMessages, 'Analyzing your question...');
@@ -2351,6 +3238,8 @@ export async function processQuestion(
         context,
         startTime,
         false,
+        services,
+        modelContextEnrichment,
       );
       if (config.orchestratorUrl && dataProductCoordinates) {
         updateLastAssistant(setMessages, () => ({
@@ -2360,34 +3249,6 @@ export async function processQuestion(
           },
         }));
       }
-      return;
-    }
-
-    const fastIntent = classifyQuestionIntentFast(question, true);
-    if (
-      fastIntent.intent === LegendAIQuestionIntent.METADATA &&
-      !fastIntent.ambiguous
-    ) {
-      await handleMetadataQuestion(
-        question,
-        metadata,
-        context,
-        startTime,
-        true,
-      );
-      return;
-    }
-
-    if (fastIntent.ambiguous) {
-      await handleAmbiguousIntent(
-        question,
-        services,
-        coordinates,
-        metadata,
-        context,
-        startTime,
-        orchestratorOpts,
-      );
       return;
     }
 
@@ -2406,6 +3267,8 @@ export async function processQuestion(
         context,
         startTime,
         true,
+        services,
+        modelContextEnrichment,
       );
       return;
     }
@@ -2419,12 +3282,13 @@ export async function processQuestion(
         context,
         startTime,
         orchestratorOpts,
+        modelContextEnrichment,
       );
     } catch (sqlError) {
       assertErrorThrown(sqlError);
       addThinkingStep(
         setMessages,
-        'SQL generation failed, answering from product metadata...',
+        'Query failed, answering from product metadata...',
       );
       await handleMetadataQuestion(
         question,
@@ -2432,6 +3296,8 @@ export async function processQuestion(
         context,
         startTime,
         true,
+        services,
+        modelContextEnrichment,
       );
       appendFallbackSuggestions(setMessages, services);
     }
@@ -2458,6 +3324,7 @@ async function routeDataQueryWithErrorHandling(
   metadata: LegendAIProductMetadata,
   context: LegendAIOperationContext,
   orchestratorOptions: LegendAIOrchestratorOptionsParam | undefined,
+  modelContextEnrichment?: string,
 ): Promise<void> {
   const { setMessages } = context;
   const startTime = Date.now();
@@ -2471,6 +3338,7 @@ async function routeDataQueryWithErrorHandling(
       context,
       startTime,
       orchestratorOptions,
+      modelContextEnrichment,
     );
   } catch (error) {
     assertErrorThrown(error);
@@ -2495,9 +3363,13 @@ export async function processQuestionWithIntent(
   metadata: LegendAIProductMetadata,
   context: LegendAIOperationContext,
   orchestratorOptions?: LegendAIOrchestratorOptionsParam,
+  modelContext?: LegendAIModelContext,
 ): Promise<void> {
   const { config, setMessages } = context;
   const dataProductCoordinates = orchestratorOptions?.dataProductCoordinates;
+  const modelContextEnrichment = modelContext
+    ? buildModelContextEnrichmentText(modelContext, services)
+    : undefined;
 
   if (intent === LegendAIQuestionIntent.METADATA) {
     const startTime = Date.now();
@@ -2508,6 +3380,8 @@ export async function processQuestionWithIntent(
         context,
         startTime,
         services.length > 0,
+        services,
+        modelContextEnrichment,
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -2538,11 +3412,20 @@ export async function processQuestionWithIntent(
         metadata,
         context,
         orchestratorOptions,
+        modelContextEnrichment,
       );
       return;
     }
     const startTime = Date.now();
-    await handleMetadataQuestion(question, metadata, context, startTime, false);
+    await handleMetadataQuestion(
+      question,
+      metadata,
+      context,
+      startTime,
+      false,
+      services,
+      modelContextEnrichment,
+    );
     updateLastAssistant(setMessages, () => ({
       fallbackAction: {
         label: ORCHESTRATOR_FALLBACK_LABEL,
@@ -2559,5 +3442,6 @@ export async function processQuestionWithIntent(
     metadata,
     context,
     orchestratorOptions,
+    modelContextEnrichment,
   );
 }

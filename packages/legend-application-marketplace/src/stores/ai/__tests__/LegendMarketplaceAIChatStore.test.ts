@@ -816,6 +816,7 @@ describe(unitTest('LegendMarketplaceAIChatStore — lastUserMessageText'), () =>
         isExecuting: false,
         suggestedQueries: [],
         fallbackAction: null,
+        queriedAccessPointGroups: [],
       },
       { id: '3', role: LegendAIMessageRole.USER, text: 'second' },
     ];
@@ -1462,6 +1463,7 @@ describe(
             label: 'Ask Legend AI Orchestrator to generate Pure query',
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
+          queriedAccessPointGroups: [],
         },
       ];
 
@@ -1543,6 +1545,7 @@ describe(
             label: 'Ask Legend AI Orchestrator to generate Pure query',
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
+          queriedAccessPointGroups: [],
         },
       ];
 
@@ -2752,6 +2755,7 @@ describe(
             label: 'Ask Legend AI Orchestrator to generate Pure query',
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
+          queriedAccessPointGroups: [],
         },
       ];
 

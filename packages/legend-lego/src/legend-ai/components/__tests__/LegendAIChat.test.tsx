@@ -103,6 +103,22 @@ jest.mock('@finos/legend-art', () => ({
   LikeIcon: () => <span data-testid="like-icon" />,
   DislikeIcon: () => <span data-testid="dislike-icon" />,
   ExternalLinkIcon: () => <span data-testid="external-link-icon" />,
+  InfoCircleIcon: () => <span data-testid="info-circle-icon" />,
+  clsx: (...args: unknown[]) => {
+    const classes: string[] = [];
+    for (const arg of args) {
+      if (typeof arg === 'string') {
+        classes.push(arg);
+      } else if (typeof arg === 'object' && arg !== null) {
+        for (const [key, value] of Object.entries(arg)) {
+          if (value) {
+            classes.push(key);
+          }
+        }
+      }
+    }
+    return classes.join(' ');
+  },
 }));
 
 afterEach(() => {
@@ -224,6 +240,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -252,6 +269,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -284,6 +302,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
 
@@ -325,6 +344,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -351,6 +371,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: LegendAIErrorType.PERMISSION,
+        queriedAccessPointGroups: [],
       },
     ];
 
@@ -395,6 +416,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: LegendAIErrorType.PERMISSION,
+        queriedAccessPointGroups: [],
       },
     ];
 
@@ -427,6 +449,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -456,6 +479,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -489,6 +513,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -523,6 +548,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -555,6 +581,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     mockState.expandedThinking = new Set([1]);
@@ -638,6 +665,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -670,6 +698,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -702,6 +731,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -735,6 +765,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     mockState.expandedThinking = new Set([1]);
@@ -742,7 +773,9 @@ describe(unitTest('LegendAIChat'), () => {
     expect(
       screen.getByText('Hit an issue while preparing the answer'),
     ).toBeDefined();
-    expect(screen.getByTestId('times-icon')).toBeDefined();
+    expect(screen.getAllByTestId('times-icon').length).toBeGreaterThanOrEqual(
+      1,
+    );
   });
   test('typing in textarea calls setQuestionText', () => {
     render(<LegendAIChat {...defaultProps} />);
@@ -783,6 +816,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -813,6 +847,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
 
@@ -855,6 +890,7 @@ describe(unitTest('LegendAIChat'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);

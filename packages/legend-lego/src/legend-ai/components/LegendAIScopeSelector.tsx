@@ -20,6 +20,7 @@ import {
   SearchIcon,
   CheckIcon,
   TimesIcon,
+  clsx,
 } from '@finos/legend-art';
 import type { LegendAIScopeItem } from '../LegendAITypes.js';
 
@@ -70,7 +71,8 @@ export const LegendAIScopeSelector = (props: {
     const handleClickOutside = (e: MouseEvent): void => {
       if (
         dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
+        e.target instanceof Node &&
+        !dropdownRef.current.contains(e.target)
       ) {
         setDropdownOpen(false);
         setSearchText('');
@@ -172,7 +174,10 @@ export const LegendAIScopeSelector = (props: {
                         key={scope.id}
                         type="button"
                         aria-pressed={isSelected}
-                        className={`legend-ai__scope-dropdown-item${isSelected ? 'legend-ai__scope-dropdown-item--selected' : ''}`}
+                        className={clsx('legend-ai__scope-dropdown-item', {
+                          'legend-ai__scope-dropdown-item--selected':
+                            isSelected,
+                        })}
                         onClick={(): void => {
                           onToggleScope(scope);
                           setDropdownOpen(false);

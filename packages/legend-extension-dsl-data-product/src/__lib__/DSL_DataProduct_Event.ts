@@ -18,6 +18,7 @@ export enum DSL_DATAPRODUCT_EVENT {
   FETCH_INGEST_ENV_FAILURE = 'dataProduct.access.ingest-env.failure',
   CREATE_CONTRACT = 'dataProduct.access.create_contract',
   CREATE_SUBSCRIPTION = 'dataProduct.access.create_subscription',
+  ERROR_EXTRACT_LEGEND_AI_SERVICES = 'dataProduct.error.extract-legend-ai-services',
 }
 
 export enum DSL_DATAPRODUCT_EVENT_STATUS {

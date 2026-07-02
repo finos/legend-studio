@@ -32,8 +32,8 @@
   --qai-gradient-mid: #6366f1;
   --qai-gradient-mid-hover: #818cf8;
   --qai-gradient-end: #a855f7;
-  --qai-fallback-color: #c4b5fd;
-  --qai-fallback-color-hover: #ddd6fe;
+  --qai-fallback-color: #7c3aed;
+  --qai-fallback-color-hover: #6d28d9;
   --qai-error: #d32f2f;
   --qai-error-bg: #fef2f2;
   --qai-success: #16a163;
@@ -41,6 +41,16 @@
   --qai-shadow-hover: 0 0.4rem 1.6rem rgb(0 0 0 / 14%);
   --qai-panel-header-bg: #f2f5f7;
   --qai-sql-bg: #fafafa;
+
+  // Markdown answer token colors — GS blue accents for visual hierarchy
+  --qai-heading-color: #10357a;
+  --qai-heading-accent: #186ade;
+  --qai-strong-color: #186ade;
+  --qai-bullet-color: #186ade;
+  --qai-section-border: rgb(24 106 222 / 18%);
+  --qai-section-bg: rgb(24 106 222 / 4%);
+  --qai-inline-code-bg: #eef2f7;
+  --qai-inline-code-color: #1a4b8c;
 
   // AI Chat colors
   --color-ai-accent-primary: #2563eb;
@@ -111,6 +121,16 @@
   --qai-shadow-hover: 0 0.4rem 1.6rem rgb(0 0 0 / 45%);
   --qai-panel-header-bg: #202020;
   --qai-sql-bg: #1a1a1a;
+
+  // Markdown answer token colors — dark mode
+  --qai-heading-color: #a3c4f3;
+  --qai-heading-accent: #7399c6;
+  --qai-strong-color: #7399c6;
+  --qai-bullet-color: #7399c6;
+  --qai-section-border: rgb(115 153 198 / 20%);
+  --qai-section-bg: rgb(115 153 198 / 6%);
+  --qai-inline-code-bg: rgb(115 153 198 / 12%);
+  --qai-inline-code-color: #a3c4f3;
 
   .legend-ai-floating-btn__trigger {
     background: linear-gradient(
