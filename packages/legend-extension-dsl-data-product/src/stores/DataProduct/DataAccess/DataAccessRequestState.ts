@@ -27,6 +27,14 @@ import {
 } from '@finos/legend-shared';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
+export enum TimelineStepStatus {
+  ACTIVE = 'active',
+  COMPLETE = 'complete',
+  DENIED = 'denied',
+  SKIPPED = 'skipped',
+  UPCOMING = 'upcoming',
+}
+
 export type TimelineStep = {
   key: string;
   label: {
@@ -37,7 +45,7 @@ export type TimelineStep = {
     isEscalatable?: boolean;
     isEscalated?: boolean;
   };
-  status: 'active' | 'complete' | 'denied' | 'skipped' | 'upcoming';
+  status: TimelineStepStatus;
   description?: React.ReactNode;
   assignees?: string[];
   approvalPayload?: {

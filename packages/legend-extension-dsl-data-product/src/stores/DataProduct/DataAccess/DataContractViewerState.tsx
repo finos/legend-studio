@@ -46,6 +46,7 @@ import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import {
   DataAccessRequestStatus,
+  TimelineStepStatus,
   type DataAccessRequestState,
   type TimelineStep,
 } from './DataAccessRequestState.js';
@@ -209,22 +210,22 @@ export class DataContractViewerState implements DataAccessRequestState {
     const privilegeManagerApprovalStepStatus = privilegeManagerApprovalTask
       ? privilegeManagerApprovalTask.rec.status ===
         V1_UserApprovalStatus.PENDING
-        ? ('active' as const)
+        ? TimelineStepStatus.ACTIVE
         : privilegeManagerApprovalTask.rec.status ===
             V1_UserApprovalStatus.APPROVED
-          ? ('complete' as const)
-          : ('denied' as const)
-      : ('skipped' as const);
+          ? TimelineStepStatus.COMPLETE
+          : TimelineStepStatus.DENIED
+      : TimelineStepStatus.SKIPPED;
     const dataOwnerApprovalStepStatus = dataOwnerApprovalTask
       ? dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.PENDING
-        ? ('active' as const)
+        ? TimelineStepStatus.ACTIVE
         : dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.APPROVED
-          ? ('complete' as const)
-          : ('denied' as const)
-      : ('upcoming' as const);
+          ? TimelineStepStatus.COMPLETE
+          : TimelineStepStatus.DENIED
+      : TimelineStepStatus.UPCOMING;
 
     const showEscalateButton =
-      privilegeManagerApprovalStepStatus === 'active' &&
+      privilegeManagerApprovalStepStatus === TimelineStepStatus.ACTIVE &&
       (selectedTargetUser ===
         this.applicationStore.identityService.currentUser ||
         (selectedTargetUser !== undefined &&
@@ -240,14 +241,15 @@ export class DataContractViewerState implements DataAccessRequestState {
     return [
       {
         key: 'submitted',
-        status: 'complete' as const,
+        status: TimelineStepStatus.COMPLETE,
         label: { title: 'Submitted' },
       },
       {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          ...(privilegeManagerApprovalStepStatus === 'active' && {
+          ...(privilegeManagerApprovalStepStatus ===
+            TimelineStepStatus.ACTIVE && {
             link: this.getTaskUrl(
               this.guid,
               guaranteeNonNullable(
@@ -277,7 +279,7 @@ export class DataContractViewerState implements DataAccessRequestState {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          ...(dataOwnerApprovalStepStatus === 'active' && {
+          ...(dataOwnerApprovalStepStatus === TimelineStepStatus.ACTIVE && {
             link: this.getTaskUrl(
               this.guid,
               guaranteeNonNullable(
@@ -304,8 +306,8 @@ export class DataContractViewerState implements DataAccessRequestState {
         key: 'complete',
         status:
           dataOwnerApprovalTask?.rec.status === V1_UserApprovalStatus.APPROVED
-            ? ('complete' as const)
-            : ('upcoming' as const),
+            ? TimelineStepStatus.COMPLETE
+            : TimelineStepStatus.UPCOMING,
         label: { title: 'Complete' },
       },
     ];
