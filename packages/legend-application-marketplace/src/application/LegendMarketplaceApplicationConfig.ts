@@ -125,6 +125,7 @@ export interface LegendMarketplaceApplicationConfigurationData
   engine: {
     url: string;
     queryUrl?: string;
+    zipkinUrl?: string;
   };
   lakehouse?: {
     url: string;
@@ -154,9 +155,6 @@ export interface LegendMarketplaceApplicationConfigurationData
     url: string;
   };
   registry?: {
-    url: string;
-  };
-  zipkin?: {
     url: string;
   };
   legendServices?: {
@@ -300,6 +298,11 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         input.configData.engine.queryUrl,
       );
     }
+    if (input.configData.engine.zipkinUrl) {
+      this.zipkinUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.engine.zipkinUrl,
+      );
+    }
 
     // depot
     assertNonNullable(
@@ -435,13 +438,6 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     if (input.configData.registry?.url) {
       this.registryUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.registry.url,
-      );
-    }
-
-    // zipkin
-    if (input.configData.zipkin?.url) {
-      this.zipkinUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.zipkin.url,
       );
     }
 
