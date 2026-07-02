@@ -32,6 +32,7 @@ import {
 } from '../stores/ProductViewerNavigation.js';
 import { DataProducteDataAccess } from './DataProduct/DataProductDataAccess.js';
 import { DataProductSupportInfo } from './DataProduct/DataProductSupportInfo.js';
+import { DataProductProducerInfo } from './DataProduct/DataProductProducerInfo.js';
 import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
 import { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
 import {
@@ -419,6 +420,10 @@ export const ProductWiki = observer(
               )}
               <DataProductSupportInfo
                 dataProductViewerState={productViewerState}
+              />
+              <DataProductProducerInfo
+                dataProductViewerState={productViewerState}
+                dataProductDataAccessState={productDataAccessState}
               />
             </>
           )}

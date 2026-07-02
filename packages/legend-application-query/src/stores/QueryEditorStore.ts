@@ -76,8 +76,10 @@ import {
   QueryDataProductNativeExecutionContextInfo,
   QueryDataProductModelAccessExecutionContextInfo,
   QueryDataProductLakehouseExecutionContextInfo,
+  QueryIngestExecutionContextInfo,
   ModelAccessPointGroup,
   type DataProduct,
+  IngestDefinition,
   LakehouseRuntime,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProductArtifact,
@@ -152,6 +154,11 @@ import { generateDataSpaceQueryCreatorRoute } from '../__lib__/DSL_DataSpace_Leg
 import { hasDataSpaceInfoBeenVisited } from '../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LegendQueryDataSpaceQueryBuilderState } from './data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 import { LegendQueryDataProductQueryBuilderState } from './data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
+import { IngestLegendQueryBuilderState } from './ingest/IngestLegendQueryBuilderState.js';
+import {
+  fetchIngestEntitiesByClassifier,
+  swapIngestInGraph,
+} from './ingest/IngestQueryGraphHelper.js';
 import { DataProductSelectorState } from './data-space/DataProductSelectorState.js';
 import {
   decorateEnvWithRealm,
@@ -317,6 +324,7 @@ export abstract class QueryEditorStore {
   showAppInfo = false;
   showDataspaceInfo = false;
   showDataProductInfo = false;
+  showIngestInfo = false;
   enableMinialGraphForDataSpaceLoadingPerformance = true;
 
   constructor(
@@ -331,6 +339,7 @@ export abstract class QueryEditorStore {
       showAppInfo: observable,
       showDataspaceInfo: observable,
       showDataProductInfo: observable,
+      showIngestInfo: observable,
       queryBuilderState: observable,
       enableMinialGraphForDataSpaceLoadingPerformance: observable,
       isPerformingBlockingAction: computed,
@@ -339,6 +348,7 @@ export abstract class QueryEditorStore {
       setShowAppInfo: action,
       setShowDataspaceInfo: action,
       setShowDataProductInfo: action,
+      setShowIngestInfo: action,
       setEnableMinialGraphForDataSpaceLoadingPerformance: action,
       initialize: flow,
       buildGraph: flow,
@@ -451,6 +461,10 @@ export abstract class QueryEditorStore {
 
   setShowDataProductInfo(val: boolean): void {
     this.showDataProductInfo = val;
+  }
+
+  setShowIngestInfo(val: boolean): void {
+    this.showIngestInfo = val;
   }
 
   setShowRegisterServiceModal(val: boolean): void {
@@ -1926,11 +1940,62 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         queryInfo?.executionContext instanceof
           QueryDataProductModelAccessExecutionContextInfo ||
         queryInfo?.executionContext instanceof
-          QueryDataProductLakehouseExecutionContextInfo
+          QueryDataProductLakehouseExecutionContextInfo ||
+        queryInfo?.executionContext instanceof QueryIngestExecutionContextInfo
       )
     ) {
       yield flowResult(this.buildFullGraph());
+    } else if (
+      queryInfo?.executionContext instanceof QueryIngestExecutionContextInfo
+    ) {
+      // Mirror the creator-store flow: build a graph containing only the
+      // referenced ingest definition. The full project entity fetch is
+      // skipped, but we still list every ingest in the project so the source
+      // dropdown can show them and `swapIngestDefinition` can build a
+      // different one on demand.
+      yield* this.buildIngestGraph(
+        queryInfo.groupId,
+        queryInfo.artifactId,
+        queryInfo.versionId,
+        queryInfo.executionContext.ingestDefinitionPath,
+      );
     }
+  }
+
+  /**
+   * Cached ingest entities for the existing-query flow. Populated by
+   * {@link buildIngestGraph} (called from {@link buildGraph}) and consumed by
+   * {@link initQueryBuildStateFromQuery} to back the source dropdown +
+   * {@link IngestLegendQueryBuilderState.swapIngest} callback.
+   */
+  private _ingestEntitiesByPath: Map<string, Entity> = new Map();
+
+  private *buildIngestGraph(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    ingestDefinitionPath: string,
+  ): GeneratorFn<void> {
+    yield this.graphManagerState.initializeSystem();
+
+    this._ingestEntitiesByPath = (yield fetchIngestEntitiesByClassifier(
+      this.depotServerClient,
+      groupId,
+      artifactId,
+      versionId,
+    )) as Map<string, Entity>;
+
+    const target = this._ingestEntitiesByPath.get(ingestDefinitionPath);
+    if (!target) {
+      throw new Error(
+        `Can't find ingest definition '${ingestDefinitionPath}' in project ${groupId}:${artifactId}:${versionId}`,
+      );
+    }
+    yield swapIngestInGraph(this.graphManagerState, target, {
+      groupId,
+      artifactId,
+      versionId,
+    });
   }
 
   override async setUpEditorState(): Promise<void> {
@@ -2191,6 +2256,71 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         },
       );
       return queryBuilderState;
+    } else if (exec instanceof QueryIngestExecutionContextInfo) {
+      // The graph was already populated by `buildIngestGraph` (above) with
+      // just the referenced ingest definition. Resolve it, build the adhoc
+      // lakehouse runtime, and stand up the ingest query builder state.
+      const ingestDefinition = guaranteeType(
+        this.graphManagerState.graph.getElement(exec.ingestDefinitionPath),
+        IngestDefinition,
+        `Can't find ingest definition '${exec.ingestDefinitionPath}'`,
+      );
+      const projectInfo = this.getProjectInfo();
+      const adhocRuntime = await this.createLakehousePackageableRuntime(
+        exec.ingestDefinitionPath,
+        projectInfo,
+      );
+      this.graphManagerState.graph.addElement(adhocRuntime, '_internal_');
+
+      // Tracked separately from the closure on `ingestQueryBuilderState` so
+      // the swap callback can capture it directly without forming a self-
+      // reference (which trips the `no-unsafe-assignment` rule).
+      let currentIngestPath = exec.ingestDefinitionPath;
+      const swapIngest = async (path: string): Promise<IngestDefinition> => {
+        // Mirror `IngestQueryCreatorStore.swapIngestDefinition`: rebuild
+        // the requested ingest in place of the current one. The entity
+        // cache was populated up front by `buildIngestGraph`.
+        const entity = this._ingestEntitiesByPath.get(path);
+        if (!entity) {
+          throw new Error(
+            `Can't find ingest definition '${path}' in project ${projectInfo.groupId}:${projectInfo.artifactId}:${projectInfo.versionId}`,
+          );
+        }
+        const next = await swapIngestInGraph(this.graphManagerState, entity, {
+          currentPath: currentIngestPath,
+          groupId: projectInfo.groupId,
+          artifactId: projectInfo.artifactId,
+          versionId: projectInfo.versionId,
+        });
+        currentIngestPath = next.path;
+        return next;
+      };
+
+      const ingestQueryBuilderState = new IngestLegendQueryBuilderState(
+        this.applicationStore,
+        undefined,
+        this.graphManagerState,
+        QueryBuilderDataBrowserWorkflow.INSTANCE,
+        new QueryBuilderActionConfig_QueryApplication(this),
+        ingestDefinition,
+        Array.from(this._ingestEntitiesByPath.keys()),
+        swapIngest,
+        adhocRuntime,
+        projectInfo,
+        this.applicationStore.config.options.queryBuilderConfig,
+        {
+          groupId: projectInfo.groupId,
+          artifactId: projectInfo.artifactId,
+          versionId: projectInfo.versionId,
+          queryId: queryInfo.id,
+        },
+      );
+      await ingestQueryBuilderState.changeAccessorOwner(ingestDefinition);
+      await ingestQueryBuilderState.changeAccessor({
+        tableName: exec.dataSet,
+      });
+      ingestQueryBuilderState.changeSelectedRuntime(adhocRuntime);
+      return ingestQueryBuilderState;
     }
     throw new UnsupportedOperationError(`Unsupported query execution context`);
   }

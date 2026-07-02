@@ -143,6 +143,13 @@ export class DataProductViewerState extends BaseViewerState<
       ) => void)
     | undefined;
   readonly openSampleQuery?: ((sampleQueryId: string) => void) | undefined;
+  readonly openIngestQuery?:
+    | ((
+        gav: ProjectGAVCoordinates,
+        ingestDefinitionPath: string,
+        dataSet: string,
+      ) => void)
+    | undefined;
   dataProductDataAccessState: DataProductDataAccessState | undefined;
 
   readonly fetchingDataProductArtifactState = ActionState.create();
@@ -173,6 +180,13 @@ export class DataProductViewerState extends BaseViewerState<
           ) => void)
         | undefined;
       openSampleQuery?: ((sampleQueryId: string) => void) | undefined;
+      openIngestQuery?:
+        | ((
+            gav: ProjectGAVCoordinates,
+            ingestDefinitionPath: string,
+            dataSet: string,
+          ) => void)
+        | undefined;
     },
     registryServerClient?: RegistryServerClient | undefined,
   ) {
@@ -236,6 +250,7 @@ export class DataProductViewerState extends BaseViewerState<
     this.openGovernance = actions.openGovernance;
     this.openQuery = actions.openQuery;
     this.openSampleQuery = actions.openSampleQuery;
+    this.openIngestQuery = actions.openIngestQuery;
   }
 
   setDataProductDataAccessState(
@@ -589,6 +604,7 @@ export class DataProductViewerState extends BaseViewerState<
             storeProject,
             resolveVersion(this.projectGAV.versionId),
             V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+            this.product.path,
           )
         ).map((rawFile) =>
           StoredFileGeneration.serialization.fromJson(rawFile),

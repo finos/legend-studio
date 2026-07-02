@@ -114,6 +114,10 @@ const AccessorQueryBuilderSetupPanelContent = observer(
           ? option.data.value.packageableRuntime.value.path
           : 'custom',
     });
+    // Hide the runtime selector entirely when the builder reports no
+    // compatible runtimes (e.g. ingest deep-link flow always uses an adhoc
+    // runtime selected upstream).
+    const showRuntimeSelector = runtimeOptions.length > 0;
 
     return (
       <div className="query-builder__setup__config-group">
@@ -173,35 +177,37 @@ const AccessorQueryBuilderSetupPanelContent = observer(
               />
             </div>
           )}
-          <div className="query-builder__setup__config-group__item">
-            <label
-              className="btn--sm query-builder__setup__config-group__item__label"
-              title="runtime"
-              htmlFor="query-builder__setup__runtime-selector"
-            >
-              Runtime
-            </label>
-            <CustomSelectorInput
-              inputId="query-builder__setup__runtime-selector"
-              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              placeholder="Choose a runtime..."
-              noMatchMessage="No compatible runtime found"
-              disabled={!queryBuilderState.selectedAccessorOwner}
-              options={runtimeOptions}
-              onChange={changeRuntime}
-              value={selectedRuntimeOption}
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-              filterOption={runtimeFilterOption}
-              formatOptionLabel={getRuntimeOptionFormatter({
-                darkMode:
+          {showRuntimeSelector && (
+            <div className="query-builder__setup__config-group__item">
+              <label
+                className="btn--sm query-builder__setup__config-group__item__label"
+                title="runtime"
+                htmlFor="query-builder__setup__runtime-selector"
+              >
+                Runtime
+              </label>
+              <CustomSelectorInput
+                inputId="query-builder__setup__runtime-selector"
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                placeholder="Choose a runtime..."
+                noMatchMessage="No compatible runtime found"
+                disabled={!queryBuilderState.selectedAccessorOwner}
+                options={runtimeOptions}
+                onChange={changeRuntime}
+                value={selectedRuntimeOption}
+                darkMode={
                   !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled,
-              })}
-            />
-          </div>
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+                filterOption={runtimeFilterOption}
+                formatOptionLabel={getRuntimeOptionFormatter({
+                  darkMode:
+                    !applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled,
+                })}
+              />
+            </div>
+          )}
         </div>
       </div>
     );

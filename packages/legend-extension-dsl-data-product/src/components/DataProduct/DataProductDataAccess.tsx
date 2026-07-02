@@ -39,6 +39,7 @@ import {
   WarningIcon,
   RocketIcon,
   CopyIcon,
+  QueryIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -53,6 +54,7 @@ import {
   extractElementNameFromPath,
   V1_AccessPointGroupReference,
   V1_AdHocDeploymentDataProductOrigin,
+  V1_AppDirProducer,
   V1_AppliedFunction,
   V1_AppliedProperty,
   V1_CBoolean,
@@ -64,12 +66,15 @@ import {
   V1_CStrictDate,
   V1_CStrictTime,
   V1_CString,
+  type V1_DataProductArtifact,
   V1_DataProductOriginType,
+  type V1_EntitlementsDataProductDetails,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
   V1_LakehouseAccessPoint,
   V1_SdlcDeploymentDataProductOrigin,
   V1_transformDataContractToLiteDatacontract,
+  V1_IngestEnvironmentClassification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
@@ -145,6 +150,10 @@ import {
   buildContractErrorsRoot,
 } from './DataContract/DataAccessRequestViewer.js';
 import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
+import {
+  buildIngestDefinitionOperationsPath,
+  buildIngestDefinitionUrnFromDataset,
+} from '../../utils/DataProductIngestUtils.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -850,6 +859,276 @@ const enum DataProductAccessPointTabs {
   POWER_BI = 'Power BI',
   SQL = 'SQL',
 }
+
+type IngestionDataSetRow = {
+  accessPointId: string;
+  dataset: string;
+  ingestDefinitionPath: string;
+  appDirId: string;
+  producerEnvironmentName: string;
+  // Location-relative path (no origin). Resolved against the current
+  // application base address at click-time by the navigation service.
+  operationsPath: string | undefined;
+};
+
+const getApgInfoFromArtifact = (
+  artifact: V1_DataProductArtifact | undefined,
+  apgId: string,
+) => artifact?.accessPointGroups.find((group) => group.id === apgId);
+
+const collectIngestionDataSetsForApg = (
+  artifact: V1_DataProductArtifact | undefined,
+  apgId: string,
+  producerEnvironmentName: string,
+  ingestEnvironmentConfig: IngestDeploymentServerConfig | undefined,
+  entitlementsDetails: V1_EntitlementsDataProductDetails | undefined,
+): IngestionDataSetRow[] => {
+  const apgInfo = getApgInfoFromArtifact(artifact, apgId);
+  if (!apgInfo) {
+    return [];
+  }
+  const origin = entitlementsDetails?.origin;
+  const gavCoordinates =
+    origin instanceof V1_SdlcDeploymentDataProductOrigin
+      ? {
+          groupId: origin.group,
+          artifactId: origin.artifact,
+          versionId: origin.version,
+        }
+      : undefined;
+
+  return apgInfo.accessPointImplementations.flatMap((apImpl) =>
+    apImpl.dependencyDatasets.map((ds) => {
+      let operationsPath: string | undefined;
+      // Only build the operations link for PROD data products: for non-prod
+      // environments we don't have a reliable way to construct the ingest URN.
+      if (
+        ingestEnvironmentConfig &&
+        ingestEnvironmentConfig.environmentClassification ===
+          V1_IngestEnvironmentClassification.PROD &&
+        entitlementsDetails &&
+        producerEnvironmentName
+      ) {
+        const ingestDefinitionUrn = buildIngestDefinitionUrnFromDataset(
+          ds,
+          ingestEnvironmentConfig.environmentClassification,
+          gavCoordinates,
+          entitlementsDetails.deploymentId,
+        );
+        if (ingestDefinitionUrn) {
+          operationsPath = buildIngestDefinitionOperationsPath(
+            ingestEnvironmentConfig.ingestEnvironmentUrn,
+            ingestDefinitionUrn,
+            producerEnvironmentName,
+          );
+        }
+      }
+      return {
+        accessPointId: apImpl.id,
+        dataset: ds.dataset,
+        ingestDefinitionPath: ds.ingestDefinition.path,
+        appDirId:
+          ds.ingestDefinition.producer instanceof V1_AppDirProducer
+            ? String(ds.ingestDefinition.producer.appDirId)
+            : '',
+        producerEnvironmentName,
+        operationsPath,
+      };
+    }),
+  );
+};
+
+export const artifactHasDependencyDatasets = (
+  artifact: V1_DataProductArtifact | undefined,
+): boolean =>
+  Boolean(
+    artifact?.accessPointGroups.some((group) =>
+      group.accessPointImplementations.some(
+        (apImpl) => apImpl.dependencyDatasets.length > 0,
+      ),
+    ),
+  );
+
+export const ApgIngestionDataSetsScreen = observer(
+  (props: {
+    apgState: DataProductAPGState;
+    artifact: V1_DataProductArtifact | undefined;
+    dataAccessState: DataProductDataAccessState | undefined;
+  }) => {
+    const { apgState, artifact, dataAccessState } = props;
+    const entitlementsDetails =
+      apgState.dataProductViewerState.entitlementsDataProductDetails;
+    const producerEnvironmentName =
+      entitlementsDetails?.lakehouseEnvironment?.producerEnvironmentName ?? '';
+    const ingestEnvironmentConfig = dataAccessState?.lakehouseIngestEnv;
+    const rows = useMemo(
+      () =>
+        collectIngestionDataSetsForApg(
+          artifact,
+          apgState.apg.id,
+          producerEnvironmentName,
+          ingestEnvironmentConfig,
+          entitlementsDetails,
+        ),
+      [
+        artifact,
+        apgState.apg.id,
+        producerEnvironmentName,
+        ingestEnvironmentConfig,
+        entitlementsDetails,
+      ],
+    );
+
+    // Resolve the (location-relative) operations path against the current
+    // application base address via the navigation service so the link stays on
+    // the same marketplace instance and we don't have to touch `window`.
+    const handleOpenOperations = (path: string): void => {
+      const navigator = apgState.applicationStore.navigationService.navigator;
+      const baseAddress = navigator.getCurrentBaseAddress();
+      navigator.visitAddress(
+        `${baseAddress.replace(/\/$/, '')}${path.startsWith('/') ? path : `/${path}`}`,
+      );
+    };
+
+    // Only SDLC-deployed data products expose the GAV coordinates required to
+    // resolve an ingest definition in Legend Query, so we disable the Query
+    // action for non-SDLC origins.
+    const origin = entitlementsDetails?.origin;
+    const sdlcGav =
+      origin instanceof V1_SdlcDeploymentDataProductOrigin
+        ? {
+            groupId: origin.group,
+            artifactId: origin.artifact,
+            versionId: origin.version,
+          }
+        : undefined;
+    const openIngestQuery = apgState.dataProductViewerState.openIngestQuery;
+    const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery);
+
+    const columnDefs: DataGridColumnDefinition<IngestionDataSetRow>[] = [
+      {
+        headerName: 'Access Point',
+        field: 'accessPointId',
+        flex: 1,
+        rowGroup: true,
+        hide: true,
+      },
+      {
+        headerName: 'Producer Environment',
+        field: 'producerEnvironmentName',
+        flex: 1,
+      },
+      {
+        headerName: 'Ingest Definition',
+        field: 'ingestDefinitionPath',
+        flex: 1.6,
+        cellRenderer: (params: {
+          value: string | undefined;
+          data: IngestionDataSetRow | undefined;
+        }) => {
+          const value = params.value;
+          const path = params.data?.operationsPath;
+          if (!value) {
+            return '';
+          }
+          if (!path) {
+            return value;
+          }
+          return (
+            <button
+              type="button"
+              className="data-product__viewer__producer-view__link-cell"
+              title={`Open ingest definition operations\n${path}`}
+              onClick={() => handleOpenOperations(path)}
+            >
+              {value}
+            </button>
+          );
+        },
+      },
+      { headerName: 'Dataset', field: 'dataset', flex: 1.4 },
+      { headerName: 'AppDir ID', field: 'appDirId', flex: 0.6 },
+
+      {
+        headerName: 'Actions',
+        colId: 'actions',
+        width: 110,
+        minWidth: 110,
+        maxWidth: 140,
+        sortable: false,
+        filter: false,
+        resizable: false,
+        cellRenderer: (params: { data: IngestionDataSetRow | undefined }) => {
+          if (!params.data) {
+            return null;
+          }
+          const { ingestDefinitionPath, dataset } = params.data;
+          const queryDisabled = !canOpenIngestQuery;
+          const queryTitle = queryDisabled
+            ? 'Open in Legend Query is only available for data products deployed from SDLC'
+            : 'Open in Legend Query';
+          return (
+            <div className="data-product__viewer__producer-view__action-cell">
+              <button
+                type="button"
+                className="data-product__viewer__producer-view__action-btn"
+                title={queryTitle}
+                disabled={queryDisabled}
+                onClick={() => {
+                  if (sdlcGav && openIngestQuery) {
+                    openIngestQuery(sdlcGav, ingestDefinitionPath, dataset);
+                  }
+                }}
+              >
+                <QueryIcon />
+                <span>Query</span>
+              </button>
+            </div>
+          );
+        },
+      },
+    ];
+
+    return (
+      <Box className="data-product__viewer__producer-view">
+        <Box className="data-product__viewer__producer-view__summary">
+          <span>
+            <strong>{apgState.accessPointStates.length}</strong> access point
+            {apgState.accessPointStates.length === 1 ? '' : 's'}
+          </span>
+          <span>•</span>
+          <span>
+            <strong>{rows.length}</strong> ingestion dataset
+            {rows.length === 1 ? '' : 's'}
+          </span>
+        </Box>
+        {rows.length === 0 ? (
+          <TabMessageScreen message="No ingestion datasets declared for this access point group." />
+        ) : (
+          <Box
+            className={clsx(
+              'data-product__viewer__more-info__columns-grid ag-theme-balham',
+              'data-product__viewer__more-info__columns-grid--auto-height',
+              'data-product__viewer__more-info__columns-grid--auto-height--non-empty',
+            )}
+          >
+            <DataGrid
+              rowData={rows}
+              columnDefs={columnDefs}
+              domLayout="autoHeight"
+              autoGroupColumnDef={{
+                headerName: 'Access Point',
+                minWidth: 240,
+                cellRendererParams: { suppressCount: false },
+              }}
+              groupDefaultExpanded={-1}
+            />
+          </Box>
+        )}
+      </Box>
+    );
+  },
+);
 
 const ColumnsScreen = observer(
   (props: {

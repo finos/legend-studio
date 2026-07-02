@@ -531,7 +531,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject> =>
     this.get(
-      `${this.baseUrl}/refData/dataOwner/deploymentId/${deploymentId}`,
+      `${this.baseUrl}/referenceData/dataOwner/deploymentId/${deploymentId}`,
       {},
       this._token(token),
     );
