@@ -142,15 +142,13 @@ export const EntitlementsDataContractCreator = observer(
           <CubesLoadingIndicator
             isLoading={
               dataAccessState.creatingContractState.isInProgress ||
-              dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress
+              dataAccessState.creatingWorkflowRequestState.isInProgress
             }
           >
             <CubesLoadingIndicatorIcon />
           </CubesLoadingIndicator>
           {!dataAccessState.creatingContractState.isInProgress &&
-            !dataAccessState.creatingWorkflowRequestState.isInProgress &&
-            !dataAccessState.creatingPermitRequestState.isInProgress && (
+            !dataAccessState.creatingWorkflowRequestState.isInProgress && (
               <>
                 <div>
                   Submit access request for{' '}
@@ -201,8 +199,7 @@ export const EntitlementsDataContractCreator = observer(
               !consumer ||
               !description ||
               dataAccessState.creatingContractState.isInProgress ||
-              dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress
+              dataAccessState.creatingWorkflowRequestState.isInProgress
             }
           >
             Create
@@ -212,8 +209,7 @@ export const EntitlementsDataContractCreator = observer(
             variant="outlined"
             disabled={
               dataAccessState.creatingContractState.isInProgress ||
-              dataAccessState.creatingWorkflowRequestState.isInProgress ||
-              dataAccessState.creatingPermitRequestState.isInProgress
+              dataAccessState.creatingWorkflowRequestState.isInProgress
             }
           >
             Cancel

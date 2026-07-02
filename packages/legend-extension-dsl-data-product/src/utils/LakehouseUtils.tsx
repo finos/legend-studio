@@ -21,7 +21,6 @@ import {
   V1_AppDirOrganizationalScope,
   V1_ProducerScope,
   type V1_RelationTypeColumn,
-  V1_RMS,
   type V1_TaggedValue,
   V1_UnknownOrganizationalScopeType,
   type V1_OrganizationalScope,
@@ -58,8 +57,6 @@ export const getOrganizationalScopeTypeName = (
     return 'Ad-hoc Team';
   } else if (scope instanceof V1_ProducerScope) {
     return 'Producer';
-  } else if (scope instanceof V1_RMS) {
-    return 'RMS';
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return 'Unknown';
   } else {
@@ -127,8 +124,6 @@ export const stringifyOrganizationalScope = (
     return scope.users.map((user) => user.name).join(', ');
   } else if (scope instanceof V1_ProducerScope) {
     return `Producer DID: ${scope.did}`;
-  } else if (scope instanceof V1_RMS) {
-    return scope.rmsNode;
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
     return JSON.stringify(scope.content);
   }
