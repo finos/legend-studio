@@ -4416,7 +4416,7 @@ describe('DataProductViewer', () => {
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
         expect.stringContaining(
-          'http://test-zipkin-url/?spanName=all&lookback=3600000&annotationQuery=dataProductName%3DMOCK_SDLC_DATAPRODUCT+and+accessPoint%3Dcustomer_demographics',
+          'http://test-zipkin-url/?spanName=all&lookback=3600000&annotationQuery=dataProductName%3DMOCK_SDLC_DATAPRODUCT%20and%20accessPoint%3Dcustomer_demographics&minDuration=&limit=100&sortOrder=timestamp-desc',
         ),
       );
 

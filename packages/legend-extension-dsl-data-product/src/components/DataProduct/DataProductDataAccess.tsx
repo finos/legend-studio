@@ -1123,14 +1123,9 @@ const ServiceScreen = observer(
 
     const zipkinBaseUrl = dataAccessState.engineServerClient.zipkinUrl;
     const zipkinUrl = zipkinBaseUrl
-      ? `${zipkinBaseUrl}?${new URLSearchParams({
-          spanName: 'all',
-          lookback: '3600000',
-          annotationQuery: `dataProductName=${dataProductName} and accessPoint=${accessPointName}`,
-          minDuration: '',
-          limit: '100',
-          sortOrder: 'timestamp-desc',
-        }).toString()}`
+      ? `${zipkinBaseUrl}?spanName=all&lookback=3600000&annotationQuery=${encodeURIComponent(
+          `dataProductName=${dataProductName} and accessPoint=${accessPointName}`,
+        )}&minDuration=&limit=100&sortOrder=timestamp-desc`
       : undefined;
 
     const openZipkinHealthCheck = (): void => {
