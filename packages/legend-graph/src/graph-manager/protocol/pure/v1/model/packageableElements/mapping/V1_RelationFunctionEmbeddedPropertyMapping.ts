@@ -45,7 +45,7 @@ export class V1_RelationFunctionEmbeddedPropertyMapping
     return hashArray([
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_EMBEDDED_PROPERTY_MAPPING,
       super.hashCode,
-      this.class ?? '',
+      this.class ?? this.property.class ?? '',
       hashArray(this.propertyMappings),
     ]);
   }
