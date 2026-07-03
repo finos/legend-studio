@@ -34,6 +34,14 @@ export class V1_RelationFunctionEmbeddedPropertyMapping
   }
 
   override get hashCode(): string {
+    // Detect inline embedded: id set + empty propertyMappings
+    if (this.id !== undefined && this.propertyMappings.length === 0) {
+      return hashArray([
+        CORE_HASH_STRUCTURE.INLINE_EMBEDDED_RELATION_FUNCTION_PROPERTY_MAPPING,
+        this.property,
+        this.id,
+      ]);
+    }
     return hashArray([
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_EMBEDDED_PROPERTY_MAPPING,
       super.hashCode,
