@@ -47,8 +47,8 @@ Mapping my::relationFunctionMapping
     ~func my::personFunction():Relation<Any>[1]
     firstName: FIRSTNAME,
     age: AGE,
-    employeeType: EnumerationMapping employeeTypeMapping: EMPLOYEE_TYPE,
-    activeStatus: EnumerationMapping activeStatusMapping: IS_ACTIVE
+    employeeType: EnumerationMapping employeeTypeMapping : EMPLOYEE_TYPE,
+    activeStatus: EnumerationMapping activeStatusMapping : IS_ACTIVE
   }
 
   my::EmployeeType: EnumerationMapping employeeTypeMapping
@@ -56,7 +56,6 @@ Mapping my::relationFunctionMapping
     CONTRACT: ['CONTRACT'],
     FULL_TIME: ['SALARY', 'FULL_TIME']
   }
-
   my::ActiveStatus: EnumerationMapping activeStatusMapping
   {
     ACTIVE: [1],
