@@ -40,7 +40,7 @@ Mapping my::relationFunctionMapping
     ~func my::personFunction():Relation<Any>[1]
     firstName: FIRSTNAME,
     age: AGE,
-    address() Inline[addressSet]
+    address () Inline [addressSet]
   }
   *my::Address[addressSet]: Relation
   {
