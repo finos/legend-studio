@@ -58,6 +58,7 @@ import {
 } from '@finos/legend-application';
 import {
   BasicValueSpecificationEditor,
+  ExecutionPlanViewer,
   LambdaEditor,
   LambdaParameterValuesEditor,
   type LambdaParameterState,
@@ -256,7 +257,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
   const targetColumnOptions = state.targetColumnOptions;
   const combinedColumnOptions = state.combinedColumnOptions;
 
-  const isRunning = state.isRunning;
+  const isRunning = state.isRunning || state.isGeneratingPlan;
   const executionResult = state.executionResult;
   const isFetchingColumns = state.fetchColumnsState.isInProgress;
   const hasColumnFetchError = state.hasColumnFetchError;
@@ -279,6 +280,10 @@ export const DataQualityRelationComparisonEditor = observer(() => {
 
   const runTargetQuery = applicationStore.guardUnhandledError(() =>
     flowResult(state.handleRun(RECONCILIATION_EXECUTION_TYPE.TARGET_QUERY)),
+  );
+
+  const generatePlan = applicationStore.guardUnhandledError(() =>
+    flowResult(state.generatePlan()),
   );
 
   const retryFetchColumns = applicationStore.guardUnhandledError(() =>
@@ -464,6 +469,18 @@ export const DataQualityRelationComparisonEditor = observer(() => {
     );
   }, [combinedColumnOptions, comparison.columnsToCompare]);
 
+  // Keys are implicitly included in the comparison, so hide them from the
+  // "Columns to Compare" dropdown options. However, to avoid breaking existing
+  // flows where the same field was put in both lists, keep any column that is
+  // currently selected as a "column to compare" visible even if it is also a key.
+  const columnsToCompareOptions = useMemo(() => {
+    const keySet = new Set(comparison.keys);
+    const selectedColumns = new Set(comparison.columnsToCompare);
+    return combinedColumnOptions.filter(
+      ({ value }) => !keySet.has(value) || selectedColumns.has(value),
+    );
+  }, [combinedColumnOptions, comparison.keys, comparison.columnsToCompare]);
+
   return (
     <div className="data-quality-relation-comparison-editor">
       <Panel>
@@ -540,6 +557,12 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                         onClick={runTargetQuery}
                       >
                         Run Target Query
+                      </MenuContentItem>
+                      <MenuContentItem
+                        className="btn__dropdown-combo__option"
+                        onClick={generatePlan}
+                      >
+                        Generate Plan
                       </MenuContentItem>
                     </MenuContent>
                   }
@@ -687,7 +710,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                     values.map((option) => option.value),
                   )
                 }
-                options={combinedColumnOptions}
+                options={columnsToCompareOptions}
                 placeholder="Select columns to compare..."
                 disabled={columnsDisabled}
                 darkMode={darkMode}
@@ -751,13 +774,15 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 </div>
                 {isRunning && (
                   <div className="data-quality-relation-comparison-editor__result__status">
-                    {state.currentExecutionType ===
-                    RECONCILIATION_EXECUTION_TYPE.RECONCILIATION
-                      ? 'Running Data Comparison...'
+                    {state.isGeneratingPlan
+                      ? 'Generating Plan...'
                       : state.currentExecutionType ===
-                          RECONCILIATION_EXECUTION_TYPE.SOURCE_QUERY
-                        ? 'Running Source Query...'
-                        : 'Running Target Query...'}
+                          RECONCILIATION_EXECUTION_TYPE.RECONCILIATION
+                        ? 'Running Data Comparison...'
+                        : state.currentExecutionType ===
+                            RECONCILIATION_EXECUTION_TYPE.SOURCE_QUERY
+                          ? 'Running Source Query...'
+                          : 'Running Target Query...'}
                   </div>
                 )}
                 <div className="data-quality-relation-comparison-editor__result__analytics">
@@ -790,6 +815,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
       {state.comparisonParametersEditorState.showModal && (
         <DataQualityRelationComparisonParametersEditor state={state} />
       )}
+      <ExecutionPlanViewer executionPlanState={state.executionPlanState} />
     </div>
   );
 });

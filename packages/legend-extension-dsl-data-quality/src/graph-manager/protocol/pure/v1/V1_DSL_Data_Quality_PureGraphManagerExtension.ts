@@ -83,6 +83,7 @@ const DQ_FETCH_RULE_SUGGESTIONS = 'fetch rule suggestions';
 const DQ_DEBUG_EXECUTION_PLAN = 'debug execution plan';
 const DQ_FETCH_PROPERTY_PATH_TREE = 'dq fetch property path tree';
 const DQ_EXECUTE_RECONCILIATION = 'execute reconciliation';
+const DQ_GENERATE_RECONCILIATION_PLAN = 'generate reconciliation plan';
 
 export class V1_DQExecuteInput {
   clientVersion: string | undefined;
@@ -697,6 +698,32 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       runTargetQuery: true,
     });
     return this.runReconciliationWithInput(input);
+  };
+
+  generateReconciliationPlan = async (
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<RawExecutionPlan> => {
+    const input = this.createReconciliationInput(graph, options);
+    const serializedInput =
+      V1_DQReconciliationInput.serialization.toJson(input);
+
+    // TODO: improve abstraction so that we do not need to access the engine server client directly
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'generateReconciliationPlan is only supported by remote engine',
+    ).getEngineServerClient();
+
+    return engineServerClient.postWithTracing(
+      engineServerClient.getTraceData(DQ_GENERATE_RECONCILIATION_PLAN),
+      `${engineServerClient._pure()}/dataquality/reconciliation/generatePlan`,
+      serializedInput,
+      {},
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
   };
 
   private async runReconciliationWithInput(
