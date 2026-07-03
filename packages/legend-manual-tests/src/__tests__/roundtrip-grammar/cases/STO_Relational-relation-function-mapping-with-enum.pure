@@ -39,7 +39,7 @@ Mapping my::relationFunctionMapping
     ~func my::personFunction():Relation<Any>[1]
     firstName: FIRSTNAME,
     age: AGE,
-    employeeType: EnumerationMapping employeeTypeMapping: EMPLOYEE_TYPE
+    employeeType: EnumerationMapping employeeTypeMapping : EMPLOYEE_TYPE
   }
 
   my::EmployeeType: EnumerationMapping employeeTypeMapping
