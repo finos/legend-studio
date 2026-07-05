@@ -270,4 +270,3 @@ export type V1_UserPendingContractsRecord = {
 export type V1_UserPendingContractsResponse = {
   records: V1_UserPendingContractsRecord[] | undefined;
 };
-
