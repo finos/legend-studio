@@ -58,7 +58,8 @@ export const getOrganizationalScopeTypeName = (
   } else if (scope instanceof V1_ProducerScope) {
     return 'Producer';
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
-    return 'Unknown';
+    const type = scope.content._type;
+    return typeof type === 'string' ? type : 'Unknown';
   } else {
     const typeName = plugins
       .flatMap((plugin) =>
@@ -125,6 +126,10 @@ export const stringifyOrganizationalScope = (
   } else if (scope instanceof V1_ProducerScope) {
     return `Producer DID: ${scope.did}`;
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
+    // Extract rmsNode or other meaningful identifier from content
+    if (scope.content.rmsNode) {
+      return String(scope.content.rmsNode);
+    }
     return JSON.stringify(scope.content);
   }
   const stringifiedValue = plugins

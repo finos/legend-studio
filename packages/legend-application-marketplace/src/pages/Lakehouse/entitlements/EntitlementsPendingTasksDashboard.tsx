@@ -57,6 +57,7 @@ import {
   UserRenderer,
   getOrganizationalScopeTypeName,
   getOrganizationalScopeTypeDetails,
+  stringifyOrganizationalScope,
   DataAccessRequestViewer,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -528,14 +529,33 @@ export const EntitlementsPendingTasksDashboard = observer(
           headerName: 'Target User',
           flex: 1,
           valueGetter: (params) => {
-            return params.data?.consumer ?? 'Unknown';
+            const contractId = params.data?.accessRequestId;
+            const consumer = pendingTaskContracts.find(
+              (c) => c.guid === contractId,
+            )?.consumer;
+            return consumer
+              ? stringifyOrganizationalScope(
+                  consumer,
+                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                )
+              : 'Unknown';
           },
           cellRenderer: (
             params: DataGridCellRendererParams<V1_PendingTaskRecord>,
           ) => {
+            const contractId = params.data?.accessRequestId;
+            const consumer = pendingTaskContracts.find(
+              (c) => c.guid === contractId,
+            )?.consumer;
+            const userId = consumer
+              ? stringifyOrganizationalScope(
+                  consumer,
+                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                )
+              : undefined;
             return (
               <UserRenderer
-                userId={params.data?.consumer}
+                userId={userId}
                 applicationStore={marketplaceBaseStore.applicationStore}
                 userSearchService={marketplaceBaseStore.userSearchService}
                 disableOnClick={true}

@@ -62,14 +62,13 @@ import {
   type V1_LiteDataContract,
   type V1_LiteAccessRequest,
   V1_PermitTaskAction,
-  V1_AppDirOrganizationalScope,
-  V1_AdhocTeam,
   type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import type {
-  ContractErrorLayer,
-  DataProductDataAccess_LegendApplicationPlugin_Extension,
+import {
+  stringifyOrganizationalScope,
+  type ContractErrorLayer,
+  type DataProductDataAccess_LegendApplicationPlugin_Extension,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   makeObservable,
@@ -513,13 +512,7 @@ export class EntitlementsDashboardState {
     if (orgNodeCode) {
       return orgNodeCode;
     }
-    if (consumer instanceof V1_AppDirOrganizationalScope) {
-      return String(consumer.appDirNode[0]?.appDirId ?? 'Unknown');
-    }
-    if (consumer instanceof V1_AdhocTeam) {
-      return consumer.users[0]?.name ?? 'Unknown';
-    }
-    return 'Unknown';
+    return stringifyOrganizationalScope(consumer, dataAccessPlugins);
   }
 
   private static parseDeploymentId(did: string): number {
