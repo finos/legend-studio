@@ -106,10 +106,6 @@ export const getBaseJestConfig = (isGlobal) => {
   /** @type {import('jest').Config} */
   const config = {
     ...baseConfig,
-    // Increase the default test timeout (5s) to account for slower CI runners
-    // where limited CPU resources (e.g. 2 CPUs on Kubernetes pods) can cause
-    // async operations like waitFor to exceed the default timeout.
-    testTimeout: 30000,
     // Restart workers that exceed this memory threshold after finishing a test file.
     // This prevents workers from accumulating too much memory across test suites
     // and getting OOM-killed by the OS in CI.

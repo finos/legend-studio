@@ -18,5 +18,9 @@ import { getBaseJestConfig } from './scripts/test/jest.config.base.js';
 
 export default {
   ...getBaseJestConfig(true),
+  // Increase the default test timeout (5s) to account for slower CI runners
+  // where limited CPU resources (e.g. 2 CPUs on Kubernetes pods) can cause
+  // async operations like waitFor to exceed the default timeout.
+  testTimeout: 30000,
   projects: ['<rootDir>/packages/*'],
 };
