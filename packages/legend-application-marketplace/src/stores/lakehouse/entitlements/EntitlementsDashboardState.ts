@@ -872,9 +872,9 @@ export class EntitlementsDashboardState {
         const unsyncedTargetAccounts = response.unsyncedTargetAccounts ?? [];
 
         const syncGroupingLayers: ContractErrorLayer[] = [
-          { title: 'Users', errorItems: unsyncedUsers },
-          { title: 'Target Accounts', errorItems: unsyncedTargetAccounts },
-          { title: 'Access Points', errorItems: unsyncedAccessPoints },
+          { title: 'Users:', errorItems: unsyncedUsers },
+          { title: 'Target Accounts:', errorItems: unsyncedTargetAccounts },
+          { title: 'Access Points:', errorItems: unsyncedAccessPoints },
         ].filter((layer) => layer.errorItems.length > 0);
 
         if (syncGroupingLayers.length === 0) {
@@ -882,7 +882,7 @@ export class EntitlementsDashboardState {
         }
 
         return {
-          title: 'Unsynced Entities',
+          title: 'Unsynced Entities:',
           childLayers: syncGroupingLayers,
         };
       }
@@ -909,7 +909,7 @@ export class EntitlementsDashboardState {
     const childLayers: ContractErrorLayer[] = [
       unverifiedIngestDefinitions.length > 0
         ? {
-            title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found`,
+            title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found:`,
             errorItems: unverifiedIngestDefinitions,
           }
         : undefined,
@@ -917,7 +917,7 @@ export class EntitlementsDashboardState {
     ].filter(isNonNullable);
 
     return childLayers.length > 0
-      ? { title: 'Contract Errors', childLayers }
+      ? { title: 'Contract Errors:', childLayers }
       : undefined;
   }
 

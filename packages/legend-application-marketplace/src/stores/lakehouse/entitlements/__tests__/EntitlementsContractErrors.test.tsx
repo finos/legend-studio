@@ -159,12 +159,20 @@ const installIngestPipelineSpies = (
 const computeErrorsAndRender = async (
   mockedStore: LegendMarketplaceBaseStore,
   mockLiteContract: V1_LiteDataContract,
+  mockUnverifiedIngests?: string[],
 ) => {
   const MOCK__applicationStore = mockedStore.applicationStore;
   const MOCK__entitlementsStore = new LakehouseEntitlementsStore(mockedStore);
   const MOCK__dashboardState = new EntitlementsDashboardState(
     MOCK__entitlementsStore,
   );
+
+  if (mockUnverifiedIngests !== undefined) {
+    createSpy(
+      MOCK__dashboardState,
+      'getUnverifiedIngestDefinitions',
+    ).mockResolvedValue(mockUnverifiedIngests);
+  }
 
   const computedContractErrors = await MOCK__dashboardState.getContractErrors(
     TEST_CONTRACT_ID,
@@ -235,6 +243,7 @@ const setupIngestErrorsModalTest = async (options: {
   syncStatusResponse: LakehouseContractSyncStatusResponseFixture;
   artifactJson: string;
   ingestEnvClassification: V1_IngestEnvironmentClassification;
+  expectedUnverifiedIngests: string[];
 }) => {
   const { mockedStore, mockLiteContract } = await setupContractMocks({
     origin: 'sdlc',
@@ -244,7 +253,11 @@ const setupIngestErrorsModalTest = async (options: {
     artifactJson: options.artifactJson,
     ingestEnvClassification: options.ingestEnvClassification,
   });
-  return computeErrorsAndRender(mockedStore, mockLiteContract);
+  return computeErrorsAndRender(
+    mockedStore,
+    mockLiteContract,
+    options.expectedUnverifiedIngests,
+  );
 };
 
 describe('DataAccessRequestViewer contract errors', () => {
@@ -311,6 +324,7 @@ describe('DataAccessRequestViewer contract errors', () => {
         syncStatusResponse: mockSyncStatus_fullySynced,
         artifactJson,
         ingestEnvClassification: V1_IngestEnvironmentClassification.PROD,
+        expectedUnverifiedIngests: ['com.example::IngestMissingFromServer'],
       });
 
       expect(computedContractErrors).toEqual({
@@ -346,6 +360,7 @@ describe('DataAccessRequestViewer contract errors', () => {
         syncStatusResponse: mockSyncStatus_neverSynced,
         artifactJson,
         ingestEnvClassification: V1_IngestEnvironmentClassification.PROD,
+        expectedUnverifiedIngests: ['com.example::IngestMissingFromServer'],
       });
 
       expect(computedContractErrors).toEqual({
