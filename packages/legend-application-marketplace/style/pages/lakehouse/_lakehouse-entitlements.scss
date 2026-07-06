@@ -572,7 +572,11 @@
     }
 
     &__link--primary {
-      font-weight: 600;
+      color: var(--color-hclight-blue-60);
+
+      &:hover {
+        color: var(--color-hclight-blue-70);
+      }
     }
 
     &__copy-btn {

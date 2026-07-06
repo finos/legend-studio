@@ -4021,6 +4021,14 @@
         color: var(--color-dark-theme-text-muted);
       }
 
+      &__link--primary {
+        color: var(--color-dark-theme-blue-primary);
+
+        &:hover {
+          color: var(--color-dark-theme-blue-accent);
+        }
+      }
+
       &__link--secondary {
         color: var(--color-dark-theme-text-muted);
       }
