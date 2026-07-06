@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.14
+
+### Patch Changes
+
+- [#5303](https://github.com/finos/legend-studio/pull/5303) [`ffae4ed`](https://github.com/finos/legend-studio/commit/ffae4ed432fde501ffbfac818cdda80ed5a23b11) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add model types, serialization schemas, and deserializers for pending data request task entries and responses.
+
 ## 32.6.13
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @finos/legend-application-marketplace
 
+## 0.2.27
+
+### Patch Changes
+
+- [#5303](https://github.com/finos/legend-studio/pull/5303) [`ffae4ed`](https://github.com/finos/legend-studio/commit/ffae4ed432fde501ffbfac818cdda80ed5a23b11) ([@TharunRajeev](https://github.com/TharunRajeev)) - Integrate pending data request tasks into the entitlements dashboard with approve/deny support via permit workflow server.
+
+- [#5297](https://github.com/finos/legend-studio/pull/5297) [`f07d638`](https://github.com/finos/legend-studio/commit/f07d638e0ecd5db3847bebd597cf37cfaee4af23) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve Legend Marketplace AI and Legend AI orchestrator with access point querying, better model context enrichment, and deterministic entity resolution.
+  Improve AP queries with advanced analytics embedded on results and ML implementations to pick better AP.
+
 ## 0.2.26
 
 ### Patch Changes

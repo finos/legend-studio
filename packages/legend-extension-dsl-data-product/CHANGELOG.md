@@ -1,5 +1,18 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.93
+
+### Patch Changes
+
+- [#5303](https://github.com/finos/legend-studio/pull/5303) [`ffae4ed`](https://github.com/finos/legend-studio/commit/ffae4ed432fde501ffbfac818cdda80ed5a23b11) ([@TharunRajeev](https://github.com/TharunRajeev)) - Removed WorkflowGuid from task schema
+
+- [#5293](https://github.com/finos/legend-studio/pull/5293) [`1a9b8d4`](https://github.com/finos/legend-studio/commit/1a9b8d45cbe07b09757cda297bc5c65e77917a0a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Org membership check after RMS data access request creation for Request button state update.
+
+- [#5297](https://github.com/finos/legend-studio/pull/5297) [`f07d638`](https://github.com/finos/legend-studio/commit/f07d638e0ecd5db3847bebd597cf37cfaee4af23) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve Legend Marketplace AI and Legend AI orchestrator with access point querying, better model context enrichment, and deterministic entity resolution.
+  Improve AP queries with advanced analytics embedded on results and ML implementations to pick better AP.
+
+- [#5296](https://github.com/finos/legend-studio/pull/5296) [`262684e`](https://github.com/finos/legend-studio/commit/262684e92e611cb1d6910b58ba2b7796b3de9c27) ([@TharunRajeev](https://github.com/TharunRajeev)) - Support RMS entitlements flow when Org Admin is the data owner.
+
 ## 0.0.92
 
 ### Patch Changes

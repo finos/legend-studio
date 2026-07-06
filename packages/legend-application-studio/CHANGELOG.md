@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.18
+
+### Patch Changes
+
+- [#5300](https://github.com/finos/legend-studio/pull/5300) [`e216b5c`](https://github.com/finos/legend-studio/commit/e216b5c7ed80c1469debbbae006ac9effd9018d7) ([@yash0024](https://github.com/yash0024)) - Remove runtime or accessors requirement from adding function tests
+
 ## 28.21.17
 
 ### Patch Changes

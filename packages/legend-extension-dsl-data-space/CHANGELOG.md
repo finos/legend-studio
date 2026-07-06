@@ -1,5 +1,12 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.232
+
+### Patch Changes
+
+- [#5297](https://github.com/finos/legend-studio/pull/5297) [`f07d638`](https://github.com/finos/legend-studio/commit/f07d638e0ecd5db3847bebd597cf37cfaee4af23) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve Legend Marketplace AI and Legend AI orchestrator with access point querying, better model context enrichment, and deterministic entity resolution.
+  Improve AP queries with advanced analytics embedded on results and ML implementations to pick better AP.
+
 ## 10.4.231
 
 ## 10.4.230
