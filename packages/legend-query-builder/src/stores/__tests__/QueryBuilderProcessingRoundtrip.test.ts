@@ -72,7 +72,10 @@ import {
 } from './TEST_DATA__QueryBuilder_GraphFetch.js';
 import { TEST__LegendApplicationPluginManager } from '../__test-utils__/QueryBuilderStateTestUtils.js';
 import { TEST_DATA__lambda_ContantExpression_MultiConstantAndCalculatedVariables } from './TEST_DATA__QueryBuilder_ConstantExpression.js';
-import { TEST_DATA__projectionWithWAVGAggregation } from './TEST_DATA__QueryBuilder_Generic.js';
+import {
+  TEST_DATA__projectionWithWAVGAggregation,
+  TEST_DATA__projectionWithPercentileAggregation,
+} from './TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA_typedTDSMax,
   TEST_DATA_typedTDSPercentRank,
@@ -266,6 +269,11 @@ const cases: RoundtripTestCase[] = [
   ['Simple slice() function', relationalCtx, TEST_DATA__projectWithSlice],
   // aggregation
   ['wavg() function', projectionCtx, TEST_DATA__projectionWithWAVGAggregation],
+  [
+    'percentile() function — percentile arg must serialize as float, not decimal',
+    projectionCtx,
+    TEST_DATA__projectionWithPercentileAggregation,
+  ],
   //typed TDS
   ['typed rank() function', olapGroupbyCtx, TEST_DATA_typedTDSRank],
   ['typed max() function', olapGroupbyCtx, TEST_DATA_typedTDSMax],

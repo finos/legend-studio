@@ -2023,7 +2023,7 @@ export const TEST_DATA__projectionWithPercentileAggregation = {
                           name: 'x',
                         },
                         {
-                          _type: 'decimal',
+                          _type: 'float',
                           value: 0.45,
                         },
                         {
@@ -2083,7 +2083,7 @@ export const TEST_DATA__projectionWithPercentileAggregation = {
                           name: 'x',
                         },
                         {
-                          _type: 'decimal',
+                          _type: 'float',
                           value: 0.36,
                         },
                       ],
