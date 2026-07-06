@@ -1121,12 +1121,11 @@ const ServiceScreen = observer(
     const accessPointName = accessPointState.accessPoint.id;
     const curlCommand = `curl -X GET "${engineBaseUrl}${LAKEHOUSE_EXECUTE_PATH}/${dataProductName}/${accessPointName}/DEFAULT" -H "accept: application/json"`;
 
-    const annotationQuery = `dataProductName=${dataProductName} and accessPoint=${accessPointName}`;
-    const engineOrigin = engineBaseUrl
-      ? new URL(engineBaseUrl).origin
-      : undefined;
-    const zipkinUrl = engineOrigin
-      ? `${engineOrigin}/zipkin/?spanName=all&lookback=3600000&annotationQuery=${encodeURIComponent(annotationQuery)}&minDuration=&limit=100&sortOrder=timestamp-desc`
+    const zipkinBaseUrl = dataAccessState.engineServerClient.zipkinUrl;
+    const zipkinUrl = zipkinBaseUrl
+      ? `${zipkinBaseUrl}?spanName=all&lookback=3600000&annotationQuery=${encodeURIComponent(
+          `dataProductName=${dataProductName} and accessPoint=${accessPointName}`,
+        )}&minDuration=&limit=100&sortOrder=timestamp-desc`
       : undefined;
 
     const openZipkinHealthCheck = (): void => {

@@ -211,6 +211,7 @@ export class LegendMarketplaceBaseStore {
     );
     this.engineServerClient = this.remoteEngine.getEngineServerClient();
     this.engineServerClient.setTracerService(applicationStore.tracerService);
+    this.engineServerClient.setZipkinUrl(applicationStore.config.zipkinUrl);
 
     // User search
     if (this.pluginManager.getUserPlugins().length > 0) {

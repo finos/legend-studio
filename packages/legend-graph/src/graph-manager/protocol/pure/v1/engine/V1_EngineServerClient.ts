@@ -191,6 +191,7 @@ export async function getCurrentUserIDFromEngineServer(
 
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;
+  zipkinUrl?: string | undefined;
   private env?: string | undefined;
 
   // NOTE: this is an attempt to follow engine's effort to be split into multiple pieces
@@ -218,6 +219,10 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   setCurrentUserId = (value: string | undefined): void => {
     this.currentUserId = value;
+  };
+
+  setZipkinUrl = (value: string | undefined): void => {
+    this.zipkinUrl = value;
   };
 
   getTraceData = (name: string, tracingTags?: PlainObject): TraceData => ({
