@@ -84,6 +84,12 @@ export const StereotypeSelector = observer(
       darkTheme,
     } = props;
     const editorStore = useEditorStore();
+    // Follow the active app theme by default; the `darkTheme` prop, when
+    // provided, still overrides (e.g. for surfaces forced to a fixed look).
+    const darkMode =
+      darkTheme ??
+      !editorStore.applicationStore.layoutService
+        .TEMPORARY__isLightColorThemeEnabled;
 
     // Profile
     const profileOptions = editorStore.graphManagerState.usableProfiles
@@ -195,7 +201,7 @@ export const StereotypeSelector = observer(
               value={selectedProfile}
               placeholder="Choose a profile"
               filterOption={filterOption}
-              darkMode={Boolean(darkTheme)}
+              darkMode={darkMode}
             />
             <button
               className="stereotype-selector__profile__visit-btn"
@@ -215,12 +221,12 @@ export const StereotypeSelector = observer(
             value={selectedStereotype}
             placeholder="Choose a stereotype"
             filterOption={stereotypeFilterOption}
-            darkMode={Boolean(darkTheme)}
+            darkMode={darkMode}
           />
           {!isReadOnly && (
             <button
               className={clsx('uml-element-editor__remove-btn', {
-                'btn--dark btn--caution': darkTheme,
+                'btn--dark btn--caution': darkMode,
               })}
               disabled={isReadOnly}
               onClick={deleteStereotype}

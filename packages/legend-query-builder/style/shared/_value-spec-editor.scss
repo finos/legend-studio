@@ -23,7 +23,7 @@
   width: 100%;
 
   &__variable__info svg {
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__reset-btn {
@@ -32,16 +32,16 @@
 
     align-self: normal;
     width: 2.8rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-tag);
     border-radius: 0 50% 50% 0;
 
     svg {
       font-size: 1.8rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -91,7 +91,7 @@
     }
 
     .selector-input__input {
-      color: var(--color-red-180);
+      color: var(--color-status-error);
     }
   }
 
@@ -104,7 +104,7 @@
 
     width: 100%;
     height: 2.2rem;
-    background: var(--color-dark-grey-280);
+    background: var(--color-bg-hover);
     border-radius: 0.2rem;
     font-size: 1.1rem;
   }
@@ -115,19 +115,19 @@
 
       width: 100%;
       height: 2.8rem;
-      color: var(--color-light-grey-400);
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      color: var(--color-text-muted);
+      background: var(--color-bg-panel-header);
+      border: 0.1rem solid var(--color-border-strong);
       font-size: 1.2rem;
 
       &--error {
-        background: var(--color-red-500);
-        border-color: var(--color-red-300);
+        background: var(--color-status-error-bg);
+        border-color: var(--color-status-error);
       }
     }
 
     &__editable__display--content--error {
-      color: var(--color-red-200) !important;
+      color: var(--color-status-error) !important;
     }
 
     &__options {
@@ -140,11 +140,11 @@
 
     &__absolute-date {
       padding: 1rem;
-      border-top: 0.1rem solid var(--color-dark-grey-50);
+      border-top: 0.1rem solid var(--color-border-subtle);
 
       &__input {
         height: 2.8rem;
-        border: 0.1rem solid var(--color-dark-grey-300);
+        border: 0.1rem solid var(--color-border-strong);
         color-scheme: dark;
         font-size: 1.2rem;
       }
@@ -154,14 +154,14 @@
       @include flexCenter;
 
       padding: 1rem;
-      border-top: 0.1rem solid var(--color-dark-grey-50);
+      border-top: 0.1rem solid var(--color-border-subtle);
 
       &__input {
         width: 100%;
       }
 
       &__input-label {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
         margin-bottom: 1rem;
       }
 
@@ -170,15 +170,15 @@
 
         height: 2.8rem;
         width: 6rem;
-        border: 0.1rem solid var(--color-dark-grey-300);
-        color: var(--color-light-grey-200);
-        background: var(--color-dark-grey-100);
+        border: 0.1rem solid var(--color-border-strong);
+        color: var(--color-text-secondary);
+        background: var(--color-bg-panel-header);
         text-align: center;
         padding: 0;
       }
 
       &__input-dropdown {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
         width: 10rem;
         font-size: 1.2rem;
         margin-left: 0.5rem;
@@ -200,7 +200,7 @@
     height: 2.2rem;
     border-radius: 0.2rem;
     margin: 0;
-    color: var(--color-light-grey-150);
+    color: var(--color-text-secondary);
     background: var(--color-pink-400);
     width: 100%;
 
@@ -251,7 +251,7 @@
 
       svg {
         font-size: 1.8rem;
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -262,8 +262,8 @@
     width: 100%;
     font-size: 1.4rem;
     padding: 0 0.5rem;
-    background: var(--color-dark-grey-100);
-    border: 0.1rem solid var(--color-dark-grey-300);
+    background: var(--color-bg-panel-header);
+    border: 0.1rem solid var(--color-border-strong);
     border-radius: 0;
     margin-bottom: 0;
   }
@@ -285,8 +285,8 @@
       padding-right: 2.8rem;
 
       &--error {
-        background: var(--color-red-500);
-        border-color: var(--color-red-300);
+        background: var(--color-status-error-bg);
+        border-color: var(--color-status-error);
       }
     }
 
@@ -304,11 +304,11 @@
 
       svg {
         font-size: 1.8rem;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -319,40 +319,40 @@
     width: 100%;
     padding: 0.5rem;
     height: 100%;
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
 
     svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-secondary);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-dark-grey-280);
+      color: var(--color-text-secondary);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-250);
+      color: var(--color-text-disabled);
     }
   }
 
   &__toggler__btn--toggled {
     svg {
       font-size: 2rem;
-      color: var(--color-blue-150);
+      color: var(--color-accent);
     }
 
     &:hover svg {
       font-size: 2rem;
-      color: var(--color-blue-100);
+      color: var(--color-accent-hover);
     }
 
     &[disabled] svg,
     &[disabled]:hover svg {
       cursor: not-allowed;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -364,14 +364,14 @@
     height: 2.8rem;
     font-size: 1.1rem;
     font-family: 'Roboto Mono', monospace;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-hover);
     padding-left: 0.5rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
     cursor: pointer;
 
     &--error {
-      background: var(--color-red-500);
-      border: 1px solid var(--color-red-300);
+      background: var(--color-status-error-bg);
+      border: 1px solid var(--color-status-error);
     }
   }
 
@@ -381,15 +381,15 @@
     align-self: normal;
     width: 2.7rem;
     min-width: 2.7rem;
-    background: var(--color-dark-grey-200);
+    background: var(--color-bg-tag);
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -421,7 +421,7 @@
     height: 50vh;
 
     &__description {
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-size: 1.2rem;
       font-weight: 400;
     }
@@ -433,23 +433,23 @@
     height: 2.8rem;
     width: 2.7rem;
     min-width: 2.7rem;
-    background: var(--color-dark-grey-250);
+    background: var(--color-bg-hover);
     border-radius: 0 0.9rem 0.9rem 0;
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-light-grey-250);
+      color: var(--color-text-muted);
     }
   }
 
   &__editable__display--content--error {
-    color: var(--color-red-200) !important;
+    color: var(--color-status-error) !important;
   }
 
   &:hover &__list-editor__preview,
   &:hover &__list-editor__edit-icon {
-    background: var(--color-dark-grey-300);
-    color: var(--color-light-grey-100);
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
   }
 
   .input--with-validation {
@@ -485,7 +485,7 @@
 
 .value-spec-paramater__tooltip {
   border-radius: 0.2rem !important;
-  background: var(--color-dark-grey-200) !important;
+  background: var(--color-bg-tag) !important;
   opacity: 0.9 !important;
   transition: none;
 
@@ -494,7 +494,7 @@
   }
 
   &__arrow {
-    color: var(--color-dark-grey-200) !important;
+    color: var(--color-bg-elevated) !important;
     opacity: 0.9 !important;
   }
 
@@ -510,7 +510,7 @@
     font-size: 1.3rem;
     user-select: none;
     cursor: default;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-secondary);
   }
 
   &__item__value {
@@ -541,7 +541,7 @@
     &__label {
       @include flexVCenter;
 
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       margin-bottom: 0.5rem;
       line-height: 2rem;
       cursor: default;
@@ -550,8 +550,8 @@
     &__label__type {
       @include flexVCenter;
 
-      background: var(--color-dark-grey-250);
-      color: var(--color-light-grey-200);
+      background: var(--color-bg-hover);
+      color: var(--color-text-secondary);
       margin-left: 0.5rem;
       border-radius: 0.2rem;
       font-size: 1rem;

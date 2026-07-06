@@ -30,7 +30,7 @@
   &__header__action--active.panel__header__action:hover,
   &__header__action--active.panel__header__action {
     svg {
-      color: var(--color-light-grey-100);
+      color: var(--color-text-primary);
     }
   }
 
@@ -52,7 +52,7 @@
   &__preview-data-modal__placeholder {
     @include flexCenter;
 
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     font-family: 'Roboto Mono', monospace;
     min-height: 5vw;
   }
@@ -64,7 +64,7 @@
 
     .table {
       width: 100%;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       font-family: 'Roboto Mono', monospace;
     }
   }
@@ -75,9 +75,9 @@
     padding-right: 2.8rem;
     padding-left: 1rem;
     width: 100%;
-    background: var(--color-dark-grey-85);
+    background: var(--color-bg-panel);
     border-radius: 0.2rem;
-    border: 0.1rem solid var(--color-dark-grey-200);
+    border: 0.1rem solid var(--color-border-default);
 
     &__container {
       @include flexCenter;
@@ -131,11 +131,11 @@
       cursor: pointer;
 
       svg {
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-dark-grey-500);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -154,7 +154,7 @@
   }
 
   .panel__header {
-    border-top: 0.1rem solid var(--color-dark-grey-200);
+    border-top: 0.1rem solid var(--color-border-default);
   }
 
   &__content {
@@ -184,7 +184,7 @@
     &__label {
       @include flexVCenter;
 
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       margin-bottom: 0.5rem;
       line-height: 2rem;
       cursor: default;
@@ -194,7 +194,7 @@
   &__info {
     @include flexVCenter;
 
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
     cursor: pointer;
 
     svg {
@@ -206,7 +206,7 @@
 
       &:hover {
         svg {
-          color: var(--color-light-grey-50);
+          color: var(--color-text-primary);
         }
       }
     }
@@ -233,15 +233,15 @@
 
       svg {
         font-size: 1.3rem;
-        color: var(--color-light-grey-400);
+        color: var(--color-text-muted);
       }
 
       &:hover svg {
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
 
       &[disabled] svg {
-        color: var(--color-dark-grey-300);
+        color: var(--color-text-disabled);
       }
     }
 
@@ -274,7 +274,7 @@
       @include ellipsisTextOverflow;
 
       display: flex;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       height: 2.2rem;
       line-height: 2.2rem;
     }
@@ -285,8 +285,8 @@
       &__label {
         @include flexVCenter;
 
-        background: var(--color-dark-grey-250);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-hover);
+        color: var(--color-text-secondary);
         margin-left: 0.5rem;
         border-radius: 0.2rem;
         font-size: 1rem;
@@ -297,7 +297,7 @@
 
       &__label--milestoning {
         background: var(--color-orange-250);
-        color: var(--color-light-grey-200);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -309,9 +309,9 @@
         padding: 0.5rem;
         height: 2.8rem;
         line-height: 2.8rem;
-        background: var(--color-dark-grey-100);
-        border: 0.1rem solid var(--color-dark-grey-300);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-panel-header);
+        border: 0.1rem solid var(--color-border-strong);
+        color: var(--color-text-secondary);
       }
     }
   }
@@ -365,7 +365,7 @@
 
   &__expand-icon svg {
     font-size: 1rem;
-    color: var(--color-light-grey-200);
+    color: var(--color-text-secondary);
   }
 
   &__node__container:hover {
@@ -374,7 +374,7 @@
 
   &__node__container:hover &__node__action {
     svg {
-      color: var(--color-dark-grey-500);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -383,7 +383,7 @@
   }
 
   &__node__container--selected {
-    background: var(--color-light-blue-450);
+    background: var(--color-bg-selected);
   }
 
   &__node__label {
@@ -392,7 +392,7 @@
     height: 2rem;
     line-height: 2rem;
     min-width: 0;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     user-select: none;
   }
 
@@ -435,7 +435,7 @@
     font-weight: 700;
     font-size: 1.1rem;
     font-family: 'Roboto Mono', monospace;
-    color: var(--color-light-grey-400);
+    color: var(--color-text-muted);
     height: 2rem;
     line-height: 2rem;
     margin-left: 0.5rem;
@@ -471,11 +471,11 @@
     }
 
     &:hover svg {
-      color: var(--color-light-grey-200) !important;
+      color: var(--color-text-secondary) !important;
     }
 
     &[disabled] svg {
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-disabled);
     }
   }
 
@@ -495,7 +495,7 @@
   &__node__container--unmapped &__type-icon &__icon,
   &__node__container--unmapped &__node__label__derived-property,
   &__node__container--unmapped &__node__label__multiple {
-    color: var(--color-dark-grey-350);
+    color: var(--color-text-muted);
   }
 
   &__node__container--highlighted &__node__label,

@@ -26,8 +26,8 @@
     padding: 1rem 1.5rem;
     font-weight: 500;
     border-radius: 0.5rem;
-    background: var(--color-dark-grey-50);
-    color: var(--color-dark-grey-300);
+    background: var(--color-bg-app);
+    color: var(--color-text-muted);
   }
 
   // NOTE: we need to ensure the specificity here in case a later imported ag-theme-balham-dark
@@ -161,7 +161,7 @@
 
     svg {
       font-size: 1.2rem;
-      color: var(--color-dark-grey-200);
+      color: var(--color-text-muted);
     }
   }
 
@@ -174,8 +174,8 @@
     padding: 0 0.5rem;
     height: 1.6rem;
     font-weight: 500;
-    background: var(--color-dark-grey-250);
-    color: var(--color-light-grey-200);
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
     user-select: none;
   }
 
@@ -192,7 +192,7 @@
 }
 
 .sql-playground__explorer {
-  border-right: 1px solid var(--color-blue-50);
+  border-right: 1px solid var(--color-border-default);
   overflow: auto;
   height: 100%;
   padding: 8px 10px;
@@ -212,6 +212,6 @@
   }
 
   &__unknown {
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-muted);
   }
 }

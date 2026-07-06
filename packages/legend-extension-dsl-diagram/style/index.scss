@@ -35,4 +35,10 @@
 .class-editor__diagram-preview {
   width: 100%;
   height: 100%;
+  // The diagram is drawn on a <canvas> whose fill is a fixed, theme-independent
+  // gray (`DiagramRenderer.canvasColor` = rgb(220, 220, 220)). Match it here so
+  // any area not yet covered by the canvas (e.g. while the panel is being
+  // resized) blends with the diagram instead of showing the themed app
+  // background (white in light theme, near-black in dark theme).
+  background: rgb(220 220 220);
 }

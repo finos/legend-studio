@@ -22,7 +22,7 @@
   &__header {
     padding: 1rem;
     height: 9.2rem;
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-border-default);
   }
 
   &__filter {
@@ -46,8 +46,8 @@
       border-radius: 0.2rem;
       padding: 0 0.5rem;
       font-size: 1.2rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
-      color: var(--color-light-grey-400);
+      border: 0.1rem solid var(--color-border-default);
+      color: var(--color-text-muted);
       line-height: 2rem;
       cursor: pointer;
 
@@ -56,14 +56,14 @@
       }
 
       &:hover {
-        border-color: var(--color-dark-grey-250);
-        background: var(--color-dark-grey-100);
+        border-color: var(--color-border-default);
+        background: var(--color-bg-panel-header);
       }
 
       &--toggled:hover,
       &--toggled {
-        border-color: var(--color-blue-200);
-        color: var(--color-light-grey-50);
+        border-color: var(--color-accent);
+        color: var(--color-text-primary);
       }
     }
   }
@@ -78,9 +78,9 @@
       padding-right: 2.8rem;
       padding-left: 1rem;
       width: 100%;
-      background: var(--color-dark-grey-85);
+      background: var(--color-bg-panel);
       border-radius: 0.2rem;
-      border: 0.1rem solid var(--color-dark-grey-200);
+      border: 0.1rem solid var(--color-border-default);
 
       &__container {
         @include flexCenter;
@@ -116,11 +116,11 @@
         width: 2.8rem;
 
         svg {
-          color: var(--color-dark-grey-400);
+          color: var(--color-text-muted);
         }
 
         &:hover svg {
-          color: var(--color-dark-grey-500);
+          color: var(--color-text-secondary);
         }
       }
     }
@@ -143,7 +143,7 @@
       font-size: 1.2rem;
       height: 2.5rem;
       margin-bottom: 0.5rem;
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-muted);
       padding: 0 0.5rem;
       user-select: none;
     }
@@ -161,7 +161,7 @@
       &__name {
         font-size: 1.2rem;
         font-weight: 500;
-        color: var(--color-dark-grey-400);
+        color: var(--color-text-muted);
       }
 
       &__selector {
@@ -178,11 +178,11 @@
     padding: 0.5rem 0;
     border-radius: 0.2rem;
     cursor: pointer;
-    border: 0.1rem solid var(--color-dark-grey-200);
-    background: var(--color-dark-grey-100);
+    border: 0.1rem solid var(--color-border-default);
+    background: var(--color-bg-panel-header);
 
     &:hover {
-      background: var(--color-dark-grey-200);
+      background: var(--color-bg-tag);
     }
 
     & + & {
@@ -202,7 +202,7 @@
     line-height: 2.2rem;
     width: 80%;
     padding: 0 1rem;
-    color: var(--color-light-grey-300);
+    color: var(--color-text-muted);
     font-weight: 500;
   }
 
@@ -232,11 +232,11 @@
     }
 
     &__cancel-btn {
-      background: var(--color-dark-grey-100);
-      border: 0.1rem solid var(--color-dark-grey-300);
+      background: var(--color-bg-panel-header);
+      border: 0.1rem solid var(--color-border-strong);
 
       &:hover {
-        background: var(--color-dark-grey-250);
+        background: var(--color-bg-hover);
       }
     }
   }
@@ -246,7 +246,7 @@
 
     padding: 0 1rem;
     height: 2.2rem;
-    color: var(--color-dark-grey-500);
+    color: var(--color-text-muted);
 
     &__date__icon svg {
       display: flex;
@@ -270,7 +270,7 @@
 
     &__author__name {
       margin-left: 0.5rem;
-      color: var(--color-light-grey-500);
+      color: var(--color-text-muted);
       font-size: 1.1rem;
     }
 
@@ -281,9 +281,9 @@
       height: 1.4rem;
       font-size: 1rem;
       font-weight: 500;
-      color: var(--color-light-grey-50);
+      color: var(--color-text-primary);
       border-radius: 0.2rem;
-      background: var(--color-blue-50);
+      background: var(--color-bg-tag);
     }
   }
 
@@ -293,14 +293,14 @@
     height: 100%;
     width: 2.5rem;
     cursor: pointer;
-    color: var(--color-dark-grey-300);
+    color: var(--color-text-muted);
 
     svg {
       font-size: 1.6rem;
     }
 
     &:hover svg {
-      color: var(--color-dark-grey-400);
+      color: var(--color-text-secondary);
     }
   }
 
@@ -309,7 +309,7 @@
 
     height: 100%;
     width: 2.5rem;
-    color: var(--color-dark-grey-280);
+    color: var(--color-text-muted);
   }
 
   &__dialog {
@@ -341,7 +341,7 @@
     }
 
     &__header__close-btn {
-      color: var(--color-light-grey-300);
+      color: var(--color-text-muted);
     }
 
     &__content {

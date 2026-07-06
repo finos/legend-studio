@@ -93,7 +93,7 @@
   &__editor__expected-return-type--highlighted {
     border-color: var(--color-yellow-0);
     background: var(--color-yellow-0);
-    color: var(--color-dark-grey-0);
+    color: var(--color-dark-grey-50);
   }
 
   &__editor__expand-btn {
@@ -126,7 +126,7 @@
   &--dnd-match &__editor__expected-return-type {
     background: var(--color-yellow-0);
     border-color: var(--color-yellow-0);
-    color: var(--color-dark-grey-0);
+    color: var(--color-dark-grey-50);
   }
 
   &__action {
