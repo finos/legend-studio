@@ -625,7 +625,6 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
         task.resourceId = lastPmLikeTask.resourceId;
         task.accessPointGroup = lastPmLikeTask.accessPointGroup;
         task.consumer = lastPmLikeTask.consumer;
-        task.workflowGuid = lastPmLikeTask.workflowGuid;
         task.createdOn = lastPmLikeTask.createdOn;
       }
       return task;

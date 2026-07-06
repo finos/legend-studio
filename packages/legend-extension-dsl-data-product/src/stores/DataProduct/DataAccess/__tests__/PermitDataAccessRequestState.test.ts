@@ -153,7 +153,6 @@ const createMockPmTask = (
   task.resourceId = 'TestProduct';
   task.accessPointGroup = 'TestAPG';
   task.consumer = createMockConsumer();
-  task.workflowGuid = 'wf-1';
   if (overrides.action !== undefined) {
     task.action = overrides.action;
   }
@@ -178,7 +177,6 @@ const createMockDoTask = (
   task.deploymentId = '123';
   task.accessPointGroup = 'TestAPG';
   task.consumer = createMockConsumer();
-  task.workflowGuid = 'wf-1';
   if (overrides.action !== undefined) {
     task.action = overrides.action;
   }

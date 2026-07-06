@@ -74,7 +74,6 @@ export enum V1_WorkflowTaskAction {
 
 export abstract class V1_WorkflowTask {
   taskId!: string;
-  workflowGuid!: string;
   status!: V1_WorkflowTaskStatus;
   createdOn!: Date;
   assignees: string[] = [];
@@ -133,6 +132,20 @@ export class V1_DataRequestsWithWorkflowResponse {
 
 export class V1_DataRequestTasksResponse {
   workflowTasks: V1_WorkflowTask[] = [];
+}
+
+// -------------------------------- Pending Data Request Tasks ------------------------------------------
+
+export class V1_PendingDataRequestTaskEntry {
+  workflowId!: string;
+  dataRequestId!: string;
+  workflowUrl!: string;
+  task!: V1_WorkflowTask;
+}
+
+export class V1_PendingDataRequestTasksResponse {
+  dataOwner: V1_PendingDataRequestTaskEntry[] = [];
+  privilegeManager: V1_PendingDataRequestTaskEntry[] = [];
 }
 
 // -------------------------------- Permit Workflow Server Types --------------------------------

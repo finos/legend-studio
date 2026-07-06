@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { V1_LiteDataContractWithUserStatus } from '@finos/legend-graph';
+import {
+  V1_LiteDataContract,
+  V1_LiteDataContractWithUserStatus,
+} from '@finos/legend-graph';
 import {
   DataGrid,
   type DataGridCellRendererParams,
@@ -121,6 +124,7 @@ export const EntitlementsPendingContractsDashboard = observer(
       () =>
         allContractsCreatedByUser.filter(
           (contract) =>
+            contract.contractResultLite instanceof V1_LiteDataContract &&
             !isContractInTerminalState(contract.contractResultLite) &&
             !myPendingContractIds.has(contract.contractResultLite.guid),
         ),
