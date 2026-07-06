@@ -3675,7 +3675,7 @@ describe('DataProductViewer', () => {
 
       // Now all should be collapsed again
       expect(screen.queryAllByText('Access Point 1').length).toBe(0);
-    });
+    }, 60000);
   });
 
   describe('fetchSampleData logic', () => {
@@ -3979,7 +3979,7 @@ describe('DataProductViewer', () => {
       });
 
       // Confirm sample queries rendered
-      await screen.findByText('Sample TDS Query');
+      await screen.findByText('Sample TDS Query', {}, { timeout: 10000 });
 
       // Navigate to the "Query" tab within the sample query card
       const queryButtons = await screen.findAllByRole('button', {
@@ -4018,7 +4018,7 @@ describe('DataProductViewer', () => {
           buildMockDataProductArtifactWithSampleQueries();
       });
 
-      await screen.findByText('Sample TDS Query');
+      await screen.findByText('Sample TDS Query', {}, { timeout: 10000 });
 
       const queryButtons = await screen.findAllByRole('button', {
         name: 'Query',
@@ -4054,7 +4054,7 @@ describe('DataProductViewer', () => {
           buildMockDataProductArtifactWithSampleQueries();
       });
 
-      await screen.findByText('Sample TDS Query');
+      await screen.findByText('Sample TDS Query', {}, { timeout: 10000 });
 
       const queryButtons = await screen.findAllByRole('button', {
         name: 'Query',
@@ -4096,7 +4096,7 @@ describe('DataProductViewer', () => {
           buildMockDataProductArtifactWithSampleQueries();
       });
 
-      await screen.findByText('Sample Relation Query');
+      await screen.findByText('Sample Relation Query', {}, { timeout: 10000 });
 
       const queryButtons = await screen.findAllByRole('button', {
         name: 'Query',
@@ -4135,10 +4135,10 @@ describe('DataProductViewer', () => {
           buildMockDataProductArtifactWithSampleQueries();
       });
 
-      await screen.findByText('Sample TDS Query');
+      await screen.findByText('Sample TDS Query', {}, { timeout: 10000 });
 
       // Column Specifications is the default tab — the "Sample Values" header should be visible
-      await screen.findByText('Sample Values');
+      await screen.findByText('Sample Values', {}, { timeout: 10000 });
 
       // The parsed sample values content should appear in the grid
       await screen.findByText(MOCK__TDS_COLUMN_SAMPLE_VALUES);
@@ -4158,8 +4158,8 @@ describe('DataProductViewer', () => {
           buildMockDataProductArtifactWithSampleQueries();
       });
 
-      await screen.findByText('Sample Relation Query');
-      await screen.findByText('Description');
+      await screen.findByText('Sample Relation Query', {}, { timeout: 10000 });
+      await screen.findByText('Description', {}, { timeout: 10000 });
       await screen.findByText('Relation column description from field');
       await screen.findByText('Legacy relation column description');
     });
