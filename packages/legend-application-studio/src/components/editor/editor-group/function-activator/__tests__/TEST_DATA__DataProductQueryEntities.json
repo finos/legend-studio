@@ -1,0 +1,550 @@
+[
+  {
+    "path": "com::entity::LegalEntity",
+    "content": {
+      "_type": "class",
+      "name": "LegalEntity",
+      "package": "com::entity",
+      "properties": [
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "entityId"
+        },
+        {
+          "genericType": {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "String"
+            }
+          },
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name"
+        }
+      ]
+    },
+    "classifierPath": "meta::pure::metamodel::type::Class"
+  },
+  {
+    "path": "com::entity::appendOnlyQuery__Relation_1_",
+    "content": {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "with",
+          "parameters": [
+            {
+              "_type": "func",
+              "function": "project",
+              "parameters": [
+                {
+                  "_type": "func",
+                  "function": "getAll",
+                  "parameters": [
+                    {
+                      "_type": "packageableElementPtr",
+                      "fullPath": "com::entity::LegalEntity",
+                      "sourceInformation": {
+                        "endColumn": 26,
+                        "endLine": 58,
+                        "sourceId": "",
+                        "startColumn": 3,
+                        "startLine": 58
+                      }
+                    }
+                  ],
+                  "sourceInformation": {
+                    "endColumn": 32,
+                    "endLine": 58,
+                    "sourceId": "",
+                    "startColumn": 27,
+                    "startLine": 58
+                  }
+                },
+                {
+                  "_type": "classInstance",
+                  "sourceInformation": {
+                    "endColumn": 6,
+                    "endLine": 62,
+                    "sourceId": "",
+                    "startColumn": 6,
+                    "startLine": 59
+                  },
+                  "type": "colSpecArray",
+                  "value": {
+                    "colSpecs": [
+                      {
+                        "function1": {
+                          "_type": "lambda",
+                          "body": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "x",
+                                  "sourceInformation": {
+                                    "endColumn": 21,
+                                    "endLine": 60,
+                                    "sourceId": "",
+                                    "startColumn": 20,
+                                    "startLine": 60
+                                  }
+                                }
+                              ],
+                              "property": "entityId",
+                              "sourceInformation": {
+                                "endColumn": 30,
+                                "endLine": 60,
+                                "sourceId": "",
+                                "startColumn": 23,
+                                "startLine": 60
+                              }
+                            }
+                          ],
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 30,
+                            "endLine": 60,
+                            "sourceId": "",
+                            "startColumn": 19,
+                            "startLine": 60
+                          }
+                        },
+                        "name": "entityId",
+                        "sourceInformation": {
+                          "endColumn": 30,
+                          "endLine": 60,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 60
+                        }
+                      },
+                      {
+                        "function1": {
+                          "_type": "lambda",
+                          "body": [
+                            {
+                              "_type": "property",
+                              "parameters": [
+                                {
+                                  "_type": "var",
+                                  "name": "x",
+                                  "sourceInformation": {
+                                    "endColumn": 17,
+                                    "endLine": 61,
+                                    "sourceId": "",
+                                    "startColumn": 16,
+                                    "startLine": 61
+                                  }
+                                }
+                              ],
+                              "property": "name",
+                              "sourceInformation": {
+                                "endColumn": 22,
+                                "endLine": 61,
+                                "sourceId": "",
+                                "startColumn": 19,
+                                "startLine": 61
+                              }
+                            }
+                          ],
+                          "parameters": [
+                            {
+                              "_type": "var",
+                              "name": "x"
+                            }
+                          ],
+                          "sourceInformation": {
+                            "endColumn": 22,
+                            "endLine": 61,
+                            "sourceId": "",
+                            "startColumn": 15,
+                            "startLine": 61
+                          }
+                        },
+                        "name": "name",
+                        "sourceInformation": {
+                          "endColumn": 22,
+                          "endLine": 61,
+                          "sourceId": "",
+                          "startColumn": 8,
+                          "startLine": 61
+                        }
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 41,
+                "endLine": 58,
+                "sourceId": "",
+                "startColumn": 35,
+                "startLine": 58
+              }
+            },
+            {
+              "_type": "packageableElementPtr",
+              "fullPath": "com::entity::EntityDataProductAppendOnly",
+              "sourceInformation": {
+                "endColumn": 44,
+                "endLine": 64,
+                "sourceId": "",
+                "startColumn": 5,
+                "startLine": 64
+              }
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 9,
+            "endLine": 63,
+            "sourceId": "",
+            "startColumn": 6,
+            "startLine": 63
+          }
+        }
+      ],
+      "name": "appendOnlyQuery__Relation_1_",
+      "package": "com::entity",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnGenericType": {
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "meta::pure::metamodel::relation::Relation"
+        },
+        "typeArguments": [
+          {
+            "rawType": {
+              "_type": "packageableType",
+              "fullPath": "meta::pure::metamodel::type::Any"
+            }
+          }
+        ]
+      },
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      }
+    },
+    "classifierPath": "meta::pure::metamodel::function::ConcreteFunctionDefinition"
+  },
+  {
+    "path": "store::lakehouse::EntityDatabase",
+    "content": {
+      "_type": "relational",
+      "filters": [],
+      "includedStoreSpecifications": [
+        {
+          "packageableElementPointer": {
+            "path": "com::entity::EntityAppendOnly"
+          },
+          "storeType": "Ingest"
+        }
+      ],
+      "joins": [],
+      "name": "EntityDatabase",
+      "package": "store::lakehouse",
+      "schemas": []
+    },
+    "classifierPath": "meta::relational::metamodel::Database"
+  },
+  {
+    "path": "com::entity::EntityMappingAppendOnly",
+    "content": {
+      "_type": "mapping",
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "com::entity::LegalEntity",
+          "distinct": false,
+          "mainTable": {
+            "_type": "Table",
+            "database": "store::lakehouse::EntityDatabase",
+            "mainTableDb": "store::lakehouse::EntityDatabase",
+            "schema": "ENTITY_DATA2",
+            "table": "LEGALENTITY"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "ENTITY_ID",
+              "table": {
+                "_type": "Table",
+                "database": "store::lakehouse::EntityDatabase",
+                "mainTableDb": "store::lakehouse::EntityDatabase",
+                "schema": "ENTITY_DATA2",
+                "table": "LEGALENTITY"
+              },
+              "tableAlias": "LEGALENTITY"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "com::entity::LegalEntity",
+                "property": "entityId"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "ENTITY_ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::lakehouse::EntityDatabase",
+                  "mainTableDb": "store::lakehouse::EntityDatabase",
+                  "schema": "ENTITY_DATA2",
+                  "table": "LEGALENTITY"
+                },
+                "tableAlias": "LEGALENTITY"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "com::entity::LegalEntity",
+                "property": "name"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "name",
+                "table": {
+                  "_type": "Table",
+                  "database": "store::lakehouse::EntityDatabase",
+                  "mainTableDb": "store::lakehouse::EntityDatabase",
+                  "schema": "ENTITY_DATA2",
+                  "table": "LEGALENTITY"
+                },
+                "tableAlias": "LEGALENTITY"
+              }
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "EntityMappingAppendOnly",
+      "package": "com::entity",
+      "tests": []
+    },
+    "classifierPath": "meta::pure::mapping::Mapping"
+  },
+  {
+    "path": "com::entity::EntityDataProductAppendOnly",
+    "content": {
+      "_type": "dataProduct",
+      "accessPointGroups": [
+        {
+          "_type": "modelAccessPointGroup",
+          "description": "desc",
+          "diagrams": [
+            {
+              "title": "Entity Diagram",
+              "description": "Entity data model diagram",
+              "diagram": {
+                "path": "com::entity::EntityDiagram"
+              }
+            }
+          ],
+          "id": "modelAccessPointGroup",
+          "mapping": {
+            "path": "com::entity::EntityMappingAppendOnly"
+          }
+        }
+      ],
+      "description": "Entity DataProduct (AppendOnly), one stop shop for Entity Data",
+      "name": "EntityDataProductAppendOnly",
+      "package": "com::entity",
+      "title": "EntityDataProduct"
+    },
+    "classifierPath": "meta::external::catalog::dataProduct::specification::metamodel::DataProduct"
+  },
+  {
+    "path": "com::entity::EntityAppendOnly",
+    "content": {
+      "_type": "ingestDefinition",
+      "datasetGroup": "ENTITY_DATA2",
+      "datasets": [
+        {
+          "ingestPartitionColumns": [],
+          "name": "LEGALENTITY",
+          "preprocessors": [],
+          "primaryKey": [],
+          "privacyClassification": {
+            "sensitivity": "DP00"
+          },
+          "source": {
+            "_type": "serializedSource",
+            "schema": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Varchar",
+                      "sourceInformation": {
+                        "endColumn": 28,
+                        "endLine": 18,
+                        "sourceId": "",
+                        "startColumn": 18,
+                        "startLine": 18
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": [
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 27,
+                          "endLine": 18,
+                          "sourceId": "",
+                          "startColumn": 26,
+                          "startLine": 18
+                        },
+                        "value": 32
+                      }
+                    ]
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "ENTITY_ID",
+                  "sourceInformation": {
+                    "endColumn": 28,
+                    "endLine": 18,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 18
+                  }
+                },
+                {
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Varchar",
+                      "sourceInformation": {
+                        "endColumn": 23,
+                        "endLine": 19,
+                        "sourceId": "",
+                        "startColumn": 13,
+                        "startLine": 19
+                      }
+                    },
+                    "typeArguments": [],
+                    "typeVariableValues": [
+                      {
+                        "_type": "integer",
+                        "sourceInformation": {
+                          "endColumn": 22,
+                          "endLine": 19,
+                          "sourceId": "",
+                          "startColumn": 21,
+                          "startLine": 19
+                        },
+                        "value": 32
+                      }
+                    ]
+                  },
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "name": "name",
+                  "sourceInformation": {
+                    "endColumn": 23,
+                    "endLine": 19,
+                    "sourceId": "",
+                    "startColumn": 7,
+                    "startLine": 19
+                  }
+                }
+              ],
+              "sourceInformation": {
+                "endColumn": 4,
+                "endLine": 20,
+                "sourceId": "",
+                "startColumn": 15,
+                "startLine": 17
+              }
+            }
+          },
+          "storageLayoutClusterColumns": [],
+          "storageLayoutPartitionColumns": []
+        }
+      ],
+      "name": "EntityAppendOnly",
+      "owner": {
+        "_type": "appDir",
+        "prodParallel": {
+          "appDirId": 1,
+          "level": "DEPLOYMENT"
+        },
+        "production": {
+          "appDirId": 2,
+          "level": "DEPLOYMENT"
+        }
+      },
+      "package": "com::entity",
+      "readMode": {
+        "_type": "Undefined",
+        "format": {
+          "_type": "CSV",
+          "fieldDelimiter": ",",
+          "headerRowsToSkipCount": 0,
+          "parseHeader": false,
+          "recordDelimiter": "\n"
+        }
+      },
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 22,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 15
+      },
+      "stereotypes": [],
+      "taggedValues": [],
+      "testSuites": [],
+      "writeMode": {
+        "_type": "append_only"
+      }
+    },
+    "classifierPath": "meta::external::ingest::specification::metamodel::IngestDefinition"
+  },
+  {
+    "path": "com::entity::EntityDiagram",
+    "content": {
+      "_type": "diagram",
+      "classViews": [],
+      "generalizationViews": [],
+      "name": "EntityDiagram",
+      "package": "com::entity",
+      "propertyViews": []
+    },
+    "classifierPath": "meta::pure::metamodel::diagram::Diagram"
+  }
+]

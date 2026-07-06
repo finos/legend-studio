@@ -16,10 +16,16 @@
 
 import { expect, test } from '@jest/globals';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
-import { createSpy, integrationTest } from '@finos/legend-shared/test';
+import {
+  createSpy,
+  integrationTest,
+  type TEMPORARY__JestMatcher,
+} from '@finos/legend-shared/test';
+import { noop } from '@finos/legend-shared';
 import {
   fireEvent,
   getByDisplayValue,
+  getByPlaceholderText,
   getByText,
   getByTitle,
   queryByRole,
@@ -30,6 +36,7 @@ import {
   TEST__setUpEditorWithDefaultSDLCData,
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
 import TEST_DATA__SimpleRelationalModel from './TEST_DATA__SimpleRelationalEntities.json' with { type: 'json' };
+import TEST_DATA__DataProductQueryEntities from './TEST_DATA__DataProductQueryEntities.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import {
   type V1_PureGraphManager,
@@ -38,6 +45,7 @@ import {
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { TEST_DATA_SimpleSnowflakeArtifact } from './TEST_DATA_SimpleSnowflakeArtifact.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
+import { FunctionEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
@@ -186,3 +194,111 @@ test(integrationTest('Test change detection in function editor'), async () => {
 
   expect(functionChange).toBeDefined();
 });
+
+test(
+  integrationTest(
+    'Create function test suite warns (not errors) when query has no runtime or accessors',
+  ),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: TEST_DATA__DataProductQueryEntities,
+      },
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    const functionPath = 'com::entity::appendOnlyQuery__Relation_1_';
+    const functionElement =
+      MOCK__editorStore.graphManagerState.graph.getFunction(functionPath);
+
+    // Navigate via the explorer tree to open the function editor
+    const explorerTree = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+    );
+    fireEvent.click(getByText(explorerTree, 'com'));
+    await waitFor(() => getByText(explorerTree, 'entity'));
+    fireEvent.click(getByText(explorerTree, 'entity'));
+    const functionDisplayName = 'appendOnlyQuery():Relation<Any>[1]';
+    await waitFor(() => getByText(explorerTree, functionDisplayName));
+    fireEvent.click(getByText(explorerTree, functionDisplayName));
+
+    const functionEditor = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR),
+    );
+    const functionEditorState =
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        FunctionEditorState,
+      );
+
+    // Sanity check: the function has no runtime binding (the warning scenario)
+    expect(
+      functionEditorState.functionTestableEditorState.associatedRuntimes
+        ?.length ?? 0,
+    ).toBe(0);
+
+    // Navigate to the Test Suites tab
+    fireEvent.click(getByText(functionEditor, 'Test Suites'));
+
+    const testSuitesPanel = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT),
+    );
+
+    // Spy on notifications BEFORE triggering suite creation
+    const warnSpy = createSpy(
+      MOCK__editorStore.applicationStore.notificationService,
+      'notifyWarning',
+    ).mockImplementation(noop);
+    const errorSpy = createSpy(
+      MOCK__editorStore.applicationStore.notificationService,
+      'notifyError',
+    ).mockImplementation(noop);
+
+    // Open the Create Function Test Suite modal via the blank placeholder
+    fireEvent.click(getByText(testSuitesPanel, 'Add Test Suite'));
+    const createSuiteModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    expect(
+      getByText(createSuiteModal, 'Create Function Test Suite'),
+    ).toBeDefined();
+
+    // Fill in suite + test names
+    const suiteNameInput = getByPlaceholderText(createSuiteModal, 'Suite Name');
+    fireEvent.change(suiteNameInput, { target: { value: 'mySuite' } });
+    const testNameInput = getByPlaceholderText(createSuiteModal, 'Test Name');
+    fireEvent.change(testNameInput, { target: { value: 'myTest' } });
+
+    // Click Create - should warn (not error) and still create the suite
+    fireEvent.click(getByText(createSuiteModal, 'Create'));
+
+    await waitFor(() =>
+      expect(warnSpy as TEMPORARY__JestMatcher).toHaveBeenCalled(),
+    );
+    const warnMessages = (
+      warnSpy as unknown as { mock: { calls: unknown[][] } }
+    ).mock.calls.map((args) => String(args[0]));
+    expect(
+      warnMessages.some((msg) =>
+        msg.includes(
+          'No runtime or accessors found, or they could not be resolved. For Relational (non-Lakehouse) function testing, please ensure that your query is bound to a runtime',
+        ),
+      ),
+    ).toBe(true);
+    expect(errorSpy as TEMPORARY__JestMatcher).not.toHaveBeenCalled();
+
+    // The suite should have been created on the function despite the warning
+    await waitFor(() =>
+      expect(functionElement.tests.length).toBeGreaterThan(0),
+    );
+    const createdSuite = functionElement.tests[0];
+    expect(createdSuite?.id).toBe('mySuite');
+    expect(createdSuite?.tests[0]?.id).toBe('myTest');
+  },
+);

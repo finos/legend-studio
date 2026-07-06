@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+  runInAction,
+} from 'mobx';
 import type { EditorStore } from '../../../../EditorStore.js';
 import type { FunctionEditorState } from '../../FunctionEditorState.js';
 import {
@@ -43,6 +50,8 @@ import {
   type ValueSpecification,
   type TestAssertion,
   type AccessorOwner,
+  type AbstractPureGraphManager,
+  type PackageableElement,
   FunctionParameterValue,
   VariableExpression,
   FunctionTest,
@@ -57,8 +66,11 @@ import {
   InstanceValue,
   PackageableElementReference,
   Database,
+  DataProduct,
+  IngestDefinition,
   PackageableElementExplicitReference,
   observe_ValueSpecification,
+  observe_RelationElementsData,
   buildLambdaVariableExpressions,
   EqualTo,
   EqualToRelation,
@@ -72,7 +84,7 @@ import {
   type Accessor,
   DataProductAccessor,
   IngestionAccessor,
-  RelationalStoreAccessor,
+  getAccessorItemLabelForElement,
   V1_buildRelationElementsDataFromAccessors,
 } from '@finos/legend-graph';
 import {
@@ -191,6 +203,28 @@ const resolveRuntimesFromQuery = (
   }
 };
 
+interface ElementDataItem {
+  id: string;
+  label: string;
+}
+
+const getElementDataItems = (
+  element: PackageableElement,
+  graphManager: AbstractPureGraphManager,
+): ElementDataItem[] => {
+  if (element instanceof DataProduct) {
+    return element.accessPointGroups
+      .flatMap((g) => g.accessPoints)
+      .map((ap) => ({ id: ap.id, label: ap.id }));
+  }
+  if (element instanceof IngestDefinition) {
+    return graphManager
+      .getIngestDefinitionDatasetNames(element)
+      .map((name) => ({ id: name, label: name }));
+  }
+  return [];
+};
+
 export class FunctionStoreTestDataState {
   readonly editorStore: EditorStore;
   readonly testDataState: FunctionTestDataState;
@@ -239,51 +273,69 @@ export class FunctionStoreTestDataState {
     embeddedDataState: RelationElementsDataState,
   ): Promise<void> {
     const parentElement = this.storeTestData.element.value;
-    const accessors =
-      this.testDataState.functionTestableState
-        .resolvedIngestOrDataProductAccessors;
-    const parentAccessors = accessors.filter(
-      (a) => a.accessorOwner === parentElement.path,
+    const graphManager = this.editorStore.graphManagerState.graphManager;
+    const graph = this.editorStore.graphManagerState.graph;
+
+    // For Database parents, fall back to the schema+table form
+    if (parentElement instanceof Database) {
+      embeddedDataState.setAccessorOptions(undefined, undefined);
+      return;
+    }
+
+    const items = getElementDataItems(parentElement, graphManager);
+    if (items.length === 0) {
+      embeddedDataState.setAccessorOptions(undefined, undefined);
+      return;
+    }
+    const typeLabel = getAccessorItemLabelForElement(
+      parentElement as AccessorOwner,
     );
-    if (!parentAccessors.length) {
-      embeddedDataState.setAccessorOptions(undefined, undefined);
-      return;
-    }
-    const firstAccessor = parentAccessors[0];
-    if (!firstAccessor) {
-      embeddedDataState.setAccessorOptions(undefined, undefined);
-      return;
-    }
-
-    const columnOverrides = new Map<string, string[]>();
-    for (const accessor of parentAccessors) {
-      const cols = accessor.relationType.columns.map((col) => col.name);
-      if (cols.length > 0) {
-        columnOverrides.set(accessor.accessor, cols);
-      }
-    }
-
-    const typeLabel = firstAccessor.accessorLabel;
-    const options = parentAccessors.map((a) => ({
-      label: a.accessor,
-      value: a.accessor,
-      columns: columnOverrides.get(a.accessor) ?? [],
-    }));
-
-    if (columnOverrides.size > 0) {
+    const options = await Promise.all(
+      items.map(async (item) => {
+        let columns: string[] = [];
+        try {
+          if (parentElement instanceof IngestDefinition) {
+            const accessor =
+              await graphManager.createAccessorFromPackageableElement(
+                parentElement,
+                graph,
+                { schemaName: undefined, tableName: item.id },
+              );
+            if (accessor) {
+              columns = accessor.relationType.columns.map((c) => c.name);
+            }
+          } else if (parentElement instanceof DataProduct) {
+            const accessor = await graphManager.buildDataProductAccessor(
+              parentElement,
+              graph,
+              { tableName: item.id },
+            );
+            if (accessor) {
+              columns = accessor.relationType.columns.map((c) => c.name);
+            }
+          }
+        } catch {}
+        return { label: item.label, value: item.id, columns };
+      }),
+    );
+    runInAction(() => {
+      embeddedDataState.setAccessorOptions(options, typeLabel);
+      const columnsByItem = new Map(
+        options
+          .filter((o) => o.columns.length > 0)
+          .map((o) => [o.value, o.columns]),
+      );
       for (const relState of embeddedDataState.relationElementStates) {
         const rel = relState.relationElement;
         if (rel.columns.length === 0) {
           const key = rel.paths[rel.paths.length - 1];
-          const cols = key ? columnOverrides.get(key) : undefined;
+          const cols = key ? columnsByItem.get(key) : undefined;
           if (cols) {
             rel.columns = cols;
           }
         }
       }
-    }
-
-    embeddedDataState.setAccessorOptions(options, typeLabel);
+    });
   }
 
   setDataElementModal(val: boolean): void {
@@ -655,34 +707,38 @@ class FunctionTestDataState {
     return (this.dataHolder.testData ?? []).map((td) => td.element.value.path);
   }
 
-  get availableElementsToAdd(): { path: string }[] {
-    const accessors =
-      this.functionTestableState.resolvedIngestOrDataProductAccessors;
+  get availableElementsToAdd(): PackageableElement[] {
+    const graph = this.editorStore.graphManagerState.graph;
     const existingPaths = new Set(this.existingElementPaths);
-    const parentPaths = new Set<string>();
-    for (const accessor of accessors) {
-      const parentPath = accessor.path[0];
-      if (parentPath && !existingPaths.has(parentPath)) {
-        parentPaths.add(parentPath);
-      }
-    }
-    return Array.from(parentPaths).map((path) => ({ path }));
+    const candidates: PackageableElement[] = [
+      ...graph.ingests,
+      ...graph.dataProducts,
+      ...graph.databases,
+    ];
+    return candidates.filter((e) => !existingPaths.has(e.path));
   }
 
   addDataElement(elementPath: string): void {
-    const accessors =
-      this.functionTestableState.resolvedIngestOrDataProductAccessors;
-    const group = accessors.filter((a) => a.path[0] === elementPath);
-    if (!group.length) {
+    const element =
+      this.editorStore.graphManagerState.graph.getNullableElement(elementPath);
+    if (!element) {
       return;
     }
-    const element =
-      this.editorStore.graphManagerState.graph.getElement(elementPath);
     const data = new FunctionTestData();
     data.element = PackageableElementExplicitReference.create(
       element as AccessorOwner,
     );
-    data.data = V1_buildRelationElementsDataFromAccessors(group);
+    const matchingAccessors = this.functionTestableState.cachedAccessors.filter(
+      (a) => a.accessorOwner === elementPath,
+    );
+    if (matchingAccessors.length) {
+      data.data = V1_buildRelationElementsDataFromAccessors(matchingAccessors);
+    } else {
+      const relData = new RelationElementsData();
+      relData.relationElements = [];
+      data.data = relData;
+    }
+    observe_RelationElementsData(data.data as RelationElementsData);
     if (!this.dataHolder.testData) {
       this.dataHolder.testData = [];
     }
@@ -966,36 +1022,9 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
 
     const ingestOrDataProductAccessors =
       this.resolvedIngestOrDataProductAccessors;
-    const databaseAccessors = this.cachedAccessors.filter(
-      (a) => a instanceof RelationalStoreAccessor,
-    );
 
     try {
-      if (ingestOrDataProductAccessors.length) {
-        // Group by parent element path and create test data per parent
-        const parentElementMap = new Map<string, Accessor[]>();
-        for (const accessor of ingestOrDataProductAccessors) {
-          const key = accessor.accessorOwner;
-          if (key) {
-            const group = parentElementMap.get(key) ?? [];
-            group.push(accessor);
-            parentElementMap.set(key, group);
-          }
-        }
-        functionSuite.testData = Array.from(parentElementMap.entries()).map(
-          ([parentPath, group]) => {
-            const data = new FunctionTestData();
-            const element =
-              this.editorStore.graphManagerState.graph.getElement(parentPath);
-            data.element = PackageableElementExplicitReference.create(
-              element as AccessorOwner,
-            );
-            data.data = V1_buildRelationElementsDataFromAccessors(group);
-            return data;
-          },
-        );
-      } else {
-        // No ingest/data product accessors found — try runtime-based approach
+      if (!ingestOrDataProductAccessors.length) {
         const engineRuntimes = this.associatedRuntimes;
         if (engineRuntimes?.length) {
           assertTrue(
@@ -1047,10 +1076,44 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
             type.path === CORE_PURE_PATH.RELATION ||
             type.path === CORE_PURE_PATH.TABULAR_DATASET
           ) {
-            this.editorStore.applicationStore.notificationService.notifyError(
-              `Unable to create function test suite: no runtime or accessors found, or they could not be resolved`,
+            this.editorStore.applicationStore.notificationService.notifyWarning(
+              `No runtime or accessors found, or they could not be resolved. For Relational (non-Lakehouse) function testing, please ensure that your query is bound to a runtime`,
             );
-            return;
+            // continue: still allow the user to create the suite/test and
+            // add test data manually
+          }
+        }
+      }
+
+      if (this.cachedAccessors.length) {
+        const accessorsByOwner = new Map<string, Accessor[]>();
+        for (const accessor of this.cachedAccessors) {
+          const key = accessor.accessorOwner;
+          if (key) {
+            const group = accessorsByOwner.get(key) ?? [];
+            group.push(accessor);
+            accessorsByOwner.set(key, group);
+          }
+        }
+        if (!functionSuite.testData) {
+          functionSuite.testData = [];
+        }
+        for (const [parentPath, group] of accessorsByOwner.entries()) {
+          const builtData = V1_buildRelationElementsDataFromAccessors(group);
+          const existing = functionSuite.testData.find(
+            (td) => td.element.value.path === parentPath,
+          );
+          if (existing) {
+            existing.data = builtData;
+          } else {
+            const element =
+              this.editorStore.graphManagerState.graph.getElement(parentPath);
+            const data = new FunctionTestData();
+            data.element = PackageableElementExplicitReference.create(
+              element as AccessorOwner,
+            );
+            data.data = builtData;
+            functionSuite.testData.push(data);
           }
         }
       }
@@ -1062,10 +1125,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
       return;
     }
 
-    const hasTestData =
-      this.containsRuntime ||
-      ingestOrDataProductAccessors.length > 0 ||
-      databaseAccessors.length > 0;
+    const hasTestData = this.containsRuntime || this.cachedAccessors.length > 0;
     yield createFunctionTest(
       testName,
       this.editorStore.changeDetectionState.observerContext,
