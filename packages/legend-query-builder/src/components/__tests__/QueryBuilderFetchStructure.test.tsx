@@ -45,6 +45,7 @@ import {
   TEST_DATA__simpleGraphFetchWithSubtype,
   TEST_DATA__projectionWithDerivation,
   TEST_DATA__simpleProjectionWithSubtypesInDeepLevel,
+  TEST_DATA__projectionWithPercentileAggregation,
 } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import {
   TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
@@ -76,6 +77,7 @@ import {
 } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QueryBuilderGraphFetchTreeState } from '../../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
+import { QueryBuilderAggregateOperator_Percentile } from '../../stores/fetch-structure/tds/aggregation/operators/QueryBuilderAggregateOperator_Percentile.js';
 import {
   TEST__setUpQueryBuilder,
   dragAndDrop,
@@ -1922,6 +1924,76 @@ test(
       }),
     );
     await waitFor(() => getByText(projectionPanel, '50'));
+
+    // Verify the serialized query encodes the percentile argument as 'float', not 'decimal'.
+    // Before the fix, PrimitiveType.NUMBER was used in buildAggregateExpression; the V1
+    // transformer degrades NUMBER → Decimal → {"_type":"decimal"} → "0.5D" in PURE grammar,
+    // which the server rejects: "Can't match percentile(Number[*],Decimal[1],...)".
+    // After the fix, PrimitiveType.FLOAT → {"_type":"float"} → "0.5" → matches Float[1].
+    act(() => {
+      const serialized =
+        queryBuilderState.graphManagerState.graphManager.serializeRawValueSpecification(
+          queryBuilderState.buildQuery(),
+        );
+      const serializedStr = JSON.stringify(serialized);
+      expect(serializedStr).toContain('"_type":"float"');
+      expect(serializedStr).not.toContain('"_type":"decimal"');
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Query builder correctly loads percentile aggregation lambda into operator state',
+  ),
+  async () => {
+    const { queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    // Load a lambda containing both a 4-param and a 2-param percentile aggregate.
+    // This exercises buildAggregateColumnState — the read-back path from JSON → operator state.
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(
+          TEST_DATA__projectionWithPercentileAggregation.parameters,
+          TEST_DATA__projectionWithPercentileAggregation.body,
+        ),
+      );
+    });
+
+    const tdsState = guaranteeType(
+      queryBuilderState.fetchStructureState.implementation,
+      QueryBuilderTDSState,
+    );
+
+    // Two agg columns: [0] = 4-param percentile(x, 0.45, true, false)
+    //                  [1] = 2-param percentile(x, 0.36)
+    expect(tdsState.aggregationState.columns).toHaveLength(2);
+
+    // 4-param: percentile value 0.45 → stored as 45 (percent), acending=true, continuous=false
+    const op0 = guaranteeType(
+      tdsState.aggregationState.columns[0]?.operator,
+      QueryBuilderAggregateOperator_Percentile,
+      'First agg column must be a percentile operator',
+    );
+    expect(op0.percentile).toBeCloseTo(45);
+    expect(op0.acending).toBe(true);
+    expect(op0.continuous).toBe(false);
+
+    // 2-param: percentile value 0.36 → stored as 36, no ascending/continuous set
+    const op1 = guaranteeType(
+      tdsState.aggregationState.columns[1]?.operator,
+      QueryBuilderAggregateOperator_Percentile,
+      'Second agg column must be a percentile operator',
+    );
+    expect(op1.percentile).toBeCloseTo(36);
+    expect(op1.acending).toBeUndefined();
+    expect(op1.continuous).toBeUndefined();
   },
 );
 
