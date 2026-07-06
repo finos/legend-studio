@@ -276,7 +276,7 @@ describe('DataAccessRequestViewer', () => {
         await act(async () => {
           fireEvent.mouseDown(userButton);
         });
-        await screen.findByText('test-consumer-user-id');
+        await screen.findByText('test-consumer-user-id-1');
       });
 
       test('Race condition: initialSelectedUser overrides targetUsers[0] when async load completes late', async () => {
