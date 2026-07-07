@@ -15,9 +15,9 @@
  */
 
 import {
+  type V1_OrganizationalScope,
   ELEMENT_PATH_DELIMITER,
   V1_ModelAccessPointGroup,
-  type V1_OrganizationalScope,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
@@ -75,9 +75,9 @@ export const EntitlementsDataContractCreator = observer(
             .filter(
               (rendererConfig: ContractConsumerTypeRendererConfig) =>
                 !(apgState.apg instanceof V1_ModelAccessPointGroup) ||
-                rendererConfig.type !== 'User',
+                rendererConfig.type !== 'System Account',
             ),
-        [apgState.access, dataAccessState.dataAccessPlugins, apgState.apg],
+        [apgState.access, apgState.apg, dataAccessState.dataAccessPlugins],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',

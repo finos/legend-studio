@@ -240,7 +240,12 @@ const TimelineStepLinks = (props: {
     if (label.link) {
       return (
         <>
-          <Link href={label.link} target="_blank" rel="noopener noreferrer">
+          <Link
+            href={label.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__link--primary"
+          >
             {label.title}
           </Link>
           <IconButton
@@ -263,6 +268,7 @@ const TimelineStepLinks = (props: {
             href={label.externalLink}
             target="_blank"
             rel="noopener noreferrer"
+            className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__link--primary"
           >
             {label.title}
           </Link>
