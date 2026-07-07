@@ -333,45 +333,6 @@ export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
   },
 );
 
-export const observe_EmbeddedRelationFunctionPropertyMapping =
-  skipObservedWithContext(
-    (
-      metamodel: EmbeddedRelationFunctionPropertyMapping,
-      context,
-    ): EmbeddedRelationFunctionPropertyMapping => {
-      observe_Abstract_PropertyMapping(metamodel, context);
-
-      makeObservable(metamodel, {
-        propertyMappings: observable,
-        hashCode: computed,
-      });
-
-      metamodel.propertyMappings.forEach(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (pm) => observe_PropertyMapping(pm, context),
-      );
-
-      return metamodel;
-    },
-  );
-
-export const observe_InlineEmbeddedRelationFunctionPropertyMapping =
-  skipObservedWithContext(
-    (
-      metamodel: InlineEmbeddedRelationFunctionPropertyMapping,
-      context,
-    ): InlineEmbeddedRelationFunctionPropertyMapping => {
-      observe_Abstract_PropertyMapping(metamodel, context);
-
-      makeObservable(metamodel, {
-        inlineSetImplementation: observable,
-        hashCode: computed,
-      });
-
-      return metamodel;
-    },
-  );
-
 const observe_INTERNAL__UnknownPropertyMapping = skipObserved(
   (
     metamodel: INTERNAL__UnknownPropertyMapping,
@@ -518,6 +479,46 @@ export const observe_PropertyMapping = (
   metamodel.accept_PropertyMappingVisitor(new PropertyMappingObserver(context));
   return metamodel;
 };
+
+export const observe_EmbeddedRelationFunctionPropertyMapping =
+  skipObservedWithContext(
+    (
+      metamodel: EmbeddedRelationFunctionPropertyMapping,
+      context,
+    ): EmbeddedRelationFunctionPropertyMapping => {
+      observe_Abstract_PropertyMapping(metamodel, context);
+
+      makeObservable(metamodel, {
+        propertyMappings: observable,
+        hashCode: computed,
+      });
+
+      metamodel.propertyMappings.forEach((pm) =>
+        observe_PropertyMapping(pm, context),
+      );
+
+      return metamodel;
+    },
+  );
+
+export const observe_InlineEmbeddedRelationFunctionPropertyMapping =
+  skipObservedWithContext(
+    (
+      metamodel: InlineEmbeddedRelationFunctionPropertyMapping,
+      context,
+    ): InlineEmbeddedRelationFunctionPropertyMapping => {
+      observe_Abstract_PropertyMapping(metamodel, context);
+
+      makeObservable(metamodel, {
+        inlineSetImplementation: observable,
+        hashCode: computed,
+      });
+
+      observe_SetImplementation(metamodel.inlineSetImplementation, context);
+
+      return metamodel;
+    },
+  );
 
 export const observe_InferableMappingElementIdValue = skipObserved(
   (metamodel: InferableMappingElementIdValue): InferableMappingElementIdValue =>
