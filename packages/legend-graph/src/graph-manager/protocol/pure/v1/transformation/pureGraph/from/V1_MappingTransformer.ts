@@ -831,7 +831,14 @@ const transformRelationFunctionEmbeddedPropertyMapping = (
   });
   embedded.source = element.sourceSetImplementation.valueForSerialization;
   embedded.target = element.targetSetImplementation?.valueForSerialization;
-  // @discrepancy grammar-roundtrip
+  /**
+   * Omit `class` during protocol transformation as it is inferred from
+   * the property's target type. The engine grammar does not include it
+   * for embedded mappings, so we drop it to keep protocol roundtrip
+   * consistent.
+   *
+   * @discrepancy grammar-roundtrip
+   */
   embedded.class = undefined;
   embedded.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
