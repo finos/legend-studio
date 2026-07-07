@@ -20,6 +20,8 @@ import {
   assertNonEmptyString,
   guaranteeType,
   guaranteeNonNullable,
+  isEmpty,
+  isNonNullable,
   returnUndefOnError,
   UnsupportedOperationError,
 } from '@finos/legend-shared';
@@ -1360,7 +1362,7 @@ export class V1_PropertyMappingBuilder
         : topParent;
 
     // Detect inline embedded: engine uses the same _type with id set and empty propertyMappings
-    if (protocol.id !== undefined && protocol.propertyMappings.length === 0) {
+    if (isNonNullable(protocol.id) && isEmpty(protocol.propertyMappings)) {
       const id = protocol.id;
       const inline = new InlineEmbeddedRelationFunctionPropertyMapping(
         this.immediateParent,
