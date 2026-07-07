@@ -117,7 +117,9 @@ const AccessorQueryBuilderSetupPanelContent = observer(
     // Hide the runtime selector entirely when the builder reports no
     // compatible runtimes (e.g. ingest deep-link flow always uses an adhoc
     // runtime selected upstream).
-    const showRuntimeSelector = runtimeOptions.length > 0;
+    const showRuntimeSelector =
+      queryBuilderState.selectedAccessorOwner === undefined ||
+      runtimeOptions.length > 0;
 
     return (
       <div className="query-builder__setup__config-group">
