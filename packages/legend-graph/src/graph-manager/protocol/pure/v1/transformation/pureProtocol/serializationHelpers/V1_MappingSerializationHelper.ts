@@ -691,38 +691,6 @@ const relationFunctionPropertyMappingModelSchema = createModelSchema(
   },
 );
 
-function V1_serializeRelationFunctionPropertyMapping(
-  protocol: V1_PropertyMapping,
-): PlainObject<V1_PropertyMapping> | typeof SKIP {
-  if (protocol instanceof V1_RelationFunctionPropertyMapping) {
-    return serialize(relationFunctionPropertyMappingModelSchema, protocol);
-  } else if (protocol instanceof V1_RelationFunctionEmbeddedPropertyMapping) {
-    return serialize(
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      relationFunctionEmbeddedPropertyMappingModelSchema,
-      protocol,
-    );
-  }
-  return SKIP;
-}
-
-function V1_deserializeRelationFunctionPropertyMapping(
-  json: PlainObject<V1_PropertyMapping>,
-): V1_PropertyMapping | typeof SKIP {
-  switch (json._type) {
-    case V1_PropertyMappingType.RELATION_FUNCTION:
-      return deserialize(relationFunctionPropertyMappingModelSchema, json);
-    case V1_PropertyMappingType.RELATION_FUNCTION_EMBEDDED:
-      return deserialize(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        relationFunctionEmbeddedPropertyMappingModelSchema,
-        json,
-      );
-    default:
-      return SKIP;
-  }
-}
-
 const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
   V1_RelationFunctionEmbeddedPropertyMapping,
   {
@@ -738,11 +706,47 @@ const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
         V1_deserializeRelationFunctionPropertyMapping,
       ),
     ),
-    // @discrepancy grammar-roundtrip
+    /**
+     * `source` and `target` are inferrable from context for embedded
+     * mappings and are not represented in the engine grammar, so they
+     * may be absent after a grammar roundtrip.
+     *
+     * @discrepancy grammar-roundtrip
+     */
     source: optional(primitive()),
     target: optional(primitive()),
   },
 );
+
+function V1_serializeRelationFunctionPropertyMapping(
+  protocol: V1_PropertyMapping,
+): PlainObject<V1_PropertyMapping> | typeof SKIP {
+  if (protocol instanceof V1_RelationFunctionPropertyMapping) {
+    return serialize(relationFunctionPropertyMappingModelSchema, protocol);
+  } else if (protocol instanceof V1_RelationFunctionEmbeddedPropertyMapping) {
+    return serialize(
+      relationFunctionEmbeddedPropertyMappingModelSchema,
+      protocol,
+    );
+  }
+  return SKIP;
+}
+
+function V1_deserializeRelationFunctionPropertyMapping(
+  json: PlainObject<V1_PropertyMapping>,
+): V1_PropertyMapping | typeof SKIP {
+  switch (json._type) {
+    case V1_PropertyMappingType.RELATION_FUNCTION:
+      return deserialize(relationFunctionPropertyMappingModelSchema, json);
+    case V1_PropertyMappingType.RELATION_FUNCTION_EMBEDDED:
+      return deserialize(
+        relationFunctionEmbeddedPropertyMappingModelSchema,
+        json,
+      );
+    default:
+      return SKIP;
+  }
+}
 
 const relationFunctionClassMappingModelSchema = createModelSchema(
   V1_RelationFunctionClassMapping,
