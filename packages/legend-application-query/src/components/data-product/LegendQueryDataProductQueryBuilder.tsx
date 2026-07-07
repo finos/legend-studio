@@ -24,150 +24,25 @@ import {
   AnchorLinkIcon,
   CogIcon,
   ControlledDropdownMenu,
-  Dialog,
   MenuContent,
   MenuContentItem,
   MenuContentItemIcon,
   MenuContentItemLabel,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalFooterButton,
-  ModalHeader,
-  ModalHeaderActions,
-  ModalTitle,
   MoreVerticalIcon,
   PanelHeader,
   PanelHeaderActionItem,
   PanelHeaderActions,
-  TimesIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { LakehouseRuntime } from '@finos/legend-graph';
 import { useEffect, useState } from 'react';
 import type { LegendQueryDataProductQueryBuilderState } from '../../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
 import { formatDataProductOptionLabel } from '../shared/LegendQueryDataProductOptionLabel.js';
-import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
+import { LakehouseRuntimeConfigModal } from '../shared/LakehouseRuntimeConfigModal.js';
 
 /**
  * Modal for editing LakehouseRuntime configuration (environment and warehouse).
  */
-const LakehouseRuntimeConfigModal = observer(
-  (props: {
-    executionState:
-      | ModelAccessPointDataProductExecutionState
-      | LakehouseDataProductExecutionState;
-    open: boolean;
-    onClose: () => void;
-    darkMode: boolean;
-  }) => {
-    const { executionState, open, onClose, darkMode } = props;
-    const lakehouseRuntime =
-      executionState.selectedRuntime?.runtimeValue instanceof LakehouseRuntime
-        ? executionState.selectedRuntime.runtimeValue
-        : undefined;
-    const [env, setEnv] = useState(lakehouseRuntime?.environment ?? '');
-    const [warehouse, setWarehouse] = useState(
-      lakehouseRuntime?.warehouse ?? '',
-    );
-
-    // sync local state when the modal opens or the runtime changes
-    useEffect(() => {
-      if (open && lakehouseRuntime) {
-        setEnv(lakehouseRuntime.environment ?? '');
-        setWarehouse(lakehouseRuntime.warehouse ?? '');
-      }
-    }, [open, lakehouseRuntime]);
-
-    const applicationStore = useApplicationStore();
-
-    const handleApply = (): void => {
-      if (lakehouseRuntime) {
-        const newEnv = env || undefined;
-        const newWarehouse = warehouse || undefined;
-        const hasChanged =
-          newEnv !== lakehouseRuntime.environment ||
-          newWarehouse !== lakehouseRuntime.warehouse;
-        lakehouseRuntime.environment = newEnv;
-        lakehouseRuntime.warehouse = newWarehouse;
-        if (hasChanged) {
-          LegendQueryUserDataHelper.persistLakehouseUserInfo(
-            applicationStore.userDataService,
-            {
-              env: newEnv,
-              snowflakeWarehouse: newWarehouse,
-            },
-          );
-        }
-      }
-      onClose();
-    };
-
-    if (!lakehouseRuntime) {
-      return null;
-    }
-
-    return (
-      <Dialog onClose={onClose} open={open}>
-        <Modal darkMode={darkMode}>
-          <ModalHeader>
-            <ModalTitle
-              icon={<CogIcon />}
-              title="Lakehouse Runtime Configuration"
-            />
-            <ModalHeaderActions>
-              <button
-                className="modal__header__action"
-                tabIndex={-1}
-                onClick={onClose}
-              >
-                <TimesIcon />
-              </button>
-            </ModalHeaderActions>
-          </ModalHeader>
-          <ModalBody>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Environment
-              </div>
-              <input
-                className="panel__content__form__section__input input--dark input--small"
-                spellCheck={false}
-                value={env}
-                placeholder="(optional)"
-                onChange={(e) => setEnv(e.target.value)}
-              />
-            </div>
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Warehouse
-              </div>
-              <input
-                className="panel__content__form__section__input input--dark input--small"
-                spellCheck={false}
-                value={warehouse}
-                placeholder="(optional)"
-                onChange={(e) => setWarehouse(e.target.value)}
-              />
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              text="Apply"
-              onClick={handleApply}
-              type="primary"
-            />
-            <ModalFooterButton
-              text="Cancel"
-              onClick={onClose}
-              type="secondary"
-            />
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
 
 const LegendDataProductQueryBuilderSetupPanelContent = observer(
   (props: { queryBuilderState: LegendQueryDataProductQueryBuilderState }) => {
@@ -256,7 +131,12 @@ const LegendDataProductQueryBuilderSetupPanelContent = observer(
         {(executionState instanceof ModelAccessPointDataProductExecutionState ||
           executionState instanceof LakehouseDataProductExecutionState) && (
           <LakehouseRuntimeConfigModal
-            executionState={executionState}
+            lakehouseRuntime={
+              executionState.selectedRuntime?.runtimeValue instanceof
+              LakehouseRuntime
+                ? executionState.selectedRuntime.runtimeValue
+                : undefined
+            }
             open={isLakehouseConfigModalOpen}
             onClose={() => setIsLakehouseConfigModalOpen(false)}
             darkMode={

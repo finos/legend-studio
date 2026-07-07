@@ -34,3 +34,22 @@ export class EntitiesWithOrigin {
     this.entities = entities;
   }
 }
+
+export class EntityWithOrigin {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  entity: Entity;
+
+  constructor(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    entity: Entity,
+  ) {
+    this.groupId = groupId;
+    this.artifactId = artifactId;
+    this.versionId = versionId;
+    this.entity = entity;
+  }
+}

@@ -62,6 +62,7 @@ import {
 import { buildGraphForDataProduct } from '../../utils/LakehouseUtils.js';
 import {
   type Entity,
+  type ProjectGAVCoordinates,
   type StoredFileGeneration,
   parseGAVCoordinates,
   parseProjectIdentifier,
@@ -70,6 +71,7 @@ import { deserialize } from 'serializr';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataProductModelQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateDataProductSampleQueryUrl,
+  EXTERNAL_APPLICATION_NAVIGATION__generateIngestQueryUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
@@ -423,6 +425,25 @@ export class LegendMarketplaceProductViewerStore {
                 );
               }
             : undefined,
+          openIngestQuery: projectGAV
+            ? (
+                gav: ProjectGAVCoordinates,
+                ingestDefinitionPath: string,
+                dataSet: string,
+              ): void => {
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                  EXTERNAL_APPLICATION_NAVIGATION__generateIngestQueryUrl(
+                    this.marketplaceBaseStore.applicationStore.config
+                      .queryApplicationUrl,
+                    gav.groupId,
+                    gav.artifactId,
+                    gav.versionId,
+                    ingestDefinitionPath,
+                    dataSet,
+                  ),
+                );
+              }
+            : undefined,
         },
         this.marketplaceBaseStore.registryServerClient,
       );
@@ -659,6 +680,23 @@ export class LegendMarketplaceProductViewerStore {
                       projectData.versionId,
                       v1DataProduct.path,
                       sampleQueryId,
+                    ),
+                  );
+                },
+                openIngestQuery: (
+                  _gav: ProjectGAVCoordinates,
+                  ingestDefinitionPath: string,
+                  dataSet: string,
+                ): void => {
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                    EXTERNAL_APPLICATION_NAVIGATION__generateIngestQueryUrl(
+                      this.marketplaceBaseStore.applicationStore.config
+                        .queryApplicationUrl,
+                      _gav.groupId,
+                      _gav.artifactId,
+                      _gav.versionId,
+                      ingestDefinitionPath,
+                      dataSet,
                     ),
                   );
                 },

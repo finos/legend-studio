@@ -63,6 +63,11 @@ export class QueryDataProductLakehouseExecutionContext extends QueryDataProductE
   accessGroupId!: string;
 }
 
+export class QueryIngestExecutionContext extends QueryExecutionContext {
+  ingestDefinitionPath!: string;
+  dataSet!: string;
+}
+
 export interface QueryGridConfig {
   columns: object[];
   isPivotModeEnabled: boolean | undefined;
@@ -186,6 +191,11 @@ export class QueryDataProductLakehouseExecutionContextInfo extends QueryExecutio
   dataProductPath!: string;
   accessPointId!: string;
   accessGroupId!: string;
+}
+
+export class QueryIngestExecutionContextInfo extends QueryExecutionContextInfo {
+  ingestDefinitionPath!: string;
+  dataSet!: string;
 }
 
 export interface QueryInfo {

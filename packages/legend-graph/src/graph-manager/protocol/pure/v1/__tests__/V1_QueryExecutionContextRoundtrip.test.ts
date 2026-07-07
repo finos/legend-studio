@@ -23,6 +23,7 @@ import {
   V1_DataProductNativeExecutionContext,
   V1_DataProductModelAccessExecutionContext,
   V1_DataProductLakehouseExecutionContext,
+  V1_QueryIngestExecutionContext,
   V1_deserializeQueryExecutionContext,
   V1_serializeQueryExecutionContext,
 } from '../engine/query/V1_Query.js';
@@ -100,6 +101,20 @@ const TEST_DATA__dataProductLakehouseExecutionContextQueryJson = {
     dataProductPath: 'model::MyDataProduct',
     accessPointId: 'my-lakehouse-access-point',
     accessGroupId: 'my-lakehouse-access-group',
+  },
+};
+
+const TEST_DATA__ingestExecutionContextQueryJson = {
+  name: 'MyIngestQuery',
+  id: 'test-query-id-6',
+  groupId: 'com.example',
+  artifactId: 'test-artifact',
+  versionId: '1.0.0',
+  content: '|model::Person.all()->project()',
+  executionContext: {
+    _type: 'ingestExecutionContext',
+    ingestDefinitionPath: 'model::MyIngestDefinition',
+    dataSet: 'my-data-set',
   },
 };
 
@@ -185,6 +200,21 @@ describe(unitTest('Query execution context serialization roundtrip'), () => {
     };
     expect(() => V1_deserializeQueryExecutionContext(json)).toThrow();
   });
+
+  test('Ingest execution context roundtrip', () => {
+    const json: PlainObject = {
+      _type: 'ingestExecutionContext',
+      ingestDefinitionPath: 'model::MyIngestDefinition',
+      dataSet: 'my-data-set',
+    };
+    const context = V1_deserializeQueryExecutionContext(json);
+    expect(context).toBeInstanceOf(V1_QueryIngestExecutionContext);
+    const ingest = context as V1_QueryIngestExecutionContext;
+    expect(ingest.ingestDefinitionPath).toBe('model::MyIngestDefinition');
+    expect(ingest.dataSet).toBe('my-data-set');
+    const reserialized = V1_serializeQueryExecutionContext(context);
+    expect(reserialized).toEqual(json);
+  });
 });
 
 // --------------------------------
@@ -269,6 +299,21 @@ describe(unitTest('V1_Query serialization roundtrip'), () => {
     expect(reserialized).toEqual(
       TEST_DATA__dataProductLakehouseExecutionContextQueryJson,
     );
+  });
+
+  test('V1_Query with ingest execution context roundtrip', () => {
+    const v1Query = V1_Query.serialization.fromJson(
+      TEST_DATA__ingestExecutionContextQueryJson,
+    );
+    expect(v1Query.name).toBe('MyIngestQuery');
+    expect(v1Query.executionContext).toBeInstanceOf(
+      V1_QueryIngestExecutionContext,
+    );
+    const exec = v1Query.executionContext as V1_QueryIngestExecutionContext;
+    expect(exec.ingestDefinitionPath).toBe('model::MyIngestDefinition');
+    expect(exec.dataSet).toBe('my-data-set');
+    const reserialized = V1_Query.serialization.toJson(v1Query);
+    expect(reserialized).toEqual(TEST_DATA__ingestExecutionContextQueryJson);
   });
 
   test('V1_Query without execution context roundtrip', () => {

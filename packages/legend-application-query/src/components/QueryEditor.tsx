@@ -98,6 +98,8 @@ import {
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
 import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.js';
+import { QueryEditorIngestInfoModal } from './ingest/IngestInfo.js';
+import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 import { extractQueryParams } from './utils/QueryParameterUtils.js';
@@ -1208,6 +1210,16 @@ export const QueryEditor = observer(() => {
             queryBuilderState={editorStore.queryBuilderState}
             open={editorStore.showDataProductInfo}
             closeModal={() => editorStore.setShowDataProductInfo(false)}
+          />
+        )}
+      {editorStore.showIngestInfo &&
+        editorStore.queryBuilderState instanceof
+          IngestLegendQueryBuilderState && (
+          <QueryEditorIngestInfoModal
+            editorStore={editorStore}
+            queryBuilderState={editorStore.queryBuilderState}
+            open={editorStore.showIngestInfo}
+            closeModal={() => editorStore.setShowIngestInfo(false)}
           />
         )}
       {isExistingQuery &&

@@ -26,6 +26,7 @@ export enum DATA_PRODUCT_DEFAULT_SECTION {
   DATA_ACCESS = 'data-access',
   DESCRIPTION = 'description',
   SUPPORT_INFO = 'support-info',
+  PRODUCER_INFO = 'producer-info',
 }
 
 export enum DATA_PRODUCT_MODELAPG_SECTION {

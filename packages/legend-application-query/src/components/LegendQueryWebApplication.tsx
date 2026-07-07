@@ -42,6 +42,7 @@ import { LEGACY_DATA_SPACE_QUERY_ROUTE_PATTERN } from '../__lib__/DSL_DataSpace_
 import { DataSpaceTemplateQueryCreator } from './data-space/DataSpaceTemplateQueryCreator.js';
 import { QueryCreator } from './data-space/DataProductQueryCreator.js';
 import { DataProductSampleQueryCreator } from './data-product/DataProductSampleQueryCreator.js';
+import { IngestQueryCreator } from './ingest/IngestQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
 import { DataSpaceArtifactInspector } from './DataSpaceArtifactInspector.js';
 import {
@@ -112,6 +113,19 @@ const LegendQueryWebApplicationRouter = observer(() => {
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT}
             element={<QueryCreator />}
+          />
+          {/*
+            Ingest query creator. Resolves `ingestDefinitionPath` and
+            `dataSet` from the route, fetches only the ingest definition
+            entity from Depot (no full graph build), and opens the editor
+            with a `QueryIngestExecutionContext`. The creator store builds
+            an adhoc lakehouse runtime (user env + consumer warehouse) and
+            selects it on the query builder state so execution works without
+            a packaged runtime.
+          */}
+          <Route
+            path={LEGEND_QUERY_ROUTE_PATTERN.INGEST_QUERY}
+            element={<IngestQueryCreator />}
           />
           <Route
             path={LEGEND_QUERY_ROUTE_PATTERN.CREATE_FROM_SERVICE_QUERY}

@@ -68,6 +68,7 @@ export enum V1_QueryExecutionContextType {
   QUERY_DATAPRODUCT_NATIVE_EXECUTION_CONTEXT = 'dataProductNativeExecutionContext',
   QUERY_DATAPRODUCT_MODEL_ACCESS_EXECUTION_CONTEXT = 'dataProductModelAccessExecutionContext',
   QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT = 'dataProductLakehouseAccessExecutionContext',
+  QUERY_INGEST_EXECUTION_CONTEXT = 'ingestExecutionContext',
 }
 
 export class V1_QueryExplicitExecutionContext extends V1_QueryExecutionContext {
@@ -163,6 +164,24 @@ export class V1_DataProductLakehouseExecutionContext extends V1_QueryDataProduct
   );
 }
 
+export class V1_QueryIngestExecutionContext extends V1_QueryExecutionContext {
+  ingestDefinitionPath!: string;
+  dataSet!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_QueryIngestExecutionContext, {
+      _type: usingConstantValueSchema(
+        V1_QueryExecutionContextType.QUERY_INGEST_EXECUTION_CONTEXT,
+      ),
+      ingestDefinitionPath: primitive(),
+      dataSet: primitive(),
+    }),
+    {
+      deserializeNullAsUndefined: true,
+    },
+  );
+}
+
 export const V1_deserializeQueryExecutionContext = (
   json: PlainObject<V1_QueryExecutionContext>,
 ): V1_QueryExecutionContext => {
@@ -190,6 +209,11 @@ export const V1_deserializeQueryExecutionContext = (
     case V1_QueryExecutionContextType.QUERY_DATAPRODUCT_LAKEHOUSE_EXECUTION_CONTEXT:
       return deserialize(
         V1_DataProductLakehouseExecutionContext.serialization.schema,
+        json,
+      );
+    case V1_QueryExecutionContextType.QUERY_INGEST_EXECUTION_CONTEXT:
+      return deserialize(
+        V1_QueryIngestExecutionContext.serialization.schema,
         json,
       );
     default: {
@@ -226,6 +250,11 @@ export const V1_serializeQueryExecutionContext = (
   } else if (protocol instanceof V1_DataProductLakehouseExecutionContext) {
     return serialize(
       V1_DataProductLakehouseExecutionContext.serialization.schema,
+      protocol,
+    );
+  } else if (protocol instanceof V1_QueryIngestExecutionContext) {
+    return serialize(
+      V1_QueryIngestExecutionContext.serialization.schema,
       protocol,
     );
   }
