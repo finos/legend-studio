@@ -1,5 +1,12 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.64
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix owners apis in lakehouse.
+  Add EntityWithOrigin to legend-storage.
+
 ## 0.3.63
 
 ### Patch Changes

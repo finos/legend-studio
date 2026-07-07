@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.19
+
+### Patch Changes
+
+- [#5299](https://github.com/finos/legend-studio/pull/5299) [`d0887f7`](https://github.com/finos/legend-studio/commit/d0887f7ed749ceb55926087226f4cb565f0ec18a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the profile/stereotype and profile/tag dropdowns in the UML editors (class, association, enumeration, property) rendering with a white menu in dark theme. These `CustomSelectorInput`s relied on a `darkTheme` prop that no caller passed, so they were always stuck in light mode; they now derive their dark/light mode from the active application theme.
+
 ## 28.21.18
 
 ### Patch Changes
