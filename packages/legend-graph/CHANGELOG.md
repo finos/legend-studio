@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.6.15
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `IngestExecutionContext` (`V1_QueryIngestExecutionContext` / `QueryIngestExecutionContext`) as a new `QueryExecutionContext` type with `ingestDefinitionPath` and `dataSet` fields.
+
+  Add an `INGEST_QUERY` route (`/ingest/:gav/:ingestDefinitionPath/:dataSet`) to Legend Query with a scaffolded `IngestQueryCreator` that fetches only the ingest definition entity from Depot (no full graph build) and opens the editor against an `IngestLegendQueryBuilderState` (extends `AccessorQueryBuilderState`).
+
+- [#5304](https://github.com/finos/legend-studio/pull/5304) [`94396ff`](https://github.com/finos/legend-studio/commit/94396ff55594add48bce91c17ae16c43bbf961b4) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix zipkin for AP as REST endpoint with a valid server
+
 ## 32.6.14
 
 ### Patch Changes

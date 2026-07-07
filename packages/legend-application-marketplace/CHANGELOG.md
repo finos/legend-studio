@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.2.28
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a `Producer Info` section to the data product viewer that lists ingestion datasets per access point group (APG), with a clickable ingest definition link (for SDLC-deployed data products), producer environment, and a `Query` action that opens the dataset in Legend Query via the new `INGEST_QUERY` route. Show an `Owner` label when the current user is in `dataProductOwners`.
+
+- [#5304](https://github.com/finos/legend-studio/pull/5304) [`94396ff`](https://github.com/finos/legend-studio/commit/94396ff55594add48bce91c17ae16c43bbf961b4) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix zipkin for AP as REST endpoint with a valid server
+
 ## 0.2.27
 
 ### Patch Changes

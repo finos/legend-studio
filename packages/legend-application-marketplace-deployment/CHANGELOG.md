@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace-deployment
 
+## 13.236.0
+
+### Patch Changes
+
+- [#5304](https://github.com/finos/legend-studio/pull/5304) [`94396ff`](https://github.com/finos/legend-studio/commit/94396ff55594add48bce91c17ae16c43bbf961b4) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix zipkin for AP as REST endpoint with a valid server
+
 ## 13.235.0
 
 ## 13.234.0

@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.8.30
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `IngestExecutionContext` (`V1_QueryIngestExecutionContext` / `QueryIngestExecutionContext`) as a new `QueryExecutionContext` type with `ingestDefinitionPath` and `dataSet` fields.
+
+  Add an `INGEST_QUERY` route (`/ingest/:gav/:ingestDefinitionPath/:dataSet`) to Legend Query with a scaffolded `IngestQueryCreator` that fetches only the ingest definition entity from Depot (no full graph build) and opens the editor against an `IngestLegendQueryBuilderState` (extends `AccessorQueryBuilderState`).
+
 ## 13.8.29
 
 ## 13.8.28

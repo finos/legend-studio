@@ -1,5 +1,13 @@
 # @finos/legend-query-builder
 
+## 4.18.23
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a `Producer Info` section to the data product viewer that lists ingestion datasets per access point group (APG), with a clickable ingest definition link (for SDLC-deployed data products), producer environment, and a `Query` action that opens the dataset in Legend Query via the new `INGEST_QUERY` route. Show an `Owner` label when the current user is in `dataProductOwners`.
+
+- [#5299](https://github.com/finos/legend-studio/pull/5299) [`d0887f7`](https://github.com/finos/legend-studio/commit/d0887f7ed749ceb55926087226f4cb565f0ec18a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Tokenize Query Builder styles onto the two-tier semantic color system so it themes correctly under both dark and light themes (instead of rendering as a dark island in Studio's light theme). Type badges, status/error states, focus rings, tab indicators, and muted text now use semantic tokens; stable categorical colors (visualization node schemes, SQL syntax highlighting, query/test labels) are kept theme-agnostic. Also fixes three latent references to undefined palette variables (`--color-dark-grey-0`, `--color-dark-grey-180`, `--color-light-grey-500`).
+
 ## 4.18.22
 
 ### Patch Changes
