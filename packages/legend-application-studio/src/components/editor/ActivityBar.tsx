@@ -70,16 +70,6 @@ const STUDIO_SUPPORTED_COLOR_THEMES: ReadonlySet<string> = new Set([
   LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK,
   LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
 ]);
-
-/**
- * Subset of supported themes that are still being stabilized and should only be
- * exposed in non-production environments. These are hidden from the picker
- * unless the `NonProductionFeatureFlag` config option is enabled, so dev/QA can
- * test them without shipping the toggle to production users.
- */
-const STUDIO_NON_PRODUCTION_COLOR_THEMES: ReadonlySet<string> = new Set([
-  LEGEND_APPLICATION_COLOR_THEME.DEFAULT_LIGHT,
-]);
 import { LegendStudioAppInfo } from '../LegendStudioAppInfo.js';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
@@ -126,25 +116,16 @@ const useOptionalAuth = (): AuthContextProps | undefined => {
  * surfaced directly in the activity bar so users don't have to dig through the
  * Settings menu to flip themes.
  *
- * The toggle only renders when both themes are actually exposed in the current
- * environment (i.e. it respects the same `STUDIO_SUPPORTED_COLOR_THEMES` /
- * `NonProductionFeatureFlag` gating as the Settings menu picker). This keeps
- * the in-progress light theme hidden in production until it's stabilized.
+ * The toggle only renders when both themes are actually exposed by the
+ * `STUDIO_SUPPORTED_COLOR_THEMES` allow-list; otherwise it would be a no-op.
  */
 export const ColorThemeToggle = observer(() => {
   const applicationStore = useLegendStudioApplicationStore();
   const { layoutService } = applicationStore;
-  const showNonProductionThemes =
-    applicationStore.config.options.NonProductionFeatureFlag;
 
   const exposedThemeKeys = new Set(
     layoutService.availableColorThemes
-      .filter(
-        (theme) =>
-          STUDIO_SUPPORTED_COLOR_THEMES.has(theme.key) &&
-          (showNonProductionThemes ||
-            !STUDIO_NON_PRODUCTION_COLOR_THEMES.has(theme.key)),
-      )
+      .filter((theme) => STUDIO_SUPPORTED_COLOR_THEMES.has(theme.key))
       .map((theme) => theme.key),
   );
 
