@@ -81,7 +81,10 @@ const TooltipContent = observer(
               userId={owner}
               applicationStore={applicationStore}
               userSearchService={userSearchService}
-              onFinishedLoadingCallback={finishedLoadingUserCallback}
+              options={{
+                hideIfNotFound: true,
+                onFinishedLoadingCallback: finishedLoadingUserCallback,
+              }}
             />
           ))
         )}

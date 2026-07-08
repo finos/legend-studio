@@ -513,14 +513,17 @@ export const DataProductSubscriptionViewer = observer(
           cellRenderer: (
             params: DataGridCellRendererParams<V1_DataSubscription>,
           ) => {
-            return (
+            const createdBy = params.data?.createdBy;
+            return createdBy ? (
               <UserRenderer
-                userId={params.data?.createdBy}
+                userId={createdBy}
                 applicationStore={apgState.applicationStore}
                 userSearchService={
                   apgState.dataProductViewerState.userSearchService
                 }
               />
+            ) : (
+              <>Unknown</>
             );
           },
           flex: 2,

@@ -17,4 +17,5 @@
 export enum DSL_DATA_PRODUCT_DOCUMENTATION_KEY {
   DATA_ACCESS = 'dsl-dataproduct.data-access',
   MULTI_REGION_RESILIENCY = 'dsl-dataproduct.multi-region-resiliency',
+  PRODUCER_QUERYING_ENTITLEMENTS = 'dsl-dataproduct.producer-querying-entitlements',
 }

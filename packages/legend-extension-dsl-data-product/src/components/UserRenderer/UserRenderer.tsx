@@ -20,38 +20,40 @@ import { Box, CircularProgress } from '@mui/material';
 import { useEffect, useState } from 'react';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 
+export interface UserRendererOptions {
+  className?: string | undefined;
+  appendComma?: boolean | undefined;
+  disableOnClick?: boolean | undefined;
+  hideIfNotFound?: boolean | undefined;
+  onFinishedLoadingCallback?: (() => void) | undefined;
+}
+
 export const UserRenderer = (props: {
-  userId: string | undefined;
+  userId: string;
   applicationStore: GenericLegendApplicationStore;
   userSearchService: UserSearchService | undefined;
-  className?: string | undefined;
-  appendComma?: boolean;
-  disableOnClick?: boolean | undefined;
-  onFinishedLoadingCallback?: () => void;
+  options?: UserRendererOptions | undefined;
 }): React.ReactNode => {
+  const { userId, applicationStore, userSearchService, options } = props;
   const {
-    userId,
-    applicationStore,
-    userSearchService,
     className,
     appendComma,
     disableOnClick,
+    hideIfNotFound,
     onFinishedLoadingCallback,
-  } = props;
+  } = options ?? {};
   const [userData, setUserData] = useState<LegendUser | string | undefined>();
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchUserData = async (): Promise<void> => {
-      if (userId) {
-        setLoading(true);
-        try {
-          const user = await userSearchService?.getOrFetchUser(userId);
-          setUserData(user);
-        } finally {
-          setLoading(false);
-          onFinishedLoadingCallback?.();
-        }
+      setLoading(true);
+      try {
+        const user = await userSearchService?.getOrFetchUser(userId);
+        setUserData(user);
+      } finally {
+        setLoading(false);
+        onFinishedLoadingCallback?.();
       }
     };
     // eslint-disable-next-line no-void
@@ -91,6 +93,8 @@ export const UserRenderer = (props: {
     ) : (
       <Box>{userData}</Box>
     );
+  } else if (hideIfNotFound) {
+    return null;
   } else {
     return appendComma ? (
       <>

@@ -424,7 +424,7 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                       userId={option.id}
                       applicationStore={marketplaceStore.applicationStore}
                       userSearchService={marketplaceStore.userSearchService}
-                      disableOnClick={true}
+                      options={{ disableOnClick: true }}
                     />
                   </li>
                 )}

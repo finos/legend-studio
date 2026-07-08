@@ -17,6 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { AnchorLinkIcon } from '@finos/legend-art';
+import { Alert, Link } from '@mui/material';
 import type { V1_DataProductArtifact } from '@finos/legend-graph';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import type { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
@@ -28,6 +29,7 @@ import {
   ApgIngestionDataSetsScreen,
   artifactHasDependencyDatasets,
 } from './DataProductDataAccess.js';
+import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 
 export const DataProductProducerInfo = observer(
   (props: {
@@ -88,6 +90,14 @@ export const DataProductProducerInfo = observer(
         dataProductDataAccessState?.dataProductOwners.includes(currentUser),
     );
 
+    // Producer-side actions (e.g. Open in Legend Query against an ingest
+    // definition) are only available to owners. Surface a documentation link
+    // for non-owners so they know where to learn more about requesting access.
+    const producerQueryingEntitlementsDocUrl =
+      dataProductViewerState.applicationStore.documentationService.getDocEntry(
+        DSL_DATA_PRODUCT_DOCUMENTATION_KEY.PRODUCER_QUERYING_ENTITLEMENTS,
+      )?.url;
+
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
         <div className="data-product__viewer__wiki__section__header">
@@ -115,6 +125,27 @@ export const DataProductProducerInfo = observer(
         </div>
         <div className="data-product__viewer__wiki__section__content">
           <div className="data-product__viewer__producer-info">
+            {!isOwner && (
+              <Alert
+                severity="info"
+                className="data-product__viewer__producer-info__non-owner-notice"
+              >
+                Producer-side actions on ingest definitions are only available
+                to data product owners.
+                {producerQueryingEntitlementsDocUrl && (
+                  <>
+                    {' '}
+                    <Link
+                      href={producerQueryingEntitlementsDocUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Learn more
+                    </Link>
+                  </>
+                )}
+              </Alert>
+            )}
             {dataProductViewerState.apgStates.map((apgState) => (
               <div
                 key={apgState.apg.id}
@@ -127,6 +158,7 @@ export const DataProductProducerInfo = observer(
                   apgState={apgState}
                   artifact={dataProductArtifact}
                   dataAccessState={dataProductDataAccessState}
+                  isOwner={isOwner}
                 />
               </div>
             ))}

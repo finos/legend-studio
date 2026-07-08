@@ -32,6 +32,7 @@ import {
   V1_PureGraphManager,
   V1_RemoteEngine,
 } from '@finos/legend-graph';
+import { type UserSearchService, guaranteeType } from '@finos/legend-shared';
 import { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   ENGINE_TEST_SUPPORT__grammarToJSON_model,
@@ -44,7 +45,6 @@ import {
 } from '@finos/legend-server-lakehouse';
 import { jest } from '@jest/globals';
 import { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
-import { guaranteeType } from '@finos/legend-shared';
 import { Core_DataProductDataAccess_LegendApplicationPlugin } from '../Core_DataProductDataAccess_LegendApplicationPlugin.js';
 import { DataProductConfig } from '../../stores/DataProduct/DataProductConfig.js';
 import type { ProjectGAVCoordinates } from '@finos/legend-storage';
@@ -120,6 +120,7 @@ export const TEST__getDataProductViewerState = async (
   dataProduct: V1_DataProduct,
   projectGAVCoordinates?: ProjectGAVCoordinates,
   extraActions?: Record<string, unknown>,
+  userSearchService?: UserSearchService,
 ): Promise<DataProductViewerState> => {
   const pluginManager = TEST__LegendApplicationPluginManager.create();
   const MOCK__applicationStore = new ApplicationStore(
@@ -187,7 +188,7 @@ export const TEST__getDataProductViewerState = async (
         value: ['Status', 'Owner'],
       },
     }),
-    undefined,
+    userSearchService,
     projectGAVCoordinates,
     {
       viewDataProductSource: jest.fn(),

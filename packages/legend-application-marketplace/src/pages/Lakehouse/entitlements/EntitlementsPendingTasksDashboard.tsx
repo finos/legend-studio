@@ -553,14 +553,19 @@ export const EntitlementsPendingTasksDashboard = observer(
                   dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
                 )
               : undefined;
-            return (
+            return userId ? (
               <UserRenderer
                 userId={userId}
                 applicationStore={marketplaceBaseStore.applicationStore}
                 userSearchService={marketplaceBaseStore.userSearchService}
-                disableOnClick={true}
-                className="marketplace-lakehouse-entitlements__grid__user-display"
+                options={{
+                  disableOnClick: true,
+                  className:
+                    'marketplace-lakehouse-entitlements__grid__user-display',
+                }}
               />
+            ) : (
+              <>Unknown</>
             );
           },
         },
@@ -590,8 +595,11 @@ export const EntitlementsPendingTasksDashboard = observer(
                 userId={requester}
                 applicationStore={marketplaceBaseStore.applicationStore}
                 userSearchService={marketplaceBaseStore.userSearchService}
-                disableOnClick={true}
-                className="marketplace-lakehouse-entitlements__grid__user-display"
+                options={{
+                  disableOnClick: true,
+                  className:
+                    'marketplace-lakehouse-entitlements__grid__user-display',
+                }}
               />
             ) : (
               <>Unknown</>

@@ -954,8 +954,9 @@ export const ApgIngestionDataSetsScreen = observer(
     apgState: DataProductAPGState;
     artifact: V1_DataProductArtifact | undefined;
     dataAccessState: DataProductDataAccessState | undefined;
+    isOwner: boolean;
   }) => {
-    const { apgState, artifact, dataAccessState } = props;
+    const { apgState, artifact, dataAccessState, isOwner } = props;
     const entitlementsDetails =
       apgState.dataProductViewerState.entitlementsDataProductDetails;
     const producerEnvironmentName =
@@ -992,7 +993,9 @@ export const ApgIngestionDataSetsScreen = observer(
 
     // Only SDLC-deployed data products expose the GAV coordinates required to
     // resolve an ingest definition in Legend Query, so we disable the Query
-    // action for non-SDLC origins.
+    // action for non-SDLC origins. We further restrict the action to data
+    // product owners since running a producer-side ingest query is an
+    // owner-only capability.
     const origin = entitlementsDetails?.origin;
     const sdlcGav =
       origin instanceof V1_SdlcDeploymentDataProductOrigin
@@ -1003,7 +1006,7 @@ export const ApgIngestionDataSetsScreen = observer(
           }
         : undefined;
     const openIngestQuery = apgState.dataProductViewerState.openIngestQuery;
-    const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery);
+    const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery && isOwner);
 
     const columnDefs: DataGridColumnDefinition<IngestionDataSetRow>[] = [
       {
@@ -1065,7 +1068,11 @@ export const ApgIngestionDataSetsScreen = observer(
           const { ingestDefinitionPath, dataset } = params.data;
           const queryDisabled = !canOpenIngestQuery;
           const queryTitle = queryDisabled
-            ? 'Open in Legend Query is only available for data products deployed from SDLC'
+            ? !sdlcGav
+              ? 'Open in Legend Query is only available for data products deployed from SDLC'
+              : !isOwner
+                ? 'Open in Legend Query is only available to data product owners'
+                : 'Open in Legend Query is not available'
             : 'Open in Legend Query';
           return (
             <div className="data-product__viewer__producer-view__action-cell">

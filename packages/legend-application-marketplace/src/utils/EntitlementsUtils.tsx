@@ -340,8 +340,10 @@ export const getCommonEntitlementsColDefs = (
             dashboardState.lakehouseEntitlementsStore.marketplaceBaseStore
               .userSearchService
           }
-          disableOnClick={true}
-          className="marketplace-lakehouse-entitlements__grid__user-display"
+          options={{
+            disableOnClick: true,
+            className: 'marketplace-lakehouse-entitlements__grid__user-display',
+          }}
         />
       ) : (
         <>{UNKNOWN}</>
