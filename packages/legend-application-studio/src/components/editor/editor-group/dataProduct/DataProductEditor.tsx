@@ -208,6 +208,7 @@ import type {
   DataProductDocResponse,
   DSL_DataProduct_LegendStudioApplicationPlugin_Extension,
 } from '../../../../stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin_Extension.js';
+import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -1818,6 +1819,10 @@ const AccessPointGroupEditor = observer(
       if (!aiDocSuggester || !legendAIUrl) {
         return;
       }
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestLaunched(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
       try {

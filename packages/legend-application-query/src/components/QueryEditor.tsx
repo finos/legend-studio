@@ -182,6 +182,9 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestLaunched(
+      applicationStore.telemetryService,
+    );
     setIsSuggestingWithAI(true);
     setAISuggestion(undefined);
     try {

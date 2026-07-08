@@ -24,6 +24,7 @@ export enum LEGEND_QUERY_APP_EVENT {
   RENAME_QUERY__SUCCESS = 'query-editor.rename.query.success',
   INITIALIZE_QUERY_STATE__SUCCESS = 'query-editor.initialize-query-state.success',
   LEGENDAI_QUERY_CHAT__OPENED = 'query-editor.legendai-query-chat.opened',
+  LEGENDAI_QUERY_SUGGEST__LAUNCH = 'query-editor.legendai-query-suggest.launch',
 
   VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
   VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',

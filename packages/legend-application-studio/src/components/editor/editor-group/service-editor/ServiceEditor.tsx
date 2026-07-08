@@ -74,6 +74,7 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudi
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { ServicePostValidationsEditor } from './ServicePostValidationEditor.js';
 import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
+import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 type UserOption = { label: string; value: string };
 
@@ -264,6 +265,10 @@ const ServiceGeneralEditor = observer(() => {
     if (!aiDocSuggester || !legendAIUrl) {
       return;
     }
+    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestLaunched(
+      applicationStore.telemetryService,
+      service.path,
+    );
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
     try {

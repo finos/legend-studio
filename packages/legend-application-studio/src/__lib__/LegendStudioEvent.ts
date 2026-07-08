@@ -87,6 +87,10 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // data product
   DATA_PRODUCT_DEPLOY_SUCCESS = 'editor.data-product.deployment.success',
   DATA_PRODUCT_DEPLOY_FAILURE = 'editor.data-product.deployment.failure',
+  DATA_PRODUCT_LEGENDAI_SUGGEST__LAUNCH = 'editor.data-product.legendai-suggest.launch',
+
+  // service
+  SERVICE_LEGENDAI_SUGGEST__LAUNCH = 'editor.service-editor.legendai-suggest.launch',
 
   // push to dev
   METADATA_PUSH_TO_METADATA = 'editor.metadata.push-to-metadata',
