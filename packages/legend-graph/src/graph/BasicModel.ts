@@ -77,6 +77,7 @@ import type { PureGraphPlugin } from './PureGraphPlugin.js';
 import { INTERNAL__UnknownElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
 import { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import { Compute } from './metamodel/pure/compute/Compute.js';
 
 const FORBIDDEN_EXTENSION_ELEMENT_CLASS = new Set([
   PackageableElement,
@@ -154,6 +155,7 @@ export abstract class BasicModel {
   >();
 
   private readonly productsIndex = new Map<string, DataProduct>();
+  private readonly computesIndex = new Map<string, Compute>();
   private readonly dataElementsIndex = new Map<string, DataElement>();
   private readonly executionEnvironmentsIndex = new Map<
     string,
@@ -249,6 +251,9 @@ export abstract class BasicModel {
   }
   get ownDataProducts(): DataProduct[] {
     return Array.from(this.productsIndex.values());
+  }
+  get ownComputes(): Compute[] {
+    return Array.from(this.computesIndex.values());
   }
   get ownDataElements(): DataElement[] {
     return Array.from(this.dataElementsIndex.values());
@@ -380,6 +385,8 @@ export abstract class BasicModel {
     this.executionEnvironmentsIndex.get(path);
   getOwnNullableDataProduct = (path: string): DataProduct | undefined =>
     this.productsIndex.get(path);
+  getOwnNullableCompute = (path: string): Compute | undefined =>
+    this.computesIndex.get(path);
   getOwnNullableIngestDefinition = (
     path: string,
   ): IngestDefinition | undefined =>
@@ -491,6 +498,11 @@ export abstract class BasicModel {
       this.getOwnNullableDataProduct(path),
       `Can't find data product element '${path}'`,
     );
+  getOwnCompute = (path: string): Compute =>
+    guaranteeNonNullable(
+      this.getOwnNullableCompute(path),
+      `Can't find compute element '${path}'`,
+    );
 
   getOwnNullableExtensionElement<T extends PackageableElement>(
     path: string,
@@ -557,6 +569,9 @@ export abstract class BasicModel {
   setOwnDataProduct(path: string, val: DataProduct): void {
     this.productsIndex.set(path, val);
   }
+  setOwnCompute(path: string, val: Compute): void {
+    this.computesIndex.set(path, val);
+  }
   INTERNAL__setOwnUnknown(path: string, val: INTERNAL__UnknownElement): void {
     this.INTERNAL__unknownIndex.set(path, val);
   }
@@ -594,6 +609,7 @@ export abstract class BasicModel {
       ...this.ownGenerationSpecifications,
       ...this.ownFileGenerations,
       ...this.ownDataProducts,
+      ...this.ownComputes,
       ...this.ownDataElements,
       ...this.ownExecutionEnvironments,
       ...Array.from(this.INTERNAL__unknownElementsIndex.values()),
@@ -652,6 +668,7 @@ export abstract class BasicModel {
       this.connectionsIndex.get(path) ??
       this.fileGenerationsIndex.get(path) ??
       this.productsIndex.get(path) ??
+      this.computesIndex.get(path) ??
       this.dataElementsIndex.get(path) ??
       this.executionEnvironmentsIndex.get(path) ??
       this.generationSpecificationsIndex.get(path);
@@ -710,6 +727,8 @@ export abstract class BasicModel {
       this.setOwnExecutionEnvironment(element.path, element);
     } else if (element instanceof DataProduct) {
       this.setOwnDataProduct(element.path, element);
+    } else if (element instanceof Compute) {
+      this.setOwnCompute(element.path, element);
     } else if (element instanceof Package) {
       // do nothing
     } else {
@@ -766,6 +785,8 @@ export abstract class BasicModel {
       this.executionEnvironmentsIndex.delete(element.path);
     } else if (element instanceof DataProduct) {
       this.productsIndex.delete(element.path);
+    } else if (element instanceof Compute) {
+      this.computesIndex.delete(element.path);
     } else if (element instanceof Package) {
       element.children.forEach((child) => this.deleteOwnElement(child));
     } else {

@@ -205,6 +205,10 @@ export class DependencyManager {
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableIngestDefinition(path),
   );
+  getOwnNullableCompute = buildDependencyElementGetter(
+    this,
+    (dep: BasicModel, path: string) => dep.getOwnNullableCompute(path),
+  );
   getOwnNullableMapping = buildDependencyElementGetter(
     this,
     (dep: BasicModel, path: string) => dep.getOwnNullableMapping(path),

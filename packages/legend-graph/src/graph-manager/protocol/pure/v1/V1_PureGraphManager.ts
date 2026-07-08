@@ -371,6 +371,7 @@ import {
   V1_createGenericTypeWithElementPath,
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
+import { V1_Compute } from './model/packageableElements/compute/V1_Compute.js';
 import {
   V1_DataProductArtifact,
   V1_ModelAccessPointGroupInfo,
@@ -458,6 +459,7 @@ class V1_PureModelContextDataIndex {
   services: V1_Service[] = [];
   executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
   products: V1_DataProduct[] = [];
+  computes: V1_Compute[] = [];
 
   INTERNAL__UnknownElement: V1_INTERNAL__UnknownElement[] = [];
   INTERNAL__unknownElements: V1_INTERNAL__UnknownPackageableElement[] = [];
@@ -542,6 +544,8 @@ export const V1_indexPureModelContextData = (
       index.executionEnvironments.push(el);
     } else if (el instanceof V1_DataProduct) {
       index.products.push(el);
+    } else if (el instanceof V1_Compute) {
+      index.computes.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -1227,6 +1231,11 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_DATA_PRODUCTS__SUCCESS,
     );
 
+    // build computes
+    graphBuilderState.setMessage(`Building computes...`);
+    await this.buildComputes(graph, inputs, options);
+    stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_COMPUTES__SUCCESS);
+
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     await this.buildMappings(graph, inputs, options);
@@ -1602,6 +1611,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graph,
       inputs,
       (data) => data.products,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
+    );
+  }
+
+  private async buildComputes(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.computes,
       (ctx) => new V1_ElementSecondPassBuilder(ctx),
       options,
     );
@@ -5222,6 +5245,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.HOSTED_SERVICE;
     } else if (protocol instanceof V1_DataProduct) {
       return CORE_PURE_PATH.DATA_PRODUCT;
+    } else if (protocol instanceof V1_Compute) {
+      return CORE_PURE_PATH.COMPUTE;
     } else if (protocol instanceof V1_MemSQLFunction) {
       return CORE_PURE_PATH.MEM_SQL_FUNCTION;
     }

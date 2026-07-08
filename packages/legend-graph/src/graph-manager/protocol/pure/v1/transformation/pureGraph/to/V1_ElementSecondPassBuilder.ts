@@ -147,6 +147,11 @@ import {
   V1_buildNativeModelAccess,
   V1_buildDataProductOwner,
 } from './helpers/V1_DataProductBuilder.js';
+import type { V1_Compute } from '../../../model/packageableElements/compute/V1_Compute.js';
+import {
+  V1_buildComputeOwner,
+  V1_buildComputeSpecification,
+} from './helpers/V1_ComputeBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';
 import { Join } from '../../../../../../../STO_Relational_Exports.js';
@@ -818,5 +823,13 @@ export class V1_ElementSecondPassBuilder
     if (element.owner) {
       dataProduct.owner = V1_buildDataProductOwner(element.owner);
     }
+  }
+
+  visit_Compute(element: V1_Compute): void {
+    const compute = this.context.currentSubGraph.getOwnCompute(
+      V1_buildFullPath(element.package, element.name),
+    );
+    compute.owner = V1_buildComputeOwner(element.owner);
+    compute.specification = V1_buildComputeSpecification(element.specification);
   }
 }

@@ -131,6 +131,11 @@ import {
   type V1_DataProduct,
 } from '../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_dataProductModelSchema } from './serializationHelpers/V1_DataProductSerializationHelper.js';
+import {
+  V1_COMPUTE_ELEMENT_PROTOCOL_TYPE,
+  type V1_Compute,
+} from '../../model/packageableElements/compute/V1_Compute.js';
+import { V1_computeModelSchema } from './serializationHelpers/V1_ComputeSerializationHelper.js';
 import { V1_INGEST_DEFINITION_TYPE } from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { V1_createIngestDef } from './serializationHelpers/V1_IngestSerializationHelper.js';
 import type { V1_MemSQLFunction } from '../../model/packageableElements/function/V1_MemSQLFunction.js';
@@ -258,6 +263,10 @@ class V1_PackageableElementSerializer
     element: V1_DataProduct,
   ): PlainObject<V1_PackageableElement> {
     return serialize(V1_dataProductModelSchema(this.plugins), element);
+  }
+
+  visit_Compute(element: V1_Compute): PlainObject<V1_PackageableElement> {
+    return serialize(V1_computeModelSchema, element);
   }
 
   visit_Mapping(element: V1_Mapping): PlainObject<V1_PackageableElement> {
@@ -395,6 +404,8 @@ export const V1_deserializePackageableElement = (
         return deserialize(V1_MemSQLModelSchema(plugins), json);
       case V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_dataProductModelSchema(plugins), json);
+      case V1_COMPUTE_ELEMENT_PROTOCOL_TYPE:
+        return deserialize(V1_computeModelSchema, json);
       case V1_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {
