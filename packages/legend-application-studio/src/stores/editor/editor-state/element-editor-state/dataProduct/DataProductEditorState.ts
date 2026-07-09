@@ -15,56 +15,56 @@
  */
 
 import {
-  DataProduct,
-  LakehouseAccessPoint,
-  type PackageableElement,
-  type IngestDefinition,
-  AccessPoint,
-  stub_RawLambda,
-  LakehouseTargetEnv,
-  LAMBDA_PIPE,
-  type RawLambda,
-  ParserError,
-  GRAPH_MANAGER_EVENT,
-  isStubbed_RawLambda,
-  AccessPointGroup,
-  CodeCompletionResult,
-  type Stereotype,
-  getStereotype,
-  type StereotypeReference,
-  ModelAccessPointGroup,
-  Association,
-  Class,
-  Enumeration,
-  Package,
-  PackageableElementExplicitReference,
-  type DataProductElement,
-  type Mapping,
-  Expertise,
-  observe_DataProductElementScope,
-  DataProductElementScope,
-  type V1_RawLineageModel,
+  type AppDirNode,
   type ArtifactGenerationExtensionResult,
-  type V1_DataProductArtifact,
+  type DataProductElement,
+  type IngestDefinition,
+  type Mapping,
+  type PackageableElement,
+  type RawLambda,
+  type Stereotype,
+  type StereotypeReference,
   type V1_AccessPointGroupInfo,
   type V1_AccessPointImplementation,
-  RelationElementsData,
-  RelationElement,
+  type V1_DataProductArtifact,
+  type V1_RawLineageModel,
+  AccessPoint,
+  AccessPointGroup,
+  AppDirOwner,
+  Association,
+  Class,
+  CodeCompletionResult,
+  DataElement,
+  DataElementReference,
+  DataProduct,
+  DataProductDiagram,
+  DataProductElementScope,
+  Enumeration,
+  Expertise,
+  getStereotype,
+  GRAPH_MANAGER_EVENT,
+  isStubbed_RawLambda,
+  LakehouseAccessPoint,
+  LakehouseTargetEnv,
+  LAMBDA_PIPE,
+  ModelAccessPointGroup,
+  observe_DataProductDiagram,
+  observe_DataProductElementScope,
   observe_RelationElement,
   observe_RelationElementsData,
-  V1_PureGraphManager,
-  V1_LambdaReturnTypeInput,
-  V1_transformRawLambda,
+  Package,
+  PackageableElementExplicitReference,
+  ParserError,
+  RelationElement,
+  RelationElementsData,
+  stub_Mapping,
+  stub_RawLambda,
   V1_GraphTransformerContextBuilder,
+  V1_LambdaReturnTypeInput,
+  V1_PureGraphManager,
   V1_relationTypeModelSchema,
   V1_RemoteEngine,
-  DataElementReference,
-  DataElement,
-  DataProductDiagram,
-  observe_DataProductDiagram,
-  stub_Mapping,
-  AppDirOwner,
-  type AppDirNode,
+  V1_transformRawLambda,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -79,35 +79,35 @@ import {
   runInAction,
 } from 'mobx';
 import {
-  guaranteeType,
-  addUniqueEntry,
   type GeneratorFn,
+  ActionState,
+  addUniqueEntry,
   assertErrorThrown,
-  LogEvent,
+  assertTrue,
   deleteEntry,
   filterByType,
-  ActionState,
   guaranteeNonNullable,
-  assertTrue,
-  uuid,
-  swapEntry,
+  guaranteeType,
+  LogEvent,
   returnUndefOnError,
+  swapEntry,
+  uuid,
 } from '@finos/legend-shared';
 import {
   accessPointGroup_swapAccessPoints,
   dataProduct_addAccessPoint,
   dataProduct_addAccessPointGroup,
-  supportInfo_addExpertise,
-  modelAccessPointGroup_addDiagram,
   dataProduct_deleteAccessPoint,
   dataProduct_deleteAccessPointGroup,
-  modelAccessPointGroup_removeDiagram,
+  dataProduct_setSupportInfoIfAbsent,
   dataProduct_swapAccessPointGroups,
+  modelAccessPointGroup_addDiagram,
   modelAccessPointGroup_addElement,
+  modelAccessPointGroup_removeDiagram,
   modelAccessPointGroup_removeElement,
   modelAccessPointGroup_setElementExclude,
   modelAccessPointGroup_setMapping,
-  dataProduct_setSupportInfoIfAbsent,
+  supportInfo_addExpertise,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
 import { DataProductTestableState } from './testable/DataProductTestableState.js';
 import { LambdaEditorState, LineageState } from '@finos/legend-query-builder';
@@ -168,6 +168,8 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   readonly val: LakehouseAccessPointState;
   lambdaRelationColumns: string[] | undefined;
   isUpdatingRelationColumns = false;
+  lastComputedLambdaHash: string | undefined;
+  lastComputedLambdaString: string | undefined;
 
   constructor(val: LakehouseAccessPointState) {
     super('', LAMBDA_PIPE, {
@@ -182,10 +184,6 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
       setLambdaRelationColumns: action,
       updateLambdaRelationColumns: flow,
     });
-
-    flowResult(this.updateLambdaRelationColumns()).catch(
-      this.editorStore.applicationStore.alertUnhandledError,
-    );
   }
 
   setLambdaRelationColumns(columns: string[] | undefined): void {
@@ -202,11 +200,12 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
       return;
     }
 
-    this.setIsUpdatingRelationColumns(true);
-    const relationElement = this.val.relationElementState?.relationElement;
-    if (relationElement) {
-      this.val.deleteRelationElement();
+    const lambdaHash = this.val.accessPoint.func.hashCode;
+    if (lambdaHash === this.lastComputedLambdaHash) {
+      return;
     }
+
+    this.setIsUpdatingRelationColumns(true);
     try {
       const model = guaranteeType(
         this.editorStore.graphManagerState.graphManager,
@@ -244,9 +243,7 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
     } catch {
       this.setLambdaRelationColumns(undefined);
     } finally {
-      if (relationElement) {
-        this.val.addRelationElement(relationElement, false);
-      }
+      this.lastComputedLambdaHash = lambdaHash;
       this.setIsUpdatingRelationColumns(false);
     }
   }
@@ -260,6 +257,9 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   }
 
   *convertLambdaGrammarStringToObject(): GeneratorFn<void> {
+    if (this.lambdaString === this.lastComputedLambdaString) {
+      return;
+    }
     const emptyLambda = stub_RawLambda();
     if (this.lambdaString) {
       try {
@@ -270,6 +270,7 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
           )) as RawLambda;
         this.setParserError(undefined);
         this.val.accessPoint.func = lambda;
+        this.lastComputedLambdaString = this.lambdaString;
       } catch (error) {
         assertErrorThrown(error);
         if (error instanceof ParserError) {
@@ -303,11 +304,12 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
             options?.pretty,
           )) as Map<string, string>;
         const grammarText = isolatedLambdas.get(this.lambdaId);
-        this.setLambdaString(
+        const nextLambdaString =
           grammarText !== undefined
             ? this.extractLambdaString(grammarText)
-            : '',
-        );
+            : '';
+        this.setLambdaString(nextLambdaString);
+        this.lastComputedLambdaString = nextLambdaString || undefined;
         this.clearErrors({
           preserveCompilationError: options?.preserveCompilationError,
         });
@@ -373,6 +375,7 @@ export class LakehouseAccessPointState extends AccessPointState {
       setShowSampleValuesModal: action,
       addRelationElement: action,
       deleteRelationElement: action,
+      createAndaddRelationElement: flow,
       // Add observables for lineage
       lineageState: observable,
       setArtifactContent: action,
@@ -483,7 +486,11 @@ export class LakehouseAccessPointState extends AccessPointState {
     return undefined;
   }
 
-  createAndaddRelationElement(): void {
+  *createAndaddRelationElement(): GeneratorFn<void> {
+    if (this.lambdaState.lambdaRelationColumns === undefined) {
+      yield flowResult(this.lambdaState.updateLambdaRelationColumns());
+    }
+
     const newElement = new RelationElement();
     newElement.paths = [this.accessPoint.id];
 
@@ -677,6 +684,8 @@ export class AccessPointGroupState {
       deleteAccessPoint: action,
       swapAccessPoints: action,
       containsPublicStereotype: computed,
+      hasParserError: computed,
+      classifications: computed,
     });
   }
 
@@ -684,9 +693,27 @@ export class AccessPointGroupState {
     return Boolean(this.accessPointStates.find((e) => e.isRunningProcess));
   }
 
+  get hasParserError(): boolean {
+    return this.accessPointStates.some(
+      (apState) =>
+        apState instanceof LakehouseAccessPointState &&
+        Boolean(apState.lambdaState.parserError),
+    );
+  }
+
   get containsPublicStereotype(): StereotypeReference | undefined {
     return this.value.stereotypes.find(
       (stereotype) => stereotype.value === this.publicStereotype,
+    );
+  }
+
+  get classifications(): string[] {
+    const config =
+      this.state.editorStore.applicationStore.config.options.dataProductConfig;
+    return (
+      (this.containsPublicStereotype
+        ? config?.publicClassifications
+        : config?.classifications) ?? []
     );
   }
 
@@ -1084,11 +1111,15 @@ export class DataProductEditorState extends ElementEditorState {
             purePropertyMapping?.lambdaState.lambdaPrefix &&
             grammarText.startsWith(purePropertyMapping.lambdaState.lambdaPrefix)
           ) {
-            purePropertyMapping.lambdaState.setLambdaString(
-              purePropertyMapping.lambdaState.extractLambdaString(grammarText),
-            );
-          } else {
-            purePropertyMapping?.lambdaState.setLambdaString(grammarText);
+            const nextLambdaString =
+              purePropertyMapping.lambdaState.extractLambdaString(grammarText);
+            purePropertyMapping.lambdaState.setLambdaString(nextLambdaString);
+            purePropertyMapping.lambdaState.lastComputedLambdaString =
+              nextLambdaString || undefined;
+          } else if (purePropertyMapping) {
+            purePropertyMapping.lambdaState.setLambdaString(grammarText);
+            purePropertyMapping.lambdaState.lastComputedLambdaString =
+              grammarText || undefined;
           }
         });
       } catch (error) {
