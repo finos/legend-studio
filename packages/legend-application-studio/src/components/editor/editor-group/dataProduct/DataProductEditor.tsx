@@ -1848,6 +1848,10 @@ const AccessPointGroupEditor = observer(
       if (!aiSuggestion) {
         return;
       }
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestApplied(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       // Find matching group in the response
       const gIdx =
         productEditorState.accessPointGroupStates.indexOf(groupState);
@@ -1883,6 +1887,13 @@ const AccessPointGroupEditor = observer(
         accessPoint_setTitle(ap, apMeta.title);
         accessPoint_setDescription(ap, apMeta.description);
       }
+      setAISuggestion(undefined);
+    };
+    const discardAISuggestion = (): void => {
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestDiscarded(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       setAISuggestion(undefined);
     };
 
@@ -1996,7 +2007,7 @@ const AccessPointGroupEditor = observer(
                 </button>
                 <button
                   className="btn data-product-editor__ai-suggestion__dismiss-btn"
-                  onClick={(): void => setAISuggestion(undefined)}
+                  onClick={discardAISuggestion}
                 >
                   Dismiss
                 </button>

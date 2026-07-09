@@ -286,7 +286,18 @@ const ServiceGeneralEditor = observer(() => {
     if (!aiDocSuggestion) {
       return;
     }
+    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestApplied(
+      applicationStore.telemetryService,
+      service.path,
+    );
     service_setDocumentation(service, aiDocSuggestion);
+    setAIDocSuggestion(undefined);
+  };
+  const discardAIDocSuggestion = (): void => {
+    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestDiscarded(
+      applicationStore.telemetryService,
+      service.path,
+    );
     setAIDocSuggestion(undefined);
   };
 
@@ -503,7 +514,7 @@ const ServiceGeneralEditor = observer(() => {
               </button>
               <button
                 className="btn service-editor__ai-suggestion__dismiss-btn"
-                onClick={(): void => setAIDocSuggestion(undefined)}
+                onClick={discardAIDocSuggestion}
                 title="Dismiss AI suggestion"
               >
                 Dismiss
