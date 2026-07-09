@@ -161,7 +161,9 @@ export interface LegendQueryApplicationConfigurationData
     url: string;
   };
   legendAI?: {
-    url: string;
+    url?: string;
+    enghubDocUrl?: string;
+    enthubRequestAccessUrl?: string;
   };
 }
 
@@ -178,6 +180,8 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly marketplaceProductionParallelUrl?: string;
   readonly lakehouseContractUrl?: string;
   readonly legendAIUrl?: string;
+  readonly legendAIEnghubDocUrl?: string;
+  readonly legendAIEnthubRequestAccessUrl?: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
 
@@ -271,6 +275,13 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
       this.legendAIUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.legendAI.url,
       );
+    }
+    if (input.configData.legendAI?.enghubDocUrl) {
+      this.legendAIEnghubDocUrl = input.configData.legendAI.enghubDocUrl;
+    }
+    if (input.configData.legendAI?.enthubRequestAccessUrl) {
+      this.legendAIEnthubRequestAccessUrl =
+        input.configData.legendAI.enthubRequestAccessUrl;
     }
 
     // options

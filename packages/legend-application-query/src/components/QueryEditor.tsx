@@ -43,6 +43,7 @@ import {
   MoonIcon,
   SunIcon,
   SparkleIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -168,6 +169,10 @@ const CreateQueryDialog = observer(() => {
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
+  const enghubDocUrl = editorStore.applicationStore.config.legendAIEnghubDocUrl;
+  const enthubRequestAccessUrl =
+    editorStore.applicationStore.config.legendAIEnthubRequestAccessUrl;
+  const hasAIAccessLinks = Boolean(enghubDocUrl ?? enthubRequestAccessUrl);
   const aiSuggester = legendAIUrl
     ? editorStore.pluginManager
         .getApplicationPlugins()
@@ -178,18 +183,24 @@ const CreateQueryDialog = observer(() => {
   const [aiSuggestion, setAISuggestion] = useState<
     { title: string; description: string } | undefined
   >(undefined);
+  const [aiError, setAIError] = useState<string | undefined>(undefined);
   const suggestWithAI = async (): Promise<void> => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
     setIsSuggestingWithAI(true);
     setAISuggestion(undefined);
+    setAIError(undefined);
     try {
       const request = await buildAISuggestionRequest(
         editorStore.queryBuilderState,
       );
       const suggestion = await aiSuggester(request, legendAIUrl);
       setAISuggestion(suggestion);
+    } catch (error) {
+      setAIError(
+        error instanceof Error ? error.message : 'An error occurred with AI.',
+      );
     } finally {
       setIsSuggestingWithAI(false);
     }
@@ -316,6 +327,37 @@ const CreateQueryDialog = observer(() => {
           </div>
         </ModalBody>
         <ModalFooter>
+          {(aiError ?? !aiSuggester) && hasAIAccessLinks && (
+            <div className="query-editor__ai-footer-links">
+              {aiError && (
+                <span className="query-editor__ai-error__message">
+                  {aiError}
+                </span>
+              )}
+              {enghubDocUrl && (
+                <a
+                  className="query-editor__ai-error__link"
+                  href={enghubDocUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLinkIcon />
+                  <span>View Documentation</span>
+                </a>
+              )}
+              {enthubRequestAccessUrl && (
+                <a
+                  className="query-editor__ai-error__link query-editor__ai-error__link--primary"
+                  href={enthubRequestAccessUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLinkIcon />
+                  <span>Request Access</span>
+                </a>
+              )}
+            </div>
+          )}
           {aiSuggestion ? (
             <>
               <ModalFooterButton
@@ -330,14 +372,22 @@ const CreateQueryDialog = observer(() => {
               />
             </>
           ) : (
-            aiSuggester && (
+            (aiSuggester || hasAIAccessLinks) && (
               <button
                 className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
                 onClick={(): void => {
                   suggestWithAI().catch(applicationStore.alertUnhandledError);
                 }}
-                disabled={isSuggestingWithAI || !editorStore.queryBuilderState}
-                title="Use AI to suggest name and description based on the current query"
+                disabled={
+                  !aiSuggester ||
+                  isSuggestingWithAI ||
+                  !editorStore.queryBuilderState
+                }
+                title={
+                  !aiSuggester
+                    ? 'You are not authorized to use AI features'
+                    : 'Use AI to suggest name and description based on the current query'
+                }
               >
                 <SparkleIcon />
                 <span>
@@ -455,6 +505,12 @@ const RenameQueryDialog = observer(
       queryRenameName !== existingEditorStore.lightQuery.name;
 
     const legendAIUrl = existingEditorStore.applicationStore.config.legendAIUrl;
+    const enghubDocUrl =
+      existingEditorStore.applicationStore.config.legendAIEnghubDocUrl;
+    const enthubRequestAccessUrl =
+      existingEditorStore.applicationStore.config
+        .legendAIEnthubRequestAccessUrl;
+    const hasAIAccessLinks = Boolean(enghubDocUrl ?? enthubRequestAccessUrl);
     const aiSuggester = legendAIUrl
       ? existingEditorStore.pluginManager
           .getApplicationPlugins()
@@ -465,6 +521,7 @@ const RenameQueryDialog = observer(
     const [aiSuggestion, setAISuggestion] = useState<
       { title: string; description: string } | undefined
     >(undefined);
+    const [aiError, setAIError] = useState<string | undefined>(undefined);
     const suggestWithAI = async (): Promise<void> => {
       if (
         !aiSuggester ||
@@ -475,6 +532,7 @@ const RenameQueryDialog = observer(
       }
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
+      setAIError(undefined);
       try {
         const request = await buildAISuggestionRequest(
           existingEditorStore.queryBuilderState,
@@ -482,6 +540,10 @@ const RenameQueryDialog = observer(
         );
         const suggestion = await aiSuggester(request, legendAIUrl);
         setAISuggestion(suggestion);
+      } catch (error) {
+        setAIError(
+          error instanceof Error ? error.message : 'An error occurred with AI.',
+        );
       } finally {
         setIsSuggestingWithAI(false);
       }
@@ -620,6 +682,37 @@ const RenameQueryDialog = observer(
             </div>
           </ModalBody>
           <ModalFooter>
+            {(aiError ?? !aiSuggester) && hasAIAccessLinks && (
+              <div className="query-editor__ai-footer-links">
+                {aiError && (
+                  <span className="query-editor__ai-error__message">
+                    {aiError}
+                  </span>
+                )}
+                {enghubDocUrl && (
+                  <a
+                    className="query-editor__ai-error__link"
+                    href={enghubDocUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLinkIcon />
+                    <span>View Documentation</span>
+                  </a>
+                )}
+                {enthubRequestAccessUrl && (
+                  <a
+                    className="query-editor__ai-error__link query-editor__ai-error__link--primary"
+                    href={enthubRequestAccessUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLinkIcon />
+                    <span>Request Access</span>
+                  </a>
+                )}
+              </div>
+            )}
             {aiSuggestion ? (
               <>
                 <ModalFooterButton
@@ -634,16 +727,22 @@ const RenameQueryDialog = observer(
                 />
               </>
             ) : (
-              aiSuggester && (
+              (aiSuggester || hasAIAccessLinks) && (
                 <button
                   className="btn btn--dark modal__footer__btn modal__footer__btn--primary query-editor__ai-suggest-btn"
                   onClick={(): void => {
                     suggestWithAI().catch(applicationStore.alertUnhandledError);
                   }}
                   disabled={
-                    isSuggestingWithAI || !existingEditorStore.queryBuilderState
+                    !aiSuggester ||
+                    isSuggestingWithAI ||
+                    !existingEditorStore.queryBuilderState
                   }
-                  title="Use AI to suggest name and description based on the current query"
+                  title={
+                    !aiSuggester
+                      ? 'You are not authorized to use AI features'
+                      : 'Use AI to suggest name and description based on the current query'
+                  }
                 >
                   <SparkleIcon />
                   <span style={{ marginLeft: '0.4rem' }}>

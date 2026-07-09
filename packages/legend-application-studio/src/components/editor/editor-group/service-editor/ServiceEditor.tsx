@@ -36,6 +36,7 @@ import {
   PanelFormValidatedTextField,
   PanelContentLists,
   SparkleIcon,
+  ExternalLinkIcon,
 } from '@finos/legend-art';
 import { debounce, prettyCONSTName } from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
@@ -246,6 +247,10 @@ const ServiceGeneralEditor = observer(() => {
 
   // AI documentation suggestion
   const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
+  const enghubDocUrl = editorStore.applicationStore.config.legendAIEnghubDocUrl;
+  const enthubRequestAccessUrl =
+    editorStore.applicationStore.config.legendAIEnthubRequestAccessUrl;
+  const hasAIAccessLinks = Boolean(enghubDocUrl ?? enthubRequestAccessUrl);
   const aiDocSuggester = legendAIUrl
     ? editorStore.pluginManager
         .getApplicationPlugins()
@@ -260,12 +265,14 @@ const ServiceGeneralEditor = observer(() => {
   const [aiDocSuggestion, setAIDocSuggestion] = useState<string | undefined>(
     undefined,
   );
+  const [aiError, setAIError] = useState<string | undefined>(undefined);
   const suggestDocumentationWithAI = async (): Promise<void> => {
     if (!aiDocSuggester || !legendAIUrl) {
       return;
     }
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
+    setAIError(undefined);
     try {
       const serviceGrammar =
         await editorStore.graphManagerState.graphManager.elementsToPureCode([
@@ -273,6 +280,10 @@ const ServiceGeneralEditor = observer(() => {
         ]);
       const suggestion = await aiDocSuggester(serviceGrammar, legendAIUrl);
       setAIDocSuggestion(suggestion);
+    } catch (error) {
+      setAIError(
+        error instanceof Error ? error.message : 'An error occurred with AI.',
+      );
     } finally {
       setIsSuggestingWithAI(false);
     }
@@ -441,22 +452,61 @@ const ServiceGeneralEditor = observer(() => {
                 AI Suggestion
               </span>
             )}
-            {aiDocSuggester && !aiDocSuggestion && (
-              <button
-                className="service-editor__ai-suggest-btn"
-                onClick={(): void => {
-                  suggestDocumentationWithAI().catch(
-                    editorStore.applicationStore.alertUnhandledError,
-                  );
-                }}
-                disabled={isSuggestingWithAI || isReadOnly}
-                title="Use AI to suggest documentation for this service"
-              >
-                <SparkleIcon />
-                <span>
-                  {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
-                </span>
-              </button>
+            {(aiDocSuggester || hasAIAccessLinks) && !aiDocSuggestion && (
+              <div className="service-editor__ai-action">
+                <button
+                  className="service-editor__ai-suggest-btn"
+                  onClick={(): void => {
+                    suggestDocumentationWithAI().catch(
+                      editorStore.applicationStore.alertUnhandledError,
+                    );
+                  }}
+                  disabled={!aiDocSuggester || isSuggestingWithAI || isReadOnly}
+                  title={
+                    !aiDocSuggester
+                      ? 'You are not authorized to use AI features'
+                      : 'Use AI to suggest documentation for this service'
+                  }
+                >
+                  <SparkleIcon />
+                  <span>
+                    {isSuggestingWithAI ? 'Suggesting...' : 'Suggest with AI'}
+                  </span>
+                </button>
+                {(aiError ?? !aiDocSuggester) && hasAIAccessLinks && (
+                  <div className="service-editor__ai-error">
+                    {aiError && (
+                      <span className="service-editor__ai-error__message">
+                        {aiError}
+                      </span>
+                    )}
+                    <div className="service-editor__ai-error__links">
+                      {enghubDocUrl && (
+                        <a
+                          className="service-editor__ai-error__link"
+                          href={enghubDocUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLinkIcon />
+                          <span>View Documentation</span>
+                        </a>
+                      )}
+                      {enthubRequestAccessUrl && (
+                        <a
+                          className="service-editor__ai-error__link service-editor__ai-error__link--primary"
+                          href={enthubRequestAccessUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLinkIcon />
+                          <span>Request Access</span>
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <div

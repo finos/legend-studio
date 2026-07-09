@@ -59,13 +59,44 @@ class MockAIDocSuggesterPlugin
 }
 
 // ---------------------------------------------------------------------------
+// Mock plugin that always throws (simulates a permission/network error)
+// ---------------------------------------------------------------------------
+class MockFailingAIDocSuggesterPlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_Service_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-failing-ai-doc-suggester', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  getExtraServiceDocumentationAISuggester(): ServiceDocumentationAISuggester {
+    return async (): Promise<never> => {
+      throw new Error('Permission denied: you do not have access to AI.');
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Shared setup helper
 // ---------------------------------------------------------------------------
-const setupEditorWithAI = async (withAIConfig = true) => {
+const setupEditorWithAI = async (
+  withAIConfig = true,
+  extraLegendAI?: { enghubDocUrl?: string; enthubRequestAccessUrl?: string },
+  failingSuggester = false,
+) => {
   const pluginManager = LegendStudioPluginManager.create();
+  const legendAIConfig = withAIConfig
+    ? { url: 'http://ai.example.com', ...extraLegendAI }
+    : extraLegendAI
+      ? extraLegendAI
+      : undefined;
   const applicationStore = new ApplicationStore(
     TEST__getLegendStudioApplicationConfig(
-      withAIConfig ? { legendAI: { url: 'http://ai.example.com' } } : {},
+      legendAIConfig ? { legendAI: legendAIConfig } : {},
     ),
     pluginManager,
   );
@@ -75,7 +106,9 @@ const setupEditorWithAI = async (withAIConfig = true) => {
     applicationStore,
   });
 
-  if (withAIConfig) {
+  if (failingSuggester) {
+    new MockFailingAIDocSuggesterPlugin().install(pluginManager);
+  } else if (withAIConfig) {
     new MockAIDocSuggesterPlugin().install(pluginManager);
   }
 
@@ -271,6 +304,73 @@ test(
       // "Suggest with AI" button returns
       expect(
         editorGroup.querySelector('.service-editor__ai-suggest-btn'),
+      ).not.toBeNull();
+    });
+  },
+);
+
+// ---------------------------------------------------------------------------
+// Unauthorized / error + doc-link tests
+// ---------------------------------------------------------------------------
+
+test(
+  integrationTest(
+    '"Suggest with AI" button is shown disabled with doc links when no legendAIUrl but doc URLs are configured',
+  ),
+  async () => {
+    const { editorGroup } = await setupEditorWithAI(false, {
+      enghubDocUrl: 'http://docs.example.com',
+      enthubRequestAccessUrl: 'http://access.example.com',
+    });
+
+    await waitFor(() => {
+      const btn = editorGroup.querySelector(
+        '.service-editor__ai-suggest-btn',
+      ) as HTMLButtonElement;
+      expect(btn).not.toBeNull();
+      expect(btn.disabled).toBe(true);
+
+      expect(
+        editorGroup.querySelector('.service-editor__ai-error__links'),
+      ).not.toBeNull();
+      expect(
+        editorGroup.querySelectorAll('.service-editor__ai-error__link'),
+      ).toHaveLength(2);
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Error message and doc links appear inline when AI suggestion call fails',
+  ),
+  async () => {
+    const { editorGroup } = await setupEditorWithAI(
+      true,
+      {
+        enghubDocUrl: 'http://docs.example.com',
+        enthubRequestAccessUrl: 'http://access.example.com',
+      },
+      true,
+    );
+
+    const suggestBtn = await waitFor(
+      () =>
+        editorGroup.querySelector(
+          '.service-editor__ai-suggest-btn',
+        ) as HTMLButtonElement,
+    );
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    await waitFor(() => {
+      expect(
+        editorGroup.querySelector('.service-editor__ai-error__message'),
+      ).not.toBeNull();
+      expect(
+        editorGroup.querySelector('.service-editor__ai-error__links'),
       ).not.toBeNull();
     });
   },
