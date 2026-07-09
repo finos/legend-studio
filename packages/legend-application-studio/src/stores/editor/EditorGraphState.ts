@@ -91,6 +91,7 @@ import {
   SnowflakeM2MUdf,
   GraphEntities,
   HostedService,
+  Compute,
   DataProduct,
   IngestDefinition,
   MemSQLFunction,
@@ -876,6 +877,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE.HOSTED_SERVICE;
     } else if (element instanceof DataProduct) {
       return PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT;
+    } else if (element instanceof Compute) {
+      return PACKAGEABLE_ELEMENT_TYPE._COMPUTE;
     } else if (element instanceof IngestDefinition) {
       return PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION;
     } else if (element instanceof MemSQLFunction) {

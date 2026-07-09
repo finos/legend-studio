@@ -87,6 +87,11 @@ import {
   TEST_DATA__DATAPRODUCT_WITH_OWNER,
   TEST_DATA__DATAPRODUCT__TEST_SUITES,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
+import {
+  TEST_DATA__COMPUTE_SNOWFLAKE,
+  TEST_DATA__COMPUTE_DATABRICKS,
+  TEST_DATA__COMPUTE_UNKNOWN_SPEC,
+} from './roundtripTestData/TEST_DATA__ComputeRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 
 describe(unitTest('M2M graph roundtrip'), () => {
@@ -296,6 +301,19 @@ describe(unitTest('DSL Data product'), () => {
     ],
     ['DSL Data Product with Owner', TEST_DATA__DATAPRODUCT_WITH_OWNER],
     ['DSL Data Product Test Suites', TEST_DATA__DATAPRODUCT__TEST_SUITES],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
+});
+
+describe(unitTest('DSL Compute'), () => {
+  test.each([
+    ['Snowflake Compute', TEST_DATA__COMPUTE_SNOWFLAKE],
+    ['Databricks Compute with tags', TEST_DATA__COMPUTE_DATABRICKS],
+    [
+      'Compute with unknown spec (forward-compat)',
+      TEST_DATA__COMPUTE_UNKNOWN_SPEC,
+    ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });

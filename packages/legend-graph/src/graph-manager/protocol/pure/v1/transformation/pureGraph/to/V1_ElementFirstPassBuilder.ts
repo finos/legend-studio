@@ -87,6 +87,8 @@ import { GenericTypeImplicitReference } from '../../../../../../../graph/metamod
 import { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
 import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { V1_Compute } from '../../../model/packageableElements/compute/V1_Compute.js';
+import { Compute } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import {
   AppDirNode,
@@ -876,5 +878,29 @@ export class V1_ElementFirstPassBuilder
     );
     this.context.currentSubGraph.setOwnDataProduct(path, product);
     return product;
+  }
+
+  visit_Compute(element: V1_Compute): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Compute 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Compute 'name' field is missing or empty`,
+    );
+    const compute = new Compute(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      compute,
+    );
+    this.context.currentSubGraph.setOwnCompute(path, compute);
+    return compute;
   }
 }

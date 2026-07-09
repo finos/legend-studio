@@ -161,6 +161,7 @@ export enum CORE_PURE_PATH {
   TABULAR_RESULT = 'meta::pure::mapping::Result',
   DATA_PRODUCT = 'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   INGEST_DEFINITION = 'meta::external::ingest::specification::metamodel::IngestDefinition',
+  COMPUTE = 'meta::external::compute::specification::metamodel::Compute',
 }
 
 export const PURE_DOC_TAG = 'doc';
