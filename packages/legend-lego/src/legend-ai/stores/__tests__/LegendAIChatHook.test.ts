@@ -21,8 +21,10 @@ import { useLegendAIChatState } from '../LegendAIChatState.js';
 import {
   type LegendAIChatState,
   type LegendAIScopeItem,
+  type LegendAIChatTelemetryEvent,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
+  LegendAIChatTelemetryEventType,
 } from '../../LegendAITypes.js';
 import type { LegendAIOrchestratorDataProductCoordinates } from '../../LegendAI_LegendApplicationPlugin_Extension.js';
 import {
@@ -144,6 +146,38 @@ describe(unitTest('useLegendAIChatState'), () => {
     );
     // Question text should be cleared
     expect(result.current.questionText).toBe('');
+  });
+
+  test('askQuestion emits a QUESTION_ASKED telemetry event with the question length only', () => {
+    const events: LegendAIChatTelemetryEvent[] = [];
+    const { result } = renderHook(() =>
+      useLegendAIChatState(
+        TEST_DATA__legendAIServices,
+        'com.test:prod:1.0.0',
+        TEST_DATA__legendAIConfig,
+        TEST_DATA__legendAIMetadata,
+        defaultPlugin,
+        undefined,
+        undefined,
+        undefined,
+        (event) => events.push(event),
+      ),
+    );
+    act(() => {
+      result.current.setQuestionText('show top 10 trades');
+    });
+    act(() => {
+      result.current.askQuestion();
+    });
+    const asked = events.find(
+      (e) => e.type === LegendAIChatTelemetryEventType.QUESTION_ASKED,
+    );
+    expect(asked).toBeDefined();
+    if (asked?.type === LegendAIChatTelemetryEventType.QUESTION_ASKED) {
+      // The raw question text is never logged (PII); only its length.
+      expect(asked.questionLength).toBe('show top 10 trades'.length);
+      expect(asked).not.toHaveProperty('question');
+    }
   });
 
   test('askQuestion does not send when already sending', () => {

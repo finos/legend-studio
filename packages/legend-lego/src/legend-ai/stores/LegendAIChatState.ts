@@ -26,7 +26,10 @@ import {
   type LegendAIScopeItem,
   type LegendAIQuestionIntent,
   type LegendAIModelContext,
+  type LegendAIChatTelemetryEvent,
+  type LegendAIAssistantMessage,
   LegendAIMessageRole,
+  LegendAIChatTelemetryEventType,
 } from '../LegendAITypes.js';
 import {
   type LegendAI_LegendApplicationPlugin_Extension,
@@ -35,6 +38,7 @@ import {
 import type { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
 import {
   buildConversationHistory,
+  classifyResponseOutcome,
   createMessagePair,
   processQuestion,
   processQuestionWithIntent,
@@ -50,6 +54,7 @@ export const useLegendAIChatState = (
   dataProductCoordinates?: LegendAIOrchestratorDataProductCoordinates,
   pureExecutionContext?: QueryExplicitExecutionContextInfo,
   modelContext?: LegendAIModelContext,
+  onLogTelemetryEvent?: (event: LegendAIChatTelemetryEvent) => void,
 ): LegendAIChatState => {
   const LEGEND_AI_MCP_SCOPE_ID = 'legend-ai-mcp';
   const [questionText, setQuestionText] = useState('');
@@ -81,8 +86,12 @@ export const useLegendAIChatState = (
     undefined,
   );
   const cancelledRef = useRef(false);
+  // Mirrors `messages` so the async settle callback in `dispatchQuestion` can
+  // read the final turn (its `messages` closure is the pre-turn snapshot).
+  const messagesRef = useRef(messages);
 
   useEffect(() => {
+    messagesRef.current = messages;
     const el = conversationRef.current;
     if (el && messages.length > 0) {
       el.scrollTop = el.scrollHeight;
@@ -178,6 +187,12 @@ export const useLegendAIChatState = (
       cancelledRef.current = false;
       setQuestionText('');
       setMessages((prev) => [...prev, ...createMessagePair(trimmed)]);
+      // Log only the length — never the raw question text (PII constraint).
+      onLogTelemetryEvent?.({
+        type: LegendAIChatTelemetryEventType.QUESTION_ASKED,
+        questionLength: trimmed.length,
+      });
+      const startTime = Date.now();
       if (sendTimeoutRef.current !== undefined) {
         clearTimeout(sendTimeoutRef.current);
         sendTimeoutRef.current = undefined;
@@ -188,12 +203,24 @@ export const useLegendAIChatState = (
           .finally(() => {
             if (!cancelledRef.current) {
               setIsSending(false);
+              // Report the finished turn's outcome (the user did not abort).
+              const lastAssistant = [...messagesRef.current]
+                .reverse()
+                .find(
+                  (m): m is LegendAIAssistantMessage =>
+                    m.role === LegendAIMessageRole.ASSISTANT,
+                );
+              onLogTelemetryEvent?.({
+                type: LegendAIChatTelemetryEventType.RESPONSE_RECEIVED,
+                outcome: classifyResponseOutcome(lastAssistant),
+                durationMs: Date.now() - startTime,
+              });
             }
             sendTimeoutRef.current = undefined;
           });
       }, 0);
     },
-    [isSending, messages],
+    [isSending, messages, onLogTelemetryEvent],
   );
 
   const askQuestion = useCallback(

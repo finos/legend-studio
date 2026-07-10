@@ -26,6 +26,7 @@ import {
   type LegendAIProductMetadata,
   type LegendAIModelContext,
   LegendAIQuestionIntent,
+  LegendAIResponseOutcome,
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
@@ -346,6 +347,30 @@ function buildTurnFromAssistant(
     };
   }
   return undefined;
+}
+
+/**
+ * Classifies the coarse outcome of a finished assistant turn for usage
+ * telemetry. A turn that surfaced a fallback action is treated as a no-answer
+ * (the "sorry" message sets `textAnswer`), so the fallback check precedes the
+ * content check.
+ */
+export function classifyResponseOutcome(
+  message: LegendAIAssistantMessage | undefined,
+): LegendAIResponseOutcome {
+  if (!message) {
+    return LegendAIResponseOutcome.NO_ANSWER;
+  }
+  if (message.error) {
+    return LegendAIResponseOutcome.ERROR;
+  }
+  if (message.fallbackAction) {
+    return LegendAIResponseOutcome.NO_ANSWER;
+  }
+  if (message.sql ?? message.textAnswer ?? message.gridData) {
+    return LegendAIResponseOutcome.ANSWERED;
+  }
+  return LegendAIResponseOutcome.NO_ANSWER;
 }
 
 export function buildConversationHistory(

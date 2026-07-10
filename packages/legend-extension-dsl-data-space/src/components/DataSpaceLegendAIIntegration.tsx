@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type QueryExplicitExecutionContextInfo,
@@ -33,6 +33,8 @@ import {
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
   extractModelContext,
+  LegendAIChatTelemetryEventType,
+  LegendAIMessageFeedbackRating,
   type TDSColumnSchema,
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -46,6 +48,8 @@ import {
   type LegendAIExecutableInfo,
   type LegendAIColumnPropertyMapping,
   type LegendAIParameterInfo,
+  type LegendAIChatTelemetryEvent,
+  type LegendAIMessageFeedback,
 } from '@finos/legend-lego/legend-ai';
 import { type DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
@@ -572,6 +576,51 @@ const DataSpaceLegendAIIntegrationInner = observer(
       services,
     ]);
 
+    const telemetryService =
+      dataSpaceViewerState.applicationStore.telemetryService;
+    const dataSpacePath = dataSpaceViewerState.dataSpaceAnalysisResult.path;
+    const handleLogTelemetryEvent = useCallback(
+      (event: LegendAIChatTelemetryEvent): void => {
+        if (event.type === LegendAIChatTelemetryEventType.QUESTION_ASKED) {
+          telemetryService.logEvent(
+            DSL_DATASPACE_EVENT.LEGEND_AI_QUESTION_ASKED,
+            {
+              context: 'data-space',
+              data_product: dataSpacePath,
+              question_length: event.questionLength,
+            },
+          );
+        } else {
+          telemetryService.logEvent(
+            DSL_DATASPACE_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
+            {
+              context: 'data-space',
+              data_product: dataSpacePath,
+              outcome: event.outcome,
+              duration_ms: event.durationMs,
+            },
+          );
+        }
+      },
+      [telemetryService, dataSpacePath],
+    );
+    const handleMessageFeedback = useCallback(
+      (feedback: LegendAIMessageFeedback): void => {
+        telemetryService.logEvent(
+          DSL_DATASPACE_EVENT.LEGEND_AI_FEEDBACK_SUBMITTED,
+          {
+            context: 'data-space',
+            data_product: dataSpacePath,
+            rating:
+              feedback.rating === LegendAIMessageFeedbackRating.THUMBS_UP
+                ? 'up'
+                : 'down',
+          },
+        );
+      },
+      [telemetryService, dataSpacePath],
+    );
+
     if (!config.enabled || !legendAIPlugin) {
       return null;
     }
@@ -588,6 +637,8 @@ const DataSpaceLegendAIIntegrationInner = observer(
         metadata={metadata}
         title={`Ask ${dsTitle}`}
         plugin={legendAIPlugin}
+        onLogTelemetryEvent={handleLogTelemetryEvent}
+        onMessageFeedback={handleMessageFeedback}
         contextBannerMessage="You can query available TDS Executables within Data Space, or use Legend AI MCP for Pure queries on models."
         dataProductCoordinates={dataProductCoordinates}
         pureExecutionContext={pureExecutionContext}

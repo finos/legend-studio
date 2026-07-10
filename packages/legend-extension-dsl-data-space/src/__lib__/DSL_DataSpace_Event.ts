@@ -18,4 +18,10 @@ export enum DSL_DATASPACE_EVENT {
   BUILD_ANALYTICS_RESULT = 'dataProduct.builder.analytics-result',
   ERROR_GENERATE_SAMPLE_VALUES = 'dataProduct.error.build-sample-values',
   ERROR_EXTRACT_LEGEND_AI_SERVICES = 'dataProduct.error.extract-legend-ai-services',
+  // Legend AI assistant usage analytics. The name scheme is shared across data
+  // product and data space; the `context` payload field distinguishes them.
+  LEGEND_AI_ASSISTANT_OPENED = 'legend-ai.assistant.opened',
+  LEGEND_AI_QUESTION_ASKED = 'legend-ai.question.asked',
+  LEGEND_AI_RESPONSE_RECEIVED = 'legend-ai.response.received',
+  LEGEND_AI_FEEDBACK_SUBMITTED = 'legend-ai.feedback.submitted',
 }

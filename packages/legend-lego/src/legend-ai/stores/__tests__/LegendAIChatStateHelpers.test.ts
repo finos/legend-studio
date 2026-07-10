@@ -18,6 +18,7 @@ import { test, describe, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import {
   buildConversationHistory,
+  classifyResponseOutcome,
   buildGenerationFailureMessage,
   buildExecutionErrorMessage,
   updateLastAssistant,
@@ -56,6 +57,7 @@ import {
   LegendAIErrorType,
   LegendAIServiceError,
   LegendAIUnsupportedEngineShapeError,
+  LegendAIResponseOutcome,
 } from '../../LegendAITypes.js';
 import {
   TEST__createMockSetter,
@@ -2219,6 +2221,60 @@ describe(unitTest('categorizeExecutionError'), () => {
     );
     expect(categorizeExecutionError(err.message, err)).toBe(
       ExecutionErrorCategory.SQL_FIXABLE,
+    );
+  });
+});
+
+describe(unitTest('classifyResponseOutcome'), () => {
+  test('undefined message is a no-answer', () => {
+    expect(classifyResponseOutcome(undefined)).toBe(
+      LegendAIResponseOutcome.NO_ANSWER,
+    );
+  });
+
+  test('an error message is an error, even with content', () => {
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({ error: 'boom', sql: 'select 1' }),
+      ),
+    ).toBe(LegendAIResponseOutcome.ERROR);
+  });
+
+  test('a fallback action is a no-answer even when a sorry text is set', () => {
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({
+          textAnswer: "Sorry — I couldn't find an answer.",
+          fallbackAction: {
+            label: 'Try the orchestrator',
+            actionId: 'retry',
+          },
+        }),
+      ),
+    ).toBe(LegendAIResponseOutcome.NO_ANSWER);
+  });
+
+  test('a SQL / text / grid answer is answered', () => {
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({ sql: 'select * from t' }),
+      ),
+    ).toBe(LegendAIResponseOutcome.ANSWERED);
+    expect(
+      classifyResponseOutcome(TEST__makeAssistantMessage({ textAnswer: 'Hi' })),
+    ).toBe(LegendAIResponseOutcome.ANSWERED);
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({
+          gridData: { columnDefs: [], rowData: [] },
+        }),
+      ),
+    ).toBe(LegendAIResponseOutcome.ANSWERED);
+  });
+
+  test('an empty (still-processing) message is a no-answer', () => {
+    expect(classifyResponseOutcome(TEST__makeAssistantMessage())).toBe(
+      LegendAIResponseOutcome.NO_ANSWER,
     );
   });
 });
