@@ -43,6 +43,7 @@ import {
 import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceLegendAIIntegration } from './DataSpaceLegendAIIntegration.js';
+import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -217,6 +218,17 @@ export const DataSpaceViewer = observer(
     const [isAIChatOpen, setIsAIChatOpen] = useState(false);
     const [panelWidth, setPanelWidth] = useState(500);
     const isResizing = useRef(false);
+
+    const handleOpenAIChat = useCallback((): void => {
+      setIsAIChatOpen(true);
+      dataSpaceViewerState.applicationStore.telemetryService.logEvent(
+        DSL_DATASPACE_EVENT.LEGEND_AI_ASSISTANT_OPENED,
+        {
+          context: 'data-space',
+          data_product: dataSpaceViewerState.dataSpaceAnalysisResult.path,
+        },
+      );
+    }, [dataSpaceViewerState]);
 
     const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
       e.preventDefault();
@@ -426,7 +438,7 @@ export const DataSpaceViewer = observer(
             {!isAIChatOpen && (
               <button
                 className="legend-ai-chat-toggle"
-                onClick={(): void => setIsAIChatOpen(true)}
+                onClick={handleOpenAIChat}
                 title={`Ask ${dsTitle}`}
               >
                 <span className="legend-ai-chat-toggle__icon">

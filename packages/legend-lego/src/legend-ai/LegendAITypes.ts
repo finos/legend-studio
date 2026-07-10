@@ -247,6 +247,40 @@ export interface LegendAIMessageFeedback {
   rowCount?: number;
 }
 
+/**
+ * Coarse outcome of an assistant turn, reported to usage telemetry so a
+ * dashboard can distinguish answered questions from no-answers and errors.
+ */
+export enum LegendAIResponseOutcome {
+  ANSWERED = 'answered',
+  NO_ANSWER = 'no_answer',
+  ERROR = 'error',
+}
+
+export enum LegendAIChatTelemetryEventType {
+  QUESTION_ASKED = 'question-asked',
+  RESPONSE_RECEIVED = 'response-received',
+}
+
+/**
+ * Usage-analytics events emitted by the chat as the user interacts with it.
+ * The host application maps these onto its own telemetry event names (see the
+ * `onLogTelemetryEvent` prop on {@link LegendAIChatProps}).
+ *
+ * These carry only non-sensitive metadata — never the raw question text or any
+ * queried values — so they are safe to log under data-product PII constraints.
+ */
+export type LegendAIChatTelemetryEvent =
+  | {
+      type: LegendAIChatTelemetryEventType.QUESTION_ASKED;
+      questionLength: number;
+    }
+  | {
+      type: LegendAIChatTelemetryEventType.RESPONSE_RECEIVED;
+      outcome: LegendAIResponseOutcome;
+      durationMs: number;
+    };
+
 export class LegendAIAssistantMessage {
   id!: string;
   role!: LegendAIMessageRole.ASSISTANT;
@@ -747,4 +781,10 @@ export interface LegendAIChatProps {
   ) => Promise<void> | void;
   onRequestAccess?: (accessPointGroupTitle: string) => void;
   contextBannerMessage?: string;
+  /**
+   * Optional usage-analytics sink. Fired when the user asks a question and when
+   * the assistant finishes a response, so the host application can log these to
+   * its telemetry service.
+   */
+  onLogTelemetryEvent?: (event: LegendAIChatTelemetryEvent) => void;
 }

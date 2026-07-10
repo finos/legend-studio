@@ -44,6 +44,8 @@ import {
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
   extractModelContext,
+  LegendAIChatTelemetryEventType,
+  LegendAIMessageFeedbackRating,
   type TDSColumnSchema,
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -54,6 +56,8 @@ import {
   type LegendAIAccessPointInfo,
   type LegendAIAccessPointRelationship,
   type LegendAIModelContext,
+  type LegendAIChatTelemetryEvent,
+  type LegendAIMessageFeedback,
 } from '@finos/legend-lego/legend-ai';
 import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
@@ -714,6 +718,51 @@ const DataProductLegendAIIntegrationInner = observer(
         dataProductViewerState.apgStates,
       ]);
 
+    const telemetryService =
+      dataProductViewerState.applicationStore.telemetryService;
+    const dataProductPath = dataProductViewerState.product.path;
+    const handleLogTelemetryEvent = useCallback(
+      (event: LegendAIChatTelemetryEvent): void => {
+        if (event.type === LegendAIChatTelemetryEventType.QUESTION_ASKED) {
+          telemetryService.logEvent(
+            DSL_DATAPRODUCT_EVENT.LEGEND_AI_QUESTION_ASKED,
+            {
+              context: 'data-product',
+              data_product: dataProductPath,
+              question_length: event.questionLength,
+            },
+          );
+        } else {
+          telemetryService.logEvent(
+            DSL_DATAPRODUCT_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
+            {
+              context: 'data-product',
+              data_product: dataProductPath,
+              outcome: event.outcome,
+              duration_ms: event.durationMs,
+            },
+          );
+        }
+      },
+      [telemetryService, dataProductPath],
+    );
+    const handleMessageFeedback = useCallback(
+      (feedback: LegendAIMessageFeedback): void => {
+        telemetryService.logEvent(
+          DSL_DATAPRODUCT_EVENT.LEGEND_AI_FEEDBACK_SUBMITTED,
+          {
+            context: 'data-product',
+            data_product: dataProductPath,
+            rating:
+              feedback.rating === LegendAIMessageFeedbackRating.THUMBS_UP
+                ? 'up'
+                : 'down',
+          },
+        );
+      },
+      [telemetryService, dataProductPath],
+    );
+
     if (!config.enabled || !legendAIPlugin) {
       return null;
     }
@@ -730,6 +779,8 @@ const DataProductLegendAIIntegrationInner = observer(
           metadata={metadata}
           title={`Ask ${productTitle}`}
           plugin={legendAIPlugin}
+          onLogTelemetryEvent={handleLogTelemetryEvent}
+          onMessageFeedback={handleMessageFeedback}
           contextBannerMessage="You can query data from the available access points in this data product."
           {...(dataProductCoordinates ? { dataProductCoordinates } : {})}
           {...(pureExecutionContext ? { pureExecutionContext } : {})}

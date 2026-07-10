@@ -624,6 +624,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     onMinimize,
     onRequestAccess,
     contextBannerMessage,
+    onLogTelemetryEvent,
   } = props;
   const state = useLegendAIChatState(
     services,
@@ -634,6 +635,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     dataProductCoordinates,
     pureExecutionContext,
     modelContext,
+    onLogTelemetryEvent,
   );
   const suggestedQueries = useMemo(
     () => buildSuggestedQueries(services, metadata),
