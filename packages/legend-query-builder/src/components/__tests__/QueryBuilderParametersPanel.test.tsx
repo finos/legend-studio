@@ -887,12 +887,14 @@ test(
     const paramLambda = TEST_DATA__simpeDateParameters(
       PRIMITIVE_TYPE.STRICTDATE,
     );
-    // Override multiplicity from [1..1] to [0..1]
-    (
-      paramLambda.parameters as {
-        multiplicity: { lowerBound: number; upperBound: number };
-      }[]
-    )[0]!.multiplicity = { lowerBound: 0, upperBound: 1 };
+    const firstParam = guaranteeNonNullable(
+      (
+        paramLambda.parameters as {
+          multiplicity: { lowerBound: number; upperBound: number };
+        }[]
+      )[0],
+    );
+    firstParam.multiplicity = { lowerBound: 0, upperBound: 1 };
 
     await act(async () => {
       queryBuilderState.initializeWithQuery(
