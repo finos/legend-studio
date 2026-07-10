@@ -37,18 +37,25 @@ import {
 } from '../../../__test-utils__/EditorComponentTestUtils.js';
 import TEST_DATA__SimpleRelationalModel from './TEST_DATA__SimpleRelationalEntities.json' with { type: 'json' };
 import TEST_DATA__DataProductQueryEntities from './TEST_DATA__DataProductQueryEntities.json' with { type: 'json' };
+import TEST_DATA__LakehouseMappingRuntimeQueryEntities from './TEST_DATA__LakehouseMappingRuntimeQueryEntities.json' with { type: 'json' };
 import { LEGEND_STUDIO_TEST_ID } from '../../../../../__lib__/LegendStudioTesting.js';
 import {
   type V1_PureGraphManager,
   Core_GraphManagerPreset,
 } from '@finos/legend-graph';
+import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
 import { LegendStudioPluginManager } from '../../../../../application/LegendStudioPluginManager.js';
 import { TEST_DATA_SimpleSnowflakeArtifact } from './TEST_DATA_SimpleSnowflakeArtifact.js';
 import { SnowflakeAppFunctionActivatorEdtiorState } from '../../../../../stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 import { FunctionEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/FunctionEditorState.js';
 
 const pluginManager = LegendStudioPluginManager.create();
-pluginManager.usePresets([new Core_GraphManagerPreset()]).install();
+pluginManager
+  .usePresets([
+    new Core_GraphManagerPreset(),
+    new QueryBuilder_GraphManagerPreset(),
+  ])
+  .install();
 
 test(integrationTest('Test Function Activator '), async () => {
   const MOCK__editorStore = TEST__provideMockedEditorStore({
@@ -294,6 +301,86 @@ test(
     expect(errorSpy as TEMPORARY__JestMatcher).not.toHaveBeenCalled();
 
     // The suite should have been created on the function despite the warning
+    await waitFor(() =>
+      expect(functionElement.tests.length).toBeGreaterThan(0),
+    );
+    const createdSuite = functionElement.tests[0];
+    expect(createdSuite?.id).toBe('mySuite');
+    expect(createdSuite?.tests[0]?.id).toBe('myTest');
+  },
+);
+
+test(
+  integrationTest('Create function test suite succeeds for a LakehouseRuntime'),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({
+      pluginManager,
+    });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      {
+        entities: TEST_DATA__LakehouseMappingRuntimeQueryEntities,
+      },
+    );
+    MockedMonacoEditorInstance.getValue.mockReturnValue('');
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    const functionPath = 'com::entity::appendOnlyQuery__Relation_1_';
+    const functionElement =
+      MOCK__editorStore.graphManagerState.graph.getFunction(functionPath);
+
+    // Navigate via the explorer tree to open the function editor
+    const explorerTree = renderResult.getByTestId(
+      LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+    );
+    fireEvent.click(getByText(explorerTree, 'com'));
+    await waitFor(() => getByText(explorerTree, 'entity'));
+    fireEvent.click(getByText(explorerTree, 'entity'));
+    const functionDisplayName = 'appendOnlyQuery():Relation<Any>[1]';
+    await waitFor(() => getByText(explorerTree, functionDisplayName));
+    fireEvent.click(getByText(explorerTree, functionDisplayName));
+
+    const functionEditor = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.FUNCTION_EDITOR),
+    );
+    const functionEditorState =
+      MOCK__editorStore.tabManagerState.getCurrentEditorState(
+        FunctionEditorState,
+      );
+
+    expect(
+      functionEditorState.functionTestableEditorState.associatedRuntimes
+        ?.length ?? 0,
+    ).toBe(1);
+
+    // Navigate to the Test Suites tab
+    fireEvent.click(getByText(functionEditor, 'Test Suites'));
+
+    const testSuitesPanel = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP_CONTENT),
+    );
+
+    // Open the Create Function Test Suite modal via the blank placeholder
+    fireEvent.click(getByText(testSuitesPanel, 'Add Test Suite'));
+    const createSuiteModal = await waitFor(() =>
+      renderResult.getByRole('dialog'),
+    );
+    expect(
+      getByText(createSuiteModal, 'Create Function Test Suite'),
+    ).toBeDefined();
+
+    // Fill in suite + test names
+    const suiteNameInput = getByPlaceholderText(createSuiteModal, 'Suite Name');
+    fireEvent.change(suiteNameInput, { target: { value: 'mySuite' } });
+    const testNameInput = getByPlaceholderText(createSuiteModal, 'Test Name');
+    fireEvent.change(testNameInput, { target: { value: 'myTest' } });
+
+    // Click Create - should succeed for a LakehouseRuntime
+    fireEvent.click(getByText(createSuiteModal, 'Create'));
+
+    // The suite should have been created on the function
     await waitFor(() =>
       expect(functionElement.tests.length).toBeGreaterThan(0),
     );
