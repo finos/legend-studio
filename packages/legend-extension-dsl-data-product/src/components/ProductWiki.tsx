@@ -41,10 +41,7 @@ import {
 } from './TerminalProductAccess.js';
 import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
 import { Chip, Stack } from '@mui/material';
-import {
-  DataProductAccessType,
-  V1_ExternalDataProductType,
-} from '@finos/legend-graph';
+import { DataProductAccessType } from '@finos/legend-graph';
 import { guaranteeNonNullable, prettyCONSTName } from '@finos/legend-shared';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DataProductSampleQueries } from './DataProduct/DataProductSampleQueries.js';
@@ -63,16 +60,22 @@ export const ProductTags = observer(
     const { productViewerState } = props;
     const product = productViewerState.product;
 
+    const isExternal = (): boolean => {
+      const vendorProfile =
+        productViewerState.dataProductConfig?.vendorTaggedValue.profile;
+      return product.stereotypes.some(
+        (stereotype) =>
+          stereotype.profile === vendorProfile &&
+          stereotype.value === 'EXTERNAL',
+      );
+    };
+
     return (
       <div className="data-product__viewer__wiki__tags">
         <Stack direction="row" spacing={1}>
           <Chip
             className="data-product__viewer__wiki__tags__chip"
-            label={
-              product.type instanceof V1_ExternalDataProductType
-                ? 'External'
-                : 'Internal'
-            }
+            label={isExternal() ? 'External' : 'Internal'}
           />
           {product.operationalMetadata?.updateFrequency && (
             <Chip
