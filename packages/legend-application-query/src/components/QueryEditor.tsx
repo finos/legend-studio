@@ -182,6 +182,9 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestLaunched(
+      applicationStore.telemetryService,
+    );
     setIsSuggestingWithAI(true);
     setAISuggestion(undefined);
     try {
@@ -198,8 +201,17 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggestion) {
       return;
     }
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestApplied(
+      applicationStore.telemetryService,
+    );
     createQueryState.setQueryName(aiSuggestion.title);
     createQueryState.setQueryDescription(aiSuggestion.description);
+    setAISuggestion(undefined);
+  };
+  const discardAISuggestion = (): void => {
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestDiscarded(
+      applicationStore.telemetryService,
+    );
     setAISuggestion(undefined);
   };
 
@@ -326,7 +338,7 @@ const CreateQueryDialog = observer(() => {
               <ModalFooterButton
                 text="Dismiss"
                 type="secondary"
-                onClick={(): void => setAISuggestion(undefined)}
+                onClick={discardAISuggestion}
               />
             </>
           ) : (

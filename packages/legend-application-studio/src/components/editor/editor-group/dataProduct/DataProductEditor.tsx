@@ -208,6 +208,7 @@ import type {
   DataProductDocResponse,
   DSL_DataProduct_LegendStudioApplicationPlugin_Extension,
 } from '../../../../stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin_Extension.js';
+import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -1852,6 +1853,10 @@ const AccessPointGroupEditor = observer(
       if (!aiDocSuggester || !legendAIUrl) {
         return;
       }
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestLaunched(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
       try {
@@ -1877,6 +1882,10 @@ const AccessPointGroupEditor = observer(
       if (!aiSuggestion) {
         return;
       }
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestApplied(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       // Find matching group in the response
       const gIdx =
         productEditorState.accessPointGroupStates.indexOf(groupState);
@@ -1912,6 +1921,13 @@ const AccessPointGroupEditor = observer(
         accessPoint_setTitle(ap, apMeta.title);
         accessPoint_setDescription(ap, apMeta.description);
       }
+      setAISuggestion(undefined);
+    };
+    const discardAISuggestion = (): void => {
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestDiscarded(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       setAISuggestion(undefined);
     };
 
@@ -2026,7 +2042,7 @@ const AccessPointGroupEditor = observer(
                 </button>
                 <button
                   className="btn data-product-editor__ai-suggestion__dismiss-btn"
-                  onClick={(): void => setAISuggestion(undefined)}
+                  onClick={discardAISuggestion}
                 >
                   Dismiss
                 </button>

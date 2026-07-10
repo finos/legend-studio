@@ -74,6 +74,7 @@ import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudi
 import { DocumentationLink } from '@finos/legend-lego/application';
 import { ServicePostValidationsEditor } from './ServicePostValidationEditor.js';
 import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
+import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 type UserOption = { label: string; value: string };
 
@@ -264,6 +265,10 @@ const ServiceGeneralEditor = observer(() => {
     if (!aiDocSuggester || !legendAIUrl) {
       return;
     }
+    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestLaunched(
+      applicationStore.telemetryService,
+      service.path,
+    );
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
     try {
@@ -281,7 +286,18 @@ const ServiceGeneralEditor = observer(() => {
     if (!aiDocSuggestion) {
       return;
     }
+    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestApplied(
+      applicationStore.telemetryService,
+      service.path,
+    );
     service_setDocumentation(service, aiDocSuggestion);
+    setAIDocSuggestion(undefined);
+  };
+  const discardAIDocSuggestion = (): void => {
+    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestDiscarded(
+      applicationStore.telemetryService,
+      service.path,
+    );
     setAIDocSuggestion(undefined);
   };
 
@@ -498,7 +514,7 @@ const ServiceGeneralEditor = observer(() => {
               </button>
               <button
                 className="btn service-editor__ai-suggestion__dismiss-btn"
-                onClick={(): void => setAIDocSuggestion(undefined)}
+                onClick={discardAIDocSuggestion}
                 title="Dismiss AI suggestion"
               >
                 Dismiss

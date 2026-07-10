@@ -87,6 +87,14 @@ export enum LEGEND_STUDIO_APP_EVENT {
   // data product
   DATA_PRODUCT_DEPLOY_SUCCESS = 'editor.data-product.deployment.success',
   DATA_PRODUCT_DEPLOY_FAILURE = 'editor.data-product.deployment.failure',
+  DATA_PRODUCT_LEGENDAI_SUGGEST__LAUNCH = 'editor.data-product.legendai-suggest.launch',
+  DATA_PRODUCT_LEGENDAI_SUGGEST__APPLY = 'editor.data-product.legendai-suggest.apply',
+  DATA_PRODUCT_LEGENDAI_SUGGEST__DISCARD = 'editor.data-product.legendai-suggest.discard',
+
+  // service
+  SERVICE_LEGENDAI_SUGGEST__LAUNCH = 'editor.service-editor.legendai-suggest.launch',
+  SERVICE_LEGENDAI_SUGGEST__APPLY = 'editor.service-editor.legendai-suggest.apply',
+  SERVICE_LEGENDAI_SUGGEST__DISCARD = 'editor.service-editor.legendai-suggest.discard',
 
   // push to dev
   METADATA_PUSH_TO_METADATA = 'editor.metadata.push-to-metadata',
