@@ -1517,6 +1517,7 @@ const DateInstanceValueEditorInner = <
         updateValueSpecification={updateValueSpecification}
         hasError={
           valueSpecification instanceof PrimitiveInstanceValue &&
+          valueSpecification.values[0] !== null &&
           !isValidInstanceValue(valueSpecification)
         }
         handleBlur={handleBlur}
