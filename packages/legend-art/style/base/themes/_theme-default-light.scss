@@ -50,7 +50,10 @@
   --color-text-primary: var(--color-dark-grey-50);
   --color-text-secondary: var(--color-dark-grey-300);
   --color-text-muted: var(--color-dark-grey-400);
-  --color-text-disabled: var(--color-light-grey-400);
+  // NOTE: light-grey-400 (#bbb) on white/elevated surfaces is essentially
+  // invisible; dark-grey-500 (#9a9a9a) keeps disabled controls perceptibly
+  // "off" while remaining legible on both bg-panel and bg-elevated.
+  --color-text-disabled: var(--color-dark-grey-500);
   // text on inverted-luminance bg (flips with theme)
   --color-text-inverted: var(--color-white);
   // stable: light text on saturated fills in both themes

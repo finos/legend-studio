@@ -130,12 +130,14 @@
 
     &__label {
       font-size: 1.2rem;
-      color: var(--color-text-secondary);
+      // sits on the saturated accent fill in both themes; text-secondary is a
+      // dark grey in light theme and renders unreadably on the blue pill.
+      color: var(--color-text-on-accent);
     }
 
     &__icon {
       margin-left: 1rem;
-      color: var(--color-text-secondary);
+      color: var(--color-text-on-accent);
     }
 
     svg {
@@ -433,6 +435,9 @@
 
   &__mode--selected {
     background: var(--color-accent);
+    // pill flips to a saturated accent fill when active; the base rule's
+    // text-secondary is a dark grey in light theme and disappears on navy.
+    color: var(--color-text-on-accent);
   }
 }
 
@@ -461,7 +466,9 @@
   height: 2.2rem;
   padding: 0 1rem;
   border-radius: 0.2rem;
-  color: var(--color-text-primary);
+  // sits on a saturated error fill in both themes; text-primary is a dark
+  // grey in light theme and renders unreadably on red.
+  color: var(--color-text-on-accent);
   white-space: nowrap;
 
   &__icon {

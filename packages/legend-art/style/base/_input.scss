@@ -75,7 +75,12 @@
   background: var(--color-bg-input);
   color: var(--color-text-primary);
   padding: 0 0.5rem;
-  border: 0.1rem solid var(--color-bg-input);
+  // NOTE: use a real border color, not `bg-input`. In the light theme
+  // `bg-input` == `bg-elevated` == white, so a border of `bg-input` on a
+  // white modal/menu surface is invisible and the input field looks like
+  // there's nothing there. `border-default` gives a subtle-but-visible edge
+  // in both themes.
+  border: 0.1rem solid var(--color-border-default);
 
   &::placeholder {
     color: var(--color-text-disabled);
@@ -91,7 +96,7 @@
   }
 
   &[disabled] {
-    border: 0.1rem solid var(--color-bg-input);
+    border: 0.1rem solid var(--color-border-default);
     color: var(--color-text-disabled);
   }
 }

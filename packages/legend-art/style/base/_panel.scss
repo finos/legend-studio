@@ -394,7 +394,12 @@
     margin: 0;
     padding: 1rem;
     border-radius: 0.1rem;
-    border: 0.1rem solid var(--color-bg-input);
+    // NOTE: use a real border color, not `bg-input`. In the light theme
+    // `bg-input` == `bg-elevated` (both white), so a border of `bg-input`
+    // on a modal/menu surface is invisible and the input looks like it
+    // isn't there. `border-default` gives a subtle-but-visible edge in
+    // both themes.
+    border: 0.1rem solid var(--color-border-default);
     background: var(--color-bg-input);
     color: var(--color-text-secondary);
     height: 2.8rem;
@@ -445,7 +450,8 @@
     height: 8rem;
     resize: none;
     line-height: 2rem;
-    border: 0.1rem solid var(--color-bg-input);
+    // See input note above — `bg-input` border is invisible in light theme.
+    border: 0.1rem solid var(--color-border-default);
 
     &:focus {
       border: 0.1rem solid var(--color-border-focus);
