@@ -28,7 +28,12 @@ import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  LegendUser,
+  type PlainObject,
+  UserSearchService,
+} from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
@@ -141,13 +146,25 @@ const setupTestComponent = async (
   ).mockResolvedValue(mockEnvironment);
 
   // Mock owners API call
+  const ownerIds = ['owner1@example.com', 'owner2@example.com'];
   const mockOwnersResponse = {
-    owners: ['owner1@example.com', 'owner2@example.com'],
+    owners: ownerIds,
   };
   createSpy(
     MOCK__baseStore.lakehouseContractServerClient,
     'getOwnersForDid',
   ).mockResolvedValue(mockOwnersResponse);
+
+  // Pre-populate a UserSearchService so the owners tooltip resolves each owner
+  // id. Previously the tooltip fell back to rendering the raw id, but with
+  // `hideIfNotFound` enabled it now hides unresolved users.
+  const userSearchService = new UserSearchService({});
+  ownerIds.forEach((ownerId) => {
+    userSearchService.setUser(ownerId, new LegendUser(ownerId, ownerId));
+  });
+  (
+    MOCK__baseStore as unknown as { userSearchService: UserSearchService }
+  ).userSearchService = userSearchService;
 
   // Mock the plugin's handleDataProductOwnersResponse
   const mockPlugin =
