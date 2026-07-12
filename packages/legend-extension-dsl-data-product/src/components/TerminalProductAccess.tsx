@@ -189,13 +189,15 @@ export const TerminalAccessAndTable = observer(
           <div className="data-product__viewer__content__terminal__access-section__container">
             <span>Showing access for</span>
 
-            <UserRenderer
-              userId={currentUser}
-              applicationStore={terminalProductViewerState.applicationStore}
-              userSearchService={
-                terminalProductDataAccessState.userSearchService
-              }
-            />
+            {currentUser && (
+              <UserRenderer
+                userId={currentUser}
+                applicationStore={terminalProductViewerState.applicationStore}
+                userSearchService={
+                  terminalProductDataAccessState.userSearchService
+                }
+              />
+            )}
 
             <PencilEditIcon
               className="data-product__viewer__content__terminal__access-section__user-edit-icon"

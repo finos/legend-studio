@@ -116,7 +116,7 @@ const AssigneesList = (props: {
   const { userIds, applicationStore, userSearchService } = props;
   return userIds.length === 0 ? (
     <span>No Assignees</span>
-  ) : userIds.length === 1 ? (
+  ) : userIds.length === 1 && userIds[0] !== undefined ? (
     <span>
       Assignee:{' '}
       <UserRenderer
@@ -602,8 +602,10 @@ export const DataAccessRequestContent = observer(
               userId={user}
               applicationStore={viewerState.applicationStore}
               userSearchService={viewerState.userSearchService}
-              disableOnClick={true}
-              onFinishedLoadingCallback={finishedLoadingUserCallback}
+              options={{
+                disableOnClick: true,
+                onFinishedLoadingCallback: finishedLoadingUserCallback,
+              }}
             />
           </MenuItem>
         )),
@@ -757,12 +759,17 @@ export const DataAccessRequestContent = observer(
             {!(viewerState.consumer instanceof V1_ProducerScope) &&
             targetUsers !== undefined ? (
               isReadOnly || targetUsers.length === 1 ? (
-                <UserRenderer
-                  key={selectedTargetUser ?? targetUsers[0]}
-                  userId={selectedTargetUser ?? targetUsers[0]}
-                  applicationStore={viewerState.applicationStore}
-                  userSearchService={viewerState.userSearchService}
-                />
+                (() => {
+                  const singleUser = selectedTargetUser ?? targetUsers[0];
+                  return singleUser !== undefined ? (
+                    <UserRenderer
+                      key={singleUser}
+                      userId={singleUser}
+                      applicationStore={viewerState.applicationStore}
+                      userSearchService={viewerState.userSearchService}
+                    />
+                  ) : null;
+                })()
               ) : (
                 <Select
                   value={selectedTargetUser}
