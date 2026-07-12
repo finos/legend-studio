@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.1.249
+
 ## 8.1.248
 
 ### Patch Changes

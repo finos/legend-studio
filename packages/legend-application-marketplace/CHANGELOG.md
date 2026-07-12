@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.2.29
+
+### Patch Changes
+
+- [#5311](https://github.com/finos/legend-studio/pull/5311) [`73a9cbb`](https://github.com/finos/legend-studio/commit/73a9cbb8cc6c4ef08db17247437cb36dca16c941) ([@jackp5150](https://github.com/jackp5150)) - Made timeline link blue consistent with rest of contract modal
+
+- [#5320](https://github.com/finos/legend-studio/pull/5320) [`4781035`](https://github.com/finos/legend-studio/commit/47810354130f34911088a6c8aae12b071cb6e9fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Refactor `UserRenderer`: `userId` is now required, and the presentation props (`className`, `appendComma`, `disableOnClick`, `onFinishedLoadingCallback`) have been grouped under a new `options` prop of type `UserRendererOptions`. Add a new `hideIfNotFound` option to render nothing when the user cannot be resolved via `getOrFetchUser`.
+
 ## 0.2.28
 
 ### Patch Changes

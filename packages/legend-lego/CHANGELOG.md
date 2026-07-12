@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.205
+
+### Patch Changes
+
+- [#5318](https://github.com/finos/legend-studio/pull/5318) [`9973d05`](https://github.com/finos/legend-studio/commit/9973d05d7ac130d9323b61fa7701cd77003bc74e) ([@bojja-gs](https://github.com/bojja-gs)) - Add optional `onLogTelemetryEvent` hook on `LegendAIChat` and emit `legend-ai.*` events (assistant opened, question asked, response received, feedback submitted) from the data product and data space viewers. Only non-sensitive metadata is logged — never the raw question text or queried values.
+
 ## 2.0.204
 
 ## 2.0.203

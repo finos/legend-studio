@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.31
+
+### Patch Changes
+
+- [#5312](https://github.com/finos/legend-studio/pull/5312) [`b22aa28`](https://github.com/finos/legend-studio/commit/b22aa287bcd88fabb079d54307b321009bc5e7bb) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding telemetry for ai suggestion buttons
+
 ## 13.8.30
 
 ### Patch Changes
