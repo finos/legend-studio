@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.6.16
+
+### Patch Changes
+
+- [#5316](https://github.com/finos/legend-studio/pull/5316) [`9ccf319`](https://github.com/finos/legend-studio/commit/9ccf319113f7d54cd5aacd85372120b9b904402b) ([@jackp5150](https://github.com/jackp5150)) - Update axios version to 1.16.0
+
+- [#5313](https://github.com/finos/legend-studio/pull/5313) [`c12ac4b`](https://github.com/finos/legend-studio/commit/c12ac4b0d57c66f71beba9fd4fbfb61d3917e6e5) ([@ad-gs](https://github.com/ad-gs)) - Add the `Compute` packageable element to the graph layer (metamodel, V1 protocol, builders, serialization, and change-detection observers).
+
 ## 32.6.15
 
 ### Patch Changes

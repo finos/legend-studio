@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.95
+
+### Patch Changes
+
+- [#5322](https://github.com/finos/legend-studio/pull/5322) [`4f26b84`](https://github.com/finos/legend-studio/commit/4f26b84f698bfbbeaa2e3d6f312cb0da162b144d) ([@kelly-thai](https://github.com/kelly-thai)) - Use Vendor External stereotype to determine internal/external tag display in Marketplace UI, rather than data product type
+
+- [#5318](https://github.com/finos/legend-studio/pull/5318) [`9973d05`](https://github.com/finos/legend-studio/commit/9973d05d7ac130d9323b61fa7701cd77003bc74e) ([@bojja-gs](https://github.com/bojja-gs)) - Add optional `onLogTelemetryEvent` hook on `LegendAIChat` and emit `legend-ai.*` events (assistant opened, question asked, response received, feedback submitted) from the data product and data space viewers. Only non-sensitive metadata is logged — never the raw question text or queried values.
+
+- [#5320](https://github.com/finos/legend-studio/pull/5320) [`4781035`](https://github.com/finos/legend-studio/commit/47810354130f34911088a6c8aae12b071cb6e9fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Restrict the producer-side "Open in Legend Query" action on ingest definitions to data product owners. Non-owners now see the action disabled with an explanatory tooltip, and the Producer Info section shows an informational notice with a `Learn more` link (backed by the new `PRODUCER_QUERYING_ENTITLEMENTS` documentation key) pointing to querying-entitlements documentation.
+
+- [#5311](https://github.com/finos/legend-studio/pull/5311) [`73a9cbb`](https://github.com/finos/legend-studio/commit/73a9cbb8cc6c4ef08db17247437cb36dca16c941) ([@jackp5150](https://github.com/jackp5150)) - Added user option for MAPG contract creation in marketplace
+
+- [#5320](https://github.com/finos/legend-studio/pull/5320) [`4781035`](https://github.com/finos/legend-studio/commit/47810354130f34911088a6c8aae12b071cb6e9fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Refactor `UserRenderer`: `userId` is now required, and the presentation props (`className`, `appendComma`, `disableOnClick`, `onFinishedLoadingCallback`) have been grouped under a new `options` prop of type `UserRendererOptions`. Add a new `hideIfNotFound` option to render nothing when the user cannot be resolved via `getOrFetchUser`.
+
 ## 0.0.94
 
 ### Patch Changes
