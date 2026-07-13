@@ -340,16 +340,13 @@ export const observe_EmbeddedRelationFunctionPropertyMapping =
       context,
     ): EmbeddedRelationFunctionPropertyMapping => {
       observe_Abstract_PropertyMapping(metamodel, context);
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      observe_Abstract_InstanceSetImplementation(metamodel, context);
 
       makeObservable(metamodel, {
-        propertyMappings: observable,
+        rootInstanceSetImplementation: observable,
         hashCode: computed,
       });
-
-      metamodel.propertyMappings.forEach(
-        // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        (pm) => observe_PropertyMapping(pm, context),
-      );
 
       return metamodel;
     },
@@ -362,10 +359,11 @@ export const observe_InlineEmbeddedRelationFunctionPropertyMapping =
       context,
     ): InlineEmbeddedRelationFunctionPropertyMapping => {
       observe_Abstract_PropertyMapping(metamodel, context);
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      observe_Abstract_InstanceSetImplementation(metamodel, context);
 
       makeObservable(metamodel, {
         inlineSetImplementation: observable,
-        hashCode: computed,
       });
 
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
