@@ -141,7 +141,11 @@ import type { RelationFunctionPropertyMapping } from '../../../graph/metamodel/p
 import type { EmbeddedRelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
 import type { InlineEmbeddedRelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
 import { type RelationColumn } from '../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
-import { observe_BindingTransformer } from './DSL_ExternalFormat_ObserverHelper.js';
+import {
+  observe_EmbeddedRelationFunctionPropertyMapping,
+  observe_InlineEmbeddedRelationFunctionPropertyMapping,
+  observe_RelationFunctionPropertyMapping,
+} from './STO_RelationFunction_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -309,69 +313,6 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
     return metamodel;
   },
 );
-
-export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
-  (
-    metamodel: RelationFunctionPropertyMapping,
-    context,
-  ): RelationFunctionPropertyMapping => {
-    observe_Abstract_PropertyMapping(metamodel, context);
-
-    makeObservable(metamodel, {
-      column: observable,
-      bindingTransformer: observable,
-      transformer: observable,
-      hashCode: computed,
-    });
-
-    observe_RelationColumn(metamodel.column);
-    if (metamodel.bindingTransformer) {
-      observe_BindingTransformer(metamodel.bindingTransformer);
-    }
-
-    return metamodel;
-  },
-);
-
-export const observe_EmbeddedRelationFunctionPropertyMapping =
-  skipObservedWithContext(
-    (
-      metamodel: EmbeddedRelationFunctionPropertyMapping,
-      context,
-    ): EmbeddedRelationFunctionPropertyMapping => {
-      observe_Abstract_PropertyMapping(metamodel, context);
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      observe_Abstract_InstanceSetImplementation(metamodel, context);
-
-      makeObservable(metamodel, {
-        rootInstanceSetImplementation: observable,
-        hashCode: computed,
-      });
-
-      return metamodel;
-    },
-  );
-
-export const observe_InlineEmbeddedRelationFunctionPropertyMapping =
-  skipObservedWithContext(
-    (
-      metamodel: InlineEmbeddedRelationFunctionPropertyMapping,
-      context,
-    ): InlineEmbeddedRelationFunctionPropertyMapping => {
-      observe_Abstract_PropertyMapping(metamodel, context);
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      observe_Abstract_InstanceSetImplementation(metamodel, context);
-
-      makeObservable(metamodel, {
-        inlineSetImplementation: observable,
-      });
-
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      observe_SetImplementation(metamodel.inlineSetImplementation, context);
-
-      return metamodel;
-    },
-  );
 
 const observe_INTERNAL__UnknownPropertyMapping = skipObserved(
   (
