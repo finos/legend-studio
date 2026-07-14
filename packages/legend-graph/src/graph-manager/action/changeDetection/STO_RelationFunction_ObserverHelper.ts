@@ -22,7 +22,6 @@ import { skipObservedWithContext } from './CoreObserverHelper.js';
 import {
   observe_Abstract_InstanceSetImplementation,
   observe_Abstract_PropertyMapping,
-  observe_EnumerationMappingReference,
   observe_RelationColumn,
   observe_SetImplementation,
 } from './DSL_Mapping_ObserverHelper.js';
