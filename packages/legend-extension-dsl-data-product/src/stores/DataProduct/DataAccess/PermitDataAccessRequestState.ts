@@ -119,7 +119,11 @@ const getStepStatus = (
   if (task.action === V1_WorkflowTaskAction.REJECTED) {
     return TimelineStepStatus.DENIED;
   }
+  // Not open and not rejected — any terminal status/action means complete
   if (
+    task.status === V1_WorkflowTaskStatus.COMPLETED ||
+    task.status === V1_WorkflowTaskStatus.CLOSED ||
+    task.status === V1_WorkflowTaskStatus.OBSOLETE ||
     task.action === V1_WorkflowTaskAction.APPROVED ||
     task.action === V1_WorkflowTaskAction.ESCALATED
   ) {
