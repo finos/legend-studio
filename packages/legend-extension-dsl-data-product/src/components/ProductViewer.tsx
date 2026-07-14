@@ -22,7 +22,13 @@ import {
   OpenIcon,
   SparkleStarsIcon,
 } from '@finos/legend-art';
-import { Button } from '@mui/material';
+import {
+  Avatar,
+  AvatarGroup,
+  Button,
+  CircularProgress,
+  Typography,
+} from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import { DataProductLegendAIIntegration } from './DataProduct/DataProductLegendAIIntegration.js';
 import {
@@ -151,6 +157,9 @@ const DataProductEnvironmentLabel = observer(
             <OpenIcon />
           </Button>
         )}
+        <Button variant="outlined">
+          {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
+        </Button>
         <LakehouseDataProductOwnersTooltip
           open={isOwnersTooltipOpen}
           setIsOpen={setIsOwnersTooltipOpen}
@@ -161,21 +170,52 @@ const DataProductEnvironmentLabel = observer(
             dataAccessState.dataProductViewerState.userSearchService
           }
         >
-          <div>
-            <Button
-              onClick={() => {
+          <div
+            className="data-product__viewer__header__type__owners"
+            onClick={() => {
+              setIsOwnersTooltipOpen((val) => !val);
+            }}
+            role="button"
+            tabIndex={0}
+            title="View data product owners"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
                 setIsOwnersTooltipOpen((val) => !val);
-              }}
-              title="Click to view owners"
-              variant="outlined"
-              loading={
-                dataAccessState.fetchingDataProductOwnersState
-                  .isInInitialState ||
-                dataAccessState.fetchingDataProductOwnersState.isInProgress
               }
+            }}
+          >
+            {dataAccessState.fetchingDataProductOwnersState.isInInitialState ||
+            dataAccessState.fetchingDataProductOwnersState.isInProgress ? (
+              <CircularProgress size={16} />
+            ) : (
+              <AvatarGroup
+                max={3}
+                className="data-product__viewer__header__type__owners__avatars"
+              >
+                {dataAccessState.dataProductOwners.map((owner) => {
+                  const imgUrl =
+                    dataAccessState.dataProductViewerState.userSearchService?.userProfileImageUrl?.replace(
+                      '{userId}',
+                      owner,
+                    );
+                  return (
+                    <Avatar
+                      key={owner}
+                      {...(imgUrl ? { src: imgUrl } : {})}
+                      alt={owner}
+                    >
+                      {owner.substring(0, 2).toUpperCase()}
+                    </Avatar>
+                  );
+                })}
+              </AvatarGroup>
+            )}
+            <Typography
+              variant="caption"
+              className="data-product__viewer__header__type__owners__label"
             >
-              {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
-            </Button>
+              Owners
+            </Typography>
           </div>
         </LakehouseDataProductOwnersTooltip>
       </div>

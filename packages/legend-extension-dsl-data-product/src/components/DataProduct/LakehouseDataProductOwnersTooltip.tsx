@@ -18,7 +18,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { Box, ClickAwayListener, Tooltip, Typography } from '@mui/material';
+import { Box, ClickAwayListener, Tooltip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState, useCallback } from 'react';
 import type { ActionState, UserSearchService } from '@finos/legend-shared';
@@ -66,9 +66,6 @@ const TooltipContent = observer(
 
     return (
       <Box className="lakehouse-data-product-owners-tooltip">
-        <Typography variant="h5" gutterBottom={true}>
-          Owners
-        </Typography>
         {fetchingOwnersState.isInInitialState ||
         fetchingOwnersState.isInProgress ? (
           <CubesLoadingIndicator isLoading={true}>
