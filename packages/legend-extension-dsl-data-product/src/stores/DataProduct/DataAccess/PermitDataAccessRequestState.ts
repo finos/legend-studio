@@ -391,6 +391,10 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     const pmStepStatus = getStepStatus(pmTask, TimelineStepStatus.SKIPPED);
     let doStepStatus = getStepStatus(doTask, TimelineStepStatus.UPCOMING);
 
+    if (pmStepStatus === TimelineStepStatus.DENIED) {
+      doStepStatus = TimelineStepStatus.UPCOMING;
+    }
+
     // When PM approver is the same as DO approver, the server does not create
     // a separate DataOwnerApprovalTask. Once PM approves, DO should be shown
     // as auto-completed.
