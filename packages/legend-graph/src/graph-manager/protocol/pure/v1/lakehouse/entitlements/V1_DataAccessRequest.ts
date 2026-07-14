@@ -70,6 +70,7 @@ export enum V1_WorkflowTaskAction {
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
   ESCALATED = 'ESCALATED',
+  OBSOLETE = 'OBSOLETE',
 }
 
 export abstract class V1_WorkflowTask {

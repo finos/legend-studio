@@ -116,10 +116,13 @@ const getStepStatus = (
   if (task.status === V1_WorkflowTaskStatus.OPEN) {
     return TimelineStepStatus.ACTIVE;
   }
-  if (task.action === V1_WorkflowTaskAction.REJECTED) {
+  if (
+    task.action === V1_WorkflowTaskAction.REJECTED ||
+    task.action === V1_WorkflowTaskAction.OBSOLETE
+  ) {
     return TimelineStepStatus.DENIED;
   }
-  // Not open and not rejected — any terminal status/action means complete
+  // Not open and not rejected/obsolete — any terminal status/action means complete
   if (
     task.status === V1_WorkflowTaskStatus.COMPLETED ||
     task.status === V1_WorkflowTaskStatus.CLOSED ||
@@ -142,13 +145,17 @@ const buildApprovalPayload = (
   if (!task || excludedStatuses.includes(stepStatus)) {
     return undefined;
   }
+  const isObsolete = task.action === V1_WorkflowTaskAction.OBSOLETE;
   const payload: {
     status: string;
     approvalTimestamp?: string;
     approverId?: string;
   } = {
-    status:
-      task.action === V1_WorkflowTaskAction.APPROVED ? 'APPROVED' : 'DENIED',
+    status: isObsolete
+      ? 'OBSOLETE'
+      : task.action === V1_WorkflowTaskAction.APPROVED
+        ? 'APPROVED'
+        : 'DENIED',
   };
   let ts: string | undefined;
   if (task.actionedOn) {
@@ -160,7 +167,8 @@ const buildApprovalPayload = (
   if (ts !== undefined) {
     payload.approvalTimestamp = ts;
   }
-  if (task.actionedBy !== undefined) {
+  // Don't show service-account approver for obsolete tasks
+  if (task.actionedBy !== undefined && !isObsolete) {
     payload.approverId = task.actionedBy;
   }
   return payload;
@@ -349,6 +357,59 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
 
   // ---- Timeline ----
 
+  private resolveDoStepStatus(
+    pmStepStatus: TimelineStepStatus,
+    pmTask: V1_WorkflowTask | undefined,
+    doTask: V1_DataOwnerApprovalTask | undefined,
+  ): TimelineStepStatus {
+    if (pmStepStatus === TimelineStepStatus.DENIED) {
+      return TimelineStepStatus.UPCOMING;
+    }
+    if (!doTask && pmStepStatus === TimelineStepStatus.COMPLETE) {
+      return TimelineStepStatus.COMPLETE;
+    }
+    if (!doTask) {
+      return TimelineStepStatus.UPCOMING;
+    }
+    if (
+      this.hasSameApprovers(pmTask, doTask) &&
+      pmStepStatus === TimelineStepStatus.COMPLETE
+    ) {
+      return TimelineStepStatus.COMPLETE;
+    }
+    return getStepStatus(doTask, TimelineStepStatus.UPCOMING);
+  }
+
+  private hasSameApprovers(
+    pmTask: V1_WorkflowTask | undefined,
+    doTask: V1_DataOwnerApprovalTask,
+  ): boolean {
+    const pmAssignees = pmTask?.assignees ?? [];
+    const doAssignees = doTask.assignees;
+    if (pmAssignees.length === 0 || doAssignees.length === 0) {
+      return false;
+    }
+    if (pmAssignees.length !== doAssignees.length) {
+      return false;
+    }
+    const doSet = new Set(doAssignees);
+    return pmAssignees.every((a) => doSet.has(a));
+  }
+
+  private buildStepLinks(
+    stepStatus: TimelineStepStatus,
+    taskUrl: string | undefined,
+    externalUrl: string | undefined,
+  ): Record<string, string> {
+    if (stepStatus !== TimelineStepStatus.ACTIVE) {
+      return {};
+    }
+    return {
+      ...(taskUrl && { link: taskUrl }),
+      ...(externalUrl && { externalLink: externalUrl }),
+    };
+  }
+
   getTimelineSteps(_selectedTargetUser: string | undefined): TimelineStep[] {
     if (this.resourceType !== V1_ResourceType.ACCESS_POINT_GROUP) {
       return [];
@@ -389,30 +450,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       pmLikeTasks[pmLikeTasks.length - 1];
 
     const pmStepStatus = getStepStatus(pmTask, TimelineStepStatus.SKIPPED);
-    let doStepStatus = getStepStatus(doTask, TimelineStepStatus.UPCOMING);
-
-    if (pmStepStatus === TimelineStepStatus.DENIED) {
-      doStepStatus = TimelineStepStatus.UPCOMING;
-    }
-
-    // When PM approver is the same as DO approver, the server does not create
-    // a separate DataOwnerApprovalTask. Once PM approves, DO should be shown
-    // as auto-completed.
-    if (!doTask && pmStepStatus === TimelineStepStatus.COMPLETE) {
-      doStepStatus = TimelineStepStatus.COMPLETE;
-    } else if (doTask) {
-      // If both tasks exist but share the same assignees, auto-complete DO on PM approval
-      const pmAssigneesSet = new Set(pmTask?.assignees ?? []);
-      const doAssigneesSet = new Set(doTask.assignees);
-      const pmAndDoSameApprover =
-        pmAssigneesSet.size > 0 &&
-        doAssigneesSet.size > 0 &&
-        pmAssigneesSet.size === doAssigneesSet.size &&
-        [...pmAssigneesSet].every((a) => doAssigneesSet.has(a));
-      if (pmAndDoSameApprover && pmStepStatus === TimelineStepStatus.COMPLETE) {
-        doStepStatus = TimelineStepStatus.COMPLETE;
-      }
-    }
+    const doStepStatus = this.resolveDoStepStatus(pmStepStatus, pmTask, doTask);
 
     const isEscalated = pmLikeTasks.some(
       (task) => task.action === V1_WorkflowTaskAction.ESCALATED,
@@ -429,20 +467,8 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       ? this.getTaskPageUrl(this.dataAccessRequestId)
       : undefined;
 
-    const pmLinks =
-      pmStepStatus === TimelineStepStatus.ACTIVE
-        ? {
-            ...(taskPageUrl && { link: taskPageUrl }),
-            ...(pmTask?.url && { externalLink: pmTask.url }),
-          }
-        : {};
-    const doLinks =
-      doStepStatus === TimelineStepStatus.ACTIVE
-        ? {
-            ...(taskPageUrl && { link: taskPageUrl }),
-            ...(doTask?.url && { externalLink: doTask.url }),
-          }
-        : {};
+    const pmLinks = this.buildStepLinks(pmStepStatus, taskPageUrl, pmTask?.url);
+    const doLinks = this.buildStepLinks(doStepStatus, taskPageUrl, doTask?.url);
 
     const pmApprovalPayload = buildApprovalPayload(pmTask, pmStepStatus, [
       TimelineStepStatus.ACTIVE,
@@ -453,7 +479,7 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
       TimelineStepStatus.UPCOMING,
     ]);
 
-    const steps: TimelineStep[] = [
+    return [
       {
         key: 'submitted',
         status: TimelineStepStatus.COMPLETE,
@@ -493,8 +519,6 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
         label: { title: 'Complete' },
       },
     ];
-
-    return steps;
   }
 
   // ---- Actions ----

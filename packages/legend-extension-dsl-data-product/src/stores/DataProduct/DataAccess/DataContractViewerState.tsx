@@ -187,14 +187,67 @@ export class DataContractViewerState implements DataAccessRequestState {
 
   // ---- Timeline ----
 
-  getTimelineSteps(selectedTargetUser: string | undefined): TimelineStep[] {
-    const consumer = this.liteContract.consumer;
-    const taskMatchesUser = (task: V1_TaskMetadata): boolean => {
-      if (consumer instanceof V1_AdhocTeam) {
-        return task.rec.consumer === selectedTargetUser;
-      }
+  private getApprovalStepStatus(
+    task: V1_TaskMetadata | undefined,
+  ): TimelineStepStatus {
+    if (!task) {
+      return TimelineStepStatus.SKIPPED;
+    }
+    switch (task.rec.status) {
+      case V1_UserApprovalStatus.PENDING:
+        return TimelineStepStatus.ACTIVE;
+      case V1_UserApprovalStatus.APPROVED:
+        return TimelineStepStatus.COMPLETE;
+      default:
+        return TimelineStepStatus.DENIED;
+    }
+  }
+
+  private getDataOwnerStepStatus(
+    pmStatus: TimelineStepStatus,
+    task: V1_TaskMetadata | undefined,
+    contractCompleted: boolean,
+  ): TimelineStepStatus {
+    if (pmStatus === TimelineStepStatus.DENIED) {
+      return TimelineStepStatus.UPCOMING;
+    }
+    if (!task) {
+      return contractCompleted
+        ? TimelineStepStatus.COMPLETE
+        : TimelineStepStatus.UPCOMING;
+    }
+    return this.getApprovalStepStatus(task);
+  }
+
+  private canEscalate(
+    pmStatus: TimelineStepStatus,
+    selectedTargetUser: string | undefined,
+  ): boolean {
+    if (pmStatus !== TimelineStepStatus.ACTIVE) {
+      return false;
+    }
+    if (
+      selectedTargetUser === this.applicationStore.identityService.currentUser
+    ) {
       return true;
-    };
+    }
+    return (
+      selectedTargetUser !== undefined &&
+      this.getContractUserType(selectedTargetUser) ===
+        V1_UserType.SYSTEM_ACCOUNT
+    );
+  }
+
+  getTimelineSteps(selectedTargetUser: string | undefined): TimelineStep[] {
+    if (this.liteContract.resourceType !== V1_ResourceType.ACCESS_POINT_GROUP) {
+      return [];
+    }
+
+    const consumer = this.liteContract.consumer;
+    const taskMatchesUser = (task: V1_TaskMetadata): boolean =>
+      consumer instanceof V1_AdhocTeam
+        ? task.rec.consumer === selectedTargetUser
+        : true;
 
     const privilegeManagerApprovalTask = this.associatedTasks?.find(
       (task) =>
@@ -206,6 +259,7 @@ export class DataContractViewerState implements DataAccessRequestState {
         taskMatchesUser(task) &&
         task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
     );
+
     const privilegeManagerApprovalPayload =
       privilegeManagerApprovalTask?.rec.eventPayload instanceof
       V1_ContractUserEventPrivilegeManagerPayload
@@ -217,52 +271,25 @@ export class DataContractViewerState implements DataAccessRequestState {
         ? dataOwnerApprovalTask.rec.eventPayload
         : undefined;
 
-    const contractCompleted =
-      this.liteContract.state === V1_ContractState.COMPLETED;
-
-    const privilegeManagerApprovalStepStatus = privilegeManagerApprovalTask
-      ? privilegeManagerApprovalTask.rec.status ===
-        V1_UserApprovalStatus.PENDING
-        ? TimelineStepStatus.ACTIVE
-        : privilegeManagerApprovalTask.rec.status ===
-            V1_UserApprovalStatus.APPROVED
-          ? TimelineStepStatus.COMPLETE
-          : TimelineStepStatus.DENIED
-      : TimelineStepStatus.SKIPPED;
-
-    // Cascade: PM denied → DO unreachable
-    const dataOwnerApprovalStepStatus =
-      privilegeManagerApprovalStepStatus === TimelineStepStatus.DENIED
-        ? TimelineStepStatus.UPCOMING
-        : dataOwnerApprovalTask
-          ? dataOwnerApprovalTask.rec.status === V1_UserApprovalStatus.PENDING
-            ? TimelineStepStatus.ACTIVE
-            : dataOwnerApprovalTask.rec.status ===
-                V1_UserApprovalStatus.APPROVED
-              ? TimelineStepStatus.COMPLETE
-              : TimelineStepStatus.DENIED
-          : contractCompleted
-            ? TimelineStepStatus.COMPLETE
-            : TimelineStepStatus.UPCOMING;
-
-    const showEscalateButton =
-      privilegeManagerApprovalStepStatus === TimelineStepStatus.ACTIVE &&
-      (selectedTargetUser ===
-        this.applicationStore.identityService.currentUser ||
-        (selectedTargetUser !== undefined &&
-          this.getContractUserType(selectedTargetUser) ===
-            V1_UserType.SYSTEM_ACCOUNT));
-    const isEscalated = privilegeManagerApprovalTask?.rec.isEscalated ?? false;
-    const isEscalatable = showEscalateButton && !isEscalated;
-
-    if (this.liteContract.resourceType !== V1_ResourceType.ACCESS_POINT_GROUP) {
-      return [];
-    }
-
+    const pmStepStatus = this.getApprovalStepStatus(
+      privilegeManagerApprovalTask,
+    );
+    const doStepStatus = this.getDataOwnerStepStatus(
+      pmStepStatus,
+      dataOwnerApprovalTask,
+      this.liteContract.state === V1_ContractState.COMPLETED,
+    );
     const completionStepStatus =
-      dataOwnerApprovalStepStatus === TimelineStepStatus.COMPLETE
+      doStepStatus === TimelineStepStatus.COMPLETE
         ? TimelineStepStatus.COMPLETE
         : TimelineStepStatus.UPCOMING;
+
+    const showEscalateButton = this.canEscalate(
+      pmStepStatus,
+      selectedTargetUser,
+    );
+    const isEscalated = privilegeManagerApprovalTask?.rec.isEscalated ?? false;
+    const isEscalatable = showEscalateButton && !isEscalated;
 
     return [
       {
@@ -274,8 +301,7 @@ export class DataContractViewerState implements DataAccessRequestState {
         key: 'privilege-manager-approval',
         label: {
           title: 'Privilege Manager Approval',
-          ...(privilegeManagerApprovalStepStatus ===
-            TimelineStepStatus.ACTIVE && {
+          ...(pmStepStatus === TimelineStepStatus.ACTIVE && {
             link: this.getTaskUrl(
               this.guid,
               guaranteeNonNullable(
@@ -288,7 +314,7 @@ export class DataContractViewerState implements DataAccessRequestState {
           isEscalatable,
           isEscalated,
         },
-        status: privilegeManagerApprovalStepStatus,
+        status: pmStepStatus,
         ...(privilegeManagerApprovalTask?.assignees && {
           assignees: privilegeManagerApprovalTask.assignees,
         }),
@@ -305,7 +331,7 @@ export class DataContractViewerState implements DataAccessRequestState {
         key: 'data-producer-approval',
         label: {
           title: 'Data Producer Approval',
-          ...(dataOwnerApprovalStepStatus === TimelineStepStatus.ACTIVE && {
+          ...(doStepStatus === TimelineStepStatus.ACTIVE && {
             link: this.getTaskUrl(
               this.guid,
               guaranteeNonNullable(
@@ -315,7 +341,7 @@ export class DataContractViewerState implements DataAccessRequestState {
             ),
           }),
         },
-        status: dataOwnerApprovalStepStatus,
+        status: doStepStatus,
         ...(dataOwnerApprovalTask?.assignees && {
           assignees: dataOwnerApprovalTask.assignees,
         }),
