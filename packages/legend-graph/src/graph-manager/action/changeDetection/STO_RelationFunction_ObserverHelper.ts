@@ -22,6 +22,7 @@ import { skipObservedWithContext } from './CoreObserverHelper.js';
 import {
   observe_Abstract_InstanceSetImplementation,
   observe_Abstract_PropertyMapping,
+  observe_EnumerationMappingReference,
   observe_RelationColumn,
   observe_SetImplementation,
 } from './DSL_Mapping_ObserverHelper.js';
@@ -44,6 +45,9 @@ export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
     observe_RelationColumn(metamodel.column);
     if (metamodel.bindingTransformer) {
       observe_BindingTransformer(metamodel.bindingTransformer);
+    }
+    if (metamodel.transformer) {
+      observe_EnumerationMappingReference(metamodel.transformer);
     }
 
     return metamodel;
