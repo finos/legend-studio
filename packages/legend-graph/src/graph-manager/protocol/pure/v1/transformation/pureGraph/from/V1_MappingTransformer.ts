@@ -793,7 +793,10 @@ const transformRelationFunctionPropertyMapping = (
 ): V1_RelationFunctionPropertyMapping => {
   const propertyMapping = new V1_RelationFunctionPropertyMapping();
   propertyMapping.column = element.column.name;
-  propertyMapping.enumMappingId = element.transformer?.valueForSerialization;
+  if (element.transformer) {
+    propertyMapping.enumMappingId =
+      element.transformer.valueForSerialization;
+  }
   if (element.bindingTransformer?.binding) {
     const bindingTransformer = new V1_BindingTransformer();
     bindingTransformer.binding = guaranteeNonEmptyString(
