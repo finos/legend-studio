@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.17
+
+### Patch Changes
+
+- [#5327](https://github.com/finos/legend-studio/pull/5327) [`afa2101`](https://github.com/finos/legend-studio/commit/afa21014369fcc765dd6b496180d59c73ab9ee88) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Obsolete to V1_WorkflowTaskAction.
+
 ## 32.6.16
 
 ### Patch Changes

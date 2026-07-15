@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.1.16
+
+### Patch Changes
+
+- [#5328](https://github.com/finos/legend-studio/pull/5328) [`c3e8918`](https://github.com/finos/legend-studio/commit/c3e8918994d08763831fac87a5de55457f977a79) ([@kelly-thai](https://github.com/kelly-thai)) - Add getProjectDependencyPointers API to DepotServerClient
+
 ## 6.1.15
 
 ## 6.1.14

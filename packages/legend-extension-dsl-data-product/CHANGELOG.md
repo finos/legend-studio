@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.96
+
+### Patch Changes
+
+- [#5327](https://github.com/finos/legend-studio/pull/5327) [`afa2101`](https://github.com/finos/legend-studio/commit/afa21014369fcc765dd6b496180d59c73ab9ee88) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fix entitlements timeline to correctly match tasks for non-AdhocTeam consumers, cascade denial from PM to subsequent steps, fall back to contract state when tasks are absent, and recognize all terminal task statuses as complete.
+
 ## 0.0.95
 
 ### Patch Changes
