@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import { hashArray, isEmpty, isNonNullable, type Hashable } from '@finos/legend-shared';
+import {
+  hashArray,
+  isEmpty,
+  isNonNullable,
+  type Hashable,
+} from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import {
   type V1_PropertyMappingVisitor,
@@ -50,5 +55,3 @@ export class V1_RelationFunctionEmbeddedPropertyMapping
     ]);
   }
 }
-
-
