@@ -690,6 +690,86 @@ describe('PermitDataAccessRequestState', () => {
       const steps = state.getTimelineSteps(undefined);
       expect(steps[1]?.status).toBe('complete');
     });
+
+    test('DO step shows as denied with OBSOLETE payload when task action is OBSOLETE', () => {
+      const pmTask = createMockPmTask({
+        status: V1_WorkflowTaskStatus.COMPLETED,
+        action: V1_WorkflowTaskAction.APPROVED,
+      });
+      const doTask = createMockDoTask({
+        status: V1_WorkflowTaskStatus.COMPLETED,
+        action: V1_WorkflowTaskAction.OBSOLETE,
+      });
+      const state = createState(
+        createMockDataRequestWithWorkflow(V1_RequestState.COMPLETED, [
+          pmTask,
+          doTask,
+        ]),
+      );
+      const steps = state.getTimelineSteps(undefined);
+      expect(steps[2]?.status).toBe('denied');
+      expect(steps[2]?.approvalPayload?.status).toBe('OBSOLETE');
+      expect(steps[2]?.approvalPayload?.approverId).toBeUndefined();
+      expect(steps[3]?.status).toBe('upcoming');
+    });
+
+    test('DO step shows as complete when task status is OBSOLETE', () => {
+      const pmTask = createMockPmTask({
+        status: V1_WorkflowTaskStatus.COMPLETED,
+        action: V1_WorkflowTaskAction.APPROVED,
+      });
+      const doTask = createMockDoTask({
+        status: V1_WorkflowTaskStatus.OBSOLETE,
+      });
+      const state = createState(
+        createMockDataRequestWithWorkflow(V1_RequestState.COMPLETED, [
+          pmTask,
+          doTask,
+        ]),
+      );
+      const steps = state.getTimelineSteps(undefined);
+      expect(steps[2]?.status).toBe('complete');
+      expect(steps[3]?.status).toBe('complete');
+    });
+
+    test('DO step shows as complete when task status is CLOSED', () => {
+      const pmTask = createMockPmTask({
+        status: V1_WorkflowTaskStatus.COMPLETED,
+        action: V1_WorkflowTaskAction.APPROVED,
+      });
+      const doTask = createMockDoTask({
+        status: V1_WorkflowTaskStatus.CLOSED,
+      });
+      const state = createState(
+        createMockDataRequestWithWorkflow(V1_RequestState.COMPLETED, [
+          pmTask,
+          doTask,
+        ]),
+      );
+      const steps = state.getTimelineSteps(undefined);
+      expect(steps[2]?.status).toBe('complete');
+      expect(steps[3]?.status).toBe('complete');
+    });
+
+    test('DO and complete steps remain upcoming when PM is denied', () => {
+      const pmTask = createMockPmTask({
+        status: V1_WorkflowTaskStatus.COMPLETED,
+        action: V1_WorkflowTaskAction.REJECTED,
+      });
+      const doTask = createMockDoTask({
+        status: V1_WorkflowTaskStatus.OPEN,
+      });
+      const state = createState(
+        createMockDataRequestWithWorkflow(V1_RequestState.REJECTED, [
+          pmTask,
+          doTask,
+        ]),
+      );
+      const steps = state.getTimelineSteps(undefined);
+      expect(steps[1]?.status).toBe('denied');
+      expect(steps[2]?.status).toBe('upcoming');
+      expect(steps[3]?.status).toBe('upcoming');
+    });
   });
 
   describe('init', () => {
