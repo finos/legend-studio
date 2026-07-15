@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { hashArray, type Hashable } from '@finos/legend-shared';
+import { hashArray, isEmpty, isNonNullable, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import {
   type V1_PropertyMappingVisitor,
@@ -35,7 +35,7 @@ export class V1_RelationFunctionEmbeddedPropertyMapping
 
   override get hashCode(): string {
     // Detect inline embedded: id set + empty propertyMappings
-    if (this.id !== undefined && this.propertyMappings.length === 0) {
+    if (isNonNullable(this.id) && isEmpty(this.propertyMappings)) {
       return hashArray([
         CORE_HASH_STRUCTURE.INLINE_EMBEDDED_RELATION_FUNCTION_PROPERTY_MAPPING,
         this.property,
