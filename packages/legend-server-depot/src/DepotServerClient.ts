@@ -258,6 +258,21 @@ export class DepotServerClient extends AbstractServerClient {
       },
     );
 
+  getProjectDependencyPointers = (
+    groupId: string,
+    artifactId: string,
+    version: string,
+    transitive: boolean,
+  ): Promise<PlainObject<ProjectDependencyCoordinates>[]> =>
+    this.get(
+      `${this._version(groupId, artifactId, version)}/projectDependencies`,
+      undefined,
+      undefined,
+      {
+        transitive,
+      },
+    );
+
   getPureModelContextData = (
     groupId: string,
     artifactId: string,
