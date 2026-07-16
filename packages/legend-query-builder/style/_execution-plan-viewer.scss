@@ -236,7 +236,8 @@
 
         &--native &__name {
           background: var(--color-blue-100);
-          color: var(--color-text-primary);
+          // light text on the stable saturated blue fill in both themes
+          color: var(--color-text-on-accent);
         }
 
         &--generation {

@@ -136,7 +136,8 @@
       height: 100%;
       width: 2.8rem;
       background: var(--color-yellow-200);
-      color: var(--color-text-primary);
+      // stable dark on the fixed yellow fill (inverse trap: do not theme)
+      color: var(--color-dark-grey-280);
 
       svg {
         font-size: 1.8rem;
@@ -325,12 +326,13 @@
       height: 100%;
       width: 2.8rem;
       background: var(--color-blue-200);
-      color: var(--color-text-primary);
+      // light text on the stable saturated blue fill in both themes
+      color: var(--color-text-on-accent);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
         font-size: 1.8rem;
-        color: var(--color-text-primary);
+        color: var(--color-text-on-accent);
       }
     }
   }

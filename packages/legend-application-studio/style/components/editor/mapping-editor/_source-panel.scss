@@ -30,6 +30,11 @@
 
     &__content {
       background: var(--color-bg-elevated);
+      // The source trees (TypeTree / RelationTypeTree / FlatDataRecordTypeTree)
+      // set no text color of their own — historically this panel was a fixed
+      // light surface and node labels just inherited the browser-default black.
+      // Now that the surface follows the theme, the text must too.
+      color: var(--color-text-primary);
     }
 
     &__content > div:first-child {

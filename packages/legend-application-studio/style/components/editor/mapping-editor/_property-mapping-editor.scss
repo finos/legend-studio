@@ -23,11 +23,13 @@
   width: 1.6rem;
   height: 2.8rem;
   font-size: 1rem;
-  color: var(--color-text-inverted);
+  color: var(--color-text-primary);
   background: var(--color-bg-tag);
 
   &--required {
     background: var(--color-required-label);
+    // stable dark text on the fixed yellow fill (inverse trap: do not theme)
+    color: var(--color-dark-shade-100);
   }
 
   & svg {

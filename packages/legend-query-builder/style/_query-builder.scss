@@ -1917,11 +1917,14 @@
       height: 100%;
       font-size: 1.2rem;
       font-weight: 500;
-      color: var(--color-text-primary);
+      // this button's fills are stable saturated colors in every theme (green
+      // run/dropdown, caution stop), so the label/icons must stay light —
+      // text-on-accent, NOT text-primary (which flips dark in light themes)
+      color: var(--color-text-on-accent);
       gap: 0.5rem;
 
       & svg {
-        color: var(--color-text-primary);
+        color: var(--color-text-on-accent);
       }
 
       &--green {
@@ -1931,10 +1934,10 @@
       &--green[disabled] {
         opacity: 0.8;
         background: var(--color-green-80) !important;
-        color: var(--color-text-primary);
+        color: var(--color-text-on-accent);
 
         & svg {
-          color: var(--color-text-primary);
+          color: var(--color-text-on-accent);
         }
       }
 
