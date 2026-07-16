@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.97
+
+### Patch Changes
+
+- [#5335](https://github.com/finos/legend-studio/pull/5335) [`b73c430`](https://github.com/finos/legend-studio/commit/b73c4302c600846f3d588c593eaba41b9c215a96) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed Data Contract get time line steps for contracts, Permit requests, Producer flow.
+
 ## 0.0.96
 
 ### Patch Changes

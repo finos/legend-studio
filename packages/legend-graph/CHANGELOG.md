@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.6.18
+
+### Patch Changes
+
+- [#5334](https://github.com/finos/legend-studio/pull/5334) [`f62b8e2`](https://github.com/finos/legend-studio/commit/f62b8e29d2a965019d7f3a3a71299c2f77e61aff) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Update test table definitions with NOT NULL constraints.
+
+- [#5288](https://github.com/finos/legend-studio/pull/5288) [`ca3f736`](https://github.com/finos/legend-studio/commit/ca3f7362bf934e6ea66615c3514f1b8f1e860836) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add enum transformer support and embedded/inline-embedded property mapping support for relation function class mappings.
+
 ## 32.6.17
 
 ### Patch Changes
