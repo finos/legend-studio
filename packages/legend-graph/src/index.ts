@@ -976,6 +976,8 @@ export { SetImplementationContainer } from './graph/metamodel/pure/packageableEl
 export { AggregationAwareSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/aggregationAware/AggregationAwareSetImplementation.js';
 export { RelationFunctionInstanceSetImplementation } from './graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 export { RelationFunctionPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+export { EmbeddedRelationFunctionPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
+export { InlineEmbeddedRelationFunctionPropertyMapping } from './graph/metamodel/pure/packageableElements/mapping/relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementId.js';
 export * from './graph/metamodel/pure/packageableElements/mapping/InferableMappingElementRoot.js';
 export { SetImplementationExplicitReference } from './graph/metamodel/pure/packageableElements/mapping/SetImplementationReference.js';

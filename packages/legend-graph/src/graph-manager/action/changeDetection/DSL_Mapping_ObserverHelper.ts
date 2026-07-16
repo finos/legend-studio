@@ -138,8 +138,14 @@ import type { INTERNAL__UnknownSetImplementation } from '../../../graph/metamode
 import type { INTERNAL__UnknownStore } from '../../../graph/metamodel/pure/packageableElements/store/INTERNAL__UnknownStore.js';
 import type { RelationFunctionInstanceSetImplementation } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import type { RelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionPropertyMapping.js';
+import type { EmbeddedRelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/EmbeddedRelationFunctionPropertyMapping.js';
+import type { InlineEmbeddedRelationFunctionPropertyMapping } from '../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/InlineEmbeddedRelationFunctionPropertyMapping.js';
 import { type RelationColumn } from '../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
-import { observe_BindingTransformer } from './DSL_ExternalFormat_ObserverHelper.js';
+import {
+  observe_EmbeddedRelationFunctionPropertyMapping,
+  observe_InlineEmbeddedRelationFunctionPropertyMapping,
+  observe_RelationFunctionPropertyMapping,
+} from './STO_RelationFunction_ObserverHelper.js';
 
 // ------------------------------------- Store -------------------------------------
 
@@ -308,28 +314,6 @@ export const observe_PurePropertyMapping = skipObservedWithContext(
   },
 );
 
-export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
-  (
-    metamodel: RelationFunctionPropertyMapping,
-    context,
-  ): RelationFunctionPropertyMapping => {
-    observe_Abstract_PropertyMapping(metamodel, context);
-
-    makeObservable(metamodel, {
-      column: observable,
-      bindingTransformer: observable,
-      hashCode: computed,
-    });
-
-    observe_RelationColumn(metamodel.column);
-    if (metamodel.bindingTransformer) {
-      observe_BindingTransformer(metamodel.bindingTransformer);
-    }
-
-    return metamodel;
-  },
-);
-
 const observe_INTERNAL__UnknownPropertyMapping = skipObserved(
   (
     metamodel: INTERNAL__UnknownPropertyMapping,
@@ -445,6 +429,24 @@ class PropertyMappingObserver implements PropertyMappingVisitor<void> {
     propertyMapping: RelationFunctionPropertyMapping,
   ): void {
     observe_RelationFunctionPropertyMapping(
+      propertyMapping,
+      this.observerContext,
+    );
+  }
+
+  visit_RelationFunctionEmbeddedPropertyMapping(
+    propertyMapping: EmbeddedRelationFunctionPropertyMapping,
+  ): void {
+    observe_EmbeddedRelationFunctionPropertyMapping(
+      propertyMapping,
+      this.observerContext,
+    );
+  }
+
+  visit_InlineEmbeddedRelationFunctionPropertyMapping(
+    propertyMapping: InlineEmbeddedRelationFunctionPropertyMapping,
+  ): void {
+    observe_InlineEmbeddedRelationFunctionPropertyMapping(
       propertyMapping,
       this.observerContext,
     );

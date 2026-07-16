@@ -72,6 +72,33 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
     ROUNTRIP_TEST_PHASES.CHECK_HASH,
   ],
+  // Relation function mapping: engine protocol includes extra empty arrays Studio omits
+  'STO_Relational-relation-function-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-primaryKey.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-enum.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-multiple-enums.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-embedded.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-embedded-association.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-inline-embedded.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
+  'STO_Relational-relation-function-mapping-with-inline-embedded-association.pure':
+    [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  'STO_Relational-relational-and-relation-function-mapping.pure': [
+    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
+  ],
   // Update processing to handle Persistence V2 specs
   // See https://github.com/finos/legend-engine/pull/1764
   'DSL_Persistence-basic.pure': SKIP,

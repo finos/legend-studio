@@ -142,6 +142,7 @@ import { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageableElem
 import { V1_INTERNAL__UnknownMappingInclude } from '../../../model/packageableElements/mapping/V1_INTERNAL__UnknownMappingInclude.js';
 import { V1_RelationFunctionClassMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
 import { V1_RelationFunctionPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionPropertyMapping.js';
+import { V1_RelationFunctionEmbeddedPropertyMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionEmbeddedPropertyMapping.js';
 
 enum V1_ClassMappingType {
   OPERATION = 'operation',
@@ -166,6 +167,7 @@ enum V1_PropertyMappingType {
   AGGREGATION_AWARE = 'AggregationAwarePropertyMapping',
   XSTORE = 'xStorePropertyMapping',
   RELATION_FUNCTION = 'relationFunctionPropertyMapping',
+  RELATION_FUNCTION_EMBEDDED = 'relationFunctionEmbeddedPropertyMapping',
 }
 
 // ------------------------------------- Shared -------------------------------------
@@ -685,21 +687,62 @@ const relationFunctionPropertyMappingModelSchema = createModelSchema(
       (val) => serialize(bindingTransformerModelSchema, val),
       (val) => deserialize(bindingTransformerModelSchema, val),
     ),
+    enumMappingId: optional(primitive()),
+  },
+);
+
+const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
+  V1_RelationFunctionEmbeddedPropertyMapping,
+  {
+    _type: usingConstantValueSchema(
+      V1_PropertyMappingType.RELATION_FUNCTION_EMBEDDED,
+    ),
+    class: optional(primitive()),
+    id: optional(primitive()),
+    property: usingModelSchema(V1_propertyPointerModelSchema),
+    propertyMappings: list(
+      custom(
+        V1_serializeRelationFunctionPropertyMapping,
+        V1_deserializeRelationFunctionPropertyMapping,
+      ),
+    ),
+    /**
+     * `source` and `target` are inferrable from context for embedded
+     * mappings and are not represented in the engine grammar, so they
+     * may be absent after a grammar roundtrip.
+     *
+     * @discrepancy grammar-roundtrip
+     */
+    source: optional(primitive()),
+    target: optional(primitive()),
   },
 );
 
 function V1_serializeRelationFunctionPropertyMapping(
-  protocol: V1_RelationFunctionPropertyMapping,
-): PlainObject<V1_RelationFunctionPropertyMapping> {
-  return serialize(relationFunctionPropertyMappingModelSchema, protocol);
+  protocol: V1_PropertyMapping,
+): PlainObject<V1_PropertyMapping> | typeof SKIP {
+  if (protocol instanceof V1_RelationFunctionPropertyMapping) {
+    return serialize(relationFunctionPropertyMappingModelSchema, protocol);
+  } else if (protocol instanceof V1_RelationFunctionEmbeddedPropertyMapping) {
+    return serialize(
+      relationFunctionEmbeddedPropertyMappingModelSchema,
+      protocol,
+    );
+  }
+  return SKIP;
 }
 
 function V1_deserializeRelationFunctionPropertyMapping(
-  json: PlainObject<V1_RelationFunctionPropertyMapping>,
-): V1_RelationFunctionPropertyMapping | typeof SKIP {
+  json: PlainObject<V1_PropertyMapping>,
+): V1_PropertyMapping | typeof SKIP {
   switch (json._type) {
     case V1_PropertyMappingType.RELATION_FUNCTION:
       return deserialize(relationFunctionPropertyMappingModelSchema, json);
+    case V1_PropertyMappingType.RELATION_FUNCTION_EMBEDDED:
+      return deserialize(
+        relationFunctionEmbeddedPropertyMappingModelSchema,
+        json,
+      );
     default:
       return SKIP;
   }
