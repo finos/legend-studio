@@ -200,7 +200,8 @@
     height: 2.2rem;
     border-radius: 0.2rem;
     margin: 0;
-    color: var(--color-text-secondary);
+    // light text on the stable saturated pink fill in both themes
+    color: var(--color-text-on-accent);
     background: var(--color-pink-400);
     width: 100%;
 

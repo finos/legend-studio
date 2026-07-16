@@ -95,6 +95,19 @@
 
     &__item__label__text {
       @include ellipsisTextOverflow;
+
+      // allow the name to shrink/ellipsize instead of pushing the action
+      // buttons out of the row
+      min-width: 0;
+    }
+
+    // Some testable editors (mapping, function) nest the run/stop action
+    // buttons inside the label button, right after the text. Push them to
+    // the right edge of the row and keep a minimum gap from the name so
+    // they don't crowd the label icon/text.
+    &__item__label .mapping-test-explorer__item__actions {
+      margin-left: auto;
+      padding-left: 1rem;
     }
 
     &__item__actions {

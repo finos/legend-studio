@@ -297,7 +297,8 @@
 
       &__label--milestoning {
         background: var(--color-orange-250);
-        color: var(--color-text-secondary);
+        // light text on the stable saturated orange fill in both themes
+        color: var(--color-text-on-accent);
       }
     }
 
