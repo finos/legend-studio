@@ -172,15 +172,11 @@ export class DataContractViewerState implements DataAccessRequestState {
   }
 
   get targetUsers(): string[] | undefined {
-    // Prefer task consumer IDs — these are the real identifiers used in task.rec.consumer,
-    // so selectedTargetUser always matches task.rec.consumer for any consumer type.
     if (this.associatedTasks?.length) {
       return Array.from(
         new Set<string>(this.associatedTasks.map((task) => task.rec.consumer)),
       ).sort();
     }
-    // Before tasks load, fall back to the AdhocTeam user list so the dropdown
-    // is populated immediately from the contract's consumer without waiting for tasks.
     const consumer = this.liteContract.consumer;
     if (consumer instanceof V1_AdhocTeam) {
       return consumer.users.map((user) => user.name).sort();
