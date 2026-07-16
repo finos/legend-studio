@@ -20,7 +20,6 @@ import {
   type PackageableElement,
   type TestSuite,
   type RawLambda,
-  type AccessorOwner,
   type ValueSpecification,
   DataProduct,
   FunctionAccessPoint,
@@ -47,8 +46,6 @@ import {
   observe_ValueSpecification,
   buildLambdaVariableExpressions,
   type IngestDefinition,
-  getAccessorItemLabelForElement,
-  type AbstractPureGraphManager,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
