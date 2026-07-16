@@ -197,29 +197,6 @@ describe('DataContractViewerState', () => {
       expect(steps[3]?.status).toBe(TimelineStepStatus.UPCOMING);
     });
 
-    test('non-AdhocTeam consumer matches all tasks regardless of selectedTargetUser', () => {
-      // Use a non-AdhocTeam consumer (falls through to return true)
-      const contract = createLiteContract();
-      // Override consumer to a non-AdhocTeam
-      (contract as unknown as { consumer: object }).consumer = {
-        _type: 'RMS',
-        rmsNode: 'OC_GRO123',
-      };
-      const doTask = createTaskMetadata({
-        taskId: 'do-task-1',
-        type: V1_ApprovalType.DATA_OWNER_APPROVAL,
-        status: V1_UserApprovalStatus.PENDING,
-        consumer: 'some-rms-consumer',
-        assignees: ['owner-1'],
-      });
-      const state = createState(contract, [doTask]);
-      // selectedTargetUser doesn't match task.rec.consumer but should still work
-      const steps = state.getTimelineSteps('whatever-display-string');
-
-      expect(steps[2]?.status).toBe(TimelineStepStatus.ACTIVE);
-      expect(steps[2]?.assignees).toEqual(['owner-1']);
-    });
-
     test('completed contract with no tasks shows all steps complete', () => {
       const contract = createLiteContract({
         state: V1_ContractState.COMPLETED,

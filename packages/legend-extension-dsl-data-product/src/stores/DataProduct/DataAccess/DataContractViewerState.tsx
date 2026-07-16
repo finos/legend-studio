@@ -51,7 +51,6 @@ import {
   type TimelineStep,
 } from './DataAccessRequestState.js';
 import { isContractInTerminalState } from '../../../utils/DataContractUtils.js';
-import { stringifyOrganizationalScope } from '../../../utils/LakehouseUtils.js';
 
 export class DataContractViewerState implements DataAccessRequestState {
   liteContract: V1_LiteDataContract;
@@ -173,16 +172,16 @@ export class DataContractViewerState implements DataAccessRequestState {
   }
 
   get targetUsers(): string[] | undefined {
+    if (this.associatedTasks?.length) {
+      return Array.from(
+        new Set<string>(this.associatedTasks.map((task) => task.rec.consumer)),
+      ).sort();
+    }
     const consumer = this.liteContract.consumer;
     if (consumer instanceof V1_AdhocTeam) {
       return consumer.users.map((user) => user.name).sort();
     }
-    // For other scope types (including unknown types like RMS), use stringifyOrganizationalScope
-    const displayString = stringifyOrganizationalScope(
-      consumer,
-      this.applicationStore.pluginManager.getApplicationPlugins(),
-    );
-    return displayString ? [displayString] : undefined;
+    return undefined;
   }
 
   // ---- Timeline ----
@@ -243,21 +242,15 @@ export class DataContractViewerState implements DataAccessRequestState {
       return [];
     }
 
-    const consumer = this.liteContract.consumer;
-    const taskMatchesUser = (task: V1_TaskMetadata): boolean =>
-      consumer instanceof V1_AdhocTeam
-        ? task.rec.consumer === selectedTargetUser
-        : true;
-
     const privilegeManagerApprovalTask = this.associatedTasks?.find(
       (task) =>
-        taskMatchesUser(task) &&
-        task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+        task.rec.type === V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL &&
+        task.rec.consumer === selectedTargetUser,
     );
     const dataOwnerApprovalTask = this.associatedTasks?.find(
       (task) =>
-        taskMatchesUser(task) &&
-        task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL,
+        task.rec.type === V1_ApprovalType.DATA_OWNER_APPROVAL &&
+        task.rec.consumer === selectedTargetUser,
     );
 
     const privilegeManagerApprovalPayload =

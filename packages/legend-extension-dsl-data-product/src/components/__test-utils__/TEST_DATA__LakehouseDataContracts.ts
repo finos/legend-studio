@@ -219,6 +219,14 @@ export const mockTasks = {
     consumer: 'test-system-account-user-id',
   },
 
+  privilegeManagerPendingConsumer1: {
+    taskId: 'pm-task-pending-id-consumer-1',
+    type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+    status: V1_UserApprovalStatus.PENDING,
+    assignees: ['test-privilege-manager-user-id'],
+    consumer: 'test-consumer-user-id-1',
+  },
+
   privilegeManagerPendingAdditionalConsumer: {
     taskId: 'pm-task-pending-id-2',
     type: V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
@@ -369,7 +377,7 @@ export const getMockSystemAccountPendingManagerApprovalTasksResponse = () =>
 
 export const getMockPendingManagerApprovaMultipleConsumersTasksResponse = () =>
   createMockTaskResponse([
-    mockTasks.privilegeManagerPending,
+    mockTasks.privilegeManagerPendingConsumer1,
     mockTasks.privilegeManagerPendingAdditionalConsumer,
   ]);
 

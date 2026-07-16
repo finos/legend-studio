@@ -126,10 +126,6 @@ export const stringifyOrganizationalScope = (
   } else if (scope instanceof V1_ProducerScope) {
     return `Producer DID: ${scope.did}`;
   } else if (scope instanceof V1_UnknownOrganizationalScopeType) {
-    // Extract rmsNode or other meaningful identifier from content
-    if (scope.content.rmsNode) {
-      return String(scope.content.rmsNode);
-    }
     return JSON.stringify(scope.content);
   }
   const stringifiedValue = plugins
