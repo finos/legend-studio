@@ -964,6 +964,10 @@
     align-items: center;
     display: flex;
   }
+
+  &__sentinel {
+    min-height: 1px;
+  }
 }
 
 .new-access-point-modal {

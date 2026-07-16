@@ -164,3 +164,163 @@ export const LegendAIDonutChart = (props: {
     </div>
   );
 };
+
+// ─── Line chart ──────────────────────────────────────────────────────────────
+
+const LINE_SVG_WIDTH = 400;
+const LINE_SVG_HEIGHT = 180;
+const LINE_PADDING = { top: 16, right: 16, bottom: 28, left: 52 };
+
+export const LegendAILineChart = (props: {
+  data: LegendAIChartDataPoint[];
+  title?: string;
+}): React.ReactNode => {
+  const { data, title } = props;
+
+  const { points, polyline, minVal, maxVal } = useMemo(() => {
+    if (data.length === 0) {
+      return { points: [], polyline: '', minVal: 0, maxVal: 0 };
+    }
+    const plotW = LINE_SVG_WIDTH - LINE_PADDING.left - LINE_PADDING.right;
+    const plotH = LINE_SVG_HEIGHT - LINE_PADDING.top - LINE_PADDING.bottom;
+    const firstVal = data[0];
+    if (!firstVal) {
+      return { points: [], polyline: '', minVal: 0, maxVal: 0 };
+    }
+    let lo = firstVal.value;
+    let hi = lo;
+    for (const d of data) {
+      if (d.value < lo) {
+        lo = d.value;
+      }
+      if (d.value > hi) {
+        hi = d.value;
+      }
+    }
+    const range = hi - lo || 1;
+    const pts = data.map((d, i) => {
+      const x =
+        LINE_PADDING.left +
+        (data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2);
+      const y = LINE_PADDING.top + (1 - (d.value - lo) / range) * plotH;
+      return { x, y, ...d };
+    });
+    return {
+      points: pts,
+      polyline: pts.map((p) => `${p.x},${p.y}`).join(' '),
+      minVal: lo,
+      maxVal: hi,
+    };
+  }, [data]);
+
+  if (data.length === 0) {
+    return null;
+  }
+
+  const plotBottom = LINE_SVG_HEIGHT - LINE_PADDING.bottom;
+  const color = getChartColor(0);
+
+  return (
+    <div className="legend-ai-chart legend-ai-chart--line">
+      {title !== undefined && title.length > 0 && (
+        <div className="legend-ai-chart__title">{title}</div>
+      )}
+      <svg
+        viewBox={`0 0 ${LINE_SVG_WIDTH} ${LINE_SVG_HEIGHT}`}
+        className="legend-ai-chart__line-svg"
+        preserveAspectRatio="xMidYMid meet"
+      >
+        {/* Y-axis labels */}
+        <text
+          x={LINE_PADDING.left - 6}
+          y={LINE_PADDING.top + 4}
+          className="legend-ai-chart__axis-label"
+          textAnchor="end"
+        >
+          {Number.isInteger(maxVal)
+            ? maxVal.toLocaleString()
+            : maxVal.toFixed(1)}
+        </text>
+        <text
+          x={LINE_PADDING.left - 6}
+          y={plotBottom + 4}
+          className="legend-ai-chart__axis-label"
+          textAnchor="end"
+        >
+          {Number.isInteger(minVal)
+            ? minVal.toLocaleString()
+            : minVal.toFixed(1)}
+        </text>
+
+        {/* Grid lines */}
+        <line
+          x1={LINE_PADDING.left}
+          y1={LINE_PADDING.top}
+          x2={LINE_SVG_WIDTH - LINE_PADDING.right}
+          y2={LINE_PADDING.top}
+          className="legend-ai-chart__grid-line"
+        />
+        <line
+          x1={LINE_PADDING.left}
+          y1={plotBottom}
+          x2={LINE_SVG_WIDTH - LINE_PADDING.right}
+          y2={plotBottom}
+          className="legend-ai-chart__grid-line"
+        />
+
+        {/* Line */}
+        <polyline
+          points={polyline}
+          fill="none"
+          stroke={color}
+          strokeWidth="2"
+          className="legend-ai-chart__line-path"
+        />
+
+        {/* Dots */}
+        {points.map((p) => (
+          <circle
+            key={`${p.label}-${String(p.value)}`}
+            cx={p.x}
+            cy={p.y}
+            r={3}
+            fill={color}
+            className="legend-ai-chart__line-dot"
+          />
+        ))}
+
+        {/* X-axis labels (first, mid, last) */}
+        {points.length > 0 &&
+          (() => {
+            const firstPt = points[0];
+            const lastPt = points[points.length - 1];
+            if (!firstPt || !lastPt) {
+              return null;
+            }
+            return (
+              <>
+                <text
+                  x={firstPt.x}
+                  y={plotBottom + 16}
+                  className="legend-ai-chart__axis-label"
+                  textAnchor="start"
+                >
+                  {firstPt.label.slice(0, 10)}
+                </text>
+                {points.length > 2 && (
+                  <text
+                    x={lastPt.x}
+                    y={plotBottom + 16}
+                    className="legend-ai-chart__axis-label"
+                    textAnchor="end"
+                  >
+                    {lastPt.label.slice(0, 10)}
+                  </text>
+                )}
+              </>
+            );
+          })()}
+      </svg>
+    </div>
+  );
+};

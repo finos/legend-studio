@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-diagram
 
+## 8.1.250
+
+## 8.1.249
+
+## 8.1.248
+
+### Patch Changes
+
+- [#5299](https://github.com/finos/legend-studio/pull/5299) [`d0887f7`](https://github.com/finos/legend-studio/commit/d0887f7ed749ceb55926087226f4cb565f0ec18a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the class editor's diagram preview showing the themed app background (white in light theme, near-black in dark theme) in areas the diagram canvas hasn't covered yet — e.g. while resizing the editor panel. The preview container now uses the same fixed gray as the diagram canvas so uncovered areas blend with the diagram.
+
+## 8.1.247
+
 ## 8.1.246
 
 ## 8.1.245

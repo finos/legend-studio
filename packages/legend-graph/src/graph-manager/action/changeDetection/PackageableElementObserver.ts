@@ -82,6 +82,8 @@ import type { INTERNAL__UnknownElement } from '../../../graph/metamodel/pure/pac
 import type { HostedService } from '../../../graph/metamodel/pure/packageableElements/function/HostedService.js';
 import type { DataProduct } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { observe_DataProduct } from './DataProductObserveHelper.js';
+import type { Compute } from '../../../graph/metamodel/pure/compute/Compute.js';
+import { observe_Compute } from './ComputeObserveHelper.js';
 import type { IngestDefinition } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { MemSQLFunction } from '../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
@@ -186,6 +188,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_DataProduct(element: DataProduct): void {
     observe_DataProduct(element, this.observerContext);
+  }
+
+  visit_Compute(element: Compute): void {
+    observe_Compute(element);
   }
 
   visit_Mapping(element: Mapping): void {

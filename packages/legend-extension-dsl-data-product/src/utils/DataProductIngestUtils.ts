@@ -90,6 +90,10 @@ const CLASSIFICATION_TO_URN_ENV: Record<
   [V1_IngestEnvironmentClassification.DEV]: 'non-prod',
 };
 
+export const getIngestUrnEnvSegment = (
+  classification: V1_IngestEnvironmentClassification,
+): string => CLASSIFICATION_TO_URN_ENV[classification];
+
 export const buildCandidateIngestUrns = (
   datasetInfo: LakehouseIngestDatasetInfo,
   datasetEnv: string,
@@ -114,6 +118,67 @@ export const buildCandidateIngestUrns = (
   }
   return candidates;
 };
+
+/**
+ * Build the (best-guess) ingest definition URN for a single artifact dataset.
+ * Returns the first candidate URN produced by {@link buildCandidateIngestUrns};
+ * for an alloy-git deployed data product (SDLC origin with GAV coordinates) that
+ * is the canonical alloy-git URN, otherwise it falls back to the rest-api URN
+ * derived from the producer (AppDir or Kerberos).
+ */
+export const buildIngestDefinitionUrnFromDataset = (
+  dataset: V1_Dataset,
+  classification: V1_IngestEnvironmentClassification,
+  gavCoordinates: ProjectGAVCoordinates | undefined,
+  deploymentId: number,
+): string | undefined => {
+  const path = dataset.ingestDefinition.path;
+  const splitIdx = path.lastIndexOf(ELEMENT_PATH_DELIMITER);
+  if (splitIdx === -1) {
+    return undefined;
+  }
+  const pkg = path.substring(0, splitIdx);
+  const name = path.substring(splitIdx + ELEMENT_PATH_DELIMITER.length);
+  const datasetTail = `${pkg}${ELEMENT_PATH_DELIMITER}${name}`;
+  const producer = dataset.ingestDefinition.producer;
+  const datasetInfo: LakehouseIngestDatasetInfo = {
+    gavCoordinates: gavCoordinates ?? {
+      groupId: '',
+      artifactId: '',
+      versionId: '',
+    },
+    deploymentId,
+    ingestDefinitionPackage: pkg,
+    ingestDefinitionName: name,
+    datasetName: dataset.dataset,
+    producerType:
+      producer instanceof V1_AppDirProducer
+        ? V1_ProducerType.APP_DIR
+        : V1_ProducerType.KERBEROS,
+    appDirId:
+      producer instanceof V1_AppDirProducer ? producer.appDirId : undefined,
+    kerberos:
+      producer instanceof V1_KerberosProducer ? producer.kerberos : undefined,
+  };
+  return buildCandidateIngestUrns(
+    datasetInfo,
+    getIngestUrnEnvSegment(classification),
+    datasetTail,
+  )[0];
+};
+
+/**
+ * Build the marketplace operations path for inspecting a single ingest
+ * definition. Returns a location-relative path (no origin) so callers can
+ * resolve it against the current application base address via the navigation
+ * service, keeping the link on the same marketplace instance.
+ */
+export const buildIngestDefinitionOperationsPath = (
+  ingestEnvironmentUrn: string,
+  ingestDefinitionUrn: string,
+  producerUrn: string,
+): string =>
+  `/operations/ingestEnv/${ingestEnvironmentUrn}/ingestDefinition/${ingestDefinitionUrn}?producerUrn=${encodeURIComponent(producerUrn)}`;
 
 export const collectDatasetsFromArtifact = (
   artifact: V1_DataProductArtifact,

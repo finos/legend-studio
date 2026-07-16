@@ -30,6 +30,7 @@ import {
   type PackageableElement,
   type ExecutionResult,
   type RawLambda,
+  type RawExecutionPlan,
   RawVariableExpression,
   buildSourceInformationSourceId,
   buildLambdaVariableExpressions,
@@ -54,6 +55,7 @@ import {
 import {
   buildExecutionParameterValues,
   doesLambdaParameterStateContainFunctionValues,
+  ExecutionPlanState,
   ParameterInstanceValuesEditorState,
   LambdaEditorState,
   LambdaParametersState,
@@ -295,6 +297,10 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
   targetParametersState: ComparisonParametersState;
   comparisonParametersEditorState = new ParameterInstanceValuesEditorState();
 
+  // Plan generation state
+  isGeneratingPlan = false;
+  executionPlanState: ExecutionPlanState;
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
@@ -316,6 +322,11 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
 
     this.sourceParametersState = new ComparisonParametersState(this);
     this.targetParametersState = new ComparisonParametersState(this);
+
+    this.executionPlanState = new ExecutionPlanState(
+      this.editorStore.applicationStore,
+      this.editorStore.graphManagerState,
+    );
 
     makeObservable(this, {
       setKeys: action,
@@ -355,6 +366,8 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       handleRun: flow,
       run: flow,
       cancelRun: flow,
+      generatePlan: flow,
+      isGeneratingPlan: observable,
       openComparisonParametersModal: action,
     });
   }
@@ -668,6 +681,52 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
         LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
         error,
       );
+    }
+  }
+
+  *generatePlan(): GeneratorFn<void> {
+    if (this.isGeneratingPlan) {
+      return;
+    }
+    try {
+      this.isGeneratingPlan = true;
+      const model = this.editorStore.graphManagerState.graph;
+      const md5Strategy = guaranteeType(this.element.strategy, MD5HashStrategy);
+      const extension = getDataQualityPureGraphManagerExtension(
+        this.editorStore.graphManagerState.graphManager,
+      );
+      const rawPlan = (yield extension.generateReconciliationPlan(model, {
+        source: this.buildSourceLambda(),
+        target: this.buildTargetLambda(),
+        keys: this.element.keys,
+        colsForHash: this.element.columnsToCompare,
+        limit: this.limit,
+        aggregatedHash: md5Strategy.aggregatedHash,
+        sourceHashCol: md5Strategy.sourceHashColumn,
+        targetHashCol: md5Strategy.targetHashColumn,
+        includeColumnValues: true,
+      })) as RawExecutionPlan;
+
+      try {
+        this.executionPlanState.setRawPlan(rawPlan);
+        const plan =
+          this.editorStore.graphManagerState.graphManager.buildExecutionPlan(
+            rawPlan,
+            this.editorStore.graphManagerState.graph,
+          );
+        this.executionPlanState.initialize(plan);
+      } catch {
+        //do nothing
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(error);
+    } finally {
+      this.isGeneratingPlan = false;
     }
   }
 

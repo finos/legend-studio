@@ -14,7 +14,7 @@ Palette tokens (physical)   →   Semantic tokens (role-based)   →   Component
 
 - **Palette tokens** — `packages/legend-art/style/base/_variables.scss`. Raw colors. Components must not reference these directly.
 - **Semantic tokens** — `packages/legend-art/style/base/themes/_semantic-tokens.scss`. The vocabulary components use. `:root` defaults to the dark mapping for backward compatibility.
-- **Theme mappings** — `_theme-default-dark.scss`, `_theme-default-light.scss`. Each maps every semantic token to a palette value, scoped to a class on `<body>` (e.g. `.theme__default-dark`).
+- **Theme mappings** — `_theme-default-dark.scss`, `_theme-default-light.scss`, `_theme-legacy-light.scss`. Each maps every semantic token to a palette value, scoped to a class on `<body>` (e.g. `.theme__default-dark`). Legacy Light is the Legend Query app's default theme; its mapping uses the historical `legacylight-*` palette (cool blue-gray) so tokenized components resolve to the shade Query users already know.
 
 To add a new theme:
 
@@ -29,9 +29,9 @@ No component file changes required.
 
 Studio surfaces theme switching as a **one-click moon/sun toggle** in the activity bar and again on the workspace setup page (`ColorThemeToggle` in `packages/legend-application-studio/src/components/editor/ActivityBar.tsx`). Clicking flips between `DEFAULT_DARK` and `DEFAULT_LIGHT` and persists via `layoutService.setColorTheme(..., { persist: true })`. The icon shows the _destination_ theme (sun while in dark, moon while in light) and is wrapped in `observer`, so the active theme is reactive.
 
-The toggle only renders when both endpoints of the flip are actually exposed — it reuses the same `STUDIO_SUPPORTED_COLOR_THEMES` allow-list and `STUDIO_NON_PRODUCTION_COLOR_THEMES` / `NonProductionFeatureFlag` gating documented below. The Color Theme list that previously lived in the Settings (cog) menu has been removed; the toggle is now the sole theme-switching entry point.
+The toggle only renders when both endpoints of the flip are actually exposed by the `STUDIO_SUPPORTED_COLOR_THEMES` allow-list. The Color Theme list that previously lived in the Settings (cog) menu has been removed; the toggle is now the sole theme-switching entry point.
 
-**Non-production gating.** Themes that are still being stabilized are additionally listed in `STUDIO_NON_PRODUCTION_COLOR_THEMES` and are hidden from the toggle unless the `NonProductionFeatureFlag` config option is enabled. The light theme (`DEFAULT_LIGHT`) is currently gated this way, so the moon/sun toggle only appears in dev/QA environments (where the flag is on) and stays hidden in production. To promote a theme to production, remove its key from `STUDIO_NON_PRODUCTION_COLOR_THEMES`. Note: gating only controls _visibility_ of the toggle — a theme that a user already persisted (via the settings key `application.layout.colorTheme`) still loads on next visit, but persisted settings are per-origin so dev selections don't leak into a separate production origin.
+If a future theme needs to be gated to non-production environments while it stabilizes, wire it through the standard `NonProductionFeatureFlag` config option at the point where themes are collected for the toggle. The previous `STUDIO_NON_PRODUCTION_COLOR_THEMES` set (used to gate `DEFAULT_LIGHT` during its stabilization) has been removed now that light theme is production-ready.
 
 ## Semantic token vocabulary
 
@@ -317,19 +317,40 @@ Still dark-only (see `Migration tracker` to mark off).
 
 ### Status
 
-- **`legend-query-builder` — largely NOT migrated.** ~600+ direct palette refs still remain across 18 SCSS files. A targeted first pass has been applied to `shared/_lambda-editor.scss` (semantic tokenization + `lambda-editor--dark` behavior aligned to active theme) to unblock Studio Function Editor light-theme rendering, but the package is still predominantly dark-token based.
+- **`legend-query-builder` — tokenized (Option A, Phases 1–2 done; pending visual QA).** All UI-chrome palette refs across the 18 SCSS files are now semantic tokens (645 semantic refs, up from ~0). The ~208 palette refs that remain are intentional escape hatches: ag-grid `--ag-*` blocks, `--dark`/`--light` modifier blocks, stripe gradients, stable categorical/brand colors (viz node schemes, SQL syntax colors, type badges, query/test labels, the green action button), inverse-trap dark-text-on-colored-chips, and translucent `shade-*` overlays. Three latent undefined-variable bugs were fixed in passing (`--color-dark-grey-0`, `--color-dark-grey-180`, `--color-light-grey-500`). **Still pending:** retirement of `light-mode.scss` (see coupling note below).
 - **Extensions — migrated (done):** `dsl-data-product`, `dsl-data-quality`, `dsl-data-space`, `dsl-data-space-studio`, `dsl-diagram`, `dsl-service`, `dsl-text`, `store-service-store`, `application-studio-depot-dashboard`.
-- **`legend-application-query/style/light-mode.scss`** — the legacy 2,036-line `theme__legacy-light` override file. Repaints ~227 Query-Builder selectors for the Query app only. To be **retired** once QB is tokenized.
+- **`legend-application-query/style/light-mode.scss`** — the legacy 2,036-line `theme__legacy-light` override file. Repaints ~227 Query-Builder selectors for the Query app only. Since the Legacy Light token mapping landed (`_theme-legacy-light.scss`, see below), this file is no longer the only thing standing between tokenized components and dark fall-through — its per-selector rules are now a redundancy layer over the token mapping wherever both agree. To be **retired** incrementally: delete rules whose token-mapped rendering matches, keep (or fold into the mapping) any that intentionally differ.
 
-### Recent applied fixes (June 2026)
+### Recent applied fixes (June–July 2026)
 
+- **Legacy Light semantic-token mapping (Phase 4, July 2026):** added `packages/legend-art/style/base/themes/_theme-legacy-light.scss`, mapping all ~41 semantic tokens to the `legacylight-*` palette under `.theme__legacy-light` (forwarded from `legend-art/style/index.scss`). This closes the fall-through gap: tokenized components with no per-selector override in `light-mode.scss` used to resolve to the dark `:root` defaults inside the Query app's light theme ("dark islands" — exec-plan viewer, SQL playground, lineage viewer, etc.); they now resolve to the legacy shade. Surfaces already repainted by `light-mode.scss` are pixel-unchanged — those rules set concrete properties and win over anything token-derived, and `light-mode.scss` consumes zero semantic tokens (verified by grep). Token choices are anchored to `light-mode.scss` conventions: white panels/menus/inputs, `#edf0f1` app/hover surfaces, `#dce2e4` chrome, `#def3ff` selection, `#29323a`/`#4e5364` primary/secondary text, `#6a8db6` accent fills with white text, `#1b4c8c` links + active indicator, brand-orange warn, no-red palette → default-light error treatment. The `legacylight-*` hexes are re-declared inside the theme file so it survives `light-mode.scss` retirement. Also fixed three pre-existing references to undefined variables in `light-mode.scss` (`--color-legacylight-light-dark-grey-200` ×2 → `dark-grey-200`, `--color-legacylight-dark-grey-300` → `dark-grey-400`).
+- **Query Builder tokenization (Option A, Phases 1–2):** swept all 18 `legend-query-builder` SCSS files from physical palette refs to semantic tokens (~645 semantic refs). Phase 1 was the mechanical grey→`bg-*`/`text-*`/`border-*` pass; Phase 2 was the judgment pass — type badges → `category-*`, error states → `status-*`, tab underlines → `active-indicator`, focus rings → `border-focus`, muted text → `text-muted`/`text-secondary`, disabled controls → `text-disabled`. Stable categorical colors (viz node schemes, SQL syntax colors, query/test labels, the green action button), inverse-trap dark-text-on-colored-chips, ag-grid blocks, and translucent overlays were deliberately left as palette. Fixed 3 latent undefined-variable references (`--color-dark-grey-0/-180`, `--color-light-grey-500`). Dark-theme appearance shifts in a few intentional ways (muted greys conform to the brighter semantic `text-muted`; error fields adopt the canonical subtle-bg + red-border treatment). Pending: Studio light-theme visual QA and `light-mode.scss` retirement.
 - **Studio splitter affordance regression (light theme):** restored missing vertical splitter base style in `packages/legend-art/style/reset/_react-reflex.scss` (`.reflex-container.vertical > .reflex-splitter` sizing/hit-area rule) after a regression introduced during light-theme work.
 - **Function Editor lambda dark-island fix:** tokenized the shared lambda editor surface/error/popup styles in `packages/legend-query-builder/style/shared/_lambda-editor.scss`; `lambda-editor--dark` is now a compatibility alias that follows the active app theme instead of forcing dark palette colors.
 - **Prominent theme toggle:** added `ColorThemeToggle` (moon/sun icon button) to the Studio activity bar and the workspace setup page so users can flip themes in one click. Removed the redundant Color Theme list from the Settings (cog) menu — the toggle is now the sole entry point. Same gating as before: only renders when both `DEFAULT_DARK` and `DEFAULT_LIGHT` are exposed (i.e. respects `NonProductionFeatureFlag`).
 - **Activity-bar layout — flex column:** `_activity-bar.scss` now uses `display: flex; flex-direction: column;` with `flex: 1 1 auto; min-height: 0` on `.activity-bar__items` and `flex-shrink: 0` on `__menu` / `__item`. Replaces the brittle `calc(100% - 13.4rem)` reservation that had to be retuned every time a bottom button was added (and which hid the Settings cog the moment the theme toggle was inserted). Any number of bottom buttons now stays anchored visible without further CSS changes.
-- **Legend Query selector dropdown locked-dark fixes:** several base selector-input rules in `packages/legend-art/style/components/_selector-input.scss` (dropdown indicator, option hover, option selected) and the base `.packageable-element-option-label__tag` rule in `packages/legend-lego/style/graph-editor/_packageable-element-option-label.scss` were migrated to semantic tokens (`--color-bg-input`, `--color-text-secondary`, `--color-accent-subtle`, `--color-bg-selected`, `--color-bg-tag`, `--color-text-muted`, `--color-border-default`) during Phase 3. Legend Query's legacy `theme__legacy-light` override file (`packages/legend-application-query/style/light-mode.scss`) does not remap the semantic-token layer — it only repaints specific selectors — so semantic tokens fall through to their `:root` (dark) defaults. This left QB's base-mode selectors (which QB opts into via `darkMode={!TEMPORARY__isLightColorThemeEnabled}`) with a dark dropdown indicator, dark option hover/selected states, and a dark entity full-path tag. Added local overrides under `.theme__legacy-light` restoring the previous physical palette colors. This is a stop-gap; the clean fix is Option A in Phase 4 (tokenize QB and retire `light-mode.scss`). Expect more bugs of this exact shape until then — anywhere the base SCSS gets tokenized, the legacy override has to be patched in parallel.
+- **Legend Query selector dropdown locked-dark fixes:** several base selector-input rules in `packages/legend-art/style/components/_selector-input.scss` (dropdown indicator, option hover, option selected) and the base `.packageable-element-option-label__tag` rule in `packages/legend-lego/style/graph-editor/_packageable-element-option-label.scss` were migrated to semantic tokens (`--color-bg-input`, `--color-text-secondary`, `--color-accent-subtle`, `--color-bg-selected`, `--color-bg-tag`, `--color-text-muted`, `--color-border-default`) during Phase 3. Legend Query's legacy `theme__legacy-light` override file (`packages/legend-application-query/style/light-mode.scss`) does not remap the semantic-token layer — it only repaints specific selectors — so semantic tokens fall through to their `:root` (dark) defaults. This left QB's base-mode selectors (which QB opts into via `darkMode={!TEMPORARY__isLightColorThemeEnabled}`) with a dark dropdown indicator, dark option hover/selected states, and a dark entity full-path tag. Added local overrides under `.theme__legacy-light` restoring the previous physical palette colors. This was a stop-gap; the class of bug is now closed by the Legacy Light semantic-token mapping (`_theme-legacy-light.scss`, July 2026) — uncovered selectors resolve to legacy-light values instead of dark defaults, so no more parallel patching is needed.
 - **Class Editor locked-dark selectors + multiplicity bound:** `ClassEditor.tsx` was rendering `CustomSelectorInput` instances (supertype picker, profile / tagged-value / actual-tagged-value, stereotype, and the property detail panel's property-aggregation, property-tagged-values, property-stereotype) without a `darkMode` prop, so they used the base (light-default) selector styling and rendered as white dropdowns inside the (still-dark-in-prod) class editor. Each call site now passes `darkMode={!applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled}`, matching the pattern used in `ProjectSearchCommand.tsx`. Separately, `&__multiplicity-bound` in `_class-editor.scss` was hard-coded to a light fill that made the lower/upper bound digits unreadable in dark; both the enabled and `[disabled]` states (and the `*` upper-bound display) now use `--color-bg-input` / `--color-bg-panel` + `--color-text-primary`, with `-webkit-text-fill-color` + `opacity: 1` on the disabled state to defeat the browser's default text fade.
 - **Depot Dashboard grid + selector locked-dark fix:** `packages/legend-extension-application-studio-depot-dashboard/src/components/DepotDashboard.tsx` no longer hardcodes `ag-theme-balham-dark` / `darkMode={true}`. Both the AG-Grid wrapper and the element-type `CustomSelectorInput` now derive `darkMode` from `applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled` and apply `ag-theme-balham` / `ag-theme-balham-dark` conditionally, matching the convention used in `DatabaseBuilderWizard`, `QueryBuilderTDSGridResult`, `SQLPlaygroundGrid`, etc. The component is already an `observer`, so theme flips repaint live.
+
+### Recent applied fixes (July 2026) — Query Builder light-theme visual QA (Studio)
+
+First pass of Studio-hosted QB visual QA in light theme. All fixes are on the semantic-token layer (or add a missing `text-on-accent` where a saturated-fill chip was missing one), so both themes stay correct.
+
+- **Header pills — "Advanced" and "Help…" labels/icons unreadable on accent fill.** `.query-builder__header__advanced-dropdown__label` / `__icon` sat on `--color-accent` (saturated navy in both themes) but used `--color-text-secondary` for text — a dark grey in light theme that vanishes on navy. Swapped to `--color-text-on-accent`. See [\_query-builder.scss](packages/legend-query-builder/style/_query-builder.scss#L121-L145).
+- **Fetch-Structure mode pill — selected label unreadable.** `.query-builder__fetch__structure__mode--selected` overrode the background to `--color-accent` but inherited `--color-text-secondary` from the base rule. Added `color: var(--color-text-on-accent)` so the active pill stays legible on the accent fill in both themes. See [\_query-builder.scss](packages/legend-query-builder/style/_query-builder.scss#L436-L441).
+- **`QueryBuilderPanelIssueCountBadge` — count text unreadable on error fill.** Badge sits on `--color-status-error` (saturated red) but used `--color-text-primary`, a dark grey in light theme. Swapped to `--color-text-on-accent`. See [\_query-builder.scss](packages/legend-query-builder/style/_query-builder.scss#L462-L471).
+- **Query Options modal — Slice / Limit Results inputs invisible.** Two-fold root cause on the semantic-token layer:
+  - `.panel__content__form__section__input` / `__section__textarea` in [\_panel.scss](packages/legend-art/style/base/_panel.scss#L391) used `border: 0.1rem solid var(--color-bg-input)`. In light theme `bg-input` == `bg-elevated` == white, so the field's edge disappeared entirely on modal/menu surfaces. Border switched to `--color-border-default` (subtle-but-visible in both themes).
+  - `.input--dark` in [\_input.scss](packages/legend-art/style/base/_input.scss#L69) had the same pattern (border of `bg-input`) — same fix. `.input--dark` remains a compat alias for consumers still passing `darkMode={true}`.
+  - Net effect: any form input using either class now shows a visible outline in light theme; dark-theme visuals are essentially unchanged (dark-grey border vs dark-grey bg differ by only a shade).
+- **Menu items ("Tabular Data Structure" etc.) unreadable in disabled state.** `--color-text-disabled` in [\_theme-default-light.scss](packages/legend-art/style/base/themes/_theme-default-light.scss#L53) was mapped to `light-grey-400` (`#bbb`), near-invisible on `bg-elevated` (white). Remapped to `dark-grey-500` (`#9a9a9a`) so disabled controls stay perceptibly "off" while remaining legible on both `bg-panel` and `bg-elevated`. Theme-wide fix; affects every disabled control on light surfaces.
+
+Pattern to watch for during continued light-theme QA:
+
+1. **Chip/pill with saturated bg + neutral text token** → text token is theme-flipping, saturated bg isn't, so the pair breaks in one theme. Fix is to use `--color-text-on-accent` on any element whose bg is `--color-accent`, `--color-status-error`, `--color-status-warn`, or any other saturated brand fill.
+2. **Border of `--color-bg-input` (or any other `--color-bg-*` token)** on a form control that lives inside a modal/menu → invisible in light theme because the elevated surface is white and `bg-input` is also white. Prefer `--color-border-default` (or `--color-border-subtle` for very thin hairlines).
+3. **Disabled text on elevated surfaces** — verify `--color-text-disabled` still reads as "muted/off" and not "gone".
 
 ### Why QB is dark in Studio's light theme — two mechanisms that don't meet
 
@@ -359,25 +380,30 @@ The bulk swap is fast (context-aware script). The real effort is the **review pa
 
 ### Tracker (file checklist — tokenizable palette refs)
 
-- [ ] `_query-builder.scss` (199 — ~10 are ag-grid, keep)
-- [ ] `_query-builder-projection.scss` (47)
-- [ ] `shared/_value-spec-editor.scss` (43)
-- [ ] `_lineage-viewer.scss` (35)
-- [ ] `_query-builder-filter.scss` (33)
-- [ ] `_query-builder-olap.scss` (32)
-- [ ] `_execution-plan-viewer.scss` (31)
-- [ ] `_query-builder-explorer.scss` (30)
-- [ ] `shared/_query-loader.scss` (26)
-- [ ] `shared/_lambda-editor.scss` (partially migrated: major surface/error/popup tokens converted; 2 `dark-grey` refs remain in highlighted expected-type text)
-- [ ] `_query-builder-post-filter.scss` (21)
-- [ ] `_query-builder-graph-fetch-tree.scss` (20)
-- [ ] `_query-builder-property-search-panel.scss` (19)
-- [ ] `_sql-playground.scss` (18 — has ag-grid)
-- [ ] `data-access-overview.scss` (16 — has ag-grid)
-- [ ] `_query-builder-functions-explorer.scss` (9)
-- [ ] `_query-builder-setup.scss` (7)
-- [ ] `_query-builder-service-plugin.scss` (2)
-- [ ] Retire `legend-application-query/style/light-mode.scss` (2,036 lines) once the above is done.
+All 18 files tokenized (Phases 1–2). Remaining palette refs in each are intentional escape hatches (ag-grid, `--dark`/`--light` blocks, stripe gradients, stable brand/category/syntax colors, inverse-trap dark-on-color chips, translucent overlays).
+
+- [x] `_query-builder.scss`
+- [x] `_query-builder-projection.scss`
+- [x] `shared/_value-spec-editor.scss`
+- [x] `_lineage-viewer.scss` (viz node-color scheme intentionally kept as stable palette)
+- [x] `_query-builder-filter.scss` (type badges → `category-*`; tree connectors → `border-strong`)
+- [x] `_query-builder-olap.scss`
+- [x] `_execution-plan-viewer.scss` (option-group node colors kept stable)
+- [x] `_query-builder-explorer.scss`
+- [x] `shared/_query-loader.scss`
+- [x] `shared/_lambda-editor.scss` (master's targeted pass; `dark-grey-0` highlight-text bug fixed → `dark-grey-50`)
+- [x] `_query-builder-post-filter.scss`
+- [x] `_query-builder-graph-fetch-tree.scss`
+- [x] `_query-builder-property-search-panel.scss`
+- [x] `_sql-playground.scss` (SQL syntax-highlight colors kept stable; ag-grid block kept)
+- [x] `data-access-overview.scss` (ag-grid block + stripe gradient kept)
+- [x] `_query-builder-functions-explorer.scss`
+- [x] `_query-builder-setup.scss`
+- [x] `_query-builder-service-plugin.scss`
+- [x] Legacy Light semantic-token mapping (`legend-art/style/base/themes/_theme-legacy-light.scss`) — closes the fall-through-to-dark gap for all tokenized components under `theme__legacy-light`.
+- [ ] Retire `legend-application-query/style/light-mode.scss` (2,036 lines) — now unblocked: with the token mapping in place, its rules are a redundancy layer wherever they agree with the mapping. Retire incrementally (delete agreeing rules, fold intentional differences into the mapping).
+
+> **Coupling caveat (legend-application-query legacy-light) — RESOLVED (July 2026).** QB base rules referencing semantic tokens used to resolve to `:root` (dark) defaults under `theme__legacy-light` for any selector `light-mode.scss` didn't repaint. `_theme-legacy-light.scss` now remaps the full token layer to the `legacylight-*` palette, so uncovered selectors get the legacy shade automatically. Consequence of the fix: former "dark islands" (exec-plan viewer, SQL playground, lineage viewer, query-setup options, …) intentionally flipped from dark to legacy light in the Query app — QA against that expectation, not against the old dark rendering.
 
 ### Downstream consumers
 

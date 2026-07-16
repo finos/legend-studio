@@ -29,6 +29,7 @@ import type {
   DataProductRelationSampleQueryTabConfiguration,
 } from './DataProduct/DataProductSampleQueryTabState.js';
 import type {
+  V1_OrganizationalScope,
   V1_RawWorkflowTask,
   V1_WorkflowTaskType,
 } from '@finos/legend-graph';
@@ -88,9 +89,20 @@ export interface DataProductDataAccess_LegendApplicationPlugin_Extension
   getWorkflowTaskType?(task: V1_RawWorkflowTask): V1_WorkflowTaskType;
 
   /**
-   * Fetches org members for a given RMS node code.
+   * Extracts an organizational node identifier from a consumer scope,
+   * used for org membership checks after data access request creation.
    *
-   * @param code the RMS node code
+   * @param consumer the organizational scope
+   * @returns the node code if applicable, undefined otherwise
+   */
+  getOrganizationalNodeCode?(
+    consumer: V1_OrganizationalScope,
+  ): string | undefined;
+
+  /**
+   * Fetches org members for a given organizational node code.
+   *
+   * @param code the organizational node code
    * @param token the auth token
    * @param applicationStore the application store (for tracer service)
    */

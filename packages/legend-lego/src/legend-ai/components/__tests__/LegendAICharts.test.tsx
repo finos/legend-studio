@@ -17,7 +17,11 @@
 import { describe, test, expect, afterEach } from '@jest/globals';
 import { render, cleanup } from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
-import { LegendAIBarChart, LegendAIDonutChart } from '../LegendAICharts.js';
+import {
+  LegendAIBarChart,
+  LegendAIDonutChart,
+  LegendAILineChart,
+} from '../LegendAICharts.js';
 import type { LegendAIChartDataPoint } from '../../LegendAI_LegendApplicationPlugin_Extension.js';
 
 afterEach(cleanup);
@@ -187,5 +191,68 @@ describe(unitTest('LegendAIDonutChart'), () => {
     const { container } = render(<LegendAIDonutChart data={data} />);
     const circle = container.querySelector('.legend-ai-chart__donut-segment');
     expect(circle?.getAttribute('stroke')).toBe('#00ff00');
+  });
+});
+
+// ─── LegendAILineChart ──────────────────────────────────────────────────────
+
+describe(unitTest('LegendAILineChart'), () => {
+  test('returns null for empty data', () => {
+    const { container } = render(<LegendAILineChart data={[]} />);
+    expect(container.innerHTML).toBe('');
+  });
+
+  test('renders SVG with polyline for data points', () => {
+    const data: LegendAIChartDataPoint[] = [
+      { label: '2024-01', value: 100 },
+      { label: '2024-02', value: 150 },
+      { label: '2024-03', value: 120 },
+    ];
+    const { container } = render(<LegendAILineChart data={data} />);
+    const polyline = container.querySelector('.legend-ai-chart__line-path');
+    expect(polyline).not.toBeNull();
+    expect(polyline?.getAttribute('points')).toBeTruthy();
+  });
+
+  test('renders dots for each data point', () => {
+    const data: LegendAIChartDataPoint[] = [
+      { label: 'A', value: 10 },
+      { label: 'B', value: 20 },
+      { label: 'C', value: 30 },
+    ];
+    const { container } = render(<LegendAILineChart data={data} />);
+    const dots = container.querySelectorAll('.legend-ai-chart__line-dot');
+    expect(dots).toHaveLength(3);
+  });
+
+  test('renders title when provided', () => {
+    const data: LegendAIChartDataPoint[] = [{ label: 'A', value: 10 }];
+    const { container } = render(
+      <LegendAILineChart data={data} title="Revenue Trend" />,
+    );
+    const title = container.querySelector('.legend-ai-chart__title');
+    expect(title?.textContent).toBe('Revenue Trend');
+  });
+
+  test('renders grid lines', () => {
+    const data: LegendAIChartDataPoint[] = [
+      { label: 'A', value: 10 },
+      { label: 'B', value: 20 },
+    ];
+    const { container } = render(<LegendAILineChart data={data} />);
+    const gridLines = container.querySelectorAll('.legend-ai-chart__grid-line');
+    expect(gridLines.length).toBeGreaterThanOrEqual(2);
+  });
+
+  test('renders Y-axis labels', () => {
+    const data: LegendAIChartDataPoint[] = [
+      { label: 'A', value: 100 },
+      { label: 'B', value: 200 },
+    ];
+    const { container } = render(<LegendAILineChart data={data} />);
+    const axisLabels = container.querySelectorAll(
+      '.legend-ai-chart__axis-label',
+    );
+    expect(axisLabels.length).toBeGreaterThanOrEqual(2);
   });
 });

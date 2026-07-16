@@ -112,4 +112,19 @@ export class LegendQueryTelemetryHelper {
   static logEvent_QueryChatOpened(service: TelemetryService): void {
     service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_CHAT__OPENED, {});
   }
+
+  static logEvent_QueryAISuggestLaunched(service: TelemetryService): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__LAUNCH, {});
+  }
+
+  static logEvent_QueryAISuggestApplied(service: TelemetryService): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__APPLY, {});
+  }
+
+  static logEvent_QueryAISuggestDiscarded(service: TelemetryService): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__DISCARD,
+      {},
+    );
+  }
 }

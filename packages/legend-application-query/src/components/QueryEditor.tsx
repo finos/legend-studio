@@ -98,6 +98,8 @@ import {
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
 import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.js';
+import { QueryEditorIngestInfoModal } from './ingest/IngestInfo.js';
+import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
 import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 import { extractQueryParams } from './utils/QueryParameterUtils.js';
@@ -180,6 +182,9 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestLaunched(
+      applicationStore.telemetryService,
+    );
     setIsSuggestingWithAI(true);
     setAISuggestion(undefined);
     try {
@@ -196,8 +201,17 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggestion) {
       return;
     }
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestApplied(
+      applicationStore.telemetryService,
+    );
     createQueryState.setQueryName(aiSuggestion.title);
     createQueryState.setQueryDescription(aiSuggestion.description);
+    setAISuggestion(undefined);
+  };
+  const discardAISuggestion = (): void => {
+    LegendQueryTelemetryHelper.logEvent_QueryAISuggestDiscarded(
+      applicationStore.telemetryService,
+    );
     setAISuggestion(undefined);
   };
 
@@ -324,7 +338,7 @@ const CreateQueryDialog = observer(() => {
               <ModalFooterButton
                 text="Dismiss"
                 type="secondary"
-                onClick={(): void => setAISuggestion(undefined)}
+                onClick={discardAISuggestion}
               />
             </>
           ) : (
@@ -1208,6 +1222,16 @@ export const QueryEditor = observer(() => {
             queryBuilderState={editorStore.queryBuilderState}
             open={editorStore.showDataProductInfo}
             closeModal={() => editorStore.setShowDataProductInfo(false)}
+          />
+        )}
+      {editorStore.showIngestInfo &&
+        editorStore.queryBuilderState instanceof
+          IngestLegendQueryBuilderState && (
+          <QueryEditorIngestInfoModal
+            editorStore={editorStore}
+            queryBuilderState={editorStore.queryBuilderState}
+            open={editorStore.showIngestInfo}
+            closeModal={() => editorStore.setShowIngestInfo(false)}
           />
         )}
       {isExistingQuery &&

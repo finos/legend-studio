@@ -15,39 +15,60 @@
  */
 
 import {
-  type GeneratorFn,
-  type PlainObject,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
+  HttpStatus,
   isNonNullable,
+  NetworkClientError,
+  type GeneratorFn,
+  type PlainObject,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
 import {
+  type PureProtocolProcessorPlugin,
+  type V1_DataProduct,
   type V1_EnrichedUserApprovalStatus,
-  type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
   type V1_PendingTasksResponse,
-  type V1_TaskStatus,
-  type V1_ContractUserEventRecord,
   type V1_TaskStatusChangeResponse,
-  type V1_DataRequestWithWorkflow,
-  type V1_DataRequestsWithWorkflowResponse,
+  RawLambda,
+  V1_DataProductAccessor,
   V1_deserializeDataContractResponse,
+  type V1_DataRequestWithWorkflow,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  V1_IngestDefinitionAccessor,
+  V1_LakehouseAccessPoint,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_pendingTasksResponseModelSchema,
+  V1_PureGraphManager,
+  V1_resolveAccessorsFromRawLambda,
+  V1_ResourceType,
+  V1_SdlcDeploymentDataProductOrigin,
   V1_TaskStatusChangeResponseModelSchema,
   V1_transformDataContractToLiteDatacontract,
+  V1_transformDataRequestWithWorkflowToLiteDataAccessRequest,
   V1_deserializeDataRequestsWithWorkflowResponse,
+  type V1_DataRequestsWithWorkflowResponse,
+  type V1_PendingDataRequestTaskEntry,
+  type V1_PendingDataRequestTasksResponse,
+  V1_deserializePendingDataRequestTasksResponse,
+  type V1_ContractUserEventRecord,
+  V1_DataRequestUserEventRecord,
+  type V1_PendingTaskRecord,
+  V1_ApprovalType,
+  V1_UserApprovalStatus,
+  type V1_LiteDataContract,
+  type V1_LiteAccessRequest,
+  V1_PermitTaskAction,
+  type V1_OrganizationalScope,
 } from '@finos/legend-graph';
+import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
+  stringifyOrganizationalScope,
   type ContractErrorLayer,
-  type LakehouseContractSyncStatusResponse,
-  buildSyncErrorLayer,
-  buildContractErrorsRoot,
-  getContractAPGCoordinates,
-  getUnverifiedIngestDefinitionsForAPG,
+  type DataProductDataAccess_LegendApplicationPlugin_Extension,
 } from '@finos/legend-extension-dsl-data-product';
 import {
   makeObservable,
@@ -58,16 +79,104 @@ import {
   computed,
 } from 'mobx';
 import {
-  type LakehouseEntitlementsStore,
   TEST_USER,
+  type LakehouseEntitlementsStore,
 } from './LakehouseEntitlementsStore.js';
+import { getDataProductFromDetails } from '../../../utils/LakehouseUtils.js';
+
+export enum ContractSyncStatus {
+  NEVER_SYNCED = 'NEVER_SYNCED',
+  NOT_FULLY_SYNCED = 'NOT_FULLY_SYNCED',
+}
+
+export type LakehouseContractSyncStatusResponse = {
+  status: string;
+  unsyncedUsers?: { username: string }[];
+  unsyncedAccessPoints?: { accessPointName: string }[];
+  unsyncedTargetAccounts?: string[];
+};
+
+const collectIngestSpecPathsFromOriginDp = (
+  rootDataProduct: V1_DataProduct,
+  accessPointGroupId: string,
+  graphManager: V1_PureGraphManager,
+  plugins: PureProtocolProcessorPlugin[],
+): Set<string> => {
+  const dpPath = `${rootDataProduct.package}::${rootDataProduct.name}`;
+  const targetApg = rootDataProduct.accessPointGroups.find(
+    (apg) => apg.id === accessPointGroupId,
+  );
+  if (!targetApg) {
+    throw new Error(
+      `Access point group '${accessPointGroupId}' not found in data product '${dpPath}'`,
+    );
+  }
+  const specs = new Set<string>();
+  const visited = new Set<string>();
+  const worklist: string[] = [accessPointGroupId];
+
+  const collectFromApg = (apgId: string): void => {
+    const apg = rootDataProduct.accessPointGroups.find((g) => g.id === apgId);
+    if (!apg) {
+      return;
+    }
+    for (const accessPoint of apg.accessPoints) {
+      if (!(accessPoint instanceof V1_LakehouseAccessPoint)) {
+        continue;
+      }
+      const visitKey = `${dpPath}::${accessPoint.id}`;
+      if (visited.has(visitKey)) {
+        continue;
+      }
+      visited.add(visitKey);
+
+      const rawLambda = new RawLambda(
+        accessPoint.func.parameters,
+        accessPoint.func.body,
+      );
+      const accessors =
+        V1_resolveAccessorsFromRawLambda(rawLambda, graphManager, plugins) ??
+        [];
+      for (const accessor of accessors) {
+        if (accessor instanceof V1_IngestDefinitionAccessor) {
+          const specPath = accessor.path[0];
+          if (specPath) {
+            specs.add(specPath);
+          }
+        } else if (accessor instanceof V1_DataProductAccessor) {
+          const refDpPath = accessor.path[0];
+          const refApId = accessor.path[1];
+          if (!refDpPath || !refApId) {
+            continue;
+          }
+          if (refDpPath !== dpPath) {
+            continue;
+          }
+          const refApg = rootDataProduct.accessPointGroups.find((g) =>
+            g.accessPoints.some((ap) => ap.id === refApId),
+          );
+          if (refApg && !worklist.includes(refApg.id)) {
+            worklist.push(refApg.id);
+          }
+        }
+      }
+    }
+  };
+
+  while (worklist.length > 0) {
+    const apgId = guaranteeNonNullable(worklist.shift());
+    collectFromApg(apgId);
+  }
+
+  return specs;
+};
 
 export class ContractCreatedByUserDetails {
-  readonly contractResultLite: V1_LiteDataContract;
+  readonly contractResultLite: V1_LiteAccessRequest;
   assignees: Set<string> = new Set();
   members: Map<string, V1_EnrichedUserApprovalStatus> = new Map();
 
-  constructor(contract: V1_LiteDataContract) {
+  constructor(contract: V1_LiteAccessRequest) {
     this.contractResultLite = contract;
 
     makeObservable(this, {
@@ -99,8 +208,8 @@ export class ContractCreatedByUserDetails {
 
 export class EntitlementsDashboardState {
   readonly lakehouseEntitlementsStore: LakehouseEntitlementsStore;
-  pendingTasks: V1_ContractUserEventRecord[] | undefined;
-  pendingTaskContractMap: Map<string, V1_LiteDataContract> = new Map();
+  pendingTasks: V1_PendingTaskRecord[] | undefined;
+  pendingTaskContractMap: Map<string, V1_LiteAccessRequest> = new Map();
   allContractsForUser: V1_LiteDataContractWithUserStatus[] | undefined;
   // The contracts createdBy user API returns an entry for each task, not just for each contract.
   // To consolidate this information, we store a map of contract ID to the contract details + the
@@ -109,6 +218,9 @@ export class EntitlementsDashboardState {
     new Map();
   dataRequestsCreatedByUser: V1_DataRequestWithWorkflow[] | undefined;
   selectedTaskIds: Set<string> = new Set();
+  pendingDataRequestIds: Set<string> = new Set();
+  pendingDataRequestDetailsMap: Map<string, V1_DataRequestWithWorkflow> =
+    new Map();
 
   readonly initializationState = ActionState.create();
   readonly fetchingPendingTasksState = ActionState.create();
@@ -127,6 +239,8 @@ export class EntitlementsDashboardState {
       pendingTaskContractMap: observable,
       selectedTaskIds: observable,
       dataRequestsCreatedByUser: observable,
+      pendingDataRequestIds: observable,
+      pendingDataRequestDetailsMap: observable,
       pendingTaskContracts: computed,
       allContractsCreatedByUser: computed,
       setSelectedTaskIds: action,
@@ -140,10 +254,11 @@ export class EntitlementsDashboardState {
       fetchContractDeploymentEnvironments: flow,
       updateContract: flow,
       fetchDataRequestsCreatedByUser: flow,
+      fetchPendingDataRequestTasks: flow,
     });
   }
 
-  get pendingTaskContracts(): V1_LiteDataContract[] {
+  get pendingTaskContracts(): V1_LiteAccessRequest[] {
     return Array.from(this.pendingTaskContractMap.values());
   }
 
@@ -169,6 +284,7 @@ export class EntitlementsDashboardState {
         contractsForUser,
         contractsCreatedByUserMap,
         dataRequestsCreatedByUser,
+        pendingDataRequestTasksResponse,
       ] = (yield Promise.all([
         (async () => {
           try {
@@ -183,25 +299,44 @@ export class EntitlementsDashboardState {
               error,
             );
             return {
-              tasks: [] as V1_ContractUserEventRecord[],
-              taskContractMap: new Map<string, V1_LiteDataContract>(),
+              tasks: [] as V1_PendingTaskRecord[],
+              taskContractMap: new Map<string, V1_LiteAccessRequest>(),
             };
           }
         })(),
         flowResult(this.fetchContractsForUser(token)),
         flowResult(this.fetchContractsCreatedByUser(token)),
         flowResult(this.fetchDataRequestsCreatedByUser(token)),
+        flowResult(this.fetchPendingDataRequestTasks(token)),
       ])) as [
         {
-          tasks: V1_ContractUserEventRecord[];
-          taskContractMap: Map<string, V1_LiteDataContract>;
+          tasks: V1_PendingTaskRecord[];
+          taskContractMap: Map<string, V1_LiteAccessRequest>;
         },
         V1_LiteDataContractWithUserStatus[],
         Map<string, ContractCreatedByUserDetails>,
         V1_DataRequestWithWorkflow[],
+        {
+          tasks: V1_PendingTaskRecord[];
+          taskContractMap: Map<string, V1_LiteAccessRequest>;
+        },
       ];
 
-      const allContracts: V1_LiteDataContract[] = [
+      // Merge data request pending tasks into contract pending tasks
+      const dataRequestIds = new Set<string>();
+      for (const task of pendingDataRequestTasksResponse.tasks) {
+        pendingTasksData.tasks.push(task);
+        dataRequestIds.add(task.accessRequestId);
+      }
+      for (const [
+        id,
+        contract,
+      ] of pendingDataRequestTasksResponse.taskContractMap) {
+        pendingTasksData.taskContractMap.set(id, contract);
+      }
+      this.pendingDataRequestIds = dataRequestIds;
+
+      const allContracts: V1_LiteAccessRequest[] = [
         ...Array.from(pendingTasksData.taskContractMap.values()),
         ...contractsForUser.map((c) => c.contractResultLite),
         ...Array.from(contractsCreatedByUserMap.values()).map(
@@ -264,12 +399,132 @@ export class EntitlementsDashboardState {
     }
   }
 
+  *fetchPendingDataRequestTasks(token: string | undefined): GeneratorFn<{
+    tasks: V1_DataRequestUserEventRecord[];
+    taskContractMap: Map<string, V1_LiteAccessRequest>;
+  }> {
+    try {
+      const plugins =
+        this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins();
+      const currentUser =
+        this.lakehouseEntitlementsStore.applicationStore.identityService
+          .currentUser;
+      const rawResponse =
+        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.getPendingDataRequestTasks(
+          currentUser,
+          token,
+        )) as PlainObject<V1_PendingDataRequestTasksResponse>;
+      const response = V1_deserializePendingDataRequestTasksResponse(
+        rawResponse,
+        plugins,
+      );
+
+      // Collect unique data request IDs and fetch withWorkflow details for each
+      const allEntries = [...response.dataOwner, ...response.privilegeManager];
+      const uniqueDataRequestIds = Array.from(
+        new Set(allEntries.map((e) => e.dataRequestId)),
+      );
+      const dataRequestDetailsMap = new Map<
+        string,
+        V1_DataRequestWithWorkflow
+      >();
+      const contractClient =
+        this.lakehouseEntitlementsStore.lakehouseContractServerClient;
+      yield Promise.all(
+        uniqueDataRequestIds.map(async (dataRequestId) => {
+          try {
+            const rawDetail =
+              await contractClient.getDataAccessRequestWithWorkflow(
+                dataRequestId,
+                token,
+              );
+            const details = V1_deserializeDataRequestsWithWorkflowResponse(
+              rawDetail,
+              plugins,
+            );
+            if (details[0]) {
+              dataRequestDetailsMap.set(dataRequestId, details[0]);
+            }
+          } catch (error) {
+            assertErrorThrown(error);
+          }
+        }),
+      );
+      this.pendingDataRequestDetailsMap = dataRequestDetailsMap;
+
+      const tasks: V1_DataRequestUserEventRecord[] = [];
+      const taskContractMap = new Map<string, V1_LiteAccessRequest>();
+
+      const processEntries = (
+        entries: V1_PendingDataRequestTaskEntry[],
+        approvalType: V1_ApprovalType,
+      ): void => {
+        for (const entry of entries) {
+          const task = entry.task;
+          const detail = dataRequestDetailsMap.get(entry.dataRequestId);
+
+          // Create V1_DataRequestUserEventRecord for grid row data
+          const record = new V1_DataRequestUserEventRecord();
+          record.taskId = task.taskId;
+          record.dataRequestId = entry.dataRequestId;
+          record.status = V1_UserApprovalStatus.PENDING;
+          record.consumer = this.getConsumerDisplayString(task.consumer);
+          record.type = approvalType;
+          tasks.push(record);
+
+          // Create V1_LiteDataAccessRequest for grid column lookups
+          if (detail && !taskContractMap.has(entry.dataRequestId)) {
+            taskContractMap.set(
+              entry.dataRequestId,
+              V1_transformDataRequestWithWorkflowToLiteDataAccessRequest(
+                detail,
+              ),
+            );
+          }
+        }
+      };
+
+      processEntries(response.dataOwner, V1_ApprovalType.DATA_OWNER_APPROVAL);
+      processEntries(
+        response.privilegeManager,
+        V1_ApprovalType.CONSUMER_PRIVILEGE_MANAGER_APPROVAL,
+      );
+
+      return { tasks, taskContractMap };
+    } catch (error) {
+      assertErrorThrown(error);
+      this.lakehouseEntitlementsStore.applicationStore.notificationService.notifyError(
+        `Error fetching pending data request tasks: ${error.message}`,
+      );
+      return {
+        tasks: [],
+        taskContractMap: new Map<string, V1_LiteAccessRequest>(),
+      };
+    }
+  }
+
+  private getConsumerDisplayString(consumer: V1_OrganizationalScope): string {
+    const dataAccessPlugins =
+      this.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins() as DataProductDataAccess_LegendApplicationPlugin_Extension[];
+    const orgNodeCode = dataAccessPlugins
+      .map((p) => p.getOrganizationalNodeCode?.(consumer))
+      .find(isNonNullable);
+    if (orgNodeCode) {
+      return orgNodeCode;
+    }
+    return stringifyOrganizationalScope(consumer, dataAccessPlugins);
+  }
+
+  private static parseDeploymentId(did: string): number {
+    return Number.parseInt(did, 10) || 0;
+  }
+
   *fetchPendingTaskContracts(
     token: string | undefined,
-    pendingTasks: V1_ContractUserEventRecord[],
-  ): GeneratorFn<Map<string, V1_LiteDataContract>> {
+    pendingTasks: V1_PendingTaskRecord[],
+  ): GeneratorFn<Map<string, V1_LiteAccessRequest>> {
     const pendingTaskContractIds = Array.from(
-      new Set(pendingTasks.map((t) => t.dataContractId)),
+      new Set(pendingTasks.map((t) => t.accessRequestId)),
     );
     const contractClient =
       this.lakehouseEntitlementsStore.lakehouseContractServerClient;
@@ -297,7 +552,7 @@ export class EntitlementsDashboardState {
         }
       }),
     )) as (V1_LiteDataContract | undefined)[];
-    const resultMap = new Map<string, V1_LiteDataContract>();
+    const resultMap = new Map<string, V1_LiteAccessRequest>();
     pendingTaskContractIds.forEach((contractId, idx) => {
       const contract = pendingTaskContracts[idx];
       if (contract) {
@@ -400,7 +655,7 @@ export class EntitlementsDashboardState {
   }
 
   *fetchContractDeploymentEnvironments(
-    allContracts: V1_LiteDataContract[],
+    allContracts: V1_LiteAccessRequest[],
     token: string | undefined,
   ): GeneratorFn<Map<number, string>> {
     const uniqueDIDToDataProduct = new Map<number, string>();
@@ -436,37 +691,158 @@ export class EntitlementsDashboardState {
     return didToEnvType;
   }
 
-  async getContractIngestErrors(
+  async getUnverifiedIngestDefinitions(
     contractId: string,
     token: string | undefined,
-  ): Promise<ContractErrorLayer | undefined> {
-    const baseStore = this.lakehouseEntitlementsStore.marketplaceBaseStore;
+  ): Promise<string[]> {
+    const entitlementsStore = this.lakehouseEntitlementsStore;
+    const baseStore = entitlementsStore.marketplaceBaseStore;
+    const applicationStore = entitlementsStore.applicationStore;
     const plugins =
-      this.lakehouseEntitlementsStore.applicationStore.pluginManager.getPureProtocolProcessorPlugins();
-    const apg = await getContractAPGCoordinates(
-      contractId,
-      baseStore.lakehouseContractServerClient,
-      plugins,
-      token,
-    );
-    if (!apg) {
-      return undefined;
-    }
-    const unverifiedIngestDefinitions =
-      await getUnverifiedIngestDefinitionsForAPG(
-        apg,
-        baseStore,
-        plugins,
-        () => baseStore.createInitializedGraphManager(),
-        token,
+      applicationStore.pluginManager.getPureProtocolProcessorPlugins();
+    const contractClient = entitlementsStore.lakehouseContractServerClient;
+
+    const PROD_ENV = 'prod';
+    const SDLC_DEPLOYMENT = 'alloy-git';
+
+    try {
+      const liteContract = await (async () => {
+        try {
+          const rawContractResponse = await contractClient.getDataContract(
+            contractId,
+            false,
+            token,
+          );
+          const dataContract = V1_deserializeDataContractResponse(
+            rawContractResponse,
+            plugins,
+          )[0]?.dataContract;
+          if (!dataContract) {
+            return undefined;
+          }
+          return V1_transformDataContractToLiteDatacontract(dataContract);
+        } catch (error) {
+          assertErrorThrown(error);
+          return undefined;
+        }
+      })();
+      if (!liteContract) {
+        return [];
+      }
+
+      const accessPointGroupId =
+        liteContract.resourceType === V1_ResourceType.ACCESS_POINT_GROUP
+          ? (liteContract.accessPointGroup ?? undefined)
+          : undefined;
+      if (!accessPointGroupId) {
+        return [];
+      }
+
+      const dpDetails = await (async () => {
+        try {
+          const raw = await contractClient.getDataProductByIdAndDID(
+            liteContract.resourceId,
+            liteContract.deploymentId,
+            token,
+          );
+          return V1_entitlementsDataProductDetailsResponseToDataProductDetails(
+            raw,
+          )[0];
+        } catch (error) {
+          assertErrorThrown(error);
+          return undefined;
+        }
+      })();
+      if (!dpDetails) {
+        return [];
+      }
+
+      if (!(dpDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
+        return [];
+      }
+
+      const graphManager = new V1_PureGraphManager(
+        applicationStore.pluginManager,
+        applicationStore.logService,
+        baseStore.remoteEngine,
       );
-    if (unverifiedIngestDefinitions.length === 0) {
-      return undefined;
+      await graphManager.initialize(
+        {
+          env: applicationStore.config.env,
+          tabSize: DEFAULT_TAB_SIZE,
+          clientConfig: {
+            baseUrl: applicationStore.config.engineServerUrl,
+          },
+        },
+        { engine: baseStore.remoteEngine },
+      );
+
+      const v1DataProduct = await getDataProductFromDetails(
+        dpDetails,
+        graphManager,
+        baseStore,
+      );
+      if (!v1DataProduct) {
+        return [];
+      }
+
+      const specs = collectIngestSpecPathsFromOriginDp(
+        v1DataProduct,
+        accessPointGroupId,
+        graphManager,
+        plugins,
+      );
+      if (specs.size === 0) {
+        return [];
+      }
+
+      const ingestEnvironment =
+        await baseStore.lakehouseDataProductService.getOrFetchEnvironmentForDID(
+          liteContract.deploymentId,
+          token,
+        );
+      const ingestServerUrl = ingestEnvironment?.ingestServerUrl;
+      if (ingestServerUrl === undefined) {
+        return [];
+      }
+
+      const sdlcOrigin = guaranteeType(
+        dpDetails.origin,
+        V1_SdlcDeploymentDataProductOrigin,
+      );
+      const gav = `${sdlcOrigin.group}~${sdlcOrigin.artifact}`;
+      const specsToVerify = Array.from(specs, (specPath) => ({
+        specPath,
+        urn: `urn:lakehouse:${PROD_ENV}:ingest:definition:${SDLC_DEPLOYMENT}:${gav}~${specPath}`,
+      }));
+
+      const ingestClient = baseStore.lakehouseIngestServerClient;
+      const settled = await Promise.all(
+        specsToVerify.map(async (entry) => {
+          try {
+            await ingestClient.getIngestDefinitionDetail(
+              entry.urn,
+              ingestServerUrl,
+              token,
+            );
+            return undefined;
+          } catch (error) {
+            assertErrorThrown(error);
+            if (
+              error instanceof NetworkClientError &&
+              error.response.status === HttpStatus.NOT_FOUND
+            ) {
+              return entry.specPath;
+            }
+            return undefined;
+          }
+        }),
+      );
+      return settled.filter(isNonNullable);
+    } catch (error) {
+      assertErrorThrown(error);
+      return [];
     }
-    return {
-      title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found:`,
-      errorItems: unverifiedIngestDefinitions,
-    };
   }
 
   async getContractSyncErrors(
@@ -479,7 +855,39 @@ export class EntitlementsDashboardState {
           contractId,
           token,
         )) as LakehouseContractSyncStatusResponse;
-      return buildSyncErrorLayer(response);
+
+      const status = response.status.toUpperCase();
+
+      if (status === ContractSyncStatus.NEVER_SYNCED) {
+        return { title: 'Sync Error: Contract Never Synced' };
+      }
+
+      if (status === ContractSyncStatus.NOT_FULLY_SYNCED) {
+        const unsyncedUsers =
+          response.unsyncedUsers?.map((user) => user.username) ?? [];
+        const unsyncedAccessPoints =
+          response.unsyncedAccessPoints?.map(
+            (accessPoint) => accessPoint.accessPointName,
+          ) ?? [];
+        const unsyncedTargetAccounts = response.unsyncedTargetAccounts ?? [];
+
+        const syncGroupingLayers: ContractErrorLayer[] = [
+          { title: 'Users:', errorItems: unsyncedUsers },
+          { title: 'Target Accounts:', errorItems: unsyncedTargetAccounts },
+          { title: 'Access Points:', errorItems: unsyncedAccessPoints },
+        ].filter((layer) => layer.errorItems.length > 0);
+
+        if (syncGroupingLayers.length === 0) {
+          return undefined;
+        }
+
+        return {
+          title: 'Unsynced Entities:',
+          childLayers: syncGroupingLayers,
+        };
+      }
+
+      return undefined;
     } catch (error) {
       assertErrorThrown(error);
       return undefined;
@@ -491,26 +899,39 @@ export class EntitlementsDashboardState {
     token: string | undefined,
     checkSyncStatus = false,
   ): Promise<ContractErrorLayer | undefined> {
-    const [ingestErrorsLayer, syncErrorsLayer] = await Promise.all([
-      this.getContractIngestErrors(contractId, token),
+    const [unverifiedIngestDefinitions, syncErrorsLayer] = await Promise.all([
+      this.getUnverifiedIngestDefinitions(contractId, token),
       checkSyncStatus
         ? this.getContractSyncErrors(contractId, token)
         : Promise.resolve(undefined),
     ]);
-    return buildContractErrorsRoot([ingestErrorsLayer, syncErrorsLayer]);
+
+    const childLayers: ContractErrorLayer[] = [
+      unverifiedIngestDefinitions.length > 0
+        ? {
+            title: `Ingest${unverifiedIngestDefinitions.length === 1 ? '' : 's'} Not Found:`,
+            errorItems: unverifiedIngestDefinitions,
+          }
+        : undefined,
+      syncErrorsLayer,
+    ].filter(isNonNullable);
+
+    return childLayers.length > 0
+      ? { title: 'Contract Errors:', childLayers }
+      : undefined;
   }
 
   filterByUserEnvironment(
     pendingData: {
-      tasks: V1_ContractUserEventRecord[];
-      taskContractMap: Map<string, V1_LiteDataContract>;
+      tasks: V1_PendingTaskRecord[];
+      taskContractMap: Map<string, V1_LiteAccessRequest>;
     },
     contractsForUser: V1_LiteDataContractWithUserStatus[],
     contractsCreatedByUserMap: Map<string, ContractCreatedByUserDetails>,
     dataRequests: V1_DataRequestWithWorkflow[],
     envMap: Map<number, string>,
   ): {
-    filteredTasks: V1_ContractUserEventRecord[];
+    filteredTasks: V1_PendingTaskRecord[];
     filteredContractsForUser: V1_LiteDataContractWithUserStatus[];
     filteredCreatedByUserMap: Map<string, ContractCreatedByUserDetails>;
     filteredDataRequests: V1_DataRequestWithWorkflow[];
@@ -524,7 +945,7 @@ export class EntitlementsDashboardState {
     };
 
     const filteredTasks = pendingData.tasks.filter((task) => {
-      const contract = pendingData.taskContractMap.get(task.dataContractId);
+      const contract = pendingData.taskContractMap.get(task.accessRequestId);
       return !contract || envMatchesForDeploymentId(contract.deploymentId);
     });
     const filteredContractsForUser = contractsForUser.filter((c) =>
@@ -627,30 +1048,72 @@ export class EntitlementsDashboardState {
     });
   }
 
-  *approve(
-    task: V1_ContractUserEventRecord,
+  private getDataRequestWorkflowId(dataRequestId: string): string {
+    const detail = this.pendingDataRequestDetailsMap.get(dataRequestId);
+    const workflowId = detail?.workflows[0]?.workflowId;
+    if (!workflowId) {
+      throw new Error(`No workflow found for data request ${dataRequestId}`);
+    }
+    return workflowId;
+  }
+
+  private *changeTaskStatus(
+    task: V1_PendingTaskRecord,
     token: string | undefined,
+    taskAction: 'approve' | 'deny',
   ): GeneratorFn<void> {
-    try {
-      this.changingState.inProgress();
-      this.changingState.setMessage('Approving Task');
-      const response =
-        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.approveTask(
-          task.taskId,
-          token,
-        )) as PlainObject<V1_TaskStatusChangeResponse>;
+    const isApprove = taskAction === 'approve';
+
+    if (task instanceof V1_DataRequestUserEventRecord) {
+      const workflowId = this.getDataRequestWorkflowId(task.dataRequestId);
+      const permitClient =
+        this.lakehouseEntitlementsStore.marketplaceBaseStore
+          .permitWorkflowServerClient;
+      if (!permitClient) {
+        throw new Error('Permit workflow client is not configured');
+      }
+      yield permitClient.performTaskAction(
+        workflowId,
+        task.taskId,
+        isApprove ? V1_PermitTaskAction.APPROVE : V1_PermitTaskAction.REJECT,
+        `${isApprove ? 'Approved' : 'Denied'} via entitlements dashboard`,
+        token,
+      );
+      task.status = isApprove
+        ? V1_UserApprovalStatus.APPROVED
+        : V1_UserApprovalStatus.DENIED;
+    } else {
+      const contractClient =
+        this.lakehouseEntitlementsStore.lakehouseContractServerClient;
+      const response = (yield isApprove
+        ? contractClient.approveTask(task.taskId, token)
+        : contractClient.denyTask(
+            task.taskId,
+            token,
+          )) as PlainObject<V1_TaskStatusChangeResponse>;
       const change = deserialize(
         V1_TaskStatusChangeResponseModelSchema,
         response,
       );
       if (change.errorMessage) {
         throw new Error(
-          `Unable to approve task: ${task.taskId}: ${change.errorMessage}`,
+          `Unable to ${taskAction} task: ${task.taskId}: ${change.errorMessage}`,
         );
       }
       task.status = change.status;
-      this.pendingTasks = [...(this.pendingTasks ?? [])];
-      this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
+    }
+    this.pendingTasks = [...(this.pendingTasks ?? [])];
+    this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
+  }
+
+  *approve(
+    task: V1_PendingTaskRecord,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    try {
+      this.changingState.inProgress();
+      this.changingState.setMessage('Approving Task');
+      yield* this.changeTaskStatus(task, token, 'approve');
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been Approved`,
       );
@@ -661,7 +1124,7 @@ export class EntitlementsDashboardState {
   }
 
   *deny(
-    task: V1_ContractUserEventRecord,
+    task: V1_PendingTaskRecord,
     token: string | undefined,
   ): GeneratorFn<void> {
     try {
@@ -673,23 +1136,7 @@ export class EntitlementsDashboardState {
           showLoading: true,
         },
       );
-      const response =
-        (yield this.lakehouseEntitlementsStore.lakehouseContractServerClient.denyTask(
-          task.taskId,
-          token,
-        )) as PlainObject<V1_TaskStatus>;
-      const change = deserialize(
-        V1_TaskStatusChangeResponseModelSchema,
-        response,
-      );
-      if (change.errorMessage) {
-        throw new Error(
-          `Unable to deny task: ${task.taskId}: ${change.errorMessage}`,
-        );
-      }
-      task.status = change.status;
-      this.pendingTasks = [...(this.pendingTasks ?? [])];
-      this.lakehouseEntitlementsStore.marketplaceBaseStore.pendingTasksCache.invalidate();
+      yield* this.changeTaskStatus(task, token, 'deny');
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been denied`,
       );

@@ -70,6 +70,7 @@ import type { ExecutionEnvironmentInstance } from './metamodel/pure/packageableE
 import { FunctionActivator } from './metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
+import type { Compute } from './metamodel/pure/compute/Compute.js';
 
 export interface GraphTextInputOption {
   graphGrammar: string | undefined;
@@ -537,6 +538,15 @@ export class PureModel extends BasicModel {
         this.systemModel.getOwnNullableIngestDefinition(path) ??
         this.coreModel.getOwnNullableIngestDefinition(path),
       `Can't find ingest definition '${path}'`,
+    );
+  getCompute = (path: string): Compute =>
+    guaranteeNonNullable(
+      this.getOwnNullableCompute(path) ??
+        this.generationModel.getOwnNullableCompute(path) ??
+        this.dependencyManager.getOwnNullableCompute(path) ??
+        this.systemModel.getOwnNullableCompute(path) ??
+        this.coreModel.getOwnNullableCompute(path),
+      `Can't find compute '${path}'`,
     );
   getFlatDataStore = (path: string): FlatData =>
     guaranteeType(

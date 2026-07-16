@@ -38,6 +38,7 @@ import type {
 } from '../stores/BaseLayoutState.js';
 import type { BaseViewerState } from '../stores/BaseViewerState.js';
 import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
+import { DSL_DATAPRODUCT_EVENT } from '../__lib__/DSL_DataProduct_Event.js';
 import { ProductWiki } from './ProductWiki.js';
 import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDataAccessState.js';
 import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
@@ -285,6 +286,19 @@ export const ProductViewer = observer(
       ? (productViewerState.product.title ?? productViewerState.product.name)
       : undefined;
 
+    const handleOpenAIChat = useCallback((): void => {
+      setIsAIChatOpen(true);
+      if (isDataProductViewerState(productViewerState)) {
+        productViewerState.applicationStore.telemetryService.logEvent(
+          DSL_DATAPRODUCT_EVENT.LEGEND_AI_ASSISTANT_OPENED,
+          {
+            context: 'data-product',
+            data_product: productViewerState.product.path,
+          },
+        );
+      }
+    }, [productViewerState]);
+
     const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
       e.preventDefault();
       isResizing.current = true;
@@ -436,7 +450,7 @@ export const ProductViewer = observer(
             {!isAIChatOpen && (
               <button
                 className="legend-ai-chat-toggle"
-                onClick={(): void => setIsAIChatOpen(true)}
+                onClick={handleOpenAIChat}
                 title={`Ask ${productTitle ?? 'AI'}`}
               >
                 <span className="legend-ai-chat-toggle__icon">

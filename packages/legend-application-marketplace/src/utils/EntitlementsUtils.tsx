@@ -25,6 +25,7 @@ import {
 } from '@finos/legend-extension-dsl-data-product';
 import {
   GraphManagerState,
+  V1_LiteDataContract,
   V1_LiteDataContractWithUserStatus,
   V1_ResourceType,
   V1_AccessPointGroupReference,
@@ -104,8 +105,15 @@ export type EntitlementsRow =
     }
   | { kind: 'request'; data: V1_DataRequestWithWorkflow };
 
-export const getContractData = (row: EntitlementsRow) =>
-  row.kind === ROW_KIND_CONTRACT ? row.data.contractResultLite : undefined;
+export const getContractData = (
+  row: EntitlementsRow,
+): V1_LiteDataContract | undefined => {
+  if (row.kind === ROW_KIND_CONTRACT) {
+    const lite = row.data.contractResultLite;
+    return lite instanceof V1_LiteDataContract ? lite : undefined;
+  }
+  return undefined;
+};
 
 export const getRequestData = (row: EntitlementsRow) =>
   row.kind === ROW_KIND_REQUEST ? row.data.dataRequest : undefined;
@@ -332,8 +340,10 @@ export const getCommonEntitlementsColDefs = (
             dashboardState.lakehouseEntitlementsStore.marketplaceBaseStore
               .userSearchService
           }
-          disableOnClick={true}
-          className="marketplace-lakehouse-entitlements__grid__user-display"
+          options={{
+            disableOnClick: true,
+            className: 'marketplace-lakehouse-entitlements__grid__user-display',
+          }}
         />
       ) : (
         <>{UNKNOWN}</>
@@ -402,6 +412,9 @@ export const useSelectedViewerState = (
     }
     if (selectedRow.kind === ROW_KIND_CONTRACT) {
       const contract = selectedRow.data.contractResultLite;
+      if (!(contract instanceof V1_LiteDataContract)) {
+        return undefined;
+      }
       return new DataContractViewerState(
         contract,
         (contractId: string, taskId: string) =>

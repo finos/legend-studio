@@ -35,6 +35,7 @@ import {
   V1_Multiplicity,
   V1_DatabaseDDL,
   V1_LakehouseAccessPoint,
+  V1_CInteger,
   RawLambda,
   VariableExpression,
   Multiplicity,
@@ -256,7 +257,7 @@ describe(unitTest('extractTDSServicesFromDataProduct'), () => {
 function makeRelationTypeColumn(
   name: string,
   typePath: string,
-  opts?: { nullable?: boolean },
+  opts?: { nullable?: boolean; typeVariableValues?: number[] },
 ): V1_RelationTypeColumn {
   const col = new V1_RelationTypeColumn();
   col.name = name;
@@ -264,6 +265,13 @@ function makeRelationTypeColumn(
   const pt = new V1_PackageableType();
   pt.fullPath = typePath;
   gt.rawType = pt;
+  if (opts?.typeVariableValues) {
+    gt.typeVariableValues = opts.typeVariableValues.map((value) => {
+      const v = new V1_CInteger();
+      v.value = value;
+      return v;
+    });
+  }
   col.genericType = gt;
   col.multiplicity = new V1_Multiplicity(opts?.nullable ? 0 : 1, 1);
   return col;
@@ -575,6 +583,27 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
     );
     const apService = result.find((s) => s.title === 'Positions');
     expect(apService?.columns[0]?.relationalType).toBe('DECIMAL(18,4)');
+  });
+
+  test('derives relationalType from genericType typeVariableValues', async () => {
+    const apState = makeAccessPointState(
+      'positions',
+      [
+        makeRelationTypeColumn('description', 'Varchar', {
+          typeVariableValues: [32],
+        }),
+        makeRelationTypeColumn('amount', 'Decimal', {
+          typeVariableValues: [18, 4],
+        }),
+      ],
+      { title: 'Positions' },
+    );
+    const result = await extractTDSServicesFromDataProduct(
+      makeViewerStateStub([], undefined, [makeApgState('group1', [apState])]),
+    );
+    const apService = result.find((s) => s.title === 'Positions');
+    expect(apService?.columns[0]?.relationalType).toBe('VARCHAR(32)');
+    expect(apService?.columns[1]?.relationalType).toBe('DECIMAL(18,4)');
   });
 
   test('falls back to artifact relationType when state relationType is undefined', async () => {

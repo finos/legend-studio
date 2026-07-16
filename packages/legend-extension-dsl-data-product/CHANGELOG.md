@@ -1,5 +1,46 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.96
+
+### Patch Changes
+
+- [#5327](https://github.com/finos/legend-studio/pull/5327) [`afa2101`](https://github.com/finos/legend-studio/commit/afa21014369fcc765dd6b496180d59c73ab9ee88) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fix entitlements timeline to correctly match tasks for non-AdhocTeam consumers, cascade denial from PM to subsequent steps, fall back to contract state when tasks are absent, and recognize all terminal task statuses as complete.
+
+## 0.0.95
+
+### Patch Changes
+
+- [#5322](https://github.com/finos/legend-studio/pull/5322) [`4f26b84`](https://github.com/finos/legend-studio/commit/4f26b84f698bfbbeaa2e3d6f312cb0da162b144d) ([@kelly-thai](https://github.com/kelly-thai)) - Use Vendor External stereotype to determine internal/external tag display in Marketplace UI, rather than data product type
+
+- [#5318](https://github.com/finos/legend-studio/pull/5318) [`9973d05`](https://github.com/finos/legend-studio/commit/9973d05d7ac130d9323b61fa7701cd77003bc74e) ([@bojja-gs](https://github.com/bojja-gs)) - Add optional `onLogTelemetryEvent` hook on `LegendAIChat` and emit `legend-ai.*` events (assistant opened, question asked, response received, feedback submitted) from the data product and data space viewers. Only non-sensitive metadata is logged — never the raw question text or queried values.
+
+- [#5320](https://github.com/finos/legend-studio/pull/5320) [`4781035`](https://github.com/finos/legend-studio/commit/47810354130f34911088a6c8aae12b071cb6e9fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Restrict the producer-side "Open in Legend Query" action on ingest definitions to data product owners. Non-owners now see the action disabled with an explanatory tooltip, and the Producer Info section shows an informational notice with a `Learn more` link (backed by the new `PRODUCER_QUERYING_ENTITLEMENTS` documentation key) pointing to querying-entitlements documentation.
+
+- [#5311](https://github.com/finos/legend-studio/pull/5311) [`73a9cbb`](https://github.com/finos/legend-studio/commit/73a9cbb8cc6c4ef08db17247437cb36dca16c941) ([@jackp5150](https://github.com/jackp5150)) - Added user option for MAPG contract creation in marketplace
+
+- [#5320](https://github.com/finos/legend-studio/pull/5320) [`4781035`](https://github.com/finos/legend-studio/commit/47810354130f34911088a6c8aae12b071cb6e9fc) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Refactor `UserRenderer`: `userId` is now required, and the presentation props (`className`, `appendComma`, `disableOnClick`, `onFinishedLoadingCallback`) have been grouped under a new `options` prop of type `UserRendererOptions`. Add a new `hideIfNotFound` option to render nothing when the user cannot be resolved via `getOrFetchUser`.
+
+## 0.0.94
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a `Producer Info` section to the data product viewer that lists ingestion datasets per access point group (APG), with a clickable ingest definition link (for SDLC-deployed data products), producer environment, and a `Query` action that opens the dataset in Legend Query via the new `INGEST_QUERY` route. Show an `Owner` label when the current user is in `dataProductOwners`.
+
+- [#5304](https://github.com/finos/legend-studio/pull/5304) [`94396ff`](https://github.com/finos/legend-studio/commit/94396ff55594add48bce91c17ae16c43bbf961b4) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix zipkin for AP as REST endpoint with a valid server
+
+## 0.0.93
+
+### Patch Changes
+
+- [#5303](https://github.com/finos/legend-studio/pull/5303) [`ffae4ed`](https://github.com/finos/legend-studio/commit/ffae4ed432fde501ffbfac818cdda80ed5a23b11) ([@TharunRajeev](https://github.com/TharunRajeev)) - Removed WorkflowGuid from task schema
+
+- [#5293](https://github.com/finos/legend-studio/pull/5293) [`1a9b8d4`](https://github.com/finos/legend-studio/commit/1a9b8d45cbe07b09757cda297bc5c65e77917a0a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Org membership check after RMS data access request creation for Request button state update.
+
+- [#5297](https://github.com/finos/legend-studio/pull/5297) [`f07d638`](https://github.com/finos/legend-studio/commit/f07d638e0ecd5db3847bebd597cf37cfaee4af23) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve Legend Marketplace AI and Legend AI orchestrator with access point querying, better model context enrichment, and deterministic entity resolution.
+  Improve AP queries with advanced analytics embedded on results and ML implementations to pick better AP.
+
+- [#5296](https://github.com/finos/legend-studio/pull/5296) [`262684e`](https://github.com/finos/legend-studio/commit/262684e92e611cb1d6910b58ba2b7796b3de9c27) ([@TharunRajeev](https://github.com/TharunRajeev)) - Support RMS entitlements flow when Org Admin is the data owner.
+
 ## 0.0.92
 
 ### Patch Changes

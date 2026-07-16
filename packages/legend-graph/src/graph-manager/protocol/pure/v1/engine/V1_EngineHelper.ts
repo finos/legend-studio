@@ -38,6 +38,8 @@ import {
   QueryDataProductModelAccessExecutionContextInfo,
   QueryDataProductLakehouseExecutionContext,
   QueryDataProductLakehouseExecutionContextInfo,
+  QueryIngestExecutionContext,
+  QueryIngestExecutionContextInfo,
 } from '../../../../../graph-manager/action/query/Query.js';
 import {
   type V1_LightQuery,
@@ -49,6 +51,7 @@ import {
   V1_DataProductNativeExecutionContext,
   V1_DataProductModelAccessExecutionContext,
   V1_DataProductLakehouseExecutionContext,
+  V1_QueryIngestExecutionContext,
 } from './query/V1_Query.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import { DEPRECATED__ServiceTestResult } from '../../../../../graph-manager/action/service/DEPRECATED__ServiceTestResult.js';
@@ -231,6 +234,11 @@ export const V1_buildExecutionContext = (
     exec.accessPointId = protocolExecContext.accessPointId;
     exec.accessGroupId = protocolExecContext.accessGroupId;
     return exec;
+  } else if (protocolExecContext instanceof V1_QueryIngestExecutionContext) {
+    const exec = new QueryIngestExecutionContext();
+    exec.ingestDefinitionPath = protocolExecContext.ingestDefinitionPath;
+    exec.dataSet = protocolExecContext.dataSet;
+    return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
 };
@@ -281,6 +289,11 @@ export const V1_buildExecutionContextInfo = (
     exec.dataProductPath = v1_execContext.dataProductPath;
     exec.accessPointId = v1_execContext.accessPointId;
     exec.accessGroupId = v1_execContext.accessGroupId;
+    return exec;
+  } else if (v1_execContext instanceof V1_QueryIngestExecutionContext) {
+    const exec = new QueryIngestExecutionContextInfo();
+    exec.ingestDefinitionPath = v1_execContext.ingestDefinitionPath;
+    exec.dataSet = v1_execContext.dataSet;
     return exec;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');
@@ -406,6 +419,11 @@ export const V1_transformQueryExecutionContext = (
     protocol.dataProductPath = execContext.dataProductPath;
     protocol.accessPointId = execContext.accessPointId;
     protocol.accessGroupId = execContext.accessGroupId;
+    return protocol;
+  } else if (execContext instanceof QueryIngestExecutionContext) {
+    const protocol = new V1_QueryIngestExecutionContext();
+    protocol.ingestDefinitionPath = execContext.ingestDefinitionPath;
+    protocol.dataSet = execContext.dataSet;
     return protocol;
   }
   throw new UnsupportedOperationError('Unsupported query execution context');

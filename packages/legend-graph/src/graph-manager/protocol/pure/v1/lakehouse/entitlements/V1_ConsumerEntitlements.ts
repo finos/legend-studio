@@ -62,13 +62,15 @@ export class V1_InvalidateDataContractResponse {
   requestId!: string;
 }
 
-// -------------------------------------- Lite Data Contracts ------------------------------------------
+// -------------------------------------- Lite Access Requests (base) ----------------------------------
 
-export class V1_LiteDataContract {
-  description!: string;
+/**
+ * Base class for lightweight access request representations (contracts and data requests)
+ * used in the pending tasks grid.
+ */
+export class V1_LiteAccessRequest {
   guid!: string;
-  version!: number;
-  state!: V1_ContractState;
+  description!: string;
   members: V1_ContractUserMembership[] = [];
   consumer!: V1_OrganizationalScope;
   createdBy!: string;
@@ -77,6 +79,19 @@ export class V1_LiteDataContract {
   resourceType!: V1_ResourceType;
   deploymentId!: number;
   accessPointGroup?: string;
+}
+
+// -------------------------------------- Lite Data Contracts ------------------------------------------
+
+export class V1_LiteDataContract extends V1_LiteAccessRequest {
+  version!: number;
+  state!: V1_ContractState;
+}
+
+// -------------------------------------- Lite Data Access Requests ------------------------------------
+
+export class V1_LiteDataAccessRequest extends V1_LiteAccessRequest {
+  state!: string;
 }
 
 export class V1_LiteDataContractsResponse {
@@ -190,16 +205,33 @@ export class V1_ContractUserEventDataProducerPayload extends V1_ContractUserEven
   taskId!: string;
 }
 
-export class V1_ContractUserEventRecord {
+export abstract class V1_PendingTaskRecord {
   taskId!: string;
-  dataContractId!: string;
   status!: V1_UserApprovalStatus;
   consumer!: string;
-  eventPayload!: V1_ContractUserEventPayload | undefined;
   type!: V1_ApprovalType;
+
+  abstract get accessRequestId(): string;
+}
+
+export class V1_ContractUserEventRecord extends V1_PendingTaskRecord {
+  dataContractId!: string;
+  eventPayload!: V1_ContractUserEventPayload | undefined;
   effectiveFrom!: string;
   effectiveTo!: string;
   isEscalated!: boolean;
+
+  override get accessRequestId(): string {
+    return this.dataContractId;
+  }
+}
+
+export class V1_DataRequestUserEventRecord extends V1_PendingTaskRecord {
+  dataRequestId!: string;
+
+  override get accessRequestId(): string {
+    return this.dataRequestId;
+  }
 }
 
 export class V1_PendingTasksResponse {

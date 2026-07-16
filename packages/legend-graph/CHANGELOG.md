@@ -1,5 +1,35 @@
 # @finos/legend-graph
 
+## 32.6.17
+
+### Patch Changes
+
+- [#5327](https://github.com/finos/legend-studio/pull/5327) [`afa2101`](https://github.com/finos/legend-studio/commit/afa21014369fcc765dd6b496180d59c73ab9ee88) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Obsolete to V1_WorkflowTaskAction.
+
+## 32.6.16
+
+### Patch Changes
+
+- [#5316](https://github.com/finos/legend-studio/pull/5316) [`9ccf319`](https://github.com/finos/legend-studio/commit/9ccf319113f7d54cd5aacd85372120b9b904402b) ([@jackp5150](https://github.com/jackp5150)) - Update axios version to 1.16.0
+
+- [#5313](https://github.com/finos/legend-studio/pull/5313) [`c12ac4b`](https://github.com/finos/legend-studio/commit/c12ac4b0d57c66f71beba9fd4fbfb61d3917e6e5) ([@ad-gs](https://github.com/ad-gs)) - Add the `Compute` packageable element to the graph layer (metamodel, V1 protocol, builders, serialization, and change-detection observers).
+
+## 32.6.15
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `IngestExecutionContext` (`V1_QueryIngestExecutionContext` / `QueryIngestExecutionContext`) as a new `QueryExecutionContext` type with `ingestDefinitionPath` and `dataSet` fields.
+
+  Add an `INGEST_QUERY` route (`/ingest/:gav/:ingestDefinitionPath/:dataSet`) to Legend Query with a scaffolded `IngestQueryCreator` that fetches only the ingest definition entity from Depot (no full graph build) and opens the editor against an `IngestLegendQueryBuilderState` (extends `AccessorQueryBuilderState`).
+
+- [#5304](https://github.com/finos/legend-studio/pull/5304) [`94396ff`](https://github.com/finos/legend-studio/commit/94396ff55594add48bce91c17ae16c43bbf961b4) ([@mrudula-gs](https://github.com/mrudula-gs)) - Fix zipkin for AP as REST endpoint with a valid server
+
+## 32.6.14
+
+### Patch Changes
+
+- [#5303](https://github.com/finos/legend-studio/pull/5303) [`ffae4ed`](https://github.com/finos/legend-studio/commit/ffae4ed432fde501ffbfac818cdda80ed5a23b11) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add model types, serialization schemas, and deserializers for pending data request task entries and responses.
+
 ## 32.6.13
 
 ### Patch Changes

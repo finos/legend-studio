@@ -221,6 +221,23 @@ export {
   V1_AppDirOwner,
   V1_DataProductOwnerType,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/V1_DataProduct.js';
+export {
+  V1_COMPUTE_ELEMENT_PROTOCOL_TYPE,
+  V1_Compute,
+  V1_AppDirComputeOwner,
+  V1_ComputeSpecification,
+  V1_ComputeSpecificationType,
+  V1_UnknownComputeSpecification,
+  V1_SnowflakeComputeSpecification,
+  V1_SnowflakeWarehouseType,
+  V1_SnowflakeWarehouseSize,
+  V1_SnowflakeResourceConstraint,
+  V1_SnowflakeScalingPolicy,
+  V1_DatabricksComputeSpecification,
+  V1_DatabricksClusterSize,
+  V1_DatabricksSpotInstancePolicy,
+  V1_DatabricksTag,
+} from './graph-manager/protocol/pure/v1/model/packageableElements/compute/V1_Compute.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/dataProduct/test/V1_DataProductTestSuite.js';
 export * from './graph-manager/protocol/pure/v1/model/data/V1_DataResolver.js';
@@ -395,7 +412,10 @@ export {
   V1_observe_DataContract,
   V1_observe_LiteDataContract,
 } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsObserver.js';
-export { V1_transformDataContractToLiteDatacontract } from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsUtils.js';
+export {
+  V1_transformDataContractToLiteDatacontract,
+  V1_transformDataRequestWithWorkflowToLiteDataAccessRequest,
+} from './graph-manager/protocol/pure/v1/lakehouse/helpers/V1_ConsumerEntitlementsUtils.js';
 export {
   V1_deserializeIngestEnvironment,
   V1_deserializeProducerEnvironment,
@@ -777,6 +797,21 @@ export {
   DataProductOwner,
   AppDirOwner,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
+export {
+  Compute,
+  AppDirComputeOwner,
+  ComputeSpecification,
+  UnknownComputeSpecification,
+  SnowflakeComputeSpecification,
+  SnowflakeWarehouseType,
+  SnowflakeWarehouseSize,
+  SnowflakeResourceConstraint,
+  SnowflakeScalingPolicy,
+  DatabricksComputeSpecification,
+  DatabricksClusterSize,
+  DatabricksSpotInstancePolicy,
+  DatabricksTag,
+} from './graph/metamodel/pure/compute/Compute.js';
 export * from './graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 export * from './graph/metamodel/pure/data/DataResolver.js';

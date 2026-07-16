@@ -1,5 +1,38 @@
 # @finos/legend-query-builder
 
+## 4.18.25
+
+## 4.18.24
+
+### Patch Changes
+
+- [#5314](https://github.com/finos/legend-studio/pull/5314) [`e3c5423`](https://github.com/finos/legend-studio/commit/e3c54233aca91aa21dbf0ecba957bcc49951af27) ([@jackp5150](https://github.com/jackp5150)) - Adds optimizations to DataProductEditor APG viewer to handle rendering 600+ aps in an access point group while preventing crashes and high latency.
+
+- [#5319](https://github.com/finos/legend-studio/pull/5319) [`3940acf`](https://github.com/finos/legend-studio/commit/3940acf9ae66585751c958fd28f5e34b23c41b6a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Light-theme visual fixes for Query Builder (hosted in Studio):
+
+  - `legend-art`: form input / textarea and the `input--dark` compat alias now use `--color-border-default` for their border instead of `--color-bg-input` (which is white in light theme and made fields invisible on modal / elevated surfaces).
+  - `legend-art`: light-theme `--color-text-disabled` remapped from `light-grey-400` to `dark-grey-500` so disabled controls stay perceptibly "off" while remaining legible on `bg-panel` and `bg-elevated`.
+  - `legend-query-builder`: header `Advanced` / `Help...` pills, the selected Fetch-Structure mode pill, and `QueryBuilderPanelIssueCountBadge` now use `--color-text-on-accent` for text sitting on saturated fills (was `--color-text-secondary` / `--color-text-primary`, unreadable in light theme).
+  - `legend-application-studio`: promoted the moon/sun `ColorThemeToggle` to production. Removed the now-unused `STUDIO_NON_PRODUCTION_COLOR_THEMES` gating and the `NonProductionFeatureFlag` check in the toggle — light theme is enabled for all users.
+
+## 4.18.23
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a `Producer Info` section to the data product viewer that lists ingestion datasets per access point group (APG), with a clickable ingest definition link (for SDLC-deployed data products), producer environment, and a `Query` action that opens the dataset in Legend Query via the new `INGEST_QUERY` route. Show an `Owner` label when the current user is in `dataProductOwners`.
+
+- [#5299](https://github.com/finos/legend-studio/pull/5299) [`d0887f7`](https://github.com/finos/legend-studio/commit/d0887f7ed749ceb55926087226f4cb565f0ec18a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Tokenize Query Builder styles onto the two-tier semantic color system so it themes correctly under both dark and light themes (instead of rendering as a dark island in Studio's light theme). Type badges, status/error states, focus rings, tab indicators, and muted text now use semantic tokens; stable categorical colors (visualization node schemes, SQL syntax highlighting, query/test labels) are kept theme-agnostic. Also fixes three latent references to undefined palette variables (`--color-dark-grey-0`, `--color-dark-grey-180`, `--color-light-grey-500`).
+
+## 4.18.22
+
+### Patch Changes
+
+- [#5301](https://github.com/finos/legend-studio/pull/5301) [`e24d0a8`](https://github.com/finos/legend-studio/commit/e24d0a8c6d663f2a87145a413d2130064f752abe) ([@aormerod-gs](https://github.com/aormerod-gs)) - Fix `percentile()` aggregate emitting `Decimal` instead of `Float` for the percentile argument.
+
+  `buildAggregateExpression` was creating the percentile `PrimitiveInstanceValue` with `PrimitiveType.NUMBER` (the abstract supertype). The V1 transformer has no direct wire representation for `Number` and intentionally falls back to `Decimal`, producing `{"_type":"decimal"}` → PURE grammar `0.8D`. The Engine correctly rejects this because the registered signature is `percentile(Number[*], Float[1], ...)` — `Decimal` and `Float` are distinct concrete subtypes.
+
+  Fix: change the generic type to `PrimitiveType.FLOAT` so the transformer takes the `FLOAT` branch → `{"_type":"float"}` → `0.8` → matches `Float[1]`.
+
 ## 4.18.21
 
 ## 4.18.20

@@ -1,5 +1,24 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.66
+
+## 0.3.65
+
+## 0.3.64
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix owners apis in lakehouse.
+  Add EntityWithOrigin to legend-storage.
+
+## 0.3.63
+
+### Patch Changes
+
+- [#5293](https://github.com/finos/legend-studio/pull/5293) [`1a9b8d4`](https://github.com/finos/legend-studio/commit/1a9b8d45cbe07b09757cda297bc5c65e77917a0a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Org membership check after RMS data access request creation for Request button state update.
+
+- [#5303](https://github.com/finos/legend-studio/pull/5303) [`ffae4ed`](https://github.com/finos/legend-studio/commit/ffae4ed432fde501ffbfac818cdda80ed5a23b11) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add model types, serialization schemas, and deserializers for pending data request task entries and responses.
+
 ## 0.3.62
 
 ## 0.3.61

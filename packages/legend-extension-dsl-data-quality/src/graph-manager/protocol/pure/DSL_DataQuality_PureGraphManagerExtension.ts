@@ -92,6 +92,11 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
     graph: PureModel,
     options: DQReconciliationInputOptions,
   ): Promise<ExecutionResult>;
+
+  abstract generateReconciliationPlan(
+    graph: PureModel,
+    options: DQReconciliationInputOptions,
+  ): Promise<RawExecutionPlan>;
 }
 
 export const getDataQualityPureGraphManagerExtension = (

@@ -18,6 +18,7 @@ import { test, describe, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import {
   buildConversationHistory,
+  classifyResponseOutcome,
   buildGenerationFailureMessage,
   buildExecutionErrorMessage,
   updateLastAssistant,
@@ -26,27 +27,42 @@ import {
   finishWithThinkingError,
   classifyError,
   sanitizeJoinOrderBy,
+  sanitizeJoinSameKeyColumns,
   sanitizeLiteralColumns,
   stripGuessedNonDateServiceParams,
   ensureDateParameters,
   detectMissingServiceParams,
   buildMissingParamsWarning,
-  preFilterServicesByRelevance,
   ensureSafeLimit,
+  ensurePureSafetyLimit,
+  hasNestedPCalls,
+  detectUnsupportedEnginePattern,
+  supplementMissingCoverage,
+  applyMultiTurnBias,
+  categorizeExecutionError,
+  ExecutionErrorCategory,
 } from '../LegendAIChatProcessors.js';
+import { splitIdentifierTokens } from '../../LegendAIDocEnrichment.js';
+import {
+  preFilterServicesByRelevance,
+  isFuzzyMatch,
+  levenshteinDistance,
+} from '../../LegendAIServiceRetrieval.js';
 import {
   type LegendAIMessage,
-  type LegendAIAssistantMessage,
   type TDSServiceSchema,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
   LegendAIErrorType,
   LegendAIServiceError,
+  LegendAIUnsupportedEngineShapeError,
+  LegendAIResponseOutcome,
 } from '../../LegendAITypes.js';
 import {
   TEST__createMockSetter,
   TEST__makeAssistantMessage,
+  TEST__getAssistantMessage,
 } from '../../__test-utils__/LegendAITestUtils.js';
 
 describe(unitTest('buildConversationHistory'), () => {
@@ -81,6 +97,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -112,6 +129,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -123,7 +141,7 @@ describe(unitTest('buildConversationHistory'), () => {
     ]);
   });
 
-  test('skips pairs without sql or textAnswer', () => {
+  test('includes generation failures in history', () => {
     const messages: LegendAIMessage[] = [
       { id: 'u1', role: LegendAIMessageRole.USER, text: 'bad query' },
       {
@@ -143,9 +161,13 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
-    expect(buildConversationHistory(messages)).toEqual([]);
+    const history = buildConversationHistory(messages);
+    expect(history).toHaveLength(1);
+    expect(history[0]?.sql).toBe('(generation failed)');
+    expect(history[0]?.resultSummary).toBe('ERROR: Something failed');
   });
 
   test('handles multiple conversation turns', () => {
@@ -168,6 +190,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
       { id: 'u2', role: LegendAIMessageRole.USER, text: 'q2' },
       {
@@ -187,6 +210,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -223,6 +247,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -253,6 +278,7 @@ describe(unitTest('buildConversationHistory'), () => {
         suggestedQueries: [],
         fallbackAction: null,
         errorType: null,
+        queriedAccessPointGroups: [],
       },
       { id: 'u1', role: LegendAIMessageRole.USER, text: 'q' },
     ];
@@ -413,6 +439,25 @@ describe(unitTest('buildExecutionErrorMessage'), () => {
     const result = buildExecutionErrorMessage(err, noParamSvcs);
     expect(result).not.toContain('Required parameters:');
   });
+
+  test('shows clear message for rename column collision error', () => {
+    const err =
+      "no viable alternative at input '->meta::pure::functions::relation::rename(~property_id,~property_id_oh)->meta::pure::functions::relation::rename(~owner'";
+    const result = buildExecutionErrorMessage(err, []);
+    expect(result).toContain('Cross-access-point JOINs');
+    expect(result).toContain('not yet supported');
+    expect(result).toContain('querying each access point separately');
+    expect(result).not.toContain('rename(~');
+  });
+
+  test('shows clear message for Timestamp vs String type mismatch', () => {
+    const err =
+      "Can't find a match for function 'greaterThanEqual(Timestamp[0..1],String[1])'.";
+    const result = buildExecutionErrorMessage(err, []);
+    expect(result).toContain('Date comparison type mismatch');
+    expect(result).toContain('Timestamp');
+    expect(result).not.toContain('greaterThanEqual');
+  });
 });
 describe(unitTest('updateLastAssistant'), () => {
   test('updates the last assistant message', () => {
@@ -424,7 +469,7 @@ describe(unitTest('updateLastAssistant'), () => {
     updateLastAssistant(setter, () => ({ sql: 'SELECT 1' }));
     const msgs = getMessages();
     expect(msgs).toHaveLength(2);
-    expect((msgs[1] as LegendAIAssistantMessage).sql).toBe('SELECT 1');
+    expect(TEST__getAssistantMessage(msgs, 1).sql).toBe('SELECT 1');
   });
 
   test('does nothing if last message is not assistant', () => {
@@ -451,7 +496,7 @@ describe(unitTest('updateLastAssistant'), () => {
       isProcessing: false,
       error: 'fail',
     }));
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.sql).toBe('SELECT 1');
     expect(msg.isProcessing).toBe(false);
     expect(msg.error).toBe('fail');
@@ -463,7 +508,7 @@ describe(unitTest('addThinkingStep'), () => {
     const { setter, getMessages } = TEST__createMockSetter();
     setter([TEST__makeAssistantMessage()]);
     addThinkingStep(setter, 'Analyzing...');
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.thinkingSteps).toHaveLength(1);
     expect(msg.thinkingSteps[0]).toMatchObject({
       label: 'Analyzing...',
@@ -486,7 +531,7 @@ describe(unitTest('addThinkingStep'), () => {
       }),
     ]);
     addThinkingStep(setter, 'Step 2');
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.thinkingSteps).toHaveLength(2);
     expect(msg.thinkingSteps[0]?.status).toBe(LegendAIThinkingStepStatus.DONE);
     expect(msg.thinkingSteps[1]?.status).toBe(
@@ -513,7 +558,7 @@ describe(unitTest('addThinkingStep'), () => {
       }),
     ]);
     addThinkingStep(setter, 'New step');
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.thinkingSteps).toHaveLength(3);
     expect(msg.thinkingSteps[0]?.status).toBe(LegendAIThinkingStepStatus.DONE);
     expect(msg.thinkingSteps[1]?.status).toBe(LegendAIThinkingStepStatus.DONE);
@@ -538,7 +583,7 @@ describe(unitTest('completeThinkingSteps'), () => {
       }),
     ]);
     completeThinkingSteps(setter);
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.thinkingSteps[0]?.status).toBe(LegendAIThinkingStepStatus.DONE);
   });
 
@@ -562,7 +607,7 @@ describe(unitTest('completeThinkingSteps'), () => {
       }),
     ]);
     completeThinkingSteps(setter);
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.thinkingSteps[0]?.status).toBe(LegendAIThinkingStepStatus.DONE);
     expect(msg.thinkingSteps[1]?.status).toBe(LegendAIThinkingStepStatus.ERROR);
     expect(msg.thinkingSteps[2]?.status).toBe(LegendAIThinkingStepStatus.DONE);
@@ -585,7 +630,7 @@ describe(unitTest('finishWithThinkingError'), () => {
     ]);
     const fakeStartTime = Date.now() - 2000;
     finishWithThinkingError(setter, 'Something failed', fakeStartTime);
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.thinkingSteps[0]?.status).toBe(LegendAIThinkingStepStatus.ERROR);
     expect(msg.error).toBe('Something failed');
     expect(msg.errorType).toBeNull();
@@ -597,7 +642,7 @@ describe(unitTest('finishWithThinkingError'), () => {
     const { setter, getMessages } = TEST__createMockSetter();
     setter([TEST__makeAssistantMessage()]);
     finishWithThinkingError(setter, 'x'.repeat(1000), Date.now());
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.error?.length).toBeLessThanOrEqual(500);
   });
 
@@ -606,7 +651,7 @@ describe(unitTest('finishWithThinkingError'), () => {
     setter([TEST__makeAssistantMessage()]);
     const fakeStartTime = Date.now() - 5000;
     finishWithThinkingError(setter, 'err', fakeStartTime);
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     const duration = parseFloat(msg.thinkingDuration ?? '0');
     expect(duration).toBeGreaterThanOrEqual(4);
     expect(duration).toBeLessThan(10);
@@ -621,7 +666,7 @@ describe(unitTest('finishWithThinkingError'), () => {
       Date.now(),
       LegendAIErrorType.PERMISSION,
     );
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.errorType).toBe(LegendAIErrorType.PERMISSION);
   });
 
@@ -629,7 +674,7 @@ describe(unitTest('finishWithThinkingError'), () => {
     const { setter, getMessages } = TEST__createMockSetter();
     setter([TEST__makeAssistantMessage()]);
     finishWithThinkingError(setter, 'generic error', Date.now());
-    const msg = getMessages()[0] as LegendAIAssistantMessage;
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
     expect(msg.errorType).toBeNull();
   });
 });
@@ -1330,5 +1375,906 @@ describe(unitTest('buildGenerationFailureMessage — parameterSchemas'), () => {
     );
     expect(result).toContain('businessDate (StrictDate)');
     expect(result).toContain('region (String)');
+  });
+});
+
+describe(unitTest('sanitizeJoinSameKeyColumns'), () => {
+  test('returns unchanged SQL when no JOIN present', () => {
+    const sql = `SELECT "id", "name" FROM p('dp::AP.VALUES')`;
+    expect(sanitizeJoinSameKeyColumns(sql)).toBe(sql);
+  });
+
+  test('returns unchanged when join keys have different names', () => {
+    const sql = [
+      'SELECT a."detailId", b."id"',
+      "FROM p('dp::AP.LEFT') AS a",
+      'JOIN p(\'dp::AP.RIGHT\') AS b ON a."detailId" = b."id"',
+    ].join('\n');
+    expect(sanitizeJoinSameKeyColumns(sql)).toBe(sql);
+  });
+
+  test('uses fallback column list when no schemas provided', () => {
+    const sql = [
+      'SELECT pv."property_id", oh."owner"',
+      "FROM p('dp::SHARE.PROPERTY_VALUES') AS pv",
+      'JOIN p(\'dp::SHARE.OWNERSHIP_HISTORY\') AS oh ON pv."property_id" = oh."property_id"',
+    ].join('\n');
+    const result = sanitizeJoinSameKeyColumns(sql);
+    expect(result).toContain(
+      '(SELECT "property_id" AS "oh_property_id", * FROM p(\'dp::SHARE.OWNERSHIP_HISTORY\')) AS oh',
+    );
+    expect(result).toContain('oh."oh_property_id"');
+    expect(result).not.toContain('= oh."property_id"');
+  });
+
+  test('uses explicit column list when schemas match', () => {
+    const sql = [
+      'SELECT pv."property_id", oh."owner"',
+      "FROM p('dp::SHARE.PROPERTY_VALUES') AS pv",
+      'JOIN p(\'dp::SHARE.OWNERSHIP_HISTORY\') AS oh ON pv."property_id" = oh."property_id"',
+    ].join('\n');
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'Property Values',
+        pattern: '/PROPERTY_VALUES',
+        columns: [{ name: 'property_id' }, { name: 'address' }],
+        parameters: [],
+        dataProductPath: 'dp::SHARE',
+      },
+      {
+        title: 'Ownership History',
+        pattern: '/OWNERSHIP_HISTORY',
+        columns: [
+          { name: 'property_id' },
+          { name: 'owner' },
+          { name: 'from_date' },
+        ],
+        parameters: [],
+        dataProductPath: 'dp::SHARE',
+      },
+    ];
+    const result = sanitizeJoinSameKeyColumns(sql, services);
+    expect(result).toContain(
+      '(SELECT "property_id" AS "oh_property_id", "owner", "from_date" FROM p(\'dp::SHARE.OWNERSHIP_HISTORY\')) AS oh',
+    );
+    expect(result).toContain('oh."oh_property_id"');
+    expect(result).not.toContain('SELECT *');
+  });
+
+  test('handles LEFT JOIN with same key', () => {
+    const sql = [
+      'SELECT a."id", b."value"',
+      "FROM p('dp::AP.A') AS a",
+      'LEFT JOIN p(\'dp::AP.B\') AS b ON a."id" = b."id"',
+    ].join('\n');
+    const result = sanitizeJoinSameKeyColumns(sql);
+    expect(result).toContain('"id" AS "b_id"');
+    expect(result).toContain('b."b_id"');
+  });
+
+  test('handles case-insensitive JOIN keyword', () => {
+    const sql = [
+      'SELECT a."id", b."name"',
+      "FROM p('dp::AP.A') AS a",
+      'join p(\'dp::AP.B\') AS b ON a."id" = b."id"',
+    ].join('\n');
+    const result = sanitizeJoinSameKeyColumns(sql);
+    expect(result).toContain('"id" AS "b_id"');
+  });
+
+  test('leaves already-subqueried right side unchanged', () => {
+    const sql = [
+      'SELECT a."id", b."b_id"',
+      "FROM p('dp::AP.A') AS a",
+      'JOIN (SELECT "id" AS "b_id", "val" FROM p(\'dp::AP.B\')) AS b ON a."id" = b."b_id"',
+    ].join('\n');
+    expect(sanitizeJoinSameKeyColumns(sql)).toBe(sql);
+  });
+
+  test('handles real-world property valuation with schemas', () => {
+    const sql = [
+      'SELECT',
+      '  pv."property_id",',
+      '  pv."address",',
+      '  oh."owner",',
+      '  oh."from_date"',
+      "FROM p('ai_training::PROPERTY_VALUATION_SHARE.PROPERTY_VALUES') AS pv",
+      "JOIN p('ai_training::PROPERTY_VALUATION_SHARE.OWNERSHIP_HISTORY') AS oh",
+      '  ON pv."property_id" = oh."property_id"',
+      'LIMIT 10',
+    ].join('\n');
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'Property Values',
+        pattern: '/PROPERTY_VALUES',
+        columns: [
+          { name: 'property_id' },
+          { name: 'address' },
+          { name: 'current_value' },
+        ],
+        parameters: [],
+        dataProductPath: 'ai_training::PROPERTY_VALUATION_SHARE',
+      },
+      {
+        title: 'Ownership History',
+        pattern: '/OWNERSHIP_HISTORY',
+        columns: [
+          { name: 'property_id' },
+          { name: 'owner' },
+          { name: 'from_date' },
+          { name: 'to_date' },
+        ],
+        parameters: [],
+        dataProductPath: 'ai_training::PROPERTY_VALUATION_SHARE',
+      },
+    ];
+    const result = sanitizeJoinSameKeyColumns(sql, services);
+    expect(result).toContain(
+      '"property_id" AS "oh_property_id", "owner", "from_date", "to_date"',
+    );
+    expect(result).not.toContain('SELECT *');
+    expect(result).toContain('oh."oh_property_id"');
+    expect(result).toContain('pv."property_id"');
+  });
+});
+
+describe(unitTest('ensurePureSafetyLimit'), () => {
+  test('appends ->take(1000) to simple .all()->project() query', () => {
+    const query = 'model::Holdings.all()->project(~[Name: {x | $x.name}])';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(
+      'model::Holdings.all()->project(~[Name: {x | $x.name}])->take(1000)',
+    );
+  });
+
+  test('does not append when ->take() already present', () => {
+    const query =
+      'model::Holdings.all()->project(~[Name: {x | $x.name}])->take(10)';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(query);
+  });
+
+  test('does not append to groupBy aggregation queries', () => {
+    const query =
+      'model::Order.all()->groupBy(~[Category: {x | $x.category}], ~[Count: agg(x | $x.id, y | $y->count())])';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(query);
+  });
+
+  test('does not append to distinct() queries', () => {
+    const query =
+      'model::Product.all()->distinct()->project(~[Name: {x | $x.name}])';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(query);
+  });
+
+  test('does not append to olapGroupBy queries', () => {
+    const query =
+      'model::Order.all()->olapGroupBy(~[Category: {x | $x.category}])';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(query);
+  });
+
+  test('uses custom limit value', () => {
+    const query = 'model::Holdings.all()->project(~[Name: {x | $x.name}])';
+    const result = ensurePureSafetyLimit(query, 500);
+    expect(result).toContain('->take(500)');
+  });
+
+  test('handles filter + project without limit', () => {
+    const query =
+      "model::Holdings.all()->filter({x | $x.country == 'US'})->project(~[Name: {x | $x.name}])";
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toContain('->take(1000)');
+  });
+
+  test('handles sort + no limit', () => {
+    const query =
+      'model::Holdings.all()->project(~[Value: {x | $x.value}])->sort([descending(~Value)])';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toContain('->take(1000)');
+  });
+
+  test('normalizes ->limit(N) to ->take(N)', () => {
+    const query =
+      'model::Holdings.all()->project(~[Name: {x | $x.name}])->limit(10)';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(
+      'model::Holdings.all()->project(~[Name: {x | $x.name}])->take(10)',
+    );
+  });
+
+  test('normalizes ->limit(N) and does not append extra ->take()', () => {
+    const query =
+      "model::Holdings.all()->filter({x | $x.ticker == 'VFINX'})->project(~[Name: {x | $x.name}])->limit(10)";
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(
+      "model::Holdings.all()->filter({x | $x.ticker == 'VFINX'})->project(~[Name: {x | $x.name}])->take(10)",
+    );
+    expect(result).not.toContain('->limit(');
+    expect(result).not.toContain('->take(1000)');
+  });
+
+  test('normalizes ->limit() with spaces', () => {
+    const query =
+      'model::Holdings.all()->project(~[Name: {x | $x.name}])->limit( 25 )';
+    const result = ensurePureSafetyLimit(query);
+    expect(result).toBe(
+      'model::Holdings.all()->project(~[Name: {x | $x.name}])->take(25)',
+    );
+  });
+});
+
+// ─── hasNestedPCalls ──────────────────────────────────────────────────────────
+
+describe(unitTest('hasNestedPCalls'), () => {
+  test('returns false for simple p() in FROM', () => {
+    const sql = `SELECT "col" FROM p('my::DataProduct.ap')`;
+    expect(hasNestedPCalls(sql)).toBe(false);
+  });
+
+  test('returns false for p() in JOIN', () => {
+    const sql = `SELECT a."x" FROM p('my::dp.a') AS a JOIN p('my::dp.b') AS b ON a."id" = b."id"`;
+    expect(hasNestedPCalls(sql)).toBe(false);
+  });
+
+  test('detects p() in IN clause', () => {
+    const sql = `SELECT * FROM p('my::dp.a') WHERE "L" IN (SELECT "L" FROM p('my::dp.a') GROUP BY "L" HAVING COUNT(*) > 5)`;
+    expect(hasNestedPCalls(sql)).toBe(true);
+  });
+
+  test('detects p() in CROSS JOIN subquery', () => {
+    const sql = `SELECT "col", cnt * 100.0 / total FROM p('my::dp.a') CROSS JOIN (SELECT COUNT(*) AS total FROM p('my::dp.a')) AS t`;
+    expect(hasNestedPCalls(sql)).toBe(true);
+  });
+
+  test('detects p() in scalar subquery', () => {
+    const sql = `SELECT "col", COUNT(*) * 100.0 / (SELECT COUNT(*) FROM p('my::dp.a')) AS pct FROM p('my::dp.a') GROUP BY "col"`;
+    expect(hasNestedPCalls(sql)).toBe(true);
+  });
+
+  test('returns false for p() in JOIN subquery (allowed pattern)', () => {
+    const sql = `SELECT a."x" FROM p('my::dp.a') AS a JOIN (SELECT "id" AS "b_id" FROM p('my::dp.b')) AS b ON a."id" = b."b_id"`;
+    expect(hasNestedPCalls(sql)).toBe(false);
+  });
+});
+
+// ─── detectUnsupportedEnginePattern ──────────────────────────────────────────
+
+describe(unitTest('detectUnsupportedEnginePattern'), () => {
+  test('returns undefined for a simple GROUP BY query', () => {
+    const sql = `SELECT "col", COUNT(*) FROM p('my::dp.a') GROUP BY "col"`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('returns undefined for a window over a plain column (no nested aggregate)', () => {
+    const sql = `SELECT "col", ROW_NUMBER() OVER (PARTITION BY "region" ORDER BY "cnt" DESC) AS rn FROM p('my::dp.a')`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('returns undefined for a window over a CTE-aggregated column (the recommended shape)', () => {
+    const sql = `WITH grouped AS (SELECT "col", COUNT(*) AS cnt FROM p('my::dp.a') GROUP BY "col") SELECT "col", cnt, SUM(cnt) OVER () AS total FROM grouped`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('detects SUM(COUNT(*)) OVER () in the same SELECT', () => {
+    const sql = `SELECT "col", COUNT(*) AS cnt, SUM(COUNT(*)) OVER () AS total FROM p('my::dp.a') GROUP BY "col"`;
+    const result = detectUnsupportedEnginePattern(sql);
+    expect(result?.kind).toBe('NESTED_AGGREGATE_IN_WINDOW');
+    expect(result?.hint).toMatch(/CTE/);
+  });
+
+  test('detects AVG(SUM(x)) OVER (PARTITION BY y)', () => {
+    const sql = `SELECT y, AVG(SUM("x")) OVER (PARTITION BY y) FROM p('my::dp.a') GROUP BY y`;
+    const result = detectUnsupportedEnginePattern(sql);
+    expect(result?.kind).toBe('NESTED_AGGREGATE_IN_WINDOW');
+  });
+
+  test('does not flag aggregate-of-aggregate without an OVER clause', () => {
+    // Engine error for this is different; this detector targets the window combo.
+    const sql = `SELECT SUM(COUNT(*)) FROM p('my::dp.a') GROUP BY "col"`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('detects CROSS JOIN LATERAL', () => {
+    const sql = `SELECT r."region", top.x FROM (SELECT DISTINCT "region" FROM p('my::dp.a')) r CROSS JOIN LATERAL (SELECT "x" FROM p('my::dp.a') WHERE "region" = r."region" LIMIT 3) top`;
+    const result = detectUnsupportedEnginePattern(sql);
+    expect(result?.kind).toBe('LATERAL_SUBQUERY');
+    expect(result?.hint).toMatch(/LATERAL/);
+  });
+
+  test('detects bare LATERAL (', () => {
+    const sql = `SELECT * FROM p('my::dp.a'), LATERAL (SELECT 1)`;
+    expect(detectUnsupportedEnginePattern(sql)?.kind).toBe('LATERAL_SUBQUERY');
+  });
+
+  test('detects INNER JOIN LATERAL', () => {
+    const sql = `SELECT * FROM p('my::dp.a') a INNER JOIN LATERAL (SELECT 1) t ON true`;
+    expect(detectUnsupportedEnginePattern(sql)?.kind).toBe('LATERAL_SUBQUERY');
+  });
+
+  test('flags nested-aggregate-in-window before LATERAL when both are present', () => {
+    // Stable rule ordering — nested-aggregate is the more common shape, and
+    // its hint is the more actionable rewrite, so it wins the priority.
+    const sql = `SELECT SUM(COUNT(*)) OVER () FROM p('my::dp.a') CROSS JOIN LATERAL (SELECT 1) t`;
+    expect(detectUnsupportedEnginePattern(sql)?.kind).toBe(
+      'NESTED_AGGREGATE_IN_WINDOW',
+    );
+  });
+
+  test('detects ROUND wrapping a window expression', () => {
+    const sql = `SELECT col, ROUND(cnt * 100.0 / SUM(cnt) OVER (), 2) AS pct FROM grouped`;
+    const result = detectUnsupportedEnginePattern(sql);
+    expect(result?.kind).toBe('WINDOW_INSIDE_FUNCTION_CALL');
+    expect(result?.hint).toMatch(/Materialize/);
+  });
+
+  test('detects CAST wrapping a window expression', () => {
+    const sql = `SELECT CAST(SUM("x") OVER (PARTITION BY y) AS INTEGER) FROM p('my::dp.a')`;
+    expect(detectUnsupportedEnginePattern(sql)?.kind).toBe(
+      'WINDOW_INSIDE_FUNCTION_CALL',
+    );
+  });
+
+  test('detects COALESCE wrapping a window expression', () => {
+    const sql = `SELECT COALESCE(LAG("x") OVER (ORDER BY "y"), 0) FROM p('my::dp.a')`;
+    expect(detectUnsupportedEnginePattern(sql)?.kind).toBe(
+      'WINDOW_INSIDE_FUNCTION_CALL',
+    );
+  });
+
+  test('does not flag ROUND on a plain column from a windowed subquery', () => {
+    // This is the recommended 3-level shape: window materialised as `total`
+    // in a middle SELECT, ROUND applied to plain columns in the outer SELECT.
+    const sql = `SELECT col, ROUND(cnt * 100.0 / total, 2) AS pct FROM (SELECT col, cnt, SUM(cnt) OVER () AS total FROM (SELECT col, COUNT(*) AS cnt FROM p('my::dp.a') GROUP BY col) agg) windowed`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('does not flag a window function used standalone in arithmetic', () => {
+    // Window in arithmetic (without a wrapping function call) is a separate
+    // shape; the engine error message is different and out of scope for this
+    // detector. We deliberately do not flag it.
+    const sql = `SELECT col, cnt + SUM(cnt) OVER () FROM grouped`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('detects aggregate inside a window ORDER BY at the same level as GROUP BY', () => {
+    const sql = `SELECT "GSREGION", "GSDIVISIONNAME", COUNT(*) AS cnt, ROW_NUMBER() OVER (PARTITION BY "GSREGION" ORDER BY COUNT(*) DESC) AS rn FROM p('my::dp.a') GROUP BY "GSREGION", "GSDIVISIONNAME"`;
+    const result = detectUnsupportedEnginePattern(sql);
+    expect(result?.kind).toBe('AGGREGATE_IN_WINDOW_ARGS');
+    expect(result?.hint).toMatch(/Materialize/);
+  });
+
+  test('detects aggregate inside a window PARTITION BY', () => {
+    const sql = `SELECT col, ROW_NUMBER() OVER (PARTITION BY SUM(x) ORDER BY col) FROM p('my::dp.a') GROUP BY col`;
+    expect(detectUnsupportedEnginePattern(sql)?.kind).toBe(
+      'AGGREGATE_IN_WINDOW_ARGS',
+    );
+  });
+
+  test('does not flag a plain column reference inside OVER', () => {
+    // Recommended shape: aggregate is materialised as `cnt` in a CTE, the
+    // window references the plain column — this is the rewrite we coach to.
+    const sql = `SELECT col, cnt, ROW_NUMBER() OVER (ORDER BY cnt DESC) AS rn FROM (SELECT col, COUNT(*) AS cnt FROM p('my::dp.a') GROUP BY col) agg`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+
+  test('does not flag an aggregate that is the window function itself', () => {
+    // `SUM(x) OVER (PARTITION BY y)` — the agg is BEFORE the OVER parens,
+    // not inside them. Engine supports this.
+    const sql = `SELECT SUM(x) OVER (PARTITION BY y) FROM p('my::dp.a')`;
+    expect(detectUnsupportedEnginePattern(sql)).toBeUndefined();
+  });
+});
+
+// ─── levenshteinDistance ─────────────────────────────────────────────────────
+
+describe(unitTest('levenshteinDistance'), () => {
+  test('identical strings have distance 0', () => {
+    expect(levenshteinDistance('government', 'government')).toBe(0);
+  });
+
+  test('single insertion', () => {
+    expect(levenshteinDistance('goverment', 'government')).toBe(1);
+  });
+
+  test('single substitution', () => {
+    expect(levenshteinDistance('governmant', 'government')).toBe(1);
+  });
+
+  test('double error — transposition-like', () => {
+    expect(levenshteinDistance('governement', 'government')).toBe(1);
+  });
+
+  test('completely different strings', () => {
+    expect(levenshteinDistance('abc', 'xyz')).toBe(3);
+  });
+
+  test('empty strings', () => {
+    expect(levenshteinDistance('', '')).toBe(0);
+    expect(levenshteinDistance('abc', '')).toBe(3);
+    expect(levenshteinDistance('', 'abc')).toBe(3);
+  });
+});
+
+// ─── isFuzzyMatch ────────────────────────────────────────────────────────────
+
+describe(unitTest('isFuzzyMatch'), () => {
+  test('exact match returns true', () => {
+    expect(isFuzzyMatch('government', 'government')).toBe(true);
+  });
+
+  test('typo within edit distance 2 returns true', () => {
+    expect(isFuzzyMatch('governement', 'government')).toBe(true);
+  });
+
+  test('missing letter within distance 1 returns true', () => {
+    expect(isFuzzyMatch('goverment', 'government')).toBe(true);
+  });
+
+  test('too many edits returns false', () => {
+    expect(isFuzzyMatch('govnmnt', 'government')).toBe(false);
+  });
+
+  test('length difference > 2 returns false immediately', () => {
+    expect(isFuzzyMatch('gov', 'government')).toBe(false);
+  });
+
+  test('short tokens (≤ 4 chars) use stricter distance 1', () => {
+    // "taxe" vs "taxi" = distance 1 → true (within max 1 for short tokens)
+    expect(isFuzzyMatch('taxe', 'taxi')).toBe(true);
+    // "tazz" vs "taxi" = distance 2, but short tokens only allow 1 → false
+    expect(isFuzzyMatch('tazz', 'taxi')).toBe(false);
+  });
+});
+
+// ─── splitIdentifierTokens ───────────────────────────────────────────────────
+
+describe(unitTest('splitIdentifierTokens'), () => {
+  test('splits camelCase', () => {
+    expect(splitIdentifierTokens('taxIDTypeCD')).toEqual([
+      'tax',
+      'id',
+      'type',
+      'cd',
+    ]);
+  });
+
+  test('splits PascalCase', () => {
+    expect(splitIdentifierTokens('GovernmentIDInfo')).toEqual([
+      'government',
+      'id',
+      'info',
+    ]);
+  });
+
+  test('splits snake_case', () => {
+    expect(splitIdentifierTokens('FISCAL_YEAR_START')).toEqual([
+      'fiscal',
+      'year',
+      'start',
+    ]);
+  });
+
+  test('filters out single-char tokens', () => {
+    // "aB" splits to ["a", "b"] which are both 1-char → filtered out
+    expect(splitIdentifierTokens('aB')).toEqual([]);
+  });
+
+  test('handles mixed delimiters', () => {
+    expect(splitIdentifierTokens('entity-name.value')).toEqual([
+      'entity',
+      'name',
+      'value',
+    ]);
+  });
+});
+
+// ─── preFilterServicesByRelevance — affinity & penalty ───────────────────────
+
+describe(
+  unitTest('preFilterServicesByRelevance — affinity and penalty'),
+  () => {
+    function makeSvc(
+      title: string,
+      columns: string[],
+      description?: string,
+    ): TDSServiceSchema {
+      return {
+        title,
+        pattern: `/${title.toLowerCase()}`,
+        columns: columns.map((name) => ({ name })),
+        parameters: [],
+        ...(description !== undefined ? { description } : {}),
+      };
+    }
+
+    test('domain-specific AP ranks higher than combined table', () => {
+      const svcs = [
+        makeSvc('ENT_EntityCombined', [
+          'entityID',
+          'natnlIdTypeCD',
+          'taxCntryCD',
+        ]),
+        makeSvc('GovernmentIDInfo', ['entityID', 'natnlIdTypeCD', 'govtIDTXT']),
+      ];
+      const result = preFilterServicesByRelevance(
+        'count entities with invalid government identifier',
+        svcs,
+        2,
+      );
+      expect(result[0]?.title).toBe('GovernmentIDInfo');
+    });
+
+    test('fuzzy matching handles typos in question', () => {
+      const svcs = [
+        makeSvc('StateTaxID', ['entityID', 'taxID']),
+        makeSvc('GovernmentIDInfo', ['entityID', 'govtIDTypeCD']),
+      ];
+      // "governement" is a typo for "government"
+      const result = preFilterServicesByRelevance(
+        'show governement identifier data',
+        svcs,
+        2,
+      );
+      expect(result[0]?.title).toBe('GovernmentIDInfo');
+    });
+
+    test('specificity penalty demotes combined tables', () => {
+      const svcs = [
+        makeSvc('ENT_EntityCombined', ['col1', 'col2']),
+        makeSvc('ENT_Entity', ['col1', 'col2']),
+      ];
+      const result = preFilterServicesByRelevance('show entity data', svcs, 2);
+      expect(result[0]?.title).toBe('ENT_Entity');
+    });
+  },
+);
+
+// ─── preFilterServicesByRelevance — BM25 properties ──────────────────────────
+
+describe(unitTest('preFilterServicesByRelevance — BM25 properties'), () => {
+  function makeSvc(
+    title: string,
+    columns: string[],
+    description?: string,
+  ): TDSServiceSchema {
+    return {
+      title,
+      pattern: `/${title.toLowerCase()}`,
+      columns: columns.map((name) => ({ name })),
+      parameters: [],
+      ...(description !== undefined ? { description } : {}),
+    };
+  }
+
+  // BM25's IDF makes a term that appears in only one document worth
+  // dramatically more than a term that appears everywhere. The AP
+  // uniquely containing the rare term should win even though it's
+  // outranked on shared-vocabulary count.
+  test('rare-term IDF outweighs broad-term frequency', () => {
+    const svcs = [
+      makeSvc(
+        'BroadCommonOne',
+        ['common', 'common', 'common'],
+        'common data data data data',
+      ),
+      makeSvc(
+        'BroadCommonTwo',
+        ['common', 'common', 'common'],
+        'common data data data data',
+      ),
+      makeSvc('NicheTransactionRecord', ['transaction'], 'transaction data'),
+    ];
+    const result = preFilterServicesByRelevance(
+      'show me data with transaction',
+      svcs,
+      1,
+    );
+    expect(result[0]?.title).toBe('NicheTransactionRecord');
+  });
+
+  // Tied IDF + tied term frequency → BM25 length normalization breaks
+  // the tie by favouring the shorter (more focused) document.
+  test('length normalization favours the focused document', () => {
+    const svcs = [
+      makeSvc('OrderFocused', ['order']),
+      makeSvc('OrderVerbose', [
+        'order',
+        'extra',
+        'detail',
+        'audit',
+        'noise',
+        'context',
+      ]),
+    ];
+    const result = preFilterServicesByRelevance('order data', svcs, 2);
+    expect(result[0]?.title).toBe('OrderFocused');
+  });
+
+  // BM25 has no native typo tolerance — we layer Levenshtein recall on
+  // top so misspellings still hit the right document.
+  test('typo in query is rewritten to the closest indexed term', () => {
+    const svcs = [
+      makeSvc('Pricing', ['unrelated']),
+      makeSvc('GovernmentRegistry', ['agency', 'jurisdiction']),
+    ];
+    const result = preFilterServicesByRelevance(
+      'show governement records',
+      svcs,
+      2,
+    );
+    expect(result[0]?.title).toBe('GovernmentRegistry');
+  });
+});
+
+// ─── supplementMissingCoverage ───────────────────────────────────────────────
+
+describe(unitTest('supplementMissingCoverage'), () => {
+  function makeSvc(title: string, columns: string[]): TDSServiceSchema {
+    return {
+      title,
+      pattern: `/${title.toLowerCase()}`,
+      columns: columns.map((name) => ({ name })),
+      parameters: [],
+    };
+  }
+
+  test('returns selected as-is when all concepts are covered', () => {
+    const selected = [makeSvc('GovernmentIDInfo', ['govtIDTXT', 'entityID'])];
+    const all = [...selected, makeSvc('Other', ['otherCol'])];
+    const result = supplementMissingCoverage(
+      'show government identifier',
+      selected,
+      all,
+    );
+    expect(result).toHaveLength(1);
+  });
+
+  test('supplements when question concept is missing from selection', () => {
+    const selected = [makeSvc('GovernmentIDInfo', ['govtIDTXT'])];
+    const all = [
+      ...selected,
+      makeSvc('TaxIdToCountryMapping', ['cntryIsoCD', 'natnlIdTypeCD']),
+    ];
+    const result = supplementMissingCoverage(
+      'invalid country mapping for government ID',
+      selected,
+      all,
+    );
+    expect(result).toHaveLength(2);
+    expect(result[1]?.title).toBe('TaxIdToCountryMapping');
+  });
+
+  test('prefers focused AP over combined when supplementing', () => {
+    const selected = [makeSvc('GovernmentIDInfo', ['govtIDTXT'])];
+    const all = [
+      ...selected,
+      makeSvc('ENT_Entity', ['entityName', 'entityID']),
+      makeSvc('ENT_EntityCombined', ['entityName', 'entityID', 'extra']),
+    ];
+    // Question has "entity" + "name" which are uncovered by GovernmentIDInfo.
+    // Both ENT_Entity and ENT_EntityCombined cover those tokens, but
+    // ENT_Entity should be preferred due to the specificity tie-breaker.
+    const result = supplementMissingCoverage(
+      'show entity name for government identifier',
+      selected,
+      all,
+      3, // allow up to 3 so we can see ordering
+    );
+    expect(result.length).toBeGreaterThanOrEqual(2);
+    // The first supplement should be ENT_Entity (non-generic) over ENT_EntityCombined
+    expect(result[1]?.title).toBe('ENT_Entity');
+  });
+
+  test('does not exceed maxTotal', () => {
+    const selected = [makeSvc('A', ['x'])];
+    const all = [
+      ...selected,
+      makeSvc('B', ['country']),
+      makeSvc('C', ['mapping']),
+      makeSvc('D', ['identifier']),
+      makeSvc('E', ['entity']),
+    ];
+    const result = supplementMissingCoverage(
+      'show country mapping identifier entity data',
+      selected,
+      all,
+      2, // maxTotal
+    );
+    expect(result).toHaveLength(2);
+  });
+
+  test('fuzzy matching treats typos as covered', () => {
+    const selected = [makeSvc('GovernmentIDInfo', ['govtIDTXT', 'entityID'])];
+    const all = [...selected, makeSvc('Other', ['otherCol'])];
+    // "governement" (typo) should fuzzy-match "government" from title
+    const result = supplementMissingCoverage(
+      'show governement data',
+      selected,
+      all,
+    );
+    expect(result).toHaveLength(1);
+  });
+});
+
+// ─── applyMultiTurnBias ──────────────────────────────────────────────────────
+
+describe(unitTest('applyMultiTurnBias'), () => {
+  function makeSvc(title: string, pattern: string): TDSServiceSchema {
+    return {
+      title,
+      pattern,
+      columns: [{ name: 'col1' }],
+      parameters: [],
+    };
+  }
+
+  test('returns services unchanged when no history', () => {
+    const services = [makeSvc('A', '/a'), makeSvc('B', '/b')];
+    const result = applyMultiTurnBias(services, []);
+    expect(result.map((s) => s.title)).toEqual(['A', 'B']);
+  });
+
+  test('biases previously-used APs to the front', () => {
+    const services = [
+      makeSvc('Alpha', '/alpha'),
+      makeSvc('Beta', '/beta'),
+      makeSvc('Gamma', '/gamma'),
+    ];
+    const history = [
+      {
+        question: 'previous query',
+        sql: "SELECT * FROM p('com::dp.Beta') LIMIT 10",
+        intent: LegendAIQuestionIntent.DATA_QUERY,
+      },
+    ];
+    const result = applyMultiTurnBias(services, history);
+    // Beta should come first because it was used in previous turn
+    expect(result[0]?.title).toBe('Beta');
+  });
+
+  test('handles multiple APs from previous turns', () => {
+    const services = [
+      makeSvc('A', '/a'),
+      makeSvc('B', '/b'),
+      makeSvc('C', '/c'),
+    ];
+    const history = [
+      {
+        question: 'q1',
+        sql: "SELECT a.x FROM p('dp.A') AS a JOIN p('dp.C') AS c ON a.id = c.id",
+        intent: LegendAIQuestionIntent.DATA_QUERY,
+      },
+    ];
+    const result = applyMultiTurnBias(services, history);
+    // A and C were used, should be first (in some order), B last
+    expect(result[2]?.title).toBe('B');
+  });
+});
+
+// ─── categorizeExecutionError ─────────────────────────────────────────────────
+
+describe(unitTest('categorizeExecutionError'), () => {
+  test('classifies SQL compilation error as SQL_FIXABLE', () => {
+    expect(
+      categorizeExecutionError(
+        'SnowflakeSQLException: SQL compilation error: invalid identifier "col"',
+      ),
+    ).toBe(ExecutionErrorCategory.SQL_FIXABLE);
+  });
+
+  test('classifies __LAKE_ACTION as INFRASTRUCTURE', () => {
+    expect(
+      categorizeExecutionError(
+        'invalid identifier "governmentidinfo_6".__LAKE_ACTION',
+      ),
+    ).toBe(ExecutionErrorCategory.INFRASTRUCTURE);
+  });
+
+  test('classifies access denied as ACCESS', () => {
+    expect(categorizeExecutionError('Insufficient privileges')).toBe(
+      ExecutionErrorCategory.ACCESS,
+    );
+  });
+
+  test('classifies ambiguous column as SQL_FIXABLE', () => {
+    expect(categorizeExecutionError('ambiguous column name "entityID"')).toBe(
+      ExecutionErrorCategory.SQL_FIXABLE,
+    );
+  });
+
+  test('classifies unknown errors as NONE', () => {
+    expect(categorizeExecutionError('Network timeout')).toBe(
+      ExecutionErrorCategory.NONE,
+    );
+  });
+
+  test('prefers structured LegendAIServiceError PERMISSION over message text', () => {
+    const err = new LegendAIServiceError(
+      'Something the engine wrote that does not match any pattern',
+      LegendAIErrorType.PERMISSION,
+    );
+    expect(categorizeExecutionError(err.message, err)).toBe(
+      ExecutionErrorCategory.ACCESS,
+    );
+  });
+
+  test('falls back to pattern table when structured error is non-permission', () => {
+    const err = new LegendAIServiceError(
+      'SnowflakeSQLException: SQL compilation error',
+      LegendAIErrorType.EXECUTION,
+    );
+    expect(categorizeExecutionError(err.message, err)).toBe(
+      ExecutionErrorCategory.SQL_FIXABLE,
+    );
+  });
+
+  test('routes LegendAIUnsupportedEngineShapeError to SQL_FIXABLE so the retry loop fires', () => {
+    // Regression guard: the pre-execution guard's hint text is prose and
+    // intentionally does not match any pattern in EXECUTION_ERROR_RULES.
+    // The subclass check is what makes the retry path engage — without it
+    // the user would see the hint surfaced verbatim instead of an LLM
+    // rewrite of the failing query.
+    const err = new LegendAIUnsupportedEngineShapeError(
+      "The engine's SQL→Pure translator cannot combine an aggregate function with a window function in the same SELECT.",
+    );
+    expect(categorizeExecutionError(err.message, err)).toBe(
+      ExecutionErrorCategory.SQL_FIXABLE,
+    );
+  });
+});
+
+describe(unitTest('classifyResponseOutcome'), () => {
+  test('undefined message is a no-answer', () => {
+    expect(classifyResponseOutcome(undefined)).toBe(
+      LegendAIResponseOutcome.NO_ANSWER,
+    );
+  });
+
+  test('an error message is an error, even with content', () => {
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({ error: 'boom', sql: 'select 1' }),
+      ),
+    ).toBe(LegendAIResponseOutcome.ERROR);
+  });
+
+  test('a fallback action is a no-answer even when a sorry text is set', () => {
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({
+          textAnswer: "Sorry — I couldn't find an answer.",
+          fallbackAction: {
+            label: 'Try the orchestrator',
+            actionId: 'retry',
+          },
+        }),
+      ),
+    ).toBe(LegendAIResponseOutcome.NO_ANSWER);
+  });
+
+  test('a SQL / text / grid answer is answered', () => {
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({ sql: 'select * from t' }),
+      ),
+    ).toBe(LegendAIResponseOutcome.ANSWERED);
+    expect(
+      classifyResponseOutcome(TEST__makeAssistantMessage({ textAnswer: 'Hi' })),
+    ).toBe(LegendAIResponseOutcome.ANSWERED);
+    expect(
+      classifyResponseOutcome(
+        TEST__makeAssistantMessage({
+          gridData: { columnDefs: [], rowData: [] },
+        }),
+      ),
+    ).toBe(LegendAIResponseOutcome.ANSWERED);
+  });
+
+  test('an empty (still-processing) message is a no-answer', () => {
+    expect(classifyResponseOutcome(TEST__makeAssistantMessage())).toBe(
+      LegendAIResponseOutcome.NO_ANSWER,
+    );
   });
 });

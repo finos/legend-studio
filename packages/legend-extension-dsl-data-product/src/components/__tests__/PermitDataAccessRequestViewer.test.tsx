@@ -88,7 +88,6 @@ const createMockPmTask = (
   task.resourceId = 'TestDataProduct';
   task.accessPointGroup = 'TestAPG';
   task.consumer = createMockConsumer();
-  task.workflowGuid = 'wf-1';
   if (action !== undefined) {
     task.action = action;
   }
@@ -109,7 +108,6 @@ const createMockDoTask = (
   task.deploymentId = '12345';
   task.accessPointGroup = 'TestAPG';
   task.consumer = createMockConsumer();
-  task.workflowGuid = 'wf-1';
   if (action !== undefined) {
     task.action = action;
   }

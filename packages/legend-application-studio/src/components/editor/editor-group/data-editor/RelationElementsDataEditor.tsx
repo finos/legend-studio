@@ -30,7 +30,7 @@ import {
   clsx,
   CustomSelectorInput,
 } from '@finos/legend-art';
-import { RelationElement } from '@finos/legend-graph';
+import { RelationElement, RelationRowTestData } from '@finos/legend-graph';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import type {
   RelationElementsDataState,
@@ -99,7 +99,9 @@ const NewRelationElementModal = observer(
           const relationElement = new RelationElement();
           relationElement.paths = [option.value];
           relationElement.columns = option.columns;
-          relationElement.rows = [];
+          const emptyRow = new RelationRowTestData();
+          emptyRow.values = option.columns.map(() => '');
+          relationElement.rows = [emptyRow];
           dataState.addRelationElement(relationElement);
         }
       } else {
@@ -110,7 +112,7 @@ const NewRelationElementModal = observer(
         }
         const relationElement = new RelationElement();
         relationElement.columns = [];
-        relationElement.rows = [];
+        relationElement.rows = [new RelationRowTestData()];
         relationElement.paths = path;
         dataState.addRelationElement(relationElement);
       }

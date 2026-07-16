@@ -36,6 +36,7 @@ import type {
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
   V1_PaginationMetadataRecord,
+  V1_PendingDataRequestTasksResponse,
   V1_PendingTasksResponse,
   V1_TaskResponse,
   V1_TaskStatus,
@@ -291,17 +292,6 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
-  createPermitDataRequest = (
-    payload: PlainObject,
-    token: string | undefined,
-  ): Promise<PlainObject> =>
-    this.post(
-      `${this._dataAccessRequests()}`,
-      payload,
-      undefined,
-      this._token(token),
-    );
-
   getDataAccessRequestsCreatedBy = (
     userId: string,
     token: string | undefined,
@@ -353,6 +343,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       undefined,
       this._token(token),
+    );
+
+  getPendingDataRequestTasks = (
+    user: string | undefined,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_PendingDataRequestTasksResponse>> =>
+    this.get(
+      `${this._dataAccessRequests()}/tasks/pending`,
+      {},
+      this._token(token),
+      { user },
     );
 
   // TODO: add implementations
@@ -531,7 +532,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject> =>
     this.get(
-      `${this.baseUrl}/refData/dataOwner/deploymentId/${deploymentId}`,
+      `${this.baseUrl}/referenceData/dataOwner/deploymentId/${deploymentId}`,
       {},
       this._token(token),
     );

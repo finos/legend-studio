@@ -52,7 +52,8 @@ export const LegendAIChatInput = (props: {
     const handleClickOutside = (event: MouseEvent): void => {
       if (
         modelDropdownRef.current &&
-        !modelDropdownRef.current.contains(event.target as Node)
+        event.target instanceof Node &&
+        !modelDropdownRef.current.contains(event.target)
       ) {
         setIsModelDropdownOpen(false);
       }

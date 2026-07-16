@@ -1,5 +1,36 @@
 # @finos/legend-application-studio
 
+## 28.21.21
+
+## 28.21.20
+
+### Patch Changes
+
+- [#5312](https://github.com/finos/legend-studio/pull/5312) [`b22aa28`](https://github.com/finos/legend-studio/commit/b22aa287bcd88fabb079d54307b321009bc5e7bb) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding telemetry for ai suggestion buttons
+
+- [#5314](https://github.com/finos/legend-studio/pull/5314) [`e3c5423`](https://github.com/finos/legend-studio/commit/e3c54233aca91aa21dbf0ecba957bcc49951af27) ([@jackp5150](https://github.com/jackp5150)) - Adds optimizations to DataProductEditor APG viewer to handle rendering 600+ aps in an access point group while preventing crashes and high latency.
+
+- [#5319](https://github.com/finos/legend-studio/pull/5319) [`3940acf`](https://github.com/finos/legend-studio/commit/3940acf9ae66585751c958fd28f5e34b23c41b6a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Light-theme visual fixes for Query Builder (hosted in Studio):
+
+  - `legend-art`: form input / textarea and the `input--dark` compat alias now use `--color-border-default` for their border instead of `--color-bg-input` (which is white in light theme and made fields invisible on modal / elevated surfaces).
+  - `legend-art`: light-theme `--color-text-disabled` remapped from `light-grey-400` to `dark-grey-500` so disabled controls stay perceptibly "off" while remaining legible on `bg-panel` and `bg-elevated`.
+  - `legend-query-builder`: header `Advanced` / `Help...` pills, the selected Fetch-Structure mode pill, and `QueryBuilderPanelIssueCountBadge` now use `--color-text-on-accent` for text sitting on saturated fills (was `--color-text-secondary` / `--color-text-primary`, unreadable in light theme).
+  - `legend-application-studio`: promoted the moon/sun `ColorThemeToggle` to production. Removed the now-unused `STUDIO_NON_PRODUCTION_COLOR_THEMES` gating and the `NonProductionFeatureFlag` check in the toggle — light theme is enabled for all users.
+
+- [#5313](https://github.com/finos/legend-studio/pull/5313) [`c12ac4b`](https://github.com/finos/legend-studio/commit/c12ac4b0d57c66f71beba9fd4fbfb61d3917e6e5) ([@ad-gs](https://github.com/ad-gs)) - Add Studio support for the `Compute` packageable element (classifier and editor graph-state wiring).
+
+## 28.21.19
+
+### Patch Changes
+
+- [#5299](https://github.com/finos/legend-studio/pull/5299) [`d0887f7`](https://github.com/finos/legend-studio/commit/d0887f7ed749ceb55926087226f4cb565f0ec18a) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the profile/stereotype and profile/tag dropdowns in the UML editors (class, association, enumeration, property) rendering with a white menu in dark theme. These `CustomSelectorInput`s relied on a `darkTheme` prop that no caller passed, so they were always stuck in light mode; they now derive their dark/light mode from the active application theme.
+
+## 28.21.18
+
+### Patch Changes
+
+- [#5300](https://github.com/finos/legend-studio/pull/5300) [`e216b5c`](https://github.com/finos/legend-studio/commit/e216b5c7ed80c1469debbbae006ac9effd9018d7) ([@yash0024](https://github.com/yash0024)) - Remove runtime or accessors requirement from adding function tests
+
 ## 28.21.17
 
 ### Patch Changes

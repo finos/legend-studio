@@ -1,5 +1,33 @@
 # @finos/legend-application-query
 
+## 13.8.32
+
+### Patch Changes
+
+- [#5323](https://github.com/finos/legend-studio/pull/5323) [`f0202dd`](https://github.com/finos/legend-studio/commit/f0202dd2c83e6b4caf609fe50ee47d948f7d6ba5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a semantic-token mapping for the Legacy Light theme (`.theme__legacy-light`)
+  so tokenized components without a per-selector override in Legend Query's
+  `light-mode.scss` resolve to the legacy light shade instead of falling through
+  to the dark `:root` defaults ("dark islands"). Surfaces already repainted by
+  `light-mode.scss` are unchanged — those per-selector rules still take
+  precedence. Also fix three references to undefined `--color-legacylight-*`
+  variables in `light-mode.scss`.
+
+## 13.8.31
+
+### Patch Changes
+
+- [#5312](https://github.com/finos/legend-studio/pull/5312) [`b22aa28`](https://github.com/finos/legend-studio/commit/b22aa287bcd88fabb079d54307b321009bc5e7bb) ([@gs-gunjan](https://github.com/gs-gunjan)) - adding telemetry for ai suggestion buttons
+
+## 13.8.30
+
+### Patch Changes
+
+- [#5308](https://github.com/finos/legend-studio/pull/5308) [`7680cc3`](https://github.com/finos/legend-studio/commit/7680cc3c3e40ad37442ab3673b5e5754f4bbdfab) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for `IngestExecutionContext` (`V1_QueryIngestExecutionContext` / `QueryIngestExecutionContext`) as a new `QueryExecutionContext` type with `ingestDefinitionPath` and `dataSet` fields.
+
+  Add an `INGEST_QUERY` route (`/ingest/:gav/:ingestDefinitionPath/:dataSet`) to Legend Query with a scaffolded `IngestQueryCreator` that fetches only the ingest definition entity from Depot (no full graph build) and opens the editor against an `IngestLegendQueryBuilderState` (extends `AccessorQueryBuilderState`).
+
+## 13.8.29
+
 ## 13.8.28
 
 ## 13.8.27

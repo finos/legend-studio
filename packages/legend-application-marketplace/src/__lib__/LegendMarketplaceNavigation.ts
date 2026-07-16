@@ -303,3 +303,20 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateDataProductSampleQueryUrl 
       artifactId,
       versionId,
     )}/${dataProductPath}/${sampleQueryId}`;
+
+/**
+ * @external_application_navigation This depends on Legend Query routing and is hardcoded so it's potentially brittle
+ */
+export const EXTERNAL_APPLICATION_NAVIGATION__generateIngestQueryUrl = (
+  queryApplicationUrl: string,
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  ingestDefinitionPath: string,
+  dataSet: string,
+): string =>
+  `${queryApplicationUrl}/ingest/${generateGAVCoordinates(
+    groupId,
+    artifactId,
+    versionId,
+  )}/${ingestDefinitionPath}/${dataSet}`;

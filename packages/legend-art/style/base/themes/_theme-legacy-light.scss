@@ -1,0 +1,138 @@
+/**
+ * Copyright (c) 2020-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* ============================================================================
+ * Legacy Light theme — semantic token mapping
+ * ----------------------------------------------------------------------------
+ * Maps the semantic token vocabulary (see `_semantic-tokens.scss`) to the
+ * `legacylight-*` palette — the cool blue-gray shade Legend Query users have
+ * had since the app launched (defined historically in Legend Query's
+ * `light-mode.scss`).
+ *
+ * Scoped to `.theme__legacy-light` (registered in
+ * `LegendApplicationColorTheme.ts`). This mapping only affects selectors that
+ * are NOT already repainted by Legend Query's per-selector overrides in
+ * `light-mode.scss` — those overrides set concrete properties and always win,
+ * so every surface that already renders in the legacy shade is unchanged.
+ * What this file fixes is the fall-through gap: tokenized components with no
+ * `light-mode.scss` override used to resolve to the dark `:root` defaults
+ * (dark islands inside the light theme); now they resolve to the legacy shade.
+ *
+ * The palette is re-declared here (identical hex values) so the theme is
+ * self-contained and survives the planned retirement of `light-mode.scss`.
+ * Token choices are anchored to how `light-mode.scss` uses each value:
+ * white panel contents, #edf0f1 app surfaces, #dce2e4 chrome/headers,
+ * #def3ff selection, #29323a primary text, blue #6a8db6 action fills.
+ * ============================================================================ */
+
+.theme__legacy-light {
+  /* ---- Legacy Light physical palette ------------------------------------ *
+   * Kept in sync with the `:root` block of Legend Query's `light-mode.scss`
+   * until that file is retired; after that, this is the canonical source. */
+  --color-legacylight-light-grey-100: #edf0f1;
+  --color-legacylight-light-grey-200: #dce2e4;
+  --color-legacylight-light-grey-300: #b5bec4;
+  --color-legacylight-light-grey-400: #95a0a8;
+  --color-legacylight-dark-grey-200: #29323a;
+  --color-legacylight-dark-grey-400: #4e5364;
+  --color-legacylight-light-blue-50: #def3ff;
+  --color-legacylight-light-blue-100: #7399c6;
+  --color-legacylight-light-blue-200: #6a8db6;
+  --color-legacylight-light-blue-250: #687b93;
+  --color-legacylight-light-blue-270: #597089;
+  --color-legacylight-light-blue-300: #4d6f9c;
+  --color-legacylight-light-blue-350: #475b72;
+  --color-legacylight-light-blue-400: #1b4c8c;
+  --color-legacylight-light-blue-600: #2d3d51;
+  --color-legacylight-green-100: #5cb65c;
+  --color-legacylight-orange-100: #f68f1e;
+  --color-legacylight-orange-150: #ea8212;
+
+  /* ---- Surfaces ---------------------------------------------------------- */
+  // shell, modal bodies (`.modal__body` → #edf0f1)
+  --color-bg-app: var(--color-legacylight-light-grey-100);
+  // panel contents are white (`.panel__content` → white)
+  --color-bg-panel: var(--color-white);
+  --color-bg-panel-header: var(--color-legacylight-light-grey-100);
+  // chrome/dividers area (`.query-builder__main` → #dce2e4)
+  --color-bg-chrome: var(--color-legacylight-light-grey-200);
+  // menus/popovers are white (`.menu` → white)
+  --color-bg-elevated: var(--color-white);
+  --color-bg-input: var(--color-white);
+  // row/menu-item hover (`.menu__item:hover` → #edf0f1)
+  --color-bg-hover: var(--color-legacylight-light-grey-100);
+  // selected rows (`--selected` tree nodes → #def3ff)
+  --color-bg-selected: var(--color-legacylight-light-blue-50);
+  --color-bg-tag: var(--color-legacylight-light-grey-300);
+  // backdrop stays dark in all themes
+  --color-bg-overlay: var(--color-dark-shade-300);
+
+  /* ---- Text --------------------------------------------------------------- */
+  --color-text-primary: var(--color-legacylight-dark-grey-200);
+  --color-text-secondary: var(--color-legacylight-dark-grey-400);
+  --color-text-muted: var(--color-legacylight-light-grey-400);
+  --color-text-disabled: var(--color-legacylight-light-grey-300);
+  // text on inverted-luminance bg (flips with theme)
+  --color-text-inverted: var(--color-white);
+  // legacy buttons render white text on blue fills
+  --color-text-on-accent: var(--color-white);
+  --color-text-link: var(--color-legacylight-light-blue-400);
+
+  /* ---- Borders ------------------------------------------------------------ */
+  --color-border-subtle: var(--color-legacylight-light-grey-100);
+  // visible panel borders (`.query-builder__main` border → #b5bec4)
+  --color-border-default: var(--color-legacylight-light-grey-300);
+  --color-border-strong: var(--color-legacylight-light-grey-400);
+  --color-border-focus: var(--color-legacylight-light-blue-200);
+
+  /* ---- Accents -------------------------------------------------------------- */
+  // primary action fills (btn backgrounds → #6a8db6)
+  --color-accent: var(--color-legacylight-light-blue-200);
+  --color-accent-hover: var(--color-legacylight-light-blue-300); // darkens
+  --color-accent-subtle: var(--color-legacylight-light-blue-50);
+
+  /* ---- Status --------------------------------------------------------------- */
+  // legacylight palette has no reds; reuse default-light's error treatment
+  --color-status-error: var(--color-red-300);
+  --color-status-error-bg: var(--color-red-0);
+  // legacy caution/warning color is the brand orange
+  --color-status-warn: var(--color-legacylight-orange-100);
+  --color-status-warn-bg: var(--color-yellow-0);
+  --color-status-success: var(--color-legacylight-green-100);
+  --color-status-success-bg: var(--color-green-20);
+  --color-status-info: var(--color-legacylight-light-blue-100);
+
+  /* ---- Interaction states on accent surfaces ------------------------------ */
+  // hover darkens on light themes (translucent black)
+  --color-state-hover-on-accent: var(--color-dark-shade-50);
+  --color-state-disabled-on-accent: var(--color-dark-shade-300);
+
+  /* ---- Active indicator (tab underlines, focused rails) -------------------- */
+  // yellow reads badly on light surfaces; use the strong legacy blue
+  --color-active-indicator: var(--color-legacylight-light-blue-400);
+
+  /* ---- Category / brand colors --------------------------------------------- */
+  // brand colors stay stable across themes — they encode meaning, not style
+  --color-category-generation: var(--color-pink-300);
+  --color-category-experimental: var(--color-mauve-50);
+  --color-category-class: var(--color-purple-400);
+  --color-category-ai-suggestion: var(--color-purple-200);
+  --color-category-enumeration: var(--color-medium-green-450);
+  --color-category-primitive: var(--color-blue-200);
+
+  /* ---- Misc ----------------------------------------------------------------- */
+  --color-shadow: var(--color-dark-shade-200); // softer in light themes
+}

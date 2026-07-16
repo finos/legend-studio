@@ -37,7 +37,6 @@ import {
   V1_EnrichedUserApprovalStatus,
   V1_deserializeOrgMembersResponse,
   V1_RequestState,
-  V1_RMS,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
@@ -525,7 +524,7 @@ export class DataProductAPGState {
   /**
    * Fallback: When no contract exists for the user, check data requests.
    * Fetches data requests for this data product + DID, checks if
-   * current user is a member of the RMS org for any matching request,
+   * current user is a member of the org for any matching request,
    * and updates button access state accordingly.
    */
   async fetchDataRequestAccessFallback(
@@ -575,19 +574,21 @@ export class DataProductAPGState {
         orgMembersPlugin.getOrgMembers.bind(orgMembersPlugin);
 
       for (const request of dataRequests) {
-        if (!(request.consumer instanceof V1_RMS)) {
+        const orgNodeCode = dataAccessPlugins
+          .map((p) => p.getOrganizationalNodeCode?.(request.consumer))
+          .find(isNonNullable);
+        if (!orgNodeCode) {
           continue;
         }
         const matched = await this.checkOrgMembership(
           getOrgMembers,
-          request.consumer.rmsNode,
+          orgNodeCode,
           token,
           currentUser,
         );
         if (matched) {
-          const access = this.mapRequestStateToAccess(request.state);
-          if (access) {
-            this.setDataRequestAccess(access, request.guid);
+          this.setAccessFromRequestState(request.state, request.guid);
+          if (this.dataRequestAccess) {
             return;
           }
         }
@@ -599,17 +600,20 @@ export class DataProductAPGState {
     }
   }
 
+  /**
+   * Check if a given user is a member of the specified organizational node.
+   */
   private async checkOrgMembership(
     getOrgMembers: NonNullable<
       DataProductDataAccess_LegendApplicationPlugin_Extension['getOrgMembers']
     >,
-    rmsNode: string,
+    orgNodeCode: string,
     token: string | undefined,
     currentUser: string,
   ): Promise<boolean> {
     try {
       const orgMembersResponse = await getOrgMembers(
-        rmsNode,
+        orgNodeCode,
         token,
         this.applicationStore,
       );
@@ -617,6 +621,53 @@ export class DataProductAPGState {
       return orgMembers.some((m) => m.kerberos.toLowerCase() === currentUser);
     } catch {
       return false;
+    }
+  }
+
+  /**
+   * After creating an organizational data request, check if the current user
+   * is a member of the request's org and update the access state accordingly.
+   */
+  async checkAndSetAccessForOrgRequest(
+    orgNodeCode: string,
+    requestGuid: string,
+    requestState: V1_RequestState,
+    dataAccessPlugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
+    token: string | undefined,
+  ): Promise<void> {
+    // Skip if access already resolved or the initial fallback is still running
+    if (
+      this.dataRequestAccess ||
+      this.fetchingDataRequestAccessState.isInProgress
+    ) {
+      return;
+    }
+    const orgMembersPlugin = dataAccessPlugins.find(
+      (p) => p.getOrgMembers !== undefined,
+    );
+    if (!orgMembersPlugin?.getOrgMembers) {
+      return;
+    }
+    const currentUser =
+      this.applicationStore.identityService.currentUser.toLowerCase();
+    const matched = await this.checkOrgMembership(
+      orgMembersPlugin.getOrgMembers.bind(orgMembersPlugin),
+      orgNodeCode,
+      token,
+      currentUser,
+    );
+    if (matched) {
+      this.setAccessFromRequestState(requestState, requestGuid);
+    }
+  }
+
+  private setAccessFromRequestState(
+    state: V1_RequestState,
+    guid: string,
+  ): void {
+    const access = this.mapRequestStateToAccess(state);
+    if (access) {
+      this.setDataRequestAccess(access, guid);
     }
   }
 

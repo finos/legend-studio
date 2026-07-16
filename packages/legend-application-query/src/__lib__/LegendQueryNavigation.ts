@@ -47,6 +47,12 @@ export enum DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
   SAMPLE_QUERY_ID = 'sampleQueryId',
 }
 
+export enum INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN {
+  GAV = 'gav',
+  INGEST_DEFINITION_PATH = 'ingestDefinitionPath',
+  DATA_SET = 'dataSet',
+}
+
 export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   DEFAULT: '/',
   SETUP: '/setup',
@@ -62,6 +68,7 @@ export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   DATA_CUBE_EXISTING_QUERY: `/edit/:${LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID}/cube`,
   DATA_PRODUCT: `/data-product/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}/:${DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_ID}`,
   DATA_PRODUCT_SAMPLE_QUERY: `/data-product/native/sample-query/:${DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}/:${DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.SAMPLE_QUERY_ID}`,
+  INGEST_QUERY: `/ingest/:${INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV}/:${INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.INGEST_DEFINITION_PATH}/:${INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SET}`,
   // Developer-only diagnostic page for inspecting depot DataSpace
   // analytics artifact sizes. See `DataSpaceArtifactInspector`.
   DEV_DATA_SPACE_INSPECTOR: '/dev/dataspace-inspector',
@@ -80,6 +87,12 @@ export type DataProductSampleQueryPathParams = {
   [DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]: string;
   [DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]: string;
   [DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.SAMPLE_QUERY_ID]: string;
+};
+
+export type IngestQueryCreatorPathParams = {
+  [INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]: string;
+  [INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.INGEST_DEFINITION_PATH]: string;
+  [INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SET]: string;
 };
 
 /**
@@ -166,6 +179,28 @@ export const generateDataProductSampleQueryRoute = (
       dataProductPath,
     [DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.SAMPLE_QUERY_ID]:
       sampleQueryId,
+  });
+
+// TODO: figure out where this URL should be generated from. Candidates:
+//   - a "create ingest query" entry point in the query setup landing page
+//   - a deep-link from the ingest definition page in Legend Studio
+// Once decided, wire callers here.
+export const generateIngestQueryCreatorRoute = (
+  groupId: string,
+  artifactId: string,
+  versionId: string,
+  ingestDefinitionPath: string,
+  dataSet: string,
+): string =>
+  generatePath(LEGEND_QUERY_ROUTE_PATTERN.INGEST_QUERY, {
+    [INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]: generateGAVCoordinates(
+      groupId,
+      artifactId,
+      versionId,
+    ),
+    [INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.INGEST_DEFINITION_PATH]:
+      ingestDefinitionPath,
+    [INGEST_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SET]: dataSet,
   });
 
 // setup

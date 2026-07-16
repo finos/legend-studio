@@ -70,6 +70,7 @@ import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElem
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import type { V1_Compute } from '../../../model/packageableElements/compute/V1_Compute.js';
 
 export class V1_ElementThirdPassBuilder
   implements V1_PackageableElementVisitor<void>
@@ -292,6 +293,10 @@ export class V1_ElementThirdPassBuilder
   }
 
   visit_DataProduct(element: V1_DataProduct): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_Compute(element: V1_Compute): void {
     throw new UnsupportedOperationError();
   }
 }

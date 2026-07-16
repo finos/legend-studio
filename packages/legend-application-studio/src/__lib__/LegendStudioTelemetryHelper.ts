@@ -183,6 +183,67 @@ export class LegendStudioTelemetryHelper {
     );
   }
 
+  // Legend AI
+  static logEvent_ServiceLegendAISuggestLaunched(
+    telemetryService: TelemetryService,
+    servicePath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__LAUNCH,
+      { servicePath },
+    );
+  }
+
+  static logEvent_ServiceLegendAISuggestApplied(
+    telemetryService: TelemetryService,
+    servicePath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__APPLY,
+      { servicePath },
+    );
+  }
+
+  static logEvent_ServiceLegendAISuggestDiscarded(
+    telemetryService: TelemetryService,
+    servicePath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__DISCARD,
+      { servicePath },
+    );
+  }
+
+  static logEvent_DataProductLegendAISuggestLaunched(
+    telemetryService: TelemetryService,
+    dataProductPath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__LAUNCH,
+      { dataProductPath },
+    );
+  }
+
+  static logEvent_DataProductLegendAISuggestApplied(
+    telemetryService: TelemetryService,
+    dataProductPath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__APPLY,
+      { dataProductPath },
+    );
+  }
+
+  static logEvent_DataProductLegendAISuggestDiscarded(
+    telemetryService: TelemetryService,
+    dataProductPath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__DISCARD,
+      { dataProductPath },
+    );
+  }
+
   // Lakehouse
   static logEvent_LakehouseDeployIngest(
     service: TelemetryService,

@@ -102,6 +102,8 @@ import { V1_HostedService } from '../../../model/packageableElements/function/V1
 import { V1_transformFunctionActivatorActions } from '../to/helpers/V1_LegendLambdaTransformerHelper.js';
 import type { DataProduct } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_transformDataProduct } from './V1_DataProductTransformer.js';
+import type { Compute } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
+import { V1_transformCompute } from './V1_ComputeTransformer.js';
 import type { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
@@ -349,6 +351,10 @@ class V1_PackageableElementTransformer
 
   visit_DataProduct(element: DataProduct): V1_PackageableElement {
     return V1_transformDataProduct(element, this.context);
+  }
+
+  visit_Compute(element: Compute): V1_PackageableElement {
+    return V1_transformCompute(element);
   }
 
   visit_Mapping(element: Mapping): V1_PackageableElement {

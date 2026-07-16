@@ -22,7 +22,7 @@
   }
 
   &__content {
-    border-bottom: 0.1rem solid var(--color-dark-grey-200);
+    border-bottom: 0.1rem solid var(--color-border-default);
     overflow: hidden;
     border-radius: 0.2rem;
   }
@@ -38,7 +38,7 @@
         width: 3rem;
 
         svg {
-          color: var(--color-light-grey-300);
+          color: var(--color-text-muted);
         }
       }
     }
@@ -60,7 +60,7 @@
       @include flexVCenter;
 
       width: 8rem;
-      color: var(--color-light-grey-400);
+      color: var(--color-text-muted);
       margin-right: 1rem;
       justify-content: right;
       text-align: right;
@@ -71,7 +71,7 @@
       @include flexVCenter;
 
       width: 8rem;
-      color: var(--color-dark-grey-300);
+      color: var(--color-text-muted);
       margin-right: 1rem;
       justify-content: right;
       text-align: right;
@@ -99,8 +99,8 @@
         font-weight: 700;
         padding: 0 0.4rem;
         border-radius: 0.2rem;
-        background: var(--color-dark-grey-280);
-        color: var(--color-light-grey-200);
+        background: var(--color-bg-hover);
+        color: var(--color-text-secondary);
         margin-left: 0.5rem;
         white-space: nowrap;
       }
@@ -131,7 +131,7 @@
     @include flexVCenter;
 
     svg {
-      color: var(--color-blue-100);
+      color: var(--color-accent);
     }
 
     &__label {
@@ -141,7 +141,7 @@
       height: 1.6rem;
       font-size: 1.2rem;
       font-weight: 500;
-      background: var(--color-dark-grey-250);
+      background: var(--color-bg-hover);
       padding: 0 0.5rem;
       border-radius: 0.2rem;
     }

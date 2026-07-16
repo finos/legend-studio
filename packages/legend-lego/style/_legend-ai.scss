@@ -218,6 +218,69 @@
   -webkit-text-fill-color: transparent;
 }
 
+.legend-ai__context-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.8rem 1.2rem 0;
+  padding: 0.6rem 1rem;
+  border-radius: 0.6rem;
+  background: var(--qai-accent-subtle);
+  border: 0.1rem solid rgb(24 106 222 / 20%);
+  font-size: 1.4rem;
+  color: var(--qai-text-secondary);
+  flex-shrink: 0;
+  animation: legend-ai-banner-slide-in 0.3s ease-out;
+}
+
+.legend-ai__context-banner-icon {
+  display: flex;
+  align-items: center;
+  font-size: 1.4rem;
+  color: var(--qai-accent);
+  flex-shrink: 0;
+}
+
+.legend-ai__context-banner-text {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.legend-ai__context-banner-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--qai-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+
+  &:hover {
+    color: var(--qai-accent);
+    background: rgb(24 106 222 / 12%);
+  }
+}
+
+@keyframes legend-ai-banner-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.6rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .legend-ai__conversation {
   flex: 1;
   overflow-y: auto;
@@ -269,7 +332,7 @@
   border-radius: 0.8rem;
   border: 0.1rem solid var(--qai-border);
   background: transparent;
-  color: var(--qai-text-secondary);
+  color: var(--qai-text-primary);
   font-size: 1.25rem;
   line-height: 1.8rem;
   cursor: pointer;
@@ -393,7 +456,7 @@
   }
 
   &--error {
-    color: var(--qai-error);
+    color: var(--qai-text-muted);
   }
 }
 
@@ -495,8 +558,8 @@
 
 .legend-ai__inline-answer {
   padding: 0;
-  font-size: 1.6rem;
-  line-height: 2.6rem;
+  font-size: 1.45rem;
+  line-height: 2.4rem;
   color: var(--qai-text-primary);
   overflow-wrap: anywhere;
 
@@ -523,22 +586,26 @@
   }
 
   .markdown-content code {
-    background: var(--qai-sql-bg);
-    color: var(--qai-text-code);
+    background: var(--qai-inline-code-bg);
+    color: var(--qai-inline-code-color);
   }
 
   .markdown-content h1,
-  .markdown-content h2,
+  .markdown-content h2 {
+    color: var(--qai-heading-color);
+    border-bottom-color: var(--qai-section-border);
+  }
+
   .markdown-content h3,
   .markdown-content h4,
   .markdown-content h5,
   .markdown-content h6 {
-    color: var(--qai-text-primary);
-    border-bottom-color: var(--qai-border-light);
+    color: var(--qai-heading-accent);
+    border-bottom: none;
   }
 
   .markdown-content strong {
-    color: var(--qai-text-primary);
+    color: var(--qai-strong-color);
   }
 
   .markdown-content mark {
@@ -546,7 +613,8 @@
   }
 
   .markdown-content blockquote {
-    border-left-color: var(--qai-border);
+    border-left-color: var(--qai-heading-accent);
+    background: var(--qai-section-bg);
     color: var(--qai-text-secondary);
   }
 
@@ -556,8 +624,8 @@
   }
 
   .markdown-content table th {
-    background: var(--qai-panel-header-bg);
-    color: var(--qai-text-primary);
+    background: var(--qai-section-bg);
+    color: var(--qai-heading-accent);
   }
 
   .markdown-content table td {
@@ -569,16 +637,20 @@
   }
 
   .markdown-content hr {
-    background: var(--qai-border);
+    background: var(--qai-section-border);
   }
 }
 
 .legend-ai__text-answer-md {
+  // ── Headings — GS blue accent, clear hierarchy ─────────────────────────
   h2 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin: 1.2rem 0 0.6rem;
-    color: var(--qai-text-primary);
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 1.6rem 0 0.8rem;
+    padding-bottom: 0.5rem;
+    color: var(--qai-heading-color);
+    border-bottom: 0.15rem solid var(--qai-section-border);
+    letter-spacing: 0.02rem;
 
     &:first-child {
       margin-top: 0;
@@ -586,38 +658,183 @@
   }
 
   h3 {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 1.2rem 0 0.5rem;
+    color: var(--qai-heading-accent);
+    letter-spacing: 0.01rem;
+  }
+
+  h4 {
+    font-size: 1.4rem;
     font-weight: 600;
     margin: 1rem 0 0.4rem;
-    color: var(--qai-text-primary);
+    color: var(--qai-heading-accent);
   }
 
+  // ── Paragraphs ─────────────────────────────────────────────────────────
   p {
-    margin: 0.4rem 0;
+    margin: 0.5rem 0;
+    line-height: 1.7;
   }
 
-  ul,
-  ol {
-    margin: 0.4rem 0;
-    padding-left: 2rem;
-  }
-
-  li {
-    margin: 0.2rem 0;
-  }
-
+  // ── Bold — GS blue accent for key terms ────────────────────────────────
   strong {
     font-weight: 600;
-    color: var(--qai-text-primary);
+    color: var(--qai-strong-color);
   }
 
+  // ── Lists — refined spacing, blue bullet/number markers ────────────────
+  ul,
+  ol {
+    margin: 0.5rem 0 0.8rem;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  ul > li {
+    position: relative;
+    padding-left: 1.6rem;
+    margin: 0.35rem 0;
+    line-height: 1.65;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0.2rem;
+      top: 0.75em;
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      background: var(--qai-bullet-color);
+      opacity: 0.7;
+    }
+  }
+
+  ol {
+    counter-reset: md-list;
+
+    > li {
+      position: relative;
+      padding-left: 2rem;
+      margin: 0.35rem 0;
+      line-height: 1.65;
+      counter-increment: md-list;
+
+      &::before {
+        content: counter(md-list) '.';
+        position: absolute;
+        left: 0;
+        font-weight: 600;
+        color: var(--qai-bullet-color);
+        font-size: 1.3rem;
+        min-width: 1.6rem;
+      }
+    }
+  }
+
+  // ── Nested lists ───────────────────────────────────────────────────────
+  li > ul,
+  li > ol {
+    margin: 0.2rem 0 0.2rem 0.6rem;
+  }
+
+  li > ul > li::before {
+    width: 0.4rem;
+    height: 0.4rem;
+    opacity: 0.45;
+    background: var(--qai-bullet-color);
+    border-radius: 0;
+    transform: rotate(45deg);
+    top: 0.8em;
+  }
+
+  // ── Inline code — subtle blue tint ─────────────────────────────────────
   code {
     font-family: 'Roboto Mono', monospace;
-    font-size: 1.4rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 0.3rem;
-    background: var(--qai-sql-bg);
-    color: var(--qai-text-code);
+    font-size: 1.3rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.4rem;
+    background: var(--qai-inline-code-bg);
+    color: var(--qai-inline-code-color);
+    font-weight: 500;
+  }
+
+  // ── Code blocks ────────────────────────────────────────────────────────
+  pre {
+    margin: 0.8rem 0;
+    border-radius: 0.6rem;
+    border: 0.1rem solid var(--qai-border-light);
+    overflow: hidden;
+
+    code {
+      display: block;
+      padding: 1rem 1.2rem;
+      background: var(--qai-sql-bg);
+      color: var(--qai-text-code);
+      font-size: 1.3rem;
+      line-height: 2rem;
+      overflow-x: auto;
+      border-radius: 0;
+    }
+  }
+
+  // ── Horizontal rule — section separator ────────────────────────────────
+  hr {
+    border: none;
+    height: 0.1rem;
+    background: var(--qai-section-border);
+    margin: 1.4rem 0;
+  }
+
+  // ── Blockquote — left accent bar ───────────────────────────────────────
+  blockquote {
+    margin: 0.8rem 0;
+    padding: 0.6rem 1.2rem;
+    border-left: 0.3rem solid var(--qai-heading-accent);
+    background: var(--qai-section-bg);
+    border-radius: 0 0.4rem 0.4rem 0;
+    color: var(--qai-text-secondary);
+    font-style: italic;
+
+    p {
+      margin: 0.2rem 0;
+    }
+  }
+
+  // ── Tables ─────────────────────────────────────────────────────────────
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8rem 0;
+    font-size: 1.35rem;
+
+    th,
+    td {
+      padding: 0.6rem 1rem;
+      border: 0.1rem solid var(--qai-border-light);
+      text-align: left;
+    }
+
+    th {
+      background: var(--qai-section-bg);
+      color: var(--qai-heading-accent);
+      font-weight: 600;
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03rem;
+    }
+  }
+
+  // ── Links ──────────────────────────────────────────────────────────────
+  a {
+    color: var(--qai-accent);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      color: var(--qai-accent-hover);
+    }
   }
 }
 
@@ -718,15 +935,12 @@
 }
 
 .legend-ai__exec-error {
-  padding: 1rem 1.4rem;
-  background: var(--qai-error-bg);
-  color: var(--qai-error);
   font-size: 1.5rem;
-  font-family: 'Roboto Mono', monospace;
+  font-family: Roboto, sans-serif;
+  line-height: 1.6;
+  color: var(--qai-text-primary);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  border-left: 0.3rem solid var(--qai-error);
-  border-radius: 0.6rem;
 }
 
 .legend-ai__fallback-action-btn {
@@ -763,7 +977,9 @@
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
-  margin-top: 1rem;
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 0.1rem solid var(--qai-border-light);
   font-family: Roboto, sans-serif;
   font-size: 1.3rem;
   line-height: 1.5;
@@ -789,34 +1005,38 @@
   padding: 0.8rem 1.6rem;
   font-size: 1.3rem;
   font-weight: 500;
-  color: var(--qai-accent);
-  background: var(--qai-accent-subtle);
-  border: 1px solid var(--qai-accent);
-  border-radius: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--qai-text-secondary);
+  background: var(--qai-bg-secondary);
+  border: 1px solid var(--qai-border);
+  border-radius: 0.6rem;
   cursor: pointer;
   text-decoration: none;
   transition:
-    background 0.15s ease,
-    border-color 0.15s ease;
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
 
   svg {
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.3rem;
+    height: 1.3rem;
   }
 
   &:hover {
-    background: var(--qai-accent);
-    color: var(--qai-text-on-accent);
+    color: var(--qai-accent);
     border-color: var(--qai-accent);
+    background: var(--qai-accent-subtle);
   }
 
   &--primary {
-    color: var(--qai-text-on-accent);
-    background: var(--qai-accent);
-    border-color: var(--qai-accent);
+    color: var(--qai-text-secondary);
+    background: var(--qai-bg-secondary);
+    border-color: var(--qai-border);
 
     &:hover {
-      filter: brightness(1.15);
+      color: var(--qai-accent);
+      border-color: var(--qai-accent);
+      background: var(--qai-accent-subtle);
     }
   }
 }
@@ -1171,6 +1391,50 @@
   font-weight: 600;
   color: var(--qai-text-primary);
   font-variant-numeric: tabular-nums;
+}
+
+// ─── Line chart ──────────────────────────────────────────────────────────────
+
+.legend-ai-chart--line {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.legend-ai-chart__line-svg {
+  width: 100%;
+  max-height: 18rem;
+}
+
+@keyframes legend-ai-line-draw {
+  from {
+    stroke-dashoffset: 2000;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.legend-ai-chart__line-path {
+  stroke-dasharray: 2000;
+  animation: legend-ai-line-draw 1s ease both;
+}
+
+.legend-ai-chart__line-dot {
+  opacity: 0;
+  animation: legend-ai-metric-fade-in 0.3s ease 0.6s both;
+}
+
+.legend-ai-chart__grid-line {
+  stroke: var(--qai-border-light);
+  stroke-width: 0.5;
+  stroke-dasharray: 4 3;
+}
+
+.legend-ai-chart__axis-label {
+  font-size: 0.9rem;
+  fill: var(--qai-text-muted);
 }
 
 // ─── Analysis narrative ──────────────────────────────────────────────────────

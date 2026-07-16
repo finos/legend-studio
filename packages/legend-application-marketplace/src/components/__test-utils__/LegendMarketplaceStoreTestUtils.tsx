@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
+import { jest } from '@jest/globals';
 import { render, waitFor } from '@testing-library/react';
 import { type AbstractPlugin, type AbstractPreset } from '@finos/legend-shared';
-import { createMock, createSpy } from '@finos/legend-shared/test';
+import { createSpy } from '@finos/legend-shared/test';
 import {
   ApplicationStore,
   ApplicationStoreProvider,
@@ -31,8 +32,24 @@ import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesti
 import { LegendMarketplacePluginManager } from '../../application/LegendMarketplacePluginManager.js';
 import { Core_LegendMarketplaceApplicationPlugin } from '../../application/extensions/Core_LegendMarketplaceApplicationPlugin.js';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
-import { LegendMarketplaceFrameworkProvider } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import {
+  LegendMarketplaceFrameworkProvider,
+  useLegendMarketplaceBaseStore,
+} from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplaceWebApplicationRouter } from '../../application/LegendMarketplaceWebApplication.js';
+
+jest.mock(
+  '../../application/providers/LegendMarketplaceFrameworkProvider.js',
+  () => {
+    const actual = jest.requireActual<Record<string, unknown>>(
+      '../../application/providers/LegendMarketplaceFrameworkProvider.js',
+    );
+    return {
+      ...actual,
+      useLegendMarketplaceBaseStore: jest.fn(),
+    };
+  },
+);
 
 export const TEST__provideMockLegendMarketplaceBaseStore =
   async (customization?: {
@@ -71,12 +88,7 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
       'getIngestEnvironmentSummaries',
     ).mockResolvedValue([]);
 
-    const MOCK__LegendMarketplaceBaseStoreProvider = require('../../application/providers/LegendMarketplaceFrameworkProvider.js'); // eslint-disable-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-require-imports
-    MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore =
-      createMock();
-    MOCK__LegendMarketplaceBaseStoreProvider.useLegendMarketplaceBaseStore.mockReturnValue(
-      mockBaseStore,
-    );
+    (useLegendMarketplaceBaseStore as jest.Mock).mockReturnValue(mockBaseStore);
     return mockBaseStore;
   };
 

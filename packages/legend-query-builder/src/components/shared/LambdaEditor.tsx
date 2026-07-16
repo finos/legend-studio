@@ -390,6 +390,7 @@ const LambdaEditor_Inner = observer(
           onEditorFocus?.();
         },
       );
+      onDidBlurEditorTextDisposer.current?.dispose();
       onDidBlurEditorTextDisposer.current = editor.onDidBlurEditorText(() => {
         if (onEditorBlur) {
           transformStringToLambda?.cancel();
@@ -402,6 +403,7 @@ const LambdaEditor_Inner = observer(
       });
 
       if (lambdaEditorState.typeAheadEnabled) {
+        onDidFocusEditorTextDisposer.current?.dispose();
         onDidFocusEditorTextDisposer.current = editor.onDidFocusEditorText(
           () => {
             suggestionsProvider.current?.dispose();

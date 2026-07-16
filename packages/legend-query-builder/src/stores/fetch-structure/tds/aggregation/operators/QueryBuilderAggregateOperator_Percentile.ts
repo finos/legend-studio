@@ -114,9 +114,7 @@ export class QueryBuilderAggregateOperator_Percentile
       extractElementNameFromPath(QUERY_BUILDER_SUPPORTED_FUNCTIONS.PERCENTILE),
     );
     const percentile = new PrimitiveInstanceValue(
-      GenericTypeExplicitReference.create(
-        new GenericType(PrimitiveType.NUMBER),
-      ),
+      GenericTypeExplicitReference.create(new GenericType(PrimitiveType.FLOAT)),
     );
     percentile.values = [percentileValue];
     if (

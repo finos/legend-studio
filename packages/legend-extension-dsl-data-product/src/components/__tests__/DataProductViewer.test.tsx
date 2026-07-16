@@ -34,6 +34,8 @@ import {
   NetworkClientError,
   HttpStatus,
   guaranteeNonNullable,
+  LegendUser,
+  UserSearchService,
 } from '@finos/legend-shared';
 import type * as LegendApplication from '@finos/legend-application';
 import {
@@ -162,11 +164,13 @@ const setupLakehouseDataProductTest = async (
   projectGAVCoordinates?: ProjectGAVCoordinates,
   mockGenerationFiles?: StoredFileGeneration[],
   extraActions?: Record<string, unknown>,
+  userSearchService?: UserSearchService,
 ) => {
   const dataProductViewerState = await TEST__getDataProductViewerState(
     dataProduct,
     projectGAVCoordinates,
     extraActions,
+    userSearchService,
   );
   createdViewerStates.push(dataProductViewerState);
 
@@ -590,11 +594,29 @@ describe('DataProductViewer', () => {
     });
 
     test('Clicking Lakehouse environment button displays tooltip with owners', async () => {
+      // Pre-populate a UserSearchService so the owners tooltip resolves each
+      // owner id (previously the tooltip fell back to rendering the raw id,
+      // but with `hideIfNotFound` enabled we now hide unresolved users).
+      const ownerIds = [
+        'owner1@example.com',
+        'owner2@example.com',
+        'owner3@example.com',
+      ];
+      const userSearchService = new UserSearchService({});
+      ownerIds.forEach((ownerId) => {
+        const user = new LegendUser(ownerId, ownerId);
+        userSearchService.setUser(ownerId, user);
+      });
+
       await setupLakehouseDataProductTest(
         mockSDLCDataProduct,
         mockEntitlementsSDLCDataProduct,
         [],
         [],
+        undefined,
+        undefined,
+        undefined,
+        userSearchService,
       );
 
       await screen.findByText('Mock SDLC Data Product');
@@ -4387,6 +4409,10 @@ describe('DataProductViewer', () => {
           mockDataContracts,
         );
 
+      guaranteeNonNullable(
+        dataProductDataAccessState,
+      ).engineServerClient.setZipkinUrl('http://test-zipkin-url/');
+
       const mockVisitAddress = jest
         .spyOn(
           guaranteeNonNullable(dataProductDataAccessState).applicationStore
@@ -4411,7 +4437,9 @@ describe('DataProductViewer', () => {
       });
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
-        expect.stringContaining('http://test-engine-server-client-url/zipkin/'),
+        expect.stringContaining(
+          'http://test-zipkin-url/?spanName=all&lookback=3600000&annotationQuery=dataProductName%3DMOCK_SDLC_DATAPRODUCT%20and%20accessPoint%3Dcustomer_demographics&minDuration=&limit=100&sortOrder=timestamp-desc',
+        ),
       );
 
       mockVisitAddress.mockRestore();

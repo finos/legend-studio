@@ -209,6 +209,14 @@ export class LegendAIServiceError extends Error {
   }
 }
 
+export class LegendAIUnsupportedEngineShapeError extends LegendAIServiceError {
+  override name = 'LegendAIUnsupportedEngineShapeError';
+
+  constructor(hint: string) {
+    super(hint, LegendAIErrorType.EXECUTION);
+  }
+}
+
 export enum LegendAIMessageRole {
   USER = 'user',
   ASSISTANT = 'assistant',
@@ -239,6 +247,40 @@ export interface LegendAIMessageFeedback {
   rowCount?: number;
 }
 
+/**
+ * Coarse outcome of an assistant turn, reported to usage telemetry so a
+ * dashboard can distinguish answered questions from no-answers and errors.
+ */
+export enum LegendAIResponseOutcome {
+  ANSWERED = 'answered',
+  NO_ANSWER = 'no_answer',
+  ERROR = 'error',
+}
+
+export enum LegendAIChatTelemetryEventType {
+  QUESTION_ASKED = 'question-asked',
+  RESPONSE_RECEIVED = 'response-received',
+}
+
+/**
+ * Usage-analytics events emitted by the chat as the user interacts with it.
+ * The host application maps these onto its own telemetry event names (see the
+ * `onLogTelemetryEvent` prop on {@link LegendAIChatProps}).
+ *
+ * These carry only non-sensitive metadata — never the raw question text or any
+ * queried values — so they are safe to log under data-product PII constraints.
+ */
+export type LegendAIChatTelemetryEvent =
+  | {
+      type: LegendAIChatTelemetryEventType.QUESTION_ASKED;
+      questionLength: number;
+    }
+  | {
+      type: LegendAIChatTelemetryEventType.RESPONSE_RECEIVED;
+      outcome: LegendAIResponseOutcome;
+      durationMs: number;
+    };
+
 export class LegendAIAssistantMessage {
   id!: string;
   role!: LegendAIMessageRole.ASSISTANT;
@@ -256,6 +298,7 @@ export class LegendAIAssistantMessage {
   isExecuting!: boolean;
   suggestedQueries!: string[];
   fallbackAction!: LegendAIFallbackAction | null;
+  queriedAccessPointGroups!: string[];
 }
 
 export type LegendAIMessage = LegendAIUserMessage | LegendAIAssistantMessage;
@@ -366,6 +409,70 @@ export class LegendAIProductMetadata {
   domainContext?: string;
 }
 
+// ────────────────────────────────────────────────────────────────────────────
+// Model context for local entity resolution (DataSpaces only)
+// ────────────────────────────────────────────────────────────────────────────
+
+export interface LegendAIModelProperty {
+  name: string;
+  type: string;
+  isCollection: boolean;
+  isOptional: boolean;
+}
+
+export interface LegendAIModelEntity {
+  path: string;
+  name: string;
+  description?: string;
+  properties: LegendAIModelProperty[];
+  isRootMapped?: boolean;
+  isQueryable?: boolean;
+  superTypes?: string[];
+}
+
+export interface LegendAIModelAssociation {
+  name: string;
+  leftEntity: string;
+  leftProperty: string;
+  rightEntity: string;
+  rightProperty: string;
+}
+
+export interface LegendAIColumnPropertyMapping {
+  columnName: string;
+  propertyPath: string;
+}
+
+export interface LegendAIParameterInfo {
+  name: string;
+  type: string;
+}
+
+export interface LegendAIEnumerationInfo {
+  path: string;
+  name: string;
+  values: string[];
+}
+
+export interface LegendAIExecutableInfo {
+  title: string;
+  description?: string;
+  rootEntityPath: string;
+  referencedEntityPaths?: string[];
+  columns?: string[];
+  queryTemplate?: string;
+  requiredParameters?: LegendAIParameterInfo[];
+  columnPropertyMappings?: LegendAIColumnPropertyMapping[];
+}
+
+export interface LegendAIModelContext {
+  entities: LegendAIModelEntity[];
+  associations: LegendAIModelAssociation[];
+  enumerations?: LegendAIEnumerationInfo[];
+  executables?: LegendAIExecutableInfo[];
+  dataspaceDescription?: string;
+}
+
 export enum LegendAIQuestionIntent {
   DATA_QUERY = 'data_query',
   METADATA = 'metadata',
@@ -474,6 +581,58 @@ export class QuestionIntentClassification {
   ambiguous!: boolean;
 }
 
+function maskEntityNames(question: string, entityNames: string[]): string {
+  const escaped = entityNames
+    .filter((name) => name.length > 0)
+    .map((name) =>
+      name.toLowerCase().replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`),
+    );
+  if (escaped.length === 0) {
+    return question;
+  }
+  return question.replaceAll(new RegExp(escaped.join('|'), 'g'), '___');
+}
+
+function classifyMixedSignal(
+  q: string,
+  metaScore: number,
+  dataScore: number,
+): QuestionIntentClassification {
+  if (dataScore >= metaScore * 2) {
+    return {
+      intent: LegendAIQuestionIntent.DATA_QUERY,
+      metaScore,
+      dataScore,
+      ambiguous: false,
+    };
+  }
+  if (PRODUCT_REFERENCE_PATTERN.test(q) || STRUCTURAL_KEYWORD_PATTERN.test(q)) {
+    return {
+      intent: LegendAIQuestionIntent.METADATA,
+      metaScore,
+      dataScore,
+      ambiguous: false,
+    };
+  }
+  if (CAPABILITY_DISCOVERY_PATTERNS.some((p) => p.test(q))) {
+    return {
+      intent: LegendAIQuestionIntent.METADATA,
+      metaScore,
+      dataScore,
+      ambiguous: false,
+    };
+  }
+  return {
+    intent:
+      metaScore > dataScore
+        ? LegendAIQuestionIntent.METADATA
+        : LegendAIQuestionIntent.DATA_QUERY,
+    metaScore,
+    dataScore,
+    ambiguous: true,
+  };
+}
+
 /**
  * Fast deterministic regex classifier (sync, < 1ms).
  * Returns both the resolved intent AND whether the result is ambiguous,
@@ -482,6 +641,7 @@ export class QuestionIntentClassification {
 export function classifyQuestionIntentFast(
   question: string,
   hasServices: boolean,
+  entityNames?: string[],
 ): QuestionIntentClassification {
   const q = question.toLowerCase().trim();
 
@@ -495,7 +655,12 @@ export function classifyQuestionIntentFast(
   }
 
   const metaScore = countPatternMatches(q, METADATA_SIGNAL_PATTERNS);
-  const dataScore = countPatternMatches(q, DATA_QUERY_SIGNAL_PATTERNS);
+  const qForDataScore =
+    entityNames && entityNames.length > 0 ? maskEntityNames(q, entityNames) : q;
+  const dataScore = countPatternMatches(
+    qForDataScore,
+    DATA_QUERY_SIGNAL_PATTERNS,
+  );
 
   if (metaScore > 0 && dataScore === 0) {
     const isStructural =
@@ -518,37 +683,8 @@ export function classifyQuestionIntentFast(
       ambiguous: false,
     };
   }
-
   if (metaScore > 0 && dataScore > 0) {
-    if (dataScore >= metaScore * 2) {
-      return {
-        intent: LegendAIQuestionIntent.DATA_QUERY,
-        metaScore,
-        dataScore,
-        ambiguous: false,
-      };
-    }
-    if (
-      PRODUCT_REFERENCE_PATTERN.test(q) ||
-      STRUCTURAL_KEYWORD_PATTERN.test(q)
-    ) {
-      return {
-        intent: LegendAIQuestionIntent.METADATA,
-        metaScore,
-        dataScore,
-        ambiguous: false,
-      };
-    }
-    const tentative =
-      metaScore > dataScore
-        ? LegendAIQuestionIntent.METADATA
-        : LegendAIQuestionIntent.DATA_QUERY;
-    return {
-      intent: tentative,
-      metaScore,
-      dataScore,
-      ambiguous: true,
-    };
+    return classifyMixedSignal(q, metaScore, dataScore);
   }
 
   return {
@@ -568,8 +704,9 @@ export function classifyQuestionIntentFast(
 export function classifyQuestionIntent(
   question: string,
   hasServices: boolean,
+  entityNames?: string[],
 ): LegendAIQuestionIntent {
-  return classifyQuestionIntentFast(question, hasServices).intent;
+  return classifyQuestionIntentFast(question, hasServices, entityNames).intent;
 }
 
 export async function extractParameterSchemas(
@@ -629,6 +766,7 @@ export interface LegendAIChatProps {
    * returned by the orchestrator. Required for the execute-after-generate flow.
    */
   pureExecutionContext?: QueryExplicitExecutionContextInfo;
+  modelContext?: LegendAIModelContext;
   availableScopes?: LegendAIScopeItem[];
   /** Called when the user clicks the close button in the chat header. */
   onClose?: () => void;
@@ -641,4 +779,12 @@ export interface LegendAIChatProps {
   onMessageFeedback?: (
     feedback: LegendAIMessageFeedback,
   ) => Promise<void> | void;
+  onRequestAccess?: (accessPointGroupTitle: string) => void;
+  contextBannerMessage?: string;
+  /**
+   * Optional usage-analytics sink. Fired when the user asks a question and when
+   * the assistant finishes a response, so the host application can log these to
+   * its telemetry service.
+   */
+  onLogTelemetryEvent?: (event: LegendAIChatTelemetryEvent) => void;
 }

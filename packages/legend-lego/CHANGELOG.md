@@ -1,5 +1,22 @@
 # @finos/legend-lego
 
+## 2.0.206
+
+## 2.0.205
+
+### Patch Changes
+
+- [#5318](https://github.com/finos/legend-studio/pull/5318) [`9973d05`](https://github.com/finos/legend-studio/commit/9973d05d7ac130d9323b61fa7701cd77003bc74e) ([@bojja-gs](https://github.com/bojja-gs)) - Add optional `onLogTelemetryEvent` hook on `LegendAIChat` and emit `legend-ai.*` events (assistant opened, question asked, response received, feedback submitted) from the data product and data space viewers. Only non-sensitive metadata is logged — never the raw question text or queried values.
+
+## 2.0.204
+
+## 2.0.203
+
+### Patch Changes
+
+- [#5297](https://github.com/finos/legend-studio/pull/5297) [`f07d638`](https://github.com/finos/legend-studio/commit/f07d638e0ecd5db3847bebd597cf37cfaee4af23) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve Legend Marketplace AI and Legend AI orchestrator with access point querying, better model context enrichment, and deterministic entity resolution.
+  Improve AP queries with advanced analytics embedded on results and ML implementations to pick better AP.
+
 ## 2.0.202
 
 ## 2.0.201

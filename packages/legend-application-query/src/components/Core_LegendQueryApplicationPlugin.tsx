@@ -135,6 +135,7 @@ import { useQueryEditorStore } from './QueryEditorStoreProvider.js';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import { LegendQueryDataSpaceQueryBuilderState } from '../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 import { LegendQueryDataProductQueryBuilderState } from '../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
+import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { renderDataProductSampleQueryPanelContent } from './data-product/DataProductSampleQueryPanel.js';
 
 export const QUERY_DATACUBE_USAGE_TITLE = 'Legend DataCube';
@@ -643,6 +644,25 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             ) {
               editorStore.setShowDataProductInfo(true);
             }
+          }
+        },
+        icon: <InfoCircleIcon />,
+      },
+      {
+        key: 'about-ingest',
+        title: 'About Ingest',
+        label: 'About Ingestion Data Set',
+        disableFunc: (queryBuilderState): boolean =>
+          !(queryBuilderState instanceof IngestLegendQueryBuilderState),
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+              QueryBuilderActionConfig_QueryApplication &&
+            queryBuilderState instanceof IngestLegendQueryBuilderState
+          ) {
+            queryBuilderState.workflowState.actionConfig.editorStore.setShowIngestInfo(
+              true,
+            );
           }
         },
         icon: <InfoCircleIcon />,

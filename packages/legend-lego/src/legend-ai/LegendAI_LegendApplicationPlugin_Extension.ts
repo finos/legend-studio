@@ -28,6 +28,7 @@ import type {
   LegendAIConversationTurn,
   LegendAIProductMetadata,
   LegendAIQuestionIntent,
+  LegendAIModelContext,
 } from './LegendAITypes.js';
 
 export class LegendAISqlExtractionResult {
@@ -63,6 +64,30 @@ export interface LegendAISemanticSearchResolutionDetails {
   data_product_coordinates: LegendAIOrchestratorDataProductCoordinates;
   root_entity: string;
   related_entities: string[];
+  enriched_business_context?: LegendAIEnrichedBusinessContext;
+}
+
+export interface LegendAIEnrichedBusinessContext {
+  naturalLanguageQuery?: string;
+  businessContextMatch?: LegendAIBusinessContextMatch;
+}
+
+export interface LegendAIBusinessContextMatch {
+  properties?: LegendAIBusinessContextProperty[];
+  additionalNlModelContext?: LegendAIAdditionalNlModelContext[];
+}
+
+export interface LegendAIBusinessContextProperty {
+  propertyName: string;
+  matchType?: string[];
+  propertyValues?: string[];
+  probablePropertyValues?: string[];
+}
+
+export interface LegendAIAdditionalNlModelContext {
+  id: string;
+  description: string;
+  category: string;
 }
 
 export class LegendAIOrchestratorRequest {
@@ -161,6 +186,8 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     question: string,
     metadata: LegendAIProductMetadata,
     history?: LegendAIConversationTurn[],
+    services?: TDSServiceSchema[],
+    modelContextEnrichment?: string,
   ): string;
 
   /**
@@ -172,6 +199,7 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     coordinates: string,
     history?: LegendAIConversationTurn[],
     metadata?: LegendAIProductMetadata,
+    modelContextEnrichment?: string,
   ): string;
 
   /**
@@ -194,6 +222,7 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     question: string,
     accessPoints: TDSServiceSchema[],
     history?: LegendAIConversationTurn[],
+    modelContextEnrichment?: string,
   ): string;
 
   /**
@@ -205,7 +234,39 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     question: string,
     accessPoints: TDSServiceSchema[],
     history?: LegendAIConversationTurn[],
+    modelContextEnrichment?: string,
   ): string;
+
+  buildAccessPointErrorCorrectionPrompt(
+    failedSql: string,
+    question: string,
+    executionError: string,
+    accessPoints: TDSServiceSchema[],
+    history?: LegendAIConversationTurn[],
+    modelContextEnrichment?: string,
+  ): string {
+    return this.buildAccessPointJudgePrompt(
+      failedSql,
+      `${question}\n\nEXECUTION ERROR — the previous SQL failed. Fix it using the SAME access points:\n${executionError}`,
+      accessPoints,
+      history,
+      modelContextEnrichment,
+    );
+  }
+
+  normalizeQuestion(
+    question: string,
+    _config: LegendAIConfig,
+  ): Promise<string> {
+    return Promise.resolve(question);
+  }
+
+  preWarmSchemaAnalysis(
+    _services: TDSServiceSchema[],
+    _config: LegendAIConfig,
+  ): void {
+    /* no-op by default — plugins override */
+  }
 
   /**
    * Send a prompt to the LLM service and return the raw response text.
@@ -252,6 +313,7 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
     config: LegendAIConfig,
     pureExecutionContext?: QueryExplicitExecutionContextInfo,
+    modelContext?: LegendAIModelContext,
   ): Promise<LegendAIResolvedEntities>;
 
   /**

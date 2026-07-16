@@ -25,7 +25,6 @@ import {
 import {
   type GeneratorFn,
   type PlainObject,
-  ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
 } from '@finos/legend-shared';
@@ -195,8 +194,6 @@ export class LegendMarketplaceAIChatStore {
     description?: string;
   }[] = [];
   selectedDataProductId: string | undefined = undefined;
-
-  readonly searchState = ActionState.create();
 
   constructor(baseStore: LegendMarketplaceBaseStore) {
     makeObservable(this, {
@@ -751,6 +748,7 @@ export class LegendMarketplaceAIChatStore {
     this.messages = [...this.messages, ...createMessagePair(trimmed)];
 
     const setMessages = this.createMessageSetter();
+    const startTime = Date.now();
 
     try {
       if (this.selectedProductCoordinates) {
@@ -823,7 +821,7 @@ export class LegendMarketplaceAIChatStore {
       finishWithThinkingError(
         setMessages,
         error.message,
-        Date.now(),
+        startTime,
         classifyError(error),
       );
       this.stage = MarketplaceAIChatStage.IDLE;
@@ -1046,6 +1044,7 @@ export class LegendMarketplaceAIChatStore {
     this.messages = [...this.messages, ...createMessagePair(trimmed)];
 
     const setMessages = this.createMessageSetter();
+    const startTime = Date.now();
 
     try {
       this.stage = MarketplaceAIChatStage.QUERYING;
@@ -1060,7 +1059,7 @@ export class LegendMarketplaceAIChatStore {
       finishWithThinkingError(
         setMessages,
         error.message,
-        Date.now(),
+        startTime,
         classifyError(error),
       );
     } finally {
@@ -1453,7 +1452,8 @@ export class LegendMarketplaceAIChatStore {
         ? this.buildContextPromise(question, metadata, setMessages)
         : Promise.resolve();
 
-    const fastIntent = classifyQuestionIntentFast(question, true);
+    const entityNames = [metadata.name, ...services.map((s) => s.title)];
+    const fastIntent = classifyQuestionIntentFast(question, true, entityNames);
 
     // ── Pure METADATA: fast classifier is confident, no data signals ──
     if (
@@ -1783,6 +1783,7 @@ export class LegendMarketplaceAIChatStore {
     if (!prompt) {
       return undefined;
     }
+    const correctionStart = Date.now();
     try {
       const raw = await plugin.callLLM(prompt, config);
       const trimmed = cleanLlmSqlResponse(raw);
@@ -1797,7 +1798,7 @@ export class LegendMarketplaceAIChatStore {
         config,
       );
       if (retryResult.rows.length > 0) {
-        const sqlGenTime = elapsedSeconds(Date.now(), 2);
+        const sqlGenTime = elapsedSeconds(correctionStart, 2);
         completeThinkingSteps(setMessages);
         updateLastAssistant(setMessages, () => ({
           sql: trimmed,
@@ -1806,8 +1807,12 @@ export class LegendMarketplaceAIChatStore {
         }));
         return { sql: trimmed, result: retryResult };
       }
-    } catch {
-      /* empty */
+    } catch (correctionError) {
+      assertErrorThrown(correctionError);
+      addThinkingStep(
+        setMessages,
+        `Filter correction failed: ${correctionError.message.slice(0, 120)}`,
+      );
     }
     return undefined;
   }

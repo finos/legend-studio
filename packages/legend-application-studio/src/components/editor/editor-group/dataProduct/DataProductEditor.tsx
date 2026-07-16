@@ -19,10 +19,10 @@ import { useEditorStore } from '../../EditorStoreProvider.js';
 import {
   type AccessPointGroupState,
   type AccessPointState,
+  type LakehouseAccessPointState,
   DATA_PRODUCT_TAB,
   DATA_PRODUCT_TYPE,
   DataProductEditorState,
-  LakehouseAccessPointState,
   ModelAccessPointGroupState,
 } from '../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
@@ -87,12 +87,12 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
 import {
   assertErrorThrown,
-  filterByType,
   guaranteeNonNullable,
   guaranteeType,
   isNonNullable,
@@ -208,6 +208,7 @@ import type {
   DataProductDocResponse,
   DSL_DataProduct_LegendStudioApplicationPlugin_Extension,
 } from '../../../../stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin_Extension.js';
+import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -331,6 +332,17 @@ const AccessPointTitle = observer(
   },
 );
 
+const AP_RENDER_CHUNK_SIZE = 50;
+const AP_SENTINEL_ROOT_MARGIN = '0px 0px 400px 0px';
+const DEFAULT_CLASSIFICATION_LABEL = 'Classification';
+
+const toClassificationOption = (
+  classification: string,
+): { label: string; value: string } => ({
+  label: classification,
+  value: classification,
+});
+
 const AccessPointClassification = observer(
   (props: {
     accessPoint: LakehouseAccessPoint;
@@ -338,52 +350,35 @@ const AccessPointClassification = observer(
   }) => {
     const { accessPoint, groupState } = props;
     const applicationStore = useEditorStore().applicationStore;
-    const CHOOSE_CLASSIFICATION = 'Classification';
     const updateAccessPointClassificationTextbox: React.ChangeEventHandler<HTMLTextAreaElement> =
       action((event) => {
         accessPoint.classification = event.target.value;
       });
 
-    const conditionalClassifications = (): string[] => {
-      if (groupState.containsPublicStereotype) {
-        return (
-          applicationStore.config.options.dataProductConfig
-            ?.publicClassifications ?? []
-        );
-      } else {
-        return (
-          applicationStore.config.options.dataProductConfig?.classifications ??
-          []
-        );
-      }
-    };
-
-    const classificationOptions = [CHOOSE_CLASSIFICATION]
-      .concat(conditionalClassifications())
-      .map((classfication) => ({
-        label: classfication,
-        value: classfication,
-      }));
+    const classificationOptions = useMemo(
+      () =>
+        [DEFAULT_CLASSIFICATION_LABEL]
+          .concat(groupState.classifications)
+          .map(toClassificationOption),
+      [groupState.classifications],
+    );
 
     const updateAccessPointClassificationFromDropdown = action(
       (val: { label: string; value: string } | null): void => {
         accessPoint_setClassification(
           accessPoint,
-          val?.value === CHOOSE_CLASSIFICATION ? undefined : val?.value,
+          val?.value === DEFAULT_CLASSIFICATION_LABEL ? undefined : val?.value,
         );
       },
     );
 
-    const currentClassification =
-      accessPoint.classification !== undefined
-        ? {
-            label: accessPoint.classification,
-            value: accessPoint.classification,
-          }
-        : {
-            label: CHOOSE_CLASSIFICATION,
-            value: CHOOSE_CLASSIFICATION,
-          };
+    const currentClassification = useMemo(
+      () =>
+        toClassificationOption(
+          accessPoint.classification ?? DEFAULT_CLASSIFICATION_LABEL,
+        ),
+      [accessPoint.classification],
+    );
 
     const classificationDocumentationLink = (): void => {
       const docLink =
@@ -399,7 +394,7 @@ const AccessPointClassification = observer(
             style={{
               borderWidth: 'thin',
               borderColor:
-                currentClassification.label === CHOOSE_CLASSIFICATION
+                currentClassification.label === DEFAULT_CLASSIFICATION_LABEL
                   ? 'var(--color-red-300)'
                   : 'transparent',
             }}
@@ -721,9 +716,7 @@ export const LakehouseDataProductAccessPointEditor = observer(
     const accessPoint = accessPointState.accessPoint;
     const groupState = accessPointState.state;
     const lambdaEditorState = accessPointState.lambdaState;
-    const propertyHasParserError = groupState.accessPointStates
-      .filter(filterByType(LakehouseAccessPointState))
-      .find((pm) => pm.lambdaState.parserError);
+    const propertyHasParserError = groupState.hasParserError;
     const [editingDescription, setEditingDescription] = useState(false);
     const [isHoveringDesc, setIsHoveringDesc] = useState(false);
     const [editingTitle, setEditingTitle] = useState(false);
@@ -735,6 +728,17 @@ export const LakehouseDataProductAccessPointEditor = observer(
         editorStore.applicationStore.alertUnhandledError,
       );
     }, [lambdaEditorState, editorStore.applicationStore]);
+
+    // Load the relation columns for access points that already have sample
+    // values so mismatches surface on load. This only runs for rendered access
+    // points, keeping the number of concurrent calls bounded to the visible set.
+    useEffect(() => {
+      if (accessPointState.relationElementState !== undefined) {
+        flowResult(lambdaEditorState.updateLambdaRelationColumns()).catch(
+          editorStore.applicationStore.alertUnhandledError,
+        );
+      }
+    }, [accessPointState, lambdaEditorState, editorStore.applicationStore]);
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
@@ -1019,7 +1023,9 @@ export const LakehouseDataProductAccessPointEditor = observer(
                   <button
                     className="access-point-editor__sample-values-btn"
                     onClick={() => {
-                      accessPointState.createAndaddRelationElement();
+                      flowResult(
+                        accessPointState.createAndaddRelationElement(),
+                      ).catch(editorStore.applicationStore.alertUnhandledError);
                     }}
                     disabled={props.isReadOnly}
                     title="Add sample values"
@@ -1730,6 +1736,10 @@ const ModelAccessPointGroupEditor = observer(
   },
 );
 
+const AccessPointLoadingSentinel = (props: {
+  ref?: React.Ref<HTMLDivElement>;
+}) => <div ref={props.ref} className="access-point-editor__sentinel" />;
+
 const AccessPointGroupEditor = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
@@ -1747,6 +1757,31 @@ const AccessPointGroupEditor = observer(
     const [aiSuggestion, setAISuggestion] = useState<
       DataProductDocResponse | undefined
     >(undefined);
+
+    const lakehouseAccessPointStates =
+      groupState.accessPointStates as LakehouseAccessPointState[];
+    const accessPointCount = lakehouseAccessPointStates.length;
+    const [renderedCount, setRenderedCount] = useState(AP_RENDER_CHUNK_SIZE);
+    const accessPointsSentinelRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      const sentinel = accessPointsSentinelRef.current;
+      if (!sentinel) {
+        return undefined;
+      }
+      const intersectionObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            setRenderedCount((count) =>
+              Math.min(count + AP_RENDER_CHUNK_SIZE, accessPointCount),
+            );
+          }
+        },
+        { rootMargin: AP_SENTINEL_ROOT_MARGIN },
+      );
+      intersectionObserver.observe(sentinel);
+      return () => intersectionObserver.disconnect();
+    }, [accessPointCount, renderedCount]);
+
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
@@ -1818,6 +1853,10 @@ const AccessPointGroupEditor = observer(
       if (!aiDocSuggester || !legendAIUrl) {
         return;
       }
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestLaunched(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
       try {
@@ -1843,6 +1882,10 @@ const AccessPointGroupEditor = observer(
       if (!aiSuggestion) {
         return;
       }
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestApplied(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       // Find matching group in the response
       const gIdx =
         productEditorState.accessPointGroupStates.indexOf(groupState);
@@ -1878,6 +1921,13 @@ const AccessPointGroupEditor = observer(
         accessPoint_setTitle(ap, apMeta.title);
         accessPoint_setDescription(ap, apMeta.description);
       }
+      setAISuggestion(undefined);
+    };
+    const discardAISuggestion = (): void => {
+      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestDiscarded(
+        editorStore.applicationStore.telemetryService,
+        productEditorState.product.path,
+      );
       setAISuggestion(undefined);
     };
 
@@ -1922,6 +1972,7 @@ const AccessPointGroupEditor = observer(
         undefined,
         productEditorState.selectedGroupState ?? groupState,
       );
+      setRenderedCount(groupState.accessPointStates.length);
     };
 
     return (
@@ -1991,7 +2042,7 @@ const AccessPointGroupEditor = observer(
                 </button>
                 <button
                   className="btn data-product-editor__ai-suggestion__dismiss-btn"
-                  onClick={(): void => setAISuggestion(undefined)}
+                  onClick={discardAISuggestion}
                 >
                   Dismiss
                 </button>
@@ -2150,8 +2201,8 @@ const AccessPointGroupEditor = observer(
             <div
               style={{ gap: '1rem', display: 'flex', flexDirection: 'column' }}
             >
-              {groupState.accessPointStates
-                .filter(filterByType(LakehouseAccessPointState))
+              {lakehouseAccessPointStates
+                .slice(0, renderedCount)
                 .map((apState, idx) => (
                   <LakehouseDataProductAccessPointEditor
                     key={apState.uuid}
@@ -2160,6 +2211,9 @@ const AccessPointGroupEditor = observer(
                     aiSuggestionMeta={aiAccessPointMetas?.[idx]}
                   />
                 ))}
+              {accessPointCount > renderedCount && (
+                <AccessPointLoadingSentinel ref={accessPointsSentinelRef} />
+              )}
             </div>
           </>
         )}

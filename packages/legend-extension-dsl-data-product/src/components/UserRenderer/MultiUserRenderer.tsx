@@ -49,15 +49,17 @@ export const MultiUserRenderer = (props: {
       return prev + 1;
     });
   }, [userIds]);
-
-  if (userIds.length === 1) {
+  const firstUserId = userIds[0];
+  if (userIds.length === 1 && firstUserId) {
     return (
       <UserRenderer
-        userId={userIds[0]}
-        className={singleUserClassName}
+        userId={firstUserId}
         applicationStore={applicationStore}
         userSearchService={userSearchService}
-        disableOnClick={disableOnClick}
+        options={{
+          className: singleUserClassName,
+          disableOnClick,
+        }}
       />
     );
   } else {
@@ -98,7 +100,9 @@ export const MultiUserRenderer = (props: {
                 userId={userId}
                 applicationStore={applicationStore}
                 userSearchService={userSearchService}
-                onFinishedLoadingCallback={finishedLoadingUserCallback}
+                options={{
+                  onFinishedLoadingCallback: finishedLoadingUserCallback,
+                }}
               />
             ))}
           </Box>

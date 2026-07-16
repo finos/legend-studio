@@ -28,7 +28,12 @@ import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
 } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  LegendUser,
+  type PlainObject,
+  UserSearchService,
+} from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
@@ -141,13 +146,25 @@ const setupTestComponent = async (
   ).mockResolvedValue(mockEnvironment);
 
   // Mock owners API call
+  const ownerIds = ['owner1@example.com', 'owner2@example.com'];
   const mockOwnersResponse = {
-    owners: ['owner1@example.com', 'owner2@example.com'],
+    owners: ownerIds,
   };
   createSpy(
     MOCK__baseStore.lakehouseContractServerClient,
     'getOwnersForDid',
   ).mockResolvedValue(mockOwnersResponse);
+
+  // Pre-populate a UserSearchService so the owners tooltip resolves each owner
+  // id. Previously the tooltip fell back to rendering the raw id, but with
+  // `hideIfNotFound` enabled it now hides unresolved users.
+  const userSearchService = new UserSearchService({});
+  ownerIds.forEach((ownerId) => {
+    userSearchService.setUser(ownerId, new LegendUser(ownerId, ownerId));
+  });
+  (
+    MOCK__baseStore as unknown as { userSearchService: UserSearchService }
+  ).userSearchService = userSearchService;
 
   // Mock the plugin's handleDataProductOwnersResponse
   const mockPlugin =
@@ -903,7 +920,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Filters')).toBeDefined();
-        expect(screen.getByText('Data Product Type')).toBeDefined();
+        expect(screen.getByText('Source')).toBeDefined();
         expect(screen.queryByText('Taxonomy')).toBeNull();
       });
     });
@@ -923,14 +940,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
         // Filter panel header
         expect(panel.getByText('Filters')).toBeDefined();
 
-        // Data Product Type section with options
-        expect(panel.getByText('Data Product Type')).toBeDefined();
-        expect(panel.getByText('Lakehouse')).toBeDefined();
-        expect(panel.getByText('Legacy')).toBeDefined();
-
         // Source section with options
         expect(panel.getByText('Source')).toBeDefined();
         expect(panel.getByText('External')).toBeDefined();
+        expect(panel.getByText('Internal')).toBeDefined();
 
         // Taxonomy section with tree nodes
         expect(panel.getByText('Taxonomy')).toBeDefined();
@@ -952,9 +965,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       ) as HTMLElement;
       const panel = within(filterPanel);
 
-      // Click on 'Lakehouse' filter checkbox in the filter panel
+      // Click on 'External' source filter checkbox in the filter panel
       await act(async () => {
-        fireEvent.click(panel.getByText('Lakehouse'));
+        fireEvent.click(panel.getByText('External'));
         await flushMicrotasks();
       });
 
@@ -965,7 +978,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         'data',
         expect.anything(),
         'hybrid',
-        ['data_product_type=lakehouse'],
+        ['data_product_source=External'],
         12,
         1,
         false,
@@ -986,9 +999,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
         MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
       ).mockClear();
 
-      // Click on 'Lakehouse' filter
+      // Click on 'Internal' source filter
       await act(async () => {
-        fireEvent.click(panel.getByText('Lakehouse'));
+        fireEvent.click(panel.getByText('Internal'));
         await flushMicrotasks();
       });
 
@@ -1002,17 +1015,16 @@ describe('MarketplaceLakehouseSearchResults', () => {
         await flushMicrotasks();
       });
 
-      // Verify the latest call has both filters
+      // Verify the latest call has both filter values joined in one filter
       const lastCall = (
         MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
       ).mock.calls[0];
       const filters = lastCall?.[3] as string[];
-      expect(filters).toHaveLength(2);
-      expect(filters).toEqual(
-        expect.arrayContaining([
-          'data_product_type=lakehouse',
-          'data_product_source=External',
-        ]),
+      expect(filters).toHaveLength(1);
+      const filterValues = filters[0]?.split('=')[1]?.split(',') ?? [];
+      expect(filters[0]?.startsWith('data_product_source=')).toBe(true);
+      expect(filterValues).toEqual(
+        expect.arrayContaining(['Internal', 'External']),
       );
     });
 
@@ -1071,7 +1083,6 @@ describe('MarketplaceLakehouseSearchResults', () => {
       await screen.findByText('3 Products');
 
       // Filter panel should not be present
-      expect(screen.queryByText('Data Product Type')).toBeNull();
       expect(screen.queryByText('Source')).toBeNull();
     });
   });

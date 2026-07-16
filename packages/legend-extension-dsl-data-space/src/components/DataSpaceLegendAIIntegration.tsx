@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
-import { type QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
+import {
+  type QueryExplicitExecutionContextInfo,
+  type MappingModelCoverageAnalysisResult,
+  Enumeration,
+  getAllSuperclasses,
+  PRIMITIVE_TYPE,
+} from '@finos/legend-graph';
 import {
   LegendAIChat,
   LegendAIErrorBoundary,
@@ -26,23 +32,281 @@ import {
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
+  extractModelContext,
+  LegendAIChatTelemetryEventType,
+  LegendAIMessageFeedbackRating,
   type TDSColumnSchema,
   type TDSServiceSchema,
   type LegendAIConfig,
   type LegendAIProductMetadata,
   type LegendAIOrchestratorDataProductCoordinates,
   type LegendAIServiceSummary,
+  type LegendAIModelContext,
+  type LegendAIModelEntity,
+  type LegendAIModelProperty,
+  type LegendAIModelAssociation,
+  type LegendAIExecutableInfo,
+  type LegendAIColumnPropertyMapping,
+  type LegendAIParameterInfo,
+  type LegendAIChatTelemetryEvent,
+  type LegendAIMessageFeedback,
 } from '@finos/legend-lego/legend-ai';
+import { type DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import type { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
+import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
 import {
   DataSpaceServiceExecutableInfo,
   DataSpaceMultiExecutionServiceExecutableInfo,
   DataSpaceExecutableTDSResult,
+  type DataSpaceExecutableAnalysisResult,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import {
   DataSpaceSupportEmail,
   DataSpaceSupportCombinedInfo,
 } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+
+const MAX_QUERY_SCAN_LENGTH = 5_000;
+const MAX_QUERY_TEMPLATE_LENGTH = 1000;
+const ENTITY_PATH_PATTERN =
+  /(?<entityPath>[A-Za-z_]\w{0,63}(?:::[A-Za-z_]\w{0,63}){0,10})\.all\(\)/g;
+
+// ────────────────────────────────────────────────────────────────────────────
+// Diagram-based model context extraction (fallback when elementDocs is sparse)
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Extracts a {@link LegendAIModelContext} from diagram metamodel objects.
+ * Diagrams always contain the actual Class metamodel references so this
+ * works even when elementDocs documentation is empty or incomplete.
+ */
+export function extractModelContextFromDiagrams(
+  diagrams: DiagramAnalysisResult[],
+): LegendAIModelContext {
+  const entityMap = new Map<string, LegendAIModelEntity>();
+  const associations: LegendAIModelAssociation[] = [];
+  const enumPaths = new Map<
+    string,
+    { path: string; name: string; values: string[] }
+  >();
+
+  for (const { diagram } of diagrams) {
+    for (const classView of diagram.classViews) {
+      const cls = classView.class.value;
+      if (entityMap.has(cls.path)) {
+        continue;
+      }
+      const properties: LegendAIModelProperty[] = cls.properties.map((prop) => {
+        const rawType = prop.genericType.value.rawType;
+        const typePath = rawType.path;
+        if (rawType instanceof Enumeration && !enumPaths.has(typePath)) {
+          enumPaths.set(typePath, {
+            path: typePath,
+            name: rawType.name,
+            values: rawType.values.map((v) => v.name),
+          });
+        }
+        return {
+          name: prop.name,
+          type: typePath,
+          isCollection:
+            prop.multiplicity.upperBound === undefined ||
+            prop.multiplicity.upperBound > 1,
+          isOptional: prop.multiplicity.lowerBound === 0,
+        };
+      });
+      const entity: LegendAIModelEntity = {
+        path: cls.path,
+        name: cls.name,
+        properties,
+      };
+      const superTypes = getAllSuperclasses(cls).map((c) => c.path);
+      if (superTypes.length > 0) {
+        entity.superTypes = superTypes;
+      }
+      entityMap.set(cls.path, entity);
+    }
+
+    for (const assocView of diagram.associationViews) {
+      const assoc = assocView.association.value;
+      const [propA, propB] = assoc.properties;
+      associations.push({
+        name: assoc.name,
+        leftEntity: assocView.from.classView.value.class.value.path,
+        leftProperty: propA.name,
+        rightEntity: assocView.to.classView.value.class.value.path,
+        rightProperty: propB.name,
+      });
+    }
+  }
+
+  const result: LegendAIModelContext = {
+    entities: Array.from(entityMap.values()),
+    associations,
+  };
+  if (enumPaths.size > 0) {
+    result.enumerations = Array.from(enumPaths.values());
+  }
+  return result;
+}
+
+/**
+ * Enriches a {@link LegendAIModelContext} with mapping coverage data.
+ * Marks entities that are root-mapped (directly queryable by the orchestrator)
+ * so entity resolution can prefer them.
+ */
+export function enrichModelContextWithMappingCoverage(
+  modelContext: LegendAIModelContext,
+  mappingCoverage: MappingModelCoverageAnalysisResult | undefined,
+): void {
+  if (!mappingCoverage) {
+    return;
+  }
+  for (const entity of modelContext.entities) {
+    const mapped = mappingCoverage.mappedEntities.find(
+      (me) => me.path === entity.path,
+    );
+    if (mapped?.info?.isRootEntity) {
+      entity.isRootMapped = true;
+    }
+  }
+}
+
+/**
+ * Builds column-to-property mappings by matching TDS result column names
+ * to model property names on the root entity.
+ * Uses case-insensitive, whitespace/underscore-normalized comparison.
+ */
+function buildColumnPropertyMappings(
+  columns: string[],
+  rootEntity: { properties: { name: string }[] } | undefined,
+): LegendAIColumnPropertyMapping[] | undefined {
+  if (!rootEntity || rootEntity.properties.length === 0) {
+    return undefined;
+  }
+
+  const propLookup = new Map<string, string>();
+  for (const prop of rootEntity.properties) {
+    const normalized = prop.name.toLowerCase().replaceAll('_', '');
+    propLookup.set(normalized, prop.name);
+  }
+
+  const mappings: LegendAIColumnPropertyMapping[] = [];
+  for (const colName of columns) {
+    const normalized = colName.toLowerCase().replaceAll(/[\s_]/g, '');
+    const propName = propLookup.get(normalized);
+    if (propName && propName !== colName) {
+      mappings.push({ columnName: colName, propertyPath: propName });
+    }
+  }
+
+  return mappings.length > 0 ? mappings : undefined;
+}
+
+function collectReferencedEntityPaths(queryStr: string): string[] {
+  const safeQuery = queryStr.slice(0, MAX_QUERY_SCAN_LENGTH);
+  // Reset lastIndex defensively — the regex is module-scoped and reused.
+  ENTITY_PATH_PATTERN.lastIndex = 0;
+  const paths: string[] = [];
+  const seen = new Set<string>();
+  let match: RegExpExecArray | null;
+  while ((match = ENTITY_PATH_PATTERN.exec(safeQuery)) !== null) {
+    const path = match.groups?.entityPath;
+    if (path && !seen.has(path)) {
+      seen.add(path);
+      paths.push(path);
+    }
+  }
+  return paths;
+}
+
+function buildExecutableInfo(
+  exec: DataSpaceExecutableAnalysisResult,
+  entityMap: Map<string, LegendAIModelEntity>,
+  serviceParameters: Map<string, LegendAIParameterInfo[]>,
+): LegendAIExecutableInfo | undefined {
+  if (
+    !(
+      exec.info instanceof DataSpaceServiceExecutableInfo ||
+      exec.info instanceof DataSpaceMultiExecutionServiceExecutableInfo
+    )
+  ) {
+    return undefined;
+  }
+  const queryStr = exec.info.query;
+  const referencedEntityPaths = collectReferencedEntityPaths(queryStr);
+  const rootEntityPath = referencedEntityPaths[0];
+  if (!rootEntityPath) {
+    return undefined;
+  }
+  const info: LegendAIExecutableInfo = {
+    title: exec.title,
+    rootEntityPath,
+    queryTemplate:
+      queryStr.length > MAX_QUERY_TEMPLATE_LENGTH
+        ? `${queryStr.slice(0, MAX_QUERY_TEMPLATE_LENGTH)}...`
+        : queryStr,
+  };
+  if (referencedEntityPaths.length > 1) {
+    info.referencedEntityPaths = referencedEntityPaths;
+  }
+  if (exec.description !== undefined) {
+    info.description = exec.description;
+  }
+  const reqParams = serviceParameters.get(exec.title);
+  if (reqParams && reqParams.length > 0) {
+    info.requiredParameters = reqParams;
+  }
+  if (exec.result instanceof DataSpaceExecutableTDSResult) {
+    info.columns = exec.result.columns.map((c) => c.name);
+    const colMappings = buildColumnPropertyMappings(
+      info.columns,
+      entityMap.get(rootEntityPath),
+    );
+    if (colMappings) {
+      info.columnPropertyMappings = colMappings;
+    }
+  }
+  return info;
+}
+
+export function extractExecutableInfo(
+  executables: DataSpaceExecutableAnalysisResult[],
+  modelContext: LegendAIModelContext,
+  services: TDSServiceSchema[],
+): LegendAIExecutableInfo[] {
+  const entityMap = new Map(modelContext.entities.map((e) => [e.path, e]));
+  const serviceParameters = new Map<string, LegendAIParameterInfo[]>();
+  for (const svc of services) {
+    if (svc.parameterSchemas && svc.parameterSchemas.length > 0) {
+      serviceParameters.set(
+        svc.title,
+        svc.parameterSchemas.map((p) => ({
+          name: p.name,
+          type: p.type ?? PRIMITIVE_TYPE.STRING,
+        })),
+      );
+    }
+  }
+  const result: LegendAIExecutableInfo[] = [];
+  for (const exec of executables) {
+    const info = buildExecutableInfo(exec, entityMap, serviceParameters);
+    if (!info) {
+      continue;
+    }
+    result.push(info);
+    const queryableEntityPaths = info.referencedEntityPaths ?? [
+      info.rootEntityPath,
+    ];
+    for (const entityPath of queryableEntityPaths) {
+      const entity = entityMap.get(entityPath);
+      if (entity) {
+        entity.isQueryable = true;
+      }
+    }
+  }
+  return result;
+}
 
 export async function extractTDSServicesFromDataSpace(
   viewerState: DataSpaceViewerState,
@@ -79,8 +343,10 @@ export async function extractTDSServicesFromDataSpace(
         if (extracted.length > 0) {
           preFilters = extracted;
         }
-      } catch {
-        /* pre-filter extraction is best-effort */
+      } catch (error) {
+        assertErrorThrown(error);
+        // pre-filter extraction is best-effort — a service without pre-filters
+        // still works, the AI just won't know about hardcoded constraints.
       }
 
       const entry: TDSServiceSchema = {
@@ -208,8 +474,14 @@ const DataSpaceLegendAIIntegrationInner = observer(
             setServices(result);
           }
         })
-        .catch(() => {
-          /* noop — services stay empty; AI panel simply won't render */
+        .catch((error) => {
+          assertErrorThrown(error);
+          dataSpaceViewerState.applicationStore.logService.warn(
+            LogEvent.create(
+              DSL_DATASPACE_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+            ),
+            error,
+          );
         });
       return () => {
         cancelled = true;
@@ -244,21 +516,110 @@ const DataSpaceLegendAIIntegrationInner = observer(
       ],
     );
 
-    const metadata = useMemo(() => {
-      try {
-        return extractMetadataFromDataSpace(
+    const metadata = useMemo(
+      () =>
+        extractMetadataFromDataSpace(
           dataSpaceViewerState,
           coordinates,
           services,
-        );
-      } catch {
-        return {
-          name: 'Unknown',
-          coordinates,
-          serviceSummaries: [],
-        };
+        ),
+      [dataSpaceViewerState, coordinates, services],
+    );
+
+    const modelContext: LegendAIModelContext | undefined = useMemo(() => {
+      const result = dataSpaceViewerState.dataSpaceAnalysisResult;
+      let ctx: LegendAIModelContext | undefined;
+      if (result.elementDocs.length > 0) {
+        const docsCtx = extractModelContext(result.elementDocs);
+        if (docsCtx.entities.length > 0) {
+          ctx = docsCtx;
+        }
       }
-    }, [dataSpaceViewerState, coordinates, services]);
+
+      // Fallback: extract from diagram metamodel objects (always available)
+      if (!ctx && result.diagrams.length > 0) {
+        const diagramCtx = extractModelContextFromDiagrams(result.diagrams);
+        if (diagramCtx.entities.length > 0) {
+          ctx = diagramCtx;
+        }
+      }
+
+      if (!ctx) {
+        return undefined;
+      }
+
+      const mappingPath =
+        dataSpaceViewerState.currentExecutionContext.mapping.path;
+      const mappingCoverage =
+        result.mappingToMappingCoverageResult?.get(mappingPath);
+      enrichModelContextWithMappingCoverage(ctx, mappingCoverage);
+
+      if (result.executables.length > 0) {
+        const execInfos = extractExecutableInfo(
+          result.executables,
+          ctx,
+          services,
+        );
+        if (execInfos.length > 0) {
+          ctx.executables = execInfos;
+        }
+      }
+
+      if (result.description) {
+        ctx.dataspaceDescription = result.description;
+      }
+
+      return ctx;
+    }, [
+      dataSpaceViewerState.dataSpaceAnalysisResult,
+      dataSpaceViewerState.currentExecutionContext.mapping,
+      services,
+    ]);
+
+    const telemetryService =
+      dataSpaceViewerState.applicationStore.telemetryService;
+    const dataSpacePath = dataSpaceViewerState.dataSpaceAnalysisResult.path;
+    const handleLogTelemetryEvent = useCallback(
+      (event: LegendAIChatTelemetryEvent): void => {
+        if (event.type === LegendAIChatTelemetryEventType.QUESTION_ASKED) {
+          telemetryService.logEvent(
+            DSL_DATASPACE_EVENT.LEGEND_AI_QUESTION_ASKED,
+            {
+              context: 'data-space',
+              data_product: dataSpacePath,
+              question_length: event.questionLength,
+            },
+          );
+        } else {
+          telemetryService.logEvent(
+            DSL_DATASPACE_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
+            {
+              context: 'data-space',
+              data_product: dataSpacePath,
+              outcome: event.outcome,
+              duration_ms: event.durationMs,
+            },
+          );
+        }
+      },
+      [telemetryService, dataSpacePath],
+    );
+    const handleMessageFeedback = useCallback(
+      (feedback: LegendAIMessageFeedback): void => {
+        telemetryService.logEvent(
+          DSL_DATASPACE_EVENT.LEGEND_AI_FEEDBACK_SUBMITTED,
+          {
+            context: 'data-space',
+            data_product: dataSpacePath,
+            rating:
+              feedback.rating === LegendAIMessageFeedbackRating.THUMBS_UP
+                ? 'up'
+                : 'down',
+          },
+        );
+      },
+      [telemetryService, dataSpacePath],
+    );
 
     if (!config.enabled || !legendAIPlugin) {
       return null;
@@ -276,8 +637,12 @@ const DataSpaceLegendAIIntegrationInner = observer(
         metadata={metadata}
         title={`Ask ${dsTitle}`}
         plugin={legendAIPlugin}
+        onLogTelemetryEvent={handleLogTelemetryEvent}
+        onMessageFeedback={handleMessageFeedback}
+        contextBannerMessage="You can query available TDS Executables within Data Space, or use Legend AI MCP for Pure queries on models."
         dataProductCoordinates={dataProductCoordinates}
         pureExecutionContext={pureExecutionContext}
+        {...(modelContext ? { modelContext } : {})}
         {...(onClose ? { onClose } : {})}
         {...(onMinimize ? { onMinimize } : {})}
       />
