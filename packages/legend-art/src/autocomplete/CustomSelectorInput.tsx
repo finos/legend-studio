@@ -205,11 +205,17 @@ const CustomInput = <Option extends SelectOption, IsMulti extends boolean>(
     selectProps: CustomSelectorInputProps<Option, IsMulti>;
   },
 ) => {
+  const { inputClassName } = props.selectProps;
+  const extra: { inputClassName?: string } = {};
+  if (inputClassName !== undefined) {
+    extra.inputClassName = inputClassName;
+  }
   return (
     <ReactSelectComponents.Input
       {...props}
       onPaste={props.selectProps.onPaste}
       name={props.selectProps.inputName}
+      {...extra}
       isHidden={false}
     />
   );
@@ -236,6 +242,7 @@ type CustomSelectorInputProps<
     optionCustomization?: { rowHeight?: number | undefined } | undefined;
     onPaste?: React.ClipboardEventHandler<HTMLInputElement> | undefined;
     inputName?: string | undefined;
+    inputClassName?: string | undefined;
   };
 
 export type SelectComponent = SelectInstance<SelectOption>;

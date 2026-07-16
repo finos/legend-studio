@@ -163,6 +163,21 @@
     font-size: min(1vw, 1.5rem);
   }
 
+  .selector-input--dark .selector-input--dark__input,
+  .selector-input .selector-input__input {
+    font-size: min(1.5vw, 1.5vh) !important;
+  }
+
+  .workspace-setup__selector--locked input {
+    caret-color: transparent !important;
+    cursor: default !important;
+  }
+
+  .workspace-setup__selector--locked .selector-input--dark__control,
+  .workspace-setup__selector--locked .selector-input__control {
+    cursor: default;
+  }
+
   .selector-input--dark .selector-input__dropdown-indicator,
   .selector-input .selector-input__dropdown-indicator {
     background: var(--color-accent);
@@ -293,8 +308,8 @@
     display: flex;
     justify-content: center;
     height: 36%;
-    margin-top: 2.5vh; // 14% of its parent
-    margin-bottom: 2.15vh; // 12% of its parent
+    margin-top: 2.5vh;
+    margin-bottom: 2.15vh;
   }
 
   &__body {
@@ -330,21 +345,22 @@
     &__link {
       color: var(--color-accent);
       font-weight: 500;
-      font-size: min(1.5vh, 1.5vw);
+      font-size: inherit;
       text-decoration: none;
     }
   }
 
   &__content__body {
     height: 80%;
+    width: min(90vw, 131rem);
     flex-direction: column;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 
   &__content__main {
-    height: 70%;
-    width: 60vw;
+    height: 78%;
+    width: 100%;
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
@@ -352,61 +368,112 @@
     border: 0.1rem solid var(--color-bg-panel);
     border-radius: 1rem;
     box-shadow: 0 1px 5px 0 rgb(0 0 0 / 50%);
+    overflow: hidden;
   }
 
   &__content__cards {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-evenly;
     margin-top: 3rem;
-    width: 60vw;
-    height: 25%;
+    width: 100%;
+
+    @media (width <= 800px) {
+      display: none;
+    }
 
     .mui-card {
+      flex: 0 0 calc((100% - 6rem) / 3);
+      min-width: 0;
+      aspect-ratio: 3 / 2;
+      container-type: inline-size;
+      justify-content: flex-start;
+
       &__media {
         margin-top: 1vw;
         margin-left: 1vw;
       }
 
       &__header {
-        margin-top: 1.5vh;
-        font-size: min(2vw, 2vh);
-        margin-bottom: 1.5vh;
+        display: block;
+        height: auto;
+        width: 90%;
+        margin: 6cqw auto 4cqw;
+        font-size: clamp(1.2rem, 5.5cqw, 2.4rem);
+        text-align: center;
       }
 
       &__content {
-        font-size: min(1.5vh, 1.5vw);
+        height: auto;
+        min-height: 0;
+        flex: 0 1 auto;
+        font-size: clamp(1.1rem, 4cqw, 2rem);
+        overflow-y: hidden;
+        width: 90%;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
       }
 
       &__card-action {
-        margin-bottom: 1.5vh;
+        margin-bottom: 6cqw;
 
         &__label {
-          font-size: min(1.5vw, 1.5vh);
+          font-size: clamp(1.1rem, 4cqw, 1.8rem);
+          line-height: 1;
         }
       }
     }
 
     .MuiCardContent-root {
-      margin-left: 1vw;
+      height: auto;
+      flex: 0 1 auto;
+      justify-content: flex-start;
+      margin-left: 0 !important;
+      padding: 0 !important;
+
+      &:last-child {
+        padding-bottom: 0 !important;
+      }
     }
 
     .MuiCardActions-root {
-      margin-left: 1vw;
+      height: auto;
+      margin-top: auto;
+      width: 90%;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0 !important;
+      justify-content: center;
+
+      .mui-card__card-action {
+        justify-content: center;
+        align-items: center;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        min-width: 0;
+      }
     }
   }
 
   &__content__card {
     background-color: var(--color-bg-panel) !important;
-    height: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+
+    &:hover {
+      cursor: default;
+    }
 
     &__content {
-      font-size: min(1.5vh, 1.5vw);
-      line-height: 2vh;
+      font-size: clamp(0.9rem, 0.9vw, 1.5vh);
+      line-height: 1.4;
     }
 
     &__action__icon {
       display: flex;
       align-items: center;
+      position: relative;
+      top: -1px;
 
       svg {
         font-size: min(1.5vw, 1.5vh);
@@ -468,6 +535,7 @@
     &__content {
       display: flex;
       height: 55%;
+      overflow: hidden;
 
       &__icon {
         @include flexCenter;
@@ -487,8 +555,6 @@
         font-size: 1.5vh;
       }
 
-      // Selector "Project:" / "Workspace:" label — bright chip with dark text
-      // standing out next to the input. Folded to bg-tag with text-inverted.
       &__label {
         @include flexCenter;
 
@@ -500,8 +566,32 @@
       }
 
       &__input {
-        flex: 1 0 auto;
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
         background: var(--color-bg-app);
+
+        .selector-input__input-container,
+        .selector-input--dark__input-container {
+          display: block;
+          width: 100%;
+          min-width: 0;
+          overflow: hidden;
+        }
+
+        .workspace-setup__selector__input {
+          padding-left: 0.5vh !important;
+        }
+
+        .workspace-setup__selector__placeholder {
+          margin-left: 0 !important;
+          padding-left: 0.5vh;
+        }
+
+        .selector-input__input-container::after,
+        .selector-input--dark__input-container::after {
+          content: none;
+        }
       }
 
       &__action {
@@ -526,6 +616,7 @@
   &__actions-combo {
     height: 36%;
     flex-shrink: 0;
+    margin-top: 2vh;
     display: flex;
     justify-content: center;
     align-items: flex-start;
@@ -542,19 +633,25 @@
       height: 28%;
       display: flex;
       justify-content: center;
+      align-items: center;
     }
   }
 
-  // Primary CTAs — were light-blue-50 (steel blue); folded to accent (navy).
-  // Same shift as documented elsewhere; potentially revisit with --color-accent-soft.
   &__go-btn {
-    height: 100%;
-    width: 15vw;
+    width: max(20%, 22rem);
+    height: auto;
+    max-height: 100%;
+    aspect-ratio: 255 / 61;
+    align-self: center;
+    container-type: inline-size;
+    padding: 0.6rem 1.2rem;
+    line-height: 1.2;
+    white-space: nowrap;
     background: var(--color-accent);
 
     &__label {
       font-weight: 700;
-      font-size: min(2vw, 2vh);
+      font-size: clamp(1.4rem, 12cqw, 3.2rem);
     }
 
     &__icon {
@@ -563,13 +660,27 @@
     }
   }
 
+  &__actions__button--projects {
+    height: auto;
+    min-height: 28%;
+    align-items: center;
+  }
+
   &__new-btn {
-    height: 100%;
-    width: 15vw;
-    margin-left: 2vw;
-    margin-right: 2vw;
+    width: max(20%, 22rem);
+    height: auto;
+    max-height: 100%;
+    aspect-ratio: 255 / 61;
+    align-self: center;
+    container-type: inline-size;
+    margin-left: 3%;
+    margin-right: 3%;
+    padding: 0.6rem 1.2rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
     background: var(--color-accent);
-    font-size: min(2vw, 2vh);
+    font-size: clamp(1.1rem, 7cqw, 2rem);
   }
 
   &__new-workspace-btn {
@@ -577,6 +688,7 @@
     font-weight: 400;
     color: var(--color-accent);
     margin-left: 2vw;
+    margin-bottom: 1.75vh;
     text-align: left;
 
     &[disabled],
@@ -605,11 +717,6 @@
 }
 
 .workspace-setup__recents {
-  // Sits between __title and __selectors inside __content__main. Size to the
-  // tile's natural height (auto) with a cap so the panel cannot push the
-  // action buttons out of view on short viewports / high zoom. `flex-shrink`
-  // on __actions-combo already protects the actions, so we don't need to
-  // pre-reserve a fixed slice here.
   flex: 0 0 auto;
   max-height: 14vh;
   margin: 0 2vw 2vh;
@@ -640,12 +747,8 @@
   }
 
   &__grid {
-    // One row only — overflow scrolls horizontally so the panel never grows
-    // vertically and starts overlapping the selectors / actions below.
     display: grid;
     grid-auto-flow: column;
-    // Fixed-width columns so tiles keep their natural size instead of
-    // stretching to fill the row when there are only a few recents.
     grid-auto-columns: 18rem;
     justify-content: start;
     gap: 0.8rem;
@@ -653,7 +756,7 @@
     overflow-y: hidden;
     flex: 1 1 auto;
     min-height: 0;
-    padding-bottom: 0.2rem; // breathing room for the scrollbar
+    padding-bottom: 0.2rem;
   }
 
   &__tile {
@@ -740,7 +843,7 @@
       font-size: 1.2rem;
       font-weight: 500;
       margin-bottom: 0.2rem;
-      padding-right: 1.4rem; // leave room for the remove button
+      padding-right: 1.4rem;
     }
 
     &__workspace {

@@ -24,6 +24,8 @@ import {
 } from 'react';
 import { observer, useLocalObservable } from 'mobx-react-lite';
 import {
+  type SelectComponent,
+  type InputActionData,
   clsx,
   AssistantIcon,
   compareLabelFn,
@@ -45,7 +47,10 @@ import {
   LEGEND_STUDIO_ROUTE_PATTERN_TOKEN,
 } from '../../__lib__/LegendStudioNavigation.js';
 import { flowResult } from 'mobx';
-import { useApplicationNavigationContext } from '@finos/legend-application';
+import {
+  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
+  useApplicationNavigationContext,
+} from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../__lib__/LegendStudioDocumentation.js';
 import { CreateProjectModal } from './CreateProjectModal.js';
@@ -82,6 +87,32 @@ const WorkspaceSetupStoreContext = createContext<
 
 export const DEFAULT_WORKSPACE_SOURCE = 'HEAD';
 
+enum ACTION_KEYS {
+  ENTER = 'Enter',
+  BACKSPACE = 'Backspace',
+  DELETE = 'Delete',
+  TAB = 'Tab',
+}
+
+const PROJECT_SELECTED_ACTION_KEYS: string[] = [
+  ACTION_KEYS.BACKSPACE,
+  ACTION_KEYS.DELETE,
+  ACTION_KEYS.TAB,
+];
+
+const handleKeyClicked = (
+  event: React.KeyboardEvent<HTMLDivElement>,
+  inputHasSelection: boolean,
+): void => {
+  if (!inputHasSelection) {
+    return;
+  }
+  if (!PROJECT_SELECTED_ACTION_KEYS.includes(event.key)) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+};
+
 export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
   props,
 ) => {
@@ -93,7 +124,7 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
       cardMedia={undefined}
       cardName="Showcase Projects"
       cardContent={
-        <div className="workspace-setup__content__card__content">
+        <>
           Review showcase projects with sample project code and re-use existing
           code snippets to quickly build your model.{' '}
           {!props.hideDocumentation && (
@@ -110,7 +141,7 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
               .
             </>
           )}
-        </div>
+        </>
       }
       cardActions={[
         {
@@ -136,7 +167,7 @@ export const DocumentationCard: React.FC = () => {
       className="workspace-setup__content__card"
       cardName="Documentation"
       cardContent={
-        <div className="workspace-setup__content__card__content">
+        <>
           Review Studio{' '}
           <a
             href={appDocUrl}
@@ -147,7 +178,7 @@ export const DocumentationCard: React.FC = () => {
             documentation
           </a>
           .
-        </div>
+        </>
       }
       cardActions={[
         {
@@ -207,31 +238,31 @@ export const ProductionCard: React.FC = () => {
   );
 };
 
-export const SandboxCard: React.FC = () => {
+export const FaqCard: React.FC = () => {
   const applicationStore = useLegendStudioApplicationStore();
-  const sandboxDocument = applicationStore.documentationService.getDocEntry(
-    LEGEND_STUDIO_DOCUMENTATION_KEY.APPLICATION_SANDBOX,
+  const faqDocument = applicationStore.documentationService.getDocEntry(
+    LEGEND_STUDIO_DOCUMENTATION_KEY.APPLICATION_FAQ,
   );
   return (
-    sandboxDocument?.title &&
-    sandboxDocument.markdownText &&
-    sandboxDocument.text && (
+    faqDocument?.title &&
+    faqDocument.markdownText &&
+    faqDocument.text && (
       <BaseCard
         className="workspace-setup__content__card"
-        cardName={sandboxDocument.title}
-        cardContent={sandboxDocument.markdownText.value}
+        cardName={faqDocument.title}
+        cardContent={faqDocument.markdownText.value}
         cardActions={[
           {
-            title: sandboxDocument.text,
+            title: faqDocument.text,
             content: (
               <div className="workspace-setup__content__card__action__icon">
                 <OpenIcon />
               </div>
             ),
             action: () => {
-              if (sandboxDocument.url) {
+              if (faqDocument.url) {
                 applicationStore.navigationService.navigator.visitAddress(
-                  sandboxDocument.url,
+                  faqDocument.url,
                 );
               }
             },
@@ -359,7 +390,11 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     const setupStore = useWorkspaceSetupStore();
     const applicationStore = useLegendStudioApplicationStore();
     const [projectSearchText, setProjectSearchText] = useState('');
+    const [isProjectSelectorMenuOpen, setIsProjectSelectorMenuOpen] =
+      useState(false);
     const goButtonRef = useRef<HTMLButtonElement>(null);
+    const projectSelectorRef = useRef<SelectComponent>(null);
+    const workspaceSelectorRef = useRef<SelectComponent>(null);
     //TODO: fix logo loading issue for localhost
     const logoPath = `${applicationStore.config.baseAddress}favicon.ico`;
     const toggleAssistant = (): void =>
@@ -369,23 +404,28 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     // Build a unified option list: recent projects (that aren't already in the
     // loaded set) are prepended so users can instantly re-open common work
     // without waiting for the SDLC search to round-trip.
+    const { projects, projectMatchedById } = setupStore.projectSearchResult;
     const sandboxProject =
       setupStore.sandboxProject instanceof Project
         ? setupStore.sandboxProject
         : undefined;
     const sandboxProjectId = sandboxProject?.projectId;
-    const loadedProjectOptions = setupStore.projects
-      .filter((p) => p.projectId !== sandboxProjectId)
+    const loadedProjectOptions = projects
+      .filter(
+        (p) =>
+          p.projectId !== sandboxProjectId &&
+          p.projectId !== projectMatchedById?.projectId,
+      )
+      .slice(0, DEFAULT_TYPEAHEAD_SEARCH_LIMIT)
       .map(buildProjectOption)
       .sort(compareLabelFn);
-    const loadedProjectIds = new Set(
-      setupStore.projects.map((p) => p.projectId),
-    );
+    const loadedProjectIds = new Set(projects.map((p) => p.projectId));
     const recentProjectOptions: ProjectOption[] = setupStore.recentProjects
       .filter(
         (r) =>
           !loadedProjectIds.has(r.projectId) &&
-          r.projectId !== sandboxProjectId,
+          r.projectId !== sandboxProjectId &&
+          r.projectId !== projectMatchedById?.projectId,
       )
       .map((r) => {
         // Rebuild a real Project from the cached metadata; no synthetic
@@ -399,18 +439,21 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
         } as PlainObject<Project>);
         return { label: stub.name, value: stub };
       });
+    const pinnedOptions: ProjectOption[] = [];
+    if (projectMatchedById) {
+      pinnedOptions.push(buildProjectOption(projectMatchedById));
+    }
+    // The user's own sandbox project is fetched via a dedicated call
+    // (`loadSandboxProject`) and excluded from the main search results, so
+    // we surface it here as a labeled option pinned to the top of the list.
+    if (sandboxProject) {
+      pinnedOptions.push({
+        label: `${sandboxProject.name} (sandbox)`,
+        value: sandboxProject,
+      });
+    }
     const projectOptions: ProjectOption[] = [
-      // The user's own sandbox project is fetched via a dedicated call
-      // (`loadSandboxProject`) and excluded from the main search results, so
-      // we surface it here as a labeled option pinned to the top of the list.
-      ...(sandboxProject
-        ? [
-            {
-              label: `${sandboxProject.name} (sandbox)`,
-              value: sandboxProject,
-            },
-          ]
-        : []),
+      ...pinnedOptions,
       ...recentProjectOptions,
       ...loadedProjectOptions,
     ];
@@ -422,12 +465,14 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
       : null;
 
     const onProjectChange = (val: ProjectOption | null): void => {
+      setProjectSearchText('');
       if (val) {
         // If the selection corresponds to a recent that hasn't been loaded
         // from search yet, fetch the project before switching.
         const isUnloadedRecent =
           !loadedProjectIds.has(val.value.projectId) &&
-          recentProjectIdSet.has(val.value.projectId);
+          recentProjectIdSet.has(val.value.projectId) &&
+          val.value.projectId !== projectMatchedById?.projectId;
         if (isUnloadedRecent) {
           flowResult(setupStore.selectRecentProject(val.value.projectId)).catch(
             applicationStore.alertUnhandledError,
@@ -439,6 +484,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
         }
       } else {
         setupStore.resetProject();
+        setTimeout(() => projectSelectorRef.current?.focus(), 0);
       }
     };
     const showCreateProjectModal = (): void =>
@@ -457,12 +503,19 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
           flowResult(setupStore.loadProjects(input)).catch(
             applicationStore.alertUnhandledError,
           );
-        }, 500),
+        }, 250),
       [applicationStore, setupStore],
     );
-    const onProjectSearchTextChange = (value: string): void => {
+    const onProjectSearchTextChange = (
+      value: string,
+      actionChange: InputActionData,
+    ): void => {
+      if (actionChange.action !== 'input-change' || selectedProjectOption) {
+        return;
+      }
       if (value !== projectSearchText) {
         setProjectSearchText(value);
+        setupStore.filterListOnInput(value);
         debouncedLoadProjects.cancel();
         debouncedLoadProjects(value);
       }
@@ -515,9 +568,9 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
             `Can't edit current workspace as the current project is not configured`,
           );
         }
-        goButtonRef.current?.focus();
       } else {
         setupStore.resetWorkspace();
+        setTimeout(() => workspaceSelectorRef.current?.focus(), 0);
       }
     };
     const showCreateWorkspaceModal = (): void =>
@@ -560,6 +613,20 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
     useApplicationNavigationContext(
       LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.SETUP,
     );
+
+    const sharedSelectorProps = {
+      inputClassName: 'workspace-setup__selector__input',
+      classNames: {
+        placeholder: (): string => 'workspace-setup__selector__placeholder',
+      },
+      isClearable: true,
+      escapeClearsValue: true,
+      darkMode:
+        !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+      optionCustomization: {
+        rowHeight: window.innerHeight * 0.03,
+      },
+    };
 
     return (
       <div className="app__page">
@@ -616,7 +683,16 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             <SearchIcon className="workspace-setup__selector__content__icon--project" />
                           </div>
                           <CustomSelectorInput
-                            className="workspace-setup__selector__content__input"
+                            {...sharedSelectorProps}
+                            className={clsx(
+                              'workspace-setup__selector__content__input',
+                              {
+                                'workspace-setup__selector--locked': Boolean(
+                                  selectedProjectOption,
+                                ),
+                              },
+                            )}
+                            inputRef={projectSelectorRef}
                             options={projectOptions}
                             isLoading={
                               setupStore.loadProjectsState.isInProgress ||
@@ -624,28 +700,37 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             }
                             onInputChange={onProjectSearchTextChange}
                             inputValue={projectSearchText}
-                            onChange={onProjectChange}
+                            onKeyDown={(
+                              event: React.KeyboardEvent<HTMLDivElement>,
+                            ) =>
+                              handleKeyClicked(
+                                event,
+                                Boolean(selectedProjectOption),
+                              )
+                            }
+                            menuIsOpen={isProjectSelectorMenuOpen}
+                            onFocus={() => setIsProjectSelectorMenuOpen(true)}
+                            onMenuOpen={() =>
+                              setIsProjectSelectorMenuOpen(true)
+                            }
+                            onBlur={() => setIsProjectSelectorMenuOpen(false)}
+                            onChange={(option: ProjectOption | null) => {
+                              onProjectChange(option);
+                              setIsProjectSelectorMenuOpen(false);
+                            }}
                             value={selectedProjectOption}
                             placeholder="Search for project..."
-                            isClearable={true}
-                            escapeClearsValue={true}
-                            darkMode={
-                              !applicationStore.layoutService
-                                .TEMPORARY__isLightColorThemeEnabled
-                            }
+                            filterOption={(): boolean => true}
                             formatOptionLabel={getProjectOptionLabelFormatter(
                               applicationStore,
                               setupStore.currentProjectConfigurationStatus,
                             )}
-                            optionCustomization={{
-                              rowHeight: window.innerHeight * 0.03,
-                            }}
                           />
                         </div>
                       </div>
                       <div className="workspace-setup__selector">
                         <div className="workspace-setup__selector__header">
-                          Choose an existing workspace
+                          <span>Choose an existing workspace</span>
                         </div>
                         <div className="workspace-setup__selector__content">
                           <div
@@ -655,15 +740,29 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                             <GitBranchIcon className="workspace-setup__selector__content__icon--workspace" />
                           </div>
                           <CustomSelectorInput
-                            className="workspace-setup__selector__content__input"
+                            {...sharedSelectorProps}
+                            className={clsx(
+                              'workspace-setup__selector__content__input',
+                              {
+                                'workspace-setup__selector--locked': Boolean(
+                                  selectedWorkspaceOption,
+                                ),
+                              },
+                            )}
+                            inputRef={workspaceSelectorRef}
                             options={workspaceOptions}
                             onKeyDown={(
                               event: React.KeyboardEvent<HTMLDivElement>,
                             ) => {
-                              if (event.key === 'Enter') {
+                              if (event.key === ACTION_KEYS.ENTER) {
                                 goButtonRef.current?.focus();
                                 handleProceed();
+                                return;
                               }
+                              handleKeyClicked(
+                                event,
+                                Boolean(selectedWorkspaceOption),
+                              );
                             }}
                             disabled={
                               !setupStore.currentProject ||
@@ -688,15 +787,6 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                                     ? 'Choose an existing workspace'
                                     : 'You have no workspaces. Please create one to proceed...'
                             }
-                            isClearable={true}
-                            escapeClearsValue={true}
-                            darkMode={
-                              !applicationStore.layoutService
-                                .TEMPORARY__isLightColorThemeEnabled
-                            }
-                            optionCustomization={{
-                              rowHeight: window.innerHeight * 0.03,
-                            }}
                           />
                         </div>
                       </div>
@@ -707,7 +797,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                       <button
                         className="workspace-setup__new-workspace-btn"
                         onClick={showCreateWorkspaceModal}
-                        title="Create a Workspace after choosing one project"
+                        title="Create a workspace after choosing a project"
                         disabled={
                           !setupStore.currentProject ||
                           !setupStore.currentProjectConfigurationStatus
@@ -741,7 +831,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                         OR
                       </DividerWithText>
                       {setupStore.sandboxModal && <SandboxAccessModal />}
-                      <div className="workspace-setup__actions__button">
+                      <div className="workspace-setup__actions__button workspace-setup__actions__button--projects">
                         <button
                           className="workspace-setup__new-btn btn--dark"
                           onClick={showCreateProjectModal}
@@ -749,17 +839,22 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                         >
                           Create New Project
                         </button>
-                        {setupStore.sandboxProject === true &&
-                          setupStore.initState.hasCompleted &&
-                          setupStore.supportsCreatingSandboxProject && (
-                            <button
-                              className="workspace-setup__new-btn btn--dark"
-                              onClick={createSandboxProject}
-                              title="Create Sandbox Project"
-                            >
-                              Create Sandbox Project
-                            </button>
-                          )}
+                        {setupStore.supportsCreatingSandboxProject && (
+                          <button
+                            className="workspace-setup__new-btn btn--dark"
+                            onClick={createSandboxProject}
+                            title="Create Sandbox Project"
+                            disabled={
+                              !setupStore.initState.hasCompleted ||
+                              setupStore.loadSandboxState.isInProgress ||
+                              setupStore.createSandboxProjectState
+                                .isInProgress ||
+                              setupStore.sandboxProject !== true
+                            }
+                          >
+                            Create Sandbox Project
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -767,8 +862,7 @@ export const WorkspaceSetup = withWorkspaceSetupStore(
                 <div className="workspace-setup__content__cards">
                   <RuleEngagementCard />
                   <ShowcaseCard />
-                  {/* The SandboxCard and ProductionCard will appear only if the corresponding documentation entry is added in the config.json file for each realm.*/}
-                  <SandboxCard />
+                  <FaqCard />
                   <ProductionCard />
                 </div>
                 {/* NOTE: We do this to reset the initial state of the modals */}

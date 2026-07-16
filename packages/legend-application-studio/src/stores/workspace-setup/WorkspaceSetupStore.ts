@@ -27,7 +27,9 @@ import {
   guaranteeNonNullable,
   guaranteeType,
   exactSearch,
+  returnUndefOnError,
 } from '@finos/legend-shared';
+import { parseProjectIdentifier } from '@finos/legend-storage';
 import { generateSetupRoute } from '../../__lib__/LegendStudioNavigation.js';
 import {
   type SDLCServerClient,
@@ -43,7 +45,6 @@ import {
 import type { LegendStudioApplicationStore } from '../LegendStudioBaseStore.js';
 import {
   DEFAULT_TAB_SIZE,
-  DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
   DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH,
 } from '@finos/legend-application';
 import {
@@ -63,13 +64,33 @@ interface ImportProjectSuccessReport {
   reviewUrl: string;
 }
 
+export interface ProjectSearchResult {
+  projects: Project[];
+  projectMatchedById?: Project | undefined;
+}
+
+const PROD_PROJECT_ID_PREFIX = 'PROD';
+const cleanProjectIdInput = (searchText: string): string | undefined => {
+  const parsed = returnUndefOnError(() =>
+    parseProjectIdentifier(searchText.trim()),
+  );
+  if (parsed === undefined) {
+    return undefined;
+  }
+  return `${parsed.prefix ?? PROD_PROJECT_ID_PREFIX}-${parsed.id}`;
+};
+
+export const PROJECT_SEARCH_FETCH_LIMIT = 30;
+
 export class WorkspaceSetupStore {
   readonly applicationStore: LegendStudioApplicationStore;
 
   readonly sdlcServerClient: SDLCServerClient;
   readonly initState = ActionState.create();
 
-  projects: Project[] = [];
+  projectSearchResult: ProjectSearchResult = { projects: [] };
+  private projectSearchSyncCounter = 0;
+  private searchCache = new Map<string, ProjectSearchResult>();
   currentProject?: Project | undefined;
   currentProjectConfigurationStatus?: ProjectConfigurationStatus | undefined;
   loadProjectsState = ActionState.create();
@@ -107,7 +128,7 @@ export class WorkspaceSetupStore {
     sdlcServerClient: SDLCServerClient,
   ) {
     makeObservable(this, {
-      projects: observable,
+      projectSearchResult: observable,
       currentProject: observable,
       currentProjectConfigurationStatus: observable,
       importProjectSuccessReport: observable,
@@ -134,6 +155,7 @@ export class WorkspaceSetupStore {
       removeRecentProject: action,
       removeRecentWorkspace: action,
       clearRecents: action,
+      filterListOnInput: action,
       initialize: flow,
       loadProjects: flow,
       loadSandboxProject: flow,
@@ -432,13 +454,82 @@ export class WorkspaceSetupStore {
     }
   }
 
+  private findPrefixCache(searchText: string): ProjectSearchResult | undefined {
+    let bestKey: string | undefined;
+    let bestEntry: ProjectSearchResult | undefined;
+    for (const [key, entry] of this.searchCache) {
+      const isStrictPrefix =
+        key.length < searchText.length && searchText.startsWith(key);
+      if (!isStrictPrefix) {
+        continue;
+      }
+      if (bestKey === undefined || key.length > bestKey.length) {
+        bestKey = key;
+        bestEntry = entry;
+      }
+    }
+    if (!bestEntry) {
+      return undefined;
+    }
+
+    const normalizedSearch = searchText.toLowerCase();
+    const projectMatchesSearch = (project: Project): boolean =>
+      project.name.toLowerCase().includes(normalizedSearch);
+    return {
+      projects: bestEntry.projects.filter(projectMatchesSearch),
+      projectMatchedById:
+        bestEntry.projectMatchedById &&
+        projectMatchesSearch(bestEntry.projectMatchedById)
+          ? bestEntry.projectMatchedById
+          : undefined,
+    };
+  }
+
+  filterListOnInput(searchText: string): void {
+    if (searchText.length === 0) {
+      return;
+    }
+    const exact = this.searchCache.get(searchText);
+    if (exact) {
+      this.projectSearchResult = exact;
+      return;
+    }
+    const narrowed = this.findPrefixCache(searchText);
+    if (narrowed) {
+      this.projectSearchResult = narrowed;
+    }
+  }
+
   *loadProjects(searchText: string): GeneratorFn<void> {
     const isValidSearchString =
       searchText.length >= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH;
+    const searchSyncCounter = ++this.projectSearchSyncCounter;
+
+    const cached = this.searchCache.get(searchText);
+    if (cached) {
+      this.projectSearchResult = cached;
+      this.loadProjectsState.pass();
+      return;
+    }
+
+    this.projectSearchResult = { projects: this.projectSearchResult.projects };
     this.loadProjectsState.inProgress();
+
+    if (searchText.length > 0) {
+      const narrowed = this.findPrefixCache(searchText);
+      if (narrowed) {
+        this.projectSearchResult = narrowed;
+      }
+      if (searchText.length <= DEFAULT_TYPEAHEAD_SEARCH_MINIMUM_SEARCH_LENGTH) {
+        this.loadProjectsState.pass();
+        return;
+      }
+    }
+
     try {
-      this.projects = (
-        (yield this.sdlcServerClient.getProjects(
+      const cleanedProjectId = cleanProjectIdInput(searchText);
+      const [searchResults, projectByIdResult] = (yield Promise.all([
+        this.sdlcServerClient.getProjects(
           undefined,
           // We apply an exact search on the input text because we show exact searches with
           // custom selector. This avoids losing some results with the additional filtering.
@@ -448,11 +539,33 @@ export class WorkspaceSetupStore {
           // `loadSandboxProject`); exclude them here so they do not appear
           // in the main workspace setup project picker.
           [SANDBOX_SDLC_TAG],
-          DEFAULT_TYPEAHEAD_SEARCH_LIMIT,
-        )) as PlainObject<Project>[]
-      ).map((v) => Project.serialization.fromJson(v));
+          PROJECT_SEARCH_FETCH_LIMIT,
+        ),
+        cleanedProjectId
+          ? this.sdlcServerClient
+              .getProject(cleanedProjectId)
+              .catch(() => undefined)
+          : Promise.resolve(undefined),
+      ])) as [PlainObject<Project>[], PlainObject<Project> | undefined];
+
+      if (searchSyncCounter !== this.projectSearchSyncCounter) {
+        return;
+      }
+
+      const projects = searchResults.map((v) =>
+        Project.serialization.fromJson(v),
+      );
+      const projectMatchedById = projectByIdResult
+        ? Project.serialization.fromJson(projectByIdResult)
+        : undefined;
+
+      this.projectSearchResult = { projects, projectMatchedById };
+      this.searchCache.set(searchText, this.projectSearchResult);
       this.loadProjectsState.pass();
     } catch (error) {
+      if (searchSyncCounter !== this.projectSearchSyncCounter) {
+        return;
+      }
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
       this.loadProjectsState.fail();
@@ -742,6 +855,8 @@ export class WorkspaceSetupStore {
         `Project '${name}' is succesfully created`,
       );
 
+      this.searchCache.clear();
+
       yield flowResult(this.changeProject(createdProject));
 
       this.setShowCreateProjectModal(false);
@@ -779,6 +894,8 @@ export class WorkspaceSetupStore {
         projectId: report.project.projectId,
         reviewUrl: importReview.webURL,
       });
+
+      this.searchCache.clear();
 
       yield flowResult(this.changeProject(report.project));
     } catch (error) {

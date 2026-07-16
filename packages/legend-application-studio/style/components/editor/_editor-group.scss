@@ -250,8 +250,10 @@
     }
 
     &__content {
-      width: 70%;
+      width: clamp(70%, 100rem, 95%);
       height: 60%;
+      max-width: 130rem;
+      max-height: 84.4rem;
       flex-direction: column;
       display: flex;
       justify-content: space-between;
@@ -263,48 +265,99 @@
         width: 100%;
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: flex-start;
         flex-direction: column;
 
         &__container {
-          @include flexVCenter;
-
-          width: 100%;
-          height: 100%;
+          display: flex;
           justify-content: space-between;
+          align-items: flex-start;
+          width: 100%;
+          max-height: 42rem;
+
+          @media (width <= 800px) {
+            display: none;
+          }
         }
 
         .mui-card {
+          flex: 0 0 min(42rem, calc((100% - 6rem) / 3));
+          min-width: 0;
+          aspect-ratio: 420 / 422;
+          height: auto;
+          container-type: inline-size;
+          justify-content: flex-start;
+
           &__media {
             margin-top: 1vw;
             margin-left: 1vw;
           }
 
           &__header {
-            margin-top: 1.5vh;
-            font-size: min(2vw, 2vh);
-            margin-bottom: 1.5vh;
+            display: block;
+            height: auto;
+            width: 90%;
+            margin: 8cqw auto 5cqw;
+            font-size: clamp(1.4rem, 7.4cqw, 2.8rem);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
           }
 
           &__content {
-            font-size: min(1.5vh, 1.5vw);
+            height: auto;
+            min-height: 0;
+            flex: 1 1 auto;
+            font-size: clamp(1.2rem, 5.5cqw, 2.1rem);
+            overflow-y: hidden;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
           }
 
           &__card-action {
-            margin-bottom: 1.5vh;
+            margin-bottom: 8cqw;
 
             &__label {
-              font-size: min(1.5vw, 1.5vh);
+              font-size: clamp(1.2rem, 5.5cqw, 2.1rem);
+              line-height: 1;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
           }
         }
 
         .MuiCardContent-root {
-          margin-left: 1vw;
+          height: auto;
+          flex: 0 1 auto;
+          justify-content: flex-start;
+          margin-left: 0 !important;
+          padding: 0 !important;
+
+          &:last-child {
+            padding-bottom: 0 !important;
+          }
         }
 
         .MuiCardActions-root {
-          margin-left: 1vw;
+          height: auto;
+          margin-top: auto;
+          width: 90%;
+          margin-left: auto;
+          margin-right: auto;
+          padding: 0 !important;
+          justify-content: center;
+
+          .mui-card__card-action {
+            justify-content: center;
+            align-items: center;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            min-width: 0;
+          }
         }
       }
 
@@ -322,7 +375,7 @@
         font-size: min(2vw, 2vh);
         height: 10%;
         width: 100%;
-        margin-bottom: 1vh;
+        margin-bottom: 3vh;
       }
 
       &__actions {
@@ -330,43 +383,40 @@
       }
 
       &__items {
-        @include flexVCenter;
-
-        flex-wrap: wrap;
-        justify-content: space-between;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        column-gap: 8rem;
+        row-gap: 2rem;
         height: 70%;
-      }
-
-      &__items::after {
-        width: 33%;
-        content: '';
+        align-content: start;
       }
     }
 
     &__content__item {
-      @include flexVCenter;
-
-      height: 3.4rem;
-      width: 33%;
-      margin-bottom: 1rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      column-gap: 0.5rem;
+      min-height: 3.4rem;
     }
 
     &__content__item__label {
       @include flexVCenter;
 
-      height: 2.8rem;
       font-weight: 500;
       font-size: min(1.5vh, 1.5vw);
-      width: 65%;
+      min-width: 0;
       color: var(--color-text-link);
+      overflow-wrap: normal;
+      word-break: normal;
     }
 
     &__content__item__hot-keys {
       @include flexVCenter;
 
-      justify-content: flex-start;
-      height: 2.8rem;
-      width: 35%;
+      justify-content: flex-end;
+      column-gap: 0.4rem;
+      flex-shrink: 0;
     }
 
     .hotkey {
