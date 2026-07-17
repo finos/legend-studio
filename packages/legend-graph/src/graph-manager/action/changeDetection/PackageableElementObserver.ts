@@ -86,6 +86,7 @@ import type { Compute } from '../../../graph/metamodel/pure/compute/Compute.js';
 import { observe_Compute } from './ComputeObserveHelper.js';
 import type { IngestDefinition } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { MemSQLFunction } from '../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
+import { observe_IngestDefinition } from './IngestObserveHelper.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -231,7 +232,7 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 
   visit_IngestDefinition(element: IngestDefinition): void {
-    return this.visit_INTERNAL__UnknownPackageableElement(element);
+    observe_IngestDefinition(element, this.observerContext);
   }
 }
 

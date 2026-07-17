@@ -196,6 +196,7 @@ export class V1_ElementFirstPassBuilder
       `Element 'name' field is missing or empty`,
     );
     const metamodel = new IngestDefinition(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
     const appDir = element.appDirDeployment;
     if (appDir) {
       const metamodelApp = new AppDirNode();
@@ -235,7 +236,6 @@ export class V1_ElementFirstPassBuilder
       metamodel.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS = matViewDataSets;
     }
 
-    const path = V1_buildFullPath(element.package, element.name);
     V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
     this.context.currentSubGraph.INTERNAL__setOwnUnknownElement(
       path,

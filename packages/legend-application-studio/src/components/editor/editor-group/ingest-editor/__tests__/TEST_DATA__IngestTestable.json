@@ -1,0 +1,31 @@
+[
+  {
+    "path": "ingest::MatViewIngest",
+    "content": {
+      "_type": "ingestDefinition",
+      "name": "MatViewIngest",
+      "package": "ingest",
+      "owner": {
+        "_type": "appDir",
+        "production": {
+          "appDirId": 287440,
+          "level": "DEPLOYMENT"
+        }
+      },
+      "datasets": [
+        {
+          "name": "MATVIEW_DS",
+          "source": {
+            "_type": "FunctionSource",
+            "function": {
+              "_type": "lambda",
+              "body": [],
+              "parameters": []
+            }
+          }
+        }
+      ]
+    },
+    "classifierPath": "meta::external::ingest::specification::metamodel::IngestDefinition"
+  }
+]

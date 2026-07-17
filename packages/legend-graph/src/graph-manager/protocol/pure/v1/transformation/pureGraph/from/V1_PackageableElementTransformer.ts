@@ -106,6 +106,7 @@ import type { Compute } from '../../../../../../../graph/metamodel/pure/compute/
 import { V1_transformCompute } from './V1_ComputeTransformer.js';
 import type { IngestDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import { V1_transformIngestTestSuite } from './V1_IngestTransformer.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import type { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 
@@ -160,7 +161,10 @@ class V1_PackageableElementTransformer
   visit_IngestDefinition(element: IngestDefinition): V1_PackageableElement {
     const protocol = new V1_IngestDefinition();
     V1_initPackageableElement(protocol, element);
-    protocol.content = element.content;
+    protocol.content = element.content as Record<string, unknown>;
+    protocol.testSuites = element.tests.map((suite) =>
+      V1_transformIngestTestSuite(suite, this.context),
+    );
     // we don't take into account appDirDeployment here as it is still read only
     return protocol;
   }

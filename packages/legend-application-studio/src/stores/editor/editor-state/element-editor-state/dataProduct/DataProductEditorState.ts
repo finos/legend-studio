@@ -1046,6 +1046,7 @@ export class DataProductEditorState extends ElementEditorState {
     }
     this.selectedTab = DATA_PRODUCT_TAB.HOME;
     this.testableState = new DataProductTestableState(this);
+    this.testableState.init();
   }
 
   setDeployOnOpen(value: boolean): void {

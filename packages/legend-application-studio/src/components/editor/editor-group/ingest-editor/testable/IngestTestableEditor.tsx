@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,20 +35,18 @@ import {
   PanelHeader,
   PanelHeaderActionItem,
   PanelHeaderActions,
-  PanelLoadingIndicator,
   PlusIcon,
 } from '@finos/legend-art';
-import type { DataProductTestSuite } from '@finos/legend-graph';
-import type { DataProductEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
-import {
-  type DataProductTestableState,
-  type DataProductTestSuiteState,
-} from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
+import type {
+  IngestTestableState,
+  IngestTestSuiteState,
+} from '../../../../../stores/editor/editor-state/element-editor-state/ingest/IngestTestableState.js';
 import { forwardRef, useRef, useState } from 'react';
-import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 import { RenameModal } from '../../testable/TestableSharedComponents.js';
+import type { IngestTestSuite } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { testSuite_setId } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
 import { LakehouseTestSuiteEditor } from '../../testable/LakehouseTestableEditor.js';
 
@@ -60,18 +58,18 @@ interface ItemOption {
 }
 
 const CreateSuiteModal = observer(
-  (props: { testableState: DataProductTestableState; onClose: () => void }) => {
+  (props: { testableState: IngestTestableState; onClose: () => void }) => {
     const { testableState, onClose } = props;
     const editorStore = useEditorStore();
     const applicationStore = editorStore.applicationStore;
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [testName, setTestName] = useState<string | undefined>(undefined);
-    const [selectedAccessPointId, setSelectedAccessPointId] = useState<
-      string | undefined
-    >(undefined);
+    const [datasetName, setDatasetName] = useState<string | undefined>(
+      testableState.datasetNames[0],
+    );
 
-    const existingIds = testableState.dataProduct.tests.map((s) => s.id);
+    const existingIds = testableState.ingest.tests.map((suite) => suite.id);
     const generateSuiteName = (): string => {
       let idx = 1;
       while (existingIds.includes(`suite_${idx}`)) {
@@ -81,32 +79,28 @@ const CreateSuiteModal = observer(
     };
 
     const testError = validateTestableId(testName, undefined);
-
-    const accessPointOptions: ItemOption[] = testableState.ownAccessPoints.map(
-      (ap) => ({
-        value: ap.id,
-        label: ap.id,
+    const datasetOptions: ItemOption[] = testableState.datasetNames.map(
+      (name) => ({
+        value: name,
+        label: name,
       }),
     );
-    const selectedApOption =
-      accessPointOptions.find((o) => o.value === selectedAccessPointId) ?? null;
 
-    const isValid = testName && !testError && selectedAccessPointId;
+    const selectedDatasetOption =
+      datasetOptions.find((option) => option.value === datasetName) ?? null;
+
+    const isValid = testName && !testError && datasetName;
 
     const create = (): void => {
-      if (!testName || !selectedAccessPointId) {
+      if (!testName || !datasetName) {
         return;
       }
       flowResult(
-        testableState.createSuite(
-          generateSuiteName(),
-          testName,
-          selectedAccessPointId,
-        ),
+        testableState.createSuite(generateSuiteName(), testName, datasetName),
       )
-        .then((err) => {
-          if (err) {
-            applicationStore.notificationService.notifyError(err);
+        .then((error) => {
+          if (error) {
+            applicationStore.notificationService.notifyError(error);
           } else {
             onClose();
           }
@@ -144,22 +138,21 @@ const CreateSuiteModal = observer(
             />
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
-                Access Point to Test
+                MatView Dataset
               </div>
               <div className="panel__content__form__section__header__prompt">
-                Select the access point of the current DataProduct that the
-                first test in this suite will verify
+                Select the MatView dataset tested by this first test
               </div>
               <CustomSelectorInput
-                options={accessPointOptions}
-                onChange={(opt: ItemOption | null): void =>
-                  setSelectedAccessPointId(opt?.value)
+                options={datasetOptions}
+                onChange={(option: ItemOption | null): void =>
+                  setDatasetName(option?.value)
                 }
-                value={selectedApOption}
-                placeholder="Select access point..."
+                value={selectedDatasetOption}
+                placeholder="Select dataset..."
                 isClearable={false}
                 darkMode={true}
-                disabled={accessPointOptions.length === 0}
+                disabled={datasetOptions.length === 0}
               />
             </div>
           </ModalBody>
@@ -185,37 +178,37 @@ const CreateSuiteModal = observer(
 // ─── Create Test Modal ────────────────────────────────────────────────────────
 
 const CreateTestModal = observer(
-  (props: { suiteState: DataProductTestSuiteState; onClose: () => void }) => {
+  (props: { suiteState: IngestTestSuiteState; onClose: () => void }) => {
     const { suiteState, onClose } = props;
     const editorStore = suiteState.editorStore;
     const applicationStore = editorStore.applicationStore;
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const existingIds = suiteState.suite.tests.map((t) => t.id);
+    const existingIds = suiteState.suite.tests.map((test) => test.id);
     const [testName, setTestName] = useState<string | undefined>(undefined);
-    const [selectedAccessPointId, setSelectedAccessPointId] = useState<
-      string | undefined
-    >(undefined);
+    const [datasetName, setDatasetName] = useState<string | undefined>(
+      suiteState.testableState.datasetNames[0],
+    );
     const testNameError = validateTestableId(testName, existingIds);
 
-    const accessPointOptions: ItemOption[] =
-      suiteState.testableState.ownAccessPoints.map((ap) => ({
-        value: ap.id,
-        label: ap.id,
+    const datasetOptions: ItemOption[] =
+      suiteState.testableState.datasetNames.map((name) => ({
+        value: name,
+        label: name,
       }));
-    const selectedApOption =
-      accessPointOptions.find((o) => o.value === selectedAccessPointId) ?? null;
+    const selectedDatasetOption =
+      datasetOptions.find((option) => option.value === datasetName) ?? null;
 
-    const isValid = testName && !testNameError && selectedAccessPointId;
+    const isValid = testName && !testNameError && datasetName;
 
     const create = (): void => {
-      if (!testName || !selectedAccessPointId) {
+      if (!testName || !datasetName) {
         return;
       }
-      flowResult(suiteState.addNewTest(testName, selectedAccessPointId))
-        .then((err) => {
-          if (err) {
-            applicationStore.notificationService.notifyError(err);
+      flowResult(suiteState.addNewTest(testName, datasetName))
+        .then((error) => {
+          if (error) {
+            applicationStore.notificationService.notifyError(error);
           } else {
             onClose();
           }
@@ -253,22 +246,21 @@ const CreateTestModal = observer(
             />
             <div className="panel__content__form__section">
               <div className="panel__content__form__section__header__label">
-                Access Point to Test
+                MatView Dataset
               </div>
               <div className="panel__content__form__section__header__prompt">
-                Select which access point of the DataProduct this test will
-                verify
+                Select which MatView dataset this test will verify
               </div>
               <CustomSelectorInput
-                options={accessPointOptions}
-                onChange={(opt: ItemOption | null): void =>
-                  setSelectedAccessPointId(opt?.value)
+                options={datasetOptions}
+                onChange={(option: ItemOption | null): void =>
+                  setDatasetName(option?.value)
                 }
-                value={selectedApOption}
-                placeholder="Select access point..."
+                value={selectedDatasetOption}
+                placeholder="Select dataset..."
                 isClearable={false}
                 darkMode={true}
-                disabled={accessPointOptions.length === 0}
+                disabled={datasetOptions.length === 0}
               />
             </div>
           </ModalBody>
@@ -297,14 +289,14 @@ const SuiteHeaderTabContextMenu = observer(
   forwardRef<
     HTMLDivElement,
     {
-      testSuite: DataProductTestSuite;
-      testableState: DataProductTestableState;
+      testSuite: IngestTestSuite;
+      testableState: IngestTestableState;
     }
   >(function SuiteHeaderTabContextMenu(props, ref) {
     const { testSuite, testableState } = props;
     const deleteSuite = (): void => {
       const suiteState = testableState.suiteStates.find(
-        (s) => s.suite === testSuite,
+        (state) => state.suite === testSuite,
       );
       if (suiteState) {
         testableState.deleteSuite(suiteState);
@@ -323,33 +315,26 @@ const SuiteHeaderTabContextMenu = observer(
 
 // ─── Main Testing Tab ─────────────────────────────────────────────────────────
 
-export const DataProductTestableEditor = observer(
-  (props: {
-    dataProductEditorState: DataProductEditorState;
-    isReadOnly: boolean;
-  }) => {
-    const { dataProductEditorState, isReadOnly } = props;
-    const testableState = dataProductEditorState.testableState;
+export const IngestTestableEditor = observer(
+  (props: { testableState: IngestTestableState }) => {
+    const { testableState } = props;
     const selectedSuiteState = testableState.selectedSuiteState;
-    const dp = testableState.dataProduct;
+    const isReadOnly = testableState.ingestDefinitionEditorState.isReadOnly;
+    const ingest = testableState.ingest;
 
     const addSuite = (): void => {
       testableState.setShowCreateSuiteModal(true);
     };
 
-    const changeSuite = (suite: DataProductTestSuite): void => {
+    const changeSuite = (suite: IngestTestSuite): void => {
       testableState.changeSuite(suite);
     };
 
-    const renameSuite = (val: string): void =>
-      testSuite_setId(guaranteeNonNullable(testableState.suiteToRename), val);
+    const renameSuite = (value: string): void =>
+      testSuite_setId(guaranteeNonNullable(testableState.suiteToRename), value);
 
     return (
       <Panel className="service-test-suite-editor">
-        <PanelLoadingIndicator
-          isLoading={testableState.runningAllTestsState.isInProgress}
-        />
-
         {testableState.showCreateSuiteModal && (
           <CreateSuiteModal
             testableState={testableState}
@@ -365,10 +350,10 @@ export const DataProductTestableEditor = observer(
         )}
 
         <PanelHeader>
-          {dp.tests.length ? (
+          {ingest.tests.length ? (
             <PanelHeader className="service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
               <div className="uml-element-editor__tabs">
-                {dp.tests.map((suite) => (
+                {ingest.tests.map((suite) => (
                   <div
                     key={suite.id}
                     onClick={(): void => changeSuite(suite)}
@@ -409,7 +394,7 @@ export const DataProductTestableEditor = observer(
               isReadOnly={isReadOnly}
             />
           )}
-          {!dp.tests.length && (
+          {!ingest.tests.length && (
             <BlankPanelPlaceholder
               text="Add Test Suite"
               onClick={addSuite}

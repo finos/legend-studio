@@ -55,6 +55,12 @@ import type { AuthContextProps } from 'react-oidc-context';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
 import { LineageState } from '@finos/legend-query-builder';
 import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
+import { IngestTestableState } from './IngestTestableState.js';
+
+export enum INGEST_DEFINITION_TAB {
+  DEFINITION = 'Definition',
+  TESTING = 'Testing',
+}
 
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
   const config = new EditorInitialConfiguration();
@@ -80,11 +86,13 @@ export const generateUrlToDeployOnOpen = (
 
 const PARSER_SECTION = `###Lakehouse`;
 export class IngestDefinitionEditorState extends ElementEditorState {
+  selectedTab = INGEST_DEFINITION_TAB.DEFINITION;
   validateAndDeployResponse: ValidateAndDeploymentResponse | undefined;
   deploymentState = ActionState.create();
   lineageGenerationState = ActionState.create();
   deployOnOpen = false;
   lineageState: LineageState;
+  ingestTestableState: IngestTestableState;
 
   constructor(
     editorStore: EditorStore,
@@ -94,11 +102,13 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     super(editorStore, element);
 
     makeObservable(this, {
+      selectedTab: observable,
       deploymentState: observable,
       deployOnOpen: observable,
       setDeployOnOpen: observable,
       validateAndDeployResponse: observable,
       deploymentResponse: computed,
+      setSelectedTab: action,
       setValidateAndDeployResponse: action,
       init_with_deploy: flow,
       deploy: flow,
@@ -112,6 +122,12 @@ export class IngestDefinitionEditorState extends ElementEditorState {
         config.elementEditorConfiguration.deployOnOpen ?? false;
     }
     this.lineageState = new LineageState(this.editorStore.applicationStore);
+    this.ingestTestableState = new IngestTestableState(this);
+    this.ingestTestableState.init();
+  }
+
+  setSelectedTab(val: INGEST_DEFINITION_TAB): void {
+    this.selectedTab = val;
   }
 
   get deploymentResponse():

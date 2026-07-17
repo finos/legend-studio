@@ -16,6 +16,7 @@
 
 import {
   UnsupportedOperationError,
+  customList,
   usingConstantValueSchema,
   usingModelSchema,
   type PlainObject,
@@ -26,6 +27,8 @@ import {
   V1_IngestDatasetSource,
   V1_IngestDefinition,
   V1_IngestDefinitionContent,
+  V1_IngestMatViewTest,
+  V1_IngestTestSuite,
   type V1_WriteMode,
   V1_WriteModeType,
   V1_AppendOnly,
@@ -59,6 +62,15 @@ import {
   V1_ProducerEnvironmentType,
   type V1_ProducerEnvironment,
 } from '../../../lakehouse/ingest/V1_LakehouseProducerEnvironment.js';
+import {
+  V1_deserializeDataResolver,
+  V1_serializeDataResolver,
+} from './V1_DataResolverSerializationHelper.js';
+import type { V1_DataResolver } from '../../../model/data/V1_DataResolver.js';
+import {
+  V1_deserializeTestAssertion,
+  V1_serializeTestAssertion,
+} from './V1_TestSerializationHelper.js';
 
 type IngestDefinitionInterface = {
   appDirDeployment?: PlainObject<V1_AppDirNode> | undefined;
@@ -66,26 +78,6 @@ type IngestDefinitionInterface = {
     prodParallel?: PlainObject<V1_AppDirNode> | undefined;
     production?: PlainObject<V1_AppDirNode> | undefined;
   };
-};
-
-export const V1_createIngestDef = (
-  name: string,
-  packagePath: string,
-  json: PlainObject<V1_PackageableElement>,
-): V1_IngestDefinition => {
-  const ingestDef = new V1_IngestDefinition();
-  const jsonType = json as IngestDefinitionInterface;
-  const appDir =
-    jsonType.appDirDeployment ??
-    jsonType.owner?.prodParallel ??
-    jsonType.owner?.production;
-  ingestDef.name = name;
-  ingestDef.appDirDeployment = appDir
-    ? deserialize(V1_AppDirNodeModelSchema, appDir)
-    : undefined;
-  ingestDef.package = packagePath;
-  ingestDef.content = json;
-  return ingestDef;
 };
 
 export const V1_OpenCatalogModelSchema = createModelSchema(V1_OpenCatalog, {
@@ -259,6 +251,44 @@ export const V1_IngestDatasetModelSchema = createModelSchema(V1_IngestDataset, {
   ),
 });
 
+const V1_ingestMatViewTestModelSchema = createModelSchema(
+  V1_IngestMatViewTest,
+  {
+    assertions: list(
+      custom(
+        (val) => V1_serializeTestAssertion(val),
+        (val) => V1_deserializeTestAssertion(val),
+      ),
+    ),
+    datasetId: primitive(),
+    doc: optional(primitive()),
+    id: primitive(),
+  },
+);
+
+const V1_ingestTestSuiteModelSchema = createModelSchema(V1_IngestTestSuite, {
+  doc: optional(primitive()),
+  id: primitive(),
+  testData: customList(
+    (value: V1_DataResolver) => V1_serializeDataResolver(value, []),
+    (value) => V1_deserializeDataResolver(value, []),
+    {
+      INTERNAL__forceReturnEmptyInTest: true,
+    },
+  ),
+  tests: list(
+    custom(
+      (value) => serialize(V1_ingestMatViewTestModelSchema, value),
+      (value) => deserialize(V1_ingestMatViewTestModelSchema, value),
+    ),
+  ),
+});
+
+export const V1_serializeIngestTestSuite = (
+  suite: V1_IngestTestSuite,
+): PlainObject<V1_IngestTestSuite> =>
+  serialize(V1_ingestTestSuiteModelSchema, suite);
+
 export const V1_IngestDefinitionContentModelSchema = createModelSchema(
   V1_IngestDefinitionContent,
   {
@@ -281,3 +311,30 @@ export const V1_serializeIngestDefinitionContent = (
   content: V1_IngestDefinitionContent,
 ): PlainObject<V1_IngestDefinitionContent> =>
   serialize(V1_IngestDefinitionContentModelSchema, content);
+
+export const V1_createIngestDef = (
+  name: string,
+  packagePath: string,
+  json: PlainObject<V1_PackageableElement>,
+): V1_IngestDefinition => {
+  const ingestDef = new V1_IngestDefinition();
+  const jsonType = json as IngestDefinitionInterface;
+  const appDir =
+    jsonType.appDirDeployment ??
+    jsonType.owner?.prodParallel ??
+    jsonType.owner?.production;
+  ingestDef.name = name;
+  ingestDef.appDirDeployment = appDir
+    ? deserialize(V1_AppDirNodeModelSchema, appDir)
+    : undefined;
+  ingestDef.package = packagePath;
+  const jsonTestSuites = (
+    json as { testSuites?: PlainObject<V1_IngestTestSuite>[] }
+  ).testSuites;
+  ingestDef.testSuites = (jsonTestSuites ?? []).map((suite) =>
+    deserialize(V1_ingestTestSuiteModelSchema, suite),
+  );
+  const { testSuites: _testSuites, ...contentWithoutTestSuites } = json;
+  ingestDef.content = contentWithoutTestSuites;
+  return ingestDef;
+};

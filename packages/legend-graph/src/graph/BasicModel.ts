@@ -276,6 +276,7 @@ export abstract class BasicModel {
       ...this.ownServices,
       ...this.ownMappings,
       ...this.ownDataProducts,
+      ...this.ownIngests,
       // TODO: re-add functions once function test runner has been completed in backend
       // ...this.ownFunctions,
     ];

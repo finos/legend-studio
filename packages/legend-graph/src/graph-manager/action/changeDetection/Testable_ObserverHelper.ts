@@ -44,6 +44,7 @@ import {
   observe_FunctionParameterValue,
   observe_FunctionTest,
 } from './DomainObserverHelper.js';
+import { IngestMatViewTest } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 
 export const observe_DataProductAccessPointTest = skipObserved(
   (metamodel: DataProductAccessPointTest): DataProductAccessPointTest => {
@@ -56,6 +57,20 @@ export const observe_DataProductAccessPointTest = skipObserved(
       hashCode: computed,
     });
     metamodel.parameters?.forEach(observe_FunctionParameterValue);
+    metamodel.assertions.forEach(observe_TestAssertion);
+    return metamodel;
+  },
+);
+
+export const observe_IngestMatViewTest = skipObserved(
+  (metamodel: IngestMatViewTest): IngestMatViewTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      doc: observable,
+      datasetId: observable,
+      assertions: observable,
+      hashCode: computed,
+    });
     metamodel.assertions.forEach(observe_TestAssertion);
     return metamodel;
   },
@@ -109,6 +124,8 @@ export function observe_AtomicTest(
     return observe_FunctionTest(metamodel);
   } else if (metamodel instanceof DataProductAccessPointTest) {
     return observe_DataProductAccessPointTest(metamodel);
+  } else if (metamodel instanceof IngestMatViewTest) {
+    return observe_IngestMatViewTest(metamodel);
   }
   const extraAtomicTestBuilder = context.plugins.flatMap(
     (plugin) =>

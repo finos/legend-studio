@@ -136,8 +136,14 @@ import {
   type V1_Compute,
 } from '../../model/packageableElements/compute/V1_Compute.js';
 import { V1_computeModelSchema } from './serializationHelpers/V1_ComputeSerializationHelper.js';
-import { V1_INGEST_DEFINITION_TYPE } from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
-import { V1_createIngestDef } from './serializationHelpers/V1_IngestSerializationHelper.js';
+import {
+  V1_INGEST_DEFINITION_TYPE,
+  type V1_IngestDefinition,
+} from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import {
+  V1_createIngestDef,
+  V1_serializeIngestTestSuite,
+} from './serializationHelpers/V1_IngestSerializationHelper.js';
 import type { V1_MemSQLFunction } from '../../model/packageableElements/function/V1_MemSQLFunction.js';
 
 class V1_PackageableElementSerializer
@@ -180,9 +186,18 @@ class V1_PackageableElementSerializer
   }
 
   visit_IngestDefinition(
-    element: V1_INTERNAL__UnknownPackageableElement,
+    element: V1_IngestDefinition,
   ): PlainObject<V1_PackageableElement> {
-    return this.visit_INTERNAL__UnknownPackageableElement(element);
+    return {
+      ...element.content,
+      ...(element.testSuites.length
+        ? {
+            testSuites: element.testSuites.map((suite) =>
+              V1_serializeIngestTestSuite(suite),
+            ),
+          }
+        : {}),
+    };
   }
 
   visit_INTERNAL__UnknownFunctionActivator(

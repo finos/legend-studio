@@ -30,8 +30,13 @@ import {
   EyeIcon,
   ModalHeaderActions,
   CustomSelectorInput,
+  FlaskIcon,
+  clsx,
 } from '@finos/legend-art';
-import { IngestDefinitionEditorState } from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
+import {
+  INGEST_DEFINITION_TAB,
+  IngestDefinitionEditorState,
+} from '../../../../stores/editor/editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import React, { useEffect, useState } from 'react';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
@@ -44,6 +49,7 @@ import {
   LineageViewerContent,
 } from '@finos/legend-query-builder';
 import type { MatViewDataSet } from '@finos/legend-graph';
+import { IngestTestableEditor } from './testable/IngestTestableEditor.js';
 
 export const IngestLineageModal = observer(
   (props: { ingestDefinitionEditorState: IngestDefinitionEditorState }) => {
@@ -171,6 +177,19 @@ export const IngestDefinitionEditor = observer(() => {
     );
   const ingestDef = ingestDefinitionEditorState.ingest;
   const isValidForLineage = ingestDefinitionEditorState.validForLineageViewer;
+  const selectedTab = ingestDefinitionEditorState.selectedTab;
+
+  const sidebarTabs = [
+    {
+      label: INGEST_DEFINITION_TAB.DEFINITION,
+      icon: <EyeIcon />,
+    },
+    {
+      label: INGEST_DEFINITION_TAB.TESTING,
+      icon: <FlaskIcon />,
+    },
+  ];
+
   useEffect(() => {
     ingestDefinitionEditorState.generateElementGrammar();
   }, [ingestDefinitionEditorState]);
@@ -195,44 +214,81 @@ export const IngestDefinitionEditor = observer(() => {
   };
 
   return (
-    <div className="data-product-editor">
-      <PanelHeader
-        title="Ingest"
-        titleContent={ingestDef.name}
-        darkMode={true}
-        isReadOnly={true}
-      ></PanelHeader>
-      <PanelContent>
-        <PanelHeader title="deployment" darkMode={true}>
-          <PanelHeaderActions>
-            <div className="panel__header__actions">
-              <div className="btn__dropdown-combo btn__dropdown-combo--primary">
-                <button
-                  className="btn__dropdown-combo__label"
-                  onClick={viewLineage}
-                  tabIndex={-1}
-                  disabled={!isValidForLineage}
-                >
-                  <EyeIcon className="btn__dropdown-combo__label__icon" />
-                  <div className="btn__dropdown-combo__label__title">
-                    Lineage
-                  </div>
-                </button>
-              </div>
-            </div>
-          </PanelHeaderActions>
-        </PanelHeader>
-        <PanelContent>
-          <CodeEditor
-            inputValue={ingestDefinitionEditorState.textContent}
-            isReadOnly={true}
-            language={CODE_EDITOR_LANGUAGE.PURE}
-          />
-        </PanelContent>
-        <IngestLineageModal
-          ingestDefinitionEditorState={ingestDefinitionEditorState}
+    <div className="ingest-definition-editor">
+      <div className="panel">
+        <PanelHeader
+          title="Ingest"
+          titleContent={ingestDef.name}
+          darkMode={true}
+          isReadOnly={true}
         />
-      </PanelContent>
+        <div className="panel ingest-definition-editor__content-panel">
+          <div className="ingest-definition-editor__activity-bar">
+            <div className="ingest-definition-editor__activity-bar__items">
+              {sidebarTabs.map((activity) => (
+                <button
+                  key={activity.label}
+                  className={clsx(
+                    'ingest-definition-editor__activity-bar__item',
+                    {
+                      'ingest-definition-editor__activity-bar__item--active':
+                        selectedTab === activity.label,
+                    },
+                  )}
+                  onClick={() =>
+                    ingestDefinitionEditorState.setSelectedTab(activity.label)
+                  }
+                  tabIndex={-1}
+                  title={activity.label}
+                >
+                  {activity.icon}
+                  {activity.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="panel ingest-definition-editor__main-panel">
+            {selectedTab === INGEST_DEFINITION_TAB.DEFINITION && (
+              <PanelContent>
+                <PanelHeader title="deployment" darkMode={true}>
+                  <PanelHeaderActions>
+                    <div className="panel__header__actions">
+                      <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                        <button
+                          className="btn__dropdown-combo__label"
+                          onClick={viewLineage}
+                          tabIndex={-1}
+                          disabled={!isValidForLineage}
+                        >
+                          <EyeIcon className="btn__dropdown-combo__label__icon" />
+                          <div className="btn__dropdown-combo__label__title">
+                            Lineage
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+                  </PanelHeaderActions>
+                </PanelHeader>
+                <PanelContent>
+                  <CodeEditor
+                    inputValue={ingestDefinitionEditorState.textContent}
+                    isReadOnly={true}
+                    language={CODE_EDITOR_LANGUAGE.PURE}
+                  />
+                </PanelContent>
+                <IngestLineageModal
+                  ingestDefinitionEditorState={ingestDefinitionEditorState}
+                />
+              </PanelContent>
+            )}
+            {selectedTab === INGEST_DEFINITION_TAB.TESTING && (
+              <IngestTestableEditor
+                testableState={ingestDefinitionEditorState.ingestTestableState}
+              />
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 });

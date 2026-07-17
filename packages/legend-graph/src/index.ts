@@ -816,6 +816,7 @@ export * from './graph/metamodel/pure/dataProduct/test/DataProductAccessPointTes
 export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 export * from './graph/metamodel/pure/data/DataResolver.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
+export * from './graph-manager/action/changeDetection/IngestObserveHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 

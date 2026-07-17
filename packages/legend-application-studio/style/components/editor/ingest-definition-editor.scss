@@ -16,6 +16,106 @@
 
 @use 'mixins' as *;
 
+.ingest-definition-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg-app);
+
+  .panel {
+    height: 100%;
+    width: 100%;
+
+    &__header {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      color: var(--color-text-secondary);
+      font-weight: bold;
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
+    }
+
+    &__header__title__label {
+      background: var(--color-bg-tag);
+    }
+
+    &__header__action {
+      color: var(--color-text-muted);
+
+      :hover {
+        color: var(--color-text-secondary);
+      }
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-text-disabled) !important;
+    }
+
+    &__content {
+      background: var(--color-bg-app);
+      flex-direction: column;
+      display: flex;
+      height: 100%;
+      width: 100%;
+      overflow-y: auto;
+    }
+  }
+
+  &__content-panel {
+    padding: 1rem;
+    flex-direction: row;
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+
+  &__activity-bar {
+    display: flex;
+    flex-direction: column;
+    width: 6.2rem;
+    align-items: center;
+    background: var(--color-bg-panel);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 0.2rem;
+
+    &__items {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    &__item {
+      @include flexCenter;
+      @include flexConstantDimension;
+
+      height: 5rem;
+      width: 6rem;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      flex-direction: column;
+      font-size: 1rem;
+      margin: 0.5rem 0;
+
+      svg {
+        font-size: 2.2rem;
+      }
+
+      &:hover {
+        color: var(--color-text-secondary);
+      }
+
+      &--active {
+        color: var(--color-text-secondary);
+      }
+    }
+  }
+
+  &__main-panel {
+    flex: 1;
+  }
+}
+
 .ingestion-modal {
   padding: 0;
   height: 60vh;
