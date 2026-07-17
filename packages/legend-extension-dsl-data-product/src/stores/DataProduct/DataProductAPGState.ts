@@ -369,12 +369,6 @@ export class DataProductAPGState {
         this.dataProductViewerState.entitlementsDataProductDetails,
         'Entitlements data product details are required to fetch approved workforce users',
       );
-      console.log(
-        '[fetchApprovedWorkforceUsers] resource:',
-        details.dataProduct.name,
-      );
-      console.log('[fetchApprovedWorkforceUsers] did:', details.deploymentId);
-      console.log('[fetchApprovedWorkforceUsers] apg:', this.apg.id);
       const raw =
         (yield lakehouseContractServerClient.getApprovedWorkforceUsersForAPG(
           details.dataProduct.name,

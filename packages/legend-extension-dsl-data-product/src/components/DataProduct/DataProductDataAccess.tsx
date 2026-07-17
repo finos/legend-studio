@@ -1805,9 +1805,19 @@ export const DataProductAccessPointGroupViewer = observer(
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
 
+    const currentUser =
+      apgState.applicationStore.identityService.currentUser.toLowerCase();
+    const isCurrentUserOwner = (dataAccessState?.dataProductOwners ?? []).some(
+      (owner) => owner.toLowerCase() === currentUser,
+    );
+    const canViewApprovedUsers =
+      isCurrentUserOwner &&
+      apgState.access !== AccessPointGroupAccess.ENTERPRISE;
+
     useEffect(() => {
       if (
         dataAccessState &&
+        canViewApprovedUsers &&
         apgState.fetchingApprovedWorkforceUsersState.isInInitialState
       ) {
         flowResult(
@@ -1817,7 +1827,12 @@ export const DataProductAccessPointGroupViewer = observer(
           ),
         ).catch(() => undefined);
       }
-    }, [apgState, dataAccessState, auth.user?.access_token]);
+    }, [
+      apgState,
+      dataAccessState,
+      canViewApprovedUsers,
+      auth.user?.access_token,
+    ]);
 
     const apgContractErrors = useMemo(() => {
       const missingIngests = apgState.missingIngests ?? [];
@@ -2095,6 +2110,7 @@ export const DataProductAccessPointGroupViewer = observer(
           </div>
           <Box className="data-product__viewer__access-group__item__header__actions">
             {dataAccessState &&
+              canViewApprovedUsers &&
               (apgState.fetchingApprovedWorkforceUsersState.isInInitialState ||
                 apgState.fetchingApprovedWorkforceUsersState.isInProgress ||
                 apgState.approvedWorkforceUsers.length > 0) && (
