@@ -117,6 +117,9 @@ export class DataProductAPGState {
     approvedUsers: V1_User[];
   }[] = [];
 
+  approvedWorkforceUsers: string[] = [];
+  readonly fetchingApprovedWorkforceUsersState = ActionState.create();
+
   // Fallback: access derived from data requests when no contract exists
   dataRequestAccess: V1_EnrichedUserApprovalStatus | undefined = undefined;
   dataRequestGuid: string | undefined = undefined;
@@ -146,6 +149,9 @@ export class DataProductAPGState {
       associatedUserContract: observable,
       userAccessStatus: observable,
       associatedSystemAccountContractsAndApprovedUsers: observable,
+      approvedWorkforceUsers: observable,
+      setApprovedWorkforceUsers: action,
+      fetchApprovedWorkforceUsers: flow,
       setApgContracts: action,
       setAssociatedUserContract: action,
       fetchAndSetAssociatedSystemAccountContracts: flow,
@@ -346,6 +352,47 @@ export class DataProductAPGState {
       );
     } finally {
       this.fetchingApprovedContractsState.complete();
+    }
+  }
+
+  setApprovedWorkforceUsers(users: string[]): void {
+    this.approvedWorkforceUsers = users;
+  }
+
+  *fetchApprovedWorkforceUsers(
+    lakehouseContractServerClient: LakehouseContractServerClient,
+    token: string | undefined,
+  ): GeneratorFn<void> {
+    this.fetchingApprovedWorkforceUsersState.inProgress();
+    try {
+      const details = guaranteeNonNullable(
+        this.dataProductViewerState.entitlementsDataProductDetails,
+        'Entitlements data product details are required to fetch approved workforce users',
+      );
+      console.log(
+        '[fetchApprovedWorkforceUsers] resource:',
+        details.dataProduct.name,
+      );
+      console.log('[fetchApprovedWorkforceUsers] did:', details.deploymentId);
+      console.log('[fetchApprovedWorkforceUsers] apg:', this.apg.id);
+      const raw =
+        (yield lakehouseContractServerClient.getApprovedWorkforceUsersForAPG(
+          details.dataProduct.name,
+          details.deploymentId,
+          this.apg.id,
+          token,
+        )) as PlainObject<unknown>;
+      const users =
+        deserialize(V1_DataContractApprovedUsersResponseModelSchema, raw)
+          .approvedUsers ?? [];
+      this.setApprovedWorkforceUsers(users.map((u) => u.name));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(
+        `Error fetching approved users for access point group: ${error.message}`,
+      );
+    } finally {
+      this.fetchingApprovedWorkforceUsersState.complete();
     }
   }
 

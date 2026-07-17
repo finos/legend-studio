@@ -98,6 +98,18 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       this._token(token),
     );
 
+  getApprovedWorkforceUsersForAPG = (
+    resource: string,
+    did: number,
+    apg: string,
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataContractApprovedUsersResponse>> =>
+    this.get(
+      `${this._dataContracts()}/approvedWorkforceUsers/resource/${encodeURIComponent(resource)}/did/${encodeURIComponent(did)}/apg/${encodeURIComponent(apg)}`,
+      {},
+      this._token(token),
+    );
+
   getContractUserStatus = (
     contractId: string,
     userId: string,

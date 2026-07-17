@@ -85,6 +85,8 @@ import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
+  Avatar,
+  AvatarGroup,
   Box,
   Button,
   ButtonGroup,
@@ -94,10 +96,12 @@ import {
   InputAdornment,
   Menu,
   MenuItem,
+  Popover,
   Tab,
   Tabs,
   TextField,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -150,6 +154,7 @@ import {
   buildContractErrorsRoot,
 } from './DataContract/DataAccessRequestViewer.js';
 import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
+import { UserRenderer } from '../UserRenderer/UserRenderer.js';
 import {
   buildIngestDefinitionOperationsPath,
   buildIngestDefinitionUrnFromDataset,
@@ -1783,6 +1788,8 @@ export const DataProductAccessPointGroupViewer = observer(
       useState(false);
     const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
       useState(false);
+    const [approvedUsersAnchorEl, setApprovedUsersAnchorEl] =
+      useState<HTMLElement | null>(null);
     const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(`apg-${apgState.apg.id}`);
@@ -1797,6 +1804,20 @@ export const DataProductAccessPointGroupViewer = observer(
       return () =>
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
+
+    useEffect(() => {
+      if (
+        dataAccessState &&
+        apgState.fetchingApprovedWorkforceUsersState.isInInitialState
+      ) {
+        flowResult(
+          apgState.fetchApprovedWorkforceUsers(
+            dataAccessState.lakehouseContractServerClient,
+            auth.user?.access_token,
+          ),
+        ).catch(() => undefined);
+      }
+    }, [apgState, dataAccessState, auth.user?.access_token]);
 
     const apgContractErrors = useMemo(() => {
       const missingIngests = apgState.missingIngests ?? [];
@@ -2073,6 +2094,96 @@ export const DataProductAccessPointGroupViewer = observer(
             </button>
           </div>
           <Box className="data-product__viewer__access-group__item__header__actions">
+            {dataAccessState &&
+              (apgState.fetchingApprovedWorkforceUsersState.isInInitialState ||
+                apgState.fetchingApprovedWorkforceUsersState.isInProgress ||
+                apgState.approvedWorkforceUsers.length > 0) && (
+                <>
+                  <div
+                    className="data-product__viewer__header__type__owners"
+                    onClick={(e) =>
+                      setApprovedUsersAnchorEl(
+                        approvedUsersAnchorEl ? null : e.currentTarget,
+                      )
+                    }
+                    role="button"
+                    tabIndex={0}
+                    title="View approved users"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        setApprovedUsersAnchorEl(
+                          approvedUsersAnchorEl ? null : e.currentTarget,
+                        );
+                      }
+                    }}
+                  >
+                    {apgState.fetchingApprovedWorkforceUsersState
+                      .isInInitialState ||
+                    apgState.fetchingApprovedWorkforceUsersState
+                      .isInProgress ? (
+                      <CircularProgress size={16} />
+                    ) : (
+                      <AvatarGroup
+                        max={3}
+                        className="data-product__viewer__header__type__owners__avatars"
+                      >
+                        {apgState.approvedWorkforceUsers.map((user) => {
+                          const imgUrl =
+                            apgState.dataProductViewerState.userSearchService?.userProfileImageUrl?.replace(
+                              '{userId}',
+                              user,
+                            );
+                          return (
+                            <Avatar
+                              key={user}
+                              {...(imgUrl ? { src: imgUrl } : {})}
+                              alt={user}
+                            >
+                              {user.substring(0, 2).toUpperCase()}
+                            </Avatar>
+                          );
+                        })}
+                      </AvatarGroup>
+                    )}
+                    <Typography
+                      variant="caption"
+                      className="data-product__viewer__header__type__owners__label"
+                    >
+                      Approved Users
+                    </Typography>
+                  </div>
+                  <Popover
+                    open={Boolean(approvedUsersAnchorEl)}
+                    anchorEl={approvedUsersAnchorEl}
+                    onClose={() => setApprovedUsersAnchorEl(null)}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                    transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                    disableScrollLock={true}
+                  >
+                    <Box className="lakehouse-data-product-owners-tooltip data-product__viewer__access-group__approved-users__popover-content">
+                      {apgState.fetchingApprovedWorkforceUsersState
+                        .isInInitialState ||
+                      apgState.fetchingApprovedWorkforceUsersState
+                        .isInProgress ? (
+                        <CubesLoadingIndicator isLoading={true}>
+                          <CubesLoadingIndicatorIcon />
+                        </CubesLoadingIndicator>
+                      ) : (
+                        apgState.approvedWorkforceUsers.map((user) => (
+                          <UserRenderer
+                            key={user}
+                            userId={user}
+                            applicationStore={apgState.applicationStore}
+                            userSearchService={
+                              apgState.dataProductViewerState.userSearchService
+                            }
+                          />
+                        ))
+                      )}
+                    </Box>
+                  </Popover>
+                </>
+              )}
             {renderAccess(apgState.access)}
           </Box>
         </div>
