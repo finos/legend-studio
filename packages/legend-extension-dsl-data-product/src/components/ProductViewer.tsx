@@ -177,7 +177,6 @@ const DataProductEnvironmentLabel = observer(
             }}
             role="button"
             tabIndex={0}
-            title="View data product owners"
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 setIsOwnersTooltipOpen((val) => !val);
