@@ -55,7 +55,7 @@ import {
   ACTIVITY_MODE,
   GRAPH_EDITOR_MODE,
 } from '../../stores/editor/EditorConfig.js';
-import { ActivityBarMenu } from '../editor/ActivityBar.js';
+import { ActivityBarMenu, ColorThemeToggle } from '../editor/ActivityBar.js';
 import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
 import { useLegendStudioApplicationStore } from '../LegendStudioFrameworkProvider.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
@@ -253,6 +253,7 @@ const ShowcaseViewerActivityBar = observer(() => {
           </button>
         ))}
       </div>
+      <ColorThemeToggle />
     </div>
   );
 });

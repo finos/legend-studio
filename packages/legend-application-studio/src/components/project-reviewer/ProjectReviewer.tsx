@@ -44,6 +44,7 @@ import {
   useEditorStore,
   withEditorStore,
 } from '../editor/EditorStoreProvider.js';
+import { ColorThemeToggle } from '../editor/ActivityBar.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useParams } from '@finos/legend-application/browser';
 import { guaranteeNonNullable } from '@finos/legend-shared';
@@ -220,6 +221,7 @@ export const ProjectReviewer = withEditorStore(
                         <CheckListIcon />
                       </button>
                     </div>
+                    <ColorThemeToggle />
                   </div>
                   <div className="workspace-review__content-container">
                     <div className="workspace-review__content">
