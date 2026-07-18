@@ -57,7 +57,7 @@
 
       &:hover {
         border-color: var(--color-border-default);
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
       }
 
       &--toggled:hover,
@@ -116,11 +116,11 @@
         width: 2.8rem;
 
         svg {
-          color: var(--color-text-muted);
+          color: var(--color-dark-grey-400);
         }
 
         &:hover svg {
-          color: var(--color-text-secondary);
+          color: var(--color-dark-grey-500);
         }
       }
     }
@@ -143,7 +143,7 @@
       font-size: 1.2rem;
       height: 2.5rem;
       margin-bottom: 0.5rem;
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-400);
       padding: 0 0.5rem;
       user-select: none;
     }
@@ -161,7 +161,7 @@
       &__name {
         font-size: 1.2rem;
         font-weight: 500;
-        color: var(--color-text-muted);
+        color: var(--color-dark-grey-400);
       }
 
       &__selector {
@@ -179,10 +179,10 @@
     border-radius: 0.2rem;
     cursor: pointer;
     border: 0.1rem solid var(--color-border-default);
-    background: var(--color-bg-panel-header);
+    background: var(--color-bg-panel);
 
     &:hover {
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
     }
 
     & + & {
@@ -232,7 +232,7 @@
     }
 
     &__cancel-btn {
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       border: 0.1rem solid var(--color-border-strong);
 
       &:hover {
@@ -246,7 +246,7 @@
 
     padding: 0 1rem;
     height: 2.2rem;
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-500);
 
     &__date__icon svg {
       display: flex;
@@ -283,7 +283,7 @@
       font-weight: 500;
       color: var(--color-text-primary);
       border-radius: 0.2rem;
-      background: var(--color-bg-tag);
+      background: var(--color-blue-50);
     }
   }
 
@@ -293,14 +293,14 @@
     height: 100%;
     width: 2.5rem;
     cursor: pointer;
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-300);
 
     svg {
       font-size: 1.6rem;
     }
 
     &:hover svg {
-      color: var(--color-text-secondary);
+      color: var(--color-dark-grey-400);
     }
   }
 
@@ -309,7 +309,7 @@
 
     height: 100%;
     width: 2.5rem;
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-280);
   }
 
   &__dialog {

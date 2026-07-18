@@ -112,12 +112,12 @@
       font-weight: 500;
       border-radius: 0.5rem;
       background: var(--color-bg-app);
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-300);
     }
 
     &__empty-cell {
       font-size: 1.2rem;
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-280);
     }
 
     &__header-cell {
@@ -194,7 +194,7 @@
       margin-right: 1rem;
 
       &--access-granted svg {
-        color: var(--color-status-success);
+        color: var(--color-lime-150);
       }
 
       &--access-approved svg {
@@ -206,7 +206,7 @@
       }
 
       &--access-not-granted svg {
-        color: var(--color-status-error);
+        color: var(--color-red-180);
       }
     }
   }

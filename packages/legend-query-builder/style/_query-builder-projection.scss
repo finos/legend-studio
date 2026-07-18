@@ -111,24 +111,24 @@
 
       .query-builder-property-expression-badge__property__info {
         svg {
-          color: var(--color-text-muted);
+          color: var(--color-dark-grey-500);
         }
       }
 
       .query-builder-property-expression-badge__action {
         color: var(--color-dark-grey-50);
-        background: var(--color-bg-tag);
+        background: var(--color-dark-grey-500);
       }
     }
 
     &__placeholder--bottom {
       height: 100%;
-      border-bottom: 0.2rem dashed var(--color-border-default);
+      border-bottom: 0.2rem dashed var(--color-light-grey-300);
     }
 
     &__placeholder--top {
       height: 100%;
-      border-top: 0.2rem dashed var(--color-border-default);
+      border-top: 0.2rem dashed var(--color-light-grey-300);
     }
   }
 
@@ -158,7 +158,7 @@
     height: 3.4rem;
 
     .dnd__entry-drag-handle {
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
     }
   }
 
@@ -168,7 +168,7 @@
     padding-left: 1rem;
 
     .lambda-editor__error-feedback {
-      background: var(--color-status-error);
+      background: var(--color-red-200);
     }
   }
 
@@ -209,7 +209,7 @@
     &__operator__percentile {
       &__container {
         &__root {
-          background: var(--color-bg-panel-header);
+          background: var(--color-bg-panel);
           width: 40rem;
         }
       }
@@ -283,7 +283,7 @@
       font-weight: 500;
       padding-right: 1rem;
       background: var(--color-bg-hover);
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-500);
       cursor: pointer;
       position: relative;
 
@@ -330,7 +330,7 @@
 
       height: 100%;
       width: 1.8rem;
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       border-radius: 0 0.2rem 0.2rem 0;
 
       svg {
@@ -388,7 +388,7 @@
 
     &[disabled] .query-builder__icon,
     &[disabled] svg {
-      color: var(--color-text-disabled);
+      color: var(--color-dark-grey-300);
     }
   }
 
@@ -499,7 +499,7 @@
         flex: 2.8rem 0 0;
         height: 2.8rem;
         color: var(--color-text-secondary);
-        background: var(--color-bg-tag);
+        background: var(--color-bg-panel-header);
         border-radius: 0.2rem;
         margin-left: 0.5rem;
         cursor: pointer;
@@ -538,7 +538,7 @@
         width: 100%;
 
         &__icon {
-          color: var(--color-text-muted);
+          color: var(--color-dark-grey-500);
         }
 
         &__title {
@@ -558,8 +558,8 @@
       margin: 0.3rem;
       padding: 0 1rem;
       font-size: 1.2rem;
-      color: var(--color-text-muted);
-      background: var(--color-bg-panel-header);
+      color: var(--color-dark-grey-400);
+      background: var(--color-bg-panel);
       border-radius: 0.2rem;
     }
 
@@ -587,7 +587,7 @@
     &__date__column__label__box {
       @include flexVCenter;
 
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       width: 100%;
       height: 2.8rem;
       margin: 0.3rem;
@@ -621,7 +621,7 @@
 
         &__icon {
           font-size: 1.2rem;
-          color: var(--color-text-muted);
+          color: var(--color-dark-grey-500);
         }
 
         &__title {

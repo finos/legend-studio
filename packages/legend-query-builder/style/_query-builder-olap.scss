@@ -43,7 +43,7 @@
 
     &__placeholder {
       height: 100%;
-      border-top: 0.2rem dashed var(--color-border-default);
+      border-top: 0.2rem dashed var(--color-light-grey-300);
 
       &__container {
         top: -0.1rem;
@@ -68,7 +68,7 @@
     height: 3.4rem;
 
     .dnd__entry-drag-handle {
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
     }
   }
 
@@ -84,7 +84,7 @@
       padding: 0.5rem;
       height: 2.8rem;
       line-height: 2.8rem;
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       border: 0.1rem solid var(--color-border-strong);
       color: var(--color-text-secondary);
 
@@ -156,7 +156,7 @@
 
       height: 100%;
       width: 1.8rem;
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       border-radius: 0 0.2rem 0.2rem 0;
 
       svg {
@@ -194,7 +194,7 @@
 
     &[disabled] .query-builder__icon,
     &[disabled] svg {
-      color: var(--color-text-disabled);
+      color: var(--color-dark-grey-300);
     }
   }
 
@@ -245,7 +245,7 @@
 
       height: 100%;
       width: 1.8rem;
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       border-radius: 0 0.2rem 0.2rem 0;
 
       svg {
@@ -284,7 +284,7 @@
       padding: 0 1rem;
       font-size: 1.2rem;
       font-weight: 500;
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       color: var(--color-text-primary);
       border-radius: 0.2rem 0 0 0.2rem;
       white-space: nowrap;
@@ -301,7 +301,7 @@
       display: flex;
       height: 2.8rem;
       min-width: 6.6rem;
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem;
 
       &__label {
@@ -327,12 +327,12 @@
       width: 2.8rem;
       background: var(--color-blue-200);
       // light text on the stable saturated blue fill in both themes
-      color: var(--color-text-on-accent);
+      color: var(--color-light-grey-100);
       border-radius: 0.2rem 0 0 0.2rem;
 
       svg {
         font-size: 1.8rem;
-        color: var(--color-text-on-accent);
+        color: var(--color-light-grey-0);
       }
     }
   }
@@ -354,7 +354,7 @@
 
         width: 100%;
         height: 2.8rem;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
         color: var(--color-text-primary);
       }
 
@@ -404,7 +404,7 @@
       flex: 2.8rem 0 0;
       height: 2.8rem;
       color: var(--color-text-secondary);
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       border-radius: 0.2rem;
       margin-left: 0.5rem;
       cursor: pointer;

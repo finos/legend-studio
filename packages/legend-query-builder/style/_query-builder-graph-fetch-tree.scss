@@ -41,7 +41,7 @@
       width: 3rem;
 
       svg {
-        color: var(--color-text-muted);
+        color: var(--color-dark-grey-500);
       }
     }
   }
@@ -96,7 +96,7 @@
       &__label[disabled] &__label__icon,
       &__label[disabled] &__label__title,
       &__dropdown-btn[disabled] svg {
-        color: var(--color-text-disabled);
+        color: var(--color-dark-grey-500);
       }
     }
   }
@@ -263,7 +263,7 @@
       flex-direction: column;
       width: 100%;
       padding: 0.5rem 0 0 0.5rem;
-      border-left: 0.5rem solid var(--color-border-strong);
+      border-left: 0.5rem solid var(--color-dark-grey-280);
     }
 
     &__item {
@@ -275,7 +275,7 @@
     &__item__label {
       @include flexCenter;
 
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       margin-right: 0.5rem;
     }
 

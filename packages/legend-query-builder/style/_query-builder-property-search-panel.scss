@@ -106,11 +106,11 @@
     line-height: 1.8rem;
     font-size: 1.2rem;
     min-width: 0;
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-400);
     user-select: none;
 
     &--highlight {
-      color: var(--color-text-secondary);
+      color: var(--color-dark-grey-500);
       font-weight: bold;
     }
   }
@@ -139,7 +139,7 @@
     }
 
     &[disabled] svg {
-      color: var(--color-text-disabled);
+      color: var(--color-dark-grey-300);
     }
   }
 
@@ -185,18 +185,18 @@
 
       svg {
         font-size: 2rem;
-        color: var(--color-text-muted);
+        color: var(--color-dark-grey-250);
       }
 
       &:hover svg {
         font-size: 2rem;
-        color: var(--color-text-secondary);
+        color: var(--color-dark-grey-280);
       }
 
       &[disabled] svg,
       &[disabled]:hover svg {
         cursor: not-allowed;
-        color: var(--color-text-disabled);
+        color: var(--color-dark-grey-250);
       }
 
       &__container {
@@ -210,7 +210,7 @@
     &__section__toggler__btn--toggled {
       svg {
         font-size: 2rem;
-        color: var(--color-accent);
+        color: var(--color-blue-150);
       }
 
       &:hover svg {
@@ -221,7 +221,7 @@
       &[disabled] svg,
       &[disabled]:hover svg {
         cursor: not-allowed;
-        color: var(--color-text-disabled);
+        color: var(--color-dark-grey-300);
       }
     }
 
@@ -236,7 +236,7 @@
     }
 
     &__section__toggler__only-btn {
-      color: var(--color-text-link);
+      color: var(--color-blue-40);
       font-size: 1.2rem;
       height: 2.2rem;
       line-height: 2.2rem;
@@ -265,7 +265,7 @@
       height: fit-content;
 
       .mui-radio-group__group__item__radio-btn--checked svg {
-        color: var(--color-accent);
+        color: var(--color-blue-150);
       }
     }
   }
@@ -275,12 +275,12 @@
     user-select: none;
 
     &__text {
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-500);
       font-weight: 700;
     }
 
     &__placeholder {
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-300);
       margin-top: 1rem;
     }
   }
@@ -288,7 +288,7 @@
   &__tagged-values__tooltip {
     display: inline-flex;
     margin-left: 0.5rem;
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-500);
     cursor: default;
 
     &:hover {

@@ -40,7 +40,7 @@
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-text-disabled) !important;
+      color: var(--color-dark-grey-300) !important;
     }
 
     &__content {
@@ -159,11 +159,11 @@
   padding: 0.8rem;
   border: 0.1rem solid var(--color-border-default);
   border-radius: 0.3rem;
-  background: var(--color-bg-panel-header);
+  background: var(--color-bg-elevated);
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--color-bg-panel-header);
+    background: var(--color-bg-panel);
     border-color: var(--color-border-strong);
   }
 
@@ -204,7 +204,7 @@
 .property-lineage__property-type {
   font-size: 0.85rem;
   color: var(--color-text-muted);
-  background: var(--color-bg-tag);
+  background: var(--color-bg-panel-header);
   padding: 0.2rem 0.5rem;
   border-radius: 0.2rem;
 }
@@ -212,7 +212,7 @@
 .property-lineage__property-scope {
   font-size: 0.85rem;
   color: var(--color-text-muted);
-  background: var(--color-bg-tag);
+  background: var(--color-bg-panel-header);
   padding: 0.2rem 0.5rem;
   border-radius: 0.2rem;
 }
@@ -363,7 +363,7 @@
   }
 
   &--more {
-    background: var(--color-bg-panel-header);
+    background: var(--color-bg-panel);
     border-color: var(--color-border-strong);
     font-style: italic;
     min-height: auto;
