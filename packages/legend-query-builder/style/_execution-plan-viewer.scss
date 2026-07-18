@@ -40,7 +40,7 @@
 
   &__close-btn {
     border-color: var(--color-accent);
-    background: var(--color-accent);
+    background: var(--color-blue-300);
   }
 
   .panel {
@@ -70,7 +70,7 @@
       overflow-y: hidden;
 
       & ::-webkit-scrollbar-thumb {
-        background: var(--color-bg-tag);
+        background: var(--color-dark-grey-400);
       }
     }
 
@@ -135,7 +135,7 @@
     }
 
     &__header {
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       z-index: 1;
       height: 3.4rem;
       min-height: 3.4rem;
@@ -154,7 +154,7 @@
       padding: 0 1rem;
       cursor: pointer;
       color: var(--color-text-muted);
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-elevated);
       border-right: 0.1rem solid var(--color-border-subtle);
     }
 
@@ -185,7 +185,7 @@
         @include flexCenter;
 
         width: 15rem;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
         border-right: 0.1rem solid var(--color-border-subtle);
         border-left: 0.1rem solid var(--color-border-subtle);
         color: var(--color-text-muted);
@@ -193,7 +193,7 @@
       }
 
       &__type:hover {
-        background: var(--color-bg-tag);
+        background: var(--color-bg-panel-header);
       }
 
       &__type__label {
@@ -258,7 +258,7 @@
 
       &__option__group__options {
         width: 100%;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
       }
 
       &__option {
@@ -274,7 +274,7 @@
 
     &__content__container {
       height: 100%;
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
 
       .tree-view__node__icon {
         padding: 0;

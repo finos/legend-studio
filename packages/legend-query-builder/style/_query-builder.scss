@@ -52,7 +52,7 @@
     @include flexVCenter;
 
     height: 3.2rem;
-    background: var(--color-bg-panel-header);
+    background: var(--color-bg-panel);
   }
 
   &__header__statuses {
@@ -61,7 +61,7 @@
     height: 2.2rem;
     margin-left: 0.5rem;
     padding: 0 0.2rem;
-    background: var(--color-bg-tag);
+    background: var(--color-bg-panel-header);
     border-radius: 0.2rem;
     max-width: 50%;
   }
@@ -73,7 +73,7 @@
     width: 2.2rem;
 
     svg {
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-400);
     }
 
     &--action:hover svg {
@@ -98,7 +98,7 @@
       @include flexVCenter;
 
       &__button {
-        color: var(--color-text-secondary);
+        color: var(--color-light-blue-50);
         margin-left: 1rem;
         margin-right: 1rem;
 
@@ -113,7 +113,7 @@
       }
 
       &__button[disabled] {
-        color: var(--color-text-disabled);
+        color: var(--color-dark-grey-500);
       }
     }
   }
@@ -132,12 +132,12 @@
       font-size: 1.2rem;
       // sits on the saturated accent fill in both themes; text-secondary is a
       // dark grey in light theme and renders unreadably on the blue pill.
-      color: var(--color-text-on-accent);
+      color: var(--color-light-grey-180);
     }
 
     &__icon {
       margin-left: 1rem;
-      color: var(--color-text-on-accent);
+      color: var(--color-light-grey-180);
     }
 
     svg {
@@ -168,7 +168,7 @@
       padding: 0.5rem;
       color: var(--color-text-muted);
       font-weight: bold;
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       border-radius: 0.2rem 0.2rem 0 0;
       border-top: 0.1rem solid var(--color-border-default);
     }
@@ -195,25 +195,25 @@
 
     &__header__action[disabled] svg,
     &__header__action[disabled]:hover svg {
-      color: var(--color-text-disabled);
+      color: var(--color-dark-grey-300);
     }
 
     &__header__action--toggled svg {
-      color: var(--color-accent);
+      color: var(--color-blue-150);
     }
 
     &__header__action--toggled:hover svg {
-      color: var(--color-accent);
+      color: var(--color-blue-50);
     }
 
     &__header__action--toggled[disabled] svg,
     &__header__action--toggled[disabled]:hover svg {
-      color: var(--color-text-disabled);
+      color: var(--color-blue-300);
     }
 
     &__content {
       height: calc(100% - 3.4rem);
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-elevated);
       border-radius: 0 0 0.2rem 0.2rem;
       border-bottom: 0.1rem solid var(--color-border-subtle);
       box-shadow: var(--color-shadow) 0 0.1rem 0.5rem 0;
@@ -225,7 +225,7 @@
     @include flexHSpaceBetween;
 
     height: 2.2rem;
-    background: var(--color-accent);
+    background: var(--color-blue-100);
     color: var(--color-text-primary);
     padding: 0 0.5rem 0 1rem;
 
@@ -310,7 +310,7 @@
         width: 100%;
         height: 2.8rem;
         line-height: 2.8rem;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
         border: 0.1rem solid var(--color-border-strong);
         color: var(--color-text-secondary);
 
@@ -331,14 +331,14 @@
 
       &__content {
         &--error {
-          color: var(--color-status-error) !important;
+          color: var(--color-red-200) !important;
         }
       }
     }
   }
 
   .editable-value {
-    color: var(--color-text-link);
+    color: var(--color-blue-40);
     cursor: pointer;
     text-decoration: underline;
     text-decoration-style: dotted;
@@ -397,7 +397,7 @@
   }
 
   &__mode:hover {
-    background: var(--color-bg-tag);
+    background: var(--color-bg-panel-header);
   }
 
   &__mode--selected,
@@ -462,13 +462,13 @@
 .query-builder-panel-issue-count-badge {
   @include flexCenter;
 
-  background: var(--color-status-error);
+  background: var(--color-red-200);
   height: 2.2rem;
   padding: 0 1rem;
   border-radius: 0.2rem;
   // sits on a saturated error fill in both themes; text-primary is a dark
   // grey in light theme and renders unreadably on red.
-  color: var(--color-text-on-accent);
+  color: var(--color-light-grey-0);
   white-space: nowrap;
 
   &__icon {
@@ -486,7 +486,7 @@
 
 .query-builder__tooltip {
   border-radius: 0.2rem !important;
-  background: var(--color-bg-tag) !important;
+  background: var(--color-bg-panel-header) !important;
   opacity: 0.9 !important;
   transition: none;
   // as this tooltip can contain long documentation, it's best we limit its dimension
@@ -498,14 +498,14 @@
   }
 
   &__arrow {
-    color: var(--color-bg-elevated) !important;
+    color: var(--color-dark-grey-200) !important;
     opacity: 0.9 !important;
   }
 
   &__header {
     font-size: 1.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--color-border-default);
+    border-bottom: 1px solid var(--color-dark-grey-500);
   }
 
   &__content {
@@ -519,7 +519,7 @@
 
   &__item__label {
     font-size: 1.3rem;
-    color: var(--color-text-secondary);
+    color: var(--color-dark-grey-500);
   }
 
   &__item__value {
@@ -556,7 +556,7 @@
   &__taggedValues {
     max-height: 20rem;
     overflow-y: scroll;
-    background-color: var(--color-bg-panel-header);
+    background-color: var(--color-bg-panel);
     margin-top: 0.5rem;
     margin-left: 1rem;
     opacity: 0.9;
@@ -588,7 +588,7 @@
     width: 100%;
     margin-top: 1.5rem;
     border: 0.2rem dashed var(--color-border-default);
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-350);
     font-weight: 500;
   }
 }
@@ -646,7 +646,7 @@
   }
 
   &__action--error {
-    background: var(--color-status-error);
+    background: var(--color-red-200);
     color: var(--color-text-primary);
     width: 6rem;
     min-width: 6rem;
@@ -732,10 +732,10 @@
   }
 
   &__modal--has-error {
-    border: 0.1rem solid var(--color-status-error) !important;
+    border: 0.1rem solid var(--color-red-200) !important;
 
     .modal__header {
-      background: var(--color-status-error);
+      background: var(--color-red-200);
     }
 
     .modal__title__error-badge {
@@ -845,7 +845,7 @@
         height: 2.8rem;
         line-height: 2.8rem;
         width: 100%;
-        background: var(--color-bg-panel-header);
+        background: var(--color-bg-panel);
         border: 0.1rem solid var(--color-border-strong);
         color: var(--color-text-secondary);
 
@@ -862,10 +862,10 @@
   }
 
   &__modal--has-error {
-    border: 0.1rem solid var(--color-status-error) !important;
+    border: 0.1rem solid var(--color-red-200) !important;
 
     .modal__header {
-      background: var(--color-status-error);
+      background: var(--color-red-200);
     }
 
     .modal__title__error-badge {
@@ -884,7 +884,7 @@
 
   &__lambda-editor {
     height: calc(100% - 3.4rem) !important;
-    border: 0.1rem solid var(--color-border-strong);
+    border: 0.1rem solid var(--color-dark-grey-280);
     border-radius: 0;
   }
 }
@@ -1117,7 +1117,7 @@
       color: var(--color-white);
 
       &:hover {
-        background: var(--color-bg-tag);
+        background: var(--color-bg-panel-header);
       }
     }
   }
@@ -1256,7 +1256,7 @@
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-text-disabled) !important;
+      color: var(--color-dark-grey-300) !important;
     }
 
     &__content {
@@ -1401,7 +1401,7 @@
     &__item__label {
       @include flexCenter;
 
-      background: var(--color-bg-panel-header);
+      background: var(--color-bg-panel);
       margin-right: 0.5rem;
     }
 
@@ -1440,7 +1440,7 @@
 
   &__analytics {
     font-size: 1.2rem;
-    color: var(--color-text-muted);
+    color: var(--color-dark-grey-400);
     margin-left: 0.5rem;
     font-family: 'Roboto Mono', monospace;
   }
@@ -1489,7 +1489,7 @@
 
       svg {
         font-size: 2rem;
-        color: var(--color-text-secondary);
+        color: var(--color-dark-grey-100);
       }
 
       &[disabled] svg,
@@ -1502,13 +1502,13 @@
     &__toggler__btn--toggled {
       svg {
         font-size: 2rem;
-        color: var(--color-accent);
+        color: var(--color-blue-150);
       }
 
       &[disabled] svg,
       &[disabled]:hover svg {
         cursor: not-allowed;
-        color: var(--color-text-disabled);
+        color: var(--color-dark-grey-100);
       }
     }
   }
@@ -1662,11 +1662,11 @@
       gap: 0 1.4rem;
       height: 2.4rem;
       padding: 0 1rem;
-      background: var(--color-bg-panel-header);
-      border-top: 0.1rem solid var(--color-border-default);
+      background: var(--color-light-grey-100);
+      border-top: 0.1rem solid var(--color-light-grey-200);
       font-size: 1.2rem;
       font-family: 'Roboto Mono', monospace;
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-400);
       user-select: none;
 
       &--dark {
@@ -1691,14 +1691,14 @@
 
         &__label {
           font-weight: 700;
-          color: var(--color-text-muted);
+          color: var(--color-dark-grey-300);
         }
 
         &__value {
-          color: var(--color-text-secondary);
+          color: var(--color-dark-grey-500);
 
           &--with-chart {
-            color: var(--color-text-muted);
+            color: var(--color-blue-40);
             text-decoration: underline;
             text-decoration-style: dotted;
             cursor: pointer;
@@ -1714,8 +1714,8 @@
           display: inline-block;
           width: 1rem;
           height: 1rem;
-          border: 0.15rem solid var(--color-border-default);
-          border-top-color: var(--color-border-strong);
+          border: 0.15rem solid var(--color-light-grey-300);
+          border-top-color: var(--color-dark-grey-400);
           border-radius: 50%;
           animation: stats-bar-spin 0.6s linear infinite;
           vertical-align: middle;
@@ -1748,8 +1748,8 @@
         // when the parent item is near the left side of the stats bar.
         left: 0;
         z-index: 100;
-        background: var(--color-bg-app);
-        border: 0.1rem solid var(--color-border-default);
+        background: var(--color-light-grey-0);
+        border: 0.1rem solid var(--color-light-grey-300);
         border-radius: 0.3rem;
         padding: 0.6rem 0.8rem;
         pointer-events: none;
@@ -1763,15 +1763,15 @@
         &__label {
           font-size: 1.1rem;
           font-family: 'Roboto Mono', monospace;
-          fill: var(--color-text-muted);
+          fill: var(--color-dark-grey-400);
 
           &--other {
-            fill: var(--color-text-muted);
+            fill: var(--color-dark-grey-300);
             font-style: italic;
           }
 
           &--empty {
-            fill: var(--color-text-muted);
+            fill: var(--color-dark-grey-300);
             font-style: italic;
           }
         }
@@ -1794,7 +1794,7 @@
         &__count {
           font-size: 1.1rem;
           font-family: 'Roboto Mono', monospace;
-          fill: var(--color-text-muted);
+          fill: var(--color-dark-grey-300);
         }
       }
 
@@ -1827,7 +1827,7 @@
       &__separator {
         width: 0.1rem;
         height: 1.4rem;
-        background: var(--color-border-default);
+        background: var(--color-light-grey-300);
         margin: 0 0.2rem;
       }
 
@@ -1839,7 +1839,7 @@
         display: flex;
         align-items: flex-end;
         flex-shrink: 0;
-        border: 0.1rem solid var(--color-border-default);
+        border: 0.1rem solid var(--color-light-grey-300);
         border-radius: 0.2rem;
         padding: 0.1rem;
         box-sizing: content-box;
@@ -1934,10 +1934,10 @@
       &--green[disabled] {
         opacity: 0.8;
         background: var(--color-green-80) !important;
-        color: var(--color-text-on-accent);
+        color: var(--color-light-grey-0);
 
         & svg {
-          color: var(--color-text-on-accent);
+          color: var(--color-light-grey-0);
         }
       }
 
@@ -1952,20 +1952,20 @@
 
     margin-left: 0.5rem;
     height: 100%;
-    border: 0.1rem solid var(--color-border-strong);
+    border: 0.1rem solid var(--color-dark-grey-280);
     background: var(--color-bg-hover);
     color: var(--color-text-primary);
 
     &[disabled],
     &[disabled]:hover {
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
       border-color: var(--color-border-default);
-      color: var(--color-text-disabled);
+      color: var(--color-dark-grey-500);
       opacity: 0.8;
     }
 
     &:hover {
-      background: var(--color-bg-hover);
+      background: var(--color-bg-tag);
     }
 
     &__label {
@@ -2000,7 +2000,7 @@
     &__header {
       display: flex;
       justify-content: center;
-      color: var(--color-status-warn);
+      color: var(--color-orange-50);
       font-weight: bold;
       font-size: 2rem;
       padding: 2rem;
@@ -2009,7 +2009,7 @@
     &__body {
       display: flex;
       justify-content: center;
-      color: var(--color-status-warn);
+      color: var(--color-orange-50);
       font-size: 2rem;
       padding: 2rem;
     }
@@ -2021,7 +2021,7 @@
     height: 6rem;
 
     &__header {
-      color: var(--color-status-error);
+      color: var(--color-red-200);
       font-weight: bold;
       font-size: 2rem;
     }
@@ -2037,7 +2037,7 @@
 
   &__execution-error {
     background: rgb(245 88 75 / 60%);
-    border: 0.3rem solid var(--color-status-error);
+    border: 0.3rem solid var(--color-red-200);
     height: calc(100% - 6rem);
     padding: 2rem;
 
@@ -2064,13 +2064,13 @@
         }
 
         &__btn:hover {
-          color: var(--color-accent-hover);
+          color: var(--color-blue-40);
         }
       }
     }
 
     & ::-webkit-scrollbar-thumb {
-      background: var(--color-bg-tag);
+      background: var(--color-dark-grey-400);
     }
   }
 
@@ -2114,7 +2114,7 @@
     width: 100%;
 
     &:hover {
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
     }
 
     .decorationsOverviewRuler {
@@ -2205,7 +2205,7 @@
     }
 
     &__header__action[disabled] svg {
-      color: var(--color-text-disabled) !important;
+      color: var(--color-dark-grey-300) !important;
     }
 
     &__content {
@@ -2306,7 +2306,7 @@
 
       height: 4rem;
       width: 100%;
-      color: var(--color-text-muted);
+      color: var(--color-dark-grey-300);
       font-weight: 500;
       user-select: none;
       border: 0.2rem dashed var(--color-border-default);
@@ -2319,7 +2319,7 @@
 
     padding-left: 0.5rem;
     height: 2.2rem;
-    color: var(--color-text-secondary);
+    color: var(--color-dark-grey-500);
     font-weight: 500;
 
     &__actions {
@@ -2334,7 +2334,7 @@
       width: 2.2rem;
 
       svg {
-        color: var(--color-text-muted);
+        color: var(--color-dark-grey-500);
       }
 
       &:hover svg {
@@ -2343,7 +2343,7 @@
     }
 
     &:hover {
-      background: var(--color-bg-tag);
+      background: var(--color-bg-panel-header);
     }
 
     &:hover &__actions {
@@ -2470,7 +2470,7 @@
 }
 
 .query-builder__lambda-editor {
-  border: 0.1rem solid var(--color-border-strong);
+  border: 0.1rem solid var(--color-dark-grey-280);
 
   &__container {
     height: 100%;
@@ -2571,7 +2571,7 @@
       color: var(--color-white);
 
       &:hover {
-        background: var(--color-bg-tag);
+        background: var(--color-bg-panel-header);
       }
     }
   }
@@ -2659,8 +2659,8 @@
 
     justify-content: space-between;
     height: 3.8rem;
-    border-bottom: 0.1rem solid var(--color-border-strong);
-    border-top: 0.1rem solid var(--color-border-strong);
+    border-bottom: 0.1rem solid var(--color-dark-grey-280);
+    border-top: 0.1rem solid var(--color-dark-grey-280);
   }
 
   &__tab {
@@ -2672,7 +2672,7 @@
   }
 
   &__tab + &__tab {
-    border-left: 0.1rem solid var(--color-border-strong);
+    border-left: 0.1rem solid var(--color-dark-grey-280);
   }
 
   &__tab__label {
@@ -2691,12 +2691,12 @@
   }
 
   &__tab:hover &__tab__label {
-    color: var(--color-text-secondary);
+    color: var(--color-dark-grey-400);
   }
 
   &__tab:hover &__tab__icon {
     svg {
-      color: var(--color-text-secondary);
+      color: var(--color-dark-grey-400);
     }
   }
 
