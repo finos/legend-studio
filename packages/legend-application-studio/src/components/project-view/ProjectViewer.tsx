@@ -71,7 +71,7 @@ import {
 } from '../LegendStudioFrameworkProvider.js';
 import { EmbeddedQueryBuilder } from '../editor/EmbeddedQueryBuilder.js';
 import type { ActivityBarItemConfig } from '@finos/legend-lego/application';
-import { ActivityBarMenu } from '../editor/ActivityBar.js';
+import { ActivityBarMenu, ColorThemeToggle } from '../editor/ActivityBar.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
 import { StoreProjectData } from '@finos/legend-server-depot';
 import { generateGAVCoordinates } from '@finos/legend-storage';
@@ -425,6 +425,7 @@ const ProjectViewerActivityBar = observer(() => {
           </button>
         ))}
       </div>
+      <ColorThemeToggle />
     </div>
   );
 });
