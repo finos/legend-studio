@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.6.20
+
+### Patch Changes
+
+- [#5345](https://github.com/finos/legend-studio/pull/5345) [`2a6625f`](https://github.com/finos/legend-studio/commit/2a6625f852eedd474306ea52da0a54b248545d8d) ([@Rakan1837](https://github.com/Rakan1837)) - Add form-mode testing support for Ingest definitions in Studio, including a new Testing tab and MatView dataset-focused test suite/test flows.
+
+  Extend `legend-graph` ingest protocol/metamodel handling so ingest test suites and tests roundtrip correctly between form mode and serialized content
+
 ## 32.6.19
 
 ## 32.6.18
