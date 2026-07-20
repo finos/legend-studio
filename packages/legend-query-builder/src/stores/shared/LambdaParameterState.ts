@@ -134,7 +134,8 @@ export const buildExecutionParameterValues = (
       (ps) =>
         !(
           ps.value instanceof PrimitiveInstanceValue &&
-          ps.value.values[0] === null
+          ps.value.values[0] === null &&
+          ps.parameter.multiplicity.lowerBound === 0
         ),
     )
     .map((queryParamState) => {
@@ -264,11 +265,17 @@ export class LambdaParameterState implements Hashable {
         Multiplicity.ZERO_ONE,
       );
     if (isOptionalDate) {
-      this.setValue(
-        buildDefaultInstanceValue(this.graph, t, this.observerContext, false),
+      const nullDateValue = buildDefaultInstanceValue(
+        this.graph,
+        t,
+        this.observerContext,
+        false,
       );
+      nullDateValue.multiplicity = this.parameter.multiplicity;
+      this.setValue(nullDateValue);
       return;
     }
+
     this.setValue(
       generateVariableExpressionMockValue(
         this.parameter,
