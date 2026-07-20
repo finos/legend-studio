@@ -139,6 +139,7 @@ import {
 import { V1_computeModelSchema } from './serializationHelpers/V1_ComputeSerializationHelper.js';
 import {
   V1_INGEST_DEFINITION_TYPE,
+  type V1_IngestTestSuite,
   type V1_IngestDefinition,
 } from '../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import {
@@ -189,7 +190,7 @@ class V1_PackageableElementSerializer
   visit_IngestDefinition(
     element: V1_IngestDefinition,
   ): PlainObject<V1_PackageableElement> {
-    const testSuites = serializeArray(
+    const testSuites = serializeArray<V1_IngestTestSuite>(
       element.testSuites,
       (suite) => V1_serializeIngestTestSuite(suite),
       {
