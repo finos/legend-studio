@@ -22,13 +22,7 @@ import {
   OpenIcon,
   SparkleStarsIcon,
 } from '@finos/legend-art';
-import {
-  Avatar,
-  AvatarGroup,
-  Button,
-  CircularProgress,
-  Typography,
-} from '@mui/material';
+import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import { DataProductLegendAIIntegration } from './DataProduct/DataProductLegendAIIntegration.js';
 import {
@@ -50,7 +44,7 @@ import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDat
 import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
 import { getHumanReadableIngestEnvName } from '../utils/LakehouseUtils.js';
-import { LakehouseDataProductOwnersTooltip } from './DataProduct/LakehouseDataProductOwnersTooltip.js';
+import { UserAvatarGroupWithPopover } from './DataProduct/UserAvatarGroupWithPopover.js';
 
 export const isDataProductViewerState = (
   state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
@@ -118,7 +112,6 @@ const DataProductEnvironmentLabel = observer(
       dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment?.type;
     const environmentName = dataAccessState.lakehouseIngestEnv?.environmentName;
     const origin = dataAccessState.entitlementsDataProductDetails.origin;
-    const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
 
     return (
       <div className="data-product__viewer__header__type">
@@ -160,63 +153,15 @@ const DataProductEnvironmentLabel = observer(
         <Button variant="outlined">
           {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
         </Button>
-        <LakehouseDataProductOwnersTooltip
-          open={isOwnersTooltipOpen}
-          setIsOpen={setIsOwnersTooltipOpen}
-          owners={dataAccessState.dataProductOwners}
-          fetchingOwnersState={dataAccessState.fetchingDataProductOwnersState}
-          applicationStore={dataAccessState.applicationStore}
+        <UserAvatarGroupWithPopover
+          users={dataAccessState.dataProductOwners}
+          fetchingUsersState={dataAccessState.fetchingDataProductOwnersState}
+          label="Owners"
           userSearchService={
             dataAccessState.dataProductViewerState.userSearchService
           }
-        >
-          <div
-            className="data-product__viewer__header__type__owners"
-            onClick={() => {
-              setIsOwnersTooltipOpen((val) => !val);
-            }}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                setIsOwnersTooltipOpen((val) => !val);
-              }
-            }}
-          >
-            {dataAccessState.fetchingDataProductOwnersState.isInInitialState ||
-            dataAccessState.fetchingDataProductOwnersState.isInProgress ? (
-              <CircularProgress size={16} />
-            ) : (
-              <AvatarGroup
-                max={3}
-                className="data-product__viewer__header__type__owners__avatars"
-              >
-                {dataAccessState.dataProductOwners.map((owner) => {
-                  const imgUrl =
-                    dataAccessState.dataProductViewerState.userSearchService?.userProfileImageUrl?.replace(
-                      '{userId}',
-                      owner,
-                    );
-                  return (
-                    <Avatar
-                      key={owner}
-                      {...(imgUrl ? { src: imgUrl } : {})}
-                      alt={owner}
-                    >
-                      {owner.substring(0, 2).toUpperCase()}
-                    </Avatar>
-                  );
-                })}
-              </AvatarGroup>
-            )}
-            <Typography
-              variant="caption"
-              className="data-product__viewer__header__type__owners__label"
-            >
-              Owners
-            </Typography>
-          </div>
-        </LakehouseDataProductOwnersTooltip>
+          applicationStore={dataAccessState.applicationStore}
+        />
       </div>
     );
   },
