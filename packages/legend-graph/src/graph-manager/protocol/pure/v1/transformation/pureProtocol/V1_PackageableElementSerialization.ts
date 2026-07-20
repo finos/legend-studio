@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { serialize, deserialize } from 'serializr';
+import { serialize, deserialize, SKIP } from 'serializr';
 import {
   type PlainObject,
   UnsupportedOperationError,
   assertErrorThrown,
   guaranteeIsString,
   isString,
+  serializeArray,
 } from '@finos/legend-shared';
 import type { V1_PackageableConnection } from '../../model/packageableElements/connection/V1_PackageableConnection.js';
 import type { V1_Association } from '../../model/packageableElements/domain/V1_Association.js';
@@ -188,15 +189,17 @@ class V1_PackageableElementSerializer
   visit_IngestDefinition(
     element: V1_IngestDefinition,
   ): PlainObject<V1_PackageableElement> {
+    const testSuites = serializeArray(
+      element.testSuites,
+      (suite) => V1_serializeIngestTestSuite(suite),
+      {
+        skipIfEmpty: true,
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    );
     return {
       ...element.content,
-      ...(element.testSuites.length
-        ? {
-            testSuites: element.testSuites.map((suite) =>
-              V1_serializeIngestTestSuite(suite),
-            ),
-          }
-        : {}),
+      ...(testSuites !== SKIP ? { testSuites } : {}),
     };
   }
 
