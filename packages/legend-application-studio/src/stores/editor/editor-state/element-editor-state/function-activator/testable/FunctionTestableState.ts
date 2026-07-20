@@ -68,6 +68,7 @@ import {
   Database,
   DataProduct,
   IngestDefinition,
+  LakehouseRuntime,
   PackageableElementExplicitReference,
   observe_ValueSpecification,
   observe_RelationElementsData,
@@ -1032,44 +1033,48 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
             `Function Test Suite Only supports One Runtime at this time. Found ${engineRuntimes.length}`,
           );
           const engineRuntime = guaranteeNonNullable(engineRuntimes[0]);
-          assertTrue(
-            !(
-              engineRuntime.connectionStores.length &&
-              engineRuntime.connections.length
-            ),
-            `Runtime found has two connection types defined. Please use connection stores only`,
-          );
-          const stores = [
-            ...engineRuntime.connections
-              .map((e) =>
-                e.storeConnections.map((s) => s.connection.store?.value).flat(),
-              )
-              .flat(),
-            ...engineRuntime.connectionStores
-              .map((e) => e.storePointers.map((sPt) => sPt.value))
-              .flat(),
-          ].filter(isNonNullable);
-          assertTrue(Boolean(stores.length), 'No runtime store found');
-          assertTrue(
-            stores.length === 1,
-            'Only one store supported in runtime for function tests',
-          );
-          const store = guaranteeNonNullable(stores[0]);
-          const data = new FunctionTestData();
-          if (store instanceof Database) {
-            const relation = new RelationElementsData();
-            data.element = PackageableElementExplicitReference.create(store);
-            data.data = relation;
-          } else if (store instanceof ModelStore) {
-            const modelStoreData = createBareExternalFormat();
-            data.element = PackageableElementExplicitReference.create(store);
-            data.data = modelStoreData;
-          } else {
-            throw new UnsupportedOperationError(
-              `function test store data does not support store: ${store.path}`,
+          if (!(engineRuntime instanceof LakehouseRuntime)) {
+            assertTrue(
+              !(
+                engineRuntime.connectionStores.length &&
+                engineRuntime.connections.length
+              ),
+              `Runtime found has two connection types defined. Please use connection stores only`,
             );
+            const stores = [
+              ...engineRuntime.connections
+                .map((e) =>
+                  e.storeConnections
+                    .map((s) => s.connection.store?.value)
+                    .flat(),
+                )
+                .flat(),
+              ...engineRuntime.connectionStores
+                .map((e) => e.storePointers.map((sPt) => sPt.value))
+                .flat(),
+            ].filter(isNonNullable);
+            assertTrue(Boolean(stores.length), 'No runtime store found');
+            assertTrue(
+              stores.length === 1,
+              'Only one store supported in runtime for function tests',
+            );
+            const store = guaranteeNonNullable(stores[0]);
+            const data = new FunctionTestData();
+            if (store instanceof Database) {
+              const relation = new RelationElementsData();
+              data.element = PackageableElementExplicitReference.create(store);
+              data.data = relation;
+            } else if (store instanceof ModelStore) {
+              const modelStoreData = createBareExternalFormat();
+              data.element = PackageableElementExplicitReference.create(store);
+              data.data = modelStoreData;
+            } else {
+              throw new UnsupportedOperationError(
+                `function test store data does not support store: ${store.path}`,
+              );
+            }
+            functionSuite.testData = [data];
           }
-          functionSuite.testData = [data];
         } else {
           const type = this.function.returnType.value.rawType;
           if (
