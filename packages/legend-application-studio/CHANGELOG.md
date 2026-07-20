@@ -1,5 +1,34 @@
 # @finos/legend-application-studio
 
+## 28.21.24
+
+### Patch Changes
+
+- [#5345](https://github.com/finos/legend-studio/pull/5345) [`2a6625f`](https://github.com/finos/legend-studio/commit/2a6625f852eedd474306ea52da0a54b248545d8d) ([@Rakan1837](https://github.com/Rakan1837)) - Add form-mode testing support for Ingest definitions in Studio, including a new Testing tab and MatView dataset-focused test suite/test flows.
+
+  Extend `legend-graph` ingest protocol/metamodel handling so ingest test suites and tests roundtrip correctly between form mode and serialized content
+
+- [#5332](https://github.com/finos/legend-studio/pull/5332) [`fc6fc3c`](https://github.com/finos/legend-studio/commit/fc6fc3c19bf42c069a89d5d919f2a24bd64ca417) ([@jackp5150](https://github.com/jackp5150)) - Added search by gitlab id for studio projects and uplifted existing UI/UX bugs.
+  Added session-bound search cache to instantly surface previous search results
+
+- [#5340](https://github.com/finos/legend-studio/pull/5340) [`dd4648e`](https://github.com/finos/legend-studio/commit/dd4648e97c724ca27017e9d6f69c557d12c67412) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix unreadable (black-on-black) text in the mapping editor source panel in dark
+  theme: source tree node labels (class properties, relational columns, flat-data
+  fields) inherited the browser-default black once the panel background was
+  tokenized to follow the theme; the panel content now sets a themed text color.
+  Also fix the property multiplicity badge, which paired `--color-text-inverted`
+  with `--color-bg-tag` (dark-on-dark in dark theme).
+
+- [#5348](https://github.com/finos/legend-studio/pull/5348) [`223c9c4`](https://github.com/finos/legend-studio/commit/223c9c440700779a8e8603ea2c6a26874c32e9ba) ([@yash0024](https://github.com/yash0024)) - Allow creating function tests when the runtime is a LakehouseRuntime
+
+- [#5340](https://github.com/finos/legend-studio/pull/5340) [`dd4648e`](https://github.com/finos/legend-studio/commit/dd4648e97c724ca27017e9d6f69c557d12c67412) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix cramped spacing in testable test explorers (mapping tests, function tests):
+  the run/stop action buttons nested inside a test row's label rendered flush
+  against the test name; they are now pushed to the right edge of the row with a
+  minimum gap, and long test names ellipsize instead of pushing the buttons out.
+
+- [#5346](https://github.com/finos/legend-studio/pull/5346) [`bc0d8af`](https://github.com/finos/legend-studio/commit/bc0d8af29c0ea28a0098211e2d9a30d5777a7b82) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Expose the color theme toggle (moon/sun) in the showcase viewer, project
+  viewer, and project review viewer activity bars, matching the main editor and
+  workspace setup page.
+
 ## 28.21.23
 
 ## 28.21.22

@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.157
+
+### Patch Changes
+
+- [#5332](https://github.com/finos/legend-studio/pull/5332) [`fc6fc3c`](https://github.com/finos/legend-studio/commit/fc6fc3c19bf42c069a89d5d919f2a24bd64ca417) ([@jackp5150](https://github.com/jackp5150)) - Added prop to allow for input styling for CustomSelectorInput
+
 ## 7.1.156
 
 ### Patch Changes

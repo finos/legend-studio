@@ -1,5 +1,31 @@
 # @finos/legend-query-builder
 
+## 4.18.28
+
+### Patch Changes
+
+- [#5347](https://github.com/finos/legend-studio/pull/5347) [`d1842c1`](https://github.com/finos/legend-studio/commit/d1842c17c0cbf8ef473efdd8fabf5312c081400b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Restore Query Builder dark-theme colors to their pre-tokenization values
+  (regression from #5299). The tokenization sweep had shifted ~330 declarations
+  to canonical token shades — muted text became brighter, tree connector lines
+  went from light to dark, error reds / accent blues / chip and header greys all
+  moved. 226 declarations are restored to their exact original dark values:
+  mis-mapped surface/border tokens swapped to value-preserving tokens, and
+  colors with no matching token (legacy muted greys, connector-line lights,
+  error reds, accent blues, category colors) reverted to their original palette
+  values. The ~100 remaining differences are imperceptible single-notch shifts
+  (delta <= 19/255) kept to avoid regressing the light theme, plus the
+  previously-fixed undefined-variable bugs.
+
+- [#5340](https://github.com/finos/legend-studio/pull/5340) [`dd4648e`](https://github.com/finos/legend-studio/commit/dd4648e97c724ca27017e9d6f69c557d12c67412) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix `text-on-accent` trap regressions from the Query Builder tokenization:
+  text/icons on stable saturated fills had been mapped to themed text tokens,
+  rendering dark-on-color in light themes. Affected: the Run Query / Stop /
+  dropdown combo button (play, stop, and caret icons showed black in Studio
+  light and Legend Query legacy light), the OLAP operation/window operator
+  badges, the execution-plan native view-mode label, the explorer milestoning
+  type chip, and the value-spec variable pill. All now use
+  `--color-text-on-accent` (or stable dark on yellow), matching their
+  pre-tokenization appearance in dark theme.
+
 ## 4.18.27
 
 ## 4.18.26
