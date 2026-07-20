@@ -1779,6 +1779,8 @@ export const DataProductAccessPointGroupViewer = observer(
       dataAccessState?.dataAccessRequestViewerState;
 
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
     const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
       useState(false);
@@ -1817,11 +1819,10 @@ export const DataProductAccessPointGroupViewer = observer(
         flowResult(
           apgState.fetchApprovedWorkforceUsers(
             dataAccessState.lakehouseContractServerClient,
-            auth.user?.access_token,
+            tokenRef.current,
           ),
         ).catch(() => undefined);
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [apgState, dataAccessState, canViewApprovedUsers]);
 
     const apgContractErrors = useMemo(() => {
