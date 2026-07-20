@@ -16,6 +16,9 @@
 
 .lakehouse-data-product-owners-tooltip {
   padding: 1rem;
+  max-height: 300px;
+  min-width: 200px;
+  overflow-y: auto;
   color: var(--marketplace-text-primary);
   background-color: var(--marketplace-bg-primary);
 

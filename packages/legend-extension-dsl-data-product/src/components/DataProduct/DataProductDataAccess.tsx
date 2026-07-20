@@ -154,6 +154,7 @@ import {
   buildIngestDefinitionOperationsPath,
   buildIngestDefinitionUrnFromDataset,
 } from '../../utils/DataProductIngestUtils.js';
+import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1778,6 +1779,8 @@ export const DataProductAccessPointGroupViewer = observer(
       dataAccessState?.dataAccessRequestViewerState;
 
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
     const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
       useState(false);
@@ -1797,6 +1800,30 @@ export const DataProductAccessPointGroupViewer = observer(
       return () =>
         apgState.dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [apgState, anchor]);
+
+    const currentUser =
+      apgState.applicationStore.identityService.currentUser.toLowerCase();
+    const isCurrentUserOwner = (dataAccessState?.dataProductOwners ?? []).some(
+      (owner) => owner.toLowerCase() === currentUser,
+    );
+    const canViewApprovedUsers =
+      isCurrentUserOwner &&
+      apgState.access !== AccessPointGroupAccess.ENTERPRISE;
+
+    useEffect(() => {
+      if (
+        dataAccessState &&
+        canViewApprovedUsers &&
+        apgState.fetchingApprovedWorkforceUsersState.isInInitialState
+      ) {
+        flowResult(
+          apgState.fetchApprovedWorkforceUsers(
+            dataAccessState.lakehouseContractServerClient,
+            tokenRef.current,
+          ),
+        ).catch(() => undefined);
+      }
+    }, [apgState, dataAccessState, canViewApprovedUsers]);
 
     const apgContractErrors = useMemo(() => {
       const missingIngests = apgState.missingIngests ?? [];
@@ -2073,6 +2100,25 @@ export const DataProductAccessPointGroupViewer = observer(
             </button>
           </div>
           <Box className="data-product__viewer__access-group__item__header__actions">
+            {dataAccessState &&
+              canViewApprovedUsers &&
+              (apgState.fetchingApprovedWorkforceUsersState.isInInitialState ||
+                apgState.fetchingApprovedWorkforceUsersState.isInProgress ||
+                apgState.approvedWorkforceUsers.length > 0) && (
+                <UserAvatarGroupWithPopover
+                  users={apgState.approvedWorkforceUsers}
+                  fetchingUsersState={
+                    apgState.fetchingApprovedWorkforceUsersState
+                  }
+                  label="Approved Users"
+                  title="View approved users"
+                  userSearchService={
+                    apgState.dataProductViewerState.userSearchService
+                  }
+                  applicationStore={apgState.applicationStore}
+                  popoverContentClassName="data-product__viewer__access-group__approved-users__popover-content"
+                />
+              )}
             {renderAccess(apgState.access)}
           </Box>
         </div>

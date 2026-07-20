@@ -44,7 +44,7 @@ import { DataProductDataAccessState } from '../stores/DataProduct/DataProductDat
 import { TerminalProductViewerState } from '../stores/TerminalProduct/TerminalProductViewerState.js';
 import type { TerminalProductDataAccessState } from '../stores/TerminalProduct/TerminalProductDataAccessState.js';
 import { getHumanReadableIngestEnvName } from '../utils/LakehouseUtils.js';
-import { LakehouseDataProductOwnersTooltip } from './DataProduct/LakehouseDataProductOwnersTooltip.js';
+import { UserAvatarGroupWithPopover } from './DataProduct/UserAvatarGroupWithPopover.js';
 
 export const isDataProductViewerState = (
   state: BaseViewerState<SupportedProducts, SupportedLayoutStates>,
@@ -112,7 +112,6 @@ const DataProductEnvironmentLabel = observer(
       dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment?.type;
     const environmentName = dataAccessState.lakehouseIngestEnv?.environmentName;
     const origin = dataAccessState.entitlementsDataProductDetails.origin;
-    const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
 
     return (
       <div className="data-product__viewer__header__type">
@@ -151,33 +150,18 @@ const DataProductEnvironmentLabel = observer(
             <OpenIcon />
           </Button>
         )}
-        <LakehouseDataProductOwnersTooltip
-          open={isOwnersTooltipOpen}
-          setIsOpen={setIsOwnersTooltipOpen}
-          owners={dataAccessState.dataProductOwners}
-          fetchingOwnersState={dataAccessState.fetchingDataProductOwnersState}
-          applicationStore={dataAccessState.applicationStore}
+        <Button variant="outlined">
+          {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
+        </Button>
+        <UserAvatarGroupWithPopover
+          users={dataAccessState.dataProductOwners}
+          fetchingUsersState={dataAccessState.fetchingDataProductOwnersState}
+          label="Owners"
           userSearchService={
             dataAccessState.dataProductViewerState.userSearchService
           }
-        >
-          <div>
-            <Button
-              onClick={() => {
-                setIsOwnersTooltipOpen((val) => !val);
-              }}
-              title="Click to view owners"
-              variant="outlined"
-              loading={
-                dataAccessState.fetchingDataProductOwnersState
-                  .isInInitialState ||
-                dataAccessState.fetchingDataProductOwnersState.isInProgress
-              }
-            >
-              {`Lakehouse${environmentName ? ` - ${getHumanReadableIngestEnvName(environmentName, dataAccessState.applicationStore.pluginManager.getApplicationPlugins())}` : ''}`}
-            </Button>
-          </div>
-        </LakehouseDataProductOwnersTooltip>
+          applicationStore={dataAccessState.applicationStore}
+        />
       </div>
     );
   },

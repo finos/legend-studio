@@ -593,7 +593,7 @@ describe('DataProductViewer', () => {
       await screen.findByText(/Lakehouse - test-production-env/);
     });
 
-    test('Clicking Lakehouse environment button displays tooltip with owners', async () => {
+    test('Clicking owners button displays tooltip with owners', async () => {
       // Pre-populate a UserSearchService so the owners tooltip resolves each
       // owner id (previously the tooltip fell back to rendering the raw id,
       // but with `hideIfNotFound` enabled we now hide unresolved users).
@@ -621,14 +621,13 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Mock SDLC Data Product');
 
-      // Wait for the environment button to be rendered
-      const lakehouseButton = await screen.findByText(
-        /Lakehouse - test-production-env/,
-      );
+      // Wait for the environment label to be rendered
+      await screen.findByText(/Lakehouse - test-production-env/);
 
-      // Click on the Lakehouse button to open the tooltip
+      // Click on the owners button (avatar group) to open the tooltip
+      const ownersButton = await screen.findByText('Owners');
       await act(async () => {
-        fireEvent.click(lakehouseButton);
+        fireEvent.click(ownersButton);
       });
 
       // Wait for the tooltip to appear with owners
