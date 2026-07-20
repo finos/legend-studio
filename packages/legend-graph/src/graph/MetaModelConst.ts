@@ -86,6 +86,7 @@ export enum ATOMIC_TEST_TYPE {
   Mapping_Test = 'mappingTest',
   Function_Test = 'functionTest',
   DataProduct_AccessPoint_Test = 'accessPointTest',
+  Availability_Barrier_Test = 'availabilityBarrierTest',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
@@ -162,6 +163,7 @@ export enum CORE_PURE_PATH {
   DATA_PRODUCT = 'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   INGEST_DEFINITION = 'meta::external::ingest::specification::metamodel::IngestDefinition',
   COMPUTE = 'meta::external::compute::specification::metamodel::Compute',
+  AVAILABILITY = 'meta::external::lakehouse::specification::metamodel::Availability',
 }
 
 export const PURE_DOC_TAG = 'doc';

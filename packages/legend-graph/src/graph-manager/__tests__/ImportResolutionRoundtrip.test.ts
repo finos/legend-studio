@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, describe } from '@jest/globals';
+import { test, describe, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import {
   TEST_DATA__AutoImportsWithSystemProfiles,
@@ -77,7 +77,14 @@ import {
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST_DATA__ModelJoinAssociationMapping_Simple } from './roundtripTestData/TEST_DATA__ModelJoinMappingRoundtrip.js';
-import { TEST__checkBuildingElementsRoundtrip } from '../__test-utils__/GraphManagerTestUtils.js';
+import {
+  TEST__buildGraphWithEntities,
+  TEST__checkBuildingElementsRoundtrip,
+  TEST__ensureObjectFieldsAreSortedAlphabetically,
+  TEST__excludeSectionIndex,
+  TEST__getTestGraphManagerState,
+} from '../__test-utils__/GraphManagerTestUtils.js';
+import type { Entity } from '@finos/legend-storage';
 import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
 import {
   TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
@@ -95,6 +102,13 @@ import {
   TEST_DATA__COMPUTE_DATABRICKS,
   TEST_DATA__COMPUTE_UNKNOWN_SPEC,
 } from './roundtripTestData/TEST_DATA__ComputeRoundtrip.js';
+import {
+  TEST_DATA__AVAILABILITY_NO_TESTS,
+  TEST_DATA__AVAILABILITY_DEFAULT_FORMAT,
+  TEST_DATA__AVAILABILITY_LITE_FORMAT,
+  TEST_DATA__AVAILABILITY_ALLOY_QUERY_FORMAT,
+  TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS,
+} from './roundtripTestData/TEST_DATA__AvailabilityRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
 import {
   TEST_DATA__INGEST_DEFINITION,
@@ -335,6 +349,50 @@ describe(unitTest('DSL Compute'), () => {
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
+  });
+});
+
+describe(unitTest('DSL Availability'), () => {
+  const TEST__checkAvailabilityRoundtrip = async (
+    entities: Entity[],
+  ): Promise<void> => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await TEST__buildGraphWithEntities(graphManagerState, entities, {
+      TEMPORARY__preserveSectionIndex: true,
+    });
+
+    const transformedEntities = graphManagerState.graph.allOwnElements.map(
+      (element) => graphManagerState.graphManager.elementToEntity(element),
+    );
+    transformedEntities.forEach((entity) =>
+      TEST__ensureObjectFieldsAreSortedAlphabetically(entity.content),
+    );
+    const expectedEntities = TEST__excludeSectionIndex(entities);
+    expect(transformedEntities).toEqual(
+      expect.arrayContaining(expectedEntities),
+    );
+    expect(expectedEntities).toEqual(
+      expect.arrayContaining(transformedEntities),
+    );
+  };
+
+  test.each([
+    ['Availability with no tests', TEST_DATA__AVAILABILITY_NO_TESTS],
+    [
+      'Availability with DEFAULT format test',
+      TEST_DATA__AVAILABILITY_DEFAULT_FORMAT,
+    ],
+    ['Availability with LITE format test', TEST_DATA__AVAILABILITY_LITE_FORMAT],
+    [
+      'Availability with ALLOY_QUERY format test',
+      TEST_DATA__AVAILABILITY_ALLOY_QUERY_FORMAT,
+    ],
+    [
+      'Availability with notification variants',
+      TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkAvailabilityRoundtrip(entities as Entity[]);
   });
 });
 

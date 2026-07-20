@@ -109,6 +109,8 @@ import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V
 import { V1_transformIngestTestSuite } from './V1_IngestTransformer.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import type { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
+import { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import { V1_transformAvailability } from './V1_AvailabilityTransformer.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -127,6 +129,9 @@ class V1_PackageableElementTransformer
   }
 
   visit_PackageableElement(element: PackageableElement): V1_PackageableElement {
+    if (element instanceof Availability) {
+      return V1_transformAvailability(element, this.context) as never;
+    }
     for (const transformer of this.extraElementTransformers) {
       const elementProtocol = transformer(element, this.context);
       if (elementProtocol) {

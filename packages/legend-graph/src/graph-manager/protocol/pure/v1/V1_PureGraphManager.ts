@@ -391,6 +391,7 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_Compute } from './model/packageableElements/compute/V1_Compute.js';
+import { V1_Availability } from './model/packageableElements/availability/V1_Availability.js';
 import {
   V1_DataProductArtifact,
   V1_ModelAccessPointGroupInfo,
@@ -481,6 +482,7 @@ class V1_PureModelContextDataIndex {
   executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
   products: V1_DataProduct[] = [];
   computes: V1_Compute[] = [];
+  availabilities: V1_Availability[] = [];
 
   INTERNAL__UnknownElement: V1_INTERNAL__UnknownElement[] = [];
   INTERNAL__unknownElements: V1_INTERNAL__UnknownPackageableElement[] = [];
@@ -567,6 +569,8 @@ export const V1_indexPureModelContextData = (
       index.products.push(el);
     } else if (el instanceof V1_Compute) {
       index.computes.push(el);
+    } else if (el instanceof V1_Availability) {
+      index.availabilities.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -1257,6 +1261,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildComputes(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_COMPUTES__SUCCESS);
 
+    // build availabilities
+    graphBuilderState.setMessage(`Building availabilities...`);
+    await this.buildAvailabilities(graph, inputs, options);
+
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     await this.buildMappings(graph, inputs, options);
@@ -1647,6 +1655,30 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       inputs,
       (data) => data.computes,
       (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
+    );
+  }
+
+  private async buildAvailabilities(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    // Second pass
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.availabilities,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
+    );
+
+    // Third pass
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) => data.availabilities,
+      (ctx) => new V1_ElementThirdPassBuilder(ctx),
       options,
     );
   }
@@ -5407,6 +5439,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATA_PRODUCT;
     } else if (protocol instanceof V1_Compute) {
       return CORE_PURE_PATH.COMPUTE;
+    } else if (protocol instanceof V1_Availability) {
+      return CORE_PURE_PATH.AVAILABILITY;
     } else if (protocol instanceof V1_MemSQLFunction) {
       return CORE_PURE_PATH.MEM_SQL_FUNCTION;
     }

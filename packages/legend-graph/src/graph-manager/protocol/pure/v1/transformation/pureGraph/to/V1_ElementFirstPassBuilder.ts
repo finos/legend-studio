@@ -63,6 +63,8 @@ import { V1_checkDuplicatedElement } from './V1_ElementBuilder.js';
 import type { Package } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
@@ -118,6 +120,21 @@ export class V1_ElementFirstPassBuilder
   }
 
   visit_PackageableElement(element: V1_PackageableElement): PackageableElement {
+    if (element instanceof V1_Availability) {
+      const metamodel = new Availability(element.name);
+      const path = V1_buildFullPath(element.package, element.name);
+      V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+      addElementToPackage(
+        getOrCreateGraphPackage(
+          this.context.currentSubGraph,
+          element.package,
+          this.packageCache,
+        ),
+        metamodel,
+      );
+      this.context.currentSubGraph.setOwnAvailability(path, metamodel);
+      return metamodel;
+    }
     return this.context.extensions
       .getExtraBuilderOrThrow(element)
       .runFirstPass(
