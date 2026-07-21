@@ -15,11 +15,14 @@
  */
 import packageJson from '../../package.json' with { type: 'json' };
 import {
+  type AtomicTest,
+  type AtomicTestObserver,
   type ElementObserver,
   type PureGraphManagerExtensionBuilder,
   type ObserverContext,
   type PackageableElement,
   PureGraphManagerPlugin,
+  type Testable_PureGraphManagerPlugin_Extension,
 } from '@finos/legend-graph';
 import {
   DataQualityClassValidationsConfiguration,
@@ -28,14 +31,23 @@ import {
   DataQualityRelationComparisonConfiguration,
 } from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
+  DataQualityRelationComparisonTest,
+  DataQualityRelationValidationTest,
+} from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityTest.js';
+import {
   observe_DataQualityConstraintsConfiguration,
   observe_DataQualityServiceValidationConfiguration,
   observe_DataQualityRelationValidationConfiguration,
   observe_DataQualityRelationComparisonConfiguration,
+  observe_DataQualityRelationComparisonTest,
+  observe_DataQualityRelationValidationTest,
 } from './action/changeDetection/DSL_DataQuality_ObserverHelper.js';
 import { DSL_DataQuality_buildGraphManagerExtension } from './protocol/pure/DSL_DataQuality_buildGraphManagerExtension.js';
 
-export class DSL_DataQuality_PureGraphManagerPlugin extends PureGraphManagerPlugin {
+export class DSL_DataQuality_PureGraphManagerPlugin
+  extends PureGraphManagerPlugin
+  implements Testable_PureGraphManagerPlugin_Extension
+{
   constructor() {
     super(packageJson.extensions.pureGraphManagerPlugin, packageJson.version);
   }
@@ -63,6 +75,20 @@ export class DSL_DataQuality_PureGraphManagerPlugin extends PureGraphManagerPlug
             element,
             context,
           );
+        }
+        return undefined;
+      },
+    ];
+  }
+
+  getExtraAtomicTestObservers(): AtomicTestObserver[] {
+    return [
+      (element: AtomicTest): AtomicTest | undefined => {
+        if (element instanceof DataQualityRelationValidationTest) {
+          return observe_DataQualityRelationValidationTest(element);
+        }
+        if (element instanceof DataQualityRelationComparisonTest) {
+          return observe_DataQualityRelationComparisonTest(element);
         }
         return undefined;
       },

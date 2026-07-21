@@ -19,6 +19,7 @@ import {
   type RawExecutionPlan,
   type ExecutionResult,
   type PureModel,
+  type RelationTypeMetadata,
   type RootGraphFetchTree,
   AbstractPureGraphManagerExtension,
 } from '@finos/legend-graph';
@@ -97,6 +98,11 @@ export abstract class DSL_DataQuality_PureGraphManagerExtension extends Abstract
     graph: PureModel,
     options: DQReconciliationInputOptions,
   ): Promise<RawExecutionPlan>;
+
+  abstract getDataQualityRelationType(
+    graph: PureModel,
+    packagePath: string,
+  ): Promise<RelationTypeMetadata>;
 }
 
 export const getDataQualityPureGraphManagerExtension = (

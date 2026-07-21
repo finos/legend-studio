@@ -21,8 +21,11 @@ import {
   type V1_StereotypePtr,
   type V1_TaggedValue,
   type V1_RawVariable,
+  type V1_FunctionTestData,
   hashRawLambda,
+  V1_AtomicTest,
   V1_PackageableElement,
+  V1_TestSuite,
 } from '@finos/legend-graph';
 import { type Hashable, hashArray } from '@finos/legend-shared';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../../../graph/metamodel/DSL_DataQuality_HashUtils.js';
@@ -150,12 +153,14 @@ export class V1_DataQualityRelationValidationsConfiguration
   runtime?: V1_PackageableElementPointer | undefined;
   taggedValues: V1_TaggedValue[] = [];
   stereotypes: V1_StereotypePtr[] = [];
+  testSuites: V1_DataQualityRelationValidationTestSuite[] = [];
 
   override get hashCode(): string {
     return hashArray([
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
       this.query,
       hashArray(this.validations),
+      hashArray(this.testSuites),
     ]);
   }
 
@@ -195,6 +200,7 @@ export class V1_DataQualityRelationComparisonConfiguration
   columnsToCompare: string[] = [];
   strategy!: V1_ReconStrategy;
   expectedMatch?: number | undefined;
+  testSuites: V1_DataQualityRelationComparisonTestSuite[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -205,6 +211,7 @@ export class V1_DataQualityRelationComparisonConfiguration
       hashArray(this.columnsToCompare),
       String(this.expectedMatch ?? ''),
       this.strategy,
+      hashArray(this.testSuites),
     ]);
   }
 
@@ -212,5 +219,89 @@ export class V1_DataQualityRelationComparisonConfiguration
     visitor: V1_PackageableElementVisitor<T>,
   ): T {
     return visitor.visit_PackageableElement(this);
+  }
+}
+
+export class V1_DataQualityRelationValidationTest
+  extends V1_AtomicTest
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_TEST,
+      this.id,
+      this.doc ?? '',
+      hashArray(this.assertions),
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationValidationTestData implements Hashable {
+  testData: V1_FunctionTestData[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_TEST_DATA,
+      hashArray(this.testData),
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationValidationTestSuite
+  extends V1_TestSuite
+  implements Hashable
+{
+  testData: V1_DataQualityRelationValidationTestData | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_TEST_SUITE,
+      this.id,
+      this.doc ?? '',
+      hashArray(this.tests),
+      this.testData ?? '',
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationComparisonTest
+  extends V1_AtomicTest
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_COMPARISON_TEST,
+      this.id,
+      this.doc ?? '',
+      hashArray(this.assertions),
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationComparisonTestData implements Hashable {
+  testData: V1_FunctionTestData[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_COMPARISON_TEST_DATA,
+      hashArray(this.testData),
+    ]);
+  }
+}
+
+export class V1_DataQualityRelationComparisonTestSuite
+  extends V1_TestSuite
+  implements Hashable
+{
+  testData: V1_DataQualityRelationComparisonTestData | undefined;
+
+  override get hashCode(): string {
+    return hashArray([
+      DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_COMPARISON_TEST_SUITE,
+      this.id,
+      this.doc ?? '',
+      hashArray(this.tests),
+      this.testData ?? '',
+    ]);
   }
 }

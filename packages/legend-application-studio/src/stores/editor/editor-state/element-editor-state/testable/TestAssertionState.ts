@@ -50,7 +50,10 @@ import {
 } from '@finos/legend-shared';
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../../EditorStore.js';
-import { externalFormatData_setData } from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
+import {
+  externalFormatData_setData,
+  relationElement_setContent,
+} from '../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
 import {
   getTestableResultFromAssertionStatus,
   TESTABLE_RESULT,
@@ -326,6 +329,38 @@ export class EqualToJsonAssertionState extends TestAssertionState {
   }
 }
 
+/**
+ * Parse the pipe-delimited relation table string (e.g.
+ * `col1 | col2\nval1 | val2`) into columns + row values. Rows that are
+ * entirely blank are dropped so an empty expected relation
+ * stays empty after generating.
+ */
+const parseRelationTableString = (
+  text: string,
+): { columns: string[]; rows: string[][] } => {
+  const lines = text.split('\n');
+  if (!lines.length) {
+    return { columns: [], rows: [] };
+  }
+  const parseLine = (line: string): string[] =>
+    line.split('|').map((cell) => cell.trim());
+  const headerLine = lines[0] ?? '';
+  const columns = parseLine(headerLine).filter((c) => c.length > 0);
+  const rows: string[][] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i] ?? '';
+    if (!line.trim()) {
+      continue;
+    }
+    const values = parseLine(line);
+    if (values.every((v) => v === '')) {
+      continue;
+    }
+    rows.push(values);
+  }
+  return { columns, rows };
+};
+
 export class EqualToRelationAssertionState extends TestAssertionState {
   declare assertion: EqualToRelation;
   expectedRelationElementState: RelationElementState;
@@ -341,11 +376,20 @@ export class EqualToRelationAssertionState extends TestAssertionState {
   }
 
   override get supportsGeneratingAssertion(): boolean {
-    return false;
+    return true;
   }
 
-  generateExpected(_status: AssertFail): boolean {
-    return false;
+  generateExpected(status: AssertFail): boolean {
+    if (!(status instanceof EqualToRelationAssertFail)) {
+      return false;
+    }
+    const parsed = parseRelationTableString(status.actual);
+    relationElement_setContent(
+      this.assertion.expected,
+      parsed.columns,
+      parsed.rows,
+    );
+    return true;
   }
 
   generateBare(): TestAssertion {

@@ -70,6 +70,7 @@ import {
 } from '../../graph-manager/index.js';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../graph/metamodel/DSL_DataQuality_HashUtils.js';
 import { getDataQualityPureGraphManagerExtension } from '../../graph-manager/protocol/pure/DSL_DataQuality_PureGraphManagerExtension.js';
+import { DataQualityTestableState } from './DataQualityTestableState.js';
 
 export type ComparisonSide = 'source' | 'target';
 
@@ -77,6 +78,11 @@ export enum RECONCILIATION_EXECUTION_TYPE {
   RECONCILIATION = 'RECONCILIATION',
   SOURCE_QUERY = 'SOURCE_QUERY',
   TARGET_QUERY = 'TARGET_QUERY',
+}
+
+export enum DATA_QUALITY_RELATION_COMPARISON_EDITOR_TAB {
+  DEFINITION = 'Definition',
+  TESTS = 'Tests',
 }
 
 export const DEFAULT_LIMIT = 1000;
@@ -301,6 +307,13 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
   isGeneratingPlan = false;
   executionPlanState: ExecutionPlanState;
 
+  // Tabs
+  selectedTab: DATA_QUALITY_RELATION_COMPARISON_EDITOR_TAB =
+    DATA_QUALITY_RELATION_COMPARISON_EDITOR_TAB.DEFINITION;
+
+  // Tests
+  readonly testableState: DataQualityTestableState;
+
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
@@ -327,6 +340,8 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       this.editorStore.applicationStore,
       this.editorStore.graphManagerState,
     );
+
+    this.testableState = new DataQualityTestableState(this, this.element);
 
     makeObservable(this, {
       setKeys: action,
@@ -369,7 +384,13 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       generatePlan: flow,
       isGeneratingPlan: observable,
       openComparisonParametersModal: action,
+      selectedTab: observable,
+      setSelectedTab: action,
     });
+  }
+
+  setSelectedTab(tab: DATA_QUALITY_RELATION_COMPARISON_EDITOR_TAB): void {
+    this.selectedTab = tab;
   }
 
   setKeys(keys: string[]): void {

@@ -94,6 +94,7 @@ import {
   USER_ATTESTATION_MESSAGE,
 } from './constants/DataQualityConstants.js';
 import { DataQualityRelationValidationContainer } from './DataQualityRelationValidationContainer.js';
+import { DataQualityTestsEditor } from './DataQualityTestsEditor.js';
 
 const RelationDefinitionEditor = observer(
   (props: {
@@ -679,6 +680,14 @@ export const DataQualityRelationValidationConfigurationEditor = observer(() => {
             <DataQualityRelationValidationContainer
               dataQualityRelationValidationConfigurationState={
                 dataQualityRelationValidationConfigurationState
+              }
+            />
+          )}
+          {selectedTab ===
+            DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB.TESTS && (
+            <DataQualityTestsEditor
+              testableState={
+                dataQualityRelationValidationConfigurationState.testableState
               }
             />
           )}

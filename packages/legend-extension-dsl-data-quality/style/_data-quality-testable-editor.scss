@@ -1,0 +1,94 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+// -----------------------------------------------------------------------------
+// Data Quality testable editor
+//
+// DQ-scoped equivalents for the cross-package classes previously borrowed
+// from the mapping/service editor stylesheets (see review issue 17).
+// -----------------------------------------------------------------------------
+
+.dq-testable-editor {
+  &__tabs {
+    display: flex;
+    height: 100%;
+    overflow-x: auto;
+  }
+
+  &__tab {
+    @include flexCenter;
+
+    display: inline-flex;
+    height: 100%;
+    color: var(--color-text-muted);
+    padding: 0 1rem;
+    border-right: 0.1rem solid var(--color-border-subtle);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  &__tab--active {
+    position: relative;
+  }
+
+  &__tab--active::after {
+    content: '';
+    height: 0.2rem;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    background: var(--color-pink-500);
+  }
+
+  &__tab__content {
+    @include flexVCenter;
+
+    height: 100%;
+  }
+
+  &__tab--context {
+    background: var(--color-bg-hover);
+  }
+}
+
+.dq-test-data-editor {
+  &__warning {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-red-300);
+    padding: 0.5rem;
+    font-size: 1.2rem;
+  }
+}
+
+.dq-test-explorer {
+  &__item__action {
+    height: 100%;
+    width: 2.8rem;
+    color: var(--color-text-disabled);
+  }
+
+  &__run-test-btn svg {
+    font-size: 1rem;
+  }
+
+  &__run-test-btn[disabled] svg {
+    color: var(--color-text-disabled);
+  }
+}

@@ -38,6 +38,12 @@ import {
   V1_DataQualityRelationQueryLambda,
   V1_DataQualityRelationComparisonConfiguration,
   V1_MD5HashStrategy,
+  V1_DataQualityRelationValidationTest,
+  V1_DataQualityRelationValidationTestData,
+  V1_DataQualityRelationValidationTestSuite,
+  V1_DataQualityRelationComparisonTest,
+  V1_DataQualityRelationComparisonTestData,
+  V1_DataQualityRelationComparisonTestSuite,
 } from '../../V1_DataQualityValidationConfiguration.js';
 import {
   type PlainObject,
@@ -46,18 +52,33 @@ import {
   usingModelSchema,
   UnsupportedOperationError,
   customListWithSchema,
+  customList,
 } from '@finos/legend-shared';
 import {
   type PureProtocolProcessorPlugin,
+  V1_deserializeFunctionTestData,
+  V1_deserializeTestAssertion,
+  type V1_FunctionTestData,
   V1_packageableElementPointerModelSchema,
   V1_rawLambdaModelSchema,
+  V1_serializeFunctionTestData,
   V1_serializeGraphFetchTree,
+  V1_serializeTestAssertion,
   V1_deserializeGraphFetchTree,
   V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
   V1_RawValueSpecificationType,
   V1_rawVariableModelSchema,
 } from '@finos/legend-graph';
+
+const V1_DATA_QUALITY_RELATION_VALIDATION_TEST_SUITE_TYPE =
+  'dataQualityRelationValidationTestSuite';
+const V1_DATA_QUALITY_RELATION_VALIDATION_TEST_TYPE =
+  'dataQualityRelationValidationTest';
+const V1_DATA_QUALITY_RELATION_COMPARISON_TEST_SUITE_TYPE =
+  'dataQualityRelationComparisonTestSuite';
+const V1_DATA_QUALITY_RELATION_COMPARISON_TEST_TYPE =
+  'dataQualityRelationComparisonTest';
 
 export const V1_DATA_QUALITY_PROTOCOL_TYPE = 'dataQualityValidation';
 export const V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE =
@@ -153,6 +174,122 @@ const V1_relationValidationModelSchema = createModelSchema(
   },
 );
 
+// -------------------------------- Test Suite Schemas --------------------------------
+
+const V1_dataQualityRelationValidationTestModelSchema = createModelSchema(
+  V1_DataQualityRelationValidationTest,
+  {
+    _type: usingConstantValueSchema(
+      V1_DATA_QUALITY_RELATION_VALIDATION_TEST_TYPE,
+    ),
+    assertions: list(
+      custom(
+        (val) => V1_serializeTestAssertion(val),
+        (val) => V1_deserializeTestAssertion(val),
+      ),
+    ),
+    doc: optional(primitive()),
+    id: primitive(),
+  },
+);
+
+const V1_dataQualityRelationValidationTestDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityRelationValidationTestData> =>
+  createModelSchema(V1_DataQualityRelationValidationTestData, {
+    testData: customList(
+      (val: V1_FunctionTestData) => V1_serializeFunctionTestData(val, plugins),
+      (val) => V1_deserializeFunctionTestData(val, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+  });
+
+const V1_dataQualityRelationValidationTestSuiteModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityRelationValidationTestSuite> =>
+  createModelSchema(V1_DataQualityRelationValidationTestSuite, {
+    _type: usingConstantValueSchema(
+      V1_DATA_QUALITY_RELATION_VALIDATION_TEST_SUITE_TYPE,
+    ),
+    doc: optional(primitive()),
+    id: primitive(),
+    testData: optionalCustom(
+      (val) =>
+        serialize(
+          V1_dataQualityRelationValidationTestDataModelSchema(plugins),
+          val,
+        ),
+      (val) =>
+        deserialize(
+          V1_dataQualityRelationValidationTestDataModelSchema(plugins),
+          val,
+        ),
+    ),
+    tests: list(
+      usingModelSchema(V1_dataQualityRelationValidationTestModelSchema),
+    ),
+  });
+
+const V1_dataQualityRelationComparisonTestModelSchema = createModelSchema(
+  V1_DataQualityRelationComparisonTest,
+  {
+    _type: usingConstantValueSchema(
+      V1_DATA_QUALITY_RELATION_COMPARISON_TEST_TYPE,
+    ),
+    assertions: list(
+      custom(
+        (val) => V1_serializeTestAssertion(val),
+        (val) => V1_deserializeTestAssertion(val),
+      ),
+    ),
+    doc: optional(primitive()),
+    id: primitive(),
+  },
+);
+
+const V1_dataQualityRelationComparisonTestDataModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityRelationComparisonTestData> =>
+  createModelSchema(V1_DataQualityRelationComparisonTestData, {
+    testData: customList(
+      (val: V1_FunctionTestData) => V1_serializeFunctionTestData(val, plugins),
+      (val) => V1_deserializeFunctionTestData(val, plugins),
+      {
+        INTERNAL__forceReturnEmptyInTest: true,
+      },
+    ),
+  });
+
+const V1_dataQualityRelationComparisonTestSuiteModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+): ModelSchema<V1_DataQualityRelationComparisonTestSuite> =>
+  createModelSchema(V1_DataQualityRelationComparisonTestSuite, {
+    _type: usingConstantValueSchema(
+      V1_DATA_QUALITY_RELATION_COMPARISON_TEST_SUITE_TYPE,
+    ),
+    doc: optional(primitive()),
+    id: primitive(),
+    testData: optionalCustom(
+      (val) =>
+        serialize(
+          V1_dataQualityRelationComparisonTestDataModelSchema(plugins),
+          val,
+        ),
+      (val) =>
+        deserialize(
+          V1_dataQualityRelationComparisonTestDataModelSchema(plugins),
+          val,
+        ),
+    ),
+    tests: list(
+      usingModelSchema(V1_dataQualityRelationComparisonTestModelSchema),
+    ),
+  });
+
+// -------------------------------- End Test Suite Schemas --------------------------------
+
 const V1_dataQualityClassValidationModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataQualityClassValidationsConfiguration> =>
@@ -205,6 +342,10 @@ const V1_dataQualityRelationValidationModelSchema = (
     taggedValues: customListWithSchema(V1_taggedValueModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
+    testSuites: customListWithSchema(
+      V1_dataQualityRelationValidationTestSuiteModelSchema(plugins),
+      { INTERNAL__forceReturnEmptyInTest: true },
+    ),
   });
 
 const V1_dataQualityServiceValidationModelSchema = (
@@ -309,6 +450,10 @@ const V1_dataQualityRelationComparisonModelSchema = (
       (val) => (val ? V1_deserializeReconStrategy(val) : SKIP),
     ),
     expectedMatch: optional(primitive()),
+    testSuites: customListWithSchema(
+      V1_dataQualityRelationComparisonTestSuiteModelSchema(plugins),
+      { INTERNAL__forceReturnEmptyInTest: true },
+    ),
   });
 
 export const V1_serializeDataQualityRelationComparison = (

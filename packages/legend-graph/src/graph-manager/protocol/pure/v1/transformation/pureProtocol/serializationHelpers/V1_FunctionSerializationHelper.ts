@@ -92,7 +92,7 @@ const V1_deserializeDataElementReferenceValue = (
   return deserialize(V1_packageableElementPointerModelSchema, json);
 };
 
-const V1_serializeFunctionTestData = (
+export const V1_serializeFunctionTestData = (
   protocol: V1_FunctionTestData,
   plugins: PureProtocolProcessorPlugin[],
 ): PlainObject<V1_FunctionTestData> => {
@@ -106,7 +106,7 @@ const V1_serializeFunctionTestData = (
   };
 };
 
-const V1_deserializeFunctionTestData = (
+export const V1_deserializeFunctionTestData = (
   json: PlainObject<V1_FunctionTestData>,
   plugins: PureProtocolProcessorPlugin[],
 ): V1_FunctionTestData => {

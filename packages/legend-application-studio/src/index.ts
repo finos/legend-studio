@@ -61,6 +61,7 @@ export * from './stores/graph-modifier/GraphModifierHelper.js';
 export * from './stores/graph-modifier/DomainGraphModifierHelper.js';
 export * from './stores/graph-modifier/DSL_Generation_GraphModifierHelper.js';
 export * from './stores/graph-modifier/DSL_Service_GraphModifierHelper.js';
+export * from './stores/graph-modifier/Testable_GraphModifierHelper.js';
 export * from './stores/graph-modifier/RawValueSpecificationGraphModifierHelper.js';
 export * from './stores/extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
@@ -117,8 +118,38 @@ export { ExternalFormatDataEditor } from './components/editor/editor-group/data-
 export {
   ExternalFormatDataState,
   EmbeddedDataState,
+  createEmbeddedData,
 } from './stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
-export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
+export { EmbeddedDataType } from './stores/editor/editor-state/ExternalFormatState.js';
+export {
+  type EmbeddedDataTypeOption,
+  EmbeddedDataEditorState,
+} from './stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
+export { EmbeddedDataEditor } from './components/editor/editor-group/data-editor/EmbeddedDataEditor.js';
+export {
+  EmbeddedDataConnectionTypeVisitor,
+  createBareExternalFormat,
+  createEmptyEqualToJsonAssertion,
+  isTestPassing,
+  validateTestableId,
+} from './stores/editor/utils/TestableUtils.js';
+export {
+  TESTABLE_TEST_TAB,
+  TestableTestEditorState,
+  TestableTestSuiteEditorState,
+  TestableTestResultState,
+  TestablePackageableElementEditorState,
+} from './stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
+export {
+  TEST_ASSERTION_TAB,
+  TestAssertionEditorState,
+  TestAssertionResultState,
+} from './stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
+export {
+  TestAssertionEditor,
+  RenameModal,
+} from './components/editor/editor-group/testable/TestableSharedComponents.js';
+export { getTestableResultIcon } from './components/editor/side-bar/testable/GlobalTestRunner.js';
 
 export { SnowflakeAppFunctionActivatorEdtiorState } from './stores/editor/editor-state/element-editor-state/function-activator/SnowflakeAppFunctionActivatorEditorState.js';
 export { SnowflakeAppFunctionActivatorEditor } from './components/editor/editor-group/function-activator/SnowflakeAppFunctionActivatorEditor.js';

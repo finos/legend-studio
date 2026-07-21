@@ -31,6 +31,10 @@ import { type Hashable, hashArray, uuid } from '@finos/legend-shared';
 import { DATA_QUALITY_HASH_STRUCTURE } from '../../../DSL_DataQuality_HashUtils.js';
 import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import type { DataQualityRootGraphFetchTree } from './DataQualityGraphFetchTree.js';
+import type {
+  DataQualityRelationValidationTestSuite,
+  DataQualityRelationComparisonTestSuite,
+} from './DataQualityTest.js';
 
 export enum RelationValidationType {
   ROW_LEVEL = 'ROW_LEVEL',
@@ -192,12 +196,14 @@ export class DataQualityRelationValidationConfiguration
   query!: DataQualityRelationQueryLambda;
   validations: DataQualityRelationValidation[] = [];
   runtime?: PackageableElementReference<PackageableRuntime> | undefined;
+  tests: DataQualityRelationValidationTestSuite[] = [];
 
   protected override get _elementHashCode(): string {
     return hashArray([
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
       this.query,
       hashArray(this.validations),
+      hashArray(this.tests),
     ]);
   }
 
@@ -237,6 +243,7 @@ export class DataQualityRelationComparisonConfiguration
   columnsToCompare: string[] = [];
   strategy!: ReconStrategy;
   expectedMatch?: number | undefined;
+  tests: DataQualityRelationComparisonTestSuite[] = [];
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -247,6 +254,7 @@ export class DataQualityRelationComparisonConfiguration
       hashArray(this.columnsToCompare),
       this.expectedMatch ?? '',
       this.strategy,
+      hashArray(this.tests),
     ]);
   }
 

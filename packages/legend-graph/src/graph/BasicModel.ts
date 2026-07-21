@@ -176,6 +176,7 @@ export abstract class BasicModel {
     origin?: GraphDataOrigin | undefined,
   ) {
     this.root = new Package(rootPackageName);
+    this.graphPlugins = graphPlugins;
     const extensionElementClasses = graphPlugins.flatMap(
       (plugin) => plugin.getExtraPureGraphExtensionClasses?.() ?? [],
     );

@@ -731,6 +731,13 @@ export * from './graph/metamodel/pure/test/assertion/EqualToTDS.js';
 export * from './graph/metamodel/pure/test/assertion/EqualToRelation.js';
 export * from './graph/metamodel/pure/test/result/UniqueTestId.js';
 export * from './graph-manager/protocol/pure/v1/model/test/V1_AtomicTest.js';
+export * from './graph-manager/protocol/pure/v1/model/test/V1_TestSuite.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/service/V1_ConnectionTestData.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/function/test/V1_FunctionTestData.js';
+export {
+  V1_serializeFunctionTestData,
+  V1_deserializeFunctionTestData,
+} from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_FunctionSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/model/test/assertion/V1_EqualToJson.js';
 export * from './graph-manager/protocol/pure/v1/model/test/assertion/V1_EqualToRelation.js';
 export * from './graph-manager/protocol/pure/v1/model/test/assertion/status/V1_EqualToRelationAssertFail.js';

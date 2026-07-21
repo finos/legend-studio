@@ -15,16 +15,20 @@
  */
 
 import {
+  type FunctionTestData,
   type GraphFetchTree,
   type V1_GraphFetchTree,
   type V1_GraphTransformerContext,
   type V1_RawVariable,
   PackageableElementPointerType,
+  V1_FunctionTestData,
   V1_PackageableElementPointer,
   V1_PropertyGraphFetchTree,
   V1_RootGraphFetchTree,
+  V1_transformEmbeddedData,
   V1_transformGraphFetchTree,
   V1_transformRawLambda,
+  V1_transformTestAssertion,
   V1_initPackageableElement,
   V1_RawValueSpecificationTransformer,
 } from '@finos/legend-graph';
@@ -52,11 +56,23 @@ import {
   MappingAndRuntimeDataQualityExecutionContext,
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
+  type DataQualityRelationComparisonTest,
+  type DataQualityRelationComparisonTestSuite,
+  type DataQualityRelationValidationTest,
+  type DataQualityRelationValidationTestSuite,
+} from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityTest.js';
+import {
   type V1_DataQualityExecutionContext,
   type V1_ReconStrategy,
   V1_DataQualityClassValidationsConfiguration,
+  V1_DataQualityRelationComparisonTest,
+  V1_DataQualityRelationComparisonTestData,
+  V1_DataQualityRelationComparisonTestSuite,
   V1_DataQualityRelationValidation,
   V1_DataQualityRelationValidationsConfiguration,
+  V1_DataQualityRelationValidationTest,
+  V1_DataQualityRelationValidationTestData,
+  V1_DataQualityRelationValidationTestSuite,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
   V1_DataQualityRelationQueryLambda,
@@ -228,6 +244,9 @@ export function V1_transformDataQualityRelationValidationConfiguration(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
   );
+  protocol.testSuites = metamodel.tests.map((suite) =>
+    V1_transformDataQualityRelationValidationTestSuite(suite, context),
+  );
   return protocol;
 }
 
@@ -272,5 +291,94 @@ export function V1_transformDataQualityRelationComparisonConfiguration(
   protocol.columnsToCompare = metamodel.columnsToCompare;
   protocol.strategy = V1_transformReconStrategy(metamodel.strategy);
   protocol.expectedMatch = metamodel.expectedMatch;
+  protocol.testSuites = metamodel.tests.map((suite) =>
+    V1_transformDataQualityRelationComparisonTestSuite(suite, context),
+  );
+  return protocol;
+}
+
+function V1_transformDataQualityStoreTestData(
+  metamodel: FunctionTestData,
+  context: V1_GraphTransformerContext,
+): V1_FunctionTestData {
+  const protocol = new V1_FunctionTestData();
+  protocol.doc = metamodel.doc;
+  protocol.packageableElementPointer = new V1_PackageableElementPointer(
+    PackageableElementPointerType.STORE,
+    metamodel.element.valueForSerialization ?? '',
+  );
+  protocol.data = V1_transformEmbeddedData(metamodel.data, context);
+  return protocol;
+}
+
+function V1_transformDataQualityRelationValidationTest(
+  metamodel: DataQualityRelationValidationTest,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationValidationTest {
+  const protocol = new V1_DataQualityRelationValidationTest();
+  protocol.id = metamodel.id;
+  protocol.doc = metamodel.doc;
+  protocol.assertions = metamodel.assertions.map((a) =>
+    V1_transformTestAssertion(a),
+  );
+  return protocol;
+}
+
+export function V1_transformDataQualityRelationValidationTestSuite(
+  metamodel: DataQualityRelationValidationTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationValidationTestSuite {
+  const protocol = new V1_DataQualityRelationValidationTestSuite();
+  protocol.id = metamodel.id;
+  protocol.doc = metamodel.doc;
+  if (metamodel.testData) {
+    const wrapper = new V1_DataQualityRelationValidationTestData();
+    wrapper.testData = metamodel.testData.testData.map((td) =>
+      V1_transformDataQualityStoreTestData(td, context),
+    );
+    protocol.testData = wrapper;
+  }
+  protocol.tests = metamodel.tests.map((t) =>
+    V1_transformDataQualityRelationValidationTest(
+      t as DataQualityRelationValidationTest,
+      context,
+    ),
+  );
+  return protocol;
+}
+
+function V1_transformDataQualityRelationComparisonTest(
+  metamodel: DataQualityRelationComparisonTest,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationComparisonTest {
+  const protocol = new V1_DataQualityRelationComparisonTest();
+  protocol.id = metamodel.id;
+  protocol.doc = metamodel.doc;
+  protocol.assertions = metamodel.assertions.map((a) =>
+    V1_transformTestAssertion(a),
+  );
+  return protocol;
+}
+
+export function V1_transformDataQualityRelationComparisonTestSuite(
+  metamodel: DataQualityRelationComparisonTestSuite,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityRelationComparisonTestSuite {
+  const protocol = new V1_DataQualityRelationComparisonTestSuite();
+  protocol.id = metamodel.id;
+  protocol.doc = metamodel.doc;
+  if (metamodel.testData) {
+    const wrapper = new V1_DataQualityRelationComparisonTestData();
+    wrapper.testData = metamodel.testData.testData.map((td) =>
+      V1_transformDataQualityStoreTestData(td, context),
+    );
+    protocol.testData = wrapper;
+  }
+  protocol.tests = metamodel.tests.map((t) =>
+    V1_transformDataQualityRelationComparisonTest(
+      t as DataQualityRelationComparisonTest,
+      context,
+    ),
+  );
   return protocol;
 }

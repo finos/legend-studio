@@ -28,13 +28,20 @@ import {
   type ModelData,
   type PackageableElementReference,
   type ModelEmbeddedData,
+  type RelationElement,
+  RelationRowTestData,
   observe_EmbeddedData,
   observe_DataElement,
   observe_RelationalDataTable,
+  observe_RelationRowTestData,
   PackageableElementExplicitReference,
   observe_ModelData,
 } from '@finos/legend-graph';
-import { addUniqueEntry, deleteEntry } from '@finos/legend-shared';
+import {
+  addUniqueEntry,
+  csvEncodeValue,
+  deleteEntry,
+} from '@finos/legend-shared';
 import { action } from 'mobx';
 
 export const dataElement_setEmbeddedData = action(
@@ -140,5 +147,21 @@ export const modelStoreData_setModelDataClass = action(
 export const modelStoreData_setModelDataData = action(
   (modelData: ModelEmbeddedData, val: EmbeddedData): void => {
     modelData.data = val;
+  },
+);
+
+export const relationElement_setContent = action(
+  (
+    relationElement: RelationElement,
+    columns: string[],
+    rows: string[][],
+  ): void => {
+    relationElement.columns = columns;
+    relationElement.paths = [];
+    relationElement.rows = rows.map((values) => {
+      const row = new RelationRowTestData();
+      row.values = values.map(csvEncodeValue);
+      return observe_RelationRowTestData(row);
+    });
   },
 );
