@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.21
+
+### Patch Changes
+
+- [#5354](https://github.com/finos/legend-studio/pull/5354) [`d04901b`](https://github.com/finos/legend-studio/commit/d04901bf965a9494b8917a22fb42df0a837b2971) ([@Rakan1837](https://github.com/Rakan1837)) - Preserve empty ingest test suites during engine roundtrip serialization.
+
 ## 32.6.20
 
 ### Patch Changes

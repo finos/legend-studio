@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.70
+
+### Patch Changes
+
+- [#5350](https://github.com/finos/legend-studio/pull/5350) [`3f0d50a`](https://github.com/finos/legend-studio/commit/3f0d50aae254a0026ca93ea9b168c4b90f9e72ef) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added `getApprovedWorkforceUsersForAPG` to `LakehouseContractServerClient` to fetch the approved workforce users for an access point group.
+
 ## 0.3.69
 
 ## 0.3.68
