@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.26
+
+### Patch Changes
+
+- [#5361](https://github.com/finos/legend-studio/pull/5361) [`aba503e`](https://github.com/finos/legend-studio/commit/aba503e6d337051cd1eb0fc6123b4543e42735d3) ([@kelly-thai](https://github.com/kelly-thai)) - Add reconciliation oidc config to studio config serializer
+
 ## 28.21.25
 
 ## 28.21.24
