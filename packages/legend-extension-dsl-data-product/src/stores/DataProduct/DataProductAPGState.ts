@@ -91,6 +91,32 @@ export enum V1_UserApprovalPriority {
   APPROVED_PRIORITY = 4,
 }
 
+// Ranks a user's approval status by how far along the approval process it is, so that
+// when a user has multiple contracts for the same access point group (e.g. a duplicate
+// request submitted by someone else on their behalf), the most advanced one (e.g. an
+// approved contract) is never masked by a less advanced one (e.g. a pending duplicate).
+export const V1_USER_APPROVAL_STAGE_PRIORITY: Record<
+  V1_EnrichedUserApprovalStatus,
+  number
+> = {
+  [V1_EnrichedUserApprovalStatus.UNKNOWN]: V1_UserApprovalPriority.NO_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.REVOKED]: V1_UserApprovalPriority.NO_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.CLOSED]: V1_UserApprovalPriority.NO_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.DENIED]: V1_UserApprovalPriority.NO_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.NO_ACCESS]:
+    V1_UserApprovalPriority.NO_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.ENTERPRISE]:
+    V1_UserApprovalPriority.NO_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS]:
+    V1_UserApprovalPriority.SUBMITTED_FOR_APPROVALS_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL]:
+    V1_UserApprovalPriority.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL]:
+    V1_UserApprovalPriority.PENDING_DATA_OWNER_APPROVAL_PRIORITY,
+  [V1_EnrichedUserApprovalStatus.APPROVED]:
+    V1_UserApprovalPriority.APPROVED_PRIORITY,
+};
+
 export class DataProductAPGState {
   readonly dataProductViewerState: DataProductViewerState;
   readonly applicationStore: GenericLegendApplicationStore;
@@ -492,16 +518,31 @@ export class DataProductAPGState {
 
       const entitlementsDataProductDetails =
         this.dataProductViewerState.entitlementsDataProductDetails;
-      const userLiteContract = userContracts
-        .filter((contract) =>
-          dataContractContainsAccessGroup(
-            this.apg,
-            contract.contractResultLite,
-            entitlementsDataProductDetails?.dataProduct.name,
-            entitlementsDataProductDetails?.deploymentId,
-          ),
-        )
-        .find(isNonNullable);
+      const matchingUserContracts = userContracts.filter((contract) =>
+        dataContractContainsAccessGroup(
+          this.apg,
+          contract.contractResultLite,
+          entitlementsDataProductDetails?.dataProduct.name,
+          entitlementsDataProductDetails?.deploymentId,
+        ),
+      );
+      // A user can end up with more than one contract for the same access point group,
+      // e.g. a duplicate request submitted by someone else on their behalf while an
+      // earlier request of theirs is already approved. Always surface the contract
+      // furthest along in the approval process so an approved contract is never masked
+      // by a stale/duplicate pending one.
+      const userLiteContract = matchingUserContracts.reduce<
+        V1_LiteDataContractWithUserStatus | undefined
+      >((best, candidate) => {
+        if (
+          !best ||
+          V1_USER_APPROVAL_STAGE_PRIORITY[candidate.status] >
+            V1_USER_APPROVAL_STAGE_PRIORITY[best.status]
+        ) {
+          return candidate;
+        }
+        return best;
+      }, undefined);
 
       const userContract = userLiteContract
         ? V1_deserializeDataContractResponse(
@@ -738,30 +779,6 @@ export class DataProductAPGState {
       return undefined;
     }
 
-    const approvalStagePriority: Record<V1_EnrichedUserApprovalStatus, number> =
-      {
-        [V1_EnrichedUserApprovalStatus.UNKNOWN]:
-          V1_UserApprovalPriority.NO_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.REVOKED]:
-          V1_UserApprovalPriority.NO_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.CLOSED]:
-          V1_UserApprovalPriority.NO_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.DENIED]:
-          V1_UserApprovalPriority.NO_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.NO_ACCESS]:
-          V1_UserApprovalPriority.NO_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.ENTERPRISE]:
-          V1_UserApprovalPriority.NO_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.SUBMITTED_FOR_APPROVALS]:
-          V1_UserApprovalPriority.SUBMITTED_FOR_APPROVALS_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL]:
-          V1_UserApprovalPriority.PENDING_CONSUMER_PRIVILEGE_MANAGER_APPROVAL_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.PENDING_DATA_OWNER_APPROVAL]:
-          V1_UserApprovalPriority.PENDING_DATA_OWNER_APPROVAL_PRIORITY,
-        [V1_EnrichedUserApprovalStatus.APPROVED]:
-          V1_UserApprovalPriority.APPROVED_PRIORITY,
-      };
-
     const contractStatuses = (
       await Promise.all(
         contracts.map(async (contract) => {
@@ -776,7 +793,7 @@ export class DataProductAPGState {
               V1_ContractUserStatusResponseModelSchema,
               rawUserStatus,
             ).status;
-            const rank = approvalStagePriority[userStatus];
+            const rank = V1_USER_APPROVAL_STAGE_PRIORITY[userStatus];
 
             return { contract, rank };
           } catch (error) {
