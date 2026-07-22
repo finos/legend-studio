@@ -37,6 +37,7 @@ import {
 import { QueryBuilderConfig } from '@finos/legend-query-builder';
 import { DataProductConfig } from '@finos/legend-extension-dsl-data-product';
 import {
+  OIDCConfiguration,
   LegendIngestionConfiguration,
   validateIngestionDeploymentConfiguration,
 } from './LegendIngestionConfiguration.js';
@@ -136,6 +137,8 @@ class LegendStudioApplicationCoreOptions {
 
   userSearchConfig: UserSearchConfig | undefined;
 
+  reconciliationOidcConfig: OIDCConfiguration | undefined;
+
   /**
    * Indicates if we should enable oauth flow
    *
@@ -166,6 +169,9 @@ class LegendStudioApplicationCoreOptions {
       ),
       userSearchConfig: optional(
         usingModelSchema(UserSearchConfig.serialization.schema),
+      ),
+      reconciliationOidcConfig: optional(
+        usingModelSchema(OIDCConfiguration.serialization.schema),
       ),
       enableOauthFlow: optional(primitive()),
     }),

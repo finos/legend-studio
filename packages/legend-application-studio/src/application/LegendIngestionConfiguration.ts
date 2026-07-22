@@ -23,13 +23,13 @@ import {
 import type { AuthProviderProps } from 'react-oidc-context';
 import { createModelSchema, optional, primitive, raw } from 'serializr';
 
-export class IngestDeploymentOIDC {
+export class OIDCConfiguration {
   redirectPath!: string;
   silentRedirectPath!: string;
   authProviderProps!: AuthProviderProps;
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(IngestDeploymentOIDC, {
+    createModelSchema(OIDCConfiguration, {
       redirectPath: primitive(),
       silentRedirectPath: primitive(),
       authProviderProps: raw(),
@@ -38,13 +38,13 @@ export class IngestDeploymentOIDC {
 }
 
 export class IngestionDeploymentConfiguration {
-  oidcConfig!: IngestDeploymentOIDC;
+  oidcConfig!: OIDCConfiguration;
   defaultServer!: IngestDeploymentServerConfig;
   useDefaultServer: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(IngestionDeploymentConfiguration, {
-      oidcConfig: usingModelSchema(IngestDeploymentOIDC.serialization.schema),
+      oidcConfig: usingModelSchema(OIDCConfiguration.serialization.schema),
       defaultServer: usingModelSchema(
         IngestDeploymentServerConfig.serialization.schema,
       ),
