@@ -105,7 +105,7 @@ export class CartStore {
   get cartItemIds(): Set<number> {
     const ids = new Set<number>();
     for (const vendorProfileId in this.items) {
-      if (Object.prototype.hasOwnProperty.call(this.items, vendorProfileId)) {
+      if (Object.hasOwn(this.items, vendorProfileId)) {
         const cartItems = this.items[Number(vendorProfileId)];
         if (cartItems) {
           for (const item of cartItems) {
@@ -158,11 +158,11 @@ export class CartStore {
    */
   getDependentAddOns(cartId: number): CartItem[] {
     for (const vendorProfileId in this.items) {
-      if (Object.prototype.hasOwnProperty.call(this.items, vendorProfileId)) {
+      if (Object.hasOwn(this.items, vendorProfileId)) {
         const cartItems = this.items[Number(vendorProfileId)];
         if (cartItems) {
           const target = cartItems.find((item) => item.cartId === cartId);
-          if (target && target.category === TerminalItemType.TERMINAL) {
+          if (target?.category === TerminalItemType.TERMINAL) {
             return cartItems.filter(
               (item) =>
                 item.cartId !== cartId &&
@@ -217,9 +217,7 @@ export class CartStore {
           if (!item.vendorProfileId) {
             item.vendorProfileId = parentVendorId;
           }
-          if (item.skipWorkflow === undefined) {
-            item.skipWorkflow = true;
-          }
+          item.skipWorkflow ??= true;
         });
       }
 
@@ -240,42 +238,169 @@ export class CartStore {
   }
 
   /**
+   * Returns true if there is a cart entry matching both the given item id and
+   * model.  This model-aware check prevents an add-on that was added for one
+   * vendor-profile terminal from being incorrectly considered "in cart" for a
+   * different terminal that shares the same add-on product id.
+   */
+  isAddOnInCartForModel(
+    itemId: number,
+    model: string | null | undefined,
+  ): boolean {
+    for (const vendorProfileId in this.items) {
+      if (Object.hasOwn(this.items, vendorProfileId)) {
+        const cartItems = this.items[Number(vendorProfileId)];
+        if (
+          cartItems?.some(
+            (ci) => ci.id === itemId && (ci.model ?? null) === (model ?? null),
+          )
+        ) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Resolves the vendorProfileId for an item.  Uses the item's own
+   * vendorProfileId if present; otherwise derives it from the parent terminal
+   * for the item's model.
+   */
+  private resolveVendorProfileId(
+    item: TraderProfileItem,
+    modelToVendorProfileId: Map<string, number>,
+  ): number | undefined {
+    if (item.vendorProfileId !== undefined) {
+      return item.vendorProfileId;
+    }
+    if (!item.isTerminal && item.model !== null && item.model !== undefined) {
+      return modelToVendorProfileId.get(item.model);
+    }
+    return undefined;
+  }
+
+  /**
+   * Resolves the effective permissionId for a non-terminal item.
+   * Priority: item's own permissionId > owned terminal's permissionId for the
+   * same model.
+   */
+  private resolvePermissionId(
+    item: TraderProfileItem,
+    ownedTerminalPermissions: Map<string, number>,
+  ): number | undefined {
+    if (item.isTerminal) {
+      return undefined;
+    }
+    return item.permissionId ?? ownedTerminalPermissions.get(item.model ?? '');
+  }
+
+  /**
+   * Builds the CartItemRequest payload for a single order-profile item.
+   */
+  private buildOrderProfileCartPayload(
+    item: TraderProfileItem,
+    ownedTerminalPermissions: Map<string, number>,
+    modelToVendorProfileId: Map<string, number>,
+  ): CartItemRequest {
+    const effectivePermissionId = this.resolvePermissionId(
+      item,
+      ownedTerminalPermissions,
+    );
+    const vendorProfileId = this.resolveVendorProfileId(
+      item,
+      modelToVendorProfileId,
+    );
+
+    return {
+      id: item.id,
+      productName: item.productName,
+      providerName: item.providerName,
+      category: item.category,
+      price: item.price,
+      description: item.description ?? '',
+      isOwned: boolToString(item.isOwned),
+      ...(item.model === null || item.model === undefined
+        ? {}
+        : { model: item.model }),
+      skipWorkflow: true,
+      ...(item.isMandatory === undefined
+        ? {}
+        : { isMandatory: item.isMandatory }),
+      ...(vendorProfileId === undefined ? {} : { vendorProfileId }),
+      ...(effectivePermissionId === undefined
+        ? {}
+        : { permissionId: effectivePermissionId }),
+    };
+  }
+
+  /**
    * Adds a list of order-profile items to the cart, skipping already-owned ones.
-   * Each item is added sequentially so that vendor-profile items can be added
-   * before their associated add-ons.
+   * Accepts both terminal and add-on items; terminals are processed first so the
+   * server-side cart can establish the terminal entry before its add-ons arrive.
+   *
+   * Every non-owned add-on is submitted with its actual item id and category.
+   * The effective permissionId for an add-on is determined as follows:
+   *   1. The item's own permissionId (the entitlement already belongs to a known
+   *      permission).
+   *   2. The parent owned terminal's permissionId when the add-on's model matches
+   *      an owned terminal that carries a permissionId.
+   * No permissionId-based deduplication is performed — the same product may
+   * legitimately need to be added under several different terminal models.
+   *
+   * Each add-on also carries a vendorProfileId derived from its parent terminal.
+   * This allows the server to correctly group items when the same product id
+   * appears under multiple vendor profiles.
    */
   *addOrderProfileItemsToCart(
     items: TraderProfileItem[],
     suppressSuccessToast = false,
   ): GeneratorFn<void> {
+    // Build maps from model → permissionId / terminal id for the terminals
+    // in this order profile.
+    // - modelToVendorProfileId: model → terminal.id, populated only for
+    //   non-owned terminals so that add-ons carry vendorProfileId only when
+    //   the parent terminal is not already owned (isOwned=false).
+    // - ownedTerminalPermissions: model → terminal.permissionId, populated
+    //   only for owned terminals so that add-ons carry permissionId when the
+    //   parent terminal is owned (isOwned=true).
+    const ownedTerminalPermissions = new Map<string, number>();
+    const modelToVendorProfileId = new Map<string, number>();
     for (const item of items) {
+      if (item.isTerminal && item.model !== null && item.model !== undefined) {
+        if (!item.isOwned) {
+          modelToVendorProfileId.set(item.model, item.id);
+        } else if (item.permissionId !== undefined) {
+          ownedTerminalPermissions.set(item.model, item.permissionId);
+        }
+      }
+    }
+
+    // Process terminals before add-ons so the server-side cart can establish
+    // the terminal entry before its associated add-ons are submitted.
+    const orderedItems = [
+      ...items.filter((i) => i.isTerminal),
+      ...items.filter((i) => !i.isTerminal),
+    ];
+
+    for (const item of orderedItems) {
       if (item.isOwned) {
+        continue;
+      }
+      // Skip items that are already present in the cart.
+      const alreadyInCart = item.isTerminal
+        ? this.isItemInCart(item.id)
+        : this.isAddOnInCartForModel(item.id, item.model);
+      if (alreadyInCart) {
         continue;
       }
       yield flowResult(
         this.addToCartWithAPI(
-          {
-            id: item.id,
-            productName: item.productName,
-            providerName: item.providerName,
-            category: item.category,
-            price: item.price,
-            description: item.description ?? '',
-            isOwned: boolToString(item.isOwned),
-            ...(item.model === null || item.model === undefined
-              ? {}
-              : { model: item.model }),
-            skipWorkflow: true,
-            ...(item.isMandatory === undefined
-              ? {}
-              : { isMandatory: item.isMandatory }),
-            ...(item.vendorProfileId === undefined
-              ? {}
-              : { vendorProfileId: item.vendorProfileId }),
-            ...(item.permissionId === undefined
-              ? {}
-              : { permissionId: item.permissionId }),
-          },
+          this.buildOrderProfileCartPayload(
+            item,
+            ownedTerminalPermissions,
+            modelToVendorProfileId,
+          ),
           suppressSuccessToast,
         ),
       );
@@ -286,28 +411,46 @@ export class CartStore {
    * Returns true when all non-owned items of the profile are present in the
    * cart.  For multiselect profiles, at least one complete terminal bundle
    * (terminal + its associated add-ons) must be fully in the cart.
+   *
+   * Add-on items are checked with a model-aware cart lookup so that the same
+   * product id appearing under two different vendor-profile models is not
+   * considered "in cart" until it has been explicitly added for each model.
    */
   isOrderProfileInCart(profile: TraderProfile): boolean {
-    const nonOwnedItems = profile.items.filter((item) => !item.isOwned);
-    const nonOwnedTerminals = nonOwnedItems.filter((item) => item.isTerminal);
+    const items = profile.items;
+
+    const nonOwnedItems = items.filter((item) => !item.isOwned);
+    if (nonOwnedItems.length === 0) {
+      return false;
+    }
+
     if (profile.multiselect) {
+      const nonOwnedTerminals = nonOwnedItems.filter((i) => i.isTerminal);
       return nonOwnedTerminals.some((terminal) => {
-        const selectedModel = terminal.model ?? null;
-        const bundleItems = [
-          terminal,
-          ...profile.items.filter(
-            (item) =>
-              !item.isTerminal &&
-              !item.isOwned &&
-              (selectedModel === null || item.model === selectedModel),
-          ),
-        ];
-        return bundleItems.every((item) => this.isItemInCart(item.id));
+        // Terminal is checked by its own id.
+        if (!this.isItemInCart(terminal.id)) {
+          return false;
+        }
+        // Gather all non-owned add-ons whose model matches this terminal.
+        const bundleAddOns = nonOwnedItems.filter(
+          (i) =>
+            !i.isTerminal &&
+            (terminal.model === null ||
+              terminal.model === undefined ||
+              i.model === terminal.model),
+        );
+        return bundleAddOns.every((a) =>
+          this.isAddOnInCartForModel(a.id, a.model),
+        );
       });
     }
+
+    const nonOwnedTerminals = nonOwnedItems.filter((i) => i.isTerminal);
+    const nonOwnedAddOns = nonOwnedItems.filter((i) => !i.isTerminal);
+
     return (
-      nonOwnedItems.length > 0 &&
-      nonOwnedItems.every((item) => this.isItemInCart(item.id))
+      nonOwnedTerminals.every((t) => this.isItemInCart(t.id)) &&
+      nonOwnedAddOns.every((a) => this.isAddOnInCartForModel(a.id, a.model))
     );
   }
 
@@ -319,7 +462,7 @@ export class CartStore {
       providerName: provider.providerName,
       category: provider.category,
       price: provider.price,
-      description: provider.description,
+      description: provider.description ?? '',
       isOwned: boolToString(provider.isOwned),
       model: provider.model ?? provider.productName,
       skipWorkflow: provider.skipWorkflow ?? false,

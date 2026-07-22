@@ -129,12 +129,12 @@ export const RecommendedItemsCard = observer(
           >
             {isCurrentlySelecting ? (
               <>
-                Selecting... &nbsp;
+                Adding... &nbsp;
                 <CircularProgress size={14} />
               </>
             ) : (
               <>
-                Select &nbsp;
+                Add to Cart &nbsp;
                 <CheckIcon />
               </>
             )}

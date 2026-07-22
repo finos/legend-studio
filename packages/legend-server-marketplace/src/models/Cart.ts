@@ -75,6 +75,14 @@ export interface VendorAddonsSearchParams {
   sort_by_price?: SortOrder;
 }
 
+export interface PermissionAddonsSearchParams {
+  permission_id?: number | null;
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_by_price?: SortOrder;
+}
+
 export interface VendorAddonsSearchResponse {
   marketplace_addons: TerminalResult[];
   total_count: number;
@@ -83,4 +91,15 @@ export interface VendorAddonsSearchResponse {
   total_pages: number;
   has_next: boolean;
   has_previous: boolean;
+}
+
+export interface PermissionAddonsSearchResponse {
+  marketplace_addons: TerminalResult[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+  permissionId?: number;
 }

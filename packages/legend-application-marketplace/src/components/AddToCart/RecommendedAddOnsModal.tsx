@@ -72,6 +72,8 @@ interface RecommendedAddOnsModalProps {
     totalCount?: number | null,
   ) => void;
   totalCount?: number | null | undefined;
+  overridePermissionId?: number | undefined;
+  overrideModel?: string | null | undefined;
 }
 
 const MAX_DISPLAY_ITEMS_COUNT = 10;
@@ -118,6 +120,8 @@ export const RecommendedAddOnsModal = observer(
       onViewCart,
       onTerminalSelected,
       totalCount: initialTotalCount,
+      overridePermissionId,
+      overrideModel,
     } = props;
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -334,6 +338,13 @@ export const RecommendedAddOnsModal = observer(
               legendMarketplaceBaseStore.cartStore.providerToCartRequest(
                 selectedTerminal,
               );
+            if (overridePermissionId !== undefined) {
+              cartRequest.permissionId = overridePermissionId;
+              cartRequest.skipWorkflow = true;
+            }
+            if (overrideModel !== undefined && overrideModel !== null) {
+              cartRequest.model = overrideModel;
+            }
             const result = await flowResult(
               legendMarketplaceBaseStore.cartStore.addToCartWithAPI(
                 cartRequest,
@@ -356,7 +367,9 @@ export const RecommendedAddOnsModal = observer(
                 result.message,
                 result.totalCount,
               );
-            } else {
+            } else if (overridePermissionId === undefined) {
+              // In the "Add Service" flow (overridePermissionId is set), keep the
+              // modal open so the user can add multiple add-ons before closing.
               closeModal();
             }
           } catch (error) {
@@ -372,7 +385,13 @@ export const RecommendedAddOnsModal = observer(
         // eslint-disable-next-line no-void
         void associate();
       },
-      [legendMarketplaceBaseStore.cartStore, onTerminalSelected, closeModal],
+      [
+        legendMarketplaceBaseStore.cartStore,
+        onTerminalSelected,
+        closeModal,
+        overridePermissionId,
+        overrideModel,
+      ],
     );
 
     const handleViewCart = () => {
@@ -406,6 +425,26 @@ export const RecommendedAddOnsModal = observer(
       return null;
     }
 
+    const isPermissionOverride = overridePermissionId !== undefined;
+    const isTerminalType =
+      terminal?.terminalItemType === TerminalItemType.TERMINAL;
+
+    let modalTitle = '';
+    if (!isPermissionOverride) {
+      modalTitle = isTerminalType
+        ? 'Item Added Successfully'
+        : 'Unable to Add Item';
+    }
+
+    let sectionTitle = '';
+    if (isPermissionOverride) {
+      sectionTitle = `Add-Ons available for ${terminal?.productName ?? ''}`;
+    } else if (isTerminalType) {
+      sectionTitle = `Recommended Add-Ons for ${terminal.providerName}`;
+    } else if (terminal) {
+      sectionTitle = `Recommended Terminals for ${terminal.providerName}`;
+    }
+
     return (
       <Dialog
         open={showModal}
@@ -415,7 +454,7 @@ export const RecommendedAddOnsModal = observer(
         className="recommended-addons-modal"
       >
         <DialogTitle className="recommended-addons-modal__header">
-          {terminal?.terminalItemType === TerminalItemType.TERMINAL ? (
+          {isTerminalType ? (
             <CheckCircleIcon className="recommended-addons-modal__success-icon" />
           ) : (
             <WarningIcon className="recommended-addons-modal__warning-icon" />
@@ -425,11 +464,9 @@ export const RecommendedAddOnsModal = observer(
               variant="h6"
               className="recommended-addons-modal__title"
             >
-              {terminal?.terminalItemType === TerminalItemType.TERMINAL
-                ? 'Item Added Successfully'
-                : 'Unable to Add Item'}
+              {modalTitle}
             </Typography>
-            {terminal && (
+            {terminal && !isPermissionOverride && (
               <Typography
                 variant="body2"
                 className="recommended-addons-modal__subtitle"
@@ -487,20 +524,18 @@ export const RecommendedAddOnsModal = observer(
               variant="h6"
               className="recommended-addons-modal__section-title"
             >
-              {terminal?.terminalItemType === TerminalItemType.TERMINAL
-                ? `Recommended Add-Ons for ${terminal.providerName}`
-                : terminal
-                  ? `Recommended Terminals for ${terminal.providerName}`
-                  : ''}
+              {sectionTitle}
             </Typography>
-            <Typography
-              variant="body2"
-              className="recommended-addons-modal__section-description"
-            >
-              {terminal?.terminalItemType === TerminalItemType.TERMINAL
-                ? 'Enhance your terminal with these add-ons'
-                : 'You must order a terminal license with this add-on'}
-            </Typography>
+            {!isPermissionOverride && (
+              <Typography
+                variant="body2"
+                className="recommended-addons-modal__section-description"
+              >
+                {isTerminalType
+                  ? 'Enhance your terminal with these add-ons'
+                  : 'You must order a terminal license with this add-on'}
+              </Typography>
+            )}
           </Box>
 
           {recommendedItems.length === 0 ? (
@@ -624,7 +659,7 @@ export const RecommendedAddOnsModal = observer(
                 <TextField
                   size="medium"
                   placeholder={
-                    terminal?.terminalItemType === TerminalItemType.TERMINAL
+                    isPermissionOverride || isTerminalType
                       ? 'Search by Add-On name...'
                       : 'Search by Terminal name...'
                   }

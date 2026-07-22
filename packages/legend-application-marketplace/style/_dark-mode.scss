@@ -616,6 +616,29 @@
         }
       }
     }
+
+    &-owned-services {
+      &__title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__count {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__subtitle {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      &__toggle-btn {
+        color: var(--color-dark-theme-text-secondary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+    }
   }
 
   // Cards
@@ -1339,6 +1362,90 @@
       background: transparent;
     }
 
+    &__expand-controls {
+      background: var(--color-dark-theme-bg-secondary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &__btn {
+        color: var(--color-dark-theme-blue-primary);
+
+        &:hover {
+          background: rgb(115 153 198 / 15%);
+        }
+      }
+
+      &__divider {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__vendor-group {
+      &__toggle {
+        border-top-color: var(--color-dark-theme-border);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+
+      &__chevron {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__summary {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__addon-card {
+      background-color: var(--color-dark-theme-bg-secondary);
+      border-color: var(--color-dark-theme-border);
+      border-left-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        box-shadow: 0 2px 8px rgb(115 153 198 / 20%);
+      }
+
+      &__provider-chip {
+        background: var(--color-dark-theme-blue-accent);
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__category-chip {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-bg-elevated) 0%,
+          var(--color-dark-theme-bg-tertiary) 100%
+        );
+
+        span {
+          color: var(--color-dark-theme-text-secondary);
+        }
+      }
+
+      &__mandatory-indicator {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__name {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__price {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__price-suffix {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__item-card__provider-name {
+      // NOTE: provider name is no longer rendered on vendor cards (bug fix #1)
+      // keeping selector in case it is re-added
+      color: var(--color-dark-theme-text-secondary);
+    }
+
     &__item-card {
       background: var(--color-dark-theme-bg-secondary);
       border: 1px solid var(--color-dark-theme-border);
@@ -1363,13 +1470,9 @@
       }
 
       &__provider {
-        background: linear-gradient(
-          135deg,
-          var(--color-dark-theme-blue-accent) 0%,
-          var(--color-dark-theme-blue-primary) 100%
-        );
+        // Solid dark equivalent of light-mode #4f6baa
+        background: #3a5080;
         color: var(--color-dark-theme-text-primary);
-        box-shadow: 0 2px 8px rgb(115 153 198 / 40%);
       }
 
       &__remove-btn {
@@ -1387,13 +1490,6 @@
 
       &__price {
         color: var(--color-dark-theme-blue-primary);
-        background: linear-gradient(
-          135deg,
-          var(--color-dark-theme-blue-primary) 0%,
-          var(--color-dark-theme-blue-accent) 100%
-        );
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
       }
 
       &__price-suffix {
@@ -1401,14 +1497,24 @@
       }
 
       &__category {
-        background: linear-gradient(
-          135deg,
-          var(--color-dark-theme-bg-elevated) 0%,
-          var(--color-dark-theme-bg-tertiary) 100%
-        );
+        // Solid dark equivalent of light-mode #1a7a4a
+        background: #155e38;
 
         span {
-          color: var(--color-dark-theme-text-secondary);
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &--owned {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+
+      &--synthetic {
+        // Synthetic card now shares the same styling as Vendor Profile —
+        // only the name text color differs in dark mode.
+        .legend-marketplace-cart-drawer__item-card__name {
+          color: var(--color-dark-theme-text-primary);
+          font-style: normal;
         }
       }
     }

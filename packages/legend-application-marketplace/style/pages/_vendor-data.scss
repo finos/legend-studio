@@ -284,6 +284,49 @@
   }
 }
 
+.legend-marketplace-vendordata-main-owned-services {
+  padding: 0;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  &__title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  &__count {
+    color: #2563eb;
+  }
+
+  &__subtitle {
+    font-size: 13px;
+    font-weight: 400;
+    color: #6b7280;
+    margin: 4px 0 0;
+    padding: 0;
+  }
+
+  &__toggle-btn {
+    color: #374151;
+    padding: 4px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
 .legend-marketplace-pagination-container {
   display: flex;
   flex-direction: row;

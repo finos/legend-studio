@@ -108,11 +108,8 @@ export const LegendMarketplaceOrderProfileCard = observer(
         setShowMultiselectModal(true);
         return;
       }
-      const terminals = items.filter((item) => item.isTerminal);
-      const addOns = items.filter((item) => !item.isTerminal);
       executeCartAction(async () => {
-        await flowResult(cartStore.addOrderProfileItemsToCart(terminals, true));
-        await flowResult(cartStore.addOrderProfileItemsToCart(addOns, true));
+        await flowResult(cartStore.addOrderProfileItemsToCart(items, true));
       }).catch(applicationStore.alertUnhandledError);
     };
 
@@ -129,10 +126,10 @@ export const LegendMarketplaceOrderProfileCard = observer(
       );
       executeCartAction(async () => {
         await flowResult(
-          cartStore.addOrderProfileItemsToCart(selectedTerminals, true),
-        );
-        await flowResult(
-          cartStore.addOrderProfileItemsToCart(addOnItems, true),
+          cartStore.addOrderProfileItemsToCart(
+            [...selectedTerminals, ...addOnItems],
+            true,
+          ),
         );
       }).catch(applicationStore.alertUnhandledError);
     };
