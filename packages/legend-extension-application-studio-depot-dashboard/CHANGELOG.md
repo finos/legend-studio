@@ -1,5 +1,7 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.83
+
 ## 0.1.82
 
 ## 0.1.81
