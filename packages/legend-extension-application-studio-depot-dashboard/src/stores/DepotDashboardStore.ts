@@ -21,6 +21,7 @@ import {
   resolvePackagePathAndElementName,
   type V1_DataProduct,
   V1_dataProductModelSchema,
+  V1_ModelAccessPointGroup,
 } from '@finos/legend-graph';
 import {
   DepotScope,
@@ -67,6 +68,9 @@ export enum DATA_PRODUCT_DASHBOARD_HEADER {
   DATA_PRODUCT_APG_TITLE = 'Access Point Group Titles',
   DATA_PRODUCT_APG_DESCRIPTION = 'Access Point Group Descriptionss',
   DATA_PRODUCT_APG_NUMBER_OF_APS = 'Access Point Group AP Number',
+  DATA_PRODUCT_HAS_MODEL_APG = 'Has Model Access Point Group',
+  DATA_PRODUCT_HAS_MODEL_APG_FEATURED_ELEMENTS = 'Model APG Has Featured Elements',
+  DATA_PRODUCT_HAS_NATIVE_APG = 'Has Native Access Point Group',
   // metadata
   DATA_PRODUCT_TYPE = 'Internal/External',
   DATA_PRODUCT_HAS_ENTERPRISE_GROUP = 'Is Enterprise',
@@ -147,6 +151,22 @@ export const getDataProductValue = (
         : false;
     case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ENTERPRISE_GROUP:
       return getHasEnterpriseGroup(dataProduct, applicationStore);
+    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_MODEL_APG:
+      return dataProduct.accessPointGroups.some(
+        (apg) => apg instanceof V1_ModelAccessPointGroup,
+      )
+        ? 'Yes'
+        : 'No';
+    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_MODEL_APG_FEATURED_ELEMENTS:
+      return dataProduct.accessPointGroups.some(
+        (apg) =>
+          apg instanceof V1_ModelAccessPointGroup &&
+          (apg.featuredElements?.length ?? 0) > 0,
+      )
+        ? 'Yes'
+        : 'No';
+    case DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_NATIVE_APG:
+      return dataProduct.nativeModelAccess !== undefined ? 'Yes' : 'No';
     default:
       throw new Error(
         `Unsupported data product dashboard header type: ${type}`,
