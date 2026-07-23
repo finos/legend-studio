@@ -947,24 +947,30 @@ export const buildDatePickerOption = (
     }
   } else if (valueSpecification instanceof PrimitiveInstanceValue) {
     const _path = valueSpecification.genericType.value.rawType.path;
-    if (_path === PRIMITIVE_TYPE.LATESTDATE) {
-      return new DatePickerOption(
-        CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
-        CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
-      );
-    }
-    if (valueSpecification.values[0] === null) {
-      return new DatePickerOption(
-        CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
-        CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
-      );
-    }
-    return new DatePickerOption(
-      valueSpecification.values[0] as string,
-      _path === PRIMITIVE_TYPE.DATETIME
-        ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
-        : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
-    );
+    const isDateType =
+      _path === PRIMITIVE_TYPE.STRICTDATE ||
+      _path === PRIMITIVE_TYPE.DATE ||
+      _path === PRIMITIVE_TYPE.DATETIME;
+    const isEmpty =
+      !valueSpecification.values.length ||
+      valueSpecification.values[0] === null ||
+      valueSpecification.values[0] === undefined;
+    return _path === PRIMITIVE_TYPE.LATESTDATE
+      ? new DatePickerOption(
+          CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
+          CUSTOM_DATE_PICKER_OPTION.LATEST_DATE,
+        )
+      : isDateType && isEmpty
+        ? new DatePickerOption(
+            CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
+            CUSTOM_DATE_PICKER_OPTION.NO_VALUE,
+          )
+        : new DatePickerOption(
+            valueSpecification.values[0] as string,
+            _path === PRIMITIVE_TYPE.DATETIME
+              ? CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_TIME
+              : CUSTOM_DATE_PICKER_OPTION.ABSOLUTE_DATE,
+          );
   } else {
     if (valueSpecification instanceof V1_CLatestDate) {
       return new DatePickerOption(

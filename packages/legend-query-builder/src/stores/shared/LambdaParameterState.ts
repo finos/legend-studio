@@ -134,8 +134,13 @@ export const buildExecutionParameterValues = (
       (ps) =>
         !(
           ps.value instanceof PrimitiveInstanceValue &&
-          ps.value.values[0] === null &&
-          ps.parameter.multiplicity.lowerBound === 0
+          (!ps.value.values.length ||
+            ps.value.values[0] === null ||
+            ps.value.values[0] === undefined) &&
+          areMultiplicitiesEqual(
+            ps.parameter.multiplicity,
+            Multiplicity.ZERO_ONE,
+          )
         ),
     )
     .map((queryParamState) => {
