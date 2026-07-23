@@ -529,6 +529,9 @@ export const EntitlementsPendingTasksDashboard = observer(
           headerName: 'Target User',
           flex: 1,
           valueGetter: (params) => {
+            if (params.data?.consumer) {
+              return params.data.consumer;
+            }
             const contractId = params.data?.accessRequestId;
             const consumer = pendingTaskContracts.find(
               (c) => c.guid === contractId,
@@ -543,16 +546,23 @@ export const EntitlementsPendingTasksDashboard = observer(
           cellRenderer: (
             params: DataGridCellRendererParams<V1_PendingTaskRecord>,
           ) => {
-            const contractId = params.data?.accessRequestId;
-            const consumer = pendingTaskContracts.find(
-              (c) => c.guid === contractId,
-            )?.consumer;
-            const userId = consumer
-              ? stringifyOrganizationalScope(
-                  consumer,
-                  dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-                )
-              : undefined;
+            // Prefer the task's own target user: for a bulk contract covering many
+            // candidates, each task pertains to a single candidate, and the parent
+            // contract's consumer scope (which can list every candidate) is not
+            // representative of this specific task.
+            let userId = params.data?.consumer;
+            if (!userId) {
+              const contractId = params.data?.accessRequestId;
+              const consumer = pendingTaskContracts.find(
+                (c) => c.guid === contractId,
+              )?.consumer;
+              userId = consumer
+                ? stringifyOrganizationalScope(
+                    consumer,
+                    dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
+                  )
+                : undefined;
+            }
             return userId ? (
               <UserRenderer
                 userId={userId}
