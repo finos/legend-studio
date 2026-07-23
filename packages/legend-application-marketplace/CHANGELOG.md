@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.2.35
+
+### Patch Changes
+
+- [#5369](https://github.com/finos/legend-studio/pull/5369) [`3e7475b`](https://github.com/finos/legend-studio/commit/3e7475ba9cdd283897b84c4371decfc7da7595a3) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fix pending tasks dashboard showing all bulk-contract target users instead of the individual candidate for each approval task
+
 ## 0.2.34
 
 ## 0.2.33

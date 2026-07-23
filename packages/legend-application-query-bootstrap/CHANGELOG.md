@@ -1,5 +1,7 @@
 # @finos/legend-application-query-bootstrap
 
+## 13.245.0
+
 ## 13.244.0
 
 ## 13.243.0
