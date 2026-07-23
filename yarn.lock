@@ -2887,7 +2887,7 @@ __metadata:
     react-dnd-html5-backend: "npm:16.0.1"
     react-dom: "npm:19.0.1"
     react-oidc-context: "npm:3.3.0"
-    react-router: "npm:7.3.0"
+    react-router: "npm:7.15.0"
     react-router-dom: "npm:7.3.0"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
@@ -18206,6 +18206,22 @@ __metadata:
     react: ">=18"
     react-dom: ">=18"
   checksum: 10/4c6ba00cd50af810e75dbb4fe2d5de7491ccf2b4089ff4b61e1c6831f80f4e670a38920532b2fb92bd171d4aa73c37e9ceebfb42fd83a7e7bb9159b0d55f5fa5
+  languageName: node
+  linkType: hard
+
+"react-router@npm:7.15.0":
+  version: 7.15.0
+  resolution: "react-router@npm:7.15.0"
+  dependencies:
+    cookie: "npm:^1.0.1"
+    set-cookie-parser: "npm:^2.6.0"
+  peerDependencies:
+    react: ">=18"
+    react-dom: ">=18"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10/98681e75fab2eddc2b18bd478840341a85b5eab796ed29c638be986faab0c63ff16ad72c9889192a4f5c6f559f20aad3273fdffbeb1edf104d2cf2381373c9ca
   languageName: node
   linkType: hard
 
