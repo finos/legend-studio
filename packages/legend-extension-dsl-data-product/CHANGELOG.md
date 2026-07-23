@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.101
+
+### Patch Changes
+
+- [#5362](https://github.com/finos/legend-studio/pull/5362) [`05a4adb`](https://github.com/finos/legend-studio/commit/05a4adb762548e2803f85ef81537f18f35ca9e19) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fix Marketplace access point group status showing a stale "pending" state when a user has multiple contracts for the same access point group (e.g. a duplicate request submitted by someone else on their behalf). The contract furthest along in the approval process is now always used, so an approved contract is never masked by a pending duplicate.
+
 ## 0.0.100
 
 ### Patch Changes

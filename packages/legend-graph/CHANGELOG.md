@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.22
+
+### Patch Changes
+
+- [#5369](https://github.com/finos/legend-studio/pull/5369) [`3e7475b`](https://github.com/finos/legend-studio/commit/3e7475ba9cdd283897b84c4371decfc7da7595a3) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add support for deserializing BigQuery and Databricks data subscription targets, with a fallback for unrecognized target types so contract deserialization no longer fails
+
 ## 32.6.21
 
 ### Patch Changes

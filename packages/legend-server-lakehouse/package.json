@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-server-lakehouse",
-  "version": "0.3.70",
+  "version": "0.3.71",
   "description": "Legend Lakehouse Server Client",
   "keywords": [
     "legend",
