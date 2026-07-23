@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
 import type { V1_PaginationMetadataRecord } from '../entitlements/V1_CoreEntitlements.js';
 
 export enum V1_DataSubscriptionTargetType {
   BigQuery = 'BigQuery',
+  Databricks = 'Databricks',
   Snowflake = 'Snowflake',
 }
 
@@ -57,6 +59,15 @@ export enum V1_SnowflakeNetwork {
 
 export class V1_BigQueryTarget extends V1_DataSubscriptionTarget {
   gcpProjectId!: string;
+}
+
+export class V1_DatabricksTarget extends V1_DataSubscriptionTarget {
+  accountId!: string;
+  workspaceName!: string;
+}
+
+export class V1_UnknownDataSubscriptionTarget extends V1_DataSubscriptionTarget {
+  content!: PlainObject;
 }
 
 export class V1_CreateSubscriptionInput {

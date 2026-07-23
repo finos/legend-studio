@@ -355,7 +355,9 @@ export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/seri
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_DataAccessRequestSerializationHelper.js';
 export * from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/lakehouse/V1_SubscriptionSerializationHelper.js';
 export {
+  V1_BigQueryTarget,
   V1_CreateSubscriptionInput,
+  V1_DatabricksTarget,
   V1_DataSubscription,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
@@ -364,6 +366,7 @@ export {
   V1_SnowflakeNetwork,
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
+  V1_UnknownDataSubscriptionTarget,
 } from './graph-manager/protocol/pure/v1/lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
 export {
   V1_DataProductArtifact,

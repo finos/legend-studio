@@ -25,16 +25,20 @@ import {
   custom,
   deserialize,
   primitive,
+  raw,
   serialize,
 } from 'serializr';
 import {
   type V1_DataSubscriptionTarget,
+  V1_BigQueryTarget,
   V1_CreateSubscriptionInput,
+  V1_DatabricksTarget,
   V1_DataSubscription,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeTarget,
+  V1_UnknownDataSubscriptionTarget,
 } from '../../../../lakehouse/subscriptions/V1_ConsumerSubscriptions.js';
 import { V1_paginationMetadataRecordModelSchema } from './V1_CoreEntitlementsSerializationHelper.js';
 
@@ -48,14 +52,45 @@ export const V1_SnowflakeTargetModelSchema = createModelSchema(
   },
 );
 
+export const V1_BigQueryTargetModelSchema = createModelSchema(
+  V1_BigQueryTarget,
+  {
+    _type: usingConstantValueSchema(V1_DataSubscriptionTargetType.BigQuery),
+    gcpProjectId: primitive(),
+  },
+);
+
+export const V1_DatabricksTargetModelSchema = createModelSchema(
+  V1_DatabricksTarget,
+  {
+    _type: usingConstantValueSchema(V1_DataSubscriptionTargetType.Databricks),
+    accountId: primitive(),
+    workspaceName: primitive(),
+  },
+);
+
+export const V1_UnknownDataSubscriptionTargetModelSchema = createModelSchema(
+  V1_UnknownDataSubscriptionTarget,
+  {
+    content: raw(),
+  },
+);
+
 const V1_deseralizeDataSubscriptionTarget = (
   json: PlainObject<V1_DataSubscriptionTarget>,
 ): V1_DataSubscriptionTarget => {
   switch (json._type) {
     case V1_DataSubscriptionTargetType.Snowflake:
       return deserialize(V1_SnowflakeTargetModelSchema, json);
-    default:
-      throw new UnsupportedOperationError();
+    case V1_DataSubscriptionTargetType.BigQuery:
+      return deserialize(V1_BigQueryTargetModelSchema, json);
+    case V1_DataSubscriptionTargetType.Databricks:
+      return deserialize(V1_DatabricksTargetModelSchema, json);
+    default: {
+      const unknownTarget = new V1_UnknownDataSubscriptionTarget();
+      unknownTarget.content = json;
+      return unknownTarget;
+    }
   }
 };
 
@@ -64,6 +99,15 @@ const V1_seralizeDataSubscriptionTarget = (
 ): PlainObject<V1_DataSubscriptionTarget> => {
   if (json instanceof V1_SnowflakeTarget) {
     return serialize(V1_SnowflakeTargetModelSchema, json);
+  }
+  if (json instanceof V1_BigQueryTarget) {
+    return serialize(V1_BigQueryTargetModelSchema, json);
+  }
+  if (json instanceof V1_DatabricksTarget) {
+    return serialize(V1_DatabricksTargetModelSchema, json);
+  }
+  if (json instanceof V1_UnknownDataSubscriptionTarget) {
+    return serialize(V1_UnknownDataSubscriptionTargetModelSchema, json);
   }
   throw new UnsupportedOperationError();
 };
