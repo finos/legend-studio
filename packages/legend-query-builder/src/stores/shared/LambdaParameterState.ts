@@ -49,6 +49,7 @@ import {
   uuid,
   isNonNullable,
   guaranteeNonNullable,
+  isEmpty,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, computed } from 'mobx';
 import {
@@ -134,9 +135,10 @@ export const buildExecutionParameterValues = (
       (ps) =>
         !(
           ps.value instanceof PrimitiveInstanceValue &&
-          (!ps.value.values.length ||
-            ps.value.values[0] === null ||
-            ps.value.values[0] === undefined) &&
+          (ps.value.genericType.value.rawType === PrimitiveType.STRICTDATE ||
+            ps.value.genericType.value.rawType === PrimitiveType.DATE ||
+            ps.value.genericType.value.rawType === PrimitiveType.DATETIME) &&
+          isEmpty(ps.value.values[0]) &&
           areMultiplicitiesEqual(
             ps.parameter.multiplicity,
             Multiplicity.ZERO_ONE,
