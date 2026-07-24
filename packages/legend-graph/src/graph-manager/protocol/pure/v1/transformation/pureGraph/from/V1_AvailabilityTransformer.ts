@@ -17,13 +17,10 @@
 import type { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import type { AvailabilityTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import type { AvailabilityBarrierTest } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
-import { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
-import { V1_Notification } from '../../../model/packageableElements/availability/V1_Notification.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
-import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 
@@ -66,20 +63,11 @@ export const V1_transformAvailability = (
 ): V1_Availability => {
   const availability = new V1_Availability();
   V1_initPackageableElement(availability, element);
-  availability.barrier = V1_transformRawLambda(element.barrier, context);
-  availability.extraIngestDefinitions = [...element.extraIngestDefinitions];
-  if (element.notification) {
-    const notification = new V1_Notification();
-    notification.type = element.notification.type;
-    notification.content = element.notification.content;
-    availability.notification = notification;
-  }
-  if (element.owner) {
-    const owner = new V1_AppDirNode();
-    owner.appDirId = element.owner.appDirId;
-    owner.level = element.owner.level;
-    availability.owner = owner;
-  }
+  // like `V1_IngestDefinition`, preserve the engine's raw JSON payload on
+  // `.content` so that fields we don't model in the studio (owner shape,
+  // notification, extra ingest definitions, barrier lambda, etc.) are
+  // roundtripped unchanged.
+  availability.content = element.content;
   availability.testSuites = element.tests.map((suite) =>
     V1_transformAvailabilityTestSuite(suite),
   );

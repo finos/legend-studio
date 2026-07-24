@@ -141,7 +141,10 @@ import {
   V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
   V1_Availability,
 } from '../../model/packageableElements/availability/V1_Availability.js';
-import { V1_availabilityModelSchema } from './serializationHelpers/V1_AvailabilitySerializationHelper.js';
+import {
+  V1_createAvailability,
+  V1_serializeAvailability,
+} from './serializationHelpers/V1_AvailabilitySerializationHelper.js';
 import {
   V1_INGEST_DEFINITION_TYPE,
   type V1_IngestTestSuite,
@@ -169,12 +172,6 @@ class V1_PackageableElementSerializer
   visit_PackageableElement(
     elementProtocol: V1_PackageableElement,
   ): PlainObject<V1_PackageableElement> {
-    if (elementProtocol instanceof V1_Availability) {
-      return serialize(
-        V1_availabilityModelSchema(this.plugins),
-        elementProtocol,
-      );
-    }
     for (const serializer of this.extraElementProtocolSerializers) {
       const elementProtocolJson = serializer(elementProtocol, this.plugins);
       if (elementProtocolJson) {
@@ -213,6 +210,12 @@ class V1_PackageableElementSerializer
       ...element.content,
       ...(testSuites !== SKIP ? { testSuites } : {}),
     };
+  }
+
+  visit_Availability(
+    element: V1_Availability,
+  ): PlainObject<V1_PackageableElement> {
+    return V1_serializeAvailability(element, this.plugins);
   }
 
   visit_INTERNAL__UnknownFunctionActivator(
@@ -437,7 +440,7 @@ export const V1_deserializePackageableElement = (
       case V1_COMPUTE_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_computeModelSchema, json);
       case V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE:
-        return deserialize(V1_availabilityModelSchema(plugins), json);
+        return V1_createAvailability(name, packagePath, json, plugins);
       case V1_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {

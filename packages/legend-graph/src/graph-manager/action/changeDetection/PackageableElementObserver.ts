@@ -98,10 +98,6 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
   }
 
   visit_PackageableElement(element: PackageableElement): void {
-    if (element instanceof Availability) {
-      observe_Availability(element);
-      return;
-    }
     const extraElementObservers = this.observerContext.plugins.flatMap(
       (plugin) => plugin.getExtraElementObservers?.() ?? [],
     );
@@ -239,6 +235,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_IngestDefinition(element: IngestDefinition): void {
     observe_IngestDefinition(element, this.observerContext);
+  }
+
+  visit_Availability(element: Availability): void {
+    observe_Availability(element);
   }
 }
 

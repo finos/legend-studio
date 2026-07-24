@@ -15,34 +15,37 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import {
-  V1_PackageableElement,
-  type V1_PackageableElementVisitor,
-} from '../V1_PackageableElement.js';
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../../../graph/Core_HashUtils.js';
+import { type V1_PackageableElementVisitor } from '../V1_PackageableElement.js';
+import { V1_INTERNAL__UnknownPackageableElement } from '../V1_INTERNAL__UnknownPackageableElement.js';
 import type { V1_AvailabilityTestSuite } from './V1_AvailabilityTestSuite.js';
-import type { V1_Notification } from './V1_Notification.js';
-import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
-import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 
-export const V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE = 'availability';
+// NOTE: the engine's Availability serializer emits `"_type": "Availability"`
+// (PascalCase) rather than the camelCase convention used by other lakehouse
+// elements such as `ingestDefinition` / `compute` / `dataProduct`. This must
+// match the engine wire format exactly, otherwise `V1_deserializePackageableElement`
+// falls through to the unknown-element branch and the studio renders the
+// availability with the "?" icon.
+export const V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE = 'Availability';
 
-export class V1_Availability extends V1_PackageableElement implements Hashable {
-  barrier!: V1_RawLambda;
-  extraIngestDefinitions: string[] = [];
-  notification: V1_Notification | undefined;
-  owner: V1_AppDirNode | undefined;
+// NOTE: mirrors `V1_IngestDefinition` — the element extends
+// `V1_INTERNAL__UnknownPackageableElement` so the engine's raw JSON payload is
+// stored on `.content`. Only the typed pieces the studio needs to render its
+// tabs (currently the testing tab) are lifted out into typed fields.
+export class V1_Availability
+  extends V1_INTERNAL__UnknownPackageableElement
+  implements Hashable
+{
   testSuites: V1_AvailabilityTestSuite[] = [];
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AVAILABILITY,
-      this.package,
-      this.name,
-      this.barrier,
-      hashArray(this.extraIngestDefinitions),
-      this.notification ?? '',
-      this.owner ?? '',
+      this.path,
+      hashObjectWithoutSourceInformation(this.content),
       hashArray(this.testSuites),
     ]);
   }
@@ -50,6 +53,6 @@ export class V1_Availability extends V1_PackageableElement implements Hashable {
   override accept_PackageableElementVisitor<T>(
     visitor: V1_PackageableElementVisitor<T>,
   ): T {
-    return visitor.visit_PackageableElement(this);
+    return visitor.visit_Availability(this);
   }
 }

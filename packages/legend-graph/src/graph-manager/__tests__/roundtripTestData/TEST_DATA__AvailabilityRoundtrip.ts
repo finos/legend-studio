@@ -44,9 +44,7 @@ const sectionIndexForSingleAvailability = {
 const baseAvailabilityEntity = {
   path: 'availability::A',
   content: {
-    _type: 'availability',
-    name: 'A',
-    package: 'availability',
+    _type: 'Availability',
     barrier: {
       _type: 'lambda',
       body: [
@@ -57,11 +55,13 @@ const baseAvailabilityEntity = {
       ],
       parameters: [],
     },
+    extraIngestDefinitions: ['ingest::MainIngest'],
+    name: 'A',
     owner: {
       appDirId: 12345,
       level: 'DEPLOYMENT',
     },
-    extraIngestDefinitions: ['ingest::MainIngest'],
+    package: 'availability',
   },
   classifierPath: availabilityClassifierPath,
 };
@@ -78,38 +78,31 @@ export const TEST_DATA__AVAILABILITY_DEFAULT_FORMAT = [
       ...baseAvailabilityEntity.content,
       testSuites: [
         {
-          _type: 'availabilityTestSuite',
           id: 'suite_1',
           testData: {
-            _type: 'relationAccessor',
-            relationElements: [
+            columns: ['eventId', 'status'],
+            paths: ['availability::A'],
+            rows: [
               {
-                columns: ['eventId', 'status'],
-                paths: ['availability::A'],
-                rows: [
-                  {
-                    values: ['evt-1', 'OK'],
-                  },
-                ],
+                values: ['evt-1', 'OK'],
               },
             ],
           },
           tests: [
             {
-              _type: 'availabilityBarrierTest',
-              id: 'test_1',
-              watermarkSerializationFormat: 'DEFAULT',
               assertions: [
                 {
                   _type: 'equalToJson',
-                  id: 'assert_1',
                   expected: {
                     _type: 'externalFormat',
                     contentType: 'application/json',
                     data: '{"eventId":"evt-1","status":"OK"}',
                   },
+                  id: 'assert_1',
                 },
               ],
+              id: 'test_1',
+              watermarkSerializationFormat: 'DEFAULT',
             },
           ],
         },
@@ -126,24 +119,22 @@ export const TEST_DATA__AVAILABILITY_LITE_FORMAT = [
       ...baseAvailabilityEntity.content,
       testSuites: [
         {
-          _type: 'availabilityTestSuite',
           id: 'suite_lite',
           tests: [
             {
-              _type: 'availabilityBarrierTest',
-              id: 'test_lite',
-              watermarkSerializationFormat: 'LITE',
               assertions: [
                 {
                   _type: 'equalToJson',
-                  id: 'assert_lite',
                   expected: {
                     _type: 'externalFormat',
                     contentType: 'application/json',
                     data: '{"eventId":"evt-lite"}',
                   },
+                  id: 'assert_lite',
                 },
               ],
+              id: 'test_lite',
+              watermarkSerializationFormat: 'LITE',
             },
           ],
         },
@@ -160,24 +151,22 @@ export const TEST_DATA__AVAILABILITY_ALLOY_QUERY_FORMAT = [
       ...baseAvailabilityEntity.content,
       testSuites: [
         {
-          _type: 'availabilityTestSuite',
           id: 'suite_alloy',
           tests: [
             {
-              _type: 'availabilityBarrierTest',
-              id: 'test_alloy',
-              watermarkSerializationFormat: 'ALLOY_QUERY',
               assertions: [
                 {
                   _type: 'equalToJson',
-                  id: 'assert_alloy',
                   expected: {
                     _type: 'externalFormat',
                     contentType: 'application/json',
                     data: '{"query":"from availability::A"}',
                   },
+                  id: 'assert_alloy',
                 },
               ],
+              id: 'test_alloy',
+              watermarkSerializationFormat: 'ALLOY_QUERY',
             },
           ],
         },
@@ -195,10 +184,10 @@ export const TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS = [
       ...baseAvailabilityEntity.content,
       name: 'Procmon',
       notification: {
-        type: 'PROCMON',
         content: {
           destination: 'procmon-topic',
         },
+        type: 'PROCMON',
       },
     },
   },
@@ -209,11 +198,11 @@ export const TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS = [
       ...baseAvailabilityEntity.content,
       name: 'MessageBus',
       notification: {
-        type: 'MESSAGEBUS',
         content: {
           channel: 'availability-events',
           format: 'json',
         },
+        type: 'MESSAGEBUS',
       },
     },
   },

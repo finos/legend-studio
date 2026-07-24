@@ -15,19 +15,27 @@
  */
 
 import { hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import {
-  PackageableElement,
-  type PackageableElementVisitor,
-} from '../PackageableElement.js';
+  CORE_HASH_STRUCTURE,
+  hashObjectWithoutSourceInformation,
+} from '../../../../../graph/Core_HashUtils.js';
+import { type PackageableElementVisitor } from '../PackageableElement.js';
+import { INTERNAL__UnknownPackageableElement } from '../INTERNAL__UnknownPackageableElement.js';
 import type { Testable } from '../../test/Testable.js';
 import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import type { AvailabilityTestSuite } from './AvailabilityTestSuite.js';
 import type { Notification } from './Notification.js';
 import type { AppDirNode } from '../ingest/IngestDefinition.js';
 
-export class Availability extends PackageableElement implements Testable {
-  barrier!: RawLambda;
+// NOTE: like `IngestDefinition`, we extend `INTERNAL__UnknownPackageableElement`
+// so the raw JSON content coming from the engine is preserved on `.content` and
+// the element does not fall back to unknown when the studio protocol schema
+// happens to diverge from the engine's (e.g. new owner shape).
+export class Availability
+  extends INTERNAL__UnknownPackageableElement
+  implements Testable
+{
+  barrier?: RawLambda | undefined;
   extraIngestDefinitions: string[] = [];
   notification: Notification | undefined;
   owner: AppDirNode | undefined;
@@ -36,17 +44,14 @@ export class Availability extends PackageableElement implements Testable {
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
   ): T {
-    return visitor.visit_PackageableElement(this);
+    return visitor.visit_Availability(this);
   }
 
-  protected override get _elementHashCode(): string {
+  override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.AVAILABILITY,
       this.path,
-      this.barrier,
-      hashArray(this.extraIngestDefinitions),
-      this.notification ?? '',
-      this.owner ?? '',
+      hashObjectWithoutSourceInformation(this.content),
       hashArray(this.tests),
     ]);
   }

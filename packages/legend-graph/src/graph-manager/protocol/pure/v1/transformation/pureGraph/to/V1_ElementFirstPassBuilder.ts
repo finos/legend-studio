@@ -120,21 +120,6 @@ export class V1_ElementFirstPassBuilder
   }
 
   visit_PackageableElement(element: V1_PackageableElement): PackageableElement {
-    if (element instanceof V1_Availability) {
-      const metamodel = new Availability(element.name);
-      const path = V1_buildFullPath(element.package, element.name);
-      V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
-      addElementToPackage(
-        getOrCreateGraphPackage(
-          this.context.currentSubGraph,
-          element.package,
-          this.packageCache,
-        ),
-        metamodel,
-      );
-      this.context.currentSubGraph.setOwnAvailability(path, metamodel);
-      return metamodel;
-    }
     return this.context.extensions
       .getExtraBuilderOrThrow(element)
       .runFirstPass(
@@ -143,6 +128,31 @@ export class V1_ElementFirstPassBuilder
         this.packageCache,
         this.elementPathCache,
       );
+  }
+
+  visit_Availability(element: V1_Availability): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Element 'name' field is missing or empty`,
+    );
+    const metamodel = new Availability(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.content = element.content;
+    this.context.currentSubGraph.setOwnAvailability(path, metamodel);
+    return metamodel;
   }
 
   visit_INTERNAL__UnknownElement(

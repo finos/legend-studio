@@ -16,10 +16,10 @@
 
 import {
   clsx,
+  EyeIcon,
+  FlaskIcon,
   PanelContent,
   PanelHeader,
-  PanelHeaderActionItem,
-  PanelHeaderActions,
 } from '@finos/legend-art';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -31,52 +31,84 @@ import {
   AvailabilityEditorState,
 } from '../../../../stores/editor/editor-state/element-editor-state/availability/AvailabilityEditorState.js';
 import { AvailabilityTestableEditor } from './testable/AvailabilityTestableEditor.js';
+import { useApplicationNavigationContext } from '@finos/legend-application';
+import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 
 export const AvailabilityEditor = observer(() => {
   const editorStore = useEditorStore();
   const availabilityEditorState =
     editorStore.tabManagerState.getCurrentEditorState(AvailabilityEditorState);
+  const availability = availabilityEditorState.availability;
+  const activeTab = availabilityEditorState.activeTab;
+
+  const sidebarTabs = [
+    {
+      label: AVAILABILITY_TAB.DEFINITION,
+      icon: <EyeIcon />,
+    },
+    {
+      label: AVAILABILITY_TAB.TESTING,
+      icon: <FlaskIcon />,
+    },
+  ];
 
   useEffect(() => {
     availabilityEditorState.generateElementGrammar();
   }, [availabilityEditorState]);
 
+  useApplicationNavigationContext(
+    LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.AVAILABILITY_EDITOR,
+  );
+
   return (
-    <div className="data-product-editor">
-      <PanelHeader
-        title="Availability"
-        titleContent={availabilityEditorState.availability.name}
-        darkMode={true}
-      >
-        <PanelHeaderActions>
-          {Object.values(AVAILABILITY_TAB).map((tab) => (
-            <PanelHeaderActionItem
-              key={tab}
-              className={clsx({
-                'panel__header__action--active':
-                  availabilityEditorState.activeTab === tab,
-              })}
-              onClick={() => availabilityEditorState.setActiveTab(tab)}
-              title={tab}
-            >
-              {tab}
-            </PanelHeaderActionItem>
-          ))}
-        </PanelHeaderActions>
-      </PanelHeader>
-      <PanelContent className={clsx('availability-editor__content')}>
-        {availabilityEditorState.activeTab === AVAILABILITY_TAB.DEFINITION ? (
-          <CodeEditor
-            language={CODE_EDITOR_LANGUAGE.PURE}
-            inputValue={availabilityEditorState.textContent}
-            isReadOnly={true}
-          />
-        ) : (
-          <AvailabilityTestableEditor
-            testableState={availabilityEditorState.testableState}
-          />
-        )}
-      </PanelContent>
+    <div className="availability-editor">
+      <div className="panel">
+        <PanelHeader
+          title="Availability"
+          titleContent={availability.name}
+          darkMode={true}
+          isReadOnly={true}
+        />
+        <div className="panel availability-editor__content-panel">
+          <div className="availability-editor__activity-bar">
+            <div className="availability-editor__activity-bar__items">
+              {sidebarTabs.map((tab) => (
+                <button
+                  key={tab.label}
+                  className={clsx('availability-editor__activity-bar__item', {
+                    'availability-editor__activity-bar__item--active':
+                      activeTab === tab.label,
+                  })}
+                  onClick={() =>
+                    availabilityEditorState.setActiveTab(tab.label)
+                  }
+                  tabIndex={-1}
+                  title={tab.label}
+                >
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="panel availability-editor__main-panel">
+            {activeTab === AVAILABILITY_TAB.DEFINITION && (
+              <PanelContent>
+                <CodeEditor
+                  language={CODE_EDITOR_LANGUAGE.PURE}
+                  inputValue={availabilityEditorState.textContent}
+                  isReadOnly={true}
+                />
+              </PanelContent>
+            )}
+            {activeTab === AVAILABILITY_TAB.TESTING && (
+              <AvailabilityTestableEditor
+                testableState={availabilityEditorState.testableState}
+              />
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 });

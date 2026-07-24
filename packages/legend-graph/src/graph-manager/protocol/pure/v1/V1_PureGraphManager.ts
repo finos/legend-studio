@@ -529,6 +529,12 @@ export const V1_indexPureModelContextData = (
     let isIndexedAsOtherElement = false;
     if (el instanceof V1_INTERNAL__UnknownElement) {
       index.INTERNAL__UnknownElement.push(el);
+    } else if (el instanceof V1_Availability) {
+      // NOTE: `V1_Availability` extends `V1_INTERNAL__UnknownPackageableElement`
+      // so we must check for it before the generic unknown-packageable-element
+      // branch below, otherwise it would be routed to `INTERNAL__unknownElements`
+      // and the second/third pass availability builders would never run.
+      index.availabilities.push(el);
     } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
       index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Association) {
@@ -569,8 +575,6 @@ export const V1_indexPureModelContextData = (
       index.products.push(el);
     } else if (el instanceof V1_Compute) {
       index.computes.push(el);
-    } else if (el instanceof V1_Availability) {
-      index.availabilities.push(el);
     } else {
       const clazz = getClass<V1_PackageableElement>(el);
       if (otherElementsByClass.has(clazz)) {
@@ -5385,6 +5389,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       if (protocol instanceof V1_IngestDefinition) {
         return CORE_PURE_PATH.INGEST_DEFINITION;
       }
+      if (protocol instanceof V1_Availability) {
+        return CORE_PURE_PATH.AVAILABILITY;
+      }
       const _type = protocol.content._type;
       const classifierPath = isString(_type)
         ? this.elementClassifierPathMap.get(_type)
@@ -5439,8 +5446,6 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       return CORE_PURE_PATH.DATA_PRODUCT;
     } else if (protocol instanceof V1_Compute) {
       return CORE_PURE_PATH.COMPUTE;
-    } else if (protocol instanceof V1_Availability) {
-      return CORE_PURE_PATH.AVAILABILITY;
     } else if (protocol instanceof V1_MemSQLFunction) {
       return CORE_PURE_PATH.MEM_SQL_FUNCTION;
     }

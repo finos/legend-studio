@@ -129,9 +129,6 @@ class V1_PackageableElementTransformer
   }
 
   visit_PackageableElement(element: PackageableElement): V1_PackageableElement {
-    if (element instanceof Availability) {
-      return V1_transformAvailability(element, this.context) as never;
-    }
     for (const transformer of this.extraElementTransformers) {
       const elementProtocol = transformer(element, this.context);
       if (elementProtocol) {
@@ -172,6 +169,10 @@ class V1_PackageableElementTransformer
     );
     // we don't take into account appDirDeployment here as it is still read only
     return protocol;
+  }
+
+  visit_Availability(element: Availability): V1_PackageableElement {
+    return V1_transformAvailability(element, this.context);
   }
 
   visit_INTERNAL__UnknownFunctionActivator(
