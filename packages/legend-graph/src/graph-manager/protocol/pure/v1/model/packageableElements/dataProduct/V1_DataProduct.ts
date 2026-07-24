@@ -209,10 +209,26 @@ export class V1_DataProductDiagram {
   }
 }
 
+export class V1_SecureView implements Hashable {
+  ingestPath!: string;
+  datasetName!: string;
+  func!: V1_RawLambda;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_SECURE_VIEW,
+      this.ingestPath,
+      this.datasetName,
+      this.func,
+    ]);
+  }
+}
+
 export class V1_ModelAccessPointGroup extends V1_AccessPointGroup {
   mapping!: V1_PackageableElementPointer;
   featuredElements: V1_ElementScope[] | undefined;
   diagrams: V1_DataProductDiagram[] = [];
+  secureViews: V1_SecureView[] = [];
   override get hashCode(): string {
     return hashArray([
       super.hashCode,
@@ -220,6 +236,7 @@ export class V1_ModelAccessPointGroup extends V1_AccessPointGroup {
       this.mapping.path,
       hashArray(this.featuredElements ?? []),
       hashArray(this.diagrams),
+      hashArray(this.secureViews),
     ]);
   }
 }

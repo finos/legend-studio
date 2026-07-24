@@ -45,6 +45,7 @@ import {
   NativeModelExecutionContext,
   type DataProductOwner,
   AppDirOwner,
+  SecureView,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { AppDirNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
@@ -68,6 +69,7 @@ import {
   type V1_NativeModelExecutionContext,
   V1_AppDirOwner,
   type V1_DataProductOwner,
+  type V1_SecureView,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
@@ -234,6 +236,17 @@ export const V1_buildAccessPointGroup = (
         );
       });
     }
+    group.secureViews = elementGroup.secureViews.map((v1SecureView) => {
+      const secureView = new SecureView();
+      secureView.ingestPath = v1SecureView.ingestPath;
+      secureView.datasetName = v1SecureView.datasetName;
+      secureView.func = V1_buildRawLambdaWithResolvedPaths(
+        v1SecureView.func.parameters,
+        v1SecureView.func.body,
+        context,
+      );
+      return secureView;
+    });
     return group;
   } else {
     const group = new AccessPointGroup();
