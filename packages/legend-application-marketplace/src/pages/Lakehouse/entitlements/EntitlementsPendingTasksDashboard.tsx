@@ -40,7 +40,13 @@ import {
   DialogTitle,
   Tooltip,
 } from '@mui/material';
-import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   CubesLoadingIndicator,
@@ -99,6 +105,8 @@ const EntitlementsDashboardActionModal = (props: {
   } = props;
 
   const auth = useAuth();
+  const tokenRef = useRef(auth.user?.access_token);
+  tokenRef.current = auth.user?.access_token;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessages, setErrorMessages] = useState<
     [V1_PendingTaskRecord, string][]
@@ -122,7 +130,7 @@ const EntitlementsDashboardActionModal = (props: {
     const currentErrorMessages: typeof errorMessages = [];
     await Promise.all(
       Array.from(selectedTasks).map(async (task) => {
-        return flowResult(actionFunction(task, auth.user?.access_token))
+        return flowResult(actionFunction(task, tokenRef.current))
           .then(() => setSuccessCount((prev) => prev++))
           .catch((error) => currentErrorMessages.push([task, error.message]));
       }),
@@ -164,7 +172,7 @@ const EntitlementsDashboardActionModal = (props: {
     }
 
     // Refresh pending tasks and contracts after taking action
-    await flowResult(dashboardState.init(auth.user?.access_token));
+    await flowResult(dashboardState.init(tokenRef.current));
   };
 
   if (action === undefined) {
@@ -302,6 +310,8 @@ export const EntitlementsPendingTasksDashboard = observer(
     >(undefined);
 
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const getDataProductUrl = useGetDataProductUrl();
 
     const selectedRowId = getSelectedRowId(selectedRow);
@@ -354,7 +364,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               data: new ContractCreatedByUserDetails(contract),
             });
             dashboardState
-              .getContractErrors(contract.guid, auth.user?.access_token)
+              .getContractErrors(contract.guid, tokenRef.current)
               .then((result) => setContractErrors(result))
               .catch(() => setContractErrors(undefined));
           }
@@ -901,7 +911,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                     await flowResult(
                       dashboardState.updateContract(
                         selectedContractGuid,
-                        auth.user?.access_token,
+                        tokenRef.current,
                       ),
                     );
                   },
