@@ -47,7 +47,13 @@ import {
   V1_ResourceType,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   type UserSearchService,
   assertErrorThrown,
@@ -330,6 +336,8 @@ const RequestEscalationModal = (props: {
   const { open, onClose, viewerState, selectedUser, refresh } = props;
 
   const auth = useAuth();
+  const tokenRef = useRef(auth.user?.access_token);
+  tokenRef.current = auth.user?.access_token;
 
   if (!selectedUser) {
     return (
@@ -356,7 +364,7 @@ const RequestEscalationModal = (props: {
   const handleEscalate = async () => {
     try {
       await flowResult(
-        viewerState.escalateRequest?.(selectedUser, auth.user?.access_token),
+        viewerState.escalateRequest?.(selectedUser, tokenRef.current),
       );
       // eslint-disable-next-line no-void
       void refresh();
@@ -577,6 +585,8 @@ export const DataAccessRequestContent = observer(
       dataProductEnvironment,
     } = props;
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const isInitialized = viewerState.initializationState.hasCompleted;
 
     const targetUsers = viewerState.targetUsers;
@@ -627,12 +637,11 @@ export const DataAccessRequestContent = observer(
     useEffect(() => {
       if (!viewerState.initializationState.hasCompleted) {
         setIsLoading(true);
-        flowResult(viewerState.init(auth.user?.access_token))
+        flowResult(viewerState.init(tokenRef.current))
           .catch(viewerState.applicationStore.alertUnhandledError)
           .finally(() => setIsLoading(false));
       }
     }, [
-      auth.user?.access_token,
       viewerState,
       viewerState.initializationState,
       viewerState.initializationState.hasCompleted,
@@ -657,7 +666,7 @@ export const DataAccessRequestContent = observer(
       setIsLoading(true);
       viewerState.initializationState.reset();
       await Promise.resolve(onRefresh?.())
-        .then(() => flowResult(viewerState.init(auth.user?.access_token)))
+        .then(() => flowResult(viewerState.init(tokenRef.current)))
         .catch(viewerState.applicationStore.alertUnhandledError)
         .finally(() => setIsLoading(false));
     };
@@ -698,7 +707,7 @@ export const DataAccessRequestContent = observer(
                   await flowResult(
                     viewerState.invalidateRequest?.(
                       isPermitFlow ? justification || undefined : undefined,
-                      auth.user?.access_token,
+                      tokenRef.current,
                     ),
                   );
                   await refresh();

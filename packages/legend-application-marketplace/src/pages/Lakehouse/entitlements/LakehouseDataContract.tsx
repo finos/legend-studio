@@ -26,7 +26,7 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   GraphManagerState,
@@ -55,6 +55,8 @@ export const LakehouseDataContractTask =
       const marketplaceBaseStore = useLegendMarketplaceBaseStore();
       const params = useParams<LakehouseDataContractTaskPathParams>();
       const auth = useAuth();
+      const tokenRef = useRef(auth.user?.access_token);
+      tokenRef.current = auth.user?.access_token;
       const currentUser =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
       const [contractViewerState, setContractViewerState] = useState<
@@ -134,7 +136,7 @@ export const LakehouseDataContractTask =
               await marketplaceBaseStore.lakehouseContractServerClient.getDataContract(
                 contractId,
                 false,
-                auth.user?.access_token,
+                tokenRef.current,
               );
 
             const contractResponse = deserialize(
@@ -154,7 +156,7 @@ export const LakehouseDataContractTask =
                   await marketplaceBaseStore.lakehouseContractServerClient.getDataProductByIdAndDID(
                     liteDataContract.resourceId,
                     liteDataContract.deploymentId,
-                    auth.user?.access_token,
+                    tokenRef.current,
                   );
                 const details =
                   V1_entitlementsDataProductDetailsResponseToDataProductDetails(
@@ -210,11 +212,11 @@ export const LakehouseDataContractTask =
         };
         // eslint-disable-next-line no-void
         void fetchAndInitializeContract();
-      }, [contractId, auth.user?.access_token, marketplaceBaseStore]);
+      }, [contractId, marketplaceBaseStore]);
 
       const handleRefresh = async (): Promise<void> => {
         if (contractViewerState) {
-          contractViewerState.init(auth.user?.access_token);
+          contractViewerState.init(tokenRef.current);
         }
       };
 
@@ -222,7 +224,7 @@ export const LakehouseDataContractTask =
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.approveTask(
             currentTaskId,
-            auth.user?.access_token,
+            tokenRef.current,
           );
         const change = deserialize(
           V1_TaskStatusChangeResponseModelSchema,
@@ -245,7 +247,7 @@ export const LakehouseDataContractTask =
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.denyTask(
             currentTaskId,
-            auth.user?.access_token,
+            tokenRef.current,
           );
         const change = deserialize(
           V1_TaskStatusChangeResponseModelSchema,
