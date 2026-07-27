@@ -43,12 +43,9 @@ import {
   TimesIcon,
 } from '@finos/legend-art';
 import {
-  FunctionAccessPoint,
-  LakehouseAccessPoint,
   PrimitiveInstanceValue,
   PrimitiveType,
   type DataProductTestSuite,
-  type RawLambda,
   type ValueSpecification,
 } from '@finos/legend-graph';
 import type { DataProductEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
@@ -56,6 +53,7 @@ import {
   DataProductValueSpecificationTestParameterState,
   type DataProductTestParameterState,
   DataProductTestState,
+  getAccessPointLambda,
   type DataProductTestableState,
   type DataProductTestSuiteState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
@@ -317,21 +315,6 @@ const CreateTestModal = observer(
   },
 );
 
-const getAccessPointQuery = (
-  testState: DataProductTestState,
-): RawLambda | undefined => {
-  const accessPoint = testState.suiteState.testableState.ownAccessPoints.find(
-    (ap) => ap.id === testState.test.accessPointId,
-  );
-  if (accessPoint instanceof LakehouseAccessPoint) {
-    return accessPoint.func;
-  }
-  if (accessPoint instanceof FunctionAccessPoint) {
-    return accessPoint.query;
-  }
-  return undefined;
-};
-
 const DataProductTestParameterEditor = observer(
   (props: {
     testState: DataProductTestState;
@@ -584,7 +567,10 @@ const DataProductTestEditorExtension = observer(
       return null;
     }
 
-    const query = getAccessPointQuery(testState);
+    const accessPoint = testState.suiteState.testableState.ownAccessPoints.find(
+      (ap) => ap.id === testState.test.accessPointId,
+    );
+    const query = accessPoint ? getAccessPointLambda(accessPoint) : undefined;
     const contentTypeParamPairs = getContentTypeWithParamFromQuery(
       query,
       testState.editorStore,

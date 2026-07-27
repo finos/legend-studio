@@ -93,7 +93,7 @@ export type { LakehouseElementTestDataState as DataProductElementTestDataState }
  * Returns the lambda for an access point (handles both LakehouseAccessPoint
  * and FunctionAccessPoint).
  */
-const getAccessPointLambda = (
+export const getAccessPointLambda = (
   accessPoint: AccessPoint,
 ): RawLambda | undefined =>
   accessPoint instanceof LakehouseAccessPoint
