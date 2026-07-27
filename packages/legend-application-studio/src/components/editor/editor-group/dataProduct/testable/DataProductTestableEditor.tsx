@@ -396,7 +396,7 @@ const DataProductTestParameterEditor = observer(
         className="panel__content__form__section"
       >
         <div className="panel__content__form__section__header__label">
-          {`Name: ${paramState.parameterValue.name || '(unnamed)'}`}
+          {paramState.parameterValue.name}
           <button
             className={clsx('type-tree__node__type__label', {})}
             tabIndex={-1}
