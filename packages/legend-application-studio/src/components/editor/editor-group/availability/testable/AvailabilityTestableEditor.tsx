@@ -44,8 +44,10 @@ import {
   ResizablePanelSplitterLine,
   RunAllIcon,
   RunErrorsIcon,
-  TimesIcon,
+  WrenchIcon,
 } from '@finos/legend-art';
+import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import {
   type AvailabilityBarrierTest,
   type AvailabilityTestSuite,
@@ -298,278 +300,37 @@ const CreateTestModal = observer(
   },
 );
 
-// ─── Availability expected-JSON structured editor ───────────────────────────
+// ─── Availability expected-JSON editor ──────────────────────────────────────
 
-const ReadOnlyField = (props: {
-  label: string;
-  value: string;
-}): React.ReactElement => (
-  <div className="availability-assertion-editor__field">
-    <div className="availability-assertion-editor__field__label">
-      {props.label}
-    </div>
-    <div className="availability-assertion-editor__field__value availability-assertion-editor__field__value--readonly">
-      {props.value}
-    </div>
-  </div>
-);
-
-const asString = (val: unknown): string => {
-  if (val === undefined || val === null) {
-    return '';
-  }
-  if (typeof val === 'object') {
-    return JSON.stringify(val);
-  }
-  return String(val);
-};
-
-const DefaultExpectedEditor = observer(
+const ExpectedJsonEditor = observer(
   (props: { testState: AvailabilityTestState }) => {
     const { testState } = props;
-    const parsed = testState.parsedExpected;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return <div>Invalid expected JSON</div>;
-    }
-    const root = parsed as Record<string, unknown>;
-    const evaluated =
-      root.evaluatedWatermark && typeof root.evaluatedWatermark === 'object'
-        ? (root.evaluatedWatermark as Record<string, unknown>)
-        : {};
-    const batches = Array.isArray(evaluated.watermarkBatches)
-      ? (evaluated.watermarkBatches as unknown[])
-      : [];
-    const availabilityRef =
-      root.availabilityDefinitionReference &&
-      typeof root.availabilityDefinitionReference === 'object'
-        ? (root.availabilityDefinitionReference as Record<string, unknown>)
-        : {};
     const isReadOnly = testState.isReadOnly;
-
     return (
-      <div className="availability-assertion-editor__content">
-        <ReadOnlyField
-          label="availabilityDefinitionUrn"
-          value={asString(availabilityRef.availabilityDefinitionUrn)}
-        />
-        <ReadOnlyField
-          label="evaluationResult"
-          value={asString(root.evaluationResult)}
-        />
-        <ReadOnlyField label="eventId" value={asString(root.eventId)} />
-        <ReadOnlyField label="watermarkId" value={asString(root.watermarkId)} />
-
-        <div className="availability-assertion-editor__section">
-          <div className="availability-assertion-editor__section__header">
-            <div className="availability-assertion-editor__section__title">
-              watermarkBatches
-            </div>
-            <button
-              className="btn--icon btn--dark btn--sm"
-              onClick={(): void => testState.addExpectedEntry()}
-              disabled={isReadOnly}
-              title="Add batch entry"
-            >
-              <PlusIcon />
-            </button>
+      <div className="availability-assertion-editor__expected">
+        <div className="availability-assertion-editor__expected__header">
+          <div className="availability-assertion-editor__expected__title">
+            Expected
           </div>
-          {batches.map((rawBatch, index) => {
-            const batch =
-              rawBatch && typeof rawBatch === 'object'
-                ? (rawBatch as Record<string, unknown>)
-                : {};
-            const ref =
-              batch.ingestDefinitionReference &&
-              typeof batch.ingestDefinitionReference === 'object'
-                ? (batch.ingestDefinitionReference as Record<string, unknown>)
-                : {};
-            return (
-              <div
-                key={`batch-${String(index)}`}
-                className="availability-assertion-editor__entry"
-              >
-                <div className="availability-assertion-editor__entry__header">
-                  <div className="availability-assertion-editor__entry__title">
-                    watermarkBatches[{index}]
-                  </div>
-                  <button
-                    className="btn--icon btn--caution btn--dark btn--sm"
-                    onClick={(): void => testState.removeExpectedEntry(index)}
-                    disabled={isReadOnly}
-                    title="Remove batch entry"
-                  >
-                    <TimesIcon />
-                  </button>
-                </div>
-                <ReadOnlyField
-                  label="batchId"
-                  value={asString(batch.batchId)}
-                />
-                <ReadOnlyField
-                  label="ingestDefinitionPath"
-                  value={asString(batch.ingestDefinitionPath)}
-                />
-                <ReadOnlyField
-                  label="ingestDefinitionUrn"
-                  value={asString(ref.ingestDefinitionUrn)}
-                />
-              </div>
-            );
-          })}
+          <button
+            className="panel__header__action"
+            disabled={isReadOnly}
+            tabIndex={-1}
+            onClick={(): void => testState.formatExpected()}
+            title="Format JSON (Alt + Shift + F)"
+          >
+            <WrenchIcon />
+          </button>
         </div>
-      </div>
-    );
-  },
-);
-
-const LiteExpectedEditor = observer(
-  (props: { testState: AvailabilityTestState }) => {
-    const { testState } = props;
-    const parsed = testState.parsedExpected;
-    const list = Array.isArray(parsed) ? (parsed as unknown[]) : [];
-    const isReadOnly = testState.isReadOnly;
-
-    return (
-      <div className="availability-assertion-editor__content">
-        <div className="availability-assertion-editor__section">
-          <div className="availability-assertion-editor__section__header">
-            <div className="availability-assertion-editor__section__title">
-              LITE entries
-            </div>
-            <button
-              className="btn--icon btn--dark btn--sm"
-              onClick={(): void => testState.addExpectedEntry()}
-              disabled={isReadOnly}
-              title="Add entry"
-            >
-              <PlusIcon />
-            </button>
-          </div>
-          {list.map((rawEntry, index) => {
-            const entry =
-              rawEntry && typeof rawEntry === 'object'
-                ? (rawEntry as Record<string, unknown>)
-                : {};
-            return (
-              <div
-                key={`lite-${String(index)}`}
-                className="availability-assertion-editor__entry"
-              >
-                <div className="availability-assertion-editor__entry__header">
-                  <div className="availability-assertion-editor__entry__title">
-                    entry[{index}]
-                  </div>
-                  <button
-                    className="btn--icon btn--caution btn--dark btn--sm"
-                    onClick={(): void => testState.removeExpectedEntry(index)}
-                    disabled={isReadOnly}
-                    title="Remove entry"
-                  >
-                    <TimesIcon />
-                  </button>
-                </div>
-                <ReadOnlyField
-                  label="ingestDefinitionPath"
-                  value={asString(entry.ingestDefinitionPath)}
-                />
-                <ReadOnlyField
-                  label="batchId"
-                  value={asString(entry.batchId)}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  },
-);
-
-const AlloyQueryExpectedEditor = observer(
-  (props: { testState: AvailabilityTestState }) => {
-    const { testState } = props;
-    const parsed = testState.parsedExpected;
-    const entries =
-      parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-        ? Object.entries(parsed as Record<string, unknown>)
-        : [];
-    const isReadOnly = testState.isReadOnly;
-
-    return (
-      <div className="availability-assertion-editor__content">
-        <div className="availability-assertion-editor__section">
-          <div className="availability-assertion-editor__section__header">
-            <div className="availability-assertion-editor__section__title">
-              ALLOY_QUERY entries
-            </div>
-            <button
-              className="btn--icon btn--dark btn--sm"
-              onClick={(): void => testState.addExpectedEntry()}
-              disabled={isReadOnly}
-              title="Add entry"
-            >
-              <PlusIcon />
-            </button>
-          </div>
-          {entries.map(([key, val], index) => {
-            const obj =
-              val && typeof val === 'object' && !Array.isArray(val)
-                ? (val as Record<string, unknown>)
-                : {};
-            const batchId = typeof obj.batchId === 'number' ? obj.batchId : 0;
-            return (
-              <div
-                key={`alloy-${String(index)}`}
-                className="availability-assertion-editor__entry"
-              >
-                <div className="availability-assertion-editor__entry__header">
-                  <div className="availability-assertion-editor__entry__title">
-                    entry[{index}]
-                  </div>
-                  <button
-                    className="btn--icon btn--caution btn--dark btn--sm"
-                    onClick={(): void => testState.removeExpectedEntry(index)}
-                    disabled={isReadOnly}
-                    title="Remove entry"
-                  >
-                    <TimesIcon />
-                  </button>
-                </div>
-                <div className="availability-assertion-editor__field">
-                  <div className="availability-assertion-editor__field__label">
-                    path
-                  </div>
-                  <input
-                    className="availability-assertion-editor__field__input"
-                    type="text"
-                    value={key}
-                    onChange={(e): void =>
-                      testState.updateAlloyQueryPath(index, e.target.value)
-                    }
-                    disabled={isReadOnly}
-                    placeholder="ingest definition path"
-                  />
-                </div>
-                <div className="availability-assertion-editor__field">
-                  <div className="availability-assertion-editor__field__label">
-                    batchId
-                  </div>
-                  <input
-                    className="availability-assertion-editor__field__input"
-                    type="number"
-                    value={batchId}
-                    onChange={(e): void =>
-                      testState.updateAlloyQueryBatchId(
-                        index,
-                        Number(e.target.value),
-                      )
-                    }
-                    disabled={isReadOnly}
-                  />
-                </div>
-              </div>
-            );
-          })}
+        <div className="availability-assertion-editor__expected__body">
+          <CodeEditor
+            inputValue={testState.expectedValue}
+            language={CODE_EDITOR_LANGUAGE.JSON}
+            updateInput={(val: string): void => {
+              testState.setExpectedValue(val);
+            }}
+            hideGutter={true}
+          />
         </div>
       </div>
     );
@@ -583,9 +344,6 @@ const AvailabilityAssertionEditor = observer(
       <div className="availability-assertion-editor panel">
         <PanelHeader>
           <div className="availability-assertion-editor__title">
-            <div className="availability-assertion-editor__title__label">
-              Test
-            </div>
             <div className="availability-assertion-editor__title__value">
               {testState.test.id}
             </div>
@@ -601,21 +359,7 @@ const AvailabilityAssertionEditor = observer(
         </PanelHeader>
         <PanelContent>
           <div className="availability-assertion-editor__body">
-            <div className="availability-assertion-editor__body__section-title">
-              Expected
-            </div>
-            {testState.format ===
-              AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT && (
-              <DefaultExpectedEditor testState={testState} />
-            )}
-            {testState.format ===
-              AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE && (
-              <LiteExpectedEditor testState={testState} />
-            )}
-            {testState.format ===
-              AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY && (
-              <AlloyQueryExpectedEditor testState={testState} />
-            )}
+            <ExpectedJsonEditor testState={testState} />
           </div>
         </PanelContent>
       </div>
@@ -814,7 +558,6 @@ const AvailabilitySuiteEditor = observer(
                   dataState={suiteState.testDataState}
                   isReadOnly={isReadOnly}
                   isSharedData={true}
-                  hideColumnDefinitions={true}
                 />
               </div>
             </div>

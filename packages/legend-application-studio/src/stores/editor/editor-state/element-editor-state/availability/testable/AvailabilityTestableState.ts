@@ -42,6 +42,7 @@ import {
   type GeneratorFn,
   guaranteeType,
   isString,
+  tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import type { AvailabilityEditorState } from '../AvailabilityEditorState.js';
 import {
@@ -245,7 +246,6 @@ export class AvailabilityTestState extends TestableTestEditorState {
       runningTestAction: observable,
       format: computed,
       firstJsonAssertion: computed,
-      parsedExpected: computed,
       setAssertionToRename: action,
       setSelectedTab: action,
       addAssertion: action,
@@ -253,10 +253,8 @@ export class AvailabilityTestState extends TestableTestEditorState {
       openAssertion: action,
       handleTestResult: action,
       resetResult: action,
-      addExpectedEntry: action,
-      removeExpectedEntry: action,
-      updateAlloyQueryPath: action,
-      updateAlloyQueryBatchId: action,
+      setExpectedValue: action,
+      formatExpected: action,
       runTest: flow,
       debugTest: flow,
     });
@@ -281,201 +279,27 @@ export class AvailabilityTestState extends TestableTestEditorState {
     return first instanceof EqualToJson ? first : undefined;
   }
 
-  get parsedExpected(): unknown {
-    const assertion = this.firstJsonAssertion;
-    if (!assertion) {
-      return undefined;
-    }
-    try {
-      return JSON.parse(assertion.expected.data) as unknown;
-    } catch {
-      return undefined;
-    }
+  get expectedValue(): string {
+    return this.firstJsonAssertion?.expected.data ?? '';
   }
 
-  private commitExpected(value: unknown): void {
+  setExpectedValue(val: string): void {
     const assertion = this.firstJsonAssertion;
     if (!assertion) {
       return;
     }
-    externalFormatData_setData(assertion.expected, stringifyTemplate(value));
+    externalFormatData_setData(assertion.expected, val);
   }
 
-  addExpectedEntry(): void {
-    const parsed = this.parsedExpected;
-    switch (this.format) {
-      case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT: {
-        const root =
-          parsed && typeof parsed === 'object'
-            ? { ...(parsed as Record<string, unknown>) }
-            : buildDefaultTemplate();
-        const evaluated =
-          root.evaluatedWatermark && typeof root.evaluatedWatermark === 'object'
-            ? { ...(root.evaluatedWatermark as Record<string, unknown>) }
-            : { watermarkBatches: [] };
-        const batches = Array.isArray(
-          (evaluated as Record<string, unknown>).watermarkBatches,
-        )
-          ? [
-              ...((evaluated as Record<string, unknown>)
-                .watermarkBatches as unknown[]),
-            ]
-          : [];
-        batches.push(buildDefaultBatch());
-        (evaluated as Record<string, unknown>).watermarkBatches = batches;
-        root.evaluatedWatermark = evaluated;
-        this.commitExpected(root);
-        return;
-      }
-      case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE: {
-        const list = Array.isArray(parsed)
-          ? [...(parsed as unknown[])]
-          : buildLiteTemplate();
-        list.push(buildLiteEntry());
-        this.commitExpected(list);
-        return;
-      }
-      case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY: {
-        const map =
-          parsed && typeof parsed === 'object' && !Array.isArray(parsed)
-            ? { ...(parsed as Record<string, unknown>) }
-            : buildAlloyQueryTemplate();
-        const [, value] = buildAlloyQueryEntry();
-        // Pick a fresh unique key so the new entry is visible even if '' is already used.
-        let key = '';
-        if (Object.prototype.hasOwnProperty.call(map, key)) {
-          let counter = 1;
-          while (Object.prototype.hasOwnProperty.call(map, `path_${counter}`)) {
-            counter++;
-          }
-          key = `path_${counter}`;
-        }
-        map[key] = value;
-        this.commitExpected(map);
-        return;
-      }
-      default:
-        return;
-    }
-  }
-
-  removeExpectedEntry(index: number): void {
-    const parsed = this.parsedExpected;
-    switch (this.format) {
-      case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT: {
-        if (!parsed || typeof parsed !== 'object') {
-          return;
-        }
-        const root = { ...(parsed as Record<string, unknown>) };
-        const evaluated =
-          root.evaluatedWatermark && typeof root.evaluatedWatermark === 'object'
-            ? { ...(root.evaluatedWatermark as Record<string, unknown>) }
-            : undefined;
-        if (
-          !evaluated ||
-          !Array.isArray(
-            (evaluated as Record<string, unknown>).watermarkBatches,
-          )
-        ) {
-          return;
-        }
-        const batches = [
-          ...((evaluated as Record<string, unknown>)
-            .watermarkBatches as unknown[]),
-        ];
-        if (index < 0 || index >= batches.length) {
-          return;
-        }
-        batches.splice(index, 1);
-        (evaluated as Record<string, unknown>).watermarkBatches = batches;
-        root.evaluatedWatermark = evaluated;
-        this.commitExpected(root);
-        return;
-      }
-      case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE: {
-        if (!Array.isArray(parsed)) {
-          return;
-        }
-        const list = [...(parsed as unknown[])];
-        if (index < 0 || index >= list.length) {
-          return;
-        }
-        list.splice(index, 1);
-        this.commitExpected(list);
-        return;
-      }
-      case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY: {
-        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-          return;
-        }
-        const keys = Object.keys(parsed as Record<string, unknown>);
-        if (index < 0 || index >= keys.length) {
-          return;
-        }
-        const map = { ...(parsed as Record<string, unknown>) };
-        const targetKey = keys[index];
-        if (targetKey !== undefined) {
-          delete map[targetKey];
-        }
-        this.commitExpected(map);
-        return;
-      }
-      default:
-        return;
-    }
-  }
-
-  updateAlloyQueryPath(index: number, newKey: string): void {
-    if (
-      this.format !== AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY
-    ) {
+  formatExpected(): void {
+    const assertion = this.firstJsonAssertion;
+    if (!assertion) {
       return;
     }
-    const parsed = this.parsedExpected;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return;
-    }
-    const entries = Object.entries(parsed as Record<string, unknown>);
-    if (index < 0 || index >= entries.length) {
-      return;
-    }
-    // Preserve ordering and let duplicate keys collide (the last write wins).
-    const rebuilt: Record<string, unknown> = {};
-    entries.forEach(([k, v], i) => {
-      const nextKey = i === index ? newKey : k;
-      rebuilt[nextKey] = v;
-    });
-    this.commitExpected(rebuilt);
-  }
-
-  updateAlloyQueryBatchId(index: number, batchId: number): void {
-    if (
-      this.format !== AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY
-    ) {
-      return;
-    }
-    const parsed = this.parsedExpected;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-      return;
-    }
-    const entries = Object.entries(parsed as Record<string, unknown>);
-    if (index < 0 || index >= entries.length) {
-      return;
-    }
-    const rebuilt: Record<string, unknown> = {};
-    entries.forEach(([k, v], i) => {
-      if (i === index) {
-        const base =
-          v && typeof v === 'object' && !Array.isArray(v)
-            ? { ...(v as Record<string, unknown>) }
-            : {};
-        base.batchId = Number.isFinite(batchId) ? batchId : 0;
-        rebuilt[k] = base;
-      } else {
-        rebuilt[k] = v;
-      }
-    });
-    this.commitExpected(rebuilt);
+    externalFormatData_setData(
+      assertion.expected,
+      tryToFormatLosslessJSONString(assertion.expected.data),
+    );
   }
 }
 
@@ -524,13 +348,12 @@ export class AvailabilityTestSuiteState extends TestableTestSuiteEditorState {
       suiteTestData,
     );
     // Rebuild child states with column defaults so newly added rows are seeded
-    // with the hard-coded `ingest_completed_ts_utc` value, and disable column
-    // editing since the availability schema is fixed.
+    // with the hard-coded `ingest_completed_ts_utc` value. Column editing is
+    // enabled so users can add/remove columns beyond the seeded schema.
     this.testDataState.relationElementStates =
       suiteTestData.relationElements.map(
         (relationElement) =>
           new RelationElementState(relationElement, {
-            supportsColumnEditing: false,
             columnDefaults: AVAILABILITY_COLUMN_DEFAULTS,
           }),
       );
