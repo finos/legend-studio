@@ -55,7 +55,7 @@ import {
 } from '@finos/legend-art';
 import type { AtomicTest, TestSuite } from '@finos/legend-graph';
 import type { ActionState, GeneratorFn } from '@finos/legend-shared';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { TestableTestEditorState } from '../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
 import {
   TESTABLE_RESULT,
@@ -69,7 +69,6 @@ import type {
 import { RelationElementsDataEditor } from '../data-editor/RelationElementsDataEditor.js';
 import { TestAssertionEditor } from './TestableSharedComponents.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
-import type { ReactNode } from 'react';
 
 // ─── Public interfaces ────────────────────────────────────────────────────────
 

@@ -420,8 +420,8 @@ const DataProductTestParameterEditor = observer(
                 value={
                   valueSpecParamState.varExpression.genericType?.value
                     .rawType === PrimitiveType.BYTE
-                    ? atob((valueSpec.values[0] as string) ?? '')
-                    : ((valueSpec.values[0] as string) ?? '')
+                    ? atob(valueSpec.values[0] as string)
+                    : (valueSpec.values[0] as string)
                 }
                 placeholder={
                   (valueSpec.values[0] as string) === '' ? '(empty)' : undefined
@@ -435,7 +435,9 @@ const DataProductTestParameterEditor = observer(
                   onClose={closePopUp}
                   isReadOnly={isReadOnly}
                   updateParamValue={updateParamValue}
-                  contentTypeParamPair={contentTypeParamPair!}
+                  contentTypeParamPair={guaranteeNonNullable(
+                    contentTypeParamPair,
+                  )}
                 />
               )}
               <div className="data-product-test-editor__parameter__value__actions">
