@@ -69,6 +69,7 @@ import type {
 import { RelationElementsDataEditor } from '../data-editor/RelationElementsDataEditor.js';
 import { TestAssertionEditor } from './TestableSharedComponents.js';
 import type { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import type { ReactNode } from 'react';
 
 // ─── Public interfaces ────────────────────────────────────────────────────────
 
@@ -341,8 +342,14 @@ export const LakehouseTestDataEditor = observer(
 // ─── Test editor: assertion viewer ────────────────────────────────────────────
 
 export const LakehouseTestEditor = observer(
-  (props: { testState: TestableTestEditorState; isReadOnly: boolean }) => {
-    const { testState } = props;
+  (props: {
+    testState: TestableTestEditorState;
+    isReadOnly: boolean;
+    renderTestStateExtension?: (
+      testState: TestableTestEditorState,
+    ) => ReactNode;
+  }) => {
+    const { testState, renderTestStateExtension } = props;
     const selectedAssertion = testState.selectedAsertionState;
 
     return (
@@ -353,6 +360,7 @@ export const LakehouseTestEditor = observer(
           </div>
         </div>
         <div className="panel">
+          {renderTestStateExtension?.(testState)}
           {selectedAssertion && (
             <TestAssertionEditor testAssertionState={selectedAssertion} />
           )}
@@ -449,8 +457,12 @@ export const LakehouseTestsEditor = observer(
     suiteState: LakehouseSuiteStateForEditor;
     testableState: LakehouseTestableStateForEditor;
     isReadOnly: boolean;
+    renderTestStateExtension?: (
+      testState: TestableTestEditorState,
+    ) => ReactNode;
   }) => {
-    const { suiteState, testableState, isReadOnly } = props;
+    const { suiteState, testableState, isReadOnly, renderTestStateExtension } =
+      props;
     const selectedTest = suiteState.selectTestState;
 
     return (
@@ -513,6 +525,9 @@ export const LakehouseTestsEditor = observer(
                 <LakehouseTestEditor
                   testState={selectedTest}
                   isReadOnly={isReadOnly}
+                  {...(renderTestStateExtension
+                    ? { renderTestStateExtension }
+                    : {})}
                 />
               ) : (
                 <BlankPanelPlaceholder
@@ -535,8 +550,12 @@ export const LakehouseTestSuiteEditor = observer(
     suiteState: LakehouseSuiteStateForEditor;
     testableState: LakehouseTestableStateForEditor;
     isReadOnly: boolean;
+    renderTestStateExtension?: (
+      testState: TestableTestEditorState,
+    ) => ReactNode;
   }) => {
-    const { suiteState, testableState, isReadOnly } = props;
+    const { suiteState, testableState, isReadOnly, renderTestStateExtension } =
+      props;
 
     return (
       <div className="service-test-suite-editor">
@@ -555,6 +574,9 @@ export const LakehouseTestSuiteEditor = observer(
               suiteState={suiteState}
               testableState={testableState}
               isReadOnly={isReadOnly}
+              {...(renderTestStateExtension
+                ? { renderTestStateExtension }
+                : {})}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

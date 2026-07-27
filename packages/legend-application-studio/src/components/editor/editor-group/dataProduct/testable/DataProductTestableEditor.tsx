@@ -17,11 +17,13 @@
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import {
+  BlankPanelContent,
   BlankPanelPlaceholder,
   clsx,
   ContextMenu,
   CustomSelectorInput,
   Dialog,
+  FilledWindowMaximizeIcon,
   MenuContent,
   MenuContentItem,
   Modal,
@@ -37,20 +39,44 @@ import {
   PanelHeaderActions,
   PanelLoadingIndicator,
   PlusIcon,
+  RefreshIcon,
+  TimesIcon,
 } from '@finos/legend-art';
-import type { DataProductTestSuite } from '@finos/legend-graph';
+import {
+  FunctionAccessPoint,
+  LakehouseAccessPoint,
+  PrimitiveInstanceValue,
+  PrimitiveType,
+  type DataProductTestSuite,
+  type RawLambda,
+  type ValueSpecification,
+} from '@finos/legend-graph';
 import type { DataProductEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import {
+  DataProductValueSpecificationTestParameterState,
+  type DataProductTestParameterState,
+  DataProductTestState,
   type DataProductTestableState,
   type DataProductTestSuiteState,
 } from '../../../../../stores/editor/editor-state/element-editor-state/dataProduct/testable/DataProductTestableState.js';
-import { forwardRef, useRef, useState } from 'react';
-import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
+import { forwardRef, useEffect, useRef, useState } from 'react';
+import {
+  getContentTypeWithParamFromQuery,
+  type TestParamContentType,
+  validateTestableId,
+} from '../../../../../stores/editor/utils/TestableUtils.js';
 import { useEditorStore } from '../../../EditorStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { RenameModal } from '../../testable/TestableSharedComponents.js';
+import {
+  ExternalFormatParameterEditorModal,
+  RenameModal,
+} from '../../testable/TestableSharedComponents.js';
 import { testSuite_setId } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
 import { LakehouseTestSuiteEditor } from '../../testable/LakehouseTestableEditor.js';
+import {
+  BasicValueSpecificationEditor,
+  instanceValue_setValue,
+} from '@finos/legend-query-builder';
 
 // ─── Create Suite Modal ───────────────────────────────────────────────────────
 
@@ -291,6 +317,353 @@ const CreateTestModal = observer(
   },
 );
 
+const getAccessPointQuery = (
+  testState: DataProductTestState,
+): RawLambda | undefined => {
+  const accessPoint = testState.suiteState.testableState.ownAccessPoints.find(
+    (ap) => ap.id === testState.test.accessPointId,
+  );
+  if (accessPoint instanceof LakehouseAccessPoint) {
+    return accessPoint.func;
+  }
+  if (accessPoint instanceof FunctionAccessPoint) {
+    return accessPoint.query;
+  }
+  return undefined;
+};
+
+const DataProductTestParameterEditor = observer(
+  (props: {
+    testState: DataProductTestState;
+    paramState: DataProductTestParameterState;
+    isReadOnly: boolean;
+    contentTypeParamPair: TestParamContentType | undefined;
+  }) => {
+    const { testState, paramState, isReadOnly, contentTypeParamPair } = props;
+    const [showPopUp, setShowPopup] = useState(false);
+    const valueSpecParamState =
+      paramState instanceof DataProductValueSpecificationTestParameterState
+        ? paramState
+        : undefined;
+    const valueSpec = valueSpecParamState?.valueSpec;
+
+    const paramIsRequired = Boolean(
+      testState.queryVariableExpressions.find(
+        (v) =>
+          v.name === paramState.parameterValue.name &&
+          v.multiplicity.lowerBound > 0,
+      ),
+    );
+
+    const showCodeEditor =
+      Boolean(contentTypeParamPair) &&
+      valueSpecParamState?.varExpression.genericType?.value.rawType ===
+        PrimitiveType.STRING &&
+      valueSpec instanceof PrimitiveInstanceValue;
+
+    const type = contentTypeParamPair
+      ? contentTypeParamPair.contentType
+      : (valueSpecParamState?.varExpression.genericType?.value.rawType.name ??
+        'unknown');
+
+    const openInPopUp = (): void => setShowPopup(!showPopUp);
+    const closePopUp = (): void => setShowPopup(false);
+
+    const updateParamValue = (val: string): void => {
+      if (
+        !(valueSpec instanceof PrimitiveInstanceValue) ||
+        !valueSpecParamState
+      ) {
+        return;
+      }
+      const nextValue =
+        valueSpecParamState.varExpression.genericType?.value.rawType ===
+        PrimitiveType.BYTE
+          ? btoa(val)
+          : val;
+      instanceValue_setValue(
+        valueSpec,
+        nextValue,
+        0,
+        testState.editorStore.changeDetectionState.observerContext,
+      );
+      valueSpecParamState.updateValueSpecification(valueSpec);
+    };
+
+    return (
+      <div
+        key={paramState.parameterValue.name}
+        className="panel__content__form__section"
+      >
+        <div className="panel__content__form__section__header__label">
+          {`Name: ${paramState.parameterValue.name || '(unnamed)'}`}
+          <button
+            className={clsx('type-tree__node__type__label', {})}
+            tabIndex={-1}
+            title={type}
+          >
+            {type}
+          </button>
+        </div>
+
+        {!valueSpecParamState && (
+          <BlankPanelContent>Unsupported parameter value</BlankPanelContent>
+        )}
+
+        {valueSpecParamState &&
+          showCodeEditor &&
+          valueSpec instanceof PrimitiveInstanceValue && (
+            <div className="data-product-test-editor__parameter__code-editor">
+              <textarea
+                className="panel__content__form__section__textarea value-spec-editor__input"
+                spellCheck={false}
+                value={
+                  valueSpecParamState.varExpression.genericType?.value
+                    .rawType === PrimitiveType.BYTE
+                    ? atob((valueSpec.values[0] as string) ?? '')
+                    : ((valueSpec.values[0] as string) ?? '')
+                }
+                placeholder={
+                  (valueSpec.values[0] as string) === '' ? '(empty)' : undefined
+                }
+                onChange={(event) => updateParamValue(event.target.value)}
+              />
+              {showPopUp && (
+                <ExternalFormatParameterEditorModal
+                  valueSpec={valueSpecParamState.valueSpec}
+                  varExpression={valueSpecParamState.varExpression}
+                  onClose={closePopUp}
+                  isReadOnly={isReadOnly}
+                  updateParamValue={updateParamValue}
+                  contentTypeParamPair={contentTypeParamPair!}
+                />
+              )}
+              <div className="data-product-test-editor__parameter__value__actions">
+                <button
+                  className="data-product-test-editor__parameter__code-editor__expand-btn"
+                  onClick={openInPopUp}
+                  tabIndex={-1}
+                  title="Open in a popup..."
+                >
+                  <FilledWindowMaximizeIcon />
+                </button>
+                <button
+                  className="btn--icon btn--dark btn--sm data-product-test-editor__parameter__code-editor__expand-btn"
+                  disabled={isReadOnly || paramIsRequired}
+                  onClick={(): void =>
+                    testState.removeParamValueState(paramState)
+                  }
+                  tabIndex={-1}
+                  title={
+                    paramIsRequired ? 'Parameter Required' : 'Remove Parameter'
+                  }
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            </div>
+          )}
+
+        {valueSpecParamState && !showCodeEditor && (
+          <div className="data-product-test-editor__parameter__value">
+            <BasicValueSpecificationEditor
+              valueSpecification={valueSpecParamState.valueSpec}
+              setValueSpecification={(val: ValueSpecification): void => {
+                valueSpecParamState.updateValueSpecification(val);
+              }}
+              graph={testState.editorStore.graphManagerState.graph}
+              observerContext={
+                testState.editorStore.changeDetectionState.observerContext
+              }
+              typeCheckOption={{
+                expectedType:
+                  valueSpecParamState.varExpression.genericType?.value
+                    .rawType ?? PrimitiveType.STRING,
+              }}
+              className="query-builder__parameters__value__editor"
+              resetValue={(): void => {
+                valueSpecParamState.resetValueSpec();
+              }}
+            />
+            <div className="data-product-test-editor__parameter__value__actions">
+              <button
+                className="btn--icon btn--dark btn--sm"
+                disabled={isReadOnly || paramIsRequired}
+                onClick={(): void =>
+                  testState.removeParamValueState(paramState)
+                }
+                tabIndex={-1}
+                title={
+                  paramIsRequired ? 'Parameter Required' : 'Remove Parameter'
+                }
+              >
+                <TimesIcon />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const NewDataProductParameterModal = observer(
+  (props: { testState: DataProductTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
+    const applicationStore = testState.editorStore.applicationStore;
+    const currentOption = {
+      value: testState.newParameterValueName,
+      label: testState.newParameterValueName,
+    };
+    const options = testState.newParamOptions;
+    const closeModal = (): void => testState.setShowNewParameterModal(false);
+    const onChange = (val: { label: string; value: string } | null): void => {
+      if (val === null) {
+        testState.setNewParameterValueName('');
+      } else if (val.value !== testState.newParameterValueName) {
+        testState.setNewParameterValueName(val.value);
+      }
+    };
+
+    return (
+      <Dialog
+        open={testState.showNewParameterModal}
+        onClose={closeModal}
+        classes={{ container: 'search-modal__container' }}
+        slotProps={{
+          paper: {
+            classes: { root: 'search-modal__inner-container' },
+          },
+        }}
+      >
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            testState.addParameterValue();
+          }}
+          className="modal modal--dark search-modal"
+        >
+          <div className="modal__title">New Test Parameter Value</div>
+          <CustomSelectorInput
+            className="panel__content__form__section__dropdown"
+            options={options}
+            onChange={onChange}
+            value={currentOption}
+            escapeClearsValue={true}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            disabled={isReadOnly}
+          />
+          <div className="search-modal__actions">
+            <button className="btn btn--dark" disabled={isReadOnly}>
+              Add
+            </button>
+          </div>
+        </form>
+      </Dialog>
+    );
+  },
+);
+
+const DataProductTestEditorExtension = observer(
+  (props: { testState: DataProductTestState; isReadOnly: boolean }) => {
+    const { testState, isReadOnly } = props;
+
+    useEffect(() => {
+      testState.syncWithQuery();
+    }, [testState]);
+
+    const hasQueryParameters = Boolean(
+      testState.queryVariableExpressions.length,
+    );
+    if (!hasQueryParameters) {
+      return null;
+    }
+
+    const query = getAccessPointQuery(testState);
+    const contentTypeParamPairs = getContentTypeWithParamFromQuery(
+      query,
+      testState.editorStore,
+    );
+
+    const addParameter = (): void => {
+      testState.openNewParamModal();
+    };
+
+    const generateParameterValues = (): void => {
+      testState.generateTestParameterValues();
+    };
+
+    return (
+      <div className="data-product-test-editor__parameters-panel-container">
+        <div className="panel data-product-test-editor__parameters-panel">
+          <div className="data-product-test-editor__parameters-header">
+            <div className="data-product-test-editor__parameters-header__title">
+              <div className="data-product-test-editor__parameters-header__title__label">
+                Parameters
+              </div>
+            </div>
+            <div className="data-product-test-editor__parameters-header__actions">
+              <button
+                className="panel__header__action data-product-test-editor__generate-btn"
+                onClick={generateParameterValues}
+                disabled={!testState.newParamOptions.length}
+                title="Generate test parameter values"
+                tabIndex={-1}
+              >
+                <div className="data-product-test-editor__generate-btn__label">
+                  <RefreshIcon className="data-product-test-editor__generate-btn__label__icon" />
+                  <div className="data-product-test-editor__generate-btn__label__title">
+                    Generate
+                  </div>
+                </div>
+              </button>
+              <button
+                className="panel__header__action"
+                tabIndex={-1}
+                disabled={!testState.newParamOptions.length}
+                onClick={addParameter}
+                title="Add Parameter Value"
+              >
+                <PlusIcon />
+              </button>
+            </div>
+          </div>
+
+          <div className="data-product-test-editor__parameters">
+            {testState.parameterValueStates.map((paramState) => (
+              <DataProductTestParameterEditor
+                key={paramState.uuid}
+                isReadOnly={isReadOnly}
+                paramState={paramState}
+                testState={testState}
+                contentTypeParamPair={contentTypeParamPairs.find(
+                  (pair) => pair.param === paramState.parameterValue.name,
+                )}
+              />
+            ))}
+            {testState.parameterValueStates.length === 0 && (
+              <BlankPanelPlaceholder
+                text="No parameter values"
+                tooltipText="Generate or add a parameter value"
+              />
+            )}
+          </div>
+        </div>
+
+        {testState.showNewParameterModal && (
+          <NewDataProductParameterModal
+            testState={testState}
+            isReadOnly={isReadOnly}
+          />
+        )}
+      </div>
+    );
+  },
+);
+
 // ─── Suite Tab Context Menu ───────────────────────────────────────────────────
 
 const SuiteHeaderTabContextMenu = observer(
@@ -407,6 +780,14 @@ export const DataProductTestableEditor = observer(
               suiteState={selectedSuiteState}
               testableState={testableState}
               isReadOnly={isReadOnly}
+              renderTestStateExtension={(testState) =>
+                testState instanceof DataProductTestState ? (
+                  <DataProductTestEditorExtension
+                    testState={testState}
+                    isReadOnly={isReadOnly}
+                  />
+                ) : null
+              }
             />
           )}
           {!dp.tests.length && (
