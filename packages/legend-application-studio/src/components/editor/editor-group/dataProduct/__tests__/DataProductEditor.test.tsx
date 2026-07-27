@@ -56,36 +56,44 @@ const TEST_DATA__FUNCTION_ACCESS_POINT_WITH_PARAMETER = (() => {
   const entities = JSON.parse(
     JSON.stringify(TEST_DATA__LHDataProduct),
   ) as typeof TEST_DATA__LHDataProduct;
-  const dataProductEntity = entities.find(
-    (entity) => entity.path === 'model::sampleDataProduct',
+  const dataProductEntity = guaranteeNonNullable(
+    entities.find((entity) => entity.path === 'model::sampleDataProduct'),
   );
-  const firstAccessPoint =
-    dataProductEntity?.content?.accessPointGroups?.[0]?.accessPoints?.[0];
-  if (firstAccessPoint) {
-    firstAccessPoint._type = 'functionAccessPoint';
-    firstAccessPoint.id = 'apWithParam';
-    delete firstAccessPoint.func;
-    firstAccessPoint.query = {
-      _type: 'lambda',
-      body: [
-        {
-          _type: 'integer',
-          value: 1,
+  type MutableFunctionAccessPointFixture = {
+    _type: string;
+    id: string;
+    func?: unknown;
+    query?: unknown;
+  };
+  const accessPointGroups = guaranteeNonNullable(
+    dataProductEntity.content.accessPointGroups,
+  );
+  const firstAccessPoint = guaranteeNonNullable(
+    accessPointGroups[0]?.accessPoints[0],
+  ) as MutableFunctionAccessPointFixture;
+  firstAccessPoint._type = 'functionAccessPoint';
+  firstAccessPoint.id = 'apWithParam';
+  delete firstAccessPoint.func;
+  firstAccessPoint.query = {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'integer',
+        value: 1,
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        name: 'type',
+        class: 'String',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
         },
-      ],
-      parameters: [
-        {
-          _type: 'var',
-          name: 'type',
-          class: 'String',
-          multiplicity: {
-            lowerBound: 1,
-            upperBound: 1,
-          },
-        },
-      ],
-    };
-  }
+      },
+    ],
+  };
   return entities;
 })();
 
@@ -319,12 +327,8 @@ test(
     fireEvent.click(await findByText(editorGroup, 'Testing'));
     fireEvent.click(await findByText(editorGroup, 'Add Test Suite'));
 
-    const createSuiteModal = await findByText(
-      screen.getByRole('dialog'),
-      'Create Test Suite',
-    );
-    const createSuiteDialog =
-      createSuiteModal.closest('.modal') ?? screen.getByRole('dialog');
+    const createSuiteDialog = screen.getByRole('dialog');
+    await findByText(createSuiteDialog, 'Create Test Suite');
 
     const testNameInput = await findByPlaceholderText(
       createSuiteDialog,
