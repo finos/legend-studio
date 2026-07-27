@@ -139,7 +139,7 @@ import {
 import { V1_computeModelSchema } from './serializationHelpers/V1_ComputeSerializationHelper.js';
 import {
   V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
-  V1_Availability,
+  type V1_Availability,
 } from '../../model/packageableElements/availability/V1_Availability.js';
 import {
   V1_createAvailability,

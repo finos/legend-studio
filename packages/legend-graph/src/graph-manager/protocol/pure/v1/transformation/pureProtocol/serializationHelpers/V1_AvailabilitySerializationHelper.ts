@@ -22,7 +22,6 @@ import {
   list,
   optional,
   primitive,
-  raw,
   serialize,
 } from 'serializr';
 import { V1_relationElementModelSchema } from './V1_DataElementSerializationHelper.js';
@@ -34,22 +33,13 @@ import {
   V1_Availability,
   V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE,
 } from '../../../model/packageableElements/availability/V1_Availability.js';
-import { V1_Notification } from '../../../model/packageableElements/availability/V1_Notification.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
 import {
-  V1_RelationElement,
   V1_RelationElementsData,
+  type V1_RelationElement,
 } from '../../../model/data/V1_EmbeddedData.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
-
-// Kept purely as a UI helper: the availability editor uses this to render the
-// optional notification block. The availability element itself is preserved as
-// raw JSON on `V1_Availability.content` (see `V1_createAvailability`).
-const V1_notificationModelSchema = createModelSchema(V1_Notification, {
-  content: optional(raw()),
-  type: optional(primitive()),
-});
 
 // NOTE: the engine's `AvailabilityBarrierTest` / `AvailabilityTestSuite`
 // protocol classes do NOT declare `_type` fields (unlike the top-level

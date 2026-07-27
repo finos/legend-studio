@@ -15,82 +15,615 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { flowResult } from 'mobx';
+import { forwardRef, useRef, useState } from 'react';
 import {
   BlankPanelPlaceholder,
-  CheckCircleIcon,
   clsx,
   ContextMenu,
+  Dialog,
   MenuContent,
   MenuContentItem,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalFooterButton,
+  ModalHeader,
+  ModalTitle,
   Panel,
   PanelContent,
+  PanelFormTextField,
   PanelHeader,
   PanelHeaderActionItem,
   PanelHeaderActions,
-  PlusIcon,
   PlayIcon,
+  PlusIcon,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
   ResizablePanelSplitterLine,
   RunAllIcon,
   RunErrorsIcon,
-  TestTubeIcon,
-  TimesCircleIcon,
+  TimesIcon,
 } from '@finos/legend-art';
 import {
   type AvailabilityBarrierTest,
   type AvailabilityTestSuite,
 } from '@finos/legend-graph';
-import { forwardRef } from 'react';
-import { flowResult } from 'mobx';
 import {
   TESTABLE_RESULT,
   getTestableResultFromTestResult,
 } from '../../../../../stores/editor/sidebar-state/testable/GlobalTestRunnerState.js';
 import { getTestableResultIcon } from '../../../side-bar/testable/GlobalTestRunner.js';
 import {
+  AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT,
   type AvailabilityTestState,
   type AvailabilityTestSuiteState,
   type AvailabilityTestableState,
-  AVAILABILITY_WATERMARK_TEMPLATE_JSON,
 } from '../../../../../stores/editor/editor-state/element-editor-state/availability/testable/AvailabilityTestableState.js';
-import { TESTABLE_TEST_TAB } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestableEditorState.js';
 import {
   atomicTest_setId,
   testAssertion_setId,
   testSuite_setId,
 } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
-import {
-  RenameModal,
-  TestAssertionEditor,
-  TestAssertionItem,
-} from '../../testable/TestableSharedComponents.js';
+import { RenameModal } from '../../testable/TestableSharedComponents.js';
 import { RelationElementsDataEditor } from '../../data-editor/RelationElementsDataEditor.js';
+import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 
-const AvailabilitySuiteContextMenu = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      suite: AvailabilityTestSuite;
-      testableState: AvailabilityTestableState;
-    }
-  >(function AvailabilitySuiteContextMenu(props, ref) {
-    const { suite, testableState } = props;
+// ─── Format helpers ─────────────────────────────────────────────────────────
+
+const FORMAT_VALUES = Object.values(
+  AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT,
+) as AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT[];
+
+const FormatSelector = observer(
+  (props: {
+    value: AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT;
+    onChange: (v: AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT) => void;
+    disabled?: boolean;
+  }) => {
+    const { value, onChange, disabled } = props;
     return (
-      <MenuContent ref={ref}>
-        <MenuContentItem
-          onClick={(): void => testableState.setSuiteToRename(suite)}
-        >
-          Rename
-        </MenuContentItem>
-        <MenuContentItem onClick={(): void => testableState.deleteSuite(suite)}>
-          Delete
-        </MenuContentItem>
-      </MenuContent>
+      <div className="availability-test-editor__format-selector">
+        {FORMAT_VALUES.map((format) => (
+          <button
+            key={format}
+            type="button"
+            className={clsx('availability-test-editor__format-btn', {
+              'availability-test-editor__format-btn--active': value === format,
+            })}
+            onClick={(): void => onChange(format)}
+            disabled={disabled}
+            title={`Use ${format} watermark format`}
+          >
+            {format}
+          </button>
+        ))}
+      </div>
     );
-  }),
+  },
 );
+
+// ─── Create Suite Modal ─────────────────────────────────────────────────────
+
+const CreateSuiteModal = observer(
+  (props: {
+    testableState: AvailabilityTestableState;
+    onClose: () => void;
+  }) => {
+    const { testableState, onClose } = props;
+    const editorStore = testableState.editorState.editorStore;
+    const applicationStore = editorStore.applicationStore;
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const existingSuiteIds = testableState.availability.tests.map(
+      (suite) => suite.id,
+    );
+    const [suiteName, setSuiteName] = useState<string | undefined>(undefined);
+    const [testName, setTestName] = useState<string | undefined>(undefined);
+    const [format, setFormat] =
+      useState<AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT>(
+        AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT,
+      );
+
+    const suiteError = validateTestableId(suiteName, existingSuiteIds);
+    const testError = validateTestableId(testName, undefined);
+    const isValid = Boolean(suiteName && !suiteError && testName && !testError);
+
+    const create = (): void => {
+      if (!suiteName || !testName) {
+        return;
+      }
+      try {
+        testableState.addSuite(format, suiteName, testName);
+        onClose();
+      } catch (err) {
+        applicationStore.notificationService.notifyError(
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    };
+
+    return (
+      <Dialog
+        open={true}
+        onClose={onClose}
+        classes={{ container: 'search-modal__container' }}
+        slotProps={{
+          transition: { onEnter: () => inputRef.current?.focus() },
+          paper: { classes: { root: 'search-modal__inner-container' } },
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
+          <ModalHeader>
+            <ModalTitle title="Create Test Suite" />
+          </ModalHeader>
+          <ModalBody>
+            <PanelFormTextField
+              ref={inputRef}
+              name="Suite Name"
+              prompt="Unique identifier for the test suite"
+              placeholder="e.g. suite_1"
+              value={suiteName}
+              update={(v): void => setSuiteName(v ?? '')}
+              errorMessage={suiteError}
+            />
+            <PanelFormTextField
+              name="Test Name"
+              prompt="Name for the first test in this suite"
+              placeholder="e.g. test_1"
+              value={testName}
+              update={(v): void => setTestName(v ?? '')}
+              errorMessage={testError}
+            />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Watermark Serialization Format
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                This format is fixed for the life of the test.
+              </div>
+              <FormatSelector value={format} onChange={setFormat} />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={!isValid}
+              title={!isValid ? 'Fill in all required fields' : 'Create Suite'}
+              onClick={create}
+              text="Create"
+            />
+            <ModalFooterButton
+              onClick={onClose}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+// ─── Create Test Modal ──────────────────────────────────────────────────────
+
+const CreateTestModal = observer(
+  (props: { suiteState: AvailabilityTestSuiteState; onClose: () => void }) => {
+    const { suiteState, onClose } = props;
+    const applicationStore = suiteState.editorStore.applicationStore;
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const existingIds = suiteState.suite.tests.map((test) => test.id);
+    const [testName, setTestName] = useState<string | undefined>(undefined);
+    const [format, setFormat] =
+      useState<AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT>(
+        AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT,
+      );
+
+    const testError = validateTestableId(testName, existingIds);
+    const isValid = Boolean(testName && !testError);
+
+    const create = (): void => {
+      if (!testName) {
+        return;
+      }
+      try {
+        suiteState.addTest(format, testName);
+        onClose();
+      } catch (err) {
+        applicationStore.notificationService.notifyError(
+          err instanceof Error ? err.message : String(err),
+        );
+      }
+    };
+
+    return (
+      <Dialog
+        open={true}
+        onClose={onClose}
+        classes={{ container: 'search-modal__container' }}
+        slotProps={{
+          transition: { onEnter: () => inputRef.current?.focus() },
+          paper: { classes: { root: 'search-modal__inner-container' } },
+        }}
+      >
+        <Modal
+          darkMode={
+            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
+          }
+        >
+          <ModalHeader>
+            <ModalTitle title={`Add Test to "${suiteState.suite.id}"`} />
+          </ModalHeader>
+          <ModalBody>
+            <PanelFormTextField
+              ref={inputRef}
+              name="Test Name"
+              prompt="Unique identifier for the test"
+              placeholder="e.g. test_1"
+              value={testName}
+              update={(v): void => setTestName(v ?? '')}
+              errorMessage={testError}
+            />
+            <div className="panel__content__form__section">
+              <div className="panel__content__form__section__header__label">
+                Watermark Serialization Format
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                This format is fixed for the life of the test.
+              </div>
+              <FormatSelector value={format} onChange={setFormat} />
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <ModalFooterButton
+              disabled={!isValid}
+              title={!isValid ? 'Fill in all required fields' : 'Create Test'}
+              onClick={create}
+              text="Create"
+            />
+            <ModalFooterButton
+              onClick={onClose}
+              text="Close"
+              type="secondary"
+            />
+          </ModalFooter>
+        </Modal>
+      </Dialog>
+    );
+  },
+);
+
+// ─── Availability expected-JSON structured editor ───────────────────────────
+
+const ReadOnlyField = (props: {
+  label: string;
+  value: string;
+}): React.ReactElement => (
+  <div className="availability-assertion-editor__field">
+    <div className="availability-assertion-editor__field__label">
+      {props.label}
+    </div>
+    <div className="availability-assertion-editor__field__value availability-assertion-editor__field__value--readonly">
+      {props.value}
+    </div>
+  </div>
+);
+
+const asString = (val: unknown): string => {
+  if (val === undefined || val === null) {
+    return '';
+  }
+  if (typeof val === 'object') {
+    return JSON.stringify(val);
+  }
+  return String(val);
+};
+
+const DefaultExpectedEditor = observer(
+  (props: { testState: AvailabilityTestState }) => {
+    const { testState } = props;
+    const parsed = testState.parsedExpected;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return <div>Invalid expected JSON</div>;
+    }
+    const root = parsed as Record<string, unknown>;
+    const evaluated =
+      root.evaluatedWatermark && typeof root.evaluatedWatermark === 'object'
+        ? (root.evaluatedWatermark as Record<string, unknown>)
+        : {};
+    const batches = Array.isArray(evaluated.watermarkBatches)
+      ? (evaluated.watermarkBatches as unknown[])
+      : [];
+    const availabilityRef =
+      root.availabilityDefinitionReference &&
+      typeof root.availabilityDefinitionReference === 'object'
+        ? (root.availabilityDefinitionReference as Record<string, unknown>)
+        : {};
+    const isReadOnly = testState.isReadOnly;
+
+    return (
+      <div className="availability-assertion-editor__content">
+        <ReadOnlyField
+          label="availabilityDefinitionUrn"
+          value={asString(availabilityRef.availabilityDefinitionUrn)}
+        />
+        <ReadOnlyField
+          label="evaluationResult"
+          value={asString(root.evaluationResult)}
+        />
+        <ReadOnlyField label="eventId" value={asString(root.eventId)} />
+        <ReadOnlyField label="watermarkId" value={asString(root.watermarkId)} />
+
+        <div className="availability-assertion-editor__section">
+          <div className="availability-assertion-editor__section__header">
+            <div className="availability-assertion-editor__section__title">
+              watermarkBatches
+            </div>
+            <button
+              className="btn--icon btn--dark btn--sm"
+              onClick={(): void => testState.addExpectedEntry()}
+              disabled={isReadOnly}
+              title="Add batch entry"
+            >
+              <PlusIcon />
+            </button>
+          </div>
+          {batches.map((rawBatch, index) => {
+            const batch =
+              rawBatch && typeof rawBatch === 'object'
+                ? (rawBatch as Record<string, unknown>)
+                : {};
+            const ref =
+              batch.ingestDefinitionReference &&
+              typeof batch.ingestDefinitionReference === 'object'
+                ? (batch.ingestDefinitionReference as Record<string, unknown>)
+                : {};
+            return (
+              <div
+                key={`batch-${String(index)}`}
+                className="availability-assertion-editor__entry"
+              >
+                <div className="availability-assertion-editor__entry__header">
+                  <div className="availability-assertion-editor__entry__title">
+                    watermarkBatches[{index}]
+                  </div>
+                  <button
+                    className="btn--icon btn--caution btn--dark btn--sm"
+                    onClick={(): void => testState.removeExpectedEntry(index)}
+                    disabled={isReadOnly}
+                    title="Remove batch entry"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
+                <ReadOnlyField
+                  label="batchId"
+                  value={asString(batch.batchId)}
+                />
+                <ReadOnlyField
+                  label="ingestDefinitionPath"
+                  value={asString(batch.ingestDefinitionPath)}
+                />
+                <ReadOnlyField
+                  label="ingestDefinitionUrn"
+                  value={asString(ref.ingestDefinitionUrn)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  },
+);
+
+const LiteExpectedEditor = observer(
+  (props: { testState: AvailabilityTestState }) => {
+    const { testState } = props;
+    const parsed = testState.parsedExpected;
+    const list = Array.isArray(parsed) ? (parsed as unknown[]) : [];
+    const isReadOnly = testState.isReadOnly;
+
+    return (
+      <div className="availability-assertion-editor__content">
+        <div className="availability-assertion-editor__section">
+          <div className="availability-assertion-editor__section__header">
+            <div className="availability-assertion-editor__section__title">
+              LITE entries
+            </div>
+            <button
+              className="btn--icon btn--dark btn--sm"
+              onClick={(): void => testState.addExpectedEntry()}
+              disabled={isReadOnly}
+              title="Add entry"
+            >
+              <PlusIcon />
+            </button>
+          </div>
+          {list.map((rawEntry, index) => {
+            const entry =
+              rawEntry && typeof rawEntry === 'object'
+                ? (rawEntry as Record<string, unknown>)
+                : {};
+            return (
+              <div
+                key={`lite-${String(index)}`}
+                className="availability-assertion-editor__entry"
+              >
+                <div className="availability-assertion-editor__entry__header">
+                  <div className="availability-assertion-editor__entry__title">
+                    entry[{index}]
+                  </div>
+                  <button
+                    className="btn--icon btn--caution btn--dark btn--sm"
+                    onClick={(): void => testState.removeExpectedEntry(index)}
+                    disabled={isReadOnly}
+                    title="Remove entry"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
+                <ReadOnlyField
+                  label="ingestDefinitionPath"
+                  value={asString(entry.ingestDefinitionPath)}
+                />
+                <ReadOnlyField
+                  label="batchId"
+                  value={asString(entry.batchId)}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  },
+);
+
+const AlloyQueryExpectedEditor = observer(
+  (props: { testState: AvailabilityTestState }) => {
+    const { testState } = props;
+    const parsed = testState.parsedExpected;
+    const entries =
+      parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? Object.entries(parsed as Record<string, unknown>)
+        : [];
+    const isReadOnly = testState.isReadOnly;
+
+    return (
+      <div className="availability-assertion-editor__content">
+        <div className="availability-assertion-editor__section">
+          <div className="availability-assertion-editor__section__header">
+            <div className="availability-assertion-editor__section__title">
+              ALLOY_QUERY entries
+            </div>
+            <button
+              className="btn--icon btn--dark btn--sm"
+              onClick={(): void => testState.addExpectedEntry()}
+              disabled={isReadOnly}
+              title="Add entry"
+            >
+              <PlusIcon />
+            </button>
+          </div>
+          {entries.map(([key, val], index) => {
+            const obj =
+              val && typeof val === 'object' && !Array.isArray(val)
+                ? (val as Record<string, unknown>)
+                : {};
+            const batchId = typeof obj.batchId === 'number' ? obj.batchId : 0;
+            return (
+              <div
+                key={`alloy-${String(index)}`}
+                className="availability-assertion-editor__entry"
+              >
+                <div className="availability-assertion-editor__entry__header">
+                  <div className="availability-assertion-editor__entry__title">
+                    entry[{index}]
+                  </div>
+                  <button
+                    className="btn--icon btn--caution btn--dark btn--sm"
+                    onClick={(): void => testState.removeExpectedEntry(index)}
+                    disabled={isReadOnly}
+                    title="Remove entry"
+                  >
+                    <TimesIcon />
+                  </button>
+                </div>
+                <div className="availability-assertion-editor__field">
+                  <div className="availability-assertion-editor__field__label">
+                    path
+                  </div>
+                  <input
+                    className="availability-assertion-editor__field__input"
+                    type="text"
+                    value={key}
+                    onChange={(e): void =>
+                      testState.updateAlloyQueryPath(index, e.target.value)
+                    }
+                    disabled={isReadOnly}
+                    placeholder="ingest definition path"
+                  />
+                </div>
+                <div className="availability-assertion-editor__field">
+                  <div className="availability-assertion-editor__field__label">
+                    batchId
+                  </div>
+                  <input
+                    className="availability-assertion-editor__field__input"
+                    type="number"
+                    value={batchId}
+                    onChange={(e): void =>
+                      testState.updateAlloyQueryBatchId(
+                        index,
+                        Number(e.target.value),
+                      )
+                    }
+                    disabled={isReadOnly}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  },
+);
+
+const AvailabilityAssertionEditor = observer(
+  (props: { testState: AvailabilityTestState }) => {
+    const { testState } = props;
+    return (
+      <div className="availability-assertion-editor panel">
+        <PanelHeader>
+          <div className="availability-assertion-editor__title">
+            <div className="availability-assertion-editor__title__label">
+              Test
+            </div>
+            <div className="availability-assertion-editor__title__value">
+              {testState.test.id}
+            </div>
+          </div>
+          <div className="availability-assertion-editor__meta">
+            <div className="availability-assertion-editor__meta__label">
+              Format
+            </div>
+            <div className="availability-assertion-editor__meta__value">
+              {testState.format}
+            </div>
+          </div>
+        </PanelHeader>
+        <PanelContent>
+          <div className="availability-assertion-editor__body">
+            <div className="availability-assertion-editor__body__section-title">
+              Expected
+            </div>
+            {testState.format ===
+              AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT && (
+              <DefaultExpectedEditor testState={testState} />
+            )}
+            {testState.format ===
+              AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE && (
+              <LiteExpectedEditor testState={testState} />
+            )}
+            {testState.format ===
+              AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY && (
+              <AlloyQueryExpectedEditor testState={testState} />
+            )}
+          </div>
+        </PanelContent>
+      </div>
+    );
+  },
+);
+
+// ─── Test list item ─────────────────────────────────────────────────────────
 
 const AvailabilityTestContextMenu = observer(
   forwardRef<
@@ -143,6 +676,9 @@ const AvailabilityTestItem = observer(
           onClick={(): void => suiteState.changeTest(testState.test)}
           tabIndex={-1}
         >
+          <div className="testable-test-explorer__item__label__icon">
+            {icon}
+          </div>
           <div className="testable-test-explorer__item__label__text">
             {testState.test.id}
           </div>
@@ -160,7 +696,6 @@ const AvailabilityTestItem = observer(
             >
               <PlayIcon />
             </button>
-            <div className="testable-test-explorer__item__result">{icon}</div>
           </div>
         </div>
       </ContextMenu>
@@ -168,208 +703,69 @@ const AvailabilityTestItem = observer(
   },
 );
 
-const AvailabilityAssertionsEditor = observer(
-  (props: { testState: AvailabilityTestState }) => {
-    const { testState } = props;
-    const isReadOnly = testState.isReadOnly;
+// ─── Tests panel (right side) ───────────────────────────────────────────────
+
+const AvailabilityTestsEditor = observer(
+  (props: {
+    suiteState: AvailabilityTestSuiteState;
+    testableState: AvailabilityTestableState;
+  }) => {
+    const { suiteState, testableState } = props;
+    const selectedTestState = suiteState.selectTestState;
+    const isReadOnly = testableState.editorState.isReadOnly;
 
     return (
-      <ResizablePanelGroup orientation="vertical">
-        <ResizablePanel minSize={100} size={200}>
-          <div className="binding-editor__header">
-            <div className="binding-editor__header__title">
-              <div className="testable-test-assertion-explorer__header__summary">
-                <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--assertion">
-                  <TestTubeIcon />
-                </div>
-                <div>{testState.assertionCount}</div>
+      <div className="panel service-test-editor">
+        <ResizablePanelGroup orientation="vertical">
+          <ResizablePanel minSize={100} size={220}>
+            <div className="binding-editor__header">
+              <div className="binding-editor__header__title">
+                <div className="panel__header__title__content">Tests</div>
               </div>
-              <div className="testable-test-assertion-explorer__header__summary">
-                <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--passed">
-                  <CheckCircleIcon />
-                </div>
-                <div>{testState.assertionPassed}</div>
-              </div>
-              <div className="testable-test-assertion-explorer__header__summary">
-                <div className="testable-test-assertion-explorer__header__summary__icon testable-test-assertion-explorer__header__summary__icon--failed">
-                  <TimesCircleIcon />
-                </div>
-                <div>{testState.assertionFailed}</div>
-              </div>
-            </div>
-            <div className="panel__header__actions">
-              <button
-                className="panel__header__action"
-                onClick={(): void => {
-                  flowResult(testState.runTest()).catch(
-                    testState.editorStore.applicationStore.alertUnhandledError,
-                  );
-                }}
-                tabIndex={-1}
-                title="Run Test"
-              >
-                <RunAllIcon />
-              </button>
-              <button
-                className="panel__header__action"
-                onClick={(): void => testState.addAssertion()}
-                tabIndex={-1}
-                title="Add Assertion"
-                disabled={isReadOnly}
-              >
-                <PlusIcon />
-              </button>
-            </div>
-          </div>
-          <div>
-            {testState.assertionEditorStates.map((assertionState) => (
-              <TestAssertionItem
-                key={assertionState.assertion.id}
-                testableTestState={testState}
-                testAssertionEditorState={assertionState}
-                isReadOnly={isReadOnly}
-              />
-            ))}
-          </div>
-        </ResizablePanel>
-        <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-        </ResizablePanelSplitter>
-        <ResizablePanel>
-          {testState.selectedAsertionState && (
-            <TestAssertionEditor
-              testAssertionState={testState.selectedAsertionState}
-            />
-          )}
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    );
-  },
-);
-
-const AvailabilityTestEditor = observer(
-  (props: { testState: AvailabilityTestState }) => {
-    const { testState } = props;
-    const suiteState = testState.suiteState;
-
-    return (
-      <div className="service-test-editor panel">
-        <div className="panel__header service-test-editor__header--with-tabs">
-          <div className="uml-element-editor__tabs">
-            {Object.values(TESTABLE_TEST_TAB).map((tab) => (
-              <div
-                key={tab}
-                onClick={(): void => testState.setSelectedTab(tab)}
-                className={clsx('service-test-editor__tab', {
-                  'service-test-editor__tab--active':
-                    tab === testState.selectedTab,
-                })}
-              >
-                {tab}
-              </div>
-            ))}
-          </div>
-        </div>
-        {testState.selectedTab === TESTABLE_TEST_TAB.SETUP && (
-          <div className="panel__content">
-            <div className="panel__content__form__section">
-              <div className="panel__content__form__section__header__label">
-                Watermark Serialization Format
-              </div>
-              <div className="panel__content__form__section__header__prompt">
-                Format used to serialize watermark values. Click a template to
-                pre-populate the expected assertion JSON.
-              </div>
-              <div className="availability-test-editor__format-selector">
-                {Object.keys(AVAILABILITY_WATERMARK_TEMPLATE_JSON).map(
-                  (format) => (
-                    <button
-                      key={format}
-                      className={clsx('availability-test-editor__format-btn', {
-                        'availability-test-editor__format-btn--active':
-                          testState.test.watermarkSerializationFormat ===
-                          format,
-                      })}
-                      onClick={(): void =>
-                        testState.applyWatermarkTemplate(format)
-                      }
-                      disabled={testState.isReadOnly}
-                      title={`Apply ${format} watermark template`}
-                    >
-                      {format}
-                    </button>
-                  ),
+              <div className="panel__header__actions">
+                <button
+                  className="panel__header__action"
+                  tabIndex={-1}
+                  onClick={(): void => {
+                    flowResult(suiteState.runSuite()).catch(
+                      suiteState.editorStore.applicationStore
+                        .alertUnhandledError,
+                    );
+                  }}
+                  disabled={suiteState.suite.tests.length === 0}
+                  title="Run all tests in this suite"
+                >
+                  <RunAllIcon />
+                </button>
+                <button
+                  className="panel__header__action"
+                  tabIndex={-1}
+                  onClick={(): void => {
+                    flowResult(suiteState.runFailingTests()).catch(
+                      suiteState.editorStore.applicationStore
+                        .alertUnhandledError,
+                    );
+                  }}
+                  disabled={suiteState.suite.tests.length === 0}
+                  title="Run failing tests"
+                >
+                  <RunErrorsIcon />
+                </button>
+                {!isReadOnly && (
+                  <button
+                    className="panel__header__action"
+                    tabIndex={-1}
+                    onClick={(): void =>
+                      testableState.setShowCreateTestModal(true)
+                    }
+                    title="Add test to this suite"
+                  >
+                    <PlusIcon />
+                  </button>
                 )}
               </div>
             </div>
-            <div className="panel">
-              <PanelHeader title="Suite Test Data" darkMode={true} />
-              <PanelContent>
-                <RelationElementsDataEditor
-                  dataState={suiteState.testDataState}
-                  isReadOnly={testState.isReadOnly}
-                />
-              </PanelContent>
-            </div>
-          </div>
-        )}
-        {testState.selectedTab === TESTABLE_TEST_TAB.ASSERTION && (
-          <AvailabilityAssertionsEditor testState={testState} />
-        )}
-      </div>
-    );
-  },
-);
-
-const AvailabilitySuiteEditor = observer(
-  (props: { suiteState: AvailabilityTestSuiteState }) => {
-    const { suiteState } = props;
-    const selectedTestState = suiteState.selectTestState;
-    const resultIcon = getTestableResultIcon(suiteState.result);
-
-    return (
-      <Panel className="service-test-suite-editor">
-        <PanelHeader>
-          <div className="service-test-suite-editor__header__title">
-            <div className="service-test-suite-editor__header__title__label">
-              {suiteState.suite.id}
-            </div>
-            <div className="service-test-suite-editor__header__title__summary">
-              {resultIcon}
-            </div>
-          </div>
-          <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={(): void => {
-                flowResult(suiteState.runSuite()).catch(
-                  suiteState.editorStore.applicationStore.alertUnhandledError,
-                );
-              }}
-              title="Run Suite"
-            >
-              <RunAllIcon />
-            </PanelHeaderActionItem>
-            <PanelHeaderActionItem
-              onClick={(): void => {
-                flowResult(suiteState.runFailingTests()).catch(
-                  suiteState.editorStore.applicationStore.alertUnhandledError,
-                );
-              }}
-              title="Run Failing Tests"
-            >
-              <RunErrorsIcon />
-            </PanelHeaderActionItem>
-            <PanelHeaderActionItem
-              onClick={(): void => suiteState.addTest()}
-              title="Add Test"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
-          </PanelHeaderActions>
-        </PanelHeader>
-        <PanelContent>
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel size={260} minSize={24}>
+            <div>
               {suiteState.testStates.map((testState) => (
                 <AvailabilityTestItem
                   key={testState.test.id}
@@ -377,31 +773,100 @@ const AvailabilitySuiteEditor = observer(
                   testState={testState}
                 />
               ))}
-            </ResizablePanel>
-            <ResizablePanelSplitter>
-              <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-            </ResizablePanelSplitter>
-            <ResizablePanel minSize={56}>
-              {selectedTestState ? (
-                <AvailabilityTestEditor testState={selectedTestState} />
-              ) : (
-                <BlankPanelPlaceholder
-                  text="No tests in this suite"
-                  tooltipText="Add a test to start validating this suite"
-                />
-              )}
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        </PanelContent>
-      </Panel>
+            </div>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={56}>
+            {selectedTestState ? (
+              <AvailabilityAssertionEditor testState={selectedTestState} />
+            ) : (
+              <BlankPanelPlaceholder
+                text="Select a test"
+                tooltipText="Select a test from the list above"
+              />
+            )}
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     );
   },
 );
+
+// ─── Suite editor (horizontal split) ────────────────────────────────────────
+
+const AvailabilitySuiteEditor = observer(
+  (props: {
+    suiteState: AvailabilityTestSuiteState;
+    testableState: AvailabilityTestableState;
+  }) => {
+    const { suiteState, testableState } = props;
+    const isReadOnly = testableState.editorState.isReadOnly;
+
+    return (
+      <div className="service-test-suite-editor">
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel size={520} minSize={28}>
+            <div className="panel service-test-data-editor">
+              <div className="service-test-data-editor__data">
+                <RelationElementsDataEditor
+                  dataState={suiteState.testDataState}
+                  isReadOnly={isReadOnly}
+                  isSharedData={true}
+                  hideColumnDefinitions={true}
+                />
+              </div>
+            </div>
+          </ResizablePanel>
+          <ResizablePanelSplitter>
+            <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
+          </ResizablePanelSplitter>
+          <ResizablePanel minSize={56}>
+            <AvailabilityTestsEditor
+              suiteState={suiteState}
+              testableState={testableState}
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    );
+  },
+);
+
+// ─── Suite tab context menu ─────────────────────────────────────────────────
+
+const AvailabilitySuiteContextMenu = observer(
+  forwardRef<
+    HTMLDivElement,
+    {
+      suite: AvailabilityTestSuite;
+      testableState: AvailabilityTestableState;
+    }
+  >(function AvailabilitySuiteContextMenu(props, ref) {
+    const { suite, testableState } = props;
+    return (
+      <MenuContent ref={ref}>
+        <MenuContentItem
+          onClick={(): void => testableState.setSuiteToRename(suite)}
+        >
+          Rename
+        </MenuContentItem>
+        <MenuContentItem onClick={(): void => testableState.deleteSuite(suite)}>
+          Delete
+        </MenuContentItem>
+      </MenuContent>
+    );
+  }),
+);
+
+// ─── Top-level testable editor ──────────────────────────────────────────────
 
 export const AvailabilityTestableEditor = observer(
   (props: { testableState: AvailabilityTestableState }) => {
     const { testableState } = props;
     const availability = testableState.availability;
+    const selectedSuiteState = testableState.selectedSuiteState;
     const isReadOnly = testableState.editorState.isReadOnly;
 
     const renameSuite = (val: string): void => {
@@ -432,20 +897,16 @@ export const AvailabilityTestableEditor = observer(
             <PanelHeader className="service-test-suite-editor__header service-test-suite-editor__header--with-tabs">
               <div className="uml-element-editor__tabs">
                 {availability.tests.map((suite) => {
-                  const typedSuite = suite;
-                  const isActive =
-                    testableState.selectedSuiteState?.suite === typedSuite;
-                  const suiteResult =
-                    isActive && testableState.selectedSuiteState
-                      ? testableState.selectedSuiteState.result
-                      : TESTABLE_RESULT.DID_NOT_RUN;
-
+                  const isActive = selectedSuiteState?.suite === suite;
+                  const suiteResult = selectedSuiteState
+                    ? isActive
+                      ? selectedSuiteState.result
+                      : TESTABLE_RESULT.DID_NOT_RUN
+                    : TESTABLE_RESULT.DID_NOT_RUN;
                   return (
                     <div
-                      key={typedSuite.id}
-                      onClick={(): void =>
-                        testableState.changeSuite(typedSuite)
-                      }
+                      key={suite.id}
+                      onClick={(): void => testableState.changeSuite(suite)}
                       className={clsx('service-test-suite-editor__tab', {
                         'service-test-suite-editor__tab--active': isActive,
                       })}
@@ -454,7 +915,7 @@ export const AvailabilityTestableEditor = observer(
                         className="mapping-editor__header__tab__content"
                         content={
                           <AvailabilitySuiteContextMenu
-                            suite={typedSuite}
+                            suite={suite}
                             testableState={testableState}
                           />
                         }
@@ -462,7 +923,7 @@ export const AvailabilityTestableEditor = observer(
                         <div className="testable-test-explorer__item__result">
                           {getTestableResultIcon(suiteResult)}
                         </div>
-                        {typedSuite.id}
+                        {suite.id}
                       </ContextMenu>
                     </div>
                   );
@@ -474,25 +935,45 @@ export const AvailabilityTestableEditor = observer(
           )}
 
           <PanelHeaderActions>
-            <PanelHeaderActionItem
-              onClick={(): void => testableState.addSuite()}
-              title="Add Suite"
-            >
-              <PlusIcon />
-            </PanelHeaderActionItem>
+            {!isReadOnly && (
+              <PanelHeaderActionItem
+                onClick={(): void =>
+                  testableState.setShowCreateSuiteModal(true)
+                }
+                title="Add Suite"
+              >
+                <PlusIcon />
+              </PanelHeaderActionItem>
+            )}
           </PanelHeaderActions>
         </PanelHeader>
+
         <Panel className="service-test-suite-editor">
-          {testableState.selectedSuiteState ? (
+          {selectedSuiteState ? (
             <AvailabilitySuiteEditor
-              suiteState={testableState.selectedSuiteState}
+              suiteState={selectedSuiteState}
+              testableState={testableState}
             />
           ) : (
             <BlankPanelPlaceholder
               text="Add Test Suite"
-              onClick={(): void => testableState.addSuite()}
+              onClick={(): void => testableState.setShowCreateSuiteModal(true)}
               clickActionType="add"
               tooltipText="Click to add availability test suite"
+            />
+          )}
+
+          {testableState.showCreateSuiteModal && (
+            <CreateSuiteModal
+              testableState={testableState}
+              onClose={(): void => testableState.setShowCreateSuiteModal(false)}
+            />
+          )}
+
+          {testableState.showCreateTestModal && selectedSuiteState && (
+            <CreateTestModal
+              suiteState={selectedSuiteState}
+              onClose={(): void => testableState.setShowCreateTestModal(false)}
             />
           )}
 
@@ -506,29 +987,25 @@ export const AvailabilityTestableEditor = observer(
             />
           )}
 
-          {testableState.selectedSuiteState?.testToRename && (
+          {selectedSuiteState?.testToRename && (
             <RenameModal
-              val={testableState.selectedSuiteState.testToRename.id}
+              val={selectedSuiteState.testToRename.id}
               isReadOnly={isReadOnly}
               showModal={true}
               closeModal={(): void =>
-                testableState.selectedSuiteState?.setTestToRename(undefined)
+                selectedSuiteState.setTestToRename(undefined)
               }
               setValue={renameTest}
             />
           )}
 
-          {testableState.selectedSuiteState?.selectTestState
-            ?.assertionToRename && (
+          {selectedSuiteState?.selectTestState?.assertionToRename && (
             <RenameModal
-              val={
-                testableState.selectedSuiteState.selectTestState
-                  .assertionToRename.id
-              }
+              val={selectedSuiteState.selectTestState.assertionToRename.id}
               isReadOnly={isReadOnly}
               showModal={true}
               closeModal={(): void =>
-                testableState.selectedSuiteState?.selectTestState?.setAssertionToRename(
+                selectedSuiteState.selectTestState?.setAssertionToRename(
                   undefined,
                 )
               }

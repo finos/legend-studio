@@ -64,7 +64,7 @@ import type { Package } from '../../../../../../../graph/metamodel/pure/packagea
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
 import { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
-import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
+import type { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';

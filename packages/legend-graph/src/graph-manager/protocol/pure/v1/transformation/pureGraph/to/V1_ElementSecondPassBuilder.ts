@@ -88,7 +88,7 @@ import { V1_buildSection } from './helpers/V1_SectionBuilderHelper.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { V1_buildEmbeddedData } from './helpers/V1_DataElementBuilderHelper.js';
 import { V1_buildTestSuite } from './helpers/V1_TestBuilderHelper.js';
-import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
+import type { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { ServiceTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/service/ServiceTestSuite.js';
 import { V1_DataElementReference } from '../../../model/data/V1_EmbeddedData.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
@@ -155,7 +155,6 @@ import {
   V1_buildComputeOwner,
   V1_buildComputeSpecification,
 } from './helpers/V1_ComputeBuilder.js';
-import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
 import { V1_buildAvailabilityTestSuite } from './helpers/V1_AvailabilityBuilder.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import { IncludeStore } from '../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/IncludeStore.js';

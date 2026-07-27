@@ -109,7 +109,7 @@ import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V
 import { V1_transformIngestTestSuite } from './V1_IngestTransformer.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import type { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
-import { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import type { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import { V1_transformAvailability } from './V1_AvailabilityTransformer.js';
 
 class V1_PackageableElementTransformer
