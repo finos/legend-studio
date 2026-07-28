@@ -313,6 +313,37 @@ const buildColumnDefs = (): ColDef<DataProductEntityState>[] => {
       minWidth: 200,
     },
     {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_MODEL_APG,
+      valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
+        getDataProductGridValue(
+          params.data?.dataProduct,
+          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_MODEL_APG,
+          params.data?.store.applicationStore,
+        ),
+      minWidth: 200,
+    },
+    {
+      headerName:
+        DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_MODEL_APG_FEATURED_ELEMENTS,
+      valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
+        getDataProductGridValue(
+          params.data?.dataProduct,
+          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_MODEL_APG_FEATURED_ELEMENTS,
+          params.data?.store.applicationStore,
+        ),
+      minWidth: 250,
+    },
+    {
+      headerName: DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_NATIVE_APG,
+      valueGetter: (params: ValueGetterParams<DataProductEntityState>) =>
+        getDataProductGridValue(
+          params.data?.dataProduct,
+          DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_NATIVE_APG,
+          params.data?.store.applicationStore,
+        ),
+      minWidth: 200,
+    },
+    {
       headerName:
         DATA_PRODUCT_DASHBOARD_HEADER.DATA_PRODUCT_HAS_ENTERPRISE_GROUP,
       cellRenderer: (
