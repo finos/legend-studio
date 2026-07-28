@@ -180,6 +180,37 @@ export const buildIngestDefinitionOperationsPath = (
 ): string =>
   `/operations/ingestEnv/${ingestEnvironmentUrn}/ingestDefinition/${ingestDefinitionUrn}?producerUrn=${encodeURIComponent(producerUrn)}`;
 
+/**
+ * Build the external operational-view URL for a producer environment,
+ * optionally scoped to a producer and an ingest definition within that
+ * producer. Returns `undefined` when an `ingestDefinitionUrn` is supplied
+ * without a `producerUrn`, since an ingest definition is scoped to a
+ * producer.
+ *
+ * The URL shape is:
+ *   `${operationalUrl}/environment/{ingestEnvironmentUrn}`
+ *     [`/producer/{producerUrn}` [`/ingestDefinition/{ingestDefinitionUrn}`]]
+ */
+export const openOperationUrlLink = (
+  operationalUrl: string,
+  ingestEnvironmentUrn: string,
+  producerUrn?: string,
+  ingestDefinitionUrn?: string,
+): string | undefined => {
+  if (ingestDefinitionUrn && !producerUrn) {
+    return undefined;
+  }
+  const normalizedBase = operationalUrl.replace(/\/$/, '');
+  let url = `${normalizedBase}/environment/${ingestEnvironmentUrn}`;
+  if (producerUrn) {
+    url = `${url}/producer/${producerUrn}`;
+  }
+  if (ingestDefinitionUrn) {
+    url = `${url}/ingestDefinition/${ingestDefinitionUrn}`;
+  }
+  return url;
+};
+
 export const collectDatasetsFromArtifact = (
   artifact: V1_DataProductArtifact,
   accessPointGroupId: string,

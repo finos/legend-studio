@@ -16,7 +16,7 @@
 
 import { StereotypeConfig, TaggedValueConfig } from '@finos/legend-application';
 import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema, list, primitive } from 'serializr';
+import { createModelSchema, list, optional, primitive } from 'serializr';
 
 export class DataProductImageConfig {
   /**
@@ -54,6 +54,7 @@ export class DataProductConfig {
   vendorTaggedValue!: TaggedValueConfig;
   imageConfig!: DataProductImageConfig;
   legendJdbcLink!: string;
+  operationalUrl?: string | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductConfig, {
@@ -61,6 +62,7 @@ export class DataProductConfig {
       publicClassifications: list(primitive()),
       classificationDoc: primitive(),
       legendJdbcLink: primitive(),
+      operationalUrl: optional(primitive()),
       publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
       vendorTaggedValue: usingModelSchema(
         TaggedValueConfig.serialization.schema,
