@@ -90,11 +90,15 @@ import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
 import { buildVersionOption, type VersionOption } from './QuerySetup.js';
 import { QueryEditorExistingQueryVersionRevertModal } from './QueryEdtiorExistingQueryVersionRevertModal.js';
 import {
+  assertErrorThrown,
   debounce,
   compareSemVerVersions,
   guaranteeNonNullable,
+  HttpStatus,
   isValidUrl,
+  NetworkClientError,
 } from '@finos/legend-shared';
+import { DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendQueryDocumentation.js';
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
 import { QueryEditorDataspaceInfoModal } from './data-space/DataSpaceInfo.js';
 import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.js';
@@ -193,6 +197,25 @@ const CreateQueryDialog = observer(() => {
       );
       const suggestion = await aiSuggester(request, legendAIUrl);
       setAISuggestion(suggestion);
+    } catch (error) {
+      assertErrorThrown(error);
+      LegendQueryTelemetryHelper.logEvent_QueryAISuggestFailure(
+        applicationStore.telemetryService,
+        error.message,
+      );
+      if (
+        error instanceof NetworkClientError &&
+        (error.response.status === HttpStatus.UNAUTHORIZED ||
+          error.response.status === HttpStatus.FORBIDDEN)
+      ) {
+        const docEntry = applicationStore.documentationService.getDocEntry(
+          DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY.LEGENDAI_HOW_TO_GET_ENTITLEMENTS,
+        );
+        if (docEntry?.url) {
+          error.message = `${error.message}. Please check how to get entitlements: ${docEntry.url}`;
+        }
+      }
+      throw error;
     } finally {
       setIsSuggestingWithAI(false);
     }
@@ -494,6 +517,25 @@ const RenameQueryDialog = observer(
         );
         const suggestion = await aiSuggester(request, legendAIUrl);
         setAISuggestion(suggestion);
+      } catch (error) {
+        assertErrorThrown(error);
+        LegendQueryTelemetryHelper.logEvent_QueryAISuggestFailure(
+          applicationStore.telemetryService,
+          error.message,
+        );
+        if (
+          error instanceof NetworkClientError &&
+          (error.response.status === HttpStatus.UNAUTHORIZED ||
+            error.response.status === HttpStatus.FORBIDDEN)
+        ) {
+          const docEntry = applicationStore.documentationService.getDocEntry(
+            DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY.LEGENDAI_HOW_TO_GET_ENTITLEMENTS,
+          );
+          if (docEntry?.url) {
+            error.message = `${error.message}. Please check how to get entitlements: ${docEntry.url}`;
+          }
+        }
+        throw error;
       } finally {
         setIsSuggestingWithAI(false);
       }

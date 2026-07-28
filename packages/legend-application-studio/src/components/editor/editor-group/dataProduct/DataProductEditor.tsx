@@ -95,7 +95,9 @@ import {
   assertErrorThrown,
   guaranteeNonNullable,
   guaranteeType,
+  HttpStatus,
   isNonNullable,
+  NetworkClientError,
   UserSearchService,
 } from '@finos/legend-shared';
 import {
@@ -209,6 +211,7 @@ import type {
   DSL_DataProduct_LegendStudioApplicationPlugin_Extension,
 } from '../../../../stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin_Extension.js';
 import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
   GROUP_NAME_EMPTY = 'Group Name is empty',
@@ -1872,6 +1875,27 @@ const AccessPointGroupEditor = observer(
         runInAction(() => {
           setAISuggestion(suggestion);
         });
+      } catch (error) {
+        assertErrorThrown(error);
+        LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestFailure(
+          editorStore.applicationStore.telemetryService,
+          productEditorState.product.path,
+          error.message,
+        );
+        if (
+          error instanceof NetworkClientError &&
+          (error.response.status === HttpStatus.UNAUTHORIZED ||
+            error.response.status === HttpStatus.FORBIDDEN)
+        ) {
+          const docEntry =
+            editorStore.applicationStore.documentationService.getDocEntry(
+              LEGEND_STUDIO_DOCUMENTATION_KEY.LEGENDAI_HOW_TO_GET_ENTITLEMENTS,
+            );
+          if (docEntry?.url) {
+            error.message = `${error.message}. Please check how to get entitlements: ${docEntry.url}`;
+          }
+        }
+        throw error;
       } finally {
         runInAction(() => {
           setIsSuggestingWithAI(false);

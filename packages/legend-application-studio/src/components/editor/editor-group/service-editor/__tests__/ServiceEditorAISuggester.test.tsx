@@ -17,6 +17,7 @@
 import { test, expect } from '@jest/globals';
 import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
+import { NetworkClientError } from '@finos/legend-shared';
 import { ApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
@@ -34,6 +35,7 @@ import type {
 } from '../../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { ServiceEditorState } from '../../../../../stores/editor/editor-state/element-editor-state/service/ServiceEditorState.js';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 // ---------------------------------------------------------------------------
 // Minimal mock plugin that returns a fixed documentation suggestion
@@ -59,9 +61,95 @@ class MockAIDocSuggesterPlugin
 }
 
 // ---------------------------------------------------------------------------
+// Mock plugin whose documentation suggester always fails
+// ---------------------------------------------------------------------------
+const MOCK_AI_SUGGESTER_ERROR_MESSAGE = 'AI service unavailable';
+
+class MockAIDocSuggesterFailurePlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_Service_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-ai-doc-suggester-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  getExtraServiceDocumentationAISuggester(): ServiceDocumentationAISuggester {
+    return async (
+      _serviceGrammar: string,
+      _legendAIUrl: string,
+    ): Promise<string> => {
+      throw new Error(MOCK_AI_SUGGESTER_ERROR_MESSAGE);
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose documentation suggester fails with 401
+// ---------------------------------------------------------------------------
+class MockAIDocSuggester401FailurePlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_Service_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-ai-doc-suggester-401-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  getExtraServiceDocumentationAISuggester(): ServiceDocumentationAISuggester {
+    return async (
+      _serviceGrammar: string,
+      _legendAIUrl: string,
+    ): Promise<string> => {
+      throw new NetworkClientError(
+        { status: 401, statusText: 'Unauthorized' } as Response,
+        undefined,
+      );
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose documentation suggester fails with 403
+// ---------------------------------------------------------------------------
+class MockAIDocSuggester403FailurePlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_Service_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-ai-doc-suggester-403-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  getExtraServiceDocumentationAISuggester(): ServiceDocumentationAISuggester {
+    return async (
+      _serviceGrammar: string,
+      _legendAIUrl: string,
+    ): Promise<string> => {
+      throw new NetworkClientError(
+        { status: 403, statusText: 'Forbidden' } as Response,
+        undefined,
+      );
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Shared setup helper
 // ---------------------------------------------------------------------------
-const setupEditorWithAI = async (withAIConfig = true) => {
+const setupEditorWithAI = async (
+  withAIConfig = true,
+  suggesterPlugin: LegendStudioApplicationPlugin = new MockAIDocSuggesterPlugin(),
+) => {
   const pluginManager = LegendStudioPluginManager.create();
   const applicationStore = new ApplicationStore(
     TEST__getLegendStudioApplicationConfig(
@@ -76,7 +164,7 @@ const setupEditorWithAI = async (withAIConfig = true) => {
   });
 
   if (withAIConfig) {
-    new MockAIDocSuggesterPlugin().install(pluginManager);
+    suggesterPlugin.install(pluginManager);
   }
 
   MockedMonacoEditorInstance.getValue.mockReturnValue('');
@@ -272,6 +360,136 @@ test(
       expect(
         editorGroup.querySelector('.service-editor__ai-suggest-btn'),
       ).not.toBeNull();
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Failure of the AI documentation suggestion is logged via telemetry',
+  ),
+  async () => {
+    const { editorGroup, editorStore } = await setupEditorWithAI(
+      true,
+      new MockAIDocSuggesterFailurePlugin(),
+    );
+
+    const logEventSpy = createSpy(
+      editorStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+
+    const suggestBtn = await waitFor(
+      () =>
+        editorGroup.querySelector(
+          '.service-editor__ai-suggest-btn',
+        ) as HTMLButtonElement,
+    );
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // Failure telemetry should be logged with the service path and error message
+    await waitFor(() => {
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__FAILURE,
+        {
+          servicePath: 'model::RelationalService',
+          errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE,
+        },
+      );
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'AI suggestion 401 failure appends entitlement documentation URL to error message',
+  ),
+  async () => {
+    const MOCK_DOC_URL = 'https://docs.example.com/entitlements';
+
+    const { editorGroup, editorStore } = await setupEditorWithAI(
+      true,
+      new MockAIDocSuggester401FailurePlugin(),
+    );
+
+    // Mock documentationService to return a doc entry with a URL
+    createSpy(
+      editorStore.applicationStore.documentationService,
+      'getDocEntry',
+    ).mockReturnValue({
+      key: 'legend-ai.how-to-get-entitlements',
+      url: MOCK_DOC_URL,
+    });
+
+    // Spy on notificationService to verify the enriched error message
+    const notifySpy = createSpy(
+      editorStore.applicationStore.notificationService,
+      'notifyIllegalState',
+    );
+
+    const suggestBtn = await waitFor(
+      () =>
+        editorGroup.querySelector(
+          '.service-editor__ai-suggest-btn',
+        ) as HTMLButtonElement,
+    );
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // The error message shown to the user should include the documentation URL
+    await waitFor(() => {
+      expect(notifySpy).toHaveBeenCalledWith(
+        expect.stringContaining(MOCK_DOC_URL),
+      );
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'AI suggestion 403 failure appends entitlement documentation URL to error message',
+  ),
+  async () => {
+    const MOCK_DOC_URL = 'https://docs.example.com/entitlements';
+
+    const { editorGroup, editorStore } = await setupEditorWithAI(
+      true,
+      new MockAIDocSuggester403FailurePlugin(),
+    );
+
+    createSpy(
+      editorStore.applicationStore.documentationService,
+      'getDocEntry',
+    ).mockReturnValue({
+      key: 'legend-ai.how-to-get-entitlements',
+      url: MOCK_DOC_URL,
+    });
+
+    const notifySpy = createSpy(
+      editorStore.applicationStore.notificationService,
+      'notifyIllegalState',
+    );
+
+    const suggestBtn = await waitFor(
+      () =>
+        editorGroup.querySelector(
+          '.service-editor__ai-suggest-btn',
+        ) as HTMLButtonElement,
+    );
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    await waitFor(() => {
+      expect(notifySpy).toHaveBeenCalledWith(
+        expect.stringContaining(MOCK_DOC_URL),
+      );
     });
   },
 );

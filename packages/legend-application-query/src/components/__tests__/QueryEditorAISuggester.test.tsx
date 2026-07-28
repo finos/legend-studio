@@ -16,6 +16,7 @@
 
 import { test, expect } from '@jest/globals';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
+import { NetworkClientError } from '@finos/legend-shared';
 import { stub_RawLambda } from '@finos/legend-graph';
 import { act, fireEvent, waitFor } from '@testing-library/react';
 import { ApplicationStore } from '@finos/legend-application';
@@ -34,6 +35,7 @@ import {
   type QueryTitleDescriptionSuggestion,
   type QueryTitleDescriptionAISuggestionRequest,
 } from '../../stores/LegendQueryApplicationPlugin.js';
+import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 
 // ---------------------------------------------------------------------------
 // Minimal mock plugin that returns a fixed suggestion instantly
@@ -55,6 +57,80 @@ class MockAISuggesterPlugin extends LegendQueryApplicationPlugin {
       title: 'AI Generated Title',
       description: 'AI Generated Description',
     });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose suggester always fails
+// ---------------------------------------------------------------------------
+const MOCK_AI_SUGGESTER_ERROR_MESSAGE = 'AI service unavailable';
+
+class MockAISuggesterFailurePlugin extends LegendQueryApplicationPlugin {
+  constructor() {
+    super('mock-ai-suggester-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendQueryPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraQueryTitleDescriptionAISuggester() {
+    return async (
+      _request: QueryTitleDescriptionAISuggestionRequest,
+      _legendAIUrl: string,
+    ): Promise<QueryTitleDescriptionSuggestion> => {
+      throw new Error(MOCK_AI_SUGGESTER_ERROR_MESSAGE);
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose suggester fails with a 401 NetworkClientError
+// ---------------------------------------------------------------------------
+class MockAISuggester401FailurePlugin extends LegendQueryApplicationPlugin {
+  constructor() {
+    super('mock-ai-suggester-401-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendQueryPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraQueryTitleDescriptionAISuggester() {
+    return async (
+      _request: QueryTitleDescriptionAISuggestionRequest,
+      _legendAIUrl: string,
+    ): Promise<QueryTitleDescriptionSuggestion> => {
+      throw new NetworkClientError(
+        { status: 401, statusText: 'Unauthorized' } as Response,
+        undefined,
+      );
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose suggester fails with a 403 NetworkClientError
+// ---------------------------------------------------------------------------
+class MockAISuggester403FailurePlugin extends LegendQueryApplicationPlugin {
+  constructor() {
+    super('mock-ai-suggester-403-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendQueryPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  override getExtraQueryTitleDescriptionAISuggester() {
+    return async (
+      _request: QueryTitleDescriptionAISuggestionRequest,
+      _legendAIUrl: string,
+    ): Promise<QueryTitleDescriptionSuggestion> => {
+      throw new NetworkClientError(
+        { status: 403, statusText: 'Forbidden' } as Response,
+        undefined,
+      );
+    };
   }
 }
 
@@ -418,6 +494,269 @@ test(
       expect(
         dialog.querySelector('.query-editor__ai-suggest-btn'),
       ).not.toBeNull();
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'Failure of the AI suggestion in Rename dialog is logged via telemetry',
+  ),
+  async () => {
+    const pluginManager = LegendQueryPluginManager.create();
+    const applicationStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig({
+        legendAI: { url: 'http://ai.example.com' },
+      }),
+      pluginManager,
+    );
+
+    const mockedEditorStore = TEST__provideMockedQueryEditorStore({
+      pluginManager,
+      applicationStore,
+      extraPlugins: [new MockAISuggesterFailurePlugin()],
+    });
+
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      mockedEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    // Set up source element so buildQuery() works
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    // Mock lambdaToPureCode (called by buildAISuggestionRequest)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    // Mock valueSpecificationToPureCode (called for parameter values)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Spy on telemetry
+    const logEventSpy = createSpy(
+      applicationStore.telemetryService,
+      'logEvent',
+    );
+
+    // Open the Rename Query dialog
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    });
+
+    const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+    // Click the AI suggest button (which will fail)
+    const suggestBtn = dialog.querySelector(
+      '.query-editor__ai-suggest-btn',
+    ) as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // Failure telemetry should be logged with the error message
+    await waitFor(() => {
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__FAILURE,
+        { errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE },
+      );
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'AI suggestion 401 failure appends entitlement documentation URL to error message',
+  ),
+  async () => {
+    const MOCK_DOC_URL = 'https://docs.example.com/entitlements';
+
+    const pluginManager = LegendQueryPluginManager.create();
+    const applicationStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig({
+        legendAI: { url: 'http://ai.example.com' },
+      }),
+      pluginManager,
+    );
+
+    const mockedEditorStore = TEST__provideMockedQueryEditorStore({
+      pluginManager,
+      applicationStore,
+      extraPlugins: [new MockAISuggester401FailurePlugin()],
+    });
+
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      mockedEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    // Set up source element so buildQuery() works
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    // Mock lambdaToPureCode (called by buildAISuggestionRequest)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    // Mock valueSpecificationToPureCode (called for parameter values)
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    // Mock searchQueries to prevent URL errors from debounced search
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    // Mock documentationService to return a doc entry with a URL
+    createSpy(
+      applicationStore.documentationService,
+      'getDocEntry',
+    ).mockReturnValue({
+      key: 'legend-ai.how-to-get-entitlements',
+      url: MOCK_DOC_URL,
+    });
+
+    // Spy on notificationService to verify the enriched error message
+    const notifySpy = createSpy(
+      applicationStore.notificationService,
+      'notifyIllegalState',
+    );
+
+    // Open the Rename Query dialog
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    });
+
+    const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+    // Click the AI suggest button (which will fail with 401)
+    const suggestBtn = dialog.querySelector(
+      '.query-editor__ai-suggest-btn',
+    ) as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // The error message shown to the user should include the documentation URL
+    await waitFor(() => {
+      expect(notifySpy).toHaveBeenCalledWith(
+        expect.stringContaining(MOCK_DOC_URL),
+      );
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'AI suggestion 403 failure appends entitlement documentation URL to error message',
+  ),
+  async () => {
+    const MOCK_DOC_URL = 'https://docs.example.com/entitlements';
+
+    const pluginManager = LegendQueryPluginManager.create();
+    const applicationStore = new ApplicationStore(
+      TEST__getTestLegendQueryApplicationConfig({
+        legendAI: { url: 'http://ai.example.com' },
+      }),
+      pluginManager,
+    );
+
+    const mockedEditorStore = TEST__provideMockedQueryEditorStore({
+      pluginManager,
+      applicationStore,
+      extraPlugins: [new MockAISuggester403FailurePlugin()],
+    });
+
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryEditor(
+      mockedEditorStore,
+      TEST_DATA__ResultState_entities,
+      stub_RawLambda(),
+      'execution::RelationalMapping',
+      'execution::Runtime',
+      TEST_DATA__modelCoverageAnalysisResult,
+    );
+
+    const _modelClass =
+      queryBuilderState.graphManagerState.graph.getClass('model::Firm');
+    await act(async () => {
+      queryBuilderState.changeSourceElement(_modelClass);
+    });
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'lambdaToPureCode',
+    ).mockResolvedValue('|test::query');
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'valueSpecificationToPureCode',
+    ).mockResolvedValue("'test'");
+
+    createSpy(
+      mockedEditorStore.graphManagerState.graphManager,
+      'searchQueries',
+    ).mockResolvedValue([]);
+
+    createSpy(
+      applicationStore.documentationService,
+      'getDocEntry',
+    ).mockReturnValue({
+      key: 'legend-ai.how-to-get-entitlements',
+      url: MOCK_DOC_URL,
+    });
+
+    const notifySpy = createSpy(
+      applicationStore.notificationService,
+      'notifyIllegalState',
+    );
+
+    await act(async () => {
+      mockedEditorStore.updateState.setIsQueryRenameDialogOpen(true);
+    });
+
+    const dialog = await waitFor(() => renderResult.getByRole('dialog'));
+
+    const suggestBtn = dialog.querySelector(
+      '.query-editor__ai-suggest-btn',
+    ) as HTMLButtonElement;
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    await waitFor(() => {
+      expect(notifySpy).toHaveBeenCalledWith(
+        expect.stringContaining(MOCK_DOC_URL),
+      );
     });
   },
 );

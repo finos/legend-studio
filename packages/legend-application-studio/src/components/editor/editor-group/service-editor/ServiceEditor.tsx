@@ -37,7 +37,13 @@ import {
   PanelContentLists,
   SparkleIcon,
 } from '@finos/legend-art';
-import { debounce, prettyCONSTName } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  debounce,
+  HttpStatus,
+  NetworkClientError,
+  prettyCONSTName,
+} from '@finos/legend-shared';
 import { ServiceExecutionEditor } from './ServiceExecutionEditor.js';
 import { LEGEND_STUDIO_TEST_ID } from '../../../../__lib__/LegendStudioTesting.js';
 import { ServiceRegistrationEditor } from './ServiceRegistrationEditor.js';
@@ -70,11 +76,11 @@ import {
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
-import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
-import { DocumentationLink } from '@finos/legend-lego/application';
 import { ServicePostValidationsEditor } from './ServicePostValidationEditor.js';
 import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
 import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
+import { DocumentationLink } from '@finos/legend-lego/application';
 
 type UserOption = { label: string; value: string };
 
@@ -278,6 +284,26 @@ const ServiceGeneralEditor = observer(() => {
         ]);
       const suggestion = await aiDocSuggester(serviceGrammar, legendAIUrl);
       setAIDocSuggestion(suggestion);
+    } catch (error) {
+      assertErrorThrown(error);
+      LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestFailure(
+        applicationStore.telemetryService,
+        service.path,
+        error.message,
+      );
+      if (
+        error instanceof NetworkClientError &&
+        (error.response.status === HttpStatus.UNAUTHORIZED ||
+          error.response.status === HttpStatus.FORBIDDEN)
+      ) {
+        const docEntry = applicationStore.documentationService.getDocEntry(
+          LEGEND_STUDIO_DOCUMENTATION_KEY.LEGENDAI_HOW_TO_GET_ENTITLEMENTS,
+        );
+        if (docEntry?.url) {
+          error.message = `${error.message}. Please check how to get entitlements: ${docEntry.url}`;
+        }
+      }
+      throw error;
     } finally {
       setIsSuggestingWithAI(false);
     }

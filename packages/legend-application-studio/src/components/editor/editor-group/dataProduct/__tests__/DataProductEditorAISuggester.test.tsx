@@ -22,7 +22,8 @@ import {
   getByText,
   waitFor,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+import { integrationTest, createSpy } from '@finos/legend-shared/test';
+import { NetworkClientError, guaranteeNonNullable } from '@finos/legend-shared';
 import { ApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
@@ -42,7 +43,7 @@ import type {
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 // ---------------------------------------------------------------------------
 // Global mocks
@@ -126,9 +127,89 @@ class MockDataProductAIDocPlugin
 }
 
 // ---------------------------------------------------------------------------
+// Mock plugin whose AI doc suggester always fails
+// ---------------------------------------------------------------------------
+const MOCK_AI_SUGGESTER_ERROR_MESSAGE = 'AI service unavailable';
+
+class MockDataProductAIDocFailurePlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_DataProduct_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-data-product-ai-doc-suggester-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  async getExtraDataProductDocumentationAISuggester(
+    _request: DataProductDocRequest,
+    _legendAIUrl: string,
+  ): Promise<DataProductDocResponse> {
+    throw new Error(MOCK_AI_SUGGESTER_ERROR_MESSAGE);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose AI doc suggester fails with 401
+// ---------------------------------------------------------------------------
+class MockDataProductAIDoc401FailurePlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_DataProduct_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-data-product-ai-doc-suggester-401-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  async getExtraDataProductDocumentationAISuggester(
+    _request: DataProductDocRequest,
+    _legendAIUrl: string,
+  ): Promise<DataProductDocResponse> {
+    throw new NetworkClientError(
+      { status: 401, statusText: 'Unauthorized' } as Response,
+      undefined,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mock plugin whose AI doc suggester fails with 403
+// ---------------------------------------------------------------------------
+class MockDataProductAIDoc403FailurePlugin
+  extends LegendStudioApplicationPlugin
+  implements DSL_DataProduct_LegendStudioApplicationPlugin_Extension
+{
+  constructor() {
+    super('mock-data-product-ai-doc-suggester-403-failure', '0.0.1');
+  }
+
+  override install(pluginManager: LegendStudioPluginManager): void {
+    pluginManager.registerApplicationPlugin(this);
+  }
+
+  async getExtraDataProductDocumentationAISuggester(
+    _request: DataProductDocRequest,
+    _legendAIUrl: string,
+  ): Promise<DataProductDocResponse> {
+    throw new NetworkClientError(
+      { status: 403, statusText: 'Forbidden' } as Response,
+      undefined,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Shared setup
 // ---------------------------------------------------------------------------
-const setupEditorWithAI = async (withAIConfig = true) => {
+const setupEditorWithAI = async (
+  withAIConfig = true,
+  suggesterPlugin: LegendStudioApplicationPlugin = new MockDataProductAIDocPlugin(),
+) => {
   const pluginManager = LegendStudioPluginManager.create();
   pluginManager
     .usePresets([
@@ -150,7 +231,7 @@ const setupEditorWithAI = async (withAIConfig = true) => {
   });
 
   if (withAIConfig) {
-    new MockDataProductAIDocPlugin().install(pluginManager);
+    suggesterPlugin.install(pluginManager);
   }
 
   MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
@@ -321,5 +402,120 @@ test(
     const unchangedGroup = dataProduct.accessPointGroups[0];
     expect(unchangedGroup?.title).toBeUndefined();
     expect(unchangedGroup?.description).toBe('my first access point group');
+  },
+);
+
+test(
+  integrationTest(
+    'Failure of the AI documentation suggestion is logged via telemetry',
+  ),
+  async () => {
+    const { editorGroup, editorStore } = await setupEditorWithAI(
+      true,
+      new MockDataProductAIDocFailurePlugin(),
+    );
+
+    const logEventSpy = createSpy(
+      editorStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+
+    const suggestBtn = await findByText(editorGroup, 'Suggest with AI');
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // Failure telemetry should be logged with the data product path and error message
+    await waitFor(() => {
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__FAILURE,
+        {
+          dataProductPath: 'model::sampleDataProduct',
+          errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE,
+        },
+      );
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'AI suggestion 401 failure appends entitlement documentation URL to error message',
+  ),
+  async () => {
+    const MOCK_DOC_URL = 'https://docs.example.com/entitlements';
+
+    const { editorGroup, editorStore } = await setupEditorWithAI(
+      true,
+      new MockDataProductAIDoc401FailurePlugin(),
+    );
+
+    // Mock documentationService to return a doc entry with a URL
+    createSpy(
+      editorStore.applicationStore.documentationService,
+      'getDocEntry',
+    ).mockReturnValue({
+      key: 'legend-ai.how-to-get-entitlements',
+      url: MOCK_DOC_URL,
+    });
+
+    // Spy on notificationService to verify the enriched error message
+    const notifySpy = createSpy(
+      editorStore.applicationStore.notificationService,
+      'notifyIllegalState',
+    );
+
+    const suggestBtn = await findByText(editorGroup, 'Suggest with AI');
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    // The error message shown to the user should include the documentation URL
+    await waitFor(() => {
+      expect(notifySpy).toHaveBeenCalledWith(
+        expect.stringContaining(MOCK_DOC_URL),
+      );
+    });
+  },
+);
+
+test(
+  integrationTest(
+    'AI suggestion 403 failure appends entitlement documentation URL to error message',
+  ),
+  async () => {
+    const MOCK_DOC_URL = 'https://docs.example.com/entitlements';
+
+    const { editorGroup, editorStore } = await setupEditorWithAI(
+      true,
+      new MockDataProductAIDoc403FailurePlugin(),
+    );
+
+    createSpy(
+      editorStore.applicationStore.documentationService,
+      'getDocEntry',
+    ).mockReturnValue({
+      key: 'legend-ai.how-to-get-entitlements',
+      url: MOCK_DOC_URL,
+    });
+
+    const notifySpy = createSpy(
+      editorStore.applicationStore.notificationService,
+      'notifyIllegalState',
+    );
+
+    const suggestBtn = await findByText(editorGroup, 'Suggest with AI');
+
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+
+    await waitFor(() => {
+      expect(notifySpy).toHaveBeenCalledWith(
+        expect.stringContaining(MOCK_DOC_URL),
+      );
+    });
   },
 );

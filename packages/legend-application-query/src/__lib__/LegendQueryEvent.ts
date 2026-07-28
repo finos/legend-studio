@@ -27,6 +27,7 @@ export enum LEGEND_QUERY_APP_EVENT {
   LEGENDAI_QUERY_SUGGEST__LAUNCH = 'query-editor.legendai-query-suggest.launch',
   LEGENDAI_QUERY_SUGGEST__APPLY = 'query-editor.legendai-query-suggest.apply',
   LEGENDAI_QUERY_SUGGEST__DISCARD = 'query-editor.legendai-query-suggest.discard',
+  LEGENDAI_QUERY_SUGGEST__FAILURE = 'query-editor.legendai-query-suggest.failure',
 
   VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
   VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',

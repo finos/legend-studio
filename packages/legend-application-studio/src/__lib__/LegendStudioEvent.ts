@@ -90,11 +90,13 @@ export enum LEGEND_STUDIO_APP_EVENT {
   DATA_PRODUCT_LEGENDAI_SUGGEST__LAUNCH = 'editor.data-product.legendai-suggest.launch',
   DATA_PRODUCT_LEGENDAI_SUGGEST__APPLY = 'editor.data-product.legendai-suggest.apply',
   DATA_PRODUCT_LEGENDAI_SUGGEST__DISCARD = 'editor.data-product.legendai-suggest.discard',
+  DATA_PRODUCT_LEGENDAI_SUGGEST__FAILURE = 'editor.data-product.legendai-suggest.failure',
 
   // service
   SERVICE_LEGENDAI_SUGGEST__LAUNCH = 'editor.service-editor.legendai-suggest.launch',
   SERVICE_LEGENDAI_SUGGEST__APPLY = 'editor.service-editor.legendai-suggest.apply',
   SERVICE_LEGENDAI_SUGGEST__DISCARD = 'editor.service-editor.legendai-suggest.discard',
+  SERVICE_LEGENDAI_SUGGEST__FAILURE = 'editor.service-editor.legendai-suggest.failure',
 
   // push to dev
   METADATA_PUSH_TO_METADATA = 'editor.metadata.push-to-metadata',

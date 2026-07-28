@@ -86,6 +86,9 @@ export enum LEGEND_STUDIO_DOCUMENTATION_KEY {
   // sdlc
   QUESTION_WHAT_ARE_PROJECT_ROLES = 'question.what-are-project-roles',
 
+  // legend AI
+  LEGENDAI_HOW_TO_GET_ENTITLEMENTS = 'legend-ai.how-to-get-entitlements',
+
   // contexts
   CONTEXT_CLASS_EDITOR = 'context.class-editor',
   CONTEXT_SERVICE_TEST_EDITOR = 'context.service-editor.test',
