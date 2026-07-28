@@ -43,7 +43,7 @@ import {
   AuthProvider,
   withAuthenticationRequired,
 } from 'react-oidc-context';
-import type { User } from 'oidc-client-ts';
+import { WebStorageStateStore, type User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
 import { LegendMarketplacePage } from '../pages/LegendMarketplacePage.js';
@@ -476,6 +476,10 @@ export const LegendMarketplaceWebApplication = observer(
           redirect_uri: `${window.location.origin}${oidcConfig.redirectPath}`,
           silent_redirect_uri: `${window.location.origin}${oidcConfig.silentRedirectPath}`,
           onSigninCallback,
+          // Share the OIDC user record across tabs (see LegendTokenSync).
+          userStore: new WebStorageStateStore({ store: window.localStorage }),
+          // Renewal is coordinated in LegendTokenSync instead.
+          automaticSilentRenew: false,
         }
       : undefined;
 
