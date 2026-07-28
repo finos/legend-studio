@@ -25,6 +25,7 @@ const BM25_K1 = 1.2;
 const BM25_B = 0.75;
 const FIELD_WEIGHT_TITLE = 3;
 const FIELD_WEIGHT_DESCRIPTION = 2;
+const FIELD_WEIGHT_DEFAULT = 1;
 const MIN_FUZZY_TOKEN_LENGTH = 4;
 
 interface BM25Doc {
@@ -49,30 +50,42 @@ function addTokensToDoc(doc: BM25Doc, tokens: string[], weight: number): void {
   }
 }
 
-function buildServiceDoc(svc: TDSServiceSchema): BM25Doc {
+function buildServiceDoc(service: TDSServiceSchema): BM25Doc {
   const doc: BM25Doc = { termFreq: new Map(), length: 0 };
 
-  addTokensToDoc(doc, tokensFromIdentifier(svc.title), FIELD_WEIGHT_TITLE);
-  if (svc.description) {
+  addTokensToDoc(doc, tokensFromIdentifier(service.title), FIELD_WEIGHT_TITLE);
+  if (service.description) {
     addTokensToDoc(
       doc,
-      tokenizeText(svc.description),
+      tokenizeText(service.description),
       FIELD_WEIGHT_DESCRIPTION,
     );
   }
-  for (const col of svc.columns) {
-    addTokensToDoc(doc, tokensFromIdentifier(col.name), 1);
-    if (col.documentation) {
-      addTokensToDoc(doc, tokenizeText(col.documentation), 1);
+  for (const column of service.columns) {
+    addTokensToDoc(
+      doc,
+      tokensFromIdentifier(column.name),
+      FIELD_WEIGHT_DEFAULT,
+    );
+    if (column.documentation) {
+      addTokensToDoc(
+        doc,
+        tokenizeText(column.documentation),
+        FIELD_WEIGHT_DEFAULT,
+      );
     }
   }
-  for (const param of svc.parameters) {
-    addTokensToDoc(doc, tokensFromIdentifier(param), 1);
+  for (const parameter of service.parameters) {
+    addTokensToDoc(doc, tokensFromIdentifier(parameter), FIELD_WEIGHT_DEFAULT);
   }
-  for (const pf of svc.preFilters ?? []) {
-    addTokensToDoc(doc, tokenizeText(pf.property), 1);
-    if (pf.value !== undefined) {
-      addTokensToDoc(doc, tokenizeText(String(pf.value)), 1);
+  for (const preFilter of service.preFilters ?? []) {
+    addTokensToDoc(doc, tokenizeText(preFilter.property), FIELD_WEIGHT_DEFAULT);
+    if (preFilter.value !== undefined) {
+      addTokensToDoc(
+        doc,
+        tokenizeText(String(preFilter.value)),
+        FIELD_WEIGHT_DEFAULT,
+      );
     }
   }
   return doc;
@@ -96,7 +109,10 @@ function buildBM25Index(services: readonly TDSServiceSchema[]): BM25Index {
 }
 
 /**
- * Standard Okapi BM25:
+ * Weighted Okapi BM25 variant — field weights fold into both the term frequency
+ * and the document length |D| (see `addTokensToDoc`), so |D| is a weight-inflated
+ * token count rather than a raw one. tf and length-normalization stay internally
+ * consistent.
  *   IDF(q) = ln((N - df + 0.5) / (df + 0.5) + 1)
  *   tfNorm = tf * (k1 + 1) / (tf + k1 * (1 - b + b * |D| / avgdl))
  *   score  = Σ IDF(q) * tfNorm
@@ -124,7 +140,6 @@ function scoreBM25(
   return score;
 }
 
-/** Rewrites a typoed query term to its closest indexed vocabulary entry. */
 function resolveQueryTermViaFuzzy(token: string, index: BM25Index): string {
   if (token.length < MIN_FUZZY_TOKEN_LENGTH || index.docFreq.has(token)) {
     return token;
@@ -154,17 +169,22 @@ export function preFilterServicesByRelevance(
     return services.slice(0, limit);
   }
   const index = buildBM25Index(services);
-  const queryTerms = rawTerms.map((t) => resolveQueryTermViaFuzzy(t, index));
-  const scored = services.map((svc, i) => ({
-    svc,
+  const queryTerms = rawTerms.map((term) =>
+    resolveQueryTermViaFuzzy(term, index),
+  );
+  const scored = services.map((service, serviceIndex) => ({
+    service,
     score: scoreBM25(
       queryTerms,
-      guaranteeNonNullable(index.docs[i], `BM25 doc missing for service ${i}`),
+      guaranteeNonNullable(
+        index.docs[serviceIndex],
+        `BM25 doc missing for service ${serviceIndex}`,
+      ),
       index,
     ),
   }));
   scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, limit).map((s) => s.svc);
+  return scored.slice(0, limit).map((entry) => entry.service);
 }
 
 /**
@@ -195,25 +215,20 @@ export function levenshteinDistance(a: string, b: string): number {
   if (b.length === 0) {
     return a.length;
   }
-  if (a.length > b.length) {
-    const tmp = a;
-    a = b;
-    b = tmp;
-  }
+  const [shorter, longer] = a.length > b.length ? [b, a] : [a, b];
+  const shortLen = shorter.length;
+  const longLen = longer.length;
+  const row = new Array<number>(shortLen + 1);
 
-  const aLen = a.length;
-  const bLen = b.length;
-  const row = new Array<number>(aLen + 1);
-
-  for (let i = 0; i <= aLen; i++) {
+  for (let i = 0; i <= shortLen; i++) {
     row[i] = i;
   }
 
-  for (let j = 1; j <= bLen; j++) {
+  for (let j = 1; j <= longLen; j++) {
     let prev = guaranteeNonNullable(row[0]);
     row[0] = j;
-    for (let i = 1; i <= aLen; i++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+    for (let i = 1; i <= shortLen; i++) {
+      const cost = shorter[i - 1] === longer[j - 1] ? 0 : 1;
       const current = guaranteeNonNullable(row[i]);
       row[i] = Math.min(
         current + 1, // deletion
@@ -224,5 +239,5 @@ export function levenshteinDistance(a: string, b: string): number {
     }
   }
 
-  return guaranteeNonNullable(row[aLen]);
+  return guaranteeNonNullable(row[shortLen]);
 }

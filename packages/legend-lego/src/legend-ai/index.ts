@@ -17,6 +17,10 @@
 export * from './LegendAITypes.js';
 export * from './LegendAI_LegendApplicationPlugin_Extension.js';
 export {
+  bridgeLegendAIServices,
+  useLegendAIChatTelemetryLogger,
+} from './LegendAIHostIntegration.js';
+export {
   LegendAIChat,
   LEGEND_AI_ANCHOR_ID,
   renderStepStatusIcon,
@@ -38,6 +42,7 @@ export {
   finishWithThinkingError,
   classifyError,
   buildConversationHistory,
+  filterHistoryForAccessPoints,
   buildGenerationFailureMessage,
   buildExecutionErrorMessage,
   generateAndJudgeSql,
@@ -55,8 +60,6 @@ export {
   analyzeOrchestratorResults,
   cleanLlmSqlResponse,
   isValidSqlCorrection,
-  sanitizeJoinOrderBy,
-  sanitizeJoinSameKeyColumns,
   sanitizeLiteralColumns,
   stripGuessedNonDateServiceParams,
   ensureDateParameters,
@@ -75,6 +78,18 @@ export {
   type LegendAIOperationContext,
   type MissingParamInfo,
 } from './stores/LegendAIChatProcessors.js';
+export {
+  buildCrossJoinZeroRowExplanation,
+  buildJoinablePairSuggestions,
+  parseSampleValueSet,
+} from './stores/LegendAIJoinAnalysis.js';
+export {
+  boundCrossAccessPointJoinDrivingSide,
+  sanitizeJoinDuplicateColumns,
+  sanitizeJoinOrderBy,
+  sanitizeJoinSameKeyColumns,
+  wrapBareJoinAccessPoints,
+} from './stores/LegendAISqlJoinSanitizers.js';
 export {
   preFilterServicesByRelevance,
   isFuzzyMatch,
@@ -101,12 +116,16 @@ export {
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
-  formatPreFiltersForContext,
   extractModelContext,
   buildEnrichedBusinessContext,
   buildModelContextEnrichmentText,
   findBestAlternateRoot,
   resolveEntitiesDeterministic,
+  rankEntities,
   buildSemanticPropertyIndex,
   splitIdentifierTokens,
+  buildDataQueryApproachText,
+  relaxExactStringFilters,
+  extractFilteredColumns,
+  buildProbedValueHints,
 } from './LegendAIDocEnrichment.js';

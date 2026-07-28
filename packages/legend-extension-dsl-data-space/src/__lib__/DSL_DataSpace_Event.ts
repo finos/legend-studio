@@ -21,7 +21,16 @@ export enum DSL_DATASPACE_EVENT {
   // Legend AI assistant usage analytics. The name scheme is shared across data
   // product and data space; the `context` payload field distinguishes them.
   LEGEND_AI_ASSISTANT_OPENED = 'legend-ai.assistant.opened',
+  LEGEND_AI_ASSISTANT_CLOSED = 'legend-ai.assistant.closed',
   LEGEND_AI_QUESTION_ASKED = 'legend-ai.question.asked',
   LEGEND_AI_RESPONSE_RECEIVED = 'legend-ai.response.received',
   LEGEND_AI_FEEDBACK_SUBMITTED = 'legend-ai.feedback.submitted',
+  LEGEND_AI_SUGGESTED_QUERY_CLICKED = 'legend-ai.suggested-query.clicked',
+  LEGEND_AI_SCOPE_CHANGED = 'legend-ai.scope.changed',
+  LEGEND_AI_MODEL_CHANGED = 'legend-ai.model.changed',
+  LEGEND_AI_SQL_DETAILS_TOGGLED = 'legend-ai.sql-details.toggled',
+  LEGEND_AI_ARTIFACT_COPIED = 'legend-ai.artifact.copied',
+  LEGEND_AI_PYTHON_CODE_REQUESTED = 'legend-ai.python-code.requested',
+  LEGEND_AI_PYTHON_CODE_TOGGLED = 'legend-ai.python-code.toggled',
+  LEGEND_AI_OPEN_IN_DATACUBE_CLICKED = 'legend-ai.open-in-datacube.clicked',
 }

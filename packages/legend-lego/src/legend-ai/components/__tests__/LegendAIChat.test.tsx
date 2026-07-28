@@ -14,25 +14,43 @@
  * limitations under the License.
  */
 
-import { describe, test, expect, afterEach, jest } from '@jest/globals';
+import {
+  describe,
+  test,
+  expect,
+  beforeEach,
+  afterEach,
+  jest,
+} from '@jest/globals';
 import {
   render,
   screen,
   fireEvent,
   cleanup,
   act,
+  waitFor,
 } from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LegendAIChat, LEGEND_AI_ANCHOR_ID } from '../LegendAIChat.js';
 import {
   type LegendAIChatProps,
   type LegendAIChatState,
+  type LegendAIAssistantMessage,
+  type LegendAIChatTelemetryEvent,
   LegendAIMessageFeedbackRating,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
   LegendAIErrorType,
+  type TDSServiceSchema,
+  LegendAIChatTelemetryEventType,
+  LegendAISuggestedQuerySource,
 } from '../../LegendAITypes.js';
+import type {
+  LegendAIPythonCodegenRequest,
+  LegendAIPythonQueryCode,
+} from '../../LegendAI_LegendApplicationPlugin_Extension.js';
 import {
   TEST__createMockLegendAIPlugin,
   TEST_DATA__legendAIConfig,
@@ -104,6 +122,9 @@ jest.mock('@finos/legend-art', () => ({
   DislikeIcon: () => <span data-testid="dislike-icon" />,
   ExternalLinkIcon: () => <span data-testid="external-link-icon" />,
   InfoCircleIcon: () => <span data-testid="info-circle-icon" />,
+  PythonIcon: () => <span data-testid="python-icon" />,
+  JupyterIcon: () => <span data-testid="jupyter-icon" />,
+  CubeIcon: () => <span data-testid="cube-icon" />,
   clsx: (...args: unknown[]) => {
     const classes: string[] = [];
     for (const arg of args) {
@@ -128,6 +149,14 @@ afterEach(() => {
   mockState.isSending = false;
   mockState.messages = [];
   mockState.expandedThinking = new Set<number>();
+});
+
+let windowOpenSpy: jest.SpiedFunction<typeof window.open>;
+beforeEach(() => {
+  windowOpenSpy = jest.spyOn(window, 'open').mockReturnValue(null);
+});
+afterEach(() => {
+  windowOpenSpy.mockRestore();
 });
 
 const defaultProps: LegendAIChatProps = {
@@ -192,6 +221,31 @@ describe(unitTest('LegendAIChat'), () => {
     );
   });
 
+  test('clicking a starter suggestion emits a SUGGESTED_QUERY_CLICKED telemetry event', () => {
+    const events: LegendAIChatTelemetryEvent[] = [];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        onLogTelemetryEvent={(event): void => {
+          events.push(event);
+        }}
+      />,
+    );
+    fireEvent.click(
+      screen.getByText(
+        `What data does ${TEST_DATA__legendAIMetadata.name} offer and how can I use it?`,
+      ),
+    );
+    const clicked = guaranteeNonNullable(
+      events.find(
+        (e) =>
+          e.type === LegendAIChatTelemetryEventType.SUGGESTED_QUERY_CLICKED,
+      ),
+    );
+    expect(clicked.source).toBe(LegendAISuggestedQuerySource.STARTER);
+    expect(clicked.position).toBe(0);
+  });
+
   test('send button is disabled when question is empty', () => {
     render(<LegendAIChat {...defaultProps} />);
     const sendBtn = screen.getByTitle('Send');
@@ -241,12 +295,205 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
     expect(screen.getByText('SELECT * FROM trades')).toBeDefined();
     expect(screen.getByText('Generated SQL')).toBeDefined();
     expect(screen.getByText('1.50s')).toBeDefined();
+  });
+
+  test('does not render Python CTA when the plugin does not support codegen', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM trades',
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+        queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
+      },
+    ];
+    render(<LegendAIChat {...defaultProps} />);
+    expect(
+      screen.queryByText('Want the Python code for this query?'),
+    ).toBeNull();
+  });
+
+  test('lazily invokes plugin.generatePythonQueryCodeAsync on first CTA click', async () => {
+    const generate = jest
+      .fn<
+        (
+          request: LegendAIPythonCodegenRequest,
+        ) => Promise<LegendAIPythonQueryCode | undefined>
+      >()
+      .mockResolvedValue({
+        code: 'df = client.query()',
+        notebookUrl: 'https://notebook.test/',
+      });
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsPythonCodegen: () => true,
+      generatePythonQueryCodeAsync: generate,
+    });
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM trades',
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+        queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
+      },
+    ];
+    render(<LegendAIChat {...defaultProps} plugin={plugin} />);
+
+    expect(generate).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText('Want the Python code for this query?'));
+    expect(generate).toHaveBeenCalledTimes(1);
+    await waitFor(() =>
+      expect(screen.getByText('df = client.query()')).toBeDefined(),
+    );
+    expect(screen.getByText('Launch Notebook')).toBeDefined();
+  });
+
+  test('scopes the codegen request to the queried access point', async () => {
+    const receivedPatterns: string[] = [];
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'MetaDir Enterprise (current records only)',
+        pattern: '/METADIR_ENTERPRISE_LATEST_ONLY',
+        columns: [{ name: 'CN' }],
+        parameters: [],
+      },
+      {
+        title: 'CorpDir Enterprise (current records only)',
+        pattern: '/CORPDIR_ENTERPRISE_LATEST_ONLY',
+        columns: [{ name: 'MAIL' }],
+        parameters: [],
+      },
+    ];
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsPythonCodegen: () => true,
+      generatePythonQueryCodeAsync: (request) => {
+        receivedPatterns.push(request.service.pattern);
+        return Promise.resolve({
+          code: `# ${request.service.pattern.replace(/^\//u, '')}`,
+        });
+      },
+    });
+    mockState.messages = [
+      { id: 'u1', role: LegendAIMessageRole.USER, text: 'q1' },
+      {
+        id: 'a1',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: "SELECT * FROM p('pkg::dp::PROD.CORPDIR_ENTERPRISE_LATEST_ONLY')",
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+        queriedAccessPointGroups: [],
+        queriedAccessPoints: ['CORPDIR_ENTERPRISE_LATEST_ONLY'],
+      },
+    ];
+    render(
+      <LegendAIChat {...defaultProps} services={services} plugin={plugin} />,
+    );
+    fireEvent.click(screen.getByText('Want the Python code for this query?'));
+    await waitFor(() =>
+      expect(
+        screen.getByText('# CORPDIR_ENTERPRISE_LATEST_ONLY'),
+      ).toBeDefined(),
+    );
+    expect(receivedPatterns).toEqual(['/CORPDIR_ENTERPRISE_LATEST_ONLY']);
+  });
+
+  test('shows an error and retry button when Python codegen fails', async () => {
+    const generate = jest
+      .fn<
+        (
+          request: LegendAIPythonCodegenRequest,
+        ) => Promise<LegendAIPythonQueryCode | undefined>
+      >()
+      .mockRejectedValueOnce(new Error('LLM unavailable'))
+      .mockResolvedValueOnce({ code: 'df = client.query()' });
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsPythonCodegen: () => true,
+      generatePythonQueryCodeAsync: generate,
+    });
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'q' },
+      {
+        id: 'a',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT 1',
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+        queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
+      },
+    ];
+    render(<LegendAIChat {...defaultProps} plugin={plugin} />);
+    fireEvent.click(screen.getByText('Want the Python code for this query?'));
+    await waitFor(() =>
+      expect(
+        screen.getByText(
+          'Could not generate Python code. Try again in a moment.',
+        ),
+      ).toBeDefined(),
+    );
+    fireEvent.click(screen.getByText('Retry'));
+    await waitFor(() =>
+      expect(screen.getByText('df = client.query()')).toBeDefined(),
+    );
+    expect(generate).toHaveBeenCalledTimes(2);
   });
 
   test('renders assistant message with text answer', () => {
@@ -270,6 +517,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -303,6 +551,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
 
@@ -345,6 +594,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -372,6 +622,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: LegendAIErrorType.PERMISSION,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
 
@@ -417,6 +668,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: LegendAIErrorType.PERMISSION,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
 
@@ -450,6 +702,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -480,6 +733,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -514,6 +768,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -549,6 +804,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -582,6 +838,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     mockState.expandedThinking = new Set([1]);
@@ -666,6 +923,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -699,6 +957,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -732,6 +991,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -766,6 +1026,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     mockState.expandedThinking = new Set([1]);
@@ -817,6 +1078,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -848,6 +1110,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
 
@@ -891,6 +1154,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     render(<LegendAIChat {...defaultProps} />);
@@ -919,5 +1183,193 @@ describe(unitTest('LegendAIChat'), () => {
     render(<LegendAIChat {...defaultProps} />);
     expect(screen.queryByTitle('Close')).toBeNull();
     expect(screen.queryByTitle('Minimize')).toBeNull();
+  });
+
+  // ─── Open in DataCube CTA ──────────────────────────────────────────────
+
+  const dataCubeAssistantMsg: LegendAIAssistantMessage = {
+    id: 'a',
+    role: LegendAIMessageRole.ASSISTANT,
+    thinkingSteps: [],
+    sql: "SELECT * FROM p('trades')",
+    textAnswer: null,
+    dataContext: null,
+    gridData: null,
+    error: null,
+    sqlGenTime: '1.00',
+    execTime: null,
+    thinkingDuration: null,
+    isProcessing: false,
+    isExecuting: false,
+    suggestedQueries: [],
+    fallbackAction: null,
+    errorType: null,
+    queriedAccessPointGroups: [],
+    queriedAccessPoints: ['trades'],
+  };
+
+  test('does not render DataCube CTA when onOpenInDataCube is not provided', () => {
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      { ...dataCubeAssistantMsg },
+    ];
+    render(<LegendAIChat {...defaultProps} />);
+    expect(screen.queryByText('Open in DataCube')).toBeNull();
+  });
+
+  test('does not render DataCube CTA when plugin.supportsOpenInDataCube returns false', () => {
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      { ...dataCubeAssistantMsg },
+    ];
+    render(
+      <LegendAIChat {...defaultProps} onOpenInDataCube={onOpenInDataCube} />,
+    );
+    expect(screen.queryByText('Open in DataCube')).toBeNull();
+  });
+
+  test('renders DataCube CTA when plugin supports it and caller passes handler', () => {
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsOpenInDataCube: () => true,
+    });
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      { ...dataCubeAssistantMsg },
+    ];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        plugin={plugin}
+        onOpenInDataCube={onOpenInDataCube}
+      />,
+    );
+    expect(screen.getByText('Open in DataCube')).toBeDefined();
+  });
+
+  test('hides DataCube CTA while message is still processing', () => {
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsOpenInDataCube: () => true,
+    });
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      { ...dataCubeAssistantMsg, isProcessing: true },
+    ];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        plugin={plugin}
+        onOpenInDataCube={onOpenInDataCube}
+      />,
+    );
+    expect(screen.queryByText('Open in DataCube')).toBeNull();
+  });
+
+  test('hides DataCube CTA when message has no SQL', () => {
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsOpenInDataCube: () => true,
+    });
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'describe schema' },
+      {
+        ...dataCubeAssistantMsg,
+        sql: null,
+        textAnswer: 'This product exposes trades data.',
+      },
+    ];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        plugin={plugin}
+        onOpenInDataCube={onOpenInDataCube}
+      />,
+    );
+    expect(screen.queryByText('Open in DataCube')).toBeNull();
+  });
+
+  test('clicking DataCube CTA dispatches with resolved AP and undefined pureQuery by default', async () => {
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsOpenInDataCube: () => true,
+    });
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      { ...dataCubeAssistantMsg },
+    ];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        plugin={plugin}
+        onOpenInDataCube={onOpenInDataCube}
+      />,
+    );
+    fireEvent.click(screen.getByText('Open in DataCube'));
+    await waitFor(() => expect(onOpenInDataCube).toHaveBeenCalledTimes(1));
+    const [accessPointNameArg, pureQueryArg] =
+      onOpenInDataCube.mock.calls[0] ?? [];
+    expect(accessPointNameArg).toBe('trades');
+    expect(pureQueryArg).toBeUndefined();
+  });
+
+  test('clicking DataCube CTA forwards translator output when plugin returns a Pure query', async () => {
+    const translator = jest
+      .fn<() => Promise<string | undefined>>()
+      .mockResolvedValue("#P{ns::DP.trades}#->filter(x|$x.status == 'A')");
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsOpenInDataCube: () => true,
+      translateAccessPointSqlToDataCubeQuery: translator,
+    });
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'active trades' },
+      {
+        ...dataCubeAssistantMsg,
+        sql: "SELECT * FROM p('trades') WHERE status = 'A'",
+      },
+    ];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        plugin={plugin}
+        onOpenInDataCube={onOpenInDataCube}
+      />,
+    );
+    fireEvent.click(screen.getByText('Open in DataCube'));
+    await waitFor(() => expect(translator).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(onOpenInDataCube).toHaveBeenCalledTimes(1));
+    const [accessPointNameArg, pureQueryArg] =
+      onOpenInDataCube.mock.calls[0] ?? [];
+    expect(accessPointNameArg).toBe('trades');
+    expect(pureQueryArg).toBe("#P{ns::DP.trades}#->filter(x|$x.status == 'A')");
+  });
+
+  test('clicking DataCube CTA still dispatches when translator rejects', async () => {
+    const translator = jest
+      .fn<() => Promise<string | undefined>>()
+      .mockRejectedValue(new Error('LLM timeout'));
+    const plugin = TEST__createMockLegendAIPlugin({
+      supportsOpenInDataCube: () => true,
+      translateAccessPointSqlToDataCubeQuery: translator,
+    });
+    const onOpenInDataCube = jest.fn();
+    mockState.messages = [
+      { id: 'u', role: LegendAIMessageRole.USER, text: 'get trades' },
+      { ...dataCubeAssistantMsg },
+    ];
+    render(
+      <LegendAIChat
+        {...defaultProps}
+        plugin={plugin}
+        onOpenInDataCube={onOpenInDataCube}
+      />,
+    );
+    fireEvent.click(screen.getByText('Open in DataCube'));
+    await waitFor(() => expect(translator).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(onOpenInDataCube).toHaveBeenCalledTimes(1));
+    const [, pureQueryArg] = onOpenInDataCube.mock.calls[0] ?? [];
+    expect(pureQueryArg).toBeUndefined();
   });
 });

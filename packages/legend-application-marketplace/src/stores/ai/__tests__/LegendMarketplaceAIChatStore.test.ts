@@ -817,6 +817,7 @@ describe(unitTest('LegendMarketplaceAIChatStore — lastUserMessageText'), () =>
         suggestedQueries: [],
         fallbackAction: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
       { id: '3', role: LegendAIMessageRole.USER, text: 'second' },
     ];
@@ -1464,6 +1465,7 @@ describe(
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
           queriedAccessPointGroups: [],
+          queriedAccessPoints: [],
         },
       ];
 
@@ -1546,6 +1548,7 @@ describe(
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
           queriedAccessPointGroups: [],
+          queriedAccessPoints: [],
         },
       ];
 
@@ -2756,6 +2759,7 @@ describe(
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
           queriedAccessPointGroups: [],
+          queriedAccessPoints: [],
         },
       ];
 

@@ -1015,6 +1015,7 @@ export {
 } from './graph-manager/action/analytics/data-product/DataProductAnalysis.js';
 export {
   DatasetSpecification,
+  RelationalDatabaseTableSpecification,
   DatasetEntitlementReport,
   DatasetEntitlementAccessGrantedReport,
   DatasetEntitlementAccessNotGrantedReport,

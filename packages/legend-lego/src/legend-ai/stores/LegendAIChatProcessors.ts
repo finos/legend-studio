@@ -15,7 +15,12 @@
  */
 
 import type React from 'react';
-import { assertErrorThrown, isPlainObject, uuid } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  isNonNullable,
+  uuid,
+} from '@finos/legend-shared';
 import {
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -25,16 +30,20 @@ import {
   type LegendAIConversationTurn,
   type LegendAIProductMetadata,
   type LegendAIModelContext,
+  LegendAISelfHealKind,
   LegendAIQuestionIntent,
   LegendAIResponseOutcome,
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
+  LegendAIExecutionTimeoutError,
   LegendAIServiceError,
   LegendAIUnsupportedEngineShapeError,
   TDSServiceSourceType,
   buildColumnDefsFromNames,
   LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+  LEGEND_AI_ALTERNATE_ROOT_ACTION_ID,
+  LEGEND_AI_FEEDBACK_PROMPT,
   getTodayISO,
 } from '../LegendAITypes.js';
 import {
@@ -46,12 +55,19 @@ import {
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import {
   type QueryExplicitExecutionContextInfo,
+  type TDSRowDataType,
   extractElementNameFromPath,
 } from '@finos/legend-graph';
 import {
   buildEnrichedBusinessContext,
   buildModelContextEnrichmentText,
+  buildModelCatalogText,
+  buildDataQueryApproachText,
   findBestAlternateRoot,
+  rankEntities,
+  relaxExactStringFilters,
+  extractFilteredColumns,
+  buildProbedValueHints,
   splitIdentifierTokens,
   tokenizeText,
 } from '../LegendAIDocEnrichment.js';
@@ -63,30 +79,49 @@ import {
   isNumericColumn,
   isStringColumn,
 } from '../components/LegendAIChatHelpers.js';
+import {
+  HAS_LIMIT_PATTERN,
+  AP_CALL_PATTERN,
+  servicePId,
+  pureRelationColumnRef,
+} from './LegendAISqlHelpers.js';
+import {
+  buildCrossJoinZeroRowExplanation,
+  buildJoinablePairSuggestions,
+} from './LegendAIJoinAnalysis.js';
+import {
+  boundCrossAccessPointJoinDrivingSide,
+  sanitizeJoinDuplicateColumns,
+  sanitizeJoinOrderBy,
+  sanitizeJoinSameKeyColumns,
+  wrapBareJoinAccessPoints,
+} from './LegendAISqlJoinSanitizers.js';
 
 const MAX_ERROR_MESSAGE_LENGTH = 500;
+const MAX_DISPLAYED_ERROR_LENGTH = 4000;
 const MAX_THINKING_ERROR_PREVIEW_LENGTH = 200;
 const DEFAULT_MAX_JUDGE_ATTEMPTS = 5;
 const DEFAULT_MAX_EXECUTION_RETRIES = 3;
 const ANALYSIS_TIMEOUT_MS = 15_000;
 const ORCHESTRATOR_GENERATION_TIMEOUT_MS = 120_000;
+const DISTINCT_PROBE_ROW_LIMIT = 5000;
+const MAX_RECOVERED_FILTER_COLUMNS = 4;
 const EXECUTION_TIMEOUT_MS = 300_000;
 const ANALYSIS_PREVIEW_ROW_LIMIT = 3;
 const ANALYSIS_PREVIEW_VALUE_LIMIT = 40;
+const MAX_ANALYSIS_ROWS = 100;
 const MAX_NON_SQL_PASS_ATTEMPTS = 2;
-const JOIN_PATTERN = /\bJOIN\b/i;
-const ORDER_BY_SPLIT = /\bORDER\s+BY\b/i;
 const UNION_ALL_PATTERN = /\bUNION\s+ALL\b/i;
 const LITERAL_COL_PATTERN = /,\s*'[^']*'\s+AS\s+(?:"[^"]+"|[a-z]\w*)/gi;
-const SELECT_ALIAS_PATTERN =
-  /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"\s+AS\s+(?:"(?<qAlias>[^"]+)"|(?<uAlias>\w+))/gi;
-const ALIAS_DOT_COL_PATTERN = /\b(?<tbl>[a-z]\w*)\s*\.\s*"(?<col>[^"]+)"/gi;
 const SERVICE_CALL_PATTERN = /\bservice\s*\([^()]*\)/gi;
 const DEFAULT_SAFETY_LIMIT = 1000;
-const HAS_LIMIT_PATTERN = /\bLIMIT\s+\d+/i;
 const HAS_AGGREGATION_PATTERN =
-  /\bGROUP\s+BY\b|\bCOUNT\s*\(|\bSUM\s*\(|\bAVG\s*\(|\bMIN\s*\(|\bMAX\s*\(/i;
+  /\bGROUP\s+BY\b|\b(?:COUNT|SUM|AVG|MIN|MAX)\s*\(|\bSELECT\s+DISTINCT\b|\bHAVING\b|\bQUALIFY\b/i;
 const MAX_SERVICES_FOR_LLM_SELECTION = 30;
+const VALUE_GROUNDING_TIME_BUDGET_MS = 4000;
+const AP_SQL_EXECUTION_TIMEOUT_MS = 90_000;
+const AP_SQL_EXECUTION_TIMEOUT_MESSAGE =
+  'This query is scanning very large access-point feeds and is taking too long to return. Narrow it with a date or entity filter, join on the full key (including the date), or use a *_LATEST snapshot access point.';
 const ORCHESTRATOR_FALLBACK_LABEL = 'Try Legend AI Orchestrator';
 const SQL_GENERATION_FAILURE_WITH_ORCHESTRATOR =
   'SQL generation could not handle this query. You can try the Legend AI Orchestrator to generate a Pure query instead.';
@@ -98,6 +133,13 @@ const SERVICE_PARAM_DATE_LIKE_PATTERNS: readonly RegExp[] = [
   /start|end|from|until|begin|report|cutoff|valuation|pricing/i,
 ];
 const GENERIC_TABLE_PATTERNS = /combined|consolidated|all|master|summary/i;
+
+const MIN_ALL_NULL_COLUMNS_FOR_JOIN_HINT = 2;
+const JOIN_HINT_COLUMN_PREVIEW_LIMIT = 3;
+
+const MAX_AGGREGATE_COLUMNS = 12;
+const MAX_AGGREGATE_VALUES_PER_COLUMN = 8;
+const MIN_NUMERIC_DISTINCT_RATIO = 0.5;
 
 function isLikelySqlQuery(text: string): boolean {
   const trimmed = text.trim().toLowerCase();
@@ -167,6 +209,7 @@ export function createMessagePair(
       suggestedQueries: [],
       fallbackAction: null,
       queriedAccessPointGroups: [],
+      queriedAccessPoints: [],
     },
   ];
 }
@@ -272,6 +315,9 @@ export function categorizeExecutionError(
   errMsg: string,
   error?: Error,
 ): ExecutionErrorCategory {
+  if (error instanceof LegendAIExecutionTimeoutError) {
+    return ExecutionErrorCategory.NONE;
+  }
   if (error instanceof LegendAIUnsupportedEngineShapeError) {
     return ExecutionErrorCategory.SQL_FIXABLE;
   }
@@ -289,6 +335,15 @@ export function categorizeExecutionError(
   return ExecutionErrorCategory.NONE;
 }
 
+const ACCESS_ERROR_PATTERN =
+  /insufficient privileges|access.*denied|permission.*denied|not authorized|unauthorized|403|entitlement/i;
+
+// Whether an execution error message indicates an access/permission problem (as
+// opposed to a SQL compilation or schema error), gating the "Request Access" UI.
+export function looksLikeAccessError(errorMsg: string | undefined): boolean {
+  return errorMsg !== undefined && ACCESS_ERROR_PATTERN.test(errorMsg);
+}
+
 export function finishWithThinkingError(
   setMessages: MessageSetter,
   errorMsg: string,
@@ -301,11 +356,45 @@ export function finishWithThinkingError(
         ? { ...s, status: LegendAIThinkingStepStatus.ERROR }
         : s,
     ),
-    error: errorMsg.slice(0, MAX_ERROR_MESSAGE_LENGTH),
+    error: errorMsg.slice(0, MAX_DISPLAYED_ERROR_LENGTH),
     errorType: errorType ?? null,
     isProcessing: false,
     thinkingDuration: elapsedSeconds(startTime),
   }));
+}
+
+export function filterHistoryForAccessPoints(
+  history: LegendAIConversationTurn[],
+  currentAccessPoints: ReadonlySet<string>,
+): LegendAIConversationTurn[] {
+  if (currentAccessPoints.size === 0) {
+    return history;
+  }
+  return history.filter((turn) => {
+    if (!turn.queriedAccessPoints || turn.queriedAccessPoints.length === 0) {
+      return true;
+    }
+    return turn.queriedAccessPoints.some((ap) => currentAccessPoints.has(ap));
+  });
+}
+
+// Access-point names referenced by `p('...')` calls in the SQL, in
+// first-appearance (driving-first) order and de-duplicated. Computed once at
+// generation to persist on the message so downstream consumers (UI, history,
+// integrations) resolve access points structurally instead of re-parsing SQL.
+function orderedAccessPointsFromSql(sql: string): string[] {
+  const ordered: string[] = [];
+  const seen = new Set<string>();
+  for (const match of sql.matchAll(AP_CALL_PATTERN)) {
+    const path = match.groups?.pId ?? '';
+    const dotIdx = path.lastIndexOf('.');
+    const apName = dotIdx === -1 ? path : path.slice(dotIdx + 1);
+    if (apName.length > 0 && !seen.has(apName)) {
+      seen.add(apName);
+      ordered.push(apName);
+    }
+  }
+  return ordered;
 }
 
 function buildTurnFromAssistant(
@@ -318,6 +407,9 @@ function buildTurnFromAssistant(
       sql: asstMsg.sql,
       intent: LegendAIQuestionIntent.DATA_QUERY,
     };
+    if (asstMsg.queriedAccessPoints.length > 0) {
+      turn.queriedAccessPoints = asstMsg.queriedAccessPoints;
+    }
     if (asstMsg.error) {
       turn.resultSummary = `ERROR: ${asstMsg.error.slice(0, 200)}`;
     } else if (asstMsg.gridData) {
@@ -530,10 +622,10 @@ export function buildExecutionErrorMessage(
     return errParts.join('');
   }
 
-  if (errLower.includes('rename(~')) {
+  if (errLower.includes('duplicate column')) {
     return [
-      'Cross-access-point JOINs on columns with the same name are not yet supported by the execution engine.',
-      '\nTry querying each access point separately, or ask a metadata question instead.',
+      'This join produced two output columns with the same name, which the execution engine cannot return.',
+      '\nGive each selected column a unique alias (e.g. `<column> AS <accessPoint>_<column>`) so the joined result stays distinct.',
     ].join('');
   }
 
@@ -680,7 +772,7 @@ function formatPreviewValue(value: unknown): string {
 function buildJoinDiagnosticNote(
   query: string,
   columns: string[],
-  rows: unknown[],
+  rows: TDSRowDataType[],
 ): string {
   if (!/\bJOIN\b/i.test(query) || rows.length === 0 || columns.length < 2) {
     return '';
@@ -690,11 +782,8 @@ function buildJoinDiagnosticNote(
   const someDataColumns: string[] = [];
   for (const col of columns) {
     const allNull = rows.every((row) => {
-      if (isPlainObject(row)) {
-        const val = row[col];
-        return val === null || val === undefined;
-      }
-      return true;
+      const val = row[col];
+      return val === null || val === undefined;
     });
     if (allNull) {
       allNullColumns.push(col);
@@ -706,10 +795,10 @@ function buildJoinDiagnosticNote(
   if (
     allNullColumns.length > 0 &&
     someDataColumns.length > 0 &&
-    allNullColumns.length >= 2
+    allNullColumns.length >= MIN_ALL_NULL_COLUMNS_FOR_JOIN_HINT
   ) {
     return (
-      `Note: ${allNullColumns.length} columns (${allNullColumns.slice(0, 3).join(', ')}${allNullColumns.length > 3 ? ', ...' : ''}) ` +
+      `Note: ${allNullColumns.length} columns (${allNullColumns.slice(0, JOIN_HINT_COLUMN_PREVIEW_LIMIT).join(', ')}${allNullColumns.length > JOIN_HINT_COLUMN_PREVIEW_LIMIT ? ', ...' : ''}) ` +
       'returned entirely NULL values. This typically means the joined services do not share ' +
       'overlapping values for the join key. The services may track different records. ' +
       'Try querying each service separately to explore their data independently.'
@@ -719,25 +808,101 @@ function buildJoinDiagnosticNote(
   return '';
 }
 
+interface ColumnDistribution {
+  column: string;
+  counts: Map<string, number>;
+  present: number;
+  numeric: number;
+  min: number;
+  max: number;
+}
+
+function createColumnDistribution(column: string): ColumnDistribution {
+  return {
+    column,
+    counts: new Map(),
+    present: 0,
+    numeric: 0,
+    min: Number.POSITIVE_INFINITY,
+    max: Number.NEGATIVE_INFINITY,
+  };
+}
+
+// Formats one accumulated column distribution into a single line:
+// "(all empty)", a numeric range, or the top values with their counts.
+function formatColumnDistribution(stats: ColumnDistribution): string {
+  const { column, counts, present, numeric, min, max } = stats;
+  if (present === 0) {
+    return `- ${column}: (all empty)`;
+  }
+  if (
+    numeric === present &&
+    counts.size > present * MIN_NUMERIC_DISTINCT_RATIO
+  ) {
+    return `- ${column}: numeric, range ${min}–${max} (${present} values)`;
+  }
+  const top = Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, MAX_AGGREGATE_VALUES_PER_COLUMN)
+    .map(([value, count]) => `${value} (${count})`)
+    .join(', ');
+  const more =
+    counts.size > MAX_AGGREGATE_VALUES_PER_COLUMN
+      ? `, … ${counts.size} distinct total`
+      : '';
+  return `- ${column}: ${top}${more}`;
+}
+
+export function buildDataAggregatesText(
+  columns: string[],
+  rows: TDSRowDataType[],
+): string {
+  if (rows.length === 0) {
+    return 'Total rows: 0';
+  }
+  const distributions = columns
+    .slice(0, MAX_AGGREGATE_COLUMNS)
+    .map(createColumnDistribution);
+  for (const row of rows) {
+    for (const stats of distributions) {
+      const raw = row[stats.column];
+      if (raw === null || raw === undefined || raw === '') {
+        continue;
+      }
+      stats.present += 1;
+      const asString = String(raw);
+      stats.counts.set(asString, (stats.counts.get(asString) ?? 0) + 1);
+      const asNumber = typeof raw === 'number' ? raw : Number(asString);
+      if (asString.trim() !== '' && !Number.isNaN(asNumber)) {
+        stats.numeric += 1;
+        stats.min = Math.min(stats.min, asNumber);
+        stats.max = Math.max(stats.max, asNumber);
+      }
+    }
+  }
+  return [
+    `Total rows: ${rows.length}`,
+    'Column value distributions over ALL rows (value: count):',
+    ...distributions.map(formatColumnDistribution),
+  ].join('\n');
+}
+
 function buildDeterministicResultSummary(
   question: string,
   query: string,
   columns: string[],
-  rows: unknown[],
+  rows: TDSRowDataType[],
 ): string {
   const selectedColumns = columns.length === 0 ? 'none' : columns.join(', ');
   const rowCount = rows.length;
   const previewRows = rows
     .slice(0, ANALYSIS_PREVIEW_ROW_LIMIT)
     .map((row, index) => {
-      if (isPlainObject(row)) {
-        const entries = Object.entries(row).slice(0, 4);
-        const formattedEntries = entries.map(
-          ([key, value]) => `${key}: ${formatPreviewValue(value)}`,
-        );
-        return `${index + 1}. ${formattedEntries.join(', ')}`;
-      }
-      return `${index + 1}. ${formatPreviewValue(row)}`;
+      const entries = Object.entries(row).slice(0, 4);
+      const formattedEntries = entries.map(
+        ([key, value]) => `${key}: ${formatPreviewValue(value)}`,
+      );
+      return `${index + 1}. ${formattedEntries.join(', ')}`;
     })
     .join('\n');
 
@@ -867,7 +1032,11 @@ function finalizeJudgeAttempt(
   maxAttempts: number,
   setMessages: MessageSetter,
 ): string | null | undefined {
-  if (currentSql !== previousSql && attempt < maxAttempts) {
+  if (
+    normalizeSqlForComparison(currentSql) !==
+      normalizeSqlForComparison(previousSql) &&
+    attempt < maxAttempts
+  ) {
     return undefined;
   }
   addThinkingStep(
@@ -1232,9 +1401,11 @@ export async function analyzeOrchestratorResults(
       question,
       query,
       execResult.columns,
-      execResult.rows,
+      execResult.rows.slice(0, MAX_ANALYSIS_ROWS),
       metadata,
       config,
+      execResult.rows.length,
+      buildDataAggregatesText(execResult.columns, execResult.rows),
     ),
     ANALYSIS_TIMEOUT_MS,
   );
@@ -1360,6 +1531,207 @@ async function retryWithAlternateRoot(
   }
 }
 
+async function attemptProbedRegeneration(
+  question: string,
+  legendQuery: string,
+  resolvedEntities: LegendAIResolvedEntities,
+  orchestratorOptions: Required<LegendAIOrchestratorOptionsParam>,
+  metadata: LegendAIProductMetadata,
+  context: LegendAIOperationContext,
+  options: { startTime: number; modelContext?: LegendAIModelContext },
+): Promise<boolean> {
+  const { startTime, modelContext } = options;
+  if (!modelContext) {
+    return false;
+  }
+  const { dataProductCoordinates, pureExecutionContext } = orchestratorOptions;
+  const { config, plugin, setMessages } = context;
+
+  const rootEntity = modelContext.entities.find(
+    (entity) => entity.path === resolvedEntities.rootEntity,
+  );
+  if (!rootEntity) {
+    return false;
+  }
+  const columns = extractFilteredColumns(legendQuery).filter((column) =>
+    rootEntity.properties.some(
+      (prop) => prop.name === column && !prop.type.includes('::'),
+    ),
+  );
+  if (columns.length === 0) {
+    return false;
+  }
+
+  addThinkingStep(setMessages, 'Re-grounding with actual column values...');
+  const probeResults = await Promise.all(
+    columns.slice(0, MAX_RECOVERED_FILTER_COLUMNS).map(async (column) => {
+      try {
+        const probe = await withTimeout(
+          plugin.executePureQuery(
+            `${resolvedEntities.rootEntity}.all()->project([col(x|$x.${column}, '${column}')])->distinct()->take(${DISTINCT_PROBE_ROW_LIMIT})`,
+            pureExecutionContext,
+            dataProductCoordinates,
+            config,
+          ),
+          ORCHESTRATOR_GENERATION_TIMEOUT_MS,
+        );
+        const values = (probe?.rows ?? [])
+          .map((row) => row[column])
+          .filter(isNonNullable)
+          .map(String);
+        return values.length > 0
+          ? { column, values: Array.from(new Set(values)) }
+          : undefined;
+      } catch (probeError) {
+        assertErrorThrown(probeError);
+        addThinkingStep(setMessages, `Could not probe values for "${column}"`);
+        return undefined;
+      }
+    }),
+  );
+  const probed = new Map<string, string[]>();
+  for (const entry of probeResults) {
+    if (entry !== undefined) {
+      probed.set(entry.column, entry.values);
+    }
+  }
+  if (probed.size === 0) {
+    return false;
+  }
+
+  const base = buildEnrichedBusinessContext(
+    question,
+    resolvedEntities.rootEntity,
+    resolvedEntities.relatedEntities,
+    modelContext,
+  );
+  const augmentedContext = {
+    ...base,
+    businessContextMatch: {
+      ...base.businessContextMatch,
+      additionalNlModelContext: [
+        ...(base.businessContextMatch?.additionalNlModelContext ?? []),
+        ...buildProbedValueHints(probed),
+      ],
+    },
+  };
+  try {
+    const response = await withTimeout(
+      plugin.generateQueryViaOrchestrator(
+        {
+          user_question: question,
+          semantic_search_resolution_details: {
+            data_product_coordinates: dataProductCoordinates,
+            root_entity: resolvedEntities.rootEntity,
+            related_entities: resolvedEntities.relatedEntities,
+            enriched_business_context: augmentedContext,
+          },
+        },
+        config,
+      ),
+      ORCHESTRATOR_GENERATION_TIMEOUT_MS,
+    );
+    if (!response) {
+      return false;
+    }
+    const safeQuery = ensurePureSafetyLimit(response.legend_query);
+    updateLastAssistant(setMessages, () => ({
+      sql: safeQuery,
+      isExecuting: true,
+    }));
+    const result = await executePureQueryAndReport(
+      safeQuery,
+      pureExecutionContext,
+      dataProductCoordinates,
+      config,
+      plugin,
+      setMessages,
+      startTime,
+    );
+    if (result && result.rows.length > 0) {
+      await analyzeOrchestratorResults(
+        question,
+        safeQuery,
+        result,
+        metadata,
+        context,
+        startTime,
+      );
+      return true;
+    }
+    return false;
+  } catch (regenerateError) {
+    assertErrorThrown(regenerateError);
+    addThinkingStep(
+      setMessages,
+      `Re-grounded retry failed: ${regenerateError.message.slice(
+        0,
+        MAX_THINKING_ERROR_PREVIEW_LENGTH,
+      )}`,
+    );
+    return false;
+  }
+}
+
+// Retries the query with case-insensitive (relaxed) string filters. Returns
+// true when the relaxed query returned rows and its results were reported.
+async function attemptRelaxedFilterRetry(
+  question: string,
+  legendQuery: string,
+  orchestratorOptions: Required<LegendAIOrchestratorOptionsParam>,
+  metadata: LegendAIProductMetadata,
+  context: LegendAIOperationContext,
+  startTime: number,
+): Promise<boolean> {
+  const { config, plugin, setMessages } = context;
+  const { dataProductCoordinates, pureExecutionContext } = orchestratorOptions;
+  const relaxedQuery = relaxExactStringFilters(legendQuery);
+  if (relaxedQuery === legendQuery) {
+    return false;
+  }
+  addThinkingStep(
+    setMessages,
+    'Retrying with relaxed (case-insensitive) filters...',
+  );
+  try {
+    const safeRelaxed = ensurePureSafetyLimit(relaxedQuery);
+    updateLastAssistant(setMessages, () => ({
+      sql: safeRelaxed,
+      isExecuting: true,
+    }));
+    const relaxedResult = await executePureQueryAndReport(
+      safeRelaxed,
+      pureExecutionContext,
+      dataProductCoordinates,
+      config,
+      plugin,
+      setMessages,
+      startTime,
+    );
+    if (relaxedResult && relaxedResult.rows.length > 0) {
+      await analyzeOrchestratorResults(
+        question,
+        relaxedQuery,
+        relaxedResult,
+        metadata,
+        context,
+        startTime,
+      );
+      return true;
+    }
+  } catch (relaxError) {
+    assertErrorThrown(relaxError);
+    addThinkingStep(
+      setMessages,
+      `Relaxed-filter retry failed: ${relaxError.message.slice(
+        0,
+        MAX_THINKING_ERROR_PREVIEW_LENGTH,
+      )}`,
+    );
+  }
+  return false;
+}
+
 async function handleEmptyOrchestratorResults(
   question: string,
   legendQuery: string,
@@ -1373,7 +1745,35 @@ async function handleEmptyOrchestratorResults(
   },
 ): Promise<void> {
   const { startTime, modelContext } = options;
-  const { config, plugin, setMessages } = context;
+  const { setMessages } = context;
+
+  if (
+    await attemptRelaxedFilterRetry(
+      question,
+      legendQuery,
+      orchestratorOptions,
+      metadata,
+      context,
+      startTime,
+    )
+  ) {
+    return;
+  }
+
+  const regenerated = await attemptProbedRegeneration(
+    question,
+    legendQuery,
+    resolvedEntities,
+    orchestratorOptions,
+    metadata,
+    context,
+    { startTime, ...(modelContext === undefined ? {} : { modelContext }) },
+  );
+  if (regenerated) {
+    return;
+  }
+
+  const triedRoots = new Set<string>([resolvedEntities.rootEntity]);
 
   if (resolvedEntities.relatedEntities.length > 0) {
     const alternateRoot = modelContext
@@ -1384,6 +1784,7 @@ async function handleEmptyOrchestratorResults(
         )
       : resolvedEntities.relatedEntities[0];
     if (alternateRoot) {
+      triedRoots.add(alternateRoot);
       const succeeded = await retryWithAlternateRoot(
         question,
         alternateRoot,
@@ -1399,24 +1800,56 @@ async function handleEmptyOrchestratorResults(
     }
   }
 
-  addThinkingStep(
+  addThinkingStep(setMessages, 'No results found for this question.');
+  completeThinkingSteps(setMessages);
+  updateLastAssistant(setMessages, () => ({
+    textAnswer: buildUnanswerableMessage(),
+    suggestedQueries: [],
+    isProcessing: false,
+    thinkingDuration: elapsedSeconds(startTime),
+  }));
+
+  attachAlternateRootFallback(
+    question,
+    resolvedEntities,
+    triedRoots,
+    modelContext,
     setMessages,
-    'No results returned \u2014 building contextual guidance...',
   );
-  updateLastAssistant(setMessages, () => ({ isProcessing: true }));
-  const fallback = await withTimeout(
-    plugin.buildNoResultsFallback(question, legendQuery, metadata, config),
-    ANALYSIS_TIMEOUT_MS,
-  );
-  if (fallback) {
-    completeThinkingSteps(setMessages);
-    updateLastAssistant(setMessages, () => ({
-      textAnswer: fallback.summary,
-      suggestedQueries: fallback.suggestedQueries,
-      isProcessing: false,
-      thinkingDuration: elapsedSeconds(startTime),
-    }));
+}
+
+// Offers a "try a different root entity" fallback action when a not-yet-tried,
+// positively-ranked root exists for the question.
+function attachAlternateRootFallback(
+  question: string,
+  resolvedEntities: LegendAIResolvedEntities,
+  triedRoots: Set<string>,
+  modelContext: LegendAIModelContext | undefined,
+  setMessages: MessageSetter,
+): void {
+  const nextRoot = modelContext
+    ? rankEntities(question, modelContext).find(
+        (ranked) => !triedRoots.has(ranked.entity.path) && ranked.score > 0,
+      )?.entity
+    : undefined;
+  if (!nextRoot) {
+    return;
   }
+  const nextRelated = resolvedEntities.relatedEntities.filter(
+    (path) => path !== nextRoot.path,
+  );
+  updateLastAssistant(setMessages, () => ({
+    fallbackAction: {
+      label: `Tried ${extractElementNameFromPath(
+        resolvedEntities.rootEntity,
+      )} as the root \u2014 try ${nextRoot.name} instead`,
+      actionId: LEGEND_AI_ALTERNATE_ROOT_ACTION_ID,
+      resolvedEntities: {
+        rootEntity: nextRoot.path,
+        relatedEntities: nextRelated,
+      },
+    },
+  }));
 }
 
 async function resolveOrchestrationEntities(
@@ -1454,16 +1887,12 @@ function extractUserErrorFromMessage(errorMessage: string): string {
   const marker = 'with error:';
   const idx = errorMessage.toLowerCase().indexOf(marker);
   if (idx !== -1) {
-    const after = errorMessage.slice(idx + marker.length).trimStart();
-    const newlineIdx = after.indexOf('\n');
-    const reason = (
-      newlineIdx === -1 ? after : after.slice(0, newlineIdx)
-    ).trim();
+    const reason = errorMessage.slice(idx + marker.length).trim();
     if (reason.length > 0) {
-      return reason.slice(0, MAX_ERROR_MESSAGE_LENGTH);
+      return reason.slice(0, MAX_DISPLAYED_ERROR_LENGTH);
     }
   }
-  return errorMessage.slice(0, MAX_ERROR_MESSAGE_LENGTH);
+  return errorMessage.slice(0, MAX_DISPLAYED_ERROR_LENGTH);
 }
 
 async function handleOrchestratorError(
@@ -1508,7 +1937,84 @@ async function handleOrchestratorError(
       `Fallback guidance failed: ${fallbackError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
   }
-  finishWithThinkingError(setMessages, error.message, startTime, orchErrorType);
+  finishWithThinkingError(
+    setMessages,
+    extractUserErrorFromMessage(error.message),
+    startTime,
+    orchErrorType,
+  );
+}
+
+// Analyzes a non-empty orchestrator result (or runs empty-result recovery),
+// attaching the model-approach overview when available.
+async function reportOrchestratorExecutionResult(
+  params: {
+    question: string;
+    safeQuery: string;
+    execResult: LegendAISqlExecutionResultData;
+    orchestratorOptions: Required<LegendAIOrchestratorOptionsParam>;
+    metadata: LegendAIProductMetadata;
+    resolvedEntities: LegendAIResolvedEntities;
+    startTime: number;
+    modelContext?: LegendAIModelContext;
+  },
+  context: LegendAIOperationContext,
+): Promise<void> {
+  const {
+    question,
+    safeQuery,
+    execResult,
+    orchestratorOptions,
+    metadata,
+    resolvedEntities,
+    startTime,
+    modelContext,
+  } = params;
+  const { setMessages } = context;
+  try {
+    if (execResult.rows.length > 0) {
+      await analyzeOrchestratorResults(
+        question,
+        safeQuery,
+        execResult,
+        metadata,
+        context,
+        startTime,
+      );
+      if (modelContext) {
+        const approachText = buildDataQueryApproachText(
+          question,
+          modelContext,
+          resolvedEntities.rootEntity,
+        );
+        if (approachText) {
+          attachMetadataOverview(setMessages, approachText);
+        }
+      }
+    } else {
+      await handleEmptyOrchestratorResults(
+        question,
+        safeQuery,
+        orchestratorOptions,
+        metadata,
+        resolvedEntities,
+        context,
+        { startTime, ...(modelContext === undefined ? {} : { modelContext }) },
+      );
+    }
+  } catch (analysisError) {
+    assertErrorThrown(analysisError);
+    addThinkingStep(
+      setMessages,
+      `Result analysis failed: ${analysisError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+    );
+  } finally {
+    completeThinkingSteps(setMessages);
+    updateLastAssistant(setMessages, () => ({
+      isProcessing: false,
+      thinkingDuration: elapsedSeconds(startTime),
+    }));
+  }
 }
 
 export async function processQuestionViaOrchestrator(
@@ -1608,43 +2114,19 @@ export async function processQuestionViaOrchestrator(
       return;
     }
 
-    try {
-      if (execResult.rows.length > 0) {
-        await analyzeOrchestratorResults(
-          question,
-          safeQuery,
-          execResult,
-          metadata,
-          context,
-          startTime,
-        );
-      } else {
-        await handleEmptyOrchestratorResults(
-          question,
-          safeQuery,
-          { dataProductCoordinates, pureExecutionContext },
-          metadata,
-          resolvedEntities,
-          context,
-          {
-            startTime,
-            ...(modelContext === undefined ? {} : { modelContext }),
-          },
-        );
-      }
-    } catch (analysisError) {
-      assertErrorThrown(analysisError);
-      addThinkingStep(
-        setMessages,
-        `Result analysis failed: ${analysisError.message.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-      );
-    } finally {
-      completeThinkingSteps(setMessages);
-      updateLastAssistant(setMessages, () => ({
-        isProcessing: false,
-        thinkingDuration: elapsedSeconds(startTime),
-      }));
-    }
+    await reportOrchestratorExecutionResult(
+      {
+        question,
+        safeQuery,
+        execResult,
+        orchestratorOptions: { dataProductCoordinates, pureExecutionContext },
+        metadata,
+        resolvedEntities,
+        startTime,
+        ...(modelContext === undefined ? {} : { modelContext }),
+      },
+      context,
+    );
   } catch (error) {
     assertErrorThrown(error);
     await handleOrchestratorError(
@@ -1666,6 +2148,10 @@ export function cleanLlmSqlResponse(raw: string): string {
     .trim();
 }
 
+function normalizeSqlForComparison(sql: string): string {
+  return sql.replaceAll(/\s+/gu, ' ').trim().toLowerCase();
+}
+
 export function isValidSqlCorrection(
   trimmed: string,
   currentSql: string,
@@ -1675,139 +2161,6 @@ export function isValidSqlCorrection(
     trimmed.toLowerCase().startsWith('select') &&
     trimmed !== currentSql
   );
-}
-
-export function sanitizeJoinOrderBy(sql: string): string {
-  if (!JOIN_PATTERN.test(sql)) {
-    return sql;
-  }
-  const parts = sql.split(ORDER_BY_SPLIT);
-  if (parts.length < 2) {
-    return sql;
-  }
-
-  const beforeOrderBy = parts[0] ?? '';
-  const afterOrderBy = parts.slice(1).join('ORDER BY').replace(/^\s+/, '');
-
-  const selectAliases = new Map<string, string>();
-  for (const m of beforeOrderBy.matchAll(SELECT_ALIAS_PATTERN)) {
-    const tableAlias = (m.groups?.tbl ?? '').toLowerCase();
-    const colName = (m.groups?.col ?? '').toLowerCase();
-    const asAlias = m.groups?.qAlias ?? m.groups?.uAlias ?? '';
-    selectAliases.set(`${tableAlias}.${colName}`, asAlias);
-  }
-
-  if (selectAliases.size === 0) {
-    return sql;
-  }
-
-  // Build a lookup of the original alias.col text → its SELECT alias replacement.
-  // matchAll exposes typed `.groups`, so no cast is needed.
-  const replacements = new Map<string, string>();
-  for (const m of afterOrderBy.matchAll(ALIAS_DOT_COL_PATTERN)) {
-    const tbl = (m.groups?.tbl ?? '').toLowerCase();
-    const col = (m.groups?.col ?? '').toLowerCase();
-    const alias = selectAliases.get(`${tbl}.${col}`);
-    if (alias) {
-      replacements.set(m[0], `"${alias}"`);
-    }
-  }
-
-  if (replacements.size === 0) {
-    return sql;
-  }
-
-  const rewritten = afterOrderBy.replaceAll(
-    ALIAS_DOT_COL_PATTERN,
-    (match) => replacements.get(match) ?? match,
-  );
-
-  if (rewritten === afterOrderBy) {
-    return sql;
-  }
-  return `${beforeOrderBy}ORDER BY ${rewritten}`;
-}
-
-export function sanitizeJoinSameKeyColumns(
-  sql: string,
-  services?: TDSServiceSchema[],
-): string {
-  if (!JOIN_PATTERN.test(sql)) {
-    return sql;
-  }
-
-  const joinRegex =
-    /\bJOIN\s{1,5}p\(\s{0,5}'(?<pId>[^']{1,200})'\s{0,5}\)\s{1,5}AS\s{1,5}(?<rAlias>[a-z]\w{0,63})\s{1,5}ON\s{1,5}(?<onClause>[^\n]{1,500})/gi;
-
-  let result = sql;
-  let match: RegExpExecArray | null;
-
-  while ((match = joinRegex.exec(sql)) !== null) {
-    const pId = match.groups?.pId ?? '';
-    const rightAlias = match.groups?.rAlias ?? '';
-    const onClause = (match.groups?.onClause ?? '').slice(0, 500);
-
-    const sameKeyMatch =
-      /(?<lAlias>[a-z]\w{0,63}) {0,5}\. {0,5}"(?<lCol>[^"]{1,200})" {0,5}= {0,5}(?<rAl>[a-z]\w{0,63}) {0,5}\. {0,5}"(?<rCol>[^"]{1,200})"/i.exec(
-        onClause,
-      );
-    if (!sameKeyMatch) {
-      continue;
-    }
-
-    const leftCol = sameKeyMatch.groups?.lCol ?? '';
-    const rightCol = sameKeyMatch.groups?.rCol ?? '';
-    const matchedRightAlias = sameKeyMatch.groups?.rAl ?? '';
-
-    if (
-      leftCol.toLowerCase() !== rightCol.toLowerCase() ||
-      matchedRightAlias.toLowerCase() !== rightAlias.toLowerCase()
-    ) {
-      continue;
-    }
-
-    const renamedKey = `${rightAlias}_${rightCol}`;
-    const columnList = buildSubqueryColumnList(
-      pId,
-      rightCol,
-      renamedKey,
-      services,
-    );
-    const originalFragment = `p('${pId}') AS ${rightAlias}`;
-    const subqueryFragment = `(SELECT ${columnList} FROM p('${pId}')) AS ${rightAlias}`;
-
-    const oldOnRef = `${rightAlias}."${rightCol}"`;
-    const newOnRef = `${rightAlias}."${renamedKey}"`;
-
-    result = result.replace(originalFragment, subqueryFragment);
-    result = result.replaceAll(oldOnRef, newOnRef);
-  }
-
-  return result;
-}
-
-function buildSubqueryColumnList(
-  pId: string,
-  originalKey: string,
-  renamedKey: string,
-  services?: TDSServiceSchema[],
-): string {
-  const svc = services?.find(
-    (s) =>
-      s.dataProductPath &&
-      s.pattern &&
-      pId === `${s.dataProductPath}.${s.pattern.replace(/^\//, '')}`,
-  );
-  if (!svc || svc.columns.length === 0) {
-    return `"${originalKey}" AS "${renamedKey}", *`;
-  }
-  return svc.columns
-    .map((c) =>
-      c.name.toLowerCase() === originalKey.toLowerCase()
-        ? `"${c.name}" AS "${renamedKey}"`
-        : `"${c.name}"`,
-    )
-    .join(', ');
 }
 
 export function sanitizeLiteralColumns(sql: string): string {
@@ -2111,14 +2464,15 @@ export function ensureSafeLimit(
 }
 
 function prepareSafeSql(sql: string, services: TDSServiceSchema[]): string {
-  const safeSql = ensureSafeLimit(
-    ensureDateParameters(
-      sanitizeLiteralColumns(
-        sanitizeJoinSameKeyColumns(sanitizeJoinOrderBy(sql), services),
-      ),
+  const joined = sanitizeLiteralColumns(
+    sanitizeJoinSameKeyColumns(
+      sanitizeJoinOrderBy(sanitizeJoinDuplicateColumns(sql, services)),
       services,
     ),
   );
+  const wrapped = wrapBareJoinAccessPoints(joined, services);
+  const bounded = boundCrossAccessPointJoinDrivingSide(wrapped);
+  const safeSql = ensureSafeLimit(ensureDateParameters(bounded, services));
   const unsupported = detectUnsupportedEnginePattern(safeSql);
   if (unsupported) {
     throw new LegendAIUnsupportedEngineShapeError(unsupported.hint);
@@ -2147,7 +2501,14 @@ async function executeSqlForServices(
     (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
   );
   if (isAccessPoint && dataProductCoordinates) {
-    return plugin.executeLakehouseSql(safeSql, dataProductCoordinates, config);
+    const result = await withTimeout(
+      plugin.executeLakehouseSql(safeSql, dataProductCoordinates, config),
+      AP_SQL_EXECUTION_TIMEOUT_MS,
+    );
+    if (result === undefined) {
+      throw new LegendAIExecutionTimeoutError(AP_SQL_EXECUTION_TIMEOUT_MESSAGE);
+    }
+    return result;
   }
   return plugin.executeSql(safeSql, config);
 }
@@ -2183,6 +2544,9 @@ async function executeSqlWithRetries(
       return { sql: currentSql, result };
     } catch (executeError) {
       assertErrorThrown(executeError);
+      if (executeError instanceof LegendAIExecutionTimeoutError) {
+        return { sql: currentSql, error: executeError.message };
+      }
       if (attempt >= DEFAULT_MAX_EXECUTION_RETRIES) {
         return { sql: currentSql, error: executeError.message };
       }
@@ -2353,7 +2717,11 @@ function buildZeroRowMessage(services: TDSServiceSchema[]): string {
     return `The SQL query executed successfully but returned **0 rows**. Note: parameter detection for ${names} was incomplete — this service may require additional parameters not shown in the schema. Try specifying filter values (dates, IDs, etc.) directly in your question.`;
   }
 
-  return 'The SQL query executed successfully but returned **0 rows**. The applied filters may not match any records, or the specific values may not exist in the queried datasets.';
+  return buildUnanswerableMessage();
+}
+
+function buildUnanswerableMessage(): string {
+  return `Sorry — I couldn't find an answer to this one. This assistant is still learning this data product, so it may not handle every question yet. ${LEGEND_AI_FEEDBACK_PROMPT} Use the 👍 / 👎 below — your feedback helps us improve. You can also try rephrasing with a specific column or value.`;
 }
 
 function handleSqlGenerationFailure(
@@ -2393,6 +2761,7 @@ interface QueryResultReport {
   sqlResult: LegendAISqlExecutionResultData;
   question: string;
   services: TDSServiceSchema[];
+  allAccessPoints?: TDSServiceSchema[];
 }
 
 async function reportQueryResults(
@@ -2402,8 +2771,8 @@ async function reportQueryResults(
   startTime: number,
   hasOrchestratorFallback: boolean,
 ): Promise<void> {
-  const { currentSql, sqlResult, question, services } = report;
-  const { setMessages } = context;
+  const { currentSql, sqlResult, question, services, allAccessPoints } = report;
+  const { config, plugin, setMessages } = context;
   if (sqlResult.rows.length > 0) {
     const columns = deduplicateColumns(sqlResult.columns);
     const rows = sqlResult.rows;
@@ -2452,7 +2821,34 @@ async function reportQueryResults(
       setMessages,
       'Query returned 0 rows after correction attempts.',
     );
+    const joinExplanation = buildCrossJoinZeroRowExplanation(
+      currentSql,
+      services,
+    );
+    const joinSuggestions =
+      joinExplanation === undefined
+        ? []
+        : buildJoinablePairSuggestions(services, allAccessPoints ?? services);
+    const llmAnalysis = await withTimeout(
+      plugin
+        .buildNoResultsFallback(
+          question,
+          currentSql,
+          metadata,
+          config,
+          joinExplanation,
+        )
+        .catch((error: unknown) => {
+          assertErrorThrown(error);
+          return undefined;
+        }),
+      ANALYSIS_TIMEOUT_MS,
+    );
     completeThinkingSteps(setMessages);
+    const suggestions =
+      joinSuggestions.length > 0
+        ? joinSuggestions
+        : (llmAnalysis?.suggestedQueries ?? []);
     const fallback = hasOrchestratorFallback
       ? {
           fallbackAction: {
@@ -2462,7 +2858,11 @@ async function reportQueryResults(
         }
       : {};
     updateLastAssistant(setMessages, () => ({
-      textAnswer: buildZeroRowMessage(services),
+      textAnswer:
+        llmAnalysis?.summary ??
+        joinExplanation ??
+        buildZeroRowMessage(services),
+      ...(suggestions.length > 0 ? { suggestedQueries: suggestions } : {}),
       ...fallback,
       isProcessing: false,
       isExecuting: false,
@@ -2471,11 +2871,13 @@ async function reportQueryResults(
   }
 }
 
+const DEFAULT_MAX_SUPPLEMENTED_SERVICES = 4;
+
 export function supplementMissingCoverage(
   question: string,
   selected: TDSServiceSchema[],
   allServices: TDSServiceSchema[],
-  maxTotal: number = 4,
+  maxTotal: number = DEFAULT_MAX_SUPPLEMENTED_SERVICES,
 ): TDSServiceSchema[] {
   if (selected.length >= maxTotal || allServices.length <= selected.length) {
     return selected;
@@ -2692,6 +3094,403 @@ async function selectBestServices(
   }
 }
 
+const EQUALITY_PREDICATE_PATTERN =
+  /"(?<col>[^"]+)"\s*=\s*'(?<val>[^']*(?:''[^']*)*)'/gu;
+export const IN_PREDICATE_PATTERN =
+  /"(?<col>[^"]+)"\s+in\s*\((?<list>[^)]+)\)/giu;
+export const IN_LIST_LITERAL_PATTERN = /'(?<val>[^']*(?:''[^']*)*)'/gu;
+const MIN_FUZZY_LITERAL_LENGTH = 3;
+
+function normalizeFilterLiteral(value: string): string {
+  return value.replaceAll(/[^a-z0-9]/giu, '').toUpperCase();
+}
+
+function escapeSqlStringLiteral(value: string): string {
+  return value.replaceAll("'", "''");
+}
+
+export function extractFromClause(sql: string): string | undefined {
+  const fromMatch = /\bfrom\b/iu.exec(sql);
+  if (!fromMatch) {
+    return undefined;
+  }
+  const rest = sql.slice(fromMatch.index);
+  const afterFrom = rest.slice('from'.length);
+  const boundary = /\b(?:where|group\s+by|order\s+by|having|limit)\b/iu.exec(
+    afterFrom,
+  );
+  return (
+    boundary ? rest.slice(0, 'from'.length + boundary.index) : rest
+  ).trim();
+}
+
+// Extracts the WHERE clause segment (from the first `WHERE` up to the next
+// top-level clause boundary), so filter self-healing only rewrites WHERE
+// predicates — never JOIN ON keys or HAVING literals.
+export function extractWhereClause(sql: string): string | undefined {
+  const whereMatch = /\bwhere\b/iu.exec(sql);
+  if (!whereMatch) {
+    return undefined;
+  }
+  const rest = sql.slice(whereMatch.index);
+  const afterWhere = rest.slice('where'.length);
+  const boundary =
+    /\b(?:group\s+by|order\s+by|having|limit|window|qualify)\b/iu.exec(
+      afterWhere,
+    );
+  return (
+    boundary ? rest.slice(0, 'where'.length + boundary.index) : rest
+  ).trim();
+}
+
+export function resolveFilterLiteral(
+  literal: string,
+  values: string[],
+): string | undefined {
+  if (values.includes(literal)) {
+    return undefined;
+  }
+  const caseInsensitive = Array.from(
+    new Set(values.filter((v) => v.toLowerCase() === literal.toLowerCase())),
+  );
+  if (caseInsensitive.length === 1) {
+    return caseInsensitive[0];
+  }
+  const normalizedLiteral = normalizeFilterLiteral(literal);
+  if (normalizedLiteral.length < MIN_FUZZY_LITERAL_LENGTH) {
+    return undefined;
+  }
+  const normalizedExact = Array.from(
+    new Set(
+      values.filter((v) => normalizeFilterLiteral(v) === normalizedLiteral),
+    ),
+  );
+  if (normalizedExact.length === 1) {
+    return normalizedExact[0];
+  }
+  const prefixMatches = Array.from(
+    new Set(
+      values.filter((v) => {
+        const normalizedValue = normalizeFilterLiteral(v);
+        return (
+          normalizedValue.length >= MIN_FUZZY_LITERAL_LENGTH &&
+          (normalizedValue.startsWith(normalizedLiteral) ||
+            normalizedLiteral.startsWith(normalizedValue))
+        );
+      }),
+    ),
+  );
+  return prefixMatches.length === 1 ? prefixMatches[0] : undefined;
+}
+
+type FilterValueProbe = (column: string) => Promise<string[] | undefined>;
+
+// Rewrites `"col" = 'literal'` predicates in the WHERE clause whose literal
+// fuzzy-matches a real probed column value, returning the updated SQL and
+// whether anything changed. Every distinct predicate is corrected (a column can
+// appear with several literals across `OR` branches), and only the WHERE clause
+// is scanned so JOIN ON / HAVING literals are left untouched.
+async function correctEqualityFilters(
+  sql: string,
+  probeColumnValues: FilterValueProbe,
+  setMessages: MessageSetter,
+): Promise<{ sql: string; corrected: boolean }> {
+  const whereClause = extractWhereClause(sql);
+  if (whereClause === undefined) {
+    return { sql, corrected: false };
+  }
+  const literalsByColumn = new Map<string, Set<string>>();
+  for (const match of whereClause.matchAll(EQUALITY_PREDICATE_PATTERN)) {
+    const column = match.groups?.col;
+    const literal = match.groups?.val;
+    if (column === undefined || literal === undefined) {
+      continue;
+    }
+    const literals = literalsByColumn.get(column) ?? new Set<string>();
+    literals.add(literal);
+    literalsByColumn.set(column, literals);
+  }
+  const resolutions = new Map<string, Map<string, string>>();
+  for (const [column, literals] of literalsByColumn) {
+    const values = await probeColumnValues(column);
+    if (values === undefined) {
+      continue;
+    }
+    for (const literal of literals) {
+      const resolved = resolveFilterLiteral(literal, values);
+      if (resolved !== undefined && resolved !== literal) {
+        const columnResolutions = resolutions.get(column) ?? new Map();
+        columnResolutions.set(literal, resolved);
+        resolutions.set(column, columnResolutions);
+        addThinkingStep(
+          setMessages,
+          `Matched "${column}" = '${literal}' to '${resolved}' from the column's values...`,
+        );
+      }
+    }
+  }
+  if (resolutions.size === 0) {
+    return { sql, corrected: false };
+  }
+  const correctedWhere = whereClause.replace(
+    EQUALITY_PREDICATE_PATTERN,
+    (matched: string, column: string, literal: string) => {
+      const resolved = resolutions.get(column)?.get(literal);
+      return resolved === undefined
+        ? matched
+        : matched.replace(
+            `'${literal}'`,
+            () => `'${escapeSqlStringLiteral(resolved)}'`,
+          );
+    },
+  );
+  return {
+    sql: sql.replace(whereClause, () => correctedWhere),
+    corrected: true,
+  };
+}
+
+// Rewrites the literals of a single `IN (...)` list to their fuzzy-matched
+// column values; returns the joined list text and whether anything changed.
+function rewriteInListLiterals(
+  list: string,
+  column: string,
+  values: string[],
+  setMessages: MessageSetter,
+): { rewritten: string; changed: boolean } {
+  let changed = false;
+  const rewrittenList: string[] = [];
+  for (const literalMatch of list.matchAll(IN_LIST_LITERAL_PATTERN)) {
+    const literal = literalMatch.groups?.val;
+    if (literal === undefined) {
+      continue;
+    }
+    const resolved = resolveFilterLiteral(literal, values);
+    if (resolved !== undefined && resolved !== literal) {
+      rewrittenList.push(`'${escapeSqlStringLiteral(resolved)}'`);
+      changed = true;
+      addThinkingStep(
+        setMessages,
+        `Matched "${column}" IN '${literal}' to '${resolved}' from the column's values...`,
+      );
+    } else {
+      rewrittenList.push(`'${literal}'`);
+    }
+  }
+  return { rewritten: rewrittenList.join(', '), changed };
+}
+
+async function correctInPredicateFilters(
+  sql: string,
+  probeColumnValues: FilterValueProbe,
+  setMessages: MessageSetter,
+): Promise<{ sql: string; corrected: boolean }> {
+  const whereClause = extractWhereClause(sql);
+  if (whereClause === undefined) {
+    return { sql, corrected: false };
+  }
+  const columns = new Set<string>();
+  for (const match of whereClause.matchAll(IN_PREDICATE_PATTERN)) {
+    const column = match.groups?.col;
+    if (column !== undefined) {
+      columns.add(column);
+    }
+  }
+  const valuesByColumn = new Map<string, string[]>();
+  for (const column of columns) {
+    const values = await probeColumnValues(column);
+    if (values !== undefined) {
+      valuesByColumn.set(column, values);
+    }
+  }
+  if (valuesByColumn.size === 0) {
+    return { sql, corrected: false };
+  }
+  const correctedWhere = whereClause.replace(
+    IN_PREDICATE_PATTERN,
+    (matched: string, column: string, list: string) => {
+      const values = valuesByColumn.get(column);
+      if (values === undefined) {
+        return matched;
+      }
+      const { rewritten, changed } = rewriteInListLiterals(
+        list,
+        column,
+        values,
+        setMessages,
+      );
+      return changed && rewritten.length > 0
+        ? matched.replace(list, () => rewritten)
+        : matched;
+    },
+  );
+  return correctedWhere === whereClause
+    ? { sql, corrected: false }
+    : { sql: sql.replace(whereClause, () => correctedWhere), corrected: true };
+}
+
+// Distinct columns filtered by equality or IN predicates in the WHERE clause,
+// in encounter order — the set the zero-row recovery probes for real values.
+function collectWhereFilterColumns(sql: string): string[] {
+  const whereClause = extractWhereClause(sql);
+  if (whereClause === undefined) {
+    return [];
+  }
+  const columns: string[] = [];
+  const seen = new Set<string>();
+  const addColumn = (column: string | undefined): void => {
+    if (column !== undefined && !seen.has(column)) {
+      seen.add(column);
+      columns.push(column);
+    }
+  };
+  for (const match of whereClause.matchAll(EQUALITY_PREDICATE_PATTERN)) {
+    addColumn(match.groups?.col);
+  }
+  for (const match of whereClause.matchAll(IN_PREDICATE_PATTERN)) {
+    addColumn(match.groups?.col);
+  }
+  return columns;
+}
+
+// Indexes each access point by its lowercased column names (first writer wins),
+// so a filter column resolves to the access point that declares it.
+function buildAccessPointColumnIndex(
+  services: TDSServiceSchema[],
+): Map<string, TDSServiceSchema> {
+  const index = new Map<string, TDSServiceSchema>();
+  for (const accessPoint of services) {
+    if (accessPoint.sourceType !== TDSServiceSourceType.ACCESS_POINT) {
+      continue;
+    }
+    for (const column of accessPoint.columns) {
+      const key = column.name.toLowerCase();
+      if (!index.has(key)) {
+        index.set(key, accessPoint);
+      }
+    }
+  }
+  return index;
+}
+
+// Recovers a zero-row query by re-probing each WHERE-filter column's real distinct
+// values and rewriting equality/IN literals that don't match (casing/spelling).
+async function attemptDistinctValueRecovery(
+  currentSql: string,
+  selectedServices: TDSServiceSchema[],
+  dataProductCoordinates:
+    | LegendAIOrchestratorDataProductCoordinates
+    | undefined,
+  context: LegendAIOperationContext,
+): Promise<
+  { sql: string; result: LegendAISqlExecutionResultData } | undefined
+> {
+  const { plugin, config, setMessages } = context;
+  const isAccessPointProbe =
+    dataProductCoordinates !== undefined &&
+    selectedServices.some(
+      (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
+    );
+  const accessPointByColumn = isAccessPointProbe
+    ? buildAccessPointColumnIndex(selectedServices)
+    : new Map<string, TDSServiceSchema>();
+  const fromClause = isAccessPointProbe
+    ? undefined
+    : extractFromClause(currentSql);
+  if (!isAccessPointProbe && fromClause === undefined) {
+    return undefined;
+  }
+
+  const probeAccessPointColumn = async (
+    column: string,
+  ): Promise<LegendAISqlExecutionResultData> => {
+    const accessPoint = accessPointByColumn.get(column.toLowerCase());
+    const pId = accessPoint ? servicePId(accessPoint) : undefined;
+    if (pId === undefined) {
+      return { columns: [], rows: [] };
+    }
+    const relationQuery = `#P{${pId}}#->select(~[${pureRelationColumnRef(column)}])->distinct()->take(${DISTINCT_PROBE_ROW_LIMIT})`;
+    return plugin.executeLakehouseRelationQuery(
+      relationQuery,
+      guaranteeNonNullable(dataProductCoordinates),
+      config,
+    );
+  };
+
+  const probedValues = new Map<string, string[] | undefined>();
+  const probeColumnValues = async (
+    column: string,
+  ): Promise<string[] | undefined> => {
+    if (probedValues.has(column)) {
+      return probedValues.get(column);
+    }
+    if (probedValues.size >= MAX_RECOVERED_FILTER_COLUMNS) {
+      return undefined;
+    }
+    let values: string[] | undefined;
+    try {
+      const probe = isAccessPointProbe
+        ? await probeAccessPointColumn(column)
+        : await executeSqlForServices(
+            `SELECT DISTINCT "${column}" ${fromClause} LIMIT ${DISTINCT_PROBE_ROW_LIMIT}`,
+            selectedServices,
+            dataProductCoordinates,
+            plugin,
+            config,
+          );
+      values = probe.rows
+        .map((row) => row[column])
+        .filter(isNonNullable)
+        .map(String);
+    } catch (probeError) {
+      assertErrorThrown(probeError);
+      addThinkingStep(setMessages, `Could not probe values for "${column}"`);
+      values = undefined;
+    }
+    probedValues.set(column, values);
+    return values;
+  };
+
+  await Promise.all(
+    collectWhereFilterColumns(currentSql)
+      .slice(0, MAX_RECOVERED_FILTER_COLUMNS)
+      .map((column) => probeColumnValues(column)),
+  );
+
+  const equalityPass = await correctEqualityFilters(
+    currentSql,
+    probeColumnValues,
+    setMessages,
+  );
+  const inPass = await correctInPredicateFilters(
+    equalityPass.sql,
+    probeColumnValues,
+    setMessages,
+  );
+  const correctedSql = inPass.sql;
+  const corrected = equalityPass.corrected || inPass.corrected;
+
+  if (!corrected) {
+    return undefined;
+  }
+  try {
+    const retryResult = await executeSqlForServices(
+      correctedSql,
+      selectedServices,
+      dataProductCoordinates,
+      plugin,
+      config,
+    );
+    if (retryResult.rows.length > 0) {
+      return { sql: correctedSql, result: retryResult };
+    }
+  } catch (retryError) {
+    assertErrorThrown(retryError);
+    addThinkingStep(setMessages, 'Filter-recovery retry failed');
+  }
+  return undefined;
+}
+
 async function tryRecoverZeroRows(
   currentSql: string,
   sqlResult: LegendAISqlExecutionResultData,
@@ -2702,10 +3501,15 @@ async function tryRecoverZeroRows(
     | LegendAIOrchestratorDataProductCoordinates
     | undefined,
   context: LegendAIOperationContext,
-): Promise<{ sql: string; result: LegendAISqlExecutionResultData }> {
+): Promise<{
+  sql: string;
+  result: LegendAISqlExecutionResultData;
+  selfHealed: LegendAISelfHealKind;
+}> {
   const { plugin, config, setMessages } = context;
   let recoveredSql = currentSql;
   let recoveredResult = sqlResult;
+  let selfHealed = LegendAISelfHealKind.NONE;
 
   const strippedSql = stripGuessedNonDateServiceParams(recoveredSql, question);
   if (strippedSql !== recoveredSql) {
@@ -2736,6 +3540,25 @@ async function tryRecoverZeroRows(
   }
 
   if (recoveredResult.rows.length === 0) {
+    addThinkingStep(
+      setMessages,
+      "Checking filter values against the column's actual values...",
+    );
+    const resolved = await attemptDistinctValueRecovery(
+      recoveredSql,
+      selectedServices,
+      dataProductCoordinates,
+      context,
+    );
+    if (resolved) {
+      recoveredSql = resolved.sql;
+      recoveredResult = resolved.result;
+      selfHealed = LegendAISelfHealKind.DISTINCT_VALUE;
+      updateLastAssistant(setMessages, () => ({ sql: resolved.sql }));
+    }
+  }
+
+  if (recoveredResult.rows.length === 0) {
     const correction = await attemptZeroRowCorrection(
       recoveredSql,
       question,
@@ -2747,10 +3570,11 @@ async function tryRecoverZeroRows(
     if (correction) {
       recoveredSql = correction.sql;
       recoveredResult = correction.result;
+      selfHealed = LegendAISelfHealKind.LLM_ZERO_ROW;
     }
   }
 
-  return { sql: recoveredSql, result: recoveredResult };
+  return { sql: recoveredSql, result: recoveredResult, selfHealed };
 }
 
 async function resolveNestedPCalls(
@@ -2874,6 +3698,86 @@ async function retryAccessPointSqlFix(
  * - Uses AP-specific generator/judge prompts (p() syntax, no coordinates/params)
  * - Skips parameter detection (APs have no parameters)
  */
+// Handles a failed access-point SQL execution: attempts an SQL-fix retry for
+// fixable errors, otherwise reports the execution error with fallback suggestions.
+async function handleAccessPointExecutionError(
+  executeError: Error,
+  params: {
+    finalSql: string;
+    question: string;
+    selectedAPs: TDSServiceSchema[];
+    dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates;
+    modelContextEnrichment?: string;
+    startTime: number;
+    execStartTime: number;
+    metadata: LegendAIProductMetadata;
+  },
+  context: LegendAIOperationContext,
+): Promise<void> {
+  const { setMessages } = context;
+  const {
+    finalSql,
+    question,
+    selectedAPs,
+    dataProductCoordinates,
+    modelContextEnrichment,
+    startTime,
+    execStartTime,
+    metadata,
+  } = params;
+  const execErrorType = classifyError(executeError);
+  const errMsg = executeError.message;
+  const errorCategory = categorizeExecutionError(errMsg, executeError);
+
+  addThinkingStep(
+    setMessages,
+    `Execution failed: ${errMsg.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+  );
+
+  if (errorCategory === ExecutionErrorCategory.SQL_FIXABLE) {
+    const retried = await retryAccessPointSqlFix(
+      {
+        failedSql: finalSql,
+        question,
+        errMsg,
+        selectedAPs,
+        dataProductCoordinates,
+        ...(modelContextEnrichment === undefined
+          ? {}
+          : { modelContextEnrichment }),
+        startTime,
+      },
+      context,
+      metadata,
+    );
+    if (retried) {
+      return;
+    }
+  }
+
+  finishWithThinkingError(
+    setMessages,
+    buildExecutionErrorMessage(errMsg, selectedAPs),
+    startTime,
+    execErrorType === LegendAIErrorType.GENERAL
+      ? LegendAIErrorType.EXECUTION
+      : execErrorType,
+  );
+  const queriedGroups = [
+    ...new Set(
+      selectedAPs
+        .map((ap) => ap.accessPointGroupTitle)
+        .filter((t): t is string => t !== undefined),
+    ),
+  ];
+  updateLastAssistant(setMessages, () => ({
+    execTime: elapsedSeconds(execStartTime, 2),
+    isExecuting: false,
+    suggestedQueries: buildFallbackSuggestions(selectedAPs),
+    queriedAccessPointGroups: queriedGroups,
+  }));
+}
+
 async function processAccessPointQuery(
   question: string,
   accessPoints: TDSServiceSchema[],
@@ -2889,10 +3793,33 @@ async function processAccessPointQuery(
 
   const selectedAPs = await selectBestServices(question, accessPoints, context);
 
+  const currentAccessPoints = new Set(
+    selectedAPs.map((ap) => ap.pattern.replace(/^\//, '')),
+  );
+  const scopedContext: LegendAIOperationContext = {
+    ...context,
+    history: filterHistoryForAccessPoints(context.history, currentAccessPoints),
+  };
+
+  try {
+    addThinkingStep(setMessages, 'Grounding filter values from real data...');
+    await withTimeout(
+      plugin.enrichAccessPointSampleValues(
+        selectedAPs,
+        dataProductCoordinates,
+        config,
+      ),
+      VALUE_GROUNDING_TIME_BUDGET_MS,
+    );
+  } catch (error) {
+    assertErrorThrown(error);
+    addThinkingStep(setMessages, 'Value grounding skipped');
+  }
+
   const judgedSql = await generateAndJudgeAccessPointSql(
     question,
     selectedAPs,
-    context,
+    scopedContext,
     startTime,
     modelContextEnrichment,
   );
@@ -2921,7 +3848,7 @@ async function processAccessPointQuery(
     judgedSql,
     question,
     selectedAPs,
-    context,
+    scopedContext,
     modelContextEnrichment,
   );
 
@@ -2929,83 +3856,69 @@ async function processAccessPointQuery(
     sql: finalSql,
     sqlGenTime: sqlGenTimeValue,
     isExecuting: true,
+    queriedAccessPoints: orderedAccessPointsFromSql(finalSql),
   }));
 
   const execStartTime = Date.now();
   try {
-    const rawResult = await executeSqlForServices(
-      finalSql,
+    let execSql = finalSql;
+    let rawResult = await executeSqlForServices(
+      execSql,
       selectedAPs,
       dataProductCoordinates,
       plugin,
       config,
     );
 
+    if (rawResult.rows.length === 0) {
+      addThinkingStep(
+        setMessages,
+        "Checking filter values against the column's actual values...",
+      );
+      const resolved = await attemptDistinctValueRecovery(
+        execSql,
+        selectedAPs,
+        dataProductCoordinates,
+        scopedContext,
+      );
+      if (resolved) {
+        execSql = resolved.sql;
+        rawResult = resolved.result;
+        updateLastAssistant(setMessages, () => ({ sql: execSql }));
+      }
+    }
+
     await reportQueryResults(
       {
-        currentSql: finalSql,
+        currentSql: execSql,
         sqlResult: rawResult,
         question,
         services: selectedAPs,
+        allAccessPoints: accessPoints,
       },
       metadata,
-      context,
+      scopedContext,
       startTime,
       false,
     );
   } catch (executeError) {
     assertErrorThrown(executeError);
-    const execErrorType = classifyError(executeError);
-    const errMsg = executeError.message;
-    const errorCategory = categorizeExecutionError(errMsg, executeError);
-
-    addThinkingStep(
-      setMessages,
-      `Execution failed: ${errMsg.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
-    );
-
-    if (errorCategory === ExecutionErrorCategory.SQL_FIXABLE) {
-      const retried = await retryAccessPointSqlFix(
-        {
-          failedSql: finalSql,
-          question,
-          errMsg,
-          selectedAPs,
-          dataProductCoordinates,
-          ...(modelContextEnrichment === undefined
-            ? {}
-            : { modelContextEnrichment }),
-          startTime,
-        },
-        context,
+    await handleAccessPointExecutionError(
+      executeError,
+      {
+        finalSql,
+        question,
+        selectedAPs,
+        dataProductCoordinates,
+        ...(modelContextEnrichment === undefined
+          ? {}
+          : { modelContextEnrichment }),
+        startTime,
+        execStartTime,
         metadata,
-      );
-      if (retried) {
-        return;
-      }
-    }
-
-    finishWithThinkingError(
-      setMessages,
-      buildExecutionErrorMessage(errMsg, selectedAPs),
-      startTime,
-      execErrorType === LegendAIErrorType.GENERAL
-        ? LegendAIErrorType.EXECUTION
-        : execErrorType,
+      },
+      scopedContext,
     );
-    const queriedGroups = [
-      ...new Set(
-        selectedAPs
-          .map((ap) => ap.accessPointGroupTitle)
-          .filter((t): t is string => t !== undefined),
-      ),
-    ];
-    updateLastAssistant(setMessages, () => ({
-      execTime: elapsedSeconds(execStartTime, 2),
-      isExecuting: false,
-      suggestedQueries: buildFallbackSuggestions(selectedAPs),
-      queriedAccessPointGroups: queriedGroups,
-    }));
   }
 }
 
@@ -3018,6 +3931,7 @@ async function processDataQuery(
   startTime: number,
   orchestratorOptions?: LegendAIOrchestratorOptionsParam,
   modelContextEnrichment?: string,
+  approachText?: string,
 ): Promise<void> {
   const { config, setMessages } = context;
   const dataProductCoordinates = orchestratorOptions?.dataProductCoordinates;
@@ -3172,6 +4086,10 @@ async function processDataQuery(
     startTime,
     hasOrchestratorFallback,
   );
+
+  if (approachText) {
+    attachMetadataOverview(setMessages, approachText);
+  }
 }
 
 function splitServicesByType(services: TDSServiceSchema[]): {
@@ -3197,6 +4115,7 @@ async function routeToAccessPointOrData(
   startTime: number,
   orchestratorOpts: LegendAIOrchestratorOptionsParam | undefined,
   modelContextEnrichment?: string,
+  approachText?: string,
 ): Promise<void> {
   const dataProductCoordinates = orchestratorOpts?.dataProductCoordinates;
   const { tdsServices, accessPoints } = splitServicesByType(services);
@@ -3224,8 +4143,28 @@ async function routeToAccessPointOrData(
       startTime,
       orchestratorOpts,
       modelContextEnrichment,
+      approachText,
     );
   }
+}
+
+/**
+ * Compute a value on first use and cache it. The data-query and metadata
+ * answer paths each need a different (potentially large) model-context string,
+ * but only one path runs per question. Deferring the build means we never pay
+ * to construct the string the chosen path doesn't consume, and the build
+ * happens inside the caller's try/catch rather than eagerly at entry.
+ */
+function lazyMemo<T>(compute: () => T): () => T {
+  let computed = false;
+  let value: T;
+  return (): T => {
+    if (!computed) {
+      value = compute();
+      computed = true;
+    }
+    return value;
+  };
 }
 
 export async function processQuestion(
@@ -3240,9 +4179,19 @@ export async function processQuestion(
 ): Promise<void> {
   const { config, plugin, setMessages } = context;
   const startTime = Date.now();
-  const modelContextEnrichment = modelContext
-    ? buildModelContextEnrichmentText(modelContext, services)
-    : undefined;
+  const getModelContextEnrichment = lazyMemo(() =>
+    modelContext
+      ? buildModelContextEnrichmentText(modelContext, services)
+      : undefined,
+  );
+  const getMetadataEnrichment = lazyMemo(() =>
+    modelContext ? buildModelCatalogText(modelContext) : undefined,
+  );
+  const getApproachText = lazyMemo(() =>
+    modelContext
+      ? buildDataQueryApproachText(question, modelContext)
+      : undefined,
+  );
 
   try {
     addThinkingStep(setMessages, 'Analyzing your question...');
@@ -3264,7 +4213,7 @@ export async function processQuestion(
         startTime,
         false,
         services,
-        modelContextEnrichment,
+        getMetadataEnrichment(),
       );
       if (config.orchestratorUrl && dataProductCoordinates) {
         updateLastAssistant(setMessages, () => ({
@@ -3293,7 +4242,7 @@ export async function processQuestion(
         startTime,
         true,
         services,
-        modelContextEnrichment,
+        getMetadataEnrichment(),
       );
       return;
     }
@@ -3307,7 +4256,8 @@ export async function processQuestion(
         context,
         startTime,
         orchestratorOpts,
-        modelContextEnrichment,
+        getModelContextEnrichment(),
+        getApproachText(),
       );
     } catch (sqlError) {
       assertErrorThrown(sqlError);
@@ -3322,7 +4272,7 @@ export async function processQuestion(
         startTime,
         true,
         services,
-        modelContextEnrichment,
+        getMetadataEnrichment(),
       );
       appendFallbackSuggestions(setMessages, services);
     }
@@ -3350,6 +4300,7 @@ async function routeDataQueryWithErrorHandling(
   context: LegendAIOperationContext,
   orchestratorOptions: LegendAIOrchestratorOptionsParam | undefined,
   modelContextEnrichment?: string,
+  approachText?: string,
 ): Promise<void> {
   const { setMessages } = context;
   const startTime = Date.now();
@@ -3364,6 +4315,7 @@ async function routeDataQueryWithErrorHandling(
       startTime,
       orchestratorOptions,
       modelContextEnrichment,
+      approachText,
     );
   } catch (error) {
     assertErrorThrown(error);
@@ -3392,9 +4344,19 @@ export async function processQuestionWithIntent(
 ): Promise<void> {
   const { config, setMessages } = context;
   const dataProductCoordinates = orchestratorOptions?.dataProductCoordinates;
-  const modelContextEnrichment = modelContext
-    ? buildModelContextEnrichmentText(modelContext, services)
-    : undefined;
+  const getModelContextEnrichment = lazyMemo(() =>
+    modelContext
+      ? buildModelContextEnrichmentText(modelContext, services)
+      : undefined,
+  );
+  const getMetadataEnrichment = lazyMemo(() =>
+    modelContext ? buildModelCatalogText(modelContext) : undefined,
+  );
+  const getApproachText = lazyMemo(() =>
+    modelContext
+      ? buildDataQueryApproachText(question, modelContext)
+      : undefined,
+  );
 
   if (intent === LegendAIQuestionIntent.METADATA) {
     const startTime = Date.now();
@@ -3406,7 +4368,7 @@ export async function processQuestionWithIntent(
         startTime,
         services.length > 0,
         services,
-        modelContextEnrichment,
+        getMetadataEnrichment(),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -3437,7 +4399,8 @@ export async function processQuestionWithIntent(
         metadata,
         context,
         orchestratorOptions,
-        modelContextEnrichment,
+        getModelContextEnrichment(),
+        getApproachText(),
       );
       return;
     }
@@ -3449,7 +4412,7 @@ export async function processQuestionWithIntent(
       startTime,
       false,
       services,
-      modelContextEnrichment,
+      getMetadataEnrichment(),
     );
     updateLastAssistant(setMessages, () => ({
       fallbackAction: {
@@ -3467,6 +4430,7 @@ export async function processQuestionWithIntent(
     metadata,
     context,
     orchestratorOptions,
-    modelContextEnrichment,
+    getModelContextEnrichment(),
+    getApproachText(),
   );
 }

@@ -26,7 +26,10 @@ import {
   isValidSqlCorrection,
   attachMetadataOverview,
 } from '../LegendAIChatProcessors.js';
-import { LegendAIQuestionIntent } from '../../LegendAITypes.js';
+import {
+  LegendAIQuestionIntent,
+  LEGEND_AI_FEEDBACK_PROMPT,
+} from '../../LegendAITypes.js';
 import {
   type LegendAIJudgeResult,
   LegendAIJudgeVerdict,
@@ -511,8 +514,48 @@ describe(
       );
 
       const msg = TEST__getAssistantMessage(getMessages(), 1);
-      expect(msg.textAnswer).toContain('0 rows');
+      expect(msg.textAnswer).toContain(LEGEND_AI_FEEDBACK_PROMPT);
       expect(msg.fallbackAction).toBeDefined();
+      expect(msg.isProcessing).toBe(false);
+    });
+
+    test('uses the LLM-phrased summary when the plugin explains the empty result', async () => {
+      const { setter, getMessages } = TEST__createMockSetter();
+      TEST__seedAssistant(setter);
+      const plugin = TEST__createMockLegendAIPlugin({
+        classifyQuestionIntent: () =>
+          Promise.resolve(LegendAIQuestionIntent.DATA_QUERY),
+        callLLM: createMock().mockResolvedValue('sql response'),
+        executeSql: createMock().mockResolvedValue({
+          columns: ['id'],
+          rows: [],
+        }),
+        buildNoResultsFallback: createMock().mockResolvedValue({
+          summary: 'No rows because the requested date has no data.',
+          suggestedQueries: ['Try a broader date range'],
+        }),
+      });
+
+      await processQuestion(
+        'show something',
+        TEST_DATA__legendAIServices,
+        'com.test:prod:1.0.0',
+        TEST_DATA__legendAIMetadata,
+        {
+          config: TEST_DATA__legendAIConfig,
+          plugin,
+          history: [],
+          setMessages: setter,
+        },
+        TEST_DATA__coordinates,
+        TEST_DATA__executionContext,
+      );
+
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
+      expect(msg.textAnswer).toContain(
+        'No rows because the requested date has no data.',
+      );
+      expect(msg.suggestedQueries).toContain('Try a broader date range');
       expect(msg.isProcessing).toBe(false);
     });
   },

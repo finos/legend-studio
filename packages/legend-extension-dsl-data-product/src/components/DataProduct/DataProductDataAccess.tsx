@@ -53,7 +53,6 @@ import {
   DataProductAccessType,
   extractElementNameFromPath,
   V1_AccessPointGroupReference,
-  V1_AdHocDeploymentDataProductOrigin,
   V1_AppDirProducer,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -67,7 +66,6 @@ import {
   V1_CStrictTime,
   V1_CString,
   type V1_DataProductArtifact,
-  V1_DataProductOriginType,
   type V1_EntitlementsDataProductDetails,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
@@ -159,7 +157,6 @@ import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
-const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 const LAKEHOUSE_EXECUTE_PATH = '/lakehouse/v1/execute';
@@ -483,48 +480,6 @@ const DataCubeScreen = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
-    const openDataCube = (sourceData: object) => {
-      if (dataAccessState) {
-        DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
-          dataAccessState.applicationStore.telemetryService,
-          {
-            origin:
-              dataAccessState.entitlementsDataProductDetails.origin instanceof
-              V1_SdlcDeploymentDataProductOrigin
-                ? {
-                    type: DATAPRODUCT_TYPE.SDLC,
-                    groupId:
-                      dataAccessState.entitlementsDataProductDetails.origin
-                        .group,
-                    artifactId:
-                      dataAccessState.entitlementsDataProductDetails.origin
-                        .artifact,
-                    versionId:
-                      dataAccessState.entitlementsDataProductDetails.origin
-                        .version,
-                  }
-                : {
-                    type: DATAPRODUCT_TYPE.ADHOC,
-                  },
-            deploymentId:
-              dataAccessState.entitlementsDataProductDetails.deploymentId,
-            name: dataAccessState.entitlementsDataProductDetails.dataProduct
-              .name,
-            productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
-            accessPointPath: (
-              (sourceData as Record<string, unknown>).paths as string[]
-            ).at(1),
-            environmentClassification:
-              dataAccessState.entitlementsDataProductDetails
-                .lakehouseEnvironment?.type,
-          },
-          undefined,
-        );
-      }
-      accessPointState.apgState.dataProductViewerState.openDataCube?.(
-        sourceData,
-      );
-    };
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
     }
@@ -550,46 +505,13 @@ const DataCubeScreen = observer(
       try {
         const dataCubeEnv = selectedEnvironment ?? resolvedUserEnv;
         assertNonNullable(dataCubeEnv, 'Env required to Open Data Cube');
-        const path =
-          accessPointState.apgState.dataProductViewerState.product.path;
-        const accessPointName = accessPointState.accessPoint.id;
-        const accessPointPath = [
-          guaranteeNonNullable(path),
-          guaranteeNonNullable(accessPointName),
-        ];
-        const deploymentId =
-          dataAccessState.entitlementsDataProductDetails.deploymentId;
-        const sourceData: Record<string, unknown> = {
-          _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
-          warehouse: DEFAULT_CONSUMER_WAREHOUSE,
-          environment: getIngestDeploymentServerConfigName(dataCubeEnv),
-          paths: accessPointPath,
-          deploymentId: deploymentId,
-        };
-        if (dataProductOrigin instanceof V1_SdlcDeploymentDataProductOrigin) {
-          sourceData.origin = {
-            _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
-            dpCoordinates: {
-              groupId: dataProductOrigin.group,
-              artifactId: dataProductOrigin.artifact,
-              versionId: dataProductOrigin.version,
-            },
-          };
-        } else if (
-          dataProductOrigin instanceof V1_AdHocDeploymentDataProductOrigin
-        ) {
-          sourceData.origin = {
-            _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
-          };
-        } else {
-          accessPointState.apgState.applicationStore.notificationService.notifyError(
-            new Error(
-              'Failed to open DataCube: unsupported data product origin.',
-            ),
-          );
-          return;
-        }
-        openDataCube(sourceData);
+        dataAccessState.openAccessPointInDataCube(
+          accessPointState.accessPoint.id,
+          guaranteeNonNullable(
+            getIngestDeploymentServerConfigName(dataCubeEnv),
+            'Environment name is required to open DataCube',
+          ),
+        );
       } catch (error) {
         assertErrorThrown(error);
         accessPointState.apgState.applicationStore.notificationService.notifyError(

@@ -19,6 +19,7 @@ import {
   extractElementNameFromPath,
   PRIMITIVE_TYPE,
 } from '@finos/legend-graph';
+import { isNonNullable } from '@finos/legend-shared';
 import {
   ClassDocumentationEntry,
   AssociationDocumentationEntry,
@@ -40,7 +41,9 @@ import type {
   LegendAIEnrichedBusinessContext,
   LegendAIBusinessContextProperty,
   LegendAIAdditionalNlModelContext,
+  LegendAIResolvedEntities,
 } from './LegendAI_LegendApplicationPlugin_Extension.js';
+import { sharedColumnNames } from './stores/LegendAISqlHelpers.js';
 
 /**
  * Builds a lookup map from lowercase property name to its documentation entry.
@@ -167,16 +170,6 @@ function buildAssociationAdjacency(
   return adjacency;
 }
 
-function findSharedColumns(
-  svcA: TDSServiceSchema,
-  svcB: TDSServiceSchema,
-): string[] {
-  const colsA = new Set(svcA.columns.map((c) => c.name.toLowerCase()));
-  return svcB.columns
-    .filter((c) => colsA.has(c.name.toLowerCase()))
-    .map((c) => c.name);
-}
-
 function findViaConnectionFromClass(
   clsA: string,
   classNamesB: string[],
@@ -218,7 +211,7 @@ function findViaRelationship(
       return {
         leftService: svcA.title,
         rightService: svcB.title,
-        joinColumns: findSharedColumns(svcA, svcB),
+        joinColumns: sharedColumnNames(svcB, svcA),
         viaEntity: via.viaEntity,
         leftCardinality: via.leftMult,
         rightCardinality: via.rightMult,
@@ -246,7 +239,7 @@ function findDirectRelationship(
         return {
           leftService: svcA.title,
           rightService: svcB.title,
-          joinColumns: findSharedColumns(svcA, svcB),
+          joinColumns: sharedColumnNames(svcB, svcA),
         };
       }
     }
@@ -549,42 +542,6 @@ export function extractLambdaPreFilters(
   return results;
 }
 
-/**
- * Formats pre-filter constraints into a human-readable summary for LLM context.
- * This generates a concise description of what's hardcoded in the service lambda
- * so the AI avoids generating contradictory WHERE clauses.
- */
-export function formatPreFiltersForContext(
-  preFilters: TDSServicePreFilter[],
-): string {
-  if (preFilters.length === 0) {
-    return '';
-  }
-  const parts: string[] = [];
-  for (const pf of preFilters) {
-    const shortProp = pf.property.includes('.')
-      ? (pf.property.split('.').pop() ?? pf.property)
-      : pf.property;
-    switch (pf.operator) {
-      case 'equal':
-        parts.push(`${shortProp} = '${String(pf.value)}'`);
-        break;
-      case 'isEmpty':
-        parts.push(`${shortProp} IS NULL (always)`);
-        break;
-      case 'isNotEmpty':
-        parts.push(`${shortProp} IS NOT NULL (always)`);
-        break;
-      case 'isNotNull':
-        parts.push(`${shortProp} IS NOT NULL (post-filter)`);
-        break;
-      default:
-        break;
-    }
-  }
-  return `Pre-applied filters: ${parts.join('; ')}`;
-}
-
 // ────────────────────────────────────────────────────────────────────────────
 // Model context extraction from DataSpace elementDocs
 // ────────────────────────────────────────────────────────────────────────────
@@ -597,6 +554,8 @@ export function formatPreFiltersForContext(
  *
  * Only applicable to DataSpaces (not DataProducts, which lack elementDocs).
  */
+const UNKNOWN_TYPE = 'Unknown';
+
 function collectClassEntities(
   classMap: Map<string, ClassDocumentationEntry>,
 ): LegendAIModelEntity[] {
@@ -605,7 +564,7 @@ function collectClassEntities(
       const upperBound = prop.multiplicity?.upperBound;
       return {
         name: prop.name,
-        type: prop.type ?? 'Unknown',
+        type: prop.type ?? UNKNOWN_TYPE,
         isCollection: upperBound === undefined || upperBound > 1,
         isOptional: (prop.multiplicity?.lowerBound ?? 0) === 0,
       };
@@ -939,6 +898,43 @@ function buildCrossClassNlHints(
   ];
 }
 
+const MAX_VALID_VALUES_PER_PROPERTY = 30;
+
+function buildValidValueNlHints(
+  rootEntity: string,
+  relatedEntities: string[],
+  modelContext: LegendAIModelContext,
+  entityMap: Map<string, LegendAIModelEntity>,
+): LegendAIAdditionalNlModelContext[] {
+  const valuesByEnum = new Map<string, string[]>();
+  for (const enumeration of modelContext.enumerations ?? []) {
+    valuesByEnum.set(enumeration.path, enumeration.values);
+    valuesByEnum.set(enumeration.name, enumeration.values);
+  }
+  if (valuesByEnum.size === 0) {
+    return [];
+  }
+  const entries: LegendAIAdditionalNlModelContext[] = [];
+  for (const path of [rootEntity, ...relatedEntities]) {
+    const entity = entityMap.get(path);
+    if (!entity) {
+      continue;
+    }
+    for (const prop of entity.properties) {
+      const values = valuesByEnum.get(prop.type);
+      if (values && values.length > 0) {
+        const shown = values.slice(0, MAX_VALID_VALUES_PER_PROPERTY).join(', ');
+        entries.push({
+          id: `valid_values:${entity.name}.${prop.name}`,
+          description: `Valid values for '${prop.name}' on ${entity.name}: ${shown}. Filter using these exact values (match case-insensitively).`,
+          category: 'valid_values',
+        });
+      }
+    }
+  }
+  return entries;
+}
+
 function buildNlContextEntries(
   question: string,
   rootEntity: string,
@@ -950,6 +946,14 @@ function buildNlContextEntries(
   const entries: LegendAIAdditionalNlModelContext[] = [
     ...buildRootEntityNlHints(rootEntity, rootEntityObj, modelContext),
   ];
+  if (rootEntityObj) {
+    entries.unshift({
+      id: 'filter_guidance',
+      description:
+        'Filter guidance: match text/descriptive concepts on descriptive columns (e.g. description) using case-insensitive contains, not exact equals — and do NOT invent identifier/mnemonic codes (e.g. name, haverId, ticker) unless you were given their actual values. When several descriptive terms apply combine them with OR (never AND two contains on the same column). For country/geography prefer a coded column such as isoCode when one exists.',
+      category: 'filter_guidance',
+    });
+  }
   if (modelContext.dataspaceDescription) {
     const shortDesc = modelContext.dataspaceDescription
       .split('\n')
@@ -978,6 +982,12 @@ function buildNlContextEntries(
   entries.push(
     ...buildAssociationNlHints(rootEntity, relatedEntities, modelContext),
     ...buildExecutableNlHints(rootEntity, rootEntityObj, modelContext),
+    ...buildValidValueNlHints(
+      rootEntity,
+      relatedEntities,
+      modelContext,
+      entityMap,
+    ),
   );
   if (rootEntityObj) {
     entries.push(
@@ -1158,19 +1168,13 @@ export function buildSemanticPropertyIndex(
   const index = new Map<string, Set<string>>();
   for (const entity of modelContext.entities) {
     for (const prop of entity.properties) {
-      const nameTokens = prop.name
-        .replaceAll(/(?<lower>[a-z])(?<upper>[A-Z])/g, '$<lower> $<upper>')
-        .toLowerCase()
-        .split(/[\s_]+/)
-        .filter((t) => t.length > 2);
+      const nameTokens = splitIdentifierTokens(prop.name).filter(
+        (token) => token.length >= DEFAULT_MIN_TOKEN_LENGTH,
+      );
       addTokensToIndex(index, nameTokens, entity.path);
     }
     if (entity.description) {
-      const descTokens = entity.description
-        .toLowerCase()
-        .split(/[\s,.;:!?'"()\-/]+/)
-        .filter((t) => t.length > 2);
-      addTokensToIndex(index, descTokens, entity.path);
+      addTokensToIndex(index, tokenizeText(entity.description), entity.path);
     }
   }
   return index;
@@ -1179,6 +1183,8 @@ export function buildSemanticPropertyIndex(
 // ────────────────────────────────────────────────────────────────────────────
 // Deterministic entity resolution (no LLM required)
 // ────────────────────────────────────────────────────────────────────────────
+
+const MAX_RESOLVED_RELATED_ENTITIES = 5;
 
 /**
  * Resolves root and related entities using keyword matching against the model
@@ -1199,7 +1205,7 @@ export function buildSemanticPropertyIndex(
 function pickFallbackEntity(
   queryableEntities: LegendAIModelEntity[],
   entities: LegendAIModelEntity[],
-): { rootEntity: string; relatedEntities: string[] } | undefined {
+): LegendAIResolvedEntities | undefined {
   const preferred =
     queryableEntities[0] ?? entities.find((e) => e.isRootMapped) ?? entities[0];
   return preferred
@@ -1217,12 +1223,36 @@ function buildExecutableByRootIndex(
       words = [];
       index.set(exec.rootEntityPath, words);
     }
-    words.push(
-      ...`${exec.title} ${exec.description ?? ''}`
-        .toLowerCase()
-        .split(/[\s,.;:!?'"()\-/]+/)
-        .filter((t) => t.length > 2),
+    words.push(...tokenizeText(`${exec.title} ${exec.description ?? ''}`));
+    for (const param of exec.requiredParameters ?? []) {
+      words.push(...tokenizeText(param.name));
+    }
+  }
+  return index;
+}
+
+function buildEnumValueIndex(
+  modelContext: LegendAIModelContext,
+): Map<string, Set<string>> {
+  const valueTokensByEnum = new Map<string, string[]>();
+  for (const enumeration of modelContext.enumerations ?? []) {
+    const valueTokens = enumeration.values.flatMap((value) =>
+      tokenizeText(value),
     );
+    valueTokensByEnum.set(enumeration.path, valueTokens);
+    valueTokensByEnum.set(enumeration.name, valueTokens);
+  }
+  const index = new Map<string, Set<string>>();
+  if (valueTokensByEnum.size === 0) {
+    return index;
+  }
+  for (const entity of modelContext.entities) {
+    for (const prop of entity.properties) {
+      const valueTokens = valueTokensByEnum.get(prop.type);
+      if (valueTokens) {
+        addTokensToIndex(index, valueTokens, entity.path);
+      }
+    }
   }
   return index;
 }
@@ -1249,6 +1279,7 @@ function scoreEntity(
   tokens: string[],
   semanticIndex: Map<string, Set<string>>,
   executableByRoot: Map<string, string[]>,
+  enumValueIndex: Map<string, Set<string>>,
 ): number {
   const nameLower = entity.name.toLowerCase();
   let score =
@@ -1271,13 +1302,37 @@ function scoreEntity(
         .length * 4;
   }
   score += tokens.filter((t) => semanticIndex.get(t)?.has(entity.path)).length;
+  score +=
+    tokens.filter((t) => enumValueIndex.get(t)?.has(entity.path)).length * 2;
   return score;
+}
+
+export function rankEntities(
+  question: string,
+  modelContext: LegendAIModelContext,
+): { entity: LegendAIModelEntity; score: number }[] {
+  const executableByRoot = buildExecutableByRootIndex(modelContext);
+  const semanticIndex = buildSemanticPropertyIndex(modelContext);
+  const enumValueIndex = buildEnumValueIndex(modelContext);
+  const tokens = tokenizeText(question);
+  return modelContext.entities
+    .map((entity) => ({
+      entity,
+      score: scoreEntity(
+        entity,
+        tokens,
+        semanticIndex,
+        executableByRoot,
+        enumValueIndex,
+      ),
+    }))
+    .sort((a, b) => b.score - a.score);
 }
 
 export function resolveEntitiesDeterministic(
   question: string,
   modelContext: LegendAIModelContext,
-): { rootEntity: string; relatedEntities: string[] } | undefined {
+): LegendAIResolvedEntities | undefined {
   if (modelContext.entities.length === 0) {
     return undefined;
   }
@@ -1289,24 +1344,12 @@ export function resolveEntitiesDeterministic(
   }
 
   const queryableEntities = modelContext.entities.filter((e) => e.isQueryable);
-  const executableByRoot = buildExecutableByRootIndex(modelContext);
-  const semanticIndex = buildSemanticPropertyIndex(modelContext);
 
-  const tokens = question
-    .toLowerCase()
-    .split(/[\s,.;:!?'"()\-/]+/)
-    .filter((t) => t.length > 2);
-
-  if (tokens.length === 0) {
+  if (tokenizeText(question).length === 0) {
     return pickFallbackEntity(queryableEntities, modelContext.entities);
   }
 
-  const scored = modelContext.entities
-    .map((entity) => ({
-      entity,
-      score: scoreEntity(entity, tokens, semanticIndex, executableByRoot),
-    }))
-    .sort((a, b) => b.score - a.score);
+  const scored = rankEntities(question, modelContext);
 
   const rootCandidates =
     queryableEntities.length > 0
@@ -1328,15 +1371,141 @@ export function resolveEntitiesDeterministic(
     }
   }
   for (const s of scored.slice(1)) {
-    if (s.score > 0 && relatedSet.size < 5) {
+    if (s.score > 0 && relatedSet.size < MAX_RESOLVED_RELATED_ENTITIES) {
       relatedSet.add(s.entity.path);
     }
   }
 
   return {
     rootEntity: rootPath,
-    relatedEntities: Array.from(relatedSet).slice(0, 5),
+    relatedEntities: Array.from(relatedSet).slice(
+      0,
+      MAX_RESOLVED_RELATED_ENTITIES,
+    ),
   };
+}
+
+const MAX_APPROACH_COLUMNS = 6;
+const MAX_APPROACH_DESCRIPTION_LENGTH = 200;
+const MAX_DESCRIPTION_PREVIEW_LENGTH = 300;
+
+export function buildDataQueryApproachText(
+  question: string,
+  modelContext: LegendAIModelContext,
+  rootEntityPath?: string,
+): string | undefined {
+  const rootPath =
+    rootEntityPath ??
+    resolveEntitiesDeterministic(question, modelContext)?.rootEntity;
+  if (!rootPath) {
+    return undefined;
+  }
+  const root = modelContext.entities.find((entity) => entity.path === rootPath);
+  if (!root) {
+    return undefined;
+  }
+
+  const service = modelContext.executables?.find(
+    (exec) => exec.rootEntityPath === root.path,
+  )?.title;
+  const columns = root.properties
+    .filter((prop) => !prop.type.includes('::'))
+    .map((prop) => prop.name);
+  const relatedPaths = new Set<string>();
+  for (const assoc of modelContext.associations) {
+    if (assoc.leftEntity === root.path) {
+      relatedPaths.add(assoc.rightEntity);
+    } else if (assoc.rightEntity === root.path) {
+      relatedPaths.add(assoc.leftEntity);
+    }
+  }
+  const related = Array.from(relatedPaths).map((path) =>
+    extractElementNameFromPath(path),
+  );
+
+  const sentences: string[] = [];
+  const via = service ? ` via the **${service}** service` : '';
+  const description = root.description
+    ? ` — ${root.description.slice(0, MAX_APPROACH_DESCRIPTION_LENGTH).trim()}`
+    : '';
+  sentences.push(
+    `To answer this, I'll query **${root.name}**${via}${description}.`,
+  );
+
+  if (columns.length > 0) {
+    const shown = columns
+      .slice(0, MAX_APPROACH_COLUMNS)
+      .map((name) => `\`${name}\``)
+      .join(', ');
+    const more =
+      columns.length > MAX_APPROACH_COLUMNS
+        ? ` (and ${columns.length - MAX_APPROACH_COLUMNS} more)`
+        : '';
+    sentences.push(`It exposes fields such as ${shown}${more}.`);
+  }
+
+  if (related.length > 0) {
+    const list = related.map((name) => `**${name}**`).join(', ');
+    sentences.push(
+      `Where the question needs more, results can be enriched by joining related ${
+        related.length > 1 ? 'entities' : 'entity'
+      } ${list} through the model's associations.`,
+    );
+  }
+
+  return sentences.join(' ');
+}
+
+const EXACT_STRING_FILTER_PATTERN =
+  /(?<lhs>\$\w+(?:\.\w+)+(?:->toOne\(\))?)\s*==\s*'(?<literal>[^']*)'/g;
+
+export function relaxExactStringFilters(pureQuery: string): string {
+  return pureQuery.replace(
+    EXACT_STRING_FILTER_PATTERN,
+    (_match, lhs: string, literal: string) =>
+      `${lhs}->toLower()->contains('${literal.toLowerCase()}')`,
+  );
+}
+
+const STRING_COMPARISON_COLUMN_PATTERN =
+  /\$\w+(?:\.\w+)*\.(?<col>\w+)(?:->toOne\(\))?\s*(?:==|!=|<=|>=|<|>)\s*'/g;
+const CONTAINS_COLUMN_PATTERN =
+  /\$\w+(?:\.\w+)*\.(?<col>\w+)(?:->to\w+\(\))*->(?:contains|startsWith|endsWith)\(/g;
+
+export function extractFilteredColumns(pureQuery: string): string[] {
+  const columns = new Set<string>();
+  for (const pattern of [
+    STRING_COMPARISON_COLUMN_PATTERN,
+    CONTAINS_COLUMN_PATTERN,
+  ]) {
+    for (const match of pureQuery.matchAll(pattern)) {
+      const col = match.groups?.col;
+      if (col) {
+        columns.add(col);
+      }
+    }
+  }
+  return Array.from(columns);
+}
+
+const MAX_PROBED_VALUES_PER_COLUMN = 30;
+
+export function buildProbedValueHints(
+  probed: Map<string, string[]>,
+): LegendAIAdditionalNlModelContext[] {
+  const entries: LegendAIAdditionalNlModelContext[] = [];
+  for (const [column, values] of probed) {
+    if (values.length === 0) {
+      continue;
+    }
+    const shown = values.slice(0, MAX_PROBED_VALUES_PER_COLUMN).join(', ');
+    entries.push({
+      id: `probed_values:${column}`,
+      description: `Actual values present in column '${column}': ${shown}. Filter using one of these exact values (case-insensitively).`,
+      category: 'probed_values',
+    });
+  }
+  return entries;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -1348,6 +1517,9 @@ const MAX_ENRICHMENT_PROPS_PER_ENTITY = 15;
 const MAX_ENRICHMENT_ENUMS = 10;
 const MAX_ENRICHMENT_ENUM_VALUES = 20;
 const MAX_ENRICHMENT_ASSOCIATIONS = 10;
+const MAX_ENRICHMENT_EXECUTABLES = 25;
+const MAX_ENRICHMENT_JOIN_SERVICES = 25;
+const MIN_SERVICE_ENTITY_COLUMN_OVERLAP = 2;
 
 /**
  * Maps each TDS service to the model entity whose properties best match
@@ -1363,7 +1535,6 @@ function inferServiceEntityMapping(
   modelContext: LegendAIModelContext,
 ): Map<string, string> {
   const result = new Map<string, string>();
-  const MIN_OVERLAP = 2; // require at least 2 matching columns
 
   const entityPropSets = modelContext.entities.map((entity) => ({
     path: entity.path,
@@ -1383,7 +1554,7 @@ function inferServiceEntityMapping(
       }
     }
 
-    if (bestScore >= MIN_OVERLAP && bestEntity) {
+    if (bestScore >= MIN_SERVICE_ENTITY_COLUMN_OVERLAP && bestEntity) {
       result.set(svc.title, bestEntity);
     }
   }
@@ -1431,7 +1602,7 @@ function buildEntitySection(
     const tagStr = tags.length > 0 ? ` [${tags.join(', ')}]` : '';
     lines.push(`\n### ${entity.name}${tagStr}`);
     if (entity.description) {
-      lines.push(entity.description.slice(0, 300));
+      lines.push(entity.description.slice(0, MAX_DESCRIPTION_PREVIEW_LENGTH));
     }
     const propLines = entity.properties
       .slice(0, MAX_ENRICHMENT_PROPS_PER_ENTITY)
@@ -1493,7 +1664,10 @@ function buildExecutableSection(
     return undefined;
   }
   const lines = ['## Available Executables'];
-  for (const exec of modelContext.executables) {
+  for (const exec of modelContext.executables.slice(
+    0,
+    MAX_ENRICHMENT_EXECUTABLES,
+  )) {
     lines.push(
       `\n- "${exec.title}" → ${extractElementNameFromPath(exec.rootEntityPath)}`,
     );
@@ -1506,6 +1680,11 @@ function buildExecutableSection(
         .join(', ');
       lines.push(`  Required parameters: ${paramList}`);
     }
+  }
+  if (modelContext.executables.length > MAX_ENRICHMENT_EXECUTABLES) {
+    lines.push(
+      `\n(${modelContext.executables.length - MAX_ENRICHMENT_EXECUTABLES} additional executables omitted)`,
+    );
   }
   return lines.join('\n');
 }
@@ -1659,15 +1838,10 @@ function buildServicePairHint(
   }
   const leftName = extractElementNameFromPath(assoc.leftEntity);
   const rightName = extractElementNameFromPath(assoc.rightEntity);
-  const colsA = new Set(
-    services
-      .find((s) => s.title === svcA)
-      ?.columns.map((c) => c.name.toLowerCase()) ?? [],
-  );
-  const svcBCols = services.find((s) => s.title === svcB)?.columns ?? [];
-  const shared = svcBCols
-    .filter((c) => colsA.has(c.name.toLowerCase()))
-    .map((c) => c.name);
+  const serviceA = services.find((s) => s.title === svcA);
+  const serviceB = services.find((s) => s.title === svcB);
+  const shared =
+    serviceA && serviceB ? sharedColumnNames(serviceB, serviceA) : [];
   const joinKeyHint =
     shared.length > 0
       ? `JOIN ON shared columns: ${shared.join(', ')}`
@@ -1721,19 +1895,26 @@ function buildServiceJoinSection(
   if (serviceEntityMap.size === 0) {
     return undefined;
   }
+  const allEntries = Array.from(serviceEntityMap);
+  const cappedEntries = allEntries.slice(0, MAX_ENRICHMENT_JOIN_SERVICES);
   const joinLines: string[] = [
     '## Model-Aware Service JOIN Guide',
     'Each service below is mapped to the data model entity whose properties best match its columns.',
     'Use the entity relationships to determine correct JOIN keys and semantics.',
     '',
   ];
-  for (const [svcTitle, entityPath] of serviceEntityMap) {
+  for (const [svcTitle, entityPath] of cappedEntries) {
     joinLines.push(
       `- **${svcTitle}** → entity ${extractElementNameFromPath(entityPath)}`,
     );
   }
+  if (allEntries.length > MAX_ENRICHMENT_JOIN_SERVICES) {
+    joinLines.push(
+      `\n(${allEntries.length - MAX_ENRICHMENT_JOIN_SERVICES} additional services omitted)`,
+    );
+  }
   const pairHints = buildServicePairHints(
-    serviceEntityMap,
+    new Map(cappedEntries),
     modelContext,
     services,
   );
@@ -1764,6 +1945,163 @@ export function buildModelContextEnrichmentText(
 
   return `# DATA MODEL CONTEXT
 The following describes the underlying data model — entities, properties, enumerations, and relationships. Use this to understand column semantics, valid filter values, and how entities relate to each other.
+
+${sections.join('\n\n')}`;
+}
+
+const MAX_CATALOG_ENTITIES = 40;
+const MAX_CATALOG_PROPS_PER_ENTITY = 50;
+const MAX_CATALOG_ENUMS = 30;
+const MAX_CATALOG_ENUM_VALUES = 50;
+const MAX_CATALOG_ASSOCIATIONS = 40;
+const MAX_CATALOG_EXECUTABLES = 30;
+
+/** Formats a property's multiplicity marker from its cardinality flags. */
+function formatCatalogMultiplicity(property: LegendAIModelProperty): string {
+  if (property.isCollection) {
+    return '[*]';
+  }
+  return property.isOptional ? '[0..1]' : '[1]';
+}
+
+/** Builds the entities-and-columns section of the model catalog. */
+function buildCatalogEntitiesSection(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  if (modelContext.entities.length === 0) {
+    return undefined;
+  }
+  const scoreOf = (e: LegendAIModelEntity): number =>
+    (e.isQueryable ? 10 : 0) + (e.isRootMapped ? 3 : 0);
+  const sorted = [...modelContext.entities].sort(
+    (a, b) => scoreOf(b) - scoreOf(a),
+  );
+  const lines: string[] = ['## Entities and Columns'];
+  for (const entity of sorted.slice(0, MAX_CATALOG_ENTITIES)) {
+    const tags: string[] = [];
+    if (entity.isQueryable) {
+      tags.push('queryable');
+    }
+    if (entity.isRootMapped) {
+      tags.push('root-mapped');
+    }
+    const tagStr = tags.length > 0 ? ` [${tags.join(', ')}]` : '';
+    lines.push(`\n### ${entity.name}${tagStr}`);
+    if (entity.description) {
+      lines.push(entity.description);
+    }
+    const propLines = entity.properties
+      .slice(0, MAX_CATALOG_PROPS_PER_ENTITY)
+      .map((p) => `- ${p.name}: ${p.type} ${formatCatalogMultiplicity(p)}`);
+    if (propLines.length > 0) {
+      lines.push('Columns:', ...propLines);
+    }
+    if (entity.properties.length > MAX_CATALOG_PROPS_PER_ENTITY) {
+      lines.push(
+        `- (${entity.properties.length - MAX_CATALOG_PROPS_PER_ENTITY} more columns)`,
+      );
+    }
+  }
+  if (modelContext.entities.length > MAX_CATALOG_ENTITIES) {
+    lines.push(
+      `\n(${modelContext.entities.length - MAX_CATALOG_ENTITIES} additional entities omitted — ask about a specific one for its columns)`,
+    );
+  }
+  return lines.join('\n');
+}
+
+/** Builds the relationships section of the model catalog. */
+function buildCatalogRelationshipsSection(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  if (modelContext.associations.length === 0) {
+    return undefined;
+  }
+  const lines: string[] = ['## Relationships'];
+  for (const assoc of modelContext.associations.slice(
+    0,
+    MAX_CATALOG_ASSOCIATIONS,
+  )) {
+    lines.push(
+      `- ${assoc.leftEntity}.${assoc.leftProperty} <-> ${assoc.rightEntity}.${assoc.rightProperty}`,
+    );
+  }
+  if (modelContext.associations.length > MAX_CATALOG_ASSOCIATIONS) {
+    lines.push(
+      `- (${modelContext.associations.length - MAX_CATALOG_ASSOCIATIONS} more relationships)`,
+    );
+  }
+  return lines.join('\n');
+}
+
+/** Builds the enumerations (valid values) section of the model catalog. */
+function buildCatalogEnumerationsSection(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  const enumerations = modelContext.enumerations ?? [];
+  if (enumerations.length === 0) {
+    return undefined;
+  }
+  const lines: string[] = ['## Enumerations (valid values)'];
+  for (const en of enumerations.slice(0, MAX_CATALOG_ENUMS)) {
+    const shown = en.values.slice(0, MAX_CATALOG_ENUM_VALUES).join(', ');
+    const more =
+      en.values.length > MAX_CATALOG_ENUM_VALUES
+        ? `, ... (${en.values.length} total)`
+        : '';
+    lines.push(`- ${en.name}: ${shown}${more}`);
+  }
+  return lines.join('\n');
+}
+
+/** Builds the available-executables section of the model catalog. */
+function buildCatalogExecutablesSection(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  const executables = modelContext.executables ?? [];
+  if (executables.length === 0) {
+    return undefined;
+  }
+  const lines: string[] = ['## How to query (available executables)'];
+  for (const exec of executables.slice(0, MAX_CATALOG_EXECUTABLES)) {
+    const root = exec.rootEntityPath
+      ? ` → ${extractElementNameFromPath(exec.rootEntityPath)}`
+      : '';
+    lines.push(`\n- **${exec.title}**${root}`);
+    if (exec.description) {
+      lines.push(
+        `  ${exec.description.slice(0, MAX_DESCRIPTION_PREVIEW_LENGTH)}`,
+      );
+    }
+    if (exec.requiredParameters && exec.requiredParameters.length > 0) {
+      const paramList = exec.requiredParameters
+        .map((p) => `${p.name} (${p.type})`)
+        .join(', ');
+      lines.push(`  Required parameters: ${paramList}`);
+    }
+  }
+  if (executables.length > MAX_CATALOG_EXECUTABLES) {
+    lines.push(`\n(${executables.length - MAX_CATALOG_EXECUTABLES} more)`);
+  }
+  return lines.join('\n');
+}
+
+export function buildModelCatalogText(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  const sections = [
+    buildCatalogEntitiesSection(modelContext),
+    buildCatalogRelationshipsSection(modelContext),
+    buildCatalogEnumerationsSection(modelContext),
+    buildCatalogExecutablesSection(modelContext),
+  ].filter(isNonNullable);
+
+  if (sections.length === 0) {
+    return undefined;
+  }
+
+  return `# MODEL REFERENCE
+A reference for this data product's model. Use it to explain the entities and their columns, how entities relate, valid enumeration values, and how to query the data. Give a thorough, well-structured answer.
 
 ${sections.join('\n\n')}`;
 }

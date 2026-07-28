@@ -27,6 +27,7 @@ import {
   type PlainObject,
   assertErrorThrown,
   guaranteeNonNullable,
+  LogEvent,
 } from '@finos/legend-shared';
 import {
   type LegendAIMessage,
@@ -90,6 +91,8 @@ import {
   EntitySearchResponse,
   type EntitySearchResult,
 } from '@finos/legend-server-marketplace';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export enum MarketplaceAIChatStage {
   IDLE = 'idle',
@@ -269,7 +272,57 @@ export class LegendMarketplaceAIChatStore {
     this.stage = stage;
   }
 
+  logCopySql(): void {
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentCopySql(
+      this.baseStore.applicationStore.telemetryService,
+    );
+  }
+
+  logSuggestedQueryClicked(): void {
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentSuggestedQueryClicked(
+      this.baseStore.applicationStore.telemetryService,
+    );
+  }
+
+  // Logs a question-asked telemetry event (length only — never the question text).
+  private logQuestionAsked(text: string, isFollowUp: boolean): void {
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentQuestionAsked(
+      this.baseStore.applicationStore.telemetryService,
+      text.trim().length,
+      isFollowUp,
+      this.scopeProducts.length,
+    );
+  }
+
+  // Logs the outcome of the last assistant turn (enum + row count + duration —
+  // never the answer text or row values).
+  private logResponseReceived(startTime: number): void {
+    const last = this.messages.at(-1);
+    const assistant =
+      last?.role === LegendAIMessageRole.ASSISTANT ? last : undefined;
+    const rowCount = assistant?.gridData?.rowData.length ?? 0;
+    let outcome: 'error' | 'data' | 'text' | 'empty';
+    if (assistant?.error) {
+      outcome = 'error';
+    } else if (rowCount > 0) {
+      outcome = 'data';
+    } else if (assistant?.textAnswer) {
+      outcome = 'text';
+    } else {
+      outcome = 'empty';
+    }
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentResponseReceived(
+      this.baseStore.applicationStore.telemetryService,
+      outcome,
+      rowCount,
+      (Date.now() - startTime) / 1000,
+    );
+  }
+
   clearChat(): void {
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentClearChat(
+      this.baseStore.applicationStore.telemetryService,
+    );
     this.messages = [];
     this.suggestedProducts = [];
     this.scoredCandidates = [];
@@ -421,6 +474,16 @@ export class LegendMarketplaceAIChatStore {
           LakehouseDataProductSearchResultDetails ||
         r.dataProductDetails instanceof LegacyDataProductSearchResultDetails,
     );
+
+    // Data spaces come back from the search API with a null `dataProductTitle`;
+    // derive a readable name from their path so recommendations never render as
+    // "Unknown Product".
+    for (const result of productResults) {
+      if (!result.dataProductTitle) {
+        const { artifactId, path } = unwrapProductDetails(result);
+        result.dataProductTitle = this.buildTitleFromPath(path, artifactId);
+      }
+    }
 
     let fieldResults: GroupedFieldSearchResultEntry[] = [];
     if (fieldRaw) {
@@ -749,6 +812,7 @@ export class LegendMarketplaceAIChatStore {
 
     const setMessages = this.createMessageSetter();
     const startTime = Date.now();
+    this.logQuestionAsked(trimmed, false);
 
     try {
       if (this.selectedProductCoordinates) {
@@ -827,6 +891,7 @@ export class LegendMarketplaceAIChatStore {
       this.stage = MarketplaceAIChatStage.IDLE;
     } finally {
       this.isSending = false;
+      this.logResponseReceived(startTime);
     }
   }
 
@@ -852,6 +917,10 @@ export class LegendMarketplaceAIChatStore {
     } else {
       this.selectedDataProductId = undefined;
     }
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentScopeAdded(
+      this.baseStore.applicationStore.telemetryService,
+      this.scopeProducts.length,
+    );
   }
 
   selectAutosuggestProduct(result: AutosuggestResult): void {
@@ -869,6 +938,10 @@ export class LegendMarketplaceAIChatStore {
     this.lastEntityCandidates = [];
     this.selectedDataProductId = undefined;
     this.stage = MarketplaceAIChatStage.PRODUCT_SELECTION;
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentScopeRemoved(
+      this.baseStore.applicationStore.telemetryService,
+      this.scopeProducts.length,
+    );
   }
 
   addScopeProduct(result: AutosuggestResult): void {
@@ -926,10 +999,18 @@ export class LegendMarketplaceAIChatStore {
       };
       this.selectedDataProductId = details.dataProductId;
     }
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentScopeAdded(
+      this.baseStore.applicationStore.telemetryService,
+      this.scopeProducts.length,
+    );
   }
 
   removeScopeProduct(index: number): void {
     this.scopeProducts = this.scopeProducts.filter((_, i) => i !== index);
+    LegendMarketplaceTelemetryHelper.logEvent_AIAgentScopeRemoved(
+      this.baseStore.applicationStore.telemetryService,
+      this.scopeProducts.length,
+    );
     if (this.selectedProduct === undefined) {
       const firstScope = this.scopeProducts[0];
       this.selectedProductCoordinates = firstScope?.coordinates;
@@ -1021,6 +1102,12 @@ export class LegendMarketplaceAIChatStore {
       }
     } catch (error) {
       assertErrorThrown(error);
+      this.baseStore.applicationStore.logService.error(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.AI_EXECUTION_CONTEXT_RESOLUTION_FAILURE,
+        ),
+        error,
+      );
       addThinkingStep(
         setMessages,
         `Warning: Could not resolve execution context — ${error.message}`,
@@ -1045,6 +1132,7 @@ export class LegendMarketplaceAIChatStore {
 
     const setMessages = this.createMessageSetter();
     const startTime = Date.now();
+    this.logQuestionAsked(trimmed, true);
 
     try {
       this.stage = MarketplaceAIChatStage.QUERYING;
@@ -1064,6 +1152,7 @@ export class LegendMarketplaceAIChatStore {
       );
     } finally {
       this.isSending = false;
+      this.logResponseReceived(startTime);
     }
   }
 
@@ -1738,7 +1827,14 @@ export class LegendMarketplaceAIChatStore {
         context,
         startTime,
       );
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      this.baseStore.applicationStore.logService.warn(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.AI_RESULT_ANALYSIS_FAILURE,
+        ),
+        error,
+      );
       completeThinkingSteps(context.setMessages);
       updateLastAssistant(context.setMessages, () => ({
         isProcessing: false,
