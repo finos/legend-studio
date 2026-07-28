@@ -167,7 +167,7 @@ export class DataProductViewerState extends BaseViewerState<
       viewDataProductSource?: (() => void) | undefined;
       onZoneChange?: ((zone: NavigationZone | undefined) => void) | undefined;
       openPowerBi?: ((apg: string) => void) | undefined;
-      openDataCube?: (sourceData: object) => void;
+      openDataCube?: ((sourceData: object) => void) | undefined;
       openLineage?:
         | ((dataProductName: string, accessPointName: string) => void)
         | undefined;

@@ -29,6 +29,7 @@ import type { LegendApplicationPlugin } from '@finos/legend-application';
 import {
   LegendAI_LegendApplicationPlugin_Extension,
   type LegendAIOrchestratorDataProductCoordinates,
+  type LegendAIResolvedEntities,
 } from './LegendAI_LegendApplicationPlugin_Extension.js';
 
 export class TDSColumnSchema {
@@ -48,6 +49,9 @@ export class TDSParameterSchema {
   required?: boolean;
 }
 
+/** A non-null scalar value carried by pre-filters and telemetry payloads. */
+export type LegendAIPrimitiveValue = string | number | boolean;
+
 /**
  * Describes a hardcoded filter constraint baked into a service lambda.
  * These are equality checks, isEmpty/isNotEmpty checks, or isNotNull
@@ -59,7 +63,7 @@ export interface TDSServicePreFilter {
   /** The comparison operator. */
   operator: 'equal' | 'isEmpty' | 'isNotEmpty' | 'isNotNull';
   /** The literal value for equality comparisons. */
-  value?: string | number | boolean;
+  value?: LegendAIPrimitiveValue;
 }
 
 export enum TDSServiceSourceType {
@@ -117,6 +121,11 @@ export class LegendAIConfig {
   maxJudgeAttempts?: number;
   /** Lakehouse runtime environment name (e.g. 'prod', 'uat'). Defaults to 'prod' when not set. */
   lakehouseEnvironment?: string;
+  /**
+   * Ingest environment classification ('prod' | 'prod-parallel' | 'dev') —
+   * supplies the realm tier for lakehouse Python codegen.
+   */
+  lakehouseEnvironmentClassification?: string;
   /** URL to EngHub documentation for Legend AI setup. */
   enghubDocUrl?: string;
   /** URL to EntHub request access page for the AI coverage app. */
@@ -151,9 +160,13 @@ export function getTodayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Action ID used to offer the Legend AI Orchestrator as a fallback. */
 export const LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID =
   'orchestrator-fallback';
+
+export const LEGEND_AI_ALTERNATE_ROOT_ACTION_ID = 'alternate-root';
+
+export const LEGEND_AI_FEEDBACK_PROMPT = 'Was this helpful?';
+export const LEGEND_AI_DEFAULT_MODEL_LABEL = 'Auto';
 
 export function findLegendAIPlugin(
   plugins: LegendApplicationPlugin[],
@@ -217,6 +230,14 @@ export class LegendAIUnsupportedEngineShapeError extends LegendAIServiceError {
   }
 }
 
+export class LegendAIExecutionTimeoutError extends LegendAIServiceError {
+  override name = 'LegendAIExecutionTimeoutError';
+
+  constructor(hint: string) {
+    super(hint, LegendAIErrorType.EXECUTION);
+  }
+}
+
 export enum LegendAIMessageRole {
   USER = 'user',
   ASSISTANT = 'assistant',
@@ -231,6 +252,7 @@ export class LegendAIUserMessage {
 export interface LegendAIFallbackAction {
   label: string;
   actionId: string;
+  resolvedEntities?: LegendAIResolvedEntities;
 }
 
 export enum LegendAIMessageFeedbackRating {
@@ -260,6 +282,39 @@ export enum LegendAIResponseOutcome {
 export enum LegendAIChatTelemetryEventType {
   QUESTION_ASKED = 'question-asked',
   RESPONSE_RECEIVED = 'response-received',
+  ASSISTANT_CLOSED = 'assistant-closed',
+  SUGGESTED_QUERY_CLICKED = 'suggested-query-clicked',
+  SCOPE_CHANGED = 'scope-changed',
+  MODEL_CHANGED = 'model-changed',
+  SQL_DETAILS_TOGGLED = 'sql-details-toggled',
+  ARTIFACT_COPIED = 'artifact-copied',
+  PYTHON_CODE_REQUESTED = 'python-code-requested',
+  PYTHON_CODE_TOGGLED = 'python-code-toggled',
+  OPEN_IN_DATACUBE_CLICKED = 'open-in-datacube-clicked',
+}
+
+export enum LegendAITelemetryArtifact {
+  SQL = 'sql',
+  PYTHON = 'python',
+}
+
+export enum LegendAISuggestedQuerySource {
+  STARTER = 'starter',
+  FOLLOW_UP = 'follow_up',
+}
+
+/** Buckets a row count into a coarse range so telemetry never carries exact sizes. */
+export function toRowCountBucket(rowCount: number): string {
+  if (rowCount <= 0) {
+    return '0';
+  }
+  if (rowCount <= 10) {
+    return '1-10';
+  }
+  if (rowCount <= 100) {
+    return '11-100';
+  }
+  return '100+';
 }
 
 /**
@@ -279,7 +334,98 @@ export type LegendAIChatTelemetryEvent =
       type: LegendAIChatTelemetryEventType.RESPONSE_RECEIVED;
       outcome: LegendAIResponseOutcome;
       durationMs: number;
-    };
+      hasSql: boolean;
+      hasResultGrid: boolean;
+      rowCountBucket: string;
+      suggestionCount: number;
+      errorType?: string;
+    }
+  | { type: LegendAIChatTelemetryEventType.ASSISTANT_CLOSED }
+  | {
+      type: LegendAIChatTelemetryEventType.SUGGESTED_QUERY_CLICKED;
+      position: number;
+      source: LegendAISuggestedQuerySource;
+    }
+  | {
+      type: LegendAIChatTelemetryEventType.SCOPE_CHANGED;
+      selectedCount: number;
+      includesMcp: boolean;
+    }
+  | {
+      type: LegendAIChatTelemetryEventType.MODEL_CHANGED;
+      model: string;
+    }
+  | {
+      type: LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED;
+      shown: boolean;
+    }
+  | {
+      type: LegendAIChatTelemetryEventType.ARTIFACT_COPIED;
+      artifact: LegendAITelemetryArtifact;
+    }
+  | { type: LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED }
+  | {
+      type: LegendAIChatTelemetryEventType.PYTHON_CODE_TOGGLED;
+      shown: boolean;
+    }
+  | { type: LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED };
+
+/** The event-specific (non-base) telemetry payload fields for a chat event. */
+function chatTelemetryEventPayload(
+  event: LegendAIChatTelemetryEvent,
+): Record<string, LegendAIPrimitiveValue> {
+  switch (event.type) {
+    case LegendAIChatTelemetryEventType.QUESTION_ASKED:
+      return { question_length: event.questionLength };
+    case LegendAIChatTelemetryEventType.RESPONSE_RECEIVED:
+      return {
+        outcome: event.outcome,
+        duration_ms: event.durationMs,
+        has_sql: event.hasSql,
+        has_result_grid: event.hasResultGrid,
+        row_count_bucket: event.rowCountBucket,
+        suggestion_count: event.suggestionCount,
+        ...(event.errorType === undefined
+          ? {}
+          : { error_type: event.errorType }),
+      };
+    case LegendAIChatTelemetryEventType.SUGGESTED_QUERY_CLICKED:
+      return { position: event.position, source: event.source };
+    case LegendAIChatTelemetryEventType.SCOPE_CHANGED:
+      return {
+        selected_count: event.selectedCount,
+        includes_mcp: event.includesMcp,
+      };
+    case LegendAIChatTelemetryEventType.MODEL_CHANGED:
+      return { model: event.model };
+    case LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED:
+    case LegendAIChatTelemetryEventType.PYTHON_CODE_TOGGLED:
+      return { shown: event.shown };
+    case LegendAIChatTelemetryEventType.ARTIFACT_COPIED:
+      return { artifact: event.artifact };
+    case LegendAIChatTelemetryEventType.ASSISTANT_CLOSED:
+    case LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED:
+    case LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED:
+      return {};
+    default:
+      return event satisfies never;
+  }
+}
+
+export function logLegendAIChatTelemetry(
+  event: LegendAIChatTelemetryEvent,
+  eventKeys: Record<LegendAIChatTelemetryEventType, string>,
+  base: Record<string, LegendAIPrimitiveValue>,
+  logEvent: (
+    eventName: string,
+    payload: Record<string, LegendAIPrimitiveValue>,
+  ) => void,
+): void {
+  logEvent(eventKeys[event.type], {
+    ...base,
+    ...chatTelemetryEventPayload(event),
+  });
+}
 
 export class LegendAIAssistantMessage {
   id!: string;
@@ -299,6 +445,7 @@ export class LegendAIAssistantMessage {
   suggestedQueries!: string[];
   fallbackAction!: LegendAIFallbackAction | null;
   queriedAccessPointGroups!: string[];
+  queriedAccessPoints!: string[];
 }
 
 export type LegendAIMessage = LegendAIUserMessage | LegendAIAssistantMessage;
@@ -315,6 +462,7 @@ export class LegendAIConversationTurn {
   rowCount?: number;
   /** Brief summary of the result (e.g. column names, first few values). */
   resultSummary?: string;
+  queriedAccessPoints?: string[];
 }
 
 export interface LegendAIChatState {
@@ -427,7 +575,6 @@ export interface LegendAIModelEntity {
   properties: LegendAIModelProperty[];
   isRootMapped?: boolean;
   isQueryable?: boolean;
-  superTypes?: string[];
 }
 
 export interface LegendAIModelAssociation {
@@ -459,10 +606,16 @@ export interface LegendAIExecutableInfo {
   description?: string;
   rootEntityPath: string;
   referencedEntityPaths?: string[];
-  columns?: string[];
   queryTemplate?: string;
   requiredParameters?: LegendAIParameterInfo[];
   columnPropertyMappings?: LegendAIColumnPropertyMapping[];
+}
+
+export interface LegendAIPhysicalDataset {
+  name: string;
+  database?: string;
+  schema?: string;
+  table?: string;
 }
 
 export interface LegendAIModelContext {
@@ -470,6 +623,7 @@ export interface LegendAIModelContext {
   associations: LegendAIModelAssociation[];
   enumerations?: LegendAIEnumerationInfo[];
   executables?: LegendAIExecutableInfo[];
+  datasets?: LegendAIPhysicalDataset[];
   dataspaceDescription?: string;
 }
 
@@ -748,6 +902,12 @@ export async function extractParameterSchemas(
   }
 }
 
+export enum LegendAISelfHealKind {
+  NONE = 'none',
+  DISTINCT_VALUE = 'distinct-value',
+  LLM_ZERO_ROW = 'llm-zero-row',
+}
+
 export interface LegendAIChatProps {
   services: TDSServiceSchema[];
   coordinates: string;
@@ -780,6 +940,10 @@ export interface LegendAIChatProps {
     feedback: LegendAIMessageFeedback,
   ) => Promise<void> | void;
   onRequestAccess?: (accessPointGroupTitle: string) => void;
+  onOpenInDataCube?: (
+    accessPointName: string,
+    pureQuery: string | undefined,
+  ) => void;
   contextBannerMessage?: string;
   /**
    * Optional usage-analytics sink. Fired when the user asks a question and when

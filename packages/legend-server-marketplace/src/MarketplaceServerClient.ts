@@ -149,13 +149,21 @@ export class MarketplaceServerClient extends AbstractServerClient {
     pageSize: number = 12,
     pageNumber: number = 1,
     showAll: boolean = false,
-  ): Promise<PlainObject<DataProductSearchResponse>> => {
-    const filters = searchFilters.join('&search_filters=');
-    const searchFilterParam = filters ? `&search_filters=${filters}` : '';
-    return this.get<PlainObject<DataProductSearchResponse>>(
-      `${this._search()}/dataProducts/${lakehouseEnv}?query=${query}&search_type=${searchType}${searchFilterParam}&page_size=${pageSize}&page_number=${pageNumber}&include_filter_metadata=true&show_all=${showAll}`,
+  ): Promise<PlainObject<DataProductSearchResponse>> =>
+    this.get<PlainObject<DataProductSearchResponse>>(
+      `${this._search()}/dataProducts/${lakehouseEnv}`,
+      {},
+      undefined,
+      {
+        query,
+        search_type: searchType,
+        ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
+        page_size: pageSize,
+        page_number: pageNumber,
+        include_filter_metadata: true,
+        show_all: showAll,
+      },
     );
-  };
 
   fieldSearch = async (
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,

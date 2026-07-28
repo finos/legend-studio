@@ -170,6 +170,7 @@ export const LegendAIDonutChart = (props: {
 const LINE_SVG_WIDTH = 400;
 const LINE_SVG_HEIGHT = 180;
 const LINE_PADDING = { top: 16, right: 16, bottom: 28, left: 52 };
+const AXIS_LABEL_MAX_CHARS = 10;
 
 export const LegendAILineChart = (props: {
   data: LegendAIChartDataPoint[];
@@ -203,7 +204,7 @@ export const LegendAILineChart = (props: {
         LINE_PADDING.left +
         (data.length > 1 ? (i / (data.length - 1)) * plotW : plotW / 2);
       const y = LINE_PADDING.top + (1 - (d.value - lo) / range) * plotH;
-      return { x, y, ...d };
+      return { x, y, label: d.label, value: d.value };
     });
     return {
       points: pts,
@@ -219,6 +220,10 @@ export const LegendAILineChart = (props: {
 
   const plotBottom = LINE_SVG_HEIGHT - LINE_PADDING.bottom;
   const color = getChartColor(0);
+  const firstPt = points[0];
+  const lastPt = points[points.length - 1];
+  const axisEndpoints =
+    firstPt && lastPt ? { first: firstPt, last: lastPt } : undefined;
 
   return (
     <div className="legend-ai-chart legend-ai-chart--line">
@@ -280,7 +285,7 @@ export const LegendAILineChart = (props: {
         {/* Dots */}
         {points.map((p) => (
           <circle
-            key={`${p.label}-${String(p.value)}`}
+            key={`${p.x}-${p.y}`}
             cx={p.x}
             cy={p.y}
             r={3}
@@ -289,37 +294,29 @@ export const LegendAILineChart = (props: {
           />
         ))}
 
-        {/* X-axis labels (first, mid, last) */}
-        {points.length > 0 &&
-          (() => {
-            const firstPt = points[0];
-            const lastPt = points[points.length - 1];
-            if (!firstPt || !lastPt) {
-              return null;
-            }
-            return (
-              <>
-                <text
-                  x={firstPt.x}
-                  y={plotBottom + 16}
-                  className="legend-ai-chart__axis-label"
-                  textAnchor="start"
-                >
-                  {firstPt.label.slice(0, 10)}
-                </text>
-                {points.length > 2 && (
-                  <text
-                    x={lastPt.x}
-                    y={plotBottom + 16}
-                    className="legend-ai-chart__axis-label"
-                    textAnchor="end"
-                  >
-                    {lastPt.label.slice(0, 10)}
-                  </text>
-                )}
-              </>
-            );
-          })()}
+        {/* X-axis labels (first, last) */}
+        {axisEndpoints && (
+          <>
+            <text
+              x={axisEndpoints.first.x}
+              y={plotBottom + 16}
+              className="legend-ai-chart__axis-label"
+              textAnchor="start"
+            >
+              {axisEndpoints.first.label.slice(0, AXIS_LABEL_MAX_CHARS)}
+            </text>
+            {points.length > 2 && (
+              <text
+                x={axisEndpoints.last.x}
+                y={plotBottom + 16}
+                className="legend-ai-chart__axis-label"
+                textAnchor="end"
+              >
+                {axisEndpoints.last.label.slice(0, AXIS_LABEL_MAX_CHARS)}
+              </text>
+            )}
+          </>
+        )}
       </svg>
     </div>
   );

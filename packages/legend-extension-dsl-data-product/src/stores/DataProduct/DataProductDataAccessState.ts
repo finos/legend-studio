@@ -42,6 +42,8 @@ import {
   V1_liteDataContractsResponseModelSchemaToContracts,
   V1_liteDataContractWithUserStatusModelSchema,
   V1_ResourceType,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_DataProductOriginType,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
@@ -53,6 +55,7 @@ import {
   guaranteeNonNullable,
   isNonNullable,
   LogEvent,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import {
   action,
@@ -81,6 +84,14 @@ import type { DataProductAccessPointState } from './DataProductAccessPointState.
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
 import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
 import { runMissingIngestsCheckForArtifact } from '../../utils/DataProductIngestUtils.js';
+import {
+  DATAPRODUCT_TYPE,
+  DataProductTelemetryHelper,
+  PRODUCT_INTEGRATION_TYPE,
+} from '../../__lib__/DataProductTelemetryHelper.js';
+
+const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
+const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 
 export enum DataAccessRequestType {
   CONTRACT = 'CONTRACT',
@@ -258,6 +269,95 @@ export class DataProductDataAccessState {
       return this.filteredDataProductQueryEnvs[0];
     }
     return undefined;
+  }
+
+  /**
+   * Builds the lakehouse-consumer DataCube `sourceData` for an access point;
+   * query-string handling is the caller's concern, not the store's.
+   */
+  buildDataCubeSourceData(
+    accessPointName: string,
+    environmentName: string,
+  ): Record<string, unknown> {
+    const details = this.entitlementsDataProductDetails;
+    const origin = details.origin;
+    const sourceData: Record<string, unknown> = {
+      _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
+      warehouse: DEFAULT_CONSUMER_WAREHOUSE,
+      environment: environmentName,
+      paths: [this.dataProductViewerState.product.path, accessPointName],
+      deploymentId: details.deploymentId,
+    };
+    if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+      sourceData.origin = {
+        _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
+        dpCoordinates: {
+          groupId: origin.group,
+          artifactId: origin.artifact,
+          versionId: origin.version,
+        },
+      };
+    } else if (origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+      sourceData.origin = {
+        _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
+      };
+    } else {
+      throw new UnsupportedOperationError(
+        `Can't open DataCube: unsupported data product origin`,
+      );
+    }
+    return sourceData;
+  }
+
+  /**
+   * Opens an access point in DataCube via the configured launcher, logging the
+   * integration-open telemetry. Throws if no launcher or origin is available.
+   */
+  openAccessPointInDataCube(
+    accessPointName: string,
+    environmentName: string,
+    extraSourceData?: Record<string, unknown>,
+  ): void {
+    const openDataCube = guaranteeNonNullable(
+      this.dataProductViewerState.openDataCube,
+      `Can't open DataCube: no launcher is configured for this data product`,
+    );
+    const details = this.entitlementsDataProductDetails;
+    const sourceData = {
+      ...this.buildDataCubeSourceData(accessPointName, environmentName),
+      ...extraSourceData,
+    };
+    try {
+      DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
+        this.applicationStore.telemetryService,
+        {
+          origin:
+            details.origin instanceof V1_SdlcDeploymentDataProductOrigin
+              ? {
+                  type: DATAPRODUCT_TYPE.SDLC,
+                  groupId: details.origin.group,
+                  artifactId: details.origin.artifact,
+                  versionId: details.origin.version,
+                }
+              : { type: DATAPRODUCT_TYPE.ADHOC },
+          deploymentId: details.deploymentId,
+          name: details.dataProduct.name,
+          productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
+          accessPointPath: accessPointName,
+          environmentClassification: details.lakehouseEnvironment?.type,
+        },
+        undefined,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create(
+          DSL_DATAPRODUCT_EVENT.ERROR_LOG_OPEN_DATACUBE_FROM_AI_CHAT,
+        ),
+        error,
+      );
+    }
+    openDataCube(sourceData);
   }
 
   setAssociatedContracts(val: V1_LiteDataContract[] | undefined): void {

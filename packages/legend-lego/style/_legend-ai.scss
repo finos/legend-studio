@@ -226,7 +226,7 @@
   padding: 0.6rem 1rem;
   border-radius: 0.6rem;
   background: var(--qai-accent-subtle);
-  border: 0.1rem solid rgb(24 106 222 / 20%);
+  border: 0.1rem solid var(--qai-section-border);
   font-size: 1.4rem;
   color: var(--qai-text-secondary);
   flex-shrink: 0;
@@ -265,7 +265,7 @@
 
   &:hover {
     color: var(--qai-accent);
-    background: rgb(24 106 222 / 12%);
+    background: var(--qai-accent-subtle);
   }
 }
 
@@ -313,6 +313,21 @@
   font-weight: 500;
   color: var(--qai-text-muted);
   letter-spacing: 0.02rem;
+}
+
+.legend-ai__empty-overview {
+  font-size: 1.25rem;
+  line-height: 1.8rem;
+  color: var(--qai-text-secondary);
+  max-width: 40rem;
+  margin-top: 0.8rem;
+  text-align: center;
+}
+
+.legend-ai__empty-meta {
+  font-size: 1.1rem;
+  color: var(--qai-text-muted);
+  margin-top: 0.4rem;
 }
 
 .legend-ai__suggestions {
@@ -473,6 +488,22 @@
   }
 }
 
+.legend-ai__sql-details {
+  width: 100%;
+
+  .legend-ai__sql-block {
+    margin-top: 0.6rem;
+  }
+}
+
+.legend-ai__sql-details-summary {
+  cursor: pointer;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--qai-text-secondary);
+  user-select: none;
+}
+
 .legend-ai__sql-block {
   border: 0.1rem solid var(--qai-border);
   border-radius: 0.8rem;
@@ -537,6 +568,175 @@
     font-size: 1.4rem;
     font-weight: 600;
   }
+}
+
+.legend-ai__python-block {
+  margin-top: 1rem;
+}
+
+.legend-ai__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.legend-ai__python-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--qai-python-accent);
+  background: var(--qai-python-accent-subtle);
+  border: 0.1rem solid var(--qai-python-border);
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  &:hover {
+    color: var(--qai-python-accent-hover);
+    border-color: var(--qai-python-border-strong);
+  }
+}
+
+.legend-ai__python-cta-caret {
+  display: flex;
+  align-items: center;
+}
+
+.legend-ai__datacube-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.6rem;
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--qai-datacube-accent);
+  background: var(--qai-datacube-accent-subtle);
+  border: 0.1rem solid var(--qai-datacube-border);
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease;
+
+  svg {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
+  &:hover:not(:disabled) {
+    color: var(--qai-datacube-accent-hover);
+    border-color: var(--qai-datacube-border-strong);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: default;
+  }
+}
+
+.legend-ai__datacube-cta-launch {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+.legend-ai__python-panel {
+  margin-top: 0.8rem;
+  border: 0.1rem solid var(--qai-python-border);
+  border-radius: 0.8rem;
+  overflow: clip;
+  background: var(--qai-bg-primary);
+}
+
+.legend-ai__python-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  background: var(--qai-panel-header-bg);
+  border-bottom: 0.1rem solid var(--qai-python-border);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--qai-text-secondary);
+}
+
+.legend-ai__python-panel-header-icon {
+  font-size: 1.5rem;
+  color: var(--qai-python-accent);
+  display: flex;
+  align-items: center;
+}
+
+.legend-ai__python-panel-actions {
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.8rem 1.2rem;
+  border-top: 0.1rem solid var(--qai-python-border);
+
+  // Retint the shared permission-error button so Python actions read as a
+  // distinct action surface without forking the button component.
+  .legend-ai__permission-error-btn {
+    color: var(--qai-python-accent);
+    border-color: var(--qai-python-border);
+    background: var(--qai-python-accent-subtle);
+
+    &:hover {
+      color: var(--qai-python-accent-hover);
+      border-color: var(--qai-python-border-strong);
+      background: var(--qai-python-accent-subtle);
+    }
+
+    &--primary {
+      color: var(--qai-python-accent);
+      background: var(--qai-python-accent-subtle);
+      border-color: var(--qai-python-border);
+
+      &:hover {
+        color: var(--qai-python-accent-hover);
+        border-color: var(--qai-python-border-strong);
+        background: var(--qai-python-accent-subtle);
+      }
+    }
+  }
+}
+
+.legend-ai__python-panel-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.2rem;
+  color: var(--qai-text-secondary);
+  font-size: 1.4rem;
+
+  svg {
+    font-size: 1.6rem;
+    color: var(--qai-python-accent);
+  }
+}
+
+.legend-ai__python-panel-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.8rem 1.2rem;
+  border-top: 0.1rem solid var(--qai-python-border);
+  color: var(--qai-text-primary);
+  font-size: 1.4rem;
 }
 
 .legend-ai__sql-scroll {
@@ -943,23 +1143,36 @@
   overflow-wrap: anywhere;
 }
 
+@keyframes legend-ai-fallback-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 var(--qai-fallback-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+}
+
 .legend-ai__fallback-action-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.6rem;
   margin-top: 1rem;
-  padding: 0.8rem 1.6rem;
+  padding: 0.9rem 1.8rem;
   font-size: 1.3rem;
-  font-weight: 500;
-  color: var(--qai-fallback-color);
-  background: rgb(139 92 246 / 8%);
-  border: 1px solid rgb(139 92 246 / 25%);
+  font-weight: 600;
+  color: var(--qai-fallback-on);
+  background: var(--qai-fallback-bg);
+  border: 1px solid var(--qai-fallback-bg);
   border-radius: 0.8rem;
   cursor: pointer;
+  box-shadow: 0 0.2rem 0.6rem var(--qai-fallback-glow);
+  animation: legend-ai-fallback-pulse 2.2s ease-in-out infinite;
   transition:
     background 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
 
   svg {
     width: 1.4rem;
@@ -967,9 +1180,11 @@
   }
 
   &:hover {
-    color: var(--qai-fallback-color-hover);
-    background: rgb(139 92 246 / 15%);
-    border-color: rgb(139 92 246 / 40%);
+    background: var(--qai-fallback-bg-hover);
+    border-color: var(--qai-fallback-bg-hover);
+    box-shadow: 0 0.3rem 0.9rem var(--qai-fallback-glow);
+    transform: translateY(-0.1rem);
+    animation: none;
   }
 }
 
@@ -1008,7 +1223,7 @@
   letter-spacing: 0.02em;
   color: var(--qai-text-secondary);
   background: var(--qai-bg-secondary);
-  border: 1px solid var(--qai-border);
+  border: 0.1rem solid var(--qai-border);
   border-radius: 0.6rem;
   cursor: pointer;
   text-decoration: none;

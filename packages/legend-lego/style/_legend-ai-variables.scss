@@ -34,6 +34,10 @@
   --qai-gradient-end: #a855f7;
   --qai-fallback-color: #7c3aed;
   --qai-fallback-color-hover: #6d28d9;
+  --qai-fallback-bg: #7c3aed;
+  --qai-fallback-bg-hover: #6d28d9;
+  --qai-fallback-on: #fff;
+  --qai-fallback-glow: rgb(124 58 237 / 45%);
   --qai-error: #d32f2f;
   --qai-error-bg: #fef2f2;
   --qai-success: #16a163;
@@ -41,6 +45,22 @@
   --qai-shadow-hover: 0 0.4rem 1.6rem rgb(0 0 0 / 14%);
   --qai-panel-header-bg: #f2f5f7;
   --qai-sql-bg: #fafafa;
+
+  // Python codegen palette — warmer, softer orange on light surfaces so it
+  // reads as distinct from the accent blue without overpowering the text.
+  --qai-python-accent: #d97706;
+  --qai-python-accent-hover: #b45309;
+  --qai-python-accent-subtle: rgb(217 119 6 / 8%);
+  --qai-python-border: rgb(217 119 6 / 34%);
+  --qai-python-border-strong: rgb(217 119 6 / 58%);
+
+  // DataCube CTA palette — teal on light surfaces so it reads as distinct
+  // from the Python CTA while staying in the same visual tier.
+  --qai-datacube-accent: #0d7583;
+  --qai-datacube-accent-hover: #08525c;
+  --qai-datacube-accent-subtle: rgb(13 117 131 / 8%);
+  --qai-datacube-border: rgb(13 117 131 / 34%);
+  --qai-datacube-border-strong: rgb(13 117 131 / 58%);
 
   // Markdown answer token colors — GS blue accents for visual hierarchy
   --qai-heading-color: #10357a;
@@ -114,6 +134,10 @@
   --qai-gradient-end: #a78bfa;
   --qai-fallback-color: #c4b5fd;
   --qai-fallback-color-hover: #ddd6fe;
+  --qai-fallback-bg: #8b5cf6;
+  --qai-fallback-bg-hover: #a78bfa;
+  --qai-fallback-on: #fff;
+  --qai-fallback-glow: rgb(139 92 246 / 55%);
   --qai-error: #fa5343;
   --qai-error-bg: rgb(250 83 67 / 10%);
   --qai-success: #6ac555;
@@ -121,6 +145,22 @@
   --qai-shadow-hover: 0 0.4rem 1.6rem rgb(0 0 0 / 45%);
   --qai-panel-header-bg: #202020;
   --qai-sql-bg: #1a1a1a;
+
+  // Python codegen palette — warmer, softer orange on dark surfaces so it
+  // stays legible against the low-contrast background without going neon.
+  --qai-python-accent: #fbbf77;
+  --qai-python-accent-hover: #fcd39c;
+  --qai-python-accent-subtle: rgb(251 191 119 / 10%);
+  --qai-python-border: rgb(251 191 119 / 36%);
+  --qai-python-border-strong: rgb(251 191 119 / 60%);
+
+  // DataCube CTA palette — brighter teal for dark mode so it retains
+  // contrast against the low-luminance background.
+  --qai-datacube-accent: #67d8e4;
+  --qai-datacube-accent-hover: #93e6ef;
+  --qai-datacube-accent-subtle: rgb(103 216 228 / 10%);
+  --qai-datacube-border: rgb(103 216 228 / 36%);
+  --qai-datacube-border-strong: rgb(103 216 228 / 60%);
 
   // Markdown answer token colors — dark mode
   --qai-heading-color: #a3c4f3;

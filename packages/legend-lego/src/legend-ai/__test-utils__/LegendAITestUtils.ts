@@ -74,6 +74,7 @@ export const TEST__makeAssistantMessage = (
   suggestedQueries: [],
   fallbackAction: null,
   queriedAccessPointGroups: [],
+  queriedAccessPoints: [],
   ...overrides,
 });
 export const TEST__seedAssistant = (setter: MessageSetter): void => {
@@ -175,6 +176,9 @@ export const TEST__createMockLegendAIPlugin = (
     preWarmSchemaAnalysis: () => {
       /* no-op in test */
     },
+    enrichAccessPointSampleValues: (): Promise<void> => Promise.resolve(),
+    buildNoResultsFallback: (): Promise<undefined> =>
+      Promise.resolve(undefined),
     callLLM: createMock(),
     executeSql: createMock(),
     extractSqlFromResponse: (_a: string): LegendAISqlExtractionResult => ({
@@ -213,6 +217,12 @@ export const TEST__createMockLegendAIPlugin = (
     },
     buildErrorCorrectionPrompt: (): string => '',
     buildZeroRowCorrectionPrompt: (): string => '',
+    supportsPythonCodegen: (): boolean => false,
+    generatePythonQueryCodeAsync: (): Promise<undefined> =>
+      Promise.resolve(undefined),
+    supportsOpenInDataCube: (): boolean => false,
+    translateAccessPointSqlToDataCubeQuery: (): Promise<undefined> =>
+      Promise.resolve(undefined),
     ...overrides,
   }) as LegendAI_LegendApplicationPlugin_Extension;
 

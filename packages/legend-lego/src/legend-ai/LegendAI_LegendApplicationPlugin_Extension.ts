@@ -18,6 +18,7 @@ import {
   LegendApplicationPlugin,
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 import type {
   QueryExplicitExecutionContextInfo,
   TDSRowDataType,
@@ -146,6 +147,28 @@ export class LegendAIResultAnalysis {
   keyMetrics!: LegendAIKeyMetric[];
   chartData!: LegendAIChartDataPoint[];
   suggestedQueries!: string[];
+}
+
+export class LegendAIPythonQueryCode {
+  code!: string;
+  notebookUrl?: string;
+}
+
+export interface LegendAIDataCubeQueryTranslationRequest {
+  sql: string;
+  service: TDSServiceSchema;
+  dataProductPath: string;
+  config: LegendAIConfig;
+  question?: string;
+}
+
+export interface LegendAIPythonCodegenRequest {
+  service: TDSServiceSchema;
+  dataProductCoordinates?: LegendAIOrchestratorDataProductCoordinates;
+  config: LegendAIConfig;
+  question?: string;
+  sql?: string;
+  history?: LegendAIConversationTurn[];
 }
 
 /**
@@ -339,6 +362,22 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
   ): Promise<LegendAISqlExecutionResultData>;
 
   /**
+   * Execute a Pure relation query built on a data-product accessor
+   * (e.g. `#P{path.accessPoint}#->select(~[col])->distinct()->take(n)`) against
+   * the lakehouse and return tabular results. Access-point-capable plugins
+   * override this; the default signals the capability is unavailable.
+   */
+  executeLakehouseRelationQuery(
+    _relationQuery: string,
+    _dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
+    _config: LegendAIConfig,
+  ): Promise<LegendAISqlExecutionResultData> {
+    throw new UnsupportedOperationError(
+      `Executing lakehouse relation queries is not supported by this plugin`,
+    );
+  }
+
+  /**
    * Analyze query results using the LLM to produce a summary, chart
    * recommendation, key metrics, and suggested follow-up queries.
    */
@@ -349,16 +388,21 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     rows: TDSRowDataType[],
     metadata: LegendAIProductMetadata,
     config: LegendAIConfig,
+    totalRowCount: number,
+    dataAggregates: string,
   ): Promise<LegendAIResultAnalysis | undefined>;
 
   /**
-   * Build a fallback analysis when the query returns no results.
+   * Build a fallback analysis when the query returns no results. `diagnosis`,
+   * when provided, is a deterministically computed reason (e.g. disjoint join
+   * keys) the LLM should phrase rather than guess.
    */
   abstract buildNoResultsFallback(
     question: string,
     query: string,
     metadata: LegendAIProductMetadata,
     config: LegendAIConfig,
+    diagnosis?: string,
   ): Promise<LegendAIResultAnalysis | undefined>;
 
   /**
@@ -425,6 +469,26 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     return Promise.resolve(services);
   }
 
+  supportsPythonCodegen(_service: TDSServiceSchema): boolean {
+    return false;
+  }
+
+  generatePythonQueryCodeAsync(
+    _request: LegendAIPythonCodegenRequest,
+  ): Promise<LegendAIPythonQueryCode | undefined> {
+    return Promise.resolve(undefined);
+  }
+
+  supportsOpenInDataCube(_service: TDSServiceSchema): boolean {
+    return false;
+  }
+
+  translateAccessPointSqlToDataCubeQuery(
+    _request: LegendAIDataCubeQueryTranslationRequest,
+  ): Promise<string | undefined> {
+    return Promise.resolve(undefined);
+  }
+
   /**
    * Probe a service by executing SELECT * LIMIT 1 to discover the real column
    * names from the engine. Returns the actual column names or undefined if
@@ -436,6 +500,14 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     _config: LegendAIConfig,
   ): Promise<string[] | undefined> {
     return Promise.resolve(undefined);
+  }
+
+  enrichAccessPointSampleValues(
+    _accessPoints: TDSServiceSchema[],
+    _dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
+    _config: LegendAIConfig,
+  ): Promise<void> {
+    return Promise.resolve();
   }
 
   /**

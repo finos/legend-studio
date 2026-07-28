@@ -352,12 +352,14 @@ export class LegendMarketplaceProductViewerStore {
             }
           },
           openDataCube: (sourceData) => {
+            const url = EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
+              this.marketplaceBaseStore.applicationStore.config
+                .datacubeApplicationUrl,
+              sourceData,
+              { addUrlSafeBase64Characters: true },
+            );
             this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
-              EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
-                this.marketplaceBaseStore.applicationStore.config
-                  .datacubeApplicationUrl,
-                sourceData,
-              ),
+              url,
             );
           },
           openLineage: this.marketplaceBaseStore.applicationStore.config

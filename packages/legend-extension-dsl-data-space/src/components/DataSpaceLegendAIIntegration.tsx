@@ -20,8 +20,8 @@ import {
   type QueryExplicitExecutionContextInfo,
   type MappingModelCoverageAnalysisResult,
   Enumeration,
-  getAllSuperclasses,
   PRIMITIVE_TYPE,
+  RelationalDatabaseTableSpecification,
 } from '@finos/legend-graph';
 import {
   LegendAIChat,
@@ -34,6 +34,8 @@ import {
   extractLambdaPreFilters,
   extractModelContext,
   LegendAIChatTelemetryEventType,
+  bridgeLegendAIServices,
+  useLegendAIChatTelemetryLogger,
   LegendAIMessageFeedbackRating,
   type TDSColumnSchema,
   type TDSServiceSchema,
@@ -48,7 +50,6 @@ import {
   type LegendAIExecutableInfo,
   type LegendAIColumnPropertyMapping,
   type LegendAIParameterInfo,
-  type LegendAIChatTelemetryEvent,
   type LegendAIMessageFeedback,
 } from '@finos/legend-lego/legend-ai';
 import { type DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
@@ -68,6 +69,34 @@ import {
 
 const MAX_QUERY_SCAN_LENGTH = 5_000;
 const MAX_QUERY_TEMPLATE_LENGTH = 1000;
+
+const DATA_SPACE_TELEMETRY_EVENT_KEYS: Record<
+  LegendAIChatTelemetryEventType,
+  string
+> = {
+  [LegendAIChatTelemetryEventType.QUESTION_ASKED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_QUESTION_ASKED,
+  [LegendAIChatTelemetryEventType.RESPONSE_RECEIVED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
+  [LegendAIChatTelemetryEventType.ASSISTANT_CLOSED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_ASSISTANT_CLOSED,
+  [LegendAIChatTelemetryEventType.SUGGESTED_QUERY_CLICKED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_SUGGESTED_QUERY_CLICKED,
+  [LegendAIChatTelemetryEventType.SCOPE_CHANGED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_SCOPE_CHANGED,
+  [LegendAIChatTelemetryEventType.MODEL_CHANGED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_MODEL_CHANGED,
+  [LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_SQL_DETAILS_TOGGLED,
+  [LegendAIChatTelemetryEventType.ARTIFACT_COPIED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_ARTIFACT_COPIED,
+  [LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_PYTHON_CODE_REQUESTED,
+  [LegendAIChatTelemetryEventType.PYTHON_CODE_TOGGLED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_PYTHON_CODE_TOGGLED,
+  [LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED]:
+    DSL_DATASPACE_EVENT.LEGEND_AI_OPEN_IN_DATACUBE_CLICKED,
+};
 const ENTITY_PATH_PATTERN =
   /(?<entityPath>[A-Za-z_]\w{0,63}(?:::[A-Za-z_]\w{0,63}){0,10})\.all\(\)/g;
 
@@ -120,10 +149,6 @@ export function extractModelContextFromDiagrams(
         name: cls.name,
         properties,
       };
-      const superTypes = getAllSuperclasses(cls).map((c) => c.path);
-      if (superTypes.length > 0) {
-        entity.superTypes = superTypes;
-      }
       entityMap.set(cls.path, entity);
     }
 
@@ -179,22 +204,23 @@ export function enrichModelContextWithMappingCoverage(
  */
 function buildColumnPropertyMappings(
   columns: string[],
-  rootEntity: { properties: { name: string }[] } | undefined,
+  rootEntity: LegendAIModelEntity | undefined,
 ): LegendAIColumnPropertyMapping[] | undefined {
   if (!rootEntity || rootEntity.properties.length === 0) {
     return undefined;
   }
 
+  const normalizeName = (name: string): string =>
+    name.toLowerCase().replaceAll(/[\s_]/g, '');
+
   const propLookup = new Map<string, string>();
   for (const prop of rootEntity.properties) {
-    const normalized = prop.name.toLowerCase().replaceAll('_', '');
-    propLookup.set(normalized, prop.name);
+    propLookup.set(normalizeName(prop.name), prop.name);
   }
 
   const mappings: LegendAIColumnPropertyMapping[] = [];
   for (const colName of columns) {
-    const normalized = colName.toLowerCase().replaceAll(/[\s_]/g, '');
-    const propName = propLookup.get(normalized);
+    const propName = propLookup.get(normalizeName(colName));
     if (propName && propName !== colName) {
       mappings.push({ columnName: colName, propertyPath: propName });
     }
@@ -258,9 +284,9 @@ function buildExecutableInfo(
     info.requiredParameters = reqParams;
   }
   if (exec.result instanceof DataSpaceExecutableTDSResult) {
-    info.columns = exec.result.columns.map((c) => c.name);
+    const columnNames = exec.result.columns.map((c) => c.name);
     const colMappings = buildColumnPropertyMappings(
-      info.columns,
+      columnNames,
       entityMap.get(rootEntityPath),
     );
     if (colMappings) {
@@ -347,6 +373,10 @@ export async function extractTDSServicesFromDataSpace(
         assertErrorThrown(error);
         // pre-filter extraction is best-effort — a service without pre-filters
         // still works, the AI just won't know about hardcoded constraints.
+        viewerState.applicationStore.logService.debug(
+          LogEvent.create(DSL_DATASPACE_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES),
+          error,
+        );
       }
 
       const entry: TDSServiceSchema = {
@@ -466,27 +496,21 @@ const DataSpaceLegendAIIntegrationInner = observer(
     );
 
     const [services, setServices] = useState<TDSServiceSchema[]>([]);
-    useEffect(() => {
-      let cancelled = false;
-      extractTDSServicesFromDataSpace(dataSpaceViewerState)
-        .then((result) => {
-          if (!cancelled) {
-            setServices(result);
-          }
-        })
-        .catch((error) => {
-          assertErrorThrown(error);
-          dataSpaceViewerState.applicationStore.logService.warn(
-            LogEvent.create(
-              DSL_DATASPACE_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+    useEffect(
+      () =>
+        bridgeLegendAIServices(
+          () => extractTDSServicesFromDataSpace(dataSpaceViewerState),
+          setServices,
+          (error) =>
+            dataSpaceViewerState.applicationStore.logService.warn(
+              LogEvent.create(
+                DSL_DATASPACE_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+              ),
+              error,
             ),
-            error,
-          );
-        });
-      return () => {
-        cancelled = true;
-      };
-    }, [dataSpaceViewerState]);
+        ),
+      [dataSpaceViewerState],
+    );
 
     const coordinates = `${dataSpaceViewerState.groupId}:${dataSpaceViewerState.artifactId}:${dataSpaceViewerState.versionId}`;
 
@@ -565,6 +589,21 @@ const DataSpaceLegendAIIntegrationInner = observer(
         }
       }
 
+      const physicalDatasets =
+        dataSpaceViewerState.currentExecutionContext.datasets;
+      if (physicalDatasets.length > 0) {
+        ctx.datasets = physicalDatasets.map((ds) =>
+          ds instanceof RelationalDatabaseTableSpecification
+            ? {
+                name: ds.name,
+                database: ds.database,
+                schema: ds.schema,
+                table: ds.table,
+              }
+            : { name: ds.name },
+        );
+      }
+
       if (result.description) {
         ctx.dataspaceDescription = result.description;
       }
@@ -573,36 +612,18 @@ const DataSpaceLegendAIIntegrationInner = observer(
     }, [
       dataSpaceViewerState.dataSpaceAnalysisResult,
       dataSpaceViewerState.currentExecutionContext.mapping,
+      dataSpaceViewerState.currentExecutionContext.datasets,
       services,
     ]);
 
     const telemetryService =
       dataSpaceViewerState.applicationStore.telemetryService;
     const dataSpacePath = dataSpaceViewerState.dataSpaceAnalysisResult.path;
-    const handleLogTelemetryEvent = useCallback(
-      (event: LegendAIChatTelemetryEvent): void => {
-        if (event.type === LegendAIChatTelemetryEventType.QUESTION_ASKED) {
-          telemetryService.logEvent(
-            DSL_DATASPACE_EVENT.LEGEND_AI_QUESTION_ASKED,
-            {
-              context: 'data-space',
-              data_product: dataSpacePath,
-              question_length: event.questionLength,
-            },
-          );
-        } else {
-          telemetryService.logEvent(
-            DSL_DATASPACE_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
-            {
-              context: 'data-space',
-              data_product: dataSpacePath,
-              outcome: event.outcome,
-              duration_ms: event.durationMs,
-            },
-          );
-        }
-      },
-      [telemetryService, dataSpacePath],
+    const handleLogTelemetryEvent = useLegendAIChatTelemetryLogger(
+      DATA_SPACE_TELEMETRY_EVENT_KEYS,
+      'data-space',
+      dataSpacePath,
+      telemetryService,
     );
     const handleMessageFeedback = useCallback(
       (feedback: LegendAIMessageFeedback): void => {

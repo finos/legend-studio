@@ -45,6 +45,8 @@ import {
   extractLambdaPreFilters,
   extractModelContext,
   LegendAIChatTelemetryEventType,
+  bridgeLegendAIServices,
+  useLegendAIChatTelemetryLogger,
   LegendAIMessageFeedbackRating,
   type TDSColumnSchema,
   type TDSServiceSchema,
@@ -56,10 +58,13 @@ import {
   type LegendAIAccessPointInfo,
   type LegendAIAccessPointRelationship,
   type LegendAIModelContext,
-  type LegendAIChatTelemetryEvent,
   type LegendAIMessageFeedback,
 } from '@finos/legend-lego/legend-ai';
-import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  guaranteeNonNullable,
+  LogEvent,
+} from '@finos/legend-shared';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import type { DataProductAccessPointState } from '../../stores/DataProduct/DataProductAccessPointState.js';
 import type { DataProductDataAccessState } from '../../stores/DataProduct/DataProductDataAccessState.js';
@@ -76,6 +81,34 @@ import { getIngestDeploymentServerConfigName } from '@finos/legend-server-lakeho
  */
 const LAKEHOUSE_SYSTEM_COLUMN_PREFIX = '__lake';
 const METADATA_AP_SUFFIX = '_AP_LH_MIGRATION_METADATA';
+
+const DATA_PRODUCT_TELEMETRY_EVENT_KEYS: Record<
+  LegendAIChatTelemetryEventType,
+  string
+> = {
+  [LegendAIChatTelemetryEventType.QUESTION_ASKED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_QUESTION_ASKED,
+  [LegendAIChatTelemetryEventType.RESPONSE_RECEIVED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
+  [LegendAIChatTelemetryEventType.ASSISTANT_CLOSED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_ASSISTANT_CLOSED,
+  [LegendAIChatTelemetryEventType.SUGGESTED_QUERY_CLICKED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_SUGGESTED_QUERY_CLICKED,
+  [LegendAIChatTelemetryEventType.SCOPE_CHANGED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_SCOPE_CHANGED,
+  [LegendAIChatTelemetryEventType.MODEL_CHANGED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_MODEL_CHANGED,
+  [LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_SQL_DETAILS_TOGGLED,
+  [LegendAIChatTelemetryEventType.ARTIFACT_COPIED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_ARTIFACT_COPIED,
+  [LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_PYTHON_CODE_REQUESTED,
+  [LegendAIChatTelemetryEventType.PYTHON_CODE_TOGGLED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_PYTHON_CODE_TOGGLED,
+  [LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED]:
+    DSL_DATAPRODUCT_EVENT.LEGEND_AI_OPEN_IN_DATACUBE_CLICKED,
+};
 
 function isLakehouseSystemColumn(name: string): boolean {
   return name.startsWith(LAKEHOUSE_SYSTEM_COLUMN_PREFIX);
@@ -102,6 +135,9 @@ function extractColumnsFromRelationType(
       }
       if (col.multiplicity.lowerBound === 0) {
         column.nullable = true;
+      }
+      if (col.description !== undefined) {
+        column.documentation = col.description;
       }
       // Enrich with documentation/sampleValues from sample queries when available
       const enrichment = columnMetadataLookup?.get(col.name);
@@ -198,6 +234,8 @@ function buildColumnMetadataLookup(
 function isMetadataAccessPoint(ap: { id: string }): boolean {
   return ap.id.endsWith(METADATA_AP_SUFFIX);
 }
+
+const DATA_PRODUCT_ACCESSOR_PREFIX = '#P{';
 
 function collectDistinctValues(
   rows: { values: string[] }[],
@@ -371,6 +409,12 @@ export async function extractTDSServicesFromDataProduct(
         assertErrorThrown(error);
         // pre-filter extraction is best-effort — a service without pre-filters
         // still works, the AI just won't know about hardcoded constraints.
+        viewerState.applicationStore.logService.debug(
+          LogEvent.create(
+            DSL_DATAPRODUCT_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+          ),
+          error,
+        );
       }
 
       const entry: TDSServiceSchema = {
@@ -584,31 +628,25 @@ const DataProductLegendAIIntegrationInner = observer(
       0,
     );
 
-    useEffect(() => {
-      let cancelled = false;
-      extractTDSServicesFromDataProduct(dataProductViewerState)
-        .then((result) => {
-          if (!cancelled) {
-            setServices(result);
-          }
-        })
-        .catch((error) => {
-          assertErrorThrown(error);
-          dataProductViewerState.applicationStore.logService.warn(
-            LogEvent.create(
-              DSL_DATAPRODUCT_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+    useEffect(
+      () =>
+        bridgeLegendAIServices(
+          () => extractTDSServicesFromDataProduct(dataProductViewerState),
+          setServices,
+          (error) =>
+            dataProductViewerState.applicationStore.logService.warn(
+              LogEvent.create(
+                DSL_DATAPRODUCT_EVENT.ERROR_EXTRACT_LEGEND_AI_SERVICES,
+              ),
+              error,
             ),
-            error,
-          );
-        });
-      return () => {
-        cancelled = true;
-      };
-    }, [
-      dataProductViewerState,
-      dataProductViewerState.dataProductArtifact,
-      sampleDataReadyCount,
-    ]);
+        ),
+      [
+        dataProductViewerState,
+        dataProductViewerState.dataProductArtifact,
+        sampleDataReadyCount,
+      ],
+    );
 
     const coordinates = projectGAV
       ? `${projectGAV.groupId}:${projectGAV.artifactId}:${projectGAV.versionId}`
@@ -674,10 +712,12 @@ const DataProductLegendAIIntegrationInner = observer(
         return config;
       }
       const envName = getIngestDeploymentServerConfigName(resolvedUserEnv);
-      if (!envName || envName === config.lakehouseEnvironment) {
-        return config;
-      }
-      return { ...config, lakehouseEnvironment: envName };
+      return {
+        ...config,
+        ...(envName ? { lakehouseEnvironment: envName } : {}),
+        lakehouseEnvironmentClassification:
+          resolvedUserEnv.environmentClassification,
+      };
     }, [config, resolvedUserEnv]);
 
     const auth = useAuth();
@@ -703,6 +743,54 @@ const DataProductLegendAIIntegrationInner = observer(
       [findApgStateByTitle, dataProductDataAccessState],
     );
 
+    const handleOpenInDataCube = useCallback(
+      (accessPointName: string, pureQuery: string | undefined): void => {
+        if (
+          !dataProductDataAccessState ||
+          !dataProductViewerState.openDataCube
+        ) {
+          return;
+        }
+        const dataCubeEnv = dataProductDataAccessState.resolvedUserEnv;
+        if (!dataCubeEnv) {
+          dataProductViewerState.applicationStore.notificationService.notifyWarning(
+            'Unable to open DataCube: no resolved lakehouse environment. Open the access point tab to pick one.',
+          );
+          return;
+        }
+        const environmentName = guaranteeNonNullable(
+          getIngestDeploymentServerConfigName(dataCubeEnv),
+          `Can't open DataCube: unable to resolve the lakehouse environment name`,
+        );
+        let extraSourceData: Record<string, unknown> | undefined;
+        if (pureQuery?.startsWith(DATA_PRODUCT_ACCESSOR_PREFIX)) {
+          extraSourceData = { query: pureQuery };
+        } else {
+          dataProductViewerState.applicationStore.logService.debug(
+            LogEvent.create(
+              DSL_DATAPRODUCT_EVENT.LEGEND_AI_OPEN_IN_DATACUBE_PREFILL_DROPPED,
+            ),
+            pureQuery === undefined
+              ? `Open in DataCube: no translated query available; opening the default access point`
+              : `Open in DataCube: dropped translated query with accessor '${pureQuery.slice(0, DATA_PRODUCT_ACCESSOR_PREFIX.length)}' (expected '${DATA_PRODUCT_ACCESSOR_PREFIX}'); opening the default access point`,
+          );
+        }
+        try {
+          dataProductDataAccessState.openAccessPointInDataCube(
+            accessPointName,
+            environmentName,
+            extraSourceData,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          dataProductViewerState.applicationStore.notificationService.notifyError(
+            error,
+          );
+        }
+      },
+      [dataProductViewerState, dataProductDataAccessState],
+    );
+
     // Resolve which APG state the currently-open contract dialog belongs to
     const contractCreatorApgState: DataProductAPGState | undefined =
       useMemo(() => {
@@ -721,30 +809,11 @@ const DataProductLegendAIIntegrationInner = observer(
     const telemetryService =
       dataProductViewerState.applicationStore.telemetryService;
     const dataProductPath = dataProductViewerState.product.path;
-    const handleLogTelemetryEvent = useCallback(
-      (event: LegendAIChatTelemetryEvent): void => {
-        if (event.type === LegendAIChatTelemetryEventType.QUESTION_ASKED) {
-          telemetryService.logEvent(
-            DSL_DATAPRODUCT_EVENT.LEGEND_AI_QUESTION_ASKED,
-            {
-              context: 'data-product',
-              data_product: dataProductPath,
-              question_length: event.questionLength,
-            },
-          );
-        } else {
-          telemetryService.logEvent(
-            DSL_DATAPRODUCT_EVENT.LEGEND_AI_RESPONSE_RECEIVED,
-            {
-              context: 'data-product',
-              data_product: dataProductPath,
-              outcome: event.outcome,
-              duration_ms: event.durationMs,
-            },
-          );
-        }
-      },
-      [telemetryService, dataProductPath],
+    const handleLogTelemetryEvent = useLegendAIChatTelemetryLogger(
+      DATA_PRODUCT_TELEMETRY_EVENT_KEYS,
+      'data-product',
+      dataProductPath,
+      telemetryService,
     );
     const handleMessageFeedback = useCallback(
       (feedback: LegendAIMessageFeedback): void => {
@@ -789,6 +858,9 @@ const DataProductLegendAIIntegrationInner = observer(
           {...(onMinimize ? { onMinimize } : {})}
           {...(dataProductDataAccessState
             ? { onRequestAccess: handleRequestAccess }
+            : {})}
+          {...(dataProductDataAccessState && dataProductViewerState.openDataCube
+            ? { onOpenInDataCube: handleOpenInDataCube }
             : {})}
         />
         {dataProductDataAccessState && contractCreatorApgState && (

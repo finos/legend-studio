@@ -257,10 +257,17 @@ describe(unitTest('extractTDSServicesFromDataProduct'), () => {
 function makeRelationTypeColumn(
   name: string,
   typePath: string,
-  opts?: { nullable?: boolean; typeVariableValues?: number[] },
+  opts?: {
+    nullable?: boolean;
+    typeVariableValues?: number[];
+    description?: string;
+  },
 ): V1_RelationTypeColumn {
   const col = new V1_RelationTypeColumn();
   col.name = name;
+  if (opts?.description !== undefined) {
+    col.description = opts.description;
+  }
   const gt = new V1_GenericType();
   const pt = new V1_PackageableType();
   pt.fullPath = typePath;
@@ -523,7 +530,7 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
         {
           id: 'group1',
           accessPointImplementations: [
-            { id: 'positions', resourceBuilder: ddl },
+            { id: 'positions', resourceBuilder: ddl, dependencyDatasets: [] },
           ],
         },
       ],
@@ -535,6 +542,24 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
     );
     expect(result[0]?.ddlScript).toBe(
       'CREATE VIEW positions AS SELECT id FROM raw_positions',
+    );
+  });
+
+  test('uses the relation column description as column documentation', async () => {
+    const apState = makeAccessPointState(
+      'positions',
+      [
+        makeRelationTypeColumn('id', 'String', {
+          description: 'Unique position identifier',
+        }),
+      ],
+      { title: 'Positions' },
+    );
+    const result = await extractTDSServicesFromDataProduct(
+      makeViewerStateStub([], undefined, [makeApgState('group1', [apState])]),
+    );
+    expect(result[0]?.columns[0]?.documentation).toBe(
+      'Unique position identifier',
     );
   });
 
@@ -625,7 +650,9 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
       accessPointGroups: [
         {
           id: 'group1',
-          accessPointImplementations: [{ id: 'positions', lambdaGenericType }],
+          accessPointImplementations: [
+            { id: 'positions', lambdaGenericType, dependencyDatasets: [] },
+          ],
         },
       ],
     };

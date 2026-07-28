@@ -15,7 +15,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
-import { noop } from '@finos/legend-shared';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import {
   type TDSServiceSchema,
   type LegendAIConfig,
@@ -30,10 +30,13 @@ import {
   type LegendAIAssistantMessage,
   LegendAIMessageRole,
   LegendAIChatTelemetryEventType,
+  toRowCountBucket,
+  LEGEND_AI_DEFAULT_MODEL_LABEL,
 } from '../LegendAITypes.js';
 import {
   type LegendAI_LegendApplicationPlugin_Extension,
   type LegendAIOrchestratorDataProductCoordinates,
+  type LegendAIResolvedEntities,
 } from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
 import {
@@ -44,6 +47,8 @@ import {
   processQuestionWithIntent,
   processQuestionViaOrchestrator,
 } from './LegendAIChatProcessors.js';
+
+const LEGEND_AI_MCP_SCOPE_ID = 'legend-ai-mcp';
 
 export const useLegendAIChatState = (
   services: TDSServiceSchema[],
@@ -56,7 +61,6 @@ export const useLegendAIChatState = (
   modelContext?: LegendAIModelContext,
   onLogTelemetryEvent?: (event: LegendAIChatTelemetryEvent) => void,
 ): LegendAIChatState => {
-  const LEGEND_AI_MCP_SCOPE_ID = 'legend-ai-mcp';
   const [questionText, setQuestionText] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [messages, setMessages] = useState<LegendAIMessage[]>([]);
@@ -118,17 +122,47 @@ export const useLegendAIChatState = (
     });
   }, []);
 
-  const toggleScope = useCallback((scope: LegendAIScopeItem) => {
-    setSelectedScopes((prev) =>
-      prev.some((s) => s.id === scope.id)
-        ? prev.filter((s) => s.id !== scope.id)
-        : [...prev, scope],
-    );
-  }, []);
+  const logScopeChanged = useCallback(
+    (next: LegendAIScopeItem[]): void => {
+      onLogTelemetryEvent?.({
+        type: LegendAIChatTelemetryEventType.SCOPE_CHANGED,
+        selectedCount: next.length,
+        includesMcp: next.some((s) => s.id === LEGEND_AI_MCP_SCOPE_ID),
+      });
+    },
+    [onLogTelemetryEvent],
+  );
 
-  const removeScope = useCallback((scopeId: string) => {
-    setSelectedScopes((prev) => prev.filter((s) => s.id !== scopeId));
-  }, []);
+  const toggleScope = useCallback(
+    (scope: LegendAIScopeItem) => {
+      const next = selectedScopes.some((s) => s.id === scope.id)
+        ? selectedScopes.filter((s) => s.id !== scope.id)
+        : [...selectedScopes, scope];
+      setSelectedScopes(next);
+      logScopeChanged(next);
+    },
+    [selectedScopes, logScopeChanged],
+  );
+
+  const removeScope = useCallback(
+    (scopeId: string) => {
+      const next = selectedScopes.filter((s) => s.id !== scopeId);
+      setSelectedScopes(next);
+      logScopeChanged(next);
+    },
+    [selectedScopes, logScopeChanged],
+  );
+
+  const handleSelectModel = useCallback(
+    (model: string | undefined): void => {
+      setSelectedModelName(model);
+      onLogTelemetryEvent?.({
+        type: LegendAIChatTelemetryEventType.MODEL_CHANGED,
+        model: model ?? LEGEND_AI_DEFAULT_MODEL_LABEL,
+      });
+    },
+    [onLogTelemetryEvent],
+  );
 
   const configForRequest = useMemo(
     () => ({
@@ -214,6 +248,15 @@ export const useLegendAIChatState = (
                 type: LegendAIChatTelemetryEventType.RESPONSE_RECEIVED,
                 outcome: classifyResponseOutcome(lastAssistant),
                 durationMs: Date.now() - startTime,
+                hasSql: Boolean(lastAssistant?.sql),
+                hasResultGrid: Boolean(lastAssistant?.gridData),
+                rowCountBucket: toRowCountBucket(
+                  lastAssistant?.gridData?.rowData.length ?? 0,
+                ),
+                suggestionCount: lastAssistant?.suggestedQueries.length ?? 0,
+                ...(lastAssistant?.errorType
+                  ? { errorType: lastAssistant.errorType }
+                  : {}),
               });
             }
             sendTimeoutRef.current = undefined;
@@ -221,6 +264,14 @@ export const useLegendAIChatState = (
       }, 0);
     },
     [isSending, messages, onLogTelemetryEvent],
+  );
+
+  const shouldRouteToOrchestrator = useCallback(
+    (): boolean =>
+      selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
+      Boolean(configForRequest.orchestratorUrl) &&
+      dataProductCoordinates !== undefined,
+    [selectedScopes, configForRequest.orchestratorUrl, dataProductCoordinates],
   );
 
   const askQuestion = useCallback(
@@ -232,14 +283,10 @@ export const useLegendAIChatState = (
           history,
           setMessages,
         };
-        if (
-          selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
-          configForRequest.orchestratorUrl &&
-          dataProductCoordinates
-        ) {
+        if (shouldRouteToOrchestrator()) {
           return processQuestionViaOrchestrator(
             trimmed,
-            dataProductCoordinates,
+            guaranteeNonNullable(dataProductCoordinates),
             metadata,
             operationContext,
             pureExecutionContext,
@@ -268,7 +315,7 @@ export const useLegendAIChatState = (
       plugin,
       dataProductCoordinates,
       pureExecutionContext,
-      selectedScopes,
+      shouldRouteToOrchestrator,
       modelContext,
     ],
   );
@@ -282,14 +329,10 @@ export const useLegendAIChatState = (
           history,
           setMessages,
         };
-        if (
-          selectedScopes.some((scope) => scope.id === LEGEND_AI_MCP_SCOPE_ID) &&
-          configForRequest.orchestratorUrl &&
-          dataProductCoordinates
-        ) {
+        if (shouldRouteToOrchestrator()) {
           return processQuestionViaOrchestrator(
             trimmed,
-            dataProductCoordinates,
+            guaranteeNonNullable(dataProductCoordinates),
             metadata,
             operationContext,
             pureExecutionContext,
@@ -324,7 +367,7 @@ export const useLegendAIChatState = (
       plugin,
       dataProductCoordinates,
       pureExecutionContext,
-      selectedScopes,
+      shouldRouteToOrchestrator,
       modelContext,
     ],
   );
@@ -335,6 +378,7 @@ export const useLegendAIChatState = (
         return;
       }
       let question: string | undefined;
+      let preResolvedEntities: LegendAIResolvedEntities | undefined;
       for (let i = 0; i < messages.length; i++) {
         const msg = messages[i];
         if (
@@ -342,6 +386,7 @@ export const useLegendAIChatState = (
           msg.id === messageId &&
           i > 0
         ) {
+          preResolvedEntities = msg.fallbackAction?.resolvedEntities;
           const userMsg = messages[i - 1];
           if (userMsg?.role === LegendAIMessageRole.USER) {
             question = userMsg.text;
@@ -373,7 +418,7 @@ export const useLegendAIChatState = (
           setMessages,
         },
         pureExecutionContext,
-        undefined,
+        preResolvedEntities,
         modelContext,
       )
         .catch(noop)
@@ -401,7 +446,7 @@ export const useLegendAIChatState = (
     messages,
     selectedModelName,
     availableModelNames,
-    setSelectedModelName,
+    setSelectedModelName: handleSelectModel,
     askQuestion,
     askQuestionWithIntent,
     runFallbackAction,

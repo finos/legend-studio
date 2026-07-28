@@ -26,8 +26,6 @@ import {
   completeThinkingSteps,
   finishWithThinkingError,
   classifyError,
-  sanitizeJoinOrderBy,
-  sanitizeJoinSameKeyColumns,
   sanitizeLiteralColumns,
   stripGuessedNonDateServiceParams,
   ensureDateParameters,
@@ -39,9 +37,34 @@ import {
   detectUnsupportedEnginePattern,
   supplementMissingCoverage,
   applyMultiTurnBias,
+  buildDataAggregatesText,
   categorizeExecutionError,
   ExecutionErrorCategory,
+  filterHistoryForAccessPoints,
+  extractFromClause,
+  extractWhereClause,
+  resolveFilterLiteral,
+  IN_PREDICATE_PATTERN,
+  IN_LIST_LITERAL_PATTERN,
 } from '../LegendAIChatProcessors.js';
+import {
+  sharedColumnNames,
+  buildColumnByNameIndex,
+  buildServiceByPIdIndex,
+  servicePId,
+  pureRelationColumnRef,
+} from '../LegendAISqlHelpers.js';
+import {
+  boundCrossAccessPointJoinDrivingSide,
+  sanitizeJoinDuplicateColumns,
+  sanitizeJoinOrderBy,
+  sanitizeJoinSameKeyColumns,
+  wrapBareJoinAccessPoints,
+} from '../LegendAISqlJoinSanitizers.js';
+import {
+  buildCrossJoinZeroRowExplanation,
+  buildJoinablePairSuggestions,
+} from '../LegendAIJoinAnalysis.js';
 import { splitIdentifierTokens } from '../../LegendAIDocEnrichment.js';
 import {
   preFilterServicesByRelevance,
@@ -51,12 +74,14 @@ import {
 import {
   type LegendAIMessage,
   type TDSServiceSchema,
+  TDSServiceSourceType,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
   LegendAIErrorType,
   LegendAIServiceError,
   LegendAIUnsupportedEngineShapeError,
+  LegendAIExecutionTimeoutError,
   LegendAIResponseOutcome,
 } from '../../LegendAITypes.js';
 import {
@@ -98,6 +123,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -130,6 +156,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -162,6 +189,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     const history = buildConversationHistory(messages);
@@ -191,6 +219,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
       { id: 'u2', role: LegendAIMessageRole.USER, text: 'q2' },
       {
@@ -211,6 +240,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -248,6 +278,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     expect(buildConversationHistory(messages)).toEqual([
@@ -279,6 +310,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
       { id: 'u1', role: LegendAIMessageRole.USER, text: 'q' },
     ];
@@ -440,14 +472,30 @@ describe(unitTest('buildExecutionErrorMessage'), () => {
     expect(result).not.toContain('Required parameters:');
   });
 
-  test('shows clear message for rename column collision error', () => {
-    const err =
-      "no viable alternative at input '->meta::pure::functions::relation::rename(~property_id,~property_id_oh)->meta::pure::functions::relation::rename(~owner'";
+  test('shows duplicate-column message only for a genuine duplicate-column error', () => {
+    const err = 'query returns duplicate columns, this is not supported';
     const result = buildExecutionErrorMessage(err, []);
-    expect(result).toContain('Cross-access-point JOINs');
-    expect(result).toContain('not yet supported');
-    expect(result).toContain('querying each access point separately');
-    expect(result).not.toContain('rename(~');
+    expect(result).toContain('same name');
+    expect(result).toContain('unique alias');
+  });
+
+  test('does not mislabel a real error whose trace merely contains rename(~)', () => {
+    const enrichedServices: TDSServiceSchema[] = [
+      {
+        title: 'Enriched Feed',
+        pattern: '/ap_enriched_feed',
+        columns: [{ name: 'productIdentifier' }, { name: 'primeCurrency' }],
+        parameters: [],
+        dataProductPath: 'dp::PriceMaster',
+      },
+    ];
+    const err =
+      "column 'productId' does not exist ->meta::pure::functions::relation::rename(~productIdentifier,~productIdentifier_renamed)";
+    const result = buildExecutionErrorMessage(err, enrichedServices);
+    expect(result).not.toContain('two output columns with the same name');
+    expect(result).toContain('does not exist');
+    expect(result).toContain('Available columns:');
+    expect(result).toContain('productIdentifier');
   });
 
   test('shows clear message for Timestamp vs String type mismatch', () => {
@@ -638,12 +686,20 @@ describe(unitTest('finishWithThinkingError'), () => {
     expect(msg.thinkingDuration).toBeDefined();
   });
 
-  test('truncates long error messages', () => {
+  test('shows full-length error messages up to the display cap', () => {
     const { setter, getMessages } = TEST__createMockSetter();
     setter([TEST__makeAssistantMessage()]);
     finishWithThinkingError(setter, 'x'.repeat(1000), Date.now());
     const msg = TEST__getAssistantMessage(getMessages(), 0);
-    expect(msg.error?.length).toBeLessThanOrEqual(500);
+    expect(msg.error?.length).toBe(1000);
+  });
+
+  test('truncates error messages that exceed the display cap', () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    setter([TEST__makeAssistantMessage()]);
+    finishWithThinkingError(setter, 'x'.repeat(5000), Date.now());
+    const msg = TEST__getAssistantMessage(getMessages(), 0);
+    expect(msg.error?.length).toBeLessThanOrEqual(4000);
   });
 
   test('sets thinkingDuration based on startTime', () => {
@@ -1234,6 +1290,27 @@ describe(unitTest('ensureSafeLimit'), () => {
     const result = ensureSafeLimit(sql, 500);
     expect(result).toContain('LIMIT 500');
   });
+
+  test('does not append to SELECT DISTINCT queries', () => {
+    const sql =
+      "SELECT DISTINCT \"region\" FROM service('/path', coordinates => 'c:g:1')";
+    const result = ensureSafeLimit(sql);
+    expect(result).toBe(sql);
+  });
+
+  test('does not append when HAVING is present', () => {
+    const sql =
+      'SELECT "region", COUNT(*) AS cnt FROM service(\'/path\', coordinates => \'c:g:1\') GROUP BY "region" HAVING COUNT(*) > 5';
+    const result = ensureSafeLimit(sql);
+    expect(result).toBe(sql);
+  });
+
+  test('does not append when QUALIFY is present', () => {
+    const sql =
+      'SELECT "region", ROW_NUMBER() OVER (PARTITION BY "region" ORDER BY "amount" DESC) AS rn FROM service(\'/path\', coordinates => \'c:g:1\') QUALIFY rn = 1';
+    const result = ensureSafeLimit(sql);
+    expect(result).toBe(sql);
+  });
 });
 
 describe(unitTest('sanitizeJoinOrderBy — edge cases'), () => {
@@ -1515,6 +1592,163 @@ describe(unitTest('sanitizeJoinSameKeyColumns'), () => {
     expect(result).not.toContain('SELECT *');
     expect(result).toContain('oh."oh_property_id"');
     expect(result).toContain('pv."property_id"');
+  });
+});
+
+describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
+  const feedServices: TDSServiceSchema[] = [
+    {
+      title: 'Refined Feed',
+      pattern: '/ap_refined_feed',
+      columns: [
+        { name: 'productId' },
+        { name: 'price' },
+        { name: 'updateSource' },
+      ],
+      parameters: [],
+      dataProductPath: 'dp::PriceMaster',
+    },
+    {
+      title: 'Enriched Feed',
+      pattern: '/ap_enriched_feed',
+      columns: [
+        { name: 'productId' },
+        { name: 'price' },
+        { name: 'updateSource' },
+      ],
+      parameters: [],
+      dataProductPath: 'dp::PriceMaster',
+    },
+  ];
+
+  test('returns unchanged SQL when no JOIN present', () => {
+    const sql = `SELECT a."price" FROM p('dp::PriceMaster.ap_refined_feed') AS a`;
+    expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
+  });
+
+  test('aliases non-key columns projected from both access points', () => {
+    const sql = [
+      'SELECT a."price", b."price", a."updateSource", b."updateSource"',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    const result = sanitizeJoinDuplicateColumns(sql, feedServices);
+    expect(result).toContain('a."price" AS "a_price"');
+    expect(result).toContain('b."price" AS "b_price"');
+    expect(result).toContain('a."updateSource" AS "a_updateSource"');
+    expect(result).toContain('b."updateSource" AS "b_updateSource"');
+  });
+
+  test('expands alias.* using the access-point schema and de-duplicates', () => {
+    const sql = [
+      'SELECT a.*, b.*',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    const result = sanitizeJoinDuplicateColumns(sql, feedServices);
+    expect(result).not.toContain('a.*');
+    expect(result).not.toContain('b.*');
+    expect(result).toContain('a."productId" AS "a_productId"');
+    expect(result).toContain('b."productId" AS "b_productId"');
+    expect(result).toContain('a."price" AS "a_price"');
+    expect(result).toContain('b."price" AS "b_price"');
+  });
+
+  test('aliases a same-name join key projected on both sides', () => {
+    const sql = [
+      'SELECT a."productId", b."productId", a."price"',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    const result = sanitizeJoinDuplicateColumns(sql, feedServices);
+    expect(result).toContain('a."productId" AS "a_productId"');
+    expect(result).toContain('b."productId" AS "b_productId"');
+    expect(result).toContain('a."price"');
+    expect(result).not.toContain('a."price" AS');
+  });
+
+  test('leaves already-uniquely-aliased projections unchanged', () => {
+    const sql = [
+      'SELECT a."price" AS refined_price, b."price" AS enriched_price',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
+  });
+
+  test('no-ops on aggregation / GROUP BY joins', () => {
+    const sql = [
+      'SELECT a."updateSource", COUNT(*) AS n',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+      'GROUP BY a."updateSource"',
+    ].join('\n');
+    expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
+  });
+
+  test('no-ops on a single access-point query', () => {
+    const sql = [
+      'SELECT a."price", a."updateSource"',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+    ].join('\n');
+    expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
+  });
+
+  test('bails out untouched when a star cannot be expanded', () => {
+    const sql = [
+      'SELECT a."price", b.*',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_unknown') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    const result = sanitizeJoinDuplicateColumns(sql, [
+      feedServices[0] as TDSServiceSchema,
+    ]);
+    expect(result).toBe(sql);
+  });
+
+  test('leaves query untouched when a generated alias would still collide', () => {
+    const collidingServices: TDSServiceSchema[] = [
+      {
+        title: 'Refined Feed',
+        pattern: '/ap_refined_feed',
+        columns: [{ name: 'price' }, { name: 'a_price' }],
+        parameters: [],
+        dataProductPath: 'dp::PriceMaster',
+      },
+      {
+        title: 'Enriched Feed',
+        pattern: '/ap_enriched_feed',
+        columns: [{ name: 'price' }],
+        parameters: [],
+        dataProductPath: 'dp::PriceMaster',
+      },
+    ];
+    const sql = [
+      'SELECT a."price", b."price", a."a_price"',
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    expect(sanitizeJoinDuplicateColumns(sql, collidingServices)).toBe(sql);
+  });
+
+  test('does not mis-split a single-quoted literal containing a comma', () => {
+    const sql = [
+      `SELECT a."price", 'x,y' AS tag, b."price"`,
+      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      '  ON a."productId" = b."productId"',
+    ].join('\n');
+    const result = sanitizeJoinDuplicateColumns(sql, feedServices);
+    expect(result).toContain(`'x,y' AS tag`);
+    expect(result).toContain('a."price" AS "a_price"');
+    expect(result).toContain('b."price" AS "b_price"');
   });
 });
 
@@ -2153,9 +2387,338 @@ describe(unitTest('applyMultiTurnBias'), () => {
   });
 });
 
+describe(unitTest('boundCrossAccessPointJoinDrivingSide'), () => {
+  const bothSidesJoin = [
+    'SELECT a."a_productId", b."b_country"',
+    'FROM (',
+    '  SELECT "productId" AS "a_productId" FROM p(\'dp::PM.ap_refined_feed\')',
+    ') AS a',
+    'JOIN (',
+    '  SELECT "productId" AS "b_productId", "country" AS "b_country" FROM p(\'dp::PM.ap_enriched_feed\')',
+    ') AS b ON a."a_productId" = b."b_productId"',
+  ].join('\n');
+
+  test('injects an inner LIMIT into the driving subquery', () => {
+    const result = boundCrossAccessPointJoinDrivingSide(bothSidesJoin);
+    expect(result).toMatch(/ap_refined_feed'\)\s*LIMIT 1000\s*\)\s*AS a/u);
+    expect(result).not.toMatch(/ap_enriched_feed'\)\s*LIMIT/u);
+    expect((result.match(/LIMIT 1000/gu) ?? []).length).toBe(1);
+  });
+
+  test('is a no-op when the driving subquery already has a LIMIT', () => {
+    const alreadyBounded = bothSidesJoin.replace(
+      "p('dp::PM.ap_refined_feed')",
+      "p('dp::PM.ap_refined_feed') LIMIT 500",
+    );
+    expect(boundCrossAccessPointJoinDrivingSide(alreadyBounded)).toBe(
+      alreadyBounded,
+    );
+  });
+
+  test('is a no-op for a single access-point query', () => {
+    const sql = `SELECT "productId" FROM p('dp::PM.ap_refined_feed') LIMIT 100`;
+    expect(boundCrossAccessPointJoinDrivingSide(sql)).toBe(sql);
+  });
+
+  test('is a no-op for aggregation/GROUP BY joins', () => {
+    const sql = [
+      'SELECT a."a_country", COUNT(*) AS n',
+      'FROM ( SELECT "country" AS "a_country" FROM p(\'dp::PM.ap_refined_feed\') ) AS a',
+      'JOIN ( SELECT "country" AS "b_country" FROM p(\'dp::PM.ap_enriched_feed\') ) AS b ON a."a_country" = b."b_country"',
+      'GROUP BY a."a_country"',
+    ].join('\n');
+    expect(boundCrossAccessPointJoinDrivingSide(sql)).toBe(sql);
+  });
+
+  test('is a no-op when the driving side is a bare p() (not a subquery)', () => {
+    const sql = [
+      'SELECT a."productId", b."b_country"',
+      "FROM p('dp::PM.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "b_country" FROM p(\'dp::PM.ap_enriched_feed\') ) AS b ON a."productId" = b."b_country"',
+    ].join('\n');
+    expect(boundCrossAccessPointJoinDrivingSide(sql)).toBe(sql);
+  });
+
+  test('bounds the top-level driving side, not a scalar subquery FROM (', () => {
+    const sql = [
+      'SELECT a."a_id", (SELECT MAX("x") FROM ( SELECT "x" FROM p(\'dp::PM.ap_third\') ) t) AS m',
+      'FROM ( SELECT "id" AS "a_id" FROM p(\'dp::PM.ap_refined_feed\') ) AS a',
+      'JOIN ( SELECT "id" AS "b_id" FROM p(\'dp::PM.ap_enriched_feed\') ) AS b ON a."a_id" = b."b_id"',
+    ].join('\n');
+    const result = boundCrossAccessPointJoinDrivingSide(sql);
+    expect(result).toMatch(/ap_refined_feed'\)\s*LIMIT 1000\s*\)\s*AS a/u);
+    expect(result).not.toMatch(/ap_third'\)\s*LIMIT/u);
+  });
+});
+
+describe(unitTest('wrapBareJoinAccessPoints'), () => {
+  const services: TDSServiceSchema[] = [
+    {
+      title: 'Refined Feed',
+      pattern: '/ap_refined_feed',
+      columns: [
+        { name: 'productIdentifier' },
+        { name: 'eventDate' },
+        { name: 'askPrice' },
+      ],
+      parameters: [],
+      dataProductPath: 'lakehouse::PM',
+    },
+    {
+      title: 'Enriched Feed',
+      pattern: '/ap_enriched_feed',
+      columns: [
+        { name: 'productIdentifier' },
+        { name: 'eventDate' },
+        { name: 'country' },
+      ],
+      parameters: [],
+      dataProductPath: 'lakehouse::PM',
+    },
+  ];
+
+  test('wraps a bare driving p() into a prefixed, bounded subquery', () => {
+    const sql = [
+      'SELECT a."askPrice" AS refined_askPrice, b."enriched_country"',
+      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "enriched_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b',
+      '  ON a."productIdentifier" = b."productIdentifier"',
+    ].join('\n');
+    const result = wrapBareJoinAccessPoints(sql, services);
+    expect(result).toMatch(
+      /FROM \(SELECT .*"askPrice" AS "a_askPrice".* FROM p\('lakehouse::PM\.ap_refined_feed'\) LIMIT 1000\) AS a/u,
+    );
+    expect(result).toContain('a."a_askPrice" AS refined_askPrice');
+    expect(result).toContain('a."a_productIdentifier" = b."productIdentifier"');
+    expect(result).not.toMatch(
+      /FROM p\('lakehouse::PM\.ap_refined_feed'\) AS a/u,
+    );
+  });
+
+  test('is a no-op when both sides are already subqueries', () => {
+    const sql = [
+      'SELECT a."a_id", b."b_id"',
+      'FROM ( SELECT "productIdentifier" AS "a_id" FROM p(\'lakehouse::PM.ap_refined_feed\') ) AS a',
+      'JOIN ( SELECT "productIdentifier" AS "b_id" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."a_id" = b."b_id"',
+    ].join('\n');
+    expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
+  });
+
+  test('rewrites a ref whose column casing differs from the schema', () => {
+    const sql = [
+      'SELECT a."ASKPRICE" AS refined_askPrice, b."enriched_country"',
+      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "enriched_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b',
+      '  ON a."productIdentifier" = b."productIdentifier"',
+    ].join('\n');
+    const result = wrapBareJoinAccessPoints(sql, services);
+    // Ref is rewritten to the SCHEMA-cased prefixed name the subquery projects.
+    expect(result).toContain('a."a_askPrice" AS refined_askPrice');
+    expect(result).not.toContain('a."ASKPRICE"');
+  });
+
+  test('is a no-op when the access-point schema is unknown', () => {
+    const sql = [
+      'SELECT a."askPrice", b."b_country"',
+      "FROM p('lakehouse::PM.ap_unknown') AS a",
+      'JOIN ( SELECT "country" AS "b_country" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."askPrice" = b."b_country"',
+    ].join('\n');
+    expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
+  });
+
+  test('is a no-op for a single access-point query', () => {
+    const sql = `SELECT "askPrice" FROM p('lakehouse::PM.ap_refined_feed') LIMIT 100`;
+    expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
+  });
+
+  test('prefixes both bare sides, LIMIT only on the driving side', () => {
+    const sql = [
+      'SELECT a."askPrice" AS refined_askPrice, b."country" AS enriched_country',
+      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+      'JOIN p(\'lakehouse::PM.ap_enriched_feed\') AS b ON a."productIdentifier" = b."productIdentifier"',
+    ].join('\n');
+    const result = wrapBareJoinAccessPoints(sql, services);
+    expect(result).toMatch(/ap_refined_feed'\) LIMIT 1000\) AS a/u);
+    expect(result).toMatch(/ap_enriched_feed'\)\) AS b/u);
+    expect(result).not.toMatch(/ap_enriched_feed'\) LIMIT/u);
+    expect(result).toContain(
+      'a."a_productIdentifier" = b."b_productIdentifier"',
+    );
+  });
+
+  test('rewrites references with whitespace around the dot', () => {
+    const sql = [
+      'SELECT a . "askPrice" AS refined_askPrice, b."b_country"',
+      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "b_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
+    ].join('\n');
+    const result = wrapBareJoinAccessPoints(sql, services);
+    expect(result).toContain('a."a_askPrice" AS refined_askPrice');
+    expect(result).not.toMatch(/\bp\('lakehouse::PM\.ap_refined_feed'\) AS a/u);
+  });
+
+  test('does not over-match a longer alias that ends in the driving alias', () => {
+    const sql = [
+      'SELECT a."askPrice" AS x, ba."b_country"',
+      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "b_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS ba ON a."productIdentifier" = ba."productIdentifier"',
+    ].join('\n');
+    const result = wrapBareJoinAccessPoints(sql, services);
+    expect(result).toContain('a."a_askPrice" AS x');
+    expect(result).toContain(
+      'a."a_productIdentifier" = ba."productIdentifier"',
+    );
+    expect(result).toContain('ba."b_country"');
+    expect(result).not.toContain('ba."a_');
+  });
+
+  test('is a no-op for aggregation / GROUP BY joins', () => {
+    const sql = [
+      'SELECT a."country" AS c, COUNT(*) AS n',
+      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+      'JOIN p(\'lakehouse::PM.ap_enriched_feed\') AS b ON a."productIdentifier" = b."productIdentifier"',
+      'GROUP BY a."country"',
+    ].join('\n');
+    expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
+  });
+});
+
+describe(unitTest('buildCrossJoinZeroRowExplanation'), () => {
+  const makeAp = (
+    id: string,
+    title: string,
+    columns: TDSServiceSchema['columns'],
+    group?: string,
+  ): TDSServiceSchema => ({
+    title,
+    pattern: `/${id}`,
+    columns,
+    parameters: [],
+    dataProductPath: 'lakehouse::PM',
+    sourceType: TDSServiceSourceType.ACCESS_POINT,
+    ...(group === undefined ? {} : { accessPointGroupTitle: group }),
+  });
+  const joinSql = [
+    "FROM p('lakehouse::PM.ap_refined_feed') AS a",
+    'JOIN ( SELECT "assetClass" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
+  ].join('\n');
+
+  test('explains disjoint universes via a shared classification column', () => {
+    const services = [
+      makeAp('ap_refined_feed', 'Refined Feed', [
+        { name: 'productIdentifier' },
+        { name: 'assetClass', sampleValues: 'FIXED INCOME' },
+      ]),
+      makeAp('ap_enriched_feed', 'Enriched Feed', [
+        { name: 'productIdentifier' },
+        { name: 'assetClass', sampleValues: 'OPTIONS' },
+      ]),
+    ];
+    const result = buildCrossJoinZeroRowExplanation(joinSql, services);
+    expect(result).toContain('cover different data');
+    expect(result).toContain('assetClass');
+    expect(result).toContain('FIXED INCOME');
+    expect(result).toContain('OPTIONS');
+  });
+
+  test('falls back to a generic key message when no samples are available', () => {
+    const services = [
+      makeAp('ap_refined_feed', 'Refined Feed', [
+        { name: 'productIdentifier' },
+        { name: 'assetClass' },
+      ]),
+      makeAp('ap_enriched_feed', 'Enriched Feed', [
+        { name: 'productIdentifier' },
+        { name: 'assetClass' },
+      ]),
+    ];
+    const result = buildCrossJoinZeroRowExplanation(joinSql, services);
+    expect(result).toContain('no rows share the join key');
+    expect(result).not.toContain('cover different data');
+  });
+
+  test('returns undefined for a single access-point query', () => {
+    const services = [
+      makeAp('ap_refined_feed', 'Refined Feed', [
+        { name: 'productIdentifier' },
+      ]),
+    ];
+    const sql = `SELECT "productIdentifier" FROM p('lakehouse::PM.ap_refined_feed') LIMIT 100`;
+    expect(buildCrossJoinZeroRowExplanation(sql, services)).toBeUndefined();
+  });
+});
+
+describe(unitTest('buildJoinablePairSuggestions'), () => {
+  const makeAp = (
+    title: string,
+    columns: TDSServiceSchema['columns'],
+    group?: string,
+  ): TDSServiceSchema => ({
+    title,
+    pattern: `/${title}`,
+    columns,
+    parameters: [],
+    dataProductPath: 'lakehouse::PM',
+    sourceType: TDSServiceSourceType.ACCESS_POINT,
+    ...(group === undefined ? {} : { accessPointGroupTitle: group }),
+  });
+
+  test('suggests a same-group AP sharing a required key, plus a single-AP query', () => {
+    const refined = makeAp(
+      'Refined Feed',
+      [{ name: 'productIdentifier', nullable: false }],
+      'Pricing',
+    );
+    const master = makeAp(
+      'Master Record',
+      [{ name: 'productIdentifier', nullable: false }],
+      'Pricing',
+    );
+    const options = makeAp(
+      'Options Feed',
+      [{ name: 'optionId', nullable: false }],
+      'Options',
+    );
+    const result = buildJoinablePairSuggestions(
+      [refined],
+      [refined, master, options],
+    );
+    expect(result).toContain(
+      'Join "Refined Feed" and "Master Record" and show 20 rows',
+    );
+    expect(result).toContain('Show 20 rows from "Refined Feed"');
+    expect(result).not.toContain('Options Feed');
+    expect(result.length).toBeLessThanOrEqual(3);
+  });
+
+  test('offers a guaranteed single-AP query when no joinable partner exists', () => {
+    const refined = makeAp(
+      'Refined Feed',
+      [{ name: 'productIdentifier', nullable: false }],
+      'Pricing',
+    );
+    const options = makeAp(
+      'Options Feed',
+      [{ name: 'optionId', nullable: false }],
+      'Options',
+    );
+    const result = buildJoinablePairSuggestions([refined], [refined, options]);
+    expect(result).toEqual(['Show 20 rows from "Refined Feed"']);
+  });
+});
+
 // ─── categorizeExecutionError ─────────────────────────────────────────────────
 
 describe(unitTest('categorizeExecutionError'), () => {
+  test('classifies an execution timeout as NONE (no retry)', () => {
+    expect(
+      categorizeExecutionError(
+        'timed out',
+        new LegendAIExecutionTimeoutError('too slow'),
+      ),
+    ).toBe(ExecutionErrorCategory.NONE);
+  });
+
   test('classifies SQL compilation error as SQL_FIXABLE', () => {
     expect(
       categorizeExecutionError(
@@ -2276,5 +2839,376 @@ describe(unitTest('classifyResponseOutcome'), () => {
     expect(classifyResponseOutcome(TEST__makeAssistantMessage())).toBe(
       LegendAIResponseOutcome.NO_ANSWER,
     );
+  });
+});
+
+// ─── filterHistoryForAccessPoints ────────────────────────────────────────────
+
+describe(unitTest('filterHistoryForAccessPoints'), () => {
+  test('returns the full history when the current access point set is empty', () => {
+    const history = [
+      {
+        question: 'q1',
+        sql: "SELECT * FROM p('pkg.AP_X')",
+        queriedAccessPoints: ['AP_X'],
+      },
+    ];
+    expect(filterHistoryForAccessPoints(history, new Set())).toEqual(history);
+  });
+
+  test('keeps turns whose access points intersect the current set', () => {
+    const turnX = {
+      question: 'top 10',
+      sql: "SELECT * FROM p('pkg.AP_X')",
+      queriedAccessPoints: ['AP_X'],
+    };
+    const turnY = {
+      question: 'floor 2',
+      sql: "SELECT * FROM p('pkg.AP_Y')",
+      queriedAccessPoints: ['AP_Y'],
+    };
+    expect(
+      filterHistoryForAccessPoints([turnX, turnY], new Set(['AP_Y'])),
+    ).toEqual([turnY]);
+  });
+
+  test('keeps turns with no access point tag (metadata / general context)', () => {
+    const turnMetadata = {
+      question: 'what is this data product?',
+      sql: 'This is a directory product.',
+    };
+    expect(
+      filterHistoryForAccessPoints([turnMetadata], new Set(['AP_Y'])),
+    ).toEqual([turnMetadata]);
+  });
+
+  test('drops turns whose access points are disjoint from the current set', () => {
+    const priorTurn = {
+      question: 'employees on floor 2',
+      sql: "SELECT * FROM p('pkg.METADIR_ENTERPRISE_LATEST_ONLY') WHERE GSFLOORNUMBER = '2'",
+      queriedAccessPoints: ['METADIR_ENTERPRISE_LATEST_ONLY'],
+    };
+    expect(
+      filterHistoryForAccessPoints(
+        [priorTurn],
+        new Set(['CORPDIR_ENTERPRISE_LATEST_ONLY']),
+      ),
+    ).toEqual([]);
+  });
+
+  test('keeps a turn that spans multiple access points if any overlap', () => {
+    const joinTurn = {
+      question: 'joined query',
+      sql: "SELECT * FROM p('pkg.AP_X') a JOIN p('pkg.AP_Y') b",
+      queriedAccessPoints: ['AP_X', 'AP_Y'],
+    };
+    expect(filterHistoryForAccessPoints([joinTurn], new Set(['AP_Y']))).toEqual(
+      [joinTurn],
+    );
+  });
+});
+
+// ─── buildConversationHistory — access point tagging ─────────────────────────
+
+describe(unitTest('buildConversationHistory — access point tagging'), () => {
+  test("carries the message's queriedAccessPoints into history", () => {
+    const messages: LegendAIMessage[] = [
+      { id: 'u1', role: LegendAIMessageRole.USER, text: 'top 10' },
+      {
+        id: 'a1',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: "SELECT * FROM p('pkg.METADIR_ENTERPRISE_LATEST_ONLY') LIMIT 10",
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+        queriedAccessPointGroups: [],
+        queriedAccessPoints: ['METADIR_ENTERPRISE_LATEST_ONLY'],
+      },
+    ];
+    const history = buildConversationHistory(messages);
+    expect(history).toHaveLength(1);
+    expect(history[0]?.queriedAccessPoints).toEqual([
+      'METADIR_ENTERPRISE_LATEST_ONLY',
+    ]);
+  });
+
+  test('omits queriedAccessPoints for non-access-point SQL', () => {
+    const messages: LegendAIMessage[] = [
+      { id: 'u1', role: LegendAIMessageRole.USER, text: 'top 10' },
+      {
+        id: 'a1',
+        role: LegendAIMessageRole.ASSISTANT,
+        thinkingSteps: [],
+        sql: 'SELECT * FROM service("/trades") LIMIT 10',
+        textAnswer: null,
+        dataContext: null,
+        gridData: null,
+        error: null,
+        sqlGenTime: null,
+        execTime: null,
+        thinkingDuration: null,
+        isProcessing: false,
+        isExecuting: false,
+        suggestedQueries: [],
+        fallbackAction: null,
+        errorType: null,
+        queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
+      },
+    ];
+    const history = buildConversationHistory(messages);
+    expect(history).toHaveLength(1);
+    expect(history[0]?.queriedAccessPoints).toBeUndefined();
+  });
+});
+
+describe(unitTest('extractFromClause'), () => {
+  test('isolates the FROM source, dropping WHERE and beyond', () => {
+    expect(
+      extractFromClause(
+        `SELECT "A", "B" FROM p('ns::DP.ap') WHERE "A" = '1' ORDER BY "B" LIMIT 10`,
+      ),
+    ).toBe(`FROM p('ns::DP.ap')`);
+  });
+
+  test('returns the whole FROM tail when there is no trailing clause', () => {
+    expect(extractFromClause(`SELECT * FROM p('ns::DP.ap')`)).toBe(
+      `FROM p('ns::DP.ap')`,
+    );
+  });
+
+  test('returns undefined when there is no FROM', () => {
+    expect(extractFromClause('SELECT 1')).toBeUndefined();
+  });
+});
+
+describe(unitTest('resolveFilterLiteral'), () => {
+  const BUILDING_CODES = ['200W', '717NH', '30H', '1011G'];
+
+  test('self-heals a truncated code to the real value (717N -> 717NH)', () => {
+    expect(resolveFilterLiteral('717N', BUILDING_CODES)).toBe('717NH');
+  });
+
+  test('fixes only casing when a case-insensitive match exists', () => {
+    expect(resolveFilterLiteral('717nh', BUILDING_CODES)).toBe('717NH');
+  });
+
+  test('normalizes punctuation/spacing (717-nh -> 717NH)', () => {
+    expect(resolveFilterLiteral('717 nh', BUILDING_CODES)).toBe('717NH');
+  });
+
+  test('returns undefined when the literal is already valid', () => {
+    expect(resolveFilterLiteral('717NH', BUILDING_CODES)).toBeUndefined();
+  });
+
+  test('does not guess when multiple values plausibly match', () => {
+    expect(resolveFilterLiteral('717', ['717NH', '717AB'])).toBeUndefined();
+  });
+
+  test('does not guess for very short literals with no exact/ci match', () => {
+    expect(resolveFilterLiteral('7', BUILDING_CODES)).toBeUndefined();
+  });
+
+  test('returns undefined when nothing plausibly matches', () => {
+    expect(resolveFilterLiteral('ZZZZ', BUILDING_CODES)).toBeUndefined();
+  });
+});
+
+describe(unitTest('IN_PREDICATE_PATTERN'), () => {
+  const parseInPredicates = (
+    sql: string,
+  ): { column: string; literals: string[] }[] =>
+    Array.from(sql.matchAll(IN_PREDICATE_PATTERN)).map((match) => ({
+      column: match.groups?.col ?? '',
+      literals: Array.from(
+        (match.groups?.list ?? '').matchAll(IN_LIST_LITERAL_PATTERN),
+      ).map((literal) => literal.groups?.val ?? ''),
+    }));
+
+  test('parses a single-value IN list', () => {
+    expect(parseInPredicates(`SELECT * FROM t WHERE "C" IN ('A')`)).toEqual([
+      { column: 'C', literals: ['A'] },
+    ]);
+  });
+
+  test('parses a multi-value list tolerating whitespace', () => {
+    expect(
+      parseInPredicates(
+        `SELECT * FROM t WHERE "GSBUILDINGCODE" IN ( '717NH' ,'200W' )`,
+      ),
+    ).toEqual([{ column: 'GSBUILDINGCODE', literals: ['717NH', '200W'] }]);
+  });
+
+  test('tolerates SQL-escaped quotes inside a literal', () => {
+    expect(
+      parseInPredicates(`SELECT * FROM t WHERE "NAME" IN ('O''Brien')`),
+    ).toEqual([{ column: 'NAME', literals: [`O''Brien`] }]);
+  });
+
+  test('matches the lowercase in keyword', () => {
+    expect(parseInPredicates(`SELECT * FROM t WHERE "C" in ('A')`)).toEqual([
+      { column: 'C', literals: ['A'] },
+    ]);
+  });
+
+  test('does not match an equality predicate', () => {
+    expect(parseInPredicates(`SELECT * FROM t WHERE "C" = 'A'`)).toEqual([]);
+  });
+
+  test('resolves each list element against real values independently', () => {
+    const [predicate] = parseInPredicates(
+      `SELECT * FROM t WHERE "GSBUILDINGCODE" IN ('717N', '200W')`,
+    );
+    const values = ['717NH', '200W', '30H'];
+    const resolved = predicate?.literals.map((literal) => ({
+      literal,
+      resolved: resolveFilterLiteral(literal, values),
+    }));
+    expect(resolved).toEqual([
+      { literal: '717N', resolved: '717NH' },
+      { literal: '200W', resolved: undefined },
+    ]);
+  });
+});
+
+describe(unitTest('buildDataAggregatesText'), () => {
+  test('reports the true total and top value distribution over ALL rows', () => {
+    const rows = [
+      ...Array.from({ length: 91 }, () => ({ TITLE: 'Vice President' })),
+      ...Array.from({ length: 72 }, () => ({ TITLE: 'Associate' })),
+      ...Array.from({ length: 7 }, () => ({ TITLE: 'MD' })),
+    ];
+    const text = buildDataAggregatesText(['TITLE'], rows);
+    expect(text).toContain('Total rows: 170');
+    expect(text).toContain('Vice President (91)');
+    expect(text).toContain('Associate (72)');
+    // MD is a minority (7) — must not be presented as a top value
+    expect(text.indexOf('Vice President')).toBeLessThan(text.indexOf('MD (7)'));
+  });
+
+  test('summarizes a high-cardinality numeric column as a range', () => {
+    const rows = Array.from({ length: 20 }, (_, i) => ({ amount: i * 10 }));
+    const text = buildDataAggregatesText(['amount'], rows);
+    expect(text).toContain('amount: numeric, range 0–190');
+  });
+
+  test('handles an empty result set', () => {
+    expect(buildDataAggregatesText(['x'], [])).toBe('Total rows: 0');
+  });
+});
+
+describe(unitTest('extractWhereClause'), () => {
+  test('returns the WHERE clause up to a trailing boundary keyword', () => {
+    expect(
+      extractWhereClause(
+        `SELECT * FROM p('ns::DP.ap') WHERE "col" = 'v' LIMIT 5`,
+      ),
+    ).toBe(`WHERE "col" = 'v'`);
+    expect(
+      extractWhereClause(`SELECT * FROM t WHERE "c" = '1' ORDER BY "c"`),
+    ).toBe(`WHERE "c" = '1'`);
+  });
+
+  test('excludes JOIN ON predicates (they precede WHERE)', () => {
+    const where = extractWhereClause(
+      `SELECT * FROM p('ns::DP.a') AS a JOIN p('ns::DP.b') AS b ON a."k" = b."k" WHERE a."country" = 'usa'`,
+    );
+    expect(where).toBe(`WHERE a."country" = 'usa'`);
+    expect(where).not.toContain('ON ');
+  });
+
+  test('returns undefined when there is no WHERE clause', () => {
+    expect(extractWhereClause(`SELECT * FROM p('ns::DP.ap')`)).toBeUndefined();
+  });
+});
+
+describe(unitTest('sharedColumnNames / buildColumnByNameIndex'), () => {
+  const apA: TDSServiceSchema = {
+    title: 'A',
+    pattern: '/a',
+    columns: [{ name: 'Id' }, { name: 'Region' }, { name: 'onlyA' }],
+    parameters: [],
+  };
+  const apB: TDSServiceSchema = {
+    title: 'B',
+    pattern: '/b',
+    columns: [{ name: 'id' }, { name: 'REGION' }, { name: 'onlyB' }],
+    parameters: [],
+  };
+
+  test('intersects case-insensitively, returning names cased from the first arg', () => {
+    expect(sharedColumnNames(apA, apB)).toEqual(['Id', 'Region']);
+    expect(sharedColumnNames(apB, apA)).toEqual(['id', 'REGION']);
+  });
+
+  test('buildColumnByNameIndex keys columns by lowercased name', () => {
+    const index = buildColumnByNameIndex(apA.columns);
+    expect(index.get('region')?.name).toBe('Region');
+    expect(index.has('missing')).toBe(false);
+  });
+});
+
+describe(unitTest('buildServiceByPIdIndex'), () => {
+  test('indexes access points by their p() identifier', () => {
+    const services: TDSServiceSchema[] = [
+      {
+        title: 'A',
+        pattern: '/ap_a',
+        columns: [],
+        parameters: [],
+        dataProductPath: 'ns::DP',
+      },
+      { title: 'B', pattern: '/ap_b', columns: [], parameters: [] },
+    ];
+    const index = buildServiceByPIdIndex(services);
+    expect(index.get('ns::DP.ap_a')?.title).toBe('A');
+    // A service without a dataProductPath has no p() identifier and is skipped.
+    expect(index.size).toBe(1);
+  });
+});
+
+describe(unitTest('servicePId'), () => {
+  test('builds the <dataProductPath>.<accessPointId> relation accessor path', () => {
+    expect(
+      servicePId({
+        title: 'AP',
+        pattern: '/ap_refined_feed',
+        columns: [],
+        parameters: [],
+        dataProductPath: 'lakehouse::PM',
+      }),
+    ).toBe('lakehouse::PM.ap_refined_feed');
+  });
+
+  test('returns undefined when the service has no data-product path', () => {
+    expect(
+      servicePId({ title: 'S', pattern: '/s', columns: [], parameters: [] }),
+    ).toBeUndefined();
+  });
+});
+
+describe(unitTest('pureRelationColumnRef'), () => {
+  test('leaves a simple identifier bare', () => {
+    expect(pureRelationColumnRef('askPrice')).toBe('askPrice');
+    expect(pureRelationColumnRef('ASK_PRICE_2')).toBe('ASK_PRICE_2');
+  });
+
+  test('single-quotes a name with spaces or special characters', () => {
+    expect(pureRelationColumnRef('Ask Price')).toBe("'Ask Price'");
+    expect(pureRelationColumnRef('price(usd)')).toBe("'price(usd)'");
+  });
+
+  test('escapes embedded single quotes', () => {
+    expect(pureRelationColumnRef("O'Brien")).toBe("'O\\'Brien'");
   });
 });

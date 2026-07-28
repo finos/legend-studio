@@ -17,6 +17,7 @@
 import { describe, test, expect, afterEach } from '@jest/globals';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { unitTest } from '@finos/legend-shared/test';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useLegendAIChatState } from '../LegendAIChatState.js';
 import {
   type LegendAIChatState,
@@ -178,6 +179,59 @@ describe(unitTest('useLegendAIChatState'), () => {
       expect(asked.questionLength).toBe('show top 10 trades'.length);
       expect(asked).not.toHaveProperty('question');
     }
+  });
+
+  test('toggleScope emits a SCOPE_CHANGED event with count and MCP flag', () => {
+    const events: LegendAIChatTelemetryEvent[] = [];
+    const { result } = renderHook(() =>
+      useLegendAIChatState(
+        TEST_DATA__legendAIServices,
+        'com.test:prod:1.0.0',
+        TEST_DATA__legendAIConfig,
+        TEST_DATA__legendAIMetadata,
+        defaultPlugin,
+        undefined,
+        undefined,
+        undefined,
+        (event) => events.push(event),
+      ),
+    );
+    act(() => {
+      result.current.toggleScope({ id: 'legend-ai-mcp', label: 'MCP' });
+    });
+    const scoped = guaranteeNonNullable(
+      events.find(
+        (e) => e.type === LegendAIChatTelemetryEventType.SCOPE_CHANGED,
+      ),
+    );
+    expect(scoped.selectedCount).toBe(1);
+    expect(scoped.includesMcp).toBe(true);
+  });
+
+  test('setSelectedModelName emits a MODEL_CHANGED event with the model name', () => {
+    const events: LegendAIChatTelemetryEvent[] = [];
+    const { result } = renderHook(() =>
+      useLegendAIChatState(
+        TEST_DATA__legendAIServices,
+        'com.test:prod:1.0.0',
+        TEST_DATA__legendAIConfig,
+        TEST_DATA__legendAIMetadata,
+        defaultPlugin,
+        undefined,
+        undefined,
+        undefined,
+        (event) => events.push(event),
+      ),
+    );
+    act(() => {
+      result.current.setSelectedModelName('gpt-4');
+    });
+    const changed = guaranteeNonNullable(
+      events.find(
+        (e) => e.type === LegendAIChatTelemetryEventType.MODEL_CHANGED,
+      ),
+    );
+    expect(changed.model).toBe('gpt-4');
   });
 
   test('askQuestion does not send when already sending', () => {
