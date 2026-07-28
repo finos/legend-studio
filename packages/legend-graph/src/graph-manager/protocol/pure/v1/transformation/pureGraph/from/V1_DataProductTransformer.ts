@@ -31,7 +31,6 @@ import {
   PackageableElementSampleQuery,
   InLineSampleQuery,
   AppDirOwner,
-  SecureView,
 } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
   type V1_AccessPoint,

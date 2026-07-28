@@ -69,7 +69,6 @@ import {
   type V1_NativeModelExecutionContext,
   V1_AppDirOwner,
   type V1_DataProductOwner,
-  type V1_SecureView,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
