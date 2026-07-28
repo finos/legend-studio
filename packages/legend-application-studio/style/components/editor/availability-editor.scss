@@ -190,26 +190,18 @@
     flex-direction: column;
     overflow: hidden;
 
-    &__header {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.4rem 0.8rem;
-      border-bottom: 0.1rem solid var(--color-border-default);
-    }
-
-    &__title {
-      font-size: 1.15rem;
-      font-weight: bold;
-      color: var(--color-text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05rem;
-    }
-
     &__body {
       flex: 1;
-      overflow: hidden;
+      overflow: auto;
+      padding: 0.6rem 0.8rem;
+
+      &--code {
+        padding: 0;
+      }
+    }
+
+    &__fallback {
+      height: 100%;
     }
   }
 }

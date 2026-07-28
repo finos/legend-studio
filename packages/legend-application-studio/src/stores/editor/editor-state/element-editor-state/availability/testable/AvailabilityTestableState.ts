@@ -42,7 +42,6 @@ import {
   type GeneratorFn,
   guaranteeType,
   isString,
-  tryToFormatLosslessJSONString,
 } from '@finos/legend-shared';
 import type { AvailabilityEditorState } from '../AvailabilityEditorState.js';
 import {
@@ -138,22 +137,49 @@ const stringifyTemplate = (value: unknown): string =>
 
 // ─── Test-data helpers ──────────────────────────────────────────────────────
 
-const createDefaultRelationElement = (): RelationElement => {
+const createDefaultRelationElement = (
+  columns: readonly string[] = AVAILABILITY_TEST_DATA_COLUMNS,
+): RelationElement => {
   const element = new RelationElement();
   element.paths = [DEFAULT_RELATION_PATH];
-  element.columns = [...AVAILABILITY_TEST_DATA_COLUMNS];
+  element.columns = [...columns];
   const row = new RelationRowTestData();
-  row.values = AVAILABILITY_TEST_DATA_COLUMNS.map(
-    (col) => AVAILABILITY_COLUMN_DEFAULTS[col] ?? '',
-  );
+  row.values = columns.map((col) => AVAILABILITY_COLUMN_DEFAULTS[col] ?? '');
   element.rows = [observe_RelationRowTestData(row)];
   return observe_RelationElement(element);
 };
 
-const createDefaultRelationElementsData = (): RelationElementsData => {
+const createDefaultRelationElementsData = (
+  columns?: readonly string[],
+): RelationElementsData => {
   const testData = new RelationElementsData();
-  testData.relationElements = [createDefaultRelationElement()];
+  testData.relationElements = [createDefaultRelationElement(columns)];
   return observe_RelationElementsData(testData);
+};
+
+// Return the union of columns declared across all existing suites in the
+// availability, preserving first-seen order. Used to seed a new suite's
+// test data so users don't have to redeclare the whole schema.
+const collectExistingColumns = (
+  availability: Availability,
+): string[] | undefined => {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  availability.tests.forEach((test) => {
+    if (!(test instanceof AvailabilityTestSuite)) {
+      return;
+    }
+    const relationElements = test.testData?.relationElements ?? [];
+    relationElements.forEach((element) => {
+      element.columns.forEach((column) => {
+        if (!seen.has(column)) {
+          seen.add(column);
+          ordered.push(column);
+        }
+      });
+    });
+  });
+  return ordered.length > 0 ? ordered : undefined;
 };
 
 // ─── Assertion / test / suite factories ─────────────────────────────────────
@@ -211,7 +237,9 @@ const createDefaultSuite = (
       DEFAULT_TEST_SUITE_PREFIX,
     );
   suite.__parent = availability;
-  suite.testData = createDefaultRelationElementsData();
+  suite.testData = createDefaultRelationElementsData(
+    collectExistingColumns(availability),
+  );
   const observedSuite = observe_AvailabilityTestSuite(suite);
   addUniqueEntry(
     observedSuite.tests,
@@ -246,6 +274,7 @@ export class AvailabilityTestState extends TestableTestEditorState {
       runningTestAction: observable,
       format: computed,
       firstJsonAssertion: computed,
+      parsedExpected: computed,
       setAssertionToRename: action,
       setSelectedTab: action,
       addAssertion: action,
@@ -254,7 +283,8 @@ export class AvailabilityTestState extends TestableTestEditorState {
       handleTestResult: action,
       resetResult: action,
       setExpectedValue: action,
-      formatExpected: action,
+      addExpectedArrayEntryAtPath: action,
+      addAlloyQueryEntry: action,
       runTest: flow,
       debugTest: flow,
     });
@@ -291,15 +321,163 @@ export class AvailabilityTestState extends TestableTestEditorState {
     externalFormatData_setData(assertion.expected, val);
   }
 
-  formatExpected(): void {
-    const assertion = this.firstJsonAssertion;
-    if (!assertion) {
+  get parsedExpected(): Record<string, unknown> | unknown[] | undefined {
+    const raw = this.expectedValue;
+    if (!raw) {
+      return undefined;
+    }
+    try {
+      const val = JSON.parse(raw) as unknown;
+      if (val && typeof val === 'object') {
+        return val as Record<string, unknown> | unknown[];
+      }
+      return undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private commitExpected(value: unknown): void {
+    this.setExpectedValue(stringifyTemplate(value));
+  }
+
+  addExpectedArrayEntryAtPath(path: readonly (string | number)[]): void {
+    const parsed = this.parsedExpected;
+    if (parsed === undefined) {
       return;
     }
-    externalFormatData_setData(
-      assertion.expected,
-      tryToFormatLosslessJSONString(assertion.expected.data),
-    );
+    const target = this.getAtPath(parsed, path);
+    if (!Array.isArray(target)) {
+      return;
+    }
+    const template =
+      target.length > 0
+        ? this.cloneWithResetLeaves(target[0])
+        : this.defaultArrayTemplateAtPath(path);
+    const next: unknown[] = [...(target as unknown[]), template];
+    this.commitExpected(this.setAtPath(parsed, path, next));
+  }
+
+  private defaultArrayTemplateAtPath(
+    path: readonly (string | number)[],
+  ): unknown {
+    // Fallback templates when the target array is empty.
+    if (
+      this.format === AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE &&
+      path.length === 0
+    ) {
+      return buildLiteEntry();
+    }
+    if (
+      this.format === AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT &&
+      path.length === 2 &&
+      path[0] === 'evaluatedWatermark' &&
+      path[1] === 'watermarkBatches'
+    ) {
+      return buildDefaultBatch();
+    }
+    return {};
+  }
+
+  addAlloyQueryEntry(): void {
+    if (
+      this.format !== AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY
+    ) {
+      return;
+    }
+    const parsed = this.parsedExpected;
+    const map: Record<string, unknown> =
+      parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? { ...parsed }
+        : {};
+    // Pick a unique fresh key so a second empty-string add is visible.
+    let key = '';
+    if (Object.prototype.hasOwnProperty.call(map, key)) {
+      let counter = 1;
+      while (Object.prototype.hasOwnProperty.call(map, `path_${counter}`)) {
+        counter++;
+      }
+      key = `path_${counter}`;
+    }
+    map[key] = { batchId: 0 };
+    this.commitExpected(map);
+  }
+
+  private cloneWithResetLeaves(val: unknown): unknown {
+    if (val === null || val === undefined) {
+      return val;
+    }
+    if (Array.isArray(val)) {
+      return val.map((entry) => this.cloneWithResetLeaves(entry));
+    }
+    if (typeof val === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(val as Record<string, unknown>)) {
+        out[k] = this.cloneWithResetLeaves(v);
+      }
+      return out;
+    }
+    if (typeof val === 'string') {
+      return '';
+    }
+    if (typeof val === 'number') {
+      return 0;
+    }
+    if (typeof val === 'boolean') {
+      return false;
+    }
+    return val;
+  }
+
+  private getAtPath(
+    root: unknown,
+    path: readonly (string | number)[],
+  ): unknown {
+    let cur: unknown = root;
+    for (const seg of path) {
+      if (cur === null || cur === undefined) {
+        return undefined;
+      }
+      if (typeof seg === 'number') {
+        if (!Array.isArray(cur)) {
+          return undefined;
+        }
+        cur = cur[seg];
+      } else {
+        if (typeof cur !== 'object' || Array.isArray(cur)) {
+          return undefined;
+        }
+        cur = (cur as Record<string, unknown>)[seg];
+      }
+    }
+    return cur;
+  }
+
+  private setAtPath(
+    root: unknown,
+    path: readonly (string | number)[],
+    value: unknown,
+  ): unknown {
+    if (path.length === 0) {
+      return value;
+    }
+    const [head, ...rest] = path;
+    if (head === undefined) {
+      return root;
+    }
+    if (typeof head === 'number') {
+      const arr: unknown[] = Array.isArray(root)
+        ? [...(root as unknown[])]
+        : [];
+      arr[head] = this.setAtPath(arr[head], rest, value);
+      return arr;
+    }
+    const obj =
+      root && typeof root === 'object' && !Array.isArray(root)
+        ? { ...(root as Record<string, unknown>) }
+        : {};
+    obj[head] = this.setAtPath(obj[head], rest, value);
+    return obj;
   }
 }
 

@@ -795,7 +795,7 @@ const AssertFailViewer = observer(
   },
 );
 
-const TestAssertionResultViewer = observer(
+export const TestAssertionResultViewer = observer(
   (props: { testAssertionEditorState: TestAssertionEditorState }) => {
     const { testAssertionEditorState } = props;
     const parentAssertionResultState =

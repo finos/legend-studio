@@ -44,7 +44,6 @@ import {
   ResizablePanelSplitterLine,
   RunAllIcon,
   RunErrorsIcon,
-  WrenchIcon,
 } from '@finos/legend-art';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
@@ -68,7 +67,11 @@ import {
   testAssertion_setId,
   testSuite_setId,
 } from '../../../../../stores/graph-modifier/Testable_GraphModifierHelper.js';
-import { RenameModal } from '../../testable/TestableSharedComponents.js';
+import {
+  RenameModal,
+  TestAssertionResultViewer,
+} from '../../testable/TestableSharedComponents.js';
+import { TEST_ASSERTION_TAB } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
 import { RelationElementsDataEditor } from '../../data-editor/RelationElementsDataEditor.js';
 import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 
@@ -302,27 +305,42 @@ const CreateTestModal = observer(
 
 // ─── Availability expected-JSON editor ──────────────────────────────────────
 
+const addExpectedEntry = (testState: AvailabilityTestState): void => {
+  switch (testState.format) {
+    case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT:
+      testState.addExpectedArrayEntryAtPath([
+        'evaluatedWatermark',
+        'watermarkBatches',
+      ]);
+      return;
+    case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE:
+      testState.addExpectedArrayEntryAtPath([]);
+      return;
+    case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY:
+      testState.addAlloyQueryEntry();
+      return;
+    default:
+      return;
+  }
+};
+
 const ExpectedJsonEditor = observer(
   (props: { testState: AvailabilityTestState }) => {
     const { testState } = props;
     const isReadOnly = testState.isReadOnly;
+    const canAdd = testState.parsedExpected !== undefined;
+    const [editorRefreshNonce, setEditorRefreshNonce] = useState(0);
+
+    const handleAdd = (): void => {
+      addExpectedEntry(testState);
+      // Force a lightweight rerender/remount so Monaco reflects external
+      // state updates immediately (without tab switching).
+      setEditorRefreshNonce((val) => val + 1);
+    };
+
     return (
       <div className="availability-assertion-editor__expected">
-        <div className="availability-assertion-editor__expected__header">
-          <div className="availability-assertion-editor__expected__title">
-            Expected
-          </div>
-          <button
-            className="panel__header__action"
-            disabled={isReadOnly}
-            tabIndex={-1}
-            onClick={(): void => testState.formatExpected()}
-            title="Format JSON (Alt + Shift + F)"
-          >
-            <WrenchIcon />
-          </button>
-        </div>
-        <div className="availability-assertion-editor__expected__body">
+        <div className="availability-assertion-editor__expected__body availability-assertion-editor__expected__body--code">
           <CodeEditor
             inputValue={testState.expectedValue}
             language={CODE_EDITOR_LANGUAGE.JSON}
@@ -330,6 +348,22 @@ const ExpectedJsonEditor = observer(
               testState.setExpectedValue(val);
             }}
             hideGutter={true}
+            rightActions={
+              <button
+                tabIndex={-1}
+                className="code-editor__header__action"
+                disabled={isReadOnly || !canAdd}
+                onClick={handleAdd}
+                title={
+                  canAdd
+                    ? 'Add entry'
+                    : 'Fix invalid JSON first, then add entry'
+                }
+              >
+                <PlusIcon />
+              </button>
+            }
+            key={`availability-expected-json-${String(editorRefreshNonce)}`}
           />
         </div>
       </div>
@@ -340,6 +374,12 @@ const ExpectedJsonEditor = observer(
 const AvailabilityAssertionEditor = observer(
   (props: { testState: AvailabilityTestState }) => {
     const { testState } = props;
+    const assertionEditorState = testState.assertionEditorStates[0];
+    const selectedTab =
+      assertionEditorState?.selectedTab ?? TEST_ASSERTION_TAB.EXPECTED;
+    const changeTab = (tab: TEST_ASSERTION_TAB): void =>
+      assertionEditorState?.setSelectedTab(tab);
+
     return (
       <div className="availability-assertion-editor panel">
         <PanelHeader>
@@ -357,9 +397,33 @@ const AvailabilityAssertionEditor = observer(
             </div>
           </div>
         </PanelHeader>
+        <div className="testable-test-assertion-editor__header">
+          <div className="testable-test-assertion-editor__header__tabs">
+            {Object.values(TEST_ASSERTION_TAB).map((tab) => (
+              <div
+                key={tab}
+                onClick={(): void => changeTab(tab)}
+                className={clsx('testable-test-assertion-editor__header__tab', {
+                  'testable-test-assertion-editor__header__tab--active':
+                    tab === selectedTab,
+                })}
+              >
+                {tab === TEST_ASSERTION_TAB.EXPECTED ? 'Expected' : 'Result'}
+              </div>
+            ))}
+          </div>
+        </div>
         <PanelContent>
           <div className="availability-assertion-editor__body">
-            <ExpectedJsonEditor testState={testState} />
+            {selectedTab === TEST_ASSERTION_TAB.EXPECTED && (
+              <ExpectedJsonEditor testState={testState} />
+            )}
+            {selectedTab === TEST_ASSERTION_TAB.RESULT &&
+              assertionEditorState && (
+                <TestAssertionResultViewer
+                  testAssertionEditorState={assertionEditorState}
+                />
+              )}
           </div>
         </PanelContent>
       </div>
@@ -558,6 +622,7 @@ const AvailabilitySuiteEditor = observer(
                   dataState={suiteState.testDataState}
                   isReadOnly={isReadOnly}
                   isSharedData={true}
+                  hideColumnDefinitions={true}
                 />
               </div>
             </div>
