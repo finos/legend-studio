@@ -102,10 +102,7 @@ class MockAISuggester401FailurePlugin extends LegendQueryApplicationPlugin {
       _legendAIUrl: string,
     ): Promise<QueryTitleDescriptionSuggestion> => {
       throw new NetworkClientError(
-        new Response(null, {
-          status: 401,
-          statusText: 'Unauthorized',
-        }),
+        { status: 401, statusText: 'Unauthorized' } as Response,
         undefined,
       );
     };
@@ -130,10 +127,7 @@ class MockAISuggester403FailurePlugin extends LegendQueryApplicationPlugin {
       _legendAIUrl: string,
     ): Promise<QueryTitleDescriptionSuggestion> => {
       throw new NetworkClientError(
-        new Response(null, {
-          status: 403,
-          statusText: 'Forbidden',
-        }),
+        { status: 403, statusText: 'Forbidden' } as Response,
         undefined,
       );
     };

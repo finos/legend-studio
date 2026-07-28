@@ -171,10 +171,7 @@ class MockDataProductAIDoc401FailurePlugin
     _legendAIUrl: string,
   ): Promise<DataProductDocResponse> {
     throw new NetworkClientError(
-      new Response(null, {
-        status: 401,
-        statusText: 'Unauthorized',
-      }),
+      { status: 401, statusText: 'Unauthorized' } as Response,
       undefined,
     );
   }
@@ -200,10 +197,7 @@ class MockDataProductAIDoc403FailurePlugin
     _legendAIUrl: string,
   ): Promise<DataProductDocResponse> {
     throw new NetworkClientError(
-      new Response(null, {
-        status: 403,
-        statusText: 'Forbidden',
-      }),
+      { status: 403, statusText: 'Forbidden' } as Response,
       undefined,
     );
   }

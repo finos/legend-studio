@@ -108,10 +108,7 @@ class MockAIDocSuggester401FailurePlugin
       _legendAIUrl: string,
     ): Promise<string> => {
       throw new NetworkClientError(
-        new Response(null, {
-          status: 401,
-          statusText: 'Unauthorized',
-        }),
+        { status: 401, statusText: 'Unauthorized' } as Response,
         undefined,
       );
     };
@@ -139,10 +136,7 @@ class MockAIDocSuggester403FailurePlugin
       _legendAIUrl: string,
     ): Promise<string> => {
       throw new NetworkClientError(
-        new Response(null, {
-          status: 403,
-          statusText: 'Forbidden',
-        }),
+        { status: 403, statusText: 'Forbidden' } as Response,
         undefined,
       );
     };
