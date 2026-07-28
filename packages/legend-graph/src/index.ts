@@ -122,7 +122,6 @@ export { PostDeploymentAction } from './graph/metamodel/pure/functionActivator/P
 export * from './graph/metamodel/pure/packageableElements/availability/Availability.js';
 export * from './graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 export * from './graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
-export * from './graph/metamodel/pure/packageableElements/availability/Notification.js';
 export {
   PostDeploymentProperties,
   INTERNAL__UnknownPostDeploymentProperties,
@@ -202,7 +201,6 @@ export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packagea
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_Availability.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
-export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_Notification.js';
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_GenerateSchemaInput.js';

@@ -61,7 +61,6 @@ import { V1_UniqueTestId } from '../../../model/test/V1_UniqueTestId.js';
 import {
   V1_externalFormatDataModelSchema,
   V1_relationElementModelSchema,
-  V1_relationElementsDataModelSchema,
 } from './V1_DataElementSerializationHelper.js';
 import {
   V1_mappingTestSuiteModelSchema,
@@ -77,8 +76,6 @@ import {
   V1_functionTestSuiteModelSchema,
 } from './V1_FunctionSerializationHelper.js';
 import { V1_FunctionTest } from '../../../model/packageableElements/function/test/V1_FunctionTest.js';
-import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
-import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import {
   type V1_TestDebug,
   V1_TestExecutionPlanDebug,
@@ -115,7 +112,6 @@ export enum V1_TestSuiteType {
   SERVICE_TEST_SUITE = 'serviceTestSuite',
   MAPPING_TEST_SUITE = 'mappingTestSuite',
   FUNCTION_TEST_SUITE = 'functionTestSuite',
-  AVAILABILITY_TEST_SUITE = 'availabilityTestSuite',
 }
 
 export const V1_uniqueTestIdModelSchema = createModelSchema(V1_UniqueTestId, {
@@ -221,75 +217,6 @@ const V1_equalToRelationModelSchema = createModelSchema(V1_EqualToRelation, {
   id: primitive(),
 });
 
-const V1_serializeAvailabilityTestAssertion = (
-  protocol: V1_TestAssertion,
-): PlainObject<V1_TestAssertion> => {
-  if (protocol instanceof V1_EqualTo) {
-    return serialize(V1_equalToModelSchema, protocol);
-  } else if (protocol instanceof V1_EqualToJson) {
-    return serialize(V1_equalToJsonModelSchema, protocol);
-  } else if (protocol instanceof V1_EqualToTDS) {
-    return serialize(V1_equalToTDSModelSchema, protocol);
-  } else if (protocol instanceof V1_EqualToRelation) {
-    return serialize(V1_equalToRelationModelSchema, protocol);
-  }
-  throw new UnsupportedOperationError(
-    `Can't serialize test assertion`,
-    protocol,
-  );
-};
-
-const V1_deserializeAvailabilityTestAssertion = (
-  json: PlainObject<V1_TestAssertion>,
-): V1_TestAssertion => {
-  switch (json._type) {
-    case V1_TestAssertionType.EQUAL_TO:
-      return deserialize(V1_equalToModelSchema, json);
-    case V1_TestAssertionType.EQUAL_TO_JSON:
-      return deserialize(V1_equalToJsonModelSchema, json);
-    case V1_TestAssertionType.EQUAL_TO_TDS:
-      return deserialize(V1_equalToTDSModelSchema, json);
-    case V1_TestAssertionType.EQUAL_TO_RELATION:
-      return deserialize(V1_equalToRelationModelSchema, json);
-    default:
-      throw new UnsupportedOperationError(
-        `Can't deserialize test assertion of type '${json._type}'`,
-      );
-  }
-};
-
-const V1_availabilityBarrierTestModelSchema = createModelSchema(
-  V1_AvailabilityBarrierTest,
-  {
-    _type: usingConstantValueSchema(ATOMIC_TEST_TYPE.Availability_Barrier_Test),
-    assertions: list(
-      custom(
-        (val) => V1_serializeAvailabilityTestAssertion(val),
-        (val) => V1_deserializeAvailabilityTestAssertion(val),
-      ),
-    ),
-    doc: optional(primitive()),
-    id: primitive(),
-    watermarkSerializationFormat: optional(primitive()),
-  },
-);
-
-const V1_availabilityTestSuiteModelSchema = createModelSchema(
-  V1_AvailabilityTestSuite,
-  {
-    _type: usingConstantValueSchema(V1_TestSuiteType.AVAILABILITY_TEST_SUITE),
-    doc: optional(primitive()),
-    id: primitive(),
-    tests: list(
-      custom(
-        (val) => serialize(V1_availabilityBarrierTestModelSchema, val),
-        (val) => deserialize(V1_availabilityBarrierTestModelSchema, val),
-      ),
-    ),
-    testData: optional(usingModelSchema(V1_relationElementsDataModelSchema)),
-  },
-);
-
 export const V1_testErrorModelSchema = createModelSchema(V1_TestError, {
   atomicTestId: primitive(),
   error: primitive(),
@@ -390,8 +317,6 @@ export const V1_serializeAtomicTest = (
     return serialize(V1_mappingTestModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_FunctionTest) {
     return serialize(V1_functionTestModelSchema, protocol);
-  } else if (protocol instanceof V1_AvailabilityBarrierTest) {
-    return serialize(V1_availabilityBarrierTestModelSchema, protocol);
   }
   const extraAtomicTestSerializers = plugins.flatMap(
     (plugin) =>
@@ -423,8 +348,6 @@ export const V1_deserializeAtomicTest = (
       return deserialize(V1_functionTestModelSchema, json);
     case ATOMIC_TEST_TYPE.Mapping_Test:
       return deserialize(V1_mappingTestModelSchema(plugins), json);
-    case ATOMIC_TEST_TYPE.Availability_Barrier_Test:
-      return deserialize(V1_availabilityBarrierTestModelSchema, json);
     default: {
       const extraAtomicTestProtocolDeserializers = plugins.flatMap(
         (plugin) =>
@@ -492,8 +415,6 @@ export const V1_serializeTestSuite = (
     return serialize(V1_mappingTestSuiteModelSchema(plugins), protocol);
   } else if (protocol instanceof V1_FunctionTestSuite) {
     return serialize(V1_functionTestSuiteModelSchema(plugins), protocol);
-  } else if (protocol instanceof V1_AvailabilityTestSuite) {
-    return serialize(V1_availabilityTestSuiteModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize test suite`, protocol);
 };
@@ -509,8 +430,6 @@ export const V1_deserializeTestSuite = (
       return deserialize(V1_mappingTestSuiteModelSchema(plugins), json);
     case V1_TestSuiteType.FUNCTION_TEST_SUITE:
       return deserialize(V1_functionTestSuiteModelSchema(plugins), json);
-    case V1_TestSuiteType.AVAILABILITY_TEST_SUITE:
-      return deserialize(V1_availabilityTestSuiteModelSchema, json);
     default:
       throw new UnsupportedOperationError(
         `Can't deserialize test suite of type '${json._type}'`,

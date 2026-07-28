@@ -22,23 +22,17 @@ import {
 import { type PackageableElementVisitor } from '../PackageableElement.js';
 import { INTERNAL__UnknownPackageableElement } from '../INTERNAL__UnknownPackageableElement.js';
 import type { Testable } from '../../test/Testable.js';
-import type { RawLambda } from '../../rawValueSpecification/RawLambda.js';
 import type { AvailabilityTestSuite } from './AvailabilityTestSuite.js';
-import type { Notification } from './Notification.js';
-import type { AppDirNode } from '../ingest/IngestDefinition.js';
 
 // NOTE: like `IngestDefinition`, we extend `INTERNAL__UnknownPackageableElement`
-// so the raw JSON content coming from the engine is preserved on `.content` and
+// so the raw JSON payload coming from the engine is preserved on `.content` and
 // the element does not fall back to unknown when the studio protocol schema
-// happens to diverge from the engine's (e.g. new owner shape).
+// happens to diverge from the engine's. Only the typed pieces the studio needs
+// (currently the test suites) are lifted onto dedicated fields.
 export class Availability
   extends INTERNAL__UnknownPackageableElement
   implements Testable
 {
-  barrier?: RawLambda | undefined;
-  extraIngestDefinitions: string[] = [];
-  notification: Notification | undefined;
-  owner: AppDirNode | undefined;
   tests: AvailabilityTestSuite[] = [];
 
   override accept_PackageableElementVisitor<T>(

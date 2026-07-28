@@ -103,8 +103,7 @@ export class V1_ElementThirdPassBuilder
   }
 
   visit_Availability(element: V1_Availability): void {
-    // no-op: availability's third pass has nothing to build
-    return;
+    throw new UnsupportedOperationError();
   }
 
   visit_INTERNAL__UnknownFunctionActivator(

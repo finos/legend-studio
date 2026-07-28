@@ -179,30 +179,30 @@ export const TEST_DATA__AVAILABILITY_ALLOY_QUERY_FORMAT = [
 export const TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS = [
   {
     ...baseAvailabilityEntity,
-    path: 'availability::Procmon',
+    path: 'availability::EmailNotified',
     content: {
       ...baseAvailabilityEntity.content,
-      name: 'Procmon',
+      name: 'EmailNotified',
       notification: {
         content: {
-          destination: 'procmon-topic',
+          address: 'availability-alerts@example.com',
         },
-        type: 'PROCMON',
+        type: 'EMAIL',
       },
     },
   },
   {
     ...baseAvailabilityEntity,
-    path: 'availability::MessageBus',
+    path: 'availability::SlackNotified',
     content: {
       ...baseAvailabilityEntity.content,
-      name: 'MessageBus',
+      name: 'SlackNotified',
       notification: {
         content: {
           channel: 'availability-events',
           format: 'json',
         },
-        type: 'MESSAGEBUS',
+        type: 'SLACK',
       },
     },
   },
@@ -221,7 +221,10 @@ export const TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS = [
         },
         {
           _type: 'importAware',
-          elements: ['availability::Procmon', 'availability::MessageBus'],
+          elements: [
+            'availability::EmailNotified',
+            'availability::SlackNotified',
+          ],
           imports: [],
           parserName: 'Lakehouse',
         },

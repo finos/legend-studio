@@ -103,15 +103,13 @@ const V1_availabilityTestSuiteModelSchema = createModelSchema(
   },
 );
 
-export const V1_serializeAvailabilityTestSuite = (
+const V1_serializeAvailabilityTestSuite = (
   suite: V1_AvailabilityTestSuite,
-  _plugins: unknown[],
 ): PlainObject<V1_AvailabilityTestSuite> =>
   serialize(V1_availabilityTestSuiteModelSchema, suite);
 
-export const V1_deserializeAvailabilityTestSuite = (
+const V1_deserializeAvailabilityTestSuite = (
   json: PlainObject<V1_AvailabilityTestSuite>,
-  _plugins: unknown[],
 ): V1_AvailabilityTestSuite =>
   deserialize(V1_availabilityTestSuiteModelSchema, json);
 
@@ -119,21 +117,18 @@ export const V1_deserializeAvailabilityTestSuite = (
 // JSON payload untouched on `.content`, and only lift out the typed pieces
 // (test suites) that the studio needs for its dedicated tabs. This keeps
 // studio compatible even when the engine's grammar output for an availability
-// element evolves (e.g. `owner` schema changes).
+// element evolves.
 export const V1_createAvailability = (
   name: string,
   packagePath: string,
   json: PlainObject<V1_PackageableElement>,
-  plugins: unknown[],
 ): V1_Availability => {
   const availability = new V1_Availability();
   availability.name = name;
   availability.package = packagePath;
   const rawTestSuites = (json as { testSuites?: PlainObject[] }).testSuites;
   availability.testSuites = Array.isArray(rawTestSuites)
-    ? rawTestSuites.map((suite) =>
-        V1_deserializeAvailabilityTestSuite(suite, plugins),
-      )
+    ? rawTestSuites.map(V1_deserializeAvailabilityTestSuite)
     : [];
   const { testSuites: _testSuites, ...contentWithoutTestSuites } = json;
   availability.content = contentWithoutTestSuites;
@@ -142,7 +137,6 @@ export const V1_createAvailability = (
 
 export const V1_serializeAvailability = (
   protocol: V1_Availability,
-  plugins: unknown[],
 ): PlainObject<V1_Availability> => {
   const raw: PlainObject<V1_Availability> = {
     ...protocol.content,
@@ -151,8 +145,8 @@ export const V1_serializeAvailability = (
     package: protocol.package,
     ...(protocol.testSuites.length
       ? {
-          testSuites: protocol.testSuites.map((suite) =>
-            V1_serializeAvailabilityTestSuite(suite, plugins),
+          testSuites: protocol.testSuites.map(
+            V1_serializeAvailabilityTestSuite,
           ),
         }
       : {}),
@@ -162,6 +156,6 @@ export const V1_serializeAvailability = (
   // preserve the raw engine payload on `.content`, we sort here to guarantee
   // the invariant regardless of the input key order.
   return Object.fromEntries(
-    Object.entries(raw).sort(([k1], [k2]) => (k1 > k2 ? 1 : k1 < k2 ? -1 : 0)),
+    Object.entries(raw).sort(([k1], [k2]) => k1.localeCompare(k2)),
   );
 };

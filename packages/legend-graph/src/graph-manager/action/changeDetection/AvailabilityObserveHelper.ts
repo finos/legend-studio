@@ -19,19 +19,7 @@ import { skipObserved } from './CoreObserverHelper.js';
 import type { Availability } from '../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import type { AvailabilityTestSuite } from '../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import type { AvailabilityBarrierTest } from '../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
-import type { Notification } from '../../../graph/metamodel/pure/packageableElements/availability/Notification.js';
 import { observe_RelationElementsData } from './DSL_Data_ObserverHelper.js';
-
-export const observe_Notification = skipObserved(
-  (metamodel: Notification): Notification => {
-    makeObservable(metamodel, {
-      type: observable,
-      content: observable,
-      hashCode: computed,
-    });
-    return metamodel;
-  },
-);
 
 export const observe_AvailabilityBarrierTest = skipObserved(
   (metamodel: AvailabilityBarrierTest): AvailabilityBarrierTest => {
@@ -42,7 +30,6 @@ export const observe_AvailabilityBarrierTest = skipObserved(
       assertions: observable,
       hashCode: computed,
     });
-    metamodel.assertions.forEach((assertion) => assertion);
     return metamodel;
   },
 );
@@ -69,16 +56,9 @@ export const observe_AvailabilityTestSuite = skipObserved(
 export const observe_Availability = skipObserved(
   (metamodel: Availability): Availability => {
     makeObservable(metamodel, {
-      barrier: observable,
-      extraIngestDefinitions: observable,
-      notification: observable,
-      owner: observable,
       tests: observable,
       hashCode: computed,
     });
-    if (metamodel.notification) {
-      observe_Notification(metamodel.notification);
-    }
     metamodel.tests.forEach(observe_AvailabilityTestSuite);
     return metamodel;
   },

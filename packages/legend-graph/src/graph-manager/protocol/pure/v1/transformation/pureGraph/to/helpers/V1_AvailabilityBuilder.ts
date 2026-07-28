@@ -16,42 +16,14 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
-import { AppDirNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
-import { Notification } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/Notification.js';
 import { AvailabilityTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import { AvailabilityBarrierTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
 import type { Availability } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import { RelationElementsData } from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import type { V1_AvailabilityTestSuite } from '../../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
-import type { V1_AppDirNode } from '../../../../lakehouse/entitlements/V1_CoreEntitlements.js';
-import type { V1_Notification } from '../../../../model/packageableElements/availability/V1_Notification.js';
 import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
-
-export const V1_buildAvailabilityNotification = (
-  v1Notification: V1_Notification | undefined,
-): Notification | undefined => {
-  if (!v1Notification) {
-    return undefined;
-  }
-  const notification = new Notification();
-  notification.type = v1Notification.type;
-  notification.content = v1Notification.content;
-  return notification;
-};
-
-export const V1_buildAvailabilityOwner = (
-  v1Owner: V1_AppDirNode | undefined,
-): AppDirNode | undefined => {
-  if (!v1Owner) {
-    return undefined;
-  }
-  const owner = new AppDirNode();
-  owner.appDirId = v1Owner.appDirId;
-  owner.level = v1Owner.level;
-  return owner;
-};
 
 const V1_buildAvailabilityBarrierTest = (
   element: V1_AvailabilityBarrierTest,

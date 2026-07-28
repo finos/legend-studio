@@ -1668,21 +1668,13 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     inputs: V1_PureGraphBuilderInput[],
     options?: GraphBuilderOptions,
   ): Promise<void> {
-    // Second pass
+    // Only second pass is meaningful for availability: it lifts the typed
+    // test suites off the raw content payload built in the first pass.
     await this.processElementsInBatches(
       graph,
       inputs,
       (data) => data.availabilities,
       (ctx) => new V1_ElementSecondPassBuilder(ctx),
-      options,
-    );
-
-    // Third pass
-    await this.processElementsInBatches(
-      graph,
-      inputs,
-      (data) => data.availabilities,
-      (ctx) => new V1_ElementThirdPassBuilder(ctx),
       options,
     );
   }

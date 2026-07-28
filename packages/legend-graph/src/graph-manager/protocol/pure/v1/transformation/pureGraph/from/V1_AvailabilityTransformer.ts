@@ -17,22 +17,21 @@
 import type { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import type { AvailabilityTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import type { AvailabilityBarrierTest } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
+import { RelationElementsData } from '../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
+import { V1_RelationElementsData } from '../../../model/data/V1_EmbeddedData.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
+import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
+import { UnsupportedOperationError } from '@finos/legend-shared';
 
-export const V1_transformAvailabilityBarrierTest = (
+const V1_transformAvailabilityBarrierTest = (
   element: AvailabilityBarrierTest,
 ): V1_AvailabilityBarrierTest => {
-  const test =
-    new V1_AvailabilityBarrierTest() as V1_AvailabilityBarrierTest & {
-      id: string;
-      doc: string | undefined;
-      assertions: unknown[];
-    };
+  const test = new V1_AvailabilityBarrierTest();
   test.id = element.id;
   test.doc = element.doc;
   test.watermarkSerializationFormat = element.watermarkSerializationFormat;
@@ -40,20 +39,32 @@ export const V1_transformAvailabilityBarrierTest = (
   return test;
 };
 
-export const V1_transformAvailabilityTestSuite = (
+const V1_transformAvailabilityTestSuite = (
   element: AvailabilityTestSuite,
+  context: V1_GraphTransformerContext,
 ): V1_AvailabilityTestSuite => {
-  const suite = new V1_AvailabilityTestSuite() as V1_AvailabilityTestSuite & {
-    id: string;
-    doc: string | undefined;
-    tests: V1_AvailabilityBarrierTest[];
-  };
+  const suite = new V1_AvailabilityTestSuite();
   suite.id = element.id;
   suite.doc = element.doc;
   suite.tests = element.tests.map((test) =>
     V1_transformAvailabilityBarrierTest(test as AvailabilityBarrierTest),
   );
-  suite.testData = element.testData as never;
+  if (element.testData) {
+    if (!(element.testData instanceof RelationElementsData)) {
+      throw new UnsupportedOperationError(
+        `Availability test suite '${element.id}' testData must be RelationElementsData`,
+        element.testData,
+      );
+    }
+    const testData = V1_transformEmbeddedData(element.testData, context);
+    if (!(testData instanceof V1_RelationElementsData)) {
+      throw new UnsupportedOperationError(
+        `Availability test suite '${element.id}' testData transformed to unexpected shape`,
+        testData,
+      );
+    }
+    suite.testData = testData;
+  }
   return suite;
 };
 
@@ -64,12 +75,11 @@ export const V1_transformAvailability = (
   const availability = new V1_Availability();
   V1_initPackageableElement(availability, element);
   // like `V1_IngestDefinition`, preserve the engine's raw JSON payload on
-  // `.content` so that fields we don't model in the studio (owner shape,
-  // notification, extra ingest definitions, barrier lambda, etc.) are
-  // roundtripped unchanged.
+  // `.content` so that fields we don't model in the studio are roundtripped
+  // unchanged.
   availability.content = element.content;
   availability.testSuites = element.tests.map((suite) =>
-    V1_transformAvailabilityTestSuite(suite),
+    V1_transformAvailabilityTestSuite(suite, context),
   );
   return availability;
 };

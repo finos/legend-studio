@@ -215,7 +215,7 @@ class V1_PackageableElementSerializer
   visit_Availability(
     element: V1_Availability,
   ): PlainObject<V1_PackageableElement> {
-    return V1_serializeAvailability(element, this.plugins);
+    return V1_serializeAvailability(element);
   }
 
   visit_INTERNAL__UnknownFunctionActivator(
@@ -440,7 +440,7 @@ export const V1_deserializePackageableElement = (
       case V1_COMPUTE_ELEMENT_PROTOCOL_TYPE:
         return deserialize(V1_computeModelSchema, json);
       case V1_AVAILABILITY_ELEMENT_PROTOCOL_TYPE:
-        return V1_createAvailability(name, packagePath, json, plugins);
+        return V1_createAvailability(name, packagePath, json);
       case V1_INGEST_DEFINITION_TYPE:
         return V1_createIngestDef(name, packagePath, json);
       default: {

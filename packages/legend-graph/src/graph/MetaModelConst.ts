@@ -86,7 +86,6 @@ export enum ATOMIC_TEST_TYPE {
   Mapping_Test = 'mappingTest',
   Function_Test = 'functionTest',
   DataProduct_AccessPoint_Test = 'accessPointTest',
-  Availability_Barrier_Test = 'availabilityBarrierTest',
 }
 
 // NOTE: the list of auto-import are kept in `m3.pure` file in `finos/legend-pure`,
