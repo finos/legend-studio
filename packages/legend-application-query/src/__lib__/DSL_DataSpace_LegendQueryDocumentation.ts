@@ -16,4 +16,9 @@
 
 export enum DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY {
   CURATED_TEMPLATE_QUERY = 'dsl-dataspace.curated-template-query',
+
+  // legend AI
+  // NOTE: keep this key value in sync with the corresponding key in Legend Studio so that
+  // the same documentation registry entry can serve both applications.
+  LEGENDAI_HOW_TO_GET_ENTITLEMENTS = 'legend-ai.how-to-get-entitlements',
 }

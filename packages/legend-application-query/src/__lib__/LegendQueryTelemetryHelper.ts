@@ -127,4 +127,13 @@ export class LegendQueryTelemetryHelper {
       {},
     );
   }
+
+  static logEvent_QueryAISuggestFailure(
+    service: TelemetryService,
+    errorMessage: string,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__FAILURE, {
+      errorMessage,
+    });
+  }
 }

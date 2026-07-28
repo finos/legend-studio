@@ -214,6 +214,17 @@ export class LegendStudioTelemetryHelper {
     );
   }
 
+  static logEvent_ServiceLegendAISuggestFailure(
+    telemetryService: TelemetryService,
+    servicePath: string,
+    errorMessage: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__FAILURE,
+      { servicePath, errorMessage },
+    );
+  }
+
   static logEvent_DataProductLegendAISuggestLaunched(
     telemetryService: TelemetryService,
     dataProductPath: string,
@@ -241,6 +252,17 @@ export class LegendStudioTelemetryHelper {
     telemetryService.logEvent(
       LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__DISCARD,
       { dataProductPath },
+    );
+  }
+
+  static logEvent_DataProductLegendAISuggestFailure(
+    telemetryService: TelemetryService,
+    dataProductPath: string,
+    errorMessage: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__FAILURE,
+      { dataProductPath, errorMessage },
     );
   }
 
