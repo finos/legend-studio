@@ -23,7 +23,7 @@ import {
   waitFor,
 } from '@testing-library/react';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
-import { NetworkClientError } from '@finos/legend-shared';
+import { NetworkClientError, guaranteeNonNullable } from '@finos/legend-shared';
 import { ApplicationStore } from '@finos/legend-application';
 import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test';
 import {
@@ -43,7 +43,6 @@ import type {
 import { TEST__getLegendStudioApplicationConfig } from '../../../../../stores/__test-utils__/LegendStudioApplicationTestUtils.js';
 import { Core_GraphManagerPreset } from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 
 // ---------------------------------------------------------------------------
