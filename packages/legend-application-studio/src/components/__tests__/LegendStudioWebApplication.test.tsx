@@ -760,6 +760,7 @@ const MOCK__useAuth = jest.fn<
   () => {
     user?: { access_token?: string; expires_at?: number };
     signinSilent: () => Promise<unknown>;
+    settings: { automaticSilentRenew?: boolean };
     events: {
       addAccessTokenExpiring: (cb: () => void) => () => void;
       addAccessTokenExpired: (cb: () => void) => () => void;
@@ -1003,6 +1004,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'first-token' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1029,6 +1031,7 @@ describe('LegendTokenSync', () => {
       const mockEvents = createMockAuthEvents();
       MOCK__useAuth.mockReturnValue({
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1053,6 +1056,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'token-v1' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1069,6 +1073,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'token-v2' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1091,6 +1096,7 @@ describe('LegendTokenSync', () => {
     MOCK__useAuth.mockReturnValue({
       user: { access_token: 'irrelevant' },
       signinSilent: mockEvents.signinSilent,
+      settings: { automaticSilentRenew: true },
       events: mockEvents.events,
     });
 
@@ -1115,6 +1121,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'about-to-expire' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1144,6 +1151,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'expired-token' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1174,6 +1182,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'expired-token' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1204,6 +1213,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'token-with-expiry', expires_at: expiresAt },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
@@ -1239,6 +1249,7 @@ describe('LegendTokenSync', () => {
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'no-expiry-token' },
         signinSilent: mockEvents.signinSilent,
+        settings: { automaticSilentRenew: true },
         events: mockEvents.events,
       });
 
