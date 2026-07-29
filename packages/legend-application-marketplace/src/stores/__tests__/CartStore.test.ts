@@ -215,6 +215,79 @@ const makeTraderProfile = (
   return profile;
 };
 
+// ─── CartStore - isAddOnInCartForModel ────────────────────────────────────────
+
+describe('CartStore - isAddOnInCartForModel', () => {
+  test('returns false for empty cart', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    expect(cartStore.isAddOnInCartForModel(123, 'Model A')).toBe(false);
+  });
+
+  test('returns true when id and model both match', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    cartStore.items[99] = [makeCartItem(1, 123, 'Add-On', 'Model A')];
+    expect(cartStore.isAddOnInCartForModel(123, 'Model A')).toBe(true);
+  });
+
+  test('returns false when id matches but model does not', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    cartStore.items[99] = [makeCartItem(1, 123, 'Add-On', 'Model A')];
+    expect(cartStore.isAddOnInCartForModel(123, 'Model B')).toBe(false);
+  });
+
+  test('returns false when model matches but id does not', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    cartStore.items[99] = [makeCartItem(1, 123, 'Add-On', 'Model A')];
+    expect(cartStore.isAddOnInCartForModel(456, 'Model A')).toBe(false);
+  });
+
+  test('returns true when both id and model are null/undefined and cart entry has no model', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    // makeCartItem without a model argument → model field absent (undefined)
+    cartStore.items[99] = [makeCartItem(1, 123, 'Add-On')];
+    expect(cartStore.isAddOnInCartForModel(123, null)).toBe(true);
+    expect(cartStore.isAddOnInCartForModel(123, undefined)).toBe(true);
+  });
+
+  test('returns false when cart entry has null model but lookup uses a non-null model', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    cartStore.items[99] = [makeCartItem(1, 123, 'Add-On')]; // no model
+    expect(cartStore.isAddOnInCartForModel(123, 'Model A')).toBe(false);
+  });
+
+  test('same add-on id under two different models are independent entries', async () => {
+    // Core model-awareness test: ECOMMODNY (id=225248836) added for Model A
+    // must not satisfy an isAddOnInCartForModel check for Model B.
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    cartStore.items[10] = [
+      makeCartItem(1, 225248836, 'Exchange', 'Internal Application'),
+    ];
+    expect(
+      cartStore.isAddOnInCartForModel(225248836, 'Internal Application'),
+    ).toBe(true);
+    expect(
+      cartStore.isAddOnInCartForModel(225248836, 'Internal Application (LAB)'),
+    ).toBe(false);
+  });
+
+  test('finds match across multiple vendor profile buckets', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    cartStore.items[1] = [makeCartItem(1, 100, 'Add-On', 'Model A')];
+    cartStore.items[2] = [makeCartItem(2, 200, 'Add-On', 'Model B')];
+    cartStore.items[3] = [makeCartItem(3, 300, 'Add-On', 'Model C')];
+    expect(cartStore.isAddOnInCartForModel(200, 'Model B')).toBe(true);
+    expect(cartStore.isAddOnInCartForModel(200, 'Model A')).toBe(false);
+  });
+});
+
 // ─── CartStore - cartItemIds ───────────────────────────────────────────────────
 
 describe('CartStore - cartItemIds', () => {

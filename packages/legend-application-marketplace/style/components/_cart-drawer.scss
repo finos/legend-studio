@@ -112,19 +112,17 @@
   }
 
   &__business-reason {
-    padding: 2rem 2.4rem;
-    background: var(--color-cart-background-light);
-    border-bottom: 1px solid var(--color-cart-border-medium);
+    padding: 0 0 1.6rem;
 
     &__title {
       font-weight: 600;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       color: var(--color-cart-text-primary);
       margin: 0 0 1.5rem;
     }
 
     &__required {
-      color: var(--color-red-100);
+      color: var(--color-red-100) !important;
       margin-left: 4px;
     }
 
@@ -149,12 +147,13 @@
 
         .MuiSelect-select {
           padding: 1.2rem 1.4rem;
-          font-size: 1.4rem;
+          font-size: 1.8rem;
         }
       }
 
       .MuiInputLabel-root {
         font-size: 1.4rem;
+        font-weight: 600;
         color: var(--color-cart-text-secondary);
         background: var(--color-white);
         padding: 0 0.6rem;
@@ -178,6 +177,10 @@
           }
         }
       }
+
+      .MuiFormLabel-asterisk {
+        display: none;
+      }
     }
 
     &__note {
@@ -193,32 +196,39 @@
     align-items: center;
     justify-content: flex-end;
     padding: 0.6rem 2.4rem;
-    gap: 0.4rem;
     background: var(--color-cart-background-lighter);
     border-bottom: 1px solid var(--color-cart-border-light);
 
-    &__btn {
-      font-size: 1.2rem;
-      text-transform: none;
-      color: var(--color-cart-blue-focus);
-      padding: 0.2rem 0.6rem;
-      min-width: auto;
+    &__group {
+      .MuiToggleButton-root {
+        font-size: 1.2rem;
+        font-weight: 500;
+        text-transform: none;
+        color: var(--color-cart-blue-focus);
+        padding: 0.4rem 1.2rem;
+        border-color: var(--color-cart-border-light);
+        line-height: 1.4;
 
-      &:hover {
-        background: rgb(102 126 234 / 8%);
+        &:hover {
+          background: rgb(102 126 234 / 8%);
+        }
+
+        &.Mui-selected {
+          background: rgb(102 126 234 / 12%);
+          color: var(--color-cart-blue-focus);
+
+          &:hover {
+            background: rgb(102 126 234 / 18%);
+          }
+        }
       }
-    }
-
-    &__divider {
-      color: var(--color-cart-text-muted);
-      font-size: 1.2rem;
-      user-select: none;
     }
   }
 
   &__content {
-    flex: 1;
-    overflow: auto;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
     padding: 1rem 0;
     background: var(--color-cart-background-lighter);
 
@@ -457,7 +467,7 @@
     &__price-section {
       display: flex;
       align-items: baseline;
-      gap: 0.5rem;
+      gap: 0;
       margin-bottom: 0;
     }
 
@@ -478,13 +488,16 @@
       display: inline-flex;
       align-items: center;
       gap: 0.4rem;
-      background: none;
-      color: var(--color-cart-price-green);
-      padding: 0;
+      background: var(--color-cart-background-section);
+      color: var(--color-cart-text-secondary);
+      padding: 0.3rem 0.8rem;
       font-size: 1.1rem;
-      font-weight: 700;
+      font-weight: 600;
       letter-spacing: 0.2px;
-      border: none;
+      border: 1px solid var(--color-cart-border-light);
+      border-radius: 20px;
+      cursor: default;
+      user-select: none;
     }
 
     &__synthetic-actions {
@@ -506,7 +519,7 @@
     border: 1px solid var(--color-cart-border-light);
     border-left: 4px solid var(--color-cart-addon-accent);
     border-radius: 4px 8px 8px 4px;
-    background-color: var(--color-white);
+    background-color: #f9fafb;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
     position: relative;
@@ -676,13 +689,59 @@
     }
   }
 
+  &__summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.4rem;
+    background: #fff;
+    backdrop-filter: blur(8px);
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 6%);
+    z-index: 10;
+    flex-shrink: 0;
+
+    &__label {
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--color-cart-text-primary);
+      line-height: 1.4;
+    }
+
+    &__right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    &__total {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    &__subtitle {
+      font-size: 1.2rem;
+      color: #9ca3af;
+      margin-top: 0.2rem;
+    }
+  }
+
   &__footer {
     display: flex;
-    gap: 1.5rem;
+    flex-direction: column;
     padding: 2.4rem;
     background: var(--color-white);
     border-top: 1px solid var(--color-cart-border-light);
-    box-shadow: 0 -4px 20px rgb(0 0 0 / 8%);
+    box-shadow: 0 -4px 12px rgb(0 0 0 / 8%);
+    flex-shrink: 0;
+  }
+
+  &__footer__actions {
+    display: flex;
+    gap: 1.5rem;
+    padding-top: 1.6rem;
   }
 
   &__clear-button,
@@ -771,12 +830,22 @@
       transform: translateY(0);
     }
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
+    &.Mui-disabled {
+      background: #e5e7eb !important;
+      color: #9ca3af !important;
+      cursor: not-allowed !important;
+      pointer-events: auto;
+      transform: none;
+      box-shadow: none;
+      border: none;
     }
+  }
+
+  &__order-button-helper {
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 0.8rem;
   }
 
   // Responsive design
@@ -797,10 +866,10 @@
     }
 
     &__business-reason {
-      padding: 1.5rem 1.8rem;
+      padding: 0 0 1.2rem;
 
       &__title {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
         margin-bottom: 1.2rem;
       }
 
@@ -894,6 +963,18 @@
       &__order-button {
         font-size: 1.2rem;
         padding: 1.2rem 1.5rem;
+      }
+    }
+  }
+
+  @media (width <= 360px) {
+    &__summary-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+
+      &__right {
+        align-items: flex-start;
       }
     }
   }

@@ -348,9 +348,11 @@ export class CartStore {
    * No permissionId-based deduplication is performed — the same product may
    * legitimately need to be added under several different terminal models.
    *
-   * Each add-on also carries a vendorProfileId derived from its parent terminal.
-   * This allows the server to correctly group items when the same product id
-   * appears under multiple vendor profiles.
+   * Every add-on also carries a vendorProfileId derived from its parent terminal
+   * (owned or not).  This is required so the server can correctly group items
+   * under the right vendor profile even when the parent terminal is already
+   * subscribed.  The vendorProfileId is the terminal's catalog id (item.id),
+   * independent of ownership status.
    */
   *addOrderProfileItemsToCart(
     items: TraderProfileItem[],
@@ -358,19 +360,23 @@ export class CartStore {
   ): GeneratorFn<void> {
     // Build maps from model → permissionId / terminal id for the terminals
     // in this order profile.
-    // - modelToVendorProfileId: model → terminal.id, populated only for
-    //   non-owned terminals so that add-ons carry vendorProfileId only when
-    //   the parent terminal is not already owned (isOwned=false).
+    // - modelToVendorProfileId: model → terminal.id, populated for ALL
+    //   terminals (owned or not) so that every add-on carries vendorProfileId.
+    //   vendorProfileId tells the server which catalog entry the add-on belongs
+    //   to and is required regardless of whether the terminal is already owned.
     // - ownedTerminalPermissions: model → terminal.permissionId, populated
-    //   only for owned terminals so that add-ons carry permissionId when the
-    //   parent terminal is owned (isOwned=true).
+    //   only for owned terminals that carry a permissionId, so that add-ons
+    //   whose parent is already subscribed carry permissionId in their payload.
     const ownedTerminalPermissions = new Map<string, number>();
     const modelToVendorProfileId = new Map<string, number>();
     for (const item of items) {
       if (item.isTerminal && item.model !== null && item.model !== undefined) {
-        if (!item.isOwned) {
-          modelToVendorProfileId.set(item.model, item.id);
-        } else if (item.permissionId !== undefined) {
+        // Every terminal contributes its id as vendorProfileId for matching
+        // add-ons so the server can group them under the right vendor profile.
+        modelToVendorProfileId.set(item.model, item.id);
+        // Owned terminals additionally supply their permissionId so add-ons
+        // can reference the existing entitlement (permissionId propagation).
+        if (item.isOwned && item.permissionId !== undefined) {
           ownedTerminalPermissions.set(item.model, item.permissionId);
         }
       }

@@ -1366,15 +1366,42 @@
       background: var(--color-dark-theme-bg-secondary);
       border-bottom: 1px solid var(--color-dark-theme-border);
 
-      &__btn {
-        color: var(--color-dark-theme-blue-primary);
+      &__group {
+        .MuiToggleButton-root {
+          color: var(--color-dark-theme-blue-primary);
+          border-color: var(--color-dark-theme-border);
+          background: var(--color-dark-theme-bg-elevated);
 
-        &:hover {
-          background: rgb(115 153 198 / 15%);
+          &:hover {
+            background: rgb(115 153 198 / 15%);
+          }
+
+          &.Mui-selected {
+            background: rgb(115 153 198 / 22%);
+            color: var(--color-dark-theme-blue-primary);
+
+            &:hover {
+              background: rgb(115 153 198 / 30%);
+            }
+          }
         }
       }
+    }
 
-      &__divider {
+    &__summary-bar {
+      background: var(--color-dark-theme-bg-secondary);
+      border-top: 1px solid var(--color-dark-theme-border);
+      box-shadow: 0 -2px 8px rgb(0 0 0 / 30%);
+
+      &__label {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__total {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__subtitle {
         color: var(--color-dark-theme-text-muted);
       }
     }
@@ -1509,6 +1536,12 @@
         }
       }
 
+      &__subscribed-badge {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-secondary);
+        border-color: var(--color-dark-theme-border);
+      }
+
       &--synthetic {
         // Synthetic card now shares the same styling as Vendor Profile —
         // only the name text color differs in dark mode.
@@ -1523,6 +1556,10 @@
       background: var(--color-dark-theme-bg-secondary);
       border-top: 1px solid var(--color-dark-theme-border);
       box-shadow: 0 -4px 20px rgb(0 0 0 / 40%);
+    }
+
+    &__order-button-helper {
+      color: var(--color-dark-theme-text-muted);
     }
 
     &__clear-button {
@@ -1563,8 +1600,10 @@
         box-shadow: 0 8px 24px rgb(115 153 198 / 50%);
       }
 
-      &:disabled {
-        opacity: 0.5;
+      &.Mui-disabled {
+        background: var(--color-dark-theme-bg-elevated) !important;
+        color: var(--color-dark-theme-text-muted) !important;
+        opacity: 0.6;
       }
     }
   }

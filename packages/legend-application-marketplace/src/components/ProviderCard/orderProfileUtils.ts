@@ -116,8 +116,13 @@ export const calculateMultiselectTotalPrice = (
   if (terminals.length === 0) {
     return undefined;
   }
-  const highestTerminal = terminals.reduce((max, curr) =>
-    curr.price > max.price ? curr : max,
+  const [firstTerminal, ...remainingTerminals] = terminals;
+  if (firstTerminal === undefined) {
+    return undefined;
+  }
+  const highestTerminal = remainingTerminals.reduce(
+    (max, curr) => (curr.price > max.price ? curr : max),
+    firstTerminal,
   );
   const addOns = items.filter(
     (item) =>

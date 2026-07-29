@@ -31,6 +31,8 @@ import {
   Chip,
   CircularProgress,
   Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material';
 import {
   CloseIcon,
@@ -38,6 +40,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   InfoCircleIcon,
+  clsx,
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { CartStore } from '../../stores/cart/CartStore.js';
@@ -85,7 +88,9 @@ const CartAddonCard = (props: {
 
   return (
     <Box
-      className={`legend-marketplace-cart-drawer__addon-card${isLastAddon ? 'legend-marketplace-cart-drawer__addon-card--last' : ''}`}
+      className={clsx('legend-marketplace-cart-drawer__addon-card', {
+        'legend-marketplace-cart-drawer__addon-card--last': isLastAddon,
+      })}
     >
       <Box className="legend-marketplace-cart-drawer__addon-card__header">
         <Box className="legend-marketplace-cart-drawer__addon-card__name-row">
@@ -142,6 +147,24 @@ const CartAddonCard = (props: {
   );
 };
 
+// ─── Cart Summary Bar ────────────────────────────────────────────────────────
+
+const CartSummaryBar = (props: { formattedTotal: string }): React.ReactNode => {
+  const { formattedTotal } = props;
+  return (
+    <Box className="legend-marketplace-cart-drawer__summary-bar">
+      <Typography className="legend-marketplace-cart-drawer__summary-bar__label">
+        Monthly Total
+      </Typography>
+      <Box className="legend-marketplace-cart-drawer__summary-bar__right">
+        <Typography className="legend-marketplace-cart-drawer__summary-bar__total">
+          {formattedTotal.replace('$ ', '$')}
+        </Typography>
+      </Box>
+    </Box>
+  );
+};
+
 // ─── Vendor Group Header (Parent Card) ───────────────────────────────────────
 
 const CartVendorGroupHeader = (props: {
@@ -172,7 +195,9 @@ const CartVendorGroupHeader = (props: {
   return (
     <Box className="legend-marketplace-cart-drawer__vendor-group">
       <Box
-        className={`legend-marketplace-cart-drawer__item-card${isSynthetic ? 'legend-marketplace-cart-drawer__item-card--synthetic' : ''}`}
+        className={clsx('legend-marketplace-cart-drawer__item-card', {
+          'legend-marketplace-cart-drawer__item-card--synthetic': isSynthetic,
+        })}
       >
         <Box className="legend-marketplace-cart-drawer__item-card__header">
           <Box className="legend-marketplace-cart-drawer__item-card__title-section">
@@ -220,7 +245,13 @@ const CartVendorGroupHeader = (props: {
             <Chip
               size="small"
               label={item.category}
-              className={`legend-marketplace-cart-drawer__item-card__category${isSynthetic ? 'legend-marketplace-cart-drawer__item-card__category--owned' : ''}`}
+              className={clsx(
+                'legend-marketplace-cart-drawer__item-card__category',
+                {
+                  'legend-marketplace-cart-drawer__item-card__category--owned':
+                    isSynthetic,
+                },
+              )}
             />
             {isSynthetic ? (
               <span className="legend-marketplace-cart-drawer__item-card__subscribed-badge">
@@ -268,7 +299,7 @@ const CartVendorGroupHeader = (props: {
                 variant="body2"
                 className="legend-marketplace-cart-drawer__vendor-group__summary"
               >
-                {addons.length} add-on{addons.length !== 1 ? 's' : ''} –{' '}
+                {addons.length} add-on{addons.length === 1 ? '' : 's'} –{' '}
                 {formatItemPrice(addonTotalPrice)}/month
               </Typography>
             )}
@@ -277,7 +308,7 @@ const CartVendorGroupHeader = (props: {
                 variant="body2"
                 className="legend-marketplace-cart-drawer__vendor-group__summary"
               >
-                {addons.length} add-on{addons.length !== 1 ? 's' : ''}
+                {addons.length} add-on{addons.length === 1 ? '' : 's'}
               </Typography>
             )}
           </Box>
@@ -363,9 +394,9 @@ export const CartDrawer = observer((): React.ReactNode => {
         category: 'Permission ID',
         price: 0,
         isOwned: 'true',
-        ...(groupItems[0]?.model !== undefined
-          ? { model: groupItems[0].model }
-          : {}),
+        ...(groupItems[0]?.model === undefined
+          ? {}
+          : { model: groupItems[0].model }),
       };
       // When synthetic, every item in the group is an add-on (no real parent item).
       const addons = isSynthetic
@@ -390,7 +421,7 @@ export const CartDrawer = observer((): React.ReactNode => {
             title: 'Remove Vendor Profile?',
             message: `Remove "${item.productName}"?`,
             messageClass: 'legend-marketplace-cart-drawer__alert-message',
-            prompt: `Removing this vendor profile will also remove ${addonCount} associated add-on${addonCount !== 1 ? 's' : ''}. This action cannot be undone. Do you want to continue?`,
+            prompt: `Removing this vendor profile will also remove ${addonCount} associated add-on${addonCount === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
             type: ActionAlertType.CAUTION,
             actions: [
               {
@@ -441,7 +472,7 @@ export const CartDrawer = observer((): React.ReactNode => {
           title: 'Remove Required Service?',
           message: `Remove "${item.productName}"?`,
           messageClass: 'legend-marketplace-cart-drawer__alert-message',
-          prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 !== 1 ? 's' : ''}. Do you want to continue?`,
+          prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 === 1 ? '' : 's'}. Do you want to continue?`,
           type: ActionAlertType.CAUTION,
           actions: [
             {
@@ -493,32 +524,31 @@ export const CartDrawer = observer((): React.ReactNode => {
   const handleDeleteSyntheticGroup = useCallback(
     (vendorGroup: CartItem[]) => {
       const count = vendorGroup.length;
+      // Defined here to avoid deep function nesting inside the handler (S2004)
+      const deleteNext = (index: number): void => {
+        if (index >= vendorGroup.length) {
+          return;
+        }
+        const cartItem = vendorGroup[index];
+        if (!cartItem) {
+          return;
+        }
+        flowResult(cart.deleteCartItem(cartItem.cartId)).then(
+          () => deleteNext(index + 1),
+          applicationStore.alertUnhandledError,
+        );
+      };
       applicationStore.alertService.setActionAlertInfo({
         title: 'Remove Items?',
-        message: `Remove ${count} item${count !== 1 ? 's' : ''}?`,
+        message: `Remove ${count} item${count === 1 ? '' : 's'}?`,
         messageClass: 'legend-marketplace-cart-drawer__alert-message',
-        prompt: `Are you sure you want to remove all ${count} item${count !== 1 ? 's' : ''} from this group? This action cannot be undone.`,
+        prompt: `Are you sure you want to remove all ${count} item${count === 1 ? '' : 's'} from this group? This action cannot be undone.`,
         type: ActionAlertType.CAUTION,
         actions: [
           {
             label: 'Remove All',
             type: ActionAlertActionType.PROCEED_WITH_CAUTION,
             handler: (): void => {
-              // Delete each item individually since there is no parent cart item
-              // to cascade-delete from
-              const deleteNext = (index: number): void => {
-                if (index >= vendorGroup.length) {
-                  return;
-                }
-                const cartItem = vendorGroup[index];
-                if (!cartItem) {
-                  return;
-                }
-                flowResult(cart.deleteCartItem(cartItem.cartId)).then(
-                  () => deleteNext(index + 1),
-                  applicationStore.alertUnhandledError,
-                );
-              };
               deleteNext(0);
             },
           },
@@ -539,7 +569,7 @@ export const CartDrawer = observer((): React.ReactNode => {
       title: 'Clear Cart?',
       message: `Clear all items?`,
       messageClass: 'legend-marketplace-cart-drawer__alert-message',
-      prompt: `This will remove all ${itemCount} item${itemCount !== 1 ? 's' : ''} from your cart. This action cannot be undone. Do you want to continue?`,
+      prompt: `This will remove all ${itemCount} item${itemCount === 1 ? '' : 's'} from your cart. This action cannot be undone. Do you want to continue?`,
       type: ActionAlertType.CAUTION,
       actions: [
         {
@@ -588,8 +618,7 @@ export const CartDrawer = observer((): React.ReactNode => {
           variant="h6"
           className="legend-marketplace-cart-drawer__title"
         >
-          Cart ({cart.cartSummary.total_items}) –{' '}
-          {cart.cartSummary.formatted_total_cost}
+          Cart ({cart.cartSummary.total_items})
         </Typography>
         <IconButton
           onClick={() => cart.setOpen(false)}
@@ -601,70 +630,32 @@ export const CartDrawer = observer((): React.ReactNode => {
         </IconButton>
       </Box>
 
-      <Divider />
-
-      <Box className="legend-marketplace-cart-drawer__business-reason">
-        <Typography
-          variant="subtitle1"
-          className="legend-marketplace-cart-drawer__business-reason__title"
-        >
-          Please Choose a Business Reason
-          <span className="legend-marketplace-cart-drawer__business-reason__required">
-            *
-          </span>
-        </Typography>
-
-        <FormControl
-          fullWidth={true}
-          required={true}
-          size="medium"
-          className="legend-marketplace-cart-drawer__business-reason__select"
-        >
-          <InputLabel id="business-reason-label">Select a Reason</InputLabel>
-          <Select
-            labelId="business-reason-label"
-            label="Select a Reason"
-            value={cart.businessReason ?? ''}
-            onChange={(e) =>
-              cart.setBusinessReason(
-                e.target.value ? String(e.target.value) : undefined,
-              )
-            }
-          >
-            {Object.values(CartStore.BUSINESS_REASONS).map((reason) => (
-              <MenuItem key={reason} value={reason}>
-                {reason}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Box>
-      <Divider />
-
       {/* Collapse / Expand All controls */}
       {!cart.loadingState.isInProgress &&
         cart.cartSummary.total_items > 0 &&
         vendorGroupCount > 1 && (
           <Box className="legend-marketplace-cart-drawer__expand-controls">
-            <Button
-              variant="text"
+            <ToggleButtonGroup
+              exclusive={true}
               size="small"
-              onClick={collapseAll}
-              className="legend-marketplace-cart-drawer__expand-controls__btn"
+              aria-label="Expand or collapse all vendor groups"
+              className="legend-marketplace-cart-drawer__expand-controls__group"
             >
-              Collapse All
-            </Button>
-            <span className="legend-marketplace-cart-drawer__expand-controls__divider">
-              |
-            </span>
-            <Button
-              variant="text"
-              size="small"
-              onClick={expandAll}
-              className="legend-marketplace-cart-drawer__expand-controls__btn"
-            >
-              Expand All
-            </Button>
+              <ToggleButton
+                value="collapse"
+                onClick={collapseAll}
+                aria-label="Collapse all"
+              >
+                Collapse All
+              </ToggleButton>
+              <ToggleButton
+                value="expand"
+                onClick={expandAll}
+                aria-label="Expand all"
+              >
+                Expand All
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Box>
         )}
 
@@ -722,47 +713,101 @@ export const CartDrawer = observer((): React.ReactNode => {
           )}
       </Box>
 
+      {!cart.loadingState.isInProgress && cart.cartSummary.total_items > 0 && (
+        <CartSummaryBar
+          formattedTotal={cart.cartSummary.formatted_total_cost}
+        />
+      )}
+
       <Divider />
 
       <Box className="legend-marketplace-cart-drawer__footer">
-        <Button
-          variant="outlined"
-          disabled={
-            !cart.cartSummary.total_items ||
-            cart.submitState.isInProgress ||
-            cart.loadingState.isInProgress
-          }
-          onClick={handleClearCartClick}
-          size="small"
-          className="legend-marketplace-cart-drawer__clear-button"
-        >
-          Clear Cart
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          disabled={
-            !cart.cartSummary.total_items ||
-            !cart.businessReason ||
-            cart.submitState.isInProgress
-          }
-          onClick={() => {
-            flowResult(cart.submitOrder()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          }}
-          size="small"
-          className="legend-marketplace-cart-drawer__order-button"
-        >
-          {cart.submitState.isInProgress ? (
-            <>
-              <CircularProgress size={16} sx={{ mr: 1 }} />
-              Submitting...
-            </>
-          ) : (
-            'Order Now'
-          )}
-        </Button>
+        <Box className="legend-marketplace-cart-drawer__business-reason">
+          <Typography
+            variant="subtitle1"
+            className="legend-marketplace-cart-drawer__business-reason__title"
+          >
+            {'Please Choose a Business Reason'}
+            <span className="legend-marketplace-cart-drawer__business-reason__required">
+              *
+            </span>
+          </Typography>
+
+          <FormControl
+            fullWidth={true}
+            required={true}
+            size="medium"
+            className="legend-marketplace-cart-drawer__business-reason__select"
+          >
+            <InputLabel id="business-reason-label">Select a Reason</InputLabel>
+            <Select
+              labelId="business-reason-label"
+              label="Select a Reason"
+              value={cart.businessReason ?? ''}
+              onChange={(e) =>
+                cart.setBusinessReason(
+                  e.target.value ? String(e.target.value) : undefined,
+                )
+              }
+              MenuProps={{
+                anchorOrigin: { vertical: 'top', horizontal: 'left' },
+                transformOrigin: { vertical: 'bottom', horizontal: 'left' },
+              }}
+            >
+              {Object.values(CartStore.BUSINESS_REASONS).map((reason) => (
+                <MenuItem key={reason} value={reason}>
+                  {reason}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        <Divider />
+        <Box className="legend-marketplace-cart-drawer__footer__actions">
+          <Button
+            variant="outlined"
+            disabled={
+              !cart.cartSummary.total_items ||
+              cart.submitState.isInProgress ||
+              cart.loadingState.isInProgress
+            }
+            onClick={handleClearCartClick}
+            size="small"
+            className="legend-marketplace-cart-drawer__clear-button"
+          >
+            Clear Cart
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={
+              !cart.cartSummary.total_items ||
+              !cart.businessReason ||
+              cart.submitState.isInProgress
+            }
+            onClick={() => {
+              flowResult(cart.submitOrder()).catch(
+                applicationStore.alertUnhandledError,
+              );
+            }}
+            size="small"
+            className="legend-marketplace-cart-drawer__order-button"
+          >
+            {cart.submitState.isInProgress ? (
+              <>
+                <CircularProgress size={16} sx={{ mr: 1 }} />
+                Submitting...
+              </>
+            ) : (
+              'Order Now'
+            )}
+          </Button>
+        </Box>
+        {cart.cartSummary.total_items > 0 && !cart.businessReason && (
+          <Typography className="legend-marketplace-cart-drawer__order-button-helper">
+            Select a business reason to continue.
+          </Typography>
+        )}
       </Box>
     </Drawer>
   );
