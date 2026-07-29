@@ -336,6 +336,22 @@ export const TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS = [
           mapping: {
             path: 'model::dummyMapping',
           },
+          secureViews: [
+            {
+              datasetName: 'myDataset',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 42,
+                  },
+                ],
+                parameters: [],
+              },
+              ingestPath: '/ingest/path',
+            },
+          ],
         },
       ],
       name: 'A',
@@ -3065,6 +3081,209 @@ export const TEST_DATA__DATAPRODUCT_WITH_OWNER = [
         {
           _type: 'importAware',
           elements: ['x::B'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
+export const TEST_DATA__DATAPRODUCT__SECURE_VIEWS = [
+  {
+    path: 'x::SecureViewProduct',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'modelAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+              id: 'ap1',
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+          description: 'Group with multiple secure views',
+          id: 'secureGrp',
+          mapping: {
+            path: 'model::dummyMapping',
+          },
+          secureViews: [
+            {
+              datasetName: 'dataset1',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'filter',
+                    parameters: [
+                      {
+                        _type: 'classInstance',
+                        type: 'I',
+                        value: {
+                          metadata: false,
+                          path: ['model::MyIngest', 'DataSet1'],
+                        },
+                      },
+                      {
+                        _type: 'lambda',
+                        body: [
+                          {
+                            _type: 'func',
+                            function: 'equal',
+                            parameters: [
+                              {
+                                _type: 'property',
+                                parameters: [
+                                  {
+                                    _type: 'var',
+                                    name: 'x',
+                                  },
+                                ],
+                                property: 'name',
+                              },
+                              {
+                                _type: 'string',
+                                value: 'secure1',
+                              },
+                            ],
+                          },
+                        ],
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+                parameters: [],
+              },
+              ingestPath: '/ingest/path/one',
+            },
+            {
+              datasetName: 'dataset2',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 99,
+                  },
+                ],
+                parameters: [],
+              },
+              ingestPath: '/ingest/path/two',
+            },
+            {
+              datasetName: 'dataset3',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'func',
+                    function: 'filter',
+                    parameters: [
+                      {
+                        _type: 'classInstance',
+                        type: 'I',
+                        value: {
+                          metadata: false,
+                          path: ['model::AnotherIngest', 'DataSet3'],
+                        },
+                      },
+                      {
+                        _type: 'lambda',
+                        body: [
+                          {
+                            _type: 'func',
+                            function: 'greaterThan',
+                            parameters: [
+                              {
+                                _type: 'property',
+                                parameters: [
+                                  {
+                                    _type: 'var',
+                                    name: 'row',
+                                  },
+                                ],
+                                property: 'amount',
+                              },
+                              {
+                                _type: 'integer',
+                                value: 1000,
+                              },
+                            ],
+                          },
+                        ],
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'row',
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+                parameters: [],
+              },
+              ingestPath: '/ingest/path/three',
+            },
+          ],
+        },
+      ],
+      name: 'SecureViewProduct',
+      package: 'x',
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: 'model::dummyMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'dummyMapping',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['x::SecureViewProduct'],
           imports: [],
           parserName: 'DataProduct',
         },

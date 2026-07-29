@@ -739,7 +739,23 @@
           "id": "grp",
           "mapping": {
             "path": "model::dummyMapping"
-          }
+          },
+          "secureViews": [
+            {
+              "datasetName": "testDataset",
+              "func": {
+                "_type": "lambda",
+                "body": [
+                  {
+                    "_type": "integer",
+                    "value": 42
+                  }
+                ],
+                "parameters": []
+              },
+              "ingestPath": "/ingest/test/path"
+            }
+          ]
         }
       ],
       "name": "AnimalDataProduct",

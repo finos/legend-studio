@@ -210,6 +210,21 @@ export class AccessPointGroup extends AnnotatedElement implements Hashable {
   }
 }
 
+export class SecureView implements Hashable {
+  ingestPath!: string;
+  datasetName!: string;
+  func!: RawLambda;
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_SECURE_VIEW,
+      this.ingestPath,
+      this.datasetName,
+      this.func,
+    ]);
+  }
+}
+
 export class ModelAccessPointGroup
   extends AccessPointGroup
   implements Hashable
@@ -217,6 +232,7 @@ export class ModelAccessPointGroup
   mapping!: PackageableElementReference<Mapping>;
   featuredElements: DataProductElementScope[] = [];
   diagrams: DataProductDiagram[] = [];
+  secureViews: SecureView[] = [];
 
   override get hashCode(): string {
     return hashArray([
@@ -225,6 +241,7 @@ export class ModelAccessPointGroup
       this.mapping.valueForSerialization ?? '',
       hashArray(this.featuredElements),
       hashArray(this.diagrams),
+      hashArray(this.secureViews),
     ]);
   }
 }

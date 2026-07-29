@@ -59,6 +59,7 @@ import {
   V1_InLineSampleQuery,
   V1_NativeModelExecutionContext,
   V1_AppDirOwner,
+  V1_SecureView,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
@@ -375,6 +376,16 @@ export const V1_transformDataProduct = (
           );
           return v1Diagram;
         });
+
+        modelGroup.secureViews = metamodelGroup.secureViews.map(
+          (secureView) => {
+            const v1SecureView = new V1_SecureView();
+            v1SecureView.ingestPath = secureView.ingestPath;
+            v1SecureView.datasetName = secureView.datasetName;
+            v1SecureView.func = V1_transformRawLambda(secureView.func, context);
+            return v1SecureView;
+          },
+        );
 
         return modelGroup;
       }
