@@ -789,6 +789,11 @@ type IngestionDataSetRow = {
   ingestDefinitionPath: string;
   appDirId: string;
   producerEnvironmentName: string;
+  // Best-guess ingest definition URN derived from the dataset's ingest
+  // definition path + producer. Used to deep-link into an ingest definition
+  // in the external operational view. `undefined` when we can't construct a
+  // URN (e.g. missing GAV / producer info).
+  ingestDefinitionUrn: string | undefined;
   // Location-relative path (no origin). Resolved against the current
   // application base address at click-time by the navigation service.
   operationsPath: string | undefined;
@@ -822,29 +827,35 @@ const collectIngestionDataSetsForApg = (
 
   return apgInfo.accessPointImplementations.flatMap((apImpl) =>
     apImpl.dependencyDatasets.map((ds) => {
+      // Best-guess ingest definition URN derived from the dataset's ingest
+      // definition path + producer. Available whenever the producer info on
+      // the dataset is sufficient to construct a URN, regardless of env
+      // classification — the URN embeds the env segment itself.
+      const ingestDefinitionUrn = ingestEnvironmentConfig
+        ? buildIngestDefinitionUrnFromDataset(
+            ds,
+            ingestEnvironmentConfig.environmentClassification,
+            gavCoordinates,
+            entitlementsDetails?.deploymentId ?? 0,
+          )
+        : undefined;
       let operationsPath: string | undefined;
-      // Only build the operations link for PROD data products: for non-prod
-      // environments we don't have a reliable way to construct the ingest URN.
+      // Only build the internal operations link for PROD data products: for
+      // non-prod environments we don't have a reliable way to resolve the
+      // ingest URN against the marketplace operations route.
       if (
         ingestEnvironmentConfig &&
         ingestEnvironmentConfig.environmentClassification ===
           V1_IngestEnvironmentClassification.PROD &&
         entitlementsDetails &&
-        producerEnvironmentName
+        producerEnvironmentName &&
+        ingestDefinitionUrn
       ) {
-        const ingestDefinitionUrn = buildIngestDefinitionUrnFromDataset(
-          ds,
-          ingestEnvironmentConfig.environmentClassification,
-          gavCoordinates,
-          entitlementsDetails.deploymentId,
+        operationsPath = buildIngestDefinitionOperationsPath(
+          ingestEnvironmentConfig.ingestEnvironmentUrn,
+          ingestDefinitionUrn,
+          producerEnvironmentName,
         );
-        if (ingestDefinitionUrn) {
-          operationsPath = buildIngestDefinitionOperationsPath(
-            ingestEnvironmentConfig.ingestEnvironmentUrn,
-            ingestDefinitionUrn,
-            producerEnvironmentName,
-          );
-        }
       }
       return {
         accessPointId: apImpl.id,
@@ -855,6 +866,7 @@ const collectIngestionDataSetsForApg = (
             ? String(ds.ingestDefinition.producer.appDirId)
             : '',
         producerEnvironmentName,
+        ingestDefinitionUrn,
         operationsPath,
       };
     }),
@@ -931,6 +943,15 @@ export const ApgIngestionDataSetsScreen = observer(
     const openIngestQuery = apgState.dataProductViewerState.openIngestQuery;
     const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery && isOwner);
 
+    // Build the external operational-view URL for the producer environment.
+    // The URL is only available when both `DataProductConfig.operationalUrl`
+    // and the resolved `lakehouseIngestEnv.ingestEnvironmentUrn` are present;
+    // otherwise we fall back to plain text. The row's producer URN is
+    // appended so we deep-link into the correct producer within the env.
+    const handleOpenProducerEnvironment = (url: string): void => {
+      apgState.applicationStore.navigationService.navigator.visitAddress(url);
+    };
+
     const columnDefs: DataGridColumnDefinition<IngestionDataSetRow>[] = [
       {
         headerName: 'Access Point',
@@ -943,6 +964,32 @@ export const ApgIngestionDataSetsScreen = observer(
         headerName: 'Producer Environment',
         field: 'producerEnvironmentName',
         flex: 1,
+        cellRenderer: (params: {
+          value: string | undefined;
+          data: IngestionDataSetRow | undefined;
+        }) => {
+          const value = params.value;
+          if (!value) {
+            return '';
+          }
+          const producerEnvironmentUrl =
+            dataAccessState?.generateOperationalUrlForIngestUrn(value);
+          if (!producerEnvironmentUrl) {
+            return value;
+          }
+          return (
+            <button
+              type="button"
+              className="data-product__viewer__producer-view__link-cell"
+              title={`Open producer environment\n${producerEnvironmentUrl}`}
+              onClick={() =>
+                handleOpenProducerEnvironment(producerEnvironmentUrl)
+              }
+            >
+              {value}
+            </button>
+          );
+        },
       },
       {
         headerName: 'Ingest Definition',
@@ -953,9 +1000,35 @@ export const ApgIngestionDataSetsScreen = observer(
           data: IngestionDataSetRow | undefined;
         }) => {
           const value = params.value;
-          const path = params.data?.operationsPath;
           if (!value) {
             return '';
+          }
+          // Prefer the external operational-view URL (scoped to the
+          // producer + ingest definition) when we can build one; otherwise
+          // fall back to the internal marketplace operations path.
+          const producerName = params.data?.producerEnvironmentName;
+          const externalUrl = params.data?.ingestDefinitionUrn
+            ? dataAccessState?.generateOperationalUrlForIngestUrn(
+                producerName,
+                params.data.ingestDefinitionUrn,
+              )
+            : undefined;
+          const path = params.data?.operationsPath;
+          if (externalUrl) {
+            return (
+              <button
+                type="button"
+                className="data-product__viewer__producer-view__link-cell"
+                title={`Open ingest definition\n${externalUrl}`}
+                onClick={() =>
+                  apgState.applicationStore.navigationService.navigator.visitAddress(
+                    externalUrl,
+                  )
+                }
+              >
+                {value}
+              </button>
+            );
           }
           if (!path) {
             return value;
