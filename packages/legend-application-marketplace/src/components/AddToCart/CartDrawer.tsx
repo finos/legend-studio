@@ -58,6 +58,12 @@ import { formatItemPrice } from '../ProviderCard/orderProfileUtils.js';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const VENDOR_PROFILE_CATEGORY = 'vendor profile';
+const ALERT_MESSAGE_CLASS = 'legend-marketplace-cart-drawer__alert-message';
+const CANCEL_ACTION = {
+  label: 'Cancel',
+  type: ActionAlertActionType.PROCEED,
+  default: true,
+};
 
 const isParentItem = (item: CartItem): boolean =>
   item.category === TerminalItemType.TERMINAL ||
@@ -191,6 +197,7 @@ const CartVendorGroupHeader = (props: {
   } = props;
 
   const addonTotalPrice = addons.reduce((sum, addon) => sum + addon.price, 0);
+  const addonLabel = `${addons.length} add-on${addons.length === 1 ? '' : 's'}`;
 
   return (
     <Box className="legend-marketplace-cart-drawer__vendor-group">
@@ -216,28 +223,23 @@ const CartVendorGroupHeader = (props: {
               </Typography>
             </Tooltip>
           </Box>
-          {!isSynthetic && (
-            <IconButton
-              size="small"
-              onClick={() => onDelete(item, vendorGroup)}
-              className="legend-marketplace-cart-drawer__item-card__remove-btn"
-              disabled={disabled}
-              aria-label={`Remove ${item.productName}`}
-            >
-              <TrashIcon />
-            </IconButton>
-          )}
-          {isSynthetic && (
-            <IconButton
-              size="small"
-              onClick={() => onDeleteSyntheticGroup(vendorGroup)}
-              className="legend-marketplace-cart-drawer__item-card__remove-btn"
-              disabled={disabled}
-              aria-label={`Remove all items under ${item.productName}`}
-            >
-              <TrashIcon />
-            </IconButton>
-          )}
+          <IconButton
+            size="small"
+            onClick={
+              isSynthetic
+                ? () => onDeleteSyntheticGroup(vendorGroup)
+                : () => onDelete(item, vendorGroup)
+            }
+            className="legend-marketplace-cart-drawer__item-card__remove-btn"
+            disabled={disabled}
+            aria-label={
+              isSynthetic
+                ? `Remove all items under ${item.productName}`
+                : `Remove ${item.productName}`
+            }
+          >
+            <TrashIcon />
+          </IconButton>
         </Box>
 
         <Box className="legend-marketplace-cart-drawer__item-card__content">
@@ -294,23 +296,13 @@ const CartVendorGroupHeader = (props: {
             <span className="legend-marketplace-cart-drawer__vendor-group__chevron">
               {isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
             </span>
-            {!isExpanded && (
-              <Typography
-                variant="body2"
-                className="legend-marketplace-cart-drawer__vendor-group__summary"
-              >
-                {addons.length} add-on{addons.length === 1 ? '' : 's'} –{' '}
-                {formatItemPrice(addonTotalPrice)}/month
-              </Typography>
-            )}
-            {isExpanded && (
-              <Typography
-                variant="body2"
-                className="legend-marketplace-cart-drawer__vendor-group__summary"
-              >
-                {addons.length} add-on{addons.length === 1 ? '' : 's'}
-              </Typography>
-            )}
+            <Typography
+              variant="body2"
+              className="legend-marketplace-cart-drawer__vendor-group__summary"
+            >
+              {addonLabel}
+              {!isExpanded && ` – ${formatItemPrice(addonTotalPrice)}/month`}
+            </Typography>
           </Box>
         )}
       </Box>
@@ -413,65 +405,34 @@ export const CartDrawer = observer((): React.ReactNode => {
     (item: CartItem, vendorGroup: CartItem[]) => {
       const addons = vendorGroup.filter((i) => !isParentItem(i));
 
-      if (isParentItem(item)) {
-        // Deleting a vendor profile — removes all associated add-ons
-        const addonCount = addons.length;
-        if (addonCount > 0) {
-          applicationStore.alertService.setActionAlertInfo({
-            title: 'Remove Vendor Profile?',
-            message: `Remove "${item.productName}"?`,
-            messageClass: 'legend-marketplace-cart-drawer__alert-message',
-            prompt: `Removing this vendor profile will also remove ${addonCount} associated add-on${addonCount === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
-            type: ActionAlertType.CAUTION,
-            actions: [
-              {
-                label: 'Remove All',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                handler: (): void => {
-                  flowResult(cart.deleteCartItem(item.cartId, true)).catch(
-                    applicationStore.alertUnhandledError,
-                  );
-                },
+      if (isParentItem(item) && addons.length > 0) {
+        // Deleting a vendor profile with add-ons — removes all associated add-ons
+        applicationStore.alertService.setActionAlertInfo({
+          title: 'Remove Vendor Profile?',
+          message: `Remove "${item.productName}"?`,
+          messageClass: ALERT_MESSAGE_CLASS,
+          prompt: `Removing this vendor profile will also remove ${addons.length} associated add-on${addons.length === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
+          type: ActionAlertType.CAUTION,
+          actions: [
+            {
+              label: 'Remove All',
+              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+              handler: (): void => {
+                flowResult(cart.deleteCartItem(item.cartId, true)).catch(
+                  applicationStore.alertUnhandledError,
+                );
               },
-              {
-                label: 'Cancel',
-                type: ActionAlertActionType.PROCEED,
-                default: true,
-              },
-            ],
-          });
-        } else {
-          applicationStore.alertService.setActionAlertInfo({
-            title: 'Remove Item?',
-            message: `Remove "${item.productName}"?`,
-            messageClass: 'legend-marketplace-cart-drawer__alert-message',
-            prompt: `Are you sure you want to remove "${item.productName}" from your cart?`,
-            type: ActionAlertType.CAUTION,
-            actions: [
-              {
-                label: 'Remove',
-                type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-                handler: (): void => {
-                  flowResult(cart.deleteCartItem(item.cartId)).catch(
-                    applicationStore.alertUnhandledError,
-                  );
-                },
-              },
-              {
-                label: 'Cancel',
-                type: ActionAlertActionType.PROCEED,
-                default: true,
-              },
-            ],
-          });
-        }
-      } else if (item.isMandatory) {
+            },
+            CANCEL_ACTION,
+          ],
+        });
+      } else if (!isParentItem(item) && item.isMandatory) {
         // Deleting a mandatory add-on — removes the entire vendor group
         const totalItems = vendorGroup.length;
         applicationStore.alertService.setActionAlertInfo({
           title: 'Remove Required Service?',
           message: `Remove "${item.productName}"?`,
-          messageClass: 'legend-marketplace-cart-drawer__alert-message',
+          messageClass: ALERT_MESSAGE_CLASS,
           prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 === 1 ? '' : 's'}. Do you want to continue?`,
           type: ActionAlertType.CAUTION,
           actions: [
@@ -484,19 +445,15 @@ export const CartDrawer = observer((): React.ReactNode => {
                 );
               },
             },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
+            CANCEL_ACTION,
           ],
         });
       } else {
-        // Deleting an optional add-on — removes just this item
+        // Deleting a parent item with no add-ons, or an optional add-on — removes just this item
         applicationStore.alertService.setActionAlertInfo({
           title: 'Remove Item?',
           message: `Remove "${item.productName}"?`,
-          messageClass: 'legend-marketplace-cart-drawer__alert-message',
+          messageClass: ALERT_MESSAGE_CLASS,
           prompt: `Are you sure you want to remove "${item.productName}" from your cart?`,
           type: ActionAlertType.CAUTION,
           actions: [
@@ -509,11 +466,7 @@ export const CartDrawer = observer((): React.ReactNode => {
                 );
               },
             },
-            {
-              label: 'Cancel',
-              type: ActionAlertActionType.PROCEED,
-              default: true,
-            },
+            CANCEL_ACTION,
           ],
         });
       }
@@ -541,7 +494,7 @@ export const CartDrawer = observer((): React.ReactNode => {
       applicationStore.alertService.setActionAlertInfo({
         title: 'Remove Items?',
         message: `Remove ${count} item${count === 1 ? '' : 's'}?`,
-        messageClass: 'legend-marketplace-cart-drawer__alert-message',
+        messageClass: ALERT_MESSAGE_CLASS,
         prompt: `Are you sure you want to remove all ${count} item${count === 1 ? '' : 's'} from this group? This action cannot be undone.`,
         type: ActionAlertType.CAUTION,
         actions: [
@@ -552,11 +505,7 @@ export const CartDrawer = observer((): React.ReactNode => {
               deleteNext(0);
             },
           },
-          {
-            label: 'Cancel',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
+          CANCEL_ACTION,
         ],
       });
     },
@@ -568,7 +517,7 @@ export const CartDrawer = observer((): React.ReactNode => {
     applicationStore.alertService.setActionAlertInfo({
       title: 'Clear Cart?',
       message: `Clear all items?`,
-      messageClass: 'legend-marketplace-cart-drawer__alert-message',
+      messageClass: ALERT_MESSAGE_CLASS,
       prompt: `This will remove all ${itemCount} item${itemCount === 1 ? '' : 's'} from your cart. This action cannot be undone. Do you want to continue?`,
       type: ActionAlertType.CAUTION,
       actions: [
@@ -581,11 +530,7 @@ export const CartDrawer = observer((): React.ReactNode => {
             );
           },
         },
-        {
-          label: 'Cancel',
-          type: ActionAlertActionType.PROCEED,
-          default: true,
-        },
+        CANCEL_ACTION,
       ],
     });
   }, [

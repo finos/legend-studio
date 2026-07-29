@@ -207,7 +207,8 @@ export const LegendMarketplaceTerminalCard = observer(
               >
                 {isAddingToCart && (
                   <>
-                    Adding... &nbsp;
+                    {cardAction === 'addService' ? 'Fetching...' : 'Adding...'}{' '}
+                    &nbsp;
                     <CircularProgress size={16} />
                   </>
                 )}
@@ -222,7 +223,7 @@ export const LegendMarketplaceTerminalCard = observer(
                 {!isAddingToCart && !isInCart && (
                   <>
                     {cardAction === 'addService'
-                      ? 'Add Service'
+                      ? 'Browse Add-Ons'
                       : 'Add to cart'}{' '}
                     &nbsp;
                     <ShoppingCartIcon />

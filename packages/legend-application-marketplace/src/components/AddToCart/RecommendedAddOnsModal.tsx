@@ -165,6 +165,11 @@ const getSectionTitle = (
   return '';
 };
 
+const getEmptyStateMessage = (isTerminalAdded: boolean): string =>
+  isTerminalAdded
+    ? 'No add-ons available for this terminal.'
+    : 'No available terminals for this add-on.';
+
 const useVendorAddonSearch = (
   terminal: TerminalResult | null,
   isTerminalAdded: boolean,
@@ -337,6 +342,177 @@ const handleCartResult = (
     // modal open so the user can add multiple add-ons before closing.
     closeModal();
   }
+};
+
+// ─── Multi-source terminal association content ───────────────────────────────
+// Extracted to its own component to keep RecommendedAddOnsModal's cognitive
+// complexity within the allowed threshold (SonarQube S3776).
+
+interface MultiSourceContentProps {
+  cartSourceItems: TerminalResult[];
+  inventorySourceItems: TerminalResult[];
+  marketplaceSourceItems: TerminalResult[];
+  headerName: string;
+  isAssociating: boolean;
+  associatingItemId: number | undefined;
+  onAssociate: (item: TerminalResult) => void;
+}
+
+const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
+  const {
+    cartSourceItems,
+    inventorySourceItems,
+    marketplaceSourceItems,
+    headerName,
+    isAssociating,
+    associatingItemId,
+    onAssociate,
+  } = props;
+  return (
+    <Box className="recommended-addons-modal__association-content">
+      {cartSourceItems.length > 0 && (
+        <Box className="recommended-addons-modal__source-section">
+          <Box className="recommended-addons-modal__source-header">
+            <Typography
+              variant="h6"
+              className="recommended-addons-modal__source-title"
+            >
+              From Your Cart
+            </Typography>
+            <Typography
+              variant="body2"
+              className="recommended-addons-modal__source-description"
+            >
+              Select a terminal from your cart to associate
+            </Typography>
+          </Box>
+          <Box className="recommended-addons-modal__list">
+            <ListHeader headerName={headerName} />
+            {cartSourceItems.map((item) => (
+              <RecommendedItemsCard
+                key={item.id}
+                recommendedItem={item}
+                onSelect={onAssociate}
+                isSelecting={isAssociating}
+                selectedItemId={associatingItemId}
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {cartSourceItems.length > 0 &&
+        (inventorySourceItems.length > 0 ||
+          marketplaceSourceItems.length > 0) && <Divider sx={{ my: 2 }} />}
+
+      {inventorySourceItems.length > 0 && (
+        <Box className="recommended-addons-modal__source-section">
+          <Box className="recommended-addons-modal__source-header">
+            <Typography
+              variant="h6"
+              className="recommended-addons-modal__source-title"
+            >
+              From Your Inventory
+            </Typography>
+            <Typography
+              variant="body2"
+              className="recommended-addons-modal__source-description"
+            >
+              Select a terminal from your existing inventory to associate
+            </Typography>
+          </Box>
+          <Box className="recommended-addons-modal__list">
+            <ListHeader headerName={headerName} />
+            {inventorySourceItems.map((item) => (
+              <RecommendedItemsCard
+                key={item.id}
+                recommendedItem={item}
+                onSelect={onAssociate}
+                isSelecting={isAssociating}
+                selectedItemId={associatingItemId}
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+
+      {(cartSourceItems.length > 0 || inventorySourceItems.length > 0) &&
+        marketplaceSourceItems.length > 0 && <Divider sx={{ my: 2 }} />}
+
+      {marketplaceSourceItems.length > 0 && (
+        <Box className="recommended-addons-modal__source-section">
+          <Box className="recommended-addons-modal__source-header">
+            <Typography
+              variant="h6"
+              className="recommended-addons-modal__source-title"
+            >
+              From Marketplace
+            </Typography>
+            <Typography
+              variant="body2"
+              className="recommended-addons-modal__source-description"
+            >
+              Explore other available terminal options from the marketplace
+            </Typography>
+          </Box>
+          <Box className="recommended-addons-modal__list">
+            <ListHeader headerName={headerName} />
+            {marketplaceSourceItems.map((item) => (
+              <RecommendedItemsCard
+                key={item.id}
+                recommendedItem={item}
+                onSelect={onAssociate}
+                isSelecting={isAssociating}
+                selectedItemId={associatingItemId}
+              />
+            ))}
+          </Box>
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+const MandatoryAddOnsAlert = (props: {
+  mandatoryAddOns: string[];
+}): JSX.Element | null => {
+  const { mandatoryAddOns } = props;
+  if (mandatoryAddOns.length === 0) {
+    return null;
+  }
+  return (
+    <Box className="recommended-addons-modal__alert">
+      <CheckCircleIcon />
+      <Box>
+        <Typography>
+          <strong>
+            Mandatory Add-On{mandatoryAddOns.length > 1 ? 's' : ''} Included:
+          </strong>
+        </Typography>
+        {mandatoryAddOns.length === 1 ? (
+          <Typography variant="body2">
+            {mandatoryAddOns[0]} Added To Cart
+          </Typography>
+        ) : (
+          <Box
+            component="ul"
+            sx={{ margin: '0.4rem 0 0', paddingLeft: '2rem' }}
+          >
+            {mandatoryAddOns.map((name) => (
+              <Typography
+                component="li"
+                variant="body2"
+                key={name}
+                sx={{ lineHeight: 1.6 }}
+              >
+                {name}
+              </Typography>
+            ))}
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
 };
 
 export const RecommendedAddOnsModal = observer(
@@ -609,6 +785,10 @@ export const RecommendedAddOnsModal = observer(
                   isSelecting: isAssociating,
                   selectedItemId: associatingItemId,
                 })}
+                {...(isPermissionOverride && {
+                  permissionIdOverride: overridePermissionId,
+                  modelOverride: overrideModel,
+                })}
               />
             ))}
           </Box>
@@ -644,116 +824,18 @@ export const RecommendedAddOnsModal = observer(
 
     const nonEmptyContent: JSX.Element =
       isAddOnAssociation && hasMultipleSources ? (
-        <Box className="recommended-addons-modal__association-content">
-          {cartSourceItems.length > 0 && (
-            <Box className="recommended-addons-modal__source-section">
-              <Box className="recommended-addons-modal__source-header">
-                <Typography
-                  variant="h6"
-                  className="recommended-addons-modal__source-title"
-                >
-                  From Your Cart
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="recommended-addons-modal__source-description"
-                >
-                  Select a terminal from your cart to associate
-                </Typography>
-              </Box>
-              <Box className="recommended-addons-modal__list">
-                <ListHeader headerName={headerName} />
-                {cartSourceItems.map((item) => (
-                  <RecommendedItemsCard
-                    key={item.id}
-                    recommendedItem={item}
-                    onSelect={(i) => {
-                      // eslint-disable-next-line no-void
-                      void handleAssociateTerminal(i);
-                    }}
-                    isSelecting={isAssociating}
-                    selectedItemId={associatingItemId}
-                  />
-                ))}
-              </Box>
-            </Box>
-          )}
-
-          {cartSourceItems.length > 0 &&
-            (inventorySourceItems.length > 0 ||
-              marketplaceSourceItems.length > 0) && <Divider sx={{ my: 2 }} />}
-
-          {inventorySourceItems.length > 0 && (
-            <Box className="recommended-addons-modal__source-section">
-              <Box className="recommended-addons-modal__source-header">
-                <Typography
-                  variant="h6"
-                  className="recommended-addons-modal__source-title"
-                >
-                  From Your Inventory
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="recommended-addons-modal__source-description"
-                >
-                  Select a terminal from your existing inventory to associate
-                </Typography>
-              </Box>
-              <Box className="recommended-addons-modal__list">
-                <ListHeader headerName={headerName} />
-                {inventorySourceItems.map((item) => (
-                  <RecommendedItemsCard
-                    key={item.id}
-                    recommendedItem={item}
-                    onSelect={(i) => {
-                      // eslint-disable-next-line no-void
-                      void handleAssociateTerminal(i);
-                    }}
-                    isSelecting={isAssociating}
-                    selectedItemId={associatingItemId}
-                  />
-                ))}
-              </Box>
-            </Box>
-          )}
-
-          {(cartSourceItems.length > 0 || inventorySourceItems.length > 0) &&
-            marketplaceSourceItems.length > 0 && <Divider sx={{ my: 2 }} />}
-
-          {marketplaceSourceItems.length > 0 && (
-            <Box className="recommended-addons-modal__source-section">
-              <Box className="recommended-addons-modal__source-header">
-                <Typography
-                  variant="h6"
-                  className="recommended-addons-modal__source-title"
-                >
-                  From Marketplace
-                </Typography>
-                <Typography
-                  variant="body2"
-                  className="recommended-addons-modal__source-description"
-                >
-                  Explore other available terminal options from the marketplace
-                </Typography>
-              </Box>
-              <Box className="recommended-addons-modal__list">
-                <ListHeader headerName={headerName} />
-                {marketplaceSourceItems.map((item) => (
-                  <RecommendedItemsCard
-                    key={item.id}
-                    recommendedItem={item}
-                    onSelect={(i) => {
-                      // eslint-disable-next-line no-void
-                      void handleAssociateTerminal(i);
-                    }}
-                    isSelecting={isAssociating}
-                    selectedItemId={associatingItemId}
-                  />
-                ))}
-              </Box>
-            </Box>
-          )}
-        </Box>
+        <MultiSourceContent
+          cartSourceItems={cartSourceItems}
+          inventorySourceItems={inventorySourceItems}
+          marketplaceSourceItems={marketplaceSourceItems}
+          headerName={headerName}
+          isAssociating={isAssociating}
+          associatingItemId={associatingItemId}
+          onAssociate={(i) => {
+            // eslint-disable-next-line no-void
+            void handleAssociateTerminal(i);
+          }}
+        />
       ) : (
         <>
           <Box className="recommended-addons-modal__filter-controls">
@@ -896,40 +978,7 @@ export const RecommendedAddOnsModal = observer(
         </DialogTitle>
 
         <DialogContent className="recommended-addons-modal__content">
-          {mandatoryAddOns.length > 0 && (
-            <Box className="recommended-addons-modal__alert">
-              <CheckCircleIcon />
-              <Box>
-                <Typography>
-                  <strong>
-                    Mandatory Add-On{mandatoryAddOns.length > 1 ? 's' : ''}{' '}
-                    Included:
-                  </strong>
-                </Typography>
-                {mandatoryAddOns.length === 1 ? (
-                  <Typography variant="body2">
-                    {mandatoryAddOns[0]} Added To Cart
-                  </Typography>
-                ) : (
-                  <Box
-                    component="ul"
-                    sx={{ margin: '0.4rem 0 0', paddingLeft: '2rem' }}
-                  >
-                    {mandatoryAddOns.map((name) => (
-                      <Typography
-                        component="li"
-                        variant="body2"
-                        key={name}
-                        sx={{ lineHeight: 1.6 }}
-                      >
-                        {name}
-                      </Typography>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          )}
+          <MandatoryAddOnsAlert mandatoryAddOns={mandatoryAddOns} />
           <Box className="recommended-addons-modal__content-header">
             <Typography
               variant="h6"
@@ -952,9 +1001,7 @@ export const RecommendedAddOnsModal = observer(
           {recommendedItems.length === 0 ? (
             <Box className="recommended-addons-modal__empty-state">
               <Typography variant="body1">
-                {isTerminalAdded
-                  ? 'No add-ons available for this terminal.'
-                  : 'No available terminals for this add-on.'}
+                {getEmptyStateMessage(isTerminalAdded)}
               </Typography>
             </Box>
           ) : (

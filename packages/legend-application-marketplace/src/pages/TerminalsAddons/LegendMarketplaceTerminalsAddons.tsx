@@ -242,13 +242,21 @@ const OwnedServicesSection = observer(
       setIsExpanded(!isExpanded);
     };
 
+    const currentUserId =
+      vendorDataState.applicationStore.identityService.currentUser;
+    const isTargetUserActive =
+      vendorDataState.selectedUser.id !== currentUserId;
+    const titleText = isTargetUserActive
+      ? `${vendorDataState.selectedUser.displayName ?? vendorDataState.selectedUser.id}'s Terminal Subscriptions`
+      : 'My Terminal Subscriptions';
+
     return (
       <div className="legend-marketplace-vendordata-main-owned-services">
         <div className="legend-marketplace-vendordata-main-owned-services__header">
           <div className="legend-marketplace-vendordata-main-owned-services__title-row">
-            <span className="legend-marketplace-vendordata-main-owned-services__title">
-              My Terminal Subscriptions{' '}
-              <span className="legend-marketplace-vendordata-main-owned-services__count">
+            <span className="legend-marketplace-vendordata-main-sidebar__title">
+              {titleText}
+              <span className="legend-marketplace-vendordata-main-sidebar__title__count">
                 ({vendorDataState.totalOwnedPermissions})
               </span>
             </span>

@@ -38,16 +38,30 @@ interface RecommendedItemsCardProps {
   onSelect?: (item: TerminalResult) => void;
   isSelecting?: boolean;
   selectedItemId?: number | undefined;
+  permissionIdOverride?: number | undefined;
+  modelOverride?: string | null | undefined;
 }
 
 export const RecommendedItemsCard = observer(
   (props: RecommendedItemsCardProps) => {
-    const { recommendedItem, onSelect, isSelecting, selectedItemId } = props;
+    const {
+      recommendedItem,
+      onSelect,
+      isSelecting,
+      selectedItemId,
+      permissionIdOverride,
+      modelOverride,
+    } = props;
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    // Tracks a successful add within this component's lifetime so the button
+    // transitions even when skipWorkflow=true causes the item to bypass the
+    // normal cart and therefore not appear in isItemInCart.
+    const [isAdded, setIsAdded] = useState(false);
     const inCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
       recommendedItem.id,
     );
+    const isInCartOrAdded = inCart || isAdded;
 
     const isAssociationFlow = onSelect !== undefined;
     const isCurrentlySelecting =
@@ -62,9 +76,22 @@ export const RecommendedItemsCard = observer(
       const cartItemRequest =
         legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
 
+      if (permissionIdOverride !== undefined) {
+        cartItemRequest.permissionId = permissionIdOverride;
+        cartItemRequest.skipWorkflow = true;
+      }
+      if (modelOverride !== null && modelOverride !== undefined) {
+        cartItemRequest.model = modelOverride;
+      }
+
       flowResult(
         legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
       )
+        .then((result) => {
+          if (result.success) {
+            setIsAdded(true);
+          }
+        })
         .catch((error) => {
           assertErrorThrown(error);
           toastManager.error(
@@ -146,10 +173,10 @@ export const RecommendedItemsCard = observer(
         <Button
           variant="outlined"
           onClick={() => handleAddAddonToCart(recommendedItem)}
-          disabled={inCart || isAddingToCart}
+          disabled={isInCartOrAdded || isAddingToCart}
           size="small"
           className={clsx('recommended-addons-modal__add-btn', {
-            'recommended-addons-modal__add-btn--added': inCart,
+            'recommended-addons-modal__add-btn--added': isInCartOrAdded,
           })}
         >
           {isAddingToCart ? (
@@ -157,7 +184,7 @@ export const RecommendedItemsCard = observer(
               Adding... &nbsp;
               <CircularProgress size={14} />
             </>
-          ) : inCart ? (
+          ) : isInCartOrAdded ? (
             'Added to Cart'
           ) : (
             <>
@@ -168,7 +195,7 @@ export const RecommendedItemsCard = observer(
         </Button>
       );
 
-      if (inCart) {
+      if (isInCartOrAdded) {
         return (
           <Tooltip
             title={
