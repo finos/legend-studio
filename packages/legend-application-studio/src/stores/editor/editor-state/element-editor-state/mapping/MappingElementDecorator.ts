@@ -671,7 +671,10 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
     ): RelationFunctionPropertyMapping[] => {
       const existingPropertyMappings = (propertyMappings ?? []).filter((pm) => {
         if (pm instanceof RelationFunctionPropertyMapping) {
-          return !isStubbed_RelationColumn(pm.column);
+          return (
+            pm.valueFn !== undefined ||
+            (pm.column !== undefined && !isStubbed_RelationColumn(pm.column))
+          );
         }
         return false;
       });
@@ -715,7 +718,9 @@ export class MappingElementDecorator implements SetImplementationVisitor<void> {
         propertyMappingsBeforeDecoration
           .filter(
             (propertyMapping) =>
-              !isStubbed_RelationColumn(propertyMapping.column),
+              propertyMapping.valueFn !== undefined ||
+              (propertyMapping.column !== undefined &&
+                !isStubbed_RelationColumn(propertyMapping.column)),
           )
           .filter(
             (propertyMapping) =>

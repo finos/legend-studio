@@ -70,6 +70,7 @@ import type { V1_INTERNAL__UnknownClassMapping } from '../../../model/packageabl
 import type { V1_RelationFunctionClassMapping } from '../../../model/packageableElements/mapping/V1_RelationFunctionClassMapping.js';
 import { RelationFunctionInstanceSetImplementation } from '../../../../../../../graph/metamodel/pure/packageableElements/mapping/relationFunction/RelationFunctionInstanceSetImplementation.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
+import { V1_buildRawLambdaWithResolvedPaths } from './helpers/V1_ValueSpecificationPathResolver.js';
 
 export class V1_ClassMappingSecondPassBuilder
   implements V1_ClassMappingVisitor<void>
@@ -390,18 +391,27 @@ export class V1_ClassMappingSecondPassBuilder
       ),
       RelationFunctionInstanceSetImplementation,
     );
-    relationFunctionInstanceSetImplementation.relationFunction =
-      guaranteeNonNullable(
-        this.context.graph.functions.find(
-          (fn) =>
-            generateFunctionPrettyName(fn, {
-              fullPath: true,
-              spacing: false,
-              notIncludeParamName: true,
-            }).replaceAll(/\s/gu, '') ===
-            classMapping.relationFunction.path.replaceAll(/\s/gu, ''),
-        ),
-      );
+    if (classMapping.relationFunction) {
+      relationFunctionInstanceSetImplementation.relationFunction =
+        guaranteeNonNullable(
+          this.context.graph.functions.find(
+            (fn) =>
+              generateFunctionPrettyName(fn, {
+                fullPath: true,
+                spacing: false,
+                notIncludeParamName: true,
+              }).replaceAll(/\s/gu, '') ===
+              classMapping.relationFunction!.path.replaceAll(/\s/gu, ''),
+          ),
+        );
+    } else if (classMapping.sourceLambda) {
+      relationFunctionInstanceSetImplementation.sourceLambda =
+        V1_buildRawLambdaWithResolvedPaths(
+          classMapping.sourceLambda.parameters,
+          classMapping.sourceLambda.body,
+          this.context,
+        );
+    }
     relationFunctionInstanceSetImplementation.propertyMappings =
       classMapping.propertyMappings.map((propertyMapping) =>
         propertyMapping.accept_PropertyMappingVisitor(

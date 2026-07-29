@@ -2985,3 +2985,94 @@ export const TEST_DATA__RelationFunctionMappingWithInlineEmbedded = [
     classifierPath: 'meta::pure::mapping::Mapping',
   },
 ];
+
+export const TEST_DATA__RelationFunctionMappingWithSourceLambda = [
+  ...TEST_DATA__RelationFunctionMappingCommonEntities,
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::Person',
+          id: 'person',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: { class: 'my::Person', property: 'firstName' },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'AGE',
+              property: { class: 'my::Person', property: 'age' },
+              source: 'person',
+            },
+          ],
+          sourceLambda: {
+            _type: 'lambda',
+            body: [{ _type: 'integer', value: 1 }],
+            parameters: [],
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
+export const TEST_DATA__RelationFunctionMappingWithValueFn = [
+  ...TEST_DATA__RelationFunctionMappingCommonEntities,
+  {
+    path: 'my::testMapping',
+    content: {
+      _type: 'mapping',
+      name: 'testMapping',
+      package: 'my',
+      classMappings: [
+        {
+          _type: 'relationFunction',
+          class: 'my::Person',
+          id: 'person',
+          primaryKey: [],
+          propertyMappings: [
+            {
+              _type: 'relationFunctionPropertyMapping',
+              column: 'FIRSTNAME',
+              property: { class: 'my::Person', property: 'firstName' },
+              source: 'person',
+            },
+            {
+              _type: 'relationFunctionPropertyMapping',
+              valueFn: {
+                _type: 'lambda',
+                body: [{ _type: 'integer', value: 1 }],
+                parameters: [],
+              },
+              property: { class: 'my::Person', property: 'age' },
+              source: 'person',
+            },
+          ],
+          relationFunction: {
+            path: 'my::personFunction():Relation<Any>[1]',
+            type: 'FUNCTION',
+          },
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];

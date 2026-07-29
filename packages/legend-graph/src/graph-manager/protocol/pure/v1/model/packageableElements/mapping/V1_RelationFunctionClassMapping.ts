@@ -30,20 +30,25 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../../../graph/Core_HashUtils.js';
 import type { V1_PropertyMapping } from './V1_PropertyMapping.js';
 import {
   type V1_ClassMappingVisitor,
   V1_ClassMapping,
 } from './V1_ClassMapping.js';
 import type { V1_PackageableElementPointer } from '../V1_PackageableElement.js';
+import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 
 export class V1_RelationFunctionClassMapping
   extends V1_ClassMapping
   implements Hashable
 {
-  relationFunction!: V1_PackageableElementPointer;
+  relationFunction?: V1_PackageableElementPointer | undefined;
+  sourceLambda?: V1_RawLambda | undefined;
   propertyMappings: V1_PropertyMapping[] = [];
   primaryKey: string[] = [];
 
@@ -57,6 +62,7 @@ export class V1_RelationFunctionClassMapping
       super.hashCode,
       hashArray(this.propertyMappings),
       hashArray(this.primaryKey),
+      hashRawLambda(this.sourceLambda?.parameters, this.sourceLambda?.body),
     ]);
   }
 }

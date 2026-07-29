@@ -27,6 +27,7 @@ import {
   observe_SetImplementation,
 } from './DSL_Mapping_ObserverHelper.js';
 import { observe_BindingTransformer } from './DSL_ExternalFormat_ObserverHelper.js';
+import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 
 export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
   (
@@ -37,12 +38,18 @@ export const observe_RelationFunctionPropertyMapping = skipObservedWithContext(
 
     makeObservable(metamodel, {
       column: observable,
+      valueFn: observable,
       bindingTransformer: observable,
       transformer: observable,
       hashCode: computed,
     });
 
-    observe_RelationColumn(metamodel.column);
+    if (metamodel.column) {
+      observe_RelationColumn(metamodel.column);
+    }
+    if (metamodel.valueFn) {
+      observe_RawLambda(metamodel.valueFn);
+    }
     if (metamodel.bindingTransformer) {
       observe_BindingTransformer(metamodel.bindingTransformer);
     }

@@ -16,7 +16,6 @@
 
 import {
   guaranteeNonEmptyString,
-  guaranteeNonNullable,
   IllegalStateError,
   isNonNullable,
   UnsupportedOperationError,
@@ -480,7 +479,11 @@ const transformClassMappingPropertyMappings = (
           value.relationalOperation,
         );
       } else if (value instanceof RelationFunctionPropertyMapping) {
-        return !isStubbed_RelationColumn(value.column);
+        return (
+          value.valueFn !== undefined ||
+          (value.column !== undefined &&
+            !isStubbed_RelationColumn(value.column))
+        );
       }
       const checkerResult = context.plugins
         .flatMap(
@@ -790,18 +793,31 @@ const transformAggregationAwarePropertyMapping = (
 const transformRelationFunctionPropertyMapping = (
   element: RelationFunctionPropertyMapping,
   isTransformingEmbeddedPropertyMapping: boolean,
+  context: V1_GraphTransformerContext,
 ): V1_RelationFunctionPropertyMapping => {
   const propertyMapping = new V1_RelationFunctionPropertyMapping();
-  propertyMapping.column = element.column.name;
-  if (element.transformer) {
-    propertyMapping.enumMappingId = element.transformer.valueForSerialization;
-  }
   if (element.bindingTransformer?.binding) {
     const bindingTransformer = new V1_BindingTransformer();
     bindingTransformer.binding = guaranteeNonEmptyString(
       element.bindingTransformer.binding.valueForSerialization,
     );
     propertyMapping.bindingTransformer = bindingTransformer;
+  }
+  if (element.valueFn) {
+    propertyMapping.valueFn =
+      element.valueFn.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawLambda;
+  } else if (element.column) {
+    propertyMapping.column = element.column.name;
+  }
+  if (element.transformer) {
+    propertyMapping.enumMappingId = element.transformer.valueForSerialization;
+  }
+  if (element.localMappingProperty) {
+    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
+      element.localMappingProperty,
+    );
   }
   propertyMapping.property = V1_transformPropertyReference(element.property, {
     isTransformingEmbeddedPropertyMapping:
@@ -812,12 +828,6 @@ const transformRelationFunctionPropertyMapping = (
     element.sourceSetImplementation.valueForSerialization;
   propertyMapping.target =
     element.targetSetImplementation?.valueForSerialization;
-  if (element.localMappingProperty) {
-    propertyMapping.localMappingProperty = transformLocalPropertyInfo(
-      element.localMappingProperty,
-    );
-  }
-  propertyMapping.column = element.column.name;
   return propertyMapping;
 };
 
@@ -992,6 +1002,7 @@ class PropertyMappingTransformer
     return transformRelationFunctionPropertyMapping(
       propertyMapping,
       this.isTransformingEmbeddedPropertyMapping,
+      this.context,
     );
   }
 
@@ -1294,23 +1305,28 @@ const transformRelationFunctionInstanceSetImplementation = (
   element: RelationFunctionInstanceSetImplementation,
   context: V1_GraphTransformerContext,
 ): V1_RelationFunctionClassMapping => {
-  const functionName = generateFunctionPrettyName(
-    guaranteeNonNullable(element.relationFunction),
-    {
-      fullPath: true,
-      spacing: false,
-      notIncludeParamName: true,
-    },
-  );
-
   const classMapping = new V1_RelationFunctionClassMapping();
-  classMapping.relationFunction = new V1_PackageableElementPointer(
-    PackageableElementPointerType.FUNCTION,
-    functionName,
-  );
+
   classMapping.id = mappingElementIdSerializer(element.id);
   classMapping.class = element.class.valueForSerialization ?? '';
   classMapping.root = element.root.valueForSerialization;
+
+  if (element.sourceLambda) {
+    classMapping.sourceLambda =
+      element.sourceLambda.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawLambda;
+  } else if (element.relationFunction) {
+    const functionName = generateFunctionPrettyName(element.relationFunction, {
+      fullPath: true,
+      spacing: false,
+      notIncludeParamName: true,
+    });
+    classMapping.relationFunction = new V1_PackageableElementPointer(
+      PackageableElementPointerType.FUNCTION,
+      functionName,
+    );
+  }
 
   classMapping.propertyMappings = transformClassMappingPropertyMappings(
     element.propertyMappings,
