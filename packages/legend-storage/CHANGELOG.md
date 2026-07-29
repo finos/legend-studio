@@ -1,5 +1,7 @@
 # @finos/legend-storage
 
+## 3.0.149
+
 ## 3.0.148
 
 ### Patch Changes

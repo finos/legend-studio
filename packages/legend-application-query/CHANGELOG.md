@@ -1,5 +1,14 @@
 # @finos/legend-application-query
 
+## 13.8.38
+
+### Patch Changes
+
+- [#5376](https://github.com/finos/legend-studio/pull/5376) [`3514904`](https://github.com/finos/legend-studio/commit/35149049434f0005816abe0d7b3855f9eb88f07e) ([@gs-gunjan](https://github.com/gs-gunjan)) - Improve the Legend AI suggestion experience across the service editor, data product editor, and query editors (create and rename dialogs):
+
+  - Log AI suggestion failures via telemetry with the error message (and the element path in Studio), so failures can be monitored. The error is still surfaced to the user as before; telemetry is added without changing existing behavior.
+  - When an AI suggestion fails with a 401 or 403 HTTP status, append an entitlements documentation link to the error message (driven by the shared `legend-ai.how-to-get-entitlements` documentation key) so users can discover how to resolve authorization issues.
+
 ## 13.8.37
 
 ## 13.8.36

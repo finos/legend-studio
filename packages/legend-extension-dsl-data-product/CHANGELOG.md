@@ -1,5 +1,20 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.102
+
+### Patch Changes
+
+- [#5388](https://github.com/finos/legend-studio/pull/5388) [`a7f9492`](https://github.com/finos/legend-studio/commit/a7f9492d1a42d08938c00576e90a956638772cc9) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed marketplace users getting unauthorized errors after their ~5 minute OIDC access token expired. Removed a duplicate silent token renewal in `LegendTokenSync` that raced with the OIDC library's own automatic renewal and could wipe out a valid token, and switched approve/deny, refresh, and request-access action handlers to read the latest token via a ref instead of one captured at render time.
+
+- [#5378](https://github.com/finos/legend-studio/pull/5378) [`0836cfd`](https://github.com/finos/legend-studio/commit/0836cfd077eb22d59a33899f1603fe083350c311) ([@bojja-gs](https://github.com/bojja-gs)) - Wire Python code generation and "Open in DataCube" into the Legend AI chat for lakehouse access points. Scope conversation history per access point to prevent cross-AP literal contamination. Add URL encoding for search.
+
+- [#5384](https://github.com/finos/legend-studio/pull/5384) [`2a7a2d2`](https://github.com/finos/legend-studio/commit/2a7a2d27b8674084562dbaff47d9e3af5c905657) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Make the `Producer Environment` and `Ingest Definition` columns in the data product Producer Info section deep-link to the external operational-view application when configured:
+
+  - Add an optional `operationalUrl` field to `DataProductConfig` — the base URL of the external operational-view app used to inspect a producer environment (and optionally a producer / ingest definition within it).
+  - Add `DataProductDataAccessState.generateOperationalUrlForIngestUrn(producerUrn?, ingestDefinitionUrn?)` which resolves `DataProductConfig.operationalUrl` + `lakehouseIngestEnv.ingestEnvironmentUrn` and returns `undefined` when either is missing (so callers can disable the click) or when `ingestDefinitionUrn` is supplied without a `producerUrn`.
+  - Extract the URL builder into a reusable `openOperationUrlLink(operationalUrl, ingestEnvironmentUrn, producerUrn?, ingestDefinitionUrn?)` utility in `DataProductIngestUtils`. The URL shape is `${operationalUrl}/environment/{ingestEnvironmentUrn}[/producer/{producerUrn}[/ingestDefinition/{ingestDefinitionUrn}]]`.
+  - Compute the best-guess `ingestDefinitionUrn` per ingestion dataset row (via `buildIngestDefinitionUrnFromDataset`) whenever the ingest env config is available, and use it to make the `Ingest Definition` cell clickable. The internal marketplace operations link remains as a PROD-only fallback.
+
 ## 0.0.101
 
 ### Patch Changes

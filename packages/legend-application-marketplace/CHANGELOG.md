@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.2.36
+
+### Patch Changes
+
+- [#5388](https://github.com/finos/legend-studio/pull/5388) [`a7f9492`](https://github.com/finos/legend-studio/commit/a7f9492d1a42d08938c00576e90a956638772cc9) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed marketplace users getting unauthorized errors after their ~5 minute OIDC access token expired. Removed a duplicate silent token renewal in `LegendTokenSync` that raced with the OIDC library's own automatic renewal and could wipe out a valid token, and switched approve/deny, refresh, and request-access action handlers to read the latest token via a ref instead of one captured at render time.
+
+- [#5378](https://github.com/finos/legend-studio/pull/5378) [`0836cfd`](https://github.com/finos/legend-studio/commit/0836cfd077eb22d59a33899f1603fe083350c311) ([@bojja-gs](https://github.com/bojja-gs)) - Wire Python code generation and "Open in DataCube" into the Legend AI chat for lakehouse access points. Scope conversation history per access point to prevent cross-AP literal contamination. Add URL encoding for search.
+
 ## 0.2.35
 
 ### Patch Changes
