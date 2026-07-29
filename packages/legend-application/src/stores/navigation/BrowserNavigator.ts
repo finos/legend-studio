@@ -179,7 +179,7 @@ export class BrowserNavigator implements ApplicationNavigator {
   }
 
   visitAddress(address: NavigationAddress): void {
-    this.window.open(address, '_blank');
+    this.window.open(address, '_blank', 'noopener');
   }
 
   generateAddress(location: NavigationLocation): string {
