@@ -241,5 +241,78 @@
     .selector-input--dark {
       max-width: 40rem;
     }
+
+    .textarea--ai-suggested {
+      border-color: var(--color-category-ai-suggestion) !important;
+      color: var(--color-category-ai-suggestion) !important;
+    }
+  }
+}
+
+.dataSpace-editor__ai-suggest-btn {
+  @include flexVCenter;
+
+  display: inline-flex;
+  gap: 0.4rem;
+  height: 2rem;
+  padding: 0 0.6rem;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 0.2rem;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  cursor: pointer;
+
+  svg {
+    font-size: 1.2rem;
+  }
+
+  &:hover {
+    background: var(--color-accent-hover);
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: default;
+  }
+}
+
+.dataSpace-editor__ai-suggestion-badge {
+  @include flexVCenter;
+
+  display: inline-flex;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-category-ai-suggestion);
+
+  svg {
+    font-size: 1.2rem;
+  }
+}
+
+.dataSpace-editor__ai-suggestion__actions {
+  @include flexVCenter;
+
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.dataSpace-editor__ai-suggestion__apply-btn {
+  height: 2.8rem;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+}
+
+.dataSpace-editor__ai-suggestion__dismiss-btn {
+  height: 2.8rem;
+  padding: 0 1rem;
+  font-size: 1.2rem;
+  background: var(--color-dark-grey-200);
+  color: var(--color-light-grey-200);
+
+  &:hover {
+    background: var(--color-dark-grey-250);
   }
 }
