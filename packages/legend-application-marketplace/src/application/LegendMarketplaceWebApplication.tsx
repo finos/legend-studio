@@ -327,11 +327,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
-              element={<LakehouseSDLCDataProduct />}
+              element={React.createElement(
+                useProtectedPage(LakehouseSDLCDataProduct),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LEGACY_DATA_PRODUCT}
-              element={<LegacyDataProduct />}
+              element={React.createElement(useProtectedPage(LegacyDataProduct))}
             />
             <Route
               path={
