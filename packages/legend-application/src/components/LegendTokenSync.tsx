@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { LogEvent } from '@finos/legend-shared';
 import { useApplicationStore } from './ApplicationStoreProvider.js';
@@ -24,10 +24,22 @@ import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
  * Must be rendered inside an `<AuthProvider>` and an
  * `<ApplicationStoreProvider>`.
  *
- * Keeps the in-memory token and cookie in sync with the OIDC provider
- * and proactively renews the access token before it expires so that
- * long-running sessions (e.g. Legend marketplace AI chat, query execution) never send
- * stale credentials.
+ * Keeps the in-memory token and cookie in sync with the OIDC provider.
+ *
+ * `react-oidc-context`'s `UserManager` already renews the access token
+ * automatically before it expires (`automaticSilentRenew`, on by default),
+ * and internally listens to its own `accessTokenExpiring`/`accessTokenExpired`
+ * events to do so. This component must NOT also call `auth.signinSilent()`
+ * on those same events — doing so previously caused two concurrent
+ * `signinSilent()` calls per renewal, racing to redeem the same (single-use)
+ * refresh token against the IdP, which surfaced as an intermittent `400` from
+ * the token endpoint and — because the losing call's failure handler cleared
+ * the token outright — as `401`s on API calls right around every token
+ * expiry, even when the other, winning renewal had actually succeeded.
+ *
+ * Instead, we only react passively to the outcome of the library's own
+ * renewal: sync the token when it changes, and clear it if the library
+ * reports the renewal ultimately failed (`SilentRenewError`).
  */
 export const LegendTokenSync = (props: {
   children: React.ReactNode;
@@ -36,18 +48,6 @@ export const LegendTokenSync = (props: {
   const applicationStore = useApplicationStore();
   const token = auth.user?.access_token;
   const expiresAt = auth.user?.expires_at;
-
-  const attemptSilentRenew = useCallback(async () => {
-    try {
-      await auth.signinSilent();
-    } catch {
-      applicationStore.logService.warn(
-        LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
-        'OIDC silent renewal failed — clearing token',
-      );
-      applicationStore.setAccessToken(undefined);
-    }
-  }, [auth, applicationStore]);
 
   // Sync token into ApplicationStore whenever it changes (including
   // after a successful automatic silent renewal).  When the auth object
@@ -61,33 +61,19 @@ export const LegendTokenSync = (props: {
     applicationStore.setAccessToken(token ?? undefined, maxAge);
   }, [applicationStore, token, expiresAt]);
 
+  // The library's automatic silent renewal (see UserManager's
+  // `automaticSilentRenew`) exhausted its own retries and gave up — only now
+  // do we clear the token, since sending it further would just 401.
   useEffect(() => {
-    const removeExpiring = auth.events.addAccessTokenExpiring(() => {
-      applicationStore.logService.info(
-        LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
-        'OIDC access token expiring soon — attempting silent renewal',
-      );
-      attemptSilentRenew().catch(() => {
-        /* handled inside attemptSilentRenew */
-      });
-    });
-    return removeExpiring;
-  }, [auth.events, applicationStore, attemptSilentRenew]);
-
-  // If the token fully expires (automatic renewal failed or was never
-  // attempted) make one last renewal attempt before giving up.
-  useEffect(() => {
-    const removeExpired = auth.events.addAccessTokenExpired(() => {
+    const removeSilentRenewError = auth.events.addSilentRenewError((err) => {
       applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.TOKEN_EXPIRED),
-        'OIDC access token expired — attempting silent renewal',
+        `OIDC silent renewal failed: ${err.message} — clearing token`,
       );
-      attemptSilentRenew().catch(() => {
-        /* handled inside attemptSilentRenew */
-      });
+      applicationStore.setAccessToken(undefined);
     });
-    return removeExpired;
-  }, [auth.events, applicationStore, attemptSilentRenew]);
+    return removeSilentRenewError;
+  }, [auth.events, applicationStore]);
 
   return <>{props.children}</>;
 };

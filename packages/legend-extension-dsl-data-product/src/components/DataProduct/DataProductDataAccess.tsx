@@ -2179,7 +2179,7 @@ export const DataProductAccessPointGroupViewer = observer(
             onClose={() => dataAccessState.setContractCreatorAPG(undefined)}
             apgState={apgState}
             dataAccessState={dataAccessState}
-            tokenProvider={() => auth.user?.access_token}
+            tokenProvider={() => tokenRef.current}
           />
         )}
         {dataContractViewerState && dataAccessState && (
@@ -2196,7 +2196,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 apgState.fetchUserAccessStatus(
                   apgState.associatedUserContract.guid,
                   dataAccessState.lakehouseContractServerClient,
-                  () => auth.user?.access_token,
+                  () => tokenRef.current,
                 );
               }
             }}

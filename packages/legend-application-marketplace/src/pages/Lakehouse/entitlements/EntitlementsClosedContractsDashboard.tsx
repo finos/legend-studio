@@ -31,7 +31,7 @@ import {
   FormGroup,
   Switch,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { startCase } from '@finos/legend-shared';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -69,6 +69,8 @@ export const EntitlementsClosedContractsDashboard = observer(
     } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const getDataProductUrl = useGetDataProductUrl();
 
     const myClosedContracts = useMemo(
@@ -120,15 +122,11 @@ export const EntitlementsClosedContractsDashboard = observer(
         const contract = selectedRow.data.contractResultLite;
         const isCompleted = contract.state === V1_ContractState.COMPLETED;
         dashboardState
-          .getContractErrors(
-            contract.guid,
-            auth.user?.access_token,
-            isCompleted,
-          )
+          .getContractErrors(contract.guid, tokenRef.current, isCompleted)
           .then((result) => setContractErrors(result))
           .catch(() => setContractErrors(undefined));
       }
-    }, [selectedRow, auth.user?.access_token, dashboardState]);
+    }, [selectedRow, dashboardState]);
 
     const selectedRowId = getSelectedRowId(selectedRow);
 
@@ -264,7 +262,7 @@ export const EntitlementsClosedContractsDashboard = observer(
                     await flowResult(
                       dashboardState.updateContract(
                         selectedContractGuid,
-                        auth.user?.access_token,
+                        tokenRef.current,
                       ),
                     );
                   },
