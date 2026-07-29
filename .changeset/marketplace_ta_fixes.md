@@ -1,6 +1,8 @@
 ---
 '@finos/legend-application-marketplace-deployment': patch
 '@finos/legend-application-marketplace': patch
+'@finos/legend-server-marketplace': patch
+'@finos/legend-art': patch
 ---
 
 Order Profile Add-to-Cart Fixes, Model-Aware Cart Logic & Add Service for Owned Terminals
