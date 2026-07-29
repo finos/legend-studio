@@ -1,5 +1,11 @@
 # @finos/legend-extension-application-studio-depot-dashboard
 
+## 0.1.85
+
+### Patch Changes
+
+- [#5380](https://github.com/finos/legend-studio/pull/5380) [`b8b986f`](https://github.com/finos/legend-studio/commit/b8b986ffbe787535eddcdac9854a402679f37faa) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add depot dashboard columns for whether a data product has a model access point group, whether any model access point group defines featured elements, and whether the data product has a native access point group.
+
 ## 0.1.84
 
 ## 0.1.83
