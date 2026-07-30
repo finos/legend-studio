@@ -26,7 +26,7 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   GraphManagerState,
@@ -52,6 +52,8 @@ export const WorkflowDataAccessRequestTask =
       const marketplaceBaseStore = useLegendMarketplaceBaseStore();
       const params = useParams<WorkflowDataAccessRequestPathParams>();
       const auth = useAuth();
+      const tokenRef = useRef(auth.user?.access_token);
+      tokenRef.current = auth.user?.access_token;
       const currentUser =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
 
@@ -125,7 +127,7 @@ export const WorkflowDataAccessRequestTask =
             );
 
             setWorkflowState(state);
-            await flowResult(state.init(auth.user?.access_token));
+            await flowResult(state.init(tokenRef.current));
           } catch (error) {
             assertErrorThrown(error);
             marketplaceBaseStore.applicationStore.notificationService.notifyError(
@@ -137,11 +139,11 @@ export const WorkflowDataAccessRequestTask =
         };
         // eslint-disable-next-line no-void
         void fetchAndInitialize();
-      }, [dataAccessRequestId, auth.user?.access_token, marketplaceBaseStore]);
+      }, [dataAccessRequestId, marketplaceBaseStore]);
 
       const handleRefresh = async (): Promise<void> => {
         if (workflowState) {
-          workflowState.init(auth.user?.access_token);
+          workflowState.init(tokenRef.current);
         }
       };
 

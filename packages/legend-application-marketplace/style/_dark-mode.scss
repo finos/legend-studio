@@ -3863,6 +3863,32 @@
     }
   }
 
+  // Lakehouse Admin
+  .marketplace-lakehouse-admin {
+    background: var(--color-dark-theme-bg-primary);
+    color: var(--color-dark-theme-text-primary);
+
+    .MuiTabs-root {
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      .MuiTabs-indicator {
+        background-color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    .MuiTab-root {
+      color: var(--color-dark-theme-text-muted);
+
+      &.Mui-selected {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      .MuiTypography-root {
+        color: inherit;
+      }
+    }
+  }
+
   // Lakehouse Entitlements
   .marketplace-lakehouse-entitlements-dashboard {
     background: var(--color-dark-theme-bg-primary);

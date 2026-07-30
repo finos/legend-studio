@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
+import { memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import {
   SparkleStarsIcon,
   CodeIcon,
@@ -32,10 +32,18 @@ import {
   DislikeIcon,
   ExternalLinkIcon,
   InfoCircleIcon,
+  PythonIcon,
+  JupyterIcon,
+  CubeIcon,
   MarkdownTextViewer,
   clsx,
 } from '@finos/legend-art';
-import { noop } from '@finos/legend-shared';
+import { assertErrorThrown, noop } from '@finos/legend-shared';
+import type {
+  LegendAIPythonQueryCode,
+  LegendAIPythonCodegenRequest,
+  LegendAIDataCubeQueryTranslationRequest,
+} from '../LegendAI_LegendApplicationPlugin_Extension.js';
 import {
   type LegendAIChatProps,
   type LegendAIAssistantMessage,
@@ -43,14 +51,20 @@ import {
   type LegendAIThinkingStep,
   type LegendAIScopeItem,
   type LegendAIQuestionIntent,
+  type LegendAIChatTelemetryEvent,
   LegendAIMessageFeedbackRating,
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
   TDSServiceSourceType,
+  LEGEND_AI_FEEDBACK_PROMPT,
   classifyQuestionIntentFast,
+  LegendAIChatTelemetryEventType,
+  LegendAITelemetryArtifact,
+  LegendAISuggestedQuerySource,
 } from '../LegendAITypes.js';
 import { useLegendAIChatState } from '../stores/LegendAIChatState.js';
+import { looksLikeAccessError } from '../stores/LegendAIChatProcessors.js';
 import { LegendAIResultGrid } from './LegendAIResultGrid.js';
 import { LegendAIAnalysisPanel } from './LegendAIAnalysisPanel.js';
 import { LegendAIChatInput } from './LegendAIChatInput.js';
@@ -60,6 +74,11 @@ export const LEGEND_AI_ANCHOR_ID = 'legend-ai-anchor';
 
 const COPY_FEEDBACK_DURATION_MS = 2000;
 const CONTEXT_BANNER_AUTO_DISMISS_MS = 20000;
+
+type LegendAIPythonCodeEntry =
+  | { status: 'loading' }
+  | { status: 'ready'; code: LegendAIPythonQueryCode | undefined }
+  | { status: 'error'; errorMessage: string };
 
 const LegendAIContextBanner = (props: {
   message: string;
@@ -211,26 +230,40 @@ export function renderStepStatusIcon(
   );
 }
 
-/**
- * Determines whether an execution error message indicates an access/permission
- * problem (as opposed to a SQL compilation or schema error). Only access-like
- * errors should show the "Request Access" button.
- */
-const ACCESS_ERROR_PATTERN =
-  /insufficient privileges|access.*denied|permission.*denied|not authorized|unauthorized|403|entitlement/i;
+const SuggestionButton = (props: {
+  query: string;
+  position: number;
+  className: string;
+  source: LegendAISuggestedQuerySource;
+  onSelect: (query: string) => void;
+  onLogTelemetryEvent?: (event: LegendAIChatTelemetryEvent) => void;
+}): React.ReactNode => {
+  const { query, position, className, source, onSelect, onLogTelemetryEvent } =
+    props;
+  return (
+    <button
+      type="button"
+      className={className}
+      onClick={(): void => {
+        onLogTelemetryEvent?.({
+          type: LegendAIChatTelemetryEventType.SUGGESTED_QUERY_CLICKED,
+          position,
+          source,
+        });
+        onSelect(query);
+      }}
+    >
+      {query}
+    </button>
+  );
+};
 
-function looksLikeAccessError(errorMsg: string | undefined): boolean {
-  if (!errorMsg) {
-    return false;
-  }
-  return ACCESS_ERROR_PATTERN.test(errorMsg);
-}
-
-const AssistantMessageView = (props: {
+const AssistantMessageView = memo(function AssistantMessageView(props: {
   msg: LegendAIAssistantMessage;
+  msgIndex: number;
   questionText: string;
   isThinkingVisible: boolean;
-  onToggleThinking: () => void;
+  onToggleThinking: (msgIndex: number) => void;
   onMessageFeedback?: (
     feedback: LegendAIMessageFeedback,
   ) => Promise<void> | void;
@@ -241,9 +274,15 @@ const AssistantMessageView = (props: {
   enghubDocUrl?: string;
   enthubRequestAccessUrl?: string;
   onRequestAccess?: (accessPointGroupTitle: string) => void;
-}): React.ReactNode => {
+  pythonEntry?: LegendAIPythonCodeEntry;
+  onRequestPython?: (msg: LegendAIAssistantMessage) => void;
+  onOpenInDataCube?: (msg: LegendAIAssistantMessage) => void;
+  isOpeningInDataCube?: boolean;
+  onLogTelemetryEvent?: (event: LegendAIChatTelemetryEvent) => void;
+}): React.ReactNode {
   const {
     msg,
+    msgIndex,
     questionText,
     isThinkingVisible,
     onToggleThinking,
@@ -255,6 +294,11 @@ const AssistantMessageView = (props: {
     enghubDocUrl,
     enthubRequestAccessUrl,
     onRequestAccess,
+    pythonEntry,
+    onRequestPython,
+    onOpenInDataCube,
+    isOpeningInDataCube,
+    onLogTelemetryEvent,
   } = props;
 
   const hasPermissionAccessLinks =
@@ -264,11 +308,19 @@ const AssistantMessageView = (props: {
   const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
     undefined,
   );
+  const [showPython, setShowPython] = useState(false);
+  const [pythonCopied, setPythonCopied] = useState(false);
+  const pythonCopyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   useEffect(
     () => () => {
       if (copyTimerRef.current !== undefined) {
         clearTimeout(copyTimerRef.current);
+      }
+      if (pythonCopyTimerRef.current !== undefined) {
+        clearTimeout(pythonCopyTimerRef.current);
       }
     },
     [],
@@ -278,6 +330,10 @@ const AssistantMessageView = (props: {
     if (msg.sql) {
       navigator.clipboard.writeText(msg.sql).catch(noop);
       setSqlCopied(true);
+      onLogTelemetryEvent?.({
+        type: LegendAIChatTelemetryEventType.ARTIFACT_COPIED,
+        artifact: LegendAITelemetryArtifact.SQL,
+      });
       if (copyTimerRef.current !== undefined) {
         clearTimeout(copyTimerRef.current);
       }
@@ -286,23 +342,64 @@ const AssistantMessageView = (props: {
         copyTimerRef.current = undefined;
       }, COPY_FEEDBACK_DURATION_MS);
     }
-  }, [msg.sql]);
+  }, [msg.sql, onLogTelemetryEvent]);
+
+  const handleCopyPython = useCallback(() => {
+    if (pythonEntry?.status === 'ready' && pythonEntry.code) {
+      navigator.clipboard.writeText(pythonEntry.code.code).catch(noop);
+      setPythonCopied(true);
+      onLogTelemetryEvent?.({
+        type: LegendAIChatTelemetryEventType.ARTIFACT_COPIED,
+        artifact: LegendAITelemetryArtifact.PYTHON,
+      });
+      if (pythonCopyTimerRef.current !== undefined) {
+        clearTimeout(pythonCopyTimerRef.current);
+      }
+      pythonCopyTimerRef.current = setTimeout(() => {
+        setPythonCopied(false);
+        pythonCopyTimerRef.current = undefined;
+      }, COPY_FEEDBACK_DURATION_MS);
+    }
+  }, [pythonEntry, onLogTelemetryEvent]);
+
+  const handleTogglePython = useCallback((): void => {
+    const opening = !showPython;
+    setShowPython(opening);
+    onLogTelemetryEvent?.({
+      type: LegendAIChatTelemetryEventType.PYTHON_CODE_TOGGLED,
+      shown: opening,
+    });
+    if (opening && !pythonEntry && onRequestPython) {
+      onLogTelemetryEvent?.({
+        type: LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED,
+      });
+      onRequestPython(msg);
+    }
+  }, [showPython, pythonEntry, onRequestPython, msg, onLogTelemetryEvent]);
 
   const canShowFeedback =
     !msg.isProcessing &&
     (msg.textAnswer !== null || msg.gridData !== null || msg.error !== null);
-  const visibleThinkingSteps = formatThinkingSteps(msg.thinkingSteps);
-  const { metadataContext, queryAnalysis } = splitCombinedAnswer(
-    msg.textAnswer,
+  const visibleThinkingSteps = useMemo(
+    () => formatThinkingSteps(msg.thinkingSteps),
+    [msg.thinkingSteps],
   );
-  const analysisSummary = (() => {
-    if (msg.gridData === null) {
-      return null;
-    }
-    return queryAnalysis ?? (metadataContext === null ? msg.textAnswer : null);
-  })();
-  const plainAnswer =
-    msg.gridData === null ? (metadataContext ?? msg.textAnswer) : null;
+  const { metadataContext, analysisSummary, plainAnswer } = useMemo(() => {
+    const split = splitCombinedAnswer(msg.textAnswer);
+    const gridAnalysisFallback =
+      split.metadataContext === null ? msg.textAnswer : null;
+    return {
+      metadataContext: split.metadataContext,
+      analysisSummary:
+        msg.gridData === null
+          ? null
+          : (split.queryAnalysis ?? gridAnalysisFallback),
+      plainAnswer:
+        msg.gridData === null
+          ? (split.metadataContext ?? msg.textAnswer)
+          : null,
+    };
+  }, [msg.textAnswer, msg.gridData]);
 
   const submitFeedback = useCallback(
     (rating: LegendAIMessageFeedbackRating): void => {
@@ -335,7 +432,7 @@ const AssistantMessageView = (props: {
               <button
                 type="button"
                 className="legend-ai__thinking-toggle"
-                onClick={onToggleThinking}
+                onClick={(): void => onToggleThinking(msgIndex)}
               >
                 <span className="legend-ai__thinking-toggle-icon">
                   {isThinkingVisible ? <CaretDownIcon /> : <CaretRightIcon />}
@@ -374,37 +471,51 @@ const AssistantMessageView = (props: {
         )}
 
         {msg.sql && (
-          <div className="legend-ai__sql-block">
-            <div className="legend-ai__sql-block-header">
-              <span className="legend-ai__sql-block-header-icon">
-                <CodeIcon />
-              </span>
-              <span>Generated SQL</span>
-              {msg.sqlGenTime && (
-                <span className="legend-ai__sql-block-time">
-                  {msg.sqlGenTime}s
+          <details
+            className="legend-ai__sql-details"
+            open={msg.gridData !== null}
+            onToggle={(event): void =>
+              onLogTelemetryEvent?.({
+                type: LegendAIChatTelemetryEventType.SQL_DETAILS_TOGGLED,
+                shown: event.currentTarget.open,
+              })
+            }
+          >
+            <summary className="legend-ai__sql-details-summary">
+              {msg.gridData === null ? 'Show the query I tried' : 'Query'}
+            </summary>
+            <div className="legend-ai__sql-block">
+              <div className="legend-ai__sql-block-header">
+                <span className="legend-ai__sql-block-header-icon">
+                  <CodeIcon />
                 </span>
-              )}
-              <button
-                type="button"
-                className="legend-ai__sql-copy-btn"
-                title="Copy SQL"
-                aria-label="Copy SQL"
-                onClick={handleCopySql}
-              >
-                {sqlCopied ? (
-                  <span className="legend-ai__sql-copy-btn--copied">
-                    <CheckIcon />
+                <span>Generated SQL</span>
+                {msg.sqlGenTime && (
+                  <span className="legend-ai__sql-block-time">
+                    {msg.sqlGenTime}s
                   </span>
-                ) : (
-                  <CopyIcon />
                 )}
-              </button>
+                <button
+                  type="button"
+                  className="legend-ai__sql-copy-btn"
+                  title="Copy SQL"
+                  aria-label="Copy SQL"
+                  onClick={handleCopySql}
+                >
+                  {sqlCopied ? (
+                    <span className="legend-ai__sql-copy-btn--copied">
+                      <CheckIcon />
+                    </span>
+                  ) : (
+                    <CopyIcon />
+                  )}
+                </button>
+              </div>
+              <div className="legend-ai__sql-scroll">
+                <pre className="legend-ai__sql-display">{msg.sql}</pre>
+              </div>
             </div>
-            <div className="legend-ai__sql-scroll">
-              <pre className="legend-ai__sql-display">{msg.sql}</pre>
-            </div>
-          </div>
+          </details>
         )}
 
         {msg.isExecuting && (
@@ -533,15 +644,16 @@ const AssistantMessageView = (props: {
               <span className="legend-ai__follow-up-label">
                 Try a data query:
               </span>
-              {msg.suggestedQueries.map((q) => (
-                <button
+              {msg.suggestedQueries.map((q, position) => (
+                <SuggestionButton
                   key={q}
-                  type="button"
+                  query={q}
+                  position={position}
                   className="legend-ai__follow-up-btn"
-                  onClick={(): void => onSuggestedQueryClick(q)}
-                >
-                  {q}
-                </button>
+                  source={LegendAISuggestedQuerySource.FOLLOW_UP}
+                  onSelect={onSuggestedQueryClick}
+                  {...(onLogTelemetryEvent ? { onLogTelemetryEvent } : {})}
+                />
               ))}
             </div>
           )}
@@ -561,10 +673,147 @@ const AssistantMessageView = (props: {
           </button>
         )}
 
+        {(onRequestPython || onOpenInDataCube) &&
+          !msg.isProcessing &&
+          (msg.sql !== null || msg.gridData !== null) && (
+            <div className="legend-ai__python-block">
+              <div className="legend-ai__cta-row">
+                {onRequestPython && (
+                  <button
+                    type="button"
+                    className="legend-ai__python-cta"
+                    onClick={handleTogglePython}
+                  >
+                    <PythonIcon />
+                    <span>
+                      {showPython
+                        ? 'Hide Python code'
+                        : 'Want the Python code for this query?'}
+                    </span>
+                    <span className="legend-ai__python-cta-caret">
+                      {showPython ? <CaretDownIcon /> : <CaretRightIcon />}
+                    </span>
+                  </button>
+                )}
+                {onOpenInDataCube && msg.sql !== null && (
+                  <button
+                    type="button"
+                    className="legend-ai__datacube-cta"
+                    onClick={(): void => {
+                      onLogTelemetryEvent?.({
+                        type: LegendAIChatTelemetryEventType.OPEN_IN_DATACUBE_CLICKED,
+                      });
+                      onOpenInDataCube(msg);
+                    }}
+                    disabled={isOpeningInDataCube}
+                    title="Open this query in DataCube"
+                    aria-label="Open this query in DataCube"
+                  >
+                    {isOpeningInDataCube ? (
+                      <LoadingIcon isLoading={true} />
+                    ) : (
+                      <CubeIcon />
+                    )}
+                    <span>
+                      {isOpeningInDataCube
+                        ? 'Opening in DataCube...'
+                        : 'Open in DataCube'}
+                    </span>
+                    <span className="legend-ai__datacube-cta-launch">
+                      <ExternalLinkIcon />
+                    </span>
+                  </button>
+                )}
+              </div>
+              {showPython && onRequestPython && (
+                <div className="legend-ai__python-panel">
+                  <div className="legend-ai__python-panel-header">
+                    <span className="legend-ai__python-panel-header-icon">
+                      <CodeIcon />
+                    </span>
+                    <span>Python</span>
+                    {pythonEntry?.status === 'ready' && pythonEntry.code && (
+                      <button
+                        type="button"
+                        className="legend-ai__sql-copy-btn"
+                        title="Copy Python code"
+                        aria-label="Copy Python code"
+                        onClick={handleCopyPython}
+                      >
+                        {pythonCopied ? (
+                          <span className="legend-ai__sql-copy-btn--copied">
+                            <CheckIcon />
+                          </span>
+                        ) : (
+                          <CopyIcon />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  {pythonEntry?.status === 'loading' && (
+                    <div className="legend-ai__python-panel-loading">
+                      <LoadingIcon isLoading={true} />
+                      <span>Generating Python…</span>
+                    </div>
+                  )}
+                  {pythonEntry?.status === 'error' && (
+                    <div className="legend-ai__python-panel-error">
+                      <span>
+                        Could not generate Python code. Try again in a moment.
+                      </span>
+                      <button
+                        type="button"
+                        className="legend-ai__permission-error-btn"
+                        onClick={(): void => {
+                          onLogTelemetryEvent?.({
+                            type: LegendAIChatTelemetryEventType.PYTHON_CODE_REQUESTED,
+                          });
+                          onRequestPython(msg);
+                        }}
+                      >
+                        Retry
+                      </button>
+                    </div>
+                  )}
+                  {pythonEntry?.status === 'ready' &&
+                    pythonEntry.code === undefined && (
+                      <div className="legend-ai__python-panel-loading">
+                        <span>
+                          Python code is not available for this data source.
+                        </span>
+                      </div>
+                    )}
+                  {pythonEntry?.status === 'ready' && pythonEntry.code && (
+                    <>
+                      <div className="legend-ai__sql-scroll">
+                        <pre className="legend-ai__sql-display">
+                          {pythonEntry.code.code}
+                        </pre>
+                      </div>
+                      {pythonEntry.code.notebookUrl && (
+                        <div className="legend-ai__python-panel-actions">
+                          <a
+                            className="legend-ai__permission-error-btn"
+                            href={pythonEntry.code.notebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <JupyterIcon />
+                            <span>Launch Notebook</span>
+                          </a>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
         {canShowFeedback && (
           <div className="legend-ai__message-feedback">
             <span className="legend-ai__message-feedback-label">
-              Did this answer your question?
+              {LEGEND_AI_FEEDBACK_PROMPT}
             </span>
             <div className="legend-ai__message-feedback-actions">
               <button
@@ -605,7 +854,7 @@ const AssistantMessageView = (props: {
       </div>
     </div>
   );
-};
+});
 
 export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
   const {
@@ -623,6 +872,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     onClose,
     onMinimize,
     onRequestAccess,
+    onOpenInDataCube,
     contextBannerMessage,
     onLogTelemetryEvent,
   } = props;
@@ -641,6 +891,26 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
     () => buildSuggestedQueries(services, metadata),
     [services, metadata],
   );
+  const overview = useMemo(() => {
+    const raw =
+      modelContext?.dataspaceDescription ?? metadata.description ?? '';
+    const summary = raw
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(
+        (line) =>
+          line.length > 0 && !line.startsWith('#') && !line.startsWith('|'),
+      )
+      .slice(0, 3)
+      .join(' ')
+      .slice(0, 300);
+    const entityCount = modelContext?.entities.length ?? 0;
+    const serviceCount =
+      metadata.serviceSummaries.length > 0
+        ? metadata.serviceSummaries.length
+        : services.length;
+    return { summary, entityCount, serviceCount };
+  }, [modelContext, metadata, services]);
   const hasServices = services.length > 0;
 
   const inferSuggestedQueryIntent = useCallback(
@@ -648,13 +918,154 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
       classifyQuestionIntentFast(query, hasServices).intent,
     [hasServices],
   );
-  const isDataProduct = services.some(
-    (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
+  const { isDataProduct, supportsPython, supportsDataCube } = useMemo(
+    () => ({
+      isDataProduct: services.some(
+        (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
+      ),
+      supportsPython: services.some((s) => plugin.supportsPythonCodegen(s)),
+      supportsDataCube: services.some((s) => plugin.supportsOpenInDataCube(s)),
+    }),
+    [services, plugin],
+  );
+  const [pythonCodeByMessageId, setPythonCodeByMessageId] = useState<
+    Map<string, LegendAIPythonCodeEntry>
+  >(new Map());
+  const pythonCodeByMessageIdRef = useRef(pythonCodeByMessageId);
+  pythonCodeByMessageIdRef.current = pythonCodeByMessageId;
+  const requestPythonCode = useCallback(
+    async (msg: LegendAIAssistantMessage): Promise<void> => {
+      const existing = pythonCodeByMessageIdRef.current.get(msg.id);
+      if (existing?.status === 'loading' || existing?.status === 'ready') {
+        return;
+      }
+      setPythonCodeByMessageId((prev) => {
+        const next = new Map(prev);
+        next.set(msg.id, { status: 'loading' });
+        return next;
+      });
+      const resolvedSet = new Set(msg.queriedAccessPoints);
+      const service =
+        services.find((s) => resolvedSet.has(s.pattern.replace(/^\//u, ''))) ??
+        services[0];
+      if (!service) {
+        setPythonCodeByMessageId((prev) => {
+          const next = new Map(prev);
+          next.set(msg.id, { status: 'ready', code: undefined });
+          return next;
+        });
+        return;
+      }
+      const msgIndex = state.messages.findIndex((m) => m.id === msg.id);
+      const previousUser =
+        msgIndex > 0 ? state.messages[msgIndex - 1] : undefined;
+      const question =
+        previousUser?.role === LegendAIMessageRole.USER
+          ? previousUser.text
+          : undefined;
+      const request: LegendAIPythonCodegenRequest = {
+        service,
+        config,
+        ...(dataProductCoordinates ? { dataProductCoordinates } : {}),
+        ...(question === undefined ? {} : { question }),
+        ...(msg.sql === null ? {} : { sql: msg.sql }),
+      };
+      try {
+        const code = await plugin.generatePythonQueryCodeAsync(request);
+        setPythonCodeByMessageId((prev) => {
+          const next = new Map(prev);
+          next.set(msg.id, { status: 'ready', code });
+          return next;
+        });
+      } catch (error) {
+        assertErrorThrown(error);
+        setPythonCodeByMessageId((prev) => {
+          const next = new Map(prev);
+          next.set(msg.id, { status: 'error', errorMessage: error.message });
+          return next;
+        });
+      }
+    },
+    [plugin, services, dataProductCoordinates, config, state.messages],
+  );
+  const [openingDataCubeMessageIds, setOpeningDataCubeMessageIds] = useState<
+    Set<string>
+  >(new Set());
+
+  // Resolves the AP, best-effort translates its SQL to a DataCube Pure query, and
+  // launches DataCube; on translation failure it opens on the bare access point.
+  const handleOpenInDataCubeMsg = useCallback(
+    async (msg: LegendAIAssistantMessage): Promise<void> => {
+      if (!onOpenInDataCube || msg.sql === null) {
+        return;
+      }
+      const accessPointName = msg.queriedAccessPoints[0];
+      if (accessPointName === undefined) {
+        return;
+      }
+      const service =
+        services.find(
+          (s) => s.pattern.replace(/^\//u, '') === accessPointName,
+        ) ?? services[0];
+      if (!service) {
+        return;
+      }
+      const dataProductPath = dataProductCoordinates?.data_product ?? '';
+      setOpeningDataCubeMessageIds((prev) => {
+        const next = new Set(prev);
+        next.add(msg.id);
+        return next;
+      });
+      const msgIndex = state.messages.findIndex((m) => m.id === msg.id);
+      const previousUser =
+        msgIndex > 0 ? state.messages[msgIndex - 1] : undefined;
+      const question =
+        previousUser?.role === LegendAIMessageRole.USER
+          ? previousUser.text
+          : undefined;
+      const request: LegendAIDataCubeQueryTranslationRequest = {
+        sql: msg.sql,
+        service,
+        dataProductPath,
+        config,
+        ...(question === undefined ? {} : { question }),
+      };
+      let pureQuery: string | undefined;
+      try {
+        pureQuery =
+          await plugin.translateAccessPointSqlToDataCubeQuery(request);
+      } catch (error) {
+        assertErrorThrown(error);
+      }
+      try {
+        onOpenInDataCube(accessPointName, pureQuery);
+      } finally {
+        setOpeningDataCubeMessageIds((prev) => {
+          if (!prev.has(msg.id)) {
+            return prev;
+          }
+          const next = new Set(prev);
+          next.delete(msg.id);
+          return next;
+        });
+      }
+    },
+    [
+      onOpenInDataCube,
+      plugin,
+      services,
+      dataProductCoordinates,
+      config,
+      state.messages,
+    ],
   );
   const [showContextBanner, setShowContextBanner] = useState(true);
   const dismissBanner = useCallback(() => setShowContextBanner(false), []);
   const hasMessages = state.messages.length > 0;
-  const scopes = isDataProduct ? [] : (availableScopes ?? DEFAULT_SCOPES);
+  const scopes = useMemo(
+    () => (isDataProduct ? [] : (availableScopes ?? DEFAULT_SCOPES)),
+    [isDataProduct, availableScopes],
+  );
   const [feedbackByMessageId, setFeedbackByMessageId] = useState<
     Map<string, LegendAIMessageFeedbackRating>
   >(new Map());
@@ -682,7 +1093,8 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
 
       try {
         await onMessageFeedback(feedback);
-      } catch {
+      } catch (error) {
+        assertErrorThrown(error);
         setFeedbackByMessageId((prev) => {
           const next = new Map(prev);
           next.delete(feedback.messageId);
@@ -697,6 +1109,25 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
       }
     },
     [onMessageFeedback],
+  );
+
+  const { toggleThinking, runFallbackAction, askQuestionWithIntent } = state;
+  const handleSuggestedQueryClick = useCallback(
+    (query: string): void =>
+      askQuestionWithIntent(query, inferSuggestedQueryIntent(query)),
+    [askQuestionWithIntent, inferSuggestedQueryIntent],
+  );
+  const handleRequestPython = useCallback(
+    (message: LegendAIAssistantMessage): void => {
+      requestPythonCode(message).catch(noop);
+    },
+    [requestPythonCode],
+  );
+  const handleOpenInDataCube = useCallback(
+    (message: LegendAIAssistantMessage): void => {
+      handleOpenInDataCubeMsg(message).catch(noop);
+    },
+    [handleOpenInDataCubeMsg],
   );
 
   return (
@@ -733,7 +1164,12 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
               className="legend-ai__header-action"
               title="Close"
               aria-label="Close"
-              onClick={onClose}
+              onClick={(): void => {
+                onLogTelemetryEvent?.({
+                  type: LegendAIChatTelemetryEventType.ASSISTANT_CLOSED,
+                });
+                onClose();
+              }}
             >
               <TimesIcon />
             </button>
@@ -757,21 +1193,40 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
             <div className="legend-ai__empty-text">
               Ask a question about your data
             </div>
+            {overview.summary.length > 0 && (
+              <div className="legend-ai__empty-overview">
+                {overview.summary}
+              </div>
+            )}
+            {(overview.entityCount > 0 || overview.serviceCount > 0) && (
+              <div className="legend-ai__empty-meta">
+                {overview.entityCount > 0 &&
+                  `${overview.entityCount} entit${
+                    overview.entityCount === 1 ? 'y' : 'ies'
+                  }`}
+                {overview.entityCount > 0 && overview.serviceCount > 0 && ' · '}
+                {overview.serviceCount > 0 &&
+                  `${overview.serviceCount} service${
+                    overview.serviceCount === 1 ? '' : 's'
+                  }`}
+              </div>
+            )}
             <div className="legend-ai__suggestions">
-              {suggestedQueries.map((q) => (
-                <button
+              {suggestedQueries.map((q, position) => (
+                <SuggestionButton
                   key={q}
-                  type="button"
+                  query={q}
+                  position={position}
                   className="legend-ai__suggestion-chip"
-                  onClick={(): void => {
+                  source={LegendAISuggestedQuerySource.STARTER}
+                  onSelect={(query): void =>
                     state.askQuestionWithIntent(
-                      q,
-                      inferSuggestedQueryIntent(q),
-                    );
-                  }}
-                >
-                  {q}
-                </button>
+                      query,
+                      inferSuggestedQueryIntent(query),
+                    )
+                  }
+                  {...(onLogTelemetryEvent ? { onLogTelemetryEvent } : {})}
+                />
               ))}
             </div>
           </div>
@@ -794,13 +1249,15 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
             previousMessage?.role === LegendAIMessageRole.USER
               ? previousMessage.text
               : '';
+          const messagePython = pythonCodeByMessageId.get(msg.id);
           return (
             <AssistantMessageView
               key={msg.id}
               msg={msg}
+              msgIndex={msgIndex}
               questionText={questionText}
               isThinkingVisible={isThinkingVisible}
-              onToggleThinking={(): void => state.toggleThinking(msgIndex)}
+              onToggleThinking={toggleThinking}
               onMessageFeedback={handleMessageFeedback}
               selectedFeedbackRating={feedbackByMessageId.get(msg.id)}
               feedbackSubmitting={pendingFeedbackByMessageId.has(msg.id)}
@@ -811,12 +1268,19 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
                 ? {}
                 : { enthubRequestAccessUrl: config.enthubRequestAccessUrl })}
               {...(onRequestAccess ? { onRequestAccess } : {})}
-              onFallbackAction={(messageId): void =>
-                state.runFallbackAction(messageId)
-              }
-              onSuggestedQueryClick={(q): void =>
-                state.askQuestionWithIntent(q, inferSuggestedQueryIntent(q))
-              }
+              {...(messagePython ? { pythonEntry: messagePython } : {})}
+              {...(supportsPython
+                ? { onRequestPython: handleRequestPython }
+                : {})}
+              {...(supportsDataCube && onOpenInDataCube
+                ? {
+                    onOpenInDataCube: handleOpenInDataCube,
+                    isOpeningInDataCube: openingDataCubeMessageIds.has(msg.id),
+                  }
+                : {})}
+              onFallbackAction={runFallbackAction}
+              onSuggestedQueryClick={handleSuggestedQueryClick}
+              {...(onLogTelemetryEvent ? { onLogTelemetryEvent } : {})}
             />
           );
         })}

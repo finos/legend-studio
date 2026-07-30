@@ -138,6 +138,42 @@ describe(unitTest('generateAndJudgeSql'), () => {
     expect(result).toBe('SELECT id FROM t');
   });
 
+  test('converges when judge returns only a cosmetic (case/whitespace) rewrite', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    let judgeCalls = 0;
+    const plugin = TEST__createMockLegendAIPlugin({
+      callLLM: createMock().mockResolvedValue('response'),
+      extractSqlFromResponse: () => ({
+        sql: 'SELECT id FROM t',
+        failure: null,
+      }),
+      extractJudgeResult: (): LegendAIJudgeResult => {
+        judgeCalls++;
+        return {
+          verdict: LegendAIJudgeVerdict.FAIL,
+          correctedSql: 'select   id   from   t',
+        };
+      },
+    });
+
+    const result = await generateAndJudgeSql(
+      'query',
+      TEST_DATA__legendAIServices,
+      'com.test:prod:1.0.0',
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+    );
+
+    expect(judgeCalls).toBe(1);
+    expect(result).toBe('select   id   from   t');
+  });
+
   test('returns best query after max attempts', async () => {
     const { setter } = TEST__createMockSetter();
     TEST__seedAssistant(setter);

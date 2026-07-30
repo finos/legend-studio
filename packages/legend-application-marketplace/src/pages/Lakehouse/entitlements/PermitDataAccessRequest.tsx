@@ -27,7 +27,7 @@ import {
 import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { Box, Button } from '@mui/material';
 import {
@@ -52,6 +52,8 @@ export const PermitDataAccessRequestTask =
       const marketplaceBaseStore = useLegendMarketplaceBaseStore();
       const params = useParams<WorkflowDataAccessRequestPathParams>();
       const auth = useAuth();
+      const tokenRef = useRef(auth.user?.access_token);
+      tokenRef.current = auth.user?.access_token;
       const currentUser =
         marketplaceBaseStore.applicationStore.identityService.currentUser;
 
@@ -105,7 +107,7 @@ export const PermitDataAccessRequestTask =
             );
 
             setPermitState(state);
-            await flowResult(state.init(auth.user?.access_token));
+            await flowResult(state.init(tokenRef.current));
           } catch (error) {
             assertErrorThrown(error);
             marketplaceBaseStore.applicationStore.notificationService.notifyError(
@@ -117,14 +119,14 @@ export const PermitDataAccessRequestTask =
         };
         // eslint-disable-next-line no-void
         void fetchAndInitialize();
-      }, [dataAccessRequestId, auth.user?.access_token, marketplaceBaseStore]);
+      }, [dataAccessRequestId, marketplaceBaseStore]);
 
       const handleRefresh = async (): Promise<void> => {
         if (permitState) {
           try {
             setIsLoading(true);
             permitState.initializationState.reset();
-            await flowResult(permitState.init(auth.user?.access_token));
+            await flowResult(permitState.init(tokenRef.current));
           } finally {
             setIsLoading(false);
           }
@@ -143,7 +145,7 @@ export const PermitDataAccessRequestTask =
             actionableTask.taskId,
             action,
             justification,
-            auth.user?.access_token,
+            tokenRef.current,
           ),
         );
         const label =

@@ -608,4 +608,99 @@ export class LegendMarketplaceTelemetryHelper {
       ...session,
     });
   }
+
+  static logEvent_AIAgentStart(
+    telemetryService: TelemetryService,
+    fromSearch: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_START,
+      { fromSearch, ...session },
+    );
+  }
+
+  static logEvent_AIAgentQuestionAsked(
+    telemetryService: TelemetryService,
+    questionLength: number,
+    isFollowUp: boolean,
+    scopeCount: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.AI_AGENT_QUESTION_ASKED,
+      { questionLength, isFollowUp, scopeCount, ...session },
+    );
+  }
+
+  static logEvent_AIAgentResponseReceived(
+    telemetryService: TelemetryService,
+    outcome: string,
+    rowCount: number,
+    durationInSeconds: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.AI_AGENT_RESPONSE_RECEIVED,
+      { outcome, rowCount, durationInSeconds, ...session },
+    );
+  }
+
+  static logEvent_AIAgentScopeAdded(
+    telemetryService: TelemetryService,
+    scopeCount: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.AI_AGENT_SCOPE_ADDED,
+      { scopeCount, ...session },
+    );
+  }
+
+  static logEvent_AIAgentScopeRemoved(
+    telemetryService: TelemetryService,
+    scopeCount: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.AI_AGENT_SCOPE_REMOVED,
+      { scopeCount, ...session },
+    );
+  }
+
+  static logEvent_AIAgentSuggestedQueryClicked(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_SUGGESTED_QUERY,
+      { ...session },
+    );
+  }
+
+  static logEvent_AIAgentClearChat(telemetryService: TelemetryService): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.AI_AGENT_CLEAR_CHAT,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AIAgentCopySql(telemetryService: TelemetryService): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_COPY_SQL,
+      { ...session },
+    );
+  }
 }

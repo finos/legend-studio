@@ -52,6 +52,51 @@ import { MockedMonacoEditorInstance } from '@finos/legend-lego/code-editor/test'
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { AP_EMPTY_DESC_WARNING } from '../DataProductEditor.js';
 
+const TEST_DATA__FUNCTION_ACCESS_POINT_WITH_PARAMETER = (() => {
+  const entities = JSON.parse(
+    JSON.stringify(TEST_DATA__LHDataProduct),
+  ) as typeof TEST_DATA__LHDataProduct;
+  const dataProductEntity = guaranteeNonNullable(
+    entities.find((entity) => entity.path === 'model::sampleDataProduct'),
+  );
+  type MutableFunctionAccessPointFixture = {
+    _type: string;
+    id: string;
+    func?: unknown;
+    query?: unknown;
+  };
+  const accessPointGroups = guaranteeNonNullable(
+    dataProductEntity.content.accessPointGroups,
+  );
+  const firstAccessPoint = guaranteeNonNullable(
+    accessPointGroups[0]?.accessPoints[0],
+  ) as MutableFunctionAccessPointFixture;
+  firstAccessPoint._type = 'functionAccessPoint';
+  firstAccessPoint.id = 'apWithParam';
+  delete firstAccessPoint.func;
+  firstAccessPoint.query = {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'integer',
+        value: 1,
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        name: 'type',
+        class: 'String',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+      },
+    ],
+  };
+  return entities;
+})();
+
 const pluginManager = LegendStudioPluginManager.create();
 pluginManager
   .usePresets([
@@ -253,6 +298,53 @@ test(
         renderResult.queryByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER),
       ).toBeNull();
     });
+  },
+);
+
+test(
+  integrationTest(
+    'Function access point query parameters are shown in data product testing',
+  ),
+  async () => {
+    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
+    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
+      MOCK__editorStore,
+      { entities: TEST_DATA__FUNCTION_ACCESS_POINT_WITH_PARAMETER },
+    );
+    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
+      readOnly: true,
+    });
+
+    await TEST__openElementFromExplorerTree(
+      'model::sampleDataProduct',
+      renderResult,
+    );
+
+    const editorGroup = await waitFor(() =>
+      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
+    );
+
+    fireEvent.click(await findByText(editorGroup, 'Testing'));
+    fireEvent.click(await findByText(editorGroup, 'Add Test Suite'));
+
+    const createSuiteDialog = screen.getByRole('dialog');
+    await findByText(createSuiteDialog, 'Create Test Suite');
+
+    const testNameInput = await findByPlaceholderText(
+      createSuiteDialog,
+      'e.g. test_1',
+    );
+    fireEvent.change(testNameInput, { target: { value: 'test_1' } });
+
+    fireEvent.mouseDown(
+      await findByText(createSuiteDialog, 'Select access point...'),
+    );
+    fireEvent.click(await screen.findByText('apWithParam'));
+
+    fireEvent.click(await findByText(createSuiteDialog, 'Create'));
+
+    await findByText(editorGroup, 'Parameters');
+    await findByText(editorGroup, 'type');
   },
 );
 

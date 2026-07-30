@@ -65,6 +65,7 @@
   --ai-shadow-dropdown: 0 8px 32px rgb(0 0 0 / 20%);
   --ai-bg-overlay-subtle: rgb(255 255 255 / 2%);
   --ai-bg-overlay-light: rgb(255 255 255 / 3%);
+  --ai-bg-overlay-mid: rgb(255 255 255 / 6%);
   --ai-bg-overlay-medium: rgb(255 255 255 / 8%);
   --ai-bg-highlight: rgb(37 99 235 / 10%);
   --ai-bg-error: rgb(239 68 68 / 8%);
@@ -209,7 +210,7 @@
 }
 
 .marketplace-agents__agent-card-logo {
-  max-height: 8rem;
+  max-height: 5.6rem;
   width: auto;
   object-fit: contain;
 }
@@ -238,10 +239,13 @@
 }
 
 .marketplace-agents__agent-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
   font-size: 1.3rem;
   font-weight: 600;
-  color: var(--ai-accent-primary);
   letter-spacing: 0.02rem;
+  color: var(--legend-marketplace-light-blue);
 }
 
 .marketplace-agents__chat-wrapper {
@@ -1014,7 +1018,7 @@
     color: var(--ai-text-secondary, var(--qai-text-secondary, inherit));
     background: var(
       --ai-bg-secondary,
-      var(--qai-bg-secondary, rgb(255 255 255 / 6%))
+      var(--qai-bg-secondary, var(--ai-bg-overlay-mid))
     );
     border: 1px solid var(--ai-border-action, var(--qai-border));
     border-radius: 0.6rem;
@@ -1040,7 +1044,7 @@
       color: var(--ai-text-secondary, var(--qai-text-secondary, inherit));
       background: var(
         --ai-bg-secondary,
-        var(--qai-bg-secondary, rgb(255 255 255 / 6%))
+        var(--qai-bg-secondary, var(--ai-bg-overlay-mid))
       );
       border-color: var(--ai-border-action, var(--qai-border));
 

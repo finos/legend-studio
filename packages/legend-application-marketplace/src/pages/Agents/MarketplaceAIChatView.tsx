@@ -93,6 +93,7 @@ const AssistantMessageView = observer(
     const handleCopySql = useCallback(() => {
       if (msg.sql) {
         navigator.clipboard.writeText(msg.sql).catch(noop());
+        store.logCopySql();
         setSqlCopied(true);
         if (copyTimerRef.current !== undefined) {
           clearTimeout(copyTimerRef.current);
@@ -102,7 +103,7 @@ const AssistantMessageView = observer(
           copyTimerRef.current = undefined;
         }, COPY_FEEDBACK_DURATION_MS);
       }
-    }, [msg.sql]);
+    }, [msg.sql, store]);
 
     return (
       <div className="legend-ai__msg legend-ai__msg--assistant">
@@ -385,6 +386,7 @@ export const MarketplaceAIChatView = observer(
 
     const handleSuggestedQueryClick = useCallback(
       (query: string): void => {
+        store.logSuggestedQueryClicked();
         store.setQuestionText(query);
         dispatchQuery(query);
       },

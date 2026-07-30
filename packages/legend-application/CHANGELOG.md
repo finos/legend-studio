@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.118
+
+### Patch Changes
+
+- [#5388](https://github.com/finos/legend-studio/pull/5388) [`a7f9492`](https://github.com/finos/legend-studio/commit/a7f9492d1a42d08938c00576e90a956638772cc9) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed marketplace users getting unauthorized errors after their ~5 minute OIDC access token expired. Removed a duplicate silent token renewal in `LegendTokenSync` that raced with the OIDC library's own automatic renewal and could wipe out a valid token, and switched approve/deny, refresh, and request-access action handlers to read the latest token via a ref instead of one captured at render time.
+
 ## 16.0.117
 
 ## 16.0.116

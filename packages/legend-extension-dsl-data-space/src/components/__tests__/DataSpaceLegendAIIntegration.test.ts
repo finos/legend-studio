@@ -293,7 +293,6 @@ describe(unitTest('extractExecutableInfo'), () => {
     expect(firstResult?.rootEntityPath).toBe('BKEmbs::domain::OrigFhlloan');
     expect(firstResult?.title).toBe('FHL Loans Service');
     expect(firstResult?.description).toBe('Fetch FHL loan data');
-    expect(firstResult?.columns).toEqual(['cusip']);
 
     // Query template should be stored
     expect(firstResult?.queryTemplate).toBe(

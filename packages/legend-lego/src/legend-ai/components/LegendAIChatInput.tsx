@@ -23,7 +23,11 @@ import {
   CheckIcon,
   clsx,
 } from '@finos/legend-art';
-import type { LegendAIChatState, LegendAIScopeItem } from '../LegendAITypes.js';
+import {
+  type LegendAIChatState,
+  type LegendAIScopeItem,
+  LEGEND_AI_DEFAULT_MODEL_LABEL,
+} from '../LegendAITypes.js';
 import { LegendAIScopeSelector } from './LegendAIScopeSelector.js';
 
 const MAX_TEXTAREA_HEIGHT = 160;
@@ -38,7 +42,7 @@ export const LegendAIChatInput = (props: {
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
 
   const modelLabel = useMemo(() => {
-    const modelName = state.selectedModelName ?? 'Auto';
+    const modelName = state.selectedModelName ?? LEGEND_AI_DEFAULT_MODEL_LABEL;
     return modelName.length > 18 ? `${modelName.slice(0, 17)}...` : modelName;
   }, [state.selectedModelName]);
 

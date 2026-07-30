@@ -22,13 +22,18 @@ import {
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
-  formatPreFiltersForContext,
   extractModelContext,
   buildEnrichedBusinessContext,
   findBestAlternateRoot,
   resolveEntitiesDeterministic,
   buildSemanticPropertyIndex,
   buildModelContextEnrichmentText,
+  buildModelCatalogText,
+  buildDataQueryApproachText,
+  rankEntities,
+  relaxExactStringFilters,
+  extractFilteredColumns,
+  buildProbedValueHints,
 } from '../LegendAIDocEnrichment.js';
 import {
   ClassDocumentationEntry,
@@ -626,41 +631,6 @@ describe(unitTest('extractLambdaPreFilters'), () => {
       },
     ];
     expect(extractLambdaPreFilters(body)).toEqual([]);
-  });
-});
-
-describe(unitTest('formatPreFiltersForContext'), () => {
-  test('returns empty string for no filters', () => {
-    expect(formatPreFiltersForContext([])).toBe('');
-  });
-
-  test('formats equality filter with short property name', () => {
-    const result = formatPreFiltersForContext([
-      {
-        property: 'FeSecCoverage.SymEntity.fsymId',
-        operator: 'equal',
-        value: 'D7HG0X-S',
-      },
-    ]);
-    expect(result).toBe("Pre-applied filters: fsymId = 'D7HG0X-S'");
-  });
-
-  test('formats isEmpty filter', () => {
-    const result = formatPreFiltersForContext([
-      { property: 'consEndDate', operator: 'isEmpty' },
-    ]);
-    expect(result).toBe('Pre-applied filters: consEndDate IS NULL (always)');
-  });
-
-  test('formats multiple filters', () => {
-    const result = formatPreFiltersForContext([
-      { property: 'consEndDate', operator: 'isEmpty' },
-      { property: 'factsetEntityId', operator: 'equal', value: '05J1CM-E' },
-      { property: 'Fe Mean', operator: 'isNotNull' },
-    ]);
-    expect(result).toBe(
-      "Pre-applied filters: consEndDate IS NULL (always); factsetEntityId = '05J1CM-E'; Fe Mean IS NOT NULL (post-filter)",
-    );
   });
 });
 
@@ -2048,6 +2018,24 @@ describe(unitTest('buildModelContextEnrichmentText'), () => {
     expect(result).toContain('asOfDate (StrictDate)');
   });
 
+  test('truncates executables beyond the cap and notes the omission', () => {
+    const EXEC_COUNT = 30;
+    const ctx: LegendAIModelContext = {
+      entities: [],
+      associations: [],
+      executables: Array.from({ length: EXEC_COUNT }, (_, i) => ({
+        title: `Service ${i}`,
+        rootEntityPath: `model::Entity${i}`,
+      })),
+    };
+    const result = buildModelContextEnrichmentText(ctx) ?? '';
+    expect(result).toContain('Available Executables');
+    expect(result).toContain('"Service 0"');
+    expect(result).toContain('"Service 24"');
+    expect(result).not.toContain('"Service 25"');
+    expect(result).toContain('(5 additional executables omitted)');
+  });
+
   test('prioritizes queryable entities over non-queryable', () => {
     const ctx: LegendAIModelContext = {
       entities: [
@@ -2387,6 +2375,60 @@ describe(unitTest('buildModelContextEnrichmentText'), () => {
     expect(result).toContain('Order.product');
   });
 
+  test('caps the service JOIN guide and notes the omission', () => {
+    const ctx: LegendAIModelContext = {
+      entities: [
+        {
+          path: 'model::Order',
+          name: 'Order',
+          properties: [
+            {
+              name: 'orderId',
+              type: 'String',
+              isCollection: false,
+              isOptional: false,
+            },
+            {
+              name: 'quantity',
+              type: 'Integer',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+      ],
+      associations: [
+        {
+          name: 'Order_Order',
+          leftEntity: 'model::Order',
+          rightEntity: 'model::Order',
+          leftProperty: 'parent',
+          rightProperty: 'children',
+        },
+      ],
+    };
+    const SVC_COUNT = 30;
+    const services: TDSServiceSchema[] = Array.from(
+      { length: SVC_COUNT },
+      (_, i) =>
+        ({
+          title: `JoinSvc ${i}`,
+          pattern: `/svc${i}`,
+          columns: [
+            { name: 'orderId', type: 'String' },
+            { name: 'quantity', type: 'Integer' },
+          ] as TDSColumnSchema[],
+          parameters: [],
+        }) as TDSServiceSchema,
+    );
+    const result = buildModelContextEnrichmentText(ctx, services) ?? '';
+    expect(result).toContain('Model-Aware Service JOIN Guide');
+    expect(result).toContain('**JoinSvc 0**');
+    expect(result).toContain('**JoinSvc 24**');
+    expect(result).not.toContain('**JoinSvc 25**');
+    expect(result).toContain('(5 additional services omitted)');
+  });
+
   test('shows same-entity hint when two services map to the same entity', () => {
     const ctx: LegendAIModelContext = {
       entities: [
@@ -2480,5 +2522,311 @@ describe(unitTest('buildModelContextEnrichmentText'), () => {
     ];
     const result = buildModelContextEnrichmentText(ctx, services) ?? '';
     expect(result).not.toContain('Model-Aware Service JOIN Guide');
+  });
+});
+
+describe(unitTest('buildModelCatalogText'), () => {
+  test('emits a comprehensive catalog: entities, columns, relationships, enums', () => {
+    const result = buildModelCatalogText(makeModelContext()) ?? '';
+    expect(result).toContain('# MODEL REFERENCE');
+    expect(result).toContain('### Customer');
+    expect(result).toContain('Stores customer information');
+    expect(result).toContain('- id: String [1]');
+    expect(result).toContain('- title: my::model::Title [0..1]');
+    expect(result).toContain('- orders: my::model::Order [*]');
+    expect(result).toContain('### Order');
+    expect(result).toContain('## Relationships');
+    expect(result).toContain(
+      'my::model::Customer.customer <-> my::model::Order.orders',
+    );
+    expect(result).toContain('## Enumerations (valid values)');
+    expect(result).toContain('Title: Mr, Mrs, Ms');
+  });
+
+  test('marks queryable and root-mapped entities and lists them first', () => {
+    const ctx: LegendAIModelContext = {
+      entities: [
+        {
+          path: 'my::model::Plain',
+          name: 'Plain',
+          properties: [
+            {
+              name: 'a',
+              type: 'String',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+        {
+          path: 'my::model::Root',
+          name: 'Root',
+          isQueryable: true,
+          isRootMapped: true,
+          properties: [
+            {
+              name: 'b',
+              type: 'String',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+      ],
+      associations: [],
+    };
+    const result = buildModelCatalogText(ctx) ?? '';
+    expect(result).toContain('### Root [queryable, root-mapped]');
+    expect(result).toContain('### Plain');
+    expect(result.indexOf('### Root')).toBeLessThan(
+      result.indexOf('### Plain'),
+    );
+  });
+
+  test('includes a "how to query" section with executables and their parameters', () => {
+    const ctx: LegendAIModelContext = {
+      entities: [
+        {
+          path: 'my::model::Customer',
+          name: 'Customer',
+          properties: [
+            {
+              name: 'id',
+              type: 'String',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+      ],
+      associations: [],
+      executables: [
+        {
+          title: 'All Customers',
+          description: 'Returns every customer.',
+          rootEntityPath: 'my::model::Customer',
+        },
+        {
+          title: 'Customer By Id',
+          rootEntityPath: 'my::model::Customer',
+          requiredParameters: [{ name: 'customerId', type: 'String' }],
+        },
+      ],
+    };
+    const result = buildModelCatalogText(ctx) ?? '';
+    expect(result).toContain('## How to query (available executables)');
+    expect(result).toContain('**All Customers** → Customer');
+    expect(result).toContain('Returns every customer.');
+    expect(result).toContain('Required parameters: customerId (String)');
+  });
+
+  test('bounds entity count and notes the omission for very large models', () => {
+    const entities = Array.from({ length: 50 }, (_, i) => ({
+      path: `my::model::E${i}`,
+      name: `E${i}`,
+      properties: [
+        { name: 'x', type: 'String', isCollection: false, isOptional: false },
+      ],
+    }));
+    const result = buildModelCatalogText({ entities, associations: [] }) ?? '';
+    expect(result).toContain('additional entities omitted');
+  });
+
+  test('returns undefined when the model context is empty', () => {
+    expect(
+      buildModelCatalogText({ entities: [], associations: [] }),
+    ).toBeUndefined();
+  });
+});
+
+describe(unitTest('buildDataQueryApproachText'), () => {
+  test('narrates the chosen root entity, its columns and related entities', () => {
+    const text =
+      buildDataQueryApproachText(
+        'show me customer companies',
+        makeModelContext(),
+      ) ?? '';
+    expect(text).toContain('**Customer**');
+    expect(text).toContain('Stores customer information');
+    expect(text).toContain('`companyName`');
+    expect(text).toContain('**Order**');
+  });
+
+  test('names the backing service when an executable maps to the root', () => {
+    const ctx: LegendAIModelContext = {
+      entities: [
+        {
+          path: 'my::model::Customer',
+          name: 'Customer',
+          isQueryable: true,
+          isRootMapped: true,
+          properties: [
+            {
+              name: 'id',
+              type: 'String',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+      ],
+      associations: [],
+      executables: [
+        {
+          title: 'All Customers',
+          rootEntityPath: 'my::model::Customer',
+        },
+      ],
+    };
+    const text = buildDataQueryApproachText('list customers', ctx) ?? '';
+    expect(text).toContain('**All Customers**');
+    expect(text).toContain('**Customer**');
+    expect(text).toContain('`id`');
+  });
+
+  test('returns undefined when there is no model to reason over', () => {
+    expect(
+      buildDataQueryApproachText('anything', {
+        entities: [],
+        associations: [],
+      }),
+    ).toBeUndefined();
+  });
+});
+
+describe(unitTest('rankEntities'), () => {
+  test('ranks the most relevant entity first (highest score)', () => {
+    const ranked = rankEntities(
+      'show me customer companies',
+      makeModelContext(),
+    );
+    expect(ranked.length).toBeGreaterThan(1);
+    expect(ranked[0]?.entity.name).toBe('Customer');
+    expect(ranked[0]?.score ?? 0).toBeGreaterThanOrEqual(ranked[1]?.score ?? 0);
+  });
+
+  test('boosts an entity when the question mentions one of its enum values', () => {
+    const ranked = rankEntities(
+      'records where title is Mrs',
+      makeModelContext(),
+    );
+    const customer = ranked.find((r) => r.entity.name === 'Customer');
+    const order = ranked.find((r) => r.entity.name === 'Order');
+    expect(customer).toBeDefined();
+    expect(customer?.score ?? 0).toBeGreaterThan(order?.score ?? 0);
+  });
+
+  test('boosts an entity via its executable required-parameter names', () => {
+    const ctx: LegendAIModelContext = {
+      entities: [
+        {
+          path: 'my::model::Sales',
+          name: 'Sales',
+          properties: [
+            {
+              name: 'amount',
+              type: 'Float',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+        {
+          path: 'my::model::Other',
+          name: 'Other',
+          properties: [
+            {
+              name: 'x',
+              type: 'String',
+              isCollection: false,
+              isOptional: false,
+            },
+          ],
+        },
+      ],
+      associations: [],
+      executables: [
+        {
+          title: 'Sales By Region',
+          rootEntityPath: 'my::model::Sales',
+          requiredParameters: [{ name: 'region', type: 'String' }],
+        },
+      ],
+    };
+    const ranked = rankEntities('sales for a region', ctx);
+    expect(ranked[0]?.entity.name).toBe('Sales');
+  });
+});
+
+describe(unitTest('relaxExactStringFilters'), () => {
+  test('relaxes exact string equality to case-insensitive contains', () => {
+    expect(relaxExactStringFilters("$x.geography == 'India'")).toBe(
+      "$x.geography->toLower()->contains('india')",
+    );
+  });
+
+  test('handles nested paths and ->toOne()', () => {
+    expect(relaxExactStringFilters("$m.a.geography->toOne() == 'High'")).toBe(
+      "$m.a.geography->toOne()->toLower()->contains('high')",
+    );
+  });
+
+  test('leaves numeric/date equality untouched', () => {
+    const q = '$x.urgency == 3';
+    expect(relaxExactStringFilters(q)).toBe(q);
+  });
+
+  test('returns the query unchanged when there is nothing to relax', () => {
+    const q = "$x.name->toLower()->contains('abc')";
+    expect(relaxExactStringFilters(q)).toBe(q);
+  });
+});
+
+describe(unitTest('buildEnrichedBusinessContext valid-value grounding'), () => {
+  test('surfaces enum values and filter guidance for the resolved root', () => {
+    const ctx = buildEnrichedBusinessContext(
+      'records where title is Mrs',
+      'my::model::Customer',
+      [],
+      makeModelContext(),
+    );
+    const hints =
+      ctx.businessContextMatch?.additionalNlModelContext?.map(
+        (h) => h.description,
+      ) ?? [];
+    const joined = hints.join('\n');
+    expect(joined).toContain('Valid values');
+    expect(joined).toContain('Mrs');
+    expect(joined.toLowerCase()).toContain('case-insensitive');
+  });
+});
+
+describe(unitTest('extractFilteredColumns'), () => {
+  test('extracts leaf columns from comparison and contains predicates', () => {
+    const query =
+      "X.all()->filter(x|($x.geography == 'India') && ($x.a.description->toLower()->contains('gdp')))->take(10)";
+    const cols = extractFilteredColumns(query);
+    expect(cols).toContain('geography');
+    expect(cols).toContain('description');
+  });
+
+  test('returns empty when there are no string/contains filters', () => {
+    expect(extractFilteredColumns('X.all()->take(10)')).toEqual([]);
+  });
+});
+
+describe(unitTest('buildProbedValueHints'), () => {
+  test('emits a probed_values hint listing the real values', () => {
+    const hints = buildProbedValueHints(
+      new Map([['geography', ['IN', 'US', 'DE']]]),
+    );
+    expect(hints).toHaveLength(1);
+    expect(hints[0]?.category).toBe('probed_values');
+    expect(hints[0]?.description).toContain("'geography'");
+    expect(hints[0]?.description).toContain('IN, US, DE');
+  });
+
+  test('skips columns with no probed values', () => {
+    expect(buildProbedValueHints(new Map([['x', []]]))).toEqual([]);
   });
 });

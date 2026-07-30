@@ -262,6 +262,41 @@ describe(unitTest('analyzeOrchestratorResults'), () => {
     expect(msg.suggestedQueries).toEqual([]);
     expect(msg.isProcessing).toBe(false);
   });
+
+  test('caps rows passed to the analysis LLM at MAX_ANALYSIS_ROWS', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const analyzeSpy = createMock().mockResolvedValue({
+      summary: 'ok',
+      suggestedQueries: [],
+      keyMetrics: [],
+      chartData: [],
+    });
+    const plugin = TEST__createMockLegendAIPlugin({
+      analyzeQueryResults: analyzeSpy,
+    });
+    const TOTAL_ROWS = 150; // exceeds MAX_ANALYSIS_ROWS (100)
+    const rows = Array.from({ length: TOTAL_ROWS }, (_, i) => ({ id: i }));
+
+    await analyzeOrchestratorResults(
+      'show trades',
+      'SELECT * FROM trades',
+      { columns: ['id'], rows },
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+    );
+    const firstCall = analyzeSpy.mock.calls[0] ?? [];
+    const passedRows = firstCall[3] as { id: number }[];
+    expect(passedRows).toHaveLength(100);
+    expect(passedRows[0]).toEqual({ id: 0 });
+    expect(passedRows[99]).toEqual({ id: 99 });
+  });
 });
 
 // ─── executePureQueryAndReport — error path ──────────────────────────────────
@@ -609,6 +644,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     const history = buildConversationHistory(messages);
@@ -638,6 +674,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     const history = buildConversationHistory(messages);
@@ -666,6 +703,7 @@ describe(unitTest('buildConversationHistory'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
+        queriedAccessPoints: [],
       },
     ];
     const history = buildConversationHistory(messages);

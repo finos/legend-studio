@@ -763,6 +763,7 @@ const MOCK__useAuth = jest.fn<
     events: {
       addAccessTokenExpiring: (cb: () => void) => () => void;
       addAccessTokenExpired: (cb: () => void) => () => void;
+      addSilentRenewError: (cb: (err: Error) => void) => () => void;
     };
   }
 >();
@@ -773,13 +774,16 @@ const createMockAuthEvents = (options?: {
   events: {
     addAccessTokenExpiring: (cb: () => void) => () => void;
     addAccessTokenExpired: (cb: () => void) => () => void;
+    addSilentRenewError: (cb: (err: Error) => void) => () => void;
     _fireExpiring: () => void;
     _fireExpired: () => void;
+    _fireSilentRenewError: (err: Error) => void;
   };
   signinSilent: () => Promise<unknown>;
 } => {
   const expiringCallbacks: (() => void)[] = [];
   const expiredCallbacks: (() => void)[] = [];
+  const silentRenewErrorCallbacks: ((err: Error) => void)[] = [];
   return {
     signinSilent: options?.signinSilent ?? (() => Promise.resolve()),
     events: {
@@ -801,8 +805,19 @@ const createMockAuthEvents = (options?: {
           }
         };
       },
+      addSilentRenewError: (cb: (err: Error) => void) => {
+        silentRenewErrorCallbacks.push(cb);
+        return () => {
+          const idx = silentRenewErrorCallbacks.indexOf(cb);
+          if (idx >= 0) {
+            silentRenewErrorCallbacks.splice(idx, 1);
+          }
+        };
+      },
       _fireExpiring: () => expiringCallbacks.forEach((cb) => cb()),
       _fireExpired: () => expiredCallbacks.forEach((cb) => cb()),
+      _fireSilentRenewError: (err: Error) =>
+        silentRenewErrorCallbacks.forEach((cb) => cb(err)),
     },
   };
 };
@@ -1092,7 +1107,7 @@ describe('LegendTokenSync', () => {
 
   test(
     integrationTest(
-      'attempts signinSilent when accessTokenExpiring event fires',
+      'does not call signinSilent when accessTokenExpiring fires (oidc-client-ts already handles renewal automatically, calling it again here would race it)',
     ),
     async () => {
       const signinSilent = jest.fn(() => Promise.resolve());
@@ -1117,18 +1132,14 @@ describe('LegendTokenSync', () => {
         mockEvents.events._fireExpiring();
       });
 
-      expect(signinSilent).toHaveBeenCalledTimes(1);
+      expect(signinSilent).not.toHaveBeenCalled();
     },
   );
 
   test(
-    integrationTest(
-      'clears token when accessTokenExpired fires and signinSilent fails',
-    ),
+    integrationTest('does not call signinSilent when accessTokenExpired fires'),
     async () => {
-      const signinSilent = jest.fn(() =>
-        Promise.reject(new Error('renewal failed')),
-      );
+      const signinSilent = jest.fn(() => Promise.resolve());
       const mockEvents = createMockAuthEvents({ signinSilent });
       MOCK__useAuth.mockReturnValue({
         user: { access_token: 'expired-token' },
@@ -1150,7 +1161,36 @@ describe('LegendTokenSync', () => {
         mockEvents.events._fireExpired();
       });
 
-      expect(signinSilent).toHaveBeenCalledTimes(1);
+      expect(signinSilent).not.toHaveBeenCalled();
+    },
+  );
+
+  test(
+    integrationTest(
+      'clears token when the OIDC library reports a silent renewal error',
+    ),
+    async () => {
+      const mockEvents = createMockAuthEvents();
+      MOCK__useAuth.mockReturnValue({
+        user: { access_token: 'expired-token' },
+        signinSilent: mockEvents.signinSilent,
+        events: mockEvents.events,
+      });
+
+      render(
+        <ApplicationStoreProvider store={appStore}>
+          <LegendTokenSync>
+            <div />
+          </LegendTokenSync>
+        </ApplicationStoreProvider>,
+      );
+
+      expect(appStore.getAccessToken()).toBe('expired-token');
+
+      await act(async () => {
+        mockEvents.events._fireSilentRenewError(new Error('renewal failed'));
+      });
+
       expect(appStore.getAccessToken()).toBeUndefined();
     },
   );

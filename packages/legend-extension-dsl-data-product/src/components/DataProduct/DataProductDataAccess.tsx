@@ -53,7 +53,6 @@ import {
   DataProductAccessType,
   extractElementNameFromPath,
   V1_AccessPointGroupReference,
-  V1_AdHocDeploymentDataProductOrigin,
   V1_AppDirProducer,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -67,7 +66,6 @@ import {
   V1_CStrictTime,
   V1_CString,
   type V1_DataProductArtifact,
-  V1_DataProductOriginType,
   type V1_EntitlementsDataProductDetails,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
@@ -159,7 +157,6 @@ import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
-const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
 const LAKEHOUSE_EXECUTE_PATH = '/lakehouse/v1/execute';
@@ -483,48 +480,6 @@ const DataCubeScreen = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
-    const openDataCube = (sourceData: object) => {
-      if (dataAccessState) {
-        DataProductTelemetryHelper.logEvent_OpenIntegratedProduct(
-          dataAccessState.applicationStore.telemetryService,
-          {
-            origin:
-              dataAccessState.entitlementsDataProductDetails.origin instanceof
-              V1_SdlcDeploymentDataProductOrigin
-                ? {
-                    type: DATAPRODUCT_TYPE.SDLC,
-                    groupId:
-                      dataAccessState.entitlementsDataProductDetails.origin
-                        .group,
-                    artifactId:
-                      dataAccessState.entitlementsDataProductDetails.origin
-                        .artifact,
-                    versionId:
-                      dataAccessState.entitlementsDataProductDetails.origin
-                        .version,
-                  }
-                : {
-                    type: DATAPRODUCT_TYPE.ADHOC,
-                  },
-            deploymentId:
-              dataAccessState.entitlementsDataProductDetails.deploymentId,
-            name: dataAccessState.entitlementsDataProductDetails.dataProduct
-              .name,
-            productIntegrationType: PRODUCT_INTEGRATION_TYPE.DATA_CUBE,
-            accessPointPath: (
-              (sourceData as Record<string, unknown>).paths as string[]
-            ).at(1),
-            environmentClassification:
-              dataAccessState.entitlementsDataProductDetails
-                .lakehouseEnvironment?.type,
-          },
-          undefined,
-        );
-      }
-      accessPointState.apgState.dataProductViewerState.openDataCube?.(
-        sourceData,
-      );
-    };
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
     }
@@ -550,46 +505,13 @@ const DataCubeScreen = observer(
       try {
         const dataCubeEnv = selectedEnvironment ?? resolvedUserEnv;
         assertNonNullable(dataCubeEnv, 'Env required to Open Data Cube');
-        const path =
-          accessPointState.apgState.dataProductViewerState.product.path;
-        const accessPointName = accessPointState.accessPoint.id;
-        const accessPointPath = [
-          guaranteeNonNullable(path),
-          guaranteeNonNullable(accessPointName),
-        ];
-        const deploymentId =
-          dataAccessState.entitlementsDataProductDetails.deploymentId;
-        const sourceData: Record<string, unknown> = {
-          _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
-          warehouse: DEFAULT_CONSUMER_WAREHOUSE,
-          environment: getIngestDeploymentServerConfigName(dataCubeEnv),
-          paths: accessPointPath,
-          deploymentId: deploymentId,
-        };
-        if (dataProductOrigin instanceof V1_SdlcDeploymentDataProductOrigin) {
-          sourceData.origin = {
-            _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
-            dpCoordinates: {
-              groupId: dataProductOrigin.group,
-              artifactId: dataProductOrigin.artifact,
-              versionId: dataProductOrigin.version,
-            },
-          };
-        } else if (
-          dataProductOrigin instanceof V1_AdHocDeploymentDataProductOrigin
-        ) {
-          sourceData.origin = {
-            _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
-          };
-        } else {
-          accessPointState.apgState.applicationStore.notificationService.notifyError(
-            new Error(
-              'Failed to open DataCube: unsupported data product origin.',
-            ),
-          );
-          return;
-        }
-        openDataCube(sourceData);
+        dataAccessState.openAccessPointInDataCube(
+          accessPointState.accessPoint.id,
+          guaranteeNonNullable(
+            getIngestDeploymentServerConfigName(dataCubeEnv),
+            'Environment name is required to open DataCube',
+          ),
+        );
       } catch (error) {
         assertErrorThrown(error);
         accessPointState.apgState.applicationStore.notificationService.notifyError(
@@ -867,6 +789,11 @@ type IngestionDataSetRow = {
   ingestDefinitionPath: string;
   appDirId: string;
   producerEnvironmentName: string;
+  // Best-guess ingest definition URN derived from the dataset's ingest
+  // definition path + producer. Used to deep-link into an ingest definition
+  // in the external operational view. `undefined` when we can't construct a
+  // URN (e.g. missing GAV / producer info).
+  ingestDefinitionUrn: string | undefined;
   // Location-relative path (no origin). Resolved against the current
   // application base address at click-time by the navigation service.
   operationsPath: string | undefined;
@@ -900,29 +827,35 @@ const collectIngestionDataSetsForApg = (
 
   return apgInfo.accessPointImplementations.flatMap((apImpl) =>
     apImpl.dependencyDatasets.map((ds) => {
+      // Best-guess ingest definition URN derived from the dataset's ingest
+      // definition path + producer. Available whenever the producer info on
+      // the dataset is sufficient to construct a URN, regardless of env
+      // classification — the URN embeds the env segment itself.
+      const ingestDefinitionUrn = ingestEnvironmentConfig
+        ? buildIngestDefinitionUrnFromDataset(
+            ds,
+            ingestEnvironmentConfig.environmentClassification,
+            gavCoordinates,
+            entitlementsDetails?.deploymentId ?? 0,
+          )
+        : undefined;
       let operationsPath: string | undefined;
-      // Only build the operations link for PROD data products: for non-prod
-      // environments we don't have a reliable way to construct the ingest URN.
+      // Only build the internal operations link for PROD data products: for
+      // non-prod environments we don't have a reliable way to resolve the
+      // ingest URN against the marketplace operations route.
       if (
         ingestEnvironmentConfig &&
         ingestEnvironmentConfig.environmentClassification ===
           V1_IngestEnvironmentClassification.PROD &&
         entitlementsDetails &&
-        producerEnvironmentName
+        producerEnvironmentName &&
+        ingestDefinitionUrn
       ) {
-        const ingestDefinitionUrn = buildIngestDefinitionUrnFromDataset(
-          ds,
-          ingestEnvironmentConfig.environmentClassification,
-          gavCoordinates,
-          entitlementsDetails.deploymentId,
+        operationsPath = buildIngestDefinitionOperationsPath(
+          ingestEnvironmentConfig.ingestEnvironmentUrn,
+          ingestDefinitionUrn,
+          producerEnvironmentName,
         );
-        if (ingestDefinitionUrn) {
-          operationsPath = buildIngestDefinitionOperationsPath(
-            ingestEnvironmentConfig.ingestEnvironmentUrn,
-            ingestDefinitionUrn,
-            producerEnvironmentName,
-          );
-        }
       }
       return {
         accessPointId: apImpl.id,
@@ -933,6 +866,7 @@ const collectIngestionDataSetsForApg = (
             ? String(ds.ingestDefinition.producer.appDirId)
             : '',
         producerEnvironmentName,
+        ingestDefinitionUrn,
         operationsPath,
       };
     }),
@@ -1009,6 +943,15 @@ export const ApgIngestionDataSetsScreen = observer(
     const openIngestQuery = apgState.dataProductViewerState.openIngestQuery;
     const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery && isOwner);
 
+    // Build the external operational-view URL for the producer environment.
+    // The URL is only available when both `DataProductConfig.operationalUrl`
+    // and the resolved `lakehouseIngestEnv.ingestEnvironmentUrn` are present;
+    // otherwise we fall back to plain text. The row's producer URN is
+    // appended so we deep-link into the correct producer within the env.
+    const handleOpenProducerEnvironment = (url: string): void => {
+      apgState.applicationStore.navigationService.navigator.visitAddress(url);
+    };
+
     const columnDefs: DataGridColumnDefinition<IngestionDataSetRow>[] = [
       {
         headerName: 'Access Point',
@@ -1021,6 +964,32 @@ export const ApgIngestionDataSetsScreen = observer(
         headerName: 'Producer Environment',
         field: 'producerEnvironmentName',
         flex: 1,
+        cellRenderer: (params: {
+          value: string | undefined;
+          data: IngestionDataSetRow | undefined;
+        }) => {
+          const value = params.value;
+          if (!value) {
+            return '';
+          }
+          const producerEnvironmentUrl =
+            dataAccessState?.generateOperationalUrlForIngestUrn(value);
+          if (!producerEnvironmentUrl) {
+            return value;
+          }
+          return (
+            <button
+              type="button"
+              className="data-product__viewer__producer-view__link-cell"
+              title={`Open producer environment\n${producerEnvironmentUrl}`}
+              onClick={() =>
+                handleOpenProducerEnvironment(producerEnvironmentUrl)
+              }
+            >
+              {value}
+            </button>
+          );
+        },
       },
       {
         headerName: 'Ingest Definition',
@@ -1031,9 +1000,35 @@ export const ApgIngestionDataSetsScreen = observer(
           data: IngestionDataSetRow | undefined;
         }) => {
           const value = params.value;
-          const path = params.data?.operationsPath;
           if (!value) {
             return '';
+          }
+          // Prefer the external operational-view URL (scoped to the
+          // producer + ingest definition) when we can build one; otherwise
+          // fall back to the internal marketplace operations path.
+          const producerName = params.data?.producerEnvironmentName;
+          const externalUrl = params.data?.ingestDefinitionUrn
+            ? dataAccessState?.generateOperationalUrlForIngestUrn(
+                producerName,
+                params.data.ingestDefinitionUrn,
+              )
+            : undefined;
+          const path = params.data?.operationsPath;
+          if (externalUrl) {
+            return (
+              <button
+                type="button"
+                className="data-product__viewer__producer-view__link-cell"
+                title={`Open ingest definition\n${externalUrl}`}
+                onClick={() =>
+                  apgState.applicationStore.navigationService.navigator.visitAddress(
+                    externalUrl,
+                  )
+                }
+              >
+                {value}
+              </button>
+            );
           }
           if (!path) {
             return value;
@@ -2184,7 +2179,7 @@ export const DataProductAccessPointGroupViewer = observer(
             onClose={() => dataAccessState.setContractCreatorAPG(undefined)}
             apgState={apgState}
             dataAccessState={dataAccessState}
-            tokenProvider={() => auth.user?.access_token}
+            tokenProvider={() => tokenRef.current}
           />
         )}
         {dataContractViewerState && dataAccessState && (
@@ -2201,7 +2196,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 apgState.fetchUserAccessStatus(
                   apgState.associatedUserContract.guid,
                   dataAccessState.lakehouseContractServerClient,
-                  () => auth.user?.access_token,
+                  () => tokenRef.current,
                 );
               }
             }}
