@@ -394,7 +394,9 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 recommendedItem={item}
                 onSelect={onAssociate}
                 isSelecting={isAssociating}
-                selectedItemId={associatingItemId}
+                {...(associatingItemId !== undefined && {
+                  selectedItemId: associatingItemId,
+                })}
               />
             ))}
           </Box>
@@ -429,7 +431,9 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 recommendedItem={item}
                 onSelect={onAssociate}
                 isSelecting={isAssociating}
-                selectedItemId={associatingItemId}
+                {...(associatingItemId !== undefined && {
+                  selectedItemId: associatingItemId,
+                })}
               />
             ))}
           </Box>
@@ -463,7 +467,9 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 recommendedItem={item}
                 onSelect={onAssociate}
                 isSelecting={isAssociating}
-                selectedItemId={associatingItemId}
+                {...(associatingItemId !== undefined && {
+                  selectedItemId: associatingItemId,
+                })}
               />
             ))}
           </Box>
@@ -783,11 +789,15 @@ export const RecommendedAddOnsModal = observer(
                     void handleAssociateTerminal(selectedItem);
                   },
                   isSelecting: isAssociating,
-                  selectedItemId: associatingItemId,
+                  ...(associatingItemId !== undefined && {
+                    selectedItemId: associatingItemId,
+                  }),
                 })}
                 {...(isPermissionOverride && {
                   permissionIdOverride: overridePermissionId,
-                  modelOverride: overrideModel,
+                  ...(overrideModel !== undefined && {
+                    modelOverride: overrideModel,
+                  }),
                 })}
               />
             ))}

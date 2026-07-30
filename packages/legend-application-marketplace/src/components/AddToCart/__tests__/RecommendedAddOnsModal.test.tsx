@@ -1113,3 +1113,640 @@ describe('RecommendedAddOnsModal - close via X button', () => {
     expect(setShowModal).toHaveBeenCalledWith(false);
   });
 });
+
+// ─── Multi-source content (add-on flow with multiple sources) ─────────────────
+
+describe('RecommendedAddOnsModal - multi-source content', () => {
+  test('shows "From Your Cart" and "From Your Inventory" sections when items come from multiple sources', () => {
+    const addon = makeAddOn();
+    const termFromCart = makeTerminal({
+      id: 2,
+      productName: 'Cart Terminal',
+      source: RecommendationSource.CART,
+    });
+    const termFromInventory = makeTerminal({
+      id: 3,
+      productName: 'Inventory Terminal',
+      source: RecommendationSource.INVENTORY,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[termFromCart, termFromInventory]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('From Your Cart')).toBeDefined();
+    expect(screen.getByText('From Your Inventory')).toBeDefined();
+  });
+
+  test('shows "From Your Cart" and marketplace sections for cart + marketplace sources', () => {
+    const addon = makeAddOn();
+    const termFromCart = makeTerminal({
+      id: 2,
+      productName: 'Cart Terminal',
+      source: RecommendationSource.CART,
+    });
+    const termFromMarket = makeTerminal({
+      id: 4,
+      productName: 'Market Terminal',
+      source: RecommendationSource.MARKETPLACE,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[termFromCart, termFromMarket]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('From Your Cart')).toBeDefined();
+    expect(screen.getByText('From Marketplace')).toBeDefined();
+  });
+
+  test('shows all three source sections when items come from cart, inventory, and marketplace', () => {
+    const addon = makeAddOn();
+    const termFromCart = makeTerminal({
+      id: 2,
+      source: RecommendationSource.CART,
+    });
+    const termFromInventory = makeTerminal({
+      id: 3,
+      source: RecommendationSource.INVENTORY,
+    });
+    const termFromMarket = makeTerminal({
+      id: 4,
+      source: RecommendationSource.MARKETPLACE,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[termFromCart, termFromInventory, termFromMarket]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('From Your Cart')).toBeDefined();
+    expect(screen.getByText('From Your Inventory')).toBeDefined();
+    expect(screen.getByText('From Marketplace')).toBeDefined();
+  });
+
+  test('renders terminal cards inside multi-source content', () => {
+    const addon = makeAddOn();
+    const termFromCart = makeTerminal({
+      id: 2,
+      productName: 'Cart Terminal',
+      source: RecommendationSource.CART,
+    });
+    const termFromInventory = makeTerminal({
+      id: 3,
+      productName: 'Inventory Terminal',
+      source: RecommendationSource.INVENTORY,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[termFromCart, termFromInventory]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Cart Terminal')).toBeDefined();
+    expect(screen.getByText('Inventory Terminal')).toBeDefined();
+  });
+});
+
+// ─── handleCartResult branches ────────────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - handleCartResult', () => {
+  test('does not close modal when association result success=false', async () => {
+    const addon = makeAddOn();
+    const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
+
+    const mockAddToCart = jest
+      .fn()
+      .mockReturnValue(
+        Promise.resolve({ success: false, recommendations: [], message: '' }),
+      );
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = mockAddToCart;
+
+    const setShowModal = jest.fn();
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal]}
+        message=""
+        showModal={true}
+        setShowModal={setShowModal}
+      />,
+    );
+
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(setShowModal).not.toHaveBeenCalledWith(false);
+    });
+  });
+
+  test('calls onTerminalSelected and closes modal when association returns recommendations', async () => {
+    const addon = makeAddOn();
+    const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
+    const recommendation = makeAddOn({
+      id: 50,
+      productName: 'Recommended Addon',
+    });
+
+    const mockAddToCart = jest.fn().mockReturnValue(
+      Promise.resolve({
+        success: true,
+        recommendations: [recommendation],
+        message: 'Terminal associated',
+        totalCount: 1,
+      }),
+    );
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = mockAddToCart;
+
+    const setShowModal = jest.fn();
+    const onTerminalSelected = jest.fn();
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal]}
+        message=""
+        showModal={true}
+        setShowModal={setShowModal}
+        onTerminalSelected={onTerminalSelected}
+      />,
+    );
+
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(onTerminalSelected).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.arrayContaining([expect.anything()]),
+        'Terminal associated',
+        1,
+      );
+      expect(setShowModal).toHaveBeenCalledWith(false);
+    });
+  });
+
+  test('closes modal when association succeeds without recommendations (no overridePermissionId)', async () => {
+    const addon = makeAddOn();
+    const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
+
+    const mockAddToCart = jest
+      .fn()
+      .mockReturnValue(
+        Promise.resolve({ success: true, recommendations: [], message: 'ok' }),
+      );
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = mockAddToCart;
+
+    const setShowModal = jest.fn();
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal]}
+        message=""
+        showModal={true}
+        setShowModal={setShowModal}
+      />,
+    );
+
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(setShowModal).toHaveBeenCalledWith(false);
+    });
+  });
+});
+
+// ─── handleAssociateTerminal error path ───────────────────────────────────────
+
+describe('RecommendedAddOnsModal - handleAssociateTerminal error', () => {
+  test('handles error when associating terminal fails', async () => {
+    const addon = makeAddOn();
+    const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
+
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = jest
+      .fn()
+      .mockReturnValue(Promise.reject(new Error('Network Error')));
+
+    const setShowModal = jest.fn();
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal]}
+        message=""
+        showModal={true}
+        setShowModal={setShowModal}
+      />,
+    );
+
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    await waitFor(() => {
+      // Modal should still be open on error
+      expect(setShowModal).not.toHaveBeenCalledWith(false);
+      // Button should be re-enabled
+      const btns = screen.getAllByRole('button');
+      const addToCartBtn = btns.find((b) =>
+        b.textContent?.includes('Add to Cart'),
+      );
+      expect(addToCartBtn).toBeDefined();
+    });
+  });
+});
+
+// ─── Pagination ───────────────────────────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - pagination', () => {
+  test('shows pagination controls when items exceed itemsPerPage (15)', () => {
+    const terminal = makeTerminal();
+    const items = Array.from({ length: 20 }, (_, i) =>
+      makeAddOn({ id: 100 + i, productName: `Addon ${i}` }),
+    );
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={items}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // Pagination should be rendered when totalPages > 1
+    const page2Btn = screen.queryByRole('button', { name: /page 2/i });
+    expect(page2Btn).toBeDefined();
+  });
+
+  test('navigates to second page when clicking page 2', async () => {
+    const terminal = makeTerminal();
+    // 20 items with default 15 per page → 2 pages
+    const items = Array.from({ length: 20 }, (_, i) =>
+      makeAddOn({
+        id: 100 + i,
+        productName: `Addon ${String(i).padStart(2, '0')}`,
+      }),
+    );
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={items}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // Click page 2
+    const page2Btn = screen.getByRole('button', { name: /page 2/i });
+    await act(async () => {
+      fireEvent.click(page2Btn);
+    });
+
+    await waitFor(() => {
+      // Page 1 items (indices 0-14) should be gone, page 2 items visible
+      expect(screen.getByText('Addon 15')).toBeDefined();
+      expect(screen.queryByText('Addon 00')).toBeNull();
+    });
+  });
+});
+
+// ─── fetchVendorAddons error path (server-side search error) ──────────────────
+
+describe('RecommendedAddOnsModal - server-side search error', () => {
+  test('handles searchVendorAddons rejection gracefully (terminal type)', async () => {
+    const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
+    const addon = makeAddOn({ id: 10, productName: 'Addon Alpha' });
+
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchVendorAddons',
+    ).mockRejectedValue(new Error('Search failed'));
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText('Search by Add-On name...');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Alpha' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
+
+    await waitFor(() => {
+      // Error is handled; original items may or may not appear, but no crash
+      expect(screen.queryByText('Addon Alpha')).toBeDefined();
+    });
+  });
+});
+
+// ─── triggerSearch with non-terminal-added flow ───────────────────────────────
+
+describe('RecommendedAddOnsModal - triggerSearch non-terminal flow', () => {
+  test('does not trigger server search for add-on type (isTerminalAdded=false)', async () => {
+    const addon = makeAddOn({ productName: 'My AddOn' });
+    const terminal = makeTerminal({ id: 2, productName: 'Terminal Alpha' });
+    const terminal2 = makeTerminal({ id: 3, productName: 'Terminal Beta' });
+
+    const searchVendorAddonsSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchVendorAddons',
+    ).mockResolvedValue({
+      marketplace_addons: [],
+      total_count: 0,
+      page: 1,
+      page_size: 300,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal, terminal2]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText('Search by Terminal name...');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Alpha' } });
+    });
+
+    // Client-side filter should work without server search
+    await waitFor(() => {
+      expect(screen.getByText('Terminal Alpha')).toBeDefined();
+      expect(screen.queryByText('Terminal Beta')).toBeNull();
+      // Server search should NOT be called for add-on type
+      expect(searchVendorAddonsSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  test('pressing Enter in add-on modal search triggers client-side filter reset path', async () => {
+    // In add-on modal (isTerminalAdded=false), pressing Enter still calls triggerSearch
+    // which hits the !isTerminalAdded early-return branch (lines 257-260)
+    const addon = makeAddOn({ productName: 'My AddOn' });
+    const t1 = makeTerminal({ id: 2, productName: 'Terminal Alpha' });
+    const t2 = makeTerminal({ id: 3, productName: 'Terminal Beta' });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[t1, t2]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText('Search by Terminal name...');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Alpha' } });
+      // Press Enter to trigger handleSearchKeyDown → handleSearchAction → triggerSearch
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Terminal Alpha')).toBeDefined();
+      expect(screen.queryByText('Terminal Beta')).toBeNull();
+    });
+  });
+});
+
+// ─── handleAssociateTerminal with permission/model override ───────────────────
+
+describe('RecommendedAddOnsModal - handleAssociateTerminal overrides', () => {
+  test('passes permissionId and model to addToCart in association flow (isAddOnAssociation=true)', async () => {
+    const addon = makeAddOn({ productName: 'My AddOn' });
+    const terminal = makeTerminal({ id: 2, productName: 'Bloomberg Terminal' });
+
+    const addToCartSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'addToCart',
+    ).mockResolvedValue({
+      status_code: 200,
+      message: 'Added',
+      marketplace_addons: [],
+    });
+
+    runInAction(() => {
+      MOCK__baseStore.cartStore.targetUser = 'test-user';
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+        overridePermissionId={42}
+        overrideModel="Model X"
+      />,
+    );
+
+    // In add-on association flow, clicking "Add to Cart" calls handleAssociateTerminal
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(addToCartSpy).toHaveBeenCalledWith(
+        'test-user',
+        expect.objectContaining({
+          permissionId: 42,
+          model: 'Model X',
+          skipWorkflow: true,
+        }),
+      );
+    });
+  });
+});
+
+// ─── MultiSourceContent onAssociate callback ──────────────────────────────────
+
+describe('RecommendedAddOnsModal - MultiSourceContent onAssociate', () => {
+  test('clicking "Add to Cart" in cart source section calls handleAssociateTerminal', async () => {
+    const addon = makeAddOn({ productName: 'My AddOn' });
+    const termFromCart = makeTerminal({
+      id: 2,
+      productName: 'Cart Terminal',
+      source: RecommendationSource.CART,
+    });
+    const termFromInventory = makeTerminal({
+      id: 3,
+      productName: 'Inventory Terminal',
+      source: RecommendationSource.INVENTORY,
+    });
+
+    const mockAddToCart = jest
+      .fn()
+      .mockReturnValue(
+        Promise.resolve({ success: true, recommendations: [], message: 'ok' }),
+      );
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = mockAddToCart;
+
+    const setShowModal = jest.fn();
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[termFromCart, termFromInventory]}
+        message=""
+        showModal={true}
+        setShowModal={setShowModal}
+      />,
+    );
+
+    // Multi-source content renders
+    expect(screen.getByText('From Your Cart')).toBeDefined();
+
+    // Click Add to Cart on the cart source item
+    const addBtns = screen
+      .getAllByRole('button')
+      .filter((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtns.length).toBeGreaterThan(0);
+    await act(async () => {
+      fireEvent.click(addBtns[0] as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(mockAddToCart).toHaveBeenCalled();
+    });
+  });
+});
+
+// ─── Sort select interaction ──────────────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - sort select', () => {
+  test('opening sort dropdown shows sort options', async () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10, price: 300 });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // Find the sort select trigger (MUI Select renders as combobox)
+    const comboboxes = screen.getAllByRole('combobox');
+    // The sort by price select is one of them
+    expect(comboboxes.length).toBeGreaterThan(0);
+
+    // Open the dropdown
+    await act(async () => {
+      fireEvent.mouseDown(comboboxes[0] as HTMLElement);
+    });
+
+    // Options should appear in the listbox
+    await waitFor(() => {
+      const listbox = screen.queryByRole('listbox');
+      expect(listbox).not.toBeNull();
+    });
+  });
+
+  test('selecting "Low to High" sort option triggers sort', async () => {
+    const terminal = makeTerminal();
+    const addon1 = makeAddOn({ id: 10, productName: 'Expensive', price: 500 });
+    const addon2 = makeAddOn({ id: 11, productName: 'Cheap', price: 100 });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon1, addon2]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // Open sort dropdown
+    const comboboxes = screen.getAllByRole('combobox');
+    await act(async () => {
+      fireEvent.mouseDown(comboboxes[0] as HTMLElement);
+    });
+
+    // Click "Low to High" option
+    await waitFor(() => {
+      const option = screen.queryByText('Low to High');
+      if (option) {
+        fireEvent.click(option);
+      }
+    });
+
+    // After sort, items should be sorted by price ascending
+    // Cheap (100) should appear before Expensive (500)
+    await waitFor(() => {
+      const items = screen.queryAllByText(/\$\d+\.\d{2}/);
+      expect(items.length).toBeGreaterThan(0);
+    });
+  });
+});

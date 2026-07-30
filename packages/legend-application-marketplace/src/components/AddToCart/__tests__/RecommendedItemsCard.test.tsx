@@ -310,15 +310,28 @@ describe('RecommendedItemsCard - association flow', () => {
     expect((btn as HTMLButtonElement).disabled).toBe(true);
   });
 
-  test('shows "Add to Cart" with CheckIcon for non-marketplace item (inventory/cart source)', () => {
+  test('shows "Add to Cart" with PlusIcon for non-marketplace item (inventory/cart source)', () => {
     const item = makeTerminalResult({
       id: 8,
       source: RecommendationSource.INVENTORY,
     });
     const onSelect = jest.fn();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
-    // Non-marketplace shows "Add to Cart" with CheckIcon (not PlusIcon)
+    // Non-marketplace shows "Add to Cart" with PlusIcon (same as marketplace items)
     expect(screen.getByText(/Add to Cart/)).toBeDefined();
+  });
+
+  test('shows "In Cart" badge for non-marketplace item already in cart', () => {
+    const item = makeTerminalResult({
+      id: 9,
+      source: RecommendationSource.INVENTORY,
+    });
+    MOCK__baseStore.cartStore.items[99] = [makeCartItem(9)];
+    render(
+      <RecommendedItemsCard recommendedItem={item} onSelect={jest.fn()} />,
+    );
+    expect(screen.getByText('In Cart')).toBeDefined();
+    expect(screen.queryByRole('button')).toBeNull();
   });
 
   test('clicking non-marketplace "Add to Cart" calls onSelect', async () => {

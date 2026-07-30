@@ -536,3 +536,125 @@ describe('LegendMarketplaceTerminalCard - modal chaining', () => {
     });
   });
 });
+
+// ─── handleViewCart ───────────────────────────────────────────────────────────
+
+describe('LegendMarketplaceTerminalCard - handleViewCart', () => {
+  test('clicking "View Cart" in the recommendations modal calls cartStore.setOpen(true)', async () => {
+    const item = makeTerminalResult({ productName: 'My Terminal' });
+    const recommendation = new TerminalResult();
+    recommendation.id = 99;
+    recommendation.category = 'Market Data';
+    recommendation.providerName = 'Bloomberg';
+    recommendation.productName = 'Extra Addon';
+    recommendation.price = 50;
+    recommendation.model = null;
+
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = jest.fn().mockReturnValue(
+      Promise.resolve({
+        success: true,
+        recommendations: [recommendation],
+        message: 'Terminal added',
+        totalCount: 1,
+      }),
+    );
+
+    const setOpenSpy = jest.fn();
+    (MOCK__baseStore.cartStore as unknown as Record<string, unknown>).setOpen =
+      setOpenSpy;
+
+    render(<LegendMarketplaceTerminalCard terminalResult={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByText(/Add to cart/));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Item Added Successfully')).toBeDefined();
+    });
+
+    // Click "View Cart" in the modal
+    fireEvent.click(screen.getByText('View Cart'));
+    expect(setOpenSpy).toHaveBeenCalledWith(true);
+  });
+});
+
+// ─── handleTerminalSelected ───────────────────────────────────────────────────
+
+describe('LegendMarketplaceTerminalCard - handleTerminalSelected', () => {
+  test('updates modal with new recommendations when terminal is selected from association flow', async () => {
+    // Set up an add-on card (category 'Market Data')
+    const addon = makeTerminalResult({
+      id: 1,
+      category: 'Market Data',
+      productName: 'My AddOn',
+    });
+
+    // First call: adding the add-on fails but returns terminals to select from
+    const terminal = new TerminalResult();
+    terminal.id = 10;
+    terminal.category = 'Vendor Profile';
+    terminal.providerName = 'Bloomberg';
+    terminal.productName = 'Bloomberg Terminal';
+    terminal.price = 500;
+    terminal.model = null;
+
+    // Second add-on recommendation after terminal association
+    const rec2 = new TerminalResult();
+    rec2.id = 20;
+    rec2.category = 'Market Data';
+    rec2.providerName = 'Bloomberg';
+    rec2.productName = 'New Addon';
+    rec2.price = 100;
+    rec2.model = null;
+
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addToCartWithAPI = jest
+      .fn()
+      .mockReturnValueOnce(
+        Promise.resolve({
+          success: false,
+          recommendations: [terminal],
+          message: 'Select a terminal',
+          totalCount: 1,
+        }),
+      )
+      .mockReturnValueOnce(
+        Promise.resolve({
+          success: true,
+          recommendations: [rec2],
+          message: 'Terminal associated',
+          totalCount: 1,
+        }),
+      );
+
+    render(<LegendMarketplaceTerminalCard terminalResult={addon} />);
+
+    // Click "Add to cart" for the add-on → opens modal with terminal to select
+    await act(async () => {
+      fireEvent.click(screen.getByText(/Add to cart/));
+    });
+
+    // Modal opens showing terminals
+    await waitFor(() => {
+      expect(screen.getByText('Unable to Add Item')).toBeDefined();
+      expect(screen.getByText('Bloomberg Terminal')).toBeDefined();
+    });
+
+    // Click "Add to Cart" on the terminal in the modal
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    // handleTerminalSelected is called → modal is updated with new recommendations
+    await waitFor(() => {
+      expect(screen.getByText('New Addon')).toBeDefined();
+    });
+  });
+});
