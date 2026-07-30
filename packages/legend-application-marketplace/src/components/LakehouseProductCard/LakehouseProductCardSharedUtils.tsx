@@ -26,6 +26,7 @@ import {
   DevelopmentLegendMarketplaceEnvState,
   ProdParallelLegendMarketplaceEnvState,
 } from '../../stores/LegendMarketplaceEnvState.js';
+import { getDataProductLicenseDisplayLabel } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import {
   getHumanReadableIngestEnvName,
   LakehouseDataProductOwnersTooltip,
@@ -164,7 +165,9 @@ export const LakehouseProductTags = observer(
         {productCardState.searchResult.licenseTo && (
           <Chip
             size="small"
-            label={productCardState.searchResult.licenseTo}
+            label={getDataProductLicenseDisplayLabel(
+              productCardState.searchResult.licenseTo,
+            )}
             title="License To"
             className="marketplace-lakehouse-data-product-card__license-to"
           />

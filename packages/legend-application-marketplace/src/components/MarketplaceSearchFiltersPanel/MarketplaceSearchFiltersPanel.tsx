@@ -22,13 +22,17 @@ import {
   ChevronRightIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
   SearchIcon,
   TimesIcon,
 } from '@finos/legend-art';
 import type { TaxonomyNode } from '@finos/legend-server-marketplace';
 import {
   type LegendMarketplaceSearchResultsStore,
+  DataProductLicenseFilter,
   DataProductSourceFilter,
+  getDataProductLicenseDisplayLabel,
+  TAXONOMY_UNDEFINED_NODE_ID,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
@@ -88,6 +92,8 @@ const TaxonomyTreeNode: React.FC<{
   const hasChildren = node.children.length > 0;
   const isSelected = store.selectedTaxonomyNodeIds.has(node.id);
 
+  // Taxonomy counts from the API are not filtered by source or license.
+  // Hide counts only for expanded parent nodes to avoid double-counting with children.
   const showCount = node.count > 0 && !(hasChildren && expanded);
 
   const handleToggleExpand = useCallback(
@@ -198,8 +204,9 @@ export const FilterCheckboxOption: React.FC<{
   label: string;
   checked: boolean;
   onChange: () => void;
-  count?: number;
-}> = observer(({ label, checked, onChange, count }) => (
+  count?: number | undefined;
+  tooltip?: string | undefined;
+}> = observer(({ label, checked, onChange, count, tooltip }) => (
   <div
     className="marketplace-search-filters-panel__section__option"
     role="button"
@@ -225,6 +232,12 @@ export const FilterCheckboxOption: React.FC<{
     <Typography className="marketplace-search-filters-panel__section__option__label">
       {label}
     </Typography>
+    {tooltip !== undefined && (
+      <InfoCircleIcon
+        className="marketplace-search-filters-panel__section__option__info"
+        title={tooltip}
+      />
+    )}
     {count !== undefined && count > 0 && (
       <span className="marketplace-search-filters-panel__count">{count}</span>
     )}
@@ -336,19 +349,34 @@ const renderTaxonomySearchResults = (
 const renderTaxonomyTree = (
   store: LegendMarketplaceSearchResultsStore,
   triggerSearch: () => void,
-): React.ReactNode => (
-  <div className="marketplace-search-filters-panel__tree">
-    {store.taxonomyTree.map((node) => (
+): React.ReactNode => {
+  const otherNode: TaxonomyNode = {
+    id: TAXONOMY_UNDEFINED_NODE_ID,
+    label: 'Undefined',
+    count: 0,
+    children: [],
+  };
+  return (
+    <div className="marketplace-search-filters-panel__tree">
+      {store.taxonomyTree.map((node) => (
+        <TaxonomyTreeNode
+          key={node.id}
+          node={node}
+          store={store}
+          depth={0}
+          onFilterChange={triggerSearch}
+        />
+      ))}
       <TaxonomyTreeNode
-        key={node.id}
-        node={node}
+        key={TAXONOMY_UNDEFINED_NODE_ID}
+        node={otherNode}
         store={store}
         depth={0}
         onFilterChange={triggerSearch}
       />
-    ))}
-  </div>
-);
+    </div>
+  );
+};
 
 export const MarketplaceSearchFiltersPanel: React.FC<{
   store: LegendMarketplaceSearchResultsStore;
@@ -443,6 +471,36 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                 />
               ))}
             </FilterSection>
+            <FilterSection title="Access">
+              {Object.values(DataProductLicenseFilter).map((value) => (
+                <FilterCheckboxOption
+                  key={value}
+                  label={getDataProductLicenseDisplayLabel(value)}
+                  checked={store.selectedLicenses.has(value)}
+                  tooltip={
+                    value === DataProductLicenseFilter.ENTERPRISE
+                      ? 'Data product available for firmwide use without requesting access'
+                      : value === DataProductLicenseFilter.LIMITED_ENTERPRISE
+                        ? 'Data product with some Access Point Groups available enterprise-wide; others require requesting access'
+                        : value === DataProductLicenseFilter.RESTRICTED
+                          ? 'Data product that requires requesting access before you can query it'
+                          : 'Data product with no license defined'
+                  }
+                  onChange={() => {
+                    const isSelected = store.selectedLicenses.has(value);
+                    store.toggleLicense(value);
+                    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+                      baseStore.applicationStore.telemetryService,
+                      'license',
+                      value,
+                      isSelected ? 'deselect' : 'select',
+                      store.searchQuery,
+                    );
+                    triggerSearch();
+                  }}
+                />
+              ))}
+            </FilterSection>
             {hasTree && (
               <FilterSection title="Taxonomy">
                 <div className="marketplace-search-filters-panel__search">
@@ -472,15 +530,34 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                     }}
                   />
                 </div>
-                {isSearchActive
-                  ? renderTaxonomySearchResults(
+                {isSearchActive ? (
+                  <>
+                    {renderTaxonomySearchResults(
                       flatSearchResults,
                       filterSearchTerm,
                       store,
                       baseStore,
                       triggerSearch,
-                    )
-                  : renderTaxonomyTree(store, triggerSearch)}
+                    )}
+                    {'other'.includes(filterSearchTerm.toLowerCase()) && (
+                      <div className="marketplace-search-filters-panel__tree">
+                        <TaxonomyTreeNode
+                          node={{
+                            id: TAXONOMY_UNDEFINED_NODE_ID,
+                            label: 'Undefined',
+                            count: 0,
+                            children: [],
+                          }}
+                          store={store}
+                          depth={0}
+                          onFilterChange={triggerSearch}
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  renderTaxonomyTree(store, triggerSearch)
+                )}
               </FilterSection>
             )}
           </>

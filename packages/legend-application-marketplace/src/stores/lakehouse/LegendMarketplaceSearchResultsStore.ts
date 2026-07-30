@@ -55,6 +55,8 @@ import {
 } from '@finos/legend-server-depot';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 
+export const TAXONOMY_UNDEFINED_NODE_ID = '__undefined__';
+
 export enum DataProductSort {
   DEFAULT = 'Default',
   NAME_ALPHABETICAL = 'Name A-Z',
@@ -71,10 +73,28 @@ export enum DataProductSourceFilter {
   INTERNAL = 'Internal',
 }
 
+export enum DataProductLicenseFilter {
+  ENTERPRISE = 'Enterprise',
+  LIMITED_ENTERPRISE = 'Limited Enterprise',
+  RESTRICTED = 'Restricted',
+  UNDEFINED = 'Undefined',
+}
+
+// Display label for a license value. The backend returns/expects
+// 'Limited Enterprise', but the UI should show 'Partial Enterprise' for it.
+// Used both for the license filter options and the license tag shown on
+// individual data product cards.
+export const getDataProductLicenseDisplayLabel = (license: string): string =>
+  license === DataProductLicenseFilter.LIMITED_ENTERPRISE
+    ? 'Partial Enterprise'
+    : license;
+
 export interface FilterCounts {
   lakehouse_count: number;
   legacy_count: number;
   external_source_count: number;
+  enterprise_license_count: number;
+  non_enterprise_license_count: number;
 }
 
 export enum SearchResultsViewMode {
@@ -94,7 +114,7 @@ export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
   readonly marketplaceServerClient: MarketplaceServerClient;
   searchQuery: string | undefined = undefined;
-  private _lastTaxonomyQuery: string | undefined = undefined;
+  private _lastTaxonomyQueryKey: string | undefined = undefined;
   useProducerSearch: boolean | undefined = undefined;
   semanticSearchProductCardStates: ProductCardState[] = [];
   producerSearchDataProductCardStates: ProductCardState[] = [];
@@ -107,10 +127,14 @@ export class LegendMarketplaceSearchResultsStore {
     new Set<DataProductTypeFilter>();
   selectedSources: Set<DataProductSourceFilter> =
     new Set<DataProductSourceFilter>();
+  selectedLicenses: Set<DataProductLicenseFilter> =
+    new Set<DataProductLicenseFilter>();
   filterCounts: FilterCounts = {
     lakehouse_count: 0,
     legacy_count: 0,
     external_source_count: 0,
+    enterprise_license_count: 0,
+    non_enterprise_license_count: 0,
   };
 
   page = 1;
@@ -136,54 +160,56 @@ export class LegendMarketplaceSearchResultsStore {
         ? SearchResultsViewMode.LIST
         : SearchResultsViewMode.TILE;
 
-    makeObservable<LegendMarketplaceSearchResultsStore, '_lastTaxonomyQuery'>(
-      this,
-      {
-        searchQuery: observable,
-        useProducerSearch: observable,
-        semanticSearchProductCardStates: observable,
-        producerSearchDataProductCardStates: observable,
-        producerSearchLegacyDataProductCardStates: observable,
-        sort: observable,
-        viewMode: observable,
-        taxonomyTree: observable,
-        selectedTaxonomyNodeIds: observable,
-        selectedDataProductTypes: observable,
-        selectedSources: observable,
-        filterCounts: observable,
-        _lastTaxonomyQuery: false,
-        setSearchQuery: action,
-        setUseProducerSearch: action,
-        page: observable,
-        itemsPerPage: observable,
-        totalItems: observable,
-        showAllProducts: observable,
-        hasFilteredDataProducts: observable,
-        setSemanticSearchProductCardStates: action,
-        setProducerSearchDataProductCardStates: action,
-        setProducerSearchLegacyDataProductCardStates: action,
-        setSort: action,
-        setViewMode: action,
-        setPage: action,
-        setItemsPerPage: action,
-        setTotalItems: action,
-        setShowAllProducts: action,
-        setHasFilteredDataProducts: action,
-        setTaxonomyTree: action,
-        setFilterCounts: action,
-        setSelectedTaxonomyNodeIds: action,
-        toggleTaxonomyNode: action,
-        simpleToggleTaxonomyNode: action,
-        toggleDataProductType: action,
-        toggleSource: action,
-        clearAllFilters: action,
-        filterSortProducts: computed,
-        isLoading: computed,
-        isOnLastPage: computed,
-        hasActiveFilters: computed,
-        executeSearch: flow,
-      },
-    );
+    makeObservable<
+      LegendMarketplaceSearchResultsStore,
+      '_lastTaxonomyQueryKey'
+    >(this, {
+      searchQuery: observable,
+      useProducerSearch: observable,
+      semanticSearchProductCardStates: observable,
+      producerSearchDataProductCardStates: observable,
+      producerSearchLegacyDataProductCardStates: observable,
+      sort: observable,
+      viewMode: observable,
+      taxonomyTree: observable,
+      selectedTaxonomyNodeIds: observable,
+      selectedDataProductTypes: observable,
+      selectedSources: observable,
+      selectedLicenses: observable,
+      filterCounts: observable,
+      _lastTaxonomyQueryKey: false,
+      setSearchQuery: action,
+      setUseProducerSearch: action,
+      page: observable,
+      itemsPerPage: observable,
+      totalItems: observable,
+      showAllProducts: observable,
+      hasFilteredDataProducts: observable,
+      setSemanticSearchProductCardStates: action,
+      setProducerSearchDataProductCardStates: action,
+      setProducerSearchLegacyDataProductCardStates: action,
+      setSort: action,
+      setViewMode: action,
+      setPage: action,
+      setItemsPerPage: action,
+      setTotalItems: action,
+      setShowAllProducts: action,
+      setHasFilteredDataProducts: action,
+      setTaxonomyTree: action,
+      setFilterCounts: action,
+      setSelectedTaxonomyNodeIds: action,
+      toggleTaxonomyNode: action,
+      simpleToggleTaxonomyNode: action,
+      toggleDataProductType: action,
+      toggleSource: action,
+      toggleLicense: action,
+      clearAllFilters: action,
+      filterSortProducts: computed,
+      isLoading: computed,
+      isOnLastPage: computed,
+      hasActiveFilters: computed,
+      executeSearch: flow,
+    });
   }
 
   setSearchQuery(query: string): void {
@@ -418,9 +444,18 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
+  toggleLicense(value: DataProductLicenseFilter): void {
+    if (this.selectedLicenses.has(value)) {
+      this.selectedLicenses.delete(value);
+    } else {
+      this.selectedLicenses.add(value);
+    }
+  }
+
   clearAllFilters(): void {
     this.selectedDataProductTypes.clear();
     this.selectedSources.clear();
+    this.selectedLicenses.clear();
     this.selectedTaxonomyNodeIds.clear();
   }
 
@@ -428,6 +463,7 @@ export class LegendMarketplaceSearchResultsStore {
     return (
       this.selectedDataProductTypes.size > 0 ||
       this.selectedSources.size > 0 ||
+      this.selectedLicenses.size > 0 ||
       this.selectedTaxonomyNodeIds.size > 0
     );
   }
@@ -493,7 +529,21 @@ export class LegendMarketplaceSearchResultsStore {
         `data_product_source=${Array.from(this.selectedSources).join(',')}`,
       );
     }
-    const taxonomyFilterIds = this.computeFilterNodeIds();
+    if (this.selectedLicenses.size > 0) {
+      // Map UNDEFINED → '' since the backend filters by empty string for unlicensed products.
+      const licenseValues = Array.from(this.selectedLicenses).map((l) =>
+        l === DataProductLicenseFilter.UNDEFINED ? '' : l,
+      );
+      filters.push(`license_to=${licenseValues.join(',')}`);
+    }
+    // Map TAXONOMY_UNDEFINED_NODE_ID to '' so the backend can filter for products
+    // with no taxonomy tags, the same way license_to='' handles undefined licenses.
+    const taxonomyFilterIds = this.computeFilterNodeIds().filter(
+      (id) => id !== TAXONOMY_UNDEFINED_NODE_ID,
+    );
+    if (this.selectedTaxonomyNodeIds.has(TAXONOMY_UNDEFINED_NODE_ID)) {
+      taxonomyFilterIds.push('');
+    }
     if (taxonomyFilterIds.length > 0) {
       filters.push(`taxonomy=${taxonomyFilterIds.join(',')}`);
     }
@@ -619,11 +669,10 @@ export class LegendMarketplaceSearchResultsStore {
         this.showAllProducts,
       );
 
-      const { productCardStates, response } = this.processRawSearchResults(
-        rawResults,
-        graphManager,
-        token,
-      );
+      const { productCardStates: rawProductCardStates, response } =
+        this.processRawSearchResults(rawResults, graphManager, token);
+
+      const productCardStates = rawProductCardStates;
 
       this.setTotalItems(response.metadata.total_count);
       this.setHasFilteredDataProducts(
@@ -631,16 +680,22 @@ export class LegendMarketplaceSearchResultsStore {
       );
       this.setSemanticSearchProductCardStates(productCardStates);
 
-      const isNewQuery = query !== this._lastTaxonomyQuery;
-      if (response.filters_metadata && isNewQuery) {
+      // Rebuild the taxonomy tree only when the query changes.
+      // Source and license filters are not applied to taxonomy counts by the backend,
+      // so there is no point keying on them.
+      if (response.filters_metadata && query !== this._lastTaxonomyQueryKey) {
         this.setTaxonomyTree(response.filters_metadata.taxonomy_tree);
-        this._lastTaxonomyQuery = query;
+        this._lastTaxonomyQueryKey = query;
       }
 
       this.setFilterCounts({
         lakehouse_count: response.metadata.lakehouse_count ?? 0,
         legacy_count: response.metadata.legacy_count ?? 0,
         external_source_count: response.metadata.external_source_count ?? 0,
+        enterprise_license_count:
+          response.metadata.enterprise_license_count ?? 0,
+        non_enterprise_license_count:
+          response.metadata.non_enterprise_license_count ?? 0,
       });
     } finally {
       this.executingSemanticSearchState.complete();

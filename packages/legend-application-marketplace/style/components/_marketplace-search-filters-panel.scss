@@ -106,6 +106,18 @@
         line-height: 1.5;
         user-select: none;
       }
+
+      &__info {
+        font-size: 1.2rem;
+        color: var(--marketplace-text-muted);
+        flex-shrink: 0;
+        cursor: help;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: var(--marketplace-text-primary);
+        }
+      }
     }
   }
 
