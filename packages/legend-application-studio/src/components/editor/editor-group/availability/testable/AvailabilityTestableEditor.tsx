@@ -21,6 +21,7 @@ import {
   BlankPanelPlaceholder,
   clsx,
   ContextMenu,
+  CustomSelectorInput,
   Dialog,
   MenuContent,
   MenuContentItem,
@@ -72,38 +73,45 @@ import {
   TestAssertionResultViewer,
 } from '../../testable/TestableSharedComponents.js';
 import { TEST_ASSERTION_TAB } from '../../../../../stores/editor/editor-state/element-editor-state/testable/TestAssertionState.js';
-import { RelationElementsDataEditor } from '../../data-editor/RelationElementsDataEditor.js';
+import { RelationElementEditor } from '../../data-editor/RelationElementsDataEditor.js';
 import { validateTestableId } from '../../../../../stores/editor/utils/TestableUtils.js';
 
 // ─── Format helpers ─────────────────────────────────────────────────────────
 
-const FORMAT_VALUES = Object.values(
+interface FormatOption {
+  label: string;
+  value: AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT;
+}
+
+const FORMAT_OPTIONS: FormatOption[] = Object.values(
   AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT,
-) as AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT[];
+).map((format) => ({ label: format, value: format }));
 
 const FormatSelector = observer(
   (props: {
     value: AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT;
     onChange: (v: AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT) => void;
     disabled?: boolean;
+    darkMode?: boolean;
   }) => {
-    const { value, onChange, disabled } = props;
+    const { value, onChange, disabled, darkMode } = props;
+    const selectedOption =
+      FORMAT_OPTIONS.find((option) => option.value === value) ?? null;
     return (
       <div className="availability-test-editor__format-selector">
-        {FORMAT_VALUES.map((format) => (
-          <button
-            key={format}
-            type="button"
-            className={clsx('availability-test-editor__format-btn', {
-              'availability-test-editor__format-btn--active': value === format,
-            })}
-            onClick={(): void => onChange(format)}
-            disabled={disabled}
-            title={`Use ${format} watermark format`}
-          >
-            {format}
-          </button>
-        ))}
+        <CustomSelectorInput
+          options={FORMAT_OPTIONS}
+          onChange={(option: FormatOption | null): void => {
+            if (option) {
+              onChange(option.value);
+            }
+          }}
+          value={selectedOption}
+          placeholder="Select watermark format"
+          isClearable={false}
+          darkMode={darkMode ?? true}
+          disabled={disabled}
+        />
       </div>
     );
   },
@@ -192,7 +200,14 @@ const CreateSuiteModal = observer(
               <div className="panel__content__form__section__header__prompt">
                 This format is fixed for the life of the test.
               </div>
-              <FormatSelector value={format} onChange={setFormat} />
+              <FormatSelector
+                value={format}
+                onChange={setFormat}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
             </div>
           </ModalBody>
           <ModalFooter>
@@ -281,7 +296,14 @@ const CreateTestModal = observer(
               <div className="panel__content__form__section__header__prompt">
                 This format is fixed for the life of the test.
               </div>
-              <FormatSelector value={format} onChange={setFormat} />
+              <FormatSelector
+                value={format}
+                onChange={setFormat}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+              />
             </div>
           </ModalBody>
           <ModalFooter>
@@ -305,25 +327,6 @@ const CreateTestModal = observer(
 
 // ─── Availability expected-JSON editor ──────────────────────────────────────
 
-const addExpectedEntry = (testState: AvailabilityTestState): void => {
-  switch (testState.format) {
-    case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.DEFAULT:
-      testState.addExpectedArrayEntryAtPath([
-        'evaluatedWatermark',
-        'watermarkBatches',
-      ]);
-      return;
-    case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.LITE:
-      testState.addExpectedArrayEntryAtPath([]);
-      return;
-    case AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT.ALLOY_QUERY:
-      testState.addAlloyQueryEntry();
-      return;
-    default:
-      return;
-  }
-};
-
 const ExpectedJsonEditor = observer(
   (props: { testState: AvailabilityTestState }) => {
     const { testState } = props;
@@ -332,7 +335,7 @@ const ExpectedJsonEditor = observer(
     const [editorRefreshNonce, setEditorRefreshNonce] = useState(0);
 
     const handleAdd = (): void => {
-      addExpectedEntry(testState);
+      testState.addExpectedEntry();
       // Force a lightweight rerender/remount so Monaco reflects external
       // state updates immediately (without tab switching).
       setEditorRefreshNonce((val) => val + 1);
@@ -490,9 +493,9 @@ const AvailabilityTestItem = observer(
           <div className="testable-test-explorer__item__label__text">
             {testState.test.id}
           </div>
-          <div className="testable-test-explorer__item__actions">
+          <div className="mapping-test-explorer__item__actions">
             <button
-              className="testable-test-explorer__item__action"
+              className="mapping-test-explorer__item__action mapping-test-explorer__run-test-btn"
               onClick={(event): void => {
                 event.stopPropagation();
                 flowResult(testState.runTest()).catch(
@@ -618,10 +621,9 @@ const AvailabilitySuiteEditor = observer(
           <ResizablePanel size={520} minSize={28}>
             <div className="panel service-test-data-editor">
               <div className="service-test-data-editor__data">
-                <RelationElementsDataEditor
-                  dataState={suiteState.testDataState}
+                <RelationElementEditor
+                  relationElementState={suiteState.testDataState}
                   isReadOnly={isReadOnly}
-                  isSharedData={true}
                   hideColumnDefinitions={true}
                 />
               </div>

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type PlainObject, optionalCustomList } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  optionalCustomList,
+  usingModelSchema,
+} from '@finos/legend-shared';
 import {
   createModelSchema,
   custom,
@@ -35,10 +39,6 @@ import {
 } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
-import {
-  V1_RelationElementsData,
-  type V1_RelationElement,
-} from '../../../model/data/V1_EmbeddedData.js';
 import type { V1_PackageableElement } from '../../../model/packageableElements/V1_PackageableElement.js';
 
 // NOTE: the engine's `AvailabilityBarrierTest` / `AvailabilityTestSuite`
@@ -66,36 +66,7 @@ const V1_availabilityTestSuiteModelSchema = createModelSchema(
   {
     doc: optional(primitive()),
     id: primitive(),
-    // NOTE: the engine's `AvailabilityTestSuite.testData` is a single flat
-    // `RelationElement` (fields: `columns`, `paths`, `rows`) — NOT a wrapper
-    // with `_type: 'relationAccessor'` + `relationElements[]`. Internally the
-    // studio state / UI editor consumes `V1_RelationElementsData` (a wrapper),
-    // so we adapt here: on serialize we unwrap the first `relationElement`;
-    // on deserialize we rewrap the incoming bare `RelationElement` into a
-    // single-element `V1_RelationElementsData`.
-    testData: optional(
-      custom(
-        (value: V1_RelationElementsData | undefined) => {
-          if (!value) {
-            return undefined;
-          }
-          const element = value.relationElements[0];
-          if (!element) {
-            return undefined;
-          }
-          return serialize(V1_relationElementModelSchema, element);
-        },
-        (value: PlainObject<V1_RelationElement> | undefined) => {
-          if (!value) {
-            return undefined;
-          }
-          const element = deserialize(V1_relationElementModelSchema, value);
-          const wrapper = new V1_RelationElementsData();
-          wrapper.relationElements = [element];
-          return wrapper;
-        },
-      ),
-    ),
+    testData: optional(usingModelSchema(V1_relationElementModelSchema)),
     tests: optionalCustomList(
       (value) => serialize(V1_availabilityBarrierTestModelSchema, value),
       (value) => deserialize(V1_availabilityBarrierTestModelSchema, value),

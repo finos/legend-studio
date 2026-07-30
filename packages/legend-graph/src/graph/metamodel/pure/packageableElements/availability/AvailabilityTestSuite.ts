@@ -17,10 +17,10 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../graph/Core_HashUtils.js';
 import { TestSuite } from '../../test/Test.js';
-import type { RelationElementsData } from '../../data/EmbeddedData.js';
+import type { RelationElement } from '../../data/EmbeddedData.js';
 
 export class AvailabilityTestSuite extends TestSuite implements Hashable {
-  testData: RelationElementsData | undefined;
+  testData: RelationElement | undefined;
 
   get hashCode(): string {
     return hashArray([

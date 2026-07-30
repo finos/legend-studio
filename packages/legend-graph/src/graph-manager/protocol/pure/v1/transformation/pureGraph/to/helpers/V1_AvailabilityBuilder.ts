@@ -19,11 +19,28 @@ import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { AvailabilityTestSuite } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import { AvailabilityBarrierTest } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
 import type { Availability } from '../../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
-import { RelationElementsData } from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
+import {
+  RelationElement,
+  RelationRowTestData,
+} from '../../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import type { V1_AvailabilityTestSuite } from '../../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
-import { V1_buildEmbeddedData } from './V1_DataElementBuilderHelper.js';
+import type { V1_RelationElement } from '../../../../model/data/V1_EmbeddedData.js';
 import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
+
+const V1_buildAvailabilityTestData = (
+  element: V1_RelationElement,
+): RelationElement => {
+  const relationElement = new RelationElement();
+  relationElement.columns = element.columns;
+  relationElement.paths = element.paths;
+  relationElement.rows = element.rows.map((row) => {
+    const r = new RelationRowTestData();
+    r.values = row.values;
+    return r;
+  });
+  return relationElement;
+};
 
 const V1_buildAvailabilityBarrierTest = (
   element: V1_AvailabilityBarrierTest,
@@ -51,14 +68,7 @@ export const V1_buildAvailabilityTestSuite = (
   suite.doc = element.doc;
   suite.__parent = parentAvailability;
   if (element.testData) {
-    const testData = V1_buildEmbeddedData(element.testData, context);
-    if (!(testData instanceof RelationElementsData)) {
-      throw new UnsupportedOperationError(
-        'Unable to build availability test suite: test data must be relation data',
-        element.testData,
-      );
-    }
-    suite.testData = testData;
+    suite.testData = V1_buildAvailabilityTestData(element.testData);
   }
   suite.tests = element.tests.map((test) => {
     if (test instanceof V1_AvailabilityBarrierTest) {

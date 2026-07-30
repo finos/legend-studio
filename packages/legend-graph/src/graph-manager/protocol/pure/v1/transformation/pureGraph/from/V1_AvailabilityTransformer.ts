@@ -17,16 +17,31 @@
 import type { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import type { AvailabilityTestSuite } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import type { AvailabilityBarrierTest } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
-import { RelationElementsData } from '../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
+import type { RelationElement } from '../../../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_AvailabilityTestSuite } from '../../../model/packageableElements/availability/V1_AvailabilityTestSuite.js';
 import { V1_AvailabilityBarrierTest } from '../../../model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
-import { V1_RelationElementsData } from '../../../model/data/V1_EmbeddedData.js';
+import {
+  V1_RelationElement,
+  V1_RelationRowTestData,
+} from '../../../model/data/V1_EmbeddedData.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformTestAssertion } from './V1_TestTransformer.js';
-import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
-import { UnsupportedOperationError } from '@finos/legend-shared';
+
+const V1_transformAvailabilityTestData = (
+  element: RelationElement,
+): V1_RelationElement => {
+  const relationElement = new V1_RelationElement();
+  relationElement.columns = element.columns;
+  relationElement.paths = element.paths;
+  relationElement.rows = element.rows.map((row) => {
+    const r = new V1_RelationRowTestData();
+    r.values = row.values;
+    return r;
+  });
+  return relationElement;
+};
 
 const V1_transformAvailabilityBarrierTest = (
   element: AvailabilityBarrierTest,
@@ -41,7 +56,6 @@ const V1_transformAvailabilityBarrierTest = (
 
 const V1_transformAvailabilityTestSuite = (
   element: AvailabilityTestSuite,
-  context: V1_GraphTransformerContext,
 ): V1_AvailabilityTestSuite => {
   const suite = new V1_AvailabilityTestSuite();
   suite.id = element.id;
@@ -50,27 +64,14 @@ const V1_transformAvailabilityTestSuite = (
     V1_transformAvailabilityBarrierTest(test as AvailabilityBarrierTest),
   );
   if (element.testData) {
-    if (!(element.testData instanceof RelationElementsData)) {
-      throw new UnsupportedOperationError(
-        `Availability test suite '${element.id}' testData must be RelationElementsData`,
-        element.testData,
-      );
-    }
-    const testData = V1_transformEmbeddedData(element.testData, context);
-    if (!(testData instanceof V1_RelationElementsData)) {
-      throw new UnsupportedOperationError(
-        `Availability test suite '${element.id}' testData transformed to unexpected shape`,
-        testData,
-      );
-    }
-    suite.testData = testData;
+    suite.testData = V1_transformAvailabilityTestData(element.testData);
   }
   return suite;
 };
 
 export const V1_transformAvailability = (
   element: Availability,
-  context: V1_GraphTransformerContext,
+  _context: V1_GraphTransformerContext,
 ): V1_Availability => {
   const availability = new V1_Availability();
   V1_initPackageableElement(availability, element);
@@ -78,8 +79,8 @@ export const V1_transformAvailability = (
   // `.content` so that fields we don't model in the studio are roundtripped
   // unchanged.
   availability.content = element.content;
-  availability.testSuites = element.tests.map((suite) =>
-    V1_transformAvailabilityTestSuite(suite, context),
+  availability.testSuites = element.tests.map(
+    V1_transformAvailabilityTestSuite,
   );
   return availability;
 };

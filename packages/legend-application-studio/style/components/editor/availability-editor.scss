@@ -107,35 +107,9 @@
 .availability-test-editor {
   &__format-selector {
     display: flex;
-    flex-direction: row;
-    gap: 0.4rem;
+    flex-direction: column;
     padding: 0.4rem 0;
-  }
-
-  &__format-btn {
-    padding: 0.4rem 1rem;
-    background: var(--color-dark-grey-100);
-    color: var(--color-text-muted);
-    border: 0.1rem solid var(--color-border-default);
-    border-radius: 0.2rem;
-    font-size: 1.1rem;
-    cursor: pointer;
-
-    &:hover:not(:disabled) {
-      color: var(--color-text-secondary);
-      border-color: var(--color-border-hover);
-    }
-
-    &--active {
-      color: var(--color-text-secondary);
-      background: var(--color-dark-grey-200);
-      border-color: var(--color-blue-100);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
-    }
+    min-width: 22rem;
   }
 }
 

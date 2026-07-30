@@ -19,7 +19,7 @@ import { skipObserved } from './CoreObserverHelper.js';
 import type { Availability } from '../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
 import type { AvailabilityTestSuite } from '../../../graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
 import type { AvailabilityBarrierTest } from '../../../graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
-import { observe_RelationElementsData } from './DSL_Data_ObserverHelper.js';
+import { observe_RelationElement } from './DSL_Data_ObserverHelper.js';
 
 export const observe_AvailabilityBarrierTest = skipObserved(
   (metamodel: AvailabilityBarrierTest): AvailabilityBarrierTest => {
@@ -47,7 +47,7 @@ export const observe_AvailabilityTestSuite = skipObserved(
       observe_AvailabilityBarrierTest(test as AvailabilityBarrierTest),
     );
     if (metamodel.testData) {
-      observe_RelationElementsData(metamodel.testData);
+      observe_RelationElement(metamodel.testData);
     }
     return metamodel;
   },

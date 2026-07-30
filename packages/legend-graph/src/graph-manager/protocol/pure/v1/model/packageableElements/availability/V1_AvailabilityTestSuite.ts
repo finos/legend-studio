@@ -17,10 +17,10 @@
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
 import { V1_TestSuite } from '../../test/V1_TestSuite.js';
-import type { V1_RelationElementsData } from '../../data/V1_EmbeddedData.js';
+import type { V1_RelationElement } from '../../data/V1_EmbeddedData.js';
 
 export class V1_AvailabilityTestSuite extends V1_TestSuite implements Hashable {
-  testData: V1_RelationElementsData | undefined;
+  testData: V1_RelationElement | undefined;
 
   get hashCode(): string {
     return hashArray([
