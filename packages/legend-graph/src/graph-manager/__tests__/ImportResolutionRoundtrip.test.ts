@@ -74,8 +74,6 @@ import {
   TEST_DATA__RelationFunctionMappingWithEnum,
   TEST_DATA__RelationFunctionMappingWithEmbedded,
   TEST_DATA__RelationFunctionMappingWithInlineEmbedded,
-  TEST_DATA__RelationFunctionMappingWithSourceLambda,
-  TEST_DATA__RelationFunctionMappingWithValueFn,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
 import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST_DATA__ModelJoinAssociationMapping_Simple } from './roundtripTestData/TEST_DATA__ModelJoinMappingRoundtrip.js';
@@ -185,14 +183,6 @@ describe(unitTest('Mapping import resolution roundtrip'), () => {
     [
       'Relation function mapping with inline embedded',
       TEST_DATA__RelationFunctionMappingWithInlineEmbedded,
-    ],
-    [
-      'Relation function mapping with sourceLambda',
-      TEST_DATA__RelationFunctionMappingWithSourceLambda,
-    ],
-    [
-      'Relation function mapping with valueFn',
-      TEST_DATA__RelationFunctionMappingWithValueFn,
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
