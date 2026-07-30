@@ -56,6 +56,7 @@ import {
 } from './DomainObserverHelper.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 import { observe_AtomicTest } from './Testable_ObserverHelper.js';
+import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 
 export const observe_AccessPoint = skipObserved(
   (metamodel: AccessPoint): AccessPoint => {
@@ -198,8 +199,9 @@ export const observe_SecureView = skipObserved(
     makeObservable(metamodel, {
       ingestPath: observable,
       datasetName: observable,
-      func: observable.ref,
+      func: observable,
     });
+    observe_RawLambda(metamodel.func);
     return metamodel;
   },
 );
