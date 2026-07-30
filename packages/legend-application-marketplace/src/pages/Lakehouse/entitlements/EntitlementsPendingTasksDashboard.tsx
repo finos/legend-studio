@@ -576,11 +576,12 @@ export const EntitlementsPendingTasksDashboard = observer(
             // covering many candidates, each task pertains to a single candidate,
             // and the parent contract's consumer scope is not representative of
             // this specific task. Fall back to the stringified consumer scope.
-            const userId =
-              params.data?.consumer ||
-              (consumerScope
+            let userId = params.data?.consumer;
+            if (!userId) {
+              userId = consumerScope
                 ? stringifyOrganizationalScope(consumerScope, plugins)
-                : undefined);
+                : undefined;
+            }
             return userId ? (
               <UserRenderer
                 userId={userId}
