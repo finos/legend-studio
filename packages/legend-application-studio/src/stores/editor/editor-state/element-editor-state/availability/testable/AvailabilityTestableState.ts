@@ -64,10 +64,14 @@ export enum AVAILABILITY_WATERMARK_SERIALIZATION_FORMAT {
 
 const DEFAULT_RELATION_PATH = 'barrier';
 
-// Hard-coded columns shared by every availability barrier test.
+// Hard-coded columns shared by every availability barrier test. These match
+// the schema the engine's barrier relation exposes to the test runtime.
 export const AVAILABILITY_TEST_DATA_COLUMNS = [
-  'ingest_definition_path',
+  'event_id',
   'batch_id',
+  'ingest_path',
+  'appdir_id',
+  'batch_attributes',
   'ingest_completed_ts_utc',
 ];
 
