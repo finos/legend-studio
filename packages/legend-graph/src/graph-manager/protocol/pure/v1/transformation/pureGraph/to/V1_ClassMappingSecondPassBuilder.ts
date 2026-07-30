@@ -392,6 +392,7 @@ export class V1_ClassMappingSecondPassBuilder
       RelationFunctionInstanceSetImplementation,
     );
     if (classMapping.relationFunction) {
+      const relationFunctionPointer = classMapping.relationFunction;
       relationFunctionInstanceSetImplementation.relationFunction =
         guaranteeNonNullable(
           this.context.graph.functions.find(
@@ -401,7 +402,7 @@ export class V1_ClassMappingSecondPassBuilder
                 spacing: false,
                 notIncludeParamName: true,
               }).replaceAll(/\s/gu, '') ===
-              classMapping.relationFunction!.path.replaceAll(/\s/gu, ''),
+              relationFunctionPointer.path.replaceAll(/\s/gu, ''),
           ),
         );
     } else if (classMapping.sourceLambda) {
