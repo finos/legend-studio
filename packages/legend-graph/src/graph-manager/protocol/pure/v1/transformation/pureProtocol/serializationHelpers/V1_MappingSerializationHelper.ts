@@ -691,9 +691,6 @@ const relationFunctionPropertyMappingModelSchema = createModelSchema(
     valueFn: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   },
 );
-TEMPORARY__disableModelSchemaExtensionMechanism(
-  relationFunctionPropertyMappingModelSchema,
-);
 
 const relationFunctionEmbeddedPropertyMappingModelSchema = createModelSchema(
   V1_RelationFunctionEmbeddedPropertyMapping,
@@ -772,9 +769,6 @@ const relationFunctionClassMappingModelSchema = createModelSchema(
     root: primitive(),
     sourceLambda: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   },
-);
-TEMPORARY__disableModelSchemaExtensionMechanism(
-  relationFunctionClassMappingModelSchema,
 );
 
 // ------------------------------------- Class Mapping -------------------------------------
