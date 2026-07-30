@@ -197,7 +197,7 @@ describe('LegendMarketplaceTerminalCard - rendering', () => {
     expect((btn as HTMLButtonElement).disabled).toBe(true);
   });
 
-  test('shows "Add Service" button for cardAction="addService"', () => {
+  test('shows "Browse Add-Ons" button for cardAction="addService"', () => {
     const item = makeTerminalResult();
     render(
       <LegendMarketplaceTerminalCard
@@ -205,7 +205,7 @@ describe('LegendMarketplaceTerminalCard - rendering', () => {
         cardAction="addService"
       />,
     );
-    expect(screen.getByText(/Add Service/)).toBeDefined();
+    expect(screen.getByText(/Browse Add-Ons/)).toBeDefined();
   });
 
   test('defaults to "Add to cart" when cardAction is not provided', () => {
@@ -350,7 +350,7 @@ describe('LegendMarketplaceTerminalCard - addToCart', () => {
 // ─── addService flow ──────────────────────────────────────────────────────────
 
 describe('LegendMarketplaceTerminalCard - addService', () => {
-  test('clicking "Add Service" calls getPermissionAddons', async () => {
+  test('clicking "Browse Add-Ons" calls getPermissionAddons', async () => {
     const item = makeTerminalResult({ permissionId: 42 });
     const addon = new TerminalResult();
     addon.id = 10;
@@ -376,7 +376,7 @@ describe('LegendMarketplaceTerminalCard - addService', () => {
       />,
     );
     await act(async () => {
-      fireEvent.click(screen.getByText(/Add Service/));
+      fireEvent.click(screen.getByText(/Browse Add-Ons/));
     });
 
     expect(getPermissionAddonsSpy).toHaveBeenCalled();
@@ -411,7 +411,7 @@ describe('LegendMarketplaceTerminalCard - addService', () => {
       />,
     );
     await act(async () => {
-      fireEvent.click(screen.getByText(/Add Service/));
+      fireEvent.click(screen.getByText(/Browse Add-Ons/));
     });
 
     await waitFor(() => {
@@ -437,11 +437,11 @@ describe('LegendMarketplaceTerminalCard - addService', () => {
       />,
     );
     await act(async () => {
-      fireEvent.click(screen.getByText(/Add Service/));
+      fireEvent.click(screen.getByText(/Browse Add-Ons/));
     });
 
     await waitFor(() => {
-      expect(screen.queryByText(/Adding\.\.\./)).toBeNull();
+      expect(screen.queryByText(/Fetching\.\.\./)).toBeNull();
     });
   });
 
@@ -468,9 +468,9 @@ describe('LegendMarketplaceTerminalCard - addService', () => {
       />,
     );
     await act(async () => {
-      fireEvent.click(screen.getByText(/Add Service/));
+      fireEvent.click(screen.getByText(/Browse Add-Ons/));
     });
-    expect(screen.getByText(/Adding\.\.\./)).toBeDefined();
+    expect(screen.getByText(/Fetching\.\.\./)).toBeDefined();
     // cleanup
     resolvePermissions({
       marketplace_addons: [],
