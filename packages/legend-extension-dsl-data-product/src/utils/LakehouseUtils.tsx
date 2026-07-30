@@ -137,6 +137,34 @@ export const stringifyOrganizationalScope = (
     .find(isNonEmptyString);
   return stringifiedValue ?? JSON.stringify(scope);
 };
+/**
+ * Inline JSX rendering of a consumer scope contributed by a plugin (e.g. an RMS
+ * node link). Returns `undefined` when no plugin handles the scope, so callers
+ * can fall back to other rendering (plain text, a user renderer, etc.).
+ */
+export const renderPluginOrganizationalScope = (
+  scope: V1_OrganizationalScope,
+  plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
+): React.ReactNode | undefined =>
+  plugins
+    .flatMap((plugin) =>
+      plugin
+        .getContractConsumerTypeRendererConfigs?.()
+        .flatMap((config) => config.renderOrganizationalScope?.(scope)),
+    )
+    .find(isNonNullable);
+
+/**
+ * JSX counterpart of `stringifyOrganizationalScope` for inline display of a
+ * consumer: prefers a plugin-provided rendering (which may render richer content
+ * such as a link) and otherwise falls back to the plain-text stringified scope.
+ */
+export const renderOrganizationalScopeConsumer = (
+  scope: V1_OrganizationalScope,
+  plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
+): React.ReactNode =>
+  renderPluginOrganizationalScope(scope, plugins) ??
+  stringifyOrganizationalScope(scope, plugins);
 
 export const getHumanReadableIngestEnvName = (
   ingestEnvName: string,
