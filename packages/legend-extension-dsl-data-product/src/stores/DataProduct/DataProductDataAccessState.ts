@@ -75,7 +75,6 @@ import {
   type LakehousePlatformServerClient,
   type PermitWorkflowServerClient,
   IngestDeploymentServerConfig,
-  ProducerEnvironment,
 } from '@finos/legend-server-lakehouse';
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
 import {
