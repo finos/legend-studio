@@ -20,19 +20,16 @@ import {
   type V1_Accessor,
   type V1_AccessPointImplementation,
   type V1_DataProduct,
+  type V1_DataProductArtifact,
   type V1_Dataset,
   type V1_EntitlementsDataProductDetails,
   type V1_PureGraphManager,
   CORE_PURE_PATH,
   V1_AdHocDeploymentDataProductOrigin,
-  V1_AppDirLevel,
   V1_AppDirProducer,
-  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_dataProductModelSchema,
   V1_DataProductAccessor,
-  V1_DataProductArtifact,
   V1_deserializeDataContractResponse,
-  V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_IngestDefinitionAccessor,
   V1_IngestEnvironmentClassification,
   V1_KerberosProducer,
@@ -45,25 +42,13 @@ import {
   ELEMENT_PATH_DELIMITER,
   RawLambda,
 } from '@finos/legend-graph';
-import {
-  type ProjectGAVCoordinates,
-  type Entity,
-  StoredFileGeneration,
-} from '@finos/legend-storage';
-import {
-  type LakehouseContractServerClient,
-  type LakehouseIngestServerClient,
-  type LakehousePlatformServerClient,
-  IngestDeploymentServerConfig,
-  ProducerEnvironment,
-} from '@finos/legend-server-lakehouse';
+import type { ProjectGAVCoordinates, Entity } from '@finos/legend-storage';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import {
   type DepotServerClient,
-  StoreProjectData,
   resolveVersion,
 } from '@finos/legend-server-depot';
 import {
-  type PlainObject,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
@@ -374,13 +359,6 @@ export interface APGCoordinates {
   accessPointGroupId: string;
 }
 
-export interface MissingIngestsClientProvider {
-  readonly lakehouseContractServerClient: LakehouseContractServerClient;
-  readonly depotServerClient: DepotServerClient;
-  readonly lakehouseIngestServerClient: LakehouseIngestServerClient;
-  readonly lakehousePlatformServerClient: LakehousePlatformServerClient;
-}
-
 export interface ResolvedMissingIngestsContext {
   accessPointGroupId: string;
   deploymentId: number;
@@ -390,17 +368,16 @@ export interface ResolvedMissingIngestsContext {
   v1DataProduct?: V1_DataProduct | undefined;
 }
 
-export interface RunMissingIngestsCheckDeps {
-  lakehouseIngestServerClient: LakehouseIngestServerClient;
-  lakehousePlatformServerClient: LakehousePlatformServerClient;
+export interface MissingIngestsInput {
+  producerUrns: string[];
+  ingestEnvironmentClassification: V1_IngestEnvironmentClassification;
   plugins: PureProtocolProcessorPlugin[];
-  getGraphManager?: () => Promise<AbstractPureGraphManager>;
+  graphManager: AbstractPureGraphManager;
 }
 
 export async function runMissingIngestsCheckForArtifact(
   context: ResolvedMissingIngestsContext,
-  deps: RunMissingIngestsCheckDeps,
-  token: string | undefined,
+  input: MissingIngestsInput,
 ): Promise<string[]> {
   const {
     accessPointGroupId,
@@ -411,21 +388,21 @@ export async function runMissingIngestsCheckForArtifact(
     v1DataProduct,
   } = context;
   const {
-    lakehouseIngestServerClient,
-    lakehousePlatformServerClient,
+    producerUrns,
+    ingestEnvironmentClassification: ingestEnvironment,
     plugins,
-    getGraphManager,
-  } = deps;
+    graphManager,
+  } = input;
 
   try {
+    const producerUrnSet = new Set(producerUrns);
     const isLegacy = isLegacyArtifact(artifact, accessPointGroupId);
 
     let datasetInfos: LakehouseIngestDatasetInfo[];
     if (isLegacy) {
-      if (!v1DataProduct || !getGraphManager) {
+      if (!v1DataProduct) {
         return [];
       }
-      const graphManager = await getGraphManager();
       const ingestSpecPaths = walkAccessPointGraphForIngestPaths(
         v1DataProduct,
         accessPointGroupId,
@@ -479,73 +456,26 @@ export async function runMissingIngestsCheckForArtifact(
       return [];
     }
 
-    const ingestEnvironment =
-      IngestDeploymentServerConfig.serialization.fromJson(
-        await lakehousePlatformServerClient.findProducerServer(
-          deploymentId,
-          V1_AppDirLevel.DEPLOYMENT,
-          token,
-        ),
+    const looseAlloyGitPrefix = `urn:lakehouse:${ingestEnvironment}:ingest:definition:alloy-git:`;
+    const verifications = datasetInfos.map((datasetInfo) => {
+      const tail = `${datasetInfo.ingestDefinitionPackage}${ELEMENT_PATH_DELIMITER}${datasetInfo.ingestDefinitionName}`;
+      const candidates = buildCandidateIngestUrns(
+        datasetInfo,
+        ingestEnvironment,
+        tail,
       );
-    const ingestServerUrl = ingestEnvironment.ingestServerUrl;
-
-    const producerEnvironment = ProducerEnvironment.serialization.fromJson(
-      await lakehouseIngestServerClient.getProducerEnvironment(
-        deploymentId,
-        ingestServerUrl,
-        token,
-      ),
-    );
-    const producerEnvironmentUrn = producerEnvironment.producerEnvironmentUrn;
-
-    const env =
-      CLASSIFICATION_TO_URN_ENV[ingestEnvironment.environmentClassification];
-
-    const serverUrns = await lakehouseIngestServerClient.getIngestDefinitions(
-      producerEnvironmentUrn,
-      ingestServerUrl,
-      token,
-    );
-    const serverUrnSet = new Set(serverUrns);
-
-    const verifications = await Promise.all(
-      datasetInfos.map(async (datasetInfo) => {
-        const tail = `${datasetInfo.ingestDefinitionPackage}${ELEMENT_PATH_DELIMITER}${datasetInfo.ingestDefinitionName}`;
-        const candidates = buildCandidateIngestUrns(datasetInfo, env, tail);
-        const matchedUrns = candidates.filter((urn) => serverUrnSet.has(urn));
-        if (matchedUrns.length === 0) {
-          // TODO: Remove after cross dp is supported
-          // Loose path comparison if ingest is cross-dp
-          const looseAlloyGitPrefix = `urn:lakehouse:${env}:ingest:definition:alloy-git:`;
-          const looseTailSuffix = `~${tail}`;
-          const hasLooseGavMatch = Array.from(serverUrnSet).some(
-            (urn) =>
-              urn.startsWith(looseAlloyGitPrefix) &&
-              urn.endsWith(looseTailSuffix),
-          );
-          if (hasLooseGavMatch) {
-            return undefined;
-          }
-          return tail;
-        }
-        const probeResults = await Promise.all(
-          matchedUrns.map(async (urn) => {
-            try {
-              await lakehouseIngestServerClient.getIngestDefinitionDetail(
-                urn,
-                ingestServerUrl,
-                token,
-              );
-              return true;
-            } catch (error) {
-              assertErrorThrown(error);
-              return false;
-            }
-          }),
-        );
-        return probeResults.includes(false) ? tail : undefined;
-      }),
-    );
+      if (candidates.some((urn) => producerUrnSet.has(urn))) {
+        return undefined;
+      }
+      // TODO: Remove after cross dp is supported
+      // Loose path comparison if ingest is cross-dp
+      const looseTailSuffix = `~${tail}`;
+      const hasLooseGavMatch = producerUrns.some(
+        (urn) =>
+          urn.startsWith(looseAlloyGitPrefix) && urn.endsWith(looseTailSuffix),
+      );
+      return hasLooseGavMatch ? undefined : tail;
+    });
     return verifications.filter(isNonNullable);
   } catch (error) {
     assertErrorThrown(error);
@@ -620,92 +550,6 @@ export async function getDataProductFromDetails(
     );
   } else {
     return undefined;
-  }
-}
-
-export async function getUnverifiedIngestDefinitionsForAPG(
-  apg: APGCoordinates,
-  clientProvider: MissingIngestsClientProvider,
-  plugins: PureProtocolProcessorPlugin[],
-  getGraphManager: () => Promise<AbstractPureGraphManager>,
-  token: string | undefined,
-): Promise<string[]> {
-  const {
-    lakehouseContractServerClient,
-    depotServerClient,
-    lakehouseIngestServerClient,
-    lakehousePlatformServerClient,
-  } = clientProvider;
-
-  try {
-    const dpDetails = guaranteeNonNullable(
-      V1_entitlementsDataProductDetailsResponseToDataProductDetails(
-        await lakehouseContractServerClient.getDataProductByIdAndDID(
-          apg.dataProductName,
-          apg.deploymentId,
-          token,
-        ),
-      )[0],
-      `No data product details found for resource '${apg.dataProductName}' (deployment '${apg.deploymentId}')`,
-    );
-
-    if (!(dpDetails.origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
-      return [];
-    }
-    const sdlcOrigin = dpDetails.origin;
-    const gavCoordinates: ProjectGAVCoordinates = {
-      groupId: sdlcOrigin.group,
-      artifactId: sdlcOrigin.artifact,
-      versionId: sdlcOrigin.version,
-    };
-
-    const { groupId, artifactId, versionId } = gavCoordinates;
-    const storeProject = StoreProjectData.serialization.fromJson(
-      await depotServerClient.getProject(groupId, artifactId),
-    );
-    const files = (
-      await depotServerClient.getGenerationFilesByType(
-        storeProject,
-        resolveVersion(versionId),
-        V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
-      )
-    ).map((rawFile) => StoredFileGeneration.serialization.fromJson(rawFile));
-    const fileGen = guaranteeNonNullable(
-      files.find((e) => e.path === dpDetails.fullPath)?.file.content,
-      `No data product artifact found at path '${dpDetails.fullPath}' for project '${groupId}:${artifactId}:${versionId}'`,
-    );
-    const rawArtifactJson = JSON.parse(fileGen) as PlainObject;
-    const artifact =
-      V1_DataProductArtifact.serialization.fromJson(rawArtifactJson);
-
-    const v1DataProduct = isLegacyArtifact(artifact, apg.accessPointGroupId)
-      ? await getDataProductFromDetails(
-          dpDetails,
-          (await getGraphManager()) as V1_PureGraphManager,
-          depotServerClient,
-        )
-      : undefined;
-
-    return await runMissingIngestsCheckForArtifact(
-      {
-        accessPointGroupId: apg.accessPointGroupId,
-        deploymentId: apg.deploymentId,
-        dataProductName: apg.dataProductName,
-        gavCoordinates,
-        artifact,
-        v1DataProduct,
-      },
-      {
-        lakehouseIngestServerClient,
-        lakehousePlatformServerClient,
-        plugins,
-        getGraphManager,
-      },
-      token,
-    );
-  } catch (error) {
-    assertErrorThrown(error);
-    return [];
   }
 }
 
