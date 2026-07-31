@@ -2117,7 +2117,7 @@ export const DataProductAccessPointGroupViewer = observer(
             {renderAccess(apgState.access)}
           </Box>
         </div>
-        {(dataAccessState?.missingIngests.length ?? 0) > 0 &&
+        {Boolean(dataAccessState?.missingIngests.length) &&
           (apgState.access === AccessPointGroupAccess.APPROVED ||
             apgState.access === AccessPointGroupAccess.ENTERPRISE) && (
             <div className="data-product__viewer__access-group__item__missing-ingests-banner">

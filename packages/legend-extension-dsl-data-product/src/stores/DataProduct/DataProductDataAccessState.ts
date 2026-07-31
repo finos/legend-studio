@@ -187,14 +187,14 @@ export class DataProductDataAccessState {
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
   dataProductOwners: string[] = [];
   subscriptionTargets: V1_DataSubscriptionTarget[] = [];
-  producerUrns: string[] = [];
+  producerIngestUrns: string[] = [];
   missingIngests: string[] = [];
 
   readonly creatingContractState = ActionState.create();
   readonly creatingWorkflowRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
-  readonly fetchingProducerUrnsState = ActionState.create();
+  readonly fetchingProducerIngestUrnsState = ActionState.create();
   readonly fetchingSubscriptionTargetsState = ActionState.create();
 
   constructor(
@@ -218,8 +218,8 @@ export class DataProductDataAccessState {
       userEntitlementsEnv: observable,
       dataProductOwners: observable,
       subscriptionTargets: observable,
-      producerUrns: observable,
-      setProducerUrns: action,
+      producerIngestUrns: observable,
+      setProducerIngestUrns: action,
       setContractViewerContractAndSubscription: action,
       setDataAccessRequestViewerState: action,
       setAssociatedContracts: action,
@@ -445,8 +445,8 @@ export class DataProductDataAccessState {
     this.dataProductOwners = owners;
   }
 
-  setProducerUrns(urns: string[]): void {
-    this.producerUrns = urns;
+  setProducerIngestUrns(urns: string[]): void {
+    this.producerIngestUrns = urns;
   }
 
   setMissingIngests(val: string[]): void {
@@ -842,10 +842,10 @@ export class DataProductDataAccessState {
     tokenProvider: () => string | undefined,
   ): Promise<void> {
     if (!this.lakehouseIngestEnv) {
-      this.fetchingProducerUrnsState.fail();
+      this.fetchingProducerIngestUrnsState.fail();
       return;
     }
-    this.fetchingProducerUrnsState.inProgress();
+    this.fetchingProducerIngestUrnsState.inProgress();
     const token = tokenProvider();
     try {
       const ingestEnv = this.lakehouseIngestEnv;
@@ -862,11 +862,11 @@ export class DataProductDataAccessState {
         ingestEnv.ingestServerUrl,
         token,
       );
-      this.setProducerUrns(urns);
-      this.fetchingProducerUrnsState.pass();
+      this.setProducerIngestUrns(urns);
+      this.fetchingProducerIngestUrnsState.pass();
     } catch (error) {
       assertErrorThrown(error);
-      this.fetchingProducerUrnsState.fail();
+      this.fetchingProducerIngestUrnsState.fail();
       this.applicationStore.logService.warn(
         LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load producer ingest definitions for did ${this.entitlementsDataProductDetails.deploymentId}: ${error.message}`,
@@ -880,7 +880,7 @@ export class DataProductDataAccessState {
   ): Promise<string[]> {
     const origin = this.entitlementsDataProductDetails.origin;
     if (
-      !this.fetchingProducerUrnsState.hasSucceeded ||
+      !this.fetchingProducerIngestUrnsState.hasSucceeded ||
       !(origin instanceof V1_SdlcDeploymentDataProductOrigin) ||
       !artifact ||
       !this.lakehouseIngestEnv
@@ -900,7 +900,7 @@ export class DataProductDataAccessState {
       v1DataProduct: this.product,
     };
     const input: MissingIngestsInput = {
-      producerUrns: this.producerUrns,
+      producerUrns: this.producerIngestUrns,
       ingestEnvironment: this.lakehouseIngestEnv.environmentClassification,
       plugins:
         this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
