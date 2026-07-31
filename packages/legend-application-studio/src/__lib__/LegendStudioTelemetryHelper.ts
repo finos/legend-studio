@@ -225,6 +225,48 @@ export class LegendStudioTelemetryHelper {
     );
   }
 
+  // DataSpace Legend AI
+  static logEvent_DataSpaceLegendAISuggestLaunched(
+    telemetryService: TelemetryService,
+    dataSpacePath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATASPACE_LEGENDAI_SUGGEST__LAUNCH,
+      { dataSpacePath },
+    );
+  }
+
+  static logEvent_DataSpaceLegendAISuggestApplied(
+    telemetryService: TelemetryService,
+    dataSpacePath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATASPACE_LEGENDAI_SUGGEST__APPLY,
+      { dataSpacePath },
+    );
+  }
+
+  static logEvent_DataSpaceLegendAISuggestDiscarded(
+    telemetryService: TelemetryService,
+    dataSpacePath: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATASPACE_LEGENDAI_SUGGEST__DISCARD,
+      { dataSpacePath },
+    );
+  }
+
+  static logEvent_DataSpaceLegendAISuggestFailure(
+    telemetryService: TelemetryService,
+    dataSpacePath: string,
+    errorMessage: string,
+  ): void {
+    telemetryService.logEvent(
+      LEGEND_STUDIO_APP_EVENT.DATASPACE_LEGENDAI_SUGGEST__FAILURE,
+      { dataSpacePath, errorMessage },
+    );
+  }
+
   static logEvent_DataProductLegendAISuggestLaunched(
     telemetryService: TelemetryService,
     dataProductPath: string,
