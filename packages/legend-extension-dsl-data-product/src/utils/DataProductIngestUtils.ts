@@ -370,7 +370,7 @@ export interface ResolvedMissingIngestsContext {
 
 export interface MissingIngestsInput {
   producerUrns: string[];
-  ingestEnvironmentClassification: V1_IngestEnvironmentClassification;
+  ingestEnvironment: V1_IngestEnvironmentClassification;
   plugins: PureProtocolProcessorPlugin[];
   graphManager: AbstractPureGraphManager;
 }
@@ -387,12 +387,7 @@ export async function runMissingIngestsCheckForArtifact(
     artifact,
     v1DataProduct,
   } = context;
-  const {
-    producerUrns,
-    ingestEnvironmentClassification: ingestEnvironment,
-    plugins,
-    graphManager,
-  } = input;
+  const { producerUrns, ingestEnvironment, plugins, graphManager } = input;
 
   try {
     const producerUrnSet = new Set(producerUrns);

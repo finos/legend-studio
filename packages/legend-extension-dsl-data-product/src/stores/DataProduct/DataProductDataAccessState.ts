@@ -22,6 +22,7 @@ import {
   type V1_DataContractsResponse,
   type V1_DataContractSubscriptions,
   type V1_DataProduct,
+  type V1_DataProductArtifact,
   type V1_DataRequestsWithWorkflowResponse,
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
@@ -193,6 +194,7 @@ export class DataProductDataAccessState {
   readonly creatingWorkflowRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
+  readonly fetchingProducerUrnsState = ActionState.create();
   readonly fetchingSubscriptionTargetsState = ActionState.create();
 
   constructor(
@@ -451,11 +453,18 @@ export class DataProductDataAccessState {
     this.missingIngests = val;
   }
 
-  *fetchMissingIngests(): GeneratorFn<void> {
+  *fetchMissingIngests(
+    tokenProvider: () => string | undefined,
+  ): GeneratorFn<void> {
     try {
+      yield this.fetchProducerURNList(tokenProvider);
+      const artifact = (yield this.dataProductViewerState
+        .dataProductArtifactPromise ?? Promise.resolve(undefined)) as
+        | V1_DataProductArtifact
+        | undefined;
       const perApg = (yield Promise.all(
         this.dataProductViewerState.apgStates.map((apgState) =>
-          this.computeMissingIngestsForApg(apgState.apg.id),
+          this.computeMissingIngestsForApg(apgState.apg.id, artifact),
         ),
       )) as string[][];
       this.setMissingIngests(Array.from(new Set(perApg.flat())));
@@ -552,9 +561,7 @@ export class DataProductDataAccessState {
       this.fetchIngestEnvironmentDetails(tokenProvider),
       this.fetchDataProductOwners(tokenProvider),
     ]);
-    yield this.fetchProducerURNList(tokenProvider);
-
-    yield flowResult(this.fetchMissingIngests());
+    yield flowResult(this.fetchMissingIngests(tokenProvider));
   }
 
   logCreatingContract(
@@ -834,27 +841,32 @@ export class DataProductDataAccessState {
   async fetchProducerURNList(
     tokenProvider: () => string | undefined,
   ): Promise<void> {
+    if (!this.lakehouseIngestEnv) {
+      this.fetchingProducerUrnsState.fail();
+      return;
+    }
+    this.fetchingProducerUrnsState.inProgress();
+    const token = tokenProvider();
     try {
-      const ingestEnv = guaranteeNonNullable(
-        this.lakehouseIngestEnv,
-        `Can't fetch producer URN list: lakehouse ingest env is not initialized`,
-      );
+      const ingestEnv = this.lakehouseIngestEnv;
       const rawProducerEnv =
         await this.lakehouseIngestServerClient.getProducerEnvironment(
           this.entitlementsDataProductDetails.deploymentId,
           ingestEnv.ingestServerUrl,
-          tokenProvider(),
+          token,
         );
       const producerEnv =
         ProducerEnvironment.serialization.fromJson(rawProducerEnv);
       const urns = await this.lakehouseIngestServerClient.getIngestDefinitions(
         producerEnv.producerEnvironmentUrn,
         ingestEnv.ingestServerUrl,
-        tokenProvider(),
+        token,
       );
       this.setProducerUrns(urns);
+      this.fetchingProducerUrnsState.pass();
     } catch (error) {
       assertErrorThrown(error);
+      this.fetchingProducerUrnsState.fail();
       this.applicationStore.logService.warn(
         LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
         `Unable to load producer ingest definitions for did ${this.entitlementsDataProductDetails.deploymentId}: ${error.message}`,
@@ -864,17 +876,15 @@ export class DataProductDataAccessState {
 
   async computeMissingIngestsForApg(
     accessPointGroupId: string,
+    artifact: V1_DataProductArtifact | undefined,
   ): Promise<string[]> {
     const origin = this.entitlementsDataProductDetails.origin;
-    if (!(origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
-      return [];
-    }
-    const artifact =
-      await this.dataProductViewerState.dataProductArtifactPromise;
-    if (!artifact) {
-      return [];
-    }
-    if (!this.lakehouseIngestEnv) {
+    if (
+      !this.fetchingProducerUrnsState.hasSucceeded ||
+      !(origin instanceof V1_SdlcDeploymentDataProductOrigin) ||
+      !artifact ||
+      !this.lakehouseIngestEnv
+    ) {
       return [];
     }
     const context: ResolvedMissingIngestsContext = {
@@ -891,8 +901,7 @@ export class DataProductDataAccessState {
     };
     const input: MissingIngestsInput = {
       producerUrns: this.producerUrns,
-      ingestEnvironmentClassification:
-        this.lakehouseIngestEnv.environmentClassification,
+      ingestEnvironment: this.lakehouseIngestEnv.environmentClassification,
       plugins:
         this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
       graphManager: this.graphManagerState.graphManager,
