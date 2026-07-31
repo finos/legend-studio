@@ -26,6 +26,7 @@ import type {
   V1_DataRequestTasksResponse,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
+  V1_DataSubscriptionTargetsResponse,
   V1_EntitlementsDataProductDetailsResponse,
   V1_EntitlementsDataProductLiteResponse,
   V1_EntitlementsLakehouseEnvironmentType,
@@ -414,6 +415,11 @@ export class LakehouseContractServerClient extends AbstractServerClient {
     token: string | undefined,
   ): Promise<PlainObject<V1_DataSubscriptionResponse>> =>
     this.post(this._subscriptions(), input, {}, this._token(token));
+
+  getSubscriptionTargets = (
+    token: string | undefined,
+  ): Promise<PlainObject<V1_DataSubscriptionTargetsResponse>> =>
+    this.get(`${this._subscriptions()}/targets`, {}, this._token(token));
 
   // --------------------------------------- Data Products ---------------------------------------
 
