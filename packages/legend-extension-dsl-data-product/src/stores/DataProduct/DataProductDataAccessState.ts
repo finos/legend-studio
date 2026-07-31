@@ -849,16 +849,12 @@ export class DataProductDataAccessState {
     const token = tokenProvider();
     try {
       const ingestEnv = this.lakehouseIngestEnv;
-      const rawProducerEnv =
-        await this.lakehouseIngestServerClient.getProducerEnvironment(
-          this.entitlementsDataProductDetails.deploymentId,
-          ingestEnv.ingestServerUrl,
-          token,
-        );
-      const producerEnv =
-        ProducerEnvironment.serialization.fromJson(rawProducerEnv);
+      const producerEnv = guaranteeNonNullable(
+        this.entitlementsDataProductDetails.lakehouseEnvironment
+          ?.producerEnvironmentName,
+      );
       const urns = await this.lakehouseIngestServerClient.getIngestDefinitions(
-        producerEnv.producerEnvironmentUrn,
+        producerEnv,
         ingestEnv.ingestServerUrl,
         token,
       );
