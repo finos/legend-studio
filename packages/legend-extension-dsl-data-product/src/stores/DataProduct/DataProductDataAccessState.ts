@@ -26,6 +26,7 @@ import {
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsUserEnv,
+  type V1_DataSubscriptionTarget,
   type V1_IngestEnvironment,
   type V1_LiteDataContract,
   type V1_OrganizationalScope,
@@ -37,6 +38,7 @@ import {
   V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
   V1_deserializeDataRequestsWithWorkflowResponse,
+  V1_deserializeDataSubscriptionTargetsResponse,
   V1_deserializeIngestEnvironment,
   V1_isIngestEnvsCompatibleWithEntitlements,
   V1_liteDataContractsResponseModelSchemaToContracts,
@@ -177,14 +179,16 @@ export class DataProductDataAccessState {
   dataAccessRequestViewerState: DataAccessRequestState | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
-  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
+  lakehouseIngestEnvDetails: V1_IngestEnvironment | undefined;
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
   dataProductOwners: string[] = [];
+  subscriptionTargets: V1_DataSubscriptionTarget[] = [];
 
   readonly creatingContractState = ActionState.create();
   readonly creatingWorkflowRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
+  readonly fetchingSubscriptionTargetsState = ActionState.create();
 
   constructor(
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
@@ -203,9 +207,10 @@ export class DataProductDataAccessState {
       dataAccessRequestViewerState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnv: observable,
-      lakehouseIngestEnvironmentDetails: observable,
+      lakehouseIngestEnvDetails: observable,
       userEntitlementsEnv: observable,
       dataProductOwners: observable,
+      subscriptionTargets: observable,
       setContractViewerContractAndSubscription: action,
       setDataAccessRequestViewerState: action,
       setAssociatedContracts: action,
@@ -213,14 +218,16 @@ export class DataProductDataAccessState {
       resolvedUserEnv: computed,
       setContractCreatorAPG: action,
       setLakehouseIngestEnvironmentSummaries: action,
-      setLakehouseIngestEnvironmentDetails: action,
       setEntitlementsEnv: action,
       setLakehouseIngestEnv: action,
+      setLakehouseIngestEnvDetails: action,
       createContract: flow,
       createWorkflowRequest: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
       setDataProductOwners: action,
+      setSubscriptionTargets: action,
+      fetchSubscriptionTargets: action,
       init: flow,
     });
 
@@ -414,8 +421,8 @@ export class DataProductDataAccessState {
     this.lakehouseIngestEnv = env;
   }
 
-  setLakehouseIngestEnvironmentDetails(details: V1_IngestEnvironment[]): void {
-    this.lakehouseIngestEnvironmentDetails = details;
+  setLakehouseIngestEnvDetails(env: V1_IngestEnvironment | undefined): void {
+    this.lakehouseIngestEnvDetails = env;
   }
 
   setEntitlementsEnv(envs: V1_EntitlementsUserEnv[] | undefined): void {
@@ -438,10 +445,7 @@ export class DataProductDataAccessState {
 
     this.ingestEnvironmentFetchState.inProgress();
     await Promise.all([
-      (async () => {
-        await this.fetchLakehouseIngestEnvironmentSummaries(tokenProvider);
-        await this.fetchLakehouseIngestEnvironmentDetails(tokenProvider);
-      })(),
+      this.fetchLakehouseIngestEnvironmentSummaries(tokenProvider),
       this.fetchLakehouseIngestEnv(tokenProvider),
       this.fetchEntitlementsEnvs(tokenProvider),
     ]);
@@ -770,6 +774,22 @@ export class DataProductDataAccessState {
       const ingestServerUrl =
         IngestDeploymentServerConfig.serialization.fromJson(ingestEnv);
       this.setLakehouseIngestEnv(ingestServerUrl);
+      try {
+        const rawIngestEnvDetails =
+          await this.lakehouseIngestServerClient.getIngestEnvironment(
+            ingestServerUrl.ingestServerUrl,
+            tokenProvider(),
+          );
+        this.setLakehouseIngestEnvDetails(
+          V1_deserializeIngestEnvironment(rawIngestEnvDetails),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
+          `Unable to load lakehouse ingest env details for ${ingestServerUrl.ingestEnvironmentUrn}: ${error.message}`,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.warn(
@@ -816,41 +836,6 @@ export class DataProductDataAccessState {
     );
   }
 
-  async fetchLakehouseIngestEnvironmentDetails(
-    tokenProvider: () => string | undefined,
-  ): Promise<void> {
-    try {
-      const ingestEnvironments: V1_IngestEnvironment[] = (
-        await Promise.all(
-          this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
-            try {
-              const env =
-                await this.lakehouseIngestServerClient.getIngestEnvironment(
-                  discoveryEnv.ingestServerUrl,
-                  tokenProvider(),
-                );
-              return V1_deserializeIngestEnvironment(env);
-            } catch (error) {
-              assertErrorThrown(error);
-              this.applicationStore.logService.warn(
-                LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
-                `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
-              );
-              return undefined;
-            }
-          }),
-        )
-      ).filter(isNonNullable);
-      this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.applicationStore.logService.warn(
-        LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
-        `Unable to load lakehouse environment details: ${error.message}`,
-      );
-    }
-  }
-
   async fetchEntitlementsEnvs(
     tokenProvider: () => string | undefined,
   ): Promise<void> {
@@ -893,6 +878,40 @@ export class DataProductDataAccessState {
       );
     } finally {
       this.fetchingDataProductOwnersState.complete();
+    }
+  }
+
+  setSubscriptionTargets(targets: V1_DataSubscriptionTarget[]): void {
+    this.subscriptionTargets = targets;
+  }
+
+  /**
+   * Fetches the available subscription targets once per store instance.
+   * Subsequent calls are no-ops while a fetch is in-flight or has completed.
+   */
+  async fetchSubscriptionTargets(
+    tokenProvider: () => string | undefined,
+  ): Promise<void> {
+    if (!this.fetchingSubscriptionTargetsState.isInInitialState) {
+      return;
+    }
+    this.fetchingSubscriptionTargetsState.inProgress();
+    try {
+      const rawResponse =
+        await this.lakehouseContractServerClient.getSubscriptionTargets(
+          tokenProvider(),
+        );
+      const targets =
+        V1_deserializeDataSubscriptionTargetsResponse(rawResponse).targets;
+      this.setSubscriptionTargets(targets);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.fetchSubscriptionTargets.failure'),
+        `Unable to fetch subscription targets: ${error.message}`,
+      );
+    } finally {
+      this.fetchingSubscriptionTargetsState.complete();
     }
   }
 }

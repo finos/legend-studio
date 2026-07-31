@@ -362,6 +362,7 @@ export {
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_DataSubscriptionTarget,
+  V1_DataSubscriptionTargetsResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeNetwork,
   V1_SnowflakeRegion,

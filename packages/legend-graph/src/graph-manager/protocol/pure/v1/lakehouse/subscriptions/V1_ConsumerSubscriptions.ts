@@ -74,3 +74,7 @@ export class V1_CreateSubscriptionInput {
   contractId!: string;
   target!: V1_DataSubscriptionTarget;
 }
+
+export class V1_DataSubscriptionTargetsResponse {
+  targets: V1_DataSubscriptionTarget[] = [];
+}

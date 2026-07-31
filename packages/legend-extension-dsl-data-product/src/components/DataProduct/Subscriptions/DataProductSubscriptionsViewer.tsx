@@ -48,7 +48,7 @@ import {
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
 import React, { useEffect, useMemo, useState } from 'react';
-import { guaranteeNonNullable, isType } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
   CloseIcon,
@@ -169,6 +169,14 @@ const LakehouseSubscriptionsCreateDialog = observer(
   }) => {
     const { open, onClose, apgState, dataAccessState, onSubmit } = props;
 
+    const auth = useAuth();
+    useEffect(() => {
+      // eslint-disable-next-line no-void
+      void dataAccessState.fetchSubscriptionTargets(
+        () => auth.user?.access_token,
+      );
+    }, [auth, dataAccessState]);
+
     const approvedUserContract =
       apgState.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED &&
       apgState.associatedUserContract instanceof V1_DataContract
@@ -201,52 +209,36 @@ const LakehouseSubscriptionsCreateDialog = observer(
       onClose();
     };
 
-    // TODO: Figure out better way to get the preferred list of snowflake accounts instead
-    // of relying upon ingest environment URN
-    const ingestEnvironmentUrn =
-      dataAccessState.entitlementsDataProductDetails.lakehouseEnvironment
-        ?.producerEnvironmentName;
-
-    const environmentDetails =
-      dataAccessState.lakehouseIngestEnvironmentDetails;
-    const suggestedSnowflakeAccounts = Array.from(
-      new Set(
-        environmentDetails
-          .filter((details) =>
-            isType(details, V1_AWSSnowflakeIngestEnvironment),
-          )
-          .filter((details) => details.urn === ingestEnvironmentUrn)
-          .map(
-            (ingestEnvironmentDetails) =>
-              ingestEnvironmentDetails.snowflakeAccount,
-          ),
-      ),
-    );
-    const otherSnowflakeAccounts = Array.from(
-      new Set(
-        environmentDetails
-          .filter((details) =>
-            isType(details, V1_AWSSnowflakeIngestEnvironment),
-          )
-          .map(
-            (ingestEnvironmentDetails) =>
-              ingestEnvironmentDetails.snowflakeAccount,
-          )
-          .filter((account) => !suggestedSnowflakeAccounts.includes(account)),
-      ),
-    );
-
-    const snowflakeAccountOptions = [
-      ...suggestedSnowflakeAccounts,
-      ...otherSnowflakeAccounts,
-    ].map((account) => {
-      return {
-        isSuggested: suggestedSnowflakeAccounts.includes(account)
-          ? 'Suggested Accounts'
-          : 'Other Accounts',
-        account,
-      };
-    });
+    const snowflakeAccountOptions = (() => {
+      const allAccounts = Array.from(
+        new Set(
+          dataAccessState.subscriptionTargets
+            .filter(
+              (target): target is V1_SnowflakeTarget =>
+                target instanceof V1_SnowflakeTarget,
+            )
+            .map((target) => target.snowflakeAccountId),
+        ),
+      );
+      const ingestEnv = dataAccessState.lakehouseIngestEnvDetails;
+      const preferredAccount =
+        ingestEnv instanceof V1_AWSSnowflakeIngestEnvironment
+          ? ingestEnv.snowflakeAccount.toLowerCase()
+          : undefined;
+      return preferredAccount
+        ? [...allAccounts].sort((a, b) => {
+            const aMatch = a.toLowerCase() === preferredAccount;
+            const bMatch = b.toLowerCase() === preferredAccount;
+            if (aMatch && !bMatch) {
+              return -1;
+            }
+            if (!aMatch && bMatch) {
+              return 1;
+            }
+            return 0;
+          })
+        : allAccounts;
+    })();
 
     return (
       <Dialog
@@ -337,10 +329,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
               fullWidth={true}
               freeSolo={true}
               options={snowflakeAccountOptions}
-              groupBy={(option) => option.isSuggested}
-              getOptionLabel={(option) =>
-                typeof option === 'string' ? option : option.account
-              }
+              getOptionLabel={(option) => option}
               renderInput={(params) => (
                 <TextField
                   {...(params as TextFieldProps)}
@@ -349,11 +338,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
                   autoFocus={contract !== undefined}
                 />
               )}
-              onChange={(_, value) =>
-                setSnowflakeAccountId(
-                  typeof value === 'string' ? value : (value?.account ?? ''),
-                )
-              }
+              onChange={(_, value) => setSnowflakeAccountId(value ?? '')}
               slotProps={{
                 listbox: {
                   className:

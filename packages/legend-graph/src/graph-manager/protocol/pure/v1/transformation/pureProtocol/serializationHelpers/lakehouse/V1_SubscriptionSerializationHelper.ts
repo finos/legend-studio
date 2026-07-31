@@ -24,6 +24,7 @@ import {
   createModelSchema,
   custom,
   deserialize,
+  list,
   primitive,
   raw,
   serialize,
@@ -36,6 +37,7 @@ import {
   V1_DataSubscription,
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
+  V1_DataSubscriptionTargetsResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeTarget,
   V1_UnknownDataSubscriptionTarget,
@@ -76,7 +78,7 @@ export const V1_UnknownDataSubscriptionTargetModelSchema = createModelSchema(
   },
 );
 
-const V1_deseralizeDataSubscriptionTarget = (
+export const V1_deserializeDataSubscriptionTarget = (
   json: PlainObject<V1_DataSubscriptionTarget>,
 ): V1_DataSubscriptionTarget => {
   switch (json._type) {
@@ -119,7 +121,7 @@ export const V1_dataSubscriptionModelSchema = createModelSchema(
     dataContractId: primitive(),
     target: custom(
       V1_seralizeDataSubscriptionTarget,
-      V1_deseralizeDataSubscriptionTarget,
+      V1_deserializeDataSubscriptionTarget,
     ),
     createdBy: primitive(),
   },
@@ -146,7 +148,24 @@ export const V1_CreateSubscriptionInputModelSchema = createModelSchema(
     contractId: primitive(),
     target: custom(
       V1_seralizeDataSubscriptionTarget,
-      V1_deseralizeDataSubscriptionTarget,
+      V1_deserializeDataSubscriptionTarget,
     ),
   },
 );
+
+export const V1_dataSubscriptionTargetsResponseModelSchema = createModelSchema(
+  V1_DataSubscriptionTargetsResponse,
+  {
+    targets: list(
+      custom(
+        V1_seralizeDataSubscriptionTarget,
+        V1_deserializeDataSubscriptionTarget,
+      ),
+    ),
+  },
+);
+
+export const V1_deserializeDataSubscriptionTargetsResponse = (
+  json: PlainObject<V1_DataSubscriptionTargetsResponse>,
+): V1_DataSubscriptionTargetsResponse =>
+  deserialize(V1_dataSubscriptionTargetsResponseModelSchema, json);
