@@ -124,6 +124,9 @@ export type ContractConsumerTypeRendererConfig = {
   stringifyOrganizationalScope?: (
     consumer: V1_OrganizationalScope,
   ) => string | undefined;
+  renderOrganizationalScope?: (
+    consumer: V1_OrganizationalScope,
+  ) => React.ReactNode | undefined;
   enableForEnterpriseAPGs?: boolean;
 };
 

@@ -64,6 +64,7 @@ import {
   getOrganizationalScopeTypeName,
   getOrganizationalScopeTypeDetails,
   stringifyOrganizationalScope,
+  renderPluginOrganizationalScope,
   DataAccessRequestViewer,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -556,21 +557,29 @@ export const EntitlementsPendingTasksDashboard = observer(
           cellRenderer: (
             params: DataGridCellRendererParams<V1_PendingTaskRecord>,
           ) => {
-            // Prefer the task's own target user: for a bulk contract covering many
-            // candidates, each task pertains to a single candidate, and the parent
-            // contract's consumer scope (which can list every candidate) is not
-            // representative of this specific task.
+            // If the row's consumer is an organizational scope a plugin renders
+            // specially (e.g. an RMS node link), show that — such scopes are not
+            // user ids (the `consumer` string holds their flattened node code).
+            const plugins =
+              dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins();
+            const contractId = params.data?.accessRequestId;
+            const consumerScope = pendingTaskContracts.find(
+              (c) => c.guid === contractId,
+            )?.consumer;
+            const orgRendered = consumerScope
+              ? renderPluginOrganizationalScope(consumerScope, plugins)
+              : undefined;
+            if (orgRendered !== undefined) {
+              return <>{orgRendered}</>;
+            }
+            // Otherwise prefer the task's own target user: for a bulk contract
+            // covering many candidates, each task pertains to a single candidate,
+            // and the parent contract's consumer scope is not representative of
+            // this specific task. Fall back to the stringified consumer scope.
             let userId = params.data?.consumer;
             if (!userId) {
-              const contractId = params.data?.accessRequestId;
-              const consumer = pendingTaskContracts.find(
-                (c) => c.guid === contractId,
-              )?.consumer;
-              userId = consumer
-                ? stringifyOrganizationalScope(
-                    consumer,
-                    dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-                  )
+              userId = consumerScope
+                ? stringifyOrganizationalScope(consumerScope, plugins)
                 : undefined;
             }
             return userId ? (

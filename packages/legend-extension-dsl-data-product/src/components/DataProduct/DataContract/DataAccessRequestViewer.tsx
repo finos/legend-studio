@@ -82,7 +82,7 @@ import {
 import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
-  stringifyOrganizationalScope,
+  renderOrganizationalScopeConsumer,
 } from '../../../utils/LakehouseUtils.js';
 import { UserRenderer } from '../../UserRenderer/UserRenderer.js';
 
@@ -792,7 +792,7 @@ export const DataAccessRequestContent = observer(
                 </Select>
               )
             ) : (
-              stringifyOrganizationalScope(
+              renderOrganizationalScopeConsumer(
                 viewerState.consumer,
                 viewerState.applicationStore.pluginManager.getApplicationPlugins(),
               )
