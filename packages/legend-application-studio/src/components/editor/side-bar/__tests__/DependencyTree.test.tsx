@@ -212,6 +212,7 @@ test(integrationTest('Test navigation of dependency tree'), async () => {
   expect(window.open).toHaveBeenCalledWith(
     'http://localhost/test/view/archive/org.finos.legend:prod-1:2.0.0',
     '_blank',
+    'noopener',
   );
   fireEvent.click(viewProject);
 });

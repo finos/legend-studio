@@ -149,11 +149,6 @@ const LegendMarketplaceAgents = React.lazy(() =>
     default: module.LegendMarketplaceAgents,
   })),
 );
-const LegendMarketplaceInventory = React.lazy(() =>
-  import('../pages/Inventory/LegendMarketplaceInventory.js').then((module) => ({
-    default: module.LegendMarketplaceInventory,
-  })),
-);
 const LegendMarketplaceVendorData = React.lazy(() =>
   import('../pages/TerminalsAddons/LegendMarketplaceTerminalsAddons.js').then(
     (module) => ({
@@ -308,10 +303,6 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<LegendMarketplaceAgents />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.INVENTORY}
-              element={<LegendMarketplaceInventory />}
-            />
-            <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS}
               element={<LegendMarketplaceVendorData />}
             />
@@ -327,11 +318,13 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.SDLC_DATA_PRODUCT}
-              element={<LakehouseSDLCDataProduct />}
+              element={React.createElement(
+                useProtectedPage(LakehouseSDLCDataProduct),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.LEGACY_DATA_PRODUCT}
-              element={<LegacyDataProduct />}
+              element={React.createElement(useProtectedPage(LegacyDataProduct))}
             />
             <Route
               path={

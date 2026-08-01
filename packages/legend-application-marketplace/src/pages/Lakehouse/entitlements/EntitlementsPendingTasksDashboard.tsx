@@ -40,7 +40,13 @@ import {
   DialogTitle,
   Tooltip,
 } from '@mui/material';
-import { useCallback, useMemo, useState, type ChangeEvent } from 'react';
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   CubesLoadingIndicator,
@@ -58,6 +64,7 @@ import {
   getOrganizationalScopeTypeName,
   getOrganizationalScopeTypeDetails,
   stringifyOrganizationalScope,
+  renderPluginOrganizationalScope,
   DataAccessRequestViewer,
 } from '@finos/legend-extension-dsl-data-product';
 import {
@@ -99,6 +106,8 @@ const EntitlementsDashboardActionModal = (props: {
   } = props;
 
   const auth = useAuth();
+  const tokenRef = useRef(auth.user?.access_token);
+  tokenRef.current = auth.user?.access_token;
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessages, setErrorMessages] = useState<
     [V1_PendingTaskRecord, string][]
@@ -122,7 +131,7 @@ const EntitlementsDashboardActionModal = (props: {
     const currentErrorMessages: typeof errorMessages = [];
     await Promise.all(
       Array.from(selectedTasks).map(async (task) => {
-        return flowResult(actionFunction(task, auth.user?.access_token))
+        return flowResult(actionFunction(task, tokenRef.current))
           .then(() => setSuccessCount((prev) => prev++))
           .catch((error) => currentErrorMessages.push([task, error.message]));
       }),
@@ -164,7 +173,7 @@ const EntitlementsDashboardActionModal = (props: {
     }
 
     // Refresh pending tasks and contracts after taking action
-    await flowResult(dashboardState.init(auth.user?.access_token));
+    await flowResult(dashboardState.init(tokenRef.current));
   };
 
   if (action === undefined) {
@@ -302,6 +311,8 @@ export const EntitlementsPendingTasksDashboard = observer(
     >(undefined);
 
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const getDataProductUrl = useGetDataProductUrl();
 
     const selectedRowId = getSelectedRowId(selectedRow);
@@ -354,7 +365,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               data: new ContractCreatedByUserDetails(contract),
             });
             dashboardState
-              .getContractErrors(contract.guid, auth.user?.access_token)
+              .getContractErrors(contract.guid, tokenRef.current)
               .then((result) => setContractErrors(result))
               .catch(() => setContractErrors(undefined));
           }
@@ -546,21 +557,29 @@ export const EntitlementsPendingTasksDashboard = observer(
           cellRenderer: (
             params: DataGridCellRendererParams<V1_PendingTaskRecord>,
           ) => {
-            // Prefer the task's own target user: for a bulk contract covering many
-            // candidates, each task pertains to a single candidate, and the parent
-            // contract's consumer scope (which can list every candidate) is not
-            // representative of this specific task.
+            // If the row's consumer is an organizational scope a plugin renders
+            // specially (e.g. an RMS node link), show that — such scopes are not
+            // user ids (the `consumer` string holds their flattened node code).
+            const plugins =
+              dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins();
+            const contractId = params.data?.accessRequestId;
+            const consumerScope = pendingTaskContracts.find(
+              (c) => c.guid === contractId,
+            )?.consumer;
+            const orgRendered = consumerScope
+              ? renderPluginOrganizationalScope(consumerScope, plugins)
+              : undefined;
+            if (orgRendered !== undefined) {
+              return <>{orgRendered}</>;
+            }
+            // Otherwise prefer the task's own target user: for a bulk contract
+            // covering many candidates, each task pertains to a single candidate,
+            // and the parent contract's consumer scope is not representative of
+            // this specific task. Fall back to the stringified consumer scope.
             let userId = params.data?.consumer;
             if (!userId) {
-              const contractId = params.data?.accessRequestId;
-              const consumer = pendingTaskContracts.find(
-                (c) => c.guid === contractId,
-              )?.consumer;
-              userId = consumer
-                ? stringifyOrganizationalScope(
-                    consumer,
-                    dashboardState.lakehouseEntitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
-                  )
+              userId = consumerScope
+                ? stringifyOrganizationalScope(consumerScope, plugins)
                 : undefined;
             }
             return userId ? (
@@ -911,7 +930,7 @@ export const EntitlementsPendingTasksDashboard = observer(
                     await flowResult(
                       dashboardState.updateContract(
                         selectedContractGuid,
-                        auth.user?.access_token,
+                        tokenRef.current,
                       ),
                     );
                   },

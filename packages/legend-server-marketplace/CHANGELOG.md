@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.1.87
+
+### Patch Changes
+
+- [#5378](https://github.com/finos/legend-studio/pull/5378) [`0836cfd`](https://github.com/finos/legend-studio/commit/0836cfd077eb22d59a33899f1603fe083350c311) ([@bojja-gs](https://github.com/bojja-gs)) - Wire Python code generation and "Open in DataCube" into the Legend AI chat for lakehouse access points. Scope conversation history per access point to prevent cross-AP literal contamination. Add URL encoding for search.
+
 ## 0.1.86
 
 ## 0.1.85

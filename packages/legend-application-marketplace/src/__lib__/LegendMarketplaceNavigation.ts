@@ -91,7 +91,6 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DATA_PRODUCTS: '/dataproducts',
   DATA_APIS: '/data-apis',
   AGENTS: '/agents',
-  INVENTORY: '/inventory',
   SUBSCRIPTIONS: '/subscriptions',
   ORDERS: '/orders',
   TERMINAL_PRODUCT: `/terminal/terminalProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID}`,

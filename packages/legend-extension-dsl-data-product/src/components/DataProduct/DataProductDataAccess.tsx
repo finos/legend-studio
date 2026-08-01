@@ -1821,7 +1821,7 @@ export const DataProductAccessPointGroupViewer = observer(
     }, [apgState, dataAccessState, canViewApprovedUsers]);
 
     const apgContractErrors = useMemo(() => {
-      const missingIngests = apgState.missingIngests ?? [];
+      const missingIngests = dataAccessState?.missingIngests ?? [];
       const ingestLayer: ContractErrorLayer | undefined =
         missingIngests.length === 0
           ? undefined
@@ -1830,7 +1830,7 @@ export const DataProductAccessPointGroupViewer = observer(
               errorItems: missingIngests,
             };
       return buildContractErrorsRoot([ingestLayer]);
-    }, [apgState.missingIngests]);
+    }, [dataAccessState?.missingIngests]);
 
     const dataContractViewerState = useMemo(() => {
       return contractViewerContractAndSubscription &&
@@ -2117,7 +2117,7 @@ export const DataProductAccessPointGroupViewer = observer(
             {renderAccess(apgState.access)}
           </Box>
         </div>
-        {apgState.hasMissingIngests &&
+        {Boolean(dataAccessState?.missingIngests.length) &&
           (apgState.access === AccessPointGroupAccess.APPROVED ||
             apgState.access === AccessPointGroupAccess.ENTERPRISE) && (
             <div className="data-product__viewer__access-group__item__missing-ingests-banner">
@@ -2147,7 +2147,7 @@ export const DataProductAccessPointGroupViewer = observer(
                   },
                 )}
               >
-                {(apgState.missingIngests ?? []).map((ingest) => (
+                {(dataAccessState?.missingIngests ?? []).map((ingest) => (
                   <li key={ingest}>{ingest}</li>
                 ))}
               </ul>
@@ -2179,7 +2179,7 @@ export const DataProductAccessPointGroupViewer = observer(
             onClose={() => dataAccessState.setContractCreatorAPG(undefined)}
             apgState={apgState}
             dataAccessState={dataAccessState}
-            tokenProvider={() => auth.user?.access_token}
+            tokenProvider={() => tokenRef.current}
           />
         )}
         {dataContractViewerState && dataAccessState && (
@@ -2196,7 +2196,7 @@ export const DataProductAccessPointGroupViewer = observer(
                 apgState.fetchUserAccessStatus(
                   apgState.associatedUserContract.guid,
                   dataAccessState.lakehouseContractServerClient,
-                  () => auth.user?.access_token,
+                  () => tokenRef.current,
                 );
               }
             }}

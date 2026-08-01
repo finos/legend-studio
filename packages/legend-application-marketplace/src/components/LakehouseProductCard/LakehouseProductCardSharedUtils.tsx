@@ -20,7 +20,7 @@ import { isSnapshotVersion } from '@finos/legend-server-depot';
 import { LakehouseDataProductSearchResultDetails } from '@finos/legend-server-marketplace';
 import { Chip } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { ProductCardState } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 import {
   DevelopmentLegendMarketplaceEnvState,
@@ -57,6 +57,8 @@ export const LakehouseProductTags = observer(
   (props: { productCardState: ProductCardState }): React.ReactNode => {
     const { productCardState } = props;
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const [isOwnersTooltipOpen, setIsOwnersTooltipOpen] = useState(false);
 
     const versionId = productCardState.versionId;
@@ -74,9 +76,7 @@ export const LakehouseProductTags = observer(
             owners={productCardState.lakehouseOwners}
             fetchingOwnersState={productCardState.fetchingOwnersState}
             fetchOwners={async () => {
-              await flowResult(
-                productCardState.fetchOwners(auth.user?.access_token),
-              );
+              await flowResult(productCardState.fetchOwners(tokenRef.current));
             }}
             applicationStore={
               productCardState.marketplaceBaseStore.applicationStore

@@ -30,7 +30,7 @@ import {
   FormGroup,
   Switch,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { EntitlementsDashboardState } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
@@ -107,6 +107,8 @@ export const EntitlementsPendingContractsDashboard = observer(
     } = dashboardState;
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const getDataProductUrl = useGetDataProductUrl();
 
     const myPendingContracts = useMemo(
@@ -161,11 +163,11 @@ export const EntitlementsPendingContractsDashboard = observer(
       if (selectedRow?.kind === ROW_KIND_CONTRACT) {
         const contract = selectedRow.data.contractResultLite;
         dashboardState
-          .getContractErrors(contract.guid, auth.user?.access_token)
+          .getContractErrors(contract.guid, tokenRef.current)
           .then((result) => setContractErrors(result))
           .catch(() => setContractErrors(undefined));
       }
-    }, [selectedRow, auth.user?.access_token, dashboardState]);
+    }, [selectedRow, dashboardState]);
 
     const selectedContractGuid = getSelectedContractGuid(selectedRow);
 
@@ -297,7 +299,7 @@ export const EntitlementsPendingContractsDashboard = observer(
                     await flowResult(
                       dashboardState.updateContract(
                         selectedContractGuid,
-                        auth.user?.access_token,
+                        tokenRef.current,
                       ),
                     );
                   },
