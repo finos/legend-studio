@@ -27,6 +27,7 @@ import {
 } from '../../stores/ProductViewerNavigation.js';
 import {
   ApgIngestionDataSetsScreen,
+  DataProductProducerEnvironmentInfo,
   artifactHasDependencyDatasets,
 } from './DataProductDataAccess.js';
 import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
@@ -146,6 +147,11 @@ export const DataProductProducerInfo = observer(
                 )}
               </Alert>
             )}
+            <DataProductProducerEnvironmentInfo
+              dataProductViewerState={dataProductViewerState}
+              dataAccessState={dataProductDataAccessState}
+              artifact={dataProductArtifact}
+            />
             {dataProductViewerState.apgStates.map((apgState) => (
               <div
                 key={apgState.apg.id}

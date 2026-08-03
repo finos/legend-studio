@@ -43,6 +43,7 @@ import {
   guaranteeNonEmptyString,
   uuid,
   returnUndefOnError,
+  type Parameters,
 } from '@finos/legend-shared';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../graph-manager/action/TEMPORARY__AbstractEngineConfig.js';
 import {
@@ -210,7 +211,10 @@ import {
   V1_buildSourceInformation,
   V1_buildExecutionContextInfo,
 } from './engine/V1_EngineHelper.js';
-import { V1_buildExecutionResult } from './engine/execution/V1_ExecutionHelper.js';
+import {
+  V1_buildExecutionResult,
+  V1_deserializeExecutionResult,
+} from './engine/execution/V1_ExecutionHelper.js';
 import {
   type Entity,
   type EntitiesWithOrigin,
@@ -339,9 +343,12 @@ import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_Dat
 import { EngineError } from '../../../action/EngineError.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_SnowflakeM2MUdf } from './model/packageableElements/function/V1_SnowflakeM2MUdf.js';
-import type {
-  ExecutionResult,
-  ExecutionResultWithMetadata,
+import {
+  type RecordValue,
+  type ExecutionResultWithMetadata,
+  type ExecutionResult,
+  EXECUTION_SERIALIZATION_FORMAT,
+  TDSExecutionResult,
 } from '../../../action/execution/ExecutionResult.js';
 import { V1_INTERNAL__UnknownElement } from './model/packageableElements/V1_INTERNAL__UnknownElement.js';
 import { V1_HostedService } from './model/packageableElements/function/V1_HostedService.js';
@@ -425,6 +432,7 @@ import {
   V1_RelationStoreAccessor,
 } from './model/valueSpecification/raw/classInstance/relation/V1_RelationStoreAccessor.js';
 import { V1_deserializeIngestDefinitionContent } from './transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
+import type { V1_ExecutionResult } from './engine/execution/V1_ExecutionResult.js';
 
 /**
  * Number of elements to process synchronously before yielding to the event loop.
@@ -4888,6 +4896,44 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       ? this.buildPureModelSDLCPointer(graph.origin, undefined)
       : this.getFullGraphModelData(graph);
     return this.engine.pushToDevMetadata(request);
+  }
+
+  // ------------------------------------------- Legend User Services -------------------------------------------
+
+  override async executeLegendUserService(
+    url: string,
+    parameters?: Parameters | undefined,
+    serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined,
+  ): Promise<TDSExecutionResult | PlainObject<RecordValue>[]> {
+    if (
+      serializationFormat !== undefined &&
+      serializationFormat !== EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT
+    ) {
+      throw new UnsupportedOperationError(
+        `Can't execute Legend user service: unsupported serialization format '${serializationFormat}'. Only '${EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT}' or no serialization format is supported.`,
+      );
+    }
+    const result = await this.engine.executeLegendUserService(
+      url,
+      parameters,
+      serializationFormat,
+    );
+    if (serializationFormat === EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT) {
+      return guaranteeType(
+        result,
+        Array,
+        'Expected array result from Legend user service with PURE_TDSOBJECT serialization format',
+      ) as PlainObject<RecordValue>[];
+    }
+    return guaranteeType(
+      V1_buildExecutionResult(
+        V1_deserializeExecutionResult(
+          result as unknown as PlainObject<V1_ExecutionResult>,
+        ),
+      ),
+      TDSExecutionResult,
+      'Expected TDS execution result from Legend user service',
+    );
   }
 
   // --------------------------------------------- Change Detection ---------------------------------------------

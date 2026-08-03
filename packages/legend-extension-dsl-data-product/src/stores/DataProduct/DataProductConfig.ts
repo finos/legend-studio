@@ -46,6 +46,34 @@ export class DataProductImageConfig {
   );
 }
 
+export class DataProductProducerConfig {
+  /**
+   * Base URL of the external operational-view app used to inspect a producer
+   * environment (and optionally a producer / ingest definition within it).
+   */
+  operationalUrl!: string;
+  /**
+   * Path (relative to the Legend Engine base) of the deployed Legend user
+   * service that resolves AppDir deployment ids to human-readable deployment
+   * names.
+   */
+  deploymentLegendServiceUrl!: string;
+  /**
+   * Base URL of the external app used to view an AppDir deployment by id.
+   * The concrete deployment id is appended by consumers when building the
+   * final link.
+   */
+  deploymentViewUrl!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(DataProductProducerConfig, {
+      operationalUrl: primitive(),
+      deploymentLegendServiceUrl: primitive(),
+      deploymentViewUrl: primitive(),
+    }),
+  );
+}
+
 export class DataProductConfig {
   classifications: string[] = [];
   publicClassifications: string[] = [];
@@ -54,7 +82,7 @@ export class DataProductConfig {
   vendorTaggedValue!: TaggedValueConfig;
   imageConfig!: DataProductImageConfig;
   legendJdbcLink!: string;
-  operationalUrl?: string | undefined;
+  producer?: DataProductProducerConfig | undefined;
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(DataProductConfig, {
@@ -62,7 +90,9 @@ export class DataProductConfig {
       publicClassifications: list(primitive()),
       classificationDoc: primitive(),
       legendJdbcLink: primitive(),
-      operationalUrl: optional(primitive()),
+      producer: optional(
+        usingModelSchema(DataProductProducerConfig.serialization.schema),
+      ),
       publicStereotype: usingModelSchema(StereotypeConfig.serialization.schema),
       vendorTaggedValue: usingModelSchema(
         TaggedValueConfig.serialization.schema,

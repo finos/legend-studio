@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type ContentType, type PlainObject } from '@finos/legend-shared';
+import {
+  type ContentType,
+  type Parameters,
+  type PlainObject,
+} from '@finos/legend-shared';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   type GenerationMode,
@@ -101,6 +105,10 @@ import type {
 } from '../model/lineage/V1_Lineage.js';
 import type { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
 import type { DeployProjectResponse } from '../../../../action/dev-metadata/DeployProjectResponse.js';
+import type {
+  EXECUTION_SERIALIZATION_FORMAT,
+  RecordValue,
+} from '../../../../action/execution/ExecutionResult.js';
 
 export interface V1_GraphManagerEngine {
   config: TEMPORARY__AbstractEngineConfig;
@@ -428,4 +436,12 @@ export interface V1_GraphManagerEngine {
   pushToDevMetadata(
     request: V1_DevMetadataPushRequest,
   ): Promise<DeployProjectResponse>;
+
+  // ------------------------------------------- Legend User Services -------------------------------------------
+
+  executeLegendUserService(
+    url: string,
+    parameters?: Parameters | undefined,
+    serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined,
+  ): Promise<PlainObject<V1_ExecutionResult> | PlainObject<RecordValue>[]>;
 }

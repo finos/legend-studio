@@ -32,7 +32,10 @@ export enum ExecutionActivityType {
 // TODO: Refactor to use external format (https://github.com/finos/legend-studio/issues/732)
 export enum EXECUTION_SERIALIZATION_FORMAT {
   CSV = 'CSV',
+  PURE_TDSOBJECT = 'PURE_TDSOBJECT',
 }
+
+export type RecordValue = string | number | boolean | object | null;
 
 export class ResultBuilder {
   _type: BuilderType;

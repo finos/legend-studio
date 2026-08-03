@@ -18,6 +18,8 @@ import type {
   ExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
   ExecutionResultWithMetadata,
+  RecordValue,
+  TDSExecutionResult,
 } from './action/execution/ExecutionResult.js';
 import type {
   ServiceRegistrationResult,
@@ -57,6 +59,7 @@ import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/
 import {
   type ContentType,
   type LogService,
+  type Parameters,
   type PlainObject,
   type ServerClientConfig,
   type TracerService,
@@ -488,6 +491,14 @@ export abstract class AbstractPureGraphManager {
     options: MetadataRequestOptions | undefined,
     graph: PureModel,
   ): Promise<DeployProjectResponse>;
+
+  // ------------------------------------------- Legend User Services -------------------------------------------
+
+  abstract executeLegendUserService(
+    url: string,
+    parameters?: Parameters | undefined,
+    serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined,
+  ): Promise<TDSExecutionResult | PlainObject<RecordValue>[]>;
 
   // ------------------------------------------- Test -------------------------------------------
 
