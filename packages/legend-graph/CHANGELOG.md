@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.6.24
+
+### Patch Changes
+
+- [#5398](https://github.com/finos/legend-studio/pull/5398) [`4761612`](https://github.com/finos/legend-studio/commit/47616129f7f70c177d7089ea82aee3dc9cbbd528) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `executeLegendUserService` API to `PureGraphManager` for executing a Legend user service by URL with optional query parameters and serialization format (supports `PURE_TDSOBJECT` or default TDS execution result).
+
+- [#5397](https://github.com/finos/legend-studio/pull/5397) [`fd37444`](https://github.com/finos/legend-studio/commit/fd37444b0ef470dcf738dc31b5bf4ea1c3f65ae6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Replace per-ingest-environment fan-out for Snowflake account options with a single `GET /subscriptions/targets` call. Adds `V1_DataSubscriptionTargetsResponse` (with `V1_dataSubscriptionTargetsResponseModelSchema` and `V1_deserializeDataSubscriptionTargetsResponse`), exposes `LakehouseContractServerClient.getSubscriptionTargets`, and wires a new `subscriptionTargets` observable on `DataProductDataAccessState` that is lazily populated (once per store instance) when the Create Subscription dialog is opened. Removes the `lakehouseIngestEnvironmentDetails` state and `fetchLakehouseIngestEnvironmentDetails` fan-out from `DataProductDataAccessState`, and drops the URN-based "Suggested Accounts" grouping in the subscription creator in favor of a flat list sourced from the targets API. Also renames the internal helper `V1_deseralizeDataSubscriptionTarget` to `V1_deserializeDataSubscriptionTarget` (now exported).
+
 ## 32.6.23
 
 ### Patch Changes

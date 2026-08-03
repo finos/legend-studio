@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube
 
+## 0.7.94
+
 ## 0.7.93
 
 ## 0.7.92
