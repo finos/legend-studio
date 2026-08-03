@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.103
+
+### Patch Changes
+
+- [#5398](https://github.com/finos/legend-studio/pull/5398) [`4761612`](https://github.com/finos/legend-studio/commit/47616129f7f70c177d7089ea82aee3dc9cbbd528) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Refactor `DataProductConfig` to group producer-side settings under a new optional `producer: DataProductProducerConfig` field (breaking-shape change on the config JSON — callers must nest `operationalUrl` and `deploymentLegendServiceUrl` under `producer`). Add a required `deploymentViewUrl` on `DataProductProducerConfig` used to deep-link an AppDir deployment id.
+
+  Consolidate producer environment metadata in the Producer Info section into a single info card rendered once above the per-APG groups (via the new exported `DataProductProducerEnvironmentInfo` component), replacing the previous per-row `Producer Environment` / `AppDir ID` columns in the ingestion datasets grid. Resolve AppDir deployment ids to human-readable deployment names via a single `executeLegendUserService` call per data product, and render each AppDir as a link to `${producer.deploymentViewUrl}/${deploymentId}` when configured.
+
+- [#5399](https://github.com/finos/legend-studio/pull/5399) [`fffac27`](https://github.com/finos/legend-studio/commit/fffac2771cc2aae8e27c548e70badc1897033485) ([@jackp5150](https://github.com/jackp5150)) - Refactor missing ingest flow in data product viewer to remove duplicate api calls
+
+- [#5396](https://github.com/finos/legend-studio/pull/5396) [`6016f91`](https://github.com/finos/legend-studio/commit/6016f91da73b5643cfe4919cf620007d3545b43a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `renderOrganizationalScopeConsumer`, a JSX-returning counterpart to `stringifyOrganizationalScope` which prefers a plugin-provided `organizationalScopeTypeDetailsRenderer` (allowing richer content such as a link) and otherwise falls back to the plain-text stringified scope. Use it for the inline consumer display in the Data Access Request Viewer ("Ordered For") and the entitlements data grid consumer cell, so plugin-contributed organizational scope types can render clickable content instead of plain text.
+
+- [#5397](https://github.com/finos/legend-studio/pull/5397) [`fd37444`](https://github.com/finos/legend-studio/commit/fd37444b0ef470dcf738dc31b5bf4ea1c3f65ae6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Replace per-ingest-environment fan-out for Snowflake account options with a single `GET /subscriptions/targets` call. Adds `V1_DataSubscriptionTargetsResponse` (with `V1_dataSubscriptionTargetsResponseModelSchema` and `V1_deserializeDataSubscriptionTargetsResponse`), exposes `LakehouseContractServerClient.getSubscriptionTargets`, and wires a new `subscriptionTargets` observable on `DataProductDataAccessState` that is lazily populated (once per store instance) when the Create Subscription dialog is opened. Removes the `lakehouseIngestEnvironmentDetails` state and `fetchLakehouseIngestEnvironmentDetails` fan-out from `DataProductDataAccessState`, and drops the URN-based "Suggested Accounts" grouping in the subscription creator in favor of a flat list sourced from the targets API. Also renames the internal helper `V1_deseralizeDataSubscriptionTarget` to `V1_deserializeDataSubscriptionTarget` (now exported).
+
 ## 0.0.102
 
 ### Patch Changes
