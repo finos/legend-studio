@@ -28,7 +28,7 @@ export class RelationFunctionInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable
 {
-  relationFunction?: ConcreteFunctionDefinition;
+  relationFunction?: ConcreteFunctionDefinition | undefined;
   sourceLambda?: RawLambda | undefined;
   primaryKey: string[] = [];
 
