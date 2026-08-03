@@ -19,6 +19,7 @@ import { unitTest } from '@finos/legend-shared/test';
 import { ApplicationStore } from '@finos/legend-application';
 import {
   Core_GraphManagerPreset,
+  DataProductAccessor,
   LakehouseAccessPoint,
   RuntimePointer,
   SimpleFunctionExpression,
@@ -42,6 +43,7 @@ import {
 import {
   DataProductQueryBuilderState,
   LakehouseDataProductExecutionState,
+  resolveDataProductAccessor,
 } from '../DataProductQueryBuilderState.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { buildLambdaFunction } from '../../../QueryBuilderValueSpecificationBuilder.js';
@@ -372,6 +374,156 @@ describe(
           }
         ).values[0];
         expect(guaranteeNonNullable(runtimeRef).value).toBe(runtime2);
+      },
+    );
+  },
+);
+
+/**
+ * Entities matching the Lakehouse data product above but with NO
+ * LakehouseRuntime defined. Used to reproduce the "relation explorer does not
+ * load" bug: prior to the fix `initWithDataProduct` skipped
+ * `setSourceElement(accessor)` when the graph had no compatible LakehouseRuntime
+ * because both actions shared the same conjoined guard.
+ */
+const TEST_DATA__LakehouseEntitiesWithoutRuntime: Entity[] =
+  TEST_DATA__LakehouseEntities.filter(
+    (entity) =>
+      entity.path !== 'model::LakehouseRuntime1' &&
+      entity.path !== 'model::LakehouseRuntime2',
+  );
+
+const buildLakehouseDataProductStateFrom = async (entities: Entity[]) => {
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager
+    .usePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ])
+    .install();
+  const applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(graphManagerState, entities);
+
+  const dataProduct =
+    graphManagerState.graph.getDataProduct('model::LakehouseDP');
+  const ap1 = guaranteeNonNullable(
+    dataProduct.accessPointGroups
+      .flatMap((group) => group.accessPoints)
+      .filter(
+        (ap): ap is LakehouseAccessPoint => ap instanceof LakehouseAccessPoint,
+      )
+      .find((ap) => ap.id === 'lhAP1'),
+  );
+  const artifact = new V1_DataProductArtifact();
+  const state = new DataProductQueryBuilderState(
+    applicationStore,
+    graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
+    dataProduct,
+    artifact,
+    QueryBuilderActionConfig.INSTANCE,
+    ap1,
+    undefined,
+    async () => {
+      /* no-op */
+    },
+  );
+  return { state, dataProduct, ap1, graphManagerState };
+};
+
+describe(
+  unitTest('DataProductQueryBuilderState - initWithDataProduct for Lakehouse'),
+  () => {
+    test(
+      unitTest(
+        'sets sourceElement to the accessor even when no compatible LakehouseRuntime exists',
+      ),
+      async () => {
+        const { state, dataProduct, ap1, graphManagerState } =
+          await buildLakehouseDataProductStateFrom(
+            TEST_DATA__LakehouseEntitiesWithoutRuntime,
+          );
+
+        // sanity check: precondition of the bug — no compatible runtime
+        const execState = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        expect(execState.compatibleRuntimes).toEqual([]);
+        expect(execState.selectedRuntime).toBeUndefined();
+
+        const accessor = resolveDataProductAccessor(
+          dataProduct,
+          ap1,
+          graphManagerState.graph,
+          undefined,
+          undefined,
+        );
+
+        state.initWithDataProduct(dataProduct, accessor, ap1);
+
+        // Regression: the relation explorer relies on `sourceAccessor` being
+        // populated so `QueryBuilderExplorerPanel` can render
+        // `QueryBuilderRelationExplorerPanel` instead of the class explorer.
+        expect(state.sourceAccessor).toBe(accessor);
+        expect(state.sourceElement).toBeInstanceOf(DataProductAccessor);
+        // sourceClass must remain undefined because the source is an accessor
+        expect(state.sourceClass).toBeUndefined();
+      },
+    );
+
+    test(
+      unitTest(
+        'sets sourceElement AND runtime when a compatible LakehouseRuntime exists',
+      ),
+      async () => {
+        const { state, dataProduct, ap1, graphManagerState } =
+          await buildLakehouseDataProductStateFrom(
+            TEST_DATA__LakehouseEntities,
+          );
+
+        const execState = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        // default selectedRuntime is compatibleRuntimes[0]
+        const defaultRuntime = guaranteeNonNullable(execState.selectedRuntime);
+
+        const accessor = resolveDataProductAccessor(
+          dataProduct,
+          ap1,
+          graphManagerState.graph,
+          undefined,
+          undefined,
+        );
+
+        state.initWithDataProduct(dataProduct, accessor, ap1);
+
+        expect(state.sourceAccessor).toBe(accessor);
+        const runtimeValue = state.executionContextState.runtimeValue;
+        expect(runtimeValue).toBeInstanceOf(RuntimePointer);
+        expect(
+          guaranteeType(runtimeValue, RuntimePointer).packageableRuntime.value,
+        ).toBe(defaultRuntime);
+      },
+    );
+
+    test(
+      unitTest('does not wire source element when no accessor is provided'),
+      async () => {
+        const { state, dataProduct, ap1 } =
+          await buildLakehouseDataProductStateFrom(
+            TEST_DATA__LakehouseEntitiesWithoutRuntime,
+          );
+
+        state.initWithDataProduct(dataProduct, undefined, ap1);
+
+        expect(state.sourceAccessor).toBeUndefined();
+        expect(state.sourceElement).toBeUndefined();
       },
     );
   },
