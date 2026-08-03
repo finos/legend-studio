@@ -29,21 +29,16 @@ Class my::Person
   greeted: String[1];
 }
 
-function my::personFunctionTyped(): meta::pure::metamodel::relation::Relation<(FIRSTNAME:String, AGE:Integer, FIRMID:Integer, GREETED:String)>[1]
-{
-  #>{my::testDB.personTable}#->filter(x|$x.AGE > 25)->extend(~GREETED:x|'Hi ' + $x.FIRSTNAME)
-}
-
 
 ###Mapping
 Mapping my::relationFunctionMappingWithSourceLambda
 (
   *my::Person[person]: Relation
   {
-    ~src my::personFunctionTyped():Relation<(FIRSTNAME:String, AGE:Integer, FIRMID:Integer, GREETED:String)>[1]
+    ~src #>{my::testDB.personTable}#->filter(x|$x.AGE > 25)->extend(~GREETED:x|'Hi ' + $x.FIRSTNAME)
     firstName: FIRSTNAME,
     age: AGE,
-    greeted: 'Hi ' + $src.FIRSTNAME
+    greeted: GREETED
   }
   *my::Firm[firm]: Relation
   {
