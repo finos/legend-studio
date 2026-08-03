@@ -30,7 +30,10 @@
  * limitations under the License.
  */
 
-import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../Core_HashUtils.js';
 import { hashArray, type Hashable } from '@finos/legend-shared';
 import {
   type PropertyMappingVisitor,
@@ -42,12 +45,14 @@ import type { SetImplementationReference } from '../SetImplementationReference.j
 import type { RelationColumn } from '../../relation/RelationType.js';
 import type { BindingTransformer } from '../../externalFormat/store/DSL_ExternalFormat_BindingTransformer.js';
 import type { EnumerationMappingReference } from '../../mapping/EnumerationMappingReference.js';
+import type { RawLambda } from '../../../rawValueSpecification/RawLambda.js';
 
 export class RelationFunctionPropertyMapping
   extends PropertyMapping
   implements Hashable
 {
-  column: RelationColumn;
+  column?: RelationColumn | undefined;
+  valueFn?: RawLambda | undefined;
   bindingTransformer?: BindingTransformer | undefined;
   transformer?: EnumerationMappingReference | undefined;
 
@@ -56,7 +61,7 @@ export class RelationFunctionPropertyMapping
     property: PropertyReference,
     source: SetImplementationReference,
     target: SetImplementationReference | undefined,
-    column: RelationColumn,
+    column: RelationColumn | undefined,
   ) {
     super(owner, property, source, target);
     this.column = column;
@@ -66,7 +71,8 @@ export class RelationFunctionPropertyMapping
     return hashArray([
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_PROPERTY_MAPPING,
       super.hashCode,
-      this.column.name,
+      this.column?.name ?? '',
+      hashRawLambda(this.valueFn?.parameters, this.valueFn?.body),
       this.bindingTransformer ?? '',
       this.transformer?.valueForSerialization ?? '',
     ]);

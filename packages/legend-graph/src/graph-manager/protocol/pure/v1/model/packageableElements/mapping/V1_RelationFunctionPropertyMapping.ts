@@ -31,18 +31,23 @@
  */
 
 import { hashArray, type Hashable } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../../../graph/Core_HashUtils.js';
 import {
   type V1_PropertyMappingVisitor,
   V1_PropertyMapping,
 } from './V1_PropertyMapping.js';
 import type { V1_BindingTransformer } from '../externalFormat/store/V1_DSL_ExternalFormat_BindingTransformer.js';
+import type { V1_RawLambda } from '../../rawValueSpecification/V1_RawLambda.js';
 
 export class V1_RelationFunctionPropertyMapping
   extends V1_PropertyMapping
   implements Hashable
 {
-  column!: string;
+  column?: string | undefined;
+  valueFn?: V1_RawLambda | undefined;
   bindingTransformer?: V1_BindingTransformer | undefined;
   enumMappingId?: string | undefined;
 
@@ -54,7 +59,8 @@ export class V1_RelationFunctionPropertyMapping
     return hashArray([
       CORE_HASH_STRUCTURE.RELATION_FUNCTION_PROPERTY_MAPPING,
       super.hashCode,
-      this.column,
+      this.column ?? '',
+      hashRawLambda(this.valueFn?.parameters, this.valueFn?.body),
       this.bindingTransformer ?? '',
       this.enumMappingId ?? '',
     ]);
