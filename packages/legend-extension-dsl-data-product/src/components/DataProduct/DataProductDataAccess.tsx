@@ -884,6 +884,127 @@ export const artifactHasDependencyDatasets = (
     ),
   );
 
+const collectAppDirIdsFromArtifact = (
+  artifact: V1_DataProductArtifact | undefined,
+): string[] => {
+  const ids = new Set<string>();
+  artifact?.accessPointGroups.forEach((group) =>
+    group.accessPointImplementations.forEach((apImpl) =>
+      apImpl.dependencyDatasets.forEach((ds) => {
+        if (ds.ingestDefinition.producer instanceof V1_AppDirProducer) {
+          ids.add(String(ds.ingestDefinition.producer.appDirId));
+        }
+      }),
+    ),
+  );
+  return Array.from(ids);
+};
+
+export const DataProductProducerEnvironmentInfo = observer(
+  (props: {
+    dataProductViewerState: DataProductViewerState;
+    dataAccessState: DataProductDataAccessState | undefined;
+    artifact: V1_DataProductArtifact | undefined;
+  }) => {
+    const { dataProductViewerState, dataAccessState, artifact } = props;
+    const entitlementsDetails =
+      dataProductViewerState.entitlementsDataProductDetails;
+    const producerEnvironmentName =
+      entitlementsDetails?.lakehouseEnvironment?.producerEnvironmentName ?? '';
+    const deploymentNameResponse = dataAccessState?.deploymentNameResponse;
+    const deploymentViewUrl =
+      dataProductViewerState.dataProductConfig?.producer?.deploymentViewUrl;
+    const appDirIds = useMemo(
+      () => collectAppDirIdsFromArtifact(artifact),
+      [artifact],
+    );
+    const producerEnvironmentUrl = producerEnvironmentName
+      ? dataAccessState?.generateOperationalUrlForIngestUrn(
+          producerEnvironmentName,
+        )
+      : undefined;
+    const handleOpenProducerEnvironment = (url: string): void => {
+      dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
+        url,
+      );
+    };
+    const handleOpenDeployment = (deploymentId: string): void => {
+      if (!deploymentViewUrl) {
+        return;
+      }
+      const base = deploymentViewUrl.replace(/\/$/, '');
+      dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
+        `${base}/${deploymentId}`,
+      );
+    };
+    const renderAppDirId = (id: string): React.ReactNode => {
+      const label =
+        deploymentNameResponse &&
+        String(deploymentNameResponse['Deployment Id']) === id
+          ? `${deploymentNameResponse['Deployment Name']} (${id})`
+          : id;
+      if (!deploymentViewUrl) {
+        return label;
+      }
+      return (
+        <button
+          key={id}
+          type="button"
+          className="data-product__viewer__producer-view__link-cell"
+          title={`Open deployment\n${deploymentViewUrl.replace(/\/$/, '')}/${id}`}
+          onClick={() => handleOpenDeployment(id)}
+        >
+          {label}
+        </button>
+      );
+    };
+    return (
+      <Box className="data-product__viewer__producer-view__info">
+        <div className="data-product__viewer__producer-view__info__item">
+          <span className="data-product__viewer__producer-view__info__label">
+            Producer Environment
+          </span>
+          {!producerEnvironmentName ? (
+            <span className="data-product__viewer__producer-view__info__value">
+              —
+            </span>
+          ) : producerEnvironmentUrl ? (
+            <button
+              type="button"
+              className="data-product__viewer__producer-view__link-cell"
+              title={`Open producer environment\n${producerEnvironmentUrl}`}
+              onClick={() =>
+                handleOpenProducerEnvironment(producerEnvironmentUrl)
+              }
+            >
+              {producerEnvironmentName}
+            </button>
+          ) : (
+            <span className="data-product__viewer__producer-view__info__value">
+              {producerEnvironmentName}
+            </span>
+          )}
+        </div>
+        <div className="data-product__viewer__producer-view__info__item">
+          <span className="data-product__viewer__producer-view__info__label">
+            AppDir
+          </span>
+          <span className="data-product__viewer__producer-view__info__value">
+            {appDirIds.length === 0
+              ? '—'
+              : appDirIds.map((id, idx) => (
+                  <React.Fragment key={id}>
+                    {idx > 0 && ', '}
+                    {renderAppDirId(id)}
+                  </React.Fragment>
+                ))}
+          </span>
+        </div>
+      </Box>
+    );
+  },
+);
+
 export const ApgIngestionDataSetsScreen = observer(
   (props: {
     apgState: DataProductAPGState;
@@ -943,15 +1064,6 @@ export const ApgIngestionDataSetsScreen = observer(
     const openIngestQuery = apgState.dataProductViewerState.openIngestQuery;
     const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery && isOwner);
 
-    // Build the external operational-view URL for the producer environment.
-    // The URL is only available when both `DataProductConfig.operationalUrl`
-    // and the resolved `lakehouseIngestEnv.ingestEnvironmentUrn` are present;
-    // otherwise we fall back to plain text. The row's producer URN is
-    // appended so we deep-link into the correct producer within the env.
-    const handleOpenProducerEnvironment = (url: string): void => {
-      apgState.applicationStore.navigationService.navigator.visitAddress(url);
-    };
-
     const columnDefs: DataGridColumnDefinition<IngestionDataSetRow>[] = [
       {
         headerName: 'Access Point',
@@ -959,37 +1071,6 @@ export const ApgIngestionDataSetsScreen = observer(
         flex: 1,
         rowGroup: true,
         hide: true,
-      },
-      {
-        headerName: 'Producer Environment',
-        field: 'producerEnvironmentName',
-        flex: 1,
-        cellRenderer: (params: {
-          value: string | undefined;
-          data: IngestionDataSetRow | undefined;
-        }) => {
-          const value = params.value;
-          if (!value) {
-            return '';
-          }
-          const producerEnvironmentUrl =
-            dataAccessState?.generateOperationalUrlForIngestUrn(value);
-          if (!producerEnvironmentUrl) {
-            return value;
-          }
-          return (
-            <button
-              type="button"
-              className="data-product__viewer__producer-view__link-cell"
-              title={`Open producer environment\n${producerEnvironmentUrl}`}
-              onClick={() =>
-                handleOpenProducerEnvironment(producerEnvironmentUrl)
-              }
-            >
-              {value}
-            </button>
-          );
-        },
       },
       {
         headerName: 'Ingest Definition',
@@ -1046,8 +1127,6 @@ export const ApgIngestionDataSetsScreen = observer(
         },
       },
       { headerName: 'Dataset', field: 'dataset', flex: 1.4 },
-      { headerName: 'AppDir ID', field: 'appDirId', flex: 0.6 },
-
       {
         headerName: 'Actions',
         colId: 'actions',

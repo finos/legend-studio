@@ -1991,6 +1991,37 @@
     color: #4b5563;
   }
 
+  &__info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.4rem;
+    padding: 0.8rem 1.2rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 3px;
+    background-color: #fafafa;
+
+    &__item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-width: 0;
+    }
+
+    &__label {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    &__value {
+      font-size: 1.2rem;
+      color: #1f2937;
+      word-break: break-all;
+    }
+  }
+
   &__link-cell {
     background: transparent;
     border: 0;
