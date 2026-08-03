@@ -156,7 +156,7 @@ import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
-const buildUnsupportedLakehouseComputeMessage = (
+export const buildUnsupportedLakehouseComputeMessage = (
   targetEnvironment: string,
 ): string =>
   `This feature is not supported for access points deployed to ${targetEnvironment}.`;
