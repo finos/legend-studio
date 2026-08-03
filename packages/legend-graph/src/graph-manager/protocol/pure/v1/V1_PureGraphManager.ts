@@ -282,7 +282,7 @@ import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_S
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
 import {
-  V1_BatchLambdaReturnTypeInput,
+  V1_BatchLambdaRelationTypeInput,
   V1_LambdaReturnTypeInput,
 } from './engine/compilation/V1_LambdaReturnType.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
@@ -2114,7 +2114,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): Promise<BatchLambdasRelationTypeResult> {
     return this.engine.getBatchLambdasRelationTypeFromRawInput(
-      this.buildBatchLambdasReturnTypeInput(lambdas, graph, options),
+      this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
     );
   }
 
@@ -2308,12 +2308,12 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  private buildBatchLambdasReturnTypeInput(
+  private buildBatchLambdasRelationTypeInput(
     lambdas: Map<string, RawLambda>,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): V1_BatchLambdaReturnTypeInput {
-    return new V1_BatchLambdaReturnTypeInput(
+  ): V1_BatchLambdaRelationTypeInput {
+    return new V1_BatchLambdaRelationTypeInput(
       this.getFullGraphModelContext(
         graph,
         V1_PureGraphManager.DEV_PROTOCOL_VERSION,

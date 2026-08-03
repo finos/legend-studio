@@ -44,7 +44,7 @@ export class V1_LambdaReturnTypeInput {
   );
 }
 
-export class V1_BatchLambdaReturnTypeInput {
+export class V1_BatchLambdaRelationTypeInput {
   model: V1_PureModelContext;
   lambdas: Record<string, V1_RawLambda>;
 
@@ -57,7 +57,7 @@ export class V1_BatchLambdaReturnTypeInput {
   }
 
   static readonly serialization = new SerializationFactory(
-    createModelSchema(V1_BatchLambdaReturnTypeInput, {
+    createModelSchema(V1_BatchLambdaRelationTypeInput, {
       model: V1_pureModelContextPropSchema,
       lambdas: custom(
         (
@@ -87,7 +87,7 @@ export interface V1_LambdaReturnTypeResult {
   returnType: string;
 }
 
-export interface V1_BatchLambdaReturnTypeResult {
-  result: Record<string, PlainObject<V1_RelationType>>;
+export interface V1_BatchLambdaRelationTypeResult {
+  results: Record<string, PlainObject<V1_RelationType>>;
   errors: Record<string, PlainObject<V1_EngineError>>;
 }

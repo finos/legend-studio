@@ -44,7 +44,7 @@ import {
 import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import {
   type V1_LambdaReturnTypeResult,
-  V1_BatchLambdaReturnTypeInput,
+  V1_BatchLambdaRelationTypeInput,
   V1_LambdaReturnTypeInput,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
@@ -788,14 +788,14 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   }
 
   async getBatchLambdasRelationTypeFromRawInput(
-    rawInput: V1_BatchLambdaReturnTypeInput,
+    rawInput: V1_BatchLambdaRelationTypeInput,
   ): Promise<BatchLambdasRelationTypeResult> {
     const response = await this.engineServerClient.batchLambdasRelationType(
-      V1_BatchLambdaReturnTypeInput.serialization.toJson(rawInput),
+      V1_BatchLambdaRelationTypeInput.serialization.toJson(rawInput),
     );
     const results = new Map<string, RelationTypeMetadata>();
     const errors = new Map<string, EngineError>();
-    Object.entries(response.result).forEach(([key, columns]) => {
+    Object.entries(response.results).forEach(([key, columns]) => {
       const relationType = deserialize(V1_relationTypeModelSchema, columns);
       const meta = new RelationTypeMetadata();
       meta.columns = relationType.columns.map(

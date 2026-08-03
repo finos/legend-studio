@@ -28,7 +28,7 @@ import { type V1_GrammarParserBatchInputEntry } from './V1_EngineServerClient.js
 import { type V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import {
   type V1_LambdaReturnTypeInput,
-  type V1_BatchLambdaReturnTypeInput,
+  type V1_BatchLambdaRelationTypeInput,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import { type V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
@@ -222,7 +222,7 @@ export interface V1_GraphManagerEngine {
   ): Promise<RelationTypeMetadata>;
 
   getBatchLambdasRelationTypeFromRawInput(
-    rawInput: V1_BatchLambdaReturnTypeInput,
+    rawInput: V1_BatchLambdaRelationTypeInput,
   ): Promise<BatchLambdasRelationTypeResult>;
 
   getCodeCompletion(
