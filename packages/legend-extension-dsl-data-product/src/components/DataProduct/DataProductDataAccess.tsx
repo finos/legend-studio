@@ -70,7 +70,6 @@ import {
   V1_EnumValue,
   V1_getGenericTypeFullPath,
   V1_LakehouseAccessPoint,
-  LakehouseTargetEnv,
   V1_SdlcDeploymentDataProductOrigin,
   V1_transformDataContractToLiteDatacontract,
   V1_IngestEnvironmentClassification,
@@ -157,8 +156,10 @@ import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
-const DATABRICKS_NOT_SUPPORTED_MESSAGE =
-  'This feature is not yet supported for data products with Databricks as the target environment.';
+const buildUnsupportedLakehouseComputeMessage = (
+  targetEnvironment: string,
+): string =>
+  `This feature is not supported for access points deployed to ${targetEnvironment}.`;
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
@@ -196,6 +197,16 @@ const PowerBiScreen = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
+
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
+    }
 
     if (
       !(
@@ -286,12 +297,14 @@ export const SqlPlaygroundScreen = observer(
         <TabMessageScreen message="Sql playground is not supported for this data product or environment." />
       );
     }
-    if (
-      accessPointState.accessPoint instanceof V1_LakehouseAccessPoint &&
-      accessPointState.accessPoint.targetEnvironment ===
-        LakehouseTargetEnv.Databricks
-    ) {
-      return <TabMessageScreen message={DATABRICKS_NOT_SUPPORTED_MESSAGE} />;
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
     }
     const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
     const [isMaximized, setIsMaximized] = useState(true);
@@ -493,12 +506,14 @@ const DataCubeScreen = observer(
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
     }
-    if (
-      accessPointState.accessPoint instanceof V1_LakehouseAccessPoint &&
-      accessPointState.accessPoint.targetEnvironment ===
-        LakehouseTargetEnv.Databricks
-    ) {
-      return <TabMessageScreen message={DATABRICKS_NOT_SUPPORTED_MESSAGE} />;
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
     }
     const dataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin;
@@ -588,12 +603,14 @@ const LegendQueryScreen = observer(
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
     }
-    if (
-      accessPointState.accessPoint instanceof V1_LakehouseAccessPoint &&
-      accessPointState.accessPoint.targetEnvironment ===
-        LakehouseTargetEnv.Databricks
-    ) {
-      return <TabMessageScreen message={DATABRICKS_NOT_SUPPORTED_MESSAGE} />;
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
     }
     const sdlcDataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin instanceof

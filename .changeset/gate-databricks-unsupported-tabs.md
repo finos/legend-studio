@@ -2,4 +2,4 @@
 '@finos/legend-extension-dsl-data-product': patch
 ---
 
-Disabled DataCube, SQL Playground, and Legend Query tabs in the Data Product Viewer for access points with a Databricks target environment, showing a not-yet-supported message instead. These features currently rely on a Snowflake-style warehouse concept that does not map to Databricks compute.
+Disabled DataCube, SQL Playground, Legend Query, and Power BI tabs in the Data Product Viewer for access points whose target environment isn't Snowflake (e.g. Databricks, BigQuery, DuckDb), showing a not-supported message instead. The Data Product Viewer's auto-generated Lakehouse runtime only ever synthesizes a Snowflake connection, so non-Snowflake access points would otherwise fail at query time.

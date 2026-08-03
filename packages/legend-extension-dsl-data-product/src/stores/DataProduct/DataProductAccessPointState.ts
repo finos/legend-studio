@@ -18,6 +18,7 @@ import {
   type V1_AccessPoint,
   type V1_DataProductArtifact,
   type V1_EntitlementsDataProductDetails,
+  LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_LambdaReturnTypeInput,
   V1_RelationElement,
@@ -73,6 +74,7 @@ export class DataProductAccessPointState {
       isCollapsed: observable,
       setIsCollapsed: action,
       entitlementsDataProductDetails: computed,
+      unsupportedLakehouseComputeTarget: computed,
     });
 
     this.apgState = apgState;
@@ -84,6 +86,16 @@ export class DataProductAccessPointState {
     | V1_EntitlementsDataProductDetails
     | undefined {
     return this.apgState.dataProductViewerState.entitlementsDataProductDetails;
+  }
+
+  get unsupportedLakehouseComputeTarget(): string | undefined {
+    if (
+      this.accessPoint instanceof V1_LakehouseAccessPoint &&
+      this.accessPoint.targetEnvironment !== LakehouseTargetEnv.Snowflake
+    ) {
+      return this.accessPoint.targetEnvironment;
+    }
+    return undefined;
   }
 
   setIsCollapsed(val: boolean): void {
