@@ -17,18 +17,18 @@
 import {
   type AppDirNode,
   type ArtifactGenerationExtensionResult,
+  type BatchLambdasRelationTypeResult,
   type DataProductElement,
   type IngestDefinition,
   type Mapping,
   type PackageableElement,
   type RawLambda,
+  type RelationTypeMetadata,
   type Stereotype,
   type StereotypeReference,
   type V1_AccessPointGroupInfo,
   type V1_AccessPointImplementation,
   type V1_DataProductArtifact,
-  type V1_LambdaReturnTypeBatchResult,
-  type V1_RawLambda,
   type V1_RawLineageModel,
   AccessPoint,
   AccessPointGroup,
@@ -61,13 +61,6 @@ import {
   RelationElementsData,
   stub_Mapping,
   stub_RawLambda,
-  V1_GraphTransformerContextBuilder,
-  V1_LambdaReturnTypeBatchInput,
-  V1_LambdaReturnTypeInput,
-  V1_PureGraphManager,
-  V1_relationTypeModelSchema,
-  V1_RemoteEngine,
-  V1_transformRawLambda,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -123,7 +116,6 @@ import type {
   AdhocDataProductDeployResponse,
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
-import { deserialize } from 'serializr';
 import { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { onGeneratingDiagramFromMapping } from '../mapping/MappingEditorState.js';
@@ -198,7 +190,6 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   }
 
   *updateLambdaRelationColumns(): GeneratorFn<void> {
-    // Prevent concurrent calls
     if (this.isUpdatingRelationColumns) {
       return;
     }
@@ -210,36 +201,11 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
 
     this.setIsUpdatingRelationColumns(true);
     try {
-      const model = guaranteeType(
-        this.editorStore.graphManagerState.graphManager,
-        V1_PureGraphManager,
-      ).getFullGraphModelData(this.editorStore.graphManagerState.graph);
-
-      const relationTypeInput = new V1_LambdaReturnTypeInput(
-        model,
-        V1_transformRawLambda(
+      const relationType =
+        (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
           this.val.accessPoint.func,
-          new V1_GraphTransformerContextBuilder(
-            this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        ),
-      );
-
-      const relationType = deserialize(
-        V1_relationTypeModelSchema,
-        (yield guaranteeType(
-          guaranteeType(
-            this.editorStore.graphManagerState.graphManager,
-            V1_PureGraphManager,
-          ).engine,
-          V1_RemoteEngine,
-        )
-          .getEngineServerClient()
-          .lambdaRelationType(
-            V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
-          )) as object,
-      );
-
+          this.editorStore.graphManagerState.graph,
+        )) as RelationTypeMetadata;
       this.setLambdaRelationColumns(
         relationType.columns.map((column) => column.name),
       );
@@ -1161,43 +1127,24 @@ export class DataProductEditorState extends ElementEditorState {
       entry.apState.lambdaState.setIsUpdatingRelationColumns(true),
     );
     try {
-      const graphManager = guaranteeType(
-        this.editorStore.graphManagerState.graphManager,
-        V1_PureGraphManager,
-      );
-      const model = graphManager.getFullGraphModelData(
-        this.editorStore.graphManagerState.graph,
-      );
-      const context = new V1_GraphTransformerContextBuilder(
-        this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
-      ).build();
-      const lambdas: Record<string, V1_RawLambda> = {};
-      entries.forEach((entry) => {
-        lambdas[entry.apState.uuid] = V1_transformRawLambda(
+      const lambdas = new Map<string, RawLambda>(
+        entries.map((entry) => [
+          entry.apState.uuid,
           entry.apState.accessPoint.func,
-          context,
-        );
-      });
-      const engineServerClient = guaranteeType(
-        graphManager.engine,
-        V1_RemoteEngine,
-      ).getEngineServerClient();
-      const response = (yield engineServerClient.lambdaRelationTypeBatch(
-        V1_LambdaReturnTypeBatchInput.serialization.toJson(
-          new V1_LambdaReturnTypeBatchInput(model, lambdas),
-        ),
-      )) as V1_LambdaReturnTypeBatchResult;
+        ]),
+      );
+      const { results } =
+        (yield this.editorStore.graphManagerState.graphManager.getBatchLambdasRelationType(
+          lambdas,
+          this.editorStore.graphManagerState.graph,
+        )) as BatchLambdasRelationTypeResult;
       entries.forEach((entry) => {
-        const columns = response.result[entry.apState.uuid];
-        if (columns !== undefined) {
-          entry.apState.lambdaState.setLambdaRelationColumns(
-            deserialize(V1_relationTypeModelSchema, columns).columns.map(
-              (column) => column.name,
-            ),
-          );
-        } else {
-          entry.apState.lambdaState.setLambdaRelationColumns(undefined);
-        }
+        const relationType = results.get(entry.apState.uuid);
+        entry.apState.lambdaState.setLambdaRelationColumns(
+          relationType
+            ? relationType.columns.map((column) => column.name)
+            : undefined,
+        );
       });
     } catch {
       entries.forEach((entry) =>

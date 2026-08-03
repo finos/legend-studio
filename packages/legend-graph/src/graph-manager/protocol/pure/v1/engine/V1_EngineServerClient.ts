@@ -27,8 +27,8 @@ import {
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
   V1_LambdaReturnTypeInput,
-  V1_LambdaReturnTypeBatchInput,
-  V1_LambdaReturnTypeBatchResult,
+  V1_BatchLambdaReturnTypeInput,
+  V1_BatchLambdaReturnTypeResult,
   V1_LambdaReturnTypeResult,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
@@ -738,12 +738,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  lambdaRelationTypeBatch = (
-    input: PlainObject<V1_LambdaReturnTypeBatchInput>,
+  batchLambdasRelationType = (
+    input: PlainObject<V1_BatchLambdaReturnTypeInput>,
     options?: {
       abortController?: AbortController | undefined;
     },
-  ): Promise<V1_LambdaReturnTypeBatchResult> =>
+  ): Promise<V1_BatchLambdaReturnTypeResult> =>
     this.postWithTracing(
       this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
       `${this._pure()}/compilation/lambdaRelationType/batch`,
