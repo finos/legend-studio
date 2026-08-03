@@ -352,6 +352,10 @@ const CIntegerModelSchema = createModelSchema(V1_CInteger, {
 
 const CStringModelSchema = createModelSchema(V1_CString, {
   _type: usingConstantValueSchema(V1_ValueSpecificationType.CSTRING),
+  multiLine: optionalCustom(
+    (val) => val,
+    (val) => val,
+  ),
   value: primitive(),
 });
 

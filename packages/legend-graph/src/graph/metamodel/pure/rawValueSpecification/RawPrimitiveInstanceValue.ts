@@ -31,6 +31,11 @@ export class RawPrimitiveInstanceValue
   readonly multiplicity = Multiplicity.ONE;
   type: PackageableElementReference<Type>;
   value?: string | number | boolean | undefined;
+  /**
+   * Only meaningful when `type` is `String`: whether the literal was authored as a multi-line (`'''...'''`) block.
+   * See https://github.com/finos/legend-engine/pull/4998
+   */
+  multiLine = false;
 
   constructor(
     type: PackageableElementReference<Type>,

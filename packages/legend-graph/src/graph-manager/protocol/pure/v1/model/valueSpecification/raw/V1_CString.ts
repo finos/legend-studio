@@ -28,6 +28,11 @@ export class V1_CString
   implements Hashable
 {
   value!: string;
+  /**
+   * Whether the literal was authored as a multi-line (`'''...'''`) block.
+   * See https://github.com/finos/legend-engine/pull/4998
+   */
+  multiLine = false;
 
   accept_ValueSpecificationVisitor<T>(
     visitor: V1_ValueSpecificationVisitor<T>,
@@ -35,6 +40,10 @@ export class V1_CString
     return visitor.visit_CString(this);
   }
 
+  /**
+   * NOTE: `multiLine` is excluded here to keep this hash compatible with `PrimitiveInstanceValue.hashCode`,
+   * whose metamodel has no counterpart for the flag.
+   */
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.PRIMITIVE_INSTANCE_VALUE,

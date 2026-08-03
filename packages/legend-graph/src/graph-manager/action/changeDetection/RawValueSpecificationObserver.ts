@@ -33,6 +33,7 @@ export const observe_RawPrimitiveInstanceValue = skipObserved(
   (metamodel: RawPrimitiveInstanceValue): RawPrimitiveInstanceValue => {
     makeObservable(metamodel, {
       value: observable,
+      multiLine: observable,
       hashCode: computed,
     });
 

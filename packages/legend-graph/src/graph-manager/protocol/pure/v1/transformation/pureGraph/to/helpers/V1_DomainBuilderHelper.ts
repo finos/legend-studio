@@ -79,10 +79,12 @@ export const V1_buildTaggedValue = (
   context: V1_GraphBuilderContext,
 ): TaggedValue | undefined => {
   assertNonNullable(taggedValue.tag, `Tagged value 'tag' field is missing`);
-  return new TaggedValue(
+  const metamodel = new TaggedValue(
     context.resolveTag(taggedValue.tag),
     taggedValue.value,
   );
+  metamodel.multiLine = taggedValue.multiLine;
+  return metamodel;
 };
 
 export const V1_buildConstraint = (
