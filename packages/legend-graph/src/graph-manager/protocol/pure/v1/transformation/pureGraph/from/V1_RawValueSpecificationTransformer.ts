@@ -76,6 +76,7 @@ export class V1_RawValueSpecificationTransformer
     const protocol = new V1_RawPrimitiveInstanceValue();
     protocol.type = rawValueSpecification.type.valueForSerialization ?? '';
     protocol.value = rawValueSpecification.value;
+    protocol.multiLine = rawValueSpecification.multiLine;
     return protocol;
   }
 }

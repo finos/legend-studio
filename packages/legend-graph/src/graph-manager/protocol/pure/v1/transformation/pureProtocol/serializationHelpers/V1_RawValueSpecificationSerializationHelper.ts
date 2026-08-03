@@ -31,6 +31,7 @@ import {
   UnsupportedOperationError,
   usingModelSchema,
   customList,
+  optionalCustom,
   optionalCustomList,
   optionalCustomListWithSchema,
   isString,
@@ -311,6 +312,11 @@ export const V1_rawPrimitiveInstanceValueSchema = createModelSchema(
           }
         },
       ),
+    ),
+    // NOTE: like engine, we omit this flag from the wire when it is `false`
+    multiLine: optionalCustom(
+      (val) => val,
+      (val) => val,
     ),
     value: optional(primitive()),
   },
