@@ -146,6 +146,7 @@ export * from './stores/shared/V1_ValueSpecificationEditorHelper.js';
 
 export * from './components/execution-plan/ExecutionPlanViewer.js';
 export * from './components/lineage/LineageViewer.js';
+export * from './components/lakehouse/IngestionDefinitionArtifactViewer.js';
 
 export * from './stores/execution-plan/ExecutionPlanState.js';
 export * from './stores/lineage/LineageState.js';

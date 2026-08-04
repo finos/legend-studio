@@ -18,6 +18,8 @@ import {
   type MatViewDataSet,
   type PackageableElement,
   type V1_RawLineageModel,
+  type ArtifactGenerationExtensionResult,
+  type IngestionDefinitionArtifact,
   GRAPH_MANAGER_EVENT,
   IngestDefinition,
 } from '@finos/legend-graph';
@@ -62,6 +64,8 @@ export enum INGEST_DEFINITION_TAB {
   TESTING = 'Testing',
 }
 
+export const INGEST_DEFINITION_ARTIFACT_EXTENSION = 'ingestDefinition';
+
 const createEditorInitialConfiguration = (): EditorInitialConfiguration => {
   const config = new EditorInitialConfiguration();
   const ingest = new IngestElementEditorInitialConfiguration();
@@ -85,11 +89,20 @@ export const generateUrlToDeployOnOpen = (
 };
 
 const PARSER_SECTION = `###Lakehouse`;
+
+type CachedIngestArtifact = {
+  hashCode: string;
+  artifact: IngestionDefinitionArtifact;
+};
+
 export class IngestDefinitionEditorState extends ElementEditorState {
   selectedTab = INGEST_DEFINITION_TAB.DEFINITION;
   validateAndDeployResponse: ValidateAndDeploymentResponse | undefined;
   deploymentState = ActionState.create();
   lineageGenerationState = ActionState.create();
+  artifactGenerationState = ActionState.create();
+  ingestionArtifact: IngestionDefinitionArtifact | undefined;
+  cachedArtfact: CachedIngestArtifact | undefined;
   deployOnOpen = false;
   lineageState: LineageState;
   ingestTestableState: IngestTestableState;
@@ -106,13 +119,18 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       deploymentState: observable,
       deployOnOpen: observable,
       setDeployOnOpen: observable,
+      cachedArtfact: observable,
       validateAndDeployResponse: observable,
+      ingestionArtifact: observable,
       deploymentResponse: computed,
       setSelectedTab: action,
       setValidateAndDeployResponse: action,
+      setIngestCachedArtifact: action,
+      setIngestionArtifact: action,
       init_with_deploy: flow,
       deploy: flow,
       generateLineage: flow,
+      generateArtifact: flow,
     });
     if (
       config?.elementEditorConfiguration instanceof
@@ -152,6 +170,14 @@ export class IngestDefinitionEditorState extends ElementEditorState {
 
   setDeployOnOpen(value: boolean): void {
     this.deployOnOpen = value;
+  }
+
+  setIngestionArtifact(val: IngestionDefinitionArtifact | undefined): void {
+    this.ingestionArtifact = val;
+  }
+
+  setIngestCachedArtifact(val: CachedIngestArtifact | undefined): void {
+    this.cachedArtfact = val;
   }
 
   *init_with_deploy(auth: AuthContextProps): GeneratorFn<void> {
@@ -266,6 +292,62 @@ export class IngestDefinitionEditorState extends ElementEditorState {
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.lineageGenerationState.complete();
+    }
+  }
+
+  *generateArtifact(): GeneratorFn<void> {
+    if (this.artifactGenerationState.isInProgress) {
+      this.editorStore.applicationStore.notificationService.notifyError(
+        'Artifact generation in progress already',
+      );
+      return;
+    }
+    const currentHashCode = this.ingest.hashCode;
+    if (this.cachedArtfact?.hashCode === currentHashCode) {
+      // reuse cached artifact if the ingest definition has not changed
+      this.setIngestionArtifact(this.cachedArtfact.artifact);
+      return;
+    }
+    try {
+      this.artifactGenerationState.inProgress();
+      const generatedArtifacts =
+        (yield this.editorStore.graphManagerState.graphManager.generateArtifacts(
+          this.editorStore.graphManagerState.graph,
+          this.editorStore.graphEditorMode.getGraphTextInputOption(),
+          [this.ingest.path],
+        )) as ArtifactGenerationExtensionResult;
+      const ingestArtifact = generatedArtifacts.values.find(
+        (artifact) =>
+          artifact.extension === INGEST_DEFINITION_ARTIFACT_EXTENSION,
+      );
+      const artifactContent =
+        ingestArtifact?.artifactsByExtensionElements[0]?.files[0]?.content;
+      if (!artifactContent) {
+        throw new Error(
+          `Could not find generated ingest definition artifact for '${this.ingest.path}'`,
+        );
+      }
+      const artifact =
+        this.editorStore.graphManagerState.graphManager.buildIngestDefinitionArtifact(
+          JSON.parse(artifactContent) as Record<PropertyKey, unknown>,
+          this.editorStore.graphManagerState.graph,
+        );
+      this.setIngestCachedArtifact({
+        hashCode: currentHashCode,
+        artifact,
+      });
+      this.setIngestionArtifact(artifact);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
+        error,
+      );
+      this.editorStore.applicationStore.notificationService.notifyError(
+        `Failed to generate ingest artifact: ${error.message}`,
+      );
+    } finally {
+      this.artifactGenerationState.complete();
     }
   }
 
