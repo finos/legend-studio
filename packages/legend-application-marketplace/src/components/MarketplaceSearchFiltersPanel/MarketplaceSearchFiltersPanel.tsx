@@ -32,12 +32,16 @@ import {
   DataProductLicenseFilter,
   DataProductSourceFilter,
   getDataProductLicenseDisplayLabel,
-  TAXONOMY_UNDEFINED_NODE_ID,
+  getDataProductLicenseTooltip,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import {
+  buildUndefinedTaxonomyNode,
+  matchesUndefinedTaxonomyNode,
+} from './MarketplaceSearchFiltersPanelHelper.js';
 
 interface FlatSearchGroup {
   parentPath: string | undefined;
@@ -204,8 +208,8 @@ export const FilterCheckboxOption: React.FC<{
   label: string;
   checked: boolean;
   onChange: () => void;
-  count?: number | undefined;
-  tooltip?: string | undefined;
+  count?: number;
+  tooltip?: string;
 }> = observer(({ label, checked, onChange, count, tooltip }) => (
   <div
     className="marketplace-search-filters-panel__section__option"
@@ -350,12 +354,7 @@ const renderTaxonomyTree = (
   store: LegendMarketplaceSearchResultsStore,
   triggerSearch: () => void,
 ): React.ReactNode => {
-  const otherNode: TaxonomyNode = {
-    id: TAXONOMY_UNDEFINED_NODE_ID,
-    label: 'Undefined',
-    count: 0,
-    children: [],
-  };
+  const undefinedNode = buildUndefinedTaxonomyNode();
   return (
     <div className="marketplace-search-filters-panel__tree">
       {store.taxonomyTree.map((node) => (
@@ -368,8 +367,8 @@ const renderTaxonomyTree = (
         />
       ))}
       <TaxonomyTreeNode
-        key={TAXONOMY_UNDEFINED_NODE_ID}
-        node={otherNode}
+        key={undefinedNode.id}
+        node={undefinedNode}
         store={store}
         depth={0}
         onFilterChange={triggerSearch}
@@ -477,15 +476,7 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                   key={value}
                   label={getDataProductLicenseDisplayLabel(value)}
                   checked={store.selectedLicenses.has(value)}
-                  tooltip={
-                    value === DataProductLicenseFilter.ENTERPRISE
-                      ? 'Data product available for firmwide use without requesting access'
-                      : value === DataProductLicenseFilter.LIMITED_ENTERPRISE
-                        ? 'Data product with some Access Point Groups available enterprise-wide; others require requesting access'
-                        : value === DataProductLicenseFilter.RESTRICTED
-                          ? 'Data product that requires requesting access before you can query it'
-                          : 'Data product with no license defined'
-                  }
+                  tooltip={getDataProductLicenseTooltip(value)}
                   onChange={() => {
                     const isSelected = store.selectedLicenses.has(value);
                     store.toggleLicense(value);
@@ -539,15 +530,10 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                       baseStore,
                       triggerSearch,
                     )}
-                    {'other'.includes(filterSearchTerm.toLowerCase()) && (
+                    {matchesUndefinedTaxonomyNode(filterSearchTerm) && (
                       <div className="marketplace-search-filters-panel__tree">
                         <TaxonomyTreeNode
-                          node={{
-                            id: TAXONOMY_UNDEFINED_NODE_ID,
-                            label: 'Undefined',
-                            count: 0,
-                            children: [],
-                          }}
+                          node={buildUndefinedTaxonomyNode()}
                           store={store}
                           depth={0}
                           onFilterChange={triggerSearch}

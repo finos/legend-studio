@@ -89,12 +89,26 @@ export const getDataProductLicenseDisplayLabel = (license: string): string =>
     ? 'Partial Enterprise'
     : license;
 
+const DATA_PRODUCT_LICENSE_TOOLTIPS: Record<DataProductLicenseFilter, string> =
+  {
+    [DataProductLicenseFilter.ENTERPRISE]:
+      'Data product available for firmwide use without requesting access',
+    [DataProductLicenseFilter.LIMITED_ENTERPRISE]:
+      'Data product with some Access Point Groups available enterprise-wide; others require requesting access',
+    [DataProductLicenseFilter.RESTRICTED]:
+      'Data product that requires requesting access before you can query it',
+    [DataProductLicenseFilter.UNDEFINED]:
+      'Data product with no license defined',
+  };
+
+export const getDataProductLicenseTooltip = (
+  license: DataProductLicenseFilter,
+): string => DATA_PRODUCT_LICENSE_TOOLTIPS[license];
+
 export interface FilterCounts {
   lakehouse_count: number;
   legacy_count: number;
   external_source_count: number;
-  enterprise_license_count: number;
-  non_enterprise_license_count: number;
 }
 
 export enum SearchResultsViewMode {
@@ -133,8 +147,6 @@ export class LegendMarketplaceSearchResultsStore {
     lakehouse_count: 0,
     legacy_count: 0,
     external_source_count: 0,
-    enterprise_license_count: 0,
-    non_enterprise_license_count: 0,
   };
 
   page = 1;
@@ -669,10 +681,11 @@ export class LegendMarketplaceSearchResultsStore {
         this.showAllProducts,
       );
 
-      const { productCardStates: rawProductCardStates, response } =
-        this.processRawSearchResults(rawResults, graphManager, token);
-
-      const productCardStates = rawProductCardStates;
+      const { productCardStates, response } = this.processRawSearchResults(
+        rawResults,
+        graphManager,
+        token,
+      );
 
       this.setTotalItems(response.metadata.total_count);
       this.setHasFilteredDataProducts(
@@ -692,10 +705,6 @@ export class LegendMarketplaceSearchResultsStore {
         lakehouse_count: response.metadata.lakehouse_count ?? 0,
         legacy_count: response.metadata.legacy_count ?? 0,
         external_source_count: response.metadata.external_source_count ?? 0,
-        enterprise_license_count:
-          response.metadata.enterprise_license_count ?? 0,
-        non_enterprise_license_count:
-          response.metadata.non_enterprise_license_count ?? 0,
       });
     } finally {
       this.executingSemanticSearchState.complete();
