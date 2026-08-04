@@ -47,6 +47,16 @@ import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 
+const getUnsupportedLakehouseTargetEnvs = (): LakehouseTargetEnv[] =>
+  Object.values(LakehouseTargetEnv).filter(
+    (targetEnv) => targetEnv !== LakehouseTargetEnv.Snowflake,
+  );
+
+const isAccessPointTargetEnvSupported = (targetEnvironment: string): boolean =>
+  !(getUnsupportedLakehouseTargetEnvs() as string[]).includes(
+    targetEnvironment,
+  );
+
 export class DataProductAccessPointState {
   readonly apgState: DataProductAPGState;
   readonly accessPoint: V1_AccessPoint;
@@ -91,7 +101,8 @@ export class DataProductAccessPointState {
   get unsupportedLakehouseComputeTarget(): string | undefined {
     if (
       this.accessPoint instanceof V1_LakehouseAccessPoint &&
-      this.accessPoint.targetEnvironment !== LakehouseTargetEnv.Snowflake
+      this.accessPoint.targetEnvironment &&
+      !isAccessPointTargetEnvSupported(this.accessPoint.targetEnvironment)
     ) {
       return this.accessPoint.targetEnvironment;
     }
