@@ -85,7 +85,10 @@ export class RelationFunctionPropertyMappingState extends PropertyMappingState {
     pretty?: boolean | undefined;
     preserveCompilationError?: boolean | undefined;
   }): GeneratorFn<void> {
-    if (!isStubbed_RelationColumn(this.propertyMapping.column)) {
+    if (
+      this.propertyMapping.column &&
+      !isStubbed_RelationColumn(this.propertyMapping.column)
+    ) {
       this.setLambdaString(this.propertyMapping.column.name);
     } else {
       this.clearErrors();
@@ -170,7 +173,10 @@ export class RelationFunctionInstanceSetImplementationState extends InstanceSetI
 
   *convertPropertyMappingTransformObjects(): GeneratorFn<void> {
     this.propertyMappingStates.forEach((pm) => {
-      if (!isStubbed_RelationColumn(pm.propertyMapping.column)) {
+      if (
+        pm.propertyMapping.column &&
+        !isStubbed_RelationColumn(pm.propertyMapping.column)
+      ) {
         pm.setLambdaString(pm.propertyMapping.column.name);
       }
     });

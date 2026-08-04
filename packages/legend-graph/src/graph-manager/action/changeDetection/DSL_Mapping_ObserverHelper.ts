@@ -602,11 +602,15 @@ export const observe_RelationFunctionInstanceSetImplementation =
 
       makeObservable(metamodel, {
         relationFunction: observable,
+        sourceLambda: observable,
         hashCode: computed,
       });
 
       if (metamodel.relationFunction) {
         observe_ConcreteFunctionDefinition(metamodel.relationFunction, context);
+      }
+      if (metamodel.sourceLambda) {
+        observe_RawLambda(metamodel.sourceLambda);
       }
 
       return metamodel;
