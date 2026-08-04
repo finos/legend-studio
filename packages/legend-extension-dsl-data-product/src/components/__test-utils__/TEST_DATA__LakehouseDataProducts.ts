@@ -92,7 +92,69 @@ export const mockSDLCDataProduct: V1_DataProduct = deserialize(
             id: 'customer_demographics',
             title: 'Customer Demographics',
             description: 'Customer demographics data access point',
-            targetEnvironment: 'testTargetEnvironment',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [],
+            },
+          },
+        ],
+      },
+    ],
+    supportInfo: {
+      documentation: {
+        label: 'Documentation Link Label',
+        url: 'https://example.com/docs',
+      },
+      website: {
+        url: 'https://example-website.com',
+      },
+      emails: [
+        {
+          title: 'Person 1 Email',
+          address: 'person1@example.com',
+        },
+        {
+          title: 'Person 2 Email',
+          address: 'person2@example.com',
+        },
+      ],
+    },
+  },
+);
+
+export const mockSDLCDataProductDatabricksAP: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema([]),
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description:
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        description: 'Test access point group',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: 'Customer demographics data access point',
+            targetEnvironment: 'Databricks',
             func: {
               _type: 'lambda',
               body: [
@@ -334,7 +396,7 @@ const generateAccessPoints = (
     id: `${prefix}_${i + 1}`,
     title: `Access Point ${i + 1}`,
     description: `Description for access point ${i + 1}`,
-    targetEnvironment: 'testTargetEnvironment',
+    targetEnvironment: 'Snowflake',
     func: {
       _type: 'lambda',
       body: [
