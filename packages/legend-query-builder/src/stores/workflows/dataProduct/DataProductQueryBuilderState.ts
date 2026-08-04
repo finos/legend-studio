@@ -182,6 +182,12 @@ export const buildModelAccessPointGroupOption = (
 export type ExecutionIdOption = {
   label: string;
   tag: string;
+  /**
+   * For Lakehouse access points, this is the enclosing access point group id.
+   * Used in the UI to disambiguate access points that share the same title/id
+   * across different groups.
+   */
+  groupId?: string | undefined;
   value:
     | NativeModelExecutionContext
     | ModelAccessPointGroup
@@ -545,6 +551,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         .map((ap) => ({
           label: ap.title ?? ap.id,
           tag: 'LAKEHOUSE',
+          groupId: ap.__owner.id,
           value: ap,
         }));
     return [...modelOptions, ...lakehouseOptions, ...nativeOptions].sort(
@@ -570,6 +577,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       return {
         label: state.exectionValue.title ?? state.exectionValue.id,
         tag: 'LAKEHOUSE',
+        groupId: state.exectionValue.__owner.id,
         value: state.exectionValue,
       };
     }
@@ -744,17 +752,18 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         this.changeRuntime(this.executionState.selectedRuntime);
       } else if (
         this.executionState instanceof LakehouseDataProductExecutionState &&
-        accessor &&
-        this.executionState.selectedRuntime instanceof PackageableRuntime
+        accessor
       ) {
         this.setSourceElement(accessor);
-        this.changeRuntime(
-          new RuntimePointer(
-            PackageableElementExplicitReference.create(
-              this.executionState.selectedRuntime,
+        if (this.executionState.selectedRuntime instanceof PackageableRuntime) {
+          this.changeRuntime(
+            new RuntimePointer(
+              PackageableElementExplicitReference.create(
+                this.executionState.selectedRuntime,
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
       if (mapping) {
         const coverageResult = this.mappingToMappingCoverageResult?.get(
