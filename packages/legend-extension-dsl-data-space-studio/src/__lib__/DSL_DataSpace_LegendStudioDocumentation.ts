@@ -23,7 +23,3 @@ export enum DSL_DATA_SPACE_LEGEND_STUDIO_DOCUMENTATION_KEY {
 export enum DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   DATA_SPACE_EDITOR = 'studio.editor.data-space-editor',
 }
-
-export enum DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY {
-  CONVERT_DATA_SPACE_TO_DATA_PRODUCT = 'studio.editor.data-space-editor.convert-data-space-to-data-product',
-}
