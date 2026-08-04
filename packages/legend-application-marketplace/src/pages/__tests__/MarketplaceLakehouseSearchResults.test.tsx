@@ -1536,8 +1536,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Click on 'Undefined' license filter — the last option in Access
       const undefinedOptions = panel.getAllByText('Undefined');
       // The Access section's "Undefined" label
+      const undefinedOption = undefinedOptions[0] as HTMLElement;
       await act(async () => {
-        fireEvent.click(undefinedOptions[0]!);
+        fireEvent.click(undefinedOption);
         await flushMicrotasks();
       });
 
