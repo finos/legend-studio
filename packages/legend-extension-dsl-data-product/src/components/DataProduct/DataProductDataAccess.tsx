@@ -40,6 +40,8 @@ import {
   RocketIcon,
   CopyIcon,
   QueryIcon,
+  Snowflake_BrandIcon,
+  Databricks_BrandIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -69,6 +71,7 @@ import {
   type V1_EntitlementsDataProductDetails,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
+  LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_SdlcDeploymentDataProductOrigin,
   V1_transformDataContractToLiteDatacontract,
@@ -160,6 +163,18 @@ export const buildUnsupportedLakehouseComputeMessage = (
   targetEnvironment: string,
 ): string =>
   `This feature is not supported for access points deployed to ${targetEnvironment}.`;
+const getLakehouseTargetEnvironmentIcon = (
+  targetEnvironment: string,
+): React.ReactElement | undefined => {
+  switch (targetEnvironment) {
+    case LakehouseTargetEnv.Snowflake:
+      return <Snowflake_BrandIcon />;
+    case LakehouseTargetEnv.Databricks:
+      return <Databricks_BrandIcon />;
+    default:
+      return undefined;
+  }
+};
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
@@ -1736,6 +1751,13 @@ export const DataProductAccessPointViewer = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
+    const targetEnvironment =
+      accessPointState.accessPoint instanceof V1_LakehouseAccessPoint
+        ? accessPointState.accessPoint.targetEnvironment
+        : undefined;
+    const targetEnvironmentIcon = targetEnvironment
+      ? getLakehouseTargetEnvironmentIcon(targetEnvironment)
+      : undefined;
 
     return (
       <Accordion
@@ -1761,6 +1783,25 @@ export const DataProductAccessPointViewer = observer(
                   {accessPointState.accessPoint.title ??
                     accessPointState.accessPoint.id}
                 </strong>
+                {targetEnvironment && (
+                  <Chip
+                    className={clsx(
+                      'data-product__viewer__access-point__platform-chip',
+                      {
+                        'data-product__viewer__access-point__platform-chip--snowflake':
+                          targetEnvironment === LakehouseTargetEnv.Snowflake,
+                        'data-product__viewer__access-point__platform-chip--databricks':
+                          targetEnvironment === LakehouseTargetEnv.Databricks,
+                      },
+                    )}
+                    size="small"
+                    {...(targetEnvironmentIcon
+                      ? { icon: targetEnvironmentIcon }
+                      : {})}
+                    label={targetEnvironment.toUpperCase()}
+                    title="Target compute platform"
+                  />
+                )}
               </div>
               <div className="data-product__viewer__access-point__description">
                 {accessPointState.accessPoint.description?.trim() ?? (
