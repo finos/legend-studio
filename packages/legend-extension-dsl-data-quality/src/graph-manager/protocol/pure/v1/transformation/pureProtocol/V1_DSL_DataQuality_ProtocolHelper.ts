@@ -344,7 +344,6 @@ const V1_dataQualityRelationValidationModelSchema = (
     }),
     testSuites: customListWithSchema(
       V1_dataQualityRelationValidationTestSuiteModelSchema(plugins),
-      { INTERNAL__forceReturnEmptyInTest: true },
     ),
   });
 
@@ -452,7 +451,6 @@ const V1_dataQualityRelationComparisonModelSchema = (
     expectedMatch: optional(primitive()),
     testSuites: customListWithSchema(
       V1_dataQualityRelationComparisonTestSuiteModelSchema(plugins),
-      { INTERNAL__forceReturnEmptyInTest: true },
     ),
   });
 
