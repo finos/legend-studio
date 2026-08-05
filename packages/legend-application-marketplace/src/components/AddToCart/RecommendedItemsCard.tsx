@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-import { clsx, PlusIcon, CheckCircleIcon } from '@finos/legend-art';
-import { type TerminalResult } from '@finos/legend-server-marketplace';
+import { clsx, CheckIcon, PlusIcon, CheckCircleIcon } from '@finos/legend-art';
+import {
+  RecommendationSource,
+  type TerminalResult,
+} from '@finos/legend-server-marketplace';
 import {
   Box,
   Button,
@@ -25,18 +28,18 @@ import {
 } from '@mui/material';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { toastManager } from '../Toast/CartToast.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 interface RecommendedItemsCardProps {
   recommendedItem: TerminalResult;
-  onSelect?: (item: TerminalResult) => void;
+  onSelect?: (item: TerminalResult) => Promise<boolean> | boolean;
   isSelecting?: boolean;
-  selectedItemId?: number;
+  selectedItemId?: number | undefined;
   permissionIdOverride?: number;
-  modelOverride?: string | null;
+  modelOverride?: string | null | undefined;
 }
 
 export const RecommendedItemsCard = observer(
@@ -51,9 +54,6 @@ export const RecommendedItemsCard = observer(
     } = props;
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
-    // Tracks a successful add within this component's lifetime so the button
-    // transitions even when skipWorkflow=true causes the item to bypass the
-    // normal cart and therefore not appear in isItemInCart.
     const [isAdded, setIsAdded] = useState(false);
     const inCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
       recommendedItem.id,
@@ -61,6 +61,8 @@ export const RecommendedItemsCard = observer(
     const isInCartOrAdded = inCart || isAdded;
 
     const isAssociationFlow = onSelect !== undefined;
+    const isMarketplaceItem =
+      recommendedItem.source === RecommendationSource.MARKETPLACE;
     const isCurrentlySelecting =
       isAssociationFlow &&
       Boolean(isSelecting) &&
@@ -70,22 +72,19 @@ export const RecommendedItemsCard = observer(
       setIsAddingToCart(true);
       const cartItemRequest =
         legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
-
       if (permissionIdOverride !== undefined) {
         cartItemRequest.permissionId = permissionIdOverride;
         cartItemRequest.skipWorkflow = true;
       }
-      if (modelOverride !== null && modelOverride !== undefined) {
+      if (modelOverride !== undefined && modelOverride !== null) {
         cartItemRequest.model = modelOverride;
       }
 
       flowResult(
         legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
       )
-        .then((result) => {
-          if (result.success) {
-            setIsAdded(true);
-          }
+        .then(() => {
+          setIsAdded(true);
         })
         .catch((error) => {
           assertErrorThrown(error);
@@ -98,36 +97,32 @@ export const RecommendedItemsCard = observer(
         });
     };
 
-    const renderAssociationAction = (
-      selectFn: (item: TerminalResult) => void,
-    ) => {
-      if (recommendedItem.isOwned) {
-        return (
-          <Box className="recommended-addons-modal__owned-badge">
-            <CheckCircleIcon />
-            <Typography variant="body2">Owned</Typography>
-          </Box>
-        );
-      }
-
-      if (inCart) {
-        return (
-          <Box className="recommended-addons-modal__in-cart-badge">
-            <Typography variant="body2">In Cart</Typography>
-            <CheckCircleIcon />
-          </Box>
-        );
-      }
-
+    const renderAssociationButton = (
+      isMarketplaceRecommendation: boolean,
+      className: string,
+    ): ReactNode => {
+      const isLoading = isCurrentlySelecting || isAddingToCart;
       return (
         <Button
           variant="outlined"
-          onClick={() => selectFn(recommendedItem)}
-          disabled={Boolean(isSelecting)}
+          onClick={() => {
+            setIsAddingToCart(true);
+            // eslint-disable-next-line no-void
+            void Promise.resolve(onSelect?.(recommendedItem))
+              .then((wasAssociated) => {
+                if (wasAssociated) {
+                  setIsAdded(true);
+                }
+              })
+              .finally(() => {
+                setIsAddingToCart(false);
+              });
+          }}
+          disabled={Boolean(isSelecting) || isAddingToCart}
           size="small"
-          className="recommended-addons-modal__add-btn"
+          className={className}
         >
-          {isCurrentlySelecting ? (
+          {isLoading ? (
             <>
               Adding... &nbsp;
               <CircularProgress size={14} />
@@ -135,10 +130,35 @@ export const RecommendedItemsCard = observer(
           ) : (
             <>
               Add to Cart &nbsp;
-              <PlusIcon />
+              {isMarketplaceRecommendation ? <PlusIcon /> : <CheckIcon />}
             </>
           )}
         </Button>
+      );
+    };
+
+    const renderAssociationAction = (): ReactNode => {
+      if (recommendedItem.isOwned) {
+        return (
+          <Box className="recommended-addons-modal__owned-badge">
+            <CheckCircleIcon />
+            <Typography variant="body2">Subscribed</Typography>
+          </Box>
+        );
+      }
+      if (isInCartOrAdded) {
+        return (
+          <Box className="recommended-addons-modal__in-cart-badge">
+            <Typography variant="body2">In Cart</Typography>
+            <CheckCircleIcon />
+          </Box>
+        );
+      }
+      return renderAssociationButton(
+        isMarketplaceItem,
+        isMarketplaceItem
+          ? 'recommended-addons-modal__add-btn'
+          : 'recommended-addons-modal__select-btn',
       );
     };
 
@@ -164,7 +184,7 @@ export const RecommendedItemsCard = observer(
 
     const renderAction = () => {
       if (isAssociationFlow) {
-        return renderAssociationAction(onSelect);
+        return renderAssociationAction();
       }
 
       const button = (
@@ -212,7 +232,7 @@ export const RecommendedItemsCard = observer(
           variant="body2"
           className="recommended-addons-modal__item-provider"
         >
-          {recommendedItem.providerName}
+          {recommendedItem.category}
         </Typography>
         <Typography
           variant="body2"

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { SerializationFactory, type PlainObject } from '@finos/legend-shared';
+import {
+  SerializationFactory,
+  type PlainObject,
+  optionalCustomList,
+} from '@finos/legend-shared';
 import {
   createModelSchema,
   list,
@@ -71,25 +75,33 @@ export class TerminalResult {
   vendorProfileId?: number;
   permissionId?: number;
   source?: RecommendationSource;
+  items?: TerminalResult[];
 
-  static readonly serialization = new SerializationFactory(
-    createModelSchema(TerminalResult, {
-      id: primitive(),
-      category: primitive(),
-      providerName: primitive(),
-      productName: primitive(),
-      description: optional(primitive()),
-      price: primitive(),
-      phystr: optional(primitive()),
-      model: primitive(),
-      isMandatory: optional(primitive()),
-      skipWorkflow: optional(primitive()),
-      isOwned: optional(primitive()),
-      vendorProfileId: optional(primitive()),
-      permissionId: optional(primitive()),
-      source: optional(primitive()),
-    }),
-  );
+  static readonly serialization: SerializationFactory<TerminalResult> =
+    new SerializationFactory(
+      createModelSchema(TerminalResult, {
+        id: primitive(),
+        category: primitive(),
+        providerName: primitive(),
+        productName: primitive(),
+        description: optional(optional(primitive())),
+        price: primitive(),
+        phystr: optional(optional(primitive())),
+        model: primitive(),
+        isMandatory: optional(primitive()),
+        skipWorkflow: optional(primitive()),
+        isOwned: optional(optional(primitive())),
+        vendorProfileId: optional(optional(primitive())),
+        permissionId: optional(primitive()),
+        source: optional(primitive()),
+        items: optionalCustomList(
+          (v: TerminalResult): PlainObject<TerminalResult> =>
+            TerminalResult.serialization.toJson(v),
+          (v: PlainObject<TerminalResult>): TerminalResult =>
+            TerminalResult.serialization.fromJson(v),
+        ),
+      }),
+    );
 
   get terminalItemType(): TerminalItemType {
     return this.category.toLowerCase() === 'vendor profile'

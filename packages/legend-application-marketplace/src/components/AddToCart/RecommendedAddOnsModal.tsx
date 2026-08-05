@@ -15,7 +15,15 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { type JSX, useCallback, useMemo, useRef, useState } from 'react';
+import {
+  type ChangeEvent,
+  type JSX,
+  type KeyboardEvent,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -92,7 +100,7 @@ const ListHeader = (props: { headerName: string }) => (
       variant="subtitle2"
       className="recommended-addons-modal__header-provider"
     >
-      Provider
+      Category
     </Typography>
     <Typography
       variant="subtitle2"
@@ -153,10 +161,7 @@ const getSectionTitle = (
   isTerminalType: boolean,
   terminal: TerminalResult | null,
 ): string => {
-  if (isPermissionOverride) {
-    return `Add-Ons available for ${terminal?.productName ?? ''}`;
-  }
-  if (isTerminalType) {
+  if (isPermissionOverride || isTerminalType) {
     return `Available Add-Ons for ${terminal?.productName ?? ''}`;
   }
   if (terminal) {
@@ -182,9 +187,7 @@ const useVendorAddonSearch = (
 } => {
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const cartUser = legendMarketplaceBaseStore.cartStore.cartUser;
-  const { marketplaceServerClient, applicationStore } =
-    legendMarketplaceBaseStore;
-
+  const applicationStore = legendMarketplaceBaseStore.applicationStore;
   const [terminalSearchResults, setTerminalSearchResults] = useState<
     TerminalResult[] | undefined
   >(undefined);
@@ -195,33 +198,30 @@ const useVendorAddonSearch = (
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchVendorAddons = useCallback(
-    async (
-      query: string,
-      sort?: SortOrder,
-      signal?: AbortSignal,
-    ): Promise<void> => {
+    async (query: string, sort?: SortOrder, signal?: AbortSignal) => {
       if (!terminal || !isTerminalAdded) {
         return;
       }
       setIsSearching(true);
       try {
-        const response = await marketplaceServerClient.searchVendorAddons(
-          cartUser,
-          terminal.providerName,
-          {
-            // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
-            page: 1,
-            page_size: SERVER_SEARCH_PAGE_SIZE,
-            search: query,
-            ...(sort ? { sort_by_price: sort } : {}),
-          },
-          signal,
-        );
+        const response =
+          await legendMarketplaceBaseStore.marketplaceServerClient.searchVendorAddons(
+            cartUser,
+            terminal.providerName,
+            {
+              // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
+              page: 1,
+              page_size: SERVER_SEARCH_PAGE_SIZE,
+              search: query,
+              ...(sort ? { sort_by_price: sort } : {}),
+            },
+            signal,
+          );
         if (!signal?.aborted) {
           setTerminalSearchResults(
             response.marketplace_addons as TerminalResult[],
           );
-          setSearchTotalCount(response.total_count as number | undefined);
+          setSearchTotalCount(response.total_count as number);
         }
       } catch (error) {
         assertErrorThrown(error);
@@ -245,7 +245,7 @@ const useVendorAddonSearch = (
       terminal,
       isTerminalAdded,
       cartUser,
-      marketplaceServerClient,
+      legendMarketplaceBaseStore.marketplaceServerClient,
       applicationStore.logService,
     ],
   );
@@ -253,12 +253,14 @@ const useVendorAddonSearch = (
   const triggerSearch = useCallback(
     (query: string, sort?: SortOrder) => {
       abortControllerRef.current?.abort();
+
       if (!isTerminalAdded || !query.trim()) {
         setTerminalSearchResults(undefined);
         setSearchTotalCount(undefined);
         setIsSearching(false);
         return;
       }
+
       const controller = new AbortController();
       abortControllerRef.current = controller;
       // eslint-disable-next-line no-void
@@ -338,15 +340,9 @@ const handleCartResult = (
       result.totalCount,
     );
   } else if (overridePermissionId === undefined) {
-    // In the "Add Service" flow (overridePermissionId is set), keep the
-    // modal open so the user can add multiple add-ons before closing.
     closeModal();
   }
 };
-
-// ─── Multi-source terminal association content ───────────────────────────────
-// Extracted to its own component to keep RecommendedAddOnsModal's cognitive
-// complexity within the allowed threshold (SonarQube S3776).
 
 interface MultiSourceContentProps {
   cartSourceItems: TerminalResult[];
@@ -355,7 +351,7 @@ interface MultiSourceContentProps {
   headerName: string;
   isAssociating: boolean;
   associatingItemId: number | undefined;
-  onAssociate: (item: TerminalResult) => void;
+  onAssociate: (item: TerminalResult) => Promise<boolean> | boolean;
 }
 
 const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
@@ -394,9 +390,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 recommendedItem={item}
                 onSelect={onAssociate}
                 isSelecting={isAssociating}
-                {...(associatingItemId !== undefined && {
-                  selectedItemId: associatingItemId,
-                })}
+                selectedItemId={associatingItemId}
               />
             ))}
           </Box>
@@ -431,9 +425,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 recommendedItem={item}
                 onSelect={onAssociate}
                 isSelecting={isAssociating}
-                {...(associatingItemId !== undefined && {
-                  selectedItemId: associatingItemId,
-                })}
+                selectedItemId={associatingItemId}
               />
             ))}
           </Box>
@@ -467,9 +459,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 recommendedItem={item}
                 onSelect={onAssociate}
                 isSelecting={isAssociating}
-                {...(associatingItemId !== undefined && {
-                  selectedItemId: associatingItemId,
-                })}
+                selectedItemId={associatingItemId}
               />
             ))}
           </Box>
@@ -517,6 +507,131 @@ const MandatoryAddOnsAlert = (props: {
           </Box>
         )}
       </Box>
+    </Box>
+  );
+};
+
+// ─── Filter controls component ───────────────────────────────────────────────
+// Extracted to reduce cognitive complexity of RecommendedAddOnsModal (S3776).
+
+interface FilterControlsProps {
+  searchTerm: string;
+  sortOrder: SortOrder | undefined;
+  itemsPerPage: number;
+  filteredItemsLength: number;
+  isPermissionOverride: boolean;
+  isTerminalType: boolean;
+  onSearchChange: (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
+  onSearchKeyDown: (e: KeyboardEvent) => void;
+  onSearchAction: () => void;
+  onSortChange: (event: SelectChangeEvent<string>) => void;
+  onItemsPerPageChange: (event: SelectChangeEvent<number>) => void;
+}
+
+const FilterControls = (props: FilterControlsProps): JSX.Element => {
+  const {
+    searchTerm,
+    sortOrder,
+    itemsPerPage,
+    filteredItemsLength,
+    isPermissionOverride,
+    isTerminalType,
+    onSearchChange,
+    onSearchKeyDown,
+    onSearchAction,
+    onSortChange,
+    onItemsPerPageChange,
+  } = props;
+  return (
+    <Box className="recommended-addons-modal__filter-controls">
+      <TextField
+        size="medium"
+        placeholder={
+          isPermissionOverride || isTerminalType
+            ? 'Search by Add-On name...'
+            : 'Search by Terminal name...'
+        }
+        value={searchTerm}
+        onChange={onSearchChange}
+        onKeyDown={onSearchKeyDown}
+        className="recommended-addons-modal__search-field"
+        slotProps={{
+          input: {
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={onSearchAction} size="small" edge="end">
+                  <SearchIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+      <FormControl
+        size="medium"
+        className="recommended-addons-modal__sort-select"
+        sx={{ minWidth: 180 }}
+      >
+        <InputLabel
+          id="recommended-addons-sort-label"
+          sx={{ fontSize: '1rem' }}
+        >
+          Sort by Price
+        </InputLabel>
+        <Select
+          labelId="recommended-addons-sort-label"
+          value={sortOrder ?? ''}
+          label="Sort by Price"
+          onChange={onSortChange}
+          sx={{ fontSize: '1rem' }}
+        >
+          <MenuItem value="" sx={{ fontSize: '1rem' }}>
+            <em>None</em>
+          </MenuItem>
+          <MenuItem value={SortOrder.ASC} sx={{ fontSize: '1rem' }}>
+            <Box display="flex" alignItems="center">
+              <ArrowUpIcon fontSize="small" />
+              <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
+                Low to High
+              </Typography>
+            </Box>
+          </MenuItem>
+          <MenuItem value={SortOrder.DESC} sx={{ fontSize: '1rem' }}>
+            <Box display="flex" alignItems="center">
+              <ArrowDownIcon fontSize="small" />
+              <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
+                High to Low
+              </Typography>
+            </Box>
+          </MenuItem>
+        </Select>
+      </FormControl>
+      {filteredItemsLength > MAX_DISPLAY_ITEMS_COUNT && (
+        <FormControl
+          size="medium"
+          className="recommended-addons-modal__items-per-page-select"
+          sx={{ minWidth: 120 }}
+        >
+          <InputLabel id="items-per-page-label" sx={{ fontSize: '1rem' }}>
+            Items per page
+          </InputLabel>
+          <Select
+            labelId="items-per-page-label"
+            value={itemsPerPage}
+            label="Items per page"
+            onChange={onItemsPerPageChange}
+            sx={{ fontSize: '1rem' }}
+          >
+            {ITEMS_PER_PAGE_LIST.map((items) => (
+              <MenuItem key={items} value={items} sx={{ fontSize: '1rem' }}>
+                {items}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
     </Box>
   );
 };
@@ -640,7 +755,7 @@ export const RecommendedAddOnsModal = observer(
     }, [setShowModal, resetSearch]);
 
     const handleAssociateTerminal = useCallback(
-      async (selectedTerminal: TerminalResult): Promise<void> => {
+      async (selectedTerminal: TerminalResult): Promise<boolean> => {
         setIsAssociating(true);
         setAssociatingItemId(selectedTerminal.id);
         try {
@@ -665,11 +780,13 @@ export const RecommendedAddOnsModal = observer(
             closeModal,
             overridePermissionId,
           );
+          return result.success;
         } catch (error) {
           assertErrorThrown(error);
           toastManager.error(
             `Failed to associate with ${selectedTerminal.productName}: ${error.message}`,
           );
+          return false;
         } finally {
           setIsAssociating(false);
           setAssociatingItemId(undefined);
@@ -685,7 +802,7 @@ export const RecommendedAddOnsModal = observer(
     );
 
     const handleSearchTermChange = useCallback(
-      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setSearchTerm(e.target.value);
         setCurrentPage(1);
         if (!e.target.value.trim()) {
@@ -696,7 +813,7 @@ export const RecommendedAddOnsModal = observer(
     );
 
     const handleSearchKeyDown = useCallback(
-      (e: React.KeyboardEvent) => {
+      (e: KeyboardEvent) => {
         if (e.key === 'Enter') {
           handleSearchAction();
         }
@@ -721,10 +838,7 @@ export const RecommendedAddOnsModal = observer(
       );
     };
 
-    const handlePageChange = (
-      _event: React.ChangeEvent<unknown>,
-      page: number,
-    ) => {
+    const handlePageChange = (_event: ChangeEvent<unknown>, page: number) => {
       setCurrentPage(page);
     };
 
@@ -784,20 +898,14 @@ export const RecommendedAddOnsModal = observer(
                 key={item.id}
                 recommendedItem={item}
                 {...(isAddOnAssociation && {
-                  onSelect: (selectedItem: TerminalResult) => {
-                    // eslint-disable-next-line no-void
-                    void handleAssociateTerminal(selectedItem);
-                  },
+                  onSelect: (selectedItem: TerminalResult) =>
+                    handleAssociateTerminal(selectedItem),
                   isSelecting: isAssociating,
-                  ...(associatingItemId !== undefined && {
-                    selectedItemId: associatingItemId,
-                  }),
+                  selectedItemId: associatingItemId,
                 })}
                 {...(isPermissionOverride && {
                   permissionIdOverride: overridePermissionId,
-                  ...(overrideModel !== undefined && {
-                    modelOverride: overrideModel,
-                  }),
+                  modelOverride: overrideModel,
                 })}
               />
             ))}
@@ -841,109 +949,23 @@ export const RecommendedAddOnsModal = observer(
           headerName={headerName}
           isAssociating={isAssociating}
           associatingItemId={associatingItemId}
-          onAssociate={(i) => {
-            // eslint-disable-next-line no-void
-            void handleAssociateTerminal(i);
-          }}
+          onAssociate={(i) => handleAssociateTerminal(i)}
         />
       ) : (
         <>
-          <Box className="recommended-addons-modal__filter-controls">
-            <TextField
-              size="medium"
-              placeholder={
-                isPermissionOverride || isTerminalType
-                  ? 'Search by Add-On name...'
-                  : 'Search by Terminal name...'
-              }
-              value={searchTerm}
-              onChange={handleSearchTermChange}
-              onKeyDown={handleSearchKeyDown}
-              className="recommended-addons-modal__search-field"
-              slotProps={{
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={handleSearchAction}
-                        size="small"
-                        edge="end"
-                      >
-                        <SearchIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                },
-              }}
-            />
-            <FormControl
-              size="medium"
-              className="recommended-addons-modal__sort-select"
-              sx={{ minWidth: 180 }}
-            >
-              <InputLabel
-                id="recommended-addons-sort-label"
-                sx={{ fontSize: '1rem' }}
-              >
-                Sort by Price
-              </InputLabel>
-              <Select
-                labelId="recommended-addons-sort-label"
-                value={sortOrder ?? ''}
-                label="Sort by Price"
-                onChange={handleSortChange}
-                sx={{ fontSize: '1rem' }}
-              >
-                <MenuItem value="" sx={{ fontSize: '1rem' }}>
-                  <em>None</em>
-                </MenuItem>
-                <MenuItem value={SortOrder.ASC} sx={{ fontSize: '1rem' }}>
-                  <Box display="flex" alignItems="center">
-                    <ArrowUpIcon fontSize="small" />
-                    <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
-                      Low to High
-                    </Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem value={SortOrder.DESC} sx={{ fontSize: '1rem' }}>
-                  <Box display="flex" alignItems="center">
-                    <ArrowDownIcon fontSize="small" />
-                    <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
-                      High to Low
-                    </Typography>
-                  </Box>
-                </MenuItem>
-              </Select>
-            </FormControl>
-            {filteredAndSortedItems.length > MAX_DISPLAY_ITEMS_COUNT && (
-              <FormControl
-                size="medium"
-                className="recommended-addons-modal__items-per-page-select"
-                sx={{ minWidth: 120 }}
-              >
-                <InputLabel id="items-per-page-label" sx={{ fontSize: '1rem' }}>
-                  Items per page
-                </InputLabel>
-                <Select
-                  labelId="items-per-page-label"
-                  value={itemsPerPage}
-                  label="Items per page"
-                  onChange={handleItemsPerPageChange}
-                  sx={{ fontSize: '1rem' }}
-                >
-                  {ITEMS_PER_PAGE_LIST.map((items) => (
-                    <MenuItem
-                      key={items}
-                      value={items}
-                      sx={{ fontSize: '1rem' }}
-                    >
-                      {items}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-          </Box>
+          <FilterControls
+            searchTerm={searchTerm}
+            sortOrder={sortOrder}
+            itemsPerPage={itemsPerPage}
+            filteredItemsLength={filteredAndSortedItems.length}
+            isPermissionOverride={isPermissionOverride}
+            isTerminalType={isTerminalType}
+            onSearchChange={handleSearchTermChange}
+            onSearchKeyDown={handleSearchKeyDown}
+            onSearchAction={handleSearchAction}
+            onSortChange={handleSortChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+          />
           {searchContent}
         </>
       );
@@ -1025,9 +1047,9 @@ export const RecommendedAddOnsModal = observer(
             onClick={closeModal}
             className="recommended-addons-modal__close-button"
           >
-            {isAddOnAssociation ? 'Cancel' : 'Close'}
+            {isAddOnAssociation && !isPermissionOverride ? 'Cancel' : 'Close'}
           </Button>
-          {onViewCart && !isAddOnAssociation && (
+          {onViewCart && (!isAddOnAssociation || isPermissionOverride) && (
             <Button
               variant="contained"
               endIcon={<ArrowRightIcon />}
