@@ -557,6 +557,7 @@ export {
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
 export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';
+export * from './graph-manager/action/generation/IngestionDefinitionArtifact.js';
 
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';

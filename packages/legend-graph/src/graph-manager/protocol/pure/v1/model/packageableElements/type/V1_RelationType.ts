@@ -20,12 +20,14 @@ import { CORE_HASH_STRUCTURE } from '../../../../../../../graph/Core_HashUtils.j
 import type { V1_GenericType } from './V1_GenericType.js';
 import type { V1_Multiplicity } from '../domain/V1_Multiplicity.js';
 import type { V1_TaggedValue } from '../domain/V1_TaggedValue.js';
+import type { V1_StereotypePtr } from '../domain/V1_StereotypePtr.js';
 
 export class V1_RelationTypeColumn implements Hashable {
   name!: string;
   genericType!: V1_GenericType;
   multiplicity!: V1_Multiplicity;
   description?: string | undefined;
+  stereotypes: V1_StereotypePtr[] | undefined = undefined;
   taggedValues: V1_TaggedValue[] | undefined = undefined;
 
   get hashCode(): string {
@@ -34,6 +36,7 @@ export class V1_RelationTypeColumn implements Hashable {
       this.name,
       this.genericType,
       this.description,
+      hashArray(this.stereotypes ?? []),
       hashArray(this.taggedValues ?? []),
     ]);
   }
