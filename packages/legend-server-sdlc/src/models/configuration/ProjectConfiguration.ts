@@ -57,6 +57,7 @@ export class ProjectConfiguration implements Hashable {
   platformConfigurations?: PlatformConfiguration[] | undefined;
   projectDependencies: ProjectDependency[] = [];
   runDependencyTests?: boolean | undefined;
+  produceShadedServiceJar?: boolean | undefined;
 
   constructor() {
     makeObservable(this, {
@@ -66,12 +67,14 @@ export class ProjectConfiguration implements Hashable {
       platformConfigurations: observable,
       projectDependencies: observable,
       runDependencyTests: observable,
+      produceShadedServiceJar: observable,
       setGroupId: action,
       setPlatformConfigurations: action,
       setArtifactId: action,
       deleteProjectDependency: action,
       addProjectDependency: action,
       setRunDependencyTests: action,
+      setProduceShadedServiceJar: action,
       dependencyKey: computed,
       hashCode: computed,
     });
@@ -96,11 +99,19 @@ export class ProjectConfiguration implements Hashable {
         () => SKIP,
         (value: boolean | null | undefined) => (value ? value : SKIP),
       ),
+      produceShadedServiceJar: custom(
+        () => SKIP,
+        (value: boolean | null | undefined) => (value ? value : SKIP),
+      ),
     }),
   );
 
   setRunDependencyTests(val: boolean | undefined): void {
     this.runDependencyTests = val;
+  }
+
+  setProduceShadedServiceJar(val: boolean | undefined): void {
+    this.produceShadedServiceJar = val;
   }
 
   setGroupId(val: string): void {
@@ -140,6 +151,7 @@ export class ProjectConfiguration implements Hashable {
       this.projectStructureVersion.extensionVersion?.toString() ?? '',
       hashArray(this.projectDependencies),
       this.runDependencyTests?.toString() ?? '',
+      this.produceShadedServiceJar?.toString() ?? '',
     ]);
   }
 }

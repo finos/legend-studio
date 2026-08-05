@@ -365,6 +365,13 @@ export class ProjectConfigurationEditorState extends EditorState {
         updateProjectConfigurationCommand.runDependencyTests =
           this.currentProjectConfiguration.runDependencyTests;
       }
+      if (
+        this.originalConfig.produceShadedServiceJar !==
+        this.currentProjectConfiguration.produceShadedServiceJar
+      ) {
+        updateProjectConfigurationCommand.produceShadedServiceJar =
+          this.currentProjectConfiguration.produceShadedServiceJar;
+      }
       updateProjectConfigurationCommand.projectDependenciesToAdd =
         this.currentProjectConfiguration.projectDependencies.filter(
           (dep) =>

@@ -66,6 +66,7 @@ export class UpdateProjectConfigurationCommand {
   projectStructureVersion?: ProjectStructureVersion | undefined;
   projectType?: ProjectType | undefined;
   runDependencyTests?: boolean | undefined;
+  produceShadedServiceJar?: boolean | undefined;
 
   constructor(
     groupId: string,
@@ -100,6 +101,7 @@ export class UpdateProjectConfigurationCommand {
       ),
       projectType: optional(primitive()),
       runDependencyTests: optional(primitive()),
+      produceShadedServiceJar: optional(primitive()),
     }),
   );
 }
