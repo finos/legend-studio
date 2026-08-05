@@ -98,6 +98,8 @@ import {
 } from '@finos/legend-query-builder';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { EditorStore } from '../../../../stores/editor/EditorStore.js';
+import { MappingExecutionPerspectiveResultPanel } from './MappingExecutionPerspectiveResultPanel.js';
 
 interface ClassMappingSelectOption {
   label: string;
@@ -728,6 +730,7 @@ export const MappingExecutionBuilder = observer(
     const { executionState } = props;
     const mappingEditorState = executionState.mappingEditorState;
     const applicationStore = useApplicationStore();
+    const editorStore = useEditorStore();
     const { queryState, inputDataState } = executionState;
     // execute
     const cancelExecution = applicationStore.guardUnhandledError(() =>
@@ -883,13 +886,70 @@ export const MappingExecutionBuilder = observer(
             </ResizablePanelSplitter>
             <ResizablePanel minSize={28}>
               <Panel className="mapping-execution-builder__result-panel">
-                <PanelHeader title="result" />
+                <PanelHeader title="result">
+                  {editorStore.applicationStore.config.options
+                    .enableStreamingPerspectiveGrid && (
+                    <div
+                      className="mapping-execution-builder__result-panel__tabs"
+                      style={{ display: 'flex', gap: '8px' }}
+                    >
+                      <button
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color:
+                            executionState.selectedResultTab === 'JSON'
+                              ? 'var(--color-blue-100)'
+                              : 'var(--color-light-grey-100)',
+                          cursor: 'pointer',
+                          fontWeight:
+                            executionState.selectedResultTab === 'JSON'
+                              ? 'bold'
+                              : 'normal',
+                        }}
+                        onClick={() =>
+                          executionState.setSelectedResultTab('JSON')
+                        }
+                      >
+                        JSON
+                      </button>
+                      <button
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color:
+                            executionState.selectedResultTab === 'Perspective'
+                              ? 'var(--color-blue-100)'
+                              : 'var(--color-light-grey-100)',
+                          cursor: 'pointer',
+                          fontWeight:
+                            executionState.selectedResultTab === 'Perspective'
+                              ? 'bold'
+                              : 'normal',
+                        }}
+                        onClick={() =>
+                          executionState.setSelectedResultTab('Perspective')
+                        }
+                      >
+                        Perspective Grid
+                      </button>
+                    </div>
+                  )}
+                </PanelHeader>
                 <PanelContent className="mapping-execution-builder__result-panel__content">
-                  <CodeEditor
-                    inputValue={executionResultText ?? ''}
-                    isReadOnly={true}
-                    language={CODE_EDITOR_LANGUAGE.JSON}
-                  />
+                  {executionState.selectedResultTab === 'Perspective' &&
+                  editorStore.applicationStore.config.options
+                    .enableStreamingPerspectiveGrid ? (
+                    <MappingExecutionPerspectiveResultPanel
+                      data={executionResultText ?? ''}
+                    />
+                  ) : (
+                    <CodeEditor
+                      inputValue={executionResultText ?? ''}
+                      isReadOnly={true}
+                      language={CODE_EDITOR_LANGUAGE.JSON}
+                    />
+                  )}
                 </PanelContent>
               </Panel>
             </ResizablePanel>
