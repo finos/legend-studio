@@ -41,6 +41,7 @@
     { "path": "packages/legend-application-query" },
     { "path": "packages/legend-application-query-bootstrap" },
     { "path": "packages/legend-application-query-deployment" },
+    { "path": "packages/legend-application-query-e2e" },
     // data cube
     { "path": "packages/legend-application-data-cube" },
     { "path": "packages/legend-application-data-cube-bootstrap" },
