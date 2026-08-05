@@ -18,13 +18,20 @@ import type { Page, Route } from '@playwright/test';
 import {
   TEST_DATA__ClassifierPathMap,
   TEST_DATA__CurrentUser,
+  TEST_DATA__ExecutionResult,
   TEST_DATA__LightQueries,
   TEST_DATA__SubtypeInfo,
 } from './TEST_DATA__EngineResponses.js';
 
-// Must match the engine URL configured in
-// `legend-application-query-deployment/dev/config.json`
-const ENGINE_PORT = 6300;
+/**
+ * The app's engine URL is rerouted (via `config.json` interception) to this
+ * port, where nothing listens: every engine call must be answered by the
+ * browser-level mocks below. This guarantees local runs behave exactly like
+ * CI, even when a real engine instance is running on the configured engine
+ * port (6300) during development — a real engine can never mask a missing
+ * mock.
+ */
+const MOCK_ENGINE_PORT = 6399;
 
 const CORS_HEADERS = {
   'access-control-allow-origin': 'http://localhost:9001',
@@ -38,15 +45,20 @@ const fulfillJson = (route: Route, json: unknown): Promise<void> =>
 
 /**
  * Intercept Legend Engine calls at the browser level and serve mock
- * responses. This keeps tests deterministic regardless of whether a real
- * engine instance is running on the engine port (e.g. during local
- * development), and lets CI run without an engine backend altogether.
+ * responses, so tests are deterministic and require no engine backend.
  */
-export const setupEngineMock = async (
-  page: Page,
-  port = ENGINE_PORT,
-): Promise<void> => {
-  const engineApiUrlPattern = new RegExp(`:${port}/api/(?<endpoint>.*)$`);
+export const setupEngineMock = async (page: Page): Promise<void> => {
+  // reroute the app's engine URL to the dead mock port
+  await page.route(/\/query\/config\.json$/, async (route) => {
+    const response = await route.fetch();
+    const config = (await response.json()) as { engine: { url: string } };
+    config.engine.url = `http://localhost:${MOCK_ENGINE_PORT}/api`;
+    await route.fulfill({ json: config });
+  });
+
+  const engineApiUrlPattern = new RegExp(
+    `:${MOCK_ENGINE_PORT}/api/(?<endpoint>.*)$`,
+  );
   await page.route(engineApiUrlPattern, async (route) => {
     const request = route.request();
     const endpoint =
@@ -71,6 +83,9 @@ export const setupEngineMock = async (
       case 'pure/v1/query/search':
         await fulfillJson(route, TEST_DATA__LightQueries);
         return;
+      case 'pure/v1/execution/execute':
+        await fulfillJson(route, TEST_DATA__ExecutionResult);
+        return;
       default:
         break;
     }
@@ -80,9 +95,15 @@ export const setupEngineMock = async (
       return;
     }
 
-    // Let unmocked engine calls through: during local development a real
-    // engine may answer them; in CI they will fail visibly, surfacing the
-    // missing mock.
-    await route.continue();
+    // Fail loudly on unmocked engine endpoints so missing mocks surface
+    // immediately (locally and in CI alike). To support a new flow, add a
+    // handler above and its payload to `TEST_DATA__EngineResponses.ts`.
+    await route.fulfill({
+      status: 501,
+      headers: { ...CORS_HEADERS },
+      json: {
+        message: `Unmocked engine endpoint called in e2e test: ${request.method()} /api/${endpoint} — add a handler in EngineMock.ts`,
+      },
+    });
   });
 };

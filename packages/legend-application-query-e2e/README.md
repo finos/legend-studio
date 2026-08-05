@@ -7,7 +7,7 @@ End-to-end tests for the Legend Query web application, built with [Playwright](h
 The tests exercise the Legend Query webapp served by the `@finos/legend-application-query-deployment` dev server (`http://localhost:9001/query/`), backed by:
 
 - **Depot**: the mock depot server from `@finos/legend-fixture-mock-server` (port 6200), which serves a small test project (`org.finos.legend.test:legend-query-test`) with a data space.
-- **Engine**: browser-level network mocks installed per-test via `setupEngineMock()` (see [`src/support/EngineMock.ts`](./src/support/EngineMock.ts)). Engine endpoints are intercepted with Playwright's [`page.route()`](https://playwright.dev/docs/network#modify-requests), so tests are deterministic whether or not a real engine instance is running on port 6300 — the mocks always win, and CI needs no engine at all.
+- **Engine**: browser-level network mocks installed per-test via `setupEngineMock()` (see [`src/support/EngineMock.ts`](./src/support/EngineMock.ts)). The app's `config.json` is intercepted with Playwright's [`page.route()`](https://playwright.dev/docs/network#modify-requests) to point the engine URL at a dead port, where every call is answered by the mocks — so tests behave identically locally and in CI, a real engine running on port 6300 can never leak into a test, and CI needs no engine at all.
 
 Both the app dev server and the mock depot server are started automatically by Playwright's [`webServer`](https://playwright.dev/docs/test-webserver) config. Outside CI, already-running instances (e.g. your own `yarn dev:query` session) are reused instead, which makes local runs fast.
 
@@ -61,7 +61,7 @@ On failure, screenshots land in `build/test-results/`; in CI, traces are recorde
 
 ### When your flow needs backend data that isn't mocked yet
 
-- **Engine endpoints**: unmocked engine calls are passed through by `setupEngineMock()` — locally a real engine (if running) may answer them, but in CI they fail visibly, which is how a missing mock surfaces. To add one: exercise the flow locally, note the failing/passed-through endpoint (via the Playwright trace or browser devtools), add a `case` for it in [`EngineMock.ts`](./src/support/EngineMock.ts), and put its response payload in [`TEST_DATA__EngineResponses.ts`](./src/support/TEST_DATA__EngineResponses.ts) (captured from a live engine when possible).
+- **Engine endpoints**: unmocked engine calls fail loudly with a `501` response whose message names the endpoint (`Unmocked engine endpoint called in e2e test: ...`) — check the Playwright trace or browser console to find it. To add one: add a `case` for the endpoint in [`EngineMock.ts`](./src/support/EngineMock.ts), and put its response payload in [`TEST_DATA__EngineResponses.ts`](./src/support/TEST_DATA__EngineResponses.ts) (captured from a live engine when possible).
 - **Depot data**: extend the mock depot server in [`fixtures/legend-mock-server`](../../fixtures/legend-mock-server) (`src/depot.ts` / `src/depot-data.ts`) when a flow needs additional depot routes or entities.
 
 ## CI

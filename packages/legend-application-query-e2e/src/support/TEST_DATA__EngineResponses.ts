@@ -189,3 +189,35 @@ export const TEST_DATA__LightQueries = [
     lastOpenAt: 1700000000000,
   },
 ];
+
+/**
+ * A TDS execution result for a query projecting all properties of
+ * `test::COVIDData` (the class from the mock depot project), as returned by
+ * the engine execute endpoint.
+ */
+export const TEST_DATA__ExecutionResult = {
+  builder: {
+    _type: 'tdsBuilder',
+    columns: [
+      { name: 'Cases', type: 'Float', relationalType: 'DOUBLE' },
+      { name: 'Case Type', type: 'String', relationalType: 'VARCHAR(200)' },
+      { name: 'Date', type: 'StrictDate', relationalType: 'DATE' },
+      { name: 'Fips', type: 'String', relationalType: 'VARCHAR(200)' },
+      { name: 'Id', type: 'Integer', relationalType: 'INTEGER' },
+      { name: 'Last Reported Flag', type: 'Boolean', relationalType: 'BIT' },
+    ],
+  },
+  activities: [
+    {
+      _type: 'relational',
+      sql: 'select "root".CASES as "Cases", "root".CASE_TYPE as "Case Type", "root".DATE as "Date", "root".FIPS as "Fips", "root".ID as "Id", "root".LAST_REPORTED_FLAG as "Last Reported Flag" from COVID_DATA as "root"',
+    },
+  ],
+  result: {
+    columns: ['Cases', 'Case Type', 'Date', 'Fips', 'Id', 'Last Reported Flag'],
+    rows: [
+      { values: [250, 'Confirmed', '2021-04-01', '00001', 1, true] },
+      { values: [301, 'Confirmed', '2021-04-02', '00002', 2, false] },
+    ],
+  },
+};
