@@ -124,7 +124,11 @@ export const OrderProfileDetailModal = observer(
 
         <DialogContent className="order-profile-modal__content" dividers={true}>
           <TableContainer>
-            <Table size="small" aria-label="order profile items">
+            <Table
+              size="small"
+              aria-label="order profile items"
+              stickyHeader={true}
+            >
               <TableHead>
                 <TableRow className="order-profile-modal__table-head">
                   <TableCell className="order-profile-modal__table-header-cell">
@@ -147,7 +151,10 @@ export const OrderProfileDetailModal = observer(
               <TableBody>
                 {groupedItems.map(({ item, isSubItem }) => {
                   const isInCart =
-                    !item.isOwned && cartStore.isItemInCart(item.id);
+                    !item.isOwned &&
+                    (item.isTerminal
+                      ? cartStore.isItemInCart(item.id)
+                      : cartStore.isAddOnInCartForModel(item.id, item.model));
                   const rowModifierClass = (() => {
                     if (item.isOwned) {
                       return 'order-profile-modal__table-row--owned';
@@ -159,7 +166,7 @@ export const OrderProfileDetailModal = observer(
                   })();
                   return (
                     <TableRow
-                      key={item.id}
+                      key={`${item.id}-${item.model ?? ''}`}
                       className={`order-profile-modal__table-row ${rowModifierClass}`}
                     >
                       <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">

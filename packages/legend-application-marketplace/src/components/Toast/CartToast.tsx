@@ -16,7 +16,7 @@
 
 import { Snackbar, Alert } from '@mui/material';
 import { observer } from 'mobx-react-lite';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 export interface ToastNotification {
   id: string;
@@ -25,7 +25,8 @@ export interface ToastNotification {
 }
 
 class ToastNotificationManager {
-  private listeners: ((notification: ToastNotification) => void)[] = [];
+  private readonly listeners: ((notification: ToastNotification) => void)[] =
+    [];
 
   subscribe(listener: (notification: ToastNotification) => void) {
     this.listeners.push(listener);
@@ -68,22 +69,20 @@ export const toastManager = new ToastNotificationManager();
 export const CartToast = observer(() => {
   const [notifications, setNotifications] = useState<ToastNotification[]>([]);
 
+  const removeNotificationById = useCallback((id: string): void => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }, []);
+
   useEffect(() => {
     const unsubscribe = toastManager.subscribe((notification) => {
       setNotifications((prev) => [...prev, notification]);
-
-      setTimeout(() => {
-        setNotifications((prev) =>
-          prev.filter((n) => n.id !== notification.id),
-        );
-      }, 3000);
+      setTimeout(() => removeNotificationById(notification.id), 3000);
     });
-
     return unsubscribe;
-  }, []);
+  }, [removeNotificationById]);
 
   const handleClose = (notificationId: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    removeNotificationById(notificationId);
   };
 
   const getSeverityColor = (type: ToastNotification['type']) => {

@@ -64,6 +64,23 @@
     }
   }
 
+  &__close-btn {
+    min-width: 44px;
+    min-height: 44px;
+    color: var(--color-white);
+    background: transparent;
+    border-radius: 8px;
+
+    &:focus-visible {
+      outline: 2px solid var(--color-white);
+      outline-offset: 2px;
+    }
+
+    &:hover {
+      background: rgb(255 255 255 / 20%);
+    }
+  }
+
   &__title {
     font-size: 2rem;
     font-weight: 700;
@@ -95,19 +112,17 @@
   }
 
   &__business-reason {
-    padding: 2rem 2.4rem;
-    background: var(--color-cart-background-light);
-    border-bottom: 1px solid var(--color-cart-border-medium);
+    padding: 0 0 1.6rem;
 
     &__title {
       font-weight: 600;
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       color: var(--color-cart-text-primary);
       margin: 0 0 1.5rem;
     }
 
     &__required {
-      color: var(--color-red-100);
+      color: var(--color-red-100) !important;
       margin-left: 4px;
     }
 
@@ -132,12 +147,13 @@
 
         .MuiSelect-select {
           padding: 1.2rem 1.4rem;
-          font-size: 1.4rem;
+          font-size: 1.8rem;
         }
       }
 
       .MuiInputLabel-root {
         font-size: 1.4rem;
+        font-weight: 600;
         color: var(--color-cart-text-secondary);
         background: var(--color-white);
         padding: 0 0.6rem;
@@ -161,6 +177,10 @@
           }
         }
       }
+
+      .MuiFormLabel-asterisk {
+        display: none;
+      }
     }
 
     &__note {
@@ -169,9 +189,46 @@
     }
   }
 
+  // ─── Expand / Collapse All controls ──────────────────────────────────────
+
+  &__expand-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.6rem 2.4rem;
+    background: var(--color-cart-background-lighter);
+    border-bottom: 1px solid var(--color-cart-border-light);
+
+    &__group {
+      .MuiToggleButton-root {
+        font-size: 1.2rem;
+        font-weight: 500;
+        text-transform: none;
+        color: var(--color-cart-blue-focus);
+        padding: 0.4rem 1.2rem;
+        border-color: var(--color-cart-border-light);
+        line-height: 1.4;
+
+        &:hover {
+          background: rgb(102 126 234 / 8%);
+        }
+
+        &.Mui-selected {
+          background: rgb(102 126 234 / 12%);
+          color: var(--color-cart-blue-focus);
+
+          &:hover {
+            background: rgb(102 126 234 / 18%);
+          }
+        }
+      }
+    }
+  }
+
   &__content {
-    flex: 1;
-    overflow: auto;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
     padding: 1rem 0;
     background: var(--color-cart-background-lighter);
 
@@ -220,10 +277,58 @@
   }
 
   &__items {
-    padding: 0 2.4rem 1rem;
+    padding: 0 1.6rem 1rem;
     display: flex;
     flex-direction: column;
     gap: 1.2rem;
+  }
+
+  // ─── Vendor group ────────────────────────────────────────────────────────
+
+  &__vendor-group {
+    padding: 0.4rem 1.6rem;
+
+    &__toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.8rem 1.2rem;
+      cursor: pointer;
+      border-top: 1px solid var(--color-cart-border-light);
+      transition: background-color 0.2s ease;
+      user-select: none;
+
+      &:hover {
+        background: var(--color-cart-background-light);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-cart-blue-focus);
+        outline-offset: -2px;
+      }
+    }
+
+    &__chevron {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      color: var(--color-cart-text-secondary);
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+
+    &__summary {
+      font-size: 1.3rem;
+      color: var(--color-cart-text-secondary);
+      font-weight: 500;
+    }
   }
 
   &__item-card {
@@ -245,7 +350,7 @@
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      padding: 2rem 2rem 1rem;
+      padding: 1.2rem 1.4rem 0.8rem;
       background: linear-gradient(
         135deg,
         var(--color-cart-card-header-start) 0%,
@@ -259,6 +364,7 @@
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      min-width: 0;
     }
 
     &__chips {
@@ -269,57 +375,77 @@
 
     &__name {
       font-weight: 700;
-      font-size: 2rem;
+      font-size: 1.8rem;
       color: var(--color-cart-text-dark);
       margin: 0;
-      line-height: 1.3;
+      line-height: 1.35;
+      // Allow up to 2 lines; truncate with ellipsis on overflow
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      max-width: 100%;
     }
 
-    &__provider {
-      background: linear-gradient(
-        135deg,
-        var(--color-cart-provider-start) 0%,
-        var(--color-cart-provider-end) 100%
-      );
-      color: var(--color-white);
-      font-size: 1.2rem;
+    // NOTE: __provider-name removed from vendor card (bug fix #1)
+    // The provider name was redundant — already shown in the chip.
+
+    &__provider-name {
+      font-size: 1.3rem;
       font-weight: 600;
-      border-radius: 20px;
-      height: auto;
-      border: none;
-      align-self: flex-start;
+      color: var(--color-cart-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgb(102 126 234 / 30%);
+      margin: 0;
     }
 
     &__category {
-      background: linear-gradient(
-        135deg,
-        var(--color-cart-category-start, #10b981) 0%,
-        var(--color-cart-category-end, #059669) 100%
-      );
-      color: var(--color-white);
-      font-size: 1.2rem;
-      font-weight: 600;
+      background: rgb(4 108 78 / 10%);
+      color: var(--color-cart-category-green);
+      font-size: 1.3rem;
+      font-weight: 700;
       border-radius: 20px;
       height: auto;
       border: none;
       align-self: flex-start;
       letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgb(16 185 129 / 30%);
+      box-shadow: none;
+
+      &--owned {
+        background: rgb(217 119 6 / 12%);
+        color: #b45309;
+      }
+    }
+
+    &--synthetic {
+      .legend-marketplace-cart-drawer__item-card__name {
+        font-style: normal;
+        color: var(--color-cart-text-dark);
+      }
     }
 
     &__remove-btn {
-      background: rgb(239 68 68 / 10%);
+      background: rgb(239 68 68 / 8%);
       color: var(--color-cart-remove-bg);
-      border-radius: 10px;
-      padding: 1rem;
+      border-radius: 8px;
+      padding: 0.4rem;
       transition: all 0.2s ease;
+      min-width: 30px;
+      min-height: 30px;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
 
       &:hover {
         background: rgb(239 68 68 / 15%);
         transform: scale(1.05);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-cart-remove-bg);
+        outline-offset: 2px;
       }
 
       &:disabled {
@@ -329,28 +455,27 @@
     }
 
     &__content {
-      padding: 1.5rem 2rem 2rem;
+      padding: 0.8rem 1.4rem;
+    }
+
+    &__category-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
 
     &__price-section {
       display: flex;
       align-items: baseline;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
+      gap: 0;
+      margin-bottom: 0;
     }
 
     &__price {
-      font-weight: 800;
-      font-size: 2.4rem;
+      font-weight: 700;
+      font-size: 1.8rem;
       color: var(--color-cart-price-green);
       margin: 0;
-      background: linear-gradient(
-        135deg,
-        var(--color-cart-price-green) 0%,
-        var(--color-cart-price-green-end) 100%
-      );
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
     }
 
     &__price-suffix {
@@ -358,15 +483,265 @@
       font-weight: 500;
       font-size: 1.4rem;
     }
+
+    &__subscribed-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--color-cart-background-section);
+      color: var(--color-cart-text-secondary);
+      padding: 0.3rem 0.8rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      border: 1px solid var(--color-cart-border-light);
+      border-radius: 20px;
+      cursor: default;
+      user-select: none;
+    }
+
+    &__synthetic-actions {
+      // No longer used — delete button moved into card header (same as Vendor Profile)
+      display: none;
+    }
+  }
+
+  // ─── Add-on cards — individual separated cards, indented under parent ────
+
+  &__addon-card {
+    // Indent from left to show parent→child hierarchy; right edge aligns with parent
+    margin-left: 24px;
+    margin-right: 0;
+    margin-bottom: 10px;
+    // Individual card with its own border, radius, and shadow
+    // 4px blue left bar; top-left/bottom-left corners are gently rounded so the
+    // bar appears to have rounded ends, while the right side uses its own radius.
+    border: 1px solid var(--color-cart-border-light);
+    border-left: 4px solid var(--color-cart-addon-accent);
+    border-radius: 4px 8px 8px 4px;
+    background-color: #f9fafb;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+    position: relative;
+
+    &--last {
+      margin-bottom: 8px;
+    }
+
+    &:hover {
+      box-shadow: 0 2px 8px rgb(59 130 246 / 14%);
+    }
+
+    &__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 0.8rem 1rem 0.4rem;
+
+      // Tooltip wraps the remove-btn in a <span> for mandatory items;
+      // keep it flex so it aligns flush with the icon button baseline.
+      > span {
+        display: inline-flex;
+        align-items: flex-start;
+      }
+    }
+
+    &__title-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-width: 0;
+    }
+
+    // ── Compact layout: top name row (productName + mandatory indicator) ──
+    &__name-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__chips {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    &__provider-chip {
+      background: var(--color-cart-provider-start);
+      color: var(--color-white);
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 20px;
+      height: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+
+      .MuiChip-label {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+      }
+    }
+
+    &__category-chip {
+      background: rgb(67 56 202 / 10%);
+      color: var(--color-cart-addon-category);
+      font-size: 1.2rem;
+      font-weight: 700;
+      border-radius: 20px;
+      height: auto;
+      border: none;
+      letter-spacing: 0.5px;
+    }
+
+    &__mandatory-indicator {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-cart-addon-accent);
+      cursor: help;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+    }
+
+    &__name {
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: var(--color-cart-text-dark);
+      margin: 0;
+      line-height: 1.3;
+      // Allow up to 2 lines; truncate with ellipsis on overflow
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      max-width: 100%;
+    }
+
+    &__content {
+      padding: 0.2rem 1rem 0.8rem;
+    }
+
+    &__price-section {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    &__price {
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--color-cart-price-green);
+      margin: 0;
+    }
+
+    &__price-suffix {
+      color: var(--color-cart-text-muted);
+      font-weight: 500;
+      font-size: 1.1rem;
+    }
+
+    // ── Compact layout: category chip + price on one row ─────────────────
+    &__category-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 1rem 0.8rem;
+    }
+
+    // ── Smaller delete button for add-on rows ─────────────────────────────
+    &__remove-btn {
+      background: rgb(239 68 68 / 8%);
+      color: var(--color-cart-remove-bg);
+      border-radius: 8px;
+      padding: 0.4rem;
+      transition: all 0.2s ease;
+      min-width: 30px;
+      min-height: 30px;
+      flex-shrink: 0;
+
+      svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      &:hover {
+        background: rgb(239 68 68 / 15%);
+        transform: scale(1.05);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--color-cart-remove-bg);
+        outline-offset: 2px;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        transform: none;
+      }
+    }
+  }
+
+  &__summary-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.4rem;
+    background: #fff;
+    backdrop-filter: blur(8px);
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -2px 8px rgb(0 0 0 / 6%);
+    z-index: 10;
+    flex-shrink: 0;
+
+    &__label {
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--color-cart-text-primary);
+      line-height: 1.4;
+    }
+
+    &__right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    &__total {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #111827;
+      line-height: 1.2;
+    }
+
+    &__subtitle {
+      font-size: 1.2rem;
+      color: #9ca3af;
+      margin-top: 0.2rem;
+    }
   }
 
   &__footer {
     display: flex;
-    gap: 1.5rem;
+    flex-direction: column;
     padding: 2.4rem;
     background: var(--color-white);
     border-top: 1px solid var(--color-cart-border-light);
-    box-shadow: 0 -4px 20px rgb(0 0 0 / 8%);
+    box-shadow: 0 -4px 12px rgb(0 0 0 / 8%);
+    flex-shrink: 0;
+  }
+
+  &__footer__actions {
+    display: flex;
+    gap: 1.5rem;
+    padding-top: 1.6rem;
   }
 
   &__clear-button,
@@ -455,12 +830,22 @@
       transform: translateY(0);
     }
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
+    &.Mui-disabled {
+      background: #e5e7eb !important;
+      color: #9ca3af !important;
+      cursor: not-allowed !important;
+      pointer-events: auto;
+      transform: none;
+      box-shadow: none;
+      border: none;
     }
+  }
+
+  &__order-button-helper {
+    font-size: 1.1rem;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 0.8rem;
   }
 
   // Responsive design
@@ -481,10 +866,10 @@
     }
 
     &__business-reason {
-      padding: 1.5rem 1.8rem;
+      padding: 0 0 1.2rem;
 
       &__title {
-        font-size: 1.3rem;
+        font-size: 1.4rem;
         margin-bottom: 1.2rem;
       }
 
@@ -515,14 +900,22 @@
       }
     }
 
+    &__expand-controls {
+      padding: 0.6rem 1.6rem;
+    }
+
+    &__vendor-group {
+      padding: 0.4rem 1.6rem;
+    }
+
     &__items {
-      padding: 0 1.8rem 1rem;
+      padding: 0 1.6rem 1rem;
       gap: 1rem;
     }
 
     &__item-card {
       &__header {
-        padding: 1.5rem 1.5rem 0.8rem;
+        padding: 1rem 1.2rem 0.6rem;
       }
 
       &__name {
@@ -535,11 +928,30 @@
       }
 
       &__content {
-        padding: 1rem 1.5rem 1.5rem;
+        padding: 0.6rem 1.2rem 1.2rem;
       }
 
       &__price {
-        font-size: 2rem;
+        font-size: 1.6rem;
+      }
+    }
+
+    &__addon-card {
+      margin-left: 14px;
+      margin-right: 0;
+
+      &__name {
+        font-size: 1.2rem;
+      }
+
+      &__category-price-row {
+        padding: 0.3rem 0.8rem 0.6rem;
+      }
+
+      &__remove-btn {
+        min-width: 26px;
+        min-height: 26px;
+        padding: 0.3rem;
       }
     }
 
@@ -551,6 +963,18 @@
       &__order-button {
         font-size: 1.2rem;
         padding: 1.2rem 1.5rem;
+      }
+    }
+  }
+
+  @media (width <= 360px) {
+    &__summary-bar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.8rem;
+
+      &__right {
+        align-items: flex-start;
       }
     }
   }

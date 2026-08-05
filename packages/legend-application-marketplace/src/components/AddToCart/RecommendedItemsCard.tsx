@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-import { clsx, PlusIcon, CheckIcon, CheckCircleIcon } from '@finos/legend-art';
-import {
-  RecommendationSource,
-  type TerminalResult,
-} from '@finos/legend-server-marketplace';
+import { clsx, PlusIcon, CheckCircleIcon } from '@finos/legend-art';
+import { type TerminalResult } from '@finos/legend-server-marketplace';
 import {
   Box,
   Button,
@@ -37,34 +34,59 @@ interface RecommendedItemsCardProps {
   recommendedItem: TerminalResult;
   onSelect?: (item: TerminalResult) => void;
   isSelecting?: boolean;
-  selectedItemId?: number | undefined;
+  selectedItemId?: number;
+  permissionIdOverride?: number;
+  modelOverride?: string | null;
 }
 
 export const RecommendedItemsCard = observer(
   (props: RecommendedItemsCardProps) => {
-    const { recommendedItem, onSelect, isSelecting, selectedItemId } = props;
+    const {
+      recommendedItem,
+      onSelect,
+      isSelecting,
+      selectedItemId,
+      permissionIdOverride,
+      modelOverride,
+    } = props;
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    // Tracks a successful add within this component's lifetime so the button
+    // transitions even when skipWorkflow=true causes the item to bypass the
+    // normal cart and therefore not appear in isItemInCart.
+    const [isAdded, setIsAdded] = useState(false);
     const inCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
       recommendedItem.id,
     );
+    const isInCartOrAdded = inCart || isAdded;
 
     const isAssociationFlow = onSelect !== undefined;
     const isCurrentlySelecting =
       isAssociationFlow &&
       Boolean(isSelecting) &&
       selectedItemId === recommendedItem.id;
-    const isMarketplaceItem =
-      recommendedItem.source === RecommendationSource.MARKETPLACE;
 
     const handleAddAddonToCart = (addon: TerminalResult) => {
       setIsAddingToCart(true);
       const cartItemRequest =
         legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
 
+      if (permissionIdOverride !== undefined) {
+        cartItemRequest.permissionId = permissionIdOverride;
+        cartItemRequest.skipWorkflow = true;
+      }
+      if (modelOverride !== null && modelOverride !== undefined) {
+        cartItemRequest.model = modelOverride;
+      }
+
       flowResult(
         legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
       )
+        .then((result) => {
+          if (result.success) {
+            setIsAdded(true);
+          }
+        })
         .catch((error) => {
           assertErrorThrown(error);
           toastManager.error(
@@ -76,89 +98,40 @@ export const RecommendedItemsCard = observer(
         });
     };
 
-    const renderAction = () => {
-      if (isAssociationFlow) {
-        if (recommendedItem.isOwned) {
-          return (
-            <Box className="recommended-addons-modal__owned-badge">
-              <CheckCircleIcon />
-              <Typography variant="body2">Owned</Typography>
-            </Box>
-          );
-        }
-
-        if (isMarketplaceItem) {
-          if (inCart) {
-            return (
-              <Box className="recommended-addons-modal__in-cart-badge">
-                <Typography variant="body2">In Cart</Typography>
-                <CheckCircleIcon />
-              </Box>
-            );
-          }
-          return (
-            <Button
-              variant="outlined"
-              onClick={() => onSelect(recommendedItem)}
-              disabled={Boolean(isSelecting)}
-              size="small"
-              className="recommended-addons-modal__add-btn"
-            >
-              {isCurrentlySelecting ? (
-                <>
-                  Adding... &nbsp;
-                  <CircularProgress size={14} />
-                </>
-              ) : (
-                <>
-                  Add to Cart &nbsp;
-                  <PlusIcon />
-                </>
-              )}
-            </Button>
-          );
-        }
-
+    const renderAssociationAction = (
+      selectFn: (item: TerminalResult) => void,
+    ) => {
+      if (recommendedItem.isOwned) {
         return (
-          <Button
-            variant="outlined"
-            onClick={() => onSelect(recommendedItem)}
-            disabled={Boolean(isSelecting)}
-            size="small"
-            className="recommended-addons-modal__select-btn"
-          >
-            {isCurrentlySelecting ? (
-              <>
-                Selecting... &nbsp;
-                <CircularProgress size={14} />
-              </>
-            ) : (
-              <>
-                Select &nbsp;
-                <CheckIcon />
-              </>
-            )}
-          </Button>
+          <Box className="recommended-addons-modal__owned-badge">
+            <CheckCircleIcon />
+            <Typography variant="body2">Owned</Typography>
+          </Box>
         );
       }
 
-      const button = (
+      if (inCart) {
+        return (
+          <Box className="recommended-addons-modal__in-cart-badge">
+            <Typography variant="body2">In Cart</Typography>
+            <CheckCircleIcon />
+          </Box>
+        );
+      }
+
+      return (
         <Button
           variant="outlined"
-          onClick={() => handleAddAddonToCart(recommendedItem)}
-          disabled={inCart || isAddingToCart}
+          onClick={() => selectFn(recommendedItem)}
+          disabled={Boolean(isSelecting)}
           size="small"
-          className={clsx('recommended-addons-modal__add-btn', {
-            'recommended-addons-modal__add-btn--added': inCart,
-          })}
+          className="recommended-addons-modal__add-btn"
         >
-          {isAddingToCart ? (
+          {isCurrentlySelecting ? (
             <>
               Adding... &nbsp;
               <CircularProgress size={14} />
             </>
-          ) : inCart ? (
-            'Added to Cart'
           ) : (
             <>
               Add to Cart &nbsp;
@@ -167,8 +140,48 @@ export const RecommendedItemsCard = observer(
           )}
         </Button>
       );
+    };
 
-      if (inCart) {
+    const renderNonAssociationButtonLabel = () => {
+      if (isAddingToCart) {
+        return (
+          <>
+            Adding... &nbsp;
+            <CircularProgress size={14} />
+          </>
+        );
+      }
+      if (isInCartOrAdded) {
+        return 'Added to Cart';
+      }
+      return (
+        <>
+          Add to Cart &nbsp;
+          <PlusIcon />
+        </>
+      );
+    };
+
+    const renderAction = () => {
+      if (isAssociationFlow) {
+        return renderAssociationAction(onSelect);
+      }
+
+      const button = (
+        <Button
+          variant="outlined"
+          onClick={() => handleAddAddonToCart(recommendedItem)}
+          disabled={isInCartOrAdded || isAddingToCart}
+          size="small"
+          className={clsx('recommended-addons-modal__add-btn', {
+            'recommended-addons-modal__add-btn--added': isInCartOrAdded,
+          })}
+        >
+          {renderNonAssociationButtonLabel()}
+        </Button>
+      );
+
+      if (isInCartOrAdded) {
         return (
           <Tooltip
             title={

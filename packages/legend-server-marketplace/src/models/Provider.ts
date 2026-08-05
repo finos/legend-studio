@@ -61,9 +61,9 @@ export class TerminalResult {
   category!: string;
   providerName!: string;
   productName!: string;
-  description!: string;
+  description?: string;
   price!: number;
-  phystr!: string;
+  phystr?: string;
   model!: string | null;
   isMandatory?: boolean;
   skipWorkflow?: boolean;
@@ -78,14 +78,14 @@ export class TerminalResult {
       category: primitive(),
       providerName: primitive(),
       productName: primitive(),
-      description: primitive(),
+      description: optional(primitive()),
       price: primitive(),
-      phystr: primitive(),
+      phystr: optional(primitive()),
       model: primitive(),
       isMandatory: optional(primitive()),
       skipWorkflow: optional(primitive()),
-      isOwned: primitive(),
-      vendorProfileId: primitive(),
+      isOwned: optional(primitive()),
+      vendorProfileId: optional(primitive()),
       permissionId: optional(primitive()),
       source: optional(primitive()),
     }),
@@ -174,4 +174,6 @@ export interface TerminalServicesResponse {
   service_pricing_total_count?: number;
   order_profile_total_count?: number;
   total_count?: number;
+  ownedPermissions?: PlainObject<TerminalResult>[];
+  ownedPermissionsCount?: number;
 }
