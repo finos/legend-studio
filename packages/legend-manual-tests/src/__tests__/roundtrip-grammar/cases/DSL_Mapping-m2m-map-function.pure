@@ -1,0 +1,34 @@
+###Pure
+
+Class test::Source
+{
+    i : Integer[*];
+    s : String[*];
+    inputs : Integer[*];
+}
+
+Class test::Target
+{
+    resolved : String[*];
+}
+
+function test::getMap(i:Integer[*], s : String[*]): Map<Integer, String>[1]
+{
+    zip($i, $s)->newMap();
+}
+
+function test::resolve(i:Integer[*], s:String[*], input:Integer[*]):String[*]
+{
+    let m = test::getMap($i,$s);
+    $input->map(iv | if(get($m,$iv)->isEmpty(), | [], | get($m, $iv)));
+}
+
+###Mapping
+Mapping test::myMapping
+(
+    *test::Target:Pure
+    {
+        ~src test::Source
+        resolved : test::resolve($src.i, $src.s, $src.inputs)
+    }
+)

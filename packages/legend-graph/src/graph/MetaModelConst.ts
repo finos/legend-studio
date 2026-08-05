@@ -61,6 +61,16 @@ export enum PRIMITIVE_TYPE {
   BYTE = 'Byte',
 }
 
+/**
+ * Built-in generic class types that the Pure engine treats as unqualified
+ * (i.e. it emits their type references with `fullPath` set to the bare name
+ * rather than a fully qualified path). They must be registered alongside
+ * primitive types so graph building can resolve them.
+ */
+export enum BUILT_IN_TYPE {
+  MAP = 'Map',
+}
+
 export enum PRECISE_PRIMITIVE_TYPE {
   VARCHAR = 'meta::pure::precisePrimitives::Varchar',
   INT = 'meta::pure::precisePrimitives::Int',
