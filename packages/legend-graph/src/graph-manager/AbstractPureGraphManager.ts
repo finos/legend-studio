@@ -115,6 +115,7 @@ import type { RelationalDatabaseTypeConfiguration } from './action/relational/Re
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
 import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
+import type { IngestionDefinitionArtifact } from './action/generation/IngestionDefinitionArtifact.js';
 import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 import type { EngineError } from './action/EngineError.js';
@@ -708,6 +709,11 @@ export abstract class AbstractPureGraphManager {
   ): RawExecutionPlan;
 
   abstract buildLineage(lineageJSON: RawLineageModel): LineageModel;
+
+  abstract buildIngestDefinitionArtifact(
+    json: PlainObject,
+    graph: PureModel,
+  ): IngestionDefinitionArtifact;
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 

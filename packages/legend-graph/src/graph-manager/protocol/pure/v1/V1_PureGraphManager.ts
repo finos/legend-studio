@@ -272,6 +272,7 @@ import type {
   RawMappingModelCoverageAnalysisResult,
 } from '../../../../graph-manager/action/analytics/MappingModelCoverageAnalysis.js';
 import { deserialize } from 'serializr';
+import { V1_relationTypeModelSchema } from './transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 import { SchemaSet } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/schemaSet/DSL_ExternalFormat_SchemaSet.js';
 import type {
   CompilationResult,
@@ -324,6 +325,7 @@ import { V1_INTERNAL__UnknownStore } from './model/packageableElements/store/V1_
 import type { V1_ValueSpecification } from './model/valueSpecification/V1_ValueSpecification.js';
 import type { V1_GrammarParserBatchInputEntry } from './engine/V1_EngineServerClient.js';
 import type { ArtifactGenerationExtensionResult } from '../../../action/generation/ArtifactGenerationExtensionResult.js';
+import { IngestionDefinitionArtifact } from '../../../action/generation/IngestionDefinitionArtifact.js';
 import {
   V1_ArtifactGenerationExtensionInput,
   V1_buildArtifactsByExtensionElement,
@@ -425,6 +427,7 @@ import {
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationTypeFromAccessPointImplementation,
+  V1_buildRelationTypeFromV1RelationType,
 } from './helpers/V1_AccessorHelper.js';
 import {
   V1_DataProductAccessor,
@@ -3355,6 +3358,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
   buildLineage(lineageJSON: PlainObject<V1_RawLineageModel>): LineageModel {
     return deserialize(LineageModel, lineageJSON);
+  }
+
+  buildIngestDefinitionArtifact(
+    json: PlainObject,
+    graph: PureModel,
+  ): IngestionDefinitionArtifact {
+    return IngestionDefinitionArtifact.fromJson(json, (rawSchema) => {
+      const v1RelationType = deserialize(V1_relationTypeModelSchema, rawSchema);
+      return V1_buildRelationTypeFromV1RelationType(v1RelationType, graph);
+    });
   }
 
   serializeExecutionPlan(

@@ -40,6 +40,7 @@ import {
 import { V1_Multiplicity } from '../../../model/packageableElements/domain/V1_Multiplicity.js';
 import {
   V1_multiplicityModelSchema,
+  V1_stereotypePtrModelSchema,
   V1_taggedValueModelSchema,
 } from './V1_CoreSerializationHelper.js';
 import { matchFunctionName } from '../../../../../../../graph/MetaModelUtils.js';
@@ -119,6 +120,7 @@ export const V1_relationTypeColumnModelSchema = createModelSchema(
     ),
     multiplicity: usingModelSchema(V1_multiplicityModelSchema),
     name: primitive(),
+    stereotypes: optionalCustomListWithSchema(V1_stereotypePtrModelSchema),
     taggedValues: optionalCustomListWithSchema(V1_taggedValueModelSchema),
   },
 );

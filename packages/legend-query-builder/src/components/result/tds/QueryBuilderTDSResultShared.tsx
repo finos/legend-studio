@@ -33,7 +33,7 @@ import {
   InstanceValue,
   RelationalExecutionActivities,
 } from '@finos/legend-graph';
-import { format as formatSQL } from 'sql-formatter';
+import { format as formatSQL, type SqlLanguage } from 'sql-formatter';
 import {
   type ApplicationStore,
   type LegendApplicationConfig,
@@ -107,9 +107,12 @@ import {
 import type { QueryBuilderState } from '../../../stores/QueryBuilderState.js';
 import type { QueryBuilderPropertyExpressionState } from '../../../stores/QueryBuilderPropertyEditorState.js';
 
-export const tryToFormatSql = (sql: string): string => {
+export const tryToFormatSql = (
+  sql: string,
+  language: SqlLanguage = 'mysql',
+): string => {
   try {
-    const formattedSql = formatSQL(sql, { language: 'mysql' });
+    const formattedSql = formatSQL(sql, { language });
     return formattedSql;
   } catch {
     try {

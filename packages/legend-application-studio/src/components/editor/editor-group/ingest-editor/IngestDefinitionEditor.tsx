@@ -31,7 +31,9 @@ import {
   ModalHeaderActions,
   CustomSelectorInput,
   FlaskIcon,
+  SQLIcon,
   clsx,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import {
   INGEST_DEFINITION_TAB,
@@ -47,6 +49,7 @@ import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__
 import {
   LINEAGE_VIEW_MODE,
   LineageViewerContent,
+  IngestionDefinitionArtifactViewer,
 } from '@finos/legend-query-builder';
 import type { MatViewDataSet } from '@finos/legend-graph';
 import { IngestTestableEditor } from './testable/IngestTestableEditor.js';
@@ -213,6 +216,21 @@ export const IngestDefinitionEditor = observer(() => {
     }
   };
 
+  const viewSQL = () => {
+    if (
+      ingestDefinitionEditorState.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS
+        ?.length
+    ) {
+      flowResult(ingestDefinitionEditorState.generateArtifact()).catch(
+        editorStore.applicationStore.alertUnhandledError,
+      );
+    } else {
+      editorStore.applicationStore.notificationService.notifyError(
+        'No MatView datasets available for artifact generation',
+      );
+    }
+  };
+
   return (
     <div className="ingest-definition-editor">
       <div className="panel">
@@ -266,9 +284,38 @@ export const IngestDefinitionEditor = observer(() => {
                           </div>
                         </button>
                       </div>
+                      {isValidForLineage && (
+                        <div className="btn__dropdown-combo btn__dropdown-combo--primary">
+                          <button
+                            className="btn__dropdown-combo__label"
+                            onClick={viewSQL}
+                            tabIndex={-1}
+                            disabled={
+                              ingestDefinitionEditorState
+                                .artifactGenerationState.isInProgress
+                            }
+                          >
+                            <SQLIcon className="btn__dropdown-combo__label__icon" />
+                            <div className="btn__dropdown-combo__label__title">
+                              {ingestDefinitionEditorState
+                                .artifactGenerationState.isInProgress
+                                ? 'Generating...'
+                                : 'View SQL'}
+                            </div>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </PanelHeaderActions>
                 </PanelHeader>
+                <PanelLoadingIndicator
+                  isLoading={
+                    ingestDefinitionEditorState.artifactGenerationState
+                      .isInProgress ||
+                    ingestDefinitionEditorState.lineageGenerationState
+                      .isInProgress
+                  }
+                />
                 <PanelContent>
                   <CodeEditor
                     inputValue={ingestDefinitionEditorState.textContent}
@@ -278,6 +325,16 @@ export const IngestDefinitionEditor = observer(() => {
                 </PanelContent>
                 <IngestLineageModal
                   ingestDefinitionEditorState={ingestDefinitionEditorState}
+                />
+                <IngestionDefinitionArtifactViewer
+                  artifact={ingestDefinitionEditorState.ingestionArtifact}
+                  onClose={() =>
+                    ingestDefinitionEditorState.setIngestionArtifact(undefined)
+                  }
+                  darkMode={
+                    !editorStore.applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
                 />
               </PanelContent>
             )}

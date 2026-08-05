@@ -38,10 +38,18 @@ import {
   type V1_WriteMode,
   V1_WriteModeType,
 } from '../model/packageableElements/ingest/V1_IngestDefinition.js';
-import type { V1_GraphBuilderContext } from '../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import {
+  type V1_GraphBuilderContext,
+  V1_GraphBuilderContextBuilder,
+} from '../transformation/pureGraph/to/V1_GraphBuilderContext.js';
+import { V1_GraphBuilderExtensions } from '../transformation/pureGraph/to/V1_GraphBuilderExtensions.js';
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
-import { returnUndefOnError, type PlainObject } from '@finos/legend-shared';
+import {
+  LogService,
+  returnUndefOnError,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   MILESTONE_INGEST_COLUMNS,
   PRECISE_PRIMITIVE_TYPE,
@@ -79,6 +87,13 @@ import {
 import type { V1_AccessPointImplementation } from '../lakehouse/deploy/V1_DataProductArtifact.js';
 import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
 import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
+import { TaggedValue } from '../../../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
+import { TagExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/TagReference.js';
+import { StereotypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
+import {
+  getTag,
+  getStereotype,
+} from '../../../../../graph/helpers/DomainHelper.js';
 
 const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   // Strip package prefix — primitive types are indexed by simple name
@@ -200,6 +215,86 @@ const buildRelationTypeFromTable = (table: Table): RelationType => {
     });
   return relationType;
 };
+/**
+ * Builds a minimal `V1_GraphBuilderContext` from a `PureModel` for callers
+ * that only have a graph handle. Extensions are empty and the log service is
+ * a no-op — this is sufficient for resolving generic types and for building
+ * simple value specifications (e.g. primitive instance values used as
+ * `typeVariableValues` for parameterized primitives like `VarChar(100)`).
+ */
+const buildMinimalGraphBuilderContext = (
+  graph: PureModel,
+): V1_GraphBuilderContext =>
+  new V1_GraphBuilderContextBuilder(
+    graph,
+    graph,
+    new V1_GraphBuilderExtensions([]),
+    new LogService(),
+  ).build();
+
+// TODO: move to pure graph
+/**
+ * Builds a metamodel `RelationType` from a raw `V1_RelationType`, resolving
+ * each column's generic type (including nested `typeVariableValues` such as
+ * the `100` in `VarChar(100)`) against the supplied `PureModel`.
+ */
+export const V1_buildRelationTypeFromV1RelationType = (
+  v1RelationType: V1_RelationType,
+  graph: PureModel,
+  relationTypeName?: string | undefined,
+): RelationType => {
+  const context = buildMinimalGraphBuilderContext(graph);
+  const relationType = new RelationType(relationTypeName ?? RelationType.ID);
+  relationType.columns = v1RelationType.columns.map((col) => {
+    const genericTypeRef = returnUndefOnError(() =>
+      context.resolveGenericTypeFromProtocolWithRelationType(col.genericType),
+    );
+    const relationColumn = new RelationColumn(
+      col.name,
+      genericTypeRef ??
+        GenericTypeExplicitReference.create(
+          new GenericType(
+            graph.getType(V1_getGenericTypeFullPath(col.genericType)),
+          ),
+        ),
+    );
+    relationColumn.multiplicity = graph.getMultiplicity(
+      col.multiplicity.lowerBound,
+      col.multiplicity.upperBound,
+    );
+    relationColumn.stereotypes = (col.stereotypes ?? [])
+      .map((stereotypePtr) =>
+        returnUndefOnError(() =>
+          StereotypeExplicitReference.create(
+            getStereotype(
+              graph.getProfile(stereotypePtr.profile),
+              stereotypePtr.value,
+            ),
+          ),
+        ),
+      )
+      .filter((s): s is StereotypeExplicitReference => s !== undefined);
+    relationColumn.taggedValues = (col.taggedValues ?? [])
+      .map((taggedValue) =>
+        returnUndefOnError(
+          () =>
+            new TaggedValue(
+              TagExplicitReference.create(
+                getTag(
+                  graph.getProfile(taggedValue.tag.profile),
+                  taggedValue.tag.value,
+                ),
+              ),
+              taggedValue.value,
+            ),
+        ),
+      )
+      .filter((tv): tv is TaggedValue => tv !== undefined);
+    return relationColumn;
+  });
+  return relationType;
+};
+
 // TODO: move to pure graph
 /**
  * Builds a metamodel `RelationType` from the cached `lambdaGenericType` on a
@@ -222,25 +317,11 @@ export const V1_buildRelationTypeFromAccessPointImplementation = (
   if (!v1RelationType) {
     return undefined;
   }
-  const relationType = new RelationType(relationTypeName ?? apImpl.id);
-  relationType.columns = v1RelationType.columns.map((col) => {
-    const relationColumn = new RelationColumn(
-      col.name,
-      GenericTypeExplicitReference.create(
-        new GenericType(
-          graph.getType(V1_getGenericTypeFullPath(col.genericType)),
-        ),
-      ),
-    );
-
-    relationColumn.multiplicity = graph.getMultiplicity(
-      col.multiplicity.lowerBound,
-      col.multiplicity.upperBound,
-    );
-
-    return relationColumn;
-  });
-  return relationType;
+  return V1_buildRelationTypeFromV1RelationType(
+    v1RelationType,
+    graph,
+    relationTypeName ?? apImpl.id,
+  );
 };
 
 /**
