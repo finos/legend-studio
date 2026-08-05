@@ -65,6 +65,7 @@ import {
   mockLargeSDLCDataProduct,
   mockMultiGroupLargeSDLCDataProduct,
   mockSDLCDataProduct,
+  mockSDLCDataProductDatabricksAP,
   mockSDLCDataProductNoSupportInfo,
   buildMockDataProductArtifactWithSampleQueries,
   MOCK__TDS_SAMPLE_QUERY_ID,
@@ -1360,7 +1361,7 @@ describe('DataProductViewer', () => {
         );
         expect(clipBoardSpy).toHaveBeenCalledWith(
           expect.stringContaining(
-            `projects|com.example.analytics:customer-analytics:1.2.0?options='--compute=testtargetenvironment --environment=Development --warehouse=LAKEHOUSE_CONSUMER_DEFAULT_WH'`,
+            `projects|com.example.analytics:customer-analytics:1.2.0?options='--compute=snowflake --environment=Development --warehouse=LAKEHOUSE_CONSUMER_DEFAULT_WH'`,
           ),
         );
       });
@@ -3980,6 +3981,97 @@ describe('DataProductViewer', () => {
 
       expect(mockOpenQuery).toHaveBeenCalled();
       expect(notifyErrorSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Non-Snowflake compute target guard', () => {
+    const projectGAVCoordinates = {
+      groupId: 'test.group',
+      artifactId: 'test-artifact',
+      versionId: '1.0.0',
+    };
+    const unsupportedMessage =
+      'This feature is not supported for access points deployed to Databricks.';
+
+    test('SQL tab shows the unsupported message for a Databricks-targeted access point', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDatabricksAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        projectGAVCoordinates,
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      const sqlTab = await screen.findByRole('tab', { name: 'SQL' });
+      fireEvent.click(sqlTab);
+
+      await screen.findByText(unsupportedMessage);
+    });
+
+    test('Datacube tab shows the unsupported message for a Databricks-targeted access point', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDatabricksAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        projectGAVCoordinates,
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      const dataCubeTab = await screen.findByRole('tab', { name: 'Datacube' });
+      fireEvent.click(dataCubeTab);
+
+      await screen.findByText(unsupportedMessage);
+    });
+
+    test('Query tab shows the unsupported message for a Databricks-targeted access point', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDatabricksAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        projectGAVCoordinates,
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      fireEvent.click(queryTab);
+
+      await screen.findByText(unsupportedMessage);
+    });
+
+    test('Power BI tab shows the unsupported message for a Databricks-targeted access point', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductDatabricksAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        projectGAVCoordinates,
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      const powerBiTab = await screen.findByRole('tab', { name: 'Power BI' });
+      fireEvent.click(powerBiTab);
+
+      await screen.findByText(unsupportedMessage);
+    });
+
+    test('SQL tab renders normally (no unsupported message) for a Snowflake-targeted access point', async () => {
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProduct,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        projectGAVCoordinates,
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      const sqlTab = await screen.findByRole('tab', { name: 'SQL' });
+      fireEvent.click(sqlTab);
+
+      await screen.findByRole('button', { name: 'Open SQL Playground' });
+      expect(screen.queryByText(unsupportedMessage)).toBeNull();
     });
   });
 

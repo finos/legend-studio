@@ -21,6 +21,7 @@ import {
   TbArrowsJoin2,
   TbArrowsSplit2,
   TbBook,
+  TbBrandDatabricks,
   TbBrandSnowflake,
   TbBriefcase,
   TbBuildingBank,
@@ -68,6 +69,7 @@ export const CalendarClockIcon = TbCalendarTime;
 export const LastModifiedIcon = TbClockEdit;
 export const SQLIcon = TbSql;
 export const Snowflake_BrandIcon = TbBrandSnowflake;
+export const Databricks_BrandIcon = TbBrandDatabricks;
 export const DatabaseImportIcon = TbDatabaseImport;
 export const FileUnknownIcon = TbFileUnknown;
 export const Database = TbDatabase;
