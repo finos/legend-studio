@@ -106,7 +106,6 @@ import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.
 import { QueryEditorIngestInfoModal } from './ingest/IngestInfo.js';
 import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
-import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 import { extractQueryParams } from './utils/QueryParameterUtils.js';
 import type { QueryTitleDescriptionAISuggestionRequest } from '../stores/LegendQueryApplicationPlugin.js';
 
@@ -1176,31 +1175,6 @@ export const QueryEditor = observer(() => {
           </div>
         </div>
         <div className="query-editor__header__action__content">
-          {!isLoadingEditor &&
-            !editorStore.queryBuilderState?.config
-              ?.TEMPORARY__disableQueryBuilderChat &&
-            (editorStore.queryBuilderState instanceof
-              DataSpaceQueryBuilderState ||
-              editorStore.queryBuilderState instanceof
-                LegendQueryBareQueryBuilderState) &&
-            editorStore.queryBuilderState.canBuildQuery && (
-              <button
-                title="Open Query Chat."
-                onClick={() => openQueryChat()}
-                className="query-editor__header__action query-editor__header__action__theme-toggler"
-              >
-                <div
-                  className={
-                    applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled
-                      ? 'query-editor__header__action__chat__label--light'
-                      : 'query-editor__header__action__chat__label--dark'
-                  }
-                >
-                  Legend AI
-                </div>
-              </button>
-            )}
           <button
             title="Toggle light/dark mode"
             onClick={TEMPORARY__toggleLightDarkMode}

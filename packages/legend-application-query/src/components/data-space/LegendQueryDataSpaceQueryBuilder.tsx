@@ -112,12 +112,10 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       }
       const value = option.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
-        queryBuilderState.queryChatState?.abort();
         queryBuilderState
           .onDataSpaceChange(value)
           .catch(queryBuilderState.applicationStore.alertUnhandledError);
       } else if (value instanceof DepotEntityWithOrigin) {
-        queryBuilderState.queryChatState?.abort();
         queryBuilderState.onDataProductChange(value);
       }
     };
