@@ -105,14 +105,12 @@ beforeEach(async () => {
     page: 1,
     page_size: 300,
   });
-  (
-    MOCK__baseStore.marketplaceServerClient as {
-      getPermissionAddons?: unknown;
-    }
-  ).getPermissionAddons = jest.fn().mockResolvedValue({
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getPermissionAddons',
+  ).mockResolvedValue({
     marketplace_addons: [],
     total_count: 0,
-    permissionId: undefined,
   });
 });
 
