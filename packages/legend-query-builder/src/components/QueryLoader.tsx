@@ -68,10 +68,11 @@ import {
 
 const LATEST_REVISION_KEY = 'latest';
 
-// Numeric ordering key for a revision `version` (e.g. "4" -> 4, "rev-2" -> 2);
-// undefined/unparseable versions sort last.
+// Numeric ordering key for a revision `version`. The value is typed as a string
+// but can arrive as a number at runtime, so coerce before parsing (e.g. 4 -> 4,
+// "rev-2" -> 2); undefined/unparseable versions sort last.
 const revisionSortKey = (version: string | undefined): number => {
-  const match = version?.match(/\d+/);
+  const match = String(version ?? '').match(/\d+/);
   return match ? Number(match[0]) : Number.NEGATIVE_INFINITY;
 };
 
