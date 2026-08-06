@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.338
+
+### Patch Changes
+
+- [#5386](https://github.com/finos/legend-studio/pull/5386) [`e6bea2c`](https://github.com/finos/legend-studio/commit/e6bea2cdf653ebbc0c316b712750f5ac96d0e3ef) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add "Suggest with AI" button to the DataSpace editor description field, mirroring the existing pattern in the service and data product editors:
+
 ## 0.1.337
 
 ## 0.1.336

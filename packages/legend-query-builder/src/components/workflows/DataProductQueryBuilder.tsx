@@ -116,7 +116,17 @@ export const DataProductQueryBuilderSetupFormContent = observer(
               value={queryBuilderState.selectedExecutionIdOption}
               formatOptionLabel={(option: ExecutionIdOption) => (
                 <div className="query-builder__setup__config-group__item__selector__option">
-                  <span>{option.label}</span>
+                  <div className="query-builder__setup__config-group__item__selector__option__label">
+                    <span>{option.label}</span>
+                    {option.groupId !== undefined && (
+                      <span
+                        className="query-builder__setup__config-group__item__selector__option__subtitle"
+                        title={`Access Point Group: ${option.groupId}`}
+                      >
+                        {option.groupId}
+                      </span>
+                    )}
+                  </div>
                   <span className="query-builder__setup__config-group__item__selector__option__tag">
                     {option.tag}
                   </span>
@@ -150,15 +160,15 @@ const DataProductQueryBuilderSetupPanelContent = observer(
     const applicationStore = useApplicationStore();
     const executionState = queryBuilderState.executionState;
 
-    // runtime options (only for model access point group)
+    // runtime options (only for model access point group / lakehouse)
     const runtimeRequired =
       executionState instanceof ModelAccessPointDataProductExecutionState ||
       executionState instanceof LakehouseDataProductExecutionState;
-    const showRuntimeSelector =
-      runtimeRequired && executionState.showRuntimeOptions;
+    const showRuntimeSelector = runtimeRequired;
     const runtimeOptions = runtimeRequired
       ? executionState.compatibleRuntimes.map(buildElementOption)
       : [];
+    const noCompatibleRuntimes = runtimeRequired && runtimeOptions.length === 0;
     const selectedRuntimeOption =
       runtimeRequired && executionState.selectedRuntime
         ? buildElementOption(executionState.selectedRuntime)
@@ -193,11 +203,16 @@ const DataProductQueryBuilderSetupPanelContent = observer(
               <CustomSelectorInput
                 inputId="query-builder__setup__runtime-selector"
                 className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose a runtime..."
+                placeholder={
+                  noCompatibleRuntimes
+                    ? 'No compatible runtimes available'
+                    : 'Choose a runtime...'
+                }
                 options={runtimeOptions}
                 disabled={runtimeOptions.length < 1}
                 onChange={onRuntimeOptionChange}
                 value={selectedRuntimeOption}
+                hasError={noCompatibleRuntimes}
                 darkMode={
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled

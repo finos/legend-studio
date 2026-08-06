@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-import {
-  action,
-  computed,
-  flow,
-  flowResult,
-  makeObservable,
-  observable,
-} from 'mobx';
+import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type EditorStore,
-  DataProductEditorState,
   ElementEditorState,
 } from '@finos/legend-application-studio';
 import {
-  type DataProduct,
   type PackageableElement,
   Package,
   Class,
@@ -36,7 +27,6 @@ import {
   Association,
   Service,
   ConcreteFunctionDefinition,
-  observe_DataProduct,
 } from '@finos/legend-graph';
 import { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 import {
@@ -44,113 +34,8 @@ import {
   DataSpacePackageableElementExecutable,
   type DataSpaceElement,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import {
-  assertErrorThrown,
-  guaranteeType,
-  type GeneratorFn,
-} from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
-import {
-  convertDataSpaceToDataProduct,
-  convertDataSpaceToNativeModelAccess,
-} from '../stores/DataSpaceToDataProductConverter.js';
-import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
-
-export const onMergeDataSpaceToDataProduct = flow(function* (
-  dataSpace: DataSpace,
-  targetDataProduct: DataProduct,
-  editorStore: EditorStore,
-  dataSpaceEditorState: DataSpaceEditorState,
-): GeneratorFn<void> {
-  try {
-    targetDataProduct.nativeModelAccess =
-      convertDataSpaceToNativeModelAccess(dataSpace);
-
-    editorStore.graphManagerState.graph.deleteElement(dataSpace);
-
-    const dataSpacePackage = dataSpace.package;
-    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
-      editorStore.graphManagerState.graph.deleteElement(dataSpacePackage);
-    }
-
-    const dataProductEditorState = new DataProductEditorState(
-      editorStore,
-      targetDataProduct,
-    );
-
-    editorStore.tabManagerState.closeTab(dataSpaceEditorState);
-    editorStore.tabManagerState.openTab(dataProductEditorState);
-    yield flowResult(editorStore.explorerTreeState.build());
-
-    editorStore.applicationStore.notificationService.notifySuccess(
-      `Successfully merged DataSpace ${dataSpace.name} into Data Product ${targetDataProduct.path}`,
-    );
-  } catch (error) {
-    assertErrorThrown(error);
-    editorStore.applicationStore.notificationService.notifyError(
-      `Failed to merge DataSpace into Data Product: ${error.message}`,
-    );
-  }
-});
-
-export const onConvertDataSpaceToDataProduct = flow(function* (
-  dataSpace: DataSpace,
-  editorStore: EditorStore,
-  dataSpaceEditorState: DataSpaceEditorState,
-): GeneratorFn<void> {
-  try {
-    const dataProduct = convertDataSpaceToDataProduct(
-      dataSpace,
-      editorStore.changeDetectionState.observerContext,
-    );
-
-    editorStore.graphManagerState.graph.deleteElement(dataSpace);
-
-    editorStore.graphManagerState.graph.addElement(
-      dataProduct,
-      dataSpace.package?.path.replace(/dataspace/, 'dataProduct'),
-    );
-
-    const dataSpacePackage = dataSpace.package;
-    if (dataSpacePackage && dataSpacePackage.children.length === 0) {
-      editorStore.graphManagerState.graph.deleteElement(dataSpacePackage);
-    }
-    const addedElement = editorStore.graphManagerState.graph.getNullableElement(
-      dataProduct.path,
-    );
-    if (addedElement) {
-      observe_DataProduct(
-        addedElement as DataProduct,
-        editorStore.changeDetectionState.observerContext,
-      );
-    }
-    const dataProductEditorState = new DataProductEditorState(
-      editorStore,
-      addedElement as DataProduct,
-    );
-
-    editorStore.tabManagerState.closeTab(dataSpaceEditorState);
-    editorStore.tabManagerState.openTab(dataProductEditorState);
-    yield flowResult(editorStore.explorerTreeState.build());
-    editorStore.applicationStore.telemetryService.logEvent(
-      DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_LOGGING_CONTEXT_KEY.CONVERT_DATA_SPACE_TO_DATA_PRODUCT,
-      {
-        sourceInfo: editorStore.editorMode.getSourceInfo(),
-        dataSpacePath: dataSpace.path,
-        dataProductPath: dataProduct.path,
-      },
-    );
-
-    editorStore.applicationStore.notificationService.notifySuccess(
-      `Successfully converted DataSpace ${dataSpace.name} to Data Product`,
-    );
-  } catch (error) {
-    assertErrorThrown(error);
-    editorStore.applicationStore.notificationService.notifyError(
-      `Failed to convert DataSpace to Data Product: ${error.message}`,
-    );
-  }
-});
 
 export class DataSpaceEditorState extends ElementEditorState {
   executionContextState: DataSpaceExecutionContextState;

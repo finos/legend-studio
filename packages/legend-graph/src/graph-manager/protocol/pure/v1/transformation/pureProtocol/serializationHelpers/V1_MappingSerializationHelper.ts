@@ -676,18 +676,19 @@ const relationFunctionPropertyMappingModelSchema = createModelSchema(
   V1_RelationFunctionPropertyMapping,
   {
     _type: usingConstantValueSchema(V1_PropertyMappingType.RELATION_FUNCTION),
+    bindingTransformer: optionalCustom(
+      (val) => serialize(bindingTransformerModelSchema, val),
+      (val) => deserialize(bindingTransformerModelSchema, val),
+    ),
+    column: optional(primitive()),
+    enumMappingId: optional(primitive()),
     localMappingProperty: usingModelSchema(
       V1_localMappingPropertyInfoModelSchema,
     ),
     property: usingModelSchema(V1_propertyPointerModelSchema),
     source: optional(primitive()),
     target: optional(primitive()),
-    column: primitive(),
-    bindingTransformer: optionalCustom(
-      (val) => serialize(bindingTransformerModelSchema, val),
-      (val) => deserialize(bindingTransformerModelSchema, val),
-    ),
-    enumMappingId: optional(primitive()),
+    valueFn: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   },
 );
 
@@ -755,15 +756,18 @@ const relationFunctionClassMappingModelSchema = createModelSchema(
     class: primitive(),
     extendsClassMappingId: optional(primitive()),
     id: optional(primitive()),
+    primaryKey: list(primitive()),
     propertyMappings: list(
       custom(
         V1_serializeRelationFunctionPropertyMapping,
         V1_deserializeRelationFunctionPropertyMapping,
       ),
     ),
+    relationFunction: optional(
+      usingModelSchema(V1_packageableElementPointerModelSchema),
+    ),
     root: primitive(),
-    relationFunction: usingModelSchema(V1_packageableElementPointerModelSchema),
-    primaryKey: list(primitive()),
+    sourceLambda: optional(usingModelSchema(V1_rawLambdaModelSchema)),
   },
 );
 

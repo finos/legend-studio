@@ -1285,8 +1285,17 @@ export class V1_PropertyMappingBuilder
         protocol.source,
       ),
       undefined,
-      new RelationColumn(protocol.column, property.genericType),
+      protocol.column
+        ? new RelationColumn(protocol.column, property.genericType)
+        : undefined,
     );
+    if (protocol.valueFn) {
+      propertyMapping.valueFn = V1_buildRawLambdaWithResolvedPaths(
+        protocol.valueFn.parameters,
+        protocol.valueFn.body,
+        this.context,
+      );
+    }
     propertyMapping.localMappingProperty = localMapping;
     if (protocol.bindingTransformer?.binding) {
       const bindingTransformer = new BindingTransformer();

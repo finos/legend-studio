@@ -17,6 +17,7 @@
 import {
   type LogService,
   type PlainObject,
+  type Parameters,
   type ServerClientConfig,
   LogEvent,
   parseLosslessJSON,
@@ -85,6 +86,10 @@ import {
   V1_ZIPKIN_TRACE_HEADER,
   type V1_ExecutionResult,
 } from './execution/V1_ExecutionResult.js';
+import type {
+  EXECUTION_SERIALIZATION_FORMAT,
+  RecordValue,
+} from '../../../../action/execution/ExecutionResult.js';
 import { V1_ServiceStorage } from './service/V1_ServiceStorage.js';
 import { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
 import type { V1_PureModelContext } from '../model/context/V1_PureModelContext.js';
@@ -1438,5 +1443,19 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
       V1_DevMetadataPushRequest.serialization.toJson(request),
     )) as unknown as PlainObject<DeployProjectResponse>;
     return DeployProjectResponse.serialization.fromJson(result);
+  }
+
+  // ------------------------------------------- Legend User Services -------------------------------------------
+
+  async executeLegendUserService(
+    url: string,
+    parameters?: Parameters | undefined,
+    serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined,
+  ): Promise<PlainObject<V1_ExecutionResult> | PlainObject<RecordValue>[]> {
+    return this.engineServerClient.executeLegendUserService(
+      url,
+      parameters,
+      serializationFormat,
+    );
   }
 }

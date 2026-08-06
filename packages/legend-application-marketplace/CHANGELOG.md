@@ -1,5 +1,15 @@
 # @finos/legend-application-marketplace
 
+## 0.2.37
+
+### Patch Changes
+
+- [#5395](https://github.com/finos/legend-studio/pull/5395) [`bd33658`](https://github.com/finos/legend-studio/commit/bd33658ab794d075c6584899009e7007be7ba976) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove the "Inventory" tab and its associated route/page from Legend Marketplace.
+
+- [#5396](https://github.com/finos/legend-studio/pull/5396) [`6016f91`](https://github.com/finos/legend-studio/commit/6016f91da73b5643cfe4919cf620007d3545b43a) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `renderOrganizationalScopeConsumer`, a JSX-returning counterpart to `stringifyOrganizationalScope` which prefers a plugin-provided `organizationalScopeTypeDetailsRenderer` (allowing richer content such as a link) and otherwise falls back to the plain-text stringified scope. Use it for the inline consumer display in the Data Access Request Viewer ("Ordered For") and the entitlements data grid consumer cell, so plugin-contributed organizational scope types can render clickable content instead of plain text.
+
+- [#5392](https://github.com/finos/legend-studio/pull/5392) [`a172537`](https://github.com/finos/legend-studio/commit/a17253732ab5d8518455b2883fe80b18014db874) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed Admin Dashboard style for tab color in dark mode.
+
 ## 0.2.36
 
 ### Patch Changes

@@ -40,6 +40,8 @@ import {
   RocketIcon,
   CopyIcon,
   QueryIcon,
+  Snowflake_BrandIcon,
+  Databricks_BrandIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -69,6 +71,7 @@ import {
   type V1_EntitlementsDataProductDetails,
   V1_EnumValue,
   V1_getGenericTypeFullPath,
+  LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_SdlcDeploymentDataProductOrigin,
   V1_transformDataContractToLiteDatacontract,
@@ -156,6 +159,22 @@ import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
+export const buildUnsupportedLakehouseComputeMessage = (
+  targetEnvironment: string,
+): string =>
+  `This feature is not supported for access points deployed to ${targetEnvironment}.`;
+const getLakehouseTargetEnvironmentIcon = (
+  targetEnvironment: string,
+): React.ReactElement | undefined => {
+  switch (targetEnvironment) {
+    case LakehouseTargetEnv.Snowflake:
+      return <Snowflake_BrandIcon />;
+    case LakehouseTargetEnv.Databricks:
+      return <Databricks_BrandIcon />;
+    default:
+      return undefined;
+  }
+};
 const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 const LEGEND_SQL_DOCUMENTATION = 'LEGEND_SQL_DOCUMENTATION';
 const MAX_GRID_AUTO_HEIGHT_ROWS = 10; // Maximum number of rows to show before switching to normal height (scrollable grid)
@@ -193,6 +212,16 @@ const PowerBiScreen = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
+
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
+    }
 
     if (
       !(
@@ -281,6 +310,15 @@ export const SqlPlaygroundScreen = observer(
     if (!dataAccessState) {
       return (
         <TabMessageScreen message="Sql playground is not supported for this data product or environment." />
+      );
+    }
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
       );
     }
     const [isSqlModalOpen, setIsSqlModalOpen] = useState(false);
@@ -483,6 +521,15 @@ const DataCubeScreen = observer(
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
     }
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
+    }
     const dataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin;
     if (
@@ -570,6 +617,15 @@ const LegendQueryScreen = observer(
     const { accessPointState, dataAccessState } = props;
     if (!dataAccessState) {
       return <TabMessageScreen message={NOT_SUPPORTED} />;
+    }
+    if (accessPointState.unsupportedLakehouseComputeTarget) {
+      return (
+        <TabMessageScreen
+          message={buildUnsupportedLakehouseComputeMessage(
+            accessPointState.unsupportedLakehouseComputeTarget,
+          )}
+        />
+      );
     }
     const sdlcDataProductOrigin =
       dataAccessState.entitlementsDataProductDetails.origin instanceof
@@ -884,6 +940,127 @@ export const artifactHasDependencyDatasets = (
     ),
   );
 
+const collectAppDirIdsFromArtifact = (
+  artifact: V1_DataProductArtifact | undefined,
+): string[] => {
+  const ids = new Set<string>();
+  artifact?.accessPointGroups.forEach((group) =>
+    group.accessPointImplementations.forEach((apImpl) =>
+      apImpl.dependencyDatasets.forEach((ds) => {
+        if (ds.ingestDefinition.producer instanceof V1_AppDirProducer) {
+          ids.add(String(ds.ingestDefinition.producer.appDirId));
+        }
+      }),
+    ),
+  );
+  return Array.from(ids);
+};
+
+export const DataProductProducerEnvironmentInfo = observer(
+  (props: {
+    dataProductViewerState: DataProductViewerState;
+    dataAccessState: DataProductDataAccessState | undefined;
+    artifact: V1_DataProductArtifact | undefined;
+  }) => {
+    const { dataProductViewerState, dataAccessState, artifact } = props;
+    const entitlementsDetails =
+      dataProductViewerState.entitlementsDataProductDetails;
+    const producerEnvironmentName =
+      entitlementsDetails?.lakehouseEnvironment?.producerEnvironmentName ?? '';
+    const deploymentNameResponse = dataAccessState?.deploymentNameResponse;
+    const deploymentViewUrl =
+      dataProductViewerState.dataProductConfig?.producer?.deploymentViewUrl;
+    const appDirIds = useMemo(
+      () => collectAppDirIdsFromArtifact(artifact),
+      [artifact],
+    );
+    const producerEnvironmentUrl = producerEnvironmentName
+      ? dataAccessState?.generateOperationalUrlForIngestUrn(
+          producerEnvironmentName,
+        )
+      : undefined;
+    const handleOpenProducerEnvironment = (url: string): void => {
+      dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
+        url,
+      );
+    };
+    const handleOpenDeployment = (deploymentId: string): void => {
+      if (!deploymentViewUrl) {
+        return;
+      }
+      const base = deploymentViewUrl.replace(/\/$/, '');
+      dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
+        `${base}/${deploymentId}`,
+      );
+    };
+    const renderAppDirId = (id: string): React.ReactNode => {
+      const label =
+        deploymentNameResponse &&
+        String(deploymentNameResponse['Deployment Id']) === id
+          ? `${deploymentNameResponse['Deployment Name']} (${id})`
+          : id;
+      if (!deploymentViewUrl) {
+        return label;
+      }
+      return (
+        <button
+          key={id}
+          type="button"
+          className="data-product__viewer__producer-view__link-cell"
+          title={`Open deployment\n${deploymentViewUrl.replace(/\/$/, '')}/${id}`}
+          onClick={() => handleOpenDeployment(id)}
+        >
+          {label}
+        </button>
+      );
+    };
+    return (
+      <Box className="data-product__viewer__producer-view__info">
+        <div className="data-product__viewer__producer-view__info__item">
+          <span className="data-product__viewer__producer-view__info__label">
+            Producer Environment
+          </span>
+          {!producerEnvironmentName ? (
+            <span className="data-product__viewer__producer-view__info__value">
+              —
+            </span>
+          ) : producerEnvironmentUrl ? (
+            <button
+              type="button"
+              className="data-product__viewer__producer-view__link-cell"
+              title={`Open producer environment\n${producerEnvironmentUrl}`}
+              onClick={() =>
+                handleOpenProducerEnvironment(producerEnvironmentUrl)
+              }
+            >
+              {producerEnvironmentName}
+            </button>
+          ) : (
+            <span className="data-product__viewer__producer-view__info__value">
+              {producerEnvironmentName}
+            </span>
+          )}
+        </div>
+        <div className="data-product__viewer__producer-view__info__item">
+          <span className="data-product__viewer__producer-view__info__label">
+            AppDir
+          </span>
+          <span className="data-product__viewer__producer-view__info__value">
+            {appDirIds.length === 0
+              ? '—'
+              : appDirIds.map((id, idx) => (
+                  <React.Fragment key={id}>
+                    {idx > 0 && ', '}
+                    {renderAppDirId(id)}
+                  </React.Fragment>
+                ))}
+          </span>
+        </div>
+      </Box>
+    );
+  },
+);
+
 export const ApgIngestionDataSetsScreen = observer(
   (props: {
     apgState: DataProductAPGState;
@@ -943,15 +1120,6 @@ export const ApgIngestionDataSetsScreen = observer(
     const openIngestQuery = apgState.dataProductViewerState.openIngestQuery;
     const canOpenIngestQuery = Boolean(sdlcGav && openIngestQuery && isOwner);
 
-    // Build the external operational-view URL for the producer environment.
-    // The URL is only available when both `DataProductConfig.operationalUrl`
-    // and the resolved `lakehouseIngestEnv.ingestEnvironmentUrn` are present;
-    // otherwise we fall back to plain text. The row's producer URN is
-    // appended so we deep-link into the correct producer within the env.
-    const handleOpenProducerEnvironment = (url: string): void => {
-      apgState.applicationStore.navigationService.navigator.visitAddress(url);
-    };
-
     const columnDefs: DataGridColumnDefinition<IngestionDataSetRow>[] = [
       {
         headerName: 'Access Point',
@@ -959,37 +1127,6 @@ export const ApgIngestionDataSetsScreen = observer(
         flex: 1,
         rowGroup: true,
         hide: true,
-      },
-      {
-        headerName: 'Producer Environment',
-        field: 'producerEnvironmentName',
-        flex: 1,
-        cellRenderer: (params: {
-          value: string | undefined;
-          data: IngestionDataSetRow | undefined;
-        }) => {
-          const value = params.value;
-          if (!value) {
-            return '';
-          }
-          const producerEnvironmentUrl =
-            dataAccessState?.generateOperationalUrlForIngestUrn(value);
-          if (!producerEnvironmentUrl) {
-            return value;
-          }
-          return (
-            <button
-              type="button"
-              className="data-product__viewer__producer-view__link-cell"
-              title={`Open producer environment\n${producerEnvironmentUrl}`}
-              onClick={() =>
-                handleOpenProducerEnvironment(producerEnvironmentUrl)
-              }
-            >
-              {value}
-            </button>
-          );
-        },
       },
       {
         headerName: 'Ingest Definition',
@@ -1046,8 +1183,6 @@ export const ApgIngestionDataSetsScreen = observer(
         },
       },
       { headerName: 'Dataset', field: 'dataset', flex: 1.4 },
-      { headerName: 'AppDir ID', field: 'appDirId', flex: 0.6 },
-
       {
         headerName: 'Actions',
         colId: 'actions',
@@ -1695,6 +1830,13 @@ export const DataProductAccessPointViewer = observer(
     dataAccessState: DataProductDataAccessState | undefined;
   }) => {
     const { accessPointState, dataAccessState } = props;
+    const targetEnvironment =
+      accessPointState.accessPoint instanceof V1_LakehouseAccessPoint
+        ? accessPointState.accessPoint.targetEnvironment
+        : undefined;
+    const targetEnvironmentIcon = targetEnvironment
+      ? getLakehouseTargetEnvironmentIcon(targetEnvironment)
+      : undefined;
 
     return (
       <Accordion
@@ -1720,6 +1862,25 @@ export const DataProductAccessPointViewer = observer(
                   {accessPointState.accessPoint.title ??
                     accessPointState.accessPoint.id}
                 </strong>
+                {targetEnvironment && (
+                  <Chip
+                    className={clsx(
+                      'data-product__viewer__access-point__platform-chip',
+                      {
+                        'data-product__viewer__access-point__platform-chip--snowflake':
+                          targetEnvironment === LakehouseTargetEnv.Snowflake,
+                        'data-product__viewer__access-point__platform-chip--databricks':
+                          targetEnvironment === LakehouseTargetEnv.Databricks,
+                      },
+                    )}
+                    size="small"
+                    {...(targetEnvironmentIcon
+                      ? { icon: targetEnvironmentIcon }
+                      : {})}
+                    label={targetEnvironment.toUpperCase()}
+                    title="Target compute platform"
+                  />
+                )}
               </div>
               <div className="data-product__viewer__access-point__description">
                 {accessPointState.accessPoint.description?.trim() ?? (
