@@ -77,7 +77,7 @@ export enum DataProductLicenseFilter {
   ENTERPRISE = 'Enterprise',
   LIMITED_ENTERPRISE = 'Limited Enterprise',
   RESTRICTED = 'Restricted',
-  UNDEFINED = 'Undefined',
+  UNDEFINED = 'Unknown',
 }
 
 // Display label for a license value. The backend returns/expects

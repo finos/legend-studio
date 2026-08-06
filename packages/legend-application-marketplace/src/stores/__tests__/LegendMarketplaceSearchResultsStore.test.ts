@@ -808,19 +808,19 @@ describe('MarketplaceSearchFiltersPanelHelper', () => {
       const node = buildUndefinedTaxonomyNode();
 
       expect(node.id).toBe(TAXONOMY_UNDEFINED_NODE_ID);
-      expect(node.label).toBe('Undefined');
+      expect(node.label).toBe('Unknown');
       expect(node.count).toBe(0);
       expect(node.children).toEqual([]);
     });
   });
 
   describe('matchesUndefinedTaxonomyNode', () => {
-    test('matches full "undefined" term', () => {
-      expect(matchesUndefinedTaxonomyNode('undefined')).toBe(true);
+    test('matches full "unknown" term', () => {
+      expect(matchesUndefinedTaxonomyNode('unknown')).toBe(true);
     });
 
-    test('matches partial term "undef"', () => {
-      expect(matchesUndefinedTaxonomyNode('undef')).toBe(true);
+    test('matches partial term "unkn"', () => {
+      expect(matchesUndefinedTaxonomyNode('unkn')).toBe(true);
     });
 
     test('matches single character "u"', () => {
@@ -828,8 +828,8 @@ describe('MarketplaceSearchFiltersPanelHelper', () => {
     });
 
     test('is case-insensitive', () => {
-      expect(matchesUndefinedTaxonomyNode('UNDEFINED')).toBe(true);
-      expect(matchesUndefinedTaxonomyNode('Undef')).toBe(true);
+      expect(matchesUndefinedTaxonomyNode('UNKNOWN')).toBe(true);
+      expect(matchesUndefinedTaxonomyNode('Unkn')).toBe(true);
     });
 
     test('does not match unrelated terms', () => {

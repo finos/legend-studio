@@ -17,7 +17,7 @@
 import type { TaxonomyNode } from '@finos/legend-server-marketplace';
 import { TAXONOMY_UNDEFINED_NODE_ID } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
-const TAXONOMY_UNDEFINED_NODE_LABEL = 'Undefined';
+const TAXONOMY_UNDEFINED_NODE_LABEL = 'Unknown';
 
 /**
  * The synthetic taxonomy node appended to the tree to represent
@@ -31,7 +31,7 @@ export const buildUndefinedTaxonomyNode = (): TaxonomyNode => ({
 });
 
 /**
- * Returns whether the given search term matches the synthetic "Undefined"
+ * Returns whether the given search term matches the synthetic "Unknown"
  * taxonomy node (case-insensitive substring match).
  */
 export const matchesUndefinedTaxonomyNode = (searchTerm: string): boolean =>

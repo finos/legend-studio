@@ -1401,8 +1401,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(panel.getByText('Enterprise')).toBeDefined();
       expect(panel.getByText('Partial Enterprise')).toBeDefined();
       expect(panel.getByText('Restricted')).toBeDefined();
-      // "Undefined" appears both in Access (license) and Taxonomy (node)
-      expect(panel.getAllByText('Undefined').length).toBeGreaterThanOrEqual(1);
+      // "Unknown" appears both in Access (license) and Taxonomy (node)
+      expect(panel.getAllByText('Unknown').length).toBeGreaterThanOrEqual(1);
     });
 
     test('renders tooltip info icons for each license option', async () => {
@@ -1515,7 +1515,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       );
     });
 
-    test('clicking Undefined license maps to empty string in filter', async () => {
+    test('clicking Unknown license maps to empty string in filter', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
       await screen.findByText('4 Products');
@@ -1532,10 +1532,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       (
         MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
       ).mockClear();
-
-      // Click on 'Undefined' license filter — the last option in Access
-      const undefinedOptions = panel.getAllByText('Undefined');
-      // The Access section's "Undefined" label
+      const undefinedOptions = panel.getAllByText('Unknown');
       const undefinedOption = undefinedOptions[0] as HTMLElement;
       await act(async () => {
         fireEvent.click(undefinedOption);
@@ -1602,7 +1599,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
   });
 
   describe('Undefined Taxonomy Node', () => {
-    test('renders the Undefined node at the bottom of the taxonomy tree', async () => {
+    test('renders the Unknown node at the bottom of the taxonomy tree', async () => {
       await setupTestComponent('data', 'prod');
 
       await screen.findByText('4 Products');
@@ -1611,20 +1608,20 @@ describe('MarketplaceLakehouseSearchResults', () => {
         expect(screen.getByText('Taxonomy')).toBeDefined();
       });
 
-      // The synthetic "Undefined" node should be rendered in the tree
-      // Note: There will be two "Undefined" texts — one in Access section (license)
+      // The synthetic "Unknown" node should be rendered in the tree
+      // Note: There will be two "Unknown" texts — one in Access section (license)
       // and one in Taxonomy section
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
       ) as HTMLElement;
       const panel = within(filterPanel);
 
-      const undefinedTexts = panel.getAllByText('Undefined');
+      const undefinedTexts = panel.getAllByText('Unknown');
       // At least 2: one for the license filter, one for the taxonomy node
       expect(undefinedTexts.length).toBeGreaterThanOrEqual(2);
     });
 
-    test('clicking the Undefined taxonomy node triggers search with taxonomy= filter', async () => {
+    test('clicking the Unknown taxonomy node triggers search with taxonomy= filter', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
       await screen.findByText('4 Products');
@@ -1637,14 +1634,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
         MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
       ).mockClear();
 
-      // Find the taxonomy tree section and click the "Undefined" node there
+      // Find the taxonomy tree section and click the "Unknown" node there
       const treeContainer = document.querySelector(
         '.marketplace-search-filters-panel__tree',
       ) as HTMLElement;
       const tree = within(treeContainer);
 
       await act(async () => {
-        fireEvent.click(tree.getByText('Undefined'));
+        fireEvent.click(tree.getByText('Unknown'));
         await flushMicrotasks();
       });
 
@@ -1656,7 +1653,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(filters[0]).toBe('taxonomy=');
     });
 
-    test('Undefined taxonomy node appears in search results when searching "undef"', async () => {
+    test('Unknown taxonomy node appears in search results when searching "unkn"', async () => {
       await setupTestComponent('data', 'prod');
 
       await screen.findByText('4 Products');
@@ -1673,23 +1670,23 @@ describe('MarketplaceLakehouseSearchResults', () => {
       // Type in the taxonomy search box
       const searchInput = panel.getByPlaceholderText('Search taxonomy...');
       await act(async () => {
-        fireEvent.change(searchInput, { target: { value: 'undef' } });
+        fireEvent.change(searchInput, { target: { value: 'unkn' } });
       });
 
-      // The "Undefined" node should still be visible via matchesUndefinedTaxonomyNode
+      // The "Unknown" node should still be visible via matchesUndefinedTaxonomyNode
       await waitFor(() => {
         const treeNodes = filterPanel.querySelectorAll(
           '.marketplace-search-filters-panel__tree',
         );
-        // At least one tree container should have the Undefined node
+        // At least one tree container should have the Unknown node
         const hasUndefined = Array.from(treeNodes).some((container) =>
-          container.textContent?.includes('Undefined'),
+          container.textContent?.includes('Unknown'),
         );
         expect(hasUndefined).toBe(true);
       });
     });
 
-    test('Undefined taxonomy node does not appear when search term does not match', async () => {
+    test('Unknown taxonomy node does not appear when search term does not match', async () => {
       await setupTestComponent('data', 'prod');
 
       await screen.findByText('4 Products');
@@ -1703,7 +1700,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       ) as HTMLElement;
       const panel = within(filterPanel);
 
-      // Type a term that does not match "undefined"
+      // Type a term that does not match "unknown"
       const searchInput = panel.getByPlaceholderText('Search taxonomy...');
       await act(async () => {
         fireEvent.change(searchInput, { target: { value: 'xyz' } });
@@ -1714,13 +1711,13 @@ describe('MarketplaceLakehouseSearchResults', () => {
         await flushMicrotasks();
       });
 
-      // Should not find "Undefined" in any tree container (the taxonomy search
+      // Should not find "Unknown" in any tree container (the taxonomy search
       // results should not show it either since "xyz" doesn't match the label)
       const treeNodes = filterPanel.querySelectorAll(
         '.marketplace-search-filters-panel__tree',
       );
       const hasUndefined = Array.from(treeNodes).some((container) =>
-        container.textContent?.includes('Undefined'),
+        container.textContent?.includes('Unknown'),
       );
       expect(hasUndefined).toBe(false);
     });
