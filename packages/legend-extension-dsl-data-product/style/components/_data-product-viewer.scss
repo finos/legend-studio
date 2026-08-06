@@ -3380,6 +3380,33 @@
     gap: 0.5rem;
     align-items: center;
   }
+
+  &__platform-chip {
+    margin-left: 0.75rem;
+    height: 2.2rem;
+
+    .MuiChip-label {
+      padding: 0 0.7rem;
+    }
+
+    &--snowflake {
+      background-color: var(--color-snowflake-brand-light);
+      color: var(--color-snowflake-brand);
+
+      .MuiChip-icon {
+        color: var(--color-snowflake-brand);
+      }
+    }
+
+    &--databricks {
+      background-color: var(--color-databricks-brand-light);
+      color: var(--color-databricks-brand);
+
+      .MuiChip-icon {
+        color: var(--color-databricks-brand);
+      }
+    }
+  }
 }
 
 .data-product__viewer__header__type__actions {
