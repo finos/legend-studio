@@ -92,10 +92,16 @@ const setupCommonSpies = (
     'notifySuccess',
   ).mockReturnValue(undefined);
 
-  createSpy(
+  // Captured as a local reference (rather than re-accessed as
+  // `marketplaceBaseStore.applicationStore.notificationService.notifyError` at each assertion
+  // site) so callers don't reference the class method itself, which is flagged by
+  // @typescript-eslint/unbound-method.
+  const notifyErrorSpy = createSpy(
     marketplaceBaseStore.applicationStore.notificationService,
     'notifyError',
   ).mockReturnValue(undefined);
+
+  return { notifyErrorSpy };
 };
 
 const setupLakehouseDataContractTest = async (
@@ -114,7 +120,7 @@ const setupLakehouseDataContractTest = async (
     currentUserId,
   );
 
-  setupCommonSpies(marketplaceBaseStore);
+  const { notifyErrorSpy } = setupCommonSpies(marketplaceBaseStore);
 
   createSpy(
     marketplaceBaseStore.lakehouseContractServerClient,
@@ -164,7 +170,7 @@ const setupLakehouseDataContractTest = async (
       </MemoryRouter>,
     );
   });
-  return { marketplaceBaseStore };
+  return { marketplaceBaseStore, notifyErrorSpy };
 };
 
 describe('Lakehouse Data Contract', () => {
@@ -337,13 +343,14 @@ describe('Lakehouse Data Contract', () => {
     });
 
     test('does not submit an approval without a business justification', async () => {
-      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
-        'contract-pending-do-id',
-        'do-task-pending-id',
-        mockContracts.pendingDataOwner,
-        getMockPendingDataOwnerApprovalTasksResponse(),
-        'test-data-owner-user-id',
-      );
+      const { marketplaceBaseStore, notifyErrorSpy } =
+        await setupLakehouseDataContractTest(
+          'contract-pending-do-id',
+          'do-task-pending-id',
+          mockContracts.pendingDataOwner,
+          getMockPendingDataOwnerApprovalTasksResponse(),
+          'test-data-owner-user-id',
+        );
 
       const doApproveButton = await screen.findByRole('button', {
         name: 'Approve Task',
@@ -361,22 +368,23 @@ describe('Lakehouse Data Contract', () => {
         confirmTaskActionAlert(marketplaceBaseStore, 'Approve', '');
       });
 
-      expect(
-        marketplaceBaseStore.applicationStore.notificationService.notifyError,
-      ).toHaveBeenCalledWith('Business justification is required');
+      expect(notifyErrorSpy).toHaveBeenCalledWith(
+        'Business justification is required',
+      );
       expect(
         marketplaceBaseStore.lakehouseContractServerClient.approveTask,
       ).not.toHaveBeenCalled();
     });
 
     test('does not submit a denial without a business justification', async () => {
-      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
-        'contract-pending-do-id',
-        'do-task-pending-id',
-        mockContracts.pendingDataOwner,
-        getMockPendingDataOwnerApprovalTasksResponse(),
-        'test-data-owner-user-id',
-      );
+      const { marketplaceBaseStore, notifyErrorSpy } =
+        await setupLakehouseDataContractTest(
+          'contract-pending-do-id',
+          'do-task-pending-id',
+          mockContracts.pendingDataOwner,
+          getMockPendingDataOwnerApprovalTasksResponse(),
+          'test-data-owner-user-id',
+        );
 
       const doDenyButton = await screen.findByRole('button', {
         name: 'Deny Task',
@@ -394,9 +402,9 @@ describe('Lakehouse Data Contract', () => {
         confirmTaskActionAlert(marketplaceBaseStore, 'Deny', '   ');
       });
 
-      expect(
-        marketplaceBaseStore.applicationStore.notificationService.notifyError,
-      ).toHaveBeenCalledWith('Business justification is required');
+      expect(notifyErrorSpy).toHaveBeenCalledWith(
+        'Business justification is required',
+      );
       expect(
         marketplaceBaseStore.lakehouseContractServerClient.denyTask,
       ).not.toHaveBeenCalled();
