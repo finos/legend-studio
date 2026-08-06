@@ -25,6 +25,7 @@ export {
   LEGEND_AI_ANCHOR_ID,
   renderStepStatusIcon,
 } from './components/LegendAIChat.js';
+export { LegendAIChatToggle } from './components/LegendAIChatToggle.js';
 export {
   isStringColumn,
   isNumericColumn,
