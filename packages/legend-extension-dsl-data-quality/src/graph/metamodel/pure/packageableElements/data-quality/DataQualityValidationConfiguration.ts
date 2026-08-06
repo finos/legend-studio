@@ -222,7 +222,7 @@ export class MD5HashStrategy extends ReconStrategy {
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_MD5_HASH_STRATEGY,
       this.sourceHashColumn ?? '',
       this.targetHashColumn ?? '',
-      String(this.aggregatedHash ?? ''),
+      this.aggregatedHash ?? false,
     ]);
   }
 }
@@ -245,7 +245,7 @@ export class DataQualityRelationComparisonConfiguration
       this.target,
       hashArray(this.keys),
       hashArray(this.columnsToCompare),
-      this.expectedMatch ?? '',
+      this.expectedMatch,
       this.strategy,
     ]);
   }
