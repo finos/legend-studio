@@ -171,6 +171,7 @@
   color: var(--qai-accent);
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   filter: drop-shadow(0 0 0.3rem var(--qai-accent));
 }
 
@@ -178,6 +179,7 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .legend-ai__header-action {
@@ -203,6 +205,11 @@
 }
 
 .legend-ai__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 2rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1680,8 +1687,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 4.8rem;
-  width: 4.8rem;
+  height: 6rem;
+  width: 6rem;
   border-radius: 50%;
   border: none;
   background: var(--qai-accent);
@@ -1693,23 +1700,45 @@
   overflow: hidden;
   white-space: nowrap;
   letter-spacing: 0.01rem;
+  touch-action: none;
+  user-select: none;
   box-shadow:
-    0 0.2rem 1.2rem rgb(24 106 222 / 30%),
-    0 0 0 0.1rem rgb(24 106 222 / 8%);
+    0 0.2rem 1.2rem rgb(var(--qai-accent-rgb) / 30%),
+    0 0 0 0.1rem rgb(var(--qai-accent-rgb) / 8%);
   transition:
     width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
     border-radius 0.3s ease,
     box-shadow 0.3s ease,
     transform 0.2s ease;
-  animation: legend-ai-toggle-glow 3s ease-in-out infinite;
+  animation:
+    legend-ai-toggle-halo 1.8s ease-out infinite,
+    legend-ai-toggle-tint 3.6s ease-in-out infinite,
+    legend-ai-toggle-drift 5s ease-in-out infinite;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      120deg,
+      transparent 30%,
+      rgb(255 255 255 / 55%) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    animation: legend-ai-toggle-shimmer 2.4s ease-in-out infinite;
+    pointer-events: none;
+  }
 
   &__icon {
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 4.8rem;
-    font-size: 2rem;
+    width: 6rem;
+    font-size: 2.6rem;
+    animation: legend-ai-toggle-heartbeat 1.4s ease-in-out infinite;
 
     svg {
       animation: legend-ai-sparkle 2.5s ease-in-out infinite;
@@ -1720,6 +1749,7 @@
     opacity: 0;
     max-width: 0;
     overflow: hidden;
+    text-overflow: ellipsis;
     transition:
       opacity 0.2s ease 0s,
       max-width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1728,10 +1758,11 @@
 
   &:hover {
     width: auto;
-    border-radius: 2.4rem;
+    border-radius: 3.2rem;
+    animation: legend-ai-toggle-halo 1.8s ease-out infinite;
     box-shadow:
-      0 0.4rem 2rem rgb(24 106 222 / 35%),
-      0 0 0 0.2rem rgb(24 106 222 / 12%);
+      0 0.4rem 2rem rgb(var(--qai-accent-rgb) / 55%),
+      0 0 0 0.3rem rgb(var(--qai-accent-rgb) / 22%);
     transform: translateY(-0.2rem);
 
     .legend-ai-chat-toggle__label {
@@ -1747,21 +1778,136 @@
 
   &:active {
     transform: translateY(0) scale(0.96);
-    box-shadow: 0 0.1rem 0.6rem rgb(24 106 222 / 25%);
+    box-shadow: 0 0.1rem 0.6rem rgb(var(--qai-accent-rgb) / 25%);
+  }
+
+  &--dragging {
+    cursor: grabbing;
+    animation: none;
+    transition:
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+    box-shadow:
+      0 0.8rem 2.4rem rgb(var(--qai-accent-rgb) / 45%),
+      0 0 0 0.3rem rgb(var(--qai-accent-rgb) / 15%);
+
+    &,
+    &:hover,
+    &:active {
+      width: 6rem;
+      border-radius: 50%;
+      transform: scale(1.08);
+    }
+
+    & .legend-ai-chat-toggle__label,
+    &:hover .legend-ai-chat-toggle__label {
+      max-width: 0;
+      padding-right: 0;
+      opacity: 0;
+    }
+
+    &::after {
+      display: none;
+    }
   }
 }
 
-@keyframes legend-ai-toggle-glow {
+@keyframes legend-ai-toggle-halo {
   0%,
   100% {
     box-shadow:
-      0 0.2rem 1.2rem rgb(24 106 222 / 30%),
-      0 0 0 0.1rem rgb(24 106 222 / 8%);
+      0 0.2rem 1.2rem rgb(var(--qai-accent-rgb) / 35%),
+      0 0 0 0.15rem rgb(var(--qai-accent-rgb) / 25%),
+      0 0 0 0 rgb(var(--qai-accent-rgb) / 55%),
+      0 0 0 0 rgb(var(--qai-accent-rgb) / 35%);
   }
 
   50% {
     box-shadow:
-      0 0.2rem 1.8rem rgb(24 106 222 / 40%),
-      0 0 0 0.3rem rgb(24 106 222 / 6%);
+      0 0.6rem 3.2rem rgb(var(--qai-accent-rgb) / 75%),
+      0 0 0 0.35rem rgb(var(--qai-accent-rgb) / 40%),
+      0 0 0 1.6rem rgb(var(--qai-accent-rgb) / 12%),
+      0 0 0 3.2rem rgb(var(--qai-accent-rgb) / 0%);
+  }
+}
+
+@keyframes legend-ai-toggle-tint {
+  0%,
+  100% {
+    background: var(--qai-accent);
+  }
+
+  50% {
+    background: linear-gradient(
+      135deg,
+      var(--qai-accent) 0%,
+      var(--qai-accent-hover) 100%
+    );
+  }
+}
+
+@keyframes legend-ai-toggle-heartbeat {
+  0%,
+  40%,
+  100% {
+    transform: scale(1);
+  }
+
+  15% {
+    transform: scale(1.28);
+  }
+
+  30% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes legend-ai-toggle-drift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  20% {
+    transform: translate(-6rem, -3rem);
+  }
+
+  40% {
+    transform: translate(4rem, -6rem);
+  }
+
+  60% {
+    transform: translate(6rem, -1.5rem);
+  }
+
+  80% {
+    transform: translate(-3rem, 2rem);
+  }
+}
+
+@keyframes legend-ai-toggle-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  55%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legend-ai-chat-toggle,
+  .legend-ai-chat-toggle:hover {
+    animation: none;
+  }
+
+  .legend-ai-chat-toggle::after {
+    display: none;
+  }
+
+  .legend-ai-chat-toggle__icon,
+  .legend-ai-chat-toggle__icon svg {
+    animation: none;
   }
 }
