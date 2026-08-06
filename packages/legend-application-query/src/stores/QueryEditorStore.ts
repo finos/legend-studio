@@ -1912,6 +1912,9 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   showQueryVersionHistory(): void {
     if (this.query) {
       this.queryLoaderState.setQueryLoaderDialogOpen(true);
+      // opened directly into history (not drilled in from the query list), so
+      // there is no list to go back to
+      this.queryLoaderState.setHistoryViewerStandalone(true);
       flowResult(this.queryLoaderState.getQueryHistory(this.lightQuery)).catch(
         this.applicationStore.alertUnhandledError,
       );

@@ -68,6 +68,13 @@ import {
 
 const LATEST_REVISION_KEY = 'latest';
 
+// Numeric ordering key for a revision `version` (e.g. "4" -> 4, "rev-2" -> 2);
+// undefined/unparseable versions sort last.
+const revisionSortKey = (version: string | undefined): number => {
+  const match = version?.match(/\d+/);
+  return match ? Number(match[0]) : Number.NEGATIVE_INFINITY;
+};
+
 // Shared "last updated · owner" line rendered under a result title, used by both
 // the query search results and the version-history rows. The owner is shown as a
 // highlighted "Me" tag when it belongs to the current user.
@@ -216,8 +223,12 @@ const QueryHistoryViewer = observer(
     const selectedKeys = queryLoaderState.selectedRevisionKeysForDiff;
 
     // Selectable snapshots for the grammar diff: the current (latest) version
-    // followed by each historical revision. The latest version's content is not
-    // part of the `/history` payload, so it is resolved lazily when comparing.
+    // followed by each historical revision, newest first (highest `version`).
+    // The latest version's content is not part of the `/history` payload, so it
+    // is resolved lazily when comparing.
+    const orderedRevisions = [...revisions].sort(
+      (a, b) => revisionSortKey(b.version) - revisionSortKey(a.version),
+    );
     const diffEntries = [
       {
         key: LATEST_REVISION_KEY,
@@ -228,11 +239,9 @@ const QueryHistoryViewer = observer(
         lastUpdatedAt: query?.lastUpdatedAt,
         owner: query?.owner,
       },
-      ...revisions.map((revision, idx) => ({
+      ...orderedRevisions.map((revision, idx) => ({
         key: revision.version ?? `revision-${idx}`,
-        // revisions are newest-first, so count down: the newest historical
-        // revision gets the highest number, decreasing down the list
-        label: `Revision ${revisions.length - idx}`,
+        label: `Revision ${revision.version}`,
         isLatest: false,
         content: revision.content as string | undefined,
         revisionId: revision.version,
@@ -291,13 +300,15 @@ const QueryHistoryViewer = observer(
     return (
       <>
         <div className="query-loader__header query-loader__header--history">
-          <button
-            className="query-loader__history__back-btn"
-            title="Back to results"
-            onClick={back}
-          >
-            <ArrowLeftIcon />
-          </button>
+          {!queryLoaderState.isHistoryViewerStandalone && (
+            <button
+              className="query-loader__history__back-btn"
+              title="Back to results"
+              onClick={back}
+            >
+              <ArrowLeftIcon />
+            </button>
+          )}
           <div className="query-loader__history__title">
             {`Query History${query ? ` - ${query.name}` : ''}`}
           </div>
@@ -1001,7 +1012,11 @@ export const QueryLoaderDialog = observer(
           <div className="modal query-loader__dialog__header">
             <ModalTitle
               className="query-loader__dialog__header__title"
-              title={title}
+              title={
+                queryLoaderState.isHistoryViewerStandalone
+                  ? 'Query History'
+                  : title
+              }
             />
             <button
               className="query-loader__dialog__header__close-btn"

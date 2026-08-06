@@ -117,6 +117,10 @@ export class QueryLoaderState {
 
   // version history
   showHistoryViewer = false;
+  // true when the history viewer is opened directly (e.g. from the editor menu)
+  // rather than drilled into from the query list — in this mode there is no
+  // query list to go "back" to, so the back button is hidden
+  isHistoryViewerStandalone = false;
   historyQuery?: LightQuery | undefined;
   queryHistoryRevisions: V1_Query[] = [];
 
@@ -157,6 +161,7 @@ export class QueryLoaderState {
       curatedTemplateQuerySpecifications: observable,
       sortBy: observable,
       showHistoryViewer: observable,
+      isHistoryViewerStandalone: observable,
       historyQuery: observable,
       queryHistoryRevisions: observable,
       selectedRevisionKeysForDiff: observable,
@@ -170,6 +175,7 @@ export class QueryLoaderState {
       setShowCurrentUserQueriesOnly: action,
       setShowPreviewViewer: action,
       setShowHistoryViewer: action,
+      setHistoryViewerStandalone: action,
       toggleRevisionForDiff: action,
       clearHistoryDiffSelection: action,
       setShowHistoryDiff: action,
@@ -249,6 +255,10 @@ export class QueryLoaderState {
     this.showHistoryViewer = val;
   }
 
+  setHistoryViewerStandalone(val: boolean): void {
+    this.isHistoryViewerStandalone = val;
+  }
+
   toggleRevisionForDiff(key: string): void {
     if (this.selectedRevisionKeysForDiff.includes(key)) {
       this.selectedRevisionKeysForDiff =
@@ -282,6 +292,7 @@ export class QueryLoaderState {
     this.setShowCurrentUserQueriesOnly(false);
     this.setIsCuratedTemplateToggled(false);
     this.setShowHistoryViewer(false);
+    this.setHistoryViewerStandalone(false);
     this.setShowHistoryDiff(false);
     this.clearHistoryDiffSelection();
   }
