@@ -90,6 +90,7 @@
 
 .theme__hc-light {
   // Override theme-agnostic variables for light mode (explicit for clarity)
+  --color-bg-panel-header: var(--color-hclight-grey-10);
   --marketplace-bg-primary: var(--color-white);
   --marketplace-bg-secondary: var(--color-hclight-grey-10);
   --marketplace-bg-elevated: var(--color-hclight-grey-30);
