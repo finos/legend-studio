@@ -85,6 +85,8 @@ export const RecommendedItemsCard = observer(
         .then((result) => {
           if (result.success) {
             setIsAdded(true);
+          } else if (result.message) {
+            toastManager.warning(result.message);
           }
         })
         .catch((error) => {

@@ -189,7 +189,16 @@ describe('RecommendedItemsCard - non-association flow', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button'));
     });
-    expect(mockAddToCart).toHaveBeenCalled();
+    expect(mockAddToCart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: item.id,
+        productName: item.productName,
+        providerName: item.providerName,
+        category: item.category,
+        price: item.price,
+        skipWorkflow: false,
+      }),
+    );
   });
 
   test('shows "Adding..." during add to cart', async () => {

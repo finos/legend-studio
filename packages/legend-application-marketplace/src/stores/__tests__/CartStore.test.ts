@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { flowResult } from 'mobx';
+import { createSpy } from '@finos/legend-shared/test';
 import { CartStore } from '../cart/CartStore.js';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import {
@@ -313,6 +314,59 @@ describe('CartStore - cartItemIds', () => {
   });
 });
 
+// ─── CartStore - vendorGroups display model ──────────────────────────────────
+
+describe('CartStore - vendorGroups display model', () => {
+  test('uses Permission ID badge for synthetic group with permission-bound add-ons', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+
+    cartStore.items[42] = [
+      {
+        cartId: 1,
+        id: 2001,
+        productName: 'Service A',
+        providerName: 'Bloomberg',
+        category: 'Service Pricing',
+        price: 120,
+        description: '',
+        isOwned: 'false',
+        model: 'MODEL-A',
+        skipWorkflow: true,
+        permissionId: 998877,
+      },
+    ];
+
+    const vendorGroup = cartStore.vendorGroups[0];
+    expect(vendorGroup?.isSynthetic).toBe(true);
+    expect(vendorGroup?.displayParent.categoryLabel).toBe('Permission ID');
+  });
+
+  test('keeps Vendor Profile badge for synthetic group without permission association', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+
+    cartStore.items[51] = [
+      {
+        cartId: 2,
+        id: 3001,
+        productName: 'Service B',
+        providerName: 'Bloomberg',
+        category: 'Service Pricing',
+        price: 90,
+        description: '',
+        isOwned: 'false',
+        model: 'MODEL-B',
+        skipWorkflow: true,
+      },
+    ];
+
+    const vendorGroup = cartStore.vendorGroups[0];
+    expect(vendorGroup?.isSynthetic).toBe(true);
+    expect(vendorGroup?.displayParent.categoryLabel).toBe('Vendor Profile');
+  });
+});
+
 // ─── CartStore - setOpen ──────────────────────────────────────────────────────
 
 describe('CartStore - setOpen', () => {
@@ -405,6 +459,107 @@ describe('CartStore - getDependentAddOns', () => {
     const terminal = makeCartItem(10, 101, 'Terminal');
     cartStore.items[1] = [terminal];
     expect(cartStore.getDependentAddOns(10)).toEqual([]);
+  });
+});
+
+// ─── CartStore - delete/confirmation policy ─────────────────────────────────
+
+describe('CartStore - delete/confirmation policy', () => {
+  test('requestDeleteItemConfirmation shows vendor-profile bulk warning for parent with add-ons', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    const alertSpy = createSpy(
+      baseStore.applicationStore.alertService,
+      'setActionAlertInfo',
+    );
+
+    const parent = makeCartItem(1, 101, 'Vendor Profile', 'MODEL-A');
+    const addOn = makeCartItem(2, 102, 'Service Pricing', 'MODEL-A');
+    cartStore.requestDeleteItemConfirmation(parent, [parent, addOn]);
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    const alert = alertSpy.mock.calls[0]?.[0];
+    expect(alert?.title).toBe('Remove Vendor Profile?');
+    expect(alert?.actions[0]?.label).toBe('Remove All');
+  });
+
+  test('requestDeleteItemConfirmation shows mandatory-service warning for mandatory add-on', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    const alertSpy = createSpy(
+      baseStore.applicationStore.alertService,
+      'setActionAlertInfo',
+    );
+
+    const parent = makeCartItem(1, 201, 'Vendor Profile', 'MODEL-B');
+    const mandatoryAddOn: CartItem = {
+      ...makeCartItem(2, 202, 'Service Pricing', 'MODEL-B'),
+      isMandatory: true,
+    };
+
+    cartStore.requestDeleteItemConfirmation(mandatoryAddOn, [
+      parent,
+      mandatoryAddOn,
+    ]);
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    const alert = alertSpy.mock.calls[0]?.[0];
+    expect(alert?.title).toBe('Remove Required Service?');
+    expect(alert?.actions[0]?.label).toBe('Remove All');
+  });
+
+  test('requestDeleteItemConfirmation shows single-item warning for optional add-on', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    const alertSpy = createSpy(
+      baseStore.applicationStore.alertService,
+      'setActionAlertInfo',
+    );
+
+    const addOn = makeCartItem(3, 303, 'Service Pricing', 'MODEL-C');
+    cartStore.requestDeleteItemConfirmation(addOn, [addOn]);
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    const alert = alertSpy.mock.calls[0]?.[0];
+    expect(alert?.title).toBe('Remove Item?');
+    expect(alert?.actions[0]?.label).toBe('Remove');
+  });
+
+  test('requestDeleteGroupConfirmation shows bulk remove warning', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    const alertSpy = createSpy(
+      baseStore.applicationStore.alertService,
+      'setActionAlertInfo',
+    );
+
+    const group = [
+      makeCartItem(10, 401, 'Service Pricing', 'MODEL-D'),
+      makeCartItem(11, 402, 'Service Pricing', 'MODEL-D'),
+    ];
+    cartStore.requestDeleteGroupConfirmation(group);
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    const alert = alertSpy.mock.calls[0]?.[0];
+    expect(alert?.title).toBe('Remove Items?');
+    expect(alert?.actions[0]?.label).toBe('Remove All');
+  });
+
+  test('requestClearCartConfirmation uses current cart item count in prompt', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    const alertSpy = createSpy(
+      baseStore.applicationStore.alertService,
+      'setActionAlertInfo',
+    );
+
+    cartStore.cartSummary.total_items = 3;
+    cartStore.requestClearCartConfirmation();
+
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+    const alert = alertSpy.mock.calls[0]?.[0];
+    expect(alert?.title).toBe('Clear Cart?');
+    expect(alert?.prompt).toContain('remove all 3 items');
   });
 });
 

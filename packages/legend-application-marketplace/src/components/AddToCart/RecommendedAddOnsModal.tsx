@@ -56,7 +56,6 @@ import { useLegendMarketplaceBaseStore } from '../../application/providers/Legen
 import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { flowResult } from 'mobx';
-import { toastManager } from '../Toast/CartToast.js';
 
 interface RecommendedAddOnsModalProps {
   terminal: TerminalResult | null;
@@ -261,8 +260,9 @@ const useVendorAddonSearch = (
       }
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      // eslint-disable-next-line no-void
-      void fetchVendorAddons(query.trim(), sort, controller.signal);
+      fetchVendorAddons(query.trim(), sort, controller.signal).catch(() => {
+        // fetchVendorAddons already handles and logs errors
+      });
     },
     [isTerminalAdded, fetchVendorAddons],
   );
@@ -285,64 +285,6 @@ const useVendorAddonSearch = (
 
 const isMandatoryItem = (item: TerminalResult): boolean =>
   Boolean(item.isMandatory) && Boolean(item.productName);
-
-const applySortChange = (
-  value: string,
-  isTerminalAdded: boolean,
-  searchTerm: string,
-  terminalSearchResults: TerminalResult[] | undefined,
-  setSortOrder: (v: SortOrder | undefined) => void,
-  setCurrentPage: (v: number) => void,
-  triggerSearch: (query: string, sort?: SortOrder) => void,
-): void => {
-  const newSortOrder = value ? (value as SortOrder) : undefined;
-  setSortOrder(newSortOrder);
-  setCurrentPage(1);
-  if (isTerminalAdded && searchTerm.trim() && terminalSearchResults) {
-    triggerSearch(searchTerm, newSortOrder);
-  }
-};
-
-const handleCartResult = (
-  result: {
-    success: boolean;
-    recommendations?: TerminalResult[];
-    message: string;
-    totalCount?: number | null;
-  },
-  selectedTerminal: TerminalResult,
-  onTerminalSelected:
-    | ((
-        selectedTerminal: TerminalResult,
-        recommendations: TerminalResult[],
-        responseMessage: string,
-        totalCount?: number | null,
-      ) => void)
-    | undefined,
-  closeModal: () => void,
-  overridePermissionId: number | undefined,
-): void => {
-  if (!result.success) {
-    return;
-  }
-  if (
-    result.recommendations &&
-    result.recommendations.length > 0 &&
-    onTerminalSelected
-  ) {
-    closeModal();
-    onTerminalSelected(
-      selectedTerminal,
-      result.recommendations,
-      result.message,
-      result.totalCount,
-    );
-  } else if (overridePermissionId === undefined) {
-    // In the "Add Service" flow (overridePermissionId is set), keep the
-    // modal open so the user can add multiple add-ons before closing.
-    closeModal();
-  }
-};
 
 // ─── Multi-source terminal association content ───────────────────────────────
 // Extracted to its own component to keep RecommendedAddOnsModal's cognitive
@@ -537,15 +479,12 @@ export const RecommendedAddOnsModal = observer(
     } = props;
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
+    const { cartStore, applicationStore } = legendMarketplaceBaseStore;
 
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState<SortOrder | undefined>();
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(15);
-    const [isAssociating, setIsAssociating] = useState(false);
-    const [associatingItemId, setAssociatingItemId] = useState<
-      number | undefined
-    >(undefined);
 
     const isTerminalAdded =
       terminal?.terminalItemType === TerminalItemType.TERMINAL;
@@ -635,48 +574,45 @@ export const RecommendedAddOnsModal = observer(
       setSortOrder(undefined);
       setCurrentPage(1);
       resetSearch();
-      setIsAssociating(false);
-      setAssociatingItemId(undefined);
     }, [setShowModal, resetSearch]);
 
     const handleAssociateTerminal = useCallback(
-      async (selectedTerminal: TerminalResult): Promise<void> => {
-        setIsAssociating(true);
-        setAssociatingItemId(selectedTerminal.id);
-        try {
-          const cartRequest =
-            legendMarketplaceBaseStore.cartStore.providerToCartRequest(
-              selectedTerminal,
-            );
-          if (overridePermissionId !== undefined) {
-            cartRequest.permissionId = overridePermissionId;
-            cartRequest.skipWorkflow = true;
-          }
-          if (overrideModel !== null && overrideModel !== undefined) {
-            cartRequest.model = overrideModel;
-          }
-          const result = await flowResult(
-            legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartRequest),
-          );
-          handleCartResult(
-            result,
-            selectedTerminal,
-            onTerminalSelected,
-            closeModal,
-            overridePermissionId,
-          );
-        } catch (error) {
-          assertErrorThrown(error);
-          toastManager.error(
-            `Failed to associate with ${selectedTerminal.productName}: ${error.message}`,
-          );
-        } finally {
-          setIsAssociating(false);
-          setAssociatingItemId(undefined);
-        }
+      (selectedTerminal: TerminalResult): void => {
+        flowResult(
+          cartStore.associateAddOnToTerminal(selectedTerminal, {
+            ...(overridePermissionId === undefined
+              ? {}
+              : { overridePermissionId }),
+            ...(overrideModel === undefined ? {} : { overrideModel }),
+          }),
+        )
+          .then((result) => {
+            if (!result.success) {
+              return;
+            }
+            if (
+              result.recommendations &&
+              result.recommendations.length > 0 &&
+              onTerminalSelected
+            ) {
+              closeModal();
+              onTerminalSelected(
+                selectedTerminal,
+                result.recommendations,
+                result.message,
+                result.totalCount,
+              );
+              return;
+            }
+            if (result.shouldCloseModal) {
+              closeModal();
+            }
+          })
+          .catch(applicationStore.alertUnhandledError);
       },
       [
-        legendMarketplaceBaseStore.cartStore,
+        applicationStore.alertUnhandledError,
+        cartStore,
         onTerminalSelected,
         closeModal,
         overridePermissionId,
@@ -710,15 +646,14 @@ export const RecommendedAddOnsModal = observer(
     };
 
     const handleSortChange = (event: SelectChangeEvent<string>) => {
-      applySortChange(
-        event.target.value,
-        isTerminalAdded,
-        searchTerm,
-        terminalSearchResults,
-        setSortOrder,
-        setCurrentPage,
-        triggerSearch,
-      );
+      const newSortOrder = event.target.value
+        ? (event.target.value as SortOrder)
+        : undefined;
+      setSortOrder(newSortOrder);
+      setCurrentPage(1);
+      if (isTerminalAdded && searchTerm.trim() && terminalSearchResults) {
+        triggerSearch(searchTerm, newSortOrder);
+      }
     };
 
     const handlePageChange = (
@@ -784,13 +719,10 @@ export const RecommendedAddOnsModal = observer(
                 key={item.id}
                 recommendedItem={item}
                 {...(isAddOnAssociation && {
-                  onSelect: (selectedItem: TerminalResult) => {
-                    // eslint-disable-next-line no-void
-                    void handleAssociateTerminal(selectedItem);
-                  },
-                  isSelecting: isAssociating,
-                  ...(associatingItemId !== undefined && {
-                    selectedItemId: associatingItemId,
+                  onSelect: handleAssociateTerminal,
+                  isSelecting: cartStore.associationState.isInProgress,
+                  ...(cartStore.associatingItemId !== undefined && {
+                    selectedItemId: cartStore.associatingItemId,
                   }),
                 })}
                 {...(isPermissionOverride && {
@@ -839,12 +771,9 @@ export const RecommendedAddOnsModal = observer(
           inventorySourceItems={inventorySourceItems}
           marketplaceSourceItems={marketplaceSourceItems}
           headerName={headerName}
-          isAssociating={isAssociating}
-          associatingItemId={associatingItemId}
-          onAssociate={(i) => {
-            // eslint-disable-next-line no-void
-            void handleAssociateTerminal(i);
-          }}
+          isAssociating={cartStore.associationState.isInProgress}
+          associatingItemId={cartStore.associatingItemId}
+          onAssociate={handleAssociateTerminal}
         />
       ) : (
         <>

@@ -41,7 +41,11 @@ import {
   RecommendationSource,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
-import { APPLICATION_EVENT } from '@finos/legend-application';
+import {
+  APPLICATION_EVENT,
+  ActionAlertActionType,
+  ActionAlertType,
+} from '@finos/legend-application';
 import { toastManager } from '../../components/Toast/CartToast.js';
 
 const boolToString = (val: boolean | undefined): 'true' | 'false' =>
@@ -55,6 +59,40 @@ enum BUSINESS_REASONS {
   OTHER_REASON = 'Other Reason',
 }
 
+const VENDOR_PROFILE_CATEGORY = 'vendor profile';
+const PERMISSION_ID_CATEGORY = 'Permission ID';
+const VENDOR_PROFILE_DISPLAY_CATEGORY = 'Vendor Profile';
+const ALERT_MESSAGE_CLASS = 'legend-marketplace-cart-drawer__alert-message';
+const CANCEL_ACTION = {
+  label: 'Cancel',
+  type: ActionAlertActionType.PROCEED,
+  default: true,
+};
+
+export interface CartVendorGroup {
+  vpId: number;
+  parentItem: CartItem | undefined;
+  displayParent: {
+    providerName: string;
+    productName: string;
+    categoryLabel: string;
+    monthlyPrice: number | undefined;
+  };
+  addons: CartItem[];
+  groupItems: CartItem[];
+  isSynthetic: boolean;
+  addonTotalPrice: number;
+  addonLabel: string;
+}
+
+export interface AddOnAssociationResult {
+  success: boolean;
+  message: string;
+  recommendations?: TerminalResult[];
+  totalCount?: number | null;
+  shouldCloseModal: boolean;
+}
+
 export class CartStore {
   readonly baseStore: LegendMarketplaceBaseStore;
 
@@ -64,6 +102,8 @@ export class CartStore {
   readonly initState = ActionState.create();
   readonly loadingState = ActionState.create();
   readonly submitState = ActionState.create();
+  readonly associationState = ActionState.create();
+  associatingItemId: number | undefined = undefined;
   open = false;
   cartSummary: CartSummary = {
     total_items: 0,
@@ -76,10 +116,13 @@ export class CartStore {
       items: observable,
       targetUser: observable,
       businessReason: observable,
+      associatingItemId: observable,
       open: observable,
       cartSummary: observable,
       cartUser: computed,
       cartItemIds: computed,
+      vendorGroups: computed,
+      vendorGroupIds: computed,
       setOpen: action,
       setTargetUser: flow,
       setBusinessReason: action,
@@ -88,7 +131,12 @@ export class CartStore {
       refresh: flow,
       clearCart: flow,
       deleteCartItem: flow,
+      deleteCartItemsSequentially: flow,
+      requestDeleteItemConfirmation: action,
+      requestDeleteGroupConfirmation: action,
+      requestClearCartConfirmation: action,
       addToCartWithAPI: flow,
+      associateAddOnToTerminal: flow,
       addOrderProfileItemsToCart: flow,
     });
     this.baseStore = baseStore;
@@ -115,6 +163,74 @@ export class CartStore {
       }
     }
     return ids;
+  }
+
+  isParentCartItem(item: CartItem): boolean {
+    return (
+      item.category === TerminalItemType.TERMINAL ||
+      item.category.toLowerCase() === VENDOR_PROFILE_CATEGORY
+    );
+  }
+
+  getGroupAddOns(groupItems: CartItem[]): CartItem[] {
+    const parent = groupItems.find((item) => this.isParentCartItem(item));
+    return parent
+      ? groupItems.filter((item) => !this.isParentCartItem(item))
+      : groupItems;
+  }
+
+  get vendorGroups(): CartVendorGroup[] {
+    const groups: CartVendorGroup[] = [];
+    for (const vpIdStr of Object.keys(this.items)) {
+      const vpId = Number(vpIdStr);
+      const groupItems = this.items[vpId];
+      if (!groupItems || groupItems.length === 0) {
+        continue;
+      }
+
+      const realParent = groupItems.find((item) => this.isParentCartItem(item));
+      const isSynthetic = !realParent;
+      const groupFirstItem = groupItems[0];
+      const hasPermissionAssociation = groupItems.some(
+        (item) => item.permissionId !== undefined,
+      );
+
+      const addons = this.getGroupAddOns(groupItems);
+      const addonTotalPrice = addons.reduce(
+        (sum, addon) => sum + addon.price,
+        0,
+      );
+      const addonLabel = `${addons.length} add-on${addons.length === 1 ? '' : 's'}`;
+      const displayParent = {
+        providerName:
+          realParent?.providerName ?? groupFirstItem?.providerName ?? '',
+        productName:
+          realParent?.productName ?? groupFirstItem?.model ?? String(vpId),
+        categoryLabel:
+          realParent?.category ??
+          (hasPermissionAssociation
+            ? PERMISSION_ID_CATEGORY
+            : VENDOR_PROFILE_DISPLAY_CATEGORY),
+        monthlyPrice: realParent?.price,
+      };
+
+      groups.push({
+        vpId,
+        parentItem: realParent,
+        displayParent,
+        addons,
+        groupItems,
+        isSynthetic,
+        addonTotalPrice,
+        addonLabel,
+      });
+    }
+
+    return groups;
+  }
+
+  get vendorGroupIds(): number[] {
+    return this.vendorGroups.map((group) => group.vpId);
   }
 
   setOpen(val: boolean): void {
@@ -234,6 +350,78 @@ export class CartStore {
       toastManager.error(message);
       this.loadingState.fail();
       return { success: false, message };
+    }
+  }
+
+  *associateAddOnToTerminal(
+    selectedTerminal: TerminalResult,
+    options?: {
+      overridePermissionId?: number;
+      overrideModel?: string | null;
+    },
+  ): GeneratorFn<AddOnAssociationResult> {
+    const { overridePermissionId, overrideModel } = options ?? {};
+
+    this.associationState.inProgress();
+    this.associatingItemId = selectedTerminal.id;
+    try {
+      const cartRequest = this.providerToCartRequest(selectedTerminal);
+      if (overridePermissionId !== undefined) {
+        cartRequest.permissionId = overridePermissionId;
+        cartRequest.skipWorkflow = true;
+      }
+      if (overrideModel !== null && overrideModel !== undefined) {
+        cartRequest.model = overrideModel;
+      }
+
+      const result = (yield flowResult(this.addToCartWithAPI(cartRequest))) as {
+        success: boolean;
+        recommendations?: TerminalResult[];
+        message: string;
+        totalCount?: number | null;
+      };
+
+      if (!result.success) {
+        this.associationState.fail();
+        return {
+          success: false,
+          message: result.message,
+          ...(result.recommendations === undefined
+            ? {}
+            : { recommendations: result.recommendations }),
+          ...(result.totalCount === undefined
+            ? {}
+            : { totalCount: result.totalCount }),
+          shouldCloseModal: false,
+        };
+      }
+
+      const hasRecommendations = Boolean(result.recommendations?.length);
+      this.associationState.complete();
+      return {
+        success: true,
+        message: result.message,
+        ...(result.recommendations === undefined
+          ? {}
+          : { recommendations: result.recommendations }),
+        ...(result.totalCount === undefined
+          ? {}
+          : { totalCount: result.totalCount }),
+        shouldCloseModal:
+          hasRecommendations || overridePermissionId === undefined,
+      };
+    } catch (error) {
+      assertErrorThrown(error);
+      const message = `Failed to associate with ${selectedTerminal.productName}: ${error.message}`;
+      toastManager.error(message);
+      this.associationState.fail();
+      return {
+        success: false,
+        message,
+        shouldCloseModal: false,
+      };
+    } finally {
+      this.associatingItemId = undefined;
     }
   }
 
@@ -613,6 +801,163 @@ export class CartStore {
       toastManager.error(message);
       this.loadingState.fail();
     }
+  }
+
+  *deleteCartItemsSequentially(
+    cartIds: number[],
+    successMessage = 'Items removed successfully',
+  ): GeneratorFn<void> {
+    const user = this.cartUser;
+    if (!user) {
+      toastManager.error('User not authenticated');
+      return;
+    }
+
+    this.loadingState.inProgress();
+    try {
+      for (const cartId of cartIds) {
+        yield this.baseStore.marketplaceServerClient.deleteCartItem(
+          user,
+          cartId,
+          undefined,
+        );
+      }
+
+      yield flowResult(this.refresh());
+      toastManager.success(successMessage);
+      this.loadingState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      const message = `Failed to remove items: ${error.message}`;
+      toastManager.error(message);
+      this.loadingState.fail();
+    }
+  }
+
+  requestDeleteItemConfirmation(item: CartItem, vendorGroup: CartItem[]): void {
+    const applicationStore = this.baseStore.applicationStore;
+    const addons = this.getGroupAddOns(vendorGroup);
+
+    if (this.isParentCartItem(item) && addons.length > 0) {
+      applicationStore.alertService.setActionAlertInfo({
+        title: 'Remove Vendor Profile?',
+        message: `Remove "${item.productName}"?`,
+        messageClass: ALERT_MESSAGE_CLASS,
+        prompt: `Removing this vendor profile will also remove ${addons.length} associated add-on${addons.length === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Remove All',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              flowResult(this.deleteCartItem(item.cartId, true)).catch(
+                applicationStore.alertUnhandledError,
+              );
+            },
+          },
+          CANCEL_ACTION,
+        ],
+      });
+      return;
+    }
+
+    if (!this.isParentCartItem(item) && item.isMandatory) {
+      const totalItems = vendorGroup.length;
+      applicationStore.alertService.setActionAlertInfo({
+        title: 'Remove Required Service?',
+        message: `Remove "${item.productName}"?`,
+        messageClass: ALERT_MESSAGE_CLASS,
+        prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 === 1 ? '' : 's'}. Do you want to continue?`,
+        type: ActionAlertType.CAUTION,
+        actions: [
+          {
+            label: 'Remove All',
+            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+            handler: (): void => {
+              flowResult(this.deleteCartItem(item.cartId, true)).catch(
+                applicationStore.alertUnhandledError,
+              );
+            },
+          },
+          CANCEL_ACTION,
+        ],
+      });
+      return;
+    }
+
+    applicationStore.alertService.setActionAlertInfo({
+      title: 'Remove Item?',
+      message: `Remove "${item.productName}"?`,
+      messageClass: ALERT_MESSAGE_CLASS,
+      prompt: `Are you sure you want to remove "${item.productName}" from your cart?`,
+      type: ActionAlertType.CAUTION,
+      actions: [
+        {
+          label: 'Remove',
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: (): void => {
+            flowResult(this.deleteCartItem(item.cartId)).catch(
+              applicationStore.alertUnhandledError,
+            );
+          },
+        },
+        CANCEL_ACTION,
+      ],
+    });
+  }
+
+  requestDeleteGroupConfirmation(vendorGroup: CartItem[]): void {
+    const applicationStore = this.baseStore.applicationStore;
+    const count = vendorGroup.length;
+    const cartIds = vendorGroup.map((item) => item.cartId);
+
+    applicationStore.alertService.setActionAlertInfo({
+      title: 'Remove Items?',
+      message: `Remove ${count} item${count === 1 ? '' : 's'}?`,
+      messageClass: ALERT_MESSAGE_CLASS,
+      prompt: `Are you sure you want to remove all ${count} item${count === 1 ? '' : 's'} from this group? This action cannot be undone.`,
+      type: ActionAlertType.CAUTION,
+      actions: [
+        {
+          label: 'Remove All',
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: (): void => {
+            flowResult(
+              this.deleteCartItemsSequentially(
+                cartIds,
+                'Items removed successfully',
+              ),
+            ).catch(applicationStore.alertUnhandledError);
+          },
+        },
+        CANCEL_ACTION,
+      ],
+    });
+  }
+
+  requestClearCartConfirmation(): void {
+    const applicationStore = this.baseStore.applicationStore;
+    const itemCount = this.cartSummary.total_items;
+
+    applicationStore.alertService.setActionAlertInfo({
+      title: 'Clear Cart?',
+      message: 'Clear all items?',
+      messageClass: ALERT_MESSAGE_CLASS,
+      prompt: `This will remove all ${itemCount} item${itemCount === 1 ? '' : 's'} from your cart. This action cannot be undone. Do you want to continue?`,
+      type: ActionAlertType.CAUTION,
+      actions: [
+        {
+          label: 'Clear All',
+          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
+          handler: (): void => {
+            flowResult(this.clearCart()).catch(
+              applicationStore.alertUnhandledError,
+            );
+          },
+        },
+        CANCEL_ACTION,
+      ],
+    });
   }
 
   static readonly BUSINESS_REASONS = BUSINESS_REASONS;

@@ -37,12 +37,21 @@ import { RecommendedAddOnsModal } from '../AddToCart/RecommendedAddOnsModal.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 
+const TERMINAL_CARD_ACTION = {
+  ADD_TO_CART: 'addToCart',
+  ADD_SERVICE: 'addService',
+} as const;
+
+type TerminalCardAction =
+  (typeof TERMINAL_CARD_ACTION)[keyof typeof TERMINAL_CARD_ACTION];
+
 export const LegendMarketplaceTerminalCard = observer(
   (props: {
     terminalResult: TerminalResult;
-    cardAction?: 'addToCart' | 'addService';
+    cardAction?: TerminalCardAction;
   }): JSX.Element => {
-    const { terminalResult, cardAction = 'addToCart' } = props;
+    const { terminalResult, cardAction = TERMINAL_CARD_ACTION.ADD_TO_CART } =
+      props;
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [showRecommendationsModal, setShowRecommendationsModal] =
       useState(false);
@@ -98,24 +107,68 @@ export const LegendMarketplaceTerminalCard = observer(
       setIsAddingToCart(true);
       try {
         const kerberos = legendMarketplaceBaseStore.cartStore.cartUser;
-        const response =
-          await legendMarketplaceBaseStore.marketplaceServerClient.getPermissionAddons(
-            kerberos,
-            terminalResult.providerName,
-            {
-              permission_id: terminalResult.permissionId ?? null,
-              page: 1,
-              page_size: 300,
-            },
-          );
-        const addons = response.marketplace_addons as TerminalResult[];
+        const marketplaceServerClient =
+          legendMarketplaceBaseStore.marketplaceServerClient as unknown as {
+            getPermissionAddons?: (
+              user: string,
+              providerName: string,
+              params?: {
+                permission_id?: number | null;
+                page?: number;
+                page_size?: number;
+              },
+            ) => Promise<{
+              marketplace_addons?: TerminalResult[];
+              total_count?: number | null;
+              permissionId?: number;
+            }>;
+            searchVendorAddons: (
+              user: string,
+              providerName: string,
+              params?: {
+                page?: number;
+                page_size?: number;
+              },
+            ) => Promise<{
+              marketplace_addons: TerminalResult[];
+              total_count: number;
+            }>;
+          };
+
+        const response = (
+          marketplaceServerClient.getPermissionAddons
+            ? await marketplaceServerClient.getPermissionAddons(
+                kerberos,
+                terminalResult.providerName,
+                {
+                  permission_id: terminalResult.permissionId ?? null,
+                  page: 1,
+                  page_size: 300,
+                },
+              )
+            : await marketplaceServerClient.searchVendorAddons(
+                kerberos,
+                terminalResult.providerName,
+                {
+                  page: 1,
+                  page_size: 300,
+                },
+              )
+        ) as {
+          marketplace_addons?: TerminalResult[];
+          total_count?: number | null;
+          permissionId?: number;
+        };
+        const addons = response.marketplace_addons ?? [];
         if (addons.length > 0) {
           setRecommendedItems(addons);
           setModalMessage(
             `Services available for ${terminalResult.providerName}`,
           );
-          setModalTotalCount(response.total_count as number | null);
-          setModalPermissionId(response.permissionId as number | undefined);
+          setModalTotalCount(response.total_count ?? null);
+          setModalPermissionId(
+            response.permissionId ?? terminalResult.permissionId,
+          );
           setShowRecommendationsModal(true);
         } else {
           toastManager.warning(
@@ -198,7 +251,7 @@ export const LegendMarketplaceTerminalCard = observer(
                 variant="outlined"
                 className="legend-marketplace-terminal-card__add-to-cart-button"
                 onClick={() => {
-                  (cardAction === 'addService'
+                  (cardAction === TERMINAL_CARD_ACTION.ADD_SERVICE
                     ? handleAddService()
                     : handleAddToCart()
                   ).catch(applicationStore.alertUnhandledError);
@@ -222,7 +275,7 @@ export const LegendMarketplaceTerminalCard = observer(
                 )}
                 {!isAddingToCart && !isInCart && (
                   <>
-                    {cardAction === 'addService'
+                    {cardAction === TERMINAL_CARD_ACTION.ADD_SERVICE
                       ? 'Browse Add-Ons'
                       : 'Add to cart'}{' '}
                     &nbsp;
@@ -256,7 +309,9 @@ export const LegendMarketplaceTerminalCard = observer(
           totalCount={modalTotalCount}
           overridePermissionId={modalPermissionId}
           overrideModel={
-            cardAction === 'addService' ? terminalResult.model : undefined
+            cardAction === TERMINAL_CARD_ACTION.ADD_SERVICE
+              ? terminalResult.model
+              : undefined
           }
         />
       </Card>

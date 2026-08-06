@@ -288,7 +288,7 @@ describe('RecommendedAddOnsModal - terminal type (TERMINAL)', () => {
       />,
     );
     fireEvent.click(screen.getByText('View Cart'));
-    expect(onViewCart).toHaveBeenCalled();
+    expect(onViewCart).toHaveBeenCalledTimes(1);
     expect(setShowModal).toHaveBeenCalledWith(false);
   });
 
@@ -320,8 +320,7 @@ describe('RecommendedAddOnsModal - terminal type (TERMINAL)', () => {
       />,
     );
     // "Showing 1 - 2 of 2 items"
-    const showingText = screen.getByText(/Showing/);
-    expect(showingText.textContent).toContain('Showing');
+    expect(screen.getByText('Showing 1 - 2 of 2 items')).toBeDefined();
   });
 });
 
@@ -947,7 +946,16 @@ describe('RecommendedAddOnsModal - server-side search (terminal type)', () => {
     });
 
     await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalled();
+      expect(searchSpy).toHaveBeenCalledWith(
+        MOCK__baseStore.cartStore.cartUser,
+        terminal.providerName,
+        expect.objectContaining({
+          page: 1,
+          page_size: 300,
+          search: 'Test',
+        }),
+        expect.anything(),
+      );
     });
   });
 
@@ -1674,7 +1682,17 @@ describe('RecommendedAddOnsModal - MultiSourceContent onAssociate', () => {
     });
 
     await waitFor(() => {
-      expect(mockAddToCart).toHaveBeenCalled();
+      expect(mockAddToCart).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: termFromCart.id,
+          productName: termFromCart.productName,
+          providerName: termFromCart.providerName,
+          category: termFromCart.category,
+          price: termFromCart.price,
+          skipWorkflow: false,
+          source: RecommendationSource.CART,
+        }),
+      );
     });
   });
 });
