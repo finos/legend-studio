@@ -96,6 +96,11 @@ export type LakehouseContractSyncStatusResponse = {
   unsyncedTargetAccounts?: string[];
 };
 
+export enum TaskApprovalAction {
+  APPROVE = 'approve',
+  DENY = 'deny',
+}
+
 const collectIngestSpecPathsFromOriginDp = (
   rootDataProduct: V1_DataProduct,
   accessPointGroupId: string,
@@ -1060,10 +1065,10 @@ export class EntitlementsDashboardState {
   private *changeTaskStatus(
     task: V1_PendingTaskRecord,
     token: string | undefined,
-    taskAction: 'approve' | 'deny',
+    taskAction: TaskApprovalAction,
     justification: string,
   ): GeneratorFn<void> {
-    const isApprove = taskAction === 'approve';
+    const isApprove = taskAction === TaskApprovalAction.APPROVE;
 
     if (task instanceof V1_DataRequestUserEventRecord) {
       const workflowId = this.getDataRequestWorkflowId(task.dataRequestId);
@@ -1116,7 +1121,12 @@ export class EntitlementsDashboardState {
     try {
       this.changingState.inProgress();
       this.changingState.setMessage('Approving Task');
-      yield* this.changeTaskStatus(task, token, 'approve', justification);
+      yield* this.changeTaskStatus(
+        task,
+        token,
+        TaskApprovalAction.APPROVE,
+        justification,
+      );
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been Approved`,
       );
@@ -1140,7 +1150,12 @@ export class EntitlementsDashboardState {
           showLoading: true,
         },
       );
-      yield* this.changeTaskStatus(task, token, 'deny', justification);
+      yield* this.changeTaskStatus(
+        task,
+        token,
+        TaskApprovalAction.DENY,
+        justification,
+      );
       this.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
         `Task has been denied`,
       );

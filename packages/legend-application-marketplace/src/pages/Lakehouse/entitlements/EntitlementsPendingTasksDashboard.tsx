@@ -73,6 +73,7 @@ import { formatOrderDate } from '../../../stores/orders/OrderHelpers.js';
 import {
   ContractCreatedByUserDetails,
   type EntitlementsDashboardState,
+  TaskApprovalAction,
 } from '../../../stores/lakehouse/entitlements/EntitlementsDashboardState.js';
 import {
   type EntitlementsRow,
@@ -85,7 +86,7 @@ import {
 } from '../../../utils/EntitlementsUtils.js';
 
 const EntitlementsDashboardActionResultsModal = (props: {
-  action: 'approve' | 'deny';
+  action: TaskApprovalAction;
   errorMessages: [V1_PendingTaskRecord, string][];
   successCount: number;
   pendingTaskContracts: V1_LiteAccessRequest[];
@@ -104,13 +105,15 @@ const EntitlementsDashboardActionResultsModal = (props: {
   return (
     <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
       <DialogTitle>
-        {action === 'approve' ? 'Approve' : 'Deny'} Contract Requests
+        {action === TaskApprovalAction.APPROVE ? 'Approve' : 'Deny'} Contract
+        Requests
       </DialogTitle>
       <DialogContent className="marketplace-lakehouse-entitlements__data-contract-approval__content">
         {successCount > 0 && (
           <Box className="marketplace-lakehouse-entitlements__data-contract-approval__success">
             {successCount} selected contract requests were{' '}
-            {action === 'approve' ? 'approved' : 'denied'} successfully
+            {action === TaskApprovalAction.APPROVE ? 'approved' : 'denied'}{' '}
+            successfully
           </Box>
         )}
         {errorMessages.map(([task, errorMessage]) => {
@@ -125,7 +128,10 @@ const EntitlementsDashboardActionResultsModal = (props: {
             >
               <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__content">
                 Encountered an error{' '}
-                {action === 'approve' ? 'approving' : 'denying'} request for{' '}
+                {action === TaskApprovalAction.APPROVE
+                  ? 'approving'
+                  : 'denying'}{' '}
+                request for{' '}
                 <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
                   <UserRenderer
                     userId={task.consumer}
@@ -195,7 +201,7 @@ export const EntitlementsPendingTasksDashboard = observer(
     const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
     const [bulkActionResults, setBulkActionResults] = useState<
       | {
-          action: 'approve' | 'deny';
+          action: TaskApprovalAction;
           errorMessages: [V1_PendingTaskRecord, string][];
           successCount: number;
         }
@@ -224,14 +230,14 @@ export const EntitlementsPendingTasksDashboard = observer(
     const selectedContractGuid = getSelectedContractGuid(selectedRow);
 
     const runBulkAction = async (
-      action: 'approve' | 'deny',
+      action: TaskApprovalAction,
       justification: string,
     ): Promise<void> => {
       const tasks =
         pendingTasks?.filter((task) => selectedTaskIdsSet.has(task.taskId)) ??
         [];
       const actionFunction =
-        action === 'approve'
+        action === TaskApprovalAction.APPROVE
           ? dashboardState.approve.bind(dashboardState)
           : dashboardState.deny.bind(dashboardState);
       const currentErrorMessages: [V1_PendingTaskRecord, string][] = [];
@@ -247,7 +253,7 @@ export const EntitlementsPendingTasksDashboard = observer(
       );
       if (currentErrorMessages.length === 0) {
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          `${tasks.length} selected contract requests have been ${action === 'approve' ? 'approved' : 'denied'} successfully.`,
+          `${tasks.length} selected contract requests have been ${action === TaskApprovalAction.APPROVE ? 'approved' : 'denied'} successfully.`,
         );
       } else {
         setBulkActionResults({
@@ -260,7 +266,7 @@ export const EntitlementsPendingTasksDashboard = observer(
         marketplaceBaseStore.applicationStore.telemetryService,
         tasks,
         pendingTaskContracts,
-        action === 'approve'
+        action === TaskApprovalAction.APPROVE
           ? CONTRACT_ACTION.APPROVED
           : CONTRACT_ACTION.DENIED,
         marketplaceBaseStore.applicationStore.identityService.currentUser,
@@ -273,22 +279,23 @@ export const EntitlementsPendingTasksDashboard = observer(
       await flowResult(dashboardState.init(tokenRef.current));
     };
 
-    const handleBulkActionClick = (action: 'approve' | 'deny'): void => {
+    const handleBulkActionClick = (action: TaskApprovalAction): void => {
       const count = selectedTaskIdsSet.size;
       showTaskActionAlert({
         applicationStore: marketplaceBaseStore.applicationStore,
-        title: `${action === 'approve' ? 'Approve' : 'Deny'} Contract Requests`,
-        message: `Please provide a business justification for ${action === 'approve' ? 'approving' : 'denying'} ${count} selected contract request${count === 1 ? '' : 's'}.`,
-        confirmLabel: action === 'approve' ? 'Approve' : 'Deny',
+        title: `${action === TaskApprovalAction.APPROVE ? 'Approve' : 'Deny'} Contract Requests`,
+        message: `Please provide a business justification for ${action === TaskApprovalAction.APPROVE ? 'approving' : 'denying'} ${count} selected contract request${count === 1 ? '' : 's'}.`,
+        confirmLabel:
+          action === TaskApprovalAction.APPROVE ? 'Approve' : 'Deny',
         alertType:
-          action === 'approve'
+          action === TaskApprovalAction.APPROVE
             ? ActionAlertType.STANDARD
             : ActionAlertType.CAUTION,
         requireJustification: true,
         isLoading: isBulkActionLoading,
         setIsLoading: setIsBulkActionLoading,
         onConfirm: (justification) => runBulkAction(action, justification),
-        errorPrefix: `Error ${action === 'approve' ? 'approving' : 'denying'} contract requests`,
+        errorPrefix: `Error ${action === TaskApprovalAction.APPROVE ? 'approving' : 'denying'} contract requests`,
       });
     };
 
@@ -764,7 +771,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               disabled={
                 !selectedTaskIdsSet.size || loading || isBulkActionLoading
               }
-              onClick={() => handleBulkActionClick('approve')}
+              onClick={() => handleBulkActionClick(TaskApprovalAction.APPROVE)}
             >
               Approve {selectedTaskIdsSet.size} tasks
             </Button>
@@ -774,7 +781,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               disabled={
                 !selectedTaskIdsSet.size || loading || isBulkActionLoading
               }
-              onClick={() => handleBulkActionClick('deny')}
+              onClick={() => handleBulkActionClick(TaskApprovalAction.DENY)}
             >
               Deny {selectedTaskIdsSet.size} tasks
             </Button>
