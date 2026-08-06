@@ -331,4 +331,22 @@ describe(unitTest('V1_Query serialization roundtrip'), () => {
     const reserialized = V1_Query.serialization.toJson(v1Query);
     expect(reserialized).toEqual(json);
   });
+
+  test('V1_Query history entry roundtrips the version (revision) field', () => {
+    const json = {
+      name: 'MyTestQuery',
+      id: 'test-query-id-1',
+      groupId: 'com.example',
+      artifactId: 'test-artifact',
+      versionId: '1.0.0',
+      content: '|model::Person.all()->project()',
+      version: 'rev-42',
+      lastUpdatedAt: 1700000000000,
+    };
+    const v1Query = V1_Query.serialization.fromJson(json);
+    expect(v1Query.version).toBe('rev-42');
+    expect(v1Query.lastUpdatedAt).toBe(1700000000000);
+    const reserialized = V1_Query.serialization.toJson(v1Query);
+    expect(reserialized).toEqual(json);
+  });
 });

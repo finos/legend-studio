@@ -41,6 +41,7 @@ import {
   CubeIcon,
   CopyIcon,
   MoreVerticalIcon,
+  HistoryIcon,
 } from '@finos/legend-art';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
@@ -549,6 +550,36 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           }
         },
         icon: <InfoCircleIcon />,
+      },
+      {
+        key: 'query-version-history',
+        title: 'Show the history of this query',
+        label: 'Query History',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            return !(
+              queryBuilderState.workflowState.actionConfig
+                .editorStore instanceof ExistingQueryEditorStore
+            );
+          }
+          return true;
+        },
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (editorStore instanceof ExistingQueryEditorStore) {
+              editorStore.showQueryVersionHistory();
+            }
+          }
+        },
+        icon: <HistoryIcon />,
       },
       {
         key: 'about-query-sdlc-project',

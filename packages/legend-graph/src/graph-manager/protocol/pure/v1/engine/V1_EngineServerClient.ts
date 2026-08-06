@@ -895,6 +895,16 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.get(`${this._query()}/batch`, {}, undefined, { queryIds });
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
     this.get(this._query(queryId));
+  getQueryHistory = (
+    queryId: string,
+    version?: string | undefined,
+  ): Promise<PlainObject<V1_Query>[]> =>
+    this.get(
+      `${this._query(queryId)}/history`,
+      {},
+      undefined,
+      version !== undefined ? { version } : {},
+    );
   createQuery = (
     query: PlainObject<V1_Query>,
   ): Promise<PlainObject<V1_Query>> =>
