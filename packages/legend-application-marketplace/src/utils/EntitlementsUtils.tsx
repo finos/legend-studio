@@ -20,6 +20,7 @@ import {
   UserRenderer,
   MultiUserRenderer,
   stringifyOrganizationalScope,
+  renderOrganizationalScopeConsumer,
   DataContractViewerState,
   PermitDataAccessRequestState,
 } from '@finos/legend-extension-dsl-data-product';
@@ -169,7 +170,7 @@ const TargetUserCellRenderer = observer(
     const consumer = row.data.dataRequest.consumer;
     return (
       <>
-        {stringifyOrganizationalScope(
+        {renderOrganizationalScopeConsumer(
           consumer,
           entitlementsStore.applicationStore.pluginManager.getApplicationPlugins(),
         )}

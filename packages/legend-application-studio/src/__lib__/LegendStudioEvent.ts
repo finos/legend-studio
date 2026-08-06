@@ -92,6 +92,12 @@ export enum LEGEND_STUDIO_APP_EVENT {
   DATA_PRODUCT_LEGENDAI_SUGGEST__DISCARD = 'editor.data-product.legendai-suggest.discard',
   DATA_PRODUCT_LEGENDAI_SUGGEST__FAILURE = 'editor.data-product.legendai-suggest.failure',
 
+  // dataspace
+  DATASPACE_LEGENDAI_SUGGEST__LAUNCH = 'editor.dataspace.legendai-suggest.launch',
+  DATASPACE_LEGENDAI_SUGGEST__APPLY = 'editor.dataspace.legendai-suggest.apply',
+  DATASPACE_LEGENDAI_SUGGEST__DISCARD = 'editor.dataspace.legendai-suggest.discard',
+  DATASPACE_LEGENDAI_SUGGEST__FAILURE = 'editor.dataspace.legendai-suggest.failure',
+
   // service
   SERVICE_LEGENDAI_SUGGEST__LAUNCH = 'editor.service-editor.legendai-suggest.launch',
   SERVICE_LEGENDAI_SUGGEST__APPLY = 'editor.service-editor.legendai-suggest.apply',

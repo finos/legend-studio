@@ -18,6 +18,7 @@ import {
   ContentType,
   AbstractServerClient,
   type PlainObject,
+  type Parameters,
   type ServerClientConfig,
   type TraceData,
   HttpHeader,
@@ -34,7 +35,10 @@ import { ServiceDetail } from '../../../../action/service/ServiceDetail.js';
 import type { V1_CompileResult } from './compilation/V1_CompileResult.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import type { V1_GenerateFileInput } from './generation/V1_FileGenerationInput.js';
-import type { V1_ExecutionResult } from './execution/V1_ExecutionResult.js';
+import type {
+  V1_ExecutionResult,
+  V1_TDSExecutionResult,
+} from './execution/V1_ExecutionResult.js';
 import type { V1_ImportConfigurationDescription } from './import/V1_ImportConfigurationDescription.js';
 import type { V1_GenerationConfigurationDescription } from './generation/V1_GenerationConfigurationDescription.js';
 import type { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
@@ -47,6 +51,7 @@ import type { GenerationMode } from '../../../../../graph-manager/action/generat
 import type { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification.js';
 import {
   type TDSExecutionResult,
+  type RecordValue,
   EXECUTION_SERIALIZATION_FORMAT,
 } from '../../../../../graph-manager/action/execution/ExecutionResult.js';
 import type { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
@@ -168,15 +173,17 @@ export type V1_GrammarParserBatchInputEntry = {
 
 enum ENGINE_EXECUTION_SERIALIZATION_FORMAT {
   CSV_TRANSFORMED = 'csv_transformed',
+  PURE_TDSOBJECT = 'PURE_TDSOBJECT',
 }
 
 export const V1_getEngineSerializationFormat = (
   val: EXECUTION_SERIALIZATION_FORMAT,
 ): ENGINE_EXECUTION_SERIALIZATION_FORMAT | string => {
   switch (val) {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     case EXECUTION_SERIALIZATION_FORMAT.CSV:
       return ENGINE_EXECUTION_SERIALIZATION_FORMAT.CSV_TRANSFORMED;
+    case EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT:
+      return ENGINE_EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT;
     default:
       return val;
   }
@@ -1266,4 +1273,23 @@ export class V1_EngineServerClient extends AbstractServerClient {
     const raw = await this.getServicesDetailsFromCache();
     return raw.map((r) => ServiceDetail.fromJson(r));
   };
+
+  // ------------------------------------------- Legend User Services -------------------------------------------
+
+  _user = (): string => `${this.baseUrl}/user`;
+
+  executeLegendUserService = (
+    url: string,
+    parameters?: Parameters | undefined,
+    serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined,
+  ): Promise<PlainObject<V1_TDSExecutionResult> | PlainObject<RecordValue>[]> =>
+    this.get(`${this._user()}${url}`, {}, undefined, {
+      ...(parameters ?? {}),
+      ...(serializationFormat
+        ? {
+            serializationFormat:
+              V1_getEngineSerializationFormat(serializationFormat),
+          }
+        : {}),
+    });
 }

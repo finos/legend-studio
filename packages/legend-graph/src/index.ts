@@ -362,6 +362,7 @@ export {
   V1_DataSubscriptionResponse,
   V1_DataSubscriptionsPaginatedResponse,
   V1_DataSubscriptionTarget,
+  V1_DataSubscriptionTargetsResponse,
   V1_DataSubscriptionTargetType,
   V1_SnowflakeNetwork,
   V1_SnowflakeRegion,
@@ -546,6 +547,7 @@ export {
   TDSExecutionResult,
   RawExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
+  type RecordValue,
   TDSRow,
   getTDSRowRankByColumnInAsc,
   TabularDataSet,
@@ -555,6 +557,7 @@ export {
 export { ExecutionError } from './graph-manager/action/ExecutionError.js';
 export { ExternalFormatDescription } from './graph-manager/action/externalFormat/ExternalFormatDescription.js';
 export * from './graph-manager/action/generation/ArtifactGenerationExtensionResult.js';
+export * from './graph-manager/action/generation/IngestionDefinitionArtifact.js';
 
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';

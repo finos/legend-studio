@@ -22,10 +22,12 @@ import {
   type V1_DataContractsResponse,
   type V1_DataContractSubscriptions,
   type V1_DataProduct,
+  type V1_DataProductArtifact,
   type V1_DataRequestsWithWorkflowResponse,
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsUserEnv,
+  type V1_DataSubscriptionTarget,
   type V1_IngestEnvironment,
   type V1_LiteDataContract,
   type V1_OrganizationalScope,
@@ -37,6 +39,7 @@ import {
   V1_createDataAccessRequestPayloadModelSchema,
   V1_deserializeDataContractResponse,
   V1_deserializeDataRequestsWithWorkflowResponse,
+  V1_deserializeDataSubscriptionTargetsResponse,
   V1_deserializeIngestEnvironment,
   V1_isIngestEnvsCompatibleWithEntitlements,
   V1_liteDataContractsResponseModelSchemaToContracts,
@@ -45,6 +48,7 @@ import {
   V1_AdHocDeploymentDataProductOrigin,
   V1_DataProductOriginType,
   V1_SdlcDeploymentDataProductOrigin,
+  EXECUTION_SERIALIZATION_FORMAT,
 } from '@finos/legend-graph';
 import type { DataProductViewerState } from './DataProductViewerState.js';
 import {
@@ -84,6 +88,8 @@ import type { DataProductAccessPointState } from './DataProductAccessPointState.
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
 import { type DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
 import {
+  type MissingIngestsInput,
+  type ResolvedMissingIngestsContext,
   runMissingIngestsCheckForArtifact,
   openOperationUrlLink,
 } from '../../utils/DataProductIngestUtils.js';
@@ -101,6 +107,10 @@ export enum DataAccessRequestType {
   WORKFLOW = 'WORKFLOW',
   PERMIT = 'PERMIT',
 }
+export type DeploymentNameResponse = {
+  'Deployment Id': number;
+  'Deployment Name': string;
+};
 
 export type ContractCreationRendererResult = {
   component: React.ReactNode;
@@ -124,6 +134,9 @@ export type ContractConsumerTypeRendererConfig = {
   stringifyOrganizationalScope?: (
     consumer: V1_OrganizationalScope,
   ) => string | undefined;
+  renderOrganizationalScope?: (
+    consumer: V1_OrganizationalScope,
+  ) => React.ReactNode | undefined;
   enableForEnterpriseAPGs?: boolean;
 };
 
@@ -174,14 +187,21 @@ export class DataProductDataAccessState {
   dataAccessRequestViewerState: DataAccessRequestState | undefined = undefined;
   lakehouseIngestEnvironmentSummaries: IngestDeploymentServerConfig[] = [];
   lakehouseIngestEnv: IngestDeploymentServerConfig | undefined;
-  lakehouseIngestEnvironmentDetails: V1_IngestEnvironment[] = [];
+  lakehouseIngestEnvDetails: V1_IngestEnvironment | undefined;
   userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined;
   dataProductOwners: string[] = [];
+  subscriptionTargets: V1_DataSubscriptionTarget[] = [];
+  producerIngestUrns: string[] = [];
+  missingIngests: string[] = [];
+  deploymentNameResponse: DeploymentNameResponse | undefined = undefined;
 
   readonly creatingContractState = ActionState.create();
   readonly creatingWorkflowRequestState = ActionState.create();
   readonly ingestEnvironmentFetchState = ActionState.create();
   readonly fetchingDataProductOwnersState = ActionState.create();
+  readonly fetchingProducerIngestUrnsState = ActionState.create();
+  readonly fetchingSubscriptionTargetsState = ActionState.create();
+  readonly fetchingDeploymentNameState = ActionState.create();
 
   constructor(
     entitlementsDataProductDetails: V1_EntitlementsDataProductDetails,
@@ -200,9 +220,14 @@ export class DataProductDataAccessState {
       dataAccessRequestViewerState: observable,
       lakehouseIngestEnvironmentSummaries: observable,
       lakehouseIngestEnv: observable,
-      lakehouseIngestEnvironmentDetails: observable,
+      lakehouseIngestEnvDetails: observable,
       userEntitlementsEnv: observable,
       dataProductOwners: observable,
+      subscriptionTargets: observable,
+      producerIngestUrns: observable,
+      setProducerIngestUrns: action,
+      deploymentNameResponse: observable,
+      setDeploymentName: action,
       setContractViewerContractAndSubscription: action,
       setDataAccessRequestViewerState: action,
       setAssociatedContracts: action,
@@ -210,14 +235,19 @@ export class DataProductDataAccessState {
       resolvedUserEnv: computed,
       setContractCreatorAPG: action,
       setLakehouseIngestEnvironmentSummaries: action,
-      setLakehouseIngestEnvironmentDetails: action,
       setEntitlementsEnv: action,
       setLakehouseIngestEnv: action,
+      setLakehouseIngestEnvDetails: action,
+      missingIngests: observable,
+      setMissingIngests: action,
+      fetchMissingIngests: flow,
       createContract: flow,
       createWorkflowRequest: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
       setDataProductOwners: action,
+      setSubscriptionTargets: action,
+      fetchSubscriptionTargets: action,
       init: flow,
     });
 
@@ -368,7 +398,7 @@ export class DataProductDataAccessState {
     ingestDefinitionUrn?: string,
   ): string | undefined {
     const baseUrl =
-      this.dataProductViewerState.dataProductConfig?.operationalUrl;
+      this.dataProductViewerState.dataProductConfig?.producer?.operationalUrl;
     const ingestEnvironmentUrn = this.lakehouseIngestEnv?.ingestEnvironmentUrn;
     if (!baseUrl || !ingestEnvironmentUrn) {
       return undefined;
@@ -411,8 +441,8 @@ export class DataProductDataAccessState {
     this.lakehouseIngestEnv = env;
   }
 
-  setLakehouseIngestEnvironmentDetails(details: V1_IngestEnvironment[]): void {
-    this.lakehouseIngestEnvironmentDetails = details;
+  setLakehouseIngestEnvDetails(env: V1_IngestEnvironment | undefined): void {
+    this.lakehouseIngestEnvDetails = env;
   }
 
   setEntitlementsEnv(envs: V1_EntitlementsUserEnv[] | undefined): void {
@@ -421,6 +451,35 @@ export class DataProductDataAccessState {
 
   setDataProductOwners(owners: string[]): void {
     this.dataProductOwners = owners;
+  }
+
+  setProducerIngestUrns(urns: string[]): void {
+    this.producerIngestUrns = urns;
+  }
+
+  setMissingIngests(val: string[]): void {
+    this.missingIngests = val;
+  }
+
+  *fetchMissingIngests(
+    tokenProvider: () => string | undefined,
+  ): GeneratorFn<void> {
+    try {
+      yield this.fetchProducerURNList(tokenProvider);
+      const artifact = (yield this.dataProductViewerState
+        .dataProductArtifactPromise ?? Promise.resolve(undefined)) as
+        | V1_DataProductArtifact
+        | undefined;
+      const perApg = (yield Promise.all(
+        this.dataProductViewerState.apgStates.map((apgState) =>
+          this.computeMissingIngestsForApg(apgState.apg.id, artifact),
+        ),
+      )) as string[][];
+      this.setMissingIngests(Array.from(new Set(perApg.flat())));
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setMissingIngests([]);
+    }
   }
 
   async fetchIngestEnvironmentDetails(
@@ -435,10 +494,7 @@ export class DataProductDataAccessState {
 
     this.ingestEnvironmentFetchState.inProgress();
     await Promise.all([
-      (async () => {
-        await this.fetchLakehouseIngestEnvironmentSummaries(tokenProvider);
-        await this.fetchLakehouseIngestEnvironmentDetails(tokenProvider);
-      })(),
+      this.fetchLakehouseIngestEnvironmentSummaries(tokenProvider),
       this.fetchLakehouseIngestEnv(tokenProvider),
       this.fetchEntitlementsEnvs(tokenProvider),
     ]);
@@ -512,10 +568,9 @@ export class DataProductDataAccessState {
       this.fetchContracts(tokenProvider),
       this.fetchIngestEnvironmentDetails(tokenProvider),
       this.fetchDataProductOwners(tokenProvider),
-      ...this.dataProductViewerState.apgStates.map((apgState) =>
-        flowResult(apgState.fetchMissingIngests(tokenProvider)),
-      ),
+      this.fetchDataProductDeploymentName(),
     ]);
+    yield flowResult(this.fetchMissingIngests(tokenProvider));
   }
 
   logCreatingContract(
@@ -767,6 +822,22 @@ export class DataProductDataAccessState {
       const ingestServerUrl =
         IngestDeploymentServerConfig.serialization.fromJson(ingestEnv);
       this.setLakehouseIngestEnv(ingestServerUrl);
+      try {
+        const rawIngestEnvDetails =
+          await this.lakehouseIngestServerClient.getIngestEnvironment(
+            ingestServerUrl.ingestServerUrl,
+            tokenProvider(),
+          );
+        this.setLakehouseIngestEnvDetails(
+          V1_deserializeIngestEnvironment(rawIngestEnvDetails),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        this.applicationStore.logService.warn(
+          LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
+          `Unable to load lakehouse ingest env details for ${ingestServerUrl.ingestEnvironmentUrn}: ${error.message}`,
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.warn(
@@ -776,76 +847,71 @@ export class DataProductDataAccessState {
     }
   }
 
-  async computeMissingIngestsForApg(
-    accessPointGroupId: string,
-    tokenProvider: () => string | undefined,
-  ): Promise<string[]> {
-    const origin = this.entitlementsDataProductDetails.origin;
-    if (!(origin instanceof V1_SdlcDeploymentDataProductOrigin)) {
-      return [];
-    }
-    const artifact =
-      await this.dataProductViewerState.dataProductArtifactPromise;
-    if (!artifact) {
-      return [];
-    }
-    return runMissingIngestsCheckForArtifact(
-      {
-        accessPointGroupId,
-        deploymentId: this.entitlementsDataProductDetails.deploymentId,
-        dataProductName: this.entitlementsDataProductDetails.dataProduct.name,
-        gavCoordinates: {
-          groupId: origin.group,
-          artifactId: origin.artifact,
-          versionId: origin.version,
-        },
-        artifact,
-        v1DataProduct: this.product,
-      },
-      {
-        lakehouseIngestServerClient: this.lakehouseIngestServerClient,
-        lakehousePlatformServerClient: this.lakehousePlatformServerClient,
-        plugins:
-          this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
-        getGraphManager: async () => this.graphManagerState.graphManager,
-      },
-      tokenProvider(),
-    );
-  }
-
-  async fetchLakehouseIngestEnvironmentDetails(
+  async fetchProducerURNList(
     tokenProvider: () => string | undefined,
   ): Promise<void> {
+    if (!this.lakehouseIngestEnv) {
+      this.fetchingProducerIngestUrnsState.fail();
+      return;
+    }
+    this.fetchingProducerIngestUrnsState.inProgress();
+    const token = tokenProvider();
     try {
-      const ingestEnvironments: V1_IngestEnvironment[] = (
-        await Promise.all(
-          this.lakehouseIngestEnvironmentSummaries.map(async (discoveryEnv) => {
-            try {
-              const env =
-                await this.lakehouseIngestServerClient.getIngestEnvironment(
-                  discoveryEnv.ingestServerUrl,
-                  tokenProvider(),
-                );
-              return V1_deserializeIngestEnvironment(env);
-            } catch (error) {
-              assertErrorThrown(error);
-              this.applicationStore.logService.warn(
-                LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
-                `Unable to load lakehouse environment details for ${discoveryEnv.ingestEnvironmentUrn}: ${error.message}`,
-              );
-              return undefined;
-            }
-          }),
-        )
-      ).filter(isNonNullable);
-      this.setLakehouseIngestEnvironmentDetails(ingestEnvironments);
+      const ingestEnv = this.lakehouseIngestEnv;
+      const producerEnv = guaranteeNonNullable(
+        this.entitlementsDataProductDetails.lakehouseEnvironment
+          ?.producerEnvironmentName,
+      );
+      const urns = await this.lakehouseIngestServerClient.getIngestDefinitions(
+        producerEnv,
+        ingestEnv.ingestServerUrl,
+        token,
+      );
+      this.setProducerIngestUrns(urns);
+      this.fetchingProducerIngestUrnsState.pass();
     } catch (error) {
       assertErrorThrown(error);
+      this.fetchingProducerIngestUrnsState.fail();
       this.applicationStore.logService.warn(
         LogEvent.create(DSL_DATAPRODUCT_EVENT.FETCH_INGEST_ENV_FAILURE),
-        `Unable to load lakehouse environment details: ${error.message}`,
+        `Unable to load producer ingest definitions for did ${this.entitlementsDataProductDetails.deploymentId}: ${error.message}`,
       );
     }
+  }
+
+  async computeMissingIngestsForApg(
+    accessPointGroupId: string,
+    artifact: V1_DataProductArtifact | undefined,
+  ): Promise<string[]> {
+    const origin = this.entitlementsDataProductDetails.origin;
+    if (
+      !this.fetchingProducerIngestUrnsState.hasSucceeded ||
+      !(origin instanceof V1_SdlcDeploymentDataProductOrigin) ||
+      !artifact ||
+      !this.lakehouseIngestEnv
+    ) {
+      return [];
+    }
+    const context: ResolvedMissingIngestsContext = {
+      accessPointGroupId,
+      deploymentId: this.entitlementsDataProductDetails.deploymentId,
+      dataProductName: this.entitlementsDataProductDetails.dataProduct.name,
+      gavCoordinates: {
+        groupId: origin.group,
+        artifactId: origin.artifact,
+        versionId: origin.version,
+      },
+      artifact,
+      v1DataProduct: this.product,
+    };
+    const input: MissingIngestsInput = {
+      producerUrns: this.producerIngestUrns,
+      ingestEnvironment: this.lakehouseIngestEnv.environmentClassification,
+      plugins:
+        this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+      graphManager: this.graphManagerState.graphManager,
+    };
+    return runMissingIngestsCheckForArtifact(context, input);
   }
 
   async fetchEntitlementsEnvs(
@@ -890,6 +956,94 @@ export class DataProductDataAccessState {
       );
     } finally {
       this.fetchingDataProductOwnersState.complete();
+    }
+  }
+
+  setSubscriptionTargets(targets: V1_DataSubscriptionTarget[]): void {
+    this.subscriptionTargets = targets;
+  }
+
+  /**
+   * Fetches the available subscription targets once per store instance.
+   * Subsequent calls are no-ops while a fetch is in-flight or has completed.
+   */
+  async fetchSubscriptionTargets(
+    tokenProvider: () => string | undefined,
+  ): Promise<void> {
+    if (!this.fetchingSubscriptionTargetsState.isInInitialState) {
+      return;
+    }
+    this.fetchingSubscriptionTargetsState.inProgress();
+    try {
+      const rawResponse =
+        await this.lakehouseContractServerClient.getSubscriptionTargets(
+          tokenProvider(),
+        );
+      const targets =
+        V1_deserializeDataSubscriptionTargetsResponse(rawResponse).targets;
+      this.setSubscriptionTargets(targets);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.fetchSubscriptionTargets.failure'),
+        `Unable to fetch subscription targets: ${error.message}`,
+      );
+    } finally {
+      this.fetchingSubscriptionTargetsState.complete();
+    }
+  }
+
+  async fetchDeploymentNames(
+    deploymentIds: number[],
+  ): Promise<DeploymentNameResponse[]> {
+    const deploymentLegendServiceUrl =
+      this.dataProductViewerState.dataProductConfig?.producer
+        ?.deploymentLegendServiceUrl;
+    if (!deploymentLegendServiceUrl || !deploymentIds.length) {
+      return [];
+    }
+    try {
+      const result =
+        (await this.graphManagerState.graphManager.executeLegendUserService(
+          deploymentLegendServiceUrl,
+          { env: 'PROD', deploymentIds },
+          EXECUTION_SERIALIZATION_FORMAT.PURE_TDSOBJECT,
+        )) as DeploymentNameResponse[];
+      return result;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.fetchDeploymentNames.failure'),
+        `Unable to fetch deployment names: ${error.message}`,
+      );
+      return [];
+    }
+  }
+
+  setDeploymentName(val: DeploymentNameResponse | undefined): void {
+    this.deploymentNameResponse = val;
+  }
+
+  async fetchDataProductDeploymentName(): Promise<void> {
+    if (this.fetchingDeploymentNameState.isInProgress) {
+      return;
+    }
+    this.fetchingDeploymentNameState.inProgress();
+    try {
+      const deploymentId = this.entitlementsDataProductDetails.deploymentId;
+      const result = await this.fetchDeploymentNames([deploymentId]);
+      const match = result.find(
+        (appDir) => appDir['Deployment Id'] === deploymentId,
+      );
+      this.setDeploymentName(match);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.logService.warn(
+        LogEvent.create('data-product.fetchDataProductDeploymentName.failure'),
+        `Unable to fetch data product deployment name: ${error.message}`,
+      );
+    } finally {
+      this.fetchingDeploymentNameState.complete();
     }
   }
 }

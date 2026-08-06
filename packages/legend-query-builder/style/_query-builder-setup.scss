@@ -94,6 +94,23 @@
       justify-content: space-between;
       width: 100%;
 
+      &__label {
+        @include flexVCenter;
+
+        min-width: 0;
+        flex: 1;
+        gap: 0.6rem;
+      }
+
+      &__subtitle {
+        font-size: 1rem;
+        color: var(--color-dark-grey-400);
+        font-style: italic;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       &__tag {
         font-size: 1rem;
         font-weight: 700;

@@ -18,6 +18,8 @@ import type {
   ExecutionResult,
   EXECUTION_SERIALIZATION_FORMAT,
   ExecutionResultWithMetadata,
+  RecordValue,
+  TDSExecutionResult,
 } from './action/execution/ExecutionResult.js';
 import type {
   ServiceRegistrationResult,
@@ -57,6 +59,7 @@ import type { ExecutionNode } from '../graph/metamodel/pure/executionPlan/nodes/
 import {
   type ContentType,
   type LogService,
+  type Parameters,
   type PlainObject,
   type ServerClientConfig,
   type TracerService,
@@ -112,6 +115,7 @@ import type { RelationalDatabaseTypeConfiguration } from './action/relational/Re
 import type { FunctionActivator } from '../graph/metamodel/pure/packageableElements/function/FunctionActivator.js';
 import type { RelationalDatabaseConnection } from '../STO_Relational_Exports.js';
 import type { ArtifactGenerationExtensionResult } from './action/generation/ArtifactGenerationExtensionResult.js';
+import type { IngestionDefinitionArtifact } from './action/generation/IngestionDefinitionArtifact.js';
 import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 import type { EngineError } from './action/EngineError.js';
@@ -489,6 +493,14 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
   ): Promise<DeployProjectResponse>;
 
+  // ------------------------------------------- Legend User Services -------------------------------------------
+
+  abstract executeLegendUserService(
+    url: string,
+    parameters?: Parameters | undefined,
+    serializationFormat?: EXECUTION_SERIALIZATION_FORMAT | undefined,
+  ): Promise<TDSExecutionResult | PlainObject<RecordValue>[]>;
+
   // ------------------------------------------- Test -------------------------------------------
 
   abstract runTests(
@@ -697,6 +709,11 @@ export abstract class AbstractPureGraphManager {
   ): RawExecutionPlan;
 
   abstract buildLineage(lineageJSON: RawLineageModel): LineageModel;
+
+  abstract buildIngestDefinitionArtifact(
+    json: PlainObject,
+    graph: PureModel,
+  ): IngestionDefinitionArtifact;
 
   abstract serializeExecutionNode(executionNode: ExecutionNode): object;
 

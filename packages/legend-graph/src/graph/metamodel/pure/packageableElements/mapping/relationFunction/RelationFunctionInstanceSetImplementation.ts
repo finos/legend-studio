@@ -15,16 +15,21 @@
  */
 
 import { type Hashable, hashArray } from '@finos/legend-shared';
-import { CORE_HASH_STRUCTURE } from '../../../../../Core_HashUtils.js';
+import {
+  CORE_HASH_STRUCTURE,
+  hashRawLambda,
+} from '../../../../../Core_HashUtils.js';
 import type { SetImplementationVisitor } from '../SetImplementation.js';
 import type { ConcreteFunctionDefinition } from '../../function/ConcreteFunctionDefinition.js';
 import { InstanceSetImplementation } from '../InstanceSetImplementation.js';
+import type { RawLambda } from '../../../rawValueSpecification/RawLambda.js';
 
 export class RelationFunctionInstanceSetImplementation
   extends InstanceSetImplementation
   implements Hashable
 {
-  relationFunction?: ConcreteFunctionDefinition;
+  relationFunction?: ConcreteFunctionDefinition | undefined;
+  sourceLambda?: RawLambda | undefined;
   primaryKey: string[] = [];
 
   override accept_SetImplementationVisitor<T>(
@@ -39,6 +44,7 @@ export class RelationFunctionInstanceSetImplementation
       super.hashCode,
       hashArray(this.propertyMappings),
       hashArray(this.primaryKey),
+      hashRawLambda(this.sourceLambda?.parameters, this.sourceLambda?.body),
     ]);
   }
 }

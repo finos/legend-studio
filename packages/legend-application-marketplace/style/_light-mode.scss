@@ -1874,7 +1874,7 @@
     color: var(--color-hclight-grey-60);
   }
 
-  // Coming Soon Display Component (for Intelligence/Agents, Inventory, Data APIs pages)
+  // Coming Soon Display Component (for Intelligence/Agents, Data APIs pages)
   .coming-soon-display {
     &__content {
       background: var(--color-hclight-white);
@@ -1931,15 +1931,6 @@
       135deg,
       var(--color-hclight-grey-5) 0%,
       var(--color-hclight-blue-10) 100%
-    );
-  }
-
-  // GS Inventory page
-  .inventory-coming-soon {
-    background: linear-gradient(
-      135deg,
-      var(--color-hclight-white) 0%,
-      var(--color-hclight-grey-10) 100%
     );
   }
 

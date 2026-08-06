@@ -1,0 +1,77 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    AGE INTEGER NOT NULL,
+    FIRMID INTEGER NOT NULL
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+)
+
+
+###Pure
+Class my::Firm
+{
+  legalName: String[1];
+}
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+  greeted: String[1];
+}
+
+
+###Mapping
+Mapping my::relationFunctionMappingWithSourceLambda
+(
+  *my::Person[person]: Relation
+  {
+    ~src #>{my::testDB.personTable}#->filter(x|$x.AGE > 25)->extend(~GREETED:x|'Hi ' + $x.FIRSTNAME)
+    firstName: FIRSTNAME,
+    age: AGE,
+    greeted: GREETED
+  }
+  *my::Firm[firm]: Relation
+  {
+    ~src #>{my::testDB.firmTable}#->limit(10)->select(~[ID, LEGALNAME])
+    legalName: LEGALNAME
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection my::conn
+{
+  store: my::testDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime my::runtime
+{
+  mappings:
+  [
+    my::relationFunctionMappingWithSourceLambda
+  ];
+  connections:
+  [
+    my::testDB:
+    [
+      connection_1: my::conn
+    ]
+  ];
+}
