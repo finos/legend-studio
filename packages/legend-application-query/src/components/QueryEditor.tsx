@@ -105,7 +105,6 @@ import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.
 import { QueryEditorIngestInfoModal } from './ingest/IngestInfo.js';
 import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
-import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 import { extractQueryParams } from './utils/QueryParameterUtils.js';
 import type { QueryTitleDescriptionAISuggestionRequest } from '../stores/LegendQueryApplicationPlugin.js';
 
