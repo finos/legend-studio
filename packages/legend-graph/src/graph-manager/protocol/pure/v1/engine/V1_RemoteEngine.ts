@@ -1195,6 +1195,15 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
+  async getQueryHistory(
+    queryId: string,
+    version?: string | undefined,
+  ): Promise<V1_Query[]> {
+    return (
+      await this.engineServerClient.getQueryHistory(queryId, version)
+    ).map((query) => V1_Query.serialization.fromJson(query));
+  }
+
   async createQuery(query: V1_Query): Promise<V1_Query> {
     return V1_Query.serialization.fromJson(
       await this.engineServerClient.createQuery(

@@ -165,7 +165,10 @@ import {
   LakehouseContractServerClient,
   LakehouseEnvironmentType,
 } from '@finos/legend-server-lakehouse';
-import { processQueryParameters } from '../components/utils/QueryParameterUtils.js';
+import {
+  buildQueryParamsFromParameterValues,
+  processQueryParameters,
+} from '../components/utils/QueryParameterUtils.js';
 
 export interface QueryPersistConfiguration {
   defaultName?: string | undefined;
@@ -376,12 +379,24 @@ export abstract class QueryEditorStore {
       applicationStore,
       this.graphManagerState.graphManager,
       {
-        loadQuery: (query: LightQuery): void => {
+        loadQuery: (
+          query: LightQuery,
+          revisionId?: string | undefined,
+        ): void => {
+          // carry any active parameter-value overrides across the navigation so
+          // a revert/load-revision keeps the values the user currently has set
+          const extraQueryParams = buildQueryParamsFromParameterValues(
+            this.getPreservedParameterOverrides(),
+          );
           this.queryBuilderState?.changeDetectionState.alertUnsavedChanges(
             () => {
               this.queryLoaderState.setQueryLoaderDialogOpen(false);
               applicationStore.navigationService.navigator.goToLocation(
-                generateExistingQueryEditorRoute(query.id),
+                generateExistingQueryEditorRoute(
+                  query.id,
+                  revisionId,
+                  extraQueryParams,
+                ),
                 { ignoreBlocking: true },
               );
             },
@@ -445,6 +460,16 @@ export abstract class QueryEditorStore {
 
   get canPersistToSavedQuery(): boolean {
     return true;
+  }
+
+  /**
+   * Parameter-value overrides (raw `p:` values, keyed by parameter name) that
+   * should be carried across a revert/load-revision navigation so the values
+   * the user currently has set are preserved. Only existing-query editors have
+   * these; other editor kinds return `undefined`.
+   */
+  getPreservedParameterOverrides(): Record<string, string> | undefined {
+    return undefined;
   }
 
   setExistingQueryName(val: string | undefined): void {
@@ -1800,6 +1825,11 @@ export class ExistingQueryUpdateState {
   }
 }
 
+/**
+ * Manages the query's version history: fetching the list of revisions and
+ * navigating to a chosen revision. A revision is keyed by its `version`
+ * identifier, which is passed as the `revisionId` route param.
+ */
 const resolveExecutionContext = (
   dataSpace: DataSpace,
   ex: string | undefined,
@@ -1837,6 +1867,9 @@ const resolveExecutionContext = (
 
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
+  // A specific revision from the query's version history to load, keyed by the
+  // revision's `version` identifier. When undefined, the latest is loaded.
+  readonly revisionId: string | undefined;
   private _lightQuery?: LightQuery | undefined;
   query: Query | undefined;
   queryInfo: QueryInfo | undefined;
@@ -1848,6 +1881,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     depotServerClient: DepotServerClient,
     queryId: string,
     urlQueryParamValues: Record<string, string> | undefined,
+    revisionId?: string | undefined,
   ) {
     super(applicationStore, depotServerClient);
 
@@ -1864,8 +1898,24 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     });
 
     this.queryId = queryId;
+    this.revisionId = revisionId;
     this.urlQueryParamValues = urlQueryParamValues;
     this.updateState = new ExistingQueryUpdateState(this);
+  }
+
+  get id(): string {
+    return this.queryId;
+  }
+
+  // Open the query version history in the query loader (the same viewer used by
+  // "load query"), loading this query's revisions.
+  showQueryVersionHistory(): void {
+    if (this.query) {
+      this.queryLoaderState.setQueryLoaderDialogOpen(true);
+      flowResult(this.queryLoaderState.getQueryHistory(this.lightQuery)).catch(
+        this.applicationStore.alertUnhandledError,
+      );
+    }
   }
 
   get lightQuery(): LightQuery {
@@ -1874,6 +1924,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
   override getEditorRoute(): string {
     return generateExistingQueryEditorRoute(this.queryId);
+  }
+
+  override getPreservedParameterOverrides():
+    | Record<string, string>
+    | undefined {
+    return this.urlQueryParamValues;
   }
 
   override get isPerformingBlockingAction(): boolean {
@@ -2001,6 +2057,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   override async setUpEditorState(): Promise<void> {
     const queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
       this.queryId,
+      this.revisionId,
     );
     this.setLightQuery(
       await this.graphManagerState.graphManager.getLightQuery(this.queryId),
@@ -2333,6 +2390,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     if (!queryInfo) {
       queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
         this.queryId,
+        this.revisionId,
       );
     }
     const queryBuilderState =
@@ -2344,6 +2402,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
+      this.revisionId,
     );
     this.setQuery(query);
     LegendQueryUserDataHelper.addRecentlyViewedQuery(

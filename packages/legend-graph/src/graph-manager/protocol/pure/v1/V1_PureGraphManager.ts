@@ -373,7 +373,10 @@ import type {
   LightPersistentDataCube,
   PersistentDataCube,
 } from '../../../action/query/PersistentDataCube.js';
-import { V1_QueryParameterValue } from './engine/query/V1_Query.js';
+import {
+  type V1_Query,
+  V1_QueryParameterValue,
+} from './engine/query/V1_Query.js';
 import { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity.js';
 import {
   V1_buildFunctionSignature,
@@ -3505,21 +3508,49 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async getQuery(queryId: string, graph: PureModel): Promise<Query> {
+  /**
+   * Fetch the query protocol, optionally for a specific revision from the
+   * query's version history (keyed by `revisionId`, i.e. `lastUpdatedAt`).
+   */
+  private async getQueryProtocol(
+    queryId: string,
+    revisionId?: string | undefined,
+  ): Promise<V1_Query> {
+    if (revisionId !== undefined) {
+      return guaranteeNonNullable(
+        (await this.engine.getQueryHistory(queryId, revisionId))[0],
+        `Can't find revision '${revisionId}' for query '${queryId}'`,
+      );
+    }
+    return this.engine.getQuery(queryId);
+  }
+
+  async getQueryHistory(queryId: string): Promise<V1_Query[]> {
+    return this.engine.getQueryHistory(queryId);
+  }
+
+  async getQuery(
+    queryId: string,
+    graph: PureModel,
+    revisionId?: string | undefined,
+  ): Promise<Query> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     return V1_buildQuery(
-      await this.engine.getQuery(queryId),
+      await this.getQueryProtocol(queryId, revisionId),
       graph,
       this.engine.getCurrentUserId(),
     );
   }
-  async getQueryInfo(queryId: string): Promise<QueryInfo> {
+  async getQueryInfo(
+    queryId: string,
+    revisionId?: string | undefined,
+  ): Promise<QueryInfo> {
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
         : undefined;
 
-    const query = await this.engine.getQuery(queryId);
+    const query = await this.getQueryProtocol(queryId, revisionId);
     return {
       name: query.name,
       id: query.id,
@@ -3590,6 +3621,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     return V1_buildLightQuery(
       await this.engine.updateQuery(query),
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async revertQueryToRevision(
+    queryId: string,
+    revisionId: string,
+  ): Promise<LightQuery> {
+    const currentQuery = await this.engine.getQuery(queryId);
+    const revision = await this.getQueryProtocol(queryId, revisionId);
+    // revert only the query body; keep the current head's metadata intact
+    currentQuery.content = revision.content;
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
+    return V1_buildLightQuery(
+      await this.engine.updateQuery(currentQuery),
       this.engine.getCurrentUserId(),
     );
   }

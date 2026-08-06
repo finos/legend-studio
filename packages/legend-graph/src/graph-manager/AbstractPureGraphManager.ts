@@ -732,12 +732,28 @@ export abstract class AbstractPureGraphManager {
   ): Promise<LightQuery[]>;
   abstract getQueries(queryIds: string[]): Promise<LightQuery[]>;
   abstract getLightQuery(queryId: string): Promise<LightQuery>;
-  abstract getQuery(queryId: string, graph: PureModel): Promise<Query>;
-  abstract getQueryInfo(queryId: string): Promise<QueryInfo>;
+  abstract getQuery(
+    queryId: string,
+    graph: PureModel,
+    revisionId?: string | undefined,
+  ): Promise<Query>;
+  abstract getQueryInfo(
+    queryId: string,
+    revisionId?: string | undefined,
+  ): Promise<QueryInfo>;
   abstract createQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract updateQuery(query: Query, graph: PureModel): Promise<Query>;
   abstract patchQuery(query: Partial<Query>, graph: PureModel): Promise<Query>;
   abstract renameQuery(queryId: string, queryName: string): Promise<LightQuery>;
+  /**
+   * Revert a query's body to a previous revision, saving it as the new head.
+   * The revision is identified by `revisionId` (i.e. its `lastUpdatedAt`);
+   * all other query metadata (name, description, etc.) is preserved.
+   */
+  abstract revertQueryToRevision(
+    queryId: string,
+    revisionId: string,
+  ): Promise<LightQuery>;
   abstract deleteQuery(queryId: string): Promise<void>;
 
   abstract productionizeQueryToServiceEntity(

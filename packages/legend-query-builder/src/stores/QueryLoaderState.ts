@@ -24,15 +24,18 @@ import {
   type AbstractPureGraphManager,
   type Query,
   type RawLambda,
+  type V1_Query,
   QuerySearchSpecification,
   GRAPH_MANAGER_EVENT,
   QuerySearchSortBy,
+  V1_PureGraphManager,
 } from '@finos/legend-graph';
 import {
   type GeneratorFn,
   ActionState,
   assertErrorThrown,
   guaranteeNonNullable,
+  guaranteeType,
   LogEvent,
 } from '@finos/legend-shared';
 import { makeObservable, observable, action, flow } from 'mobx';
@@ -54,20 +57,37 @@ export enum SORT_BY_OPTIONS {
 
 export type SortByOption = { label: SORT_BY_OPTIONS; value: SORT_BY_OPTIONS };
 
+/**
+ * One side of a grammar diff between two query revisions in the history view.
+ * `isLatest` refers to the current (latest) version, whose content is not part
+ * of the `/history` payload and is fetched on demand.
+ */
+export interface QueryRevisionDiffInput {
+  label: string;
+  isLatest: boolean;
+  content: string | undefined;
+}
+
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManager: AbstractPureGraphManager;
 
   readonly searchQueriesState = ActionState.create();
   readonly renameQueryState = ActionState.create();
+  readonly revertQueryState = ActionState.create();
   readonly deleteQueryState = ActionState.create();
   readonly previewQueryState = ActionState.create();
+  readonly queryHistoryState = ActionState.create();
+  readonly queryHistoryDiffState = ActionState.create();
 
   readonly decorateSearchSpecification?:
     | ((val: QuerySearchSpecification) => QuerySearchSpecification)
     | undefined;
 
-  readonly loadQuery: (query: LightQuery) => void;
+  readonly loadQuery: (
+    query: LightQuery,
+    revisionId?: string | undefined,
+  ) => void;
   readonly fetchDefaultQueries?: (() => Promise<LightQuery[]>) | undefined;
   readonly generateDefaultQueriesSummaryText?:
     | ((queries: LightQuery[]) => string)
@@ -95,6 +115,17 @@ export class QueryLoaderState {
   queryPreviewContent?: QueryInfo | { name: string; content: string };
   sortBy = SORT_BY_OPTIONS.SORT_BY_VIEW;
 
+  // version history
+  showHistoryViewer = false;
+  historyQuery?: LightQuery | undefined;
+  queryHistoryRevisions: V1_Query[] = [];
+
+  // grammar diff between two revisions in the history view
+  selectedRevisionKeysForDiff: string[] = [];
+  showHistoryDiff = false;
+  historyDiffGrammars?: { from: string; to: string } | undefined;
+  historyDiffLabels?: { from: string; to: string } | undefined;
+
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManager: AbstractPureGraphManager,
@@ -103,7 +134,7 @@ export class QueryLoaderState {
         | ((val: QuerySearchSpecification) => QuerySearchSpecification)
         | undefined;
 
-      loadQuery: (query: LightQuery) => void;
+      loadQuery: (query: LightQuery, revisionId?: string | undefined) => void;
       fetchDefaultQueries?: (() => Promise<LightQuery[]>) | undefined;
       generateDefaultQueriesSummaryText?:
         | ((queries: LightQuery[]) => string)
@@ -125,17 +156,31 @@ export class QueryLoaderState {
       isCuratedTemplateToggled: observable,
       curatedTemplateQuerySpecifications: observable,
       sortBy: observable,
+      showHistoryViewer: observable,
+      historyQuery: observable,
+      queryHistoryRevisions: observable,
+      selectedRevisionKeysForDiff: observable,
+      showHistoryDiff: observable,
+      historyDiffGrammars: observable.ref,
+      historyDiffLabels: observable.ref,
       setSortBy: action,
       setSearchText: action,
       setQueryLoaderDialogOpen: action,
       setQueries: action,
       setShowCurrentUserQueriesOnly: action,
       setShowPreviewViewer: action,
+      setShowHistoryViewer: action,
+      toggleRevisionForDiff: action,
+      clearHistoryDiffSelection: action,
+      setShowHistoryDiff: action,
       setIsCuratedTemplateToggled: action,
       searchQueries: flow,
       getPreviewQueryContent: flow,
+      getQueryHistory: flow,
+      computeHistoryDiff: flow,
       deleteQuery: flow,
       renameQuery: flow,
+      revertToRevision: flow,
       initialize: flow,
     });
 
@@ -200,6 +245,35 @@ export class QueryLoaderState {
     this.showPreviewViewer = val;
   }
 
+  setShowHistoryViewer(val: boolean): void {
+    this.showHistoryViewer = val;
+  }
+
+  toggleRevisionForDiff(key: string): void {
+    if (this.selectedRevisionKeysForDiff.includes(key)) {
+      this.selectedRevisionKeysForDiff =
+        this.selectedRevisionKeysForDiff.filter((entry) => entry !== key);
+    } else {
+      // only two revisions can be compared, so keep the two most recently picked
+      this.selectedRevisionKeysForDiff = [
+        ...this.selectedRevisionKeysForDiff,
+        key,
+      ].slice(-2);
+    }
+  }
+
+  clearHistoryDiffSelection(): void {
+    this.selectedRevisionKeysForDiff = [];
+  }
+
+  setShowHistoryDiff(val: boolean): void {
+    this.showHistoryDiff = val;
+    if (!val) {
+      this.historyDiffGrammars = undefined;
+      this.historyDiffLabels = undefined;
+    }
+  }
+
   setShowCurrentUserQueriesOnly(val: boolean): void {
     this.showCurrentUserQueriesOnly = val;
   }
@@ -207,6 +281,9 @@ export class QueryLoaderState {
   reset(): void {
     this.setShowCurrentUserQueriesOnly(false);
     this.setIsCuratedTemplateToggled(false);
+    this.setShowHistoryViewer(false);
+    this.setShowHistoryDiff(false);
+    this.clearHistoryDiffSelection();
   }
 
   *initialize(queryBuilderState: QueryBuilderState): GeneratorFn<void> {
@@ -346,6 +423,33 @@ export class QueryLoaderState {
     }
   }
 
+  *revertToRevision(revisionId: string): GeneratorFn<void> {
+    const query = guaranteeNonNullable(
+      this.historyQuery,
+      `Can't revert: no query is being viewed in history`,
+    );
+    this.revertQueryState.inProgress();
+    try {
+      const reverted = (yield this.graphManager.revertQueryToRevision(
+        query.id,
+        revisionId,
+      )) as LightQuery;
+      this.applicationStore.notificationService.notifySuccess(
+        'Reverted query to the selected revision',
+      );
+      this.revertQueryState.pass();
+      // the revert is saved as the new current version, so close the loader and
+      // load it straight away (as the current head, not a historical revision)
+      this.setShowHistoryViewer(false);
+      this.setQueryLoaderDialogOpen(false);
+      this.loadQuery(reverted);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.revertQueryState.fail();
+    }
+  }
+
   *deleteQuery(queryId: string): GeneratorFn<void> {
     this.deleteQueryState.inProgress();
     try {
@@ -397,6 +501,62 @@ export class QueryLoaderState {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(error);
       this.previewQueryState.fail();
+    }
+  }
+
+  *getQueryHistory(query: LightQuery): GeneratorFn<void> {
+    this.queryHistoryState.inProgress();
+    try {
+      const revisions = (yield guaranteeType(
+        this.graphManager,
+        V1_PureGraphManager,
+      ).getQueryHistory(query.id)) as V1_Query[];
+      this.historyQuery = query;
+      this.queryHistoryRevisions = revisions;
+      this.clearHistoryDiffSelection();
+      this.setShowHistoryDiff(false);
+      this.setShowHistoryViewer(true);
+      this.queryHistoryState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.queryHistoryState.fail();
+    }
+  }
+
+  private async resolveRevisionGrammar(
+    side: QueryRevisionDiffInput,
+  ): Promise<string> {
+    if (side.isLatest) {
+      // the latest/current version is not returned by `/history`, so fetch it
+      const info = await this.graphManager.getQueryInfo(
+        guaranteeNonNullable(this.historyQuery).id,
+      );
+      return this.graphManager.prettyLambdaContent(info.content);
+    }
+    return this.graphManager.prettyLambdaContent(
+      guaranteeNonNullable(side.content),
+    );
+  }
+
+  *computeHistoryDiff(
+    from: QueryRevisionDiffInput,
+    to: QueryRevisionDiffInput,
+  ): GeneratorFn<void> {
+    this.queryHistoryDiffState.inProgress();
+    try {
+      const [fromGrammar, toGrammar] = (yield Promise.all([
+        this.resolveRevisionGrammar(from),
+        this.resolveRevisionGrammar(to),
+      ])) as [string, string];
+      this.historyDiffGrammars = { from: fromGrammar, to: toGrammar };
+      this.historyDiffLabels = { from: from.label, to: to.label };
+      this.setShowHistoryDiff(true);
+      this.queryHistoryDiffState.pass();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(error);
+      this.queryHistoryDiffState.fail();
     }
   }
 }

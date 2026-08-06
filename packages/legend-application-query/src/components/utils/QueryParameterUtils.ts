@@ -43,6 +43,23 @@ export const extractQueryParams = (
   return undefined;
 };
 
+/**
+ * Inverse of `extractQueryParams`: re-attach the `p:` prefix to raw
+ * parameter-value overrides (keyed by parameter name) so they can be carried in
+ * a URL's query string. Returns `undefined` when there is nothing to carry.
+ */
+export const buildQueryParamsFromParameterValues = (
+  parameterValues: Record<string, string> | undefined,
+): Record<string, string> | undefined =>
+  parameterValues && Object.keys(parameterValues).length
+    ? Object.fromEntries(
+        Object.entries(parameterValues).map(([name, value]) => [
+          `${QUERY_PARAM_SUFFIX}${name}`,
+          value,
+        ]),
+      )
+    : undefined;
+
 export const processQueryParameters = (
   query: RawLambda,
   savedQueryParams: QueryParameterValue[] | undefined,

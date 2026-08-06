@@ -357,6 +357,11 @@ export interface V1_GraphManagerEngine {
 
   getQuery: (queryId: string) => Promise<V1_Query>;
 
+  getQueryHistory: (
+    queryId: string,
+    version?: string | undefined,
+  ) => Promise<V1_Query[]>;
+
   createQuery: (query: V1_Query) => Promise<V1_Query>;
 
   updateQuery: (query: V1_Query) => Promise<V1_Query>;
