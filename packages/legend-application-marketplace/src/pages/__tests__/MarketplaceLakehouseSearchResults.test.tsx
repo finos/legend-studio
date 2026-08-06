@@ -504,6 +504,20 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(await screen.findByText('Legacy Data Product'));
     });
 
+    test('Lakehouse data products show license chip when licenseTo is set', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // The mock data has licenseTo: 'Enterprise' on some results
+      await waitFor(() => {
+        const licenseChips = screen.getAllByTitle('License To');
+        expect(licenseChips.length).toBeGreaterThanOrEqual(1);
+        // Verify the label uses getDataProductLicenseDisplayLabel
+        expect(licenseChips[0]?.textContent).toBe('Enterprise');
+      });
+    });
+
     test('Clicking on ingest environment chip displays tooltip with owners', async () => {
       await setupTestComponent('data', 'prod');
 
