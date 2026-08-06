@@ -34,6 +34,7 @@ import {
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { LakehouseDataContractTask } from '../LakehouseDataContract.js';
 import { type PlainObject } from '@finos/legend-shared';
+import { type ReactElement } from 'react';
 import {
   getMockPendingDataOwnerApprovalTasksResponse,
   getMockPendingManagerApprovalTasksResponse,
@@ -47,6 +48,34 @@ jest.mock('react-oidc-context', () => {
   }>('@finos/legend-shared/test');
   return MOCK__reactOIDCContext;
 });
+
+// The approve/deny buttons open a business-justification prompt via `showTaskActionAlert`
+// (backed by `applicationStore.alertService`) instead of calling the action directly. Since the
+// alert dialog itself is rendered by a separate top-level provider not mounted in these tests,
+// interact with the alert's `prompt`/`actions` data directly rather than through the DOM.
+const confirmTaskActionAlert = (
+  marketplaceBaseStore: Awaited<
+    ReturnType<typeof TEST__provideMockLegendMarketplaceBaseStore>
+  >,
+  actionLabel: string,
+  justification: string,
+): void => {
+  const info =
+    marketplaceBaseStore.applicationStore.alertService.actionAlertInfo;
+  if (!info) {
+    throw new Error('Expected an action alert to be open');
+  }
+  // `actionAlertInfo` is a deeply-observed mobx object, so `info.prompt` is not a genuine
+  // React element that can be mounted via `render` (its `props` are getter/setter-backed).
+  // Call the justification field's `onChange` handler directly instead of going through the DOM.
+  const prompt = info.prompt as
+    | ReactElement<{
+        onChange?: (event: { target: { value: string } }) => void;
+      }>
+    | undefined;
+  prompt?.props.onChange?.({ target: { value: justification } });
+  info.actions.find((action) => action.label === actionLabel)?.handler?.();
+};
 
 const setupCommonSpies = (
   marketplaceBaseStore: Awaited<
@@ -200,8 +229,26 @@ describe('Lakehouse Data Contract', () => {
 
       await waitFor(() => {
         expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(
+          marketplaceBaseStore,
+          'Approve',
+          'Approved for testing',
+        );
+      });
+
+      await waitFor(() => {
+        expect(
           marketplaceBaseStore.lakehouseContractServerClient.approveTask,
-        ).toHaveBeenCalledWith('pm-task-pending-id', expect.any(String));
+        ).toHaveBeenCalledWith(
+          'pm-task-pending-id',
+          expect.any(String),
+          'Approved for testing',
+        );
       });
     });
 
@@ -224,9 +271,135 @@ describe('Lakehouse Data Contract', () => {
 
       await waitFor(() => {
         expect(
-          marketplaceBaseStore.lakehouseContractServerClient.approveTask,
-        ).toHaveBeenCalledWith('do-task-pending-id', expect.any(String));
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
       });
+
+      act(() => {
+        confirmTaskActionAlert(
+          marketplaceBaseStore,
+          'Approve',
+          'Approved for testing',
+        );
+      });
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.lakehouseContractServerClient.approveTask,
+        ).toHaveBeenCalledWith(
+          'do-task-pending-id',
+          expect.any(String),
+          'Approved for testing',
+        );
+      });
+    });
+
+    test('data owner can deny their assigned task with a business justification', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-do-id',
+        'do-task-pending-id',
+        mockContracts.pendingDataOwner,
+        getMockPendingDataOwnerApprovalTasksResponse(),
+        'test-data-owner-user-id',
+      );
+
+      const doDenyButton = await screen.findByRole('button', {
+        name: 'Deny Task',
+      });
+
+      expect(doDenyButton.getAttribute('disabled')).toBeNull();
+
+      fireEvent.click(doDenyButton);
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(
+          marketplaceBaseStore,
+          'Deny',
+          'Denied for testing',
+        );
+      });
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.lakehouseContractServerClient.denyTask,
+        ).toHaveBeenCalledWith(
+          'do-task-pending-id',
+          expect.any(String),
+          'Denied for testing',
+        );
+      });
+    });
+
+    test('does not submit an approval without a business justification', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-do-id',
+        'do-task-pending-id',
+        mockContracts.pendingDataOwner,
+        getMockPendingDataOwnerApprovalTasksResponse(),
+        'test-data-owner-user-id',
+      );
+
+      const doApproveButton = await screen.findByRole('button', {
+        name: 'Approve Task',
+      });
+
+      fireEvent.click(doApproveButton);
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(marketplaceBaseStore, 'Approve', '');
+      });
+
+      expect(
+        marketplaceBaseStore.applicationStore.notificationService.notifyError,
+      ).toHaveBeenCalledWith('Business justification is required');
+      expect(
+        marketplaceBaseStore.lakehouseContractServerClient.approveTask,
+      ).not.toHaveBeenCalled();
+    });
+
+    test('does not submit a denial without a business justification', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-do-id',
+        'do-task-pending-id',
+        mockContracts.pendingDataOwner,
+        getMockPendingDataOwnerApprovalTasksResponse(),
+        'test-data-owner-user-id',
+      );
+
+      const doDenyButton = await screen.findByRole('button', {
+        name: 'Deny Task',
+      });
+
+      fireEvent.click(doDenyButton);
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(marketplaceBaseStore, 'Deny', '   ');
+      });
+
+      expect(
+        marketplaceBaseStore.applicationStore.notificationService.notifyError,
+      ).toHaveBeenCalledWith('Business justification is required');
+      expect(
+        marketplaceBaseStore.lakehouseContractServerClient.denyTask,
+      ).not.toHaveBeenCalled();
     });
 
     test('data owner cannot approve when privilege manager approval is still pending', async () => {
