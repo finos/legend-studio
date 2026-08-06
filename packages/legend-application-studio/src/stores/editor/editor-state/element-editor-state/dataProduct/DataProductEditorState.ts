@@ -17,11 +17,13 @@
 import {
   type AppDirNode,
   type ArtifactGenerationExtensionResult,
+  type BatchLambdasRelationTypeResult,
   type DataProductElement,
   type IngestDefinition,
   type Mapping,
   type PackageableElement,
   type RawLambda,
+  type RelationTypeMetadata,
   type Stereotype,
   type StereotypeReference,
   type V1_AccessPointGroupInfo,
@@ -59,12 +61,6 @@ import {
   RelationElementsData,
   stub_Mapping,
   stub_RawLambda,
-  V1_GraphTransformerContextBuilder,
-  V1_LambdaReturnTypeInput,
-  V1_PureGraphManager,
-  V1_relationTypeModelSchema,
-  V1_RemoteEngine,
-  V1_transformRawLambda,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -120,7 +116,6 @@ import type {
   AdhocDataProductDeployResponse,
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
-import { deserialize } from 'serializr';
 import { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { onGeneratingDiagramFromMapping } from '../mapping/MappingEditorState.js';
@@ -195,7 +190,6 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   }
 
   *updateLambdaRelationColumns(): GeneratorFn<void> {
-    // Prevent concurrent calls
     if (this.isUpdatingRelationColumns) {
       return;
     }
@@ -207,36 +201,11 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
 
     this.setIsUpdatingRelationColumns(true);
     try {
-      const model = guaranteeType(
-        this.editorStore.graphManagerState.graphManager,
-        V1_PureGraphManager,
-      ).getFullGraphModelData(this.editorStore.graphManagerState.graph);
-
-      const relationTypeInput = new V1_LambdaReturnTypeInput(
-        model,
-        V1_transformRawLambda(
+      const relationType =
+        (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
           this.val.accessPoint.func,
-          new V1_GraphTransformerContextBuilder(
-            this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        ),
-      );
-
-      const relationType = deserialize(
-        V1_relationTypeModelSchema,
-        (yield guaranteeType(
-          guaranteeType(
-            this.editorStore.graphManagerState.graphManager,
-            V1_PureGraphManager,
-          ).engine,
-          V1_RemoteEngine,
-        )
-          .getEngineServerClient()
-          .lambdaRelationType(
-            V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
-          )) as object,
-      );
-
+          this.editorStore.graphManagerState.graph,
+        )) as RelationTypeMetadata;
       this.setLambdaRelationColumns(
         relationType.columns.map((column) => column.name),
       );
@@ -1020,6 +989,7 @@ export class DataProductEditorState extends ElementEditorState {
       setDeployResponse: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
+      batchUpdateLambdaRelationColumns: flow,
       selectedGroupState: observable,
       setSelectedGroupState: action,
       swapAccessPointGroups: action,
@@ -1132,6 +1102,59 @@ export class DataProductEditorState extends ElementEditorState {
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
+    }
+  }
+
+  *batchUpdateLambdaRelationColumns(
+    accessPointStates: LakehouseAccessPointState[],
+  ): GeneratorFn<void> {
+    const entries = accessPointStates
+      .filter(
+        (apState) =>
+          apState.relationElementState !== undefined &&
+          !apState.lambdaState.isUpdatingRelationColumns &&
+          apState.lambdaState.lastComputedLambdaHash !==
+            apState.accessPoint.func.hashCode,
+      )
+      .map((apState) => ({
+        apState,
+        hash: apState.accessPoint.func.hashCode,
+      }));
+    if (entries.length === 0) {
+      return;
+    }
+    entries.forEach((entry) =>
+      entry.apState.lambdaState.setIsUpdatingRelationColumns(true),
+    );
+    try {
+      const lambdas = new Map<string, RawLambda>(
+        entries.map((entry) => [
+          entry.apState.uuid,
+          entry.apState.accessPoint.func,
+        ]),
+      );
+      const { results } =
+        (yield this.editorStore.graphManagerState.graphManager.getBatchLambdasRelationType(
+          lambdas,
+          this.editorStore.graphManagerState.graph,
+        )) as BatchLambdasRelationTypeResult;
+      entries.forEach((entry) => {
+        const relationType = results.get(entry.apState.uuid);
+        entry.apState.lambdaState.setLambdaRelationColumns(
+          relationType
+            ? relationType.columns.map((column) => column.name)
+            : undefined,
+        );
+      });
+    } catch {
+      entries.forEach((entry) =>
+        entry.apState.lambdaState.setLambdaRelationColumns(undefined),
+      );
+    } finally {
+      entries.forEach((entry) => {
+        entry.apState.lambdaState.lastComputedLambdaHash = entry.hash;
+        entry.apState.lambdaState.setIsUpdatingRelationColumns(false);
+      });
     }
   }
 

@@ -16,12 +16,8 @@
 
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  CaretUpIcon,
-  clsx,
-  OpenIcon,
-  SparkleStarsIcon,
-} from '@finos/legend-art';
+import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
+import { LegendAIChatToggle } from '@finos/legend-lego/legend-ai';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
 import { DataProductLegendAIIntegration } from './DataProduct/DataProductLegendAIIntegration.js';
@@ -432,18 +428,10 @@ export const ProductViewer = observer(
               />
             </div>
             {!isAIChatOpen && (
-              <button
-                className="legend-ai-chat-toggle"
-                onClick={handleOpenAIChat}
-                title={`Ask ${productTitle ?? 'AI'}`}
-              >
-                <span className="legend-ai-chat-toggle__icon">
-                  <SparkleStarsIcon />
-                </span>
-                <span className="legend-ai-chat-toggle__label">
-                  Ask {productTitle ?? 'AI'}
-                </span>
-              </button>
+              <LegendAIChatToggle
+                label={`Ask ${productTitle ?? 'AI'}`}
+                onOpen={handleOpenAIChat}
+              />
             )}
           </>
         )}

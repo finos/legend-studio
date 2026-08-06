@@ -50,6 +50,7 @@ import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
   type ServiceQueryCreatorPathParams,
+  type ExistingQueryEditorQueryParams,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateQuerySetupRoute,
@@ -1092,6 +1093,23 @@ export const QueryEditor = observer(() => {
     );
   };
 
+  // open the query version history (same viewer used by the query loader)
+  const showQueryHistory = (): void => {
+    if (editorStore instanceof ExistingQueryEditorStore) {
+      editorStore.showQueryVersionHistory();
+    }
+  };
+
+  //open legend ai query chat
+  const openQueryChat = (): void => {
+    if (!editorStore.queryBuilderState?.isQueryChatOpened) {
+      LegendQueryTelemetryHelper.logEvent_QueryChatOpened(
+        applicationStore.telemetryService,
+      );
+      editorStore.queryBuilderState?.setIsQueryChatOpened(true);
+    }
+  };
+
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
       applicationStore.alertUnhandledError,
@@ -1120,6 +1138,14 @@ export const QueryEditor = observer(() => {
                   <MenuContentItem onClick={goToQuerySetup}>
                     Back to query setup
                   </MenuContentItem>
+                  {isExistingQuery && (
+                    <MenuContentItem
+                      disabled={isLoadingEditor}
+                      onClick={showQueryHistory}
+                    >
+                      Query History
+                    </MenuContentItem>
+                  )}
                   <MenuContentItem
                     disabled={!appDocUrl}
                     onClick={goToDocumentation}
@@ -1267,19 +1293,25 @@ export const ExistingQueryEditor = observer(() => {
     params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID],
   );
   const queryParams =
-    applicationStore.navigationService.navigator.getCurrentLocationParameters();
+    applicationStore.navigationService.navigator.getCurrentLocationParameters<ExistingQueryEditorQueryParams>();
   const processed = extractQueryParams(queryParams);
+  const revisionId = queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID];
   useEffect(() => {
-    // clear params
+    // clear the query-parameter values from the URL while preserving the
+    // revisionId so the loaded revision remains reflected in a shareable link
     if (processed && Object.keys(processed).length) {
       applicationStore.navigationService.navigator.updateCurrentLocation(
-        generateExistingQueryEditorRoute(queryId),
+        generateExistingQueryEditorRoute(queryId, revisionId),
       );
     }
-  }, [applicationStore, queryId, processed]);
+  }, [applicationStore, queryId, processed, revisionId]);
 
   return (
-    <ExistingQueryEditorStoreProvider queryId={queryId} params={processed}>
+    <ExistingQueryEditorStoreProvider
+      queryId={queryId}
+      params={processed}
+      revisionId={revisionId}
+    >
       <QueryEditor />
     </ExistingQueryEditorStoreProvider>
   );

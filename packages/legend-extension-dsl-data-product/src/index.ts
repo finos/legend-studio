@@ -46,7 +46,10 @@ export * from './stores/DataProduct/DataAccess/PermitDataAccessRequestState.js';
 export * from './stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 export * from './stores/TerminalProduct/TerminalProductViewerState.js';
 export * from './stores/TerminalProduct/TerminalProductDataAccessState.js';
-export { TabMessageScreen } from './components/DataProduct/DataProductDataAccess.js';
+export {
+  TabMessageScreen,
+  buildUnsupportedLakehouseComputeMessage,
+} from './components/DataProduct/DataProductDataAccess.js';
 
 export * from './utils/DataContractUtils.js';
 export * from './utils/DataProductIngestUtils.js';

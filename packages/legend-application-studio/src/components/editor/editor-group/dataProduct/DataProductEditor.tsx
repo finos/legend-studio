@@ -732,17 +732,6 @@ export const LakehouseDataProductAccessPointEditor = observer(
       );
     }, [lambdaEditorState, editorStore.applicationStore]);
 
-    // Load the relation columns for access points that already have sample
-    // values so mismatches surface on load. This only runs for rendered access
-    // points, keeping the number of concurrent calls bounded to the visible set.
-    useEffect(() => {
-      if (accessPointState.relationElementState !== undefined) {
-        flowResult(lambdaEditorState.updateLambdaRelationColumns()).catch(
-          editorStore.applicationStore.alertUnhandledError,
-        );
-      }
-    }, [accessPointState, lambdaEditorState, editorStore.applicationStore]);
-
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
       setEditingDescription(false);
@@ -1784,6 +1773,20 @@ const AccessPointGroupEditor = observer(
       intersectionObserver.observe(sentinel);
       return () => intersectionObserver.disconnect();
     }, [accessPointCount, renderedCount]);
+
+    useEffect(() => {
+      flowResult(
+        productEditorState.batchUpdateLambdaRelationColumns(
+          lakehouseAccessPointStates.slice(0, renderedCount),
+        ),
+      ).catch(editorStore.applicationStore.alertUnhandledError);
+    }, [
+      renderedCount,
+      accessPointCount,
+      lakehouseAccessPointStates,
+      productEditorState,
+      editorStore.applicationStore.alertUnhandledError,
+    ]);
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {

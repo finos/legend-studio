@@ -280,6 +280,10 @@ export class V1_Query {
   lastUpdatedAt?: number | undefined;
   createdAt?: number | undefined;
   lastOpenAt?: number | undefined;
+  // Identifies a specific revision of the query within its version history.
+  // Returned by the `/query/{queryId}/history` endpoint and passed back as the
+  // `version` query parameter to load that revision.
+  version?: string | undefined;
   gridConfig?: V1_QueryGridConfig | undefined;
 
   executionContext: V1_QueryExecutionContext | undefined;
@@ -305,6 +309,7 @@ export class V1_Query {
       lastUpdatedAt: optional(primitive()),
       createdAt: optional(primitive()),
       lastOpenAt: optional(primitive()),
+      version: optional(primitive()),
       mapping: optional(primitive()),
       name: primitive(),
       description: optional(primitive()),

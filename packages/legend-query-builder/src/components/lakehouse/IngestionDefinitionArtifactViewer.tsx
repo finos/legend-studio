@@ -43,8 +43,8 @@ import {
   InstanceValue,
   type IngestionArtifactMatViewImplementation,
   type IngestionDefinitionArtifact,
-  type Multiplicity,
   type RelationColumn,
+  getMultiplicityPrettyDescription,
 } from '@finos/legend-graph';
 import { isNonNullable } from '@finos/legend-shared';
 import { tryToFormatSql } from '../result/tds/QueryBuilderTDSResultShared.js';
@@ -74,31 +74,6 @@ const getColumnTypeLabel = (column: RelationColumn): string => {
   return typeName;
 };
 
-const getMultiplicityLabel = (multiplicity: Multiplicity): string => {
-  const { lowerBound, upperBound } = multiplicity;
-  if (lowerBound === 1 && upperBound === 1) {
-    return 'Required';
-  } else if (lowerBound === 0 && upperBound === 1) {
-    return 'Optional';
-  } else if (lowerBound === 0 && upperBound === undefined) {
-    return 'List';
-  } else if (lowerBound === 1 && upperBound === undefined) {
-    return 'Non-Empty List';
-  }
-  const upper = upperBound === undefined ? '*' : String(upperBound);
-  return lowerBound === upperBound
-    ? String(lowerBound)
-    : `[${lowerBound}..${upper}]`;
-};
-
-const getMultiplicityRange = (multiplicity: Multiplicity): string => {
-  const upper =
-    multiplicity.upperBound === undefined
-      ? '*'
-      : String(multiplicity.upperBound);
-  return `[${multiplicity.lowerBound}..${upper}]`;
-};
-
 const schemaColumnDefs: DataGridColumnDefinition<RelationColumn>[] = [
   {
     headerName: 'Column Name',
@@ -115,9 +90,9 @@ const schemaColumnDefs: DataGridColumnDefinition<RelationColumn>[] = [
     headerName: 'Multiplicity',
     flex: 1,
     valueGetter: (params) =>
-      params.data ? getMultiplicityLabel(params.data.multiplicity) : '',
-    tooltipValueGetter: (params) =>
-      params.data ? getMultiplicityRange(params.data.multiplicity) : '',
+      params.data
+        ? getMultiplicityPrettyDescription(params.data.multiplicity)
+        : '',
   },
 ];
 
