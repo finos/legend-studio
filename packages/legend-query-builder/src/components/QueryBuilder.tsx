@@ -38,6 +38,7 @@ import {
   BlankPanelContent,
   ModalFooterButton,
   CalendarClockIcon,
+  ChatIcon,
   PanelLoadingIndicator,
   SerializeIcon,
   DataAccessIcon,
@@ -79,6 +80,7 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
+import { QueryChat } from './QueryChat.js';
 import { Fragment, useEffect, useRef } from 'react';
 import { RedoButton, UndoButton } from '@finos/legend-lego/application';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
@@ -116,6 +118,8 @@ const QueryBuilderStatusBar = observer(
     );
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
+    const openQueryChat = (): void =>
+      queryBuilderState.setIsQueryChatOpened(true);
 
     return (
       <div className="query-builder__status-bar">
@@ -151,6 +155,25 @@ const QueryBuilderStatusBar = observer(
                 />
               )}
             </>
+          )}
+          {queryBuilderState.isQueryChatOpened && (
+            <QueryChat queryBuilderState={queryBuilderState} />
+          )}
+          {!queryBuilderState.config?.TEMPORARY__disableQueryBuilderChat && (
+            <button
+              className={clsx(
+                'query-builder__status-bar__action query-builder__status-bar__action__toggler',
+                {
+                  'query-builder__status-bar__action__toggler--toggled':
+                    queryBuilderState.isQueryChatOpened === true,
+                },
+              )}
+              onClick={openQueryChat}
+              tabIndex={-1}
+              title="Open Query Chat"
+            >
+              <ChatIcon />
+            </button>
           )}
           <button
             className={clsx(
@@ -1026,6 +1049,14 @@ export const QueryBuilder = observer(
                       {showPostFetchStructurePanel && (
                         <ResizablePanel minSize={300}>
                           {renderPostFetchStructure()}
+                        </ResizablePanel>
+                      )}
+                      {queryBuilderState.isQueryChatOpened && (
+                        <ResizablePanelSplitter />
+                      )}
+                      {queryBuilderState.isQueryChatOpened && (
+                        <ResizablePanel size={450}>
+                          <QueryChat queryBuilderState={queryBuilderState} />
                         </ResizablePanel>
                       )}
                     </ResizablePanelGroup>

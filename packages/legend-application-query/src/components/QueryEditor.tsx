@@ -1093,6 +1093,16 @@ export const QueryEditor = observer(() => {
     );
   };
 
+  //open legend ai query chat
+  const openQueryChat = (): void => {
+    if (!editorStore.queryBuilderState?.isQueryChatOpened) {
+      LegendQueryTelemetryHelper.logEvent_QueryChatOpened(
+        applicationStore.telemetryService,
+      );
+      editorStore.queryBuilderState?.setIsQueryChatOpened(true);
+    }
+  };
+
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
       applicationStore.alertUnhandledError,
@@ -1150,6 +1160,31 @@ export const QueryEditor = observer(() => {
           </div>
         </div>
         <div className="query-editor__header__action__content">
+          {!isLoadingEditor &&
+            !editorStore.queryBuilderState?.config
+              ?.TEMPORARY__disableQueryBuilderChat &&
+            (editorStore.queryBuilderState instanceof
+              DataSpaceQueryBuilderState ||
+              editorStore.queryBuilderState instanceof
+                LegendQueryBareQueryBuilderState) &&
+            editorStore.queryBuilderState.canBuildQuery && (
+              <button
+                title="Open Query Chat."
+                onClick={() => openQueryChat()}
+                className="query-editor__header__action query-editor__header__action__theme-toggler"
+              >
+                <div
+                  className={
+                    applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                      ? 'query-editor__header__action__chat__label--light'
+                      : 'query-editor__header__action__chat__label--dark'
+                  }
+                >
+                  Legend AI
+                </div>
+              </button>
+            )}
           <button
             title="Toggle light/dark mode"
             onClick={TEMPORARY__toggleLightDarkMode}

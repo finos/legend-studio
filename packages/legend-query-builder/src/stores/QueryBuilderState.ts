@@ -115,8 +115,10 @@ import {
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
+import { type QueryChatState } from './QueryChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 import { createDataCubeViewerStateFromQueryBuilder } from './data-cube/QueryBuilderDataCubeHelper.js';
 import type { QueryBuilderDataCubeViewerState } from './data-cube/QueryBuilderDataCubeViewerState.js';
@@ -214,6 +216,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
   changeHistoryState: QueryBuilderChangeHistoryState;
+  isQueryChatOpened: boolean;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
@@ -230,6 +233,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
   executionContextState: QueryBuilderExecutionContextState;
   internalizeState?: QueryBuilderInternalizeState | undefined;
+  queryChatState?: QueryChatState | undefined;
 
   // NOTE: This property contains information about workflow used
   // to create this state. This should only be used to add additional
@@ -269,6 +273,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeHistoryState: observable,
       executionContextState: observable,
       sourceElement: observable,
+      queryChatState: observable,
+      isQueryChatOpened: observable,
       isLocalModeEnabled: observable,
       dataCubeViewerState: observable,
       getAllFunction: observable,
@@ -292,6 +298,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       openDataCubeEngine: action,
       setIsCheckingEntitlments: action,
       setSourceElement: action,
+      setIsQueryChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
       setLambdaWriteMode: action,
@@ -304,6 +311,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeMapping: action,
       changeRuntime: action,
       setExecutionContextState: action,
+      setQueryChatState: action,
 
       rebuildWithQuery: action,
       compileQuery: flow,
@@ -335,6 +343,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.config = config;
     this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
+    this.isQueryChatOpened =
+      (!this.config?.TEMPORARY__disableQueryBuilderChat &&
+        this.applicationStore.settingService.getBooleanValue(
+          QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
+        )) ??
+      false;
   }
 
   TEMPORARY_initializeExecContext(
@@ -482,6 +496,14 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return undefined;
   }
 
+  setIsQueryChatOpened(val: boolean): void {
+    this.isQueryChatOpened = val;
+    this.applicationStore.settingService.persistValue(
+      QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
+      val,
+    );
+  }
+
   setIsLocalModeEnabled(val: boolean): void {
     this.isLocalModeEnabled = val;
   }
@@ -494,6 +516,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {
     this.internalizeState = val;
+  }
+
+  setQueryChatState(val: QueryChatState | undefined): void {
+    this.queryChatState = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {
