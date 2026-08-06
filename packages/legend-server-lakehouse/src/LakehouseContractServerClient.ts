@@ -259,23 +259,27 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   approveTask = (
     id: string,
     token: string | undefined,
+    justification: string,
   ): Promise<PlainObject<V1_TaskStatus>> =>
     this.post(
       `${this._tasks()}/${encodeURIComponent(id)}/approve`,
       {},
       {},
       this._token(token),
+      { justification },
     );
 
   denyTask = (
     id: string,
     token: string | undefined,
+    justification: string,
   ): Promise<PlainObject<V1_TaskStatus>> =>
     this.post(
       `${this._tasks()}/${encodeURIComponent(id)}/deny`,
       {},
       {},
       this._token(token),
+      { justification },
     );
 
   // --------------------------------- Data Access Requests --------------------------------------

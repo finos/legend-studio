@@ -48,16 +48,14 @@ import {
   type ChangeEvent,
 } from 'react';
 import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import {
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-  InfoCircleIcon,
-} from '@finos/legend-art';
+import { InfoCircleIcon } from '@finos/legend-art';
+import { ActionAlertType } from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { startCase } from '@finos/legend-shared';
+import { showTaskActionAlert } from './showTaskActionAlert.js';
 import {
   type ContractErrorLayer,
   UserRenderer,
@@ -86,178 +84,75 @@ import {
   useGetDataProductUrl,
 } from '../../../utils/EntitlementsUtils.js';
 
-const EntitlementsDashboardActionModal = (props: {
-  open: boolean;
-  selectedTasks: V1_PendingTaskRecord[];
-  dashboardState: EntitlementsDashboardState;
-  onClose: () => void;
-  action: 'approve' | 'deny' | undefined;
+const EntitlementsDashboardActionResultsModal = (props: {
+  action: 'approve' | 'deny';
+  errorMessages: [V1_PendingTaskRecord, string][];
+  successCount: number;
   pendingTaskContracts: V1_LiteAccessRequest[];
   marketplaceBaseStore: LegendMarketplaceBaseStore;
+  onClose: () => void;
 }) => {
   const {
-    open,
-    selectedTasks,
-    dashboardState,
-    onClose,
     action,
+    errorMessages,
+    successCount,
     pendingTaskContracts,
     marketplaceBaseStore,
+    onClose,
   } = props;
 
-  const auth = useAuth();
-  const tokenRef = useRef(auth.user?.access_token);
-  tokenRef.current = auth.user?.access_token;
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessages, setErrorMessages] = useState<
-    [V1_PendingTaskRecord, string][]
-  >([]);
-  const [successCount, setSuccessCount] = useState(0);
-
-  const handleClose = () => {
-    setIsLoading(false);
-    setErrorMessages([]);
-    setSuccessCount(0);
-    onClose();
-  };
-
-  const actionFunction =
-    action === 'approve'
-      ? dashboardState.approve.bind(dashboardState)
-      : dashboardState.deny.bind(dashboardState);
-
-  const handleAction = async () => {
-    setIsLoading(true);
-    const currentErrorMessages: typeof errorMessages = [];
-    await Promise.all(
-      Array.from(selectedTasks).map(async (task) => {
-        return flowResult(actionFunction(task, tokenRef.current))
-          .then(() => setSuccessCount((prev) => prev++))
-          .catch((error) => currentErrorMessages.push([task, error.message]));
-      }),
-    );
-    setIsLoading(false);
-    // If everything was successful, show a success message and close the modal.
-    if (currentErrorMessages.length === 0) {
-      dashboardState.lakehouseEntitlementsStore.applicationStore.notificationService.notifySuccess(
-        `${selectedTasks.length} selected contract requests have been ${action === 'approve' ? 'approved' : 'denied'} successfully.`,
-      );
-      handleClose();
-      LegendMarketplaceTelemetryHelper.logEvent_ActionDataContracts(
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .telemetryService,
-        selectedTasks,
-        pendingTaskContracts,
-        action === 'approve'
-          ? CONTRACT_ACTION.APPROVED
-          : CONTRACT_ACTION.DENIED,
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .identityService.currentUser,
-        undefined,
-      );
-    } else {
-      // If there were errors, we won't close the modal and will show the errors in the modal.
-      setErrorMessages(currentErrorMessages);
-      LegendMarketplaceTelemetryHelper.logEvent_ActionDataContracts(
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .telemetryService,
-        selectedTasks,
-        pendingTaskContracts,
-        action === 'approve'
-          ? CONTRACT_ACTION.APPROVED
-          : CONTRACT_ACTION.DENIED,
-        dashboardState.lakehouseEntitlementsStore.applicationStore
-          .identityService.currentUser,
-        currentErrorMessages.map((error) => error[1]),
-      );
-    }
-
-    // Refresh pending tasks and contracts after taking action
-    await flowResult(dashboardState.init(tokenRef.current));
-  };
-
-  if (action === undefined) {
-    return null;
-  }
-
   return (
-    <Dialog open={open} onClose={handleClose} fullWidth={true} maxWidth="md">
+    <Dialog open={true} onClose={onClose} fullWidth={true} maxWidth="md">
       <DialogTitle>
         {action === 'approve' ? 'Approve' : 'Deny'} Contract Requests
       </DialogTitle>
       <DialogContent className="marketplace-lakehouse-entitlements__data-contract-approval__content">
-        <CubesLoadingIndicator isLoading={isLoading}>
-          <CubesLoadingIndicatorIcon />
-        </CubesLoadingIndicator>
-        {!isLoading && errorMessages.length === 0 && (
-          <div>
-            {action === 'approve' ? 'Approve' : 'Deny'} {selectedTasks.length}{' '}
-            selected contract requests
-          </div>
+        {successCount > 0 && (
+          <Box className="marketplace-lakehouse-entitlements__data-contract-approval__success">
+            {successCount} selected contract requests were{' '}
+            {action === 'approve' ? 'approved' : 'denied'} successfully
+          </Box>
         )}
-        {!isLoading && errorMessages.length > 0 && (
-          <>
-            {successCount > 0 && (
-              <Box className="marketplace-lakehouse-entitlements__data-contract-approval__success">
-                {successCount} selected contract requests were{' '}
-                {action === 'approve' ? 'approved' : 'denied'} successfully
-              </Box>
-            )}
-            {errorMessages.map(([task, errorMessage]) => {
-              const contractId = task.accessRequestId;
-              const contract = pendingTaskContracts.find(
-                (c) => c.guid === contractId,
-              );
-              return (
-                <Box
-                  key={task.taskId}
-                  className="marketplace-lakehouse-entitlements__data-contract-approval__error"
-                >
-                  <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__content">
-                    Encountered an error{' '}
-                    {action === 'approve' ? 'approving' : 'denying'} request for{' '}
-                    <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
-                      <UserRenderer
-                        userId={task.consumer}
-                        applicationStore={marketplaceBaseStore.applicationStore}
-                        userSearchService={
-                          marketplaceBaseStore.userSearchService
-                        }
-                      />
-                    </div>{' '}
-                    for {startCase(contract?.resourceType.toLowerCase())}{' '}
-                    <span className="marketplace-lakehouse-text__emphasis">
-                      {contract?.accessPointGroup}
-                    </span>{' '}
-                    on Data Product{' '}
-                    <span className="marketplace-lakehouse-text__emphasis">
-                      {contract?.resourceId}
-                    </span>
-                    :
-                  </div>
-                  <div>
-                    <code>{errorMessage}</code>
-                  </div>
-                </Box>
-              );
-            })}
-          </>
-        )}
+        {errorMessages.map(([task, errorMessage]) => {
+          const contractId = task.accessRequestId;
+          const contract = pendingTaskContracts.find(
+            (c) => c.guid === contractId,
+          );
+          return (
+            <Box
+              key={task.taskId}
+              className="marketplace-lakehouse-entitlements__data-contract-approval__error"
+            >
+              <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__content">
+                Encountered an error{' '}
+                {action === 'approve' ? 'approving' : 'denying'} request for{' '}
+                <div className="marketplace-lakehouse-entitlements__data-contract-approval__error__user">
+                  <UserRenderer
+                    userId={task.consumer}
+                    applicationStore={marketplaceBaseStore.applicationStore}
+                    userSearchService={marketplaceBaseStore.userSearchService}
+                  />
+                </div>{' '}
+                for {startCase(contract?.resourceType.toLowerCase())}{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {contract?.accessPointGroup}
+                </span>{' '}
+                on Data Product{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {contract?.resourceId}
+                </span>
+                :
+              </div>
+              <div>
+                <code>{errorMessage}</code>
+              </div>
+            </Box>
+          );
+        })}
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={() => {
-            // eslint-disable-next-line no-void
-            void handleAction();
-          }}
-          variant="contained"
-          disabled={isLoading || errorMessages.length > 0}
-          color={action === 'approve' ? 'success' : 'error'}
-        >
-          {action === 'approve' ? 'Approve' : 'Deny'} Selected Contracts
-        </Button>
-        <Button onClick={handleClose} variant="outlined" disabled={isLoading}>
-          Cancel
+        <Button onClick={onClose} variant="outlined">
+          Close
         </Button>
       </DialogActions>
     </Dialog>
@@ -297,9 +192,15 @@ export const EntitlementsPendingTasksDashboard = observer(
     const loading = dashboardState.fetchingPendingTasksState.isInProgress;
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
-    const [selectedAction, setSelectedAction] = useState<
-      'approve' | 'deny' | undefined
-    >();
+    const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
+    const [bulkActionResults, setBulkActionResults] = useState<
+      | {
+          action: 'approve' | 'deny';
+          errorMessages: [V1_PendingTaskRecord, string][];
+          successCount: number;
+        }
+      | undefined
+    >(undefined);
     const selectedTaskIdsSet = dashboardState.selectedTaskIds;
     const [selectedRow, setSelectedRow] = useState<
       EntitlementsRow | undefined
@@ -321,6 +222,75 @@ export const EntitlementsPendingTasksDashboard = observer(
       selectedRowId,
     );
     const selectedContractGuid = getSelectedContractGuid(selectedRow);
+
+    const runBulkAction = async (
+      action: 'approve' | 'deny',
+      justification: string,
+    ): Promise<void> => {
+      const tasks =
+        pendingTasks?.filter((task) => selectedTaskIdsSet.has(task.taskId)) ??
+        [];
+      const actionFunction =
+        action === 'approve'
+          ? dashboardState.approve.bind(dashboardState)
+          : dashboardState.deny.bind(dashboardState);
+      const currentErrorMessages: [V1_PendingTaskRecord, string][] = [];
+      let successCount = 0;
+      await Promise.all(
+        tasks.map(async (task) =>
+          flowResult(actionFunction(task, tokenRef.current, justification))
+            .then(() => {
+              successCount += 1;
+            })
+            .catch((error) => currentErrorMessages.push([task, error.message])),
+        ),
+      );
+      if (currentErrorMessages.length === 0) {
+        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+          `${tasks.length} selected contract requests have been ${action === 'approve' ? 'approved' : 'denied'} successfully.`,
+        );
+      } else {
+        setBulkActionResults({
+          action,
+          errorMessages: currentErrorMessages,
+          successCount,
+        });
+      }
+      LegendMarketplaceTelemetryHelper.logEvent_ActionDataContracts(
+        marketplaceBaseStore.applicationStore.telemetryService,
+        tasks,
+        pendingTaskContracts,
+        action === 'approve'
+          ? CONTRACT_ACTION.APPROVED
+          : CONTRACT_ACTION.DENIED,
+        marketplaceBaseStore.applicationStore.identityService.currentUser,
+        currentErrorMessages.length > 0
+          ? currentErrorMessages.map((error) => error[1])
+          : undefined,
+      );
+
+      // Refresh pending tasks and contracts after taking action
+      await flowResult(dashboardState.init(tokenRef.current));
+    };
+
+    const handleBulkActionClick = (action: 'approve' | 'deny'): void => {
+      const count = selectedTaskIdsSet.size;
+      showTaskActionAlert({
+        applicationStore: marketplaceBaseStore.applicationStore,
+        title: `${action === 'approve' ? 'Approve' : 'Deny'} Contract Requests`,
+        message: `Please provide a business justification for ${action === 'approve' ? 'approving' : 'denying'} ${count} selected contract request${count === 1 ? '' : 's'}.`,
+        confirmLabel: action === 'approve' ? 'Approve' : 'Deny',
+        alertType:
+          action === 'approve'
+            ? ActionAlertType.STANDARD
+            : ActionAlertType.CAUTION,
+        requireJustification: true,
+        isLoading: isBulkActionLoading,
+        setIsLoading: setIsBulkActionLoading,
+        onConfirm: (justification) => runBulkAction(action, justification),
+        errorPrefix: `Error ${action === 'approve' ? 'approving' : 'denying'} contract requests`,
+      });
+    };
 
     // Callbacks
 
@@ -791,16 +761,20 @@ export const EntitlementsPendingTasksDashboard = observer(
             <Button
               variant="contained"
               color="success"
-              disabled={!selectedTaskIdsSet.size || loading}
-              onClick={() => setSelectedAction('approve')}
+              disabled={
+                !selectedTaskIdsSet.size || loading || isBulkActionLoading
+              }
+              onClick={() => handleBulkActionClick('approve')}
             >
               Approve {selectedTaskIdsSet.size} tasks
             </Button>
             <Button
               variant="contained"
               color="error"
-              disabled={!selectedTaskIdsSet.size || loading}
-              onClick={() => setSelectedAction('deny')}
+              disabled={
+                !selectedTaskIdsSet.size || loading || isBulkActionLoading
+              }
+              onClick={() => handleBulkActionClick('deny')}
             >
               Deny {selectedTaskIdsSet.size} tasks
             </Button>
@@ -902,19 +876,16 @@ export const EntitlementsPendingTasksDashboard = observer(
             )}
           </Box>
         </Box>
-        <EntitlementsDashboardActionModal
-          open={selectedAction !== undefined}
-          selectedTasks={
-            pendingTasks?.filter((task) =>
-              selectedTaskIdsSet.has(task.taskId),
-            ) ?? []
-          }
-          dashboardState={dashboardState}
-          onClose={() => setSelectedAction(undefined)}
-          action={selectedAction}
-          pendingTaskContracts={pendingTaskContracts}
-          marketplaceBaseStore={marketplaceBaseStore}
-        />
+        {bulkActionResults && (
+          <EntitlementsDashboardActionResultsModal
+            action={bulkActionResults.action}
+            errorMessages={bulkActionResults.errorMessages}
+            successCount={bulkActionResults.successCount}
+            pendingTaskContracts={pendingTaskContracts}
+            marketplaceBaseStore={marketplaceBaseStore}
+            onClose={() => setBulkActionResults(undefined)}
+          />
+        )}
         {selectedRow !== undefined && selectedViewerState !== undefined && (
           <DataAccessRequestViewer
             open={true}

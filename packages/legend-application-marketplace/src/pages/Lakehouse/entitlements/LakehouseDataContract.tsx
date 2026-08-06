@@ -15,6 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
+import { ActionAlertType } from '@finos/legend-application';
 import { withLegendMarketplaceProductViewerStore } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
@@ -48,6 +49,7 @@ import {
   DataContractViewerState,
   LakehouseResiliencyDisclaimer,
 } from '@finos/legend-extension-dsl-data-product';
+import { showTaskActionAlert } from './showTaskActionAlert.js';
 
 export const LakehouseDataContractTask =
   withLegendMarketplaceProductViewerStore(
@@ -220,11 +222,12 @@ export const LakehouseDataContractTask =
         }
       };
 
-      const handleApprove = async () => {
+      const handleApprove = async (justification: string) => {
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.approveTask(
             currentTaskId,
             tokenRef.current,
+            justification,
           );
         const change = deserialize(
           V1_TaskStatusChangeResponseModelSchema,
@@ -243,11 +246,12 @@ export const LakehouseDataContractTask =
         await handleRefresh();
       };
 
-      const handleDeny = async () => {
+      const handleDeny = async (justification: string) => {
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.denyTask(
             currentTaskId,
             tokenRef.current,
+            justification,
           );
         const change = deserialize(
           V1_TaskStatusChangeResponseModelSchema,
@@ -267,35 +271,35 @@ export const LakehouseDataContractTask =
       };
 
       const handleApproveClick = () => {
-        if (!isLoading) {
-          setIsLoading(true);
-          handleApprove()
-            .catch((error) => {
-              assertErrorThrown(error);
-              marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                `Error approving task: ${error.message}`,
-              );
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
-        }
+        showTaskActionAlert({
+          applicationStore: marketplaceBaseStore.applicationStore,
+          title: 'Approve Task',
+          message:
+            'Please provide a business justification for approving this task.',
+          confirmLabel: 'Approve',
+          alertType: ActionAlertType.STANDARD,
+          requireJustification: true,
+          isLoading,
+          setIsLoading,
+          onConfirm: (justification) => handleApprove(justification),
+          errorPrefix: 'Error approving task',
+        });
       };
 
       const handleDenyClick = () => {
-        if (!isLoading) {
-          setIsLoading(true);
-          handleDeny()
-            .catch((error) => {
-              assertErrorThrown(error);
-              marketplaceBaseStore.applicationStore.notificationService.notifyError(
-                `Error denying task: ${error.message}`,
-              );
-            })
-            .finally(() => {
-              setIsLoading(false);
-            });
-        }
+        showTaskActionAlert({
+          applicationStore: marketplaceBaseStore.applicationStore,
+          title: 'Deny Task',
+          message:
+            'Please provide a business justification for denying this task.',
+          confirmLabel: 'Deny',
+          alertType: ActionAlertType.CAUTION,
+          requireJustification: true,
+          isLoading,
+          setIsLoading,
+          onConfirm: (justification) => handleDeny(justification),
+          errorPrefix: 'Error denying task',
+        });
       };
 
       return (
