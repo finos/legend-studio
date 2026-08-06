@@ -87,6 +87,7 @@ import type {
   CompilationResult,
   TextCompilationResult,
 } from './action/compilation/CompilationResult.js';
+import type { EngineError } from './action/EngineError.js';
 import type {
   ParameterValue,
   PostValidationAssertionResult,
@@ -118,7 +119,6 @@ import type { ArtifactGenerationExtensionResult } from './action/generation/Arti
 import type { IngestionDefinitionArtifact } from './action/generation/IngestionDefinitionArtifact.js';
 import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageableElements/service/TestGenerationResult.js';
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
-import type { EngineError } from './action/EngineError.js';
 import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
 import type { CodeCompletionResult } from './action/compilation/Completion.js';
@@ -208,6 +208,16 @@ export interface ServiceRegistrationOptions {
   TEMPORARY__useGenerateLineage?: boolean | undefined;
   TEMPORARY__useGenerateOpenApi?: boolean | undefined;
 }
+
+export type LambdasReturnTypeResult = {
+  results: Map<string, string>;
+  errors: Map<string, EngineError>;
+};
+
+export type BatchLambdasRelationTypeResult = {
+  results: Map<string, RelationTypeMetadata>;
+  errors: Map<string, EngineError>;
+};
 
 export abstract class AbstractPureGraphManagerExtension {
   graphManager: AbstractPureGraphManager;
@@ -444,10 +454,13 @@ export abstract class AbstractPureGraphManager {
   abstract getLambdasReturnType(
     lambdas: Map<string, RawLambda>,
     graph: PureModel,
-  ): Promise<{
-    results: Map<string, string>;
-    errors: Map<string, EngineError>;
-  }>;
+  ): Promise<LambdasReturnTypeResult>;
+
+  abstract getBatchLambdasRelationType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<BatchLambdasRelationTypeResult>;
 
   // ------------------------------------------- Relation -------------------------------------------
 

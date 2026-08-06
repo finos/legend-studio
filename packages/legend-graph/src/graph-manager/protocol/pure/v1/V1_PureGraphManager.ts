@@ -282,7 +282,10 @@ import { CompilationWarning } from '../../../action/compilation/CompilationWarni
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
+import {
+  V1_BatchLambdaRelationTypeInput,
+  V1_LambdaReturnTypeInput,
+} from './engine/compilation/V1_LambdaReturnType.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
@@ -343,6 +346,10 @@ import {
 } from './engine/service/V1_TableRowIdentifiers.js';
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
+import type {
+  BatchLambdasRelationTypeResult,
+  LambdasReturnTypeResult,
+} from '../../../AbstractPureGraphManager.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_SnowflakeM2MUdf } from './model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import {
@@ -2107,6 +2114,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  override getBatchLambdasRelationType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<BatchLambdasRelationTypeResult> {
+    return this.engine.getBatchLambdasRelationTypeFromRawInput(
+      this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
+    );
+  }
+
   getCodeComplete(
     codeBlock: string,
     graph: PureModel,
@@ -2136,11 +2153,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambdas: Map<string, RawLambda>,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): Promise<{
-    results: Map<string, string>;
-    errors: Map<string, EngineError>;
-  }> {
-    const returnTypes = {
+  ): Promise<LambdasReturnTypeResult> {
+    const returnTypes: LambdasReturnTypeResult = {
       results: new Map<string, string>(),
       errors: new Map<string, EngineError>(),
     };
@@ -2169,10 +2183,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     key: string,
     lambda: RawLambda,
     plainGraph: PlainObject<V1_PureModelContext>,
-    finalResult: {
-      results: Map<string, string>;
-      errors: Map<string, EngineError>;
-    },
+    finalResult: LambdasReturnTypeResult,
     options?: { keepSourceInformation?: boolean },
   ): Promise<void> {
     try {
@@ -2303,6 +2314,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  private buildBatchLambdasRelationTypeInput(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): V1_BatchLambdaRelationTypeInput {
+    return new V1_BatchLambdaRelationTypeInput(
+      this.getFullGraphModelContext(
+        graph,
+        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      ),
+      this.buildV1BatchRawLambdas(lambdas, options),
+    );
+  }
+
   private buildV1RawLambda(
     lambda: RawLambda,
     options?: { keepSourceInformation?: boolean },
@@ -2318,6 +2343,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           .build(),
       ),
     ) as V1_RawLambda;
+  }
+
+  private buildV1BatchRawLambdas(
+    lambdas: Map<string, RawLambda>,
+    options?: { keepSourceInformation?: boolean },
+  ): Record<string, V1_RawLambda> {
+    const context = new V1_GraphTransformerContextBuilder(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    )
+      .withKeepSourceInformationFlag(Boolean(options?.keepSourceInformation))
+      .build();
+    const result: Record<string, V1_RawLambda> = {};
+    lambdas.forEach((lambda, key) => {
+      result[key] = lambda.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawLambda;
+    });
+    return result;
   }
 
   // ------------------------------------------- Generation -------------------------------------------
