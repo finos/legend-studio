@@ -28,7 +28,6 @@ import {
 } from '@finos/legend-art';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
-import { QueryChat } from './QueryChat.js';
 
 const QueryBuilderUnsupportedQueryViewer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -82,12 +81,6 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
             queryBuilderState={queryBuilderState}
           />
         </ResizablePanel>
-        {queryBuilderState.isQueryChatOpened && <ResizablePanelSplitter />}
-        {queryBuilderState.isQueryChatOpened && (
-          <ResizablePanel size={450}>
-            <QueryChat queryBuilderState={queryBuilderState} />
-          </ResizablePanel>
-        )}
       </ResizablePanelGroup>
     );
   },

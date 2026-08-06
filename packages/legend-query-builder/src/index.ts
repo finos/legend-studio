@@ -46,7 +46,6 @@ export {
   QueryBuilderExecutionContextState,
   QueryBuilderEmbeddedFromExecutionContextState,
 } from './stores/QueryBuilderExecutionContextState.js';
-export { QueryChatState } from './stores/QueryChatState.js';
 export {
   getTDSColumnDerivedProperyFromType,
   buildTDSSortTypeExpression,
