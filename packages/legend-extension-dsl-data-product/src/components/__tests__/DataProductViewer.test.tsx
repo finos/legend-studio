@@ -342,77 +342,89 @@ const setupLakehouseDataProductTest = async (
   }
 
   // engineServerClient spies
-  createSpy(
-    dataProductViewerState.engineServerClient,
-    'lambdaRelationType',
-  ).mockImplementation(async () => {
-    return new Promise((resolve) => {
-      const response = {
-        _type: 'relationType',
-        columns: [
+  const relationTypeResponse = {
+    _type: 'relationType',
+    columns: [
+      {
+        name: 'varchar_val',
+        description: 'Varchar Column Description from field',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        taggedValues: [
           {
-            name: 'varchar_val',
-            description: 'Varchar Column Description from field',
-            multiplicity: {
-              lowerBound: 1,
-              upperBound: 1,
+            tag: {
+              profile: 'meta::pure::profiles::doc',
+              value: 'doc',
             },
-            taggedValues: [
-              {
-                tag: {
-                  profile: 'meta::pure::profiles::doc',
-                  value: 'doc',
-                },
-                value: 'Varchar Column Description from tagged value',
-              },
-            ],
-            genericType: {
-              multiplicityArguments: [],
-              typeArguments: [],
-              rawType: {
-                _type: 'packageableType',
-                fullPath: 'meta::pure::precisePrimitives::Varchar',
-              },
-              typeVariableValues: [{ _type: 'integer', value: 32 }],
-            },
-          },
-          {
-            name: 'int_val',
-            multiplicity: {
-              lowerBound: 1,
-              upperBound: 1,
-            },
-            taggedValues: [
-              {
-                tag: {
-                  profile: 'meta::pure::profiles::doc',
-                  value: 'doc',
-                },
-                value: 'Int Column Description from tagged value',
-              },
-            ],
-            genericType: {
-              multiplicityArguments: [],
-              typeArguments: [],
-              rawType: {
-                _type: 'packageableType',
-                fullPath: 'meta::pure::precisePrimitives::Int',
-              },
-              typeVariableValues: [],
-            },
+            value: 'Varchar Column Description from tagged value',
           },
         ],
-      };
-
-      if (mockGenerationFiles) {
-        // Simulate engine response taking some time to ensure the artifact is used
-        // instead of the engine response
-        setTimeout(() => resolve(response), 500);
-      } else {
-        resolve(response);
-      }
-    });
-  });
+        genericType: {
+          multiplicityArguments: [],
+          typeArguments: [],
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'meta::pure::precisePrimitives::Varchar',
+          },
+          typeVariableValues: [{ _type: 'integer', value: 32 }],
+        },
+      },
+      {
+        name: 'int_val',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        taggedValues: [
+          {
+            tag: {
+              profile: 'meta::pure::profiles::doc',
+              value: 'doc',
+            },
+            value: 'Int Column Description from tagged value',
+          },
+        ],
+        genericType: {
+          multiplicityArguments: [],
+          typeArguments: [],
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'meta::pure::precisePrimitives::Int',
+          },
+          typeVariableValues: [],
+        },
+      },
+    ],
+  };
+  const batchRelationTypeResults = Object.fromEntries(
+    dataProduct.accessPointGroups.flatMap((apg) =>
+      apg.accessPoints.map((ap) => [
+        `${apg.id}::${ap.id}`,
+        relationTypeResponse,
+      ]),
+    ),
+  );
+  const batchRelationTypeResponse = {
+    results: batchRelationTypeResults,
+    errors: {},
+  };
+  createSpy(
+    dataProductViewerState.engineServerClient,
+    'batchLambdasRelationType',
+  ).mockImplementation(
+    async () =>
+      new Promise((resolve) => {
+        if (mockGenerationFiles) {
+          // Simulate engine response taking some time to ensure the artifact is used
+          // instead of the engine response
+          setTimeout(() => resolve(batchRelationTypeResponse), 500);
+        } else {
+          resolve(batchRelationTypeResponse);
+        }
+      }),
+  );
 
   createSpy(
     dataProductViewerState.engineServerClient,
