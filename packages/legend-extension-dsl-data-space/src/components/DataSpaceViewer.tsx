@@ -25,9 +25,9 @@ import {
   MoreVerticalIcon,
   PlayIcon,
   VerifiedIcon,
-  SparkleStarsIcon,
   clsx,
 } from '@finos/legend-art';
+import { LegendAIChatToggle } from '@finos/legend-lego/legend-ai';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
@@ -436,18 +436,10 @@ export const DataSpaceViewer = observer(
               />
             </div>
             {!isAIChatOpen && (
-              <button
-                className="legend-ai-chat-toggle"
-                onClick={handleOpenAIChat}
-                title={`Ask ${dsTitle}`}
-              >
-                <span className="legend-ai-chat-toggle__icon">
-                  <SparkleStarsIcon />
-                </span>
-                <span className="legend-ai-chat-toggle__label">
-                  Ask {dsTitle}
-                </span>
-              </button>
+              <LegendAIChatToggle
+                label={`Ask ${dsTitle}`}
+                onOpen={handleOpenAIChat}
+              />
             )}
           </>
         )}

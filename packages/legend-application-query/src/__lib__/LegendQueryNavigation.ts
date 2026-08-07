@@ -213,6 +213,9 @@ export enum LEGEND_QUERY_SETUP_QUERY_PARAM_TOKEN {
 
 export enum LEGEND_QUERY_QUERY_PARAM_TOKEN {
   SERVICE_EXECUTION_KEY = 'executionKey',
+  // Identifies a specific revision from a query's version history
+  // (the revision's `version` identifier).
+  REVISION_ID = 'revisionId',
 }
 
 export type QuerySetupQueryParams = {
@@ -326,13 +329,37 @@ export type ServiceQueryCreatorQueryParams = {
   [LEGEND_QUERY_QUERY_PARAM_TOKEN.SERVICE_EXECUTION_KEY]?: string | undefined;
 };
 
-export const generateExistingQueryEditorRoute = (queryId: string): string =>
-  generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY, {
+export const generateExistingQueryEditorRoute = (
+  queryId: string,
+  revisionId?: string | undefined,
+  // fully-formed extra query parameters (e.g. `p:`-prefixed parameter-value
+  // overrides) to carry across the navigation
+  extraQueryParams?: Record<string, string> | undefined,
+): string => {
+  const path = generatePath(LEGEND_QUERY_ROUTE_PATTERN.EDIT_EXISTING_QUERY, {
     [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID]: queryId,
   });
+  const queryParams: Record<string, string> = {};
+  if (revisionId !== undefined) {
+    queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID] =
+      encodeURIComponent(revisionId);
+  }
+  if (extraQueryParams) {
+    Object.entries(extraQueryParams).forEach(([key, value]) => {
+      queryParams[key] = encodeURIComponent(value);
+    });
+  }
+  return Object.keys(queryParams).length
+    ? addQueryParametersToUrl(path, stringifyQueryParams(queryParams))
+    : path;
+};
 
 export type ExistingQueryEditorPathParams = {
   [LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID]: string;
+};
+
+export type ExistingQueryEditorQueryParams = {
+  [LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID]?: string | undefined;
 };
 
 /**

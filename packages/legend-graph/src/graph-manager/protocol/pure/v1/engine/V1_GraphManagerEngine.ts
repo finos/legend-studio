@@ -26,7 +26,10 @@ import {
 } from '../../../../action/generation/GenerationConfigurationDescription.js';
 import { type V1_GrammarParserBatchInputEntry } from './V1_EngineServerClient.js';
 import { type V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
-import { type V1_LambdaReturnTypeInput } from './compilation/V1_LambdaReturnType.js';
+import {
+  type V1_LambdaReturnTypeInput,
+  type V1_BatchLambdaRelationTypeInput,
+} from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import { type V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
@@ -49,6 +52,7 @@ import { type V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecific
 import type {
   ExecutionOptions,
   TEMPORARY__EngineSetupConfig,
+  BatchLambdasRelationTypeResult,
 } from '../../../../AbstractPureGraphManager.js';
 import type { ExternalFormatDescription } from '../../../../action/externalFormat/ExternalFormatDescription.js';
 import { type V1_ExternalFormatModelGenerationInput } from './externalFormat/V1_ExternalFormatModelGeneration.js';
@@ -217,6 +221,10 @@ export interface V1_GraphManagerEngine {
     rawInput: V1_LambdaReturnTypeInput,
   ): Promise<RelationTypeMetadata>;
 
+  getBatchLambdasRelationTypeFromRawInput(
+    rawInput: V1_BatchLambdaRelationTypeInput,
+  ): Promise<BatchLambdasRelationTypeResult>;
+
   getCodeCompletion(
     rawInput: V1_CompleteCodeInput,
   ): Promise<CodeCompletionResult>;
@@ -356,6 +364,11 @@ export interface V1_GraphManagerEngine {
   getQueries: (queryIds: string[]) => Promise<V1_LightQuery[]>;
 
   getQuery: (queryId: string) => Promise<V1_Query>;
+
+  getQueryHistory: (
+    queryId: string,
+    version?: string | undefined,
+  ) => Promise<V1_Query[]>;
 
   createQuery: (query: V1_Query) => Promise<V1_Query>;
 

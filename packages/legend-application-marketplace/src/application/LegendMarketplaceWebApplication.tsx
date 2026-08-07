@@ -300,7 +300,9 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
-              element={<LegendMarketplaceAgents />}
+              element={React.createElement(
+                useProtectedPage(LegendMarketplaceAgents),
+              )}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS}
