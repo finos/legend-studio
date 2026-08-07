@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.21.30
+
+### Patch Changes
+
+- [#5409](https://github.com/finos/legend-studio/pull/5409) [`2f7fb59`](https://github.com/finos/legend-studio/commit/2f7fb59993fc1eb11383fe9a2fef6f05bf2d4a9d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `IngestionDefinitionArtifactViewer` for viewing generated ingest definition artifacts (mat view explorer, schema grid, SQL sub-tabs for view function / barrier / select, JSON view, fullscreen toggle). Wire a "View SQL" action into the Ingest Definition editor that generates and caches the artifact by hash. Extend `tryToFormatSql` with an optional `language` parameter (defaults to `mysql`) so the viewer can format Snowflake SQL.
+
+- [#5400](https://github.com/finos/legend-studio/pull/5400) [`7c7ddd6`](https://github.com/finos/legend-studio/commit/7c7ddd60830d0eeed54a889ee36c64e9479451c0) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add support for lambda-based relation function class mapping (`~src` sourceLambda on class mapping, expression-based `valueFn` on property mapping).
+
+- [#5413](https://github.com/finos/legend-studio/pull/5413) [`14da71f`](https://github.com/finos/legend-studio/commit/14da71fa602c229f2804570f88bdcd482e4bb2e3) ([@jackp5150](https://github.com/jackp5150)) - Added bulk lambda api to DataProductEditor to retrieve all monaco editor lambdas in one api call
+
 ## 28.21.29
 
 ### Patch Changes

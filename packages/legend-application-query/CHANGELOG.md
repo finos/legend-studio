@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.40
+
+### Patch Changes
+
+- [#5401](https://github.com/finos/legend-studio/pull/5401) [`f6d3aa8`](https://github.com/finos/legend-studio/commit/f6d3aa87a19a7553e59a4f2efcfac68c4fc46384) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add support for viewing and loading a query's version history in Legend Query. A saved query can be opened from the `/query/{queryId}/history` endpoint, and a specific revision (identified by its `version`) can be loaded via a new `revisionId` route parameter. The history is surfaced through a "Query History" action in the query editor help menu and a "Show Query History" action per query in the load-query dialog.
+
 ## 13.8.39
 
 ## 13.8.38

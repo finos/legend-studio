@@ -1,5 +1,11 @@
 # @finos/legend-art
 
+## 7.1.159
+
+### Patch Changes
+
+- [#5412](https://github.com/finos/legend-studio/pull/5412) [`21903b4`](https://github.com/finos/legend-studio/commit/21903b4ded183a57a02f620b2d8296d2641fec70) ([@TharunRajeev](https://github.com/TharunRajeev)) - Added Databricks and snowflake logo, color.
+
 ## 7.1.158
 
 ## 7.1.157
