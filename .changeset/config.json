@@ -19,5 +19,5 @@
   },
   "updateInternalDependencies": "patch",
   "bumpVersionsWithWorkspaceProtocolOnly": true,
-  "ignore": ["@finos/legend-fixture-*", "@finos/legend-internal-*"]
+  "ignore": ["@finos/legend-fixture-*", "@finos/legend-internal-*", "@finos/legend-manual-tests"]
 }
