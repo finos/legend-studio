@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.339
+
+### Patch Changes
+
+- [#5405](https://github.com/finos/legend-studio/pull/5405) [`9138494`](https://github.com/finos/legend-studio/commit/913849455b974be159206f8763c74414f0037c1e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove the "Convert to DataProduct" feature (button, merge/create modal, and associated flows) from the DataSpace editor.
+
 ## 0.1.338
 
 ### Patch Changes

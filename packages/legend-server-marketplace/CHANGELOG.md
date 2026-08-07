@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.2.0
+
+### Minor Changes
+
+- [#5425](https://github.com/finos/legend-studio/pull/5425) [`7604941`](https://github.com/finos/legend-studio/commit/76049418e1e3dba6f728a481b2a7b549b44356b2) ([@nguyenqchi](https://github.com/nguyenqchi)) - Added an "Access" filter (Enterprise, Partial Enterprise, Restricted, Undefined) to the Marketplace search filters panel, and an "Undefined" node to the Taxonomy filter tree for data products without a taxonomy tag.
+
 ## 0.1.88
 
 ## 0.1.87
