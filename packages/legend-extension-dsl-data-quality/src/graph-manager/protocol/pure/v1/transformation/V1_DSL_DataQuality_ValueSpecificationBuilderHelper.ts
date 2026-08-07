@@ -32,6 +32,10 @@ import {
   type V1_DataQualityRelationValidationsConfiguration,
   type V1_DataQualityServiceValidationsConfiguration,
   type V1_DataQualityRelationComparisonConfiguration,
+  type V1_DataQualityRelationComparisonTest,
+  type V1_DataQualityRelationComparisonTestSuite,
+  type V1_DataQualityRelationValidationTest,
+  type V1_DataQualityRelationValidationTestSuite,
   V1_DataSpaceDataQualityExecutionContext,
   V1_MappingAndRuntimeDataQualityExecutionContext,
   V1_MD5HashStrategy,
@@ -45,6 +49,14 @@ import {
   MD5HashStrategy,
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
+  DataQualityRelationComparisonTest,
+  DataQualityRelationComparisonTestData,
+  DataQualityRelationComparisonTestSuite,
+  DataQualityRelationValidationTest,
+  DataQualityRelationValidationTestData,
+  DataQualityRelationValidationTestSuite,
+} from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityTest.js';
+import {
   type V1_GraphBuilderContext,
   type Class,
   type GraphFetchTree,
@@ -53,13 +65,17 @@ import {
   type PackageableRuntime,
   type PropertyGraphFetchTree,
   type RootGraphFetchTree,
+  type V1_FunctionTestData,
   type V1_GraphFetchTree,
   type V1_PropertyGraphFetchTree,
   type V1_RootGraphFetchTree,
+  FunctionTestData,
   V1_ProcessingContext,
   V1_buildPropertyGraphFetchTree,
   V1_buildRootGraphFetchTree,
   V1_buildRawLambdaWithResolvedPaths,
+  V1_buildEmbeddedData,
+  V1_buildTestAssertion,
   V1_buildFullPath,
   V1_buildVariable,
 } from '@finos/legend-graph';
@@ -334,6 +350,14 @@ export function V1_buildDataQualityRelationValidationConfiguration(
         false,
       ) as PackageableElementImplicitReference<PackageableRuntime>)
     : undefined;
+  element.tests = elementProtocol.testSuites.map((suite) => {
+    const built = V1_buildDataQualityRelationValidationTestSuite(
+      suite,
+      context,
+    );
+    built.__parent = element;
+    return built;
+  });
 }
 
 export function V1_buildDataQualityServiceValidationConfiguration(
@@ -393,4 +417,96 @@ export function V1_buildDataQualityRelationComparisonConfiguration(
     );
   }
   element.expectedMatch = elementProtocol.expectedMatch;
+  element.tests = elementProtocol.testSuites.map((suite) => {
+    const built = V1_buildDataQualityRelationComparisonTestSuite(
+      suite,
+      context,
+    );
+    built.__parent = element;
+    return built;
+  });
+}
+
+function V1_buildDataQualityStoreTestData(
+  protocol: V1_FunctionTestData,
+  context: V1_GraphBuilderContext,
+): FunctionTestData {
+  const storeTestData = new FunctionTestData();
+  storeTestData.doc = protocol.doc;
+  storeTestData.element = context.resolveElement(
+    protocol.packageableElementPointer.path,
+    false,
+  );
+  storeTestData.data = V1_buildEmbeddedData(protocol.data, context);
+  return storeTestData;
+}
+
+function V1_buildDataQualityRelationValidationTest(
+  protocol: V1_DataQualityRelationValidationTest,
+  parentSuite: DataQualityRelationValidationTestSuite,
+  context: V1_GraphBuilderContext,
+): DataQualityRelationValidationTest {
+  const test = new DataQualityRelationValidationTest();
+  test.id = protocol.id;
+  test.doc = protocol.doc;
+  test.__parent = parentSuite;
+  test.assertions = protocol.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, test, context),
+  );
+  return test;
+}
+
+export function V1_buildDataQualityRelationValidationTestSuite(
+  protocol: V1_DataQualityRelationValidationTestSuite,
+  context: V1_GraphBuilderContext,
+): DataQualityRelationValidationTestSuite {
+  const testSuite = new DataQualityRelationValidationTestSuite();
+  testSuite.id = protocol.id;
+  testSuite.doc = protocol.doc;
+  if (protocol.testData) {
+    const wrapper = new DataQualityRelationValidationTestData();
+    wrapper.testData = protocol.testData.testData.map((data) =>
+      V1_buildDataQualityStoreTestData(data, context),
+    );
+    testSuite.testData = wrapper;
+  }
+  testSuite.tests = protocol.tests.map((test) =>
+    V1_buildDataQualityRelationValidationTest(test, testSuite, context),
+  );
+  return testSuite;
+}
+
+function V1_buildDataQualityRelationComparisonTest(
+  protocol: V1_DataQualityRelationComparisonTest,
+  parentSuite: DataQualityRelationComparisonTestSuite,
+  context: V1_GraphBuilderContext,
+): DataQualityRelationComparisonTest {
+  const test = new DataQualityRelationComparisonTest();
+  test.id = protocol.id;
+  test.doc = protocol.doc;
+  test.__parent = parentSuite;
+  test.assertions = protocol.assertions.map((assertion) =>
+    V1_buildTestAssertion(assertion, test, context),
+  );
+  return test;
+}
+
+export function V1_buildDataQualityRelationComparisonTestSuite(
+  protocol: V1_DataQualityRelationComparisonTestSuite,
+  context: V1_GraphBuilderContext,
+): DataQualityRelationComparisonTestSuite {
+  const testSuite = new DataQualityRelationComparisonTestSuite();
+  testSuite.id = protocol.id;
+  testSuite.doc = protocol.doc;
+  if (protocol.testData) {
+    const wrapper = new DataQualityRelationComparisonTestData();
+    wrapper.testData = protocol.testData.testData.map((data) =>
+      V1_buildDataQualityStoreTestData(data, context),
+    );
+    testSuite.testData = wrapper;
+  }
+  testSuite.tests = protocol.tests.map((test) =>
+    V1_buildDataQualityRelationComparisonTest(test, testSuite, context),
+  );
+  return testSuite;
 }

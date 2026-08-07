@@ -124,7 +124,7 @@ export class ModelStoreData extends EmbeddedData implements Hashable {
 }
 
 export class RelationRowTestData implements Hashable {
-  values!: string[];
+  values: string[] = [];
 
   get hashCode(): string {
     return hashArray([
