@@ -67,10 +67,6 @@ export type WarehouseEntitlementRender = {
   renderer: (dataAccessState: DataAccessState) => React.ReactNode;
 };
 
-export type QueryChatRenderer = (
-  queryBuilderState: QueryBuilderState,
-) => React.ReactNode;
-
 export type TemplateQueryPanelContentRenderer = (
   queryBuilderState: QueryBuilderState,
 ) => React.ReactNode;
@@ -134,11 +130,6 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of query usage configurations
    */
   getExtraQueryUsageConfigurations?(): QueryExportUsageConfiguration[];
-
-  /**
-   * Get the list of query chat configurations
-   */
-  getExtraQueryChatRenderers?(): QueryChatRenderer[];
 
   /**
    * Get the list of template query panel content render
