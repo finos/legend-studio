@@ -39,6 +39,7 @@ checkProjectReferenceConfig({
   excludePackagePatterns: [
     '@finos/legend-manual-tests',
     '@finos/legend-application-*-deployment',
+    '@finos/legend-application-*-e2e',
   ],
   excludeReferencePatterns: ['**/tsconfig.package.json'],
 });
