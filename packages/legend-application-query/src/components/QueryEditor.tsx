@@ -1100,16 +1100,6 @@ export const QueryEditor = observer(() => {
     }
   };
 
-  //open legend ai query chat
-  const openQueryChat = (): void => {
-    if (!editorStore.queryBuilderState?.isQueryChatOpened) {
-      LegendQueryTelemetryHelper.logEvent_QueryChatOpened(
-        applicationStore.telemetryService,
-      );
-      editorStore.queryBuilderState?.setIsQueryChatOpened(true);
-    }
-  };
-
   useEffect(() => {
     flowResult(editorStore.initialize()).catch(
       applicationStore.alertUnhandledError,
