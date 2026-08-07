@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { flowResult } from 'mobx';
 import {
   Drawer,
@@ -44,30 +44,14 @@ import {
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { CartStore } from '../../stores/cart/CartStore.js';
-import {
-  ActionAlertActionType,
-  ActionAlertType,
-  useApplicationStore,
-} from '@finos/legend-application';
-import {
-  TerminalItemType,
-  type CartItem,
-} from '@finos/legend-server-marketplace';
+import { useApplicationStore } from '@finos/legend-application';
+import { type CartItem } from '@finos/legend-server-marketplace';
 import { formatItemPrice } from '../ProviderCard/orderProfileUtils.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const VENDOR_PROFILE_CATEGORY = 'vendor profile';
-const ALERT_MESSAGE_CLASS = 'legend-marketplace-cart-drawer__alert-message';
-const CANCEL_ACTION = {
-  label: 'Cancel',
-  type: ActionAlertActionType.PROCEED,
-  default: true,
-};
-
-const isParentItem = (item: CartItem): boolean =>
-  item.category === TerminalItemType.TERMINAL ||
-  item.category.toLowerCase() === VENDOR_PROFILE_CATEGORY;
+const MANDATORY_ADDON_TOOLTIP =
+  'This is a mandatory add-on included with the vendor profile.';
 
 // ─── Cart Item Card (Add-on) ─────────────────────────────────────────────────
 
@@ -108,7 +92,7 @@ const CartAddonCard = (props: {
           </Typography>
           {item.isMandatory && (
             <Tooltip
-              title="This is a mandatory add-on included with the vendor profile."
+              title={MANDATORY_ADDON_TOOLTIP}
               arrow={true}
               placement="top"
             >
@@ -119,11 +103,7 @@ const CartAddonCard = (props: {
           )}
         </Box>
         {item.isMandatory ? (
-          <Tooltip
-            title="This is a mandatory add-on included with the vendor profile."
-            arrow={true}
-            placement="top"
-          >
+          <Tooltip title={MANDATORY_ADDON_TOOLTIP} arrow={true} placement="top">
             <span>{removeButton}</span>
           </Tooltip>
         ) : (
@@ -140,10 +120,7 @@ const CartAddonCard = (props: {
           variant="body2"
           className="legend-marketplace-cart-drawer__addon-card__price"
         >
-          {item.price.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-          })}
+          {formatItemPrice(item.price)}
           <span className="legend-marketplace-cart-drawer__addon-card__price-suffix">
             /month
           </span>
@@ -174,9 +151,17 @@ const CartSummaryBar = (props: { formattedTotal: string }): React.ReactNode => {
 // ─── Vendor Group Header (Parent Card) ───────────────────────────────────────
 
 const CartVendorGroupHeader = (props: {
-  item: CartItem;
+  parentItem: CartItem | undefined;
+  displayParent: {
+    providerName: string;
+    productName: string;
+    categoryLabel: string;
+    monthlyPrice: number | undefined;
+  };
   vendorGroup: CartItem[];
   addons: CartItem[];
+  addonTotalPrice: number;
+  addonLabel: string;
   isExpanded: boolean;
   isSynthetic: boolean;
   onToggle: () => void;
@@ -185,9 +170,12 @@ const CartVendorGroupHeader = (props: {
   disabled: boolean;
 }): React.ReactNode => {
   const {
-    item,
+    parentItem,
+    displayParent,
     vendorGroup,
     addons,
+    addonTotalPrice,
+    addonLabel,
     isExpanded,
     isSynthetic,
     onToggle,
@@ -195,9 +183,6 @@ const CartVendorGroupHeader = (props: {
     onDeleteSyntheticGroup,
     disabled,
   } = props;
-
-  const addonTotalPrice = addons.reduce((sum, addon) => sum + addon.price, 0);
-  const addonLabel = `${addons.length} add-on${addons.length === 1 ? '' : 's'}`;
 
   return (
     <Box className="legend-marketplace-cart-drawer__vendor-group">
@@ -212,14 +197,14 @@ const CartVendorGroupHeader = (props: {
               variant="body2"
               className="legend-marketplace-cart-drawer__item-card__provider-name"
             >
-              {item.providerName}
+              {displayParent.providerName}
             </Typography>
-            <Tooltip title={item.productName} placement="top">
+            <Tooltip title={displayParent.productName} placement="top">
               <Typography
                 variant="h6"
                 className="legend-marketplace-cart-drawer__item-card__name"
               >
-                {item.productName}
+                {displayParent.productName}
               </Typography>
             </Tooltip>
           </Box>
@@ -228,14 +213,18 @@ const CartVendorGroupHeader = (props: {
             onClick={
               isSynthetic
                 ? () => onDeleteSyntheticGroup(vendorGroup)
-                : () => onDelete(item, vendorGroup)
+                : () => {
+                    if (parentItem) {
+                      onDelete(parentItem, vendorGroup);
+                    }
+                  }
             }
             className="legend-marketplace-cart-drawer__item-card__remove-btn"
             disabled={disabled}
             aria-label={
               isSynthetic
-                ? `Remove all items under ${item.productName}`
-                : `Remove ${item.productName}`
+                ? `Remove all items under ${displayParent.productName}`
+                : `Remove ${displayParent.productName}`
             }
           >
             <TrashIcon />
@@ -246,7 +235,7 @@ const CartVendorGroupHeader = (props: {
           <Box className="legend-marketplace-cart-drawer__item-card__category-price-row">
             <Chip
               size="small"
-              label={item.category}
+              label={displayParent.categoryLabel}
               className={clsx(
                 'legend-marketplace-cart-drawer__item-card__category',
                 {
@@ -265,7 +254,7 @@ const CartVendorGroupHeader = (props: {
                   variant="body2"
                   className="legend-marketplace-cart-drawer__item-card__price"
                 >
-                  {formatItemPrice(item.price)}
+                  {formatItemPrice(displayParent.monthlyPrice ?? 0)}
                 </Typography>
                 <Typography
                   variant="caption"
@@ -291,7 +280,7 @@ const CartVendorGroupHeader = (props: {
               }
             }}
             aria-expanded={isExpanded}
-            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} add-ons for ${item.productName}`}
+            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} add-ons for ${displayParent.productName}`}
           >
             <span className="legend-marketplace-cart-drawer__vendor-group__chevron">
               {isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
@@ -321,6 +310,7 @@ export const CartDrawer = observer((): React.ReactNode => {
   const [expandedVendors, setExpandedVendors] = useState<Set<number>>(
     new Set<number>(),
   );
+  const knownVendorIdsRef = useRef<Set<number>>(new Set<number>());
 
   // Refresh cart when drawer opens
   useEffect(() => {
@@ -335,8 +325,23 @@ export const CartDrawer = observer((): React.ReactNode => {
 
   // Initialize all vendor groups as expanded when items change
   useEffect(() => {
-    setExpandedVendors(new Set(Object.keys(cart.items).map(Number)));
-  }, [cart.items]);
+    const currentVendorIds = new Set(cart.vendorGroupIds);
+    setExpandedVendors((previousExpanded) => {
+      const nextExpanded = new Set<number>();
+      for (const vpId of previousExpanded) {
+        if (currentVendorIds.has(vpId)) {
+          nextExpanded.add(vpId);
+        }
+      }
+      for (const vpId of currentVendorIds) {
+        if (!knownVendorIdsRef.current.has(vpId)) {
+          nextExpanded.add(vpId);
+        }
+      }
+      return nextExpanded;
+    });
+    knownVendorIdsRef.current = currentVendorIds;
+  }, [cart.vendorGroupIds]);
 
   const toggleVendor = useCallback((vpId: number) => {
     setExpandedVendors((prev) => {
@@ -355,191 +360,26 @@ export const CartDrawer = observer((): React.ReactNode => {
   }, []);
 
   const expandAll = useCallback(() => {
-    setExpandedVendors(new Set(Object.keys(cart.items).map(Number)));
-  }, [cart.items]);
+    setExpandedVendors(new Set(cart.vendorGroupIds));
+  }, [cart.vendorGroupIds]);
 
-  // Build vendor groups for rendering
-  const vendorGroups = useMemo(() => {
-    const groups: Array<{
-      vpId: number;
-      parent: CartItem;
-      addons: CartItem[];
-      groupItems: CartItem[];
-      isSynthetic: boolean;
-    }> = [];
-    for (const vpIdStr of Object.keys(cart.items)) {
-      const vpId = Number(vpIdStr);
-      const groupItems = cart.items[vpId];
-      if (!groupItems || groupItems.length === 0) {
-        continue;
-      }
-      const realParent = groupItems.find((i) => isParentItem(i));
-      // When no vendor-profile item exists, the group belongs to an already-owned
-      // vendor profile. Synthesise a display-only header from the items' model field.
-      const isSynthetic = !realParent;
-      const parent: CartItem = realParent ?? {
-        cartId: -vpId,
-        id: vpId,
-        productName: groupItems[0]?.model ?? String(vpId),
-        providerName: groupItems[0]?.providerName ?? '',
-        description: '',
-        category: 'Permission ID',
-        price: 0,
-        isOwned: 'true',
-        ...(groupItems[0]?.model === undefined
-          ? {}
-          : { model: groupItems[0].model }),
-      };
-      // When synthetic, every item in the group is an add-on (no real parent item).
-      const addons = isSynthetic
-        ? groupItems
-        : groupItems.filter((i) => !isParentItem(i));
-      groups.push({ vpId, parent, addons, groupItems, isSynthetic });
-    }
-    return groups;
-  }, [cart.items]);
-
-  // ─── Delete confirmation handlers ────────────────────────────────────────
+  const vendorGroups = cart.vendorGroups;
 
   const handleDeleteItem = useCallback(
     (item: CartItem, vendorGroup: CartItem[]) => {
-      const addons = vendorGroup.filter((i) => !isParentItem(i));
-
-      if (isParentItem(item) && addons.length > 0) {
-        // Deleting a vendor profile with add-ons — removes all associated add-ons
-        applicationStore.alertService.setActionAlertInfo({
-          title: 'Remove Vendor Profile?',
-          message: `Remove "${item.productName}"?`,
-          messageClass: ALERT_MESSAGE_CLASS,
-          prompt: `Removing this vendor profile will also remove ${addons.length} associated add-on${addons.length === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Remove All',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                flowResult(cart.deleteCartItem(item.cartId, true)).catch(
-                  applicationStore.alertUnhandledError,
-                );
-              },
-            },
-            CANCEL_ACTION,
-          ],
-        });
-      } else if (!isParentItem(item) && item.isMandatory) {
-        // Deleting a mandatory add-on — removes the entire vendor group
-        const totalItems = vendorGroup.length;
-        applicationStore.alertService.setActionAlertInfo({
-          title: 'Remove Required Service?',
-          message: `Remove "${item.productName}"?`,
-          messageClass: ALERT_MESSAGE_CLASS,
-          prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 === 1 ? '' : 's'}. Do you want to continue?`,
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Remove All',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                flowResult(cart.deleteCartItem(item.cartId, true)).catch(
-                  applicationStore.alertUnhandledError,
-                );
-              },
-            },
-            CANCEL_ACTION,
-          ],
-        });
-      } else {
-        // Deleting a parent item with no add-ons, or an optional add-on — removes just this item
-        applicationStore.alertService.setActionAlertInfo({
-          title: 'Remove Item?',
-          message: `Remove "${item.productName}"?`,
-          messageClass: ALERT_MESSAGE_CLASS,
-          prompt: `Are you sure you want to remove "${item.productName}" from your cart?`,
-          type: ActionAlertType.CAUTION,
-          actions: [
-            {
-              label: 'Remove',
-              type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => {
-                flowResult(cart.deleteCartItem(item.cartId)).catch(
-                  applicationStore.alertUnhandledError,
-                );
-              },
-            },
-            CANCEL_ACTION,
-          ],
-        });
-      }
+      cart.requestDeleteItemConfirmation(item, vendorGroup);
     },
-    [applicationStore.alertService, applicationStore.alertUnhandledError, cart],
+    [cart],
   );
 
   const handleDeleteSyntheticGroup = useCallback(
     (vendorGroup: CartItem[]) => {
-      const count = vendorGroup.length;
-      // Defined here to avoid deep function nesting inside the handler (S2004)
-      const deleteNext = (index: number): void => {
-        if (index >= vendorGroup.length) {
-          return;
-        }
-        const cartItem = vendorGroup[index];
-        if (!cartItem) {
-          return;
-        }
-        flowResult(cart.deleteCartItem(cartItem.cartId)).then(
-          () => deleteNext(index + 1),
-          applicationStore.alertUnhandledError,
-        );
-      };
-      applicationStore.alertService.setActionAlertInfo({
-        title: 'Remove Items?',
-        message: `Remove ${count} item${count === 1 ? '' : 's'}?`,
-        messageClass: ALERT_MESSAGE_CLASS,
-        prompt: `Are you sure you want to remove all ${count} item${count === 1 ? '' : 's'} from this group? This action cannot be undone.`,
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Remove All',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              deleteNext(0);
-            },
-          },
-          CANCEL_ACTION,
-        ],
-      });
+      cart.requestDeleteGroupConfirmation(vendorGroup);
     },
-    [applicationStore.alertService, applicationStore.alertUnhandledError, cart],
+    [cart],
   );
 
-  const handleClearCartClick = useCallback(() => {
-    const itemCount = cart.cartSummary.total_items;
-    applicationStore.alertService.setActionAlertInfo({
-      title: 'Clear Cart?',
-      message: `Clear all items?`,
-      messageClass: ALERT_MESSAGE_CLASS,
-      prompt: `This will remove all ${itemCount} item${itemCount === 1 ? '' : 's'} from your cart. This action cannot be undone. Do you want to continue?`,
-      type: ActionAlertType.CAUTION,
-      actions: [
-        {
-          label: 'Clear All',
-          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): void => {
-            flowResult(cart.clearCart()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          },
-        },
-        CANCEL_ACTION,
-      ],
-    });
-  }, [
-    applicationStore.alertService,
-    applicationStore.alertUnhandledError,
-    cart,
-  ]);
-
-  const vendorGroupCount = vendorGroups.length;
+  const vendorGroupCount = cart.vendorGroupIds.length;
 
   return (
     <Drawer
@@ -627,12 +467,24 @@ export const CartDrawer = observer((): React.ReactNode => {
           cart.cartSummary.total_items > 0 && (
             <Box className="legend-marketplace-cart-drawer__items">
               {vendorGroups.map(
-                ({ vpId, parent, addons, groupItems, isSynthetic }) => (
+                ({
+                  vpId,
+                  parentItem,
+                  displayParent,
+                  addons,
+                  groupItems,
+                  isSynthetic,
+                  addonTotalPrice,
+                  addonLabel,
+                }) => (
                   <Box key={vpId}>
                     <CartVendorGroupHeader
-                      item={parent}
+                      parentItem={parentItem}
+                      displayParent={displayParent}
                       vendorGroup={groupItems}
                       addons={addons}
+                      addonTotalPrice={addonTotalPrice}
+                      addonLabel={addonLabel}
                       isExpanded={expandedVendors.has(vpId)}
                       isSynthetic={isSynthetic}
                       onToggle={() => toggleVendor(vpId)}
@@ -716,7 +568,7 @@ export const CartDrawer = observer((): React.ReactNode => {
               cart.submitState.isInProgress ||
               cart.loadingState.isInProgress
             }
-            onClick={handleClearCartClick}
+            onClick={() => cart.requestClearCartConfirmation()}
             size="small"
             className="legend-marketplace-cart-drawer__clear-button"
           >

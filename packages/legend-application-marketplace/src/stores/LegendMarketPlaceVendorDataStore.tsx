@@ -214,18 +214,27 @@ export class LegendMarketPlaceVendorDataStore {
         const response = (yield this.marketplaceServerClient.fetchProducts(
           params,
         )) as TerminalServicesResponse;
+        const terminalLicenseResponse = response as TerminalServicesResponse & {
+          ownedPermissions?: unknown[];
+          ownedPermissionsCount?: number;
+        };
 
         this.providers = (response.vendor_profiles ?? []).map((json) =>
           TerminalResult.serialization.fromJson(json),
         );
 
-        this.ownedPermissions = (response.ownedPermissions ?? []).map((json) =>
-          TerminalResult.serialization.fromJson(json),
+        this.ownedPermissions = (
+          terminalLicenseResponse.ownedPermissions ?? []
+        ).map((json: unknown) =>
+          TerminalResult.serialization.fromJson(
+            json as Record<string, unknown>,
+          ),
         );
 
         this.totalItems = response.total_count ?? 0;
         this.totalOwnedPermissions =
-          response.ownedPermissionsCount ?? this.ownedPermissions.length;
+          terminalLicenseResponse.ownedPermissionsCount ??
+          this.ownedPermissions.length;
       } else if (this.providerDisplayState === VendorDataProviderType.ADD_ONS) {
         const params: FetchProductsParams = {
           kerberos: this.selectedUser.id,

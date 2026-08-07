@@ -571,7 +571,7 @@ describe('VendorDataMainContent - OwnedServicesSection', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Owned Terminal')).toBeDefined();
+      expect(screen.getByText(/Owned Terminal/i)).toBeDefined();
     });
   });
 

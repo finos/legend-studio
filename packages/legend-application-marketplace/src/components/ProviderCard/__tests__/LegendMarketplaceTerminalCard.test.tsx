@@ -105,6 +105,13 @@ beforeEach(async () => {
     page: 1,
     page_size: 300,
   });
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getPermissionAddons',
+  ).mockResolvedValue({
+    marketplace_addons: [],
+    total_count: 0,
+  });
 });
 
 afterEach(() => {
@@ -416,9 +423,9 @@ describe('LegendMarketplaceTerminalCard - addService', () => {
 
     await waitFor(() => {
       // Modal opens with permission-override flow: section title is
-      // "Add-Ons available for {productName}"
+      // "Available Add-Ons for {productName}"
       expect(
-        screen.getByText(`Add-Ons available for ${item.productName}`),
+        screen.getByText(`Available Add-Ons for ${item.productName}`),
       ).toBeDefined();
     });
   });

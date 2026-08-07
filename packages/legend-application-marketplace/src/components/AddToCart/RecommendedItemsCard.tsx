@@ -83,8 +83,12 @@ export const RecommendedItemsCard = observer(
       flowResult(
         legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),
       )
-        .then(() => {
-          setIsAdded(true);
+        .then((result) => {
+          if (result.success) {
+            setIsAdded(true);
+          } else if (result.message) {
+            toastManager.warning(result.message);
+          }
         })
         .catch((error) => {
           assertErrorThrown(error);

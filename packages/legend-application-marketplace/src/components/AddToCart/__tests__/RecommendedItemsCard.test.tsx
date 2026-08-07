@@ -46,6 +46,8 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
+let MOCK__baseStore: LegendMarketplaceBaseStore;
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const makeTerminalResult = (
@@ -82,9 +84,28 @@ const makeCartItem = (id: number): CartItem => ({
   skipWorkflow: false,
 });
 
-// ─── Test Setup ───────────────────────────────────────────────────────────────
+type AddToCartResult = {
+  success: boolean;
+  recommendations?: TerminalResult[];
+  message: string;
+  totalCount?: number | null;
+};
 
-let MOCK__baseStore: LegendMarketplaceBaseStore;
+const makeOnSelectMock = (returnValue = true) =>
+  jest.fn((_item: TerminalResult): boolean => returnValue);
+
+const setAddToCartWithAPIMock = (
+  impl: (
+    cartItemData: unknown,
+    suppressSuccessToast?: boolean,
+  ) => Promise<AddToCartResult>,
+): void => {
+  (
+    MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+  ).addToCartWithAPI = impl;
+};
+
+// ─── Test Setup ───────────────────────────────────────────────────────────────
 
 beforeEach(async () => {
   MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
@@ -176,35 +197,51 @@ describe('RecommendedItemsCard - non-association flow', () => {
 
   test('clicking "Add to Cart" triggers addToCartWithAPI', async () => {
     const item = makeTerminalResult({ id: 10 });
-    let resolveAdd!: (value: unknown) => void;
-    const pendingPromise = new Promise((resolve) => {
-      resolveAdd = resolve;
-    });
-    const mockAddToCart = jest.fn().mockReturnValue(pendingPromise);
-    createSpy(MOCK__baseStore.cartStore, 'addToCartWithAPI').mockImplementation(
-      mockAddToCart,
-    );
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: true,
+        recommendations: [],
+        message: '',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
 
     render(<RecommendedItemsCard recommendedItem={item} />);
     await act(async () => {
       fireEvent.click(screen.getByRole('button'));
     });
-    expect(mockAddToCart).toHaveBeenCalled();
-    await act(async () => {
-      resolveAdd({ success: true, recommendations: [], message: '' });
-      await pendingPromise;
-    });
+    expect(mockAddToCart).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: item.id,
+        productName: item.productName,
+        providerName: item.providerName,
+        category: item.category,
+        price: item.price,
+        skipWorkflow: false,
+      }),
+    );
   });
 
   test('shows "Adding..." during add to cart', async () => {
     const item = makeTerminalResult({ id: 10 });
-    let resolveAdd!: (v: unknown) => void;
-    const pendingPromise = new Promise((resolve) => {
+    let resolveAdd: ((value: AddToCartResult) => void) | undefined;
+    const pendingPromise = new Promise<AddToCartResult>((resolve) => {
       resolveAdd = resolve;
     });
-    createSpy(MOCK__baseStore.cartStore, 'addToCartWithAPI').mockReturnValue(
-      pendingPromise,
-    );
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockReturnValue(pendingPromise);
+    setAddToCartWithAPIMock(mockAddToCart);
 
     render(<RecommendedItemsCard recommendedItem={item} />);
     await act(async () => {
@@ -212,7 +249,7 @@ describe('RecommendedItemsCard - non-association flow', () => {
     });
     expect(screen.getByText(/Adding\.\.\./)).toBeDefined();
     await act(async () => {
-      resolveAdd({ success: true, recommendations: [], message: '' });
+      resolveAdd?.({ success: true, recommendations: [], message: '' });
       await pendingPromise;
     });
   });
@@ -235,7 +272,7 @@ describe('RecommendedItemsCard - non-association flow', () => {
 describe('RecommendedItemsCard - association flow', () => {
   test('shows "Subscribed" badge when isOwned=true', () => {
     const item = makeTerminalResult({ isOwned: true });
-    const onSelect = jest.fn();
+    const onSelect = makeOnSelectMock();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
     expect(screen.getByText('Subscribed')).toBeDefined();
   });
@@ -243,7 +280,10 @@ describe('RecommendedItemsCard - association flow', () => {
   test('does not render a button when item is owned', () => {
     const item = makeTerminalResult({ isOwned: true });
     render(
-      <RecommendedItemsCard recommendedItem={item} onSelect={jest.fn()} />,
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={makeOnSelectMock()}
+      />,
     );
     expect(screen.queryByRole('button')).toBeNull();
   });
@@ -255,7 +295,10 @@ describe('RecommendedItemsCard - association flow', () => {
     });
     MOCK__baseStore.cartStore.items[99] = [makeCartItem(3)];
     render(
-      <RecommendedItemsCard recommendedItem={item} onSelect={jest.fn()} />,
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={makeOnSelectMock()}
+      />,
     );
     expect(screen.getByText('In Cart')).toBeDefined();
   });
@@ -265,7 +308,7 @@ describe('RecommendedItemsCard - association flow', () => {
       id: 7,
       source: RecommendationSource.MARKETPLACE,
     });
-    const onSelect = jest.fn();
+    const onSelect = makeOnSelectMock();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
     expect(screen.getByText(/Add to Cart/)).toBeDefined();
   });
@@ -275,7 +318,7 @@ describe('RecommendedItemsCard - association flow', () => {
       id: 7,
       source: RecommendationSource.MARKETPLACE,
     });
-    const onSelect = jest.fn();
+    const onSelect = makeOnSelectMock();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
     await act(async () => {
       fireEvent.click(screen.getByRole('button'));
@@ -291,7 +334,7 @@ describe('RecommendedItemsCard - association flow', () => {
     render(
       <RecommendedItemsCard
         recommendedItem={item}
-        onSelect={jest.fn()}
+        onSelect={makeOnSelectMock()}
         isSelecting={true}
         selectedItemId={7}
       />,
@@ -307,7 +350,7 @@ describe('RecommendedItemsCard - association flow', () => {
     render(
       <RecommendedItemsCard
         recommendedItem={item}
-        onSelect={jest.fn()}
+        onSelect={makeOnSelectMock()}
         isSelecting={true}
         selectedItemId={99} // different item being selected
       />,
@@ -321,7 +364,7 @@ describe('RecommendedItemsCard - association flow', () => {
       id: 8,
       source: RecommendationSource.INVENTORY,
     });
-    const onSelect = jest.fn();
+    const onSelect = makeOnSelectMock();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
     // Non-marketplace shows "Add to Cart" with CheckIcon (not PlusIcon)
     expect(screen.getByText(/Add to Cart/)).toBeDefined();
@@ -332,7 +375,7 @@ describe('RecommendedItemsCard - association flow', () => {
       id: 8,
       source: RecommendationSource.INVENTORY,
     });
-    const onSelect = jest.fn();
+    const onSelect = makeOnSelectMock();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
     await act(async () => {
       fireEvent.click(screen.getByRole('button'));
@@ -348,7 +391,7 @@ describe('RecommendedItemsCard - association flow', () => {
     render(
       <RecommendedItemsCard
         recommendedItem={item}
-        onSelect={jest.fn()}
+        onSelect={makeOnSelectMock()}
         isSelecting={true}
         selectedItemId={8}
       />,
@@ -364,7 +407,7 @@ describe('RecommendedItemsCard - association flow', () => {
     render(
       <RecommendedItemsCard
         recommendedItem={item}
-        onSelect={jest.fn()}
+        onSelect={makeOnSelectMock()}
         isSelecting={true}
         selectedItemId={99}
       />,
@@ -376,7 +419,7 @@ describe('RecommendedItemsCard - association flow', () => {
   test('non-marketplace item with no source defaults to non-marketplace flow', () => {
     // When source is undefined, isMarketplaceItem is false → uses CheckIcon flow
     const item = makeTerminalResult({ id: 9 });
-    const onSelect = jest.fn();
+    const onSelect = makeOnSelectMock();
     render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
     expect(screen.getByText(/Add to Cart/)).toBeDefined();
   });
@@ -389,7 +432,7 @@ describe('RecommendedItemsCard - association flow', () => {
     render(
       <RecommendedItemsCard
         recommendedItem={item}
-        onSelect={jest.fn()}
+        onSelect={makeOnSelectMock()}
         isSelecting={false}
         selectedItemId={7}
       />,
@@ -405,9 +448,15 @@ describe('RecommendedItemsCard - error handling', () => {
   test('calls addToCartWithAPI and handles rejection gracefully', async () => {
     const item = makeTerminalResult({ id: 10 });
     const error = new Error('Network Error');
-    createSpy(MOCK__baseStore.cartStore, 'addToCartWithAPI').mockReturnValue(
-      Promise.reject(error),
-    );
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockRejectedValue(error);
+    setAddToCartWithAPIMock(mockAddToCart);
 
     render(<RecommendedItemsCard recommendedItem={item} />);
     // Should not throw
