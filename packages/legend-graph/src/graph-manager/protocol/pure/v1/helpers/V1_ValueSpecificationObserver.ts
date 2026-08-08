@@ -94,6 +94,8 @@ const V1_observe_PrimitiveType = skipObserved(
   ) => {
     V1_observe_Abstract_ValueSpecification(metamodel);
 
+    // NOTE: `V1_CString.multiLine` is not observed here as `mobx` throws when annotating a property which does
+    // not exist on the instance, and this function covers all primitive types.
     makeObservable(metamodel, {
       value: observable,
     });

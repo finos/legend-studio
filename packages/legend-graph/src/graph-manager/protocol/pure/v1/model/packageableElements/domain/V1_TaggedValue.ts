@@ -21,8 +21,21 @@ import type { V1_TagPtr } from '../../../model/packageableElements/domain/V1_Tag
 export class V1_TaggedValue implements Hashable {
   tag!: V1_TagPtr;
   value!: string;
+  /**
+   * Whether the value was authored as a multi-line (`'''...'''`) block.
+   * See https://github.com/finos/legend-engine/pull/5008
+   */
+  multiLine = false;
 
+  /**
+   * NOTE: must be kept in sync with `TaggedValue.hashCode`.
+   */
   get hashCode(): string {
-    return hashArray([CORE_HASH_STRUCTURE.TAGGED_VALUE, this.tag, this.value]);
+    return hashArray([
+      CORE_HASH_STRUCTURE.TAGGED_VALUE,
+      this.tag,
+      this.value,
+      this.multiLine.toString(),
+    ]);
   }
 }

@@ -57,9 +57,11 @@ export class V1_RawValueSpecificationBuilder
   visit_PrimitiveInstanceValue(
     valueSpecification: V1_RawPrimitiveInstanceValue,
   ): RawValueSpecification {
-    return new RawPrimitiveInstanceValue(
+    const metamodel = new RawPrimitiveInstanceValue(
       this.context.resolveType(valueSpecification.type),
       valueSpecification.value,
     );
+    metamodel.multiLine = valueSpecification.multiLine;
+    return metamodel;
   }
 }

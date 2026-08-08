@@ -1166,3 +1166,52 @@ export const TEST_DATA__OverloadedFunctionsRoundtrip = [
       'meta::pure::metamodel::function::ConcreteFunctionDefinition',
   },
 ];
+
+export const TEST_DATA__ClassWithMultiLineTaggedValue = [
+  {
+    path: 'test::A',
+    content: {
+      _type: 'class',
+      name: 'A',
+      package: 'test',
+      taggedValues: [
+        {
+          tag: {
+            profile: 'test::tProf',
+            value: 'doc',
+          },
+          value: 'a single-line doc',
+        },
+        {
+          tag: {
+            profile: 'test::tProf',
+            value: 'todo',
+          },
+          value: {
+            _type: 'string',
+            multiLine: true,
+            value: 'line one\nline two',
+          },
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'test::tProf',
+    content: {
+      _type: 'profile',
+      name: 'tProf',
+      package: 'test',
+      tags: [
+        {
+          value: 'doc',
+        },
+        {
+          value: 'todo',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::extension::Profile',
+  },
+];
