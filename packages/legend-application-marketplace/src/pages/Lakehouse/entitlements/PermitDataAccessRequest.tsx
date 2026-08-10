@@ -161,10 +161,10 @@ export const PermitDataAccessRequestTask =
           applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Approve Request',
           message:
-            'Please provide a business justification for approving this request.',
+            'You may optionally provide a business justification for approving this request.',
           confirmLabel: 'Approve',
           alertType: ActionAlertType.STANDARD,
-          requireJustification: true,
+          requireJustification: false,
           isLoading,
           setIsLoading,
           onConfirm: (justification) =>

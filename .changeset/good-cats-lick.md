@@ -3,4 +3,4 @@
 '@finos/legend-server-lakehouse': patch
 ---
 
-Added a Required field for business justification when approving or denying entitlement contract requests.
+Made business justification optional when approving entitlement contract requests, while keeping it required when denying them.

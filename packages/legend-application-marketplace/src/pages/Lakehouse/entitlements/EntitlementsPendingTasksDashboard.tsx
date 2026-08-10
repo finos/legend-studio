@@ -281,17 +281,18 @@ export const EntitlementsPendingTasksDashboard = observer(
 
     const handleBulkActionClick = (action: TaskApprovalAction): void => {
       const count = selectedTaskIdsSet.size;
+      const isApprove = action === TaskApprovalAction.APPROVE;
       showTaskActionAlert({
         applicationStore: marketplaceBaseStore.applicationStore,
-        title: `${action === TaskApprovalAction.APPROVE ? 'Approve' : 'Deny'} Contract Requests`,
-        message: `Please provide a business justification for ${action === TaskApprovalAction.APPROVE ? 'approving' : 'denying'} ${count} selected contract request${count === 1 ? '' : 's'}.`,
-        confirmLabel:
-          action === TaskApprovalAction.APPROVE ? 'Approve' : 'Deny',
-        alertType:
-          action === TaskApprovalAction.APPROVE
-            ? ActionAlertType.STANDARD
-            : ActionAlertType.CAUTION,
-        requireJustification: true,
+        title: `${isApprove ? 'Approve' : 'Deny'} Contract Requests`,
+        message: isApprove
+          ? `You may optionally provide a business justification for approving ${count} selected contract request${count === 1 ? '' : 's'}.`
+          : `Please provide a business justification for denying ${count} selected contract request${count === 1 ? '' : 's'}.`,
+        confirmLabel: isApprove ? 'Approve' : 'Deny',
+        alertType: isApprove
+          ? ActionAlertType.STANDARD
+          : ActionAlertType.CAUTION,
+        requireJustification: !isApprove,
         isLoading: isBulkActionLoading,
         setIsLoading: setIsBulkActionLoading,
         onConfirm: (justification) => runBulkAction(action, justification),

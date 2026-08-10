@@ -342,15 +342,14 @@ describe('Lakehouse Data Contract', () => {
       });
     });
 
-    test('does not submit an approval without a business justification', async () => {
-      const { marketplaceBaseStore, notifyErrorSpy } =
-        await setupLakehouseDataContractTest(
-          'contract-pending-do-id',
-          'do-task-pending-id',
-          mockContracts.pendingDataOwner,
-          getMockPendingDataOwnerApprovalTasksResponse(),
-          'test-data-owner-user-id',
-        );
+    test('submits an approval without a business justification', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-do-id',
+        'do-task-pending-id',
+        mockContracts.pendingDataOwner,
+        getMockPendingDataOwnerApprovalTasksResponse(),
+        'test-data-owner-user-id',
+      );
 
       const doApproveButton = await screen.findByRole('button', {
         name: 'Approve Task',
@@ -368,12 +367,11 @@ describe('Lakehouse Data Contract', () => {
         confirmTaskActionAlert(marketplaceBaseStore, 'Approve', '');
       });
 
-      expect(notifyErrorSpy).toHaveBeenCalledWith(
-        'Business justification is required',
-      );
-      expect(
-        marketplaceBaseStore.lakehouseContractServerClient.approveTask,
-      ).not.toHaveBeenCalled();
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.lakehouseContractServerClient.approveTask,
+        ).toHaveBeenCalledWith('do-task-pending-id', expect.any(String), '');
+      });
     });
 
     test('does not submit a denial without a business justification', async () => {

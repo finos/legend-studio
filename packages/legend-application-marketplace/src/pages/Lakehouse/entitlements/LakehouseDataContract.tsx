@@ -275,10 +275,10 @@ export const LakehouseDataContractTask =
           applicationStore: marketplaceBaseStore.applicationStore,
           title: 'Approve Task',
           message:
-            'Please provide a business justification for approving this task.',
+            'You may optionally provide a business justification for approving this task.',
           confirmLabel: 'Approve',
           alertType: ActionAlertType.STANDARD,
-          requireJustification: true,
+          requireJustification: false,
           isLoading,
           setIsLoading,
           onConfirm: (justification) => handleApprove(justification),
