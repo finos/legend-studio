@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.6.25
+
+### Patch Changes
+
+- [#5409](https://github.com/finos/legend-studio/pull/5409) [`2f7fb59`](https://github.com/finos/legend-studio/commit/2f7fb59993fc1eb11383fe9a2fef6f05bf2d4a9d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `IngestionDefinitionArtifact` model with serialization support and a `buildIngestDefinitionArtifact` graph manager method that resolves mat view schemas into metamodel `RelationType`s.
+
+- [#5401](https://github.com/finos/legend-studio/pull/5401) [`f6d3aa8`](https://github.com/finos/legend-studio/commit/f6d3aa87a19a7553e59a4f2efcfac68c4fc46384) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add support for viewing and loading a query's version history in Legend Query. A saved query can be opened from the `/query/{queryId}/history` endpoint, and a specific revision (identified by its `version`) can be loaded via a new `revisionId` route parameter. The history is surfaced through a "Query History" action in the query editor help menu and a "Show Query History" action per query in the load-query dialog.
+
+- [#5400](https://github.com/finos/legend-studio/pull/5400) [`7c7ddd6`](https://github.com/finos/legend-studio/commit/7c7ddd60830d0eeed54a889ee36c64e9479451c0) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add support for lambda-based relation function class mapping (`~src` sourceLambda on class mapping, expression-based `valueFn` on property mapping).
+
+- [#5413](https://github.com/finos/legend-studio/pull/5413) [`14da71f`](https://github.com/finos/legend-studio/commit/14da71fa602c229f2804570f88bdcd482e4bb2e3) ([@jackp5150](https://github.com/jackp5150)) - Added serializers for new V1_LambdaReturnTypeBatchInput class for batched lambda calls
+
 ## 32.6.24
 
 ### Patch Changes
