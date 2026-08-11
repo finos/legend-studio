@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-art';
 import {
   LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
+  generateLakehouseAccessSearchResultsRoute,
   generateLakehouseSearchResultsRoute,
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
@@ -43,7 +44,10 @@ import {
 import { FieldSearchFiltersPanel } from '../../../components/FieldSearchFiltersPanel/FieldSearchFiltersPanel.js';
 import { FieldSearchResultListRow } from '../../../components/MarketplaceCard/FieldSearchResultListItem.js';
 import { LegendMarketplaceOptionSelector } from '../../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
-import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import {
+  LegendMarketplaceSearchBar,
+  MarketplaceSearchMode,
+} from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import {
@@ -271,17 +275,22 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
   }, [fieldSearchResultsStore, applicationStore]);
 
   const handleSearch = useCallback(
-    (
-      query: string | undefined,
-      useProducerSearch: boolean,
-      useFieldSearch: boolean,
-    ) => {
+    (query: string | undefined, mode: MarketplaceSearchMode) => {
       if (!isNonEmptyString(query)) {
         return;
       }
-      if (!useFieldSearch) {
+      if (mode === MarketplaceSearchMode.LAKEHOUSE_ACCESS) {
         applicationStore.navigationService.navigator.goToLocation(
-          generateLakehouseSearchResultsRoute(query, useProducerSearch),
+          generateLakehouseAccessSearchResultsRoute(query),
+        );
+        return;
+      }
+      if (mode !== MarketplaceSearchMode.DATA_FIELDS) {
+        applicationStore.navigationService.navigator.goToLocation(
+          generateLakehouseSearchResultsRoute(
+            query,
+            mode === MarketplaceSearchMode.PRODUCER,
+          ),
         );
         return;
       }
@@ -377,7 +386,7 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
 
   const handleSearchResultViewChange = useCallback(
     (value: SearchResultViewOption) => {
-      if (value === SearchResultViewOption.DATA_PRODUCTS) {
+      if (value === SearchResultViewOption.DATA_SPACES) {
         handleOpenDataProductsTab();
       }
     },
@@ -392,8 +401,7 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
           showSettings={true}
           onSearch={handleSearch}
           stateSearchQuery={fieldSearchResultsStore.searchQuery}
-          stateUseProducerSearch={false}
-          stateUseFieldSearch={true}
+          stateSearchMode={MarketplaceSearchMode.DATA_FIELDS}
           placeholder="Search Marketplace fields"
           className="marketplace-lakehouse-search-results__search-bar"
           enableAutosuggest={false}
@@ -407,16 +415,18 @@ const LegendMarketplaceFieldSearchResultsPage = observer(() => {
           >
             {fieldSearchResultsStore.totalFieldMatches} Fields
           </Typography>
-          <div className="legend-marketplace-search-results__search-type-tabs">
-            <LegendMarketplaceOptionSelector
-              options={[
-                SearchResultViewOption.DATA_PRODUCTS,
-                SearchResultViewOption.DATA_FIELDS,
-              ]}
-              selectedOption={SearchResultViewOption.DATA_FIELDS}
-              onChange={handleSearchResultViewChange}
-              ariaLabel="Search result type"
-            />
+          <div className="legend-marketplace-search-results__sort-bar__center-slot">
+            <div className="legend-marketplace-search-results__search-type-tabs">
+              <LegendMarketplaceOptionSelector
+                options={[
+                  SearchResultViewOption.DATA_SPACES,
+                  SearchResultViewOption.DATA_FIELDS,
+                ]}
+                selectedOption={SearchResultViewOption.DATA_FIELDS}
+                onChange={handleSearchResultViewChange}
+                ariaLabel="Search result type"
+              />
+            </div>
           </div>
         </div>
       </div>

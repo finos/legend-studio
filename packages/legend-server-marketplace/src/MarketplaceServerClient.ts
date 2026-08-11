@@ -57,6 +57,7 @@ import type {
   FieldSearchResponse,
 } from './models/DatasetSearchResult.js';
 import type { EntitySearchResponse } from './models/EntitySearchResult.js';
+import { SearchType } from './models/SearchType.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -144,7 +145,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
   dataProductSearch = async (
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
-    searchType: string = 'hybrid',
+    searchType: SearchType = SearchType.HYBRID,
     searchFilters: string[] = [],
     pageSize: number = 12,
     pageNumber: number = 1,
@@ -153,6 +154,36 @@ export class MarketplaceServerClient extends AbstractServerClient {
     this.get<PlainObject<DataProductSearchResponse>>(
       `${this._search()}/dataProducts/${lakehouseEnv}`,
       {},
+      undefined,
+      {
+        query,
+        search_type: searchType,
+        ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
+        page_size: pageSize,
+        page_number: pageNumber,
+        include_filter_metadata: true,
+        show_all: showAll,
+      },
+    );
+
+  /**
+   * Search Lakehouse Data Products only, over the lightweight lexical path.
+   * The server enforces `data_product_type=lakehouse`, so DataSpaces are never
+   * returned regardless of the filters supplied here.
+   */
+  lakehouseAccessSearch = async (
+    query: string,
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    searchType: SearchType = SearchType.FULL_TEXT,
+    searchFilters: string[] = [],
+    pageSize: number = 12,
+    pageNumber: number = 1,
+    showAll: boolean = false,
+    signal?: AbortSignal,
+  ): Promise<PlainObject<DataProductSearchResponse>> =>
+    this.get<PlainObject<DataProductSearchResponse>>(
+      `${this._search()}/lakehouseAccess/${lakehouseEnv}`,
+      signal ? { signal } : {},
       undefined,
       {
         query,
@@ -193,6 +224,19 @@ export class MarketplaceServerClient extends AbstractServerClient {
   ): Promise<AutosuggestResponse> =>
     this.get<AutosuggestResponse>(
       `${this._autosuggest()}/dataProducts/${environment}`,
+      signal ? { signal } : {},
+      undefined,
+      { query, limit },
+    );
+
+  getLakehouseAccessAutosuggestions = async (
+    query: string,
+    environment: string,
+    limit: number = 5,
+    signal?: AbortSignal,
+  ): Promise<AutosuggestResponse> =>
+    this.get<AutosuggestResponse>(
+      `${this._autosuggest()}/lakehouseAccess/${environment}`,
       signal ? { signal } : {},
       undefined,
       { query, limit },

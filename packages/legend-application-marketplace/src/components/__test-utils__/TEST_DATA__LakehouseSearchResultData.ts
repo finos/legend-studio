@@ -194,6 +194,60 @@ export const mockProdSearchResultResponse: PlainObject<DataProductSearchResponse
     as_of_time: '2026-01-27T00:00:00.000Z',
   };
 
+/**
+ * The lakehouse-only subset of the prod results. Deliberately contains no `legacy`
+ * (DataSpace) entries: the Lakehouse Access endpoint enforces
+ * `data_product_type=lakehouse` server-side, so this tab can never surface a DataSpace.
+ */
+const mockLakehouseAccessSearchResults: PlainObject<DataProductSearchResult>[] =
+  mockProdSearchResults.filter(
+    (result) =>
+      (result.dataProductDetails as { _type: string })._type === 'lakehouse',
+  );
+
+export const mockLakehouseAccessSearchResultResponse: PlainObject<DataProductSearchResponse> =
+  {
+    results: mockLakehouseAccessSearchResults,
+    metadata: {
+      total_count: mockLakehouseAccessSearchResults.length,
+      num_pages: 1,
+      page_size: mockLakehouseAccessSearchResults.length,
+      page_number: 1,
+      next_page_number: null,
+      prev_page_number: null,
+      lakehouse_count: mockLakehouseAccessSearchResults.length,
+      legacy_count: 0,
+      external_source_count: 1,
+      internal_source_count: 1,
+    },
+    filters_metadata: mockProdSearchResultResponse.filters_metadata,
+    as_of_time: '2026-01-27T00:00:00.000Z',
+  };
+
+/**
+ * A response where an active filter has narrowed `total_count` below the unfiltered
+ * source counts. Guards the Internal source count: computing it as
+ * `total_count - external_source_count` would render -1 here.
+ */
+export const mockLakehouseAccessFilteredSearchResultResponse: PlainObject<DataProductSearchResponse> =
+  {
+    results: mockLakehouseAccessSearchResults.slice(0, 1),
+    metadata: {
+      total_count: 1,
+      num_pages: 1,
+      page_size: 12,
+      page_number: 1,
+      next_page_number: null,
+      prev_page_number: null,
+      lakehouse_count: 1,
+      legacy_count: 0,
+      external_source_count: 2,
+      internal_source_count: 3,
+    },
+    filters_metadata: mockProdSearchResultResponse.filters_metadata,
+    as_of_time: '2026-01-27T00:00:00.000Z',
+  };
+
 const mockProdParSearchResults: PlainObject<DataProductSearchResult>[] = [
   {
     dataProductTitle: 'Lakehouse SDLC Data Product',
