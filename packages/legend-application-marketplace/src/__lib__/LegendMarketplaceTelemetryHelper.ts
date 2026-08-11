@@ -33,6 +33,7 @@ import {
 export enum LEGEND_MARKETPLACE_PAGE {
   HOME_PAGE = 'Home Page',
   SEARCH_RESULTS_PAGE = 'Search Results Page',
+  LAKEHOUSE_ACCESS_PAGE = 'Lakehouse Access Page',
 }
 
 export enum CONTRACT_ACTION {
@@ -329,6 +330,21 @@ export class LegendMarketplaceTelemetryHelper {
     const session = this.getOrCreateUserSession();
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.FIELD_SEARCH_TOGGLE,
+      {
+        toggleAction: isEnabled ? 'enabled' : 'disabled',
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleLakehouseAccessSearch(
+    telemetryService: TelemetryService,
+    isEnabled: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.LAKEHOUSE_ACCESS_SEARCH_TOGGLE,
       {
         toggleAction: isEnabled ? 'enabled' : 'disabled',
         ...session,

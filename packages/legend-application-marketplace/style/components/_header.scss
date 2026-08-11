@@ -194,6 +194,19 @@
       bottom: 0;
       width: calc(100% - 24px);
     }
+
+    &__badge {
+      margin-left: 0.6rem;
+      padding: 0.1rem 0.6rem;
+      border-radius: 1rem;
+      background: var(--color-hclight-blue-60);
+      color: var(--color-white);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.6rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
   }
 
   &__icons {

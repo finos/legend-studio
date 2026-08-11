@@ -77,6 +77,8 @@
     font-weight: bold;
     margin: 0.8em 0;
     font-size: 2.2rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   &__data-product-cards {

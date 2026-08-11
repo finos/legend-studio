@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
-import {
-  useLegendMarketplaceSearchResultsStore,
-  withLegendMarketplaceSearchResultsStore,
-} from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   CheckIcon,
   clsx,
@@ -40,23 +36,26 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
+import { useAuth } from 'react-oidc-context';
+import { useSyncStateAndSearchParam } from '@finos/legend-application';
+import { useSearchParams } from '@finos/legend-application/browser';
+import { isNonEmptyString } from '@finos/legend-shared';
+import {
+  useLegendMarketplaceLakehouseAccessSearchResultsStore,
+  withLegendMarketplaceLakehouseAccessSearchResultsStore,
+} from '../../../application/providers/LegendMarketplaceLakehouseAccessSearchResultsStoreProvider.js';
 import {
   DataProductSort,
-  SearchResultViewOption,
   SearchResultsViewMode,
-  type LegendMarketplaceSearchResultsStore,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-import {
-  generateFieldSearchResultsRoute,
-  generateLakehouseAccessSearchResultsRoute,
-  LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
-} from '../../../__lib__/LegendMarketplaceNavigation.js';
+import type { LegendMarketplaceLakehouseAccessSearchResultsStore } from '../../../stores/lakehouse/LegendMarketplaceLakehouseAccessSearchResultsStore.js';
+import { LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import {
   LegendMarketplaceSearchBar,
+  MarketplaceAutosuggestVariant,
   MarketplaceSearchMode,
 } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { useAuth } from 'react-oidc-context';
 import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
 import { LakehouseProductListItem } from '../../../components/LakehouseProductCard/LakehouseProductListItem.js';
 import type { ProductCardState } from '../../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -66,16 +65,12 @@ import {
 } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { generatePathForDataProductSearchResult } from '../../../utils/SearchUtils.js';
 import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
-import { useSyncStateAndSearchParam } from '@finos/legend-application';
-import { useSearchParams } from '@finos/legend-application/browser';
-import { isNonEmptyString } from '@finos/legend-shared';
 import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
-import { MarketplaceSearchFiltersPanel } from '../../../components/MarketplaceSearchFiltersPanel/MarketplaceSearchFiltersPanel.js';
-import { LegendMarketplaceOptionSelector } from '../../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
+import { LakehouseAccessSearchFiltersPanel } from '../../../components/LakehouseAccessSearchFiltersPanel/LakehouseAccessSearchFiltersPanel.js';
 
-const SearchResultsContent = observer(
+const LakehouseAccessSearchResultsContent = observer(
   (props: {
-    searchResultsStore: LegendMarketplaceSearchResultsStore;
+    searchResultsStore: LegendMarketplaceLakehouseAccessSearchResultsStore;
     isLoadingDataProducts: boolean;
     handleProductCardClick: (productCardState: ProductCardState) => void;
     handlePageChange: (page: number) => void;
@@ -155,7 +150,6 @@ const SearchResultsContent = observer(
         )}
         {searchResultsStore.isOnLastPage &&
           !searchResultsStore.showAllProducts &&
-          !searchResultsStore.useProducerSearch &&
           searchResultsStore.hasFilteredDataProducts && (
             <div className="marketplace-lakehouse-search-results__show-all-container">
               <div className="marketplace-lakehouse-search-results__show-all-text-row">
@@ -196,10 +190,11 @@ const SearchResultsContent = observer(
   },
 );
 
-export const LegendMarketplaceSearchResults =
-  withLegendMarketplaceSearchResultsStore(
+export const LegendMarketplaceLakehouseAccessSearchResults =
+  withLegendMarketplaceLakehouseAccessSearchResultsStore(
     observer(() => {
-      const searchResultsStore = useLegendMarketplaceSearchResultsStore();
+      const searchResultsStore =
+        useLegendMarketplaceLakehouseAccessSearchResultsStore();
       const auth = useAuth();
       const [searchParams, setSearchParams] = useSearchParams();
 
@@ -212,54 +207,14 @@ export const LegendMarketplaceSearchResults =
         tokenRef.current = auth.user?.access_token;
       }, [auth.user?.access_token]);
 
-      const handleFiltersChanged = useCallback(() => {
+      const runSearch = useCallback(() => {
         flowResult(
           searchResultsStore.executeSearch(
             searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch ?? false,
             tokenRef.current,
           ),
         ).catch(applicationStore.alertUnhandledError);
       }, [searchResultsStore, applicationStore]);
-
-      useEffect(() => {
-        if (searchResultsStore.useProducerSearch === undefined) {
-          return;
-        }
-        searchResultsStore.clearAllFilters();
-        searchResultsStore.setPage(1);
-        searchResultsStore.setShowAllProducts(false);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch,
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
-      }, [
-        applicationStore.telemetryService,
-        tokenRef,
-        searchResultsStore,
-        searchResultsStore.searchQuery,
-        searchResultsStore.useProducerSearch,
-        applicationStore,
-      ]);
-
-      useSyncStateAndSearchParam(
-        searchResultsStore.useProducerSearch,
-        useCallback(
-          (val: string | null) => {
-            searchResultsStore.setUseProducerSearch(val === 'true');
-          },
-          [searchResultsStore],
-        ),
-        LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
-        searchParams.get(
-          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.USE_PRODUCER_SEARCH,
-        ),
-        setSearchParams,
-        useCallback(() => true, []),
-      );
 
       useSyncStateAndSearchParam(
         searchResultsStore.searchQuery,
@@ -271,13 +226,46 @@ export const LegendMarketplaceSearchResults =
           },
           [searchResultsStore],
         ),
-        LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
+        LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
         searchParams.get(
-          LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
+          LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY,
         ),
         setSearchParams,
         useCallback(() => true, []),
       );
+
+      // The search param sync above only assigns `searchQuery` when the URL actually
+      // carries a `query` param, so on the bare route (arriving from the header tab)
+      // it stays `undefined`. Gating the initial search on `searchQuery` being defined
+      // would therefore hang forever on that route — `isLoading` reports true while the
+      // search action is still in its initial state. Instead, wait one commit for the
+      // sync effect above to run, then search with whatever we ended up with.
+      const [hasReadSearchParams, setHasReadSearchParams] = useState(false);
+
+      useEffect(() => {
+        setHasReadSearchParams(true);
+      }, []);
+
+      useEffect(() => {
+        if (!hasReadSearchParams) {
+          return;
+        }
+        searchResultsStore.clearAllFilters();
+        searchResultsStore.setPage(1);
+        searchResultsStore.setShowAllProducts(false);
+        flowResult(
+          searchResultsStore.executeSearch(
+            searchResultsStore.searchQuery ?? '',
+            tokenRef.current,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
+      }, [
+        hasReadSearchParams,
+        tokenRef,
+        searchResultsStore,
+        searchResultsStore.searchQuery,
+        applicationStore,
+      ]);
 
       const isLoadingDataProducts = searchResultsStore.isLoading;
 
@@ -285,41 +273,15 @@ export const LegendMarketplaceSearchResults =
         _query: string | undefined,
         _mode: MarketplaceSearchMode,
       ): void => {
+        // NOTE: the mode switcher is not offered on this tab (`showSettings` is
+        // false), so the mode is always LAKEHOUSE_ACCESS and is ignored here.
         if (isNonEmptyString(_query)) {
-          if (_mode === MarketplaceSearchMode.DATA_FIELDS) {
-            applicationStore.navigationService.navigator.goToLocation(
-              generateFieldSearchResultsRoute(_query),
-            );
-            LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
-              applicationStore.telemetryService,
-              _query,
-              false,
-              LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-              true,
-            );
-            return;
-          }
-          if (_mode === MarketplaceSearchMode.LAKEHOUSE_ACCESS) {
-            applicationStore.navigationService.navigator.goToLocation(
-              generateLakehouseAccessSearchResultsRoute(_query),
-            );
-            LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
-              applicationStore.telemetryService,
-              _query,
-              false,
-              LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
-            );
-            return;
-          }
           searchResultsStore.setSearchQuery(_query);
-          searchResultsStore.setUseProducerSearch(
-            _mode === MarketplaceSearchMode.PRODUCER,
-          );
           LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
             applicationStore.telemetryService,
-            searchResultsStore.searchQuery,
-            searchResultsStore.useProducerSearch ?? false,
-            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+            _query,
+            false,
+            LEGEND_MARKETPLACE_PAGE.LAKEHOUSE_ACCESS_PAGE,
           );
         }
       };
@@ -327,29 +289,17 @@ export const LegendMarketplaceSearchResults =
       const handlePageChange = useCallback(
         (page: number) => {
           searchResultsStore.setPage(page);
-          flowResult(
-            searchResultsStore.executeSearch(
-              searchResultsStore.searchQuery ?? '',
-              searchResultsStore.useProducerSearch ?? false,
-              tokenRef.current,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          runSearch();
         },
-        [searchResultsStore, applicationStore],
+        [searchResultsStore, runSearch],
       );
 
       const handleItemsPerPageChange = useCallback(
         (itemsPerPage: number) => {
           searchResultsStore.setItemsPerPage(itemsPerPage);
-          flowResult(
-            searchResultsStore.executeSearch(
-              searchResultsStore.searchQuery ?? '',
-              searchResultsStore.useProducerSearch ?? false,
-              tokenRef.current,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          runSearch();
         },
-        [searchResultsStore, applicationStore],
+        [searchResultsStore, runSearch],
       );
 
       const handleProductCardClick = useCallback(
@@ -367,41 +317,34 @@ export const LegendMarketplaceSearchResults =
           logClickingDataProductCard(
             productCardState,
             applicationStore,
-            LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+            LEGEND_MARKETPLACE_PAGE.LAKEHOUSE_ACCESS_PAGE,
           );
         },
         [applicationStore],
       );
+
       const handleShowAllProducts = useCallback(() => {
         LegendMarketplaceTelemetryHelper.logEvent_ShowAllDataProducts(
           applicationStore.telemetryService,
           searchResultsStore.searchQuery,
         );
         searchResultsStore.setShowAllProducts(true);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch ?? false,
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
-      }, [searchResultsStore, applicationStore]);
+        runSearch();
+      }, [searchResultsStore, applicationStore, runSearch]);
 
       return (
-        <LegendMarketplacePage className="marketplace-lakehouse-search-results">
+        <LegendMarketplacePage className="marketplace-lakehouse-search-results marketplace-lakehouse-access-search-results">
           <Container className="marketplace-lakehouse-search-results__search-container">
             <LegendMarketplaceSearchBar
-              showSettings={true}
+              showSettings={false}
               onSearch={handleSearch}
               stateSearchQuery={searchResultsStore.searchQuery}
-              stateSearchMode={
-                searchResultsStore.useProducerSearch === true
-                  ? MarketplaceSearchMode.PRODUCER
-                  : MarketplaceSearchMode.DATA_SPACES
-              }
-              placeholder="Search Legend Marketplace"
+              stateSearchMode={MarketplaceSearchMode.LAKEHOUSE_ACCESS}
+              placeholder="Search Lakehouse data products"
               className="marketplace-lakehouse-search-results__search-bar"
-              enableAutosuggest={false}
+              autosuggestVariant={
+                MarketplaceAutosuggestVariant.LAKEHOUSE_ACCESS
+              }
             />
           </Container>
           <div className="legend-marketplace-search-results__sort-bar">
@@ -410,35 +353,12 @@ export const LegendMarketplaceSearchResults =
                 variant="h4"
                 className="marketplace-lakehouse-search-results__subtitles"
               >
-                {searchResultsStore.useProducerSearch
-                  ? `${searchResultsStore.filterSortProducts?.length ?? 0} Products`
-                  : `${searchResultsStore.totalItems} Products`}
+                {`${searchResultsStore.totalItems} Products`}
               </Typography>
               <div className="legend-marketplace-search-results__sort-bar__center-slot">
-                {isNonEmptyString(searchResultsStore.searchQuery) && (
-                  <div className="legend-marketplace-search-results__search-type-tabs">
-                    <LegendMarketplaceOptionSelector
-                      options={[
-                        SearchResultViewOption.DATA_SPACES,
-                        SearchResultViewOption.DATA_FIELDS,
-                      ]}
-                      selectedOption={SearchResultViewOption.DATA_SPACES}
-                      onChange={(option) => {
-                        if (option === SearchResultViewOption.DATA_FIELDS) {
-                          applicationStore.navigationService.navigator.goToLocation(
-                            generateFieldSearchResultsRoute(
-                              searchResultsStore.searchQuery,
-                            ),
-                          );
-                        }
-                      }}
-                      ariaLabel="Search result type"
-                    />
-                  </div>
-                )}
                 <Typography className="legend-marketplace-search-results__sort-bar__scope-hint">
-                  Searching DataSpaces — the modeled-domain discovery corpus.
-                  Switch to the Lakehouse Access tab for Lakehouse Access.
+                  Searching Data Products for Lakehouse Access. Switch to the
+                  DataSpaces tab for data domains.
                 </Typography>
               </div>
               <div className="legend-marketplace-search-results__sort-bar__controls">
@@ -532,16 +452,14 @@ export const LegendMarketplaceSearchResults =
             className="marketplace-lakehouse-search-results__results-container"
           >
             <div className="marketplace-lakehouse-search-results__results-layout">
-              {!searchResultsStore.useProducerSearch && (
-                <div className="marketplace-lakehouse-search-results__sidebar">
-                  <MarketplaceSearchFiltersPanel
-                    store={searchResultsStore}
-                    onFiltersChanged={handleFiltersChanged}
-                  />
-                </div>
-              )}
+              <div className="marketplace-lakehouse-search-results__sidebar">
+                <LakehouseAccessSearchFiltersPanel
+                  store={searchResultsStore}
+                  onFiltersChanged={runSearch}
+                />
+              </div>
               <div className="marketplace-lakehouse-search-results__main-content">
-                <SearchResultsContent
+                <LakehouseAccessSearchResultsContent
                   searchResultsStore={searchResultsStore}
                   isLoadingDataProducts={isLoadingDataProducts}
                   handleProductCardClick={handleProductCardClick}

@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Checkbox, InputAdornment, TextField, Typography } from '@mui/material';
 import {
   ChevronDownIcon,
@@ -28,13 +28,12 @@ import {
 } from '@finos/legend-art';
 import type { TaxonomyNode } from '@finos/legend-server-marketplace';
 import {
-  type LegendMarketplaceSearchResultsStore,
   DataProductLicenseFilter,
+  type TaxonomyFilterableSearchStore,
   DataProductSourceFilter,
   getDataProductLicenseDisplayLabel,
   getDataProductLicenseTooltip,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-import { useAuth } from 'react-oidc-context';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
@@ -87,7 +86,7 @@ const buildFlatSearchResults = (
 
 const TaxonomyTreeNode: React.FC<{
   node: TaxonomyNode;
-  store: LegendMarketplaceSearchResultsStore;
+  store: TaxonomyFilterableSearchStore;
   depth: number;
   onFilterChange: () => void;
 }> = observer(({ node, store, depth, onFilterChange }) => {
@@ -251,7 +250,7 @@ export const FilterCheckboxOption: React.FC<{
 const renderTaxonomySearchResults = (
   flatSearchResults: FlatSearchGroup[],
   filterSearchTerm: string,
-  store: LegendMarketplaceSearchResultsStore,
+  store: TaxonomyFilterableSearchStore,
   baseStore: LegendMarketplaceBaseStore,
   triggerSearch: () => void,
 ): React.ReactNode => {
@@ -351,7 +350,7 @@ const renderTaxonomySearchResults = (
 };
 
 const renderTaxonomyTree = (
-  store: LegendMarketplaceSearchResultsStore,
+  store: TaxonomyFilterableSearchStore,
   triggerSearch: () => void,
 ): React.ReactNode => {
   const undefinedNode = buildUndefinedTaxonomyNode();
@@ -378,19 +377,17 @@ const renderTaxonomyTree = (
 };
 
 export const MarketplaceSearchFiltersPanel: React.FC<{
-  store: LegendMarketplaceSearchResultsStore;
-}> = observer(({ store }) => {
-  const isFirstLoad = store.executingSemanticSearchState.isInInitialState;
+  store: TaxonomyFilterableSearchStore;
+  /**
+   * Invoked whenever a filter changes. The owning page decides how to re-run its
+   * own search — the panel deliberately knows nothing about search modes or auth.
+   */
+  onFiltersChanged: () => void;
+}> = observer(({ store, onFiltersChanged }) => {
+  const isFirstLoad = store.isFirstLoad;
   const hasTree = store.taxonomyTree.length > 0;
-  const auth = useAuth();
   const baseStore = useLegendMarketplaceBaseStore();
   const [filterSearchTerm, setFilterSearchTerm] = useState('');
-
-  const tokenRef = useRef(auth.user?.access_token);
-
-  useEffect(() => {
-    tokenRef.current = auth.user?.access_token;
-  }, [auth.user?.access_token]);
 
   const flatSearchResults = useMemo(
     () => buildFlatSearchResults(store.taxonomyTree, filterSearchTerm),
@@ -400,12 +397,8 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
 
   const triggerSearch = useCallback(() => {
     store.setPage(1);
-    store.executeSearch(
-      store.searchQuery ?? '',
-      store.useProducerSearch ?? false,
-      tokenRef.current,
-    );
-  }, [store]);
+    onFiltersChanged();
+  }, [store, onFiltersChanged]);
 
   const handleClearAll = useCallback(() => {
     store.clearAllFilters();
@@ -452,8 +445,7 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                   count={
                     value === DataProductSourceFilter.EXTERNAL
                       ? store.filterCounts.external_source_count
-                      : store.totalItems -
-                        store.filterCounts.external_source_count
+                      : store.filterCounts.internal_source_count
                   }
                   onChange={() => {
                     const isSelected = store.selectedSources.has(value);

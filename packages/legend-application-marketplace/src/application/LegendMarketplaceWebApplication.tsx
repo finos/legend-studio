@@ -138,6 +138,13 @@ const LegendMarketplaceFieldSearchResults = React.lazy(() =>
     default: module.LegendMarketplaceFieldSearchResults,
   })),
 );
+const LegendMarketplaceLakehouseAccessSearchResults = React.lazy(() =>
+  import(
+    '../pages/Lakehouse/searchResults/LegendMarketplaceLakehouseAccessSearchResults.js'
+  ).then((module) => ({
+    default: module.LegendMarketplaceLakehouseAccessSearchResults,
+  })),
+);
 const LegacyDataProduct = React.lazy(() =>
   import('../pages/Lakehouse/dataProduct/LegacyDataProduct.js').then(
     (module) => ({
@@ -287,9 +294,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 
             {/* Marketplace Routes */}
             <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
-              }
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS}
               element={React.createElement(
                 useProtectedPage(LegendMarketplaceSearchResults),
               )}
@@ -298,6 +303,14 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.FIELD_SEARCH_RESULTS}
               element={React.createElement(
                 useProtectedPage(LegendMarketplaceFieldSearchResults),
+              )}
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS
+              }
+              element={React.createElement(
+                useProtectedPage(LegendMarketplaceLakehouseAccessSearchResults),
               )}
             />
             <Route
@@ -404,7 +417,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={
                 <Navigate
                   to={
-                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS
                   }
                   replace={true}
                 />
