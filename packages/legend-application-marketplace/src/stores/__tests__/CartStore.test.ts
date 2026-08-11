@@ -422,18 +422,29 @@ describe('CartStore - getDependentAddOns', () => {
     expect(cartStore.getDependentAddOns(999)).toEqual([]);
   });
 
-  test('returns empty array when target item is not a Terminal', async () => {
+  test('returns empty array when target item is not a parent category', async () => {
     const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
     const cartStore = new CartStore(baseStore);
-    // Add-On item (not a Terminal)
+    // Add-On item (not a parent category)
     cartStore.items[1] = [makeCartItem(1, 101, 'Add-On')];
     expect(cartStore.getDependentAddOns(1)).toEqual([]);
   });
 
-  test('returns add-ons associated with a Terminal', async () => {
+  test('does not treat Permission ID item as a parent category', async () => {
     const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
     const cartStore = new CartStore(baseStore);
-    const terminal = makeCartItem(10, 101, 'Terminal');
+    cartStore.items[1] = [
+      makeCartItem(10, 101, 'Permission ID'),
+      makeCartItem(11, 102, 'Add-On'),
+    ];
+
+    expect(cartStore.getDependentAddOns(10)).toEqual([]);
+  });
+
+  test('returns add-ons associated with a parent category item', async () => {
+    const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+    const cartStore = new CartStore(baseStore);
+    const terminal = makeCartItem(10, 101, 'Vendor Profile');
     const addOn1 = makeCartItem(11, 102, 'Add-On');
     const addOn2 = makeCartItem(12, 103, 'Add-On');
     cartStore.items[1] = [terminal, addOn1, addOn2];
@@ -446,17 +457,17 @@ describe('CartStore - getDependentAddOns', () => {
   test('does not include the terminal itself in returned add-ons', async () => {
     const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
     const cartStore = new CartStore(baseStore);
-    const terminal = makeCartItem(10, 101, 'Terminal');
+    const terminal = makeCartItem(10, 101, 'Vendor Profile');
     const addOn = makeCartItem(11, 102, 'Add-On');
     cartStore.items[1] = [terminal, addOn];
     const dependents = cartStore.getDependentAddOns(10);
     expect(dependents.every((i) => i.cartId !== 10)).toBe(true);
   });
 
-  test('returns empty array when Terminal has no add-ons', async () => {
+  test('returns empty array when parent category item has no add-ons', async () => {
     const baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
     const cartStore = new CartStore(baseStore);
-    const terminal = makeCartItem(10, 101, 'Terminal');
+    const terminal = makeCartItem(10, 101, 'Vendor Profile');
     cartStore.items[1] = [terminal];
     expect(cartStore.getDependentAddOns(10)).toEqual([]);
   });

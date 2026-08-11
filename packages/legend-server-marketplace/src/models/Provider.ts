@@ -56,6 +56,11 @@ export enum RecommendationSource {
   MARKETPLACE = 'marketplace',
 }
 
+export const VENDOR_PROFILE_CATEGORY = 'vendor profile';
+
+export const isVendorProfileCategory = (category: string): boolean =>
+  category.toLowerCase() === VENDOR_PROFILE_CATEGORY;
+
 export class TerminalResult {
   id!: number;
   category!: string;
@@ -92,7 +97,7 @@ export class TerminalResult {
   );
 
   get terminalItemType(): TerminalItemType {
-    return this.category.toLowerCase() === 'vendor profile'
+    return isVendorProfileCategory(this.category)
       ? TerminalItemType.TERMINAL
       : TerminalItemType.ADD_ON;
   }
@@ -137,7 +142,7 @@ export class TraderProfileItem {
   );
 
   get isTerminal(): boolean {
-    return this.category.toLowerCase() === 'vendor profile';
+    return isVendorProfileCategory(this.category);
   }
 }
 

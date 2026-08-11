@@ -30,7 +30,7 @@ import {
   ActionState,
 } from '@finos/legend-shared';
 import {
-  TerminalItemType,
+  isVendorProfileCategory,
   type CartItem,
   type CartItemRequest,
   type CartItemResponse,
@@ -60,7 +60,6 @@ enum BUSINESS_REASONS {
   OTHER_REASON = 'Other Reason',
 }
 
-const VENDOR_PROFILE_CATEGORY = 'vendor profile';
 const PERMISSION_ID_CATEGORY = 'Permission ID';
 const VENDOR_PROFILE_DISPLAY_CATEGORY = 'Vendor Profile';
 const ALERT_MESSAGE_CLASS = 'legend-marketplace-cart-drawer__alert-message';
@@ -172,10 +171,7 @@ export class CartStore {
   }
 
   isParentCartItem(item: CartItem): boolean {
-    return (
-      item.category === TerminalItemType.TERMINAL ||
-      item.category.toLowerCase() === VENDOR_PROFILE_CATEGORY
-    );
+    return isVendorProfileCategory(item.category);
   }
 
   getGroupAddOns(groupItems: CartItem[]): CartItem[] {
@@ -284,11 +280,9 @@ export class CartStore {
         const cartItems = this.items[Number(vendorProfileId)];
         if (cartItems) {
           const target = cartItems.find((item) => item.cartId === cartId);
-          if (target?.category === TerminalItemType.TERMINAL) {
+          if (target && this.isParentCartItem(target)) {
             return cartItems.filter(
-              (item) =>
-                item.cartId !== cartId &&
-                item.category === TerminalItemType.ADD_ON,
+              (item) => item.cartId !== cartId && !this.isParentCartItem(item),
             );
           }
         }
