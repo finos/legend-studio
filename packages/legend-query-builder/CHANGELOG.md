@@ -1,5 +1,21 @@
 # @finos/legend-query-builder
 
+## 4.19.0
+
+### Minor Changes
+
+- [#5409](https://github.com/finos/legend-studio/pull/5409) [`2f7fb59`](https://github.com/finos/legend-studio/commit/2f7fb59993fc1eb11383fe9a2fef6f05bf2d4a9d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `IngestionDefinitionArtifactViewer` for viewing generated ingest definition artifacts (mat view explorer, schema grid, SQL sub-tabs for view function / barrier / select, JSON view, fullscreen toggle). Wire a "View SQL" action into the Ingest Definition editor that generates and caches the artifact by hash. Extend `tryToFormatSql` with an optional `language` parameter (defaults to `mysql`) so the viewer can format Snowflake SQL.
+
+### Patch Changes
+
+- [#5406](https://github.com/finos/legend-studio/pull/5406) [`28497ab`](https://github.com/finos/legend-studio/commit/28497ab69c55bafb2790b14139e2539e94b25aeb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix Data Product query builder for Lakehouse access points:
+
+  - `initWithDataProduct` now wires the accessor as the source element for Lakehouse execution contexts even when the graph has no compatible `LakehouseRuntime`, so the relation explorer loads instead of falling back to the class explorer.
+  - Always render the runtime selector in the Data Product setup panel. When no compatible runtime is available, it renders disabled with a red border and a "No compatible runtimes available" placeholder.
+  - Show the enclosing access point group id as a subtitle in the Execution ID dropdown option label for Lakehouse access points, to disambiguate access points that share the same title/id across different groups.
+
+- [#5401](https://github.com/finos/legend-studio/pull/5401) [`f6d3aa8`](https://github.com/finos/legend-studio/commit/f6d3aa87a19a7553e59a4f2efcfac68c4fc46384) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add support for viewing and loading a query's version history in Legend Query. A saved query can be opened from the `/query/{queryId}/history` endpoint, and a specific revision (identified by its `version`) can be loaded via a new `revisionId` route parameter. The history is surfaced through a "Query History" action in the query editor help menu and a "Show Query History" action per query in the load-query dialog.
+
 ## 4.18.32
 
 ## 4.18.31

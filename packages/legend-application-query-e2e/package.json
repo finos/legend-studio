@@ -1,0 +1,37 @@
+{
+  "name": "@finos/legend-application-query-e2e",
+  "private": true,
+  "description": "Legend Query web application end-to-end tests",
+  "keywords": [
+    "legend",
+    "legend-application",
+    "legend-query",
+    "e2e",
+    "end-to-end-tests"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/finos/legend-studio.git",
+    "directory": "packages/legend-application-query-e2e"
+  },
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "clean": "yarn clean:cache",
+    "clean:cache": "rimraf \"build\"",
+    "lint:js": "cross-env NODE_ENV=production eslint --cache --cache-location ./build/.eslintcache --report-unused-disable-directives --parser-options=project:\"./tsconfig.json\",requireConfigFile:false \"./src/**/*.{js,ts,tsx}\"",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report build/playwright-report",
+    "test:e2e:setup": "playwright install chromium",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@finos/legend-dev-utils": "workspace:*",
+    "@playwright/test": "1.61.0",
+    "cross-env": "7.0.3",
+    "eslint": "9.22.0",
+    "rimraf": "6.0.1",
+    "typescript": "5.8.2"
+  }
+}

@@ -22,18 +22,26 @@ import {
   ChevronRightIcon,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
+  InfoCircleIcon,
   SearchIcon,
   TimesIcon,
 } from '@finos/legend-art';
 import type { TaxonomyNode } from '@finos/legend-server-marketplace';
 import {
   type LegendMarketplaceSearchResultsStore,
+  DataProductLicenseFilter,
   DataProductSourceFilter,
+  getDataProductLicenseDisplayLabel,
+  getDataProductLicenseTooltip,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import { useAuth } from 'react-oidc-context';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
+import {
+  buildUndefinedTaxonomyNode,
+  matchesUndefinedTaxonomyNode,
+} from './MarketplaceSearchFiltersPanelHelper.js';
 
 interface FlatSearchGroup {
   parentPath: string | undefined;
@@ -88,6 +96,8 @@ const TaxonomyTreeNode: React.FC<{
   const hasChildren = node.children.length > 0;
   const isSelected = store.selectedTaxonomyNodeIds.has(node.id);
 
+  // Taxonomy counts from the API are not filtered by source or license.
+  // Hide counts only for expanded parent nodes to avoid double-counting with children.
   const showCount = node.count > 0 && !(hasChildren && expanded);
 
   const handleToggleExpand = useCallback(
@@ -199,7 +209,8 @@ export const FilterCheckboxOption: React.FC<{
   checked: boolean;
   onChange: () => void;
   count?: number;
-}> = observer(({ label, checked, onChange, count }) => (
+  tooltip?: string;
+}> = observer(({ label, checked, onChange, count, tooltip }) => (
   <div
     className="marketplace-search-filters-panel__section__option"
     role="button"
@@ -225,6 +236,12 @@ export const FilterCheckboxOption: React.FC<{
     <Typography className="marketplace-search-filters-panel__section__option__label">
       {label}
     </Typography>
+    {tooltip !== undefined && (
+      <InfoCircleIcon
+        className="marketplace-search-filters-panel__section__option__info"
+        title={tooltip}
+      />
+    )}
     {count !== undefined && count > 0 && (
       <span className="marketplace-search-filters-panel__count">{count}</span>
     )}
@@ -336,19 +353,29 @@ const renderTaxonomySearchResults = (
 const renderTaxonomyTree = (
   store: LegendMarketplaceSearchResultsStore,
   triggerSearch: () => void,
-): React.ReactNode => (
-  <div className="marketplace-search-filters-panel__tree">
-    {store.taxonomyTree.map((node) => (
+): React.ReactNode => {
+  const undefinedNode = buildUndefinedTaxonomyNode();
+  return (
+    <div className="marketplace-search-filters-panel__tree">
+      {store.taxonomyTree.map((node) => (
+        <TaxonomyTreeNode
+          key={node.id}
+          node={node}
+          store={store}
+          depth={0}
+          onFilterChange={triggerSearch}
+        />
+      ))}
       <TaxonomyTreeNode
-        key={node.id}
-        node={node}
+        key={undefinedNode.id}
+        node={undefinedNode}
         store={store}
         depth={0}
         onFilterChange={triggerSearch}
       />
-    ))}
-  </div>
-);
+    </div>
+  );
+};
 
 export const MarketplaceSearchFiltersPanel: React.FC<{
   store: LegendMarketplaceSearchResultsStore;
@@ -443,6 +470,28 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                 />
               ))}
             </FilterSection>
+            <FilterSection title="Access">
+              {Object.values(DataProductLicenseFilter).map((value) => (
+                <FilterCheckboxOption
+                  key={value}
+                  label={getDataProductLicenseDisplayLabel(value)}
+                  checked={store.selectedLicenses.has(value)}
+                  tooltip={getDataProductLicenseTooltip(value)}
+                  onChange={() => {
+                    const isSelected = store.selectedLicenses.has(value);
+                    store.toggleLicense(value);
+                    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+                      baseStore.applicationStore.telemetryService,
+                      'license',
+                      value,
+                      isSelected ? 'deselect' : 'select',
+                      store.searchQuery,
+                    );
+                    triggerSearch();
+                  }}
+                />
+              ))}
+            </FilterSection>
             {hasTree && (
               <FilterSection title="Taxonomy">
                 <div className="marketplace-search-filters-panel__search">
@@ -472,15 +521,29 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                     }}
                   />
                 </div>
-                {isSearchActive
-                  ? renderTaxonomySearchResults(
+                {isSearchActive ? (
+                  <>
+                    {renderTaxonomySearchResults(
                       flatSearchResults,
                       filterSearchTerm,
                       store,
                       baseStore,
                       triggerSearch,
-                    )
-                  : renderTaxonomyTree(store, triggerSearch)}
+                    )}
+                    {matchesUndefinedTaxonomyNode(filterSearchTerm) && (
+                      <div className="marketplace-search-filters-panel__tree">
+                        <TaxonomyTreeNode
+                          node={buildUndefinedTaxonomyNode()}
+                          store={store}
+                          depth={0}
+                          onFilterChange={triggerSearch}
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  renderTaxonomyTree(store, triggerSearch)
+                )}
               </FilterSection>
             )}
           </>

@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-export abstract class QueryChatState {
-  abstract abort(): void;
-}
+/**
+ * Tests in this package are Playwright end-to-end tests, not Jest tests.
+ * The root Jest config treats every `packages/*` directory as a project
+ * (falling back to Jest's default `testMatch`, which would pick up our
+ * `*.spec.ts` files), so this config explicitly matches nothing to keep
+ * Jest out of this package. Run these tests with `yarn test:e2e` instead.
+ */
+export default {
+  displayName: '@finos/legend-application-query-e2e',
+  testMatch: ['<rootDir>/__no-jest-tests__/**/*'],
+};
