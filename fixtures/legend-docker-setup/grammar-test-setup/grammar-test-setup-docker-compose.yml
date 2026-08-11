@@ -11,18 +11,6 @@ services:
     volumes:
       - ./config:/config
     command: ['server', '/config/engine-config.json']
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'curl',
-          '--fail',
-          '--silent',
-          'http://127.0.0.1:6300/api/server/v1/info',
-        ]
-      interval: 5s
-      timeout: 5s
-      retries: 120
 
 networks:
   legend: {}
