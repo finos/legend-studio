@@ -504,6 +504,20 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(await screen.findByText('Legacy Data Product'));
     });
 
+    test('Lakehouse data products show license chip when licenseTo is set', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      // The mock data has licenseTo: 'Enterprise' on some results
+      await waitFor(() => {
+        const licenseChips = screen.getAllByTitle('License To');
+        expect(licenseChips.length).toBeGreaterThanOrEqual(1);
+        // Verify the label uses getDataProductLicenseDisplayLabel
+        expect(licenseChips[0]?.textContent).toBe('Enterprise');
+      });
+    });
+
     test('Clicking on ingest environment chip displays tooltip with owners', async () => {
       await setupTestComponent('data', 'prod');
 
@@ -1379,6 +1393,347 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(screen.getByTitle('Tile View')).toBeDefined();
       expect(screen.getByTitle('List View')).toBeDefined();
+    });
+  });
+
+  describe('Access (License) Filter', () => {
+    test('renders all license filter options under Access section', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      await waitFor(() => {
+        expect(panel.getByText('Access')).toBeDefined();
+      });
+
+      // Check all license options are rendered with correct display labels
+      expect(panel.getByText('Enterprise')).toBeDefined();
+      expect(panel.getByText('Partial Enterprise')).toBeDefined();
+      expect(panel.getByText('Restricted')).toBeDefined();
+      // "Unknown" appears both in Access (license) and Taxonomy (node)
+      expect(panel.getAllByText('Unknown').length).toBeGreaterThanOrEqual(1);
+    });
+
+    test('renders tooltip info icons for each license option', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        expect(screen.getByText('Access')).toBeDefined();
+      });
+
+      // InfoCircleIcon renders with title attribute containing the tooltip text
+      expect(
+        screen.getByTitle(
+          'Data product available for firmwide use without requesting access',
+        ),
+      ).toBeDefined();
+      expect(
+        screen.getByTitle(
+          'Data product with some Access Point Groups available enterprise-wide; others require requesting access',
+        ),
+      ).toBeDefined();
+      expect(
+        screen.getByTitle(
+          'Data product that requires requesting access before you can query it',
+        ),
+      ).toBeDefined();
+      expect(
+        screen.getByTitle('Data product with no license defined'),
+      ).toBeDefined();
+    });
+
+    test('clicking a license filter triggers search with license_to filter', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      await waitFor(() => {
+        expect(panel.getByText('Access')).toBeDefined();
+      });
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Click on 'Enterprise' license filter
+      await act(async () => {
+        fireEvent.click(panel.getByText('Enterprise'));
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        'hybrid',
+        ['license_to=Enterprise'],
+        12,
+        1,
+        false,
+      );
+    });
+
+    test('clicking multiple license filters passes combined filter', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      await waitFor(() => {
+        expect(panel.getByText('Access')).toBeDefined();
+      });
+
+      // Click 'Enterprise' first
+      await act(async () => {
+        fireEvent.click(panel.getByText('Enterprise'));
+        await flushMicrotasks();
+      });
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Click 'Restricted'
+      await act(async () => {
+        fireEvent.click(panel.getByText('Restricted'));
+        await flushMicrotasks();
+      });
+
+      const lastCall = (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mock.calls[0];
+      const filters = lastCall?.[3] as string[];
+      expect(filters).toHaveLength(1);
+      expect(filters[0]?.startsWith('license_to=')).toBe(true);
+      const licenseValues =
+        filters[0]?.replace('license_to=', '').split(',') ?? [];
+      expect(licenseValues).toEqual(
+        expect.arrayContaining(['Enterprise', 'Restricted']),
+      );
+    });
+
+    test('clicking Unknown license maps to empty string in filter', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      await waitFor(() => {
+        expect(panel.getByText('Access')).toBeDefined();
+      });
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+      const undefinedOptions = panel.getAllByText('Unknown');
+      const undefinedOption = undefinedOptions[0] as HTMLElement;
+      await act(async () => {
+        fireEvent.click(undefinedOption);
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        'hybrid',
+        ['license_to='],
+        12,
+        1,
+        false,
+      );
+    });
+
+    test('clear all resets license filters', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      await waitFor(() => {
+        expect(panel.getByText('Access')).toBeDefined();
+      });
+
+      // Click a license filter
+      await act(async () => {
+        fireEvent.click(panel.getByText('Enterprise'));
+        await flushMicrotasks();
+      });
+
+      expect(panel.getByText('Clear all')).toBeDefined();
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Clear all
+      await act(async () => {
+        fireEvent.click(panel.getByText('Clear all'));
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        'hybrid',
+        [],
+        12,
+        1,
+        false,
+      );
+    });
+  });
+
+  describe('Undefined Taxonomy Node', () => {
+    test('renders the Unknown node at the bottom of the taxonomy tree', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        expect(screen.getByText('Taxonomy')).toBeDefined();
+      });
+
+      // The synthetic "Unknown" node should be rendered in the tree
+      // Note: There will be two "Unknown" texts — one in Access section (license)
+      // and one in Taxonomy section
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      const undefinedTexts = panel.getAllByText('Unknown');
+      // At least 2: one for the license filter, one for the taxonomy node
+      expect(undefinedTexts.length).toBeGreaterThanOrEqual(2);
+    });
+
+    test('clicking the Unknown taxonomy node triggers search with taxonomy= filter', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        expect(screen.getByText('Taxonomy')).toBeDefined();
+      });
+
+      (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mockClear();
+
+      // Find the taxonomy tree section and click the "Unknown" node there
+      const treeContainer = document.querySelector(
+        '.marketplace-search-filters-panel__tree',
+      ) as HTMLElement;
+      const tree = within(treeContainer);
+
+      await act(async () => {
+        fireEvent.click(tree.getByText('Unknown'));
+        await flushMicrotasks();
+      });
+
+      const lastCall = (
+        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+      ).mock.calls[0];
+      const filters = lastCall?.[3] as string[];
+      expect(filters).toHaveLength(1);
+      expect(filters[0]).toBe('taxonomy=');
+    });
+
+    test('Unknown taxonomy node appears in search results when searching "unkn"', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        expect(screen.getByText('Taxonomy')).toBeDefined();
+      });
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      // Type in the taxonomy search box
+      const searchInput = panel.getByPlaceholderText('Search taxonomy...');
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: 'unkn' } });
+      });
+
+      // The "Unknown" node should still be visible via matchesUndefinedTaxonomyNode
+      await waitFor(() => {
+        const treeNodes = filterPanel.querySelectorAll(
+          '.marketplace-search-filters-panel__tree',
+        );
+        // At least one tree container should have the Unknown node
+        const hasUndefined = Array.from(treeNodes).some((container) =>
+          container.textContent?.includes('Unknown'),
+        );
+        expect(hasUndefined).toBe(true);
+      });
+    });
+
+    test('Unknown taxonomy node does not appear when search term does not match', async () => {
+      await setupTestComponent('data', 'prod');
+
+      await screen.findByText('4 Products');
+
+      await waitFor(() => {
+        expect(screen.getByText('Taxonomy')).toBeDefined();
+      });
+
+      const filterPanel = document.querySelector(
+        '.marketplace-search-filters-panel',
+      ) as HTMLElement;
+      const panel = within(filterPanel);
+
+      // Type a term that does not match "unknown"
+      const searchInput = panel.getByPlaceholderText('Search taxonomy...');
+      await act(async () => {
+        fireEvent.change(searchInput, { target: { value: 'xyz' } });
+      });
+
+      // Wait a tick for re-render
+      await act(async () => {
+        await flushMicrotasks();
+      });
+
+      // Should not find "Unknown" in any tree container (the taxonomy search
+      // results should not show it either since "xyz" doesn't match the label)
+      const treeNodes = filterPanel.querySelectorAll(
+        '.marketplace-search-filters-panel__tree',
+      );
+      const hasUndefined = Array.from(treeNodes).some((container) =>
+        container.textContent?.includes('Unknown'),
+      );
+      expect(hasUndefined).toBe(false);
     });
   });
 });

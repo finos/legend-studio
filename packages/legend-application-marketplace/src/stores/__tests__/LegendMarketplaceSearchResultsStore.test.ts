@@ -21,9 +21,16 @@ import {
   SearchResultsViewMode,
   DataProductTypeFilter,
   DataProductSourceFilter,
+  DataProductLicenseFilter,
+  TAXONOMY_UNDEFINED_NODE_ID,
+  getDataProductLicenseTooltip,
 } from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { mockTaxonomyTreeResponse } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
+import {
+  buildUndefinedTaxonomyNode,
+  matchesUndefinedTaxonomyNode,
+} from '../../components/MarketplaceSearchFiltersPanel/MarketplaceSearchFiltersPanelHelper.js';
 
 const setupStore = async (): Promise<{
   store: LegendMarketplaceSearchResultsStore;
@@ -601,5 +608,268 @@ describe('LegendMarketplaceSearchResultsStore - Show All Products', () => {
 
     store.setHasFilteredDataProducts(false);
     expect(store.hasFilteredDataProducts).toBe(false);
+  });
+});
+
+describe('LegendMarketplaceSearchResultsStore - Access (License) Filter', () => {
+  describe('toggleLicense', () => {
+    test('adds a license when not selected', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+
+      expect(
+        store.selectedLicenses.has(DataProductLicenseFilter.ENTERPRISE),
+      ).toBe(true);
+      expect(store.selectedLicenses.size).toBe(1);
+    });
+
+    test('removes a license when already selected', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+
+      expect(
+        store.selectedLicenses.has(DataProductLicenseFilter.ENTERPRISE),
+      ).toBe(false);
+      expect(store.selectedLicenses.size).toBe(0);
+    });
+
+    test('can select multiple licenses', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+      store.toggleLicense(DataProductLicenseFilter.RESTRICTED);
+
+      expect(store.selectedLicenses.size).toBe(2);
+      expect(
+        store.selectedLicenses.has(DataProductLicenseFilter.ENTERPRISE),
+      ).toBe(true);
+      expect(
+        store.selectedLicenses.has(DataProductLicenseFilter.RESTRICTED),
+      ).toBe(true);
+    });
+
+    test('can select all license values', async () => {
+      const { store } = await setupStore();
+
+      Object.values(DataProductLicenseFilter).forEach((v) =>
+        store.toggleLicense(v),
+      );
+
+      expect(store.selectedLicenses.size).toBe(
+        Object.values(DataProductLicenseFilter).length,
+      );
+    });
+  });
+
+  describe('hasActiveFilters with licenses', () => {
+    test('returns true when license filter is active', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.RESTRICTED);
+
+      expect(store.hasActiveFilters).toBe(true);
+    });
+  });
+
+  describe('clearAllFilters clears licenses', () => {
+    test('clears selected licenses along with other filters', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+      store.toggleLicense(DataProductLicenseFilter.RESTRICTED);
+      store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
+
+      expect(store.hasActiveFilters).toBe(true);
+
+      store.clearAllFilters();
+
+      expect(store.selectedLicenses.size).toBe(0);
+      expect(store.selectedDataProductTypes.size).toBe(0);
+      expect(store.hasActiveFilters).toBe(false);
+    });
+  });
+
+  describe('buildSearchFilters with licenses', () => {
+    test('builds correct filter string for a single license', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toEqual(['license_to=Enterprise']);
+    });
+
+    test('builds correct filter string for multiple licenses', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+      store.toggleLicense(DataProductLicenseFilter.RESTRICTED);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toHaveLength(1);
+      expect(filters[0]).toMatch(/^license_to=/);
+      expect(filters[0]).toContain('Enterprise');
+      expect(filters[0]).toContain('Restricted');
+    });
+
+    test('maps UNDEFINED license to empty string for the backend', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.UNDEFINED);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toEqual(['license_to=']);
+    });
+
+    test('maps UNDEFINED to empty string alongside other licenses', async () => {
+      const { store } = await setupStore();
+
+      store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
+      store.toggleLicense(DataProductLicenseFilter.UNDEFINED);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toHaveLength(1);
+      const licenseFilter = filters[0] as string;
+      expect(licenseFilter).toMatch(/^license_to=/);
+      // The value should contain 'Enterprise' and an empty segment
+      const values = licenseFilter.replace('license_to=', '').split(',');
+      expect(values).toContain('Enterprise');
+      expect(values).toContain('');
+    });
+  });
+});
+
+describe('LegendMarketplaceSearchResultsStore - Undefined Taxonomy Node', () => {
+  describe('buildSearchFilters with undefined taxonomy node', () => {
+    test('maps TAXONOMY_UNDEFINED_NODE_ID to empty string for the backend', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.simpleToggleTaxonomyNode(TAXONOMY_UNDEFINED_NODE_ID);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toHaveLength(1);
+      expect(filters[0]).toBe('taxonomy=');
+    });
+
+    test('includes both real taxonomy IDs and empty string for undefined', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+      store.simpleToggleTaxonomyNode(TAXONOMY_UNDEFINED_NODE_ID);
+
+      const filters = (
+        store as unknown as { buildSearchFilters: () => string[] }
+      ).buildSearchFilters();
+      expect(filters).toHaveLength(1);
+      const taxonomyFilter = filters[0] as string;
+      expect(taxonomyFilter).toMatch(/^taxonomy=/);
+      const values = taxonomyFilter.replace('taxonomy=', '').split(',');
+      expect(values).toContain('referenceData::marketData::esg');
+      expect(values).toContain('');
+    });
+  });
+
+  describe('clearAllFilters clears undefined taxonomy selection', () => {
+    test('clears the undefined taxonomy node along with others', async () => {
+      const { store } = await setupStore();
+      store.setTaxonomyTree(mockTaxonomyTreeResponse.taxonomy_tree);
+
+      store.simpleToggleTaxonomyNode(TAXONOMY_UNDEFINED_NODE_ID);
+      store.toggleTaxonomyNode('referenceData::marketData::esg');
+
+      expect(store.hasActiveFilters).toBe(true);
+
+      store.clearAllFilters();
+
+      expect(store.selectedTaxonomyNodeIds.size).toBe(0);
+      expect(store.hasActiveFilters).toBe(false);
+    });
+  });
+});
+
+describe('MarketplaceSearchFiltersPanelHelper', () => {
+  describe('buildUndefinedTaxonomyNode', () => {
+    test('creates a node with the undefined ID and label', () => {
+      const node = buildUndefinedTaxonomyNode();
+
+      expect(node.id).toBe(TAXONOMY_UNDEFINED_NODE_ID);
+      expect(node.label).toBe('Unknown');
+      expect(node.count).toBe(0);
+      expect(node.children).toEqual([]);
+    });
+  });
+
+  describe('matchesUndefinedTaxonomyNode', () => {
+    test('matches full "unknown" term', () => {
+      expect(matchesUndefinedTaxonomyNode('unknown')).toBe(true);
+    });
+
+    test('matches partial term "unkn"', () => {
+      expect(matchesUndefinedTaxonomyNode('unkn')).toBe(true);
+    });
+
+    test('matches single character "u"', () => {
+      expect(matchesUndefinedTaxonomyNode('u')).toBe(true);
+    });
+
+    test('is case-insensitive', () => {
+      expect(matchesUndefinedTaxonomyNode('UNKNOWN')).toBe(true);
+      expect(matchesUndefinedTaxonomyNode('Unkn')).toBe(true);
+    });
+
+    test('does not match unrelated terms', () => {
+      expect(matchesUndefinedTaxonomyNode('enterprise')).toBe(false);
+      expect(matchesUndefinedTaxonomyNode('other')).toBe(false);
+      expect(matchesUndefinedTaxonomyNode('xyz')).toBe(false);
+    });
+
+    test('matches empty string (everything matches empty search)', () => {
+      expect(matchesUndefinedTaxonomyNode('')).toBe(true);
+    });
+  });
+});
+
+describe('getDataProductLicenseTooltip', () => {
+  test('returns correct tooltip for ENTERPRISE', () => {
+    expect(
+      getDataProductLicenseTooltip(DataProductLicenseFilter.ENTERPRISE),
+    ).toBe('Data product available for firmwide use without requesting access');
+  });
+
+  test('returns correct tooltip for LIMITED_ENTERPRISE', () => {
+    expect(
+      getDataProductLicenseTooltip(DataProductLicenseFilter.LIMITED_ENTERPRISE),
+    ).toBe(
+      'Data product with some Access Point Groups available enterprise-wide; others require requesting access',
+    );
+  });
+
+  test('returns correct tooltip for RESTRICTED', () => {
+    expect(
+      getDataProductLicenseTooltip(DataProductLicenseFilter.RESTRICTED),
+    ).toBe(
+      'Data product that requires requesting access before you can query it',
+    );
+  });
+
+  test('returns correct tooltip for UNDEFINED', () => {
+    expect(
+      getDataProductLicenseTooltip(DataProductLicenseFilter.UNDEFINED),
+    ).toBe('Data product with no license defined');
   });
 });

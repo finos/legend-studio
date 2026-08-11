@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.243
+
+### Patch Changes
+
+- [#5417](https://github.com/finos/legend-studio/pull/5417) [`b7312d7`](https://github.com/finos/legend-studio/commit/b7312d781d6080a7903dca1cd6c006d9385039f5) ([@bojja-gs](https://github.com/bojja-gs)) - Make the Legend AI chat launcher a floating, draggable button so it can be moved clear of transient notifications in the bottom-right corner. The launcher docks to the nearest viewport corner when dropped, re-clamps itself on window resize, distinguishes a drag from a click, and opens the chat on a plain click. Long data product names are now truncated with an ellipsis in the chat header (so the minimize/close actions stay visible) and in the launcher's hover label.
+
 ## 10.4.242
 
 ## 10.4.241

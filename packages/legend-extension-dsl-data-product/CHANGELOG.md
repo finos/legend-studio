@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.104
+
+### Patch Changes
+
+- [#5412](https://github.com/finos/legend-studio/pull/5412) [`21903b4`](https://github.com/finos/legend-studio/commit/21903b4ded183a57a02f620b2d8296d2641fec70) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disabled DataCube, SQL Playground, Legend Query, and Power BI tabs in the Data Product Viewer for access points whose target environment isn't Snowflake (e.g. Databricks, BigQuery, DuckDb), showing a not-supported message instead. The Data Product Viewer's auto-generated Lakehouse runtime only ever synthesizes a Snowflake connection, so non-Snowflake access points would otherwise fail at query time.
+
+- [#5417](https://github.com/finos/legend-studio/pull/5417) [`b7312d7`](https://github.com/finos/legend-studio/commit/b7312d781d6080a7903dca1cd6c006d9385039f5) ([@bojja-gs](https://github.com/bojja-gs)) - Make the Legend AI chat launcher a floating, draggable button so it can be moved clear of transient notifications in the bottom-right corner. The launcher docks to the nearest viewport corner when dropped, re-clamps itself on window resize, distinguishes a drag from a click, and opens the chat on a plain click. Long data product names are now truncated with an ellipsis in the chat header (so the minimize/close actions stay visible) and in the launcher's hover label.
+
 ## 0.0.103
 
 ### Patch Changes
