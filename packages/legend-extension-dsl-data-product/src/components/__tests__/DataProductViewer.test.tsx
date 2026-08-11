@@ -2574,7 +2574,7 @@ describe('DataProductViewer', () => {
       screen.getByRole('button', { name: 'System Account' });
     });
 
-    test('On enterprise APG, Request Access for Others button opens create contract modal for only system account', async () => {
+    test('On enterprise APG, Request Access for Others button opens create contract modal with system account and user', async () => {
       await setupLakehouseDataProductTest(
         mockEnterpriseDataProduct,
         mockEntitlementsEnterpriseDataProduct,
@@ -2593,10 +2593,7 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Data Contract Request');
       await screen.findByRole('button', { name: 'System Account' });
-      expect(screen.queryByRole('button', { name: 'User' })).toBeNull();
-      screen.getByText(
-        'Note: Enterprise APGs only require contracts for System Accounts. Regular users do not need to request access.',
-      );
+      await screen.findByRole('button', { name: 'User' });
     });
 
     test('displays disabled UNKNOWN button when no DataProductDataAccessState is provided', async () => {
