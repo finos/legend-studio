@@ -169,12 +169,6 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
 
       return (
         <>
-          {apgState.access === AccessPointGroupAccess.ENTERPRISE && (
-            <p className="marketplace-lakehouse-entitlements__data-contract-creator__enterprise-apg-notice">
-              Note: Enterprise APGs only require contracts for System Accounts.
-              Regular users do not need to request access.
-            </p>
-          )}
           {type === 'producer' ? (
             <TextField
               className="marketplace-lakehouse-entitlements__data-contract-creator__producer-input"
@@ -226,6 +220,7 @@ export class Core_DataProductDataAccess_LegendApplicationPlugin
     return [
       {
         type: 'User',
+        enableForEnterpriseAPGs: true,
         createContractRenderer: (
           apgState: DataProductAPGState,
           handleOrganizationalScopeChange: (
