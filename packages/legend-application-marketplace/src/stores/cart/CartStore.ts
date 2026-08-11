@@ -24,6 +24,7 @@ import {
 } from 'mobx';
 import {
   LogEvent,
+  type PlainObject,
   type GeneratorFn,
   assertErrorThrown,
   ActionState,
@@ -35,7 +36,7 @@ import {
   type CartItemResponse,
   type CartSummary,
   type OrderDetails,
-  type TerminalResult,
+  TerminalResult,
   type TraderProfile,
   type TraderProfileItem,
   RecommendationSource,
@@ -91,6 +92,11 @@ export interface AddOnAssociationResult {
   recommendations?: TerminalResult[];
   totalCount?: number | null;
   shouldCloseModal: boolean;
+}
+
+interface AddOnCartRequestOptions {
+  overridePermissionId?: number;
+  overrideModel?: string | null;
 }
 
 export class CartStore {
@@ -324,8 +330,12 @@ export class CartStore {
         toastManager.success(responseMessage);
       }
 
-      const recommendations: TerminalResult[] =
-        response.marketplace_addons ?? response.marketplace_terminals ?? [];
+      const recommendationPayloads = (response.marketplace_addons ??
+        response.marketplace_terminals ??
+        []) as unknown as PlainObject<TerminalResult>[];
+      const recommendations = recommendationPayloads.map((payload) =>
+        TerminalResult.serialization.fromJson(payload),
+      );
 
       const parentVendorId = response.vendor_profile_id;
       if (parentVendorId && recommendations.length > 0) {
@@ -355,24 +365,14 @@ export class CartStore {
 
   *associateAddOnToTerminal(
     selectedTerminal: TerminalResult,
-    options?: {
-      overridePermissionId?: number;
-      overrideModel?: string | null;
-    },
+    options?: AddOnCartRequestOptions,
   ): GeneratorFn<AddOnAssociationResult> {
-    const { overridePermissionId, overrideModel } = options ?? {};
+    const { overridePermissionId } = options ?? {};
 
     this.associationState.inProgress();
     this.associatingItemId = selectedTerminal.id;
     try {
-      const cartRequest = this.providerToCartRequest(selectedTerminal);
-      if (overridePermissionId !== undefined) {
-        cartRequest.permissionId = overridePermissionId;
-        cartRequest.skipWorkflow = true;
-      }
-      if (overrideModel !== null && overrideModel !== undefined) {
-        cartRequest.model = overrideModel;
-      }
+      const cartRequest = this.buildAddonCartRequest(selectedTerminal, options);
 
       const result = (yield flowResult(this.addToCartWithAPI(cartRequest))) as {
         success: boolean;
@@ -672,6 +672,24 @@ export class CartStore {
     };
   }
 
+  buildAddonCartRequest(
+    provider: TerminalResult,
+    options?: AddOnCartRequestOptions,
+  ): CartItemRequest {
+    const cartItemRequest = this.providerToCartRequest(provider);
+    const { overridePermissionId, overrideModel } = options ?? {};
+
+    if (overridePermissionId !== undefined) {
+      cartItemRequest.permissionId = overridePermissionId;
+      cartItemRequest.skipWorkflow = true;
+    }
+    if (overrideModel !== undefined && overrideModel !== null) {
+      cartItemRequest.model = overrideModel;
+    }
+
+    return cartItemRequest;
+  }
+
   *initialize(): GeneratorFn<void> {
     if (!this.initState.isInInitialState) {
       return;
@@ -701,10 +719,17 @@ export class CartStore {
         user,
       )) as Record<number, CartItem[]>;
 
-      this.cartSummary =
+      const cartSummary =
         (yield this.baseStore.marketplaceServerClient.getCartSummary(
           user,
         )) as CartSummary;
+      this.cartSummary = {
+        ...cartSummary,
+        formatted_total_cost: cartSummary.formatted_total_cost.replace(
+          '$ ',
+          '$',
+        ),
+      };
     } catch (error) {
       assertErrorThrown(error);
       this.baseStore.applicationStore.logService.error(
@@ -834,104 +859,98 @@ export class CartStore {
     }
   }
 
-  requestDeleteItemConfirmation(item: CartItem, vendorGroup: CartItem[]): void {
-    const applicationStore = this.baseStore.applicationStore;
-    const addons = this.getGroupAddOns(vendorGroup);
-
-    if (this.isParentCartItem(item) && addons.length > 0) {
-      applicationStore.alertService.setActionAlertInfo({
-        title: 'Remove Vendor Profile?',
-        message: `Remove "${item.productName}"?`,
-        messageClass: ALERT_MESSAGE_CLASS,
-        prompt: `Removing this vendor profile will also remove ${addons.length} associated add-on${addons.length === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Remove All',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              flowResult(this.deleteCartItem(item.cartId, true)).catch(
-                applicationStore.alertUnhandledError,
-              );
-            },
-          },
-          CANCEL_ACTION,
-        ],
-      });
-      return;
-    }
-
-    if (!this.isParentCartItem(item) && item.isMandatory) {
-      const totalItems = vendorGroup.length;
-      applicationStore.alertService.setActionAlertInfo({
-        title: 'Remove Required Service?',
-        message: `Remove "${item.productName}"?`,
-        messageClass: ALERT_MESSAGE_CLASS,
-        prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 === 1 ? '' : 's'}. Do you want to continue?`,
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Remove All',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              flowResult(this.deleteCartItem(item.cartId, true)).catch(
-                applicationStore.alertUnhandledError,
-              );
-            },
-          },
-          CANCEL_ACTION,
-        ],
-      });
-      return;
-    }
-
-    applicationStore.alertService.setActionAlertInfo({
-      title: 'Remove Item?',
-      message: `Remove "${item.productName}"?`,
+  private requestCartActionAlert(params: {
+    title: string;
+    message: string;
+    prompt: string;
+    proceedLabel: string;
+    handler: () => void;
+  }): void {
+    this.baseStore.applicationStore.alertService.setActionAlertInfo({
+      title: params.title,
+      message: params.message,
       messageClass: ALERT_MESSAGE_CLASS,
-      prompt: `Are you sure you want to remove "${item.productName}" from your cart?`,
+      prompt: params.prompt,
       type: ActionAlertType.CAUTION,
       actions: [
         {
-          label: 'Remove',
+          label: params.proceedLabel,
           type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): void => {
-            flowResult(this.deleteCartItem(item.cartId)).catch(
-              applicationStore.alertUnhandledError,
-            );
-          },
+          handler: params.handler,
         },
         CANCEL_ACTION,
       ],
     });
   }
 
+  requestDeleteItemConfirmation(item: CartItem, vendorGroup: CartItem[]): void {
+    const applicationStore = this.baseStore.applicationStore;
+    const addons = this.getGroupAddOns(vendorGroup);
+
+    if (this.isParentCartItem(item) && addons.length > 0) {
+      this.requestCartActionAlert({
+        title: 'Remove Vendor Profile?',
+        message: `Remove "${item.productName}"?`,
+        prompt: `Removing this vendor profile will also remove ${addons.length} associated add-on${addons.length === 1 ? '' : 's'}. This action cannot be undone. Do you want to continue?`,
+        proceedLabel: 'Remove All',
+        handler: (): void => {
+          flowResult(this.deleteCartItem(item.cartId, true)).catch(
+            applicationStore.alertUnhandledError,
+          );
+        },
+      });
+      return;
+    }
+
+    if (!this.isParentCartItem(item) && item.isMandatory) {
+      const totalItems = vendorGroup.length;
+      this.requestCartActionAlert({
+        title: 'Remove Required Service?',
+        message: `Remove "${item.productName}"?`,
+        prompt: `This is a required service. Removing it will also remove the vendor profile and all ${totalItems - 1} associated item${totalItems - 1 === 1 ? '' : 's'}. Do you want to continue?`,
+        proceedLabel: 'Remove All',
+        handler: (): void => {
+          flowResult(this.deleteCartItem(item.cartId, true)).catch(
+            applicationStore.alertUnhandledError,
+          );
+        },
+      });
+      return;
+    }
+
+    this.requestCartActionAlert({
+      title: 'Remove Item?',
+      message: `Remove "${item.productName}"?`,
+      prompt: `Are you sure you want to remove "${item.productName}" from your cart?`,
+      proceedLabel: 'Remove',
+      handler: (): void => {
+        flowResult(this.deleteCartItem(item.cartId)).catch(
+          applicationStore.alertUnhandledError,
+        );
+      },
+    });
+  }
+
   requestDeleteGroupConfirmation(vendorGroup: CartItem[]): void {
     const applicationStore = this.baseStore.applicationStore;
     const count = vendorGroup.length;
+    const parentItem = vendorGroup.find((item) => this.isParentCartItem(item));
     const cartIds = vendorGroup.map((item) => item.cartId);
 
-    applicationStore.alertService.setActionAlertInfo({
+    this.requestCartActionAlert({
       title: 'Remove Items?',
       message: `Remove ${count} item${count === 1 ? '' : 's'}?`,
-      messageClass: ALERT_MESSAGE_CLASS,
       prompt: `Are you sure you want to remove all ${count} item${count === 1 ? '' : 's'} from this group? This action cannot be undone.`,
-      type: ActionAlertType.CAUTION,
-      actions: [
-        {
-          label: 'Remove All',
-          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): void => {
-            flowResult(
-              this.deleteCartItemsSequentially(
-                cartIds,
-                'Items removed successfully',
-              ),
-            ).catch(applicationStore.alertUnhandledError);
-          },
-        },
-        CANCEL_ACTION,
-      ],
+      proceedLabel: 'Remove All',
+      handler: (): void => {
+        const deleteAction = parentItem
+          ? this.deleteCartItem(parentItem.cartId, true)
+          : this.deleteCartItemsSequentially(
+              cartIds,
+              'Items removed successfully',
+            );
+        flowResult(deleteAction).catch(applicationStore.alertUnhandledError);
+      },
     });
   }
 
@@ -939,24 +958,16 @@ export class CartStore {
     const applicationStore = this.baseStore.applicationStore;
     const itemCount = this.cartSummary.total_items;
 
-    applicationStore.alertService.setActionAlertInfo({
+    this.requestCartActionAlert({
       title: 'Clear Cart?',
       message: 'Clear all items?',
-      messageClass: ALERT_MESSAGE_CLASS,
       prompt: `This will remove all ${itemCount} item${itemCount === 1 ? '' : 's'} from your cart. This action cannot be undone. Do you want to continue?`,
-      type: ActionAlertType.CAUTION,
-      actions: [
-        {
-          label: 'Clear All',
-          type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-          handler: (): void => {
-            flowResult(this.clearCart()).catch(
-              applicationStore.alertUnhandledError,
-            );
-          },
-        },
-        CANCEL_ACTION,
-      ],
+      proceedLabel: 'Clear All',
+      handler: (): void => {
+        flowResult(this.clearCart()).catch(
+          applicationStore.alertUnhandledError,
+        );
+      },
     });
   }
 
