@@ -34,6 +34,7 @@ import {
   LakehouseDataProductSearchResultOriginType,
   LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
+  SearchType,
   type TaxonomyNode,
 } from '@finos/legend-server-marketplace';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
@@ -109,6 +110,7 @@ export interface FilterCounts {
   lakehouse_count: number;
   legacy_count: number;
   external_source_count: number;
+  internal_source_count: number;
 }
 
 export enum SearchResultsViewMode {
@@ -117,12 +119,37 @@ export enum SearchResultsViewMode {
 }
 
 export enum SearchResultViewOption {
-  DATA_PRODUCTS = 'Data Products',
+  DATA_SPACES = 'Dataspaces',
   DATA_FIELDS = 'Data Fields',
 }
 
-const LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE =
+export const LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE =
   'marketplace.search-results.viewMode';
+
+/**
+ * The subset of a search results store that {@link MarketplaceSearchFiltersPanel} needs.
+ *
+ * Declared structurally so that any search experience can reuse the shared filters panel.
+ * The concrete stores have private members, which would otherwise make them mutually
+ * incompatible even where their public shapes match.
+ */
+export interface TaxonomyFilterableSearchStore {
+  searchQuery: string | undefined;
+  taxonomyTree: TaxonomyNode[];
+  selectedTaxonomyNodeIds: Set<string>;
+  selectedSources: Set<DataProductSourceFilter>;
+  selectedLicenses: Set<DataProductLicenseFilter>;
+  filterCounts: FilterCounts;
+  totalItems: number;
+  hasActiveFilters: boolean;
+  isFirstLoad: boolean;
+  toggleTaxonomyNode(nodeId: string): void;
+  simpleToggleTaxonomyNode(nodeId: string): void;
+  toggleSource(value: DataProductSourceFilter): void;
+  toggleLicense(value: DataProductLicenseFilter): void;
+  clearAllFilters(): void;
+  setPage(value: number): void;
+}
 
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -147,6 +174,7 @@ export class LegendMarketplaceSearchResultsStore {
     lakehouse_count: 0,
     legacy_count: 0,
     external_source_count: 0,
+    internal_source_count: 0,
   };
 
   page = 1;
@@ -172,56 +200,57 @@ export class LegendMarketplaceSearchResultsStore {
         ? SearchResultsViewMode.LIST
         : SearchResultsViewMode.TILE;
 
-    makeObservable<
-      LegendMarketplaceSearchResultsStore,
-      '_lastTaxonomyQueryKey'
-    >(this, {
-      searchQuery: observable,
-      useProducerSearch: observable,
-      semanticSearchProductCardStates: observable,
-      producerSearchDataProductCardStates: observable,
-      producerSearchLegacyDataProductCardStates: observable,
-      sort: observable,
-      viewMode: observable,
-      taxonomyTree: observable,
-      selectedTaxonomyNodeIds: observable,
-      selectedDataProductTypes: observable,
-      selectedSources: observable,
-      selectedLicenses: observable,
-      filterCounts: observable,
-      _lastTaxonomyQueryKey: false,
-      setSearchQuery: action,
-      setUseProducerSearch: action,
-      page: observable,
-      itemsPerPage: observable,
-      totalItems: observable,
-      showAllProducts: observable,
-      hasFilteredDataProducts: observable,
-      setSemanticSearchProductCardStates: action,
-      setProducerSearchDataProductCardStates: action,
-      setProducerSearchLegacyDataProductCardStates: action,
-      setSort: action,
-      setViewMode: action,
-      setPage: action,
-      setItemsPerPage: action,
-      setTotalItems: action,
-      setShowAllProducts: action,
-      setHasFilteredDataProducts: action,
-      setTaxonomyTree: action,
-      setFilterCounts: action,
-      setSelectedTaxonomyNodeIds: action,
-      toggleTaxonomyNode: action,
-      simpleToggleTaxonomyNode: action,
-      toggleDataProductType: action,
-      toggleSource: action,
-      toggleLicense: action,
-      clearAllFilters: action,
-      filterSortProducts: computed,
-      isLoading: computed,
-      isOnLastPage: computed,
-      hasActiveFilters: computed,
-      executeSearch: flow,
-    });
+    makeObservable<LegendMarketplaceSearchResultsStore, '_lastTaxonomyQuery'>(
+      this,
+      {
+        searchQuery: observable,
+        useProducerSearch: observable,
+        semanticSearchProductCardStates: observable,
+        producerSearchDataProductCardStates: observable,
+        producerSearchLegacyDataProductCardStates: observable,
+        sort: observable,
+        viewMode: observable,
+        taxonomyTree: observable,
+        selectedTaxonomyNodeIds: observable,
+        selectedDataProductTypes: observable,
+        selectedSources: observable,
+        selectedLicenses: observable,
+        filterCounts: observable,
+        _lastTaxonomyQuery: false,
+        setSearchQuery: action,
+        setUseProducerSearch: action,
+        page: observable,
+        itemsPerPage: observable,
+        totalItems: observable,
+        showAllProducts: observable,
+        hasFilteredDataProducts: observable,
+        setSemanticSearchProductCardStates: action,
+        setProducerSearchDataProductCardStates: action,
+        setProducerSearchLegacyDataProductCardStates: action,
+        setSort: action,
+        setViewMode: action,
+        setPage: action,
+        setItemsPerPage: action,
+        setTotalItems: action,
+        setShowAllProducts: action,
+        setHasFilteredDataProducts: action,
+        setTaxonomyTree: action,
+        setFilterCounts: action,
+        setSelectedTaxonomyNodeIds: action,
+        toggleTaxonomyNode: action,
+        simpleToggleTaxonomyNode: action,
+        toggleDataProductType: action,
+        toggleSource: action,
+        toggleLicense: action,
+        clearAllFilters: action,
+        filterSortProducts: computed,
+        isLoading: computed,
+        isFirstLoad: computed,
+        isOnLastPage: computed,
+        hasActiveFilters: computed,
+        executeSearch: flow,
+      },
+    );
   }
 
   setSearchQuery(query: string): void {
@@ -285,6 +314,10 @@ export class LegendMarketplaceSearchResultsStore {
           this.fetchingProducerSearchLegacyDataProductsState.isInProgress
       : this.executingSemanticSearchState.isInProgress ||
           this.executingSemanticSearchState.isInInitialState;
+  }
+
+  get isFirstLoad(): boolean {
+    return this.executingSemanticSearchState.isInInitialState;
   }
 
   setPage(value: number): void {
@@ -674,7 +707,7 @@ export class LegendMarketplaceSearchResultsStore {
       const rawResults = await this.marketplaceServerClient.dataProductSearch(
         query,
         this.marketplaceBaseStore.envState.lakehouseEnvironment,
-        'hybrid',
+        SearchType.HYBRID,
         filters,
         this.itemsPerPage,
         this.page,
@@ -705,6 +738,7 @@ export class LegendMarketplaceSearchResultsStore {
         lakehouse_count: response.metadata.lakehouse_count ?? 0,
         legacy_count: response.metadata.legacy_count ?? 0,
         external_source_count: response.metadata.external_source_count ?? 0,
+        internal_source_count: response.metadata.internal_source_count ?? 0,
       });
     } finally {
       this.executingSemanticSearchState.complete();

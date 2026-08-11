@@ -48,6 +48,10 @@ export enum LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
 }
 
+export enum LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
+  QUERY = 'query',
+}
+
 export enum LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN {
   SELECTED_TAB = 'selectedTab',
 }
@@ -99,8 +103,9 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DATA_PRODUCT: `/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
   LEGACY_DATA_PRODUCT: `/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SDLC_DATA_PRODUCT: `/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
-  DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
+  DATA_SPACE_SEARCH_RESULTS: '/dataSpace/results',
   FIELD_SEARCH_RESULTS: '/dataProduct/fields/results',
+  LAKEHOUSE_ACCESS_SEARCH_RESULTS: '/lakehouseAccess/results',
   // Lakehouse
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK: `/lakehouse/entitlements/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID}`,
@@ -178,7 +183,7 @@ export const generateLakehouseSearchResultsRoute = (
   useProducerSearch: boolean,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
         query ? query : undefined,
@@ -192,7 +197,7 @@ export const generateSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.PROVIDER]: provider
         ? provider
@@ -210,6 +215,17 @@ export const generateFieldSearchResultsRoute = (
     LEGEND_MARKETPLACE_ROUTE_PATTERN.FIELD_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]: query,
+    }),
+  );
+
+export const generateLakehouseAccessSearchResultsRoute = (
+  query: string | undefined,
+): string =>
+  addQueryParametersToUrl(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS,
+    stringifyQueryParams({
+      [LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
+        query,
     }),
   );
 
