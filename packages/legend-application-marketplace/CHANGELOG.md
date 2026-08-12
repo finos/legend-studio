@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.3.1
+
+### Patch Changes
+
+- [#5432](https://github.com/finos/legend-studio/pull/5432) [`2409086`](https://github.com/finos/legend-studio/commit/24090864a31395eb3941759253c7ff937789adef) ([@TharunRajeev](https://github.com/TharunRajeev)) - Enable "User" and "Permit" as a request-access consumer type for Enterprise Access Point Groups.
+
 ## 0.3.0
 
 ### Minor Changes
