@@ -71,14 +71,14 @@ export const RecommendedItemsCard = observer(
     const handleAddAddonToCart = (addon: TerminalResult) => {
       setIsAddingToCart(true);
       const cartItemRequest =
-        legendMarketplaceBaseStore.cartStore.providerToCartRequest(addon);
-      if (permissionIdOverride !== undefined) {
-        cartItemRequest.permissionId = permissionIdOverride;
-        cartItemRequest.skipWorkflow = true;
-      }
-      if (modelOverride !== undefined && modelOverride !== null) {
-        cartItemRequest.model = modelOverride;
-      }
+        legendMarketplaceBaseStore.cartStore.buildAddonCartRequest(addon, {
+          ...(permissionIdOverride === undefined
+            ? {}
+            : { overridePermissionId: permissionIdOverride }),
+          ...(modelOverride === undefined
+            ? {}
+            : { overrideModel: modelOverride }),
+        });
 
       flowResult(
         legendMarketplaceBaseStore.cartStore.addToCartWithAPI(cartItemRequest),

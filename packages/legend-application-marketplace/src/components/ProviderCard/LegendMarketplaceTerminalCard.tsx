@@ -27,14 +27,17 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
-import { TerminalResult } from '@finos/legend-server-marketplace';
+import {
+  TerminalResult,
+  type PermissionAddonsSearchResponse,
+} from '@finos/legend-server-marketplace';
 import { CheckCircleIcon, ShoppingCartIcon } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { toastManager } from '../Toast/CartToast.js';
 import { RecommendedAddOnsModal } from '../AddToCart/RecommendedAddOnsModal.js';
-import { assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, type PlainObject } from '@finos/legend-shared';
 import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 
 const TERMINAL_CARD_ACTION = {
@@ -108,37 +111,31 @@ export const LegendMarketplaceTerminalCard = observer(
       try {
         const kerberos = legendMarketplaceBaseStore.cartStore.cartUser;
         const response =
-          await legendMarketplaceBaseStore.marketplaceServerClient.getPermissionAddons(
+          (await legendMarketplaceBaseStore.marketplaceServerClient.getPermissionAddons(
             kerberos,
             terminalResult.providerName,
             {
-              permission_id: terminalResult.permissionId ?? null,
+              ...(terminalResult.permissionId === undefined
+                ? {}
+                : { permission_id: terminalResult.permissionId }),
               page: 1,
               page_size: 300,
             },
-          );
-        const addons = Array.isArray(response.marketplace_addons)
-          ? response.marketplace_addons.map((addon) =>
-              TerminalResult.serialization.fromJson(
-                addon as Record<string, unknown>,
-              ),
-            )
-          : [];
-        const totalCount =
-          typeof response.total_count === 'number'
-            ? response.total_count
-            : null;
-        const permissionId =
-          typeof response.permissionId === 'number'
-            ? response.permissionId
-            : terminalResult.permissionId;
+          )) as unknown as PermissionAddonsSearchResponse;
+        const addons = response.marketplace_addons.map((item) =>
+          TerminalResult.serialization.fromJson(
+            item as unknown as PlainObject<TerminalResult>,
+          ),
+        );
         if (addons.length > 0) {
           setRecommendedItems(addons);
           setModalMessage(
             `Services available for ${terminalResult.providerName}`,
           );
-          setModalTotalCount(totalCount);
-          setModalPermissionId(permissionId);
+          setModalTotalCount(response.total_count);
+          setModalPermissionId(
+            response.permissionId ?? terminalResult.permissionId,
+          );
           setShowRecommendationsModal(true);
         } else {
           toastManager.warning(

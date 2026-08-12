@@ -57,11 +57,16 @@ import {
   TerminalItemType,
   RecommendationSource,
   SortOrder,
-  type TerminalResult,
+  TerminalResult,
+  type VendorAddonsSearchResponse,
 } from '@finos/legend-server-marketplace';
 import { RecommendedItemsCard } from './RecommendedItemsCard.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { assertErrorThrown, LogEvent, noop } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  LogEvent,
+  type PlainObject,
+} from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { flowResult } from 'mobx';
 
@@ -187,6 +192,8 @@ const useVendorAddonSearch = (
   const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
   const cartUser = legendMarketplaceBaseStore.cartStore.cartUser;
   const applicationStore = legendMarketplaceBaseStore.applicationStore;
+  const marketplaceServerClient =
+    legendMarketplaceBaseStore.marketplaceServerClient;
   const [terminalSearchResults, setTerminalSearchResults] = useState<
     TerminalResult[] | undefined
   >(undefined);
@@ -203,24 +210,27 @@ const useVendorAddonSearch = (
       }
       setIsSearching(true);
       try {
-        const response =
-          await legendMarketplaceBaseStore.marketplaceServerClient.searchVendorAddons(
-            cartUser,
-            terminal.providerName,
-            {
-              // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
-              page: 1,
-              page_size: SERVER_SEARCH_PAGE_SIZE,
-              search: query,
-              ...(sort ? { sort_by_price: sort } : {}),
-            },
-            signal,
-          );
+        const response = (await marketplaceServerClient.searchVendorAddons(
+          cartUser,
+          terminal.providerName,
+          {
+            // SERVER_SEARCH_PAGE_SIZE is set high enough to cover all expected results and paginate client-side.
+            page: 1,
+            page_size: SERVER_SEARCH_PAGE_SIZE,
+            search: query,
+            ...(sort ? { sort_by_price: sort } : {}),
+          },
+          signal,
+        )) as unknown as VendorAddonsSearchResponse;
         if (!signal?.aborted) {
           setTerminalSearchResults(
-            response.marketplace_addons as TerminalResult[],
+            response.marketplace_addons.map((item) =>
+              TerminalResult.serialization.fromJson(
+                item as unknown as PlainObject<TerminalResult>,
+              ),
+            ),
           );
-          setSearchTotalCount(response.total_count as number);
+          setSearchTotalCount(response.total_count);
         }
       } catch (error) {
         assertErrorThrown(error);
@@ -244,7 +254,7 @@ const useVendorAddonSearch = (
       terminal,
       isTerminalAdded,
       cartUser,
-      legendMarketplaceBaseStore.marketplaceServerClient,
+      marketplaceServerClient,
       applicationStore.logService,
     ],
   );
@@ -262,9 +272,11 @@ const useVendorAddonSearch = (
 
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      fetchVendorAddons(query.trim(), sort, controller.signal).catch(noop);
+      fetchVendorAddons(query.trim(), sort, controller.signal).catch(
+        applicationStore.alertUnhandledError,
+      );
     },
-    [isTerminalAdded, fetchVendorAddons],
+    [isTerminalAdded, fetchVendorAddons, applicationStore.alertUnhandledError],
   );
 
   const resetSearch = useCallback(() => {
@@ -706,6 +718,7 @@ export const RecommendedAddOnsModal = observer(
               ...(overrideModel === undefined ? {} : { overrideModel }),
             }),
           );
+
           if (!result.success) {
             return false;
           }

@@ -70,9 +70,11 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
             legendMarketplaceBaseStore.cartStore.cartUser,
             terminalResult.providerName,
             {
-              permission_id: terminalResult.permissionId ?? null,
               page: 1,
               page_size: 300,
+              ...(terminalResult.permissionId === undefined
+                ? {}
+                : { permission_id: terminalResult.permissionId }),
             },
           );
         const addons = response.marketplace_addons as TerminalResult[];

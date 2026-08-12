@@ -28,11 +28,10 @@ import {
   FormControl,
   InputLabel,
   Button,
+  ButtonGroup,
   Chip,
   CircularProgress,
   Tooltip,
-  ToggleButton,
-  ToggleButtonGroup,
 } from '@mui/material';
 import {
   CloseIcon,
@@ -43,10 +42,16 @@ import {
   clsx,
 } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import { CartStore } from '../../stores/cart/CartStore.js';
+import {
+  type CartVendorGroup,
+  CartStore,
+} from '../../stores/cart/CartStore.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { type CartItem } from '@finos/legend-server-marketplace';
-import { formatItemPrice } from '../ProviderCard/orderProfileUtils.js';
+import {
+  formatCardPrice,
+  formatItemPrice,
+} from '../ProviderCard/orderProfileUtils.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -141,7 +146,7 @@ const CartSummaryBar = (props: { formattedTotal: string }): React.ReactNode => {
       </Typography>
       <Box className="legend-marketplace-cart-drawer__summary-bar__right">
         <Typography className="legend-marketplace-cart-drawer__summary-bar__total">
-          {formattedTotal.replace('$ ', '$')}
+          {formattedTotal}
         </Typography>
       </Box>
     </Box>
@@ -152,12 +157,7 @@ const CartSummaryBar = (props: { formattedTotal: string }): React.ReactNode => {
 
 const CartVendorGroupHeader = (props: {
   parentItem: CartItem | undefined;
-  displayParent: {
-    providerName: string;
-    productName: string;
-    categoryLabel: string;
-    monthlyPrice: number | undefined;
-  };
+  displayParent: CartVendorGroup['displayParent'];
   vendorGroup: CartItem[];
   addons: CartItem[];
   addonTotalPrice: number;
@@ -290,7 +290,7 @@ const CartVendorGroupHeader = (props: {
               className="legend-marketplace-cart-drawer__vendor-group__summary"
             >
               {addonLabel}
-              {!isExpanded && ` – ${formatItemPrice(addonTotalPrice)}/month`}
+              {!isExpanded && ` – ${formatCardPrice(addonTotalPrice)}`}
             </Typography>
           </Box>
         )}
@@ -420,27 +420,18 @@ export const CartDrawer = observer((): React.ReactNode => {
         cart.cartSummary.total_items > 0 &&
         vendorGroupCount > 1 && (
           <Box className="legend-marketplace-cart-drawer__expand-controls">
-            <ToggleButtonGroup
-              exclusive={true}
+            <ButtonGroup
               size="small"
-              aria-label="Expand or collapse all vendor groups"
+              aria-label="Expand or collapse vendor groups"
               className="legend-marketplace-cart-drawer__expand-controls__group"
             >
-              <ToggleButton
-                value="collapse"
-                onClick={collapseAll}
-                aria-label="Collapse all"
-              >
+              <Button onClick={collapseAll} aria-label="Collapse all">
                 Collapse All
-              </ToggleButton>
-              <ToggleButton
-                value="expand"
-                onClick={expandAll}
-                aria-label="Expand all"
-              >
+              </Button>
+              <Button onClick={expandAll} aria-label="Expand all">
                 Expand All
-              </ToggleButton>
-            </ToggleButtonGroup>
+              </Button>
+            </ButtonGroup>
           </Box>
         )}
 

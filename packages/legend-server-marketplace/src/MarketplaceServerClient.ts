@@ -410,7 +410,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
       provider_name: providerName,
     };
 
-    if (params?.permission_id !== undefined && params.permission_id !== null) {
+    if (params?.permission_id !== undefined) {
       queryParams.permission_id = params.permission_id;
     }
     if (params?.page !== undefined) {
