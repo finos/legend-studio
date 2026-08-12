@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.19.1
+
+### Patch Changes
+
+- [#5430](https://github.com/finos/legend-studio/pull/5430) [`5393092`](https://github.com/finos/legend-studio/commit/5393092df434e7937498c9c9ef59db3cb11b88fd) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed "Can't filter column" error when using Filter By/Filter Out on window function and relation-type projection columns in the query result grid.
+
 ## 4.19.0
 
 ### Minor Changes
