@@ -146,16 +146,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem 0;
+    // Horizontal padding leaves room for the close button (which is absolutely
+    // positioned within this element) so wrapped content never runs under it.
+    padding: 1.2rem 5rem;
     width: 100%;
-    font-size: 2rem;
+    font-size: 1.5rem;
+    line-height: 1.5;
     position: relative;
 
     &__content {
+      max-width: 90rem;
       text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     &__link {

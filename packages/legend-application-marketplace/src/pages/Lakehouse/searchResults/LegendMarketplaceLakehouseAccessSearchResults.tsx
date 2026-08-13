@@ -56,6 +56,7 @@ import {
   MarketplaceSearchMode,
 } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
+import { TimedInfoBanner } from '../../../components/TimedInfoBanner/TimedInfoBanner.js';
 import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
 import { LakehouseProductListItem } from '../../../components/LakehouseProductCard/LakehouseProductListItem.js';
 import type { ProductCardState } from '../../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -355,12 +356,6 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
               >
                 {`${searchResultsStore.totalItems} Products`}
               </Typography>
-              <div className="legend-marketplace-search-results__sort-bar__center-slot">
-                <Typography className="legend-marketplace-search-results__sort-bar__scope-hint">
-                  Searching Data Products for Lakehouse Access. Switch to the
-                  DataSpaces tab for data domains.
-                </Typography>
-              </div>
               <div className="legend-marketplace-search-results__sort-bar__controls">
                 <div className="legend-marketplace-search-results__view-toggle">
                   <div
@@ -459,6 +454,14 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
                 />
               </div>
               <div className="marketplace-lakehouse-search-results__main-content">
+                {applicationStore.config.options.showDevFeatures && (
+                  <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
+                    This is the new home for what was previously called Data
+                    Product — the same entitled, Lakehouse-scoped API surface,
+                    now with its own search tab, dedicated filtering. DataSpace
+                    search on the homepage still surfaces these results for now.
+                  </TimedInfoBanner>
+                )}
                 <LakehouseAccessSearchResultsContent
                   searchResultsStore={searchResultsStore}
                   isLoadingDataProducts={isLoadingDataProducts}
