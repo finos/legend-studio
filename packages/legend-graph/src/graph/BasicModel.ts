@@ -76,6 +76,7 @@ import { INTERNAL__UnknownStore } from './metamodel/pure/packageableElements/sto
 import type { PureGraphPlugin } from './PureGraphPlugin.js';
 import { INTERNAL__UnknownElement } from './metamodel/pure/packageableElements/INTERNAL__UnknownElement.js';
 import { DataProduct } from './metamodel/pure/dataProduct/DataProduct.js';
+import { Availability } from './metamodel/pure/packageableElements/availability/Availability.js';
 import { IngestDefinition } from './metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { Compute } from './metamodel/pure/compute/Compute.js';
 
@@ -155,6 +156,7 @@ export abstract class BasicModel {
   >();
 
   private readonly productsIndex = new Map<string, DataProduct>();
+  private readonly availabilityIndex = new Map<string, Availability>();
   private readonly computesIndex = new Map<string, Compute>();
   private readonly dataElementsIndex = new Map<string, DataElement>();
   private readonly executionEnvironmentsIndex = new Map<
@@ -252,6 +254,9 @@ export abstract class BasicModel {
   get ownDataProducts(): DataProduct[] {
     return Array.from(this.productsIndex.values());
   }
+  get ownAvailabilities(): Availability[] {
+    return Array.from(this.availabilityIndex.values());
+  }
   get ownComputes(): Compute[] {
     return Array.from(this.computesIndex.values());
   }
@@ -277,6 +282,7 @@ export abstract class BasicModel {
       ...this.ownMappings,
       ...this.ownDataProducts,
       ...this.ownIngests,
+      ...this.ownAvailabilities,
       // TODO: re-add functions once function test runner has been completed in backend
       // ...this.ownFunctions,
     ];
@@ -386,6 +392,8 @@ export abstract class BasicModel {
     this.executionEnvironmentsIndex.get(path);
   getOwnNullableDataProduct = (path: string): DataProduct | undefined =>
     this.productsIndex.get(path);
+  getOwnNullableAvailability = (path: string): Availability | undefined =>
+    this.availabilityIndex.get(path);
   getOwnNullableCompute = (path: string): Compute | undefined =>
     this.computesIndex.get(path);
   getOwnNullableIngestDefinition = (
@@ -499,6 +507,11 @@ export abstract class BasicModel {
       this.getOwnNullableDataProduct(path),
       `Can't find data product element '${path}'`,
     );
+  getOwnAvailability = (path: string): Availability =>
+    guaranteeNonNullable(
+      this.getOwnNullableAvailability(path),
+      `Can't find availability element '${path}'`,
+    );
   getOwnCompute = (path: string): Compute =>
     guaranteeNonNullable(
       this.getOwnNullableCompute(path),
@@ -570,6 +583,9 @@ export abstract class BasicModel {
   setOwnDataProduct(path: string, val: DataProduct): void {
     this.productsIndex.set(path, val);
   }
+  setOwnAvailability(path: string, val: Availability): void {
+    this.availabilityIndex.set(path, val);
+  }
   setOwnCompute(path: string, val: Compute): void {
     this.computesIndex.set(path, val);
   }
@@ -610,6 +626,7 @@ export abstract class BasicModel {
       ...this.ownGenerationSpecifications,
       ...this.ownFileGenerations,
       ...this.ownDataProducts,
+      ...this.ownAvailabilities,
       ...this.ownComputes,
       ...this.ownDataElements,
       ...this.ownExecutionEnvironments,
@@ -728,6 +745,8 @@ export abstract class BasicModel {
       this.setOwnExecutionEnvironment(element.path, element);
     } else if (element instanceof DataProduct) {
       this.setOwnDataProduct(element.path, element);
+    } else if (element instanceof Availability) {
+      this.setOwnAvailability(element.path, element);
     } else if (element instanceof Compute) {
       this.setOwnCompute(element.path, element);
     } else if (element instanceof Package) {
@@ -786,6 +805,8 @@ export abstract class BasicModel {
       this.executionEnvironmentsIndex.delete(element.path);
     } else if (element instanceof DataProduct) {
       this.productsIndex.delete(element.path);
+    } else if (element instanceof Availability) {
+      this.availabilityIndex.delete(element.path);
     } else if (element instanceof Compute) {
       this.computesIndex.delete(element.path);
     } else if (element instanceof Package) {

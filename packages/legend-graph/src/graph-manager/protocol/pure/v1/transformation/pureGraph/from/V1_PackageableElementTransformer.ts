@@ -109,6 +109,8 @@ import { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V
 import { V1_transformIngestTestSuite } from './V1_IngestTransformer.js';
 import { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import type { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
+import type { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import { V1_transformAvailability } from './V1_AvailabilityTransformer.js';
 
 class V1_PackageableElementTransformer
   implements PackageableElementVisitor<V1_PackageableElement>
@@ -167,6 +169,10 @@ class V1_PackageableElementTransformer
     );
     // we don't take into account appDirDeployment here as it is still read only
     return protocol;
+  }
+
+  visit_Availability(element: Availability): V1_PackageableElement {
+    return V1_transformAvailability(element, this.context);
   }
 
   visit_INTERNAL__UnknownFunctionActivator(

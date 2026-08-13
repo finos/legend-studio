@@ -216,10 +216,14 @@ export class ModelStoreDataState extends EmbeddedDataState {
 export class RelationElementState {
   relationElement: RelationElement;
   supportsColumnEditing: boolean;
+  columnDefaults: Record<string, string>;
 
   constructor(
     relationElement: RelationElement,
-    options?: { supportsColumnEditing?: boolean },
+    options?: {
+      supportsColumnEditing?: boolean;
+      columnDefaults?: Record<string, string>;
+    },
   ) {
     makeObservable(this, {
       relationElement: observable,
@@ -233,14 +237,20 @@ export class RelationElementState {
       importCSV: action,
     });
     this.supportsColumnEditing = options?.supportsColumnEditing ?? true;
+    this.columnDefaults = options?.columnDefaults ?? {};
     this.relationElement = relationElement;
     this.relationElement = observe_RelationElement(relationElement);
   }
 
+  private defaultValueForColumn(column: string): string {
+    return this.columnDefaults[column] ?? '';
+  }
+
   addColumn(name: string): void {
     this.relationElement.columns.push(name);
+    const defaultVal = this.defaultValueForColumn(name);
     this.relationElement.rows.forEach((row) => {
-      row.values.push('');
+      row.values.push(defaultVal);
     });
   }
 
@@ -265,7 +275,7 @@ export class RelationElementState {
     row.values = [];
     const newRow = observe_RelationRowTestData(row);
     this.relationElement.columns.forEach((col) => {
-      newRow.values.push('');
+      newRow.values.push(this.defaultValueForColumn(col));
     });
     this.relationElement.rows.push(newRow);
   }

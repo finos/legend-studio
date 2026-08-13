@@ -391,6 +391,7 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_Compute } from './model/packageableElements/compute/V1_Compute.js';
+import { V1_Availability } from './model/packageableElements/availability/V1_Availability.js';
 import {
   V1_DataProductArtifact,
   V1_ModelAccessPointGroupInfo,
@@ -528,6 +529,9 @@ export const V1_indexPureModelContextData = (
     if (el instanceof V1_INTERNAL__UnknownElement) {
       index.INTERNAL__UnknownElement.push(el);
     } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
+      // `V1_Availability` and `V1_IngestDefinition` both extend this and are
+      // routed here; each is picked out downstream by an `instanceof` filter
+      // when its second-pass builder runs.
       index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Association) {
       index.associations.push(el);
@@ -1257,6 +1261,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildComputes(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_COMPUTES__SUCCESS);
 
+    // build availabilities
+    graphBuilderState.setMessage(`Building availabilities...`);
+    await this.buildAvailabilities(graph, inputs, options);
+
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     await this.buildMappings(graph, inputs, options);
@@ -1646,6 +1654,28 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       graph,
       inputs,
       (data) => data.computes,
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
+    );
+  }
+
+  private async buildAvailabilities(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    // Only second pass is meaningful for availability: it lifts the typed
+    // test suites off the raw content payload built in the first pass.
+    // Availabilities live in `INTERNAL__unknownElements` (same pattern as
+    // ingest); filter them out here.
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) =>
+        data.INTERNAL__unknownElements.filter(
+          (element): element is V1_Availability =>
+            element instanceof V1_Availability,
+        ),
       (ctx) => new V1_ElementSecondPassBuilder(ctx),
       options,
     );
@@ -5352,6 +5382,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     ) {
       if (protocol instanceof V1_IngestDefinition) {
         return CORE_PURE_PATH.INGEST_DEFINITION;
+      }
+      if (protocol instanceof V1_Availability) {
+        return CORE_PURE_PATH.AVAILABILITY;
       }
       const _type = protocol.content._type;
       const classifierPath = isString(_type)

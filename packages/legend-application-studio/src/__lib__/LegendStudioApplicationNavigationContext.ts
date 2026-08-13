@@ -76,4 +76,5 @@ export enum LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY {
   // Lakehouse
   INGEST_DEFINITION_EDITOR = 'studio.editor.ingest-definition-editor',
   DATA_PRODUCT_EDITOR = 'studio.editor.data-product-editor',
+  AVAILABILITY_EDITOR = 'studio.editor.availability-editor',
 }
