@@ -132,6 +132,22 @@ export interface V1_GraphManagerEngine {
     pretty: boolean,
   ) => Promise<string>;
 
+  /**
+   * Optional fast-path that hands the raw wire JSON straight to the engine's
+   * JSONToGrammar endpoint, skipping the client-side
+   * deserialize -> reserialize round-trip that
+   * `transformPureModelContextDataToCode` incurs.
+   *
+   * Left optional for backward compatibility: existing implementers of
+   * {@link V1_GraphManagerEngine} do not need to provide it. Callers must
+   * fall back to `transformPureModelContextDataToCode` (after a client-side
+   * deserialize) when this is not implemented.
+   */
+  transformProtocolGraphToCode: (
+    graph: PlainObject<V1_PureModelContextData>,
+    pretty: boolean,
+  ) => Promise<string>;
+
   transformCodeToPureModelContextData: (
     code: string,
     options?: {

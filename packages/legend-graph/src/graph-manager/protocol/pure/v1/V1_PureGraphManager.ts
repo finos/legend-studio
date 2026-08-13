@@ -1893,6 +1893,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return grammarToJson;
   }
 
+  async protocolToPureCode(
+    protocolGraph: PlainObject<V1_PureModelContextData>,
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string> {
+    const startTime = Date.now();
+    const grammarToJson = await this.engine.transformProtocolGraphToCode(
+      protocolGraph,
+      Boolean(options?.pretty),
+    );
+    this.logService.info(
+      LogEvent.create(
+        GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS,
+      ),
+      Date.now() - startTime,
+      'ms',
+    );
+    return grammarToJson;
+  }
+
   async pureCodeToEntities(
     code: string,
     options?: {
