@@ -52,11 +52,10 @@ import {
   V1_Protocol,
   V1_PureGraphManager,
   V1_PureModelContextPointer,
-  V1_relationTypeModelSchema,
   V1_SdlcDeploymentDataProductOrigin,
   V1_ServiceExecutableInfo,
+  V1_buildBatchLambdaRelationTypeResult,
 } from '@finos/legend-graph';
-import { deserialize } from 'serializr';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
@@ -605,8 +604,6 @@ export class DataProductViewerState extends BaseViewerState<
   }
 
   async fetchBatchRelationTypeFromEngine(): Promise<V1_BatchLambdaRelationTypeResult> {
-    let results: V1_BatchLambdaRelationTypeResult['results'] = new Map();
-
     const entries: [string, V1_RawLambda][] = [];
     this.apgStates.forEach((apgState) => {
       apgState.accessPointStates.forEach((apState) => {
@@ -632,18 +629,13 @@ export class DataProductViewerState extends BaseViewerState<
           ),
         ),
       );
-      results = new Map(
-        Object.entries(response.results).map(([key, columns]) => [
-          key,
-          deserialize(V1_relationTypeModelSchema, columns),
-        ]),
-      );
+      return V1_buildBatchLambdaRelationTypeResult(response);
     } catch (error) {
       assertErrorThrown(error);
+      return { results: new Map() };
     } finally {
       this.fetchingBatchRelationTypeState.complete();
     }
-    return { results };
   }
 
   async fetchDataProductArtifact(): Promise<
