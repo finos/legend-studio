@@ -32,10 +32,12 @@ jest.mock('react-oidc-context', () => {
   return MOCK__reactOIDCContext;
 });
 
-const setupTestComponent = async () => {
+const setupTestComponent = async (showDevFeatures = true) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     extraPlugins: [new TestLegendMarketplaceApplicationPlugin()],
   });
+  MOCK__baseStore.applicationStore.config.options.showDevFeatures =
+    showDevFeatures;
 
   const { renderResult } =
     await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
@@ -195,6 +197,23 @@ test('search modes are mutually exclusive', async () => {
   expect(fieldSwitch.checked).toBe(true);
   expect(lakehouseAccessSwitch.checked).toBe(false);
   expect(producerSwitch.checked).toBe(false);
+});
+
+test('hides the Lakehouse Access tab and search option when dev features are disabled', async () => {
+  await setupTestComponent(false);
+
+  expect(screen.queryByText('Lakehouse Access')).toBeNull();
+
+  const searchInput = screen.getByPlaceholderText(
+    'Which data can I help you find?',
+  );
+  fireEvent.change(searchInput, { target: { value: 'data' } });
+  fireEvent.click(screen.getByTitle('Search settings'));
+
+  expect(screen.queryByRole('switch', { name: /Lakehouse Access/ })).toBeNull();
+  // The other two search modes are unaffected by the flag.
+  expect(screen.getByRole('switch', { name: /Producer Search/ })).toBeDefined();
+  expect(screen.getByRole('switch', { name: /Field Search/ })).toBeDefined();
 });
 
 test('does not render banners when no plugins provide banner configs', async () => {

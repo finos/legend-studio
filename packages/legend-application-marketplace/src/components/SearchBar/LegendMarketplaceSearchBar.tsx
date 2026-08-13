@@ -605,34 +605,36 @@ export const LegendMarketplaceSearchBar = observer(
                 }
               />
             </MenuItem>
-            <MenuItem>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={
-                      searchMode === MarketplaceSearchMode.LAKEHOUSE_ACCESS
-                    }
-                    onChange={(event) => {
-                      setSearchMode(
-                        event.target.checked
-                          ? MarketplaceSearchMode.LAKEHOUSE_ACCESS
-                          : MarketplaceSearchMode.DATA_SPACES,
-                      );
-                      LegendMarketplaceTelemetryHelper.logEvent_ToggleLakehouseAccessSearch(
-                        applicationStore.telemetryService,
-                        event.target.checked,
-                      );
-                    }}
-                  />
-                }
-                label={
-                  <>
-                    Lakehouse Access{' '}
-                    <LegendMarketplaceInfoTooltip title="Use this search to find Lakehouse Data Products you can request access to" />
-                  </>
-                }
-              />
-            </MenuItem>
+            {applicationStore.config.options.showDevFeatures && (
+              <MenuItem>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={
+                        searchMode === MarketplaceSearchMode.LAKEHOUSE_ACCESS
+                      }
+                      onChange={(event) => {
+                        setSearchMode(
+                          event.target.checked
+                            ? MarketplaceSearchMode.LAKEHOUSE_ACCESS
+                            : MarketplaceSearchMode.DATA_SPACES,
+                        );
+                        LegendMarketplaceTelemetryHelper.logEvent_ToggleLakehouseAccessSearch(
+                          applicationStore.telemetryService,
+                          event.target.checked,
+                        );
+                      }}
+                    />
+                  }
+                  label={
+                    <>
+                      Lakehouse Access{' '}
+                      <LegendMarketplaceInfoTooltip title="Lakehouse Access: is the new name for what you knew as Data Product — Lakehouse-scoped data API used for entitlements." />
+                    </>
+                  }
+                />
+              </MenuItem>
+            )}
           </Menu>
         )}
       </form>

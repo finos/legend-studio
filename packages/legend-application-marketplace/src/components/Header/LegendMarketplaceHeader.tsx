@@ -24,6 +24,7 @@ import {
   useApplicationStore,
 } from '@finos/legend-application';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../../__lib__/LegendMarketplaceNavigation.js';
+import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { LegendMarketplaceIconToolbar } from './LegendMarketplaceIconToolbar.js';
 import { matchPath } from '@finos/legend-application/browser';
 import { useEffect, useState } from 'react';
@@ -193,6 +194,10 @@ const LegendMarketplaceBaseHeader = observer(
 );
 
 export const MarketplaceLakehouseHeader = observer(() => {
+  const marketplaceBaseStore = useLegendMarketplaceBaseStore();
+  const showDevFeatures =
+    marketplaceBaseStore.applicationStore.config.options.showDevFeatures;
+
   return (
     <LegendMarketplaceBaseHeader
       headerName=""
@@ -202,12 +207,16 @@ export const MarketplaceLakehouseHeader = observer(() => {
           title: 'Dataspaces',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
         },
-        {
-          title: 'Lakehouse Access',
-          urlRoute:
-            LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS,
-          badge: 'NEW',
-        },
+        ...(showDevFeatures
+          ? [
+              {
+                title: 'Lakehouse Access',
+                urlRoute:
+                  LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS,
+                badge: 'NEW',
+              },
+            ]
+          : []),
         {
           title: 'Data APIs',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_APIS,
