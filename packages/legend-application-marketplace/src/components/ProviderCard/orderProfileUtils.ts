@@ -116,8 +116,13 @@ export const calculateMultiselectTotalPrice = (
   if (terminals.length === 0) {
     return undefined;
   }
-  const highestTerminal = terminals.reduce((max, curr) =>
-    curr.price > max.price ? curr : max,
+  const [firstTerminal, ...remainingTerminals] = terminals;
+  if (firstTerminal === undefined) {
+    return undefined;
+  }
+  const highestTerminal = remainingTerminals.reduce(
+    (max, curr) => (curr.price > max.price ? curr : max),
+    firstTerminal,
   );
   const addOns = items.filter(
     (item) =>
@@ -141,22 +146,27 @@ export const groupOrderProfileItems = (
 
   const terminals = items.filter((i) => i.isTerminal);
   const addOns = items.filter((i) => !i.isTerminal);
-  const matchedAddonIds = new Set<number>();
+  // Use a composite key of id + model so that the same product appearing
+  // under different terminal models is treated as a distinct row.
+  const matchedAddonKeys = new Set<string>();
+  const addonKey = (addon: TraderProfileItem): string =>
+    `${addon.id}-${addon.model ?? ''}`;
 
   for (const terminal of terminals) {
     result.push({ item: terminal, isSubItem: false });
     if (terminal.model !== undefined && terminal.model !== null) {
       for (const addon of addOns) {
-        if (addon.model === terminal.model && !matchedAddonIds.has(addon.id)) {
+        const key = addonKey(addon);
+        if (addon.model === terminal.model && !matchedAddonKeys.has(key)) {
           result.push({ item: addon, isSubItem: true });
-          matchedAddonIds.add(addon.id);
+          matchedAddonKeys.add(key);
         }
       }
     }
   }
 
   for (const addon of addOns) {
-    if (!matchedAddonIds.has(addon.id)) {
+    if (!matchedAddonKeys.has(addonKey(addon))) {
       result.push({ item: addon, isSubItem: false });
     }
   }

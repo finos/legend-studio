@@ -115,13 +115,20 @@ export class LegendMarketplaceBaseStore {
     this.pluginManager = applicationStore.pluginManager;
 
     // marketplace
-    this.envState =
+    let envState: LegendMarketplaceEnvState;
+    if (
       applicationStore.config.dataProductEnv === LegendMarketplaceEnv.PRODUCTION
-        ? new ProdLegendMarketplaceEnvState()
-        : applicationStore.config.dataProductEnv ===
-            LegendMarketplaceEnv.PRODUCTION_PARALLEL
-          ? new ProdParallelLegendMarketplaceEnvState()
-          : new DevelopmentLegendMarketplaceEnvState();
+    ) {
+      envState = new ProdLegendMarketplaceEnvState();
+    } else if (
+      applicationStore.config.dataProductEnv ===
+      LegendMarketplaceEnv.PRODUCTION_PARALLEL
+    ) {
+      envState = new ProdParallelLegendMarketplaceEnvState();
+    } else {
+      envState = new DevelopmentLegendMarketplaceEnvState();
+    }
+    this.envState = envState;
     this.adjacentEnvState = this.buildAdjacentEnvState();
     this.marketplaceServerClient = new MarketplaceServerClient({
       serverUrl: this.applicationStore.config.marketplaceServerUrl,
@@ -306,7 +313,7 @@ export class LegendMarketplaceBaseStore {
         if (Number.isInteger(Number(secondPart))) {
           return {
             dataProductId: id,
-            deploymentId: parseInt(secondPart),
+            deploymentId: Number.parseInt(secondPart),
           };
         } else {
           return { dataProductId: id, gav: secondPart };
@@ -403,15 +410,15 @@ export class LegendMarketplaceBaseStore {
         const states = (
           await Promise.all(
             entries.map(async (dataProduct) =>
-              dataProduct.deploymentId !== undefined
-                ? getDataProductState(
-                    dataProduct.dataProductId,
-                    dataProduct.deploymentId,
-                    graphManager,
-                  )
-                : getLegacyDataProductState(
+              dataProduct.deploymentId === undefined
+                ? getLegacyDataProductState(
                     dataProduct.dataProductId,
                     dataProduct.gav,
+                    graphManager,
+                  )
+                : getDataProductState(
+                    dataProduct.dataProductId,
+                    dataProduct.deploymentId,
                     graphManager,
                   ),
             ),

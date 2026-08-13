@@ -35,6 +35,8 @@ import type {
   CartItemResponse,
   CartSummary,
   DeleteCartItemResponse,
+  PermissionAddonsSearchParams,
+  PermissionAddonsSearchResponse,
   VendorAddonsSearchParams,
   VendorAddonsSearchResponse,
 } from './models/Cart.js';
@@ -391,6 +393,41 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
     return this.get<PlainObject<VendorAddonsSearchResponse>>(
       `${this._cart(user)}/vendor-addons/${encodeURIComponent(providerName)}`,
+      signal ? { signal } : {},
+      undefined,
+      queryParams,
+    );
+  };
+
+  getPermissionAddons = async (
+    kerberos: string,
+    providerName: string,
+    params?: PermissionAddonsSearchParams,
+    signal?: AbortSignal,
+  ): Promise<PlainObject<PermissionAddonsSearchResponse>> => {
+    const queryParams: Record<string, string | number | boolean> = {
+      kerberos,
+      provider_name: providerName,
+    };
+
+    if (params?.permission_id !== undefined) {
+      queryParams.permission_id = params.permission_id;
+    }
+    if (params?.page !== undefined) {
+      queryParams.page = params.page;
+    }
+    if (params?.page_size !== undefined) {
+      queryParams.page_size = params.page_size;
+    }
+    if (isNonEmptyString(params?.search)) {
+      queryParams.search = params.search;
+    }
+    if (params?.sort_by_price !== undefined) {
+      queryParams.sort_by_price = params.sort_by_price;
+    }
+
+    return this.get<PlainObject<PermissionAddonsSearchResponse>>(
+      `${this.baseUrl}/v1/workflow/products/permission-addons`,
       signal ? { signal } : {},
       undefined,
       queryParams,

@@ -15,15 +15,17 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { type JSX, useEffect, useCallback } from 'react';
+import { type JSX, useEffect, useCallback, useState } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
   Button,
+  IconButton,
   Tooltip,
   Typography,
   List,
   ListItem,
   CircularProgress,
+  Collapse,
 } from '@mui/material';
 import type {
   TerminalResult,
@@ -41,7 +43,12 @@ import {
   withLegendMarketplaceVendorDataStore,
 } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 import { useParams } from '@finos/legend-application/browser';
-import { InfoCircleIcon, UserSearchInput } from '@finos/legend-art';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  InfoCircleIcon,
+  UserSearchInput,
+} from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import type { LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -224,6 +231,73 @@ const OrderProfileSearchResultsRenderer = observer(
   },
 );
 
+const OwnedServicesSection = observer(
+  (props: {
+    vendorDataState: LegendMarketPlaceVendorDataStore;
+  }): JSX.Element => {
+    const { vendorDataState } = props;
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const handleToggle = () => {
+      setIsExpanded(!isExpanded);
+    };
+
+    const currentUserId =
+      vendorDataState.applicationStore.identityService.currentUser;
+    const isTargetUserActive =
+      vendorDataState.selectedUser.id !== currentUserId;
+    const titleText = isTargetUserActive
+      ? `${vendorDataState.selectedUser.displayName ?? vendorDataState.selectedUser.id}'s Terminal Subscriptions`
+      : 'My Terminal Subscriptions';
+
+    return (
+      <div className="legend-marketplace-vendordata-main-owned-services">
+        <div className="legend-marketplace-vendordata-main-owned-services__header">
+          <div className="legend-marketplace-vendordata-main-owned-services__title-row">
+            <span className="legend-marketplace-vendordata-main-sidebar__title">
+              {titleText}
+              <span className="legend-marketplace-vendordata-main-sidebar__title__count">
+                ({vendorDataState.totalOwnedPermissions})
+              </span>
+            </span>
+            <IconButton
+              size="small"
+              onClick={handleToggle}
+              aria-expanded={isExpanded}
+              aria-controls="terminal-subscriptions-grid"
+              aria-label={
+                isExpanded
+                  ? 'Collapse my terminal subscriptions'
+                  : 'Expand my terminal subscriptions'
+              }
+              className="legend-marketplace-vendordata-main-owned-services__toggle-btn"
+            >
+              {isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
+            </IconButton>
+          </div>
+          <p className="legend-marketplace-vendordata-main-owned-services__subtitle">
+            Select a subscription to browse and order available Add-Ons.
+          </p>
+        </div>
+        <Collapse in={isExpanded}>
+          <div
+            id="terminal-subscriptions-grid"
+            className="legend-marketplace-vendordata-main-search-results__card-group"
+          >
+            {vendorDataState.ownedPermissions.map((permission) => (
+              <LegendMarketplaceTerminalCard
+                key={permission.id}
+                terminalResult={permission}
+                cardAction="addService"
+              />
+            ))}
+          </div>
+        </Collapse>
+      </div>
+    );
+  },
+);
+
 export const VendorDataMainContent = observer(
   (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { marketPlaceVendorDataState } = props;
@@ -296,13 +370,23 @@ export const VendorDataMainContent = observer(
               )}
               {marketPlaceVendorDataState.providerDisplayState ===
                 VendorDataProviderType.TERMINAL_LICENSE && (
-                <SearchResultsRenderer
-                  vendorDataState={marketPlaceVendorDataState}
-                  terminalResults={marketPlaceVendorDataState.providers}
-                  sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
-                  totalCount={marketPlaceVendorDataState.totalItems}
-                  seeAll={false}
-                />
+                <>
+                  {marketPlaceVendorDataState.ownedPermissions.length > 0 && (
+                    <>
+                      <OwnedServicesSection
+                        vendorDataState={marketPlaceVendorDataState}
+                      />
+                      <hr />
+                    </>
+                  )}
+                  <SearchResultsRenderer
+                    vendorDataState={marketPlaceVendorDataState}
+                    terminalResults={marketPlaceVendorDataState.providers}
+                    sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                    totalCount={marketPlaceVendorDataState.totalItems}
+                    seeAll={false}
+                  />
+                </>
               )}
               {marketPlaceVendorDataState.providerDisplayState ===
                 VendorDataProviderType.ADD_ONS && (
