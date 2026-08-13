@@ -44,6 +44,8 @@ export default defineConfig({
     baseURL: 'http://localhost:9001/query/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // needed by result grid tests that assert on copy-to-clipboard actions
+    permissions: ['clipboard-read', 'clipboard-write'],
   },
   projects: [
     {
