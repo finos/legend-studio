@@ -53,6 +53,7 @@ import type { DataProduct } from '../dataProduct/DataProduct.js';
 import type { IngestDefinition } from './ingest/IngestDefinition.js';
 import type { MemSQLFunction } from './function/MemSQLFunction.js';
 import type { Compute } from '../compute/Compute.js';
+import type { Availability } from './availability/Availability.js';
 
 export interface PackageableElementVisitor<T> {
   visit_PackageableElement(element: PackageableElement): T;
@@ -92,6 +93,7 @@ export interface PackageableElementVisitor<T> {
   visit_IngestDefinition(element: IngestDefinition): T;
   visit_MemSQLFunction(element: MemSQLFunction): T;
   visit_Compute(element: Compute): T;
+  visit_Availability(element: Availability): T;
 }
 
 class ModelElement extends AnnotatedElement {

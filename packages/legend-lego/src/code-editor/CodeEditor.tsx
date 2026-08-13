@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, type ReactNode } from 'react';
 import {
   type IDisposable,
   editor as monacoEditorAPI,
@@ -133,6 +133,7 @@ export const CodeEditor: React.FC<{
     | (monacoEditorAPI.IEditorOptions & monacoEditorAPI.IGlobalEditorOptions)
     | undefined;
   error?: ParserError | CompilationError | undefined;
+  rightActions?: ReactNode;
 }> = (props) => {
   const {
     inputValue,
@@ -147,6 +148,7 @@ export const CodeEditor: React.FC<{
     lineToScroll,
     extraEditorOptions,
     error,
+    rightActions,
   } = props;
   const applicationStore = useApplicationStore();
   const [editor, setEditor] = useState<
@@ -290,6 +292,7 @@ export const CodeEditor: React.FC<{
           >
             <WordWrapIcon />
           </button>
+          {rightActions}
         </div>
       )}
       <div
