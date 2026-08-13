@@ -29,6 +29,7 @@ import {
   FormControlLabel,
   IconButton,
   InputLabel,
+  ListSubheader,
   MenuItem,
   Select,
   Switch,
@@ -38,8 +39,10 @@ import {
 import {
   type V1_DataSubscription,
   type V1_DataSubscriptionTarget,
+  type V1_LiteDataContract,
   V1_AdhocTeam,
   V1_AWSSnowflakeIngestEnvironment,
+  V1_ContractState,
   V1_DataContract,
   V1_DataSubscriptionTargetType,
   V1_EnrichedUserApprovalStatus,
@@ -47,7 +50,7 @@ import {
   V1_SnowflakeRegion,
   V1_SnowflakeTarget,
 } from '@finos/legend-graph';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -68,13 +71,15 @@ import { MultiUserRenderer } from '../../UserRenderer/MultiUserRenderer.js';
 import {
   getOrganizationalScopeTypeDetails,
   getOrganizationalScopeTypeName,
+  stringifyOrganizationalScope,
 } from '../../../utils/LakehouseUtils.js';
 import type { DataProductAPGState } from '../../../stores/DataProduct/DataProductAPGState.js';
 import type { DataProductDataAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
+import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
 
 const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   (props: {
-    contract: V1_DataContract;
+    contract: V1_LiteDataContract;
     dataAccessState: DataProductDataAccessState;
   }) => {
     const { contract, dataAccessState } = props;
@@ -156,6 +161,27 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   },
 );
 
+const contractMatchesSearch = (
+  contract: V1_LiteDataContract,
+  searchText: string,
+  plugins: DataProductDataAccess_LegendApplicationPlugin_Extension[],
+): boolean => {
+  const normalizedSearch = searchText.trim().toLowerCase();
+  if (!normalizedSearch) {
+    return true;
+  }
+  const searchableFields = [
+    contract.description,
+    contract.guid,
+    contract.createdBy,
+    stringifyOrganizationalScope(contract.consumer, plugins),
+    contract.members.map((member) => member.user.name).join(' '),
+  ];
+  return searchableFields.some((field) =>
+    field.toLowerCase().includes(normalizedSearch),
+  );
+};
+
 const LakehouseSubscriptionsCreateDialog = observer(
   (props: {
     open: boolean;
@@ -163,7 +189,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
     apgState: DataProductAPGState;
     dataAccessState: DataProductDataAccessState;
     onSubmit: (
-      contract: V1_DataContract,
+      contract: V1_LiteDataContract,
       target: V1_DataSubscriptionTarget,
     ) => Promise<void>;
   }) => {
@@ -177,6 +203,19 @@ const LakehouseSubscriptionsCreateDialog = observer(
       );
     }, [auth, dataAccessState]);
 
+    const plugins =
+      dataAccessState.applicationStore.pluginManager.getApplicationPlugins();
+
+    // All completed (approved) contracts for this access point group, from every
+    // consumer -- not just the current user's -- sourced from the single "lite"
+    // all-contracts fetch already cached on apgState.apgContracts.
+    const selectableContracts = apgState.apgContracts.filter(
+      (_contract) => _contract.state === V1_ContractState.COMPLETED,
+    );
+
+    // Used only to derive the default selection below; the priority logic that
+    // ranks a user's contracts (see V1_USER_APPROVAL_STAGE_PRIORITY) still lives
+    // upstream in DataProductAPGState and is left untouched.
     const approvedUserContract =
       apgState.userAccessStatus === V1_EnrichedUserApprovalStatus.APPROVED &&
       apgState.associatedUserContract instanceof V1_DataContract
@@ -187,12 +226,38 @@ const LakehouseSubscriptionsCreateDialog = observer(
         .filter((_contract) => _contract.approvedUsers.length > 0)
         .map((_contract) => _contract.contract);
 
-    const [contract, setContract] = useState<V1_DataContract | undefined>(
-      approvedUserContract ??
-        (approvedSystemAccountContracts.length === 1
-          ? approvedSystemAccountContracts[0]
-          : undefined),
+    const defaultContract = (() => {
+      const defaultUserContract = selectableContracts.find(
+        (_contract) => _contract.guid === approvedUserContract?.guid,
+      );
+      if (defaultUserContract) {
+        return defaultUserContract;
+      }
+      if (approvedSystemAccountContracts.length === 1) {
+        return selectableContracts.find(
+          (_contract) =>
+            _contract.guid === approvedSystemAccountContracts[0]?.guid,
+        );
+      }
+      return undefined;
+    })();
+
+    const [contract, setContract] = useState<V1_LiteDataContract | undefined>(
+      defaultContract,
     );
+    const [contractSearchText, setContractSearchText] = useState<string>('');
+    const filteredSelectableContracts = selectableContracts.filter(
+      (_contract) =>
+        contractMatchesSearch(_contract, contractSearchText, plugins),
+    );
+    // MUI's Select re-asserts DOM focus onto the (re-rendered) MenuList/option
+    // items whenever the option list changes -- which happens on every
+    // keystroke here, since it drives the filter -- stealing focus away from
+    // this search input. Forcibly reclaim it after each render.
+    const contractSearchInputRef = useRef<HTMLInputElement | null>(null);
+    useEffect(() => {
+      contractSearchInputRef.current?.focus();
+    }, [contractSearchText, filteredSelectableContracts.length]);
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
     );
@@ -284,25 +349,54 @@ const LakehouseSubscriptionsCreateDialog = observer(
               value={contract?.guid ?? ''}
               label="Contract"
               autoFocus={contract === undefined}
+              onClose={() => setContractSearchText('')}
+              renderValue={() =>
+                contract ? (
+                  <LakehouseSubscriptionsCreateDialogContractRenderer
+                    contract={contract}
+                    dataAccessState={dataAccessState}
+                  />
+                ) : (
+                  ''
+                )
+              }
               onChange={(event: SelectChangeEvent<string>) => {
                 setContract(
-                  [
-                    approvedUserContract,
-                    ...approvedSystemAccountContracts,
-                  ].find((_contract) => _contract?.guid === event.target.value),
+                  selectableContracts.find(
+                    (_contract) => _contract.guid === event.target.value,
+                  ),
                 );
               }}
+              MenuProps={{
+                autoFocus: false,
+                disableAutoFocusItem: true,
+              }}
             >
-              {[approvedUserContract, ...approvedSystemAccountContracts]
-                .filter((_contract) => _contract instanceof V1_DataContract)
-                .map((_contract) => (
-                  <MenuItem key={_contract.guid} value={_contract.guid}>
-                    <LakehouseSubscriptionsCreateDialogContractRenderer
-                      contract={_contract}
-                      dataAccessState={dataAccessState}
-                    />
-                  </MenuItem>
-                ))}
+              <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__contract-search">
+                <TextField
+                  inputRef={contractSearchInputRef}
+                  autoFocus={true}
+                  fullWidth={true}
+                  placeholder="Search by user, description, or creator"
+                  value={contractSearchText}
+                  onChange={(event) =>
+                    setContractSearchText(event.target.value)
+                  }
+                  onKeyDown={(event) => {
+                    if (event.key !== 'Escape') {
+                      event.stopPropagation();
+                    }
+                  }}
+                />
+              </ListSubheader>
+              {filteredSelectableContracts.map((_contract) => (
+                <MenuItem key={_contract.guid} value={_contract.guid}>
+                  <LakehouseSubscriptionsCreateDialogContractRenderer
+                    contract={_contract}
+                    dataAccessState={dataAccessState}
+                  />
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
           <FormControl fullWidth={true} margin="dense">
@@ -431,7 +525,7 @@ export const DataProductSubscriptionViewer = observer(
     );
 
     const createDialogHandleSubmit = async (
-      _contract: V1_DataContract,
+      _contract: V1_LiteDataContract,
       target: V1_DataSubscriptionTarget,
     ): Promise<void> => {
       await flowResult(
