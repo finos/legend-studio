@@ -40,7 +40,7 @@ interface LegendMarketplaceHeaderPage {
   /**
    * Optional short label rendered as a pill next to the tab title, e.g. `NEW`.
    */
-  badge?: string | undefined;
+  badge?: string;
 }
 
 const LegendMarketPlaceHeaderTabs = observer(

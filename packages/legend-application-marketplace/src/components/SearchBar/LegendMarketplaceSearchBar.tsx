@@ -96,7 +96,7 @@ export const LegendMarketplaceSearchBar = observer(
     onChange?: (query: string) => void;
     className?: string | undefined;
     showSettings?: boolean;
-    stateSearchMode?: MarketplaceSearchMode | undefined;
+    stateSearchMode?: MarketplaceSearchMode;
     enableAutosuggest?: boolean;
     autosuggestVariant?: MarketplaceAutosuggestVariant;
   }): JSX.Element => {
