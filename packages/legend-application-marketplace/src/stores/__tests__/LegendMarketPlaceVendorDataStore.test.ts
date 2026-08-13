@@ -72,6 +72,18 @@ const makeOrderProfileJson = (id: number) => ({
   items: [makeTerminalJson(id * 100)],
 });
 
+const makeOwnedPermissionJson = (id: number) => ({
+  id,
+  category: 'Permission ID',
+  providerName: 'Reuters',
+  productName: `DBF Admin Fee ${id}`,
+  price: 0,
+  model: `DBF Admin Fee ${id}`,
+  skipWorkflow: true,
+  permissionId: id,
+  source: 'inventory',
+});
+
 // ─── VendorDataProviderType enum ──────────────────────────────────────────────
 
 describe('VendorDataProviderType', () => {
@@ -345,6 +357,60 @@ describe('LegendMarketPlaceVendorDataStore - populateProviders', () => {
 
     expect(vendorDataStore.providers).toHaveLength(3);
     expect(vendorDataStore.totalItems).toBe(3);
+  });
+
+  test('populates TERMINAL_LICENSE with ownedPermissions correctly', async () => {
+    const { vendorDataStore, baseStore } = await setupStore();
+    createSpy(
+      baseStore.marketplaceServerClient,
+      'fetchProducts',
+    ).mockResolvedValue({
+      hrid: 'test-hrid',
+      vendor_profiles: [makeTerminalJson(1), makeTerminalJson(2)],
+      total_count: 2,
+      ownedPermissions: [
+        makeOwnedPermissionJson(213591989),
+        makeOwnedPermissionJson(213591990),
+        makeOwnedPermissionJson(213591991),
+      ],
+      ownedPermissionsCount: 3,
+    });
+
+    vendorDataStore.providerDisplayState =
+      VendorDataProviderType.TERMINAL_LICENSE;
+    await flowResult(vendorDataStore.populateProviders());
+
+    expect(vendorDataStore.providers).toHaveLength(2);
+    expect(vendorDataStore.totalItems).toBe(2);
+    expect(vendorDataStore.ownedPermissions).toHaveLength(3);
+    expect(vendorDataStore.totalOwnedPermissions).toBe(3);
+
+    const firstOwned = vendorDataStore.ownedPermissions[0];
+    expect(firstOwned).toBeDefined();
+    expect(firstOwned?.category).toBe('Permission ID');
+    expect(firstOwned?.source).toBe('inventory');
+    expect(firstOwned?.skipWorkflow).toBe(true);
+    expect(firstOwned?.permissionId).toBe(213591989);
+  });
+
+  test('handles TERMINAL_LICENSE with missing ownedPermissions fields', async () => {
+    const { vendorDataStore, baseStore } = await setupStore();
+    createSpy(
+      baseStore.marketplaceServerClient,
+      'fetchProducts',
+    ).mockResolvedValue({
+      hrid: 'test-hrid',
+      vendor_profiles: [makeTerminalJson(1)],
+      total_count: 1,
+    });
+
+    vendorDataStore.providerDisplayState =
+      VendorDataProviderType.TERMINAL_LICENSE;
+    await flowResult(vendorDataStore.populateProviders());
+
+    expect(vendorDataStore.providers).toHaveLength(1);
+    expect(vendorDataStore.ownedPermissions).toHaveLength(0);
+    expect(vendorDataStore.totalOwnedPermissions).toBe(0);
   });
 
   test('populates ADD_ONS providers correctly', async () => {
