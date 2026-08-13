@@ -470,6 +470,13 @@
         background: var(--color-hclight-green-60);
         border-color: var(--color-hclight-green-60);
       }
+
+      &.Mui-disabled {
+        background: var(--color-hclight-green-50) !important;
+        color: var(--color-white) !important;
+        border-color: var(--color-hclight-green-50) !important;
+        opacity: 0.85;
+      }
     }
   }
 
