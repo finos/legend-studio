@@ -482,7 +482,6 @@ class V1_PureModelContextDataIndex {
   executionEnvironments: V1_ExecutionEnvironmentInstance[] = [];
   products: V1_DataProduct[] = [];
   computes: V1_Compute[] = [];
-  availabilities: V1_Availability[] = [];
 
   INTERNAL__UnknownElement: V1_INTERNAL__UnknownElement[] = [];
   INTERNAL__unknownElements: V1_INTERNAL__UnknownPackageableElement[] = [];
@@ -529,13 +528,10 @@ export const V1_indexPureModelContextData = (
     let isIndexedAsOtherElement = false;
     if (el instanceof V1_INTERNAL__UnknownElement) {
       index.INTERNAL__UnknownElement.push(el);
-    } else if (el instanceof V1_Availability) {
-      // NOTE: `V1_Availability` extends `V1_INTERNAL__UnknownPackageableElement`
-      // so we must check for it before the generic unknown-packageable-element
-      // branch below, otherwise it would be routed to `INTERNAL__unknownElements`
-      // and the second/third pass availability builders would never run.
-      index.availabilities.push(el);
     } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
+      // `V1_Availability` and `V1_IngestDefinition` both extend this and are
+      // routed here; each is picked out downstream by an `instanceof` filter
+      // when its second-pass builder runs.
       index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Association) {
       index.associations.push(el);
@@ -1670,10 +1666,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
   ): Promise<void> {
     // Only second pass is meaningful for availability: it lifts the typed
     // test suites off the raw content payload built in the first pass.
+    // Availabilities live in `INTERNAL__unknownElements` (same pattern as
+    // ingest); filter them out here.
     await this.processElementsInBatches(
       graph,
       inputs,
-      (data) => data.availabilities,
+      (data) =>
+        data.INTERNAL__unknownElements.filter(
+          (element): element is V1_Availability =>
+            element instanceof V1_Availability,
+        ),
       (ctx) => new V1_ElementSecondPassBuilder(ctx),
       options,
     );
