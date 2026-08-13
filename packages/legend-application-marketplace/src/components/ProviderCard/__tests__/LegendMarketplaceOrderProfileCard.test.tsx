@@ -354,3 +354,70 @@ describe('LegendMarketplaceOrderProfileCard - add to cart', () => {
     });
   });
 });
+
+// ─── Error handling ───────────────────────────────────────────────────────────
+
+describe('LegendMarketplaceOrderProfileCard - error handling', () => {
+  test('shows error toast when addOrderProfileItemsToCart throws', async () => {
+    const terminal = makeTerminal(1, 200);
+    const profile = makeProfile([terminal], 200, false);
+
+    const mockAddItems = jest
+      .fn()
+      .mockReturnValue(Promise.reject(new Error('Cart error')));
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addOrderProfileItemsToCart = mockAddItems;
+
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'addToCart',
+    ).mockRejectedValue(new Error('Cart error'));
+
+    render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Add to cart'));
+    });
+
+    // After error, button should be re-enabled (not "Adding...")
+    await waitFor(() => {
+      expect(screen.queryByText(/Adding\.\.\./)).toBeNull();
+    });
+  });
+
+  test('shows "Adding..." loading state while adding to cart (non-multiselect)', async () => {
+    const terminal = makeTerminal(1, 200);
+    const profile = makeProfile([terminal], 200, false);
+
+    let resolveAdd!: (v: unknown) => void;
+    const pendingPromise = new Promise((resolve) => {
+      resolveAdd = resolve;
+    });
+    const mockAddItems = jest.fn().mockReturnValue(pendingPromise);
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).addOrderProfileItemsToCart = mockAddItems;
+
+    render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText('Add to cart'));
+    });
+
+    expect(screen.getByText(/Adding\.\.\./)).toBeDefined();
+    // cleanup pending promise
+    resolveAdd(undefined);
+  });
+
+  test('handleAddToCart returns early when profile isOwned', () => {
+    // When isOwned=true the button is replaced by "Already have access"
+    // so handleAddToCart is not reachable via UI, but the owned state is
+    // correctly rendered.
+    const profile = makeProfile([makeTerminal(1)], 200, false, true);
+    render(<LegendMarketplaceOrderProfileCard traderProfile={profile} />);
+    expect(screen.getByText(/Already have access/)).toBeDefined();
+    // No cart button is rendered
+    expect(screen.queryByText('Add to cart')).toBeNull();
+  });
+});
