@@ -56,6 +56,7 @@ import {
   MarketplaceSearchMode,
 } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
+import { TimedInfoBanner } from '../../../components/TimedInfoBanner/TimedInfoBanner.js';
 import { useAuth } from 'react-oidc-context';
 import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
 import { LakehouseProductListItem } from '../../../components/LakehouseProductCard/LakehouseProductListItem.js';
@@ -436,10 +437,6 @@ export const LegendMarketplaceSearchResults =
                     />
                   </div>
                 )}
-                <Typography className="legend-marketplace-search-results__sort-bar__scope-hint">
-                  Searching DataSpaces — the modeled-domain discovery corpus.
-                  Switch to the Lakehouse Access tab for Lakehouse Access.
-                </Typography>
               </div>
               <div className="legend-marketplace-search-results__sort-bar__controls">
                 <div className="legend-marketplace-search-results__view-toggle">
@@ -541,6 +538,14 @@ export const LegendMarketplaceSearchResults =
                 </div>
               )}
               <div className="marketplace-lakehouse-search-results__main-content">
+                {applicationStore.config.options.showDevFeatures && (
+                  <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
+                    Results include both DataSpaces (firm&apos;s data-domain
+                    artifact for business concepts) and Lakehouse Access items
+                    (formerly Data Product). Lakehouse Access is moving to its
+                    own tab soon.
+                  </TimedInfoBanner>
+                )}
                 <SearchResultsContent
                   searchResultsStore={searchResultsStore}
                   isLoadingDataProducts={isLoadingDataProducts}

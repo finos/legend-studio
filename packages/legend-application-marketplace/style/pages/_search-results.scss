@@ -105,27 +105,14 @@
     padding: 0.5rem;
   }
 
-  // Shares the centred slot already used for the search-type tabs (see
-  // `__search-type-tabs` below): the tabs, when present, sit above the hint, both
-  // centred between the result count and the view/sort controls. Kept to one line by
-  // request — on narrow viewports this can run under the count or controls rather
-  // than wrap; revisit with a breakpoint (e.g. hide below a width) if that surfaces.
-  &__scope-hint {
-    white-space: nowrap;
-    color: var(--marketplace-text-muted);
-    font-size: 1.3rem;
-    line-height: 1.4;
-    text-align: center;
-  }
-
+  // Centres the search-type tabs (see `__search-type-tabs` below) between the result
+  // count and the view/sort controls, independent of either one's width.
   &__center-slot {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
   }
 
   &__controls {

@@ -87,10 +87,13 @@ const setupTestComponent = async (
   query: string,
   dataProductEnv: 'prod' | 'prod-par' | 'dev',
   useProducerSearch?: boolean,
+  showDevFeatures = true,
 ) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     dataProductEnv,
   });
+  MOCK__baseStore.applicationStore.config.options.showDevFeatures =
+    showDevFeatures;
   mockUseSearchParams.mockReturnValue([
     new URLSearchParams({
       query,
@@ -343,14 +346,26 @@ describe('MarketplaceLakehouseSearchResults', () => {
     );
   });
 
-  test('explains which corpus is being searched', async () => {
+  test('shows an intro banner explaining Lakehouse Access results are included', async () => {
     await setupTestComponent('data', 'prod');
 
     expect(
       await screen.findByText(
-        /Searching DataSpaces — the modeled-domain discovery corpus\. Switch to the Lakehouse Access tab for Lakehouse Access\./,
+        /Results include both DataSpaces .* and Lakehouse Access items \(formerly Data Product\)/,
       ),
     ).toBeDefined();
+  });
+
+  test('hides the intro banner when dev features are disabled', async () => {
+    await setupTestComponent('data', 'prod', false, false);
+
+    await screen.findByText('4 Products');
+
+    expect(
+      screen.queryByText(
+        /Results include both DataSpaces .* and Lakehouse Access items/,
+      ),
+    ).toBeNull();
   });
 
   test('search type tabs are not shown when there is no search query', async () => {
