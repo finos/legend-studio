@@ -180,25 +180,29 @@ export class MarketplaceServerClient extends AbstractServerClient {
   lakehouseAccessSearch = async (
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
-    searchType: SearchType = SearchType.FULL_TEXT,
-    searchFilters: string[] = [],
-    pageSize: number = 12,
-    pageNumber: number = 1,
-    showAll: boolean = false,
-    signal?: AbortSignal,
+    options?: {
+      searchType?: SearchType;
+      searchFilters?: string[];
+      pageSize?: number;
+      pageNumber?: number;
+      showAll?: boolean;
+      signal?: AbortSignal;
+    },
   ): Promise<PlainObject<DataProductSearchResponse>> =>
     this.get<PlainObject<DataProductSearchResponse>>(
       `${this._search()}/lakehouseAccess/${lakehouseEnv}`,
-      signal ? { signal } : {},
+      options?.signal ? { signal: options.signal } : {},
       undefined,
       {
         query,
-        search_type: searchType,
-        ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
-        page_size: pageSize,
-        page_number: pageNumber,
+        search_type: options?.searchType ?? SearchType.FULL_TEXT,
+        ...(options?.searchFilters?.length
+          ? { search_filters: options.searchFilters }
+          : {}),
+        page_size: options?.pageSize ?? 12,
+        page_number: options?.pageNumber ?? 1,
         include_filter_metadata: true,
-        show_all: showAll,
+        show_all: options?.showAll ?? false,
       },
     );
 

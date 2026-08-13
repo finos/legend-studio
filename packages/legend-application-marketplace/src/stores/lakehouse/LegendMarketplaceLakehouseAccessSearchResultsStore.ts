@@ -308,12 +308,14 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
         (yield this.marketplaceServerClient.lakehouseAccessSearch(
           query,
           this.marketplaceBaseStore.envState.lakehouseEnvironment,
-          SearchType.FULL_TEXT,
-          searchFilters,
-          this.itemsPerPage,
-          this.page,
-          this.showAllProducts,
-          signal,
+          {
+            searchType: SearchType.FULL_TEXT,
+            searchFilters,
+            pageSize: this.itemsPerPage,
+            pageNumber: this.page,
+            showAll: this.showAllProducts,
+            signal,
+          },
         )) as PlainObject<DataProductSearchResponse>;
 
       if (fetchToken !== this._currentFetchToken) {
