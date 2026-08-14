@@ -362,6 +362,16 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     );
   }
 
+  transformProtocolGraphToCode(
+    graph: PlainObject<V1_PureModelContextData>,
+    pretty: boolean,
+  ): Promise<string> {
+    return this.engineServerClient.JSONToGrammar_model(
+      graph,
+      pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+    );
+  }
+
   async transformCodeToPureModelContextData(
     code: string,
     options?: {
