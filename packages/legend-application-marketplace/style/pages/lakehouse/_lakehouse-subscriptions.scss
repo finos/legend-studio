@@ -61,6 +61,11 @@
     }
   }
 
+  &__contract-select-menu {
+    margin-top: -16px;
+    max-height: 400px;
+  }
+
   &__autocomplete {
     &__listbox {
       .MuiListSubheader-root {
@@ -100,21 +105,23 @@
     &__footer {
       @include flexVCenter;
 
-      font-size: 1.2rem;
-      color: var(--color-light-grey-300);
+      justify-content: space-between;
       gap: 1rem;
     }
 
     &__description {
       @include ellipsisTextOverflow;
 
-      flex: 1;
+      font-size: 1.2rem;
+      color: var(--color-light-grey-300);
     }
 
     &__id {
       @include flexVCenter;
 
       width: fit-content;
+      font-size: 1.2rem;
+      color: var(--color-light-grey-300);
     }
   }
 }

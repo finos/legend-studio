@@ -134,12 +134,9 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
 
     return (
       <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details">
-        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users">
-          User(s): {consumerComponent}
-        </Box>
         <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__footer">
-          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
-            Description: {contract.description}
+          <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__users">
+            User(s): {consumerComponent}
           </Box>
           <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__id">
             ID: {contract.guid}
@@ -155,6 +152,9 @@ const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
               <CopyIcon />
             </IconButton>
           </Box>
+        </Box>
+        <Box className="marketplace-lakehouse-subscriptions__subscription-creator__contract-details__description">
+          Description: {contract.description}
         </Box>
       </Box>
     );
@@ -258,6 +258,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
     useEffect(() => {
       contractSearchInputRef.current?.focus();
     }, [contractSearchText, filteredSelectableContracts.length]);
+    const contractFieldRef = useRef<HTMLDivElement>(null);
     const [targetType] = useState<V1_DataSubscriptionTargetType>(
       V1_DataSubscriptionTargetType.Snowflake,
     );
@@ -342,6 +343,7 @@ const LakehouseSubscriptionsCreateDialog = observer(
           <FormControl fullWidth={true} margin="dense">
             <InputLabel id="contract-select-label">Contract</InputLabel>
             <Select
+              ref={contractFieldRef}
               required={true}
               labelId="contract-select-label"
               id="contract-select"
@@ -370,6 +372,15 @@ const LakehouseSubscriptionsCreateDialog = observer(
               MenuProps={{
                 autoFocus: false,
                 disableAutoFocusItem: true,
+                anchorOrigin: { vertical: 'bottom', horizontal: 'left' },
+                transformOrigin: { vertical: 'top', horizontal: 'left' },
+                slotProps: {
+                  paper: {
+                    className:
+                      'marketplace-lakehouse-subscriptions__subscription-creator__contract-select-menu',
+                    style: { width: contractFieldRef.current?.offsetWidth },
+                  },
+                },
               }}
             >
               <ListSubheader className="marketplace-lakehouse-subscriptions__subscription-creator__contract-search">
