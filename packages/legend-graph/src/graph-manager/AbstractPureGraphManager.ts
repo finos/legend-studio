@@ -366,6 +366,20 @@ export abstract class AbstractPureGraphManager {
     entities: Entity[],
     options?: { pretty?: boolean | undefined },
   ): Promise<string>;
+
+  /**
+   * NOTE: `protocolGraph` is intentionally typed as a raw `PlainObject` (i.e.
+   * the V1 `PureModelContextData` JSON as it comes off the wire). It is passed
+   * straight through to the engine grammar transform and MUST NOT be mutated
+   * or consumed outside of `PureGraphManager` usage — treat it as opaque
+   * transport payload, not as a domain model. If you need to work with the
+   * metamodel, build a `PureModel` and use `graphToPureCode` instead.
+   */
+  abstract protocolToPureCode(
+    protocolGraph: PlainObject,
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string>;
+
   abstract pureCodeToLambda(
     lambda: string,
     lambdaId?: string,

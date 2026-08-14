@@ -85,6 +85,7 @@ import {
   TEST__getTestGraphManagerState,
 } from '../__test-utils__/GraphManagerTestUtils.js';
 import type { Entity } from '@finos/legend-storage';
+import { TEST_DATA__IngestIncludeTransitiveRoundtrip } from './roundtripTestData/TEST_DATA__IngestIncludeTransitiveRoundtrip.js';
 import { TEST_DATA__DataRoundtrip } from './roundtripTestData/TEST_DATA__DataRoundtrip.js';
 import {
   TEST_DATA__DATAPRODUCT__MODEL_ACCESS_GROUPS,
@@ -419,6 +420,10 @@ describe(unitTest('Ingest definition'), () => {
     [
       'Ingest definition with test suites',
       TEST_DATA__INGEST_DEFINITION__TEST_SUITES,
+    ],
+    [
+      'Database with transitive ingest include (parent DB references schema from child DB ingest include)',
+      TEST_DATA__IngestIncludeTransitiveRoundtrip,
     ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);

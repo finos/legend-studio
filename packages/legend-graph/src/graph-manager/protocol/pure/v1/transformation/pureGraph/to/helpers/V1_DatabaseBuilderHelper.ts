@@ -200,7 +200,7 @@ export const V1_findSchema = (database: Database, _schema: string): void => {
     return;
   }
   throw new AssertionError(
-    `Can't find schema '${_schema}' in database '${database}'`,
+    `Can't find schema '${_schema}' in database '${database.path}'`,
   );
 };
 
