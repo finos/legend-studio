@@ -250,6 +250,20 @@ export function _operationValue(
         _operationValue(val, columnGetter, columnChecker),
       ),
     };
+  } else if (
+    value instanceof V1_AppliedFunction &&
+    matchFunctionName(value.function, DataCubeFunction.TODAY)
+  ) {
+    return {
+      type: DataCubeOperationAdvancedValueType.TODAY,
+    };
+  } else if (
+    value instanceof V1_AppliedFunction &&
+    matchFunctionName(value.function, DataCubeFunction.NOW)
+  ) {
+    return {
+      type: DataCubeOperationAdvancedValueType.NOW,
+    };
   } else if (value === undefined) {
     return {
       type: DataCubeOperationAdvancedValueType.VOID,

@@ -284,14 +284,14 @@ const CustomDateFieldPickerOpenCalendarButton = observer(
   },
 );
 
-const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
+const DataCubeEditorFilterConditionNodeDatePicker = observer(
   forwardRef<
     HTMLInputElement,
     {
       value: string;
       updateValue: (value: string) => void;
     }
-  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
+  >(function DataCubeEditorFilterConditionNodeDatePicker(props, ref) {
     const { value, updateValue } = props;
 
     return (
@@ -314,6 +314,121 @@ const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
           }
         }}
       />
+    );
+  }),
+);
+
+const CURRENT_MOMENT_FUNCTION_LABEL: Record<string, string> = {
+  [DataCubeOperationAdvancedValueType.TODAY]: 'today()',
+  [DataCubeOperationAdvancedValueType.NOW]: 'now()',
+};
+
+/**
+ * Returns the current-moment function value type applicable to a date column:
+ * `today()` (StrictDate) for date columns, `now()` (DateTime) for date-time
+ * columns. Returns `undefined` for columns that carry no date (e.g. a pure
+ * time-of-day column), since a current-moment date/time value is meaningless
+ * there.
+ */
+function _getCurrentMomentValueType(columnType: string): string | undefined {
+  switch (columnType) {
+    case PRIMITIVE_TYPE.DATE:
+    case PRIMITIVE_TYPE.STRICTDATE:
+    case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
+      return DataCubeOperationAdvancedValueType.TODAY;
+    case PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+      return DataCubeOperationAdvancedValueType.NOW;
+    default:
+      return undefined;
+  }
+}
+
+// Date value editor for scalar filter conditions. For date and date-time
+// columns, it additionally lets the user switch between a specific date and a
+// current-moment function: `today()` (returns StrictDate) for date columns and
+// `now()` (returns DateTime) for date-time columns.
+const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      node: DataCubeFilterEditorConditionTreeNode;
+    }
+  >(function DataCubeEditorFilterConditionNodeDateValueEditor(props, ref) {
+    const { node } = props;
+    const value = node.value;
+    const isCurrentMoment =
+      value.type === DataCubeOperationAdvancedValueType.TODAY ||
+      value.type === DataCubeOperationAdvancedValueType.NOW;
+    const currentMomentType =
+      _getCurrentMomentValueType(node.column.type) ??
+      (isCurrentMoment ? value.type : undefined);
+    const [
+      openModeDropdown,
+      closeModeDropdown,
+      modeDropdownProps,
+      modeDropdownPropsOpen,
+    ] = useDropdownMenu();
+
+    // For columns that carry no date (e.g. a pure time-of-day column), only the
+    // date picker is shown - `today()`/`now()` are not offered.
+    if (!currentMomentType) {
+      return (
+        <DataCubeEditorFilterConditionNodeDatePicker
+          ref={ref}
+          value={value.value as string}
+          updateValue={(val) => node.updateValue(val)}
+        />
+      );
+    }
+
+    const currentMomentLabel = isCurrentMoment
+      ? (CURRENT_MOMENT_FUNCTION_LABEL[value.type] ?? 'today()')
+      : (CURRENT_MOMENT_FUNCTION_LABEL[currentMomentType] ?? 'today()');
+
+    return (
+      <div className="flex h-full w-full items-center">
+        <FormDropdownMenuTrigger
+          className="relative mr-1 w-16 flex-shrink-0"
+          onClick={openModeDropdown}
+          open={modeDropdownPropsOpen}
+          title={isCurrentMoment ? currentMomentLabel : 'Specific date'}
+        >
+          {isCurrentMoment ? currentMomentLabel : 'Date'}
+        </FormDropdownMenuTrigger>
+        <FormDropdownMenu className="w-20" {...modeDropdownProps}>
+          <FormDropdownMenuItem
+            onClick={() => {
+              if (isCurrentMoment) {
+                node.setValue(node.operation.generateDefaultValue(node.column));
+              }
+              closeModeDropdown();
+            }}
+            autoFocus={!isCurrentMoment}
+          >
+            Date
+          </FormDropdownMenuItem>
+          <FormDropdownMenuItem
+            onClick={() => {
+              if (value.type !== currentMomentType) {
+                node.setValue({ type: currentMomentType });
+              }
+              closeModeDropdown();
+            }}
+            autoFocus={isCurrentMoment}
+          >
+            {CURRENT_MOMENT_FUNCTION_LABEL[currentMomentType]}
+          </FormDropdownMenuItem>
+        </FormDropdownMenu>
+        {!isCurrentMoment && (
+          <DataCubeEditorFilterConditionNodeDatePicker
+            ref={ref}
+            value={value.value as string}
+            updateValue={(val) => node.updateValue(val)}
+          />
+        )}
+      </div>
     );
   }),
 );
@@ -621,7 +736,7 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
                           case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
                           case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
                             return (
-                              <DataCubeEditorFilterConditionNodeDateValueEditor
+                              <DataCubeEditorFilterConditionNodeDatePicker
                                 value={String(
                                   it.value ??
                                     formatDate(new Date(), DATE_FORMAT),
@@ -719,12 +834,13 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
   forwardRef<
     HTMLElement,
     {
+      node: DataCubeFilterEditorConditionTreeNode;
       value: DataCubeOperationValue;
       updateValue: (value: unknown) => void;
       view: DataCubeViewState;
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
-    const { value, updateValue, view } = props;
+    const { node, value, updateValue, view } = props;
     // WIP: support column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
@@ -774,11 +890,12 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRECISE_PRIMITIVE_TYPE.DATETIME:
       case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
       case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+      case DataCubeOperationAdvancedValueType.TODAY:
+      case DataCubeOperationAdvancedValueType.NOW:
         return (
           <DataCubeEditorFilterConditionNodeDateValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
-            value={value.value as string}
-            updateValue={(val) => updateValue(val)}
+            node={node}
           />
         );
       case DataCubeOperationAdvancedValueType.COLUMN:
@@ -909,6 +1026,11 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
       () => valueEditorRef.current?.focus(),
       [],
     );
+    // NOTE: the value editor for date columns is wider to accommodate the
+    // selector for switching between a specific date and the `today()`/`now()`
+    // function.
+    const isDateColumn =
+      _getCurrentMomentValueType(node.column.type) !== undefined;
 
     return (
       <div className="group flex h-6 items-center">
@@ -1034,9 +1156,15 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
               </FormDropdownMenuItem>
             ))}
         </FormDropdownMenu>
-        <div className="relative w-32 flex-shrink-0">
+        <div
+          className={cn('relative flex-shrink-0', {
+            'w-48': isDateColumn,
+            'w-32': !isDateColumn,
+          })}
+        >
           <DataCubeEditorFilterConditionNodeValueEditor
             ref={valueEditorRef}
+            node={node}
             value={node.value}
             updateValue={(val) => node.updateValue(val)}
             view={view}

@@ -372,6 +372,10 @@ export function _value(value: DataCubeOperationValue): V1_ValueSpecification {
       }
       return _primitiveValue(value.type, value.value);
     }
+    case DataCubeOperationAdvancedValueType.TODAY:
+      return _function(_functionName(DataCubeFunction.TODAY), []);
+    case DataCubeOperationAdvancedValueType.NOW:
+      return _function(_functionName(DataCubeFunction.NOW), []);
     case DataCubeOperationAdvancedValueType.COLUMN:
       return _property(guaranteeIsString(value.value));
     case DataCubeOperationAdvancedValueType.LIST: {

@@ -23,6 +23,7 @@ import {
   isPrimitiveType,
   ofDataType,
   _defaultPrimitiveTypeValue,
+  DataCubeOperationAdvancedValueType,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -67,6 +68,12 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
+    if (
+      value.type === DataCubeOperationAdvancedValueType.TODAY ||
+      value.type === DataCubeOperationAdvancedValueType.NOW
+    ) {
+      return true;
+    }
     return (
       value.value !== undefined &&
       isPrimitiveType(value.type) &&

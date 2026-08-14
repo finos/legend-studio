@@ -47,6 +47,10 @@ export enum DataCubeFunction {
   FROM = 'meta::pure::mapping::from',
   TO_ONE = 'meta::pure::functions::multiplicity::toOne',
 
+  // date
+  TODAY = 'meta::pure::functions::date::today',
+  NOW = 'meta::pure::functions::date::now',
+
   // sort
   ASCENDING = 'meta::pure::functions::relation::ascending',
   DESCENDING = 'meta::pure::functions::relation::descending',
@@ -157,6 +161,8 @@ export enum DataCubeOperationAdvancedValueType {
   COLUMN = 'COLUMN',
   LIST = 'LIST',
   VOID = 'VOID',
+  TODAY = 'TODAY',
+  NOW = 'NOW',
   // PARAMETER
 }
 

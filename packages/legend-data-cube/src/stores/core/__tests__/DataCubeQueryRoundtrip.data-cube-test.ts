@@ -255,6 +255,38 @@ const cases: TestCase[] = [
     columns: ['Dob:Date'],
     validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_IN),
   }),
+  _case(`Filter: == today()`, {
+    query: `filter(x|$x.Dob == today())`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
+  }),
+  _case(`Filter: == today() : NOT`, {
+    query: `filter(x|$x.Dob != today())`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.NOT_EQUAL),
+  }),
+  _case(`Filter: < today()`, {
+    query: `filter(x|$x.Dob < today())`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.LESS_THAN),
+  }),
+  _case(`Filter: >= today()`, {
+    query: `filter(x|$x.Dob >= today())`,
+    columns: ['Dob:Date'],
+    validator: _checkFilterOperator(
+      DataCubeQueryFilterOperator.GREATER_THAN_OR_EQUAL,
+    ),
+  }),
+  _case(`Filter: == now()`, {
+    query: `filter(x|$x.LastUpdated == now())`,
+    columns: ['LastUpdated:DateTime'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.EQUAL),
+  }),
+  _case(`Filter: < now()`, {
+    query: `filter(x|$x.LastUpdated < now())`,
+    columns: ['LastUpdated:DateTime'],
+    validator: _checkFilterOperator(DataCubeQueryFilterOperator.LESS_THAN),
+  }),
   _case(`Filter: endsWith()`, {
     query: `filter(x|$x.Name->endsWith('asd'))`,
     columns: ['Name:String'],
