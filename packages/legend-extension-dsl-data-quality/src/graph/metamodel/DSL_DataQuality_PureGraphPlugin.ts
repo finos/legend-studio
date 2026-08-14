@@ -15,7 +15,12 @@
  */
 
 import { type Clazz } from '@finos/legend-shared';
-import { type PackageableElement, PureGraphPlugin } from '@finos/legend-graph';
+import {
+  type PackageableElement,
+  PureGraphPlugin,
+  type Testable,
+  type TestableElementFilter,
+} from '@finos/legend-graph';
 import packageJson from '../../../package.json' with { type: 'json' };
 import {
   DataQualityClassValidationsConfiguration,
@@ -35,6 +40,20 @@ export class DSL_DataQuality_PureGraphPlugin extends PureGraphPlugin {
       DataQualityServiceValidationConfiguration,
       DataQualityRelationValidationConfiguration,
       DataQualityRelationComparisonConfiguration,
+    ];
+  }
+
+  override getExtraTestablesCollectors(): TestableElementFilter[] {
+    return [
+      (element: PackageableElement): Testable | undefined => {
+        if (
+          element instanceof DataQualityRelationValidationConfiguration ||
+          element instanceof DataQualityRelationComparisonConfiguration
+        ) {
+          return element;
+        }
+        return undefined;
+      },
     ];
   }
 }

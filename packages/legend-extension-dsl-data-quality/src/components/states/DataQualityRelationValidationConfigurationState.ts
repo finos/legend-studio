@@ -82,11 +82,13 @@ import {
   dataQualityRelationValidation_addValidation,
   dataQualityRelationValidation_setAssertion,
 } from '../../graph-manager/DSL_DataQuality_GraphModifierHelper.js';
+import { DataQualityTestableState } from './DataQualityTestableState.js';
 
 export enum DATA_QUALITY_RELATION_VALIDATION_EDITOR_TAB {
   DEFINITION = 'Definition',
   VALIDATIONS = 'Validations',
   TRIAL_RUN = 'Trial Run',
+  TESTS = 'Tests',
 }
 
 export const DEFAULT_QUERY_LIMIT = 1000;
@@ -286,6 +288,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
   executionPlanState: ExecutionPlanState;
   validationStates: DataQualityRelationValidationState[] = [];
   readonly suggestedValidationsState: SuggestedValidationsState;
+  readonly testableState: DataQualityTestableState;
   parametersState: RelationDefinitionParameterState;
   isConvertingValidationLambdaObjects = false;
   resultState: DataQualityRelationResultState;
@@ -369,6 +372,7 @@ export class DataQualityRelationValidationConfigurationState extends ElementEdit
     this.parametersState = new RelationDefinitionParameterState(this);
     this.resultState = new DataQualityRelationResultState(this);
     this.suggestedValidationsState = new SuggestedValidationsState(this);
+    this.testableState = new DataQualityTestableState(this, element);
 
     flowResult(this.setupValidationStatesWithColumns()).catch(
       this.editorStore.applicationStore.alertUnhandledError,

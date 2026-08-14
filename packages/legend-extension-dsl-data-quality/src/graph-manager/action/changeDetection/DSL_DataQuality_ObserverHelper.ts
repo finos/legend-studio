@@ -18,9 +18,11 @@ import {
   type ObserverContext,
   observe_Abstract_PackageableElement,
   observe_Class,
+  observe_FunctionTestData,
   observe_PackageableElementReference,
   observe_PropertyReference,
   observe_RawLambda,
+  observe_TestAssertion,
   skipObserved,
   skipObservedWithContext,
 } from '@finos/legend-graph';
@@ -42,6 +44,14 @@ import {
   type DataQualityRootGraphFetchTree,
   DataQualityPropertyGraphFetchTree,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
+import {
+  type DataQualityRelationComparisonTest,
+  type DataQualityRelationComparisonTestData,
+  type DataQualityRelationComparisonTestSuite,
+  type DataQualityRelationValidationTest,
+  type DataQualityRelationValidationTestData,
+  type DataQualityRelationValidationTestSuite,
+} from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityTest.js';
 
 export const observe_DataSpaceDataQualityExecutionContext = skipObserved(
   (
@@ -183,6 +193,122 @@ export const observe_DataQualityRelationQueryLambda = skipObserved(
     }),
 );
 
+export const observe_DataQualityRelationValidationTest = skipObserved(
+  (
+    metamodel: DataQualityRelationValidationTest,
+  ): DataQualityRelationValidationTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      doc: observable,
+      assertions: observable,
+      hashCode: computed,
+    });
+    metamodel.assertions.forEach(observe_TestAssertion);
+    return metamodel;
+  },
+);
+
+export const observe_DataQualityRelationValidationTestData =
+  skipObservedWithContext(
+    (
+      metamodel: DataQualityRelationValidationTestData,
+      context: ObserverContext,
+    ): DataQualityRelationValidationTestData => {
+      makeObservable(metamodel, {
+        testData: observable,
+        hashCode: computed,
+      });
+      metamodel.testData.forEach((data) =>
+        observe_FunctionTestData(data, context),
+      );
+      return metamodel;
+    },
+  );
+
+export const observe_DataQualityRelationValidationTestSuite =
+  skipObservedWithContext(
+    (
+      metamodel: DataQualityRelationValidationTestSuite,
+      context: ObserverContext,
+    ): DataQualityRelationValidationTestSuite => {
+      makeObservable(metamodel, {
+        id: observable,
+        doc: observable,
+        testData: observable,
+        tests: observable,
+        hashCode: computed,
+      });
+      if (metamodel.testData) {
+        observe_DataQualityRelationValidationTestData(
+          metamodel.testData,
+          context,
+        );
+      }
+      metamodel.tests.forEach((test) =>
+        observe_DataQualityRelationValidationTest(test),
+      );
+      return metamodel;
+    },
+  );
+
+export const observe_DataQualityRelationComparisonTest = skipObserved(
+  (
+    metamodel: DataQualityRelationComparisonTest,
+  ): DataQualityRelationComparisonTest => {
+    makeObservable(metamodel, {
+      id: observable,
+      doc: observable,
+      assertions: observable,
+      hashCode: computed,
+    });
+    metamodel.assertions.forEach(observe_TestAssertion);
+    return metamodel;
+  },
+);
+
+export const observe_DataQualityRelationComparisonTestData =
+  skipObservedWithContext(
+    (
+      metamodel: DataQualityRelationComparisonTestData,
+      context: ObserverContext,
+    ): DataQualityRelationComparisonTestData => {
+      makeObservable(metamodel, {
+        testData: observable,
+        hashCode: computed,
+      });
+      metamodel.testData.forEach((data) =>
+        observe_FunctionTestData(data, context),
+      );
+      return metamodel;
+    },
+  );
+
+export const observe_DataQualityRelationComparisonTestSuite =
+  skipObservedWithContext(
+    (
+      metamodel: DataQualityRelationComparisonTestSuite,
+      context: ObserverContext,
+    ): DataQualityRelationComparisonTestSuite => {
+      makeObservable(metamodel, {
+        id: observable,
+        doc: observable,
+        testData: observable,
+        tests: observable,
+        hashCode: computed,
+      });
+      if (metamodel.testData) {
+        observe_DataQualityRelationComparisonTestData(
+          metamodel.testData,
+          context,
+        );
+      }
+      metamodel.tests.forEach((test) =>
+        observe_DataQualityRelationComparisonTest(test),
+      );
+      return metamodel;
+    },
+  );
+
 export const observe_DataQualityRelationValidationConfiguration =
   skipObservedWithContext(
     (
@@ -198,11 +324,15 @@ export const observe_DataQualityRelationValidationConfiguration =
         _elementHashCode: override,
         query: observable,
         validations: observable,
+        tests: observable,
       });
       metamodel.validations.forEach((value) =>
         observe_DataQualityRelationValidation(value),
       );
       observe_DataQualityRelationQueryLambda(metamodel.query);
+      metamodel.tests.forEach((testSuite) =>
+        observe_DataQualityRelationValidationTestSuite(testSuite, context),
+      );
       return metamodel;
     },
   );
@@ -225,6 +355,7 @@ export const observe_DataQualityRelationComparisonConfiguration =
   skipObservedWithContext(
     (
       metamodel: DataQualityRelationComparisonConfiguration,
+      context: ObserverContext,
     ): DataQualityRelationComparisonConfiguration => {
       observe_Abstract_PackageableElement(metamodel);
       makeObservable<
@@ -238,10 +369,14 @@ export const observe_DataQualityRelationComparisonConfiguration =
         columnsToCompare: observable,
         strategy: observable,
         expectedMatch: observable,
+        tests: observable,
       });
       observe_DataQualityRelationQueryLambda(metamodel.source);
       observe_DataQualityRelationQueryLambda(metamodel.target);
       observe_ReconStrategy(metamodel.strategy);
+      metamodel.tests.forEach((testSuite) =>
+        observe_DataQualityRelationComparisonTestSuite(testSuite, context),
+      );
       return metamodel;
     },
   );

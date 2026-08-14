@@ -26,12 +26,17 @@ import {
   type V1_ExecutionResult,
   type V1_ParameterValue,
   type V1_PureModelContext,
+  type V1_RelationType,
   type V1_RootGraphFetchTree,
   type RawLambda,
   type V1_RawLambda,
   V1_getEngineSerializationFormat,
+  V1_getGenericTypeFullPath,
   LegendSDLC,
+  Multiplicity,
   PureClientVersion,
+  RelationTypeColumnMetadata,
+  RelationTypeMetadata,
   V1_buildExecutionError,
   V1_buildExecutionResult,
   V1_ExecutionError,
@@ -45,12 +50,19 @@ import {
   V1_pureModelContextPropSchema,
   V1_deserializeExecutionResult,
   V1_parameterValueModelSchema,
+  V1_relationTypeModelSchema,
   V1_transformParameterValue,
   V1_transformRawLambda,
   V1_RemoteEngine,
   V1_rawLambdaModelSchema,
 } from '@finos/legend-graph';
-import { createModelSchema, list, optional, primitive } from 'serializr';
+import {
+  createModelSchema,
+  deserialize,
+  list,
+  optional,
+  primitive,
+} from 'serializr';
 import {
   type PlainObject,
   assertErrorThrown,
@@ -84,6 +96,7 @@ const DQ_DEBUG_EXECUTION_PLAN = 'debug execution plan';
 const DQ_FETCH_PROPERTY_PATH_TREE = 'dq fetch property path tree';
 const DQ_EXECUTE_RECONCILIATION = 'execute reconciliation';
 const DQ_GENERATE_RECONCILIATION_PLAN = 'generate reconciliation plan';
+const DQ_RELATION_TYPE = 'dq relation type';
 
 export class V1_DQExecuteInput {
   clientVersion: string | undefined;
@@ -770,4 +783,50 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
       throw error;
     }
   }
+
+  getDataQualityRelationType = async (
+    graph: PureModel,
+    packagePath: string,
+  ): Promise<RelationTypeMetadata> => {
+    const input = this.createExecutionInput(
+      graph,
+      packagePath,
+      new V1_DQExecuteInput(),
+      {},
+    );
+
+    // TODO: improve abstraction so that we do not need to access the engine
+    // server client directly
+    const engineServerClient = guaranteeType(
+      this.graphManager.engine,
+      V1_RemoteEngine,
+      'getDataQualityRelationType is only supported by remote engine',
+    ).getEngineServerClient();
+
+    const rawResult: PlainObject<V1_RelationType> =
+      await engineServerClient.postWithTracing(
+        engineServerClient.getTraceData(DQ_RELATION_TYPE),
+        `${engineServerClient._pure()}/dataquality/relationType`,
+        V1_DQExecuteInput.serialization.toJson(input),
+        {},
+        undefined,
+        undefined,
+        { enableCompression: true },
+      );
+
+    const v1RelationType = deserialize(V1_relationTypeModelSchema, rawResult);
+    const relationTypeMetadata = new RelationTypeMetadata();
+    relationTypeMetadata.columns = v1RelationType.columns.map(
+      (column) =>
+        new RelationTypeColumnMetadata(
+          V1_getGenericTypeFullPath(column.genericType),
+          column.name,
+          new Multiplicity(
+            column.multiplicity.lowerBound,
+            column.multiplicity.upperBound,
+          ),
+        ),
+    );
+    return relationTypeMetadata;
+  };
 }
