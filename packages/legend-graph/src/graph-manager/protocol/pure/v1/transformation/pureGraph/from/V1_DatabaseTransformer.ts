@@ -203,10 +203,15 @@ export const V1_transformTableAliasToTablePointer = (
   tablePtr.database = options?.TEMPORARY__resolveToFullPath
     ? ownerRef.value.path
     : (ownerRef.valueForSerialization ?? '');
-  // make sure reference is to the owner not the generated database
+  // make sure reference is to the owner (or the outer store the user actually
+  // referenced) rather than the synthetic lakehouse-generated database. We only
+  // rewrite when the user actually serialized a non-empty path that differs
+  // from the synthetic DB path, so we don't accidentally clobber the resolved
+  // path with an empty string.
   if (
     ownerRef.value instanceof INTERNAL__LakehouseGeneratedDatabase &&
-    ownerRef.valueForSerialization === ownerRef.value.OWNER.path
+    ownerRef.valueForSerialization &&
+    ownerRef.valueForSerialization !== ownerRef.value.path
   ) {
     tablePtr.database = ownerRef.valueForSerialization;
   }
