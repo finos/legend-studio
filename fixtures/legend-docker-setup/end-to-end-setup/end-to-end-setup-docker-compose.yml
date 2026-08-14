@@ -4,19 +4,27 @@ services:
   engine:
     container_name: engine
     image: finos/legend-engine-server-http-server:snapshot
+    entrypoint:
+      - /bin/sh
+      - -c
+      - >-
+        exec java
+        -XX:+ExitOnOutOfMemoryError
+        -XX:MaxRAMPercentage=60
+        -Xss4M
+        -Dfile.encoding=UTF8
+        -cp
+        "/app/resources:/app/classes:$$(find /app/libs -name 'jersey225-pac4j-*.jar' -print -quit):/app/libs/*"
+        org.finos.legend.engine.server.Server
+        "$$@"
+      - --
     ports:
       - 6300:6300
     networks:
       - legend
     volumes:
       - ./config:/config
-    # NOTE: the Java CLI wildcard must be wrapped by quotes
-    # See https://stackoverflow.com/questions/14722657/java-classpath-wildcard-behaviour/14722763
-    command: >
-      java
-      -cp /app/bin/"*"
-      org.finos.legend.engine.server.Server
-      server /config/engine-config.json
+    command: ['server', '/config/engine-config.json']
 
 networks:
   legend: {}
