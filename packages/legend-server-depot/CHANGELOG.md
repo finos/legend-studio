@@ -1,5 +1,11 @@
 # @finos/legend-server-depot
 
+## 6.1.18
+
+### Patch Changes
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize "download project grammar with dependency" in the developer tools panel: dependency grammar is now fetched from Depot as a single `V1_PureModelContextData` payload and transformed to Pure code in one engine call, instead of building a metamodel graph and round-tripping element-by-element. Adds `DepotServerClient.collectDependencyEntitiesAsPureModelContextData` and `AbstractPureGraphManager.protocolToPureCode` (backed by the engine's `transformProtocolGraphToCode`). Also makes the entire download-grammar action row (icon + label) clickable.
+
 ## 6.1.17
 
 ## 6.1.16
