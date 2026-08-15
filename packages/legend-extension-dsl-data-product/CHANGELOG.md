@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.106
+
+### Patch Changes
+
+- [#5443](https://github.com/finos/legend-studio/pull/5443) [`e0a1c79`](https://github.com/finos/legend-studio/commit/e0a1c79ab73453ca40aed3c653717c0a012ee6d5) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve subscription contract selection by showing completed contracts and adding searchable filtering in the create dialog.
+
 ## 0.0.105
 
 ### Patch Changes
