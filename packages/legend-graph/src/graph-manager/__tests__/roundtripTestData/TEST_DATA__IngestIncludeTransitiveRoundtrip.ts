@@ -27,31 +27,59 @@
  * check.
  */
 
-const varchar200Column = (name: string): object => ({
-  genericType: {
-    multiplicityArguments: [],
-    rawType: {
-      _type: 'packageableType',
-      fullPath: 'Varchar',
-    },
-    typeArguments: [],
-    typeVariableValues: [
-      {
-        _type: 'integer',
-        value: 200,
-      },
-    ],
-  },
-  multiplicity: {
-    lowerBound: 0,
-    upperBound: 1,
-  },
-  name,
-});
-
 export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
   {
-    path: 'zoo::store::ParkStore',
+    classifierPath: 'meta::pure::metamodel::type::Class',
+    content: {
+      _type: 'class',
+      name: 'Animal',
+      package: 'model',
+      properties: [
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'animalId',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'name',
+        },
+        {
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'String',
+            },
+          },
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          name: 'species',
+        },
+      ],
+    },
+    path: 'model::Animal',
+  },
+  {
+    classifierPath: 'meta::relational::metamodel::Database',
     content: {
       _type: 'relational',
       filters: [],
@@ -100,10 +128,10 @@ export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
       package: 'zoo::store',
       schemas: [],
     },
-    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'zoo::store::ParkStore',
   },
   {
-    path: 'zoo::store::AnimalStore',
+    classifierPath: 'meta::relational::metamodel::Database',
     content: {
       _type: 'relational',
       filters: [],
@@ -160,10 +188,111 @@ export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
       package: 'zoo::store',
       schemas: [],
     },
-    classifierPath: 'meta::relational::metamodel::Database',
+    path: 'zoo::store::AnimalStore',
   },
   {
-    path: 'zoo::lakehouse::ingestDefinitions::ZOO::ANIMALS',
+    classifierPath: 'meta::pure::mapping::Mapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'relational',
+          class: 'model::Animal',
+          distinct: false,
+          mainTable: {
+            _type: 'Table',
+            database: 'zoo::store::ParkStore',
+            mainTableDb: 'zoo::store::ParkStore',
+            schema: 'ZOO',
+            table: 'ANIMALS',
+          },
+          primaryKey: [
+            {
+              _type: 'column',
+              column: 'ANIMAL_ID',
+              table: {
+                _type: 'Table',
+                database: 'zoo::store::ParkStore',
+                mainTableDb: 'zoo::store::ParkStore',
+                schema: 'ZOO',
+                table: 'ANIMALS',
+              },
+              tableAlias: 'ANIMALS',
+            },
+          ],
+          propertyMappings: [
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Animal',
+                property: 'animalId',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'ANIMAL_ID',
+                table: {
+                  _type: 'Table',
+                  database: 'zoo::store::ParkStore',
+                  mainTableDb: 'zoo::store::ParkStore',
+                  schema: 'ZOO',
+                  table: 'ANIMALS',
+                },
+                tableAlias: 'ANIMALS',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Animal',
+                property: 'name',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'NAME',
+                table: {
+                  _type: 'Table',
+                  database: 'zoo::store::ParkStore',
+                  mainTableDb: 'zoo::store::ParkStore',
+                  schema: 'ZOO',
+                  table: 'ANIMALS',
+                },
+                tableAlias: 'ANIMALS',
+              },
+            },
+            {
+              _type: 'relationalPropertyMapping',
+              property: {
+                class: 'model::Animal',
+                property: 'species',
+              },
+              relationalOperation: {
+                _type: 'column',
+                column: 'SPECIES',
+                table: {
+                  _type: 'Table',
+                  database: 'zoo::store::ParkStore',
+                  mainTableDb: 'zoo::store::ParkStore',
+                  schema: 'ZOO',
+                  table: 'ANIMALS',
+                },
+                tableAlias: 'ANIMALS',
+              },
+            },
+          ],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'AnimalMapping',
+      package: 'model',
+      tests: [],
+    },
+    path: 'model::AnimalMapping',
+  },
+  {
+    classifierPath:
+      'meta::external::ingest::specification::metamodel::IngestDefinition',
     content: {
       _type: 'ingestDefinition',
       datasetGroup: 'ZOO',
@@ -181,11 +310,111 @@ export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
             schema: {
               _type: 'relationType',
               columns: [
-                varchar200Column('ANIMAL_ID'),
-                varchar200Column('NAME'),
-                varchar200Column('SPECIES'),
-                varchar200Column('HABITAT_ID'),
-                varchar200Column('KEEPER_ID'),
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'ANIMAL_ID',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'NAME',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'SPECIES',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'HABITAT_ID',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'KEEPER_ID',
+                },
               ],
             },
           },
@@ -218,11 +447,11 @@ export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
         _type: 'batch_milestoned',
       },
     },
-    classifierPath:
-      'meta::external::ingest::specification::metamodel::IngestDefinition',
+    path: 'zoo::lakehouse::ingestDefinitions::ZOO::ANIMALS',
   },
   {
-    path: 'zoo::lakehouse::ingestDefinitions::ZOO::HABITATS',
+    classifierPath:
+      'meta::external::ingest::specification::metamodel::IngestDefinition',
     content: {
       _type: 'ingestDefinition',
       datasetGroup: 'ZOO',
@@ -240,9 +469,69 @@ export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
             schema: {
               _type: 'relationType',
               columns: [
-                varchar200Column('HABITAT_ID'),
-                varchar200Column('NAME'),
-                varchar200Column('KEEPER_ID'),
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'HABITAT_ID',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'NAME',
+                },
+                {
+                  genericType: {
+                    multiplicityArguments: [],
+                    rawType: {
+                      _type: 'packageableType',
+                      fullPath: 'Varchar',
+                    },
+                    typeArguments: [],
+                    typeVariableValues: [
+                      {
+                        _type: 'integer',
+                        value: 200,
+                      },
+                    ],
+                  },
+                  multiplicity: {
+                    lowerBound: 0,
+                    upperBound: 1,
+                  },
+                  name: 'KEEPER_ID',
+                },
               ],
             },
           },
@@ -275,7 +564,6 @@ export const TEST_DATA__IngestIncludeTransitiveRoundtrip = [
         _type: 'batch_milestoned',
       },
     },
-    classifierPath:
-      'meta::external::ingest::specification::metamodel::IngestDefinition',
+    path: 'zoo::lakehouse::ingestDefinitions::ZOO::HABITATS',
   },
 ];
