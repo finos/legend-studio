@@ -1,5 +1,17 @@
 # @finos/legend-art
 
+## 7.1.160
+
+### Patch Changes
+
+- [#5437](https://github.com/finos/legend-studio/pull/5437) [`85f0562`](https://github.com/finos/legend-studio/commit/85f05624141d5b115d78a1eea54763002ea62f2e) ([@eradityash](https://github.com/eradityash)) - Order Profile Add-to-Cart Fixes, Model-Aware Cart Logic & Add Service for Owned Terminals
+
+  - Implement Order Profile Add-to-Cart Payload Fixes
+  - Implement Model-Aware Cart Logic
+  - Implement Order Profile Detail Modal Fixes
+  - Implement "Add Service" for Owned Terminals functionality
+  - Cart Drawer UI Overhaul & Refactors
+
 ## 7.1.159
 
 ### Patch Changes
