@@ -1836,33 +1836,37 @@ const resolveExecutionContext = (
   queryMapping: Mapping | undefined,
   queryRuntime: PackageableRuntime | undefined,
 ): DataSpaceExecutionContext | undefined => {
-  if (!ex) {
-    if (queryMapping && queryRuntime) {
-      if (
-        dataSpace.defaultExecutionContext.mapping.value !== queryMapping &&
-        dataSpace.defaultExecutionContext.defaultRuntime.value.path !==
-          queryRuntime.path
-      ) {
-        const matchingExecContexts = dataSpace.executionContexts.filter(
-          (ec) => ec.mapping.value === queryMapping,
-        );
-        if (matchingExecContexts.length > 1) {
-          const matchRuntime = matchingExecContexts.find(
-            (exec) => exec.defaultRuntime.value.path === queryRuntime.path,
-          );
-          // TODO: we will safely do this for now. Long term we should save exec context key into query store
-          // we should make runtime/mapping optional
-          return matchRuntime ?? matchingExecContexts[0];
-        }
-        return matchingExecContexts[0];
-      }
-    }
-    return dataSpace.defaultExecutionContext;
+  const executionContexts = dataSpace.executionContexts ?? [];
+  if (ex) {
+    return executionContexts.find((ec) => ec.name === ex);
   }
-  const matchingExecContexts = dataSpace.executionContexts.filter(
-    (ec) => ec.name === ex,
-  );
-  return matchingExecContexts[0];
+  const defaultExecutionContext = dataSpace.defaultExecutionContext;
+  if (!defaultExecutionContext) {
+    return undefined;
+  }
+  if (queryMapping && queryRuntime) {
+    const defaultExecutionContextMapping = defaultExecutionContext.mapping;
+    const defaultExecutionContextRuntime =
+      defaultExecutionContext.defaultRuntime;
+    if (
+      defaultExecutionContextMapping &&
+      defaultExecutionContextRuntime &&
+      defaultExecutionContextMapping.value !== queryMapping &&
+      defaultExecutionContextRuntime.value.path !== queryRuntime.path
+    ) {
+      const matchingExecContexts = executionContexts.filter(
+        (ec) => ec.mapping?.value === queryMapping,
+      );
+      if (matchingExecContexts.length > 1) {
+        const matchRuntime = matchingExecContexts.find(
+          (exec) => exec.defaultRuntime?.value.path === queryRuntime.path,
+        );
+        return matchRuntime ?? matchingExecContexts[0];
+      }
+      return matchingExecContexts[0];
+    }
+  }
+  return defaultExecutionContext;
 };
 
 export class ExistingQueryEditorStore extends QueryEditorStore {
@@ -2219,21 +2223,29 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             this.applicationStore.config.options.queryBuilderConfig,
             sourceInfo,
           );
+        const matchingExecutionContextMapping = guaranteeNonNullable(
+          matchingExecutionContext.mapping,
+          `Execution context '${matchingExecutionContext.name}' does not have a mapping`,
+        );
+        const matchingExecutionContextRuntime = guaranteeNonNullable(
+          matchingExecutionContext.defaultRuntime,
+          `Execution context '${matchingExecutionContext.name}' does not have a default runtime`,
+        );
         const mappingModelCoverageAnalysisResult =
           dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
-            matchingExecutionContext.mapping.value.path,
+            matchingExecutionContextMapping.value.path,
           );
         if (mappingModelCoverageAnalysisResult) {
           dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
             mappingModelCoverageAnalysisResult;
         }
         dataSpaceQueryBuilderState.executionContextState.setMapping(
-          matchingExecutionContext.mapping.value,
+          matchingExecutionContextMapping.value,
         );
         dataSpaceQueryBuilderState.executionContextState.setRuntimeValue(
           new RuntimePointer(
             PackageableElementExplicitReference.create(
-              matchingExecutionContext.defaultRuntime.value,
+              matchingExecutionContextRuntime.value,
             ),
           ),
         );

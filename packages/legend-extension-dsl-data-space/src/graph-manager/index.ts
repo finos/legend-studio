@@ -44,6 +44,7 @@ export {
   observe_DataSpaceElementPointer,
   observe_DataSpaceExecutable,
   observe_DataSpaceExecutionContext,
+  observe_DataSpaceMappingProvider,
   observe_DataSpaceSupportInfo,
 } from '../graph-manager/action/changeDetection/DSL_DataSpace_ObserverHelper.js';
 export {

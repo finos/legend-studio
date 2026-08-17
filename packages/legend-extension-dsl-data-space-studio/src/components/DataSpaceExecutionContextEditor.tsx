@@ -15,686 +15,827 @@
  */
 
 import {
-  type ElementDragSource,
-  type UMLEditorElementDropTarget,
   CORE_DND_TYPE,
+  type ElementDragSource,
   useEditorStore,
+  type UMLEditorElementDropTarget,
 } from '@finos/legend-application-studio';
 import { observer } from 'mobx-react-lite';
-import { useDrop } from 'react-dnd';
 import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import {
   BlankPanelPlaceholder,
   clsx,
-  ContextMenu,
   CustomSelectorInput,
   Dialog,
-  ErrorIcon,
-  ExclamationTriangleIcon,
-  InputWithInlineValidation,
   LongArrowRightIcon,
-  MenuContent,
-  MenuContentItem,
   ModalTitle,
   PanelContent,
+  PanelDivider,
   PanelDropZone,
+  PanelFormSection,
+  PanelFormTextField,
+  PanelFormValidatedTextField,
   PanelHeader,
-  PanelHeaderActionItem,
-  PanelHeaderActions,
   PlusIcon,
   PURE_MappingIcon,
   PURE_RuntimeIcon,
-  ResizablePanel,
-  ResizablePanelGroup,
-  ResizablePanelSplitter,
-  ResizablePanelSplitterLine,
+  TimesIcon,
+  WarningIcon,
 } from '@finos/legend-art';
 import {
+  DataProduct,
+  LakehouseRuntime,
   Mapping,
+  ModelAccessPointGroup,
   PackageableElementExplicitReference,
   PackageableRuntime,
-  validate_PureExecutionMapping,
 } from '@finos/legend-graph';
-import {
-  dataSpace_setExecutionContextDefaultRuntime,
-  dataSpace_setExecutionContextMapping,
-  dataSpace_setExecutionContextTitle,
-  dataSpace_setExecutionContextDescription,
-} from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
-import { forwardRef, useCallback, useState } from 'react';
-import type { DataSpaceExecutionContextState } from '../stores/DataSpaceExecutionContextState.js';
-import type { DataSpaceExecutionContext } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   buildElementOption,
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
-import type { PropsValue } from 'react-select';
+import {
+  DataSpaceExecutionContext,
+  DataSpaceMappingProvider,
+  type DataSpaceExecutionContext as DataSpaceExecutionContextType,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { useCallback, useState } from 'react';
+import { useDrop } from 'react-dnd';
+import type { DataSpaceExecutionContextState } from '../stores/DataSpaceExecutionContextState.js';
+import {
+  dataSpace_setDefaultExecutionContext,
+  dataSpace_setExecutionContextDefaultRuntime,
+  dataSpace_setExecutionContextDescription,
+  dataSpace_setExecutionContextMapping,
+  dataSpace_setExecutionContextMappingProvider,
+  dataSpace_setExecutionContextName,
+  dataSpace_setExecutionContextTitle,
+  dataSpace_setMappingProviderKeys,
+} from '../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
+import {
+  collectExecutionContextValidationIssues,
+  hasExecutionContextValidationError,
+  hasNoMappingSource,
+  InlineIssue,
+} from './DataSpaceGeneralEditor/DataSpaceValidation.js';
 
-const DataSpaceExecutionContextConfigurationEditor = observer(
-  (props: {
-    executionContextState: DataSpaceExecutionContextState;
-    executionContext: DataSpaceExecutionContext;
-  }) => {
-    const { executionContextState, executionContext } = props;
-    const isReadOnly = executionContextState.dataSpaceEditorState.isReadOnly;
-    const editorStore = executionContextState.editorStore;
-    const applicationStore = editorStore.applicationStore;
+type MappingSourceKind = 'mapping' | 'mappingProvider';
 
-    // Mapping
-    // TODO: this is not generic error handling, as there could be other problems
-    // with mapping, we need to genericize this
-    const isMappingEmpty = validate_PureExecutionMapping(
-      executionContext.mapping.value,
-    );
-    const mapping = executionContext.mapping.value;
-    const mappingOptions =
-      editorStore.graphManagerState.usableMappings.map(buildElementOption);
-    const noMappingLabel = (
-      <div
-        className="service-execution-editor__configuration__mapping-option--empty"
-        title={isMappingEmpty?.messages.join('\n') ?? ''}
-      >
-        <div className="service-execution-editor__configuration__mapping-option--empty__label">
-          (none)
-        </div>
-        <ErrorIcon />
-      </div>
-    );
-    const selectedMappingOption = {
-      value: mapping,
-      label: isMappingEmpty ? noMappingLabel : mapping.path,
-    } as PackageableElementOption<Mapping>;
-    const onMappingSelectionChange = (
-      val: PackageableElementOption<Mapping>,
-    ): void => {
-      if (val.value !== mapping) {
-        dataSpace_setExecutionContextMapping(
-          executionContext,
-          PackageableElementExplicitReference.create(val.value),
-        );
-        executionContextState.autoSelectRuntimeOnMappingChange(val.value);
-      }
-    };
-    const visitMapping = (): void =>
-      editorStore.graphEditorMode.openElement(mapping);
+const getDataProductsWithModelAccessPointGroups = (
+  editorStore: ReturnType<typeof useEditorStore>,
+): DataProduct[] =>
+  editorStore.graphManagerState.graph.dataProducts.filter((dataProduct) =>
+    dataProduct.accessPointGroups.some(
+      (group) => group instanceof ModelAccessPointGroup,
+    ),
+  );
 
-    // Runtime
-    const defaultRuntime = executionContext.defaultRuntime;
-    // NOTE: for now, only include runtime associated with the mapping
-    // TODO?: Should we bring the runtime compatibility check from query to here?
-    const runtimes = editorStore.graphManagerState.graph.runtimes.filter((rt) =>
-      rt.runtimeValue.mappings.map((m) => m.value).includes(mapping),
-    );
-    const runtimeOptions = runtimes.map((rt) => ({
-      label: rt.path,
-      value: PackageableElementExplicitReference.create(rt),
-    }));
-    const runtimePointerWarning = !runtimes.includes(defaultRuntime.value) // if the runtime does not belong to the chosen mapping
-      ? `runtime is not associated with specified mapping '${mapping.path}'`
-      : undefined;
-    const selectedRuntimeOption = {
-      value: defaultRuntime,
-      label: (
-        <div
-          className="service-execution-editor__configuration__runtime-option__pointer"
-          title={undefined}
-        >
-          <div
-            className={clsx(
-              'service-execution-editor__configuration__runtime-option__pointer__label',
-              {
-                'service-execution-editor__configuration__runtime-option__pointer__label--with-warning':
-                  Boolean(runtimePointerWarning),
-              },
-            )}
-          >
-            {defaultRuntime.value.path}
-          </div>
-          {runtimePointerWarning && (
-            <div
-              className="service-execution-editor__configuration__runtime-option__pointer__warning"
-              title={runtimePointerWarning}
-            >
-              <ExclamationTriangleIcon />
-            </div>
-          )}
-        </div>
-      ),
-    } as unknown as PropsValue<{
-      label: string;
-      value: PackageableElementExplicitReference<PackageableRuntime>;
-    }>;
-    const onRuntimeSelectionChange = (val: {
-      label: string | React.ReactNode;
-      value:
-        | PackageableElementExplicitReference<PackageableRuntime>
-        | undefined;
-    }): void => {
-      if (
-        val.value?.value !== defaultRuntime.value &&
-        val.value !== undefined
-      ) {
-        dataSpace_setExecutionContextDefaultRuntime(
-          executionContext,
-          val.value,
-        );
-      }
-    };
-    const visitRuntime = (): void => {
-      editorStore.graphEditorMode.openElement(defaultRuntime.value);
-    };
+const getModelAccessPointGroupIds = (dataProduct: DataProduct): string[] =>
+  dataProduct.accessPointGroups
+    .filter((group) => group instanceof ModelAccessPointGroup)
+    .map((group) => group.id);
 
-    // DnD
-    const handleMappingOrRuntimeDrop = useCallback(
-      (item: UMLEditorElementDropTarget): void => {
-        const element = item.data.packageableElement;
-        if (!isReadOnly) {
-          if (element instanceof Mapping) {
-            dataSpace_setExecutionContextMapping(
-              executionContext,
-              PackageableElementExplicitReference.create(element),
-            );
-            executionContextState.autoSelectRuntimeOnMappingChange(element);
-          } else if (
-            element instanceof PackageableRuntime &&
-            element.runtimeValue.mappings.map((m) => m.value).includes(mapping)
-          ) {
-            dataSpace_setExecutionContextDefaultRuntime(
-              executionContext,
-              PackageableElementExplicitReference.create(element),
-            );
-          }
-        }
-      },
-      [isReadOnly, mapping, executionContextState, executionContext],
-    );
-    const [{ isMappingOrRuntimeDragOver }, dropConnector] = useDrop<
-      ElementDragSource,
-      void,
-      { isMappingOrRuntimeDragOver: boolean }
-    >(
-      () => ({
-        accept: [
-          CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING,
-          CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME,
-        ],
-        drop: (item) => handleMappingOrRuntimeDrop(item),
-        collect: (monitor) => ({
-          isMappingOrRuntimeDragOver: monitor.isOver({ shallow: true }),
-        }),
-      }),
-      [handleMappingOrRuntimeDrop],
-    );
-
-    return (
-      <PanelContent>
-        <PanelDropZone
-          dropTargetConnector={dropConnector}
-          isDragOver={isMappingOrRuntimeDragOver && !isReadOnly}
-        >
-          <div className="service-execution-editor__configuration__items">
-            <div className="service-execution-editor__configuration__item">
-              <div className="btn--sm service-execution-editor__configuration__item__label">
-                <PURE_MappingIcon />
-              </div>
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
-                disabled={isReadOnly}
-                options={mappingOptions}
-                onChange={onMappingSelectionChange}
-                value={selectedMappingOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                hasError={Boolean(isMappingEmpty)}
-              />
-              <button
-                className="btn--dark btn--sm service-execution-editor__configuration__item__btn"
-                onClick={visitMapping}
-                tabIndex={-1}
-                title="See mapping"
-                disabled={Boolean(isMappingEmpty)}
-              >
-                <LongArrowRightIcon />
-              </button>
-            </div>
-            <div className="service-execution-editor__configuration__item">
-              <div className="btn--sm service-execution-editor__configuration__item__label">
-                <PURE_RuntimeIcon />
-              </div>
-              <CustomSelectorInput
-                className="panel__content__form__section__dropdown service-execution-editor__configuration__item__dropdown"
-                disabled={isReadOnly}
-                options={runtimeOptions}
-                onChange={onRuntimeSelectionChange}
-                value={selectedRuntimeOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-              <button
-                className="btn--sm btn--dark service-execution-editor__configuration__item__btn"
-                onClick={visitRuntime}
-                tabIndex={-1}
-                title="See runtime"
-              >
-                <LongArrowRightIcon />
-              </button>
-            </div>
-
-            {/* Title input */}
-            <div className="execution-context-editor__form-section">
-              <div className="execution-context-editor__form-section__label">
-                Title
-              </div>
-              <div className="execution-context-editor__form-section__content">
-                <input
-                  className="execution-context-editor__form-section__content__input panel__content__form__section__input"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={executionContext.title ?? ''}
-                  onChange={(event): void =>
-                    dataSpace_setExecutionContextTitle(
-                      executionContext,
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            {/* Description input */}
-            <div className="execution-context-editor__form-section">
-              <div className="execution-context-editor__form-section__label">
-                Description
-              </div>
-              <div className="execution-context-editor__form-section__content">
-                <textarea
-                  className="execution-context-editor__form-section__content__textarea panel__content__form__section__input"
-                  spellCheck={false}
-                  disabled={isReadOnly}
-                  value={executionContext.description ?? ''}
-                  onChange={(event): void =>
-                    dataSpace_setExecutionContextDescription(
-                      executionContext,
-                      event.target.value,
-                    )
-                  }
-                  rows={4}
-                />
-              </div>
-            </div>
-
-            {/* Test Data input removed as it's not used */}
-          </div>
-        </PanelDropZone>
-      </PanelContent>
-    );
-  },
-);
+const getMappingSourceKind = (
+  executionContext: DataSpaceExecutionContextType,
+): MappingSourceKind | undefined => {
+  if (executionContext.mappingProvider) {
+    return 'mappingProvider';
+  }
+  if (executionContext.mapping) {
+    return 'mapping';
+  }
+  return undefined;
+};
 
 export const NewExecutionContextModal = observer(
   (props: {
-    executionState: DataSpaceExecutionContextState;
+    executionContextState: DataSpaceExecutionContextState;
     isReadOnly: boolean;
   }) => {
-    const { executionState, isReadOnly } = props;
+    const { executionContextState, isReadOnly } = props;
+    const existingNames = executionContextState.executionContexts.map(
+      (context) => context.name,
+    );
     const [name, setName] = useState('');
-    const validationMessage =
-      name === ''
-        ? `Execution context name can't be empty`
-        : executionState.executionContexts.find((e) => e.name === name)
-          ? 'Execution context name already exists'
-          : undefined;
+    const [isNameValid, setIsNameValid] = useState(false);
+
+    const validateName = (val: string): string | undefined => {
+      if (!val) {
+        return `Execution context name can't be empty`;
+      }
+      if (existingNames.includes(val)) {
+        return `Execution context '${val}' already exists`;
+      }
+      return undefined;
+    };
 
     const closeModal = (): void =>
-      executionState.setNewExecutionContextModal(false);
-    const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      setName(event.target.value);
+      executionContextState.setNewExecutionContextModal(false);
+
+    const create = (): void => {
+      if (isReadOnly || !isNameValid) {
+        return;
+      }
+      const context = new DataSpaceExecutionContext();
+      context.name = name;
+      executionContextState.addExecutionContext(context);
+      closeModal();
     };
+
     return (
       <Dialog
-        open={executionState.newExecutionContextModal}
+        open={executionContextState.newExecutionContextModal}
         onClose={closeModal}
         classes={{ container: 'search-modal__container' }}
         slotProps={{
-          paper: {
-            classes: { root: 'search-modal__inner-container' },
-          },
+          paper: { classes: { root: 'search-modal__inner-container' } },
         }}
       >
         <form
-          onSubmit={(event) => {
+          onSubmit={(event): void => {
             event.preventDefault();
-            executionState.addExecutionContext(name);
-            setName('');
-            closeModal();
+            create();
           }}
-          className="modal modal--dark search-modal"
+          className="modal search-modal modal--dark"
         >
           <ModalTitle title="New Execution Context" />
-          <div className="service-execution-editor__change__modal">
-            <InputWithInlineValidation
-              className="service-execution-editor__input input-group__input"
-              spellCheck={false}
-              value={name}
-              onChange={onChange}
-              placeholder="Key execution name"
-              error={validationMessage}
-            />
-          </div>
-          <div className="search-modal__actions">
-            <button
-              className="btn btn--dark"
-              disabled={isReadOnly || Boolean(validationMessage)}
-            >
-              Add
-            </button>
-          </div>
-        </form>
-      </Dialog>
-    );
-  },
-);
-
-export const RenameModal = observer(
-  (props: {
-    val: string;
-    isReadOnly: boolean;
-    setValue: (val: string) => void;
-    showModal: boolean;
-    closeModal: () => void;
-    executionContext: DataSpaceExecutionContext;
-  }) => {
-    const {
-      val,
-      isReadOnly,
-      showModal,
-      closeModal,
-      setValue,
-      executionContext,
-    } = props;
-    const [inputValue, setInputValue] = useState(val);
-    const changeValue: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-      setInputValue(event.target.value);
-    };
-    return (
-      <Dialog
-        open={showModal}
-        onClose={closeModal}
-        classes={{ container: 'search-modal__container' }}
-        slotProps={{
-          paper: {
-            classes: { root: 'search-modal__inner-container' },
-          },
-        }}
-      >
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            setValue(inputValue);
-            closeModal();
-          }}
-          className="modal modal--dark search-modal"
-        >
-          <ModalTitle title="Edit Execution Context" />
-          <div className="execution-context-editor__form-section">
-            <div className="execution-context-editor__form-section__label">
-              Key
-            </div>
-            <div className="execution-context-editor__form-section__content">
-              <input
-                className="execution-context-editor__form-section__content__input panel__content__form__section__input"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={inputValue}
-                onChange={changeValue}
-              />
-            </div>
-          </div>
-
-          {/* Title input */}
-          <div className="execution-context-editor__form-section">
-            <div className="execution-context-editor__form-section__label">
-              Title
-            </div>
-            <div className="execution-context-editor__form-section__content">
-              <input
-                className="execution-context-editor__form-section__content__input panel__content__form__section__input"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={executionContext.title ?? ''}
-                onChange={(event): void =>
-                  dataSpace_setExecutionContextTitle(
-                    executionContext,
-                    event.target.value,
-                  )
-                }
-              />
-            </div>
-          </div>
-
-          {/* Description input */}
-          <div className="execution-context-editor__form-section">
-            <div className="execution-context-editor__form-section__label">
-              Description
-            </div>
-            <div className="execution-context-editor__form-section__content">
-              <textarea
-                className="execution-context-editor__form-section__content__textarea panel__content__form__section__input"
-                spellCheck={false}
-                disabled={isReadOnly}
-                value={executionContext.description ?? ''}
-                onChange={(event): void =>
-                  dataSpace_setExecutionContextDescription(
-                    executionContext,
-                    event.target.value,
-                  )
-                }
-                rows={4}
-              />
-            </div>
-          </div>
-
-          <div className="search-modal__actions">
-            <button className="btn btn--dark" disabled={isReadOnly}>
-              Done
-            </button>
-          </div>
-        </form>
-      </Dialog>
-    );
-  },
-);
-
-const ExecutionContextMenu = observer(
-  forwardRef<
-    HTMLDivElement,
-    {
-      dataSpaceExecutionContextState: DataSpaceExecutionContextState;
-      dataSpaceExecutionContext: DataSpaceExecutionContext;
-      isReadOnly: boolean;
-    }
-  >(function TestContainerContextMenu(props, ref) {
-    const { dataSpaceExecutionContextState, dataSpaceExecutionContext } = props;
-    const rename = (): void => {
-      dataSpaceExecutionContextState.setExecutionContextToRename(
-        dataSpaceExecutionContext,
-      );
-    };
-    const remove = (): void => {
-      dataSpaceExecutionContextState.removeExecutionContext(
-        dataSpaceExecutionContext,
-      );
-    };
-    const add = (): void => {
-      dataSpaceExecutionContextState.setNewExecutionContextModal(true);
-    };
-    return (
-      <MenuContent ref={ref}>
-        <MenuContentItem onClick={rename}>Rename</MenuContentItem>
-        <MenuContentItem onClick={remove}>Delete</MenuContentItem>
-        <MenuContentItem onClick={add}>Create a new key</MenuContentItem>
-      </MenuContent>
-    );
-  }),
-);
-
-const ExecutionContextItem = observer(
-  (props: {
-    dataSpaceExecutionContextState: DataSpaceExecutionContextState;
-    dataSpaceExecutionContext: DataSpaceExecutionContext;
-    isReadOnly: boolean;
-  }) => {
-    const {
-      dataSpaceExecutionContextState,
-      dataSpaceExecutionContext,
-      isReadOnly,
-    } = props;
-    const [isSelectedFromContextMenu, setIsSelectedFromContextMenu] =
-      useState(false);
-    const isActive =
-      dataSpaceExecutionContextState.selectedExecutionContext ===
-      dataSpaceExecutionContext;
-
-    const openKeyedExecution = (): void =>
-      dataSpaceExecutionContextState.setSelectedExecutionContext(
-        dataSpaceExecutionContext,
-      );
-    const onContextMenuOpen = (): void => setIsSelectedFromContextMenu(true);
-    const onContextMenuClose = (): void => setIsSelectedFromContextMenu(false);
-    return (
-      <ContextMenu
-        className={clsx(
-          'service-multi-execution-editor__item',
-          {
-            'service-multi-execution-editor__item--selected-from-context-menu':
-              !isActive && isSelectedFromContextMenu,
-          },
-          { 'service-multi-execution-editor__item--active': isActive },
-        )}
-        disabled={isReadOnly}
-        content={
-          <ExecutionContextMenu
-            dataSpaceExecutionContextState={dataSpaceExecutionContextState}
-            dataSpaceExecutionContext={dataSpaceExecutionContext}
+          <PanelFormValidatedTextField
+            name="Name"
+            value={name}
+            update={(value): void => setName(value ?? '')}
+            validate={validateName}
+            onValidate={(issue): void => setIsNameValid(!issue)}
             isReadOnly={isReadOnly}
+            placeholder="Enter a unique name"
+            fullWidth={true}
           />
+          <PanelDivider />
+          <PanelFormSection>
+            <div className="search-modal__actions">
+              <button
+                type="button"
+                className="btn btn--dark"
+                onClick={closeModal}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn btn--dark"
+                disabled={isReadOnly || !isNameValid}
+              >
+                Create
+              </button>
+            </div>
+          </PanelFormSection>
+        </form>
+      </Dialog>
+    );
+  },
+);
+
+const MappingSourceEditor = observer(
+  (props: {
+    executionContextState: DataSpaceExecutionContextState;
+    executionContext: DataSpaceExecutionContextType;
+    isReadOnly: boolean;
+    sourceKind: MappingSourceKind;
+    setSourceKind: (val: MappingSourceKind) => void;
+  }) => {
+    const {
+      executionContextState,
+      executionContext,
+      isReadOnly,
+      sourceKind,
+      setSourceKind,
+    } = props;
+    const editorStore = executionContextState.editorStore;
+    const applicationStore = editorStore.applicationStore;
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+
+    const mapping = executionContext.mapping?.value;
+    const mappingOptions =
+      editorStore.graphManagerState.usableMappings.map(buildElementOption);
+    const onMappingChange = (
+      option: PackageableElementOption<Mapping> | null,
+    ): void =>
+      dataSpace_setExecutionContextMapping(
+        executionContext,
+        option
+          ? PackageableElementExplicitReference.create(option.value)
+          : undefined,
+      );
+
+    const mappingProvider = executionContext.mappingProvider;
+    const providerElement = mappingProvider?.element.value;
+    const providerDataProduct =
+      providerElement instanceof DataProduct ? providerElement : undefined;
+    const dataProductOptions =
+      getDataProductsWithModelAccessPointGroups(editorStore).map(
+        buildElementOption,
+      );
+    const onDataProductChange = (
+      option: PackageableElementOption<DataProduct> | null,
+    ): void => {
+      if (!option) {
+        dataSpace_setExecutionContextMappingProvider(
+          executionContext,
+          undefined,
+        );
+        return;
+      }
+      const provider = new DataSpaceMappingProvider();
+      provider.element = PackageableElementExplicitReference.create(
+        option.value,
+      );
+      const groupIds = getModelAccessPointGroupIds(option.value);
+      provider.keys = groupIds.length === 1 && groupIds[0] ? [groupIds[0]] : [];
+      dataSpace_setExecutionContextMappingProvider(executionContext, provider);
+    };
+
+    const accessPointGroupIds = providerDataProduct
+      ? getModelAccessPointGroupIds(providerDataProduct)
+      : [];
+    const accessPointGroupOptions = accessPointGroupIds.map((id) => ({
+      label: id,
+      value: id,
+    }));
+    const accessPointGroupId = mappingProvider?.keys[0];
+    const onAccessPointGroupChange = (
+      option: { value: string } | null,
+    ): void => {
+      if (mappingProvider) {
+        dataSpace_setMappingProviderKeys(
+          mappingProvider,
+          option ? [option.value] : [],
+        );
+      }
+    };
+
+    const handleMappingDrop = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        const element = item.data.packageableElement;
+        if (!isReadOnly && element instanceof Mapping) {
+          dataSpace_setExecutionContextMapping(
+            executionContext,
+            PackageableElementExplicitReference.create(element),
+          );
+          setSourceKind('mapping');
         }
-        menuProps={{ elevation: 7 }}
-        onOpen={onContextMenuOpen}
-        onClose={onContextMenuClose}
+      },
+      [isReadOnly, executionContext, setSourceKind],
+    );
+    const [{ isMappingDragOver }, mappingDropConnector] = useDrop<
+      ElementDragSource,
+      void,
+      { isMappingDragOver: boolean }
+    >(
+      () => ({
+        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_MAPPING],
+        drop: (item) => handleMappingDrop(item),
+        collect: (monitor) => ({
+          isMappingDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleMappingDrop],
+    );
+
+    const providerElementIssue =
+      providerElement && !providerDataProduct
+        ? `'${providerElement.path}' is not a data product.`
+        : undefined;
+    const providerKeyIssue =
+      providerDataProduct &&
+      accessPointGroupId &&
+      !accessPointGroupIds.includes(accessPointGroupId)
+        ? `Access point group '${accessPointGroupId}' is not defined on '${providerDataProduct.path}'.`
+        : undefined;
+
+    return (
+      <div className="dataSpace-editor__configuration__section">
+        <div className="dataSpace-editor__configuration__section__header">
+          <div className="dataSpace-editor__configuration__section__title">
+            Mapping Source
+          </div>
+          <div className="dataSpace-editor__configuration__section__hint">
+            Where this context gets its model from. Choose a mapping directly,
+            or indirectly via a mapping provider.
+          </div>
+          {hasNoMappingSource(executionContext) && (
+            <InlineIssue
+              issue={{
+                severity: 'error',
+                message: 'Specify either a mapping or a mapping provider.',
+              }}
+            />
+          )}
+        </div>
+        <div className="dataSpace-editor__tab-toggle">
+          <button
+            type="button"
+            className={clsx('dataSpace-editor__tab-toggle__tab', {
+              'dataSpace-editor__tab-toggle__tab--active':
+                sourceKind === 'mapping',
+            })}
+            disabled={isReadOnly}
+            onClick={(): void => setSourceKind('mapping')}
+          >
+            Mapping
+          </button>
+          <button
+            type="button"
+            className={clsx('dataSpace-editor__tab-toggle__tab', {
+              'dataSpace-editor__tab-toggle__tab--active':
+                sourceKind === 'mappingProvider',
+            })}
+            disabled={isReadOnly}
+            onClick={(): void => setSourceKind('mappingProvider')}
+          >
+            Mapping Provider
+          </button>
+        </div>
+        <div className="dataSpace-editor__configuration__section__body">
+          {sourceKind === 'mapping' && (
+            <PanelDropZone
+              dropTargetConnector={mappingDropConnector}
+              isDragOver={isMappingDragOver && !isReadOnly}
+            >
+              <div className="dataSpace-editor__configuration__row">
+                <div className="dataSpace-editor__configuration__row__icon">
+                  <PURE_MappingIcon />
+                </div>
+                <CustomSelectorInput
+                  className="dataSpace-editor__configuration__row__select"
+                  disabled={isReadOnly}
+                  options={mappingOptions}
+                  onChange={onMappingChange}
+                  value={mapping ? buildElementOption(mapping) : null}
+                  placeholder="Select a mapping..."
+                  isClearable={true}
+                  darkMode={darkMode}
+                  hasError={!mapping}
+                />
+                <button
+                  className="btn--dark btn--sm dataSpace-editor__configuration__row__btn"
+                  onClick={(): void => {
+                    if (mapping) {
+                      editorStore.graphEditorMode.openElement(mapping);
+                    }
+                  }}
+                  disabled={!mapping}
+                  title="See mapping"
+                  tabIndex={-1}
+                >
+                  <LongArrowRightIcon />
+                </button>
+              </div>
+            </PanelDropZone>
+          )}
+          {sourceKind === 'mappingProvider' && (
+            <div className="dataSpace-editor__mapping-provider">
+              <div className="dataSpace-editor__configuration__row">
+                <CustomSelectorInput
+                  className="dataSpace-editor__configuration__row__select"
+                  disabled={isReadOnly}
+                  options={dataProductOptions}
+                  onChange={onDataProductChange}
+                  value={
+                    providerDataProduct
+                      ? buildElementOption(providerDataProduct)
+                      : null
+                  }
+                  placeholder="Select a mapping provider..."
+                  isClearable={true}
+                  darkMode={darkMode}
+                  hasError={!providerDataProduct}
+                />
+                <button
+                  className="btn--dark btn--sm dataSpace-editor__configuration__row__btn"
+                  onClick={(): void => {
+                    if (providerDataProduct) {
+                      editorStore.graphEditorMode.openElement(
+                        providerDataProduct,
+                      );
+                    }
+                  }}
+                  disabled={!providerDataProduct}
+                  title="See data product"
+                  tabIndex={-1}
+                >
+                  <LongArrowRightIcon />
+                </button>
+              </div>
+              {providerDataProduct && (
+                <div className="dataSpace-editor__configuration__field">
+                  <div className="dataSpace-editor__configuration__field__label">
+                    Model Access Point Group
+                  </div>
+                  <CustomSelectorInput
+                    disabled={isReadOnly}
+                    options={accessPointGroupOptions}
+                    onChange={onAccessPointGroupChange}
+                    value={
+                      accessPointGroupId
+                        ? {
+                            label: accessPointGroupId,
+                            value: accessPointGroupId,
+                          }
+                        : null
+                    }
+                    placeholder="Select a model access point group..."
+                    darkMode={darkMode}
+                    hasError={!accessPointGroupId}
+                  />
+                </div>
+              )}
+              {providerElementIssue && (
+                <InlineIssue
+                  issue={{ severity: 'error', message: providerElementIssue }}
+                />
+              )}
+              {providerKeyIssue && (
+                <InlineIssue
+                  issue={{ severity: 'error', message: providerKeyIssue }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+const DefaultRuntimeEditor = observer(
+  (props: {
+    executionContextState: DataSpaceExecutionContextState;
+    executionContext: DataSpaceExecutionContextType;
+    isReadOnly: boolean;
+  }) => {
+    const { executionContextState, executionContext, isReadOnly } = props;
+    const editorStore = executionContextState.editorStore;
+    const applicationStore = editorStore.applicationStore;
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+
+    const mapping = executionContext.mapping?.value;
+    const defaultRuntime = executionContext.defaultRuntime?.value;
+    const compatibleRuntimes =
+      editorStore.graphManagerState.graph.runtimes.filter(
+        (runtime) =>
+          !mapping ||
+          runtime.runtimeValue.mappings.map((m) => m.value).includes(mapping),
+      );
+    const runtimeOptions = (
+      compatibleRuntimes.length
+        ? compatibleRuntimes
+        : editorStore.graphManagerState.graph.runtimes
+    ).map(buildElementOption);
+
+    const runtimeWarning =
+      defaultRuntime &&
+      mapping &&
+      !(defaultRuntime.runtimeValue instanceof LakehouseRuntime) &&
+      !compatibleRuntimes.includes(defaultRuntime)
+        ? `Runtime is not associated with mapping '${mapping.path}'.`
+        : undefined;
+
+    const onRuntimeChange = (
+      option: PackageableElementOption<PackageableRuntime> | null,
+    ): void =>
+      dataSpace_setExecutionContextDefaultRuntime(
+        executionContext,
+        option
+          ? PackageableElementExplicitReference.create(option.value)
+          : undefined,
+      );
+
+    const handleRuntimeDrop = useCallback(
+      (item: UMLEditorElementDropTarget): void => {
+        const element = item.data.packageableElement;
+        if (!isReadOnly && element instanceof PackageableRuntime) {
+          dataSpace_setExecutionContextDefaultRuntime(
+            executionContext,
+            PackageableElementExplicitReference.create(element),
+          );
+        }
+      },
+      [isReadOnly, executionContext],
+    );
+    const [{ isRuntimeDragOver }, runtimeDropConnector] = useDrop<
+      ElementDragSource,
+      void,
+      { isRuntimeDragOver: boolean }
+    >(
+      () => ({
+        accept: [CORE_DND_TYPE.PROJECT_EXPLORER_RUNTIME],
+        drop: (item) => handleRuntimeDrop(item),
+        collect: (monitor) => ({
+          isRuntimeDragOver: monitor.isOver({ shallow: true }),
+        }),
+      }),
+      [handleRuntimeDrop],
+    );
+
+    return (
+      <div className="dataSpace-editor__configuration__section">
+        <div className="dataSpace-editor__configuration__section__header">
+          <div className="dataSpace-editor__configuration__section__title">
+            Default Runtime
+          </div>
+        </div>
+        <div className="dataSpace-editor__configuration__section__body">
+          <PanelDropZone
+            dropTargetConnector={runtimeDropConnector}
+            isDragOver={isRuntimeDragOver && !isReadOnly}
+          >
+            <div className="dataSpace-editor__configuration__row">
+              <div className="dataSpace-editor__configuration__row__icon">
+                <PURE_RuntimeIcon />
+              </div>
+              <CustomSelectorInput
+                className="dataSpace-editor__configuration__row__select"
+                disabled={isReadOnly}
+                options={runtimeOptions}
+                onChange={onRuntimeChange}
+                value={
+                  defaultRuntime ? buildElementOption(defaultRuntime) : null
+                }
+                placeholder="Select a default runtime (optional)..."
+                isClearable={true}
+                darkMode={darkMode}
+              />
+              <button
+                className="btn--dark btn--sm dataSpace-editor__configuration__row__btn"
+                onClick={(): void => {
+                  if (defaultRuntime) {
+                    editorStore.graphEditorMode.openElement(defaultRuntime);
+                  }
+                }}
+                disabled={!defaultRuntime}
+                title="See runtime"
+                tabIndex={-1}
+              >
+                <LongArrowRightIcon />
+              </button>
+            </div>
+          </PanelDropZone>
+          {runtimeWarning && (
+            <InlineIssue
+              issue={{ severity: 'warning', message: runtimeWarning }}
+            />
+          )}
+        </div>
+      </div>
+    );
+  },
+);
+
+const ExecutionContextConfigurationEditor = observer(
+  (props: {
+    executionContextState: DataSpaceExecutionContextState;
+    executionContext: DataSpaceExecutionContextType;
+    isReadOnly: boolean;
+  }) => {
+    const { executionContextState, executionContext, isReadOnly } = props;
+    const dataSpace = executionContextState.dataSpace;
+
+    const [sourceKindOverride, setSourceKindOverride] = useState<
+      MappingSourceKind | undefined
+    >(undefined);
+    const [trackedContext, setTrackedContext] = useState(executionContext);
+    if (trackedContext !== executionContext) {
+      setTrackedContext(executionContext);
+      setSourceKindOverride(undefined);
+    }
+    const sourceKind =
+      getMappingSourceKind(executionContext) ?? sourceKindOverride ?? 'mapping';
+
+    const otherNames = executionContextState.executionContexts
+      .filter((context) => context !== executionContext)
+      .map((context) => context.name);
+    const validateName = (val: string): string | undefined => {
+      if (!val) {
+        return `Execution context name can't be empty`;
+      }
+      if (otherNames.includes(val)) {
+        return `Execution context '${val}' already exists`;
+      }
+      return undefined;
+    };
+
+    const isDefault = dataSpace.defaultExecutionContext === executionContext;
+    const toggleDefault = (): void =>
+      dataSpace_setDefaultExecutionContext(
+        dataSpace,
+        isDefault ? undefined : executionContext,
+      );
+
+    const issues = collectExecutionContextValidationIssues(executionContext);
+    const nameError = validateName(executionContext.name);
+
+    return (
+      <div className="dataSpace-editor__configuration">
+        <PanelFormTextField
+          name="Name"
+          value={executionContext.name}
+          update={(value): void =>
+            dataSpace_setExecutionContextName(executionContext, value ?? '')
+          }
+          isReadOnly={isReadOnly}
+          placeholder="Enter a unique name"
+          fullWidth={true}
+          hasError={Boolean(nameError)}
+          errorMessage={nameError}
+          errorClassName="dataSpace-editor__field--error"
+        />
+        <PanelFormTextField
+          name="Title"
+          value={executionContext.title ?? ''}
+          update={(value): void =>
+            dataSpace_setExecutionContextTitle(executionContext, value)
+          }
+          isReadOnly={isReadOnly}
+          placeholder="Enter title"
+          prompt="Provide a title for this execution context"
+          fullWidth={true}
+        />
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            Description
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Provide a description for this execution context.
+          </div>
+          <textarea
+            className="panel__content__form__section__textarea"
+            spellCheck={false}
+            disabled={isReadOnly}
+            value={executionContext.description ?? ''}
+            onChange={(event): void =>
+              dataSpace_setExecutionContextDescription(
+                executionContext,
+                event.target.value || undefined,
+              )
+            }
+            rows={3}
+            placeholder="Enter description"
+          />
+        </PanelFormSection>
+        <MappingSourceEditor
+          executionContextState={executionContextState}
+          executionContext={executionContext}
+          isReadOnly={isReadOnly}
+          sourceKind={sourceKind}
+          setSourceKind={setSourceKindOverride}
+        />
+        <DefaultRuntimeEditor
+          executionContextState={executionContextState}
+          executionContext={executionContext}
+          isReadOnly={isReadOnly}
+        />
+        <PanelFormSection>
+          <button
+            className="btn btn--dark"
+            onClick={toggleDefault}
+            disabled={isReadOnly}
+            tabIndex={-1}
+          >
+            {isDefault
+              ? 'Unset as default execution context'
+              : 'Set as default execution context'}
+          </button>
+        </PanelFormSection>
+        {issues.length > 0 && (
+          <div className="dataSpace-editor__configuration__issues">
+            {issues.map((issue) => (
+              <InlineIssue key={issue.message} issue={issue} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const ExecutionContextTab = observer(
+  (props: {
+    executionContextState: DataSpaceExecutionContextState;
+    executionContext: DataSpaceExecutionContextType;
+    isReadOnly: boolean;
+  }) => {
+    const { executionContextState, executionContext, isReadOnly } = props;
+    const dataSpace = executionContextState.dataSpace;
+    const isActive =
+      executionContextState.selectedExecutionContext === executionContext;
+    const isDefault = dataSpace.defaultExecutionContext === executionContext;
+    const hasError = hasExecutionContextValidationError(executionContext);
+
+    const select = (): void =>
+      executionContextState.setSelectedExecutionContext(executionContext);
+    const remove = (event: React.MouseEvent): void => {
+      event.stopPropagation();
+      executionContextState.removeExecutionContext(executionContext);
+    };
+
+    return (
+      <div
+        onClick={select}
+        className={clsx('service-editor__tab', 'dataSpace-editor__tab', {
+          'service-editor__tab--active': isActive,
+        })}
+        role="tab"
       >
-        <button
-          className={clsx('service-multi-execution-editor__item__label')}
-          onClick={openKeyedExecution}
-          tabIndex={-1}
-        >
-          {dataSpaceExecutionContext.name}
-        </button>
-      </ContextMenu>
+        <span className="dataSpace-editor__tab__label">
+          {executionContext.name}
+        </span>
+        {isDefault && (
+          <span
+            className="dataSpace-editor__tab__badge"
+            title="Default execution context"
+          >
+            default
+          </span>
+        )}
+        {hasError && (
+          <WarningIcon
+            className="dataSpace-editor__tab__error-icon"
+            title="This execution context is incomplete"
+          />
+        )}
+        {!isReadOnly && (
+          <button
+            className="dataSpace-editor__tab__close-btn"
+            onClick={remove}
+            tabIndex={-1}
+            title="Delete execution context"
+          >
+            <TimesIcon />
+          </button>
+        )}
+      </div>
     );
   },
 );
 
 export const DataSpaceExecutionContextEditor = observer(() => {
   const editorStore = useEditorStore();
-
   const dataSpaceState =
     editorStore.tabManagerState.getCurrentEditorState(DataSpaceEditorState);
   const executionContextState = dataSpaceState.executionContextState;
+  const isReadOnly = dataSpaceState.isReadOnly;
+  const executionContexts = executionContextState.executionContexts;
 
-  const addExecutionKey = (): void => {
+  const addExecutionContext = (): void =>
     executionContextState.setNewExecutionContextModal(true);
-  };
 
   return (
-    <div className="service-execution-editor__execution">
-      <ResizablePanelGroup orientation="vertical">
-        <ResizablePanel size={300} minSize={200}>
-          <div className="service-multi-execution-editor__panel">
-            <PanelHeader>
-              <div className="panel__header__title">
-                <div className="panel__header__title__content">
-                  Execution Contexts
-                </div>
-              </div>
-              <PanelHeaderActions>
-                <PanelHeaderActionItem
-                  disabled={dataSpaceState.isReadOnly}
-                  onClick={addExecutionKey}
-                  title="Add an execution context"
-                >
-                  <PlusIcon />
-                </PanelHeaderActionItem>
-              </PanelHeaderActions>
-            </PanelHeader>
-
-            {executionContextState.executionContexts.map((executionContext) => (
-              <ExecutionContextItem
-                key={executionContext.name}
-                dataSpaceExecutionContextState={executionContextState}
-                dataSpaceExecutionContext={executionContext}
-                isReadOnly={dataSpaceState.isReadOnly}
-              />
-            ))}
-            {!executionContextState.executionContexts.length && (
-              <BlankPanelPlaceholder
-                text="Add an execution context"
-                onClick={addExecutionKey}
-                clickActionType="add"
-                tooltipText="Click to add an execution context"
-              />
-            )}
-          </div>
-          {executionContextState.newExecutionContextModal && (
-            <NewExecutionContextModal
-              executionState={executionContextState}
-              isReadOnly={dataSpaceState.isReadOnly}
-            />
-          )}
-          {executionContextState.executionContextToRename && (
-            <RenameModal
-              val={executionContextState.executionContextToRename.name}
-              isReadOnly={dataSpaceState.isReadOnly}
-              showModal={true}
-              closeModal={(): void =>
-                executionContextState.setExecutionContextToRename(undefined)
-              }
-              setValue={(val: string): void =>
-                executionContextState.renameExecutionContext(
-                  guaranteeNonNullable(
-                    executionContextState.executionContextToRename,
-                  ),
-                  val,
-                )
-              }
-              executionContext={executionContextState.executionContextToRename}
-            />
-          )}
-        </ResizablePanel>
-        <ResizablePanelSplitter>
-          <ResizablePanelSplitterLine color="var(--color-dark-grey-200)" />
-        </ResizablePanelSplitter>
-        <ResizablePanel minSize={56}>
-          {executionContextState.selectedExecutionContext ? (
-            <DataSpaceExecutionContextConfigurationEditor
+    <div className="panel dataSpace-editor__tab-panel">
+      <PanelHeader>
+        <div className="uml-element-editor__tabs">
+          {executionContexts.map((executionContext) => (
+            <ExecutionContextTab
+              key={executionContext.name}
               executionContextState={executionContextState}
-              executionContext={executionContextState.selectedExecutionContext}
+              executionContext={executionContext}
+              isReadOnly={isReadOnly}
             />
-          ) : (
-            <BlankPanelPlaceholder
-              text="Add an execution context"
-              onClick={addExecutionKey}
-              clickActionType="add"
-              tooltipText="Click to add an execution context"
-            />
-          )}
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          ))}
+          <button
+            className="panel__header__action"
+            disabled={isReadOnly}
+            onClick={addExecutionContext}
+            title="Add an execution context"
+            tabIndex={-1}
+          >
+            <PlusIcon />
+          </button>
+        </div>
+      </PanelHeader>
+      <PanelContent>
+        {executionContextState.selectedExecutionContext ? (
+          <ExecutionContextConfigurationEditor
+            executionContextState={executionContextState}
+            executionContext={executionContextState.selectedExecutionContext}
+            isReadOnly={isReadOnly}
+          />
+        ) : (
+          <BlankPanelPlaceholder
+            text="Add an execution context"
+            onClick={addExecutionContext}
+            clickActionType="add"
+            tooltipText="Click to add an execution context"
+            disabled={isReadOnly}
+          />
+        )}
+      </PanelContent>
+      {executionContextState.newExecutionContextModal && (
+        <NewExecutionContextModal
+          executionContextState={executionContextState}
+          isReadOnly={isReadOnly}
+        />
+      )}
     </div>
   );
 });
