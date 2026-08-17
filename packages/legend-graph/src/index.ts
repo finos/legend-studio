@@ -119,6 +119,9 @@ export {
 export * from './graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 export { HostedServiceDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 export { PostDeploymentAction } from './graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+export * from './graph/metamodel/pure/packageableElements/availability/Availability.js';
+export * from './graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
+export * from './graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
 export {
   PostDeploymentProperties,
   INTERNAL__UnknownPostDeploymentProperties,
@@ -195,6 +198,9 @@ export { V1_Lambda } from './graph-manager/protocol/pure/v1/model/valueSpecifica
 export { V1_Variable } from './graph-manager/protocol/pure/v1/model/valueSpecification/V1_Variable.js';
 export { V1_ValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
 export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Multiplicity.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_Availability.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_AvailabilityTestSuite.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_GenerateSchemaInput.js';
@@ -768,6 +774,7 @@ export * from './graph-manager/action/changeDetection/DSL_Service_ObserverHelper
 export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
+export * from './graph-manager/action/changeDetection/AvailabilityObserveHelper.js';
 
 // ------------------------------------- Data Product --------------------------------------------
 export {

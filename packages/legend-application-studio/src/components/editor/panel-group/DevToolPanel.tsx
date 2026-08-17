@@ -31,12 +31,8 @@ import {
 } from '@finos/legend-shared';
 import { useEditorStore } from '../EditorStoreProvider.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../../__lib__/LegendStudioSetting.js';
-import { flowResult } from 'mobx';
-import {
-  PARSER_SECTION_MARKER,
-  PURE_PARSER,
-  type PureModel,
-} from '@finos/legend-graph';
+import { PARSER_SECTION_MARKER, PURE_PARSER } from '@finos/legend-graph';
+import { ProjectDependencyCoordinates } from '@finos/legend-server-depot';
 
 export const DevToolPanel = observer(() => {
   const editorStore = useEditorStore();
@@ -75,53 +71,50 @@ export const DevToolPanel = observer(() => {
     );
   };
 
-  const downloadDependencyProjectGrammars = async (): Promise<string[]> => {
-    const grammars = await Promise.all(
-      Array.from(
-        editorStore.graphManagerState.graph.dependencyManager
-          .projectDependencyModelsIndex,
-      ).map(
-        (graph) =>
-          flowResult(
-            editorStore.graphManagerState.graphManager.graphToPureCode(
-              graph[1] as PureModel,
-              {
-                pretty: true,
-              },
-            ),
-          ) as string,
-      ),
-    );
-    return grammars;
-  };
-
   const downloadProjectGrammar = async (
     withDependency: boolean,
   ): Promise<void> => {
-    const graphGrammar = (await Promise.all([
-      flowResult(
-        editorStore.graphManagerState.graphManager.graphToPureCode(
-          editorStore.graphManagerState.graph,
-          { pretty: true },
-        ),
-      ),
-    ])) as unknown as string;
-    const dependencyGrammars = withDependency
-      ? ((await Promise.all([
-          flowResult(downloadDependencyProjectGrammars()),
-        ])) as unknown as string[])
-      : [];
-    const fullGrammar = [graphGrammar, ...dependencyGrammars].join(
-      `\n${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n`,
+    const graphManager = editorStore.graphManagerState.graphManager;
+    const graphGrammar = await graphManager.graphToPureCode(
+      editorStore.graphManagerState.graph,
+      { pretty: true },
     );
+    let dependencyGrammar: string | undefined;
+    if (withDependency) {
+      // Fetch the dependency graph directly from Depot as a
+      // `V1_PureModelContextData` payload and hand it straight to the engine
+      // grammar transform. This skips building a `PureModel` for dependencies
+      // and collapses the whole dependency graph into a single engine call.
+      const projectDependencies =
+        editorStore.projectConfigurationEditorState.currentProjectConfiguration
+          .projectDependencies;
+      if (projectDependencies.length) {
+        const dependencyCoordinates =
+          await editorStore.graphState.buildProjectDependencyCoordinates(
+            projectDependencies,
+          );
+        const dependencyProtocolGraph =
+          await editorStore.depotServerClient.collectDependencyEntitiesAsPureModelContextData(
+            dependencyCoordinates.map((e) =>
+              ProjectDependencyCoordinates.serialization.toJson(e),
+            ),
+            true,
+            true,
+          );
+        dependencyGrammar = await graphManager.protocolToPureCode(
+          dependencyProtocolGraph,
+          { pretty: true },
+        );
+      }
+    }
+    const fullGrammar =
+      dependencyGrammar === undefined
+        ? graphGrammar
+        : `${graphGrammar}\n${PARSER_SECTION_MARKER}${PURE_PARSER.PURE}\n// ------------------------------------------------------------\n// Dependency grammar starts here\n// ------------------------------------------------------------\n${dependencyGrammar}`;
     const fileName = `grammar.${getContentTypeFileExtension(
       ContentType.TEXT_PLAIN,
     )}`;
-    downloadFileUsingDataURI(
-      fileName,
-      `${fullGrammar}`,
-      ContentType.TEXT_PLAIN,
-    );
+    downloadFileUsingDataURI(fileName, fullGrammar, ContentType.TEXT_PLAIN);
   };
 
   return (
@@ -205,16 +198,20 @@ export const DevToolPanel = observer(() => {
         />
         <PanelFormListItems title="Download Project Grammar">
           <div className="developer-tools__action-groups">
-            <div className="developer-tools__action-group">
+            <div
+              className="developer-tools__action-group"
+              onClick={() => {
+                downloadProjectGrammar(false).catch(
+                  editorStore.applicationStore.alertUnhandledError,
+                );
+              }}
+              role="button"
+              tabIndex={-1}
+              title="Download Project Grammar"
+            >
               <button
                 className="developer-tools__action-group__btn"
-                onClick={() => {
-                  downloadProjectGrammar(false).catch(
-                    editorStore.applicationStore.alertUnhandledError,
-                  );
-                }}
                 tabIndex={-1}
-                title="Download Project Grammar"
               >
                 <CloudDownloadIcon />
               </button>
@@ -222,16 +219,20 @@ export const DevToolPanel = observer(() => {
                 download grammar without dependency
               </div>
             </div>
-            <div className="developer-tools__action-group">
+            <div
+              className="developer-tools__action-group"
+              onClick={() => {
+                downloadProjectGrammar(true).catch(
+                  editorStore.applicationStore.alertUnhandledError,
+                );
+              }}
+              role="button"
+              tabIndex={-1}
+              title="Download Project Grammar with Dependency"
+            >
               <button
                 className="developer-tools__action-group__btn"
-                onClick={() => {
-                  downloadProjectGrammar(true).catch(
-                    editorStore.applicationStore.alertUnhandledError,
-                  );
-                }}
                 tabIndex={-1}
-                title="Download Project Grammar with Dependency"
               >
                 <CloudDownloadIcon />
               </button>

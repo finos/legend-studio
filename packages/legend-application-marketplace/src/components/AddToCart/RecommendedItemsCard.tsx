@@ -54,6 +54,9 @@ export const RecommendedItemsCard = observer(
     } = props;
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [isAddingToCart, setIsAddingToCart] = useState(false);
+    // Tracks a successful add within this component's lifetime so the button
+    // transitions even when skipWorkflow=true causes the item to bypass the
+    // normal cart and therefore not appear in isItemInCart.
     const [isAdded, setIsAdded] = useState(false);
     const inCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
       recommendedItem.id,

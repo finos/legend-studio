@@ -54,6 +54,7 @@ import type { V1_INTERNAL__UnknownElement } from '../../../model/packageableElem
 import type { V1_HostedService } from '../../../model/packageableElements/function/V1_HostedService.js';
 import type { V1_DataProduct } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
+import type { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import type { V1_Compute } from '../../../model/packageableElements/compute/V1_Compute.js';
 import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 
@@ -105,6 +106,10 @@ export class V1_ElementFifthPassBuilder
   }
 
   visit_IngestDefinition(element: V1_IngestDefinition): void {
+    throw new UnsupportedOperationError();
+  }
+
+  visit_Availability(element: V1_Availability): void {
     throw new UnsupportedOperationError();
   }
 

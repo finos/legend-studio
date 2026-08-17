@@ -344,6 +344,32 @@ export class DepotServerClient extends AbstractServerClient {
       },
     );
 
+  collectDependencyEntitiesAsPureModelContextData = (
+    /**
+     * List of (direct) dependencies.
+     */
+    dependencies: PlainObject<ProjectDependencyCoordinates>[],
+    /**
+     * Flag indicating if transitive dependencies should be returned.
+     */
+    transitive: boolean,
+    /**
+     * Flag indicating whether to return the root of the dependency tree.
+     */
+    includeOrigin: boolean,
+  ): Promise<PlainObject<V1_PureModelContextData>> =>
+    this.post(
+      `${this._projects()}/dependencies/pureModelContextData`,
+      dependencies,
+      undefined,
+      undefined,
+      {
+        transitive,
+        includeOrigin,
+        versioned: false, // we don't need to add version prefix to entity path
+      },
+    );
+
   analyzeDependencyTree = (
     /**
      * List of (direct) dependencies.
