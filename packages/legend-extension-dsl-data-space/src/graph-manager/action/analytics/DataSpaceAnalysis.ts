@@ -21,6 +21,7 @@ import type {
   DatasetSpecification,
   MappingModelCoverageAnalysisResult,
   FunctionAnalysisInfo,
+  GenericType,
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -31,8 +32,9 @@ export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
   title?: string | undefined;
   description?: string | undefined;
-  mapping!: Mapping;
-  defaultRuntime!: PackageableRuntime;
+  mapping?: Mapping | undefined;
+  mappingProvider?: DataSpaceMappingProviderAnalysisResult;
+  defaultRuntime?: PackageableRuntime | undefined;
   compatibleRuntimes!: PackageableRuntime[];
   datasets: DatasetSpecification[] = [];
   runtimeMetadata?: DataSpaceExecutionContextRuntimeMetadata;
@@ -42,6 +44,11 @@ export class DataSpaceExecutionContextRuntimeMetadata {
   storePath?: string;
   connectionPath?: string;
   connectionType?: string;
+}
+
+export class DataSpaceMappingProviderAnalysisResult {
+  element!: string;
+  keys: string[] = [];
 }
 
 export class DataSpaceTaggedValueInfo {
@@ -61,7 +68,7 @@ export class DataSpaceStereotypeInfo {
 
 export abstract class DataSpaceExecutableInfo {
   id!: string;
-  executionContextKey!: string;
+  executionContextKey?: string | undefined;
   query!: string;
 }
 
@@ -117,7 +124,8 @@ export class DataSpaceExecutableAnalysisResult {
   description?: string | undefined;
   executable?: string;
   info?: DataSpaceExecutableInfo | undefined;
-  result!: DataSpaceExecutableResult;
+  result?: DataSpaceExecutableResult | undefined;
+  executableReturnType?: GenericType | undefined;
 }
 
 export class DataSpaceAnalysisResult {
@@ -134,7 +142,7 @@ export class DataSpaceAnalysisResult {
   graph!: PureModel;
 
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
-  defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
+  defaultExecutionContext?: DataSpaceExecutionContextAnalysisResult | undefined;
 
   elementDocs: NormalizedDocumentationEntry[] = [];
 

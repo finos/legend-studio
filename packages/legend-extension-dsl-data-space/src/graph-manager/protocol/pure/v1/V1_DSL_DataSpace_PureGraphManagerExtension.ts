@@ -51,6 +51,7 @@ import {
   V1_buildFullPath,
   V1_LakehouseRuntime,
   V1_packageableRuntimeModelSchema,
+  GenericType,
 } from '@finos/legend-graph';
 import type {
   Entity,
@@ -94,6 +95,7 @@ import {
   DataSpaceTemplateExecutableInfo,
   DataSpaceFunctionPointerExecutableInfo,
   DataSpaceExecutionContextRuntimeMetadata,
+  DataSpaceMappingProviderAnalysisResult,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
@@ -624,7 +626,9 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     // TODO?: these stubbed mappings and runtimes are not really useful that useful, so either we should
     // simplify the model here or potentially refactor the backend analytics endpoint to return these as model
     const mappingModels = uniq(
-      analysisResult.executionContexts.map((context) => context.mapping),
+      analysisResult.executionContexts
+        .map((context) => context.mapping)
+        .filter(isNonNullable),
     ).map((path) => {
       const mapping = new V1_Mapping();
       const [packagePath, name] = resolvePackagePathAndElementName(path);
@@ -635,6 +639,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     const runtimeModels = uniq(
       analysisResult.executionContexts
         .map((context) => context.defaultRuntime)
+        .filter(isNonNullable)
         .concat(
           analysisResult.executionContexts.flatMap(
             (val) => val.compatibleRuntimes,
@@ -662,14 +667,18 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         contextProtocol.name = execContext.name;
         contextProtocol.title = execContext.title;
         contextProtocol.description = execContext.description;
-        contextProtocol.mapping = new V1_PackageableElementPointer(
-          PackageableElementPointerType.MAPPING,
-          execContext.mapping,
-        );
-        contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
-          PackageableElementPointerType.RUNTIME,
-          execContext.defaultRuntime,
-        );
+        if (execContext.mapping) {
+          contextProtocol.mapping = new V1_PackageableElementPointer(
+            PackageableElementPointerType.MAPPING,
+            execContext.mapping,
+          );
+        }
+        if (execContext.defaultRuntime) {
+          contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
+            PackageableElementPointerType.RUNTIME,
+            execContext.defaultRuntime,
+          );
+        }
         return contextProtocol;
       },
     );
@@ -746,10 +755,13 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       if (runtimeEntitiesRetriever) {
         try {
           const defaultRuntime = guaranteeNonNullable(
-            analysisResult.executionContexts.find(
-              (value) => value.name === analysisResult.defaultExecutionContext,
-            ),
-          ).defaultRuntime;
+            guaranteeNonNullable(
+              analysisResult.executionContexts.find(
+                (value) =>
+                  value.name === analysisResult.defaultExecutionContext,
+              ),
+            ).defaultRuntime,
+          );
           await this.processRuntimeInfo(
             runtimeEntitiesRetriever,
             defaultRuntime,
@@ -868,10 +880,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       contextAnalysisResult.name = context.name;
       contextAnalysisResult.title = context.title;
       contextAnalysisResult.description = context.description;
-      contextAnalysisResult.mapping = graph.getMapping(context.mapping);
-      contextAnalysisResult.defaultRuntime = graph.getRuntime(
-        context.defaultRuntime,
-      );
+      if (context.mapping) {
+        contextAnalysisResult.mapping = graph.getMapping(context.mapping);
+      }
+      if (context.defaultRuntime) {
+        contextAnalysisResult.defaultRuntime = graph.getRuntime(
+          context.defaultRuntime,
+        );
+      }
       if (context.runtimeMetadata) {
         const metadata = new DataSpaceExecutionContextRuntimeMetadata();
         if (context.runtimeMetadata.storePath) {
@@ -885,9 +901,20 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         }
         contextAnalysisResult.runtimeMetadata = metadata;
       }
+      if (context.mappingProvider) {
+        const mappingProviderAnalysisResult =
+          new DataSpaceMappingProviderAnalysisResult();
+        mappingProviderAnalysisResult.element = context.mappingProvider.element;
+        mappingProviderAnalysisResult.keys = context.mappingProvider.keys;
+        contextAnalysisResult.mappingProvider = mappingProviderAnalysisResult;
+      }
 
       // for handling deprecated mappingModelCoverageAnalysisResult
-      if (context.mappingModelCoverageAnalysisResult) {
+      if (
+        context.mappingModelCoverageAnalysisResult &&
+        context.mapping &&
+        contextAnalysisResult.mapping
+      ) {
         mappingToMappingCoverageResult.set(
           context.mapping,
           V1_buildModelCoverageAnalysisResult(
@@ -910,9 +937,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         contextAnalysisResult,
       );
     });
-    result.defaultExecutionContext = guaranteeNonNullable(
-      result.executionContextsIndex.get(analysisResult.defaultExecutionContext),
-    );
+    if (analysisResult.defaultExecutionContext) {
+      result.defaultExecutionContext = guaranteeNonNullable(
+        result.executionContextsIndex.get(
+          analysisResult.defaultExecutionContext,
+        ),
+        `Can't find default execution context '${analysisResult.defaultExecutionContext}'`,
+      );
+    }
 
     // elements documentation
     result.elementDocs = analysisResult.elementDocs.flatMap((docEntry) => {
@@ -1159,6 +1191,15 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             },
           );
           executable.result = tdsResult;
+        }
+        if (executableProtocol.executableReturnType) {
+          executable.executableReturnType = new GenericType(
+            graph.getType(
+              V1_getGenericTypeFullPath(
+                executableProtocol.executableReturnType,
+              ),
+            ),
+          );
         }
         return executable;
       },

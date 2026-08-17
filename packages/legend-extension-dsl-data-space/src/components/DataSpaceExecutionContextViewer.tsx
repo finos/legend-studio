@@ -145,7 +145,7 @@ export const DataSpaceExecutionContextViewer = observer(
                 <PURE_MappingIcon />
               </div>
               <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text">
-                {dataSpaceViewerState.currentExecutionContext.mapping.path}
+                {dataSpaceViewerState.currentMapping.path}
               </div>
             </div>
             <div className="data-space__viewer__execution-context__entry">

@@ -111,6 +111,7 @@ import {
   buildUrl,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   LogEvent,
   StopWatch,
   uniq,
@@ -1031,7 +1032,9 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   const mappingModels = uniq(
                     Array.from(
                       dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-                    ).map((context) => context.mapping),
+                    )
+                      .map((context) => context.mapping)
+                      .filter(isNonNullable),
                   ).map((m) => {
                     const _mapping = new V1_Mapping();
                     const [packagePath, name] =
@@ -1045,6 +1048,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                       dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
                     )
                       .map((context) => context.defaultRuntime)
+                      .filter(isNonNullable)
                       .concat(
                         Array.from(
                           dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
@@ -1077,19 +1081,24 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     contextProtocol.name = execContext.name;
                     contextProtocol.title = execContext.title;
                     contextProtocol.description = execContext.description;
-                    contextProtocol.mapping = new V1_PackageableElementPointer(
-                      PackageableElementPointerType.MAPPING,
-                      execContext.mapping.path,
-                    );
-                    contextProtocol.defaultRuntime =
-                      new V1_PackageableElementPointer(
-                        PackageableElementPointerType.RUNTIME,
-                        execContext.defaultRuntime.path,
-                      );
+                    if (execContext.mapping) {
+                      contextProtocol.mapping =
+                        new V1_PackageableElementPointer(
+                          PackageableElementPointerType.MAPPING,
+                          execContext.mapping.path,
+                        );
+                    }
+                    if (execContext.defaultRuntime) {
+                      contextProtocol.defaultRuntime =
+                        new V1_PackageableElementPointer(
+                          PackageableElementPointerType.RUNTIME,
+                          execContext.defaultRuntime.path,
+                        );
+                    }
                     return contextProtocol;
                   });
                   dataspaceProtocol.defaultExecutionContext =
-                    dataSpaceQueryBuilderState.dataSpaceAnalysisResult.defaultExecutionContext.name;
+                    dataSpaceQueryBuilderState.dataSpaceAnalysisResult.defaultExecutionContext?.name;
                   dataspaceProtocol.title =
                     dataSpaceQueryBuilderState.dataSpaceAnalysisResult.title;
                   dataspaceProtocol.description =

@@ -23,6 +23,9 @@ import {
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
   V1_MappingModelCoverageAnalysisResult,
+  type V1_GenericType,
+  V1_genericTypeModelSchema,
+  V1_deserializeGenericType,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -83,8 +86,9 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   name!: string;
   title?: string | undefined;
   description?: string | undefined;
-  mapping!: string;
-  defaultRuntime!: string;
+  mapping?: string | undefined;
+  mappingProvider?: V1_DataSpaceMappingProviderAnalysisResult;
+  defaultRuntime?: string | undefined;
   compatibleRuntimes!: string[];
   /**
    * @deprecated
@@ -92,6 +96,18 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   mappingModelCoverageAnalysisResult?: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
   runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
+}
+
+class V1_DataSpaceMappingProviderAnalysisResult {
+  element!: string;
+  keys: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceMappingProviderAnalysisResult, {
+      element: primitive(),
+      keys: list(primitive()),
+    }),
+  );
 }
 
 class V1_DataSpaceExecutionContextRuntimeMetadata {
@@ -120,14 +136,19 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
           V1_deserializeDatasetSpecification(val, plugins),
       ),
     ),
-    defaultRuntime: primitive(),
+    defaultRuntime: optional(primitive()),
     description: optional(primitive()),
     mappingModelCoverageAnalysisResult: optional(
       usingModelSchema(
         V1_MappingModelCoverageAnalysisResult.serialization.schema,
       ),
     ),
-    mapping: primitive(),
+    mapping: optional(primitive()),
+    mappingProvider: optional(
+      usingModelSchema(
+        V1_DataSpaceMappingProviderAnalysisResult.serialization.schema,
+      ),
+    ),
     name: primitive(),
     title: optional(primitive()),
     runtimeMetadata: usingModelSchema(
@@ -377,7 +398,7 @@ const V1_dataSpaceMultiExecutionServiceExecutableInfoModelSchema = (
     _type: usingConstantValueSchema(
       V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE,
     ),
-    keyedExecutableInfoList: list(
+    keyedExecutableInfos: list(
       usingModelSchema(
         V1_dataSpaceMultiExecutionServiceKeyedExecutableInfoModelSchema(
           plugins,
@@ -472,7 +493,8 @@ export class V1_DataSpaceExecutableAnalysisResult {
   description?: string | undefined;
   executable?: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
-  result!: V1_DataSpaceExecutableResult;
+  result?: V1_DataSpaceExecutableResult | undefined;
+  executableReturnType?: V1_GenericType;
 }
 
 const V1_dataSpaceExecutableAnalysisResultModelSchema = (
@@ -486,7 +508,13 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
       (val: PlainObject<V1_DataSpaceExecutableInfo>) =>
         V1_deserializeDataSpaceExecutableInfo(plugins, val),
     ),
-    result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
+    result: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
+    executableReturnType: optional(
+      custom(
+        (val) => serialize(V1_genericTypeModelSchema, val),
+        (val) => V1_deserializeGenericType(val),
+      ),
+    ),
     title: primitive(),
   });
 
@@ -505,7 +533,7 @@ export class V1_DataSpaceAnalysisResult {
   model!: V1_PureModelContextData;
 
   executionContexts: V1_DataSpaceExecutionContextAnalysisResult[] = [];
-  defaultExecutionContext!: string;
+  defaultExecutionContext?: string | undefined;
 
   elements: string[] = [];
   elementDocs: V1_DataSpaceModelDocumentationEntry[] = [];
@@ -519,7 +547,7 @@ export class V1_DataSpaceAnalysisResult {
   >;
 }
 
-const V1_dataSpaceAnalysisResultModelSchema = (
+export const V1_dataSpaceAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceAnalysisResult> =>
   createModelSchema(V1_DataSpaceAnalysisResult, {
@@ -543,7 +571,7 @@ const V1_dataSpaceAnalysisResultModelSchema = (
     executionContexts: customListWithSchema(
       V1_dataSpaceExecutionContextAnalysisResultModelSchema(plugins),
     ),
-    defaultExecutionContext: primitive(),
+    defaultExecutionContext: optional(primitive()),
 
     elements: list(primitive()),
     elementDocs: list(
@@ -557,23 +585,21 @@ const V1_dataSpaceAnalysisResultModelSchema = (
     executables: customListWithSchema(
       V1_dataSpaceExecutableAnalysisResultModelSchema(plugins),
     ),
-    mappingToMappingCoverageResult: optional(
-      custom(
-        (val) =>
-          serializeMap(val, (_val) =>
-            serialize(
-              V1_MappingModelCoverageAnalysisResult.serialization.schema,
-              _val,
-            ),
+    mappingToMappingCoverageResult: optionalCustom(
+      (val) =>
+        serializeMap(val, (_val) =>
+          serialize(
+            V1_MappingModelCoverageAnalysisResult.serialization.schema,
+            _val,
           ),
-        (val) =>
-          deserializeMap(val, (_val) =>
-            deserialize(
-              V1_MappingModelCoverageAnalysisResult.serialization.schema,
-              _val,
-            ),
+        ),
+      (val) =>
+        deserializeMap(val, (_val) =>
+          deserialize(
+            V1_MappingModelCoverageAnalysisResult.serialization.schema,
+            _val,
           ),
-      ),
+        ),
     ),
   });
 

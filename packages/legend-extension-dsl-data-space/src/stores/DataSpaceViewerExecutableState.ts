@@ -47,11 +47,11 @@ export interface ResultColumnData {
 
 export class DataSpaceExecutableAnalysisResultState {
   readonly execState: DataSpaceViewerExecutableState;
-  value: DataSpaceExecutableResult;
+  value: DataSpaceExecutableResult | undefined;
 
   constructor(
     viewerState: DataSpaceViewerExecutableState,
-    value: DataSpaceExecutableResult,
+    value: DataSpaceExecutableResult | undefined,
   ) {
     this.value = value;
     this.execState = viewerState;
@@ -131,12 +131,19 @@ export class DataSpaceExecutableTDSResultState extends DataSpaceExecutableAnalys
         return;
       } else {
         const analysis = this.execState.viewerState.dataSpaceAnalysisResult;
-        const executionContextKey = info.executionContextKey
+        const executionContext = info.executionContextKey
           ? (analysis.executionContextsIndex.get(info.executionContextKey) ??
             analysis.defaultExecutionContext)
           : analysis.defaultExecutionContext;
-        mapping = executionContextKey.mapping.path;
-        runtime = executionContextKey.defaultRuntime.path;
+        if (!executionContext?.mapping || !executionContext.defaultRuntime) {
+          this.execState.viewerState.applicationStore.logService.error(
+            LogEvent.create(DSL_DATASPACE_EVENT.ERROR_GENERATE_SAMPLE_VALUES),
+            'An execution context with a mapping and a default runtime is required to generate sample values',
+          );
+          return;
+        }
+        mapping = executionContext.mapping.path;
+        runtime = executionContext.defaultRuntime.path;
       }
       this.setGridData(
         this.buildGridData({

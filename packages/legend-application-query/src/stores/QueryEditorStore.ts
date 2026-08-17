@@ -855,7 +855,7 @@ export abstract class QueryEditorStore {
         );
         const mappingPath = executionContext
           ? dataSpaceAnalysisResult.executionContextsIndex.get(executionContext)
-              ?.mapping.path
+              ?.mapping?.path
           : undefined;
         if (mappingPath) {
           const pmcd =

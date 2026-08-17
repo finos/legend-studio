@@ -23,8 +23,10 @@ import {
   type Class,
   type GraphData,
   type GraphManagerState,
+  type Mapping,
   type PackageableRuntime,
 } from '@finos/legend-graph';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type DataSpaceAnalysisResult,
@@ -84,6 +86,7 @@ export class DataSpaceViewerState {
   currentDataAccessState: DataAccessState;
   currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
   currentRuntime: PackageableRuntime;
+  currentMapping: Mapping;
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -109,6 +112,7 @@ export class DataSpaceViewerState {
       currentActivity: observable,
       currentExecutionContext: observable,
       currentRuntime: observable,
+      currentMapping: observable,
       currentDataAccessState: observable,
       executableStates: observable,
       legendAIConfig: observable,
@@ -138,16 +142,29 @@ export class DataSpaceViewerState {
     this.openServiceQuery = actions.openServiceQuery;
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
 
-    this.currentExecutionContext =
-      dataSpaceAnalysisResult.defaultExecutionContext;
-    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
+    // NOTE: the viewer is built around always having a current execution
+    // context; when the data product declares no default, fall back to the
+    // first available one rather than failing outright
+    this.currentExecutionContext = guaranteeNonNullable(
+      dataSpaceAnalysisResult.defaultExecutionContext ??
+        Array.from(dataSpaceAnalysisResult.executionContextsIndex.values())[0],
+      `Can't view data product '${dataSpaceAnalysisResult.path}': no execution context is available`,
+    );
+    this.currentRuntime = guaranteeNonNullable(
+      this.currentExecutionContext.defaultRuntime,
+      `Can't view data product '${dataSpaceAnalysisResult.path}': execution context '${this.currentExecutionContext.name}' has no default runtime`,
+    );
+    this.currentMapping = guaranteeNonNullable(
+      this.currentExecutionContext.mapping,
+      `Can't view data product '${dataSpaceAnalysisResult.path}': execution context '${this.currentExecutionContext.name}' has no mapping`,
+    );
     this.currentDataAccessState = new DataAccessState(
       this.applicationStore,
       this.graphManagerState,
       {
         initialDatasets: this.currentExecutionContext.datasets,
-        mapping: this.currentExecutionContext.mapping.path,
-        runtime: this.currentExecutionContext.defaultRuntime.path,
+        mapping: this.currentMapping.path,
+        runtime: this.currentRuntime.path,
         getQuery: async () => undefined,
         graphData: this.retrieveGraphData(),
       },
@@ -179,14 +196,21 @@ export class DataSpaceViewerState {
     val: DataSpaceExecutionContextAnalysisResult,
   ): void {
     this.currentExecutionContext = val;
-    this.currentRuntime = val.defaultRuntime;
+    this.currentRuntime = guaranteeNonNullable(
+      val.defaultRuntime,
+      `Execution context '${val.name}' has no default runtime`,
+    );
+    this.currentMapping = guaranteeNonNullable(
+      val.mapping,
+      `Execution context '${val.name}' has no mapping`,
+    );
     this.currentDataAccessState = new DataAccessState(
       this.applicationStore,
       this.graphManagerState,
       {
         initialDatasets: val.datasets,
-        mapping: val.mapping.path,
-        runtime: val.defaultRuntime.path,
+        mapping: this.currentMapping.path,
+        runtime: this.currentRuntime.path,
         getQuery: async () => undefined,
         graphData: this.retrieveGraphData(),
       },

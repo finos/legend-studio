@@ -531,11 +531,11 @@ const DataSpaceLegendAIIntegrationInner = observer(
 
     const pureExecutionContext = useMemo(
       (): QueryExplicitExecutionContextInfo => ({
-        mapping: dataSpaceViewerState.currentExecutionContext.mapping.path,
+        mapping: dataSpaceViewerState.currentMapping.path,
         runtime: dataSpaceViewerState.currentRuntime.path,
       }),
       [
-        dataSpaceViewerState.currentExecutionContext.mapping,
+        dataSpaceViewerState.currentMapping,
         dataSpaceViewerState.currentRuntime,
       ],
     );
@@ -572,8 +572,7 @@ const DataSpaceLegendAIIntegrationInner = observer(
         return undefined;
       }
 
-      const mappingPath =
-        dataSpaceViewerState.currentExecutionContext.mapping.path;
+      const mappingPath = dataSpaceViewerState.currentMapping.path;
       const mappingCoverage =
         result.mappingToMappingCoverageResult?.get(mappingPath);
       enrichModelContextWithMappingCoverage(ctx, mappingCoverage);
@@ -611,8 +610,8 @@ const DataSpaceLegendAIIntegrationInner = observer(
       return ctx;
     }, [
       dataSpaceViewerState.dataSpaceAnalysisResult,
-      dataSpaceViewerState.currentExecutionContext.mapping,
       dataSpaceViewerState.currentExecutionContext.datasets,
+      dataSpaceViewerState.currentMapping.path,
       services,
     ]);
 
