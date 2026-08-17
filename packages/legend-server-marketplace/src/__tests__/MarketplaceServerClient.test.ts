@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { describe, test, expect, beforeEach } from '@jest/globals';
+import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 import { unitTest, createSpy } from '@finos/legend-shared/test';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import { MarketplaceServerClient } from '../MarketplaceServerClient.js';
@@ -24,7 +24,7 @@ describe('MarketplaceServerClient', () => {
   let client: MarketplaceServerClient;
   // Captured once so assertions never re-read `client.get` as a bare property
   // access (which trips `@typescript-eslint/unbound-method` on a prototype method).
-  let getSpy: ReturnType<typeof createSpy<MarketplaceServerClient, 'get'>>;
+  let getSpy: jest.SpiedFunction<MarketplaceServerClient['get']>;
 
   beforeEach(() => {
     client = new MarketplaceServerClient({
