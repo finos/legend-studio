@@ -32,6 +32,7 @@ export class DataSpaceExecutionContextAnalysisResult {
   title?: string | undefined;
   description?: string | undefined;
   mapping!: Mapping;
+  mappingProvider?: DataSpaceMappingProviderAnalysisResult;
   defaultRuntime!: PackageableRuntime;
   compatibleRuntimes!: PackageableRuntime[];
   datasets: DatasetSpecification[] = [];
@@ -42,6 +43,11 @@ export class DataSpaceExecutionContextRuntimeMetadata {
   storePath?: string;
   connectionPath?: string;
   connectionType?: string;
+}
+
+export class DataSpaceMappingProviderAnalysisResult {
+  element!: string;
+  keys: string[] = [];
 }
 
 export class DataSpaceTaggedValueInfo {
