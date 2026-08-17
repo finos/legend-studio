@@ -101,14 +101,15 @@ export const QueryEditorDataspaceInfoModal = observer(
     const dataSpaceMedata = dataSpaceAnalysisResult?.executionContextsIndex.get(
       executionContext.name,
     )?.runtimeMetadata;
-    const connection =
-      executionContext.defaultRuntime.value.runtimeValue.connections.length > 0
-        ? executionContext.defaultRuntime.value.runtimeValue.connections[0]
-            ?.storeConnections?.[0]?.connection instanceof ConnectionPointer
-          ? executionContext.defaultRuntime.value.runtimeValue.connections[0]
-              ?.storeConnections?.[0]?.connection
-          : undefined
-        : undefined;
+    const defaultRuntimeValue = executionContext.defaultRuntime?.value;
+    const executionContextMappingValue = executionContext.mapping?.value;
+    const connection = defaultRuntimeValue?.runtimeValue.connections.length
+      ? defaultRuntimeValue.runtimeValue.connections[0]?.storeConnections?.[0]
+          ?.connection instanceof ConnectionPointer
+        ? defaultRuntimeValue.runtimeValue.connections[0]?.storeConnections?.[0]
+            ?.connection
+        : undefined
+      : undefined;
     const connectionPath = connection
       ? connection.packageableConnection.value.path
       : dataSpaceMedata
@@ -210,31 +211,41 @@ export const QueryEditorDataspaceInfoModal = observer(
                 <div className="dataspace-info-modal__field__label">
                   Mapping
                 </div>
-                <div
-                  className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
-                  onClick={() =>
-                    flowResult(
-                      visitElement(executionContext.mapping.value.path),
-                    )
-                  }
-                >
-                  {executionContext.mapping.value.name}
-                </div>
+                {executionContextMappingValue ? (
+                  <div
+                    className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
+                    onClick={() =>
+                      flowResult(
+                        visitElement(executionContextMappingValue.path),
+                      )
+                    }
+                  >
+                    {executionContextMappingValue.name}
+                  </div>
+                ) : (
+                  <div className="dataspace-info-modal__field__value">
+                    (none)
+                  </div>
+                )}
               </div>
               <div className="dataspace-info-modal__field">
                 <div className="dataspace-info-modal__field__label">
                   Runtime
                 </div>
-                <div
-                  className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
-                  onClick={() =>
-                    flowResult(
-                      visitElement(executionContext.defaultRuntime.value.path),
-                    )
-                  }
-                >
-                  {executionContext.defaultRuntime.value.name}
-                </div>
+                {defaultRuntimeValue ? (
+                  <div
+                    className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
+                    onClick={() =>
+                      flowResult(visitElement(defaultRuntimeValue.path))
+                    }
+                  >
+                    {defaultRuntimeValue.name}
+                  </div>
+                ) : (
+                  <div className="dataspace-info-modal__field__value">
+                    (none)
+                  </div>
+                )}
               </div>
               {(connection || dataSpaceMedata) && (
                 <>

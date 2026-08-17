@@ -21,6 +21,7 @@ import {
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceMappingProvider,
   V1_DataSpacePackageableElementExecutable,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
@@ -51,6 +52,7 @@ import {
   type DataSpaceElement,
   DataSpace,
   DataSpaceExecutionContext,
+  DataSpaceMappingProvider,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
   DataSpaceDiagram,
@@ -144,43 +146,56 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             elementProtocol.package,
             elementProtocol.name,
           );
-          element.executionContexts = guaranteeNonNullable(
-            elementProtocol.executionContexts,
-            `Data product 'executionContexts' field is missing`,
-          ).map((contextProtocol) => {
-            const execContext = new DataSpaceExecutionContext();
-            execContext.name = guaranteeNonEmptyString(
-              contextProtocol.name,
-              `Data product execution context 'name' field is missing or empty`,
-            );
-            execContext.title = contextProtocol.title;
-            execContext.description = contextProtocol.description;
-            execContext.mapping = PackageableElementExplicitReference.create(
-              context.graph.getMapping(contextProtocol.mapping.path),
-            );
-            execContext.defaultRuntime =
-              PackageableElementExplicitReference.create(
-                context.graph.getRuntime(contextProtocol.defaultRuntime.path),
+          element.executionContexts = elementProtocol.executionContexts?.map(
+            (contextProtocol) => {
+              const execContext = new DataSpaceExecutionContext();
+              execContext.name = guaranteeNonEmptyString(
+                contextProtocol.name,
+                `Data product execution context 'name' field is missing or empty`,
               );
-            execContext.testData = contextProtocol.testData
-              ? guaranteeType(
-                  V1_buildEmbeddedData(contextProtocol.testData, context),
-                  DataElementReference,
+              execContext.title = contextProtocol.title;
+              execContext.description = contextProtocol.description;
+              execContext.mapping = contextProtocol.mapping
+                ? PackageableElementExplicitReference.create(
+                    context.graph.getMapping(contextProtocol.mapping.path),
+                  )
+                : undefined;
+              execContext.defaultRuntime = contextProtocol.defaultRuntime
+                ? PackageableElementExplicitReference.create(
+                    context.graph.getRuntime(
+                      contextProtocol.defaultRuntime.path,
+                    ),
+                  )
+                : undefined;
+              if (contextProtocol.mappingProvider) {
+                const mappingProvider = new DataSpaceMappingProvider();
+                mappingProvider.element = context.resolveElement(
+                  contextProtocol.mappingProvider.element.path,
+                  false,
+                );
+                mappingProvider.keys = contextProtocol.mappingProvider.keys;
+                execContext.mappingProvider = mappingProvider;
+              }
+              execContext.testData = contextProtocol.testData
+                ? guaranteeType(
+                    V1_buildEmbeddedData(contextProtocol.testData, context),
+                    DataElementReference,
+                  )
+                : undefined;
+              return execContext;
+            },
+          );
+          element.defaultExecutionContext =
+            elementProtocol.defaultExecutionContext
+              ? guaranteeNonNullable(
+                  element.executionContexts?.find(
+                    (execContext) =>
+                      execContext.name ===
+                      elementProtocol.defaultExecutionContext,
+                  ),
+                  `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
                 )
               : undefined;
-            return execContext;
-          });
-          element.defaultExecutionContext = guaranteeNonNullable(
-            element.executionContexts.find(
-              (execContext) =>
-                execContext.name ===
-                guaranteeNonEmptyString(
-                  elementProtocol.defaultExecutionContext,
-                  `Data product 'defaultExecutionContext' field is missing or empty`,
-                ),
-            ),
-            `Can't find default execution context '${elementProtocol.defaultExecutionContext}'`,
-          );
           context.currentSubGraph.setOwnElementInExtension(
             path,
             element,
@@ -426,20 +441,36 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
           protocol.taggedValues = metamodel.taggedValues.map(
             V1_transformTaggedValue,
           );
-          protocol.executionContexts = metamodel.executionContexts.map(
+          protocol.executionContexts = metamodel.executionContexts?.map(
             (execContext) => {
               const contextProtocol = new V1_DataSpaceExecutionContext();
               contextProtocol.name = execContext.name;
               contextProtocol.title = execContext.title;
               contextProtocol.description = execContext.description;
-              contextProtocol.mapping = new V1_PackageableElementPointer(
-                PackageableElementPointerType.MAPPING,
-                execContext.mapping.valueForSerialization ?? '',
-              );
-              contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
-                PackageableElementPointerType.RUNTIME,
-                execContext.defaultRuntime.valueForSerialization ?? '',
-              );
+              contextProtocol.mapping = execContext.mapping
+                ? new V1_PackageableElementPointer(
+                    PackageableElementPointerType.MAPPING,
+                    execContext.mapping.valueForSerialization ?? '',
+                  )
+                : undefined;
+              contextProtocol.defaultRuntime = execContext.defaultRuntime
+                ? new V1_PackageableElementPointer(
+                    PackageableElementPointerType.RUNTIME,
+                    execContext.defaultRuntime.valueForSerialization ?? '',
+                  )
+                : undefined;
+              if (execContext.mappingProvider) {
+                const mappingProviderProtocol =
+                  new V1_DataSpaceMappingProvider();
+                mappingProviderProtocol.element =
+                  new V1_PackageableElementPointer(
+                    undefined,
+                    execContext.mappingProvider.element.valueForSerialization ??
+                      '',
+                  );
+                mappingProviderProtocol.keys = execContext.mappingProvider.keys;
+                contextProtocol.mappingProvider = mappingProviderProtocol;
+              }
               contextProtocol.testData = execContext.testData
                 ? guaranteeType(
                     V1_transformEmbeddedData(execContext.testData, context),
@@ -450,7 +481,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             },
           );
           protocol.defaultExecutionContext =
-            metamodel.defaultExecutionContext.name;
+            metamodel.defaultExecutionContext?.name;
           protocol.title = metamodel.title;
           protocol.description = metamodel.description;
           protocol.elements = metamodel.elements?.map((pointer) => {
@@ -572,9 +603,16 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
             protocol.includedDataSpace,
             context,
           );
+          const defaultExecutionContext = guaranteeNonNullable(
+            dataSpace.value.defaultExecutionContext,
+            `Can't include data product '${protocol.includedDataSpace}' in a mapping: 'defaultExecutionContext' is required`,
+          );
           const includedMapping = new MappingIncludeDataSpace(
             parentMapping,
-            dataSpace.value.defaultExecutionContext.mapping,
+            guaranteeNonNullable(
+              defaultExecutionContext.mapping,
+              `Can't include data product '${protocol.includedDataSpace}' in a mapping: default execution context 'mapping' is required`,
+            ),
             dataSpace,
           );
           return includedMapping;
@@ -652,25 +690,22 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 V1_deserializeDataSpace(content),
               );
               if (v1DataSpace) {
-                if (v1DataSpace.executionContexts.length === 1) {
-                  const exec = guaranteeNonNullable(
-                    v1DataSpace.executionContexts[0],
-                  );
+                const executionContexts = v1DataSpace.executionContexts ?? [];
+                if (executionContexts.length === 1) {
+                  const exec = guaranteeNonNullable(executionContexts[0]);
                   return {
-                    mapping: exec.mapping.path,
-                    runtime: exec.defaultRuntime.path,
+                    mapping: exec.mapping?.path ?? '',
+                    runtime: exec.defaultRuntime?.path ?? '',
                   };
                 }
                 const resvoled =
                   queryExec.executionKey ?? v1DataSpace.defaultExecutionContext;
                 const resolvedExec = guaranteeNonNullable(
-                  v1DataSpace.executionContexts.find(
-                    (e) => e.name === resvoled,
-                  ),
+                  executionContexts.find((e) => e.name === resvoled),
                 );
                 return {
-                  mapping: resolvedExec.mapping.path,
-                  runtime: resolvedExec.defaultRuntime.path,
+                  mapping: resolvedExec.mapping?.path ?? '',
+                  runtime: resolvedExec.defaultRuntime?.path ?? '',
                 };
               }
             }

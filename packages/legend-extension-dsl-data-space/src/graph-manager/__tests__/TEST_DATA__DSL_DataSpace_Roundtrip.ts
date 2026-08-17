@@ -1072,6 +1072,12 @@ export const TEST_DATA__DSL_DataSpace_Model = [
             path: 'mapping::CovidDataMapping',
             type: 'MAPPING',
           },
+          mappingProvider: {
+            element: {
+              path: 'mapping::CovidDataMapping',
+            },
+            keys: ['k1', 'k2'],
+          },
           name: 'dummyContext2',
         },
       ],

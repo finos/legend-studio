@@ -21,15 +21,19 @@ import {
   type DataSpaceElementPointer,
   type DataSpaceExecutable,
   type DataSpaceExecutionContext,
+  type DataSpaceMappingProvider,
   type DataSpaceSupportCombinedInfo,
   type DataSpaceSupportEmail,
   type DataSpaceSupportInfo,
   observe_DataSpaceDiagram,
   observe_DataSpaceElementPointer,
+  observe_DataSpaceExecutable,
   observe_DataSpaceExecutionContext,
+  observe_DataSpaceMappingProvider,
   observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import type {
+  PackageableElement,
   PackageableElementReference,
   Mapping,
   PackageableRuntime,
@@ -54,7 +58,7 @@ export const dataSpace_setDescription = action(
 export const dataSpace_setExecutionContexts = action(
   (
     dataSpace: DataSpace,
-    executionContexts: DataSpaceExecutionContext[],
+    executionContexts: DataSpaceExecutionContext[] | undefined,
   ): void => {
     dataSpace.executionContexts = executionContexts;
   },
@@ -63,7 +67,7 @@ export const dataSpace_setExecutionContexts = action(
 export const dataSpace_setDefaultExecutionContext = action(
   (
     dataSpace: DataSpace,
-    defaultExecutionContext: DataSpaceExecutionContext,
+    defaultExecutionContext: DataSpaceExecutionContext | undefined,
   ): void => {
     dataSpace.defaultExecutionContext = defaultExecutionContext;
   },
@@ -108,6 +112,9 @@ export const dataSpace_setSupportInfo = action(
 // Array item management
 export const dataSpace_addExecutionContext = action(
   (dataSpace: DataSpace, executionContext: DataSpaceExecutionContext): void => {
+    if (!dataSpace.executionContexts) {
+      dataSpace.executionContexts = [];
+    }
     addUniqueEntry(
       dataSpace.executionContexts,
       observe_DataSpaceExecutionContext(executionContext),
@@ -120,10 +127,21 @@ export const dataSpace_removeExecutionContext = action(
     dataSpace: DataSpace,
     dataSpaceExecutionContext: DataSpaceExecutionContext,
   ): void => {
+    if (!dataSpace.executionContexts) {
+      return;
+    }
     const index = dataSpace.executionContexts.indexOf(
       dataSpaceExecutionContext,
     );
-    dataSpace.executionContexts.splice(index, 1);
+    if (index !== -1) {
+      dataSpace.executionContexts.splice(index, 1);
+    }
+    if (dataSpace.executionContexts.length === 0) {
+      dataSpace.executionContexts = undefined;
+    }
+    if (dataSpace.defaultExecutionContext === dataSpaceExecutionContext) {
+      dataSpace.defaultExecutionContext = undefined;
+    }
   },
 );
 
@@ -159,7 +177,7 @@ export const dataSpace_addExecutable = action(
     if (!dataSpace.executables) {
       dataSpace.executables = [];
     }
-    dataSpace.executables.push(executable);
+    dataSpace.executables.push(observe_DataSpaceExecutable(executable));
   },
 );
 
@@ -169,6 +187,27 @@ export const dataSpace_removeExecutable = action(
       const index = dataSpace.executables.indexOf(executable);
       dataSpace.executables.splice(index, 1);
     }
+  },
+);
+
+export const dataSpace_setExecutableTitle = action(
+  (executable: DataSpaceExecutable, title: string): void => {
+    executable.title = title;
+  },
+);
+
+export const dataSpace_setExecutableDescription = action(
+  (executable: DataSpaceExecutable, description: string | undefined): void => {
+    executable.description = description;
+  },
+);
+
+export const dataSpace_setExecutableExecutionContextKey = action(
+  (
+    executable: DataSpaceExecutable,
+    executionContextKey: string | undefined,
+  ): void => {
+    executable.executionContextKey = executionContextKey;
   },
 );
 
@@ -232,18 +271,52 @@ export const dataSpace_setExecutionContextDescription = action(
 export const dataSpace_setExecutionContextMapping = action(
   (
     executionContext: DataSpaceExecutionContext,
-    mapping: PackageableElementReference<Mapping>,
+    mapping: PackageableElementReference<Mapping> | undefined,
   ): void => {
     executionContext.mapping = mapping;
+    if (mapping) {
+      executionContext.mappingProvider = undefined;
+    }
   },
 );
 
 export const dataSpace_setExecutionContextDefaultRuntime = action(
   (
     executionContext: DataSpaceExecutionContext,
-    defaultRuntime: PackageableElementReference<PackageableRuntime>,
+    defaultRuntime: PackageableElementReference<PackageableRuntime> | undefined,
   ): void => {
     executionContext.defaultRuntime = defaultRuntime;
+  },
+);
+
+export const dataSpace_setExecutionContextMappingProvider = action(
+  (
+    executionContext: DataSpaceExecutionContext,
+    mappingProvider: DataSpaceMappingProvider | undefined,
+  ): void => {
+    executionContext.mappingProvider =
+      mappingProvider !== undefined
+        ? observe_DataSpaceMappingProvider(mappingProvider)
+        : undefined;
+    if (mappingProvider) {
+      executionContext.mapping = undefined;
+    }
+  },
+);
+
+export const dataSpace_setMappingProviderElement = action(
+  (
+    mappingProvider: DataSpaceMappingProvider,
+    element: PackageableElementReference<PackageableElement>,
+  ): void => {
+    mappingProvider.element = element;
+    mappingProvider.keys = [];
+  },
+);
+
+export const dataSpace_setMappingProviderKeys = action(
+  (mappingProvider: DataSpaceMappingProvider, keys: string[]): void => {
+    mappingProvider.keys = keys;
   },
 );
 

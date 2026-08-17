@@ -286,8 +286,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
         this.dataSpace.title,
         this.dataSpace.name,
         this.dataSpace.path,
-        this.dataSpace.defaultExecutionContext.title ??
-          this.dataSpace.defaultExecutionContext.name,
+        this.dataSpace.defaultExecutionContext?.title ??
+          this.dataSpace.defaultExecutionContext?.name ??
+          '',
       ),
     };
   }
@@ -316,8 +317,9 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       element.title,
       element.name,
       element.path,
-      element.defaultExecutionContext.title ??
-        element.defaultExecutionContext.name,
+      element.defaultExecutionContext?.title ??
+        element.defaultExecutionContext?.name ??
+        '',
     );
   }
 

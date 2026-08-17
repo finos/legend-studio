@@ -38,6 +38,7 @@ import {
   ResolvedDataSpaceEntityWithOrigin,
   type DataSpaceExecutionContext,
   DataSpace,
+  hasMappingBasedDefaultExecutionContext,
   resolveUsableDataSpaceClasses,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { CLASS_ELEMENT_CREATION_BASIS } from '../DSL_DataQuality_ElementDriver.js';
@@ -134,13 +135,23 @@ export class DataQualityClassValidationState extends DataQualityState {
         CLASS_ELEMENT_CREATION_BASIS.DATASPACE_BASED;
       this.dataSpace =
         this.constraintsConfigurationElement.context.dataSpace.value;
-      this.executionContext = this.dataSpace.defaultExecutionContext;
+      const defaultExecutionContext = guaranteeNonNullable(
+        this.dataSpace.defaultExecutionContext,
+        `Data product '${this.dataSpace.path}' does not have a default execution context`,
+      );
+      this.executionContext = defaultExecutionContext;
       this.dataQualityQueryBuilderState.executionContextState.setMapping(
-        this.dataSpace.defaultExecutionContext.mapping.value,
+        guaranteeNonNullable(
+          defaultExecutionContext.mapping,
+          `Default execution context '${defaultExecutionContext.name}' does not have a mapping`,
+        ).value,
       );
       this.dataQualityQueryBuilderState.executionContextState.setRuntimeValue(
         new RuntimePointer(
-          this.dataSpace.defaultExecutionContext.defaultRuntime,
+          guaranteeNonNullable(
+            defaultExecutionContext.defaultRuntime,
+            `Default execution context '${defaultExecutionContext.name}' does not have a default runtime`,
+          ),
         ),
       );
       classOptions = resolveUsableDataSpaceClasses(
@@ -245,10 +256,18 @@ export class DataQualityClassValidationState extends DataQualityState {
   propagateExecutionContextChange(
     executionContext: DataSpaceExecutionContext,
   ): void {
-    const mapping = executionContext.mapping.value;
+    const mapping = guaranteeNonNullable(
+      executionContext.mapping,
+      `Execution context '${executionContext.name}' does not have a mapping`,
+    ).value;
     this.changeMapping(mapping);
     this.dataQualityQueryBuilderState.changeRuntime(
-      new RuntimePointer(executionContext.defaultRuntime),
+      new RuntimePointer(
+        guaranteeNonNullable(
+          executionContext.defaultRuntime,
+          `Execution context '${executionContext.name}' does not have a default runtime`,
+        ),
+      ),
     );
     const compatibleClasses = resolveUsableDataSpaceClasses(
       guaranteeNonNullable(this.dataSpace),
@@ -273,10 +292,12 @@ export class DataQualityClassValidationState extends DataQualityState {
       this.graphManagerState.graph.getElement(dataSpaceInfo.path),
       DataSpace,
     );
-    this.setExecutionContext(this.dataSpace.defaultExecutionContext);
-    this.propagateExecutionContextChange(
+    const defaultExecutionContext = guaranteeNonNullable(
       this.dataSpace.defaultExecutionContext,
+      `Data product '${this.dataSpace.path}' does not have a default execution context`,
     );
+    this.setExecutionContext(defaultExecutionContext);
+    this.propagateExecutionContextChange(defaultExecutionContext);
   }
 
   updateElementOnDataSpaceChange() {
@@ -297,6 +318,7 @@ export class DataQualityClassValidationState extends DataQualityState {
   *loadDataSpaces(): GeneratorFn<void> {
     this.dataSpaces = this.graphManagerState.graph.allOwnElements
       .filter(filterByType(DataSpace))
+      .filter(hasMappingBasedDefaultExecutionContext)
       .map(
         (e) =>
           new ResolvedDataSpaceEntityWithOrigin(
@@ -304,7 +326,7 @@ export class DataQualityClassValidationState extends DataQualityState {
             e.title,
             e.name,
             e.path,
-            e.defaultExecutionContext.name,
+            guaranteeNonNullable(e.defaultExecutionContext).name,
           ),
       );
   }
