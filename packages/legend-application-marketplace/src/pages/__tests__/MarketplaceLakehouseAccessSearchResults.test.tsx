@@ -120,6 +120,30 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
     expect(screen.getByDisplayValue('data')).toBeDefined();
   });
 
+  test('submitting a new query updates the store and re-searches', async () => {
+    const { MOCK__baseStore } = await setupTestComponent('data');
+
+    await screen.findByText('2 Products');
+    (
+      MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch as jest.Mock
+    ).mockClear();
+
+    const searchInput = screen.getByDisplayValue('data');
+    fireEvent.change(searchInput, { target: { value: 'orders' } });
+    await act(async () => {
+      fireEvent.submit(searchInput.closest('form') as HTMLFormElement);
+      await flushMicrotasks();
+    });
+
+    expect(
+      MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+    ).toHaveBeenCalledWith(
+      'orders',
+      expect.anything(),
+      expect.objectContaining({ searchType: 'full_text' }),
+    );
+  });
+
   test('searches with an empty query when the route carries no query param', async () => {
     // Reaching this page from the header tab yields a bare `/lakehouseAccess/results`.
     // The page must still run a search; otherwise the search action never leaves its
@@ -136,12 +160,13 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
     ).toHaveBeenCalledWith(
       '',
       expect.anything(),
-      'full_text',
-      [],
-      12,
-      1,
-      false,
-      expect.anything(),
+      expect.objectContaining({
+        searchType: 'full_text',
+        searchFilters: [],
+        pageSize: 12,
+        pageNumber: 1,
+        showAll: false,
+      }),
     );
   });
 
@@ -180,12 +205,13 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
     ).toHaveBeenCalledWith(
       'data',
       expect.anything(),
-      'full_text',
-      [],
-      12,
-      1,
-      false,
-      expect.anything(),
+      expect.objectContaining({
+        searchType: 'full_text',
+        searchFilters: [],
+        pageSize: 12,
+        pageNumber: 1,
+        showAll: false,
+      }),
     );
   });
 
@@ -284,12 +310,13 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
       ).toHaveBeenCalledWith(
         'data',
         expect.anything(),
-        'full_text',
-        ['deployment_id=12345'],
-        12,
-        1,
-        false,
-        expect.anything(),
+        expect.objectContaining({
+          searchType: 'full_text',
+          searchFilters: ['deployment_id=12345'],
+          pageSize: 12,
+          pageNumber: 1,
+          showAll: false,
+        }),
       );
     });
 
@@ -335,12 +362,13 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
       ).toHaveBeenCalledWith(
         'data',
         expect.anything(),
-        'full_text',
-        ['data_product_source=External'],
-        12,
-        1,
-        false,
-        expect.anything(),
+        expect.objectContaining({
+          searchType: 'full_text',
+          searchFilters: ['data_product_source=External'],
+          pageSize: 12,
+          pageNumber: 1,
+          showAll: false,
+        }),
       );
     });
 
@@ -369,6 +397,120 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
 
       expect(within(internalRow as HTMLElement).getByText('3')).toBeDefined();
       expect(within(externalRow as HTMLElement).getByText('2')).toBeDefined();
+    });
+  });
+
+  describe('Product cards', () => {
+    test('clicking a product card navigates to the data product viewer', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data');
+
+      const mockVisitAddress = jest.fn();
+      MOCK__baseStore.applicationStore.navigationService.navigator.visitAddress =
+        mockVisitAddress;
+
+      const title = (
+        await screen.findAllByText('Lakehouse SDLC Data Product')
+      )[0] as HTMLElement;
+      fireEvent.click(title);
+
+      expect(mockVisitAddress).toHaveBeenCalledWith(
+        expect.stringContaining(
+          '/dataProduct/deployed/LAKEHOUSE_SDLC_DATA_PRODUCT/12345',
+        ),
+      );
+    });
+  });
+
+  describe('View toggle', () => {
+    test('tile view is active by default', async () => {
+      await setupTestComponent('data');
+
+      await screen.findByText('2 Products');
+
+      expect(screen.getByTitle('Tile View').className).toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+    });
+
+    test('clicking List View switches the store to list mode', async () => {
+      await setupTestComponent('data');
+
+      await screen.findByText('2 Products');
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('List View'));
+      });
+
+      expect(screen.getByTitle('List View').className).toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+      expect(screen.getByTitle('Tile View').className).not.toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+      expect(
+        document.querySelector(
+          '.marketplace-lakehouse-search-results__list-view',
+        ),
+      ).not.toBeNull();
+    });
+
+    test('clicking Tile View switches back to tile mode', async () => {
+      await setupTestComponent('data');
+
+      await screen.findByText('2 Products');
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('List View'));
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTitle('Tile View'));
+      });
+
+      expect(screen.getByTitle('Tile View').className).toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+      expect(screen.getByTitle('List View').className).not.toContain(
+        'legend-marketplace-search-results__view-toggle__btn--active',
+      );
+    });
+  });
+
+  describe('Sort', () => {
+    test('selecting a sort option re-sorts the results client-side', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data');
+
+      await screen.findByText('2 Products');
+      (
+        MOCK__baseStore.marketplaceServerClient
+          .lakehouseAccessSearch as jest.Mock
+      ).mockClear();
+
+      fireEvent.mouseDown(screen.getByText('Sort'));
+      fireEvent.click(screen.getByText('Name Z-A'));
+
+      // Sorting is client-side: it must not trigger another network search.
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Empty state', () => {
+    test('shows a no-results message when the search returns nothing', async () => {
+      await setupTestComponent('data', 'prod', {
+        results: [],
+        as_of_time: '2026-01-27T00:00:00.000Z',
+        metadata: {
+          next_page_number: null,
+          num_pages: 0,
+          page_number: 1,
+          page_size: 12,
+          prev_page_number: null,
+          total_count: 0,
+        },
+      } as unknown as PlainObject<DataProductSearchResponse>);
+
+      expect(await screen.findByText('No results found')).toBeDefined();
     });
   });
 
@@ -409,12 +551,88 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
       ).toHaveBeenCalledWith(
         'data',
         expect.anything(),
-        'full_text',
-        [],
-        12,
-        2,
-        false,
+        expect.objectContaining({
+          searchType: 'full_text',
+          searchFilters: [],
+          pageSize: 12,
+          pageNumber: 2,
+          showAll: false,
+        }),
+      );
+    });
+
+    test('changing items per page re-searches with the new page size', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod', {
+        ...mockLakehouseAccessSearchResultResponse,
+        metadata: {
+          ...(mockLakehouseAccessSearchResultResponse.metadata as Record<
+            string,
+            unknown
+          >),
+          total_count: 25,
+          num_pages: 3,
+        },
+      });
+
+      await screen.findByText('25 Products');
+      (
+        MOCK__baseStore.marketplaceServerClient
+          .lakehouseAccessSearch as jest.Mock
+      ).mockClear();
+
+      const paginationContainer = screen
+        .getByText('Items per page:')
+        .closest('.legend-marketplace-pagination-page-size');
+      const itemsPerPageSelect = (
+        paginationContainer as HTMLElement
+      ).querySelector('[role="combobox"]') as HTMLElement;
+      fireEvent.mouseDown(itemsPerPageSelect);
+
+      await act(async () => {
+        fireEvent.click(screen.getByRole('option', { name: '48' }));
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).toHaveBeenCalledWith(
+        'data',
         expect.anything(),
+        expect.objectContaining({ pageSize: 48, pageNumber: 1 }),
+      );
+    });
+  });
+
+  describe('Show all', () => {
+    test('clicking show all re-searches with show_all=true', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data', 'prod', {
+        ...mockLakehouseAccessSearchResultResponse,
+        metadata: {
+          ...(mockLakehouseAccessSearchResultResponse.metadata as Record<
+            string,
+            unknown
+          >),
+          has_filtered_products: true,
+        },
+      });
+
+      await screen.findByText('Show all data products');
+      (
+        MOCK__baseStore.marketplaceServerClient
+          .lakehouseAccessSearch as jest.Mock
+      ).mockClear();
+
+      await act(async () => {
+        fireEvent.click(screen.getByText('Show all data products'));
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        expect.objectContaining({ showAll: true }),
       );
     });
   });
