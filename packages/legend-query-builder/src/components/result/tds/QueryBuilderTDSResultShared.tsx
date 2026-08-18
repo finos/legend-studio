@@ -50,6 +50,7 @@ import { forwardRef } from 'react';
 import {
   QueryBuilderDerivationProjectionColumnState,
   QueryBuilderProjectionColumnState,
+  QueryBuilderRelationColumnProjectionColumnState,
   QueryBuilderSimpleProjectionColumnState,
 } from '../../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import {
@@ -91,6 +92,7 @@ import {
   FilterPropertyExpressionSourceState,
 } from '../../../stores/filter/QueryBuilderFilterState.js';
 import { QueryBuilderAggregateColumnState } from '../../../stores/fetch-structure/tds/aggregation/QueryBuilderAggregationState.js';
+import { QueryBuilderWindowColumnState } from '../../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
 import type { QueryBuilderFilterOperator } from '../../../stores/filter/QueryBuilderFilterOperator.js';
 import {
   QueryBuilderFilterOperator_Equal,
@@ -212,7 +214,9 @@ const getExistingPostFilterNode = (
     .filter(
       (node) =>
         node.condition.leftConditionValue instanceof
-        QueryBuilderProjectionColumnState,
+          QueryBuilderProjectionColumnState ||
+        node.condition.leftConditionValue instanceof
+          QueryBuilderWindowColumnState,
     )
     .filter(
       (node) =>
@@ -306,13 +310,13 @@ const generateNewPostFilterConditionNodeData = async (
   let postFilterConditionState: PostFilterConditionState;
   try {
     const possibleProjectionColumnState = _cellData.columnName
-      ? tdsState.projectionColumns
+      ? (tdsState.projectionColumns
           .filter((c) => c.columnName === _cellData.columnName)
           .concat(
             tdsState.aggregationState.columns
               .filter((c) => c.columnName === _cellData.columnName)
               .map((ag) => ag.projectionColumnState),
-          )[0]
+          )[0] ?? tdsColState)
       : tdsColState;
 
     if (possibleProjectionColumnState) {
@@ -676,6 +680,8 @@ const filterByOrOutValue = async (
   if (
     tdsColState instanceof QueryBuilderDerivationProjectionColumnState ||
     tdsColState instanceof QueryBuilderAggregateColumnState ||
+    tdsColState instanceof QueryBuilderWindowColumnState ||
+    tdsColState instanceof QueryBuilderRelationColumnProjectionColumnState ||
     (tdsColState instanceof QueryBuilderSimpleProjectionColumnState &&
       isCollectionProperty(
         tdsColState.propertyExpressionState.propertyExpression,

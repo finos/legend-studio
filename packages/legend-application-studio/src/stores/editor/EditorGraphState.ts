@@ -95,6 +95,7 @@ import {
   DataProduct,
   IngestDefinition,
   MemSQLFunction,
+  Availability,
 } from '@finos/legend-graph';
 import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-editor-state/ProjectConfigurationEditorState.js';
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
@@ -881,6 +882,8 @@ export class EditorGraphState {
       return PACKAGEABLE_ELEMENT_TYPE._COMPUTE;
     } else if (element instanceof IngestDefinition) {
       return PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION;
+    } else if (element instanceof Availability) {
+      return PACKAGEABLE_ELEMENT_TYPE.AVAILABILITY;
     } else if (element instanceof MemSQLFunction) {
       return PACKAGEABLE_ELEMENT_TYPE.MEM_SQL_FUNCTION;
     }

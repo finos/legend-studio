@@ -87,6 +87,8 @@ import { observe_Compute } from './ComputeObserveHelper.js';
 import type { IngestDefinition } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import type { MemSQLFunction } from '../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 import { observe_IngestDefinition } from './IngestObserveHelper.js';
+import type { Availability } from '../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import { observe_Availability } from './AvailabilityObserveHelper.js';
 
 class PackageableElementObserver implements PackageableElementVisitor<void> {
   observerContext: ObserverContext;
@@ -233,6 +235,10 @@ class PackageableElementObserver implements PackageableElementVisitor<void> {
 
   visit_IngestDefinition(element: IngestDefinition): void {
     observe_IngestDefinition(element, this.observerContext);
+  }
+
+  visit_Availability(element: Availability): void {
+    observe_Availability(element);
   }
 }
 

@@ -56,14 +56,19 @@ export enum RecommendationSource {
   MARKETPLACE = 'marketplace',
 }
 
+export const VENDOR_PROFILE_CATEGORY = 'vendor profile';
+
+export const isVendorProfileCategory = (category: string): boolean =>
+  category.toLowerCase() === VENDOR_PROFILE_CATEGORY;
+
 export class TerminalResult {
   id!: number;
   category!: string;
   providerName!: string;
   productName!: string;
-  description!: string;
+  description?: string;
   price!: number;
-  phystr!: string;
+  phystr?: string;
   model!: string | null;
   isMandatory?: boolean;
   skipWorkflow?: boolean;
@@ -78,21 +83,21 @@ export class TerminalResult {
       category: primitive(),
       providerName: primitive(),
       productName: primitive(),
-      description: primitive(),
+      description: optional(primitive()),
       price: primitive(),
-      phystr: primitive(),
+      phystr: optional(primitive()),
       model: primitive(),
       isMandatory: optional(primitive()),
       skipWorkflow: optional(primitive()),
-      isOwned: primitive(),
-      vendorProfileId: primitive(),
+      isOwned: optional(primitive()),
+      vendorProfileId: optional(primitive()),
       permissionId: optional(primitive()),
       source: optional(primitive()),
     }),
   );
 
   get terminalItemType(): TerminalItemType {
-    return this.category.toLowerCase() === 'vendor profile'
+    return isVendorProfileCategory(this.category)
       ? TerminalItemType.TERMINAL
       : TerminalItemType.ADD_ON;
   }
@@ -137,7 +142,7 @@ export class TraderProfileItem {
   );
 
   get isTerminal(): boolean {
-    return this.category.toLowerCase() === 'vendor profile';
+    return isVendorProfileCategory(this.category);
   }
 }
 
@@ -174,4 +179,6 @@ export interface TerminalServicesResponse {
   service_pricing_total_count?: number;
   order_profile_total_count?: number;
   total_count?: number;
+  ownedPermissions?: PlainObject<TerminalResult>[];
+  ownedPermissionsCount?: number;
 }

@@ -63,6 +63,8 @@ import { V1_checkDuplicatedElement } from './V1_ElementBuilder.js';
 import type { Package } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Package.js';
 import type { V1_DataElement } from '../../../model/packageableElements/data/V1_DataElement.js';
 import { DataElement } from '../../../../../../../graph/metamodel/pure/packageableElements/data/DataElement.js';
+import { Availability } from '../../../../../../../graph/metamodel/pure/packageableElements/availability/Availability.js';
+import type { V1_Availability } from '../../../model/packageableElements/availability/V1_Availability.js';
 import { V1_buildFunctionSignature } from '../../../helpers/V1_DomainHelper.js';
 import { Multiplicity } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { PrimitiveType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
@@ -126,6 +128,31 @@ export class V1_ElementFirstPassBuilder
         this.packageCache,
         this.elementPathCache,
       );
+  }
+
+  visit_Availability(element: V1_Availability): PackageableElement {
+    assertNonEmptyString(
+      element.package,
+      `Element 'package' field is missing or empty`,
+    );
+    assertNonEmptyString(
+      element.name,
+      `Element 'name' field is missing or empty`,
+    );
+    const metamodel = new Availability(element.name);
+    const path = V1_buildFullPath(element.package, element.name);
+    V1_checkDuplicatedElement(path, this.context, this.elementPathCache);
+    addElementToPackage(
+      getOrCreateGraphPackage(
+        this.context.currentSubGraph,
+        element.package,
+        this.packageCache,
+      ),
+      metamodel,
+    );
+    metamodel.content = element.content;
+    this.context.currentSubGraph.setOwnAvailability(path, metamodel);
+    return metamodel;
   }
 
   visit_INTERNAL__UnknownElement(

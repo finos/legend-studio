@@ -19,6 +19,8 @@
   &__action-group {
     @include flexVCenter;
 
+    cursor: pointer;
+
     &__btn {
       align-self: flex-start;
       padding-top: 0.2rem;

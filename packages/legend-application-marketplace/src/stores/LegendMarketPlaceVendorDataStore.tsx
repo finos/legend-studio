@@ -56,6 +56,7 @@ export class LegendMarketPlaceVendorDataStore {
   traderProfileProviders: TraderProfile[] = [];
   providers: TerminalResult[] = [];
   traderProfileAllProviders: TraderProfile[] = [];
+  ownedPermissions: TerminalResult[] = [];
 
   page = 1;
   itemsPerPage = 24;
@@ -63,6 +64,7 @@ export class LegendMarketPlaceVendorDataStore {
   totalAddOnItems = 0;
   totalTraderProfileItems = 0;
   totalItems = 0;
+  totalOwnedPermissions = 0;
 
   searchTerm = '';
 
@@ -81,12 +83,14 @@ export class LegendMarketPlaceVendorDataStore {
       traderProfileProviders: observable,
       providers: observable,
       traderProfileAllProviders: observable,
+      ownedPermissions: observable,
       page: observable,
       itemsPerPage: observable,
       totalTerminalItems: observable,
       totalAddOnItems: observable,
       totalTraderProfileItems: observable,
       totalItems: observable,
+      totalOwnedPermissions: observable,
       searchTerm: observable,
       providerDisplayState: observable,
       providersFilters: observable,
@@ -210,12 +214,27 @@ export class LegendMarketPlaceVendorDataStore {
         const response = (yield this.marketplaceServerClient.fetchProducts(
           params,
         )) as TerminalServicesResponse;
+        const terminalLicenseResponse = response as TerminalServicesResponse & {
+          ownedPermissions?: unknown[];
+          ownedPermissionsCount?: number;
+        };
 
         this.providers = (response.vendor_profiles ?? []).map((json) =>
           TerminalResult.serialization.fromJson(json),
         );
 
+        this.ownedPermissions = (
+          terminalLicenseResponse.ownedPermissions ?? []
+        ).map((json: unknown) =>
+          TerminalResult.serialization.fromJson(
+            json as Record<string, unknown>,
+          ),
+        );
+
         this.totalItems = response.total_count ?? 0;
+        this.totalOwnedPermissions =
+          terminalLicenseResponse.ownedPermissionsCount ??
+          this.ownedPermissions.length;
       } else if (this.providerDisplayState === VendorDataProviderType.ADD_ONS) {
         const params: FetchProductsParams = {
           kerberos: this.selectedUser.id,

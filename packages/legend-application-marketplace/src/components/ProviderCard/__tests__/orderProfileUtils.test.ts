@@ -417,4 +417,34 @@ describe('groupOrderProfileItems', () => {
     expect(result[1]?.item).toBe(addOn2);
     expect(result[1]?.isSubItem).toBe(false);
   });
+
+  test('same add-on id under two different terminal models both appear as separate sub-items', () => {
+    // Regression: the old Set<number> dedup keyed on addon.id would drop the
+    // second occurrence of product id 225248836 when it appeared under a second
+    // terminal model.  The composite key `${id}-${model}` makes each
+    // (id, model) pair unique so both rows are emitted.
+    const tIA = makeTerminal(476, 2000, 'Internal Application');
+    const tLAB = makeTerminal(1340, 2000, 'Internal Application (LAB)');
+    const addOnIA = makeAddOn(225248836, 0, 'Internal Application');
+    const addOnLAB = makeAddOn(225248836, 0, 'Internal Application (LAB)');
+
+    const result = groupOrderProfileItems([tIA, tLAB, addOnIA, addOnLAB]);
+
+    // 4 rows total — no row dropped.
+    expect(result).toHaveLength(4);
+
+    // Both add-ons appear as sub-items.
+    const addOnEntries = result.filter((r) => r.item.id === 225248836);
+    expect(addOnEntries).toHaveLength(2);
+    expect(addOnEntries.every((r) => r.isSubItem)).toBe(true);
+
+    // Each add-on is grouped under its own terminal.
+    const iaIndex = result.findIndex((r) => r.item === tIA);
+    const labIndex = result.findIndex((r) => r.item === tLAB);
+    const addOnIAIndex = result.findIndex((r) => r.item === addOnIA);
+    const addOnLABIndex = result.findIndex((r) => r.item === addOnLAB);
+    expect(addOnIAIndex).toBeGreaterThan(iaIndex);
+    expect(addOnIAIndex).toBeLessThan(labIndex);
+    expect(addOnLABIndex).toBeGreaterThan(labIndex);
+  });
 });
