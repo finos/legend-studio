@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { describe, test, expect, beforeEach, jest } from '@jest/globals';
+import { describe, test, expect, beforeEach, type jest } from '@jest/globals';
 import { unitTest, createSpy } from '@finos/legend-shared/test';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import { MarketplaceServerClient } from '../MarketplaceServerClient.js';
