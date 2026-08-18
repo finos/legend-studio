@@ -42,6 +42,7 @@ import {
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
 import {
   type DataQualityExecutionContext,
+  type DataQualityPersistenceStrategy,
   type DataQualityRelationValidation,
   type DataQualityRelationValidationConfiguration,
   type DataQualityClassValidationsConfiguration,
@@ -53,6 +54,7 @@ import {
 } from '../../../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
 import {
   type V1_DataQualityExecutionContext,
+  type V1_DataQualityPersistenceStrategy,
   type V1_ReconStrategy,
   V1_DataQualityClassValidationsConfiguration,
   V1_DataQualityRelationValidation,
@@ -63,6 +65,7 @@ import {
   V1_DataQualityRelationComparisonConfiguration,
   V1_MD5HashStrategy,
 } from '../V1_DataQualityValidationConfiguration.js';
+import type { DSL_DataQuality_PureProtocolProcessorPlugin_Extension } from '../../extensions/DSL_DataQuality_PureProtocolProcessorPlugin_Extension.js';
 import { DATA_SPACE_ELEMENT_POINTER } from '@finos/legend-extension-dsl-data-space/graph';
 
 export function V1_transformDataQualityGraphFetchTree(
@@ -228,7 +231,35 @@ export function V1_transformDataQualityRelationValidationConfiguration(
         new V1_RawValueSpecificationTransformer(context),
       ) as V1_RawVariable,
   );
+  protocol.persistenceStrategy = metamodel.persistenceStrategy
+    ? V1_transformDataQualityPersistenceStrategy(
+        metamodel.persistenceStrategy,
+        context,
+      )
+    : undefined;
   return protocol;
+}
+
+export function V1_transformDataQualityPersistenceStrategy(
+  metamodel: DataQualityPersistenceStrategy,
+  context: V1_GraphTransformerContext,
+): V1_DataQualityPersistenceStrategy {
+  const extraTransformers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_DataQuality_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraDataQualityPersistenceStrategyTransformers?.() ?? [],
+  );
+  for (const transformer of extraTransformers) {
+    const protocol = transformer(metamodel, context);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't transform data quality persistence strategy: no compatible transformer available from plugins`,
+    metamodel,
+  );
 }
 
 function V1_transformReconStrategy(value: ReconStrategy): V1_ReconStrategy {

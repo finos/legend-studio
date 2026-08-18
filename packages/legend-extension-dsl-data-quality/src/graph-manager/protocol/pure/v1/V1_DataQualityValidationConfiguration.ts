@@ -148,6 +148,7 @@ export class V1_DataQualityRelationValidationsConfiguration
   query!: V1_DataQualityRelationQueryLambda;
   validations: V1_DataQualityRelationValidation[] = [];
   runtime?: V1_PackageableElementPointer | undefined;
+  persistenceStrategy?: V1_DataQualityPersistenceStrategy | undefined;
   taggedValues: V1_TaggedValue[] = [];
   stereotypes: V1_StereotypePtr[] = [];
 
@@ -156,6 +157,7 @@ export class V1_DataQualityRelationValidationsConfiguration
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
       this.query,
       hashArray(this.validations),
+      this.persistenceStrategy ?? '',
     ]);
   }
 
@@ -164,6 +166,10 @@ export class V1_DataQualityRelationValidationsConfiguration
   ): T {
     return visitor.visit_PackageableElement(this);
   }
+}
+
+export abstract class V1_DataQualityPersistenceStrategy implements Hashable {
+  abstract get hashCode(): string;
 }
 
 export abstract class V1_ReconStrategy implements Hashable {

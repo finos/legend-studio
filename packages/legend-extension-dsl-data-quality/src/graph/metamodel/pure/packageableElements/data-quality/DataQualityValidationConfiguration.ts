@@ -192,12 +192,14 @@ export class DataQualityRelationValidationConfiguration
   query!: DataQualityRelationQueryLambda;
   validations: DataQualityRelationValidation[] = [];
   runtime?: PackageableElementReference<PackageableRuntime> | undefined;
+  persistenceStrategy?: DataQualityPersistenceStrategy | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
       DATA_QUALITY_HASH_STRUCTURE.DATA_QUALITY_RELATION_VALIDATION_CONFIGURATION,
       this.query,
       hashArray(this.validations),
+      this.persistenceStrategy ?? '',
     ]);
   }
 
@@ -206,6 +208,10 @@ export class DataQualityRelationValidationConfiguration
   ): T {
     return visitor.visit_PackageableElement(this);
   }
+}
+
+export abstract class DataQualityPersistenceStrategy implements Hashable {
+  abstract get hashCode(): string;
 }
 
 export abstract class ReconStrategy implements Hashable {
