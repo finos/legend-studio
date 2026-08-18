@@ -28,6 +28,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import {
   type PlainObject,
@@ -2574,7 +2575,7 @@ describe('DataProductViewer', () => {
       screen.getByRole('button', { name: 'System Account' });
     });
 
-    test('On enterprise APG, Request Access for Others button opens create contract modal for only system account', async () => {
+    test('On enterprise APG, Request Access for Others button opens create contract modal with system account and user', async () => {
       await setupLakehouseDataProductTest(
         mockEnterpriseDataProduct,
         mockEntitlementsEnterpriseDataProduct,
@@ -2593,10 +2594,7 @@ describe('DataProductViewer', () => {
 
       await screen.findByText('Data Contract Request');
       await screen.findByRole('button', { name: 'System Account' });
-      expect(screen.queryByRole('button', { name: 'User' })).toBeNull();
-      screen.getByText(
-        'Note: Enterprise APGs only require contracts for System Accounts. Regular users do not need to request access.',
-      );
+      await screen.findByRole('button', { name: 'User' });
     });
 
     test('displays disabled UNKNOWN button when no DataProductDataAccessState is provided', async () => {
@@ -2731,6 +2729,148 @@ describe('DataProductViewer', () => {
       await waitFor(() => {
         expect(getSubscriptionsForContractSpy).toHaveBeenCalledTimes(1);
       });
+    });
+
+    test("Create New Subscription contract field lists every approved contract for the group, not just the current user's, and supports search", async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 11111,
+          accessPointGroup: 'GROUP1',
+        },
+        {
+          description: 'Other team contract',
+          guid: 'test-other-user-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'other-team-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'other-team-user-id',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 11111,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProduct,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+        );
+
+      createSpy(
+        guaranteeNonNullable(dataProductDataAccessState)
+          .lakehouseContractServerClient,
+        'getSubscriptionsForContract',
+      ).mockResolvedValue([]);
+
+      await screen.findByText('Main Group Test');
+      fireEvent.click(await screen.findByTitle('More options'));
+      fireEvent.click(await screen.findByText('Manage Subscriptions'));
+      await screen.findByText('Data Product Subscriptions');
+
+      const createButton = await screen.findByRole('button', {
+        name: 'Create New Subscription',
+      });
+      fireEvent.click(createButton);
+
+      const contractSelectTrigger = await waitFor(() =>
+        guaranteeNonNullable(document.getElementById('contract-select')),
+      );
+      fireEvent.mouseDown(contractSelectTrigger);
+
+      const listbox = await screen.findByRole('listbox');
+
+      // Both the current user's contract and another user's contract for the
+      // same access point group should be listed -- not just the current
+      // user's, and not requiring a second, separate API call. Scoped to the
+      // listbox since the closed field's own (persistent) value display also
+      // contains the currently-selected contract's text.
+      await within(listbox).findByText(/Test approved contract/);
+      within(listbox).getByText(/Other team contract/);
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search by user, description, or creator',
+      );
+
+      // Narrowing the search should filter out non-matching contracts.
+      fireEvent.change(searchInput, { target: { value: 'other-team' } });
+      await waitFor(() => {
+        expect(
+          within(listbox).queryByText(/Test approved contract/),
+        ).toBeNull();
+      });
+      within(listbox).getByText(/Other team contract/);
+
+      // Regression: typing progressively longer search terms must not cause
+      // the field to lose focus (MUI's Select/MenuList re-asserting focus
+      // onto the -- now narrower -- option list after each keystroke).
+      fireEvent.change(searchInput, { target: { value: 'o' } });
+      expect(document.activeElement).toBe(searchInput);
+      fireEvent.change(searchInput, { target: { value: 'ot' } });
+      expect(document.activeElement).toBe(searchInput);
+      fireEvent.change(searchInput, { target: { value: 'oth' } });
+      expect(document.activeElement).toBe(searchInput);
     });
   });
 

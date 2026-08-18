@@ -326,4 +326,65 @@ describe('OrderProfileDetailModal', () => {
     expect(screen.getByText('Terminal A')).toBeDefined();
     expect(screen.getByText('Add-On X')).toBeDefined();
   });
+
+  test('renders all rows when same add-on id appears under two different terminal models', () => {
+    // Regression: composite key `${id}-${model}` in groupOrderProfileItems must
+    // prevent deduplication of the same product id under distinct models.
+    const tIA = makeTerminal(476, 'Terminal IA', 200, false, 'Model A');
+    const tLAB = makeTerminal(1340, 'Terminal LAB', 200, false, 'Model B');
+    const addOnIA = makeAddOn(225248836, 'ECOMMODNY', 0, false, 'Model A');
+    const addOnLAB = makeAddOn(225248836, 'ECOMMODNY', 0, false, 'Model B');
+    const profile = makeProfile([tIA, tLAB, addOnIA, addOnLAB]);
+    render(
+      <OrderProfileDetailModal
+        profile={profile}
+        open={true}
+        onClose={jest.fn()}
+      />,
+    );
+    // Both terminal rows and both ECOMMODNY rows must appear — 4 occurrences of
+    // product names in the table.
+    const ecommodnyRows = screen.getAllByText('ECOMMODNY');
+    expect(ecommodnyRows.length).toBe(2);
+    expect(screen.getByText('Terminal IA')).toBeDefined();
+    expect(screen.getByText('Terminal LAB')).toBeDefined();
+  });
+
+  test('In Cart badge is model-aware: shows for matching model only', () => {
+    // Add-on id=2 in cart for Model A must show "(In Cart)" only for the
+    // Model A row, not for the same add-on id under Model B.
+    const tA = makeTerminal(1, 'Terminal A', 200, false, 'Model A');
+    const tB = makeTerminal(3, 'Terminal B', 200, false, 'Model B');
+    const addOnA = makeAddOn(2, 'Add-On X', 50, false, 'Model A');
+    const addOnB = makeAddOn(2, 'Add-On X', 50, false, 'Model B');
+    const profile = makeProfile([tA, tB, addOnA, addOnB]);
+
+    // Only the Model A add-on entry in cart (cart key = item id with model).
+    MOCK__baseStore.cartStore.items[99] = [
+      {
+        cartId: 1,
+        id: 2,
+        productName: 'Add-On X',
+        providerName: 'Test Provider',
+        category: 'Market Data',
+        price: 50,
+        description: '',
+        isOwned: 'false',
+        model: 'Model A',
+        skipWorkflow: false,
+      },
+    ];
+
+    render(
+      <OrderProfileDetailModal
+        profile={profile}
+        open={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    // Exactly one "(In Cart)" badge should appear — for the Model A add-on.
+    const inCartBadges = screen.getAllByText('(In Cart)');
+    expect(inCartBadges.length).toBe(1);
+  });
 });

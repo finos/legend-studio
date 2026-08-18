@@ -45,6 +45,7 @@ import type { V1_DataProduct } from './dataProduct/V1_DataProduct.js';
 import type { V1_IngestDefinition } from './ingest/V1_IngestDefinition.js';
 import type { V1_MemSQLFunction } from './function/V1_MemSQLFunction.js';
 import type { V1_Compute } from './compute/V1_Compute.js';
+import type { V1_Availability } from './availability/V1_Availability.js';
 
 export interface V1_PackageableElementVisitor<T> {
   visit_PackageableElement(element: V1_PackageableElement): T;
@@ -86,6 +87,7 @@ export interface V1_PackageableElementVisitor<T> {
   visit_DataProduct(element: V1_DataProduct): T;
   visit_IngestDefinition(element: V1_IngestDefinition): T;
   visit_Compute(element: V1_Compute): T;
+  visit_Availability(element: V1_Availability): T;
 }
 
 export abstract class V1_PackageableElement implements Hashable {

@@ -39,6 +39,7 @@ import {
   DataProduct,
   IngestDefinition,
   MemSQLFunction,
+  Availability,
 } from '@finos/legend-graph';
 import {
   type Clazz,
@@ -73,6 +74,7 @@ import { MemSQLFunctionActivatorEditorState } from './editor-state/element-edito
 import { ArtifactGenerationViewerState } from './editor-state/ArtifactGenerationViewerState.js';
 import { DataProductEditorState } from './editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import { IngestDefinitionEditorState } from './editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
+import { AvailabilityEditorState } from './editor-state/element-editor-state/availability/AvailabilityEditorState.js';
 import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 
 export class EditorTabManagerState extends TabManagerState {
@@ -186,6 +188,8 @@ export class EditorTabManagerState extends TabManagerState {
       return new ServiceEditorState(this.editorStore, element);
     } else if (element instanceof DataProduct) {
       return new DataProductEditorState(this.editorStore, element, config);
+    } else if (element instanceof Availability) {
+      return new AvailabilityEditorState(this.editorStore, element);
     } else if (element instanceof GenerationSpecification) {
       return new GenerationSpecificationEditorState(this.editorStore, element);
     } else if (element instanceof FileGenerationSpecification) {

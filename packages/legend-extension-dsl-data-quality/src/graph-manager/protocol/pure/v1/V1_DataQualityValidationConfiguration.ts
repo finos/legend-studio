@@ -203,7 +203,7 @@ export class V1_DataQualityRelationComparisonConfiguration
       this.target,
       hashArray(this.keys),
       hashArray(this.columnsToCompare),
-      this.expectedMatch,
+      String(this.expectedMatch ?? ''),
       this.strategy,
     ]);
   }
