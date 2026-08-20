@@ -15,6 +15,17 @@
  */
 
 export * from './DSL_DataQuality_GraphManagerPreset.js';
-export * from './protocol/pure/v1/transformation/V1_DSL_DataQuality_ValueSpecificationBuilderHelper.js';
-export * from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
-export * from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';
+export * from './extensions/DSL_DataQuality_PureGraphManagerPlugin_Extension.js';
+export * from './protocol/pure/extensions/DSL_DataQuality_PureProtocolProcessorPlugin_Extension.js';
+export { V1_DataQualityPersistenceStrategy } from './protocol/pure/v1/V1_DataQualityValidationConfiguration.js';
+export {
+  DataQualityValidationConfiguration,
+  DataQualityClassValidationsConfiguration,
+  DataQualityRelationValidationConfiguration,
+  DataQualityRelationComparisonConfiguration,
+  DataQualityRelationValidation,
+  DataQualityRelationQueryLambda,
+  DataQualityPersistenceStrategy,
+  ReconStrategy,
+  MD5HashStrategy,
+} from '../graph/metamodel/pure/packageableElements/data-quality/DataQualityValidationConfiguration.js';

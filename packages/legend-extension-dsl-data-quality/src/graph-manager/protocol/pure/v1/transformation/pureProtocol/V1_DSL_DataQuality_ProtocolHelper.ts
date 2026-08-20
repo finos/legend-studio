@@ -28,6 +28,7 @@ import {
 } from 'serializr';
 import {
   type V1_DataQualityExecutionContext,
+  type V1_DataQualityPersistenceStrategy,
   type V1_ReconStrategy,
   V1_DataQualityClassValidationsConfiguration,
   V1_DataQualityServiceValidationsConfiguration,
@@ -58,6 +59,7 @@ import {
   V1_RawValueSpecificationType,
   V1_rawVariableModelSchema,
 } from '@finos/legend-graph';
+import type { DSL_DataQuality_PureProtocolProcessorPlugin_Extension } from '../../../extensions/DSL_DataQuality_PureProtocolProcessorPlugin_Extension.js';
 
 export const V1_DATA_QUALITY_PROTOCOL_TYPE = 'dataQualityValidation';
 export const V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE =
@@ -193,6 +195,10 @@ const V1_dataQualityRelationValidationModelSchema = (
     _type: usingConstantValueSchema(V1_DATA_QUALITY_RELATION_PROTOCOL_TYPE),
     name: primitive(),
     package: primitive(),
+    persistenceStrategy: optionalCustom(
+      (val) => V1_serializeDataQualityPersistenceStrategy(val, plugins),
+      (val) => V1_deserializeDataQualityPersistenceStrategy(val, plugins),
+    ),
     query: usingModelSchema(V1_rawLambdaModelSchemaParameters),
     runtime: optionalCustom(
       (val) => serialize(V1_packageableElementPointerModelSchema, val),
@@ -322,3 +328,47 @@ export const V1_deserializeDataQualityRelationComparison = (
   plugins: PureProtocolProcessorPlugin[],
 ): V1_DataQualityRelationComparisonConfiguration =>
   deserialize(V1_dataQualityRelationComparisonModelSchema(plugins), json);
+
+export function V1_serializeDataQualityPersistenceStrategy(
+  protocol: V1_DataQualityPersistenceStrategy,
+  plugins: PureProtocolProcessorPlugin[],
+): PlainObject<V1_DataQualityPersistenceStrategy> {
+  const extraSerializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_DataQuality_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraDataQualityPersistenceStrategyProtocolSerializers?.() ?? [],
+  );
+  for (const serializer of extraSerializers) {
+    const json = serializer(protocol);
+    if (json) {
+      return json;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't serialize data quality persistence strategy: no compatible serializer available from plugins`,
+    protocol,
+  );
+}
+
+export function V1_deserializeDataQualityPersistenceStrategy(
+  json: PlainObject<V1_DataQualityPersistenceStrategy>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DataQualityPersistenceStrategy {
+  const extraDeserializers = plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_DataQuality_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraDataQualityPersistenceStrategyProtocolDeserializers?.() ??
+      [],
+  );
+  for (const deserializer of extraDeserializers) {
+    const protocol = deserializer(json);
+    if (protocol) {
+      return protocol;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't deserialize data quality persistence strategy of type '${json._type}': no compatible deserializer available from plugins`,
+  );
+}
