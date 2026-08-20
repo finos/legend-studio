@@ -1282,15 +1282,9 @@ const ColumnsScreen = observer(
       const dataProductArtifactPromise =
         accessPointState.apgState.dataProductViewerState
           .dataProductArtifactPromise;
-      const entitlementsDataProductDetails =
-        accessPointState.apgState.dataProductViewerState
-          .entitlementsDataProductDetails;
       if (accessPointState.fetchingRelationTypeState.isInInitialState) {
         accessPointState
-          .fetchRelationType(
-            dataProductArtifactPromise,
-            entitlementsDataProductDetails,
-          )
+          .fetchRelationType(dataProductArtifactPromise)
           .catch((error: Error) =>
             accessPointState.apgState.applicationStore.notificationService.notifyError(
               error,
