@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import type { Page, Route } from '@playwright/test';
+import { inflateSync } from 'node:zlib';
+import type { Page, Request, Route } from '@playwright/test';
 import {
   TEST_DATA__ClassifierPathMap,
   TEST_DATA__CurrentUser,
@@ -43,11 +44,62 @@ const CORS_HEADERS = {
 const fulfillJson = (route: Route, json: unknown): Promise<void> =>
   route.fulfill({ json, headers: { ...CORS_HEADERS } });
 
+const fulfillText = (route: Route, body: string): Promise<void> =>
+  route.fulfill({
+    body,
+    contentType: 'text/plain',
+    headers: { ...CORS_HEADERS },
+  });
+
+/**
+ * The app zlib-deflates request payloads to some engine endpoints (see
+ * `compressData` in `@finos/legend-shared` network utils) — inflate when
+ * needed to read them.
+ */
+const getRequestBody = (request: Request): string => {
+  const buffer = request.postDataBuffer();
+  if (!buffer) {
+    return '';
+  }
+  try {
+    return inflateSync(buffer).toString('utf-8');
+  } catch {
+    // not compressed
+    return buffer.toString('utf-8');
+  }
+};
+
+/**
+ * Payloads the app sent to the engine during a test, recorded so specs can
+ * assert on what the query builder actually produced (see
+ * `QueryBuilderProtocol.spec.ts`). The object is mutated in place, so a spec
+ * reads it after driving the UI.
+ */
+export interface CapturedEngineRequests {
+  /** `V1_ExecuteInput` bodies posted to the execute endpoint, in order. */
+  executeInputs: Record<string, unknown>[];
+  /** Lambda protocol JSON posted to `jsonToGrammar/lambda`, in order. */
+  lambdas: Record<string, unknown>[];
+}
+
 /**
  * Intercept Legend Engine calls at the browser level and serve mock
  * responses, so tests are deterministic and require no engine backend.
+ * Returns the payloads the app sent, for specs that assert on them.
+ *
+ * The mock is stateful per test page to support the save/load round-trip:
+ * - created queries are stored in-memory and served back by id
+ * - lambda protocol JSON sent to `jsonToGrammar/lambda` (on save) is stored
+ *   against a generated placeholder "grammar" string, and served back as
+ *   JSON when `grammarToJson/lambda` is later called with that placeholder
+ *   (on load) — so the app's own serialization round-trips without the mock
+ *   needing a real Pure grammar parser.
  */
-export const setupEngineMock = async (page: Page): Promise<void> => {
+export const setupEngineMock = async (
+  page: Page,
+): Promise<CapturedEngineRequests> => {
+  const captured: CapturedEngineRequests = { executeInputs: [], lambdas: [] };
+
   // reroute the app's engine URL to the dead mock port
   await page.route(/\/query\/config\.json$/, async (route) => {
     const response = await route.fetch();
@@ -56,6 +108,11 @@ export const setupEngineMock = async (page: Page): Promise<void> => {
     await route.fulfill({ json: config });
   });
 
+  // per-page state for the save/load round-trip
+  const savedQueries = new Map<string, { id: string }>();
+  const savedLambdas = new Map<string, string>();
+  let lambdaCounter = 0;
+
   const engineApiUrlPattern = new RegExp(
     `:${MOCK_ENGINE_PORT}/api/(?<endpoint>.*)$`,
   );
@@ -63,6 +120,8 @@ export const setupEngineMock = async (page: Page): Promise<void> => {
     const request = route.request();
     const endpoint =
       engineApiUrlPattern.exec(request.url())?.groups?.endpoint ?? '';
+    // strip query parameters (e.g. `?renderStyle=PRETTY`)
+    const path = endpoint.split('?')[0] ?? '';
 
     // CORS preflight
     if (request.method() === 'OPTIONS') {
@@ -70,7 +129,7 @@ export const setupEngineMock = async (page: Page): Promise<void> => {
       return;
     }
 
-    switch (endpoint) {
+    switch (path) {
       case 'server/v1/currentUser':
         await fulfillJson(route, TEST_DATA__CurrentUser);
         return;
@@ -84,15 +143,62 @@ export const setupEngineMock = async (page: Page): Promise<void> => {
         await fulfillJson(route, TEST_DATA__LightQueries);
         return;
       case 'pure/v1/execution/execute':
+        captured.executeInputs.push(
+          JSON.parse(getRequestBody(request)) as Record<string, unknown>,
+        );
         await fulfillJson(route, TEST_DATA__ExecutionResult);
         return;
+      // lambda protocol JSON -> Pure grammar text (called when saving)
+      case 'pure/v1/grammar/jsonToGrammar/lambda': {
+        const lambdaJson = getRequestBody(request);
+        captured.lambdas.push(
+          JSON.parse(lambdaJson) as Record<string, unknown>,
+        );
+        const placeholder = `e2e_mock_lambda_${(lambdaCounter += 1)}`;
+        savedLambdas.set(placeholder, lambdaJson);
+        await fulfillText(route, placeholder);
+        return;
+      }
+      // Pure grammar text -> lambda protocol JSON (called when loading)
+      case 'pure/v1/grammar/grammarToJson/lambda': {
+        const grammarText = getRequestBody(request);
+        const lambdaJson = savedLambdas.get(grammarText);
+        if (lambdaJson !== undefined) {
+          await fulfillJson(route, JSON.parse(lambdaJson));
+          return;
+        }
+        break;
+      }
       default:
         break;
     }
     // recently-viewed queries, potentially with query params
-    if (endpoint.startsWith('pure/v1/query/batch')) {
+    if (path.startsWith('pure/v1/query/batch')) {
       await fulfillJson(route, []);
       return;
+    }
+    // query CRUD (save/load round-trip)
+    if (path === 'pure/v1/query' && request.method() === 'POST') {
+      const query = JSON.parse(request.postData() ?? '{}') as { id: string };
+      savedQueries.set(query.id, query);
+      await fulfillJson(route, query);
+      return;
+    }
+    if (path.startsWith('pure/v1/query/')) {
+      const queryId = path.substring('pure/v1/query/'.length);
+      const query = savedQueries.get(queryId);
+      if (request.method() === 'GET' && query) {
+        await fulfillJson(route, query);
+        return;
+      }
+      if (request.method() === 'PUT') {
+        const updated = JSON.parse(request.postData() ?? '{}') as {
+          id: string;
+        };
+        savedQueries.set(queryId, updated);
+        await fulfillJson(route, updated);
+        return;
+      }
     }
 
     // Fail loudly on unmocked engine endpoints so missing mocks surface
@@ -106,4 +212,6 @@ export const setupEngineMock = async (page: Page): Promise<void> => {
       },
     });
   });
+
+  return captured;
 };
