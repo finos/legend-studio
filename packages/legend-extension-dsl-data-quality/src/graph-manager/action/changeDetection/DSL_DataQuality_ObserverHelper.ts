@@ -27,6 +27,7 @@ import {
 import { computed, makeObservable, observable, override } from 'mobx';
 import {
   type DataQualityClassValidationsConfiguration,
+  type DataQualityPersistenceStrategy,
   type DataQualityServiceValidationConfiguration,
   type DataQualityRelationValidation,
   type DataQualityRelationValidationConfiguration,
@@ -42,6 +43,7 @@ import {
   type DataQualityRootGraphFetchTree,
   DataQualityPropertyGraphFetchTree,
 } from '../../../graph/metamodel/pure/packageableElements/data-quality/DataQualityGraphFetchTree.js';
+import type { DSL_DataQuality_PureGraphManagerPlugin_Extension } from '../../extensions/DSL_DataQuality_PureGraphManagerPlugin_Extension.js';
 
 export const observe_DataSpaceDataQualityExecutionContext = skipObserved(
   (
@@ -183,6 +185,25 @@ export const observe_DataQualityRelationQueryLambda = skipObserved(
     }),
 );
 
+export const observe_DataQualityPersistenceStrategy = (
+  metamodel: DataQualityPersistenceStrategy,
+  context: ObserverContext,
+): DataQualityPersistenceStrategy => {
+  const extraObservers = context.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_DataQuality_PureGraphManagerPlugin_Extension
+      ).getExtraDataQualityPersistenceStrategyObservers?.() ?? [],
+  );
+  for (const observer of extraObservers) {
+    const observed = observer(metamodel);
+    if (observed) {
+      return observed;
+    }
+  }
+  return metamodel;
+};
+
 export const observe_DataQualityRelationValidationConfiguration =
   skipObservedWithContext(
     (
@@ -198,11 +219,18 @@ export const observe_DataQualityRelationValidationConfiguration =
         _elementHashCode: override,
         query: observable,
         validations: observable,
+        persistenceStrategy: observable,
       });
       metamodel.validations.forEach((value) =>
         observe_DataQualityRelationValidation(value),
       );
       observe_DataQualityRelationQueryLambda(metamodel.query);
+      if (metamodel.persistenceStrategy) {
+        observe_DataQualityPersistenceStrategy(
+          metamodel.persistenceStrategy,
+          context,
+        );
+      }
       return metamodel;
     },
   );

@@ -28,6 +28,7 @@ import {
 import {
   type V1_DataQualityExecutionContext,
   type V1_DataQualityClassValidationsConfiguration,
+  type V1_DataQualityPersistenceStrategy,
   type V1_DataQualityRelationValidation,
   type V1_DataQualityRelationValidationsConfiguration,
   type V1_DataQualityServiceValidationsConfiguration,
@@ -38,6 +39,7 @@ import {
 } from '../V1_DataQualityValidationConfiguration.js';
 import {
   type DataQualityExecutionContext,
+  type DataQualityPersistenceStrategy,
   DataQualityRelationQueryLambda,
   DataQualityRelationValidation,
   DataSpaceDataQualityExecutionContext,
@@ -63,6 +65,7 @@ import {
   V1_buildFullPath,
   V1_buildVariable,
 } from '@finos/legend-graph';
+import type { DSL_DataQuality_PureProtocolProcessorPlugin_Extension } from '../../extensions/DSL_DataQuality_PureProtocolProcessorPlugin_Extension.js';
 import type { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   getOwnDataQualityClassValidationsConfiguration,
@@ -334,6 +337,34 @@ export function V1_buildDataQualityRelationValidationConfiguration(
         false,
       ) as PackageableElementImplicitReference<PackageableRuntime>)
     : undefined;
+  element.persistenceStrategy = elementProtocol.persistenceStrategy
+    ? V1_buildDataQualityPersistenceStrategy(
+        elementProtocol.persistenceStrategy,
+        context,
+      )
+    : undefined;
+}
+
+export function V1_buildDataQualityPersistenceStrategy(
+  protocol: V1_DataQualityPersistenceStrategy,
+  context: V1_GraphBuilderContext,
+): DataQualityPersistenceStrategy {
+  const extraBuilders = context.extensions.plugins.flatMap(
+    (plugin) =>
+      (
+        plugin as DSL_DataQuality_PureProtocolProcessorPlugin_Extension
+      ).V1_getExtraDataQualityPersistenceStrategyBuilders?.() ?? [],
+  );
+  for (const builder of extraBuilders) {
+    const metamodel = builder(protocol, context);
+    if (metamodel) {
+      return metamodel;
+    }
+  }
+  throw new UnsupportedOperationError(
+    `Can't build data quality persistence strategy: no compatible builder available from plugins`,
+    protocol,
+  );
 }
 
 export function V1_buildDataQualityServiceValidationConfiguration(
