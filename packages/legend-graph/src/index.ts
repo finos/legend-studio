@@ -1129,10 +1129,12 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_Defect.js';
 export { V1_CompilationError } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationError.js';
 export {
+  type V1_BatchLambdaRelationTypeResponse,
   type V1_BatchLambdaRelationTypeResult,
   type V1_LambdaReturnTypeResult,
   V1_LambdaReturnTypeInput,
   V1_BatchLambdaRelationTypeInput,
+  V1_buildBatchLambdaRelationTypeResult,
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
 export { V1_CompleteCodeInput } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompleteCodeInput.js';
 export { V1_RunTestsInput } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsInput.js';
