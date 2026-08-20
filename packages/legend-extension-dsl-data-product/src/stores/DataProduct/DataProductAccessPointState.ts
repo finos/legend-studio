@@ -20,10 +20,8 @@ import {
   type V1_EntitlementsDataProductDetails,
   LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
-  V1_LambdaReturnTypeInput,
   V1_RelationElement,
   V1_RelationType,
-  V1_relationTypeModelSchema,
   V1_RenderStyle,
   V1_serializeRawValueSpecification,
   V1_ExecuteInput,
@@ -41,7 +39,6 @@ import {
   LogEvent,
 } from '@finos/legend-shared';
 import { makeAutoObservable, observable, action, computed } from 'mobx';
-import { deserialize } from 'serializr';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
@@ -159,48 +156,18 @@ export class DataProductAccessPointState {
     }
   }
 
-  async fetchRelationTypeFromEngine(
-    abortController: AbortController,
-    entitlementsDataProductDetails?:
-      | V1_EntitlementsDataProductDetails
-      | undefined,
-  ): Promise<V1_RelationType | undefined> {
+  async fetchRelationTypeFromEngine(): Promise<V1_RelationType | undefined> {
     if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
-      const projectGAV = this.apgState.dataProductViewerState.projectGAV;
-      const entitlementsOrigin = entitlementsDataProductDetails?.origin;
-      const model = this.apgState.dataProductViewerState.getAccessPointModel(
-        projectGAV,
-        entitlementsOrigin,
-      );
-      const relationTypeInput = new V1_LambdaReturnTypeInput(
-        guaranteeNonNullable(
-          model,
-          `Unable to get model from data product origin of type ${entitlementsOrigin?.constructor.name}`,
-        ),
-        this.accessPoint.func,
-      );
-      const relationType = deserialize(
-        V1_relationTypeModelSchema,
-        await this.apgState.dataProductViewerState.engineServerClient.lambdaRelationType(
-          V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
-          {
-            abortController,
-          },
-        ),
-      );
-      return relationType;
+      const { results } =
+        await this.apgState.dataProductViewerState.batchRelationTypePromise;
+      return results.get(`${this.apgState.apg.id}::${this.accessPoint.id}`);
     }
-    throw new Error(
-      `Access point '${this.accessPoint.id}' is not a Lakehouse access point, cannot fetch relation type from engine`,
-    );
+    return undefined;
   }
 
   async fetchRelationType(
     dataProductArtifactPromise:
       | Promise<V1_DataProductArtifact | undefined>
-      | undefined,
-    entitlementsDataProductDetails?:
-      | V1_EntitlementsDataProductDetails
       | undefined,
   ): Promise<void> {
     if (!this.fetchingRelationTypeState.isInInitialState) {
@@ -208,18 +175,12 @@ export class DataProductAccessPointState {
     }
     this.fetchingRelationTypeState.inProgress();
     try {
-      const abortController = new AbortController();
       const relationType = await Promise.any([
         ...(dataProductArtifactPromise
           ? [this.fetchRelationTypeFromArtifact(dataProductArtifactPromise)]
           : []),
-        this.fetchRelationTypeFromEngine(
-          abortController,
-          entitlementsDataProductDetails,
-        ),
+        this.fetchRelationTypeFromEngine(),
       ]);
-      // Abort the engine request if we got the relation type from the artifact
-      abortController.abort();
       this.relationType = relationType;
     } catch (error) {
       assertErrorThrown(error);
