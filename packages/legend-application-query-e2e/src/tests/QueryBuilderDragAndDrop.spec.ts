@@ -16,6 +16,7 @@
 
 import { test, expect } from '@playwright/test';
 import { setupEngineMock } from '../support/EngineMock.js';
+import { TEST_DATA__EXECUTION_RESULT_ROW_COUNT } from '../support/TEST_DATA__EngineResponses.js';
 
 // Deep-link straight into the query builder for the mock data space served
 // by the mock depot server (see `@finos/legend-fixture-mock-server`)
@@ -64,10 +65,10 @@ test('build and run a query with projection columns, filter, and post-filter', a
   await expect(projectionColumns).toHaveCount(COLUMNS.length);
 
   // 2. run the query and check the result grid (the engine execute endpoint
-  // is mocked to return 2 rows, see `TEST_DATA__ExecutionResult`)
+  // is mocked, see `TEST_DATA__ExecutionResult`)
   await resultPanel.getByText('Run Query', { exact: true }).click();
   const gridRows = resultPanel.locator('.ag-center-cols-container .ag-row');
-  await expect(gridRows).toHaveCount(2);
+  await expect(gridRows).toHaveCount(TEST_DATA__EXECUTION_RESULT_ROW_COUNT);
   await expect(resultPanel.getByText('2021-04-01')).toBeVisible();
   await expect(resultPanel.getByText('2021-04-02')).toBeVisible();
 
@@ -120,5 +121,36 @@ test('build and run a query with projection columns, filter, and post-filter', a
 
   // 5. re-run with filter and post-filter in place
   await resultPanel.getByText('Run Query', { exact: true }).click();
-  await expect(gridRows).toHaveCount(2);
+  await expect(gridRows).toHaveCount(TEST_DATA__EXECUTION_RESULT_ROW_COUNT);
+
+  // 6. clean up in reverse: post-filter first (a projection column used by
+  // the post-filter cannot be removed), then filter, then each column
+  await postFilterPanel.getByTitle('Remove').click();
+  await expect(
+    postFilterPanel.getByText('Add a post-filter condition'),
+  ).toBeVisible();
+
+  await filterPanel.getByTitle('Remove').click();
+  await expect(filterPanel.getByText('Add a filter condition')).toBeVisible();
+
+  for (const column of COLUMNS) {
+    await projectionColumns
+      .filter({ has: page.getByText(column, { exact: true }) })
+      .getByTitle('Remove')
+      .click();
+  }
+  await expect(projectionColumns).toHaveCount(0);
+
+  // 7. the emptied query is now invalid: the fetch-structure panel flags
+  // 1 issue, whose hover tooltip explains the missing projection column
+  const issueBadge = page
+    .getByTestId('query__builder__fetch__structure')
+    .locator('.query-builder-panel-issue-count-badge');
+  await expect(issueBadge).toBeVisible();
+  await expect(issueBadge).toHaveText('1 issue');
+  await issueBadge.hover();
+  await expect(issueBadge).toHaveAttribute(
+    'title',
+    'Found 1 issue:\n• Query has no projection columns',
+  );
 });
