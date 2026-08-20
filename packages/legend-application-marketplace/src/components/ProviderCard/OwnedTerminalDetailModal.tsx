@@ -58,13 +58,9 @@ const CategoryChip = (props: {
   );
 };
 
-type OwnedTerminalResult = TerminalResult & {
-  items?: TerminalResult[];
-};
-
 export const OwnedTerminalDetailModal = observer(
   (props: {
-    terminal: OwnedTerminalResult;
+    terminal: TerminalResult;
     open: boolean;
     onClose: () => void;
   }): JSX.Element => {

@@ -28,7 +28,10 @@ import {
   IconButton,
   Typography,
 } from '@mui/material';
-import { type TerminalResult } from '@finos/legend-server-marketplace';
+import {
+  TerminalResult,
+  type PermissionAddonsSearchResponse,
+} from '@finos/legend-server-marketplace';
 import { InfoCircleIcon, ShoppingCartIcon } from '@finos/legend-art';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
@@ -66,7 +69,7 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
       setIsAddingToCart(true);
       try {
         const response =
-          await legendMarketplaceBaseStore.marketplaceServerClient.getPermissionAddons(
+          (await legendMarketplaceBaseStore.marketplaceServerClient.getPermissionAddons(
             legendMarketplaceBaseStore.cartStore.cartUser,
             terminalResult.providerName,
             {
@@ -76,15 +79,19 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
                 ? {}
                 : { permission_id: terminalResult.permissionId }),
             },
-          );
-        const addons = response.marketplace_addons as TerminalResult[];
+          )) as unknown as PermissionAddonsSearchResponse;
+        const addons = response.marketplace_addons.map((item) =>
+          TerminalResult.serialization.fromJson(item),
+        );
         if (addons.length > 0) {
           setRecommendedItems(addons);
           setModalMessage(
             `Services available for ${terminalResult.providerName}`,
           );
-          setModalTotalCount(response.total_count as number | null);
-          setModalPermissionId(response.permissionId as number | undefined);
+          setModalTotalCount(response.total_count);
+          setModalPermissionId(
+            response.permissionId ?? terminalResult.permissionId,
+          );
           setShowAddOnsModal(true);
         } else {
           toastManager.warning(
@@ -155,12 +162,9 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
               variant="outlined"
               className="legend-marketplace-terminal-card__add-to-cart-button"
               onClick={() => {
-                handleBrowseAddOns().catch((error) => {
-                  assertErrorThrown(error);
-                  toastManager.error(
-                    `Unexpected error while fetching services for ${terminalResult.productName}: ${error.message}`,
-                  );
-                });
+                handleBrowseAddOns().catch(
+                  applicationStore.alertUnhandledError,
+                );
               }}
               disabled={isAddingToCart}
             >
