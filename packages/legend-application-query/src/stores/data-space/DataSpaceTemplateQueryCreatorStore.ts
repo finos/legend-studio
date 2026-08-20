@@ -145,7 +145,7 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
       executionContext =
         template.info?.executionContextKey === undefined
           ? dataSpace.defaultExecutionContext
-          : dataSpace.executionContexts.find(
+          : dataSpace.executionContexts?.find(
               (ex) => ex.name === template.info?.executionContextKey,
             );
       if (template.info) {

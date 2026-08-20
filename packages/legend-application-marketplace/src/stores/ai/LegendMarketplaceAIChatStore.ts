@@ -1087,15 +1087,21 @@ export class LegendMarketplaceAIChatStore {
         );
       }
 
-      if (dataSpace && dataSpace.executionContexts.length > 0) {
+      if (dataSpace?.executionContexts?.length) {
         const defaultCtxName = dataSpace.defaultExecutionContext;
         const execCtx =
           dataSpace.executionContexts.find((c) => c.name === defaultCtxName) ??
           guaranteeNonNullable(dataSpace.executionContexts[0]);
 
         const ctx = new QueryExplicitExecutionContextInfo();
-        ctx.mapping = execCtx.mapping.path;
-        ctx.runtime = execCtx.defaultRuntime.path;
+        ctx.mapping = guaranteeNonNullable(
+          execCtx.mapping,
+          `Execution context '${execCtx.name}' does not have a mapping`,
+        ).path;
+        ctx.runtime = guaranteeNonNullable(
+          execCtx.defaultRuntime,
+          `Execution context '${execCtx.name}' does not have a default runtime`,
+        ).path;
         runInAction(() => {
           this.pureExecutionContext = ctx;
         });

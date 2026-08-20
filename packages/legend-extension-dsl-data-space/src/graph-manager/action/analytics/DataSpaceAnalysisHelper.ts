@@ -113,7 +113,8 @@ export const buildDataSpaceExecutableAnalysisResultFromExecutable = async (
         if (info) {
           info.executionContextKey =
             executable.executionContextKey ??
-            dataspace.defaultExecutionContext.name;
+            dataspace.defaultExecutionContext?.name ??
+            '';
           if (query) {
             info.query =
               await graphManagerState.graphManager.lambdaToPureCode(query);

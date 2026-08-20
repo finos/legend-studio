@@ -20,14 +20,8 @@ import {
 } from '@finos/legend-application-studio';
 import {
   DataSpace,
-  DataSpaceExecutionContext,
   DataSpaceSupportCombinedInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import {
-  PackageableElementExplicitReference,
-  stub_Mapping,
-  stub_PackageableRuntime,
-} from '@finos/legend-graph';
 import { action, makeObservable, observable } from 'mobx';
 import {
   dataSpace_setDescription,
@@ -66,14 +60,6 @@ export class NewDataProductDriver extends NewElementDriver<DataSpace> {
   }
   override createElement(name: string): DataSpace {
     const dataSpace = new DataSpace(name);
-    const dataSpaceExecutionContext = new DataSpaceExecutionContext();
-    dataSpaceExecutionContext.name = 'defaultContext';
-    dataSpaceExecutionContext.mapping =
-      PackageableElementExplicitReference.create(stub_Mapping());
-    dataSpaceExecutionContext.defaultRuntime =
-      PackageableElementExplicitReference.create(stub_PackageableRuntime());
-    dataSpace.executionContexts = [dataSpaceExecutionContext];
-    dataSpace.defaultExecutionContext = dataSpaceExecutionContext;
     dataSpace_setTitle(dataSpace, this.title);
     dataSpace_setDescription(dataSpace, this.description);
     dataSpace_setSupportInfo(dataSpace, new DataSpaceSupportCombinedInfo());

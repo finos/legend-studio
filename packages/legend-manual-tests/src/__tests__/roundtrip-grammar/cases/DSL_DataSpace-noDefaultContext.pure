@@ -1,0 +1,43 @@
+###DataSpace
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::dummyMapping;
+      defaultRuntime: model::dummyRuntime;
+    }
+  ];
+  title: 'some title';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template 1';
+      query: src: model::element[1]|$src;
+    }
+  ];
+}
+
+
+###Pure
+Class model::element
+{
+}
+
+
+###Mapping
+Mapping model::dummyMapping
+(
+)
+
+
+###Runtime
+Runtime model::dummyRuntime
+{
+  mappings:
+  [
+    model::dummyMapping
+  ];
+}

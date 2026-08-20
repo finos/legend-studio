@@ -183,10 +183,10 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         execContext.executionKey;
     } else if (currentQuery.mapping && currentQuery.runtime) {
       dataSpaceTemplateExecutable.executionContextKey = guaranteeNonNullable(
-        dataSpaceProtocol.executionContexts.filter(
+        dataSpaceProtocol.executionContexts?.filter(
           (ec) =>
-            ec.mapping.path === currentQuery.mapping &&
-            ec.defaultRuntime.path === currentQuery.runtime,
+            ec.mapping?.path === currentQuery.mapping &&
+            ec.defaultRuntime?.path === currentQuery.runtime,
         )[0]?.name,
         'can`t find a corresponding executatin key based on query`s mapping and runtime in data product',
       );

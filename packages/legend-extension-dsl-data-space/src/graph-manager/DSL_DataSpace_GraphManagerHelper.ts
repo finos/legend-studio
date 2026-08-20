@@ -18,7 +18,10 @@ import {
   type BasicModel,
   type PureModel,
   type GraphManagerState,
+  type Mapping,
   ConcreteFunctionDefinition,
+  DataProduct,
+  ModelAccessPointGroup,
   PureExecution,
   PureMultiExecution,
   PureSingleExecution,
@@ -30,6 +33,7 @@ import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type DataSpaceExecutable,
   type DataSpaceExecutionContext,
+  type DataSpaceMappingProvider,
   DataSpace,
   DataSpaceExecutableTemplate,
   DataSpacePackageableElementExecutable,
@@ -48,6 +52,38 @@ export const getOwnDataSpace = (path: string, graph: BasicModel): DataSpace =>
     `Can't find data product '${path}'`,
   );
 
+export const hasMappingBasedDefaultExecutionContext = (
+  dataSpace: DataSpace,
+): boolean =>
+  Boolean(
+    dataSpace.defaultExecutionContext?.mapping &&
+      dataSpace.defaultExecutionContext.defaultRuntime,
+  );
+
+export const resolveMappingFromMappingProvider = (
+  mappingProvider: DataSpaceMappingProvider,
+): Mapping | undefined => {
+  const providerElement = mappingProvider.element.value;
+  const accessPointGroupId = mappingProvider.keys[0];
+  if (!(providerElement instanceof DataProduct) || !accessPointGroupId) {
+    return undefined;
+  }
+  const group = providerElement.accessPointGroups.find(
+    (candidate): candidate is ModelAccessPointGroup =>
+      candidate instanceof ModelAccessPointGroup &&
+      candidate.id === accessPointGroupId,
+  );
+  return group?.mapping.value;
+};
+
+export const resolveExecutionContextMapping = (
+  executionContext: DataSpaceExecutionContext,
+): Mapping | undefined =>
+  executionContext.mapping?.value ??
+  (executionContext.mappingProvider
+    ? resolveMappingFromMappingProvider(executionContext.mappingProvider)
+    : undefined);
+
 export const getExecutionContextFromDataspaceExecutable = (
   dataSpace: DataSpace,
   executable: DataSpaceExecutable,
@@ -59,7 +95,7 @@ export const getExecutionContextFromDataspaceExecutable = (
       executable.executable.value instanceof ConcreteFunctionDefinition)
   ) {
     executionContext = executable.executionContextKey
-      ? dataSpace.executionContexts.find(
+      ? dataSpace.executionContexts?.find(
           (c) => c.name === executable.executionContextKey,
         )
       : dataSpace.defaultExecutionContext;
@@ -68,7 +104,7 @@ export const getExecutionContextFromDataspaceExecutable = (
     executable.executable.value instanceof Service
   ) {
     if (executable.executionContextKey) {
-      executionContext = dataSpace.executionContexts.find(
+      executionContext = dataSpace.executionContexts?.find(
         (c) => c.name === executable.executionContextKey,
       );
     } else if (executable.executable.value.execution instanceof PureExecution) {
@@ -90,8 +126,10 @@ export const getExecutionContextFromDataspaceExecutable = (
                 .filter((r) => r instanceof RuntimePointer)
                 .map((rp) => rp.packageableRuntime.value)
             : [];
-      executionContext = dataSpace.executionContexts.find(
+      executionContext = dataSpace.executionContexts?.find(
         (c) =>
+          c.mapping !== undefined &&
+          c.defaultRuntime !== undefined &&
           serviceMapping?.includes(c.mapping.value) &&
           serviceRuntime?.includes(c.defaultRuntime.value),
       );

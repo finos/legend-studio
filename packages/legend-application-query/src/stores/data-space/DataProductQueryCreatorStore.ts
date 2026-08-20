@@ -432,7 +432,7 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
       this.graphManagerState.graph,
     );
     const executionContext = guaranteeNonNullable(
-      dataSpace.executionContexts.find(
+      dataSpace.executionContexts?.find(
         (context) => context.name === queryableDataSpace.executionContext,
       ),
       `Can't find execution context '${queryableDataSpace.executionContext}'`,

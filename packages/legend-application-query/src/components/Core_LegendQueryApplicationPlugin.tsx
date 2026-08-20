@@ -989,8 +989,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             queryBuilderState,
             DataSpaceQueryBuilderState,
           );
-          const mapping =
-            dataSpaceQueryBuilderState.executionContext.mapping.value;
+          const mapping = guaranteeNonNullable(
+            dataSpaceQueryBuilderState.executionContext.mapping,
+            `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a mapping`,
+          ).value;
           const mappingModelCoverageAnalysisResult =
             dataSpaceQueryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
               mapping.path,
@@ -1178,7 +1180,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           dataSpaceQueryBuilderState.changeMapping(mapping);
           dataSpaceQueryBuilderState.changeRuntime(
             new RuntimePointer(
-              dataSpaceQueryBuilderState.executionContext.defaultRuntime,
+              guaranteeNonNullable(
+                dataSpaceQueryBuilderState.executionContext.defaultRuntime,
+                `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a default runtime`,
+              ),
             ),
           );
           // if there is no chosen class or the chosen one is not compatible

@@ -65,18 +65,18 @@ import type { LegendQueryDataSpaceQueryBuilderState } from '../../stores/data-sp
 const resolveExecutionContextRuntimes = (
   queryBuilderState: LegendQueryDataSpaceQueryBuilderState,
 ): PackageableRuntime[] => {
+  const currentMapping = guaranteeNonNullable(
+    queryBuilderState.executionContext.mapping,
+    `Execution context '${queryBuilderState.executionContext.name}' does not have a mapping`,
+  ).value;
   if (queryBuilderState.dataSpaceAnalysisResult) {
     const executionContext = Array.from(
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-    ).find(
-      (e) =>
-        e.mapping.path ===
-        queryBuilderState.executionContext.mapping.value.path,
-    );
+    ).find((e) => e.mapping.path === currentMapping.path);
     return guaranteeNonNullable(executionContext).compatibleRuntimes;
   }
   return getMappingCompatibleRuntimes(
-    queryBuilderState.executionContext.mapping.value,
+    currentMapping,
     queryBuilderState.graphManagerState.usableRuntimes,
   );
 };
@@ -127,10 +127,12 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     };
 
     // execution context
-    const executionContextOptions =
-      queryBuilderState.dataSpace.executionContexts
-        .map(buildExecutionContextOption)
-        .sort(compareLabelFn);
+    const executionContextOptions = guaranteeNonNullable(
+      queryBuilderState.dataSpace.executionContexts,
+      `Data product '${queryBuilderState.dataSpace.path}' does not have any execution contexts`,
+    )
+      .map(buildExecutionContextOption)
+      .sort(compareLabelFn);
     const showExecutionContextOptions = executionContextOptions.length > 1;
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
@@ -142,11 +144,17 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
-      const currentMapping =
-        queryBuilderState.executionContext.mapping.value.path;
+      const currentMappingPath = guaranteeNonNullable(
+        queryBuilderState.executionContext.mapping,
+        `Execution context '${queryBuilderState.executionContext.name}' does not have a mapping`,
+      ).value.path;
+      const nextMappingPath = guaranteeNonNullable(
+        option.value.mapping,
+        `Execution context '${option.value.name}' does not have a mapping`,
+      ).value.path;
       queryBuilderState.setExecutionContext(option.value);
       await queryBuilderState.propagateExecutionContextChange(
-        currentMapping === option.value.mapping.value.path,
+        currentMappingPath === nextMappingPath,
       );
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
@@ -191,7 +199,10 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     // class
     const classes = resolveUsableDataSpaceClasses(
       queryBuilderState.dataSpace,
-      queryBuilderState.executionContext.mapping.value,
+      guaranteeNonNullable(
+        queryBuilderState.executionContext.mapping,
+        `Execution context '${queryBuilderState.executionContext.name}' does not have a mapping`,
+      ).value,
       queryBuilderState.graphManagerState,
       queryBuilderState,
     );

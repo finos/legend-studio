@@ -48,6 +48,7 @@ import {
   type V1_DataSpaceExecutable,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceMappingProvider,
   V1_DataSpaceSupportEmail,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceDiagram,
@@ -64,12 +65,27 @@ const V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE =
   'dataSpacePackageableElementExecutable';
 const V1_DATA_SPACE_TEMPLATE_EXECUTABLE = 'dataSpaceTemplateExecutable';
 
+const V1_dataSpaceMappingProviderModelSchema = createModelSchema(
+  V1_DataSpaceMappingProvider,
+  {
+    element: usingModelSchema(V1_packageableElementPointerModelSchema),
+    keys: list(primitive()),
+  },
+);
+
 const V1_dataSpaceExecutionContextModelSchema = createModelSchema(
   V1_DataSpaceExecutionContext,
   {
-    defaultRuntime: usingModelSchema(V1_packageableElementPointerModelSchema),
+    defaultRuntime: optional(
+      usingModelSchema(V1_packageableElementPointerModelSchema),
+    ),
     description: optional(primitive()),
-    mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
+    mapping: optional(
+      usingModelSchema(V1_packageableElementPointerModelSchema),
+    ),
+    mappingProvider: optional(
+      usingModelSchema(V1_dataSpaceMappingProviderModelSchema),
+    ),
     name: primitive(),
     title: optional(primitive()),
     testData: optional(usingModelSchema(V1_dataElementReferenceModelSchema)),
@@ -204,7 +220,7 @@ const V1_dataSpaceDiagramModelSchema = createModelSchema(V1_DataSpaceDiagram, {
 
 const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
-  defaultExecutionContext: primitive(),
+  defaultExecutionContext: optional(primitive()),
   description: optional(primitive()),
   diagrams: list(object(V1_dataSpaceDiagramModelSchema)),
   elements: optionalCustomListWithSchema(V1_dataSpaceElementPointerModelSchema),
@@ -214,7 +230,9 @@ const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
       (val) => V1_deserializeDataspaceExecutable(val),
     ),
   ),
-  executionContexts: list(object(V1_dataSpaceExecutionContextModelSchema)),
+  executionContexts: optional(
+    list(object(V1_dataSpaceExecutionContextModelSchema)),
+  ),
   featuredDiagrams: optionalCustomListWithSchema(
     V1_packageableElementPointerModelSchema,
   ),
