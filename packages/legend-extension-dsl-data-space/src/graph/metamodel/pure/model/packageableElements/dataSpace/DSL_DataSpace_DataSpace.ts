@@ -33,12 +33,26 @@ import {
 import { DATA_SPACE_HASH_STRUCTURE } from '../../../../../DSL_DataSpace_HashUtils.js';
 import type { Diagram } from '@finos/legend-extension-dsl-diagram/graph';
 
+export class DataSpaceMappingProvider implements Hashable {
+  element!: PackageableElementReference<PackageableElement>;
+  keys: string[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_MAPPING_PROVIDER,
+      this.element.valueForSerialization ?? '',
+      hashArray(this.keys),
+    ]);
+  }
+}
+
 export class DataSpaceExecutionContext implements Hashable {
   name!: string;
   title?: string | undefined;
   description?: string | undefined;
-  mapping!: PackageableElementReference<Mapping>;
-  defaultRuntime!: PackageableElementReference<PackageableRuntime>;
+  mapping?: PackageableElementReference<Mapping> | undefined;
+  defaultRuntime?: PackageableElementReference<PackageableRuntime> | undefined;
+  mappingProvider?: DataSpaceMappingProvider | undefined;
   testData: DataElementReference | undefined;
 
   get hashCode(): string {
@@ -47,8 +61,9 @@ export class DataSpaceExecutionContext implements Hashable {
       this.name,
       this.title ?? '',
       this.description ?? '',
-      this.mapping.valueForSerialization ?? '',
-      this.defaultRuntime.valueForSerialization ?? '',
+      this.mapping?.valueForSerialization ?? '',
+      this.defaultRuntime?.valueForSerialization ?? '',
+      this.mappingProvider ?? '',
       this.testData ?? '',
     ]);
   }
@@ -71,7 +86,7 @@ export class DataSpaceElementPointer implements Hashable {
 
 export abstract class DataSpaceExecutable implements Hashable {
   id?: string;
-  executionContextKey?: string;
+  executionContextKey?: string | undefined;
   title!: string;
   description?: string | undefined;
 
@@ -188,8 +203,8 @@ export class DataSpaceSupportCombinedInfo
 export class DataSpace extends PackageableElement implements Hashable {
   title?: string | undefined;
   description?: string | undefined;
-  executionContexts: DataSpaceExecutionContext[] = [];
-  defaultExecutionContext!: DataSpaceExecutionContext;
+  executionContexts?: DataSpaceExecutionContext[] | undefined;
+  defaultExecutionContext?: DataSpaceExecutionContext | undefined;
   elements?: DataSpaceElementPointer[] | undefined;
   executables?: DataSpaceExecutable[] | undefined;
   diagrams?: DataSpaceDiagram[] | undefined;
@@ -204,8 +219,8 @@ export class DataSpace extends PackageableElement implements Hashable {
       hashArray(this.taggedValues),
       this.title ?? '',
       this.description ?? '',
-      hashArray(this.executionContexts),
-      this.defaultExecutionContext.name,
+      hashArray(this.executionContexts ?? []),
+      this.defaultExecutionContext?.name ?? '',
       hashArray(this.elements ?? []),
       hashArray(this.executables ?? []),
       hashArray(this.diagrams ?? []),

@@ -76,10 +76,10 @@ export const DataQualityDataSpaceBuilderSetupPanelContent = observer(
         title: dataSpace.title,
         name: dataSpace.name,
         path: dataSpace.path,
-        defaultExecutionContext: dataSpace.defaultExecutionContext.name,
+        defaultExecutionContext: dataSpace.defaultExecutionContext?.name,
       },
     } as DataSpaceOption;
-    const executionContextOptions = dataSpace.executionContexts.map(
+    const executionContextOptions = (dataSpace.executionContexts ?? []).map(
       buildExecutionContextOption,
     );
     const runtimeOptions = getMappingCompatibleRuntimes(
