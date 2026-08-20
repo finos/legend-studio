@@ -27,7 +27,7 @@ export type CuratedTemplateQuery = {
   title: string;
   description: string | undefined;
   query: RawLambda;
-  executionContextKey: string;
+  executionContextKey: string | undefined;
 };
 
 export type CuratedTemplateQuerySpecification = {

@@ -59,6 +59,7 @@ import { useEffect } from 'react';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { type DataSpaceExecutionContext } from '../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+import { resolveExecutionContextMapping } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 import { DataSpaceAdvancedSearchModal } from './DataSpaceAdvancedSearchModal.js';
 
 export type DataSpaceOption = {
@@ -90,18 +91,18 @@ export const formatDataSpaceOptionLabel = (
 const resolveExecutionContextRuntimes = (
   queryBuilderState: DataSpaceQueryBuilderState,
 ): PackageableRuntime[] => {
+  const currentMapping = guaranteeNonNullable(
+    resolveExecutionContextMapping(queryBuilderState.executionContext),
+    `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
+  );
   if (queryBuilderState.dataSpaceAnalysisResult) {
     const executionContext = Array.from(
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-    ).find(
-      (e) =>
-        e.mapping.path ===
-        queryBuilderState.executionContext.mapping.value.path,
-    );
+    ).find((e) => e.mapping.path === currentMapping.path);
     return guaranteeNonNullable(executionContext).compatibleRuntimes;
   }
   return getMappingCompatibleRuntimes(
-    queryBuilderState.executionContext.mapping.value,
+    currentMapping,
     queryBuilderState.graphManagerState.usableRuntimes,
   );
 };
@@ -164,10 +165,11 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     };
 
     // execution context
-    const executionContextOptions =
-      queryBuilderState.dataSpace.executionContexts
-        .map(buildExecutionContextOption)
-        .sort(compareLabelFn);
+    const executionContextOptions = (
+      queryBuilderState.dataSpace.executionContexts ?? []
+    )
+      .map(buildExecutionContextOption)
+      .sort(compareLabelFn);
     const showExecutionContextOptions = executionContextOptions.length > 1;
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
@@ -179,11 +181,14 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
-      const currentMapping =
-        queryBuilderState.executionContext.mapping.value.path;
+      const currentMappingPath = resolveExecutionContextMapping(
+        queryBuilderState.executionContext,
+      )?.path;
       queryBuilderState.setExecutionContext(option.value);
       await queryBuilderState.propagateExecutionContextChange(
-        currentMapping === option.value.mapping.value.path,
+        currentMappingPath !== undefined &&
+          currentMappingPath ===
+            resolveExecutionContextMapping(option.value)?.path,
       );
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
@@ -226,9 +231,13 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     });
 
     // class
+    const executionContextMapping = guaranteeNonNullable(
+      resolveExecutionContextMapping(queryBuilderState.executionContext),
+      `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
+    );
     const classes = resolveUsableDataSpaceClasses(
       queryBuilderState.dataSpace,
-      queryBuilderState.executionContext.mapping.value,
+      executionContextMapping,
       queryBuilderState.graphManagerState,
       queryBuilderState,
     );

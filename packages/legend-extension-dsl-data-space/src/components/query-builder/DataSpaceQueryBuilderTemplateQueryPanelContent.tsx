@@ -62,7 +62,7 @@ const DataSpaceTemplateQueryDialog = observer(
         );
       } else {
         const executionContext =
-          queryBuilderState.dataSpace.executionContexts.filter(
+          queryBuilderState.dataSpace.executionContexts?.filter(
             (ex) => ex.name === template.info?.executionContextKey,
           )[0];
         if (
