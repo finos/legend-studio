@@ -38,7 +38,6 @@ export enum OrderProfileLabel {
 
 export enum OrderProfileTableHeader {
   PRODUCT_NAME = 'PRODUCT NAME',
-  PROVIDER = 'PROVIDER',
   CATEGORY = 'CATEGORY',
   COST_MONTHLY = 'COST (Monthly)',
 }

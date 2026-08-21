@@ -137,7 +137,6 @@ describe('OwnedTerminalDetailModal', () => {
       />,
     );
     expect(screen.getByText('PRODUCT NAME')).toBeDefined();
-    expect(screen.getByText('PROVIDER')).toBeDefined();
     expect(screen.getByText('CATEGORY')).toBeDefined();
     expect(screen.getByText('COST (Monthly)')).toBeDefined();
   });

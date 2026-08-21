@@ -166,10 +166,14 @@ const getSectionTitle = (
   terminal: TerminalResult | null,
 ): string => {
   if (isPermissionOverride || isTerminalType) {
-    return `Available Add-Ons for ${terminal?.productName ?? ''}`;
+    return `Available Add-Ons for ${terminal?.productName ?? ''}${
+      terminal?.providerName ? ` by ${terminal.providerName}` : ''
+    }`;
   }
   if (terminal) {
-    return `Available Terminals for ${terminal.productName}`;
+    return `Available Terminals for ${terminal.productName}${
+      terminal.providerName ? ` by ${terminal.providerName}` : ''
+    }`;
   }
   return '';
 };

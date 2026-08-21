@@ -175,7 +175,7 @@ describe('RecommendedAddOnsModal - terminal type (TERMINAL)', () => {
     expect(screen.getByText('Item Added Successfully')).toBeDefined();
   });
 
-  test('shows "Available Add-Ons for {productName}" as section title', () => {
+  test('shows "Available Add-Ons for {productName} by {providerName}" as section title', () => {
     render(
       <RecommendedAddOnsModal
         terminal={makeTerminal({ productName: 'My Terminal' })}
@@ -185,7 +185,9 @@ describe('RecommendedAddOnsModal - terminal type (TERMINAL)', () => {
         setShowModal={jest.fn()}
       />,
     );
-    expect(screen.getByText('Available Add-Ons for My Terminal')).toBeDefined();
+    expect(
+      screen.getByText('Available Add-Ons for My Terminal by Bloomberg'),
+    ).toBeDefined();
   });
 
   test('shows "Close" button (not "Cancel") for terminal type', () => {
@@ -369,7 +371,7 @@ describe('RecommendedAddOnsModal - add-on type (ADD_ON)', () => {
     expect(screen.getByText('Unable to Add Item')).toBeDefined();
   });
 
-  test('shows "Available Terminals for {productName}" section title', () => {
+  test('shows "Available Terminals for {productName} by {providerName}" section title', () => {
     const addon = makeAddOn({ productName: 'Market Addon' });
     render(
       <RecommendedAddOnsModal
@@ -381,7 +383,7 @@ describe('RecommendedAddOnsModal - add-on type (ADD_ON)', () => {
       />,
     );
     expect(
-      screen.getByText('Available Terminals for Market Addon'),
+      screen.getByText('Available Terminals for Market Addon by Bloomberg'),
     ).toBeDefined();
   });
 
@@ -547,7 +549,7 @@ describe('RecommendedAddOnsModal - permission override flow', () => {
     expect(screen.queryByText('Item Added Successfully')).toBeNull();
   });
 
-  test('shows "Available Add-Ons for {productName}" as section title', () => {
+  test('shows "Available Add-Ons for {productName} by {providerName}" as section title', () => {
     const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
     render(
       <RecommendedAddOnsModal
@@ -560,7 +562,7 @@ describe('RecommendedAddOnsModal - permission override flow', () => {
       />,
     );
     expect(
-      screen.getByText('Available Add-Ons for Bloomberg Terminal'),
+      screen.getByText('Available Add-Ons for Bloomberg Terminal by Bloomberg'),
     ).toBeDefined();
   });
 

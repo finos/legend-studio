@@ -191,7 +191,9 @@ describe('LegendMarketplaceOwnedTerminalCard - browse add-ons', () => {
     // fallback were dropped, the add-ons section would not render.
     await waitFor(() => {
       expect(
-        screen.getByText(`Available Add-Ons for ${item.productName}`),
+        screen.getByText(
+          `Available Add-Ons for ${item.productName} by ${item.providerName}`,
+        ),
       ).toBeDefined();
     });
   });

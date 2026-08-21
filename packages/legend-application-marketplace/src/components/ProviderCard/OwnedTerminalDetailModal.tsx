@@ -84,9 +84,6 @@ export const OwnedTerminalDetailModal = observer(
                     {OrderProfileTableHeader.PRODUCT_NAME}
                   </TableCell>
                   <TableCell className="order-profile-modal__table-header-cell">
-                    {OrderProfileTableHeader.PROVIDER}
-                  </TableCell>
-                  <TableCell className="order-profile-modal__table-header-cell">
                     {OrderProfileTableHeader.CATEGORY}
                   </TableCell>
                   <TableCell
@@ -107,9 +104,6 @@ export const OwnedTerminalDetailModal = observer(
                       <Box className="order-profile-modal__row-accent order-profile-modal__row-accent--vendor-profile" />
                       <span>{terminal.productName}</span>
                     </Box>
-                  </TableCell>
-                  <TableCell className="order-profile-modal__table-cell">
-                    {terminal.providerName}
                   </TableCell>
                   <TableCell className="order-profile-modal__table-cell">
                     <CategoryChip
@@ -134,9 +128,6 @@ export const OwnedTerminalDetailModal = observer(
                         <Box className="order-profile-modal__row-accent order-profile-modal__row-accent--addon" />
                         <span>{addon.productName}</span>
                       </Box>
-                    </TableCell>
-                    <TableCell className="order-profile-modal__table-cell">
-                      {addon.providerName}
                     </TableCell>
                     <TableCell className="order-profile-modal__table-cell">
                       <CategoryChip

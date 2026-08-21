@@ -91,9 +91,6 @@ export const OrderProfileDetailModal = observer(
                     {OrderProfileTableHeader.PRODUCT_NAME}
                   </TableCell>
                   <TableCell className="order-profile-modal__table-header-cell">
-                    {OrderProfileTableHeader.PROVIDER}
-                  </TableCell>
-                  <TableCell className="order-profile-modal__table-header-cell">
                     {OrderProfileTableHeader.CATEGORY}
                   </TableCell>
                   <TableCell
@@ -148,9 +145,6 @@ export const OrderProfileDetailModal = observer(
                             )}
                           </span>
                         </Box>
-                      </TableCell>
-                      <TableCell className="order-profile-modal__table-cell">
-                        {item.providerName}
                       </TableCell>
                       <TableCell className="order-profile-modal__table-cell">
                         <CategoryChip

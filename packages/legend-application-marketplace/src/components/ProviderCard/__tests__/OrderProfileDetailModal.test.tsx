@@ -147,7 +147,6 @@ describe('OrderProfileDetailModal', () => {
       />,
     );
     expect(screen.getByText('PRODUCT NAME')).toBeDefined();
-    expect(screen.getByText('PROVIDER')).toBeDefined();
     expect(screen.getByText('CATEGORY')).toBeDefined();
     expect(screen.getByText('COST (Monthly)')).toBeDefined();
   });
@@ -294,22 +293,6 @@ describe('OrderProfileDetailModal', () => {
     // The close button in DialogActions is labeled "Close"
     fireEvent.click(screen.getByText('Close'));
     expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  test('renders provider name in table', () => {
-    const items = [makeTerminal(1, 'Terminal A')];
-    const profile = makeProfile(items);
-    render(
-      <OrderProfileDetailModal
-        profile={profile}
-        open={true}
-        onClose={jest.fn()}
-      />,
-    );
-    // providerName appears in the table row
-    expect(screen.getAllByText('Test Provider').length).toBeGreaterThanOrEqual(
-      1,
-    );
   });
 
   test('groups terminals with their add-ons', () => {

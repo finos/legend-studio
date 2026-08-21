@@ -94,7 +94,6 @@ describe('OrderProfileLabel', () => {
 describe('OrderProfileTableHeader', () => {
   test('has expected string values', () => {
     expect(OrderProfileTableHeader.PRODUCT_NAME).toBe('PRODUCT NAME');
-    expect(OrderProfileTableHeader.PROVIDER).toBe('PROVIDER');
     expect(OrderProfileTableHeader.CATEGORY).toBe('CATEGORY');
     expect(OrderProfileTableHeader.COST_MONTHLY).toBe('COST (Monthly)');
   });
