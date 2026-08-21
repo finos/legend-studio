@@ -94,7 +94,7 @@ const MAX_DISPLAY_ITEMS_COUNT = 10;
 const ITEMS_PER_PAGE_LIST = [10, 15, 25, 50];
 const SERVER_SEARCH_PAGE_SIZE = 300;
 
-const ACTION_STATUS_OWNED = 'Owned';
+const ACTION_STATUS_OWNED = 'Subscribed';
 const ACTION_STATUS_IN_CART = 'In Cart';
 const ACTION_STATUS_ADD_TO_CART = 'Add to Cart';
 const ACTION_STATUS_OPTIONS = [
