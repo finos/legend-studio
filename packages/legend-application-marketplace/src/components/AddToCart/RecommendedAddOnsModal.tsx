@@ -420,10 +420,13 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
     marketplaceSourceItems.length === 0
   ) {
     return (
-      <Box className="recommended-addons-modal__empty-state">
-        <Typography variant="body1">
-          No items match your search criteria.
-        </Typography>
+      <Box className="recommended-addons-modal__list">
+        <ListHeader headerName={headerName} {...listHeaderFilterProps} />
+        <Box className="recommended-addons-modal__empty-state">
+          <Typography variant="body1">
+            No items match your search criteria.
+          </Typography>
+        </Box>
       </Box>
     );
   }
@@ -732,6 +735,18 @@ export const RecommendedAddOnsModal = observer(
     const isPermissionOverride = overridePermissionId !== undefined;
     const headerName =
       isTerminalAdded || isPermissionOverride ? 'Add-On Name' : 'Terminal Name';
+    // The "Subscribed" status only applies when overriding an existing
+    // permission (managing add-ons for an already-owned terminal); in other
+    // flows recommended items are never owned, so hide it as a filter option.
+    const actionOptions = useMemo(
+      () =>
+        isPermissionOverride
+          ? ACTION_STATUS_OPTIONS
+          : ACTION_STATUS_OPTIONS.filter(
+              (status) => status !== ACTION_STATUS_OWNED,
+            ),
+      [isPermissionOverride],
+    );
 
     const {
       terminalSearchResults,
@@ -967,15 +982,9 @@ export const RecommendedAddOnsModal = observer(
       ? columnFilteredItems.length
       : baseTotalCount;
 
-    const itemsOrEmpty: JSX.Element =
-      columnFilteredItems.length === 0 ? (
-        <Box className="recommended-addons-modal__empty-state">
-          <Typography variant="body1">
-            No items match your search criteria.
-          </Typography>
-        </Box>
-      ) : (
-        <>
+    const itemsOrEmpty: JSX.Element = (
+      <>
+        {columnFilteredItems.length > 0 && (
           <Box className="recommended-addons-modal__list-info">
             <Typography
               variant="body2"
@@ -989,17 +998,25 @@ export const RecommendedAddOnsModal = observer(
               of {displayTotalCount} items
             </Typography>
           </Box>
-          <Box className="recommended-addons-modal__list">
-            <ListHeader
-              headerName={headerName}
-              categoryOptions={categoryOptions}
-              categoryFilter={categoryFilter}
-              onCategoryFilterChange={handleCategoryFilterChange}
-              actionOptions={ACTION_STATUS_OPTIONS}
-              actionFilter={actionFilter}
-              onActionFilterChange={handleActionFilterChange}
-            />
-            {paginatedItems.map((item) => (
+        )}
+        <Box className="recommended-addons-modal__list">
+          <ListHeader
+            headerName={headerName}
+            categoryOptions={categoryOptions}
+            categoryFilter={categoryFilter}
+            onCategoryFilterChange={handleCategoryFilterChange}
+            actionOptions={actionOptions}
+            actionFilter={actionFilter}
+            onActionFilterChange={handleActionFilterChange}
+          />
+          {columnFilteredItems.length === 0 ? (
+            <Box className="recommended-addons-modal__empty-state">
+              <Typography variant="body1">
+                No items match your search criteria.
+              </Typography>
+            </Box>
+          ) : (
+            paginatedItems.map((item) => (
               <RecommendedItemsCard
                 key={item.id}
                 recommendedItem={item}
@@ -1015,23 +1032,24 @@ export const RecommendedAddOnsModal = observer(
                   modelOverride: overrideModel,
                 })}
               />
-            ))}
-          </Box>
-          {totalPages > 1 && (
-            <Box className="recommended-addons-modal__pagination">
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
-                showFirstButton={true}
-                showLastButton={true}
-              />
-            </Box>
+            ))
           )}
-        </>
-      );
+        </Box>
+        {totalPages > 1 && (
+          <Box className="recommended-addons-modal__pagination">
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              size="large"
+              showFirstButton={true}
+              showLastButton={true}
+            />
+          </Box>
+        )}
+      </>
+    );
 
     const searchContent: JSX.Element = isSearching ? (
       <Box
@@ -1075,7 +1093,7 @@ export const RecommendedAddOnsModal = observer(
           categoryOptions={categoryOptions}
           categoryFilter={categoryFilter}
           onCategoryFilterChange={handleCategoryFilterChange}
-          actionOptions={ACTION_STATUS_OPTIONS}
+          actionOptions={actionOptions}
           actionFilter={actionFilter}
           onActionFilterChange={handleActionFilterChange}
         />
