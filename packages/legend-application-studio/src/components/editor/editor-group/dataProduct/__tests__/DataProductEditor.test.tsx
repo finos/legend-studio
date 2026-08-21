@@ -422,7 +422,6 @@ test(
 
     //check rendered as mapg editor
     await findByText(editorGroup, 'Mapping');
-    await findByText(editorGroup, 'Featured Elements');
 
     //mapping editor
     const mappingDropdown = await screen.findByText('model::dummyMapping');
@@ -437,99 +436,6 @@ test(
     fireEvent.click(dropdownOption as HTMLElement);
 
     await screen.findByText('model::dummyMapping2');
-
-    //diagrams editor
-    await findByText(editorGroup, 'Diagrams');
-    fireEvent.click(
-      guaranteeNonNullable(
-        (
-          await screen.findAllByRole('button', {
-            name: 'Add Value',
-          })
-        )[1],
-      ),
-    );
-    await screen.findByText('Select a diagram to add...');
-    fireEvent.click(
-      guaranteeNonNullable(
-        (
-          await screen.findAllByRole('button', {
-            name: 'Generate from Mapping',
-          })
-        )[0],
-      ),
-    );
-    await screen.findByText('Animal');
-    await screen.findByText('Animal2');
-    await screen.findByText('GenericAnimal');
-    await screen.findByText('GenericAnimal2');
-  },
-);
-
-test(
-  integrationTest('Model Access Point Group featured elements editor'),
-  async () => {
-    const MOCK__editorStore = TEST__provideMockedEditorStore({ pluginManager });
-    const renderResult = await TEST__setUpEditorWithDefaultSDLCData(
-      MOCK__editorStore,
-      { entities: TEST_DATA__ModelApgDataProduct },
-    );
-    MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
-      readOnly: true,
-    });
-
-    await TEST__openElementFromExplorerTree(
-      'model::animal::AnimalDataProduct',
-      renderResult,
-    );
-
-    const editorGroup = await waitFor(() =>
-      renderResult.getByTestId(LEGEND_STUDIO_TEST_ID.EDITOR_GROUP),
-    );
-    fireEvent.click(await findByText(editorGroup, 'APG'));
-
-    //add new element
-    fireEvent.click(
-      guaranteeNonNullable(
-        (
-          await screen.findAllByRole('button', {
-            name: 'Add Value',
-          })
-        )[0],
-      ),
-    );
-    const newElementDropdown = await screen.findByText(
-      'Select an element to add...',
-    );
-    fireEvent.mouseDown(newElementDropdown);
-
-    const elementOptions = await screen.findAllByRole('option');
-    const mammalClass = elementOptions.find(
-      (opt) => opt.textContent === 'model::animal::mammal::Mammal',
-    );
-    fireEvent.click(mammalClass as HTMLElement);
-    expect(
-      findByText(editorGroup, 'model::animal::mammal::Mammal'),
-    ).not.toBeNull();
-
-    //test exclude checkbox
-    const excludeCheckbox = guaranteeNonNullable(
-      within(editorGroup).getAllByRole('checkbox')[0],
-    );
-    fireEvent.click(excludeCheckbox);
-    expect((excludeCheckbox as HTMLInputElement).checked).toBe(true);
-    fireEvent.click(excludeCheckbox);
-    expect((excludeCheckbox as HTMLInputElement).checked).toBe(false);
-
-    // remove element
-    fireEvent.click(
-      guaranteeNonNullable(
-        (await screen.findAllByRole('button', { name: 'Remove item' }))[0],
-      ),
-    );
-    expect(
-      within(editorGroup).queryByText('model::animal::mammal::Mammal'),
-    ).toBeNull();
   },
 );
 
@@ -783,8 +689,6 @@ test(integrationTest('Adding a Model Access Point Group'), async () => {
   fireEvent.click(await screen.findByText('New Model Access Point Group'));
 
   await findByText(editorGroup, 'Mapping');
-  await findByText(editorGroup, 'Diagrams');
-  await findByText(editorGroup, 'Featured Elements');
 });
 
 test(

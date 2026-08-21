@@ -212,14 +212,14 @@ export class V1_DataProductDiagram {
 export class V1_ModelAccessPointGroup extends V1_AccessPointGroup {
   mapping!: V1_PackageableElementPointer;
   featuredElements: V1_ElementScope[] | undefined;
-  diagrams: V1_DataProductDiagram[] = [];
+  diagrams: V1_DataProductDiagram[] | undefined;
   override get hashCode(): string {
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.DATA_PRODUCT_MODEL_ACCESS_POINT_GROUP,
       this.mapping.path,
       hashArray(this.featuredElements ?? []),
-      hashArray(this.diagrams),
+      hashArray(this.diagrams ?? []),
     ]);
   }
 }

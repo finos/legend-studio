@@ -18,7 +18,6 @@ import {
   type AppDirNode,
   type ArtifactGenerationExtensionResult,
   type BatchLambdasRelationTypeResult,
-  type DataProductElement,
   type IngestDefinition,
   type Mapping,
   type PackageableElement,
@@ -33,15 +32,10 @@ import {
   AccessPoint,
   AccessPointGroup,
   AppDirOwner,
-  Association,
-  Class,
   CodeCompletionResult,
   DataElement,
   DataElementReference,
   DataProduct,
-  DataProductDiagram,
-  DataProductElementScope,
-  Enumeration,
   Expertise,
   getStereotype,
   GRAPH_MANAGER_EVENT,
@@ -50,11 +44,8 @@ import {
   LakehouseTargetEnv,
   LAMBDA_PIPE,
   ModelAccessPointGroup,
-  observe_DataProductDiagram,
-  observe_DataProductElementScope,
   observe_RelationElement,
   observe_RelationElementsData,
-  Package,
   PackageableElementExplicitReference,
   ParserError,
   RelationElement,
@@ -97,11 +88,6 @@ import {
   dataProduct_deleteAccessPointGroup,
   dataProduct_setSupportInfoIfAbsent,
   dataProduct_swapAccessPointGroups,
-  modelAccessPointGroup_addDiagram,
-  modelAccessPointGroup_addElement,
-  modelAccessPointGroup_removeDiagram,
-  modelAccessPointGroup_removeElement,
-  modelAccessPointGroup_setElementExclude,
   modelAccessPointGroup_setMapping,
   supportInfo_addExpertise,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -116,9 +102,7 @@ import type {
   AdhocDataProductDeployResponse,
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
-import { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
-import { onGeneratingDiagramFromMapping } from '../mapping/MappingEditorState.js';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -764,16 +748,11 @@ export class AccessPointGroupState {
 export class ModelAccessPointGroupState extends AccessPointGroupState {
   declare value: ModelAccessPointGroup;
   readonly editorState: DataProductEditorState;
-  showNewModal = false;
 
   constructor(val: ModelAccessPointGroup, editorState: DataProductEditorState) {
     super(val, editorState);
     this.value = val;
     this.editorState = editorState;
-
-    makeObservable(this, {
-      generateDiagramFromMapping: flow,
-    });
   }
 
   override hasErrors(): boolean {
@@ -781,8 +760,7 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       this.value.id === '' ||
       !this.value.description ||
       !this.value.title ||
-      this.value.mapping.value.path === '' ||
-      this.value.diagrams.length === 0
+      this.value.mapping.value.path === ''
     );
   }
 
@@ -791,145 +769,6 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       this.value,
       PackageableElementExplicitReference.create(mapping),
     );
-  }
-
-  getCompatibleDiagramOptions(): {
-    label: string;
-    value: PackageableElement;
-  }[] {
-    const currentDiagrams = this.value.diagrams.map(
-      (diagram) => diagram.diagram,
-    );
-
-    return this.state.editorStore.graphManagerState.graph.allOwnElements
-      .filter((element): element is Diagram => element instanceof Diagram)
-      .filter((diagram) => !currentDiagrams.includes(diagram))
-      .map((diagram) => ({
-        label: diagram.path,
-        value: diagram,
-      }));
-  }
-
-  collectFeaturedClasses = (
-    element: PackageableElement,
-    excludedPaths: string[],
-    elements: Set<Class>,
-  ): void => {
-    if (excludedPaths.includes(element.path)) {
-      return;
-    }
-    if (element instanceof Class) {
-      elements.add(element);
-    } else if (element instanceof Package) {
-      this.collectClassesFromPackage(element, excludedPaths, elements);
-    }
-  };
-
-  collectClassesFromPackage = (
-    element: Package,
-    excludedPaths: string[],
-    elements: Set<Class>,
-  ): void => {
-    element.children.forEach((child) => {
-      if (excludedPaths.includes(child.path)) {
-        return;
-      }
-      if (child instanceof Class) {
-        elements.add(child);
-      } else if (child instanceof Package) {
-        this.collectClassesFromPackage(child, excludedPaths, elements);
-      }
-    });
-  };
-
-  addDiagram = (option: { label: string; value: PackageableElement }): void => {
-    const diagramValue = option.value;
-    const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
-    newDiagram.title = diagramValue.name;
-    newDiagram.diagram = diagramValue;
-    modelAccessPointGroup_addDiagram(this.value, newDiagram);
-  };
-
-  handleRemoveDiagram = (diagram: DataProductDiagram): void => {
-    modelAccessPointGroup_removeDiagram(this.value, diagram);
-  };
-
-  *generateDiagramFromMapping(): GeneratorFn<void> {
-    const mapping = this.value.mapping.value;
-    if (mapping.path === '') {
-      return;
-    }
-    let featuredClasses: Class[] | undefined = undefined;
-    if (this.value.featuredElements.length > 0) {
-      const includes = this.value.featuredElements
-        .filter((el) => el.exclude === undefined || el.exclude === false)
-        .map((el) => el.element.value);
-      const excludedPaths = this.value.featuredElements
-        .filter((el) => el.exclude !== undefined && el.exclude === true)
-        .map((el) => el.element.value.path);
-      const elements = new Set<Class>();
-      includes.forEach((element) => {
-        this.collectFeaturedClasses(element, excludedPaths, elements);
-      });
-      featuredClasses = Array.from(elements);
-    }
-    const diagram = (yield flowResult(
-      onGeneratingDiagramFromMapping(
-        mapping,
-        this.state.editorStore,
-        featuredClasses,
-      ),
-    )) as Diagram | undefined;
-    if (diagram) {
-      const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
-      newDiagram.title = diagram.name;
-      newDiagram.diagram = diagram;
-      modelAccessPointGroup_addDiagram(this.value, newDiagram);
-    }
-  }
-
-  addFeaturedElement(element: DataProductElement): void {
-    const elementPointer = observe_DataProductElementScope(
-      new DataProductElementScope(),
-    );
-    elementPointer.element =
-      PackageableElementExplicitReference.create(element);
-    modelAccessPointGroup_addElement(this.value, elementPointer);
-  }
-
-  removeFeaturedElement(element: DataProductElementScope): void {
-    modelAccessPointGroup_removeElement(this.value, element);
-  }
-
-  excludeFeaturedElement(
-    element: DataProductElementScope,
-    value: boolean,
-  ): void {
-    modelAccessPointGroup_setElementExclude(element, value);
-  }
-
-  isValidDataProductElement(
-    element: PackageableElement,
-  ): element is DataProductElement {
-    return (
-      element instanceof Package ||
-      element instanceof Class ||
-      element instanceof Enumeration ||
-      element instanceof Association
-    );
-  }
-
-  getFeaturedElementOptions(): { label: string; value: DataProductElement }[] {
-    const currentElements = this.value.featuredElements.map(
-      (elementPointer) => elementPointer.element.value,
-    );
-    return this.state.editorStore.graphManagerState.graph.allOwnElements
-      .filter((element) => this.isValidDataProductElement(element))
-      .filter((element) => !currentElements.includes(element))
-      .map((element) => ({
-        label: element.path,
-        value: element,
-      }));
   }
 }
 
