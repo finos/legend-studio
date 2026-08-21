@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.33
+
+### Patch Changes
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Remove diagrams and featuredElements from modelAPG studio form-mode
+
 ## 28.21.32
 
 ### Patch Changes
