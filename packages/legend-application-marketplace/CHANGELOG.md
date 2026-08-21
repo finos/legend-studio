@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.3.3
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Guard against Data Products whose execution context has no mapping or runtime when resolving the AI chat's execution context, matching the now-optional Data Product execution context model.
+
 ## 0.3.2
 
 ### Patch Changes

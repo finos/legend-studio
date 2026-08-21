@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.43
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Stop throwing when a Data Product has no default execution context or an execution context has no mapping/runtime; the query editor now degrades gracefully (e.g. showing "(none)" in the info modal) instead of crashing (temporary).
+
 ## 13.8.42
 
 ## 13.8.41

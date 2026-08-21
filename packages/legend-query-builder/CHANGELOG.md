@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.19.3
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Make `CuratedTemplateQuery.executionContextKey` optional to support Data Products with no default execution context.
+
 ## 4.19.2
 
 ## 4.19.1

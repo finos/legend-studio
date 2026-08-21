@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.107
+
+### Patch Changes
+
+- [#5449](https://github.com/finos/legend-studio/pull/5449) [`3d09d32`](https://github.com/finos/legend-studio/commit/3d09d3286e482e835ae80e7b12883cb039e3ebd9) ([@jackp5150](https://github.com/jackp5150)) - Added batching for lambdaRelationType in DataProductViewerState
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Make diagrams optional and omit empty featuredElements/diagrams from serialized json
+
 ## 0.0.106
 
 ### Patch Changes
