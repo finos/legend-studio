@@ -38,8 +38,11 @@ type GraphFetchPanel_TelemtryData = {
 };
 
 export class QueryBuilderTelemetryHelper {
-  static logEvent_QueryRunLaunched(service: TelemetryService): void {
-    service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, {});
+  static logEvent_QueryRunLaunched(
+    service: TelemetryService,
+    data?: Record<string, unknown> | undefined,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__LAUNCH, data ?? {});
   }
 
   static logEvent_ExportQueryDataLaunched(service: TelemetryService): void {
@@ -65,6 +68,20 @@ export class QueryBuilderTelemetryHelper {
     data: QueryExecution_TelemetryData,
   ): void {
     service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__SUCCESS, data);
+  }
+
+  static logEvent_QueryRunFailed(
+    service: TelemetryService,
+    data: { errorMessage: string } & Record<string, unknown>,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__FAILURE, data);
+  }
+
+  static logEvent_QueryRunCancelled(
+    service: TelemetryService,
+    data?: Record<string, unknown> | undefined,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.RUN_QUERY__CANCELLED, data ?? {});
   }
 
   static logEvent_ExportQueryDataSucceeded(
