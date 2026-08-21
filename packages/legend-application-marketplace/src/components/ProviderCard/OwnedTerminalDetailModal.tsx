@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Box,
@@ -39,6 +39,7 @@ import {
   CategoryChip,
   OrderProfileModalHeader,
 } from './OrderProfileModalHeader.js';
+import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 
 export const OwnedTerminalDetailModal = observer(
   (props: {
@@ -48,11 +49,28 @@ export const OwnedTerminalDetailModal = observer(
   }): JSX.Element => {
     const { terminal, open, onClose } = props;
 
-    const ownedAddons = terminal.items ?? [];
+    const ownedAddons = useMemo(() => terminal.items ?? [], [terminal.items]);
     const addOnCount = ownedAddons.length;
     const summaryLine = `1 Terminal · ${addOnCount} Add-On${addOnCount === 1 ? '' : 's'}`;
     const totalPrice =
       terminal.price + ownedAddons.reduce((sum, addon) => sum + addon.price, 0);
+
+    const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
+      () => new Set(),
+    );
+    const categoryOptions = useMemo(
+      () =>
+        Array.from(
+          new Set([terminal, ...ownedAddons].map((item) => item.category)),
+        ).sort((a, b) => a.localeCompare(b)),
+      [terminal, ownedAddons],
+    );
+    const showTerminalRow =
+      categoryFilter.size === 0 || categoryFilter.has(terminal.category);
+    const filteredAddons =
+      categoryFilter.size === 0
+        ? ownedAddons
+        : ownedAddons.filter((addon) => categoryFilter.has(addon.category));
 
     return (
       <Dialog
@@ -84,7 +102,15 @@ export const OwnedTerminalDetailModal = observer(
                     {OrderProfileTableHeader.PRODUCT_NAME}
                   </TableCell>
                   <TableCell className="order-profile-modal__table-header-cell">
-                    {OrderProfileTableHeader.CATEGORY}
+                    <Box className="order-profile-modal__table-header-cell-content">
+                      <span>{OrderProfileTableHeader.CATEGORY}</span>
+                      <ColumnFilterButton
+                        columnLabel="Category"
+                        options={categoryOptions}
+                        selected={categoryFilter}
+                        onChange={setCategoryFilter}
+                      />
+                    </Box>
                   </TableCell>
                   <TableCell
                     align="center"
@@ -95,30 +121,32 @@ export const OwnedTerminalDetailModal = observer(
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow
-                  key={`terminal-${terminal.id}`}
-                  className="order-profile-modal__table-row"
-                >
-                  <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">
-                    <Box className="order-profile-modal__product-name-wrapper">
-                      <Box className="order-profile-modal__row-accent order-profile-modal__row-accent--vendor-profile" />
-                      <span>{terminal.productName}</span>
-                    </Box>
-                  </TableCell>
-                  <TableCell className="order-profile-modal__table-cell">
-                    <CategoryChip
-                      category={terminal.category}
-                      isTerminal={true}
-                    />
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    className="order-profile-modal__table-cell order-profile-modal__table-cell--price"
+                {showTerminalRow && (
+                  <TableRow
+                    key={`terminal-${terminal.id}`}
+                    className="order-profile-modal__table-row"
                   >
-                    {formatItemPrice(terminal.price)}
-                  </TableCell>
-                </TableRow>
-                {ownedAddons.map((addon) => (
+                    <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">
+                      <Box className="order-profile-modal__product-name-wrapper">
+                        <Box className="order-profile-modal__row-accent order-profile-modal__row-accent--vendor-profile" />
+                        <span>{terminal.productName}</span>
+                      </Box>
+                    </TableCell>
+                    <TableCell className="order-profile-modal__table-cell">
+                      <CategoryChip
+                        category={terminal.category}
+                        isTerminal={true}
+                      />
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      className="order-profile-modal__table-cell order-profile-modal__table-cell--price"
+                    >
+                      {formatItemPrice(terminal.price)}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {filteredAddons.map((addon) => (
                   <TableRow
                     key={`${addon.id}-${addon.model ?? ''}`}
                     className="order-profile-modal__table-row"

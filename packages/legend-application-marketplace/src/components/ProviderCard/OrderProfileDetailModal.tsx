@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
@@ -43,6 +43,7 @@ import {
   CategoryChip,
   OrderProfileModalHeader,
 } from './OrderProfileModalHeader.js';
+import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 
 export const OrderProfileDetailModal = observer(
   (props: {
@@ -56,6 +57,20 @@ export const OrderProfileDetailModal = observer(
     const items = profile.items;
     const { terminalCount, addOnCount } = getItemSummary(items);
     const groupedItems = groupOrderProfileItems(items);
+    const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
+      () => new Set(),
+    );
+    const categoryOptions = useMemo(
+      () =>
+        Array.from(new Set(items.map((item) => item.category))).sort((a, b) =>
+          a.localeCompare(b),
+        ),
+      [items],
+    );
+    const filteredGroupedItems =
+      categoryFilter.size === 0
+        ? groupedItems
+        : groupedItems.filter(({ item }) => categoryFilter.has(item.category));
     const displayPrice =
       profile.multiselect && multiselectTotalPrice !== undefined
         ? multiselectTotalPrice
@@ -91,7 +106,15 @@ export const OrderProfileDetailModal = observer(
                     {OrderProfileTableHeader.PRODUCT_NAME}
                   </TableCell>
                   <TableCell className="order-profile-modal__table-header-cell">
-                    {OrderProfileTableHeader.CATEGORY}
+                    <Box className="order-profile-modal__table-header-cell-content">
+                      <span>{OrderProfileTableHeader.CATEGORY}</span>
+                      <ColumnFilterButton
+                        columnLabel="Category"
+                        options={categoryOptions}
+                        selected={categoryFilter}
+                        onChange={setCategoryFilter}
+                      />
+                    </Box>
                   </TableCell>
                   <TableCell
                     align="center"
@@ -102,7 +125,7 @@ export const OrderProfileDetailModal = observer(
                 </TableRow>
               </TableHead>
               <TableBody>
-                {groupedItems.map(({ item, isSubItem }) => {
+                {filteredGroupedItems.map(({ item, isSubItem }) => {
                   const isInCart =
                     !item.isOwned &&
                     (item.isTerminal

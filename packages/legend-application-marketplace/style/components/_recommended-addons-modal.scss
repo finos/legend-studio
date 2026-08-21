@@ -317,10 +317,16 @@
   }
 
   &__header-name,
-  &__header-provider,
   &__header-price {
     display: flex;
     align-items: center;
+    white-space: nowrap;
+  }
+
+  &__header-provider {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
     white-space: nowrap;
   }
 
@@ -328,6 +334,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 0.2rem;
   }
 
   &__list-item {

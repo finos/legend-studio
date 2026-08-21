@@ -61,7 +61,9 @@ import {
   type VendorAddonsSearchResponse,
 } from '@finos/legend-server-marketplace';
 import { RecommendedItemsCard } from './RecommendedItemsCard.js';
+import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import type { CartStore } from '../../stores/cart/CartStore.js';
 import {
   assertErrorThrown,
   LogEvent,
@@ -92,34 +94,102 @@ const MAX_DISPLAY_ITEMS_COUNT = 10;
 const ITEMS_PER_PAGE_LIST = [10, 15, 25, 50];
 const SERVER_SEARCH_PAGE_SIZE = 300;
 
-const ListHeader = (props: { headerName: string }) => (
-  <Box className="recommended-addons-modal__list-header">
-    <Typography
-      variant="subtitle2"
-      className="recommended-addons-modal__header-name"
-    >
-      {props.headerName}
-    </Typography>
-    <Typography
-      variant="subtitle2"
-      className="recommended-addons-modal__header-provider"
-    >
-      Category
-    </Typography>
-    <Typography
-      variant="subtitle2"
-      className="recommended-addons-modal__header-price"
-    >
-      Price (monthly)
-    </Typography>
-    <Typography
-      variant="subtitle2"
-      className="recommended-addons-modal__header-action"
-    >
-      Action
-    </Typography>
-  </Box>
-);
+const ACTION_STATUS_OWNED = 'Owned';
+const ACTION_STATUS_IN_CART = 'In Cart';
+const ACTION_STATUS_ADD_TO_CART = 'Add to Cart';
+const ACTION_STATUS_OPTIONS = [
+  ACTION_STATUS_OWNED,
+  ACTION_STATUS_IN_CART,
+  ACTION_STATUS_ADD_TO_CART,
+];
+
+const getItemActionStatus = (
+  item: TerminalResult,
+  cartStore: CartStore,
+): string => {
+  if (item.isOwned) {
+    return ACTION_STATUS_OWNED;
+  }
+  if (cartStore.isItemInCart(item.id)) {
+    return ACTION_STATUS_IN_CART;
+  }
+  return ACTION_STATUS_ADD_TO_CART;
+};
+
+const filterItemsByColumnFilters = (
+  items: TerminalResult[],
+  categoryFilter: ReadonlySet<string>,
+  actionFilter: ReadonlySet<string>,
+  cartStore: CartStore,
+): TerminalResult[] =>
+  items.filter((item) => {
+    if (categoryFilter.size > 0 && !categoryFilter.has(item.category)) {
+      return false;
+    }
+    if (
+      actionFilter.size > 0 &&
+      !actionFilter.has(getItemActionStatus(item, cartStore))
+    ) {
+      return false;
+    }
+    return true;
+  });
+
+interface ListHeaderProps {
+  headerName: string;
+  categoryOptions: string[];
+  categoryFilter: ReadonlySet<string>;
+  onCategoryFilterChange: (next: Set<string>) => void;
+  actionOptions: string[];
+  actionFilter: ReadonlySet<string>;
+  onActionFilterChange: (next: Set<string>) => void;
+}
+
+const ListHeader = (props: ListHeaderProps): JSX.Element => {
+  const {
+    headerName,
+    categoryOptions,
+    categoryFilter,
+    onCategoryFilterChange,
+    actionOptions,
+    actionFilter,
+    onActionFilterChange,
+  } = props;
+  return (
+    <Box className="recommended-addons-modal__list-header">
+      <Typography
+        variant="subtitle2"
+        className="recommended-addons-modal__header-name"
+      >
+        {headerName}
+      </Typography>
+      <Box className="recommended-addons-modal__header-provider">
+        <Typography variant="subtitle2">Category</Typography>
+        <ColumnFilterButton
+          columnLabel="Category"
+          options={categoryOptions}
+          selected={categoryFilter}
+          onChange={onCategoryFilterChange}
+        />
+      </Box>
+      <Typography
+        variant="subtitle2"
+        className="recommended-addons-modal__header-price"
+      >
+        Price (monthly)
+      </Typography>
+      <Box className="recommended-addons-modal__header-action">
+        <Typography variant="subtitle2">Action</Typography>
+        <ColumnFilterButton
+          columnLabel="Action"
+          options={actionOptions}
+          selected={actionFilter}
+          onChange={onActionFilterChange}
+        />
+      </Box>
+    </Box>
+  );
+};
 
 const getFilteredAndSortedItems = (
   recommendedItems: TerminalResult[],
@@ -310,6 +380,12 @@ interface MultiSourceContentProps {
   isAssociating: boolean;
   associatingItemId: number | undefined;
   onAssociate: (item: TerminalResult) => Promise<boolean> | boolean;
+  categoryOptions: string[];
+  categoryFilter: ReadonlySet<string>;
+  onCategoryFilterChange: (next: Set<string>) => void;
+  actionOptions: string[];
+  actionFilter: ReadonlySet<string>;
+  onActionFilterChange: (next: Set<string>) => void;
 }
 
 const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
@@ -321,7 +397,37 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
     isAssociating,
     associatingItemId,
     onAssociate,
+    categoryOptions,
+    categoryFilter,
+    onCategoryFilterChange,
+    actionOptions,
+    actionFilter,
+    onActionFilterChange,
   } = props;
+
+  const listHeaderFilterProps = {
+    categoryOptions,
+    categoryFilter,
+    onCategoryFilterChange,
+    actionOptions,
+    actionFilter,
+    onActionFilterChange,
+  };
+
+  if (
+    cartSourceItems.length === 0 &&
+    inventorySourceItems.length === 0 &&
+    marketplaceSourceItems.length === 0
+  ) {
+    return (
+      <Box className="recommended-addons-modal__empty-state">
+        <Typography variant="body1">
+          No items match your search criteria.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
     <Box className="recommended-addons-modal__association-content">
       {cartSourceItems.length > 0 && (
@@ -341,7 +447,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
             </Typography>
           </Box>
           <Box className="recommended-addons-modal__list">
-            <ListHeader headerName={headerName} />
+            <ListHeader headerName={headerName} {...listHeaderFilterProps} />
             {cartSourceItems.map((item) => (
               <RecommendedItemsCard
                 key={item.id}
@@ -376,7 +482,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
             </Typography>
           </Box>
           <Box className="recommended-addons-modal__list">
-            <ListHeader headerName={headerName} />
+            <ListHeader headerName={headerName} {...listHeaderFilterProps} />
             {inventorySourceItems.map((item) => (
               <RecommendedItemsCard
                 key={item.id}
@@ -410,7 +516,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
             </Typography>
           </Box>
           <Box className="recommended-addons-modal__list">
-            <ListHeader headerName={headerName} />
+            <ListHeader headerName={headerName} {...listHeaderFilterProps} />
             {marketplaceSourceItems.map((item) => (
               <RecommendedItemsCard
                 key={item.id}
@@ -613,11 +719,19 @@ export const RecommendedAddOnsModal = observer(
     const [sortOrder, setSortOrder] = useState<SortOrder | undefined>();
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(15);
+    const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
+      () => new Set(),
+    );
+    const [actionFilter, setActionFilter] = useState<Set<string>>(
+      () => new Set(),
+    );
 
     const isTerminalAdded =
       terminal?.terminalItemType === TerminalItemType.TERMINAL;
     const isAddOnAssociation = !isTerminalAdded;
-    const headerName = isTerminalAdded ? 'Add-On Name' : 'Terminal Name';
+    const isPermissionOverride = overridePermissionId !== undefined;
+    const headerName =
+      isTerminalAdded || isPermissionOverride ? 'Add-On Name' : 'Terminal Name';
 
     const {
       terminalSearchResults,
@@ -682,7 +796,26 @@ export const RecommendedAddOnsModal = observer(
       ],
     );
 
-    const totalPages = Math.ceil(filteredAndSortedItems.length / itemsPerPage);
+    const categoryOptions = useMemo(
+      () =>
+        Array.from(new Set(recommendedItems.map((item) => item.category))).sort(
+          (a, b) => a.localeCompare(b),
+        ),
+      [recommendedItems],
+    );
+
+    const columnFilteredItems = useMemo(
+      () =>
+        filterItemsByColumnFilters(
+          filteredAndSortedItems,
+          categoryFilter,
+          actionFilter,
+          cartStore,
+        ),
+      [filteredAndSortedItems, categoryFilter, actionFilter, cartStore],
+    );
+
+    const totalPages = Math.ceil(columnFilteredItems.length / itemsPerPage);
     const mandatoryAddOns = useMemo(
       () =>
         filteredAndSortedItems
@@ -693,14 +826,16 @@ export const RecommendedAddOnsModal = observer(
     const paginatedItems = useMemo(() => {
       const startIndex = (currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
-      return filteredAndSortedItems.slice(startIndex, endIndex);
-    }, [filteredAndSortedItems, currentPage, itemsPerPage]);
+      return columnFilteredItems.slice(startIndex, endIndex);
+    }, [columnFilteredItems, currentPage, itemsPerPage]);
 
     const closeModal = useCallback(() => {
       setShowModal(false);
       setSearchTerm('');
       setSortOrder(undefined);
       setCurrentPage(1);
+      setCategoryFilter(new Set());
+      setActionFilter(new Set());
       resetSearch();
     }, [setShowModal, resetSearch]);
 
@@ -798,11 +933,20 @@ export const RecommendedAddOnsModal = observer(
       setCurrentPage(1);
     };
 
+    const handleCategoryFilterChange = useCallback((next: Set<string>) => {
+      setCategoryFilter(next);
+      setCurrentPage(1);
+    }, []);
+
+    const handleActionFilterChange = useCallback((next: Set<string>) => {
+      setActionFilter(next);
+      setCurrentPage(1);
+    }, []);
+
     if (!showModal) {
       return null;
     }
 
-    const isPermissionOverride = overridePermissionId !== undefined;
     const isTerminalType =
       terminal?.terminalItemType === TerminalItemType.TERMINAL;
 
@@ -814,8 +958,17 @@ export const RecommendedAddOnsModal = observer(
     );
 
     // Pre-compute JSX branches to avoid nested ternary expressions (S3358).
+    const hasActiveColumnFilters =
+      categoryFilter.size > 0 || actionFilter.size > 0;
+    const baseTotalCount =
+      (terminalSearchResults ? searchTotalCount : initialTotalCount) ??
+      filteredAndSortedItems.length;
+    const displayTotalCount = hasActiveColumnFilters
+      ? columnFilteredItems.length
+      : baseTotalCount;
+
     const itemsOrEmpty: JSX.Element =
-      filteredAndSortedItems.length === 0 ? (
+      columnFilteredItems.length === 0 ? (
         <Box className="recommended-addons-modal__empty-state">
           <Typography variant="body1">
             No items match your search criteria.
@@ -832,18 +985,20 @@ export const RecommendedAddOnsModal = observer(
               }}
             >
               Showing {(currentPage - 1) * itemsPerPage + 1} -{' '}
-              {Math.min(
-                currentPage * itemsPerPage,
-                filteredAndSortedItems.length,
-              )}{' '}
-              of{' '}
-              {(terminalSearchResults ? searchTotalCount : initialTotalCount) ??
-                filteredAndSortedItems.length}{' '}
-              items
+              {Math.min(currentPage * itemsPerPage, columnFilteredItems.length)}{' '}
+              of {displayTotalCount} items
             </Typography>
           </Box>
           <Box className="recommended-addons-modal__list">
-            <ListHeader headerName={headerName} />
+            <ListHeader
+              headerName={headerName}
+              categoryOptions={categoryOptions}
+              categoryFilter={categoryFilter}
+              onCategoryFilterChange={handleCategoryFilterChange}
+              actionOptions={ACTION_STATUS_OPTIONS}
+              actionFilter={actionFilter}
+              onActionFilterChange={handleActionFilterChange}
+            />
             {paginatedItems.map((item) => (
               <RecommendedItemsCard
                 key={item.id}
@@ -895,13 +1050,34 @@ export const RecommendedAddOnsModal = observer(
     const nonEmptyContent: JSX.Element =
       isAddOnAssociation && hasMultipleSources ? (
         <MultiSourceContent
-          cartSourceItems={cartSourceItems}
-          inventorySourceItems={inventorySourceItems}
-          marketplaceSourceItems={marketplaceSourceItems}
+          cartSourceItems={filterItemsByColumnFilters(
+            cartSourceItems,
+            categoryFilter,
+            actionFilter,
+            cartStore,
+          )}
+          inventorySourceItems={filterItemsByColumnFilters(
+            inventorySourceItems,
+            categoryFilter,
+            actionFilter,
+            cartStore,
+          )}
+          marketplaceSourceItems={filterItemsByColumnFilters(
+            marketplaceSourceItems,
+            categoryFilter,
+            actionFilter,
+            cartStore,
+          )}
           headerName={headerName}
           isAssociating={cartStore.associationState.isInProgress}
           associatingItemId={cartStore.associatingItemId}
           onAssociate={handleAssociateTerminal}
+          categoryOptions={categoryOptions}
+          categoryFilter={categoryFilter}
+          onCategoryFilterChange={handleCategoryFilterChange}
+          actionOptions={ACTION_STATUS_OPTIONS}
+          actionFilter={actionFilter}
+          onActionFilterChange={handleActionFilterChange}
         />
       ) : (
         <>

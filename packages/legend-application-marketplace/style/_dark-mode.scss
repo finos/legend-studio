@@ -4574,7 +4574,12 @@
     }
 
     &__table-header-cell {
-      color: var(--color-dark-theme-text-secondary);
+      // MUI's `stickyHeader` TableCell variant applies an inline
+      // `background-color: theme.palette.background.default` (white, since
+      // the app never switches the underlying MUI theme palette to dark
+      // mode). Override it so the header doesn't render as a white bar.
+      background-color: var(--color-dark-theme-bg-tertiary) !important;
+      color: var(--color-dark-theme-text-secondary) !important;
       border-bottom-color: var(--color-dark-theme-border) !important;
     }
 
