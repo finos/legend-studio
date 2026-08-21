@@ -298,10 +298,6 @@ const useVendorAddonSearch = (
 const isMandatoryItem = (item: TerminalResult): boolean =>
   Boolean(item.isMandatory) && Boolean(item.productName);
 
-// ─── Multi-source terminal association content ───────────────────────────────
-// Extracted to its own component to keep RecommendedAddOnsModal's cognitive
-// complexity within the allowed threshold (SonarQube S3776).
-
 interface MultiSourceContentProps {
   cartSourceItems: TerminalResult[];
   inventorySourceItems: TerminalResult[];
@@ -468,9 +464,6 @@ const MandatoryAddOnsAlert = (props: {
     </Box>
   );
 };
-
-// ─── Filter controls component ───────────────────────────────────────────────
-// Extracted to reduce cognitive complexity of RecommendedAddOnsModal (S3776).
 
 interface FilterControlsProps {
   searchTerm: string;

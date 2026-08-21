@@ -19,44 +19,26 @@ import { observer } from 'mobx-react-lite';
 import {
   Box,
   Button,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  IconButton,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
 } from '@mui/material';
-import { clsx, CloseIcon, DocumentIcon } from '@finos/legend-art';
 import { type TerminalResult } from '@finos/legend-server-marketplace';
 import {
   formatItemPrice,
   OrderProfileLabel,
   OrderProfileTableHeader,
 } from './orderProfileUtils.js';
-
-const CategoryChip = (props: {
-  category: string;
-  isTerminal: boolean;
-}): JSX.Element => {
-  const { category, isTerminal } = props;
-  return (
-    <Chip
-      label={category}
-      size="small"
-      className={clsx({
-        'order-profile-modal__category-chip--terminal': isTerminal,
-        'order-profile-modal__category-chip--addon': !isTerminal,
-      })}
-    />
-  );
-};
+import {
+  CategoryChip,
+  OrderProfileModalHeader,
+} from './OrderProfileModalHeader.js';
 
 export const OwnedTerminalDetailModal = observer(
   (props: {
@@ -81,38 +63,13 @@ export const OwnedTerminalDetailModal = observer(
         className="order-profile-modal"
         aria-labelledby="owned-terminal-modal-title"
       >
-        <DialogTitle
-          id="owned-terminal-modal-title"
-          className="order-profile-modal__header"
-        >
-          <Box className="order-profile-modal__header-content">
-            <Box className="order-profile-modal__header-title">
-              <DocumentIcon className="order-profile-modal__header-icon" />
-              <Typography
-                variant="h6"
-                className="order-profile-modal__profile-name"
-              >
-                {terminal.productName}
-              </Typography>
-            </Box>
-            <IconButton
-              onClick={onClose}
-              size="small"
-              aria-label="close"
-              className="order-profile-modal__close-button"
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <Typography
-            variant="body2"
-            className="order-profile-modal__header-summary"
-          >
-            {summaryLine}
-            {OrderProfileLabel.PRICE_TOTAL_SEPARATOR}
-            <strong>{formatItemPrice(totalPrice)}</strong>
-          </Typography>
-        </DialogTitle>
+        <OrderProfileModalHeader
+          titleId="owned-terminal-modal-title"
+          productName={terminal.productName}
+          summaryLine={summaryLine}
+          totalPrice={totalPrice}
+          onClose={onClose}
+        />
 
         <DialogContent className="order-profile-modal__content" dividers={true}>
           <TableContainer>

@@ -32,6 +32,7 @@ import { type ReactNode, useState } from 'react';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { toastManager } from '../Toast/CartToast.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
+import { formatItemPrice } from '../ProviderCard/orderProfileUtils.js';
 
 interface RecommendedItemsCardProps {
   recommendedItem: TerminalResult;
@@ -245,12 +246,7 @@ export const RecommendedItemsCard = observer(
           variant="body2"
           className="recommended-addons-modal__item-price"
         >
-          {recommendedItem.price.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
+          {formatItemPrice(recommendedItem.price)}
         </Typography>
         <Box className="recommended-addons-modal__item-action">
           {renderAction()}

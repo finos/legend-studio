@@ -247,8 +247,11 @@ const OwnedServicesSection = observer(
       vendorDataState.applicationStore.identityService.currentUser;
     const isTargetUserActive =
       vendorDataState.selectedUser.id !== currentUserId;
+    const selectedUserName =
+      vendorDataState.selectedUser.displayName?.trim() ||
+      vendorDataState.selectedUser.id;
     const titleText = isTargetUserActive
-      ? `${vendorDataState.selectedUser.displayName ?? vendorDataState.selectedUser.id}'s Terminal Subscriptions`
+      ? `${selectedUserName}'s Terminal Subscriptions`
       : 'My Terminal Subscriptions';
 
     return (
