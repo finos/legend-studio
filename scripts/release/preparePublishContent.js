@@ -166,9 +166,12 @@ const preparePublishContent = async () => {
       },
     );
 
+    // Remove `publishConfig` from the package.json written to the publish content directory
+    // to avoid npm following `publishConfig.directory` recursively when publishing from this directory
+    const { publishConfig: _publishConfig, ...publishPackageJson } = packageJson;
     writeFileSync(
       resolve(publishContentDir, 'package.json'),
-      JSON.stringify(packageJson, undefined, 2),
+      JSON.stringify(publishPackageJson, undefined, 2),
     );
     console.log(
       chalk.green(
