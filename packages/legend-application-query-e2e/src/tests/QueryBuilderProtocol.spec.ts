@@ -20,6 +20,7 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  asCollection,
   asFunction,
   asProperty,
   at,
@@ -184,4 +185,116 @@ test('the generated lambda matches the query built in the UI', async ({
   expect(postFilterColumn.property).toBe('getFloat');
   expect(getValue(at(postFilterColumn.parameters, 1))).toBe('Cases');
   expect(getValue(at(postFilterCondition.parameters, 1))).toBe(200);
+});
+
+test('an aggregation produces a groupBy lambda with the right aggregate', async ({
+  page,
+}) => {
+  const explorer = page.getByTestId('query__builder__explorer');
+  const projectionPanel = page.getByTestId('query__builder__tds__projection');
+
+  // group by `Case Type`, aggregating `Cases` with `sum`
+  await explorer
+    .getByText('Case Type', { exact: true })
+    .dragTo(projectionPanel);
+  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
+  const casesColumn = page
+    .getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN')
+    .filter({ hasText: 'Cases' });
+  await casesColumn.getByTitle('Choose Aggregate Operator...').click();
+  await page
+    .locator(
+      '.query-builder__projection__column__aggregate__operator__dropdown__option',
+      { hasText: /^sum$/ },
+    )
+    .click();
+
+  await page
+    .getByTestId('query__builder__result__panel')
+    .getByText('Run Query', { exact: true })
+    .click();
+  await expect(
+    page.locator('.ag-center-cols-container .ag-row'),
+  ).not.toHaveCount(0);
+
+  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
+    .function;
+
+  // aggregating replaces `project` with `groupBy`
+  expect(getFunctionChain(lambda)).toEqual(['take', 'groupBy', 'getAll']);
+
+  const groupBy = getChainedFunction(lambda, 1);
+  // grouped-by columns, then aggregations, then the resulting column names
+  expect(getCollectionProperties(at(groupBy.parameters, 1))).toEqual([
+    'caseType',
+  ]);
+  expect(getCollectionValues(at(groupBy.parameters, 3))).toEqual([
+    'Case Type',
+    'Cases (sum)',
+  ]);
+
+  // the aggregation reads `cases` and reduces it with `sum`
+  const aggregation = asFunction(
+    at(asCollection(at(groupBy.parameters, 2)).values, 0),
+    'agg',
+  );
+  expect(
+    asProperty(getLambdaBody(at(aggregation.parameters, 0))).property,
+  ).toBe('cases');
+  asFunction(getLambdaBody(at(aggregation.parameters, 1)), 'sum');
+});
+
+test('a window function produces an olapGroupBy lambda', async ({ page }) => {
+  const explorer = page.getByTestId('query__builder__explorer');
+  const projectionPanel = page.getByTestId('query__builder__tds__projection');
+
+  await explorer
+    .getByText('Case Type', { exact: true })
+    .dragTo(projectionPanel);
+  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
+
+  await page
+    .getByTestId('query__builder__actions')
+    .getByRole('button', { name: 'Advanced' })
+    .click();
+  await page.getByText('Show Window Function(s)').click();
+  const windowPanel = page.getByTestId('query__builder__window');
+  await windowPanel
+    .getByRole('button', { name: 'Create Window Function Column' })
+    .click();
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Create', exact: true })
+    .click();
+  await expect(
+    windowPanel.locator('.query-builder__olap__column__operation'),
+  ).toHaveCount(1);
+
+  await page
+    .getByTestId('query__builder__result__panel')
+    .getByText('Run Query', { exact: true })
+    .click();
+  await expect(
+    page.locator('.ag-center-cols-container .ag-row'),
+  ).not.toHaveCount(0);
+
+  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
+    .function;
+
+  // the window function wraps the projection in an `olapGroupBy`
+  expect(getFunctionChain(lambda)).toEqual([
+    'take',
+    'olapGroupBy',
+    'project',
+    'getAll',
+  ]);
+
+  const olapGroupBy = getChainedFunction(lambda, 1);
+  // the default window function partitions by nothing...
+  expect(asCollection(at(olapGroupBy.parameters, 1)).values).toHaveLength(0);
+  // ...applies `sum` over the first column, and names the output after it
+  const windowOperator = asFunction(at(olapGroupBy.parameters, 2), 'func');
+  expect(getValue(at(windowOperator.parameters, 0))).toBe('Case Type');
+  asFunction(getLambdaBody(at(windowOperator.parameters, 1)), 'sum');
+  expect(getValue(at(olapGroupBy.parameters, 3))).toBe('sum of Case Type');
 });
