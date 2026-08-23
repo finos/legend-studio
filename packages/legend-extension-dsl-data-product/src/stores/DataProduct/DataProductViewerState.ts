@@ -344,7 +344,7 @@ export class DataProductViewerState extends BaseViewerState<
   getModelAccessPointDiagrams(): DiagramAnalysisResult[] {
     const modelAPG = this.getModelAccessPointGroup();
 
-    if (!modelAPG || modelAPG.diagrams.length === 0) {
+    if (!modelAPG?.diagrams?.length) {
       return [];
     }
 

@@ -202,16 +202,18 @@ export const V1_buildAccessPointGroup = (
     group.mapping = PackageableElementExplicitReference.create(
       context.graph.getMapping(elementGroup.mapping.path),
     );
-    group.diagrams = elementGroup.diagrams.map((diagram) => {
-      const metadatamodelDiagram = new DataProductDiagram();
-      metadatamodelDiagram.diagram = context.graph.getElement(
-        diagram.diagram.path,
-      );
-      metadatamodelDiagram.title = diagram.title;
-      metadatamodelDiagram.description = diagram.description;
-      return metadatamodelDiagram;
-    });
-    if (elementGroup.featuredElements) {
+    if (elementGroup.diagrams?.length) {
+      group.diagrams = elementGroup.diagrams.map((diagram) => {
+        const metadatamodelDiagram = new DataProductDiagram();
+        metadatamodelDiagram.diagram = context.graph.getElement(
+          diagram.diagram.path,
+        );
+        metadatamodelDiagram.title = diagram.title;
+        metadatamodelDiagram.description = diagram.description;
+        return metadatamodelDiagram;
+      });
+    }
+    if (elementGroup.featuredElements?.length) {
       group.featuredElements = elementGroup.featuredElements.map((pointer) => {
         const elementReference = context.resolveElement(
           pointer.element.path,
