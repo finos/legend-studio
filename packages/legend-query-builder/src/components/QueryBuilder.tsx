@@ -79,6 +79,7 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
+import { QueryAgentChat } from './QueryAgentChat.js';
 import { Fragment, useEffect, useRef } from 'react';
 import { RedoButton, UndoButton } from '@finos/legend-lego/application';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
@@ -245,6 +246,9 @@ export const QueryBuilder = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
+    const showQueryAgentChatPanel =
+      queryBuilderState.isAgentChatOpened &&
+      !queryBuilderState.config?.TEMPORARY__disableQueryBuilderAgentChat;
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
     const openPure = (): void =>
@@ -1028,6 +1032,14 @@ export const QueryBuilder = observer(
                           {renderPostFetchStructure()}
                         </ResizablePanel>
                       )}
+                      {showQueryAgentChatPanel && <ResizablePanelSplitter />}
+                      {showQueryAgentChatPanel && (
+                        <ResizablePanel size={450}>
+                          <QueryAgentChat
+                            queryBuilderState={queryBuilderState}
+                          />
+                        </ResizablePanel>
+                      )}
                     </ResizablePanelGroup>
                   ) : (
                     <QueryBuilderUnsupportedQueryEditor
@@ -1114,9 +1126,9 @@ export const QueryBuilder = observer(
             />
           )}
         </div>
-        {queryBuilderState.workflowState.showStatusBar ? (
+        {queryBuilderState.workflowState.showStatusBar && (
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
-        ) : null}
+        )}
       </div>
     );
   },
