@@ -100,7 +100,10 @@ const resolveExecutionContextRuntimes = (
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.get(
         queryBuilderState.executionContext.name,
       );
-    return guaranteeNonNullable(executionContext).compatibleRuntimes;
+    return guaranteeNonNullable(
+      executionContext,
+      `No execution context '${queryBuilderState.executionContext.name}' defined for data product '${queryBuilderState.dataSpace.path}'`,
+    ).compatibleRuntimes;
   }
   return getMappingCompatibleRuntimes(
     currentMapping,
