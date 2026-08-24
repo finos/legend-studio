@@ -24,7 +24,6 @@ import type { PlainObject } from '@finos/legend-shared';
 import { DSL_DataSpace_GraphManagerPreset } from '../DSL_DataSpace_GraphManagerPreset.js';
 import { DSL_DataSpace_getGraphManagerExtension } from '../protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import type { DataSpaceAnalysisResult } from '../action/analytics/DataSpaceAnalysis.js';
-import type { V1_DataSpaceAnalysisResult } from '../protocol/pure/v1/engine/analytics/V1_DataSpaceAnalysis.js';
 import {
   TEST_DATA__analysisResult_contextWithoutMappingOrRuntime,
   TEST_DATA__analysisResult_danglingDefaultExecutionContext,
@@ -49,7 +48,7 @@ const buildAnalytics = async (
   return DSL_DataSpace_getGraphManagerExtension(
     graphManagerState.graphManager,
   ).buildDataSpaceAnalytics(
-    json as PlainObject<V1_DataSpaceAnalysisResult>,
+    json as PlainObject,
     pluginManager.getPureProtocolProcessorPlugins(),
   );
 };
