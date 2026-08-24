@@ -63,4 +63,13 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_AI_AGENT_SUGGESTED_QUERY = 'marketplace.click.ai-agent.suggested-query',
   AI_AGENT_CLEAR_CHAT = 'marketplace.ai-agent.clear-chat',
   CLICK_AI_AGENT_COPY_SQL = 'marketplace.click.ai-agent.copy-sql',
+  CLICK_AI_AGENT_GENERATE_PYTHON = 'marketplace.click.ai-agent.generate-python',
+  CLICK_AI_AGENT_COPY_PYTHON = 'marketplace.click.ai-agent.copy-python',
+  CLICK_AI_AGENT_OPEN_IN_DATACUBE = 'marketplace.click.ai-agent.open-in-datacube',
+  AI_AGENT_DATACUBE_TRANSLATE_FAILURE = 'marketplace.ai-agent.datacube.translate.failure',
+  AI_AGENT_DATASPACE_CONTEXT_RESOLUTION_FAILURE = 'marketplace.ai-agent.dataspace.context-resolution.failure',
+  AI_AGENT_ACCESS_POINT_RESOLUTION_FAILURE = 'marketplace.ai-agent.access-point.resolution.failure',
+  AI_AGENT_ENTITY_DISAMBIGUATION_FAILURE = 'marketplace.ai-agent.entity.disambiguation.failure',
+  AI_AGENT_FIELD_SEARCH_PARSE_FAILURE = 'marketplace.ai-agent.field-search.parse.failure',
+  AI_AGENT_OPEN_DATACUBE_FAILURE = 'marketplace.ai-agent.open-datacube.failure',
 }

@@ -15,11 +15,17 @@
  */
 
 import {
+  type AbstractPureGraphManager,
   type Multiplicity,
   extractElementNameFromPath,
   PRIMITIVE_TYPE,
+  GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
-import { isNonNullable } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  isNonNullable,
+  LogEvent,
+} from '@finos/legend-shared';
 import {
   ClassDocumentationEntry,
   AssociationDocumentationEntry,
@@ -36,6 +42,7 @@ import type {
   LegendAIModelEntity,
   LegendAIModelAssociation,
   LegendAIModelProperty,
+  LegendAIFunctionInfo,
 } from './LegendAITypes.js';
 import type {
   LegendAIEnrichedBusinessContext,
@@ -247,6 +254,8 @@ function findDirectRelationship(
   return undefined;
 }
 
+const MAX_SERVICE_RELATIONSHIPS = 25;
+
 /**
  * Infers cross-service relationships from association documentation entries.
  *
@@ -258,6 +267,9 @@ function findDirectRelationship(
  * - Which columns to JOIN on (shared column names)
  *
  * Used by both Data Space and Data Product AI integrations.
+ *
+ * Capped at {@link MAX_SERVICE_RELATIONSHIPS}: the pair space is quadratic in
+ * the service count, and every entry is rendered into the metadata prompt.
  */
 export function inferServiceRelationshipsFromAssociations(
   services: TDSServiceSchema[],
@@ -268,12 +280,10 @@ export function inferServiceRelationshipsFromAssociations(
   const relationships: LegendAIServiceRelationship[] = [];
   const seen = new Set<string>();
 
-  for (let i = 0; i < services.length; i++) {
-    for (let j = i + 1; j < services.length; j++) {
-      const svcA = services[i];
-      const svcB = services[j];
-      if (!svcA || !svcB) {
-        continue;
+  for (const [index, svcA] of services.entries()) {
+    for (const svcB of services.slice(index + 1)) {
+      if (relationships.length >= MAX_SERVICE_RELATIONSHIPS) {
+        return relationships;
       }
       const key = `${svcA.title}|${svcB.title}`;
       if (seen.has(key)) {
@@ -542,6 +552,28 @@ export function extractLambdaPreFilters(
   return results;
 }
 
+/**
+ * Reads the filters already baked into a service query. Best effort: without
+ * them the service still works, the AI just misses its hardcoded constraints.
+ */
+export async function extractServicePreFilters(
+  query: string,
+  graphManager: AbstractPureGraphManager,
+): Promise<TDSServicePreFilter[] | undefined> {
+  try {
+    const rawLambda = await graphManager.pureCodeToLambda(query);
+    const preFilters = extractLambdaPreFilters(rawLambda.body);
+    return preFilters.length > 0 ? preFilters : undefined;
+  } catch (error) {
+    assertErrorThrown(error);
+    graphManager.logService.debug(
+      LogEvent.create(GRAPH_MANAGER_EVENT.PARSING_FAILURE),
+      error,
+    );
+    return undefined;
+  }
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // Model context extraction from DataSpace elementDocs
 // ────────────────────────────────────────────────────────────────────────────
@@ -576,6 +608,9 @@ function collectClassEntities(
     };
     if (cls.docs.length > 0) {
       entity.description = cls.docs.join('; ');
+    }
+    if (cls.milestoning !== undefined) {
+      entity.milestoning = cls.milestoning;
     }
     return entity;
   });
@@ -740,6 +775,13 @@ function buildRootEntityNlHints(
       id: rootEntity,
       description: `${rootEntityObj.name} is queryable via a service executable${execHint} — this entity can be queried with .all()`,
       category: 'queryable_hint',
+    });
+  }
+  if (rootEntityObj.milestoning) {
+    entries.push({
+      id: rootEntity,
+      description: `${rootEntityObj.name} is temporally versioned (${rootEntityObj.milestoning}) — include an as-of/business-date filter to select the intended snapshot`,
+      category: 'milestoning_hint',
     });
   }
   return entries;
@@ -982,6 +1024,7 @@ function buildNlContextEntries(
   entries.push(
     ...buildAssociationNlHints(rootEntity, relatedEntities, modelContext),
     ...buildExecutableNlHints(rootEntity, rootEntityObj, modelContext),
+    ...buildFunctionNlHints(modelContext),
     ...buildValidValueNlHints(
       rootEntity,
       relatedEntities,
@@ -1185,6 +1228,18 @@ export function buildSemanticPropertyIndex(
 // ────────────────────────────────────────────────────────────────────────────
 
 const MAX_RESOLVED_RELATED_ENTITIES = 5;
+const EXECUTABLE_COUNT_SCORE_CAP = 3;
+
+// Counts executables whose root is each entity — a signal of "real query target".
+function buildExecutableCountByRoot(
+  modelContext: LegendAIModelContext,
+): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const exec of modelContext.executables ?? []) {
+    counts.set(exec.rootEntityPath, (counts.get(exec.rootEntityPath) ?? 0) + 1);
+  }
+  return counts;
+}
 
 /**
  * Resolves root and related entities using keyword matching against the model
@@ -1199,6 +1254,7 @@ const MAX_RESOLVED_RELATED_ENTITIES = 5;
  *  - description keyword match (+1)
  *  - executable title/description match (+4)
  *  - semantic property-doc match (+1 per token hit)
+ *  - executable count on the entity (+1 each, capped at 3)
  *
  * When queryable entities exist, only they are eligible as root.
  */
@@ -1274,12 +1330,17 @@ function scoreEntityByProperties(
   return score;
 }
 
+interface EntityScoreIndexes {
+  semanticIndex: Map<string, Set<string>>;
+  executableByRoot: Map<string, string[]>;
+  executableCountByRoot: Map<string, number>;
+  enumValueIndex: Map<string, Set<string>>;
+}
+
 function scoreEntity(
   entity: LegendAIModelEntity,
   tokens: string[],
-  semanticIndex: Map<string, Set<string>>,
-  executableByRoot: Map<string, string[]>,
-  enumValueIndex: Map<string, Set<string>>,
+  indexes: EntityScoreIndexes,
 ): number {
   const nameLower = entity.name.toLowerCase();
   let score =
@@ -1295,15 +1356,22 @@ function scoreEntity(
     const descLower = entity.description.toLowerCase();
     score += tokens.filter((t) => descLower.includes(t)).length;
   }
-  const execWords = executableByRoot.get(entity.path);
+  const execWords = indexes.executableByRoot.get(entity.path);
   if (execWords) {
     score +=
       tokens.filter((t) => execWords.some((w) => w === t || w.includes(t)))
         .length * 4;
   }
-  score += tokens.filter((t) => semanticIndex.get(t)?.has(entity.path)).length;
+  score += Math.min(
+    indexes.executableCountByRoot.get(entity.path) ?? 0,
+    EXECUTABLE_COUNT_SCORE_CAP,
+  );
+  score += tokens.filter((t) =>
+    indexes.semanticIndex.get(t)?.has(entity.path),
+  ).length;
   score +=
-    tokens.filter((t) => enumValueIndex.get(t)?.has(entity.path)).length * 2;
+    tokens.filter((t) => indexes.enumValueIndex.get(t)?.has(entity.path))
+      .length * 2;
   return score;
 }
 
@@ -1311,20 +1379,17 @@ export function rankEntities(
   question: string,
   modelContext: LegendAIModelContext,
 ): { entity: LegendAIModelEntity; score: number }[] {
-  const executableByRoot = buildExecutableByRootIndex(modelContext);
-  const semanticIndex = buildSemanticPropertyIndex(modelContext);
-  const enumValueIndex = buildEnumValueIndex(modelContext);
+  const indexes: EntityScoreIndexes = {
+    semanticIndex: buildSemanticPropertyIndex(modelContext),
+    executableByRoot: buildExecutableByRootIndex(modelContext),
+    executableCountByRoot: buildExecutableCountByRoot(modelContext),
+    enumValueIndex: buildEnumValueIndex(modelContext),
+  };
   const tokens = tokenizeText(question);
   return modelContext.entities
     .map((entity) => ({
       entity,
-      score: scoreEntity(
-        entity,
-        tokens,
-        semanticIndex,
-        executableByRoot,
-        enumValueIndex,
-      ),
+      score: scoreEntity(entity, tokens, indexes),
     }))
     .sort((a, b) => b.score - a.score);
 }
@@ -1489,6 +1554,34 @@ export function extractFilteredColumns(pureQuery: string): string[] {
 }
 
 const MAX_PROBED_VALUES_PER_COLUMN = 30;
+
+const MAX_PRIOR_SQL_HINT_CHARS = 2000;
+
+/**
+ * Builds orchestrator hints describing a prior SQL attempt that failed or
+ * returned no rows, so the Pure query is generated with that context in mind.
+ */
+export function buildPriorSqlFailureHints(
+  failedSql: string | undefined,
+  failedReason: string | undefined,
+): LegendAIAdditionalNlModelContext[] {
+  const entries: LegendAIAdditionalNlModelContext[] = [];
+  if (failedReason !== undefined && failedReason.length > 0) {
+    entries.push({
+      id: 'prior_sql_failure_reason',
+      description: `A prior SQL attempt for this question did not yield a usable answer: ${failedReason.slice(0, MAX_PRIOR_SQL_HINT_CHARS)}. Generate a query using the model's entities, relationships, and functions rather than repeating that approach.`,
+      category: 'prior_sql_failure',
+    });
+  }
+  if (failedSql !== undefined && failedSql.length > 0) {
+    entries.push({
+      id: 'prior_sql_failure_query',
+      description: `The prior SQL that failed or returned 0 rows was: ${failedSql.slice(0, MAX_PRIOR_SQL_HINT_CHARS)}. Avoid the filters or joins that produced no rows.`,
+      category: 'prior_sql_failure',
+    });
+  }
+  return entries;
+}
 
 export function buildProbedValueHints(
   probed: Map<string, string[]>,
@@ -1687,6 +1780,75 @@ function buildExecutableSection(
     );
   }
   return lines.join('\n');
+}
+
+const MAX_MILESTONING_ENTITIES = 15;
+
+// Lists temporally-versioned entities so the LLM adds as-of/business-date filters.
+function buildMilestoningSection(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  const temporal = modelContext.entities.filter((e) => e.milestoning);
+  if (temporal.length === 0) {
+    return undefined;
+  }
+  const lines = [
+    '## Temporal Entities (time-versioned)',
+    'These entities track changes over time — include an as-of/business-date filter to select the intended snapshot:',
+  ];
+  for (const entity of temporal.slice(0, MAX_MILESTONING_ENTITIES)) {
+    lines.push(`- ${entity.name} [${entity.milestoning}]`);
+  }
+  if (temporal.length > MAX_MILESTONING_ENTITIES) {
+    lines.push(
+      `\n(${temporal.length - MAX_MILESTONING_ENTITIES} additional temporal entities omitted)`,
+    );
+  }
+  return lines.join('\n');
+}
+
+const MAX_ENRICHMENT_FUNCTIONS = 20;
+
+function formatFunctionSignature(fn: LegendAIFunctionInfo): string {
+  const params = fn.parameters.map((p) => `${p.name}: ${p.type}`).join(', ');
+  const returns = fn.returnType ? `: ${fn.returnType}` : '';
+  return `${fn.name}(${params})${returns}`;
+}
+
+// Lists the dataspace's callable model functions so the orchestrator can use them.
+function buildFunctionSection(
+  modelContext: LegendAIModelContext,
+): string | undefined {
+  if (!modelContext.functions?.length) {
+    return undefined;
+  }
+  const lines = [
+    '## Available Functions',
+    'These model functions can be called in queries:',
+  ];
+  for (const fn of modelContext.functions.slice(0, MAX_ENRICHMENT_FUNCTIONS)) {
+    lines.push(`- ${formatFunctionSignature(fn)}`);
+  }
+  if (modelContext.functions.length > MAX_ENRICHMENT_FUNCTIONS) {
+    lines.push(
+      `\n(${modelContext.functions.length - MAX_ENRICHMENT_FUNCTIONS} additional functions omitted)`,
+    );
+  }
+  return lines.join('\n');
+}
+
+function buildFunctionNlHints(
+  modelContext: LegendAIModelContext,
+): LegendAIAdditionalNlModelContext[] {
+  return (modelContext.functions ?? [])
+    .slice(0, MAX_ENRICHMENT_FUNCTIONS)
+    .map((fn) => {
+      return {
+        id: fn.functionPath,
+        description: `Callable function: ${formatFunctionSignature(fn)}`,
+        category: 'function',
+      };
+    });
 }
 
 function buildPropToEnumPathMap(
@@ -1934,6 +2096,8 @@ export function buildModelContextEnrichmentText(
     buildEnumerationSection(modelContext),
     buildAssociationSection(modelContext),
     buildExecutableSection(modelContext),
+    buildFunctionSection(modelContext),
+    buildMilestoningSection(modelContext),
     buildColumnEnumMappingSection(modelContext, services),
     buildColumnDescriptionSection(modelContext, services),
     buildServiceJoinSection(modelContext, services),
@@ -2094,6 +2258,8 @@ export function buildModelCatalogText(
     buildCatalogRelationshipsSection(modelContext),
     buildCatalogEnumerationsSection(modelContext),
     buildCatalogExecutablesSection(modelContext),
+    buildFunctionSection(modelContext),
+    buildMilestoningSection(modelContext),
   ].filter(isNonNullable);
 
   if (sections.length === 0) {

@@ -37,6 +37,7 @@ export class TDSColumnSchema {
   type?: string;
   documentation?: string;
   sampleValues?: string;
+  sampleValuesComplete?: boolean;
   /** Whether this column is nullable (multiplicity lowerBound === 0). */
   nullable?: boolean;
   /** Physical relational type (e.g. 'VARCHAR(100)', 'DECIMAL(18,4)'). */
@@ -156,6 +157,34 @@ export const COVERAGE_NAME_SANDBOX = 'Legend-AI-Sandbox';
  */
 export const TDS_SAMPLE_VALUES_DELIMITER = '-- e.g.';
 
+/**
+ * Splits a TDS column `doc` on the sample-values delimiter. Without the
+ * delimiter the whole string is the documentation; blank halves are omitted.
+ */
+export function parseTDSColumnDoc(doc: string): {
+  documentation?: string;
+  sampleValues?: string;
+} {
+  const delimiterIndex = doc.indexOf(TDS_SAMPLE_VALUES_DELIMITER);
+  const result: { documentation?: string; sampleValues?: string } = {};
+  const documentation = (
+    delimiterIndex === -1 ? doc : doc.substring(0, delimiterIndex)
+  ).trim();
+  if (documentation) {
+    result.documentation = documentation;
+  }
+  if (delimiterIndex === -1) {
+    return result;
+  }
+  const sampleValues = doc
+    .substring(delimiterIndex + TDS_SAMPLE_VALUES_DELIMITER.length)
+    .trim();
+  if (sampleValues) {
+    result.sampleValues = sampleValues;
+  }
+  return result;
+}
+
 export function getTodayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -164,6 +193,9 @@ export const LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID =
   'orchestrator-fallback';
 
 export const LEGEND_AI_ALTERNATE_ROOT_ACTION_ID = 'alternate-root';
+
+/** Prefix of a Pure data-product accessor query — `#P{path}#->...`. */
+export const DATA_PRODUCT_ACCESSOR_PREFIX = '#P{';
 
 export const LEGEND_AI_FEEDBACK_PROMPT = 'Was this helpful?';
 export const LEGEND_AI_DEFAULT_MODEL_LABEL = 'Auto';
@@ -202,6 +234,12 @@ export class LegendAIThinkingStep {
   id!: string;
   label!: string;
   status!: LegendAIThinkingStepStatus;
+}
+
+export enum LegendAIPythonCodeStatus {
+  LOADING = 'loading',
+  READY = 'ready',
+  ERROR = 'error',
 }
 
 export enum LegendAIErrorType {
@@ -249,7 +287,13 @@ export class LegendAIUserMessage {
   text!: string;
 }
 
-export interface LegendAIFallbackAction {
+/** A prior SQL attempt carried into orchestrator (Pure) query generation. */
+export interface LegendAIPriorSqlFailure {
+  failedSql?: string;
+  failedReason?: string;
+}
+
+export interface LegendAIFallbackAction extends LegendAIPriorSqlFailure {
   label: string;
   actionId: string;
   resolvedEntities?: LegendAIResolvedEntities;
@@ -575,6 +619,7 @@ export interface LegendAIModelEntity {
   properties: LegendAIModelProperty[];
   isRootMapped?: boolean;
   isQueryable?: boolean;
+  milestoning?: string;
 }
 
 export interface LegendAIModelAssociation {
@@ -618,12 +663,20 @@ export interface LegendAIPhysicalDataset {
   table?: string;
 }
 
+export interface LegendAIFunctionInfo {
+  name: string;
+  functionPath: string;
+  returnType?: string;
+  parameters: LegendAIParameterInfo[];
+}
+
 export interface LegendAIModelContext {
   entities: LegendAIModelEntity[];
   associations: LegendAIModelAssociation[];
   enumerations?: LegendAIEnumerationInfo[];
   executables?: LegendAIExecutableInfo[];
   datasets?: LegendAIPhysicalDataset[];
+  functions?: LegendAIFunctionInfo[];
   dataspaceDescription?: string;
 }
 

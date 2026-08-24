@@ -19,7 +19,7 @@ import {
   TDSServiceSourceType,
 } from '../LegendAITypes.js';
 import {
-  AP_CALL_PATTERN,
+  accessPointCalls,
   buildColumnByNameIndex,
   buildServiceByPIdIndex,
   sharedColumnNames,
@@ -62,14 +62,14 @@ function hasSharedRequiredKey(
 
 // Resolves the access points referenced by a cross-`p()` join SQL to their
 // schemas via `findServiceForPId`, de-duplicated by pId.
-function resolveJoinedAccessPoints(
+export function resolveJoinedAccessPoints(
   sql: string,
   services: TDSServiceSchema[],
 ): TDSServiceSchema[] {
   const serviceByPId = buildServiceByPIdIndex(services);
   const resolved: TDSServiceSchema[] = [];
   const seenPIds = new Set<string>();
-  for (const match of sql.matchAll(AP_CALL_PATTERN)) {
+  for (const match of accessPointCalls(sql)) {
     const pId = match.groups?.pId;
     if (pId === undefined || seenPIds.has(pId)) {
       continue;
@@ -83,6 +83,92 @@ function resolveJoinedAccessPoints(
   return resolved;
 }
 
+// Previews the first few of a column's values for a message, so the grounded
+// and live-probe paths show the same number of examples.
+export function previewValues(values: string[]): string {
+  return values.slice(0, SAMPLE_VALUE_PREVIEW_COUNT).join(', ');
+}
+
+function previewSampleValues(sampleValues: string | undefined): string {
+  return previewValues(
+    (sampleValues ?? '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter((value) => value.length > 0),
+  );
+}
+
+// The shared "disjoint join" explanation, used for both grounded-sample and
+// live-probe disjointness so the two paths phrase the finding identically.
+export function buildDisjointJoinMessage(
+  apATitle: string,
+  apBTitle: string,
+  column: string,
+  previewA: string,
+  previewB: string,
+): string {
+  return `**${apATitle}** and **${apBTitle}** cover different data. Their shared column "${column}" has no values in common (e.g. ${previewA} vs ${previewB}), so there are no rows to join.`;
+}
+
+/**
+ * Explains a cross-access-point join proven empty by disjoint sample values.
+ * `requireComplete` + `restrictToColumns` (the join keys) make it safe pre-execution.
+ */
+export function detectDisjointJoinUniverses(
+  sql: string,
+  services: TDSServiceSchema[],
+  options?: { requireComplete?: boolean; restrictToColumns?: Set<string> },
+): string | undefined {
+  const involved = resolveJoinedAccessPoints(sql, services);
+  return detectDisjointJoinUniversesFor(involved[0], involved[1], options);
+}
+
+// Takes the already resolved pair so a caller that needs it as well does not
+// scan the statement twice.
+function detectDisjointJoinUniversesFor(
+  apA: TDSServiceSchema | undefined,
+  apB: TDSServiceSchema | undefined,
+  options?: { requireComplete?: boolean; restrictToColumns?: Set<string> },
+): string | undefined {
+  const requireComplete = options?.requireComplete ?? false;
+  const restrictToColumns = options?.restrictToColumns;
+  if (apA === undefined || apB === undefined) {
+    return undefined;
+  }
+  const colsA = buildColumnByNameIndex(apA.columns);
+  const colsB = buildColumnByNameIndex(apB.columns);
+  for (const name of sharedColumnNames(apA, apB)) {
+    const key = name.toLowerCase();
+    if (restrictToColumns !== undefined && !restrictToColumns.has(key)) {
+      continue;
+    }
+    const colA = colsA.get(key);
+    const colB = colsB.get(key);
+    if (
+      requireComplete &&
+      (colA?.sampleValuesComplete !== true ||
+        colB?.sampleValuesComplete !== true)
+    ) {
+      continue;
+    }
+    const setA = parseSampleValueSet(colA?.sampleValues);
+    const setB = parseSampleValueSet(colB?.sampleValues);
+    if (setA.size === 0 || setB.size === 0) {
+      continue;
+    }
+    if (![...setA].some((v) => setB.has(v))) {
+      return buildDisjointJoinMessage(
+        apA.title,
+        apB.title,
+        name,
+        previewSampleValues(colA?.sampleValues),
+        previewSampleValues(colB?.sampleValues),
+      );
+    }
+  }
+  return undefined;
+}
+
 /**
  * Explains why a cross-access-point join returned 0 rows from grounded sample
  * values. Returns undefined when this is not a cross-access-point join.
@@ -91,36 +177,13 @@ export function buildCrossJoinZeroRowExplanation(
   sql: string,
   services: TDSServiceSchema[],
 ): string | undefined {
-  const involved = resolveJoinedAccessPoints(sql, services);
-  const apA = involved[0];
-  const apB = involved[1];
+  const [apA, apB] = resolveJoinedAccessPoints(sql, services);
+  const disjoint = detectDisjointJoinUniversesFor(apA, apB);
+  if (disjoint !== undefined) {
+    return `The join executed successfully but returned **0 rows**: ${disjoint}`;
+  }
   if (apA === undefined || apB === undefined) {
     return undefined;
-  }
-  const colsA = buildColumnByNameIndex(apA.columns);
-  const colsB = buildColumnByNameIndex(apB.columns);
-  for (const name of sharedColumnNames(apA, apB)) {
-    const key = name.toLowerCase();
-    const colA = colsA.get(key);
-    const colB = colsB.get(key);
-    const setA = parseSampleValueSet(colA?.sampleValues);
-    const setB = parseSampleValueSet(colB?.sampleValues);
-    if (setA.size === 0 || setB.size === 0) {
-      continue;
-    }
-    if (![...setA].some((v) => setB.has(v))) {
-      const previewA = colA?.sampleValues
-        ?.split(',')
-        .slice(0, SAMPLE_VALUE_PREVIEW_COUNT)
-        .map((v) => v.trim())
-        .join(', ');
-      const previewB = colB?.sampleValues
-        ?.split(',')
-        .slice(0, SAMPLE_VALUE_PREVIEW_COUNT)
-        .map((v) => v.trim())
-        .join(', ');
-      return `The join executed successfully but returned **0 rows**: **${apA.title}** and **${apB.title}** cover different data. Their shared column "${name}" has no values in common (e.g. ${previewA} vs ${previewB}), so there are no rows to join.`;
-    }
   }
   return `The join executed successfully but returned **0 rows**: no rows share the join key between **${apA.title}** and **${apB.title}**. These access points may cover different products or time periods.`;
 }
