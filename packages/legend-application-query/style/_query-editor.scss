@@ -227,6 +227,10 @@
         }
       }
 
+      &__chat__icon {
+        margin-left: 0.6rem;
+      }
+
       &__chat__label {
         &--light {
           color: var(--color-yellow-100) !important;

@@ -504,6 +504,7 @@ export class QueryBuilderResultState {
 
       QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
         this.queryBuilderState.applicationStore.telemetryService,
+        this.queryBuilderState.getExtraTelemetryMetadata(),
       );
 
       const stopWatch = new StopWatch();
@@ -547,6 +548,7 @@ export class QueryBuilderResultState {
           {},
           report,
           this.queryBuilderState.getStateInfo(),
+          this.queryBuilderState.getExtraTelemetryMetadata(),
         );
         QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
@@ -567,6 +569,14 @@ export class QueryBuilderResultState {
         if (error instanceof ExecutionError && error.executionTraceId) {
           this.setExecutionTraceId(error.executionTraceId);
         }
+        QueryBuilderTelemetryHelper.logEvent_QueryRunFailed(
+          this.queryBuilderState.applicationStore.telemetryService,
+          {
+            errorMessage:
+              error instanceof Error ? error.message : String(error),
+            ...this.queryBuilderState.getExtraTelemetryMetadata(),
+          },
+        );
       }
     } finally {
       this.setIsRunningQuery(false);
@@ -581,6 +591,10 @@ export class QueryBuilderResultState {
     try {
       yield this.queryBuilderState.graphManagerState.graphManager.cancelUserExecutions(
         true,
+      );
+      QueryBuilderTelemetryHelper.logEvent_QueryRunCancelled(
+        this.queryBuilderState.applicationStore.telemetryService,
+        this.queryBuilderState.getExtraTelemetryMetadata(),
       );
     } catch (error) {
       // Don't notify users about success or failure

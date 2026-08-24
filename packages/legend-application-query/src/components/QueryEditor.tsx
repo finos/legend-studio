@@ -43,6 +43,7 @@ import {
   MoonIcon,
   SunIcon,
   SparkleIcon,
+  RobotIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -57,7 +58,7 @@ import {
   generateExistingQueryEditorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
-import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import { LegendQueryAgentChatTelemetryHelper } from '../__lib__/LegendQueryAgentChatTelemetryHelper.js';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   ReleaseLogManager,
@@ -186,7 +187,7 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
-    LegendQueryTelemetryHelper.logEvent_QueryAISuggestLaunched(
+    LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestLaunched(
       applicationStore.telemetryService,
     );
     setIsSuggestingWithAI(true);
@@ -199,7 +200,7 @@ const CreateQueryDialog = observer(() => {
       setAISuggestion(suggestion);
     } catch (error) {
       assertErrorThrown(error);
-      LegendQueryTelemetryHelper.logEvent_QueryAISuggestFailure(
+      LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestFailure(
         applicationStore.telemetryService,
         error.message,
       );
@@ -224,7 +225,7 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggestion) {
       return;
     }
-    LegendQueryTelemetryHelper.logEvent_QueryAISuggestApplied(
+    LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestApplied(
       applicationStore.telemetryService,
     );
     createQueryState.setQueryName(aiSuggestion.title);
@@ -232,7 +233,7 @@ const CreateQueryDialog = observer(() => {
     setAISuggestion(undefined);
   };
   const discardAISuggestion = (): void => {
-    LegendQueryTelemetryHelper.logEvent_QueryAISuggestDiscarded(
+    LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestDiscarded(
       applicationStore.telemetryService,
     );
     setAISuggestion(undefined);
@@ -519,7 +520,7 @@ const RenameQueryDialog = observer(
         setAISuggestion(suggestion);
       } catch (error) {
         assertErrorThrown(error);
-        LegendQueryTelemetryHelper.logEvent_QueryAISuggestFailure(
+        LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestFailure(
           applicationStore.telemetryService,
           error.message,
         );
@@ -1093,6 +1094,20 @@ export const QueryEditor = observer(() => {
     );
   };
 
+  const toggleAgentChat = (): void => {
+    const qbState = editorStore.queryBuilderState;
+    if (!qbState) {
+      return;
+    }
+    const nextOpened = !qbState.isAgentChatOpened;
+    if (nextOpened) {
+      LegendQueryAgentChatTelemetryHelper.logEvent_QueryAgentChatOpened(
+        applicationStore.telemetryService,
+      );
+    }
+    qbState.setIsAgentChatOpened(nextOpened);
+  };
+
   // open the query version history (same viewer used by the query loader)
   const showQueryHistory = (): void => {
     if (editorStore instanceof ExistingQueryEditorStore) {
@@ -1165,6 +1180,46 @@ export const QueryEditor = observer(() => {
           </div>
         </div>
         <div className="query-editor__header__action__content">
+          {!isLoadingEditor &&
+            !editorStore.queryBuilderState?.config
+              ?.TEMPORARY__disableQueryBuilderAgentChat &&
+            editorStore.queryBuilderState?.canBuildQuery && (
+              <button
+                title={
+                  editorStore.queryBuilderState.isAgentChatOpened
+                    ? 'Close Legend AI Agent Chat'
+                    : 'Open Legend AI Agent Chat'
+                }
+                onClick={toggleAgentChat}
+                className={clsx(
+                  'query-editor__header__action query-editor__header__action__theme-toggler',
+                  {
+                    'query-editor__header__action--toggled':
+                      editorStore.queryBuilderState.isAgentChatOpened,
+                  },
+                )}
+              >
+                <div
+                  className={
+                    applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                      ? 'query-editor__header__action__chat__label--light'
+                      : 'query-editor__header__action__chat__label--dark'
+                  }
+                >
+                  Legend AI
+                </div>
+                <RobotIcon
+                  className={clsx(
+                    'query-editor__header__action__chat__icon',
+                    applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                      ? 'query-editor__header__action__chat__label--light'
+                      : 'query-editor__header__action__chat__label--dark',
+                  )}
+                />
+              </button>
+            )}
           <button
             title="Toggle light/dark mode"
             onClick={TEMPORARY__toggleLightDarkMode}

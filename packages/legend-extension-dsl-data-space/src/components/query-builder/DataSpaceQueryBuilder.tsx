@@ -147,6 +147,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     ): void => {
       const value = option?.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
+        queryBuilderState.queryAgentChatState?.abort();
         queryBuilderState
           .onDataSpaceChange(value)
           .catch(queryBuilderState.applicationStore.alertUnhandledError);
@@ -154,6 +155,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
         value instanceof DepotEntityWithOrigin &&
         queryBuilderState.extraOptionsConfig
       ) {
+        queryBuilderState.queryAgentChatState?.abort();
         queryBuilderState.extraOptionsConfig.onChange(value);
       }
     };
