@@ -403,6 +403,7 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     metadata: LegendAIProductMetadata,
     config: LegendAIConfig,
     diagnosis?: string,
+    services?: TDSServiceSchema[],
   ): Promise<LegendAIResultAnalysis | undefined>;
 
   /**
@@ -506,6 +507,7 @@ export abstract class LegendAI_LegendApplicationPlugin_Extension extends LegendA
     _accessPoints: TDSServiceSchema[],
     _dataProductCoordinates: LegendAIOrchestratorDataProductCoordinates,
     _config: LegendAIConfig,
+    _question?: string,
   ): Promise<void> {
     return Promise.resolve();
   }

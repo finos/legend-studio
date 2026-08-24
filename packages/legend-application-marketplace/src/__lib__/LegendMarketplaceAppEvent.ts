@@ -80,4 +80,13 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   VIEW_YOUR_ORDERS_PAGE = 'marketplace.view.your-orders.page',
   CLICK_ORDER_ETASK_LINK = 'marketplace.click.order.etask-link',
   VIEW_SUBSCRIPTIONS_PAGE = 'marketplace.view.subscriptions.page',
+  CLICK_AI_AGENT_GENERATE_PYTHON = 'marketplace.click.ai-agent.generate-python',
+  CLICK_AI_AGENT_COPY_PYTHON = 'marketplace.click.ai-agent.copy-python',
+  CLICK_AI_AGENT_OPEN_IN_DATACUBE = 'marketplace.click.ai-agent.open-in-datacube',
+  AI_AGENT_DATACUBE_TRANSLATE_FAILURE = 'marketplace.ai-agent.datacube.translate.failure',
+  AI_AGENT_DATASPACE_CONTEXT_RESOLUTION_FAILURE = 'marketplace.ai-agent.dataspace.context-resolution.failure',
+  AI_AGENT_ACCESS_POINT_RESOLUTION_FAILURE = 'marketplace.ai-agent.access-point.resolution.failure',
+  AI_AGENT_ENTITY_DISAMBIGUATION_FAILURE = 'marketplace.ai-agent.entity.disambiguation.failure',
+  AI_AGENT_FIELD_SEARCH_PARSE_FAILURE = 'marketplace.ai-agent.field-search.parse.failure',
+  AI_AGENT_OPEN_DATACUBE_FAILURE = 'marketplace.ai-agent.open-datacube.failure',
 }

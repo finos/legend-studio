@@ -16,12 +16,20 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
-import { Multiplicity } from '@finos/legend-graph';
+import { guaranteeNonNullable, LogService } from '@finos/legend-shared';
+import {
+  type AbstractPureGraphManager,
+  Multiplicity,
+  RawLambda,
+  V1_PureGraphManager,
+} from '@finos/legend-graph';
+import { TEST__GraphManagerPluginManager } from '@finos/legend-graph/test';
 import {
   buildPropertyDocIndex,
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
+  extractServicePreFilters,
   extractModelContext,
   buildEnrichedBusinessContext,
   findBestAlternateRoot,
@@ -34,6 +42,7 @@ import {
   relaxExactStringFilters,
   extractFilteredColumns,
   buildProbedValueHints,
+  buildPriorSqlFailureHints,
 } from '../LegendAIDocEnrichment.js';
 import {
   ClassDocumentationEntry,
@@ -271,6 +280,25 @@ describe(unitTest('inferServiceRelationshipsFromAssociations'), () => {
       assocDocs,
     );
     expect(result).toHaveLength(0);
+  });
+
+  test('caps the relationships emitted for a large service set', () => {
+    const propA = makePropertyDoc('trade', [], new Multiplicity(0, undefined));
+    const propB = makePropertyDoc('instrument', [], new Multiplicity(1, 1));
+    const assocDocs = makeAssociationDocs('TradeInstrument', propA, propB);
+    const services: TDSServiceSchema[] = Array.from(
+      { length: 20 },
+      (_, index) => ({
+        title: index % 2 === 0 ? `Trades_${index}` : `Instruments_${index}`,
+        pattern: index % 2 === 0 ? '/getTrade' : '/getInstrument',
+        columns: [{ name: 'instrumentId' }],
+        parameters: [],
+      }),
+    );
+
+    expect(
+      inferServiceRelationshipsFromAssociations(services, assocDocs),
+    ).toHaveLength(25);
   });
 });
 
@@ -631,6 +659,75 @@ describe(unitTest('extractLambdaPreFilters'), () => {
       },
     ];
     expect(extractLambdaPreFilters(body)).toEqual([]);
+  });
+});
+
+describe(unitTest('extractServicePreFilters'), () => {
+  // A real graph manager needs an engine; only pureCodeToLambda and the log
+  // service it reports parse failures through are exercised here.
+  const graphManagerWith = (
+    pureCodeToLambda: AbstractPureGraphManager['pureCodeToLambda'],
+  ): AbstractPureGraphManager => {
+    const graphManager = new V1_PureGraphManager(
+      new TEST__GraphManagerPluginManager(),
+      new LogService(),
+    );
+    graphManager.pureCodeToLambda = pureCodeToLambda;
+    return graphManager;
+  };
+
+  const graphManagerReturning = (
+    body: object | undefined,
+  ): AbstractPureGraphManager =>
+    graphManagerWith(() => Promise.resolve(new RawLambda(undefined, body)));
+
+  test('returns the filters baked into the query', async () => {
+    const body = [
+      {
+        _type: 'func',
+        function: 'filter',
+        parameters: [
+          { _type: 'func', function: 'getAll', parameters: [] },
+          {
+            _type: 'lambda',
+            body: [
+              {
+                _type: 'func',
+                function: 'equal',
+                parameters: [
+                  {
+                    _type: 'property',
+                    property: 'region',
+                    parameters: [{ _type: 'var', name: 'x' }],
+                  },
+                  { _type: 'string', value: 'AMERICAS' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    expect(
+      await extractServicePreFilters('{| ok}', graphManagerReturning(body)),
+    ).toEqual([{ property: 'region', operator: 'equal', value: 'AMERICAS' }]);
+  });
+
+  test('returns undefined when the query carries no filters', async () => {
+    expect(
+      await extractServicePreFilters('{| ok}', graphManagerReturning([])),
+    ).toBeUndefined();
+  });
+
+  test('returns undefined when the query cannot be parsed', async () => {
+    const graphManager = graphManagerWith(() =>
+      Promise.reject(new Error('parse error')),
+    );
+
+    expect(
+      await extractServicePreFilters('invalid', graphManager),
+    ).toBeUndefined();
   });
 });
 
@@ -2828,5 +2925,144 @@ describe(unitTest('buildProbedValueHints'), () => {
 
   test('skips columns with no probed values', () => {
     expect(buildProbedValueHints(new Map([['x', []]]))).toEqual([]);
+  });
+});
+
+describe(unitTest('buildPriorSqlFailureHints'), () => {
+  test('emits reason and query hints for a failed SQL attempt', () => {
+    const hints = buildPriorSqlFailureHints(
+      'SELECT * FROM t',
+      'Query returned 0 rows',
+    );
+    expect(hints).toHaveLength(2);
+    expect(hints[0]?.id).toBe('prior_sql_failure_reason');
+    expect(hints[0]?.description).toContain('Query returned 0 rows');
+    expect(hints[1]?.id).toBe('prior_sql_failure_query');
+    expect(hints[1]?.description).toContain('SELECT * FROM t');
+  });
+
+  test('emits only the reason hint when no SQL is available', () => {
+    const hints = buildPriorSqlFailureHints(undefined, 'Generation failed');
+    expect(hints).toHaveLength(1);
+    expect(hints[0]?.id).toBe('prior_sql_failure_reason');
+  });
+});
+
+describe(unitTest('rankEntities enrichment signals'), () => {
+  const twoEntityCtx = (
+    executables: { title: string; rootEntityPath: string }[],
+  ): LegendAIModelContext => ({
+    entities: [
+      {
+        path: 'model::Alpha',
+        name: 'Alpha',
+        properties: [],
+        isQueryable: true,
+      },
+      { path: 'model::Beta', name: 'Beta', properties: [], isQueryable: true },
+    ],
+    associations: [],
+    executables,
+  });
+
+  test('boosts the entity referenced by more executables', () => {
+    const ctx = twoEntityCtx([
+      { title: 'svc one', rootEntityPath: 'model::Beta' },
+      { title: 'svc two', rootEntityPath: 'model::Beta' },
+      { title: 'svc three', rootEntityPath: 'model::Beta' },
+    ]);
+    const ranked = rankEntities('show me the records', ctx);
+    expect(ranked[0]?.entity.path).toBe('model::Beta');
+    const alpha = ranked.find((r) => r.entity.path === 'model::Alpha');
+    const beta = ranked.find((r) => r.entity.path === 'model::Beta');
+    expect(beta?.score ?? 0).toBeGreaterThan(alpha?.score ?? 0);
+  });
+
+  test('is unchanged when no executables are provided', () => {
+    const ranked = rankEntities('show me the records', twoEntityCtx([]));
+    expect(ranked.map((r) => r.entity.path).sort()).toEqual([
+      'model::Alpha',
+      'model::Beta',
+    ]);
+    const alpha = guaranteeNonNullable(
+      ranked.find((r) => r.entity.path === 'model::Alpha'),
+    );
+    const beta = guaranteeNonNullable(
+      ranked.find((r) => r.entity.path === 'model::Beta'),
+    );
+    expect(alpha.score).toBe(beta.score);
+  });
+
+  test('a direct name match still outranks an executable-count prior', () => {
+    const ctx = twoEntityCtx([
+      { title: 'svc one', rootEntityPath: 'model::Beta' },
+      { title: 'svc two', rootEntityPath: 'model::Beta' },
+      { title: 'svc three', rootEntityPath: 'model::Beta' },
+    ]);
+    expect(rankEntities('show alpha data', ctx)[0]?.entity.path).toBe(
+      'model::Alpha',
+    );
+  });
+});
+
+describe(unitTest('milestoning + function enrichment'), () => {
+  test('extractModelContext captures class milestoning', () => {
+    const cls = new ClassDocumentationEntry();
+    cls.name = 'Trade';
+    cls.path = 'my::model::Trade';
+    cls.docs = [];
+    cls.properties = [];
+    cls.milestoning = 'businesstemporal';
+    const ctx = extractModelContext([
+      new NormalizedDocumentationEntry('Trade', '', cls, cls),
+    ]);
+    expect(ctx.entities[0]?.milestoning).toBe('businesstemporal');
+  });
+
+  const enrichedCtx: LegendAIModelContext = {
+    entities: [
+      {
+        path: 'm::Trade',
+        name: 'Trade',
+        properties: [],
+        isQueryable: true,
+        milestoning: 'bitemporal',
+      },
+    ],
+    associations: [],
+    functions: [
+      {
+        name: 'pctChange',
+        functionPath: 'm::pctChange',
+        returnType: 'Float',
+        parameters: [
+          { name: 'from', type: 'Float' },
+          { name: 'to', type: 'Float' },
+        ],
+      },
+    ],
+  };
+
+  test('buildModelContextEnrichmentText includes temporal + function sections', () => {
+    const text = buildModelContextEnrichmentText(enrichedCtx);
+    expect(text).toContain('Temporal Entities');
+    expect(text).toContain('bitemporal');
+    expect(text).toContain('Available Functions');
+    expect(text).toContain('pctChange(from: Float, to: Float): Float');
+  });
+
+  test('buildEnrichedBusinessContext emits milestoning + function hints', () => {
+    const result = buildEnrichedBusinessContext(
+      'show trades',
+      'm::Trade',
+      [],
+      enrichedCtx,
+    );
+    const categories =
+      result.businessContextMatch?.additionalNlModelContext?.map(
+        (e) => e.category,
+      ) ?? [];
+    expect(categories).toContain('milestoning_hint');
+    expect(categories).toContain('function');
   });
 });

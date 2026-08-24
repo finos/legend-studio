@@ -69,10 +69,16 @@ const INFRASTRUCTURE_COLUMN_PATTERN =
   /^lake_|^__lake|^vlf|^batch|_ap_lh_migration/i;
 const AP_DATE_NAME_PATTERN = /(?:date|dt|time)$/i;
 
+/**
+ * Whether the column holds text. Unlike {@link isStringColumn} this keeps
+ * identifier columns, which are the usual join keys.
+ */
+export function isStringTypedColumn(c: TDSColumnSchema): boolean {
+  return STRING_TYPE_NAMES.has(c.type ?? '');
+}
+
 export function isStringColumn(c: TDSColumnSchema): boolean {
-  return (
-    STRING_TYPE_NAMES.has(c.type ?? '') && !c.name.toLowerCase().includes('id')
-  );
+  return isStringTypedColumn(c) && !c.name.toLowerCase().includes('id');
 }
 
 export function isNumericColumn(c: TDSColumnSchema): boolean {
