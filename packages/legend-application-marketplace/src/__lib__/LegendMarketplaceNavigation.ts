@@ -19,8 +19,10 @@ import type { DataProductAccessType } from '@finos/legend-graph';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { MarketplaceSearchMode } from './LegendMarketplaceSearchMode.js';
 
 export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
@@ -228,6 +230,32 @@ export const generateLakehouseAccessSearchResultsRoute = (
         query,
     }),
   );
+
+/**
+ * Routes a search-bar submission to the results route for its mode. The `default`
+ * case throws rather than falling back to the DataSpaces route, so a new
+ * `MarketplaceSearchMode` value can't be silently routed to the wrong page.
+ */
+export const generateSearchResultsRouteForMode = (
+  query: string,
+  mode: MarketplaceSearchMode,
+): string => {
+  switch (mode) {
+    case MarketplaceSearchMode.DATA_FIELDS:
+      return generateFieldSearchResultsRoute(query);
+    case MarketplaceSearchMode.LAKEHOUSE_ACCESS:
+      return generateLakehouseAccessSearchResultsRoute(query);
+    case MarketplaceSearchMode.PRODUCER:
+      return generateLakehouseSearchResultsRoute(query, true);
+    case MarketplaceSearchMode.DATA_SPACES:
+      return generateLakehouseSearchResultsRoute(query, false);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't generate a search results route for search mode`,
+        mode,
+      );
+  }
+};
 
 export const generateLakehouseEntitlementsRoute = (
   selectedTab: string | undefined,

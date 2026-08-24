@@ -16,19 +16,17 @@
 
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { Chip, TextField, Typography } from '@mui/material';
+import { Chip, TextField } from '@mui/material';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import { DataProductSourceFilter } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-import type { LegendMarketplaceLakehouseAccessSearchResultsStore } from '../../stores/lakehouse/LegendMarketplaceLakehouseAccessSearchResultsStore.js';
+import type { DeploymentIdFilterableSearchStore } from '../../stores/lakehouse/LegendMarketplaceLakehouseAccessSearchResultsStore.js';
 import {
-  FilterCheckboxOption,
   FilterSection,
+  FiltersPanelHeader,
+  SourceFilterSection,
 } from '../MarketplaceSearchFiltersPanel/MarketplaceSearchFiltersPanel.js';
-import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 /**
  * Filters for the Lakehouse Access search experience.
@@ -36,13 +34,13 @@ import { useLegendMarketplaceBaseStore } from '../../application/providers/Legen
  * Deliberately narrower than {@link MarketplaceSearchFiltersPanel}: there is no taxonomy
  * section, because the server builds the taxonomy tree unscoped by product type and its
  * counts would describe the DataSpace corpus rather than the Lakehouse Data Products
- * shown here. Deployment ID takes its place.
+ * shown here. Deployment ID takes its place. Shares the header chrome and Source
+ * section with {@link MarketplaceSearchFiltersPanel} rather than duplicating them.
  */
 export const LakehouseAccessSearchFiltersPanel: React.FC<{
-  store: LegendMarketplaceLakehouseAccessSearchResultsStore;
+  store: DeploymentIdFilterableSearchStore;
   onFiltersChanged: () => void;
 }> = observer(({ store, onFiltersChanged }) => {
-  const baseStore = useLegendMarketplaceBaseStore();
   const [deploymentIdInput, setDeploymentIdInput] = useState('');
 
   const triggerSearch = (): void => {
@@ -53,58 +51,29 @@ export const LakehouseAccessSearchFiltersPanel: React.FC<{
   const handleClearAll = (): void => {
     store.clearAllFilters();
     setDeploymentIdInput('');
-    LegendMarketplaceTelemetryHelper.logEvent_ClearSearchFilters(
-      baseStore.applicationStore.telemetryService,
-      store.searchQuery,
-    );
     triggerSearch();
   };
 
   const handleApplyDeploymentId = (): void => {
-    const value = deploymentIdInput.trim();
-    if (value.length === 0) {
+    if (deploymentIdInput.trim().length === 0) {
       return;
     }
-    store.addDeploymentId(value);
+    store.addDeploymentId(deploymentIdInput);
     setDeploymentIdInput('');
-    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-      baseStore.applicationStore.telemetryService,
-      'deployment_id',
-      value,
-      'select',
-      store.searchQuery,
-    );
     triggerSearch();
   };
 
   const handleRemoveDeploymentId = (deploymentId: string): void => {
     store.removeDeploymentId(deploymentId);
-    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-      baseStore.applicationStore.telemetryService,
-      'deployment_id',
-      deploymentId,
-      'deselect',
-      store.searchQuery,
-    );
     triggerSearch();
   };
 
   return (
     <div className="marketplace-search-filters-panel">
-      <div className="marketplace-search-filters-panel__header">
-        <Typography className="marketplace-search-filters-panel__header__title">
-          Filters
-        </Typography>
-        {store.hasActiveFilters && (
-          <Typography
-            className="marketplace-search-filters-panel__header__clear"
-            onClick={handleClearAll}
-            role="button"
-          >
-            Clear all
-          </Typography>
-        )}
-      </div>
+      <FiltersPanelHeader
+        hasActiveFilters={store.hasActiveFilters}
+        onClearAll={handleClearAll}
+      />
       <div className="marketplace-search-filters-panel__content">
         {store.isFirstLoad ? (
           <CubesLoadingIndicator
@@ -115,32 +84,7 @@ export const LakehouseAccessSearchFiltersPanel: React.FC<{
           </CubesLoadingIndicator>
         ) : (
           <>
-            <FilterSection title="Source">
-              {Object.values(DataProductSourceFilter).map((value) => (
-                <FilterCheckboxOption
-                  key={value}
-                  label={value}
-                  checked={store.selectedSources.has(value)}
-                  count={
-                    value === DataProductSourceFilter.EXTERNAL
-                      ? store.filterCounts.external_source_count
-                      : store.filterCounts.internal_source_count
-                  }
-                  onChange={() => {
-                    const isSelected = store.selectedSources.has(value);
-                    store.toggleSource(value);
-                    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-                      baseStore.applicationStore.telemetryService,
-                      'source',
-                      value,
-                      isSelected ? 'deselect' : 'select',
-                      store.searchQuery,
-                    );
-                    triggerSearch();
-                  }}
-                />
-              ))}
-            </FilterSection>
+            <SourceFilterSection store={store} onFilterChange={triggerSearch} />
             <FilterSection title="Deployment ID">
               <TextField
                 value={deploymentIdInput}
@@ -151,13 +95,14 @@ export const LakehouseAccessSearchFiltersPanel: React.FC<{
                     handleApplyDeploymentId();
                   }
                 }}
+                onBlur={handleApplyDeploymentId}
                 placeholder="e.g. 12345"
                 size="small"
                 fullWidth={true}
                 slotProps={{
                   htmlInput: { 'aria-label': 'Deployment ID' },
                 }}
-                helperText="Press Enter to apply."
+                helperText="Press Enter or click away to apply."
                 className="marketplace-search-filters-panel__deployment-id-input"
               />
               {store.selectedDeploymentIds.size > 0 && (

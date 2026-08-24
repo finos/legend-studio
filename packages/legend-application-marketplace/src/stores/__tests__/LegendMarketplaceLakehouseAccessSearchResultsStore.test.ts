@@ -36,16 +36,11 @@ const setupStore = async (): Promise<{
   return { store, baseStore };
 };
 
-const callBuildSearchFilters = (store: object): string[] =>
-  (
-    store as unknown as { buildSearchFilters: () => string[] }
-  ).buildSearchFilters.call(store);
-
 describe('LegendMarketplaceLakehouseAccessSearchResultsStore - search filters', () => {
   test('emits no filters when nothing is selected', async () => {
     const { store } = await setupStore();
 
-    expect(callBuildSearchFilters(store)).toEqual([]);
+    expect(store.buildSearchFilters()).toEqual([]);
   });
 
   test('emits data_product_source for selected sources', async () => {
@@ -53,7 +48,7 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - search filters', 
 
     store.toggleSource(DataProductSourceFilter.EXTERNAL);
 
-    expect(callBuildSearchFilters(store)).toEqual([
+    expect(store.buildSearchFilters()).toEqual([
       'data_product_source=External',
     ]);
   });
@@ -63,7 +58,7 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - search filters', 
 
     store.addDeploymentId('12345');
 
-    expect(callBuildSearchFilters(store)).toEqual(['deployment_id=12345']);
+    expect(store.buildSearchFilters()).toEqual(['deployment_id=12345']);
   });
 
   test('emits source and deployment filters together', async () => {
@@ -72,7 +67,7 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - search filters', 
     store.toggleSource(DataProductSourceFilter.INTERNAL);
     store.addDeploymentId('12345');
 
-    expect(callBuildSearchFilters(store)).toEqual([
+    expect(store.buildSearchFilters()).toEqual([
       'data_product_source=Internal',
       'deployment_id=12345',
     ]);
@@ -84,7 +79,7 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - search filters', 
     store.toggleSource(DataProductSourceFilter.INTERNAL);
     store.addDeploymentId('12345');
 
-    const filters = callBuildSearchFilters(store);
+    const filters = store.buildSearchFilters();
     expect(
       filters.some((filter) => filter.startsWith('data_product_type=')),
     ).toBe(false);
@@ -113,9 +108,7 @@ describe('LegendMarketplaceLakehouseAccessSearchResultsStore - deployment IDs', 
     store.addDeploymentId('12345, 67890 ,  ');
 
     expect(Array.from(store.selectedDeploymentIds)).toEqual(['12345', '67890']);
-    expect(callBuildSearchFilters(store)).toEqual([
-      'deployment_id=12345,67890',
-    ]);
+    expect(store.buildSearchFilters()).toEqual(['deployment_id=12345,67890']);
   });
 
   test('ignores duplicates and blank entries', async () => {

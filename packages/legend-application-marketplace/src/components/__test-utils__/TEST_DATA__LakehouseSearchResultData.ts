@@ -15,10 +15,11 @@
  */
 
 import { type PlainObject } from '@finos/legend-shared';
-import type {
-  DataProductSearchResponse,
-  DataProductSearchResult,
-  TaxonomyTreeResponse,
+import {
+  DataProductSearchResultDetailsType,
+  type DataProductSearchResponse,
+  type DataProductSearchResult,
+  type TaxonomyTreeResponse,
 } from '@finos/legend-server-marketplace';
 
 const createMockPaginatedResult = (
@@ -202,7 +203,8 @@ export const mockProdSearchResultResponse: PlainObject<DataProductSearchResponse
 const mockLakehouseAccessSearchResults: PlainObject<DataProductSearchResult>[] =
   mockProdSearchResults.filter(
     (result) =>
-      (result.dataProductDetails as { _type: string })._type === 'lakehouse',
+      (result.dataProductDetails as { _type: string })._type ===
+      DataProductSearchResultDetailsType.LAKEHOUSE,
   );
 
 export const mockLakehouseAccessSearchResultResponse: PlainObject<DataProductSearchResponse> =

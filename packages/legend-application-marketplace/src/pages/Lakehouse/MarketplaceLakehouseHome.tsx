@@ -28,11 +28,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import {
-  generateFieldSearchResultsRoute,
-  generateLakehouseAccessSearchResultsRoute,
-  generateLakehouseSearchResultsRoute,
-} from '../../__lib__/LegendMarketplaceNavigation.js';
+import { generateSearchResultsRouteForMode } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   assertErrorThrown,
   isNonEmptyString,
@@ -226,19 +222,9 @@ export const MarketplaceLakehouseHome = observer(() => {
     _mode: MarketplaceSearchMode,
   ): void => {
     if (isNonEmptyString(_query)) {
-      const routeForMode = (): string => {
-        switch (_mode) {
-          case MarketplaceSearchMode.DATA_FIELDS:
-            return generateFieldSearchResultsRoute(_query);
-          case MarketplaceSearchMode.LAKEHOUSE_ACCESS:
-            return generateLakehouseAccessSearchResultsRoute(_query);
-          case MarketplaceSearchMode.PRODUCER:
-            return generateLakehouseSearchResultsRoute(_query, true);
-          default:
-            return generateLakehouseSearchResultsRoute(_query, false);
-        }
-      };
-      applicationStore.navigationService.navigator.goToLocation(routeForMode());
+      applicationStore.navigationService.navigator.goToLocation(
+        generateSearchResultsRouteForMode(_query, _mode),
+      );
       LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
         applicationStore.telemetryService,
         _query,
