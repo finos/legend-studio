@@ -32,7 +32,7 @@ export class DataSpaceExecutionContextAnalysisResult {
   name!: string;
   title?: string | undefined;
   description?: string | undefined;
-  mapping?: Mapping | undefined;
+  mapping!: Mapping;
   mappingProvider?: DataSpaceMappingProviderAnalysisResult;
   defaultRuntime?: PackageableRuntime | undefined;
   compatibleRuntimes!: PackageableRuntime[];

@@ -135,10 +135,10 @@ export class DataSpaceExecutableTDSResultState extends DataSpaceExecutableAnalys
           ? (analysis.executionContextsIndex.get(info.executionContextKey) ??
             analysis.defaultExecutionContext)
           : analysis.defaultExecutionContext;
-        if (!executionContext?.mapping || !executionContext.defaultRuntime) {
+        if (!executionContext?.defaultRuntime) {
           this.execState.viewerState.applicationStore.logService.error(
             LogEvent.create(DSL_DATASPACE_EVENT.ERROR_GENERATE_SAMPLE_VALUES),
-            'An execution context with a mapping and a default runtime is required to generate sample values',
+            'An execution context with a default runtime is required to generate sample values',
           );
           return;
         }

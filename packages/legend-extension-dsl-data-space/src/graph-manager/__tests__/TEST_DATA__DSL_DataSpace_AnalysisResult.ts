@@ -40,6 +40,7 @@ export const TEST_DATA__analysisResult_roundtrip = {
     {
       name: 'providerBased',
       title: 'Mapping-provider-based context',
+      mapping: 'test::product::mapping::ProviderMapping',
       mappingProvider: {
         element: 'test::product::TestDataProduct',
         keys: ['modelAccessGroupPointId'],
@@ -95,21 +96,22 @@ export const TEST_DATA__analysisResult_danglingDefaultExecutionContext = {
   defaultExecutionContext: 'thisContextDoesNotExist',
 };
 
-export const TEST_DATA__analysisResult_contextWithoutMappingOrRuntime = {
-  name: 'NoMappingProduct',
+export const TEST_DATA__analysisResult_contextWithoutRuntime = {
+  name: 'NoRuntimeProduct',
   package: 'test::product',
-  path: 'test::product::NoMappingProduct',
+  path: 'test::product::NoRuntimeProduct',
   taggedValues: [],
   stereotypes: [],
   model: TEST_DATA__emptyModel,
   executionContexts: [
     {
-      name: 'bareContext',
+      name: 'runtimelessContext',
+      mapping: 'test::product::mapping::TestMapping',
       compatibleRuntimes: [],
       datasets: [],
     },
   ],
-  defaultExecutionContext: 'bareContext',
+  defaultExecutionContext: 'runtimelessContext',
   elements: [],
   elementDocs: [],
   diagrams: [],

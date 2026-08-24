@@ -31,7 +31,7 @@ import {
   V1_deserializeDataSpaceAnalysisResult,
 } from '../V1_DataSpaceAnalysis.js';
 import {
-  TEST_DATA__analysisResult_contextWithoutMappingOrRuntime,
+  TEST_DATA__analysisResult_contextWithoutRuntime,
   TEST_DATA__analysisResult_executableWithoutResult,
   TEST_DATA__analysisResult_multiExecutionExecutable,
   TEST_DATA__analysisResult_noDefaultExecutionContext,
@@ -85,7 +85,9 @@ test(
     const providerBased = result.executionContexts.find(
       (ctx) => ctx.name === 'providerBased',
     );
-    expect(providerBased?.mapping).toBeUndefined();
+    expect(providerBased?.mapping).toBe(
+      'test::product::mapping::ProviderMapping',
+    );
     expect(providerBased?.defaultRuntime).toBeUndefined();
     expect(providerBased?.mappingProvider?.element).toBe(
       'test::product::TestDataProduct',
@@ -96,19 +98,14 @@ test(
   },
 );
 
-test(
-  unitTest('tolerates an execution context with no mapping and no runtime'),
-  () => {
-    const result = deserialize(
-      TEST_DATA__analysisResult_contextWithoutMappingOrRuntime,
-    );
-    const context = result.executionContexts[0];
-    expect(context?.name).toBe('bareContext');
-    expect(context?.mapping).toBeUndefined();
-    expect(context?.defaultRuntime).toBeUndefined();
-    expect(context?.mappingProvider).toBeUndefined();
-  },
-);
+test(unitTest('tolerates an execution context with no runtime'), () => {
+  const result = deserialize(TEST_DATA__analysisResult_contextWithoutRuntime);
+  const context = result.executionContexts[0];
+  expect(context?.name).toBe('runtimelessContext');
+  expect(context?.mapping).toBe('test::product::mapping::TestMapping');
+  expect(context?.defaultRuntime).toBeUndefined();
+  expect(context?.mappingProvider).toBeUndefined();
+});
 
 test(unitTest('tolerates a missing default execution context'), () => {
   const result = deserialize(

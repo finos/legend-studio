@@ -25,7 +25,7 @@ import { DSL_DataSpace_GraphManagerPreset } from '../DSL_DataSpace_GraphManagerP
 import { DSL_DataSpace_getGraphManagerExtension } from '../protocol/pure/DSL_DataSpace_PureGraphManagerExtension.js';
 import type { DataSpaceAnalysisResult } from '../action/analytics/DataSpaceAnalysis.js';
 import {
-  TEST_DATA__analysisResult_contextWithoutMappingOrRuntime,
+  TEST_DATA__analysisResult_contextWithoutRuntime,
   TEST_DATA__analysisResult_danglingDefaultExecutionContext,
   TEST_DATA__analysisResult_executableWithoutResult,
   TEST_DATA__analysisResult_noDefaultExecutionContext,
@@ -87,7 +87,7 @@ describe('build DataSpace analysis result', () => {
       const result = await buildAnalytics(TEST_DATA__analysisResult_roundtrip);
 
       const mappingBased = result.executionContextsIndex.get('mappingBased');
-      expect(mappingBased?.mapping?.path).toBe(
+      expect(mappingBased?.mapping.path).toBe(
         'test::product::mapping::TestMapping',
       );
       expect(mappingBased?.defaultRuntime?.path).toBe(
@@ -96,7 +96,9 @@ describe('build DataSpace analysis result', () => {
       expect(mappingBased?.mappingProvider).toBeUndefined();
 
       const providerBased = result.executionContextsIndex.get('providerBased');
-      expect(providerBased?.mapping).toBeUndefined();
+      expect(providerBased?.mapping.path).toBe(
+        'test::product::mapping::ProviderMapping',
+      );
       expect(providerBased?.defaultRuntime).toBeUndefined();
       expect(providerBased?.mappingProvider?.element).toBe(
         'test::product::TestDataProduct',
@@ -110,19 +112,16 @@ describe('build DataSpace analysis result', () => {
     },
   );
 
-  test(
-    unitTest('builds a context that has neither mapping nor runtime'),
-    async () => {
-      const result = await buildAnalytics(
-        TEST_DATA__analysisResult_contextWithoutMappingOrRuntime,
-      );
-      const context = result.executionContextsIndex.get('bareContext');
-      expect(context).toBeDefined();
-      expect(context?.mapping).toBeUndefined();
-      expect(context?.defaultRuntime).toBeUndefined();
-      expect(result.defaultExecutionContext).toBe(context);
-    },
-  );
+  test(unitTest('builds a context that has no runtime'), async () => {
+    const result = await buildAnalytics(
+      TEST_DATA__analysisResult_contextWithoutRuntime,
+    );
+    const context = result.executionContextsIndex.get('runtimelessContext');
+    expect(context).toBeDefined();
+    expect(context?.mapping.path).toBe('test::product::mapping::TestMapping');
+    expect(context?.defaultRuntime).toBeUndefined();
+    expect(result.defaultExecutionContext).toBe(context);
+  });
 
   test(unitTest('builds an executable with no result'), async () => {
     const result = await buildAnalytics(

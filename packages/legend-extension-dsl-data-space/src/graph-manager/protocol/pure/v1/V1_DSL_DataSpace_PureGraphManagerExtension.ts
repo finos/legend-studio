@@ -626,9 +626,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     // TODO?: these stubbed mappings and runtimes are not really useful that useful, so either we should
     // simplify the model here or potentially refactor the backend analytics endpoint to return these as model
     const mappingModels = uniq(
-      analysisResult.executionContexts
-        .map((context) => context.mapping)
-        .filter(isNonNullable),
+      analysisResult.executionContexts.map((context) => context.mapping),
     ).map((path) => {
       const mapping = new V1_Mapping();
       const [packagePath, name] = resolvePackagePathAndElementName(path);
@@ -667,12 +665,10 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         contextProtocol.name = execContext.name;
         contextProtocol.title = execContext.title;
         contextProtocol.description = execContext.description;
-        if (execContext.mapping) {
-          contextProtocol.mapping = new V1_PackageableElementPointer(
-            PackageableElementPointerType.MAPPING,
-            execContext.mapping,
-          );
-        }
+        contextProtocol.mapping = new V1_PackageableElementPointer(
+          PackageableElementPointerType.MAPPING,
+          execContext.mapping,
+        );
         if (execContext.defaultRuntime) {
           contextProtocol.defaultRuntime = new V1_PackageableElementPointer(
             PackageableElementPointerType.RUNTIME,
@@ -880,9 +876,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       contextAnalysisResult.name = context.name;
       contextAnalysisResult.title = context.title;
       contextAnalysisResult.description = context.description;
-      if (context.mapping) {
-        contextAnalysisResult.mapping = graph.getMapping(context.mapping);
-      }
+      contextAnalysisResult.mapping = graph.getMapping(context.mapping);
       if (context.defaultRuntime) {
         contextAnalysisResult.defaultRuntime = graph.getRuntime(
           context.defaultRuntime,
@@ -910,11 +904,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       }
 
       // for handling deprecated mappingModelCoverageAnalysisResult
-      if (
-        context.mappingModelCoverageAnalysisResult &&
-        context.mapping &&
-        contextAnalysisResult.mapping
-      ) {
+      if (context.mappingModelCoverageAnalysisResult) {
         mappingToMappingCoverageResult.set(
           context.mapping,
           V1_buildModelCoverageAnalysisResult(

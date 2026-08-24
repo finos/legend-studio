@@ -86,7 +86,7 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   name!: string;
   title?: string | undefined;
   description?: string | undefined;
-  mapping?: string | undefined;
+  mapping!: string;
   mappingProvider?: V1_DataSpaceMappingProviderAnalysisResult;
   defaultRuntime?: string | undefined;
   compatibleRuntimes!: string[];
@@ -143,7 +143,7 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
         V1_MappingModelCoverageAnalysisResult.serialization.schema,
       ),
     ),
-    mapping: optional(primitive()),
+    mapping: primitive(),
     mappingProvider: optional(
       usingModelSchema(
         V1_DataSpaceMappingProviderAnalysisResult.serialization.schema,

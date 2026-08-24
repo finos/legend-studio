@@ -1032,9 +1032,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                   const mappingModels = uniq(
                     Array.from(
                       dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-                    )
-                      .map((context) => context.mapping)
-                      .filter(isNonNullable),
+                    ).map((context) => context.mapping),
                   ).map((m) => {
                     const _mapping = new V1_Mapping();
                     const [packagePath, name] =
@@ -1081,13 +1079,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     contextProtocol.name = execContext.name;
                     contextProtocol.title = execContext.title;
                     contextProtocol.description = execContext.description;
-                    if (execContext.mapping) {
-                      contextProtocol.mapping =
-                        new V1_PackageableElementPointer(
-                          PackageableElementPointerType.MAPPING,
-                          execContext.mapping.path,
-                        );
-                    }
+                    contextProtocol.mapping = new V1_PackageableElementPointer(
+                      PackageableElementPointerType.MAPPING,
+                      execContext.mapping.path,
+                    );
                     if (execContext.defaultRuntime) {
                       contextProtocol.defaultRuntime =
                         new V1_PackageableElementPointer(
