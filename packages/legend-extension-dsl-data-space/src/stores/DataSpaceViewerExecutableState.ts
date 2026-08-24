@@ -47,11 +47,11 @@ export interface ResultColumnData {
 
 export class DataSpaceExecutableAnalysisResultState {
   readonly execState: DataSpaceViewerExecutableState;
-  value: DataSpaceExecutableResult | undefined;
+  value: DataSpaceExecutableResult;
 
   constructor(
     viewerState: DataSpaceViewerExecutableState,
-    value: DataSpaceExecutableResult | undefined,
+    value: DataSpaceExecutableResult,
   ) {
     this.value = value;
     this.execState = viewerState;
@@ -192,7 +192,7 @@ export class DataSpaceViewerExecutableState {
   readonly uuid = uuid();
   readonly viewerState: DataSpaceViewerState;
   readonly value: DataSpaceExecutableAnalysisResult;
-  resultState: DataSpaceExecutableAnalysisResultState;
+  resultState: DataSpaceExecutableAnalysisResultState | undefined;
 
   constructor(
     dataSpaceViewerState: DataSpaceViewerState,
@@ -208,10 +208,10 @@ export class DataSpaceViewerExecutableState {
 
   buildResultState(
     value: DataSpaceExecutableAnalysisResult,
-  ): DataSpaceExecutableAnalysisResultState {
+  ): DataSpaceExecutableAnalysisResultState | undefined {
     if (value.result instanceof DataSpaceExecutableTDSResult) {
       return new DataSpaceExecutableTDSResultState(this, value.result);
     }
-    return new DataSpaceExecutableAnalysisResultState(this, value.result);
+    return undefined;
   }
 }
