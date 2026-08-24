@@ -142,9 +142,6 @@ export class DataSpaceViewerState {
     this.openServiceQuery = actions.openServiceQuery;
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
 
-    // NOTE: the viewer is built around always having a current execution
-    // context; when the data product declares no default, fall back to the
-    // first available one rather than failing outright
     this.currentExecutionContext = guaranteeNonNullable(
       dataSpaceAnalysisResult.defaultExecutionContext ??
         Array.from(dataSpaceAnalysisResult.executionContextsIndex.values())[0],

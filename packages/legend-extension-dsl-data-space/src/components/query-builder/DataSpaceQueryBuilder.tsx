@@ -96,8 +96,6 @@ const resolveExecutionContextRuntimes = (
     `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
   );
   if (queryBuilderState.dataSpaceAnalysisResult) {
-    // NOTE: look the context up by name rather than by mapping, as a context
-    // sourcing its mapping via `mappingProvider` has no direct mapping to match on
     const executionContext =
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.get(
         queryBuilderState.executionContext.name,
