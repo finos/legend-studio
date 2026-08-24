@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.246
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Make execution contexts, their default mapping/runtime, and `executionContextKey` optional on Data Products, and add a `mappingProvider` alternative to `mapping` on execution contexts (resolved via a referenced Data Product's model access point group). Harden query-builder/graph-manager helpers accordingly.
+
 ## 10.4.245
 
 ## 10.4.244
