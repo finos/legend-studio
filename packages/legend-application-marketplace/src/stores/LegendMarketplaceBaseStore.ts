@@ -18,6 +18,7 @@ import {
   type GeneratorFn,
   ActionState,
   assertErrorThrown,
+  guaranteeType,
   isNonNullable,
   LogEvent,
   UserSearchService,
@@ -31,6 +32,7 @@ import {
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
   DepotServerClient,
+  retrieveProjectEntitiesWithDependencies,
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
@@ -42,6 +44,7 @@ import {
   type V1_EngineServerClient,
   getCurrentUserIDFromEngineServer,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
+  GraphManagerState,
   V1_PureGraphManager,
   V1_RemoteEngine,
 } from '@finos/legend-graph';
@@ -58,7 +61,12 @@ import {
 import { CartStore } from './cart/CartStore.js';
 import { PendingTasksCache } from './lakehouse/PendingTasksCache.js';
 import { parseGAVCoordinates, type Entity } from '@finos/legend-storage';
-import { V1_deserializeDataSpace } from '@finos/legend-extension-dsl-data-space/graph';
+import {
+  type DataSpaceAnalysisResult,
+  DSL_DataSpace_getGraphManagerExtension,
+  retrieveAnalyticsResultCache,
+  V1_deserializeDataSpace,
+} from '@finos/legend-extension-dsl-data-space/graph';
 import {
   DevelopmentLegendMarketplaceEnvState,
   LegendMarketplaceEnv,
@@ -276,12 +284,9 @@ export class LegendMarketplaceBaseStore {
     return vendorImageMap;
   }
 
-  async createInitializedGraphManager(): Promise<V1_PureGraphManager> {
-    const graphManager = new V1_PureGraphManager(
-      this.applicationStore.pluginManager,
-      this.applicationStore.logService,
-      this.remoteEngine,
-    );
+  private async initializeGraphManager(
+    graphManager: V1_PureGraphManager,
+  ): Promise<void> {
     await graphManager.initialize(
       {
         env: this.applicationStore.config.env,
@@ -292,6 +297,68 @@ export class LegendMarketplaceBaseStore {
       },
       { engine: this.remoteEngine },
     );
+  }
+
+  /**
+   * Builds a graph manager state with the system graph loaded. Callers that
+   * only parse lambdas can use {@link createInitializedGraphManager} instead.
+   */
+  async createInitializedGraphManagerState(): Promise<GraphManagerState> {
+    const graphManagerState = new GraphManagerState(
+      this.applicationStore.pluginManager,
+      this.applicationStore.logService,
+    );
+    const graphManager = guaranteeType(
+      graphManagerState.graphManager,
+      V1_PureGraphManager,
+      'GraphManager must be a V1_PureGraphManager',
+    );
+    await this.initializeGraphManager(graphManager);
+    await graphManagerState.initializeSystem();
+    return graphManagerState;
+  }
+
+  /**
+   * Analyzes a legacy data product's data space, which is everything the
+   * schema extractors read. No viewer state is involved.
+   */
+  async analyzeLegacyDataProduct(
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    dataSpacePath: string,
+    graphManagerState: GraphManagerState,
+  ): Promise<DataSpaceAnalysisResult> {
+    const project = StoreProjectData.serialization.fromJson(
+      await this.depotServerClient.getProject(groupId, artifactId),
+    );
+    return DSL_DataSpace_getGraphManagerExtension(
+      graphManagerState.graphManager,
+    ).analyzeDataSpace(
+      dataSpacePath,
+      () =>
+        retrieveProjectEntitiesWithDependencies(
+          project,
+          versionId,
+          this.depotServerClient,
+        ),
+      () =>
+        retrieveAnalyticsResultCache(
+          project,
+          versionId,
+          dataSpacePath,
+          this.depotServerClient,
+        ),
+    );
+  }
+
+  async createInitializedGraphManager(): Promise<V1_PureGraphManager> {
+    const graphManager = new V1_PureGraphManager(
+      this.applicationStore.pluginManager,
+      this.applicationStore.logService,
+      this.remoteEngine,
+    );
+    await this.initializeGraphManager(graphManager);
     return graphManager;
   }
 

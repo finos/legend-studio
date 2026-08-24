@@ -15,11 +15,32 @@
  */
 
 import { test, describe, expect, jest } from '@jest/globals';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
+import { guaranteeNonNullable, noop } from '@finos/legend-shared';
 import { unitTest, createMock } from '@finos/legend-shared/test';
-import { ApplicationStore } from '@finos/legend-application';
+import {
+  CORE_PURE_PATH,
+  QueryExplicitExecutionContextInfo,
+  GraphManagerState,
+  Mapping,
+  PackageableRuntime,
+  V1_DataProductOriginType,
+  V1_EntitlementsDataProduct,
+  V1_EntitlementsDataProductDetails,
+  V1_SdlcDeploymentDataProductOrigin,
+} from '@finos/legend-graph';
+import {
+  ApplicationStore,
+  EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
+} from '@finos/legend-application';
 import { flowResult } from 'mobx';
 import { TEST__getTestLegendMarketplaceApplicationConfig } from '../../../application/__test-utils__/LegendMarketplaceApplicationTestUtils.js';
 import { LegendMarketplacePluginManager } from '../../../application/LegendMarketplacePluginManager.js';
+import {
+  DataSpaceAnalysisResult,
+  DataSpaceExecutionContextAnalysisResult,
+} from '@finos/legend-extension-dsl-data-space/graph';
+import { LegendMarketplaceProductViewerStore } from '../../lakehouse/LegendMarketplaceProductViewerStore.js';
 import { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import {
   LegendMarketplaceAIChatStore,
@@ -38,12 +59,18 @@ import {
 import {
   type LegendAIConfig,
   type MessageSetter,
+  type LegendAIFallbackAction,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
   LegendAI_LegendApplicationPlugin_Extension,
   LegendAIJudgeVerdict,
   LegendAIResolvedEntities,
+  LegendAIPythonCodeStatus,
   LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+  LEGEND_AI_ALTERNATE_ROOT_ACTION_ID,
+  TDSServiceSourceType,
+  type TDSServiceSchema,
+  createMessagePair,
 } from '@finos/legend-lego/legend-ai';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -106,6 +133,30 @@ function buildLakehouseProduct(overrides?: {
 
 // ─── create store ────────────────────────────────────────────────────────────
 
+function lakehouseDetailsFixture(): V1_EntitlementsDataProductDetails {
+  const details = new V1_EntitlementsDataProductDetails();
+  details.deploymentId = 1;
+  const entitlementsProduct = new V1_EntitlementsDataProduct();
+  entitlementsProduct.name = 'LhProduct';
+  details.dataProduct = entitlementsProduct;
+  const origin = new V1_SdlcDeploymentDataProductOrigin();
+  origin.group = 'com.lh';
+  origin.artifact = 'lh-artifact';
+  origin.version = '2.0.0';
+  details.origin = origin;
+  return details;
+}
+
+function accessPointServiceFixture(): TDSServiceSchema {
+  return {
+    title: 'Accounts',
+    pattern: '/Accounts',
+    columns: [{ name: 'ACCOUNTCODE' }],
+    parameters: [],
+    sourceType: TDSServiceSourceType.ACCESS_POINT,
+  };
+}
+
 function createStore(configOverrides?: Partial<LegendAIConfig>): {
   store: LegendMarketplaceAIChatStore;
   baseStore: LegendMarketplaceBaseStore;
@@ -135,6 +186,13 @@ function createStore(configOverrides?: Partial<LegendAIConfig>): {
   }
 
   const store = new LegendMarketplaceAIChatStore(baseStore);
+  jest.spyOn(store, 'resolveAccessPointServices').mockResolvedValue({
+    services: [],
+    details: undefined,
+    productPath: undefined,
+    environmentName: undefined,
+  });
+  jest.spyOn(store, 'resolveDataSpaceContext').mockResolvedValue(undefined);
   return { store, baseStore };
 }
 
@@ -1115,12 +1173,19 @@ class MockLegendAIPlugin extends LegendAI_LegendApplicationPlugin_Extension {
 }
 
 /**
- * Create a store with a mock plugin installed.
+ * Create a store with a mock plugin installed. Scoped resolution is stubbed;
+ * tests that exercise it restore {@link accessPointServicesStub}.
  */
 function createStoreWithPlugin(configOverrides?: Partial<LegendAIConfig>): {
   store: LegendMarketplaceAIChatStore;
   baseStore: LegendMarketplaceBaseStore;
   plugin: MockLegendAIPlugin;
+  accessPointServicesStub: jest.SpiedFunction<
+    LegendMarketplaceAIChatStore['resolveAccessPointServices']
+  >;
+  dataSpaceContextStub: jest.SpiedFunction<
+    LegendMarketplaceAIChatStore['resolveDataSpaceContext']
+  >;
 } {
   const pluginManager = LegendMarketplacePluginManager.create();
   const mockPlugin = new MockLegendAIPlugin();
@@ -1145,8 +1210,25 @@ function createStoreWithPlugin(configOverrides?: Partial<LegendAIConfig>): {
   });
 
   const store = new LegendMarketplaceAIChatStore(baseStore);
+  const accessPointServicesStub = jest
+    .spyOn(store, 'resolveAccessPointServices')
+    .mockResolvedValue({
+      services: [],
+      details: undefined,
+      productPath: undefined,
+      environmentName: undefined,
+    });
+  const dataSpaceContextStub = jest
+    .spyOn(store, 'resolveDataSpaceContext')
+    .mockResolvedValue(undefined);
 
-  return { store, baseStore, plugin: mockPlugin };
+  return {
+    store,
+    baseStore,
+    plugin: mockPlugin,
+    accessPointServicesStub,
+    dataSpaceContextStub,
+  };
 }
 
 // ─── submitQuery — product selection flow ────────────────────────────────────
@@ -1461,7 +1543,7 @@ describe(
           isExecuting: false,
           suggestedQueries: [],
           fallbackAction: {
-            label: 'Ask Legend AI Orchestrator to generate Pure query',
+            label: 'Try Legend AI Orchestrator',
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
           queriedAccessPointGroups: [],
@@ -1544,7 +1626,7 @@ describe(
           isExecuting: false,
           suggestedQueries: [],
           fallbackAction: {
-            label: 'Ask Legend AI Orchestrator to generate Pure query',
+            label: 'Try Legend AI Orchestrator',
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
           queriedAccessPointGroups: [],
@@ -1582,11 +1664,8 @@ describe(
 
       await flowResult(store.runOrchestratorFallback('assistant-1'));
 
-      // Verify thinking steps include entity candidate info
-      const assistantMsg = store.messages.find(
-        (m) => m.role === LegendAIMessageRole.ASSISTANT,
-      );
-      expect(assistantMsg).toBeDefined();
+      const assistantMsg = store.messages[store.messages.length - 1];
+      expect(assistantMsg?.role).toBe(LegendAIMessageRole.ASSISTANT);
       if (assistantMsg?.role === LegendAIMessageRole.ASSISTANT) {
         const stepLabels = assistantMsg.thinkingSteps.map((s) => s.label);
         expect(
@@ -1601,6 +1680,303 @@ describe(
         ).toBe(true);
       }
       expect(store.isSending).toBe(false);
+    });
+  },
+);
+
+// ─── runOrchestratorFallback — robust question derivation + SQL threading ─────
+
+describe(
+  unitTest(
+    'LegendMarketplaceAIChatStore — orchestrator fallback derivation + threading',
+  ),
+  () => {
+    const seedFailedSqlMessage = (
+      store: LegendMarketplaceAIChatStore,
+    ): void => {
+      store.messages = [
+        { id: 'user-1', role: LegendAIMessageRole.USER, text: 'show trades' },
+        {
+          ...createMessagePair('placeholder')[1],
+          id: 'assistant-1',
+          sql: 'SELECT * FROM t WHERE "TICKER" = \'FRDICO\'',
+          textAnswer: 'Query returned 0 rows after correction attempts.',
+          isProcessing: false,
+          fallbackAction: {
+            label: 'Try Legend AI Orchestrator',
+            actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+            failedSql: 'SELECT * FROM t WHERE "TICKER" = \'FRDICO\'',
+            failedReason: 'Query returned 0 rows after correction attempts.',
+          },
+        },
+      ];
+    };
+
+    test('derives question from message and threads prior SQL failure when no pending question', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin({
+        orchestratorUrl: 'http://localhost/orch',
+      });
+      store.selectDataProduct(buildLegacyProduct());
+      expect(store.pendingFallbackQuestion).toBeUndefined();
+      seedFailedSqlMessage(store);
+
+      jest
+        .spyOn(baseStore.depotServerClient, 'getVersionEntity')
+        .mockResolvedValue({
+          path: 'my::DataSpace',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+          content: {
+            _type: 'dataSpace',
+            name: 'DataSpace',
+            package: 'my',
+            executionContexts: [
+              {
+                name: 'default',
+                mapping: { path: 'my::Mapping' },
+                defaultRuntime: { path: 'my::Runtime' },
+              },
+            ],
+            defaultExecutionContext: 'default',
+          },
+        });
+
+      await flowResult(store.runOrchestratorFallback('assistant-1'));
+
+      expect(store.isSending).toBe(false);
+      expect(plugin.generateQueryViaOrchestrator).toHaveBeenCalledTimes(1);
+      const request = plugin.generateQueryViaOrchestrator.mock.calls[0]?.[0];
+      expect(request?.user_question).toBe('show trades');
+      const hints =
+        request?.semantic_search_resolution_details.enriched_business_context
+          ?.businessContextMatch?.additionalNlModelContext ?? [];
+      expect(hints.some((h) => h.id === 'prior_sql_failure_reason')).toBe(true);
+      expect(hints.some((h) => h.id === 'prior_sql_failure_query')).toBe(true);
+      expect(store.messages).toHaveLength(3);
+      const failedMsg = store.messages[1];
+      expect(failedMsg?.role === LegendAIMessageRole.ASSISTANT).toBe(true);
+      if (failedMsg?.role === LegendAIMessageRole.ASSISTANT) {
+        expect(failedMsg.sql).toBe(
+          'SELECT * FROM t WHERE "TICKER" = \'FRDICO\'',
+        );
+        expect(failedMsg.fallbackAction).toBeNull();
+      }
+    });
+
+    test('retries with the alternate root the fallback action carries', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin({
+        orchestratorUrl: 'http://localhost/orch',
+      });
+      store.selectDataProduct(buildLegacyProduct());
+      store.lastResolvedEntities = {
+        rootEntity: 'my::OriginalRoot',
+        relatedEntities: ['my::AlternateRoot'],
+      };
+      store.messages = [
+        { id: 'user-1', role: LegendAIMessageRole.USER, text: 'show trades' },
+        {
+          ...createMessagePair('placeholder')[1],
+          id: 'assistant-1',
+          isProcessing: false,
+          fallbackAction: {
+            label: 'Tried OriginalRoot as the root — try AlternateRoot instead',
+            actionId: LEGEND_AI_ALTERNATE_ROOT_ACTION_ID,
+            resolvedEntities: {
+              rootEntity: 'my::AlternateRoot',
+              relatedEntities: [],
+            },
+          },
+        },
+      ];
+      jest
+        .spyOn(baseStore.depotServerClient, 'getVersionEntity')
+        .mockResolvedValue({
+          path: 'my::DataSpace',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+          content: {
+            _type: 'dataSpace',
+            name: 'DataSpace',
+            package: 'my',
+            executionContexts: [
+              {
+                name: 'default',
+                mapping: { path: 'my::Mapping' },
+                defaultRuntime: { path: 'my::Runtime' },
+              },
+            ],
+            defaultExecutionContext: 'default',
+          },
+        });
+
+      await flowResult(store.runOrchestratorFallback('assistant-1'));
+
+      const request = plugin.generateQueryViaOrchestrator.mock.calls[0]?.[0];
+      expect(request?.semantic_search_resolution_details.root_entity).toBe(
+        'my::AlternateRoot',
+      );
+      expect(plugin.resolveEntitiesForQuery).not.toHaveBeenCalled();
+    });
+
+    test('surfaces a visible error instead of a silent no-op when orchestrator is unavailable', async () => {
+      const { store } = createStore({
+        orchestratorUrl: 'http://localhost/orch',
+      });
+      store.messages = [
+        { id: 'user-1', role: LegendAIMessageRole.USER, text: 'show trades' },
+        {
+          ...createMessagePair('placeholder')[1],
+          id: 'assistant-1',
+          isProcessing: false,
+          fallbackAction: {
+            label: 'Try Legend AI Orchestrator',
+            actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+            failedReason: 'Query returned 0 rows after correction attempts.',
+          },
+        },
+      ];
+
+      await flowResult(store.runOrchestratorFallback('assistant-1'));
+
+      expect(store.isSending).toBe(false);
+      const last = store.messages[store.messages.length - 1];
+      expect(last?.role === LegendAIMessageRole.ASSISTANT).toBe(true);
+      if (last?.role === LegendAIMessageRole.ASSISTANT) {
+        expect(last.error).toContain('not available');
+      }
+    });
+  },
+);
+
+// ─── maybeAutoRouteToOrchestrator — scoped SQL dead-end auto-routing ──────────
+
+describe(
+  unitTest('LegendMarketplaceAIChatStore — auto-route on scoped SQL dead-end'),
+  () => {
+    const seedDeadEnd = (
+      store: LegendMarketplaceAIChatStore,
+      fallback: LegendAIFallbackAction | null,
+    ): void => {
+      store.messages = [
+        { id: 'user-1', role: LegendAIMessageRole.USER, text: 'show trades' },
+        {
+          ...createMessagePair('placeholder')[1],
+          id: 'assistant-1',
+          isProcessing: false,
+          fallbackAction: fallback,
+        },
+      ];
+    };
+
+    type AutoRouteInternals = {
+      createMessageSetter: () => MessageSetter;
+      maybeAutoRouteToOrchestrator: (
+        question: string,
+        setMessages: MessageSetter,
+      ) => Promise<void>;
+    };
+    const autoRoute = (store: LegendMarketplaceAIChatStore): Promise<void> => {
+      const internals = store as unknown as AutoRouteInternals;
+      return internals.maybeAutoRouteToOrchestrator(
+        'show trades',
+        internals.createMessageSetter(),
+      );
+    };
+
+    const mockExecContext = (baseStore: LegendMarketplaceBaseStore): void => {
+      jest
+        .spyOn(baseStore.depotServerClient, 'getVersionEntity')
+        .mockResolvedValue({
+          path: 'my::DataSpace',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+          content: {
+            _type: 'dataSpace',
+            name: 'DataSpace',
+            package: 'my',
+            executionContexts: [
+              {
+                name: 'default',
+                mapping: { path: 'my::Mapping' },
+                defaultRuntime: { path: 'my::Runtime' },
+              },
+            ],
+            defaultExecutionContext: 'default',
+          },
+        });
+    };
+
+    test('fires the orchestrator once and appends a bubble on a SQL dead-end', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin({
+        orchestratorUrl: 'http://localhost/orch',
+      });
+      store.selectDataProduct(buildLegacyProduct());
+      mockExecContext(baseStore);
+      seedDeadEnd(store, {
+        label: 'Try Legend AI Orchestrator',
+        actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+        failedSql: 'SELECT * FROM t',
+        failedReason: 'Query returned 0 rows after correction attempts.',
+      });
+
+      await autoRoute(store);
+
+      expect(plugin.generateQueryViaOrchestrator).toHaveBeenCalledTimes(1);
+      expect(store.messages).toHaveLength(3);
+      const failedMsg = store.messages[1];
+      expect(failedMsg?.role === LegendAIMessageRole.ASSISTANT).toBe(true);
+      if (failedMsg?.role === LegendAIMessageRole.ASSISTANT) {
+        expect(failedMsg.sql).toBe('SELECT * FROM t');
+        expect(failedMsg.fallbackAction).toBeNull();
+      }
+    });
+
+    test('does not re-route on a later turn once the fallback is consumed', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin({
+        orchestratorUrl: 'http://localhost/orch',
+      });
+      store.selectDataProduct(buildLegacyProduct());
+      mockExecContext(baseStore);
+      seedDeadEnd(store, {
+        label: 'Try Legend AI Orchestrator',
+        actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+        failedSql: 'SELECT * FROM t',
+        failedReason: 'Query returned 0 rows after correction attempts.',
+      });
+
+      await autoRoute(store);
+      await autoRoute(store);
+
+      expect(plugin.generateQueryViaOrchestrator).toHaveBeenCalledTimes(1);
+      expect(store.messages).toHaveLength(3);
+    });
+
+    test('does not fire when the fallback carries no failure reason (metadata answer)', async () => {
+      const { store, plugin } = createStoreWithPlugin({
+        orchestratorUrl: 'http://localhost/orch',
+      });
+      store.selectDataProduct(buildLegacyProduct());
+      seedDeadEnd(store, {
+        label: 'Try Legend AI Orchestrator',
+        actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+      });
+
+      await autoRoute(store);
+
+      expect(plugin.generateQueryViaOrchestrator).not.toHaveBeenCalled();
+      expect(store.messages).toHaveLength(2);
+    });
+
+    test('does not fire when the orchestrator is not configured', async () => {
+      const { store, plugin } = createStoreWithPlugin();
+      store.selectDataProduct(buildLegacyProduct());
+      seedDeadEnd(store, {
+        label: 'Try Legend AI Orchestrator',
+        actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+        failedReason: 'Query returned 0 rows.',
+      });
+
+      await autoRoute(store);
+
+      expect(plugin.generateQueryViaOrchestrator).not.toHaveBeenCalled();
+      expect(store.messages).toHaveLength(2);
     });
   },
 );
@@ -1680,7 +2056,7 @@ describe(
         .spyOn(baseStore.depotServerClient, 'getVersionEntity')
         .mockResolvedValue({
           path: 'my::DataSpace',
-          classifierPath: 'meta',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
           content: {
             _type: 'dataSpace',
             name: 'DataSpace',
@@ -1713,7 +2089,7 @@ describe(
         .spyOn(baseStore.depotServerClient, 'getVersionEntity')
         .mockResolvedValue({
           path: 'my::LhDataSpace',
-          classifierPath: 'meta',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
           content: {
             _type: 'dataSpace',
             name: 'LhDataSpace',
@@ -1763,7 +2139,7 @@ describe(
         .spyOn(baseStore.depotServerClient, 'getVersionEntity')
         .mockResolvedValue({
           path: 'my::DataSpace',
-          classifierPath: 'meta',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
           content: {
             _type: 'dataSpace',
             name: 'DataSpace',
@@ -1782,6 +2158,25 @@ describe(
       await store.resolveExecutionContext(mockSetter);
 
       expect(store.pureExecutionContext?.mapping).toBe('my::Mapping');
+    });
+
+    test('resolves no execution context when the entity is not a dataspace', async () => {
+      const { store, baseStore } = createStore();
+      store.selectDataProduct(buildLegacyProduct());
+      const mockSetter = createMock() as MessageSetter;
+
+      jest
+        .spyOn(baseStore.depotServerClient, 'getVersionEntity')
+        .mockResolvedValue({
+          path: 'my::DataProduct',
+          classifierPath:
+            'meta::external::catalog::dataProduct::specification::DataProduct',
+          content: { _type: 'dataProduct', name: 'DataProduct', package: 'my' },
+        });
+
+      await store.resolveExecutionContext(mockSetter);
+
+      expect(store.pureExecutionContext).toBeUndefined();
     });
   },
 );
@@ -2224,7 +2619,7 @@ describe(
         .spyOn(baseStore.depotServerClient, 'getVersionEntity')
         .mockResolvedValue({
           path: 'my::DataSpace',
-          classifierPath: 'meta',
+          classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
           content: {
             _type: 'dataSpace',
             name: 'DataSpace',
@@ -2535,6 +2930,338 @@ describe(
   },
 );
 
+// ─── access-point scoped routing ─────────────────────────────────────────────
+
+describe(
+  unitTest('LegendMarketplaceAIChatStore — access-point scoped routing'),
+  () => {
+    test('resolves access-point schemas and routes to the shared pipeline', async () => {
+      const { store, plugin } = createStoreWithPlugin();
+      store.selectDataProduct(buildLakehouseProduct());
+      const accessPointService = accessPointServiceFixture();
+      const resolveSpy = jest
+        .spyOn(store, 'resolveAccessPointServices')
+        .mockResolvedValue({
+          services: [accessPointService],
+          details: undefined,
+          productPath: undefined,
+          environmentName: undefined,
+        });
+
+      await flowResult(store.submitQuery('people in Building A on floor 2'));
+
+      expect(resolveSpy).toHaveBeenCalledTimes(1);
+      expect(store.resolvedProductServices).toEqual([accessPointService]);
+      expect(plugin.buildAccessPointGeneratorPrompt).toHaveBeenCalled();
+    });
+
+    test('withdraws the DataCube launcher when the product details are unresolved', async () => {
+      const { store } = createStoreWithPlugin();
+      store.selectDataProduct(buildLakehouseProduct());
+      const resolve = jest
+        .spyOn(store, 'resolveAccessPointServices')
+        .mockResolvedValue({
+          services: [accessPointServiceFixture()],
+          details: lakehouseDetailsFixture(),
+          productPath: 'my::LhDataSpace',
+          environmentName: 'env-1',
+        });
+
+      await flowResult(store.submitQuery('show accounts'));
+      expect(store.resolvedOpenInDataCube).toBeDefined();
+
+      store.selectDataProduct(
+        buildLakehouseProduct({ title: 'OtherProduct', path: 'my::Other' }),
+      );
+      resolve.mockResolvedValue({
+        services: [accessPointServiceFixture()],
+        details: undefined,
+        productPath: undefined,
+        environmentName: 'env-1',
+      });
+      await flowResult(store.submitQuery('show accounts again'));
+
+      expect(store.resolvedOpenInDataCube).toBeUndefined();
+      expect(store.resolvedEnvironmentName).toBe('env-1');
+    });
+
+    test('launches DataCube once details and product path resolve', async () => {
+      const { store, baseStore } = createStoreWithPlugin();
+      store.selectDataProduct(buildLakehouseProduct());
+      const details = lakehouseDetailsFixture();
+      jest.spyOn(store, 'resolveAccessPointServices').mockResolvedValue({
+        services: [accessPointServiceFixture()],
+        details,
+        productPath: 'my::LhDataSpace',
+        environmentName: 'env-1',
+      });
+      const visitAddress = jest
+        .spyOn(
+          baseStore.applicationStore.navigationService.navigator,
+          'visitAddress',
+        )
+        .mockImplementation(noop());
+
+      await flowResult(store.submitQuery('show accounts'));
+      guaranteeNonNullable(store.resolvedOpenInDataCube)(
+        'Accounts',
+        'env-1',
+        undefined,
+      );
+
+      expect(visitAddress).toHaveBeenCalledTimes(1);
+      expect(visitAddress.mock.calls[0]?.[0]).toBe(
+        EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl(
+          baseStore.applicationStore.config.datacubeApplicationUrl,
+          {
+            _type: 'lakehouseConsumer',
+            warehouse: 'LAKEHOUSE_CONSUMER_DEFAULT_WH',
+            environment: 'env-1',
+            paths: ['my::LhDataSpace', 'Accounts'],
+            deploymentId: 1,
+            origin: {
+              _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
+              dpCoordinates: {
+                groupId: 'com.lh',
+                artifactId: 'lh-artifact',
+                versionId: '2.0.0',
+              },
+            },
+          },
+          { addUrlSafeBase64Characters: true },
+        ),
+      );
+    });
+
+    test('resolves schemas from the product element and its artifact', async () => {
+      const { store, baseStore, accessPointServicesStub } =
+        createStoreWithPlugin();
+      accessPointServicesStub.mockRestore();
+      store.selectDataProduct(buildLakehouseProduct());
+      jest
+        .spyOn(baseStore, 'createInitializedGraphManagerState')
+        .mockResolvedValue(TEST__getTestGraphManagerState());
+      jest
+        .spyOn(
+          baseStore.lakehouseContractServerClient,
+          'getDataProductByIdAndDID',
+        )
+        .mockResolvedValue({
+          dataProducts: [
+            {
+              id: 'dp-123',
+              deploymentId: 1,
+              origin: {
+                type: 'SdlcDeployment',
+                group: 'com.lh',
+                artifact: 'lh-artifact',
+                version: '2.0.0',
+              },
+              dataProduct: { name: 'dp-123', owner: {} },
+            },
+          ],
+        });
+      jest
+        .spyOn(baseStore.depotServerClient, 'getVersionEntities')
+        .mockResolvedValue([
+          {
+            groupId: 'com.lh',
+            artifactId: 'lh-artifact',
+            versionId: '2.0.0',
+            versionedEntity: false,
+            entity: {
+              path: 'my::dp-123',
+              classifierPath: CORE_PURE_PATH.DATA_PRODUCT,
+              content: {
+                _type: 'dataProduct',
+                name: 'dp-123',
+                package: 'my',
+                accessPointGroups: [
+                  {
+                    id: 'grp',
+                    title: 'Group',
+                    accessPoints: [
+                      {
+                        _type: 'lakehouseAccessPoint',
+                        id: 'Accounts',
+                        title: 'Accounts',
+                        targetEnvironment: 'Snowflake',
+                        func: { _type: 'lambda', body: [], parameters: [] },
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        ]);
+      jest
+        .spyOn(baseStore.depotServerClient, 'getGenerationFilesByType')
+        .mockResolvedValue([
+          {
+            path: 'my::dp-123',
+            file: {
+              path: 'my::dp-123',
+              content: JSON.stringify({
+                accessPointGroups: [
+                  {
+                    id: 'grp',
+                    accessPointImplementations: [
+                      {
+                        id: 'Accounts',
+                        lambdaGenericType: {
+                          rawType: {
+                            _type: 'packageableType',
+                            fullPath:
+                              'meta::pure::metamodel::relation::Relation',
+                          },
+                          typeArguments: [
+                            {
+                              rawType: {
+                                _type: 'relationType',
+                                columns: [
+                                  {
+                                    name: 'ACCOUNTCODE',
+                                    genericType: {
+                                      rawType: {
+                                        _type: 'packageableType',
+                                        fullPath: 'String',
+                                      },
+                                      typeVariableValues: [],
+                                    },
+                                    multiplicity: {
+                                      lowerBound: 1,
+                                      upperBound: 1,
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              }),
+            },
+          },
+        ]);
+
+      const resolved = await store.resolveAccessPointServices();
+
+      expect(resolved.productPath).toBe('my::dp-123');
+      expect(resolved.services).toHaveLength(1);
+      expect(resolved.services[0]?.title).toBe('Accounts');
+      expect(resolved.services[0]?.accessPointGroupTitle).toBe('Group');
+      expect(resolved.services[0]?.sourceType).toBe(
+        TDSServiceSourceType.ACCESS_POINT,
+      );
+      expect(resolved.services[0]?.columns.map((col) => col.name)).toEqual([
+        'ACCOUNTCODE',
+      ]);
+    });
+
+    test('drops the previous product execution context on selection', () => {
+      const { store } = createStoreWithPlugin();
+      const previousContext = new QueryExplicitExecutionContextInfo();
+      previousContext.mapping = 'other::Mapping';
+      previousContext.runtime = 'other::Runtime';
+      store.pureExecutionContext = previousContext;
+
+      store.selectDataProduct(buildLakehouseProduct());
+
+      expect(store.pureExecutionContext).toBeUndefined();
+    });
+
+    test('re-resolves the scope when the same product is selected again', async () => {
+      const { store, accessPointServicesStub } = createStoreWithPlugin();
+      accessPointServicesStub.mockResolvedValue({
+        services: [accessPointServiceFixture()],
+        details: lakehouseDetailsFixture(),
+        productPath: 'my::ProductA',
+        environmentName: 'env-a',
+      });
+
+      store.selectDataProduct(buildLakehouseProduct({ path: 'my::ProductA' }));
+      await flowResult(store.submitQuery('show accounts'));
+      expect(accessPointServicesStub).toHaveBeenCalledTimes(1);
+
+      // Re-selecting must drop the cached scope, so a product whose
+      // environment resolution has since changed is not served a stale one.
+      store.selectDataProduct(buildLakehouseProduct({ path: 'my::ProductA' }));
+      await flowResult(store.submitQuery('show accounts again'));
+
+      expect(accessPointServicesStub).toHaveBeenCalledTimes(2);
+    });
+
+    test('resolves a data space scope without building a product viewer', async () => {
+      const { store, baseStore, dataSpaceContextStub } =
+        createStoreWithPlugin();
+      dataSpaceContextStub.mockRestore();
+      store.selectDataProduct(buildLakehouseProduct());
+      const graphManagerState = TEST__getTestGraphManagerState();
+      jest
+        .spyOn(baseStore, 'createInitializedGraphManagerState')
+        .mockResolvedValue(graphManagerState);
+
+      const executionContext = new DataSpaceExecutionContextAnalysisResult();
+      executionContext.name = 'default';
+      executionContext.mapping = new Mapping('LhMapping');
+      executionContext.defaultRuntime = new PackageableRuntime('LhRuntime');
+      const analysisResult = new DataSpaceAnalysisResult();
+      analysisResult.name = 'LhDataSpace';
+      analysisResult.path = 'my::LhDataSpace';
+      analysisResult.defaultExecutionContext = executionContext;
+      const analyze = jest
+        .spyOn(baseStore, 'analyzeLegacyDataProduct')
+        .mockResolvedValue(analysisResult);
+      const viewerInit = jest.spyOn(
+        LegendMarketplaceProductViewerStore.prototype,
+        'initWithLegacyProduct',
+      );
+
+      const scope = await store.resolveDataSpaceContext();
+
+      expect(analyze).toHaveBeenCalledTimes(1);
+      expect(viewerInit).not.toHaveBeenCalled();
+      const resolvedContext = guaranteeNonNullable(
+        guaranteeNonNullable(scope).pureExecutionContext,
+      );
+      expect(resolvedContext.mapping).toBe('LhMapping');
+      expect(resolvedContext.runtime).toBe('LhRuntime');
+    });
+
+    test('returns an empty scope when the product lookup fails', async () => {
+      const { store, baseStore, accessPointServicesStub } =
+        createStoreWithPlugin();
+      accessPointServicesStub.mockRestore();
+      store.selectDataProduct(buildLakehouseProduct());
+      jest
+        .spyOn(baseStore, 'createInitializedGraphManagerState')
+        .mockResolvedValue(
+          new GraphManagerState(
+            baseStore.applicationStore.pluginManager,
+            baseStore.applicationStore.logService,
+          ),
+        );
+      const lookup = jest
+        .spyOn(
+          baseStore.lakehouseContractServerClient,
+          'getDataProductByIdAndDID',
+        )
+        .mockRejectedValue(new Error('contract server unavailable'));
+
+      const resolved = await store.resolveAccessPointServices();
+
+      expect(lookup).toHaveBeenCalledTimes(1);
+      expect(resolved.services).toEqual([]);
+      expect(resolved.details).toBeUndefined();
+      expect(resolved.environmentName).toBeUndefined();
+    });
+  },
+);
+
 // ─── llmRerankProducts — with >3 candidates ─────────────────────────────────
 
 describe(
@@ -2628,7 +3355,7 @@ describe(
             groupId: 'com.lh',
             artifactId: 'lh-art',
             versionId: '2.0.0',
-            path: 'my::LhDataSpace',
+            path: 'my::dp-123',
           },
           datasetDetails: { _type: 'relational', modelPath: 'model::Primary' },
           relatedFields: [{ fieldName: 'id', fieldType: 'String' }],
@@ -2643,7 +3370,7 @@ describe(
             groupId: 'com.lh',
             artifactId: 'lh-art',
             versionId: '2.0.0',
-            path: 'my::LhDataSpace',
+            path: 'my::dp-123',
           },
           datasetDetails: {
             _type: 'relational',
@@ -2755,7 +3482,7 @@ describe(
           isExecuting: false,
           suggestedQueries: [],
           fallbackAction: {
-            label: 'Ask Legend AI Orchestrator to generate Pure query',
+            label: 'Try Legend AI Orchestrator',
             actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
           },
           queriedAccessPointGroups: [],
@@ -2776,6 +3503,183 @@ describe(
       await flowResult(store.runOrchestratorFallback('assistant-1'));
 
       expect(store.isSending).toBe(false);
+    });
+  },
+);
+
+describe(
+  unitTest('LegendMarketplaceAIChatStore — Python codegen + Open in DataCube'),
+  () => {
+    const accessPointService: TDSServiceSchema = {
+      title: 'Reference Directory',
+      pattern: '/ACCOUNTS_LATEST',
+      columns: [{ name: 'CN' }],
+      parameters: [],
+      dataProductPath: 'lakehouse::REF',
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+    };
+
+    const seedScopedAnswer = (store: LegendMarketplaceAIChatStore): string => {
+      const [userMsg, assistantMsg] = createMessagePair('people in Building A');
+      const assistant = {
+        ...assistantMsg,
+        sql: 'SELECT "CN" FROM p(\'lakehouse::REF.ACCOUNTS_LATEST\')',
+        queriedAccessPoints: ['ACCOUNTS_LATEST'],
+        isProcessing: false,
+      };
+      store.messages = [userMsg, assistant];
+      store.resolvedProductServices = [accessPointService];
+      return assistant.id;
+    };
+
+    test('generatePythonCode transitions loading to ready with code and notebook URL', async () => {
+      const { store, plugin } = createStoreWithPlugin();
+      const messageId = seedScopedAnswer(store);
+      jest.spyOn(plugin, 'generatePythonQueryCodeAsync').mockResolvedValue({
+        code: 'df = lakehouse.query()',
+        notebookUrl: 'https://nb',
+      });
+      await flowResult(store.generatePythonCode(messageId));
+      expect(store.pythonCodeByMessageId.get(messageId)).toEqual({
+        status: LegendAIPythonCodeStatus.READY,
+        code: 'df = lakehouse.query()',
+        notebookUrl: 'https://nb',
+      });
+    });
+
+    test('generatePythonCode records an error when the plugin throws', async () => {
+      const { store, plugin } = createStoreWithPlugin();
+      const messageId = seedScopedAnswer(store);
+      jest
+        .spyOn(plugin, 'generatePythonQueryCodeAsync')
+        .mockRejectedValue(new Error('codegen boom'));
+      await flowResult(store.generatePythonCode(messageId));
+      const entry = store.pythonCodeByMessageId.get(messageId);
+      expect(entry?.status).toBe(LegendAIPythonCodeStatus.ERROR);
+      expect(
+        entry?.status === LegendAIPythonCodeStatus.ERROR
+          ? entry.error
+          : undefined,
+      ).toContain('codegen boom');
+    });
+
+    test('openInDataCube translates SQL and opens with the prefill for a data-product accessor', async () => {
+      const { store, plugin } = createStoreWithPlugin();
+      const messageId = seedScopedAnswer(store);
+      store.selectedProductCoordinates = {
+        data_product: 'DIRECTORY_DATA_PRODUCT',
+        group_id: 'com.lh',
+        artifact_id: 'lh-artifact',
+        version: '2.0.0',
+      };
+      const openSpy = jest.fn();
+      store.resolvedOpenInDataCube = openSpy;
+      store.resolvedEnvironmentName = 'prod-env';
+      jest
+        .spyOn(plugin, 'translateAccessPointSqlToDataCubeQuery')
+        .mockResolvedValue(
+          '#P{lakehouse::REF.ACCOUNTS_LATEST}#->select(~[CN])',
+        );
+      await flowResult(store.openInDataCube(messageId));
+      expect(openSpy).toHaveBeenCalledWith('ACCOUNTS_LATEST', 'prod-env', {
+        query: '#P{lakehouse::REF.ACCOUNTS_LATEST}#->select(~[CN])',
+      });
+    });
+
+    test('openInDataCube opens without a prefill when the translation is not a data-product accessor', async () => {
+      const { store, plugin } = createStoreWithPlugin();
+      const messageId = seedScopedAnswer(store);
+      const openSpy = jest.fn();
+      store.resolvedOpenInDataCube = openSpy;
+      store.resolvedEnvironmentName = 'prod-env';
+      jest
+        .spyOn(plugin, 'translateAccessPointSqlToDataCubeQuery')
+        .mockResolvedValue('something->select()');
+      await flowResult(store.openInDataCube(messageId));
+      expect(openSpy).toHaveBeenCalledWith(
+        'ACCOUNTS_LATEST',
+        'prod-env',
+        undefined,
+      );
+    });
+
+    test('openInDataCube warns and does not translate when no launcher is resolved', async () => {
+      const { store, baseStore, plugin } = createStoreWithPlugin();
+      const messageId = seedScopedAnswer(store);
+      const translateSpy = jest.spyOn(
+        plugin,
+        'translateAccessPointSqlToDataCubeQuery',
+      );
+      const warnSpy = jest.spyOn(
+        baseStore.applicationStore.notificationService,
+        'notifyWarning',
+      );
+      await flowResult(store.openInDataCube(messageId));
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      expect(translateSpy).not.toHaveBeenCalled();
+    });
+  },
+);
+
+describe(
+  unitTest('LegendMarketplaceAIChatStore — dataspace scope routing'),
+  () => {
+    const dataSpaceService: TDSServiceSchema = {
+      title: 'TradeService',
+      pattern: '/trades',
+      columns: [{ name: 'amount', type: 'Number' }],
+      parameters: [],
+      sourceType: TDSServiceSourceType.SERVICE,
+    };
+    const resolvedContext = {
+      services: [dataSpaceService],
+      metadata: {
+        name: 'Trades DataSpace',
+        coordinates: 'com.test:artifact:1.0.0',
+        serviceSummaries: [{ title: 'TradeService' }],
+      },
+      modelContext: { entities: [], associations: [] },
+      pureExecutionContext: undefined,
+    };
+
+    test('resolves dataspace context and routes to the shared engine', async () => {
+      const { store } = createStoreWithPlugin();
+      store.selectDataProduct(buildLegacyProduct());
+      const resolveSpy = jest
+        .spyOn(store, 'resolveDataSpaceContext')
+        .mockResolvedValue(resolvedContext);
+
+      await flowResult(store.submitQuery('show me trades'));
+
+      expect(resolveSpy).toHaveBeenCalledTimes(1);
+      expect(store.resolvedProductServices).toEqual([dataSpaceService]);
+      expect(store.selectedProductMetadata).toEqual(resolvedContext.metadata);
+    });
+
+    test('caches the resolved dataspace context across questions', async () => {
+      const { store } = createStoreWithPlugin();
+      store.selectDataProduct(buildLegacyProduct());
+      const resolveSpy = jest
+        .spyOn(store, 'resolveDataSpaceContext')
+        .mockResolvedValue(resolvedContext);
+
+      await flowResult(store.submitQuery('first question'));
+      await flowResult(store.askFollowUp('second question'));
+
+      expect(resolveSpy).toHaveBeenCalledTimes(1);
+    });
+
+    test('falls back to entity search when the dataspace cannot be resolved', async () => {
+      const { store, baseStore } = createStoreWithPlugin();
+      store.selectDataProduct(buildLegacyProduct());
+      jest.spyOn(store, 'resolveDataSpaceContext').mockResolvedValue(undefined);
+      const entitySearchSpy = jest
+        .spyOn(baseStore.marketplaceServerClient, 'entitySearch')
+        .mockResolvedValue(buildEntitySearchResponseJson([]));
+
+      await flowResult(store.submitQuery('show me trades'));
+
+      expect(entitySearchSpy).toHaveBeenCalled();
     });
   },
 );

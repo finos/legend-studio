@@ -389,13 +389,13 @@ describe(unitTest('LegendAIChat'), () => {
     const services: TDSServiceSchema[] = [
       {
         title: 'MetaDir Enterprise (current records only)',
-        pattern: '/METADIR_ENTERPRISE_LATEST_ONLY',
+        pattern: '/DIRECTORY_LATEST_ONLY',
         columns: [{ name: 'CN' }],
         parameters: [],
       },
       {
-        title: 'CorpDir Enterprise (current records only)',
-        pattern: '/CORPDIR_ENTERPRISE_LATEST_ONLY',
+        title: 'Directory Enterprise (current records only)',
+        pattern: '/DIRECTORY_LATEST',
         columns: [{ name: 'MAIL' }],
         parameters: [],
       },
@@ -415,7 +415,7 @@ describe(unitTest('LegendAIChat'), () => {
         id: 'a1',
         role: LegendAIMessageRole.ASSISTANT,
         thinkingSteps: [],
-        sql: "SELECT * FROM p('pkg::dp::PROD.CORPDIR_ENTERPRISE_LATEST_ONLY')",
+        sql: "SELECT * FROM p('pkg::dp::PROD.DIRECTORY_LATEST')",
         textAnswer: null,
         dataContext: null,
         gridData: null,
@@ -429,7 +429,7 @@ describe(unitTest('LegendAIChat'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
-        queriedAccessPoints: ['CORPDIR_ENTERPRISE_LATEST_ONLY'],
+        queriedAccessPoints: ['DIRECTORY_LATEST'],
       },
     ];
     render(
@@ -437,11 +437,9 @@ describe(unitTest('LegendAIChat'), () => {
     );
     fireEvent.click(screen.getByText('Want the Python code for this query?'));
     await waitFor(() =>
-      expect(
-        screen.getByText('# CORPDIR_ENTERPRISE_LATEST_ONLY'),
-      ).toBeDefined(),
+      expect(screen.getByText('# DIRECTORY_LATEST')).toBeDefined(),
     );
-    expect(receivedPatterns).toEqual(['/CORPDIR_ENTERPRISE_LATEST_ONLY']);
+    expect(receivedPatterns).toEqual(['/DIRECTORY_LATEST']);
   });
 
   test('shows an error and retry button when Python codegen fails', async () => {
