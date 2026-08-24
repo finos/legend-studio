@@ -691,21 +691,24 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               );
               if (v1DataSpace) {
                 const executionContexts = v1DataSpace.executionContexts ?? [];
-                if (executionContexts.length === 1) {
-                  const exec = guaranteeNonNullable(executionContexts[0]);
-                  return {
-                    mapping: exec.mapping?.path ?? '',
-                    runtime: exec.defaultRuntime?.path ?? '',
-                  };
+                const resolvedExec =
+                  executionContexts.length === 1
+                    ? executionContexts[0]
+                    : executionContexts.find(
+                        (e) =>
+                          e.name ===
+                          (queryExec.executionKey ??
+                            v1DataSpace.defaultExecutionContext),
+                      );
+                if (
+                  !resolvedExec?.mapping?.path ||
+                  !resolvedExec.defaultRuntime?.path
+                ) {
+                  return undefined;
                 }
-                const resvoled =
-                  queryExec.executionKey ?? v1DataSpace.defaultExecutionContext;
-                const resolvedExec = guaranteeNonNullable(
-                  executionContexts.find((e) => e.name === resvoled),
-                );
                 return {
-                  mapping: resolvedExec.mapping?.path ?? '',
-                  runtime: resolvedExec.defaultRuntime?.path ?? '',
+                  mapping: resolvedExec.mapping.path,
+                  runtime: resolvedExec.defaultRuntime.path,
                 };
               }
             }
