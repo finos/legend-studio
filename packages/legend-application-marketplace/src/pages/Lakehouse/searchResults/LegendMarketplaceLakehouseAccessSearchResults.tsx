@@ -16,12 +16,15 @@
 
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Container, Typography } from '@mui/material';
-import { useAuth } from 'react-oidc-context';
 import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
+import {
+  useAccessTokenRef,
+  useHasReadSearchParams,
+} from '../../../utils/SearchResultsPageHooks.js';
 import {
   useLegendMarketplaceLakehouseAccessSearchResultsStore,
   withLegendMarketplaceLakehouseAccessSearchResultsStore,
@@ -33,9 +36,9 @@ import {
 import { LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN } from '../../../__lib__/LegendMarketplaceNavigation.js';
 import {
   LegendMarketplaceSearchBar,
-  MarketplaceAutosuggestVariant,
   MarketplaceSearchMode,
 } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import { LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT } from '../../../__lib__/LegendMarketplaceSearchMode.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { TimedInfoBanner } from '../../../components/TimedInfoBanner/TimedInfoBanner.js';
 import type { ProductCardState } from '../../../stores/lakehouse/dataProducts/ProductCardState.js';
@@ -54,17 +57,12 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
     observer(() => {
       const searchResultsStore =
         useLegendMarketplaceLakehouseAccessSearchResultsStore();
-      const auth = useAuth();
       const [searchParams, setSearchParams] = useSearchParams();
 
       const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
       const applicationStore = marketplaceBaseStore.applicationStore;
 
-      const tokenRef = useRef(auth.user?.access_token);
-
-      useEffect(() => {
-        tokenRef.current = auth.user?.access_token;
-      }, [auth.user?.access_token]);
+      const tokenRef = useAccessTokenRef();
 
       const runSearch = useCallback(() => {
         flowResult(
@@ -73,7 +71,7 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
             tokenRef.current,
           ),
         ).catch(applicationStore.alertUnhandledError);
-      }, [searchResultsStore, applicationStore]);
+      }, [searchResultsStore, applicationStore, tokenRef]);
 
       useSyncStateAndSearchParam(
         searchResultsStore.searchQuery,
@@ -95,34 +93,23 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
 
       // The search param sync above only assigns `searchQuery` when the URL actually
       // carries a `query` param, so on the bare route (arriving from the header tab)
-      // it stays `undefined`. Gating the initial search on `searchQuery` being defined
-      // would therefore hang forever on that route — `isLoading` reports true while the
-      // search action is still in its initial state. Instead, wait one commit for the
-      // sync effect above to run, then search with whatever we ended up with.
-      const [hasReadSearchParams, setHasReadSearchParams] = useState(false);
-
-      useEffect(() => {
-        setHasReadSearchParams(true);
-      }, []);
+      // it stays `undefined` — see `useHasReadSearchParams` for why the initial search
+      // is gated on this instead of on `searchQuery` being defined.
+      const hasReadSearchParams = useHasReadSearchParams();
 
       useEffect(() => {
         if (!hasReadSearchParams) {
           return;
         }
-        searchResultsStore.clearAllFilters();
-        searchResultsStore.setPage(1);
-        searchResultsStore.setShowAllProducts(false);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
+        searchResultsStore.initialize(
+          tokenRef.current,
+          applicationStore.alertUnhandledError,
+        );
       }, [
         hasReadSearchParams,
-        tokenRef,
         searchResultsStore,
         searchResultsStore.searchQuery,
+        tokenRef,
         applicationStore,
       ]);
 
@@ -201,9 +188,6 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
               stateSearchMode={MarketplaceSearchMode.LAKEHOUSE_ACCESS}
               placeholder="Search Lakehouse data products"
               className="marketplace-lakehouse-search-results__search-bar"
-              autosuggestVariant={
-                MarketplaceAutosuggestVariant.LAKEHOUSE_ACCESS
-              }
             />
           </Container>
           <div className="legend-marketplace-search-results__sort-bar">
@@ -251,10 +235,7 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
               <div className="marketplace-lakehouse-search-results__main-content">
                 {applicationStore.config.options.showDevFeatures && (
                   <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
-                    This is the new home for what was previously called Data
-                    Product — the same entitled, Lakehouse-scoped API surface,
-                    now with its own search tab, dedicated filtering. DataSpace
-                    search on the homepage still surfaces these results for now.
+                    {LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT}
                   </TimedInfoBanner>
                 )}
                 <SearchResultsCardGrid

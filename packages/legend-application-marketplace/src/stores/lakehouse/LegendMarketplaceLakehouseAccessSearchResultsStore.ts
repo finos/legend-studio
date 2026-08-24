@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   ActionState,
   assertErrorThrown,
@@ -34,13 +41,28 @@ import { V1_PureGraphManager } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import {
   type DataProductSourceFilter,
   type FilterCounts,
+  type SourceFilterableSearchStore,
   DataProductSort,
   LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE,
+  SearchFilterKey,
   SearchResultsViewMode,
 } from './LegendMarketplaceSearchResultsStore.js';
+
+/**
+ * The subset of {@link LegendMarketplaceLakehouseAccessSearchResultsStore} that
+ * {@link LakehouseAccessSearchFiltersPanel} needs, on top of the common
+ * {@link SourceFilterableSearchStore} shape shared with the DataSpaces filters panel.
+ */
+export interface DeploymentIdFilterableSearchStore
+  extends SourceFilterableSearchStore {
+  selectedDeploymentIds: Set<string>;
+  addDeploymentId(value: string): void;
+  removeDeploymentId(value: string): void;
+}
 
 /**
  * Search results store for the Lakehouse Access experience.
@@ -220,11 +242,19 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
   }
 
   toggleSource(value: DataProductSourceFilter): void {
-    if (this.selectedSources.has(value)) {
+    const wasSelected = this.selectedSources.has(value);
+    if (wasSelected) {
       this.selectedSources.delete(value);
     } else {
       this.selectedSources.add(value);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'source',
+      value,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   /**
@@ -233,20 +263,53 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
    * current page would silently omit matches on other pages.
    */
   addDeploymentId(value: string): void {
-    value
+    const trimmedValue = value.trim();
+    if (trimmedValue.length === 0) {
+      return;
+    }
+    trimmedValue
       .split(',')
       .map((part) => part.trim())
       .filter((part) => part.length > 0)
       .forEach((part) => this.selectedDeploymentIds.add(part));
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'deployment_id',
+      trimmedValue,
+      'select',
+      this.searchQuery,
+    );
   }
 
   removeDeploymentId(value: string): void {
     this.selectedDeploymentIds.delete(value);
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'deployment_id',
+      value,
+      'deselect',
+      this.searchQuery,
+    );
   }
 
   clearAllFilters(): void {
     this.selectedSources.clear();
     this.selectedDeploymentIds.clear();
+  }
+
+  /**
+   * Resets filters and pagination, then runs the first search for this tab. Called
+   * once by the page, after it has given URL param sync a chance to populate
+   * `searchQuery` — kept here rather than as an inline effect so the page doesn't
+   * need to re-sequence "reset then search" itself.
+   */
+  initialize(token: string | undefined, onError: (error: Error) => void): void {
+    this.clearAllFilters();
+    this.setPage(1);
+    this.setShowAllProducts(false);
+    flowResult(this.executeSearch(this.searchQuery ?? '', token)).catch(
+      onError,
+    );
   }
 
   get hasActiveFilters(): boolean {
@@ -257,16 +320,16 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
    * NOTE: deliberately never emits `data_product_type`. The Lakehouse Access endpoint
    * enforces that filter server-side and would silently discard whatever we sent.
    */
-  private buildSearchFilters(): string[] {
+  buildSearchFilters(): string[] {
     const filters: string[] = [];
     if (this.selectedSources.size > 0) {
       filters.push(
-        `data_product_source=${Array.from(this.selectedSources).join(',')}`,
+        `${SearchFilterKey.DATA_PRODUCT_SOURCE}=${Array.from(this.selectedSources).join(',')}`,
       );
     }
     if (this.selectedDeploymentIds.size > 0) {
       filters.push(
-        `deployment_id=${Array.from(this.selectedDeploymentIds).join(',')}`,
+        `${SearchFilterKey.DEPLOYMENT_ID}=${Array.from(this.selectedDeploymentIds).join(',')}`,
       );
     }
     return filters;
@@ -318,7 +381,7 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
           },
         )) as PlainObject<DataProductSearchResponse>;
 
-      if (fetchToken !== this._currentFetchToken) {
+      if (signal.aborted || fetchToken !== this._currentFetchToken) {
         return;
       }
 
@@ -340,11 +403,14 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
         external_source_count: response.metadata.external_source_count ?? 0,
         internal_source_count: response.metadata.internal_source_count ?? 0,
       });
+
+      this.executingSearchState.pass();
     } catch (error) {
       if (fetchToken !== this._currentFetchToken) {
         return;
       }
       assertErrorThrown(error);
+      this.executingSearchState.fail();
       this.marketplaceBaseStore.applicationStore.logService.error(
         LogEvent.create(
           LEGEND_MARKETPLACE_APP_EVENT.LAKEHOUSE_ACCESS_SEARCH_FAILURE,
@@ -363,10 +429,6 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
         this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
           `Error executing search: ${error.message}`,
         );
-      }
-    } finally {
-      if (fetchToken === this._currentFetchToken) {
-        this.executingSearchState.complete();
       }
     }
   }

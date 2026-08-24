@@ -27,6 +27,9 @@ import {
   SearchResultsViewMode,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 
+/** The sort dropdown's placeholder option is not itself a sort value. */
+type SortSelectValue = DataProductSort | 'Sort';
+
 /**
  * The tile/list view toggle plus the sort dropdown, shared by the DataSpaces and
  * Lakehouse Access search pages. Telemetry and store mutation stay with the caller
@@ -77,12 +80,14 @@ export const SearchResultsSortControls: React.FC<{
       </div>
       <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
       <FormControl>
-        <Select
+        <Select<SortSelectValue>
           autoWidth={true}
           displayEmpty={true}
           value={'Sort'}
           onChange={(e) => {
-            onSortChange(e.target.value as DataProductSort);
+            if (e.target.value !== 'Sort') {
+              onSortChange(e.target.value);
+            }
           }}
           className="legend-marketplace-search-results__sort-select"
         >
