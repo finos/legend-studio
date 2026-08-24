@@ -19,7 +19,7 @@ import { unitTest } from '@finos/legend-shared/test';
 import {
   extractTDSServicesFromDataSpace,
   extractExecutableInfo,
-} from '../../components/DataSpaceLegendAIIntegration.js';
+} from '../../components/DataSpaceLegendAISchema.js';
 import type { DataSpaceViewerState } from '../../stores/DataSpaceViewerState.js';
 import {
   DataSpaceServiceExecutableInfo,

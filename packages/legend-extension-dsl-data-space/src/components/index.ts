@@ -34,3 +34,4 @@ export {
 export * from '../stores/shared/DataSpaceUtils.js';
 
 export * from './shared/DSL_DataSpace_Icon.js';
+export * from './DataSpaceLegendAISchema.js';
