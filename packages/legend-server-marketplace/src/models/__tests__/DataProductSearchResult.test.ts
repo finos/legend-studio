@@ -16,6 +16,7 @@
 
 import { test, describe, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   DataProductSearchResponse,
   DataProductSearchResult,
@@ -98,8 +99,10 @@ describe(unitTest('DataProductSearchResult'), () => {
       expect(result.dataProductDetails).toBeInstanceOf(
         LakehouseDataProductSearchResultDetails,
       );
-      const details =
-        result.dataProductDetails as LakehouseDataProductSearchResultDetails;
+      const details = guaranteeType(
+        result.dataProductDetails,
+        LakehouseDataProductSearchResultDetails,
+      );
       expect(details.dataProductId).toBe('LAKEHOUSE_SDLC_DATA_PRODUCT');
       expect(details.origin).toBeInstanceOf(
         LakehouseSDLCDataProductSearchResultOrigin,
@@ -147,8 +150,10 @@ describe(unitTest('DataProductSearchResult'), () => {
       ErrorDataProductSearchResultDetails,
     );
     expect(
-      (result.dataProductDetails as ErrorDataProductSearchResultDetails)
-        .message,
+      guaranteeType(
+        result.dataProductDetails,
+        ErrorDataProductSearchResultDetails,
+      ).message,
     ).toBe('Could not resolve data product');
   });
 });

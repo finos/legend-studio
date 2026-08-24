@@ -55,6 +55,7 @@ import {
   DepotScope,
 } from '@finos/legend-server-depot';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const TAXONOMY_UNDEFINED_NODE_ID = '__undefined__';
 
@@ -72,6 +73,18 @@ export enum DataProductTypeFilter {
 export enum DataProductSourceFilter {
   EXTERNAL = 'External',
   INTERNAL = 'Internal',
+}
+
+/**
+ * Query-string keys accepted by the `search_filters` parameter on the
+ * DataSpaces and Lakehouse Access search endpoints.
+ */
+export enum SearchFilterKey {
+  DATA_PRODUCT_TYPE = 'data_product_type',
+  DATA_PRODUCT_SOURCE = 'data_product_source',
+  LICENSE_TO = 'license_to',
+  TAXONOMY = 'taxonomy',
+  DEPLOYMENT_ID = 'deployment_id',
 }
 
 export enum DataProductLicenseFilter {
@@ -113,6 +126,19 @@ export interface FilterCounts {
   internal_source_count: number;
 }
 
+/**
+ * Which {@link FilterCounts} key backs the count shown next to each
+ * {@link DataProductSourceFilter} option. A lookup table rather than a ternary so a
+ * third source value can't silently fall through to the wrong count.
+ */
+export const SOURCE_FILTER_COUNT_KEY: Record<
+  DataProductSourceFilter,
+  keyof FilterCounts
+> = {
+  [DataProductSourceFilter.EXTERNAL]: 'external_source_count',
+  [DataProductSourceFilter.INTERNAL]: 'internal_source_count',
+};
+
 export enum SearchResultsViewMode {
   TILE = 'tile',
   LIST = 'list',
@@ -127,28 +153,38 @@ export const LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE =
   'marketplace.search-results.viewMode';
 
 /**
- * The subset of a search results store that {@link MarketplaceSearchFiltersPanel} needs.
+ * The subset of a search results store that {@link SourceFilterSection} (the "Source"
+ * filter section shared by every search experience's filters panel) needs.
  *
- * Declared structurally so that any search experience can reuse the shared filters panel.
- * The concrete stores have private members, which would otherwise make them mutually
+ * Declared structurally so that any search experience can reuse the section. The
+ * concrete stores have private members, which would otherwise make them mutually
  * incompatible even where their public shapes match.
  */
-export interface TaxonomyFilterableSearchStore {
+export interface SourceFilterableSearchStore {
   searchQuery: string | undefined;
-  taxonomyTree: TaxonomyNode[];
-  selectedTaxonomyNodeIds: Set<string>;
   selectedSources: Set<DataProductSourceFilter>;
-  selectedLicenses: Set<DataProductLicenseFilter>;
   filterCounts: FilterCounts;
-  totalItems: number;
   hasActiveFilters: boolean;
   isFirstLoad: boolean;
-  toggleTaxonomyNode(nodeId: string): void;
-  simpleToggleTaxonomyNode(nodeId: string): void;
   toggleSource(value: DataProductSourceFilter): void;
-  toggleLicense(value: DataProductLicenseFilter): void;
   clearAllFilters(): void;
   setPage(value: number): void;
+}
+
+/**
+ * The subset of a search results store that {@link MarketplaceSearchFiltersPanel} needs.
+ * Extends {@link SourceFilterableSearchStore} with the taxonomy- and license-specific
+ * members that only the DataSpaces search experience has.
+ */
+export interface TaxonomyFilterableSearchStore
+  extends SourceFilterableSearchStore {
+  taxonomyTree: TaxonomyNode[];
+  selectedTaxonomyNodeIds: Set<string>;
+  selectedLicenses: Set<DataProductLicenseFilter>;
+  totalItems: number;
+  toggleTaxonomyNode(nodeId: string): void;
+  simpleToggleTaxonomyNode(nodeId: string): void;
+  toggleLicense(value: DataProductLicenseFilter): void;
 }
 
 export class LegendMarketplaceSearchResultsStore {
@@ -200,57 +236,57 @@ export class LegendMarketplaceSearchResultsStore {
         ? SearchResultsViewMode.LIST
         : SearchResultsViewMode.TILE;
 
-    makeObservable<LegendMarketplaceSearchResultsStore, '_lastTaxonomyQuery'>(
-      this,
-      {
-        searchQuery: observable,
-        useProducerSearch: observable,
-        semanticSearchProductCardStates: observable,
-        producerSearchDataProductCardStates: observable,
-        producerSearchLegacyDataProductCardStates: observable,
-        sort: observable,
-        viewMode: observable,
-        taxonomyTree: observable,
-        selectedTaxonomyNodeIds: observable,
-        selectedDataProductTypes: observable,
-        selectedSources: observable,
-        selectedLicenses: observable,
-        filterCounts: observable,
-        _lastTaxonomyQuery: false,
-        setSearchQuery: action,
-        setUseProducerSearch: action,
-        page: observable,
-        itemsPerPage: observable,
-        totalItems: observable,
-        showAllProducts: observable,
-        hasFilteredDataProducts: observable,
-        setSemanticSearchProductCardStates: action,
-        setProducerSearchDataProductCardStates: action,
-        setProducerSearchLegacyDataProductCardStates: action,
-        setSort: action,
-        setViewMode: action,
-        setPage: action,
-        setItemsPerPage: action,
-        setTotalItems: action,
-        setShowAllProducts: action,
-        setHasFilteredDataProducts: action,
-        setTaxonomyTree: action,
-        setFilterCounts: action,
-        setSelectedTaxonomyNodeIds: action,
-        toggleTaxonomyNode: action,
-        simpleToggleTaxonomyNode: action,
-        toggleDataProductType: action,
-        toggleSource: action,
-        toggleLicense: action,
-        clearAllFilters: action,
-        filterSortProducts: computed,
-        isLoading: computed,
-        isFirstLoad: computed,
-        isOnLastPage: computed,
-        hasActiveFilters: computed,
-        executeSearch: flow,
-      },
-    );
+    makeObservable<
+      LegendMarketplaceSearchResultsStore,
+      '_lastTaxonomyQueryKey'
+    >(this, {
+      searchQuery: observable,
+      useProducerSearch: observable,
+      semanticSearchProductCardStates: observable,
+      producerSearchDataProductCardStates: observable,
+      producerSearchLegacyDataProductCardStates: observable,
+      sort: observable,
+      viewMode: observable,
+      taxonomyTree: observable,
+      selectedTaxonomyNodeIds: observable,
+      selectedDataProductTypes: observable,
+      selectedSources: observable,
+      selectedLicenses: observable,
+      filterCounts: observable,
+      _lastTaxonomyQueryKey: false,
+      setSearchQuery: action,
+      setUseProducerSearch: action,
+      page: observable,
+      itemsPerPage: observable,
+      totalItems: observable,
+      showAllProducts: observable,
+      hasFilteredDataProducts: observable,
+      setSemanticSearchProductCardStates: action,
+      setProducerSearchDataProductCardStates: action,
+      setProducerSearchLegacyDataProductCardStates: action,
+      setSort: action,
+      setViewMode: action,
+      setPage: action,
+      setItemsPerPage: action,
+      setTotalItems: action,
+      setShowAllProducts: action,
+      setHasFilteredDataProducts: action,
+      setTaxonomyTree: action,
+      setFilterCounts: action,
+      setSelectedTaxonomyNodeIds: action,
+      toggleTaxonomyNode: action,
+      simpleToggleTaxonomyNode: action,
+      toggleDataProductType: action,
+      toggleSource: action,
+      toggleLicense: action,
+      clearAllFilters: action,
+      filterSortProducts: computed,
+      isLoading: computed,
+      isFirstLoad: computed,
+      isOnLastPage: computed,
+      hasActiveFilters: computed,
+      executeSearch: flow,
+    });
   }
 
   setSearchQuery(query: string): void {
@@ -428,11 +464,19 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   toggleTaxonomyNode(nodeId: string): void {
-    if (this.selectedTaxonomyNodeIds.has(nodeId)) {
+    const wasSelected = this.selectedTaxonomyNodeIds.has(nodeId);
+    if (wasSelected) {
       this.deselectTaxonomyNode(nodeId);
     } else {
       this.selectTaxonomyNode(nodeId);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'taxonomy',
+      nodeId,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   private deselectTaxonomyNode(nodeId: string): void {
@@ -466,11 +510,19 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   simpleToggleTaxonomyNode(nodeId: string): void {
-    if (this.selectedTaxonomyNodeIds.has(nodeId)) {
+    const wasSelected = this.selectedTaxonomyNodeIds.has(nodeId);
+    if (wasSelected) {
       this.selectedTaxonomyNodeIds.delete(nodeId);
     } else {
       this.selectedTaxonomyNodeIds.add(nodeId);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'taxonomy',
+      nodeId,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   toggleDataProductType(value: DataProductTypeFilter): void {
@@ -482,19 +534,35 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   toggleSource(value: DataProductSourceFilter): void {
-    if (this.selectedSources.has(value)) {
+    const wasSelected = this.selectedSources.has(value);
+    if (wasSelected) {
       this.selectedSources.delete(value);
     } else {
       this.selectedSources.add(value);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'source',
+      value,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   toggleLicense(value: DataProductLicenseFilter): void {
-    if (this.selectedLicenses.has(value)) {
+    const wasSelected = this.selectedLicenses.has(value);
+    if (wasSelected) {
       this.selectedLicenses.delete(value);
     } else {
       this.selectedLicenses.add(value);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'license',
+      value,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   clearAllFilters(): void {
@@ -562,16 +630,16 @@ export class LegendMarketplaceSearchResultsStore {
     return filterIds;
   }
 
-  private buildSearchFilters(): string[] {
+  buildSearchFilters(): string[] {
     const filters: string[] = [];
     if (this.selectedDataProductTypes.size > 0) {
       filters.push(
-        `data_product_type=${Array.from(this.selectedDataProductTypes).join(',')}`,
+        `${SearchFilterKey.DATA_PRODUCT_TYPE}=${Array.from(this.selectedDataProductTypes).join(',')}`,
       );
     }
     if (this.selectedSources.size > 0) {
       filters.push(
-        `data_product_source=${Array.from(this.selectedSources).join(',')}`,
+        `${SearchFilterKey.DATA_PRODUCT_SOURCE}=${Array.from(this.selectedSources).join(',')}`,
       );
     }
     if (this.selectedLicenses.size > 0) {
@@ -579,7 +647,7 @@ export class LegendMarketplaceSearchResultsStore {
       const licenseValues = Array.from(this.selectedLicenses).map((l) =>
         l === DataProductLicenseFilter.UNDEFINED ? '' : l,
       );
-      filters.push(`license_to=${licenseValues.join(',')}`);
+      filters.push(`${SearchFilterKey.LICENSE_TO}=${licenseValues.join(',')}`);
     }
     // Map TAXONOMY_UNDEFINED_NODE_ID to '' so the backend can filter for products
     // with no taxonomy tags, the same way license_to='' handles undefined licenses.
@@ -590,7 +658,9 @@ export class LegendMarketplaceSearchResultsStore {
       taxonomyFilterIds.push('');
     }
     if (taxonomyFilterIds.length > 0) {
-      filters.push(`taxonomy=${taxonomyFilterIds.join(',')}`);
+      filters.push(
+        `${SearchFilterKey.TAXONOMY}=${taxonomyFilterIds.join(',')}`,
+      );
     }
     return filters;
   }
@@ -740,8 +810,10 @@ export class LegendMarketplaceSearchResultsStore {
         external_source_count: response.metadata.external_source_count ?? 0,
         internal_source_count: response.metadata.internal_source_count ?? 0,
       });
-    } finally {
-      this.executingSemanticSearchState.complete();
+      this.executingSemanticSearchState.pass();
+    } catch (error) {
+      this.executingSemanticSearchState.fail();
+      throw error;
     }
   }
 
@@ -843,8 +915,10 @@ export class LegendMarketplaceSearchResultsStore {
         dataProductState.init(token),
       );
       this.setProducerSearchDataProductCardStates(filteredProductCardStates);
-    } finally {
-      this.fetchingProducerSearchDataProductsState.complete();
+      this.fetchingProducerSearchDataProductsState.pass();
+    } catch (error) {
+      this.fetchingProducerSearchDataProductsState.fail();
+      throw error;
     }
   }
 
@@ -922,8 +996,10 @@ export class LegendMarketplaceSearchResultsStore {
       this.setProducerSearchLegacyDataProductCardStates(
         filteredProductCardStates,
       );
-    } finally {
-      this.fetchingProducerSearchLegacyDataProductsState.complete();
+      this.fetchingProducerSearchLegacyDataProductsState.pass();
+    } catch (error) {
+      this.fetchingProducerSearchLegacyDataProductsState.fail();
+      throw error;
     }
   }
 }

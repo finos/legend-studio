@@ -29,6 +29,10 @@ import {
 } from '../../components/__test-utils__/TEST_DATA__LakehouseSearchResultData.js';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
 import type { DataProductSearchResponse } from '@finos/legend-server-marketplace';
+import {
+  generateLakehouseAccessSearchResultsRoute,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN,
+} from '../../__lib__/LegendMarketplaceNavigation.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -100,8 +104,8 @@ const setupTestComponent = async (
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
     query === undefined
-      ? '/lakehouseAccess/results'
-      : `/lakehouseAccess/results?query=${query}`,
+      ? LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS
+      : generateLakehouseAccessSearchResultsRoute(query),
   );
 
   return { MOCK__baseStore, renderResult };
@@ -320,6 +324,33 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
       );
     });
 
+    test('applying a deployment ID on blur re-searches with a deployment_id filter', async () => {
+      const { MOCK__baseStore } = await setupTestComponent('data');
+
+      await screen.findByText('2 Products');
+      (
+        MOCK__baseStore.marketplaceServerClient
+          .lakehouseAccessSearch as jest.Mock
+      ).mockClear();
+
+      const deploymentInput = screen.getByLabelText('Deployment ID');
+      await act(async () => {
+        fireEvent.change(deploymentInput, { target: { value: '12345' } });
+        fireEvent.blur(deploymentInput);
+        await flushMicrotasks();
+      });
+
+      expect(
+        MOCK__baseStore.marketplaceServerClient.lakehouseAccessSearch,
+      ).toHaveBeenCalledWith(
+        'data',
+        expect.anything(),
+        expect.objectContaining({
+          searchFilters: ['deployment_id=12345'],
+        }),
+      );
+    });
+
     test('an applied deployment ID renders as a chip', async () => {
       await setupTestComponent('data');
 
@@ -508,7 +539,7 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
           prev_page_number: null,
           total_count: 0,
         },
-      } as unknown as PlainObject<DataProductSearchResponse>);
+      });
 
       expect(await screen.findByText('No results found')).toBeDefined();
     });

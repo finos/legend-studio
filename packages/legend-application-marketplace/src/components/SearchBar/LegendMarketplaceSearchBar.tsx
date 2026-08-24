@@ -33,6 +33,11 @@ import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import {
+  LAKEHOUSE_ACCESS_SEARCH_MODE_LABEL,
+  LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP,
+  MarketplaceSearchMode,
+} from '../../__lib__/LegendMarketplaceSearchMode.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   createDefaultSuggestions,
@@ -61,32 +66,64 @@ export interface Vendor {
   type: string;
 }
 
-/**
- * Which autosuggest endpoint the search bar should query. Each search experience is
- * backed by its own endpoint so that suggestions match the results the user will get.
- */
-export enum MarketplaceAutosuggestVariant {
-  DATA_PRODUCTS = 'dataProducts',
-  LAKEHOUSE_ACCESS = 'lakehouseAccess',
+// Re-exported for existing call sites that import the mode enum from the search bar.
+export { MarketplaceSearchMode };
+
+interface SearchModeOption {
+  mode: MarketplaceSearchMode;
+  label: string;
+  tooltip: string;
+  /** Only offered when dev features are enabled (still under evaluation). */
+  devOnly?: boolean;
 }
 
 /**
- * Which search experience a query should be dispatched to.
- *
- * Modelled as a single enum rather than a set of booleans because the options are
- * mutually exclusive — with three alternatives, pairwise "turn the other ones off"
- * logic does not scale.
+ * The alternate search modes offered from the search bar's settings menu. Declared
+ * once and rendered via `.map()` so adding/removing a mode doesn't mean copy-pasting
+ * another `MenuItem`/`Switch`/`FormControlLabel` block.
  */
-export enum MarketplaceSearchMode {
-  /** Default: hybrid search over DataSpaces and Data Products. */
-  DATA_SPACES = 'dataSpaces',
-  /** Bypasses the search service to surface freshly-created data products. */
-  PRODUCER = 'producer',
-  /** Field-level search across data products. */
-  DATA_FIELDS = 'dataFields',
-  /** Lexical search over Lakehouse Data Products only. */
-  LAKEHOUSE_ACCESS = 'lakehouseAccess',
-}
+const SEARCH_MODE_OPTIONS: SearchModeOption[] = [
+  {
+    mode: MarketplaceSearchMode.PRODUCER,
+    label: 'Producer Search',
+    tooltip:
+      'Use this search if you have just created a data product and would like to immediately see it',
+  },
+  {
+    mode: MarketplaceSearchMode.DATA_FIELDS,
+    label: 'Field Search',
+    tooltip:
+      'Use this search to discover data products and datasets that contain a specific field',
+  },
+  {
+    mode: MarketplaceSearchMode.LAKEHOUSE_ACCESS,
+    label: LAKEHOUSE_ACCESS_SEARCH_MODE_LABEL,
+    tooltip: LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP,
+    devOnly: true,
+  },
+];
+
+const SearchModeToggleMenuItem: React.FC<{
+  option: SearchModeOption;
+  searchMode: MarketplaceSearchMode;
+  onToggle: (mode: MarketplaceSearchMode, isEnabled: boolean) => void;
+}> = ({ option, searchMode, onToggle }) => (
+  <MenuItem>
+    <FormControlLabel
+      control={
+        <Switch
+          checked={searchMode === option.mode}
+          onChange={(event) => onToggle(option.mode, event.target.checked)}
+        />
+      }
+      label={
+        <>
+          {option.label} <LegendMarketplaceInfoTooltip title={option.tooltip} />
+        </>
+      }
+    />
+  </MenuItem>
+);
 
 export const LegendMarketplaceSearchBar = observer(
   (props: {
@@ -98,7 +135,6 @@ export const LegendMarketplaceSearchBar = observer(
     showSettings?: boolean;
     stateSearchMode?: MarketplaceSearchMode;
     enableAutosuggest?: boolean;
-    autosuggestVariant?: MarketplaceAutosuggestVariant;
   }): JSX.Element => {
     const {
       onSearch,
@@ -109,7 +145,6 @@ export const LegendMarketplaceSearchBar = observer(
       showSettings,
       stateSearchMode,
       enableAutosuggest = true,
-      autosuggestVariant = MarketplaceAutosuggestVariant.DATA_PRODUCTS,
     } = props;
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -141,8 +176,7 @@ export const LegendMarketplaceSearchBar = observer(
         try {
           const client = legendMarketplaceBaseStore.marketplaceServerClient;
           const fetchSuggestions =
-            autosuggestVariant ===
-            MarketplaceAutosuggestVariant.LAKEHOUSE_ACCESS
+            searchMode === MarketplaceSearchMode.LAKEHOUSE_ACCESS
               ? client.getLakehouseAccessAutosuggestions
               : client.getAutosuggestions;
           const response = await fetchSuggestions(
@@ -182,7 +216,7 @@ export const LegendMarketplaceSearchBar = observer(
       },
       [
         enableAutosuggest,
-        autosuggestVariant,
+        searchMode,
         legendMarketplaceBaseStore.marketplaceServerClient,
         legendMarketplaceBaseStore.envState.lakehouseEnvironment,
         applicationStore.logService,
@@ -553,88 +587,27 @@ export const LegendMarketplaceSearchBar = observer(
             open={searchMenuOpen}
             onClose={() => setSearchMenuAnchorEl(null)}
           >
-            <MenuItem>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={searchMode === MarketplaceSearchMode.PRODUCER}
-                    onChange={(event) => {
-                      setSearchMode(
-                        event.target.checked
-                          ? MarketplaceSearchMode.PRODUCER
-                          : MarketplaceSearchMode.DATA_SPACES,
-                      );
-                      LegendMarketplaceTelemetryHelper.logEvent_ToggleProducerSearch(
-                        applicationStore.telemetryService,
-                        event.target.checked,
-                      );
-                    }}
-                  />
-                }
-                label={
-                  <>
-                    Producer Search{' '}
-                    <LegendMarketplaceInfoTooltip title="Use this search if you have just created a data product and would like to immediately see it" />
-                  </>
-                }
+            {SEARCH_MODE_OPTIONS.filter(
+              (option) =>
+                !option.devOnly ||
+                applicationStore.config.options.showDevFeatures,
+            ).map((option) => (
+              <SearchModeToggleMenuItem
+                key={option.mode}
+                option={option}
+                searchMode={searchMode}
+                onToggle={(mode, isEnabled) => {
+                  setSearchMode(
+                    isEnabled ? mode : MarketplaceSearchMode.DATA_SPACES,
+                  );
+                  LegendMarketplaceTelemetryHelper.logEvent_ToggleSearchMode(
+                    applicationStore.telemetryService,
+                    mode,
+                    isEnabled,
+                  );
+                }}
               />
-            </MenuItem>
-            <MenuItem>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={searchMode === MarketplaceSearchMode.DATA_FIELDS}
-                    onChange={(event) => {
-                      setSearchMode(
-                        event.target.checked
-                          ? MarketplaceSearchMode.DATA_FIELDS
-                          : MarketplaceSearchMode.DATA_SPACES,
-                      );
-                      LegendMarketplaceTelemetryHelper.logEvent_ToggleFieldSearch(
-                        applicationStore.telemetryService,
-                        event.target.checked,
-                      );
-                    }}
-                  />
-                }
-                label={
-                  <>
-                    Field Search{' '}
-                    <LegendMarketplaceInfoTooltip title="Use this search to discover data products and datasets that contain a specific field" />
-                  </>
-                }
-              />
-            </MenuItem>
-            {applicationStore.config.options.showDevFeatures && (
-              <MenuItem>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={
-                        searchMode === MarketplaceSearchMode.LAKEHOUSE_ACCESS
-                      }
-                      onChange={(event) => {
-                        setSearchMode(
-                          event.target.checked
-                            ? MarketplaceSearchMode.LAKEHOUSE_ACCESS
-                            : MarketplaceSearchMode.DATA_SPACES,
-                        );
-                        LegendMarketplaceTelemetryHelper.logEvent_ToggleLakehouseAccessSearch(
-                          applicationStore.telemetryService,
-                          event.target.checked,
-                        );
-                      }}
-                    />
-                  }
-                  label={
-                    <>
-                      Lakehouse Access{' '}
-                      <LegendMarketplaceInfoTooltip title="Lakehouse Access: is the new name for what you knew as Data Product — Lakehouse-scoped data API used for entitlements." />
-                    </>
-                  }
-                />
-              </MenuItem>
-            )}
+            ))}
           </Menu>
         )}
       </form>

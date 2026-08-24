@@ -148,6 +148,29 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _autosuggest = (): string => `${this.baseUrl}/v1/autosuggest`;
 
+  /**
+   * Shared query-param shape for `dataProductSearch` and `lakehouseAccessSearch` —
+   * the two endpoints differ only in URL segment and default `searchType`.
+   */
+  private _buildSearchQueryParams(
+    query: string,
+    searchType: SearchType,
+    searchFilters: string[],
+    pageSize: number,
+    pageNumber: number,
+    showAll: boolean,
+  ): Record<string, string | number | boolean | string[]> {
+    return {
+      query,
+      search_type: searchType,
+      ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
+      page_size: pageSize,
+      page_number: pageNumber,
+      include_filter_metadata: true,
+      show_all: showAll,
+    };
+  }
+
   dataProductSearch = async (
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
@@ -161,15 +184,14 @@ export class MarketplaceServerClient extends AbstractServerClient {
       `${this._search()}/dataProducts/${lakehouseEnv}`,
       {},
       undefined,
-      {
+      this._buildSearchQueryParams(
         query,
-        search_type: searchType,
-        ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
-        page_size: pageSize,
-        page_number: pageNumber,
-        include_filter_metadata: true,
-        show_all: showAll,
-      },
+        searchType,
+        searchFilters,
+        pageSize,
+        pageNumber,
+        showAll,
+      ),
     );
 
   /**
@@ -193,17 +215,14 @@ export class MarketplaceServerClient extends AbstractServerClient {
       `${this._search()}/lakehouseAccess/${lakehouseEnv}`,
       options?.signal ? { signal: options.signal } : {},
       undefined,
-      {
+      this._buildSearchQueryParams(
         query,
-        search_type: options?.searchType ?? SearchType.FULL_TEXT,
-        ...(options?.searchFilters?.length
-          ? { search_filters: options.searchFilters }
-          : {}),
-        page_size: options?.pageSize ?? 12,
-        page_number: options?.pageNumber ?? 1,
-        include_filter_metadata: true,
-        show_all: options?.showAll ?? false,
-      },
+        options?.searchType ?? SearchType.FULL_TEXT,
+        options?.searchFilters ?? [],
+        options?.pageSize ?? 12,
+        options?.pageNumber ?? 1,
+        options?.showAll ?? false,
+      ),
     );
 
   fieldSearch = async (
@@ -226,17 +245,32 @@ export class MarketplaceServerClient extends AbstractServerClient {
       },
     );
 
+  private _fetchAutosuggestions = async (
+    endpoint: 'dataProducts' | 'lakehouseAccess',
+    query: string,
+    environment: string,
+    limit: number,
+    signal?: AbortSignal,
+  ): Promise<AutosuggestResponse> =>
+    this.get<AutosuggestResponse>(
+      `${this._autosuggest()}/${endpoint}/${environment}`,
+      signal ? { signal } : {},
+      undefined,
+      { query, limit },
+    );
+
   getAutosuggestions = async (
     query: string,
     environment: string,
     limit: number = 5,
     signal?: AbortSignal,
   ): Promise<AutosuggestResponse> =>
-    this.get<AutosuggestResponse>(
-      `${this._autosuggest()}/dataProducts/${environment}`,
-      signal ? { signal } : {},
-      undefined,
-      { query, limit },
+    this._fetchAutosuggestions(
+      'dataProducts',
+      query,
+      environment,
+      limit,
+      signal,
     );
 
   getLakehouseAccessAutosuggestions = async (
@@ -245,11 +279,12 @@ export class MarketplaceServerClient extends AbstractServerClient {
     limit: number = 5,
     signal?: AbortSignal,
   ): Promise<AutosuggestResponse> =>
-    this.get<AutosuggestResponse>(
-      `${this._autosuggest()}/lakehouseAccess/${environment}`,
-      signal ? { signal } : {},
-      undefined,
-      { query, limit },
+    this._fetchAutosuggestions(
+      'lakehouseAccess',
+      query,
+      environment,
+      limit,
+      signal,
     );
 
   datasetSearch = async (
@@ -271,7 +306,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
         version_id: versionId,
         path,
         query,
-        search_type: options?.searchType ?? 'hybrid',
+        search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 20,
         page_number: options?.pageNumber ?? 1,
       },
@@ -294,7 +329,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
         artifact_id: artifactId,
         version_id: versionId,
         path,
-        search_type: options?.searchType ?? 'hybrid',
+        search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 20,
         page_number: options?.pageNumber ?? 1,
       },
@@ -328,7 +363,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
         path: options?.path,
         data_product_id: options?.dataProductId,
         deployment_id: options?.deploymentId,
-        search_type: options?.searchType ?? 'hybrid',
+        search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 10,
         page_number: options?.pageNumber ?? 1,
         include_primitive_fields: options?.includePrimitiveFields ?? true,

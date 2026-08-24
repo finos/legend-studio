@@ -20,7 +20,7 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Container, Typography } from '@mui/material';
 import {
   type DataProductSort,
@@ -36,9 +36,13 @@ import {
   LegendMarketplaceSearchBar,
   MarketplaceSearchMode,
 } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import { DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT } from '../../../__lib__/LegendMarketplaceSearchMode.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
 import { TimedInfoBanner } from '../../../components/TimedInfoBanner/TimedInfoBanner.js';
-import { useAuth } from 'react-oidc-context';
+import {
+  useAccessTokenRef,
+  useHasReadSearchParams,
+} from '../../../utils/SearchResultsPageHooks.js';
 import type { ProductCardState } from '../../../stores/lakehouse/dataProducts/ProductCardState.js';
 import {
   LEGEND_MARKETPLACE_PAGE,
@@ -58,19 +62,14 @@ export const LegendMarketplaceSearchResults =
   withLegendMarketplaceSearchResultsStore(
     observer(() => {
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
-      const auth = useAuth();
       const [searchParams, setSearchParams] = useSearchParams();
 
       const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
       const applicationStore = marketplaceBaseStore.applicationStore;
 
-      const tokenRef = useRef(auth.user?.access_token);
+      const tokenRef = useAccessTokenRef();
 
-      useEffect(() => {
-        tokenRef.current = auth.user?.access_token;
-      }, [auth.user?.access_token]);
-
-      const handleFiltersChanged = useCallback(() => {
+      const runSearch = useCallback(() => {
         flowResult(
           searchResultsStore.executeSearch(
             searchResultsStore.searchQuery ?? '',
@@ -78,30 +77,7 @@ export const LegendMarketplaceSearchResults =
             tokenRef.current,
           ),
         ).catch(applicationStore.alertUnhandledError);
-      }, [searchResultsStore, applicationStore]);
-
-      useEffect(() => {
-        if (searchResultsStore.useProducerSearch === undefined) {
-          return;
-        }
-        searchResultsStore.clearAllFilters();
-        searchResultsStore.setPage(1);
-        searchResultsStore.setShowAllProducts(false);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch,
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
-      }, [
-        applicationStore.telemetryService,
-        tokenRef,
-        searchResultsStore,
-        searchResultsStore.searchQuery,
-        searchResultsStore.useProducerSearch,
-        applicationStore,
-      ]);
+      }, [searchResultsStore, applicationStore, tokenRef]);
 
       useSyncStateAndSearchParam(
         searchResultsStore.useProducerSearch,
@@ -136,6 +112,26 @@ export const LegendMarketplaceSearchResults =
         setSearchParams,
         useCallback(() => true, []),
       );
+
+      // See `useHasReadSearchParams` for why the initial search is gated on this
+      // rather than on `useProducerSearch`/`searchQuery` being defined.
+      const hasReadSearchParams = useHasReadSearchParams();
+
+      useEffect(() => {
+        if (!hasReadSearchParams) {
+          return;
+        }
+        searchResultsStore.clearAllFilters();
+        searchResultsStore.setPage(1);
+        searchResultsStore.setShowAllProducts(false);
+        runSearch();
+      }, [
+        hasReadSearchParams,
+        searchResultsStore,
+        searchResultsStore.searchQuery,
+        searchResultsStore.useProducerSearch,
+        runSearch,
+      ]);
 
       const isLoadingDataProducts = searchResultsStore.isLoading;
 
@@ -185,29 +181,17 @@ export const LegendMarketplaceSearchResults =
       const handlePageChange = useCallback(
         (page: number) => {
           searchResultsStore.setPage(page);
-          flowResult(
-            searchResultsStore.executeSearch(
-              searchResultsStore.searchQuery ?? '',
-              searchResultsStore.useProducerSearch ?? false,
-              tokenRef.current,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          runSearch();
         },
-        [searchResultsStore, applicationStore],
+        [searchResultsStore, runSearch],
       );
 
       const handleItemsPerPageChange = useCallback(
         (itemsPerPage: number) => {
           searchResultsStore.setItemsPerPage(itemsPerPage);
-          flowResult(
-            searchResultsStore.executeSearch(
-              searchResultsStore.searchQuery ?? '',
-              searchResultsStore.useProducerSearch ?? false,
-              tokenRef.current,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          runSearch();
         },
-        [searchResultsStore, applicationStore],
+        [searchResultsStore, runSearch],
       );
 
       const handleProductCardClick = useCallback(
@@ -236,14 +220,8 @@ export const LegendMarketplaceSearchResults =
           searchResultsStore.searchQuery,
         );
         searchResultsStore.setShowAllProducts(true);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch ?? false,
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
-      }, [searchResultsStore, applicationStore]);
+        runSearch();
+      }, [searchResultsStore, applicationStore, runSearch]);
 
       return (
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
@@ -327,17 +305,14 @@ export const LegendMarketplaceSearchResults =
                 <div className="marketplace-lakehouse-search-results__sidebar">
                   <MarketplaceSearchFiltersPanel
                     store={searchResultsStore}
-                    onFiltersChanged={handleFiltersChanged}
+                    onFiltersChanged={runSearch}
                   />
                 </div>
               )}
               <div className="marketplace-lakehouse-search-results__main-content">
                 {applicationStore.config.options.showDevFeatures && (
                   <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
-                    Results include both DataSpaces (firm&apos;s data-domain
-                    artifact for business concepts) and Lakehouse Access items
-                    (formerly Data Product). Lakehouse Access is moving to its
-                    own tab soon.
+                    {DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT}
                   </TimedInfoBanner>
                 )}
                 <SearchResultsCardGrid
