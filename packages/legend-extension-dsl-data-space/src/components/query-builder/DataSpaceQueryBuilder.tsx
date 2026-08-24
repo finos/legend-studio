@@ -102,7 +102,7 @@ const resolveExecutionContextRuntimes = (
       );
     return guaranteeNonNullable(
       executionContext,
-      `No execution context '${queryBuilderState.executionContext.name}' defined for data product '${queryBuilderState.dataSpace.path}'`,
+      `No execution context '${queryBuilderState.executionContext.name}' defined for '${queryBuilderState.dataSpace.path}'`,
     ).compatibleRuntimes;
   }
   return getMappingCompatibleRuntimes(
