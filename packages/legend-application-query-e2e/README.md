@@ -65,6 +65,38 @@ UI assertions prove panels render, not that the query the app _builds_ is correc
 
 Prefer this over scraping the `Show Protocol` viewer: the captured payload is exactly what a real engine would receive, and it needs no DOM parsing. Assert on meaningful fragments (function chain, properties, values) rather than snapshotting the whole JSON, which would break on every unrelated protocol change.
 
+### Testing error paths
+
+`setupEngineMock()`'s handle carries a `failures` map: set an engine path on it and the mock answers that endpoint with an error until you delete the entry, so the app's real error handling runs. Deleting mid-test lets you assert recovery.
+
+```ts
+captured.failures.set('pure/v1/execution/execute', {
+  status: 500,
+  message: 'table COVID_DATA does not exist',
+});
+// ... drive the UI, assert the message reaches the user ...
+captured.failures.delete('pure/v1/execution/execute'); // next call succeeds
+```
+
+See `QueryBuilderErrorHandling.spec.ts`. Assert on the user-visible message text rather than notification CSS classes — engine errors surface through more than one component.
+
+### Enriching depot data
+
+The mock depot server holds a single data space with a single execution
+context. Rather than growing that shared fixture — it backs local development
+for every Legend app — [`DepotMock.ts`](./src/support/DepotMock.ts) intercepts
+its responses and enriches them per-test: `mockAdditionalDataSpaces()` pads the
+listing out to N data spaces, and `mockSecondExecutionContext()` gives the
+fixture's data space a second execution context (patched into the project
+entities the graph is built from, not the analytics artifact). See
+`QueryBuilderDataSpaceSetup.spec.ts`.
+
+Two things to know about the setup panel's selectors: they are virtualized
+with `react-window`, so only the options in view exist in the DOM — assert on
+the selector's own "N results available" status message for list size, and
+search to reach entries beyond the rendered window. And the execution context
+selector only renders when a data space has more than one context.
+
 ### When your flow needs backend data that isn't mocked yet
 
 - **Result grid**: the app renders ag-grid's _community_ grid unless `TEMPORARY__enableGridEnterpriseMode` is set, and this suite runs against a dev build with no ag-grid license. Enterprise-only interactions — multi-cell range selection (needed for `Filter By` to build an `in` list) and `Copy Row Value` (needs row selection) — therefore cannot be covered here; `Filter By`/`Filter Out` fall back to the single right-clicked cell.
