@@ -71,6 +71,7 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { flowResult } from 'mobx';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 interface RecommendedAddOnsModalProps {
   terminal: TerminalResult | null;
@@ -790,8 +791,13 @@ export const RecommendedAddOnsModal = observer(
 
     const handleSearchAction = useCallback(() => {
       setCurrentPage(1);
+      LegendMarketplaceTelemetryHelper.logEvent_AddonsPopupSearch(
+        applicationStore.telemetryService,
+        searchTerm,
+        terminal?.productName ?? '',
+      );
       triggerSearch(searchTerm, sortOrder);
-    }, [searchTerm, sortOrder, triggerSearch]);
+    }, [searchTerm, sortOrder, triggerSearch, applicationStore, terminal]);
 
     const filteredAndSortedItems = useMemo(
       () =>
@@ -932,6 +938,10 @@ export const RecommendedAddOnsModal = observer(
       const newSortOrder = event.target.value
         ? (event.target.value as SortOrder)
         : undefined;
+      LegendMarketplaceTelemetryHelper.logEvent_AddonsPopupSort(
+        applicationStore.telemetryService,
+        newSortOrder ?? 'none',
+      );
       setSortOrder(newSortOrder);
       setCurrentPage(1);
       if (isTerminalAdded && searchTerm.trim() && terminalSearchResults) {
@@ -940,6 +950,10 @@ export const RecommendedAddOnsModal = observer(
     };
 
     const handlePageChange = (_event: ChangeEvent<unknown>, page: number) => {
+      LegendMarketplaceTelemetryHelper.logEvent_AddonsPopupPaginate(
+        applicationStore.telemetryService,
+        page,
+      );
       setCurrentPage(page);
     };
 

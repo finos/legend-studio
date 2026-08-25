@@ -55,6 +55,7 @@ import {
   canCancelOrder,
   formatTimestamp,
 } from '../../stores/orders/OrderHelpers.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const OrderAccordion: React.FC<{
   order: TerminalProductOrder;
@@ -225,6 +226,10 @@ const OrderAccordion: React.FC<{
                         e.stopPropagation();
                         const url = order.workflow_details?.url_manager;
                         if (url) {
+                          LegendMarketplaceTelemetryHelper.logEvent_ClickOrderEtaskLink(
+                            baseStore.applicationStore.telemetryService,
+                            String(order.order_id),
+                          );
                           baseStore.applicationStore.navigationService.navigator.visitAddress(
                             url,
                           );
@@ -456,6 +461,12 @@ export const LegendMarketplaceYourOrders: React.FC =
           executeFlowSafely(() => ordersStore.fetchOpenOrders());
         }
       }, [ordersStore, executeFlowSafely]);
+
+      useEffect(() => {
+        LegendMarketplaceTelemetryHelper.logEvent_ViewYourOrdersPage(
+          baseStore.applicationStore.telemetryService,
+        );
+      }, [baseStore.applicationStore.telemetryService]);
 
       const currentOrders = ordersStore.currentOrders;
       const isLoading = ordersStore.currentFetchState.isInProgress;

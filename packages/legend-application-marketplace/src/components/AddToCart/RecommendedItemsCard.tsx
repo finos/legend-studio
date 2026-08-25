@@ -33,6 +33,10 @@ import { assertErrorThrown } from '@finos/legend-shared';
 import { toastManager } from '../Toast/CartToast.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { formatItemPrice } from '../ProviderCard/orderProfileUtils.js';
+import {
+  LegendMarketplaceTelemetryHelper,
+  TERMINAL_SEARCH_LOCATION,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 interface RecommendedItemsCardProps {
   recommendedItem: TerminalResult;
@@ -90,6 +94,17 @@ export const RecommendedItemsCard = observer(
         .then((result) => {
           if (result.success) {
             setIsAdded(true);
+            LegendMarketplaceTelemetryHelper.logEvent_AddTerminalAddonToCart(
+              legendMarketplaceBaseStore.applicationStore.telemetryService,
+              addon.id,
+              addon.productName,
+              addon.providerName,
+              addon.terminalItemType,
+              TERMINAL_SEARCH_LOCATION.ADDONS_POPUP,
+              legendMarketplaceBaseStore.cartStore.cartUser !==
+                legendMarketplaceBaseStore.applicationStore.identityService
+                  .currentUser,
+            );
           } else if (result.message) {
             toastManager.warning(result.message);
           }
@@ -120,6 +135,18 @@ export const RecommendedItemsCard = observer(
               .then((wasAssociated) => {
                 if (wasAssociated) {
                   setIsAdded(true);
+                  LegendMarketplaceTelemetryHelper.logEvent_AddTerminalAddonToCart(
+                    legendMarketplaceBaseStore.applicationStore
+                      .telemetryService,
+                    recommendedItem.id,
+                    recommendedItem.productName,
+                    recommendedItem.providerName,
+                    recommendedItem.terminalItemType,
+                    TERMINAL_SEARCH_LOCATION.ADDONS_POPUP,
+                    legendMarketplaceBaseStore.cartStore.cartUser !==
+                      legendMarketplaceBaseStore.applicationStore
+                        .identityService.currentUser,
+                  );
                 }
               })
               .finally(() => {
