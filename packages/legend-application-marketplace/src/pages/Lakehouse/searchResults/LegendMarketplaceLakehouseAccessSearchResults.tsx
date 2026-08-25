@@ -233,11 +233,9 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
                 />
               </div>
               <div className="marketplace-lakehouse-search-results__main-content">
-                {applicationStore.config.options.showDevFeatures && (
-                  <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
-                    {LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT}
-                  </TimedInfoBanner>
-                )}
+                <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
+                  {LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT}
+                </TimedInfoBanner>
                 <SearchResultsCardGrid
                   isLoading={isLoadingDataProducts}
                   totalItems={searchResultsStore.totalItems}
