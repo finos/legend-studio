@@ -127,10 +127,17 @@ export const LegendMarketplaceSubscriptions =
                   className="legend-marketplace-subscriptions__user-input"
                   userValue={subscriptionStore.selectedUser}
                   setUserValue={(_user: LegendUser): void => {
-                    subscriptionStore.setSelectedUser(_user);
-                    fetchSubscriptions(_user.id).catch(
-                      marketplaceStore.applicationStore.alertUnhandledError,
-                    );
+                    if (_user.id) {
+                      subscriptionStore.setSelectedUser(_user);
+                      fetchSubscriptions(_user.id).catch(
+                        marketplaceStore.applicationStore.alertUnhandledError,
+                      );
+                    } else {
+                      subscriptionStore.resetSelectedUser();
+                      fetchSubscriptions(initialUser).catch(
+                        marketplaceStore.applicationStore.alertUnhandledError,
+                      );
+                    }
                   }}
                   userSearchService={marketplaceStore.userSearchService}
                   label="Search user"

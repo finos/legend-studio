@@ -111,6 +111,7 @@ import {
   buildUrl,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   LogEvent,
   StopWatch,
   uniq,
@@ -1045,6 +1046,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                       dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
                     )
                       .map((context) => context.defaultRuntime)
+                      .filter(isNonNullable)
                       .concat(
                         Array.from(
                           dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
