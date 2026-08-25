@@ -64,11 +64,7 @@ import { RecommendedItemsCard } from './RecommendedItemsCard.js';
 import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { CartStore } from '../../stores/cart/CartStore.js';
-import {
-  assertErrorThrown,
-  LogEvent,
-  type PlainObject,
-} from '@finos/legend-shared';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { flowResult } from 'mobx';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
@@ -300,9 +296,7 @@ const useVendorAddonSearch = (
         if (!signal?.aborted) {
           setTerminalSearchResults(
             response.marketplace_addons.map((item) =>
-              TerminalResult.serialization.fromJson(
-                item as unknown as PlainObject<TerminalResult>,
-              ),
+              TerminalResult.serialization.fromJson(item),
             ),
           );
           setSearchTotalCount(response.total_count);

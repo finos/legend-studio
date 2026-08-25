@@ -24,7 +24,6 @@ import {
 } from 'mobx';
 import {
   LogEvent,
-  type PlainObject,
   type GeneratorFn,
   assertErrorThrown,
   ActionState,
@@ -325,9 +324,8 @@ export class CartStore {
         toastManager.success(responseMessage);
       }
 
-      const recommendationPayloads = (response.marketplace_addons ??
-        response.marketplace_terminals ??
-        []) as unknown as PlainObject<TerminalResult>[];
+      const recommendationPayloads =
+        response.marketplace_addons ?? response.marketplace_terminals ?? [];
       const recommendations = recommendationPayloads.map((payload) =>
         TerminalResult.serialization.fromJson(payload),
       );
