@@ -84,6 +84,7 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   title?: string | undefined;
   description?: string | undefined;
   mapping!: string;
+  mappingProvider?: V1_DataSpaceMappingProviderAnalysisResult;
   defaultRuntime!: string;
   compatibleRuntimes!: string[];
   /**
@@ -92,6 +93,18 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   mappingModelCoverageAnalysisResult?: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
   runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
+}
+
+class V1_DataSpaceMappingProviderAnalysisResult {
+  element!: string;
+  keys: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceMappingProviderAnalysisResult, {
+      element: primitive(),
+      keys: list(primitive()),
+    }),
+  );
 }
 
 class V1_DataSpaceExecutionContextRuntimeMetadata {
@@ -128,6 +141,11 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
       ),
     ),
     mapping: primitive(),
+    mappingProvider: optional(
+      usingModelSchema(
+        V1_DataSpaceMappingProviderAnalysisResult.serialization.schema,
+      ),
+    ),
     name: primitive(),
     title: optional(primitive()),
     runtimeMetadata: usingModelSchema(
@@ -377,7 +395,7 @@ const V1_dataSpaceMultiExecutionServiceExecutableInfoModelSchema = (
     _type: usingConstantValueSchema(
       V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE,
     ),
-    keyedExecutableInfoList: list(
+    keyedExecutableInfos: list(
       usingModelSchema(
         V1_dataSpaceMultiExecutionServiceKeyedExecutableInfoModelSchema(
           plugins,
@@ -519,7 +537,7 @@ export class V1_DataSpaceAnalysisResult {
   >;
 }
 
-const V1_dataSpaceAnalysisResultModelSchema = (
+export const V1_dataSpaceAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceAnalysisResult> =>
   createModelSchema(V1_DataSpaceAnalysisResult, {
@@ -557,23 +575,21 @@ const V1_dataSpaceAnalysisResultModelSchema = (
     executables: customListWithSchema(
       V1_dataSpaceExecutableAnalysisResultModelSchema(plugins),
     ),
-    mappingToMappingCoverageResult: optional(
-      custom(
-        (val) =>
-          serializeMap(val, (_val) =>
-            serialize(
-              V1_MappingModelCoverageAnalysisResult.serialization.schema,
-              _val,
-            ),
+    mappingToMappingCoverageResult: optionalCustom(
+      (val) =>
+        serializeMap(val, (_val) =>
+          serialize(
+            V1_MappingModelCoverageAnalysisResult.serialization.schema,
+            _val,
           ),
-        (val) =>
-          deserializeMap(val, (_val) =>
-            deserialize(
-              V1_MappingModelCoverageAnalysisResult.serialization.schema,
-              _val,
-            ),
+        ),
+      (val) =>
+        deserializeMap(val, (_val) =>
+          deserialize(
+            V1_MappingModelCoverageAnalysisResult.serialization.schema,
+            _val,
           ),
-      ),
+        ),
     ),
   });
 
