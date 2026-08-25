@@ -73,8 +73,6 @@ interface SearchModeOption {
   mode: MarketplaceSearchMode;
   label: string;
   tooltip: string;
-  /** Only offered when dev features are enabled (still under evaluation). */
-  devOnly?: boolean;
 }
 
 /**
@@ -99,7 +97,6 @@ const SEARCH_MODE_OPTIONS: SearchModeOption[] = [
     mode: MarketplaceSearchMode.LAKEHOUSE_ACCESS,
     label: LAKEHOUSE_ACCESS_SEARCH_MODE_LABEL,
     tooltip: LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP,
-    devOnly: true,
   },
 ];
 
@@ -587,11 +584,7 @@ export const LegendMarketplaceSearchBar = observer(
             open={searchMenuOpen}
             onClose={() => setSearchMenuAnchorEl(null)}
           >
-            {SEARCH_MODE_OPTIONS.filter(
-              (option) =>
-                !option.devOnly ||
-                applicationStore.config.options.showDevFeatures,
-            ).map((option) => (
+            {SEARCH_MODE_OPTIONS.map((option) => (
               <SearchModeToggleMenuItem
                 key={option.mode}
                 option={option}
