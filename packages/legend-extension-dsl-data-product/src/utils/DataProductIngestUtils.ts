@@ -18,21 +18,37 @@ import {
   type AbstractPureGraphManager,
   type PureProtocolProcessorPlugin,
   type V1_Accessor,
+  type V1_AccessPointGroup,
   type V1_AccessPointImplementation,
   type V1_DataProduct,
-  type V1_DataProductArtifact,
+  V1_DataProductArtifact,
+  V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   type V1_Dataset,
+  type V1_AccessPoint,
+  type V1_EngineServerClient,
+  type V1_PureModelContext,
+  V1_RelationType,
+  type GraphManagerState,
   type V1_EntitlementsDataProductDetails,
-  type V1_PureGraphManager,
+  type V1_EntitlementsUserEnv,
   CORE_PURE_PATH,
   V1_AdHocDeploymentDataProductOrigin,
   V1_AppDirProducer,
+  V1_DataProductOriginType,
   V1_dataProductModelSchema,
   V1_DataProductAccessor,
   V1_deserializeDataContractResponse,
   V1_IngestDefinitionAccessor,
   V1_IngestEnvironmentClassification,
+  V1_isIngestEnvsCompatibleWithEntitlements,
   V1_KerberosProducer,
+  V1_PureGraphManager,
+  V1_BatchLambdaRelationTypeInput,
+  V1_buildBatchLambdaRelationTypeResult,
+  V1_LegendSDLC,
+  V1_Protocol,
+  V1_PureModelContextPointer,
+  PureClientVersion,
   V1_LakehouseAccessPoint,
   V1_ProducerType,
   V1_resolveAccessorsFromRawLambda,
@@ -42,18 +58,33 @@ import {
   ELEMENT_PATH_DELIMITER,
   RawLambda,
 } from '@finos/legend-graph';
-import type { ProjectGAVCoordinates, Entity } from '@finos/legend-storage';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import {
+  type ProjectGAVCoordinates,
+  type Entity,
+  StoredFileGeneration,
+} from '@finos/legend-storage';
+import type {
+  IngestDeploymentServerConfig,
+  LakehouseContractServerClient,
+} from '@finos/legend-server-lakehouse';
 import {
   type DepotServerClient,
   resolveVersion,
+  StoreProjectData,
 } from '@finos/legend-server-depot';
 import {
+  type PlainObject,
   assertErrorThrown,
+  guaranteeNonEmptyString,
   guaranteeNonNullable,
+  guaranteeType,
   isNonNullable,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { deserialize } from 'serializr';
+
+const LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE = 'lakehouseConsumer';
+const DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 
 export interface LakehouseIngestDatasetInfo {
   gavCoordinates: ProjectGAVCoordinates;
@@ -582,4 +613,209 @@ export async function getContractAPGCoordinates(
     assertErrorThrown(error);
     return undefined;
   }
+}
+
+/**
+ * The ingest environments compatible with the product's entitlements and, when
+ * known, with the user's own entitlement environments.
+ */
+export function filterUserIngestEnvs(
+  details: V1_EntitlementsDataProductDetails,
+  environmentSummaries: IngestDeploymentServerConfig[],
+  userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined,
+): IngestDeploymentServerConfig[] {
+  const dataProductEnv = details.lakehouseEnvironment?.type;
+  const filteredByClassification = environmentSummaries.filter(
+    (env) =>
+      dataProductEnv === undefined ||
+      V1_isIngestEnvsCompatibleWithEntitlements(
+        env.environmentClassification,
+        dataProductEnv,
+      ),
+  );
+  if (userEntitlementsEnv?.length) {
+    const userEnvs = userEntitlementsEnv.map((e) => e.lakehouseEnvironment);
+    return filteredByClassification.filter((e) =>
+      userEnvs.includes(e.environmentName),
+    );
+  }
+  return filteredByClassification;
+}
+
+export function resolveUserIngestEnv(
+  details: V1_EntitlementsDataProductDetails,
+  environmentSummaries: IngestDeploymentServerConfig[],
+  userEntitlementsEnv: V1_EntitlementsUserEnv[] | undefined,
+): IngestDeploymentServerConfig | undefined {
+  const candidates = filterUserIngestEnvs(
+    details,
+    environmentSummaries,
+    userEntitlementsEnv,
+  );
+  return candidates.length === 1 ? candidates[0] : undefined;
+}
+
+/**
+ * Builds the lakehouse-consumer DataCube `sourceData` for an access point.
+ * Query-string handling is the caller's concern, not this helper's.
+ */
+export function buildLakehouseDataCubeSourceData(
+  details: V1_EntitlementsDataProductDetails,
+  productPath: string,
+  accessPointName: string,
+  environmentName: string,
+): Record<string, unknown> {
+  const origin = details.origin;
+  const sourceData: Record<string, unknown> = {
+    _type: LAKEHOUSE_CONSUMER_DATA_CUBE_SOURCE_TYPE,
+    warehouse: DEFAULT_CONSUMER_WAREHOUSE,
+    environment: environmentName,
+    paths: [productPath, accessPointName],
+    deploymentId: details.deploymentId,
+  };
+  if (origin instanceof V1_SdlcDeploymentDataProductOrigin) {
+    sourceData.origin = {
+      _type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
+      dpCoordinates: {
+        groupId: origin.group,
+        artifactId: origin.artifact,
+        versionId: origin.version,
+      },
+    };
+  } else if (origin instanceof V1_AdHocDeploymentDataProductOrigin) {
+    sourceData.origin = {
+      _type: V1_DataProductOriginType.AD_HOC_DEPLOYMENT,
+    };
+  } else {
+    throw new UnsupportedOperationError(
+      `Can't open DataCube: unsupported data product origin`,
+    );
+  }
+  return sourceData;
+}
+
+/**
+ * Reads a data product's generated artifact from the depot. Throws when the
+ * project has no artifact generated for that path.
+ */
+export async function fetchDataProductArtifact(
+  depotServerClient: DepotServerClient,
+  projectGAV: ProjectGAVCoordinates,
+  dataProductPath: string,
+): Promise<V1_DataProductArtifact> {
+  const storeProject = new StoreProjectData();
+  storeProject.groupId = projectGAV.groupId;
+  storeProject.artifactId = projectGAV.artifactId;
+  const files = (
+    await depotServerClient.getGenerationFilesByType(
+      storeProject,
+      resolveVersion(projectGAV.versionId),
+      V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
+      dataProductPath,
+    )
+  ).map((rawFile) => StoredFileGeneration.serialization.fromJson(rawFile));
+  const content = guaranteeNonEmptyString(
+    files.find((file) => file.path === dataProductPath)?.file.content,
+    `Artifact generation not found for data product: ${storeProject.groupId}:${storeProject.artifactId}:${projectGAV.versionId}/${dataProductPath}`,
+  );
+  return V1_DataProductArtifact.serialization.fromJson(
+    JSON.parse(content) as PlainObject,
+  );
+}
+
+/**
+ * The model the engine needs to type an access point lambda: an SDLC pointer
+ * when the product has coordinates, otherwise the built ad hoc graph.
+ */
+export function buildAccessPointModel(
+  projectGAV: ProjectGAVCoordinates | undefined,
+  graphManagerState: GraphManagerState,
+): V1_PureModelContext {
+  if (projectGAV !== undefined) {
+    return new V1_PureModelContextPointer(
+      new V1_Protocol(
+        V1_PureGraphManager.PURE_PROTOCOL_NAME,
+        PureClientVersion.VX_X_X,
+      ),
+      new V1_LegendSDLC(
+        projectGAV.groupId,
+        projectGAV.artifactId,
+        resolveVersion(projectGAV.versionId),
+      ),
+    );
+  }
+  return guaranteeType(
+    graphManagerState.graphManager,
+    V1_PureGraphManager,
+  ).getFullGraphModelData(graphManagerState.graph);
+}
+
+/**
+ * Reads the relation type artifact generation recorded for an access point.
+ * Absent when the artifact predates the access point or failed to type it.
+ */
+export function findArtifactRelationType(
+  implementation: V1_AccessPointImplementation | undefined,
+): V1_RelationType | undefined {
+  return implementation?.lambdaGenericType?.typeArguments
+    .map((typeArgument) => typeArgument.rawType)
+    .find(
+      (rawType): rawType is V1_RelationType =>
+        rawType instanceof V1_RelationType,
+    );
+}
+
+/**
+ * Lists the access points whose relation type the artifact does not carry, so
+ * a caller only pays the engine for what artifact generation left out.
+ */
+export function selectAccessPointsMissingRelationType(
+  accessPointGroups: V1_AccessPointGroup[],
+  artifact: V1_DataProductArtifact | undefined,
+): V1_AccessPoint[] {
+  return accessPointGroups.flatMap((apg) => {
+    const artifactApg = artifact?.accessPointGroups.find(
+      (group) => group.id === apg.id,
+    );
+    return apg.accessPoints.filter(
+      (ap) =>
+        findArtifactRelationType(
+          artifactApg?.accessPointImplementations.find(
+            (impl) => impl.id === ap.id,
+          ),
+        ) === undefined,
+    );
+  });
+}
+
+/**
+ * Types the lakehouse access point lambdas through the engine in one batch,
+ * reporting the ones it could not type. Non-lakehouse access points are skipped.
+ */
+export async function fetchAccessPointRelationTypes(
+  accessPoints: V1_AccessPoint[],
+  model: V1_PureModelContext,
+  engineServerClient: V1_EngineServerClient,
+  onFailure: (accessPointId: string, error: Error) => void,
+): Promise<Map<string, V1_RelationType>> {
+  const lakehouseAccessPoints = accessPoints.filter(
+    (ap): ap is V1_LakehouseAccessPoint =>
+      ap instanceof V1_LakehouseAccessPoint,
+  );
+  if (lakehouseAccessPoints.length === 0) {
+    return new Map<string, V1_RelationType>();
+  }
+  const input = new V1_BatchLambdaRelationTypeInput(
+    model,
+    Object.fromEntries(lakehouseAccessPoints.map((ap) => [ap.id, ap.func])),
+  );
+  const { results, errors } = V1_buildBatchLambdaRelationTypeResult(
+    await engineServerClient.batchLambdasRelationType(
+      V1_BatchLambdaRelationTypeInput.serialization.toJson(input),
+    ),
+  );
+  errors?.forEach((engineError, accessPointId) => {
+    onFailure(accessPointId, new Error(engineError.message));
+  });
+  return results;
 }

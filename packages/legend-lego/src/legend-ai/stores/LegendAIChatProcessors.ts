@@ -22,6 +22,8 @@ import {
   uuid,
 } from '@finos/legend-shared';
 import {
+  type LegendAIFallbackAction,
+  type LegendAIPriorSqlFailure,
   type TDSServiceSchema,
   type LegendAIConfig,
   type LegendAIAssistantMessage,
@@ -68,6 +70,7 @@ import {
   relaxExactStringFilters,
   extractFilteredColumns,
   buildProbedValueHints,
+  buildPriorSqlFailureHints,
   splitIdentifierTokens,
   tokenizeText,
 } from '../LegendAIDocEnrichment.js';
@@ -78,16 +81,25 @@ import {
 import {
   isNumericColumn,
   isStringColumn,
+  isStringTypedColumn,
 } from '../components/LegendAIChatHelpers.js';
 import {
+  buildColumnByNameIndex,
+  accessPointName,
   HAS_LIMIT_PATTERN,
-  AP_CALL_PATTERN,
+  accessPointCalls,
   servicePId,
   pureRelationColumnRef,
+  extractJoinKeyColumns,
+  sharedColumnNames,
 } from './LegendAISqlHelpers.js';
 import {
   buildCrossJoinZeroRowExplanation,
   buildJoinablePairSuggestions,
+  detectDisjointJoinUniverses,
+  resolveJoinedAccessPoints,
+  buildDisjointJoinMessage,
+  previewValues,
 } from './LegendAIJoinAnalysis.js';
 import {
   boundCrossAccessPointJoinDrivingSide,
@@ -106,6 +118,10 @@ const ANALYSIS_TIMEOUT_MS = 15_000;
 const ORCHESTRATOR_GENERATION_TIMEOUT_MS = 120_000;
 const DISTINCT_PROBE_ROW_LIMIT = 5000;
 const MAX_RECOVERED_FILTER_COLUMNS = 4;
+export const JOIN_OVERLAP_PROBE_LIMIT = 200;
+const JOIN_OVERLAP_CONCLUSIVE_MAX = JOIN_OVERLAP_PROBE_LIMIT - 1;
+const MAX_JOIN_OVERLAP_PROBE_KEYS = 4;
+const JOIN_OVERLAP_PROBE_TIMEOUT_MS = 15_000;
 const EXECUTION_TIMEOUT_MS = 300_000;
 const ANALYSIS_PREVIEW_ROW_LIMIT = 3;
 const ANALYSIS_PREVIEW_VALUE_LIMIT = 40;
@@ -117,12 +133,32 @@ const SERVICE_CALL_PATTERN = /\bservice\s*\([^()]*\)/gi;
 const DEFAULT_SAFETY_LIMIT = 1000;
 const HAS_AGGREGATION_PATTERN =
   /\bGROUP\s+BY\b|\b(?:COUNT|SUM|AVG|MIN|MAX)\s*\(|\bSELECT\s+DISTINCT\b|\bHAVING\b|\bQUALIFY\b/i;
+const OUTER_JOIN_PATTERN = /\b(?:LEFT|RIGHT|FULL)\s+(?:OUTER\s+)?JOIN\b/i;
+const DISJUNCTIVE_PREDICATE_PATTERN = /\bOR\b/i;
+const SET_OPERATION_PATTERN = /\b(?:UNION|INTERSECT|EXCEPT)\b/i;
 const MAX_SERVICES_FOR_LLM_SELECTION = 30;
 const VALUE_GROUNDING_TIME_BUDGET_MS = 4000;
 const AP_SQL_EXECUTION_TIMEOUT_MS = 90_000;
 const AP_SQL_EXECUTION_TIMEOUT_MESSAGE =
   'This query is scanning very large access-point feeds and is taking too long to return. Narrow it with a date or entity filter, join on the full key (including the date), or use a *_LATEST snapshot access point.';
 const ORCHESTRATOR_FALLBACK_LABEL = 'Try Legend AI Orchestrator';
+
+// The single orchestrator fallback action, so every dead-end path offers the
+// same button and threads any prior SQL failure the same way.
+export function buildOrchestratorFallbackAction(
+  failure?: LegendAIPriorSqlFailure,
+): LegendAIFallbackAction {
+  return {
+    label: ORCHESTRATOR_FALLBACK_LABEL,
+    actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+    ...(failure?.failedSql === undefined
+      ? {}
+      : { failedSql: failure.failedSql }),
+    ...(failure?.failedReason === undefined
+      ? {}
+      : { failedReason: failure.failedReason }),
+  };
+}
 const SQL_GENERATION_FAILURE_WITH_ORCHESTRATOR =
   'SQL generation could not handle this query. You can try the Legend AI Orchestrator to generate a Pure query instead.';
 const SQL_GENERATION_FAILURE_NO_ORCHESTRATOR =
@@ -186,31 +222,35 @@ export type MessageSetter = React.Dispatch<
   React.SetStateAction<LegendAIMessage[]>
 >;
 
+export function createAssistantMessage(): LegendAIAssistantMessage {
+  return {
+    id: uuid(),
+    role: LegendAIMessageRole.ASSISTANT,
+    thinkingSteps: [],
+    sql: null,
+    textAnswer: null,
+    dataContext: null,
+    gridData: null,
+    error: null,
+    errorType: null,
+    sqlGenTime: null,
+    execTime: null,
+    thinkingDuration: null,
+    isProcessing: true,
+    isExecuting: false,
+    suggestedQueries: [],
+    fallbackAction: null,
+    queriedAccessPointGroups: [],
+    queriedAccessPoints: [],
+  };
+}
+
 export function createMessagePair(
   text: string,
 ): [LegendAIUserMessage, LegendAIAssistantMessage] {
   return [
     { id: uuid(), role: LegendAIMessageRole.USER, text },
-    {
-      id: uuid(),
-      role: LegendAIMessageRole.ASSISTANT,
-      thinkingSteps: [],
-      sql: null,
-      textAnswer: null,
-      dataContext: null,
-      gridData: null,
-      error: null,
-      errorType: null,
-      sqlGenTime: null,
-      execTime: null,
-      thinkingDuration: null,
-      isProcessing: true,
-      isExecuting: false,
-      suggestedQueries: [],
-      fallbackAction: null,
-      queriedAccessPointGroups: [],
-      queriedAccessPoints: [],
-    },
+    createAssistantMessage(),
   ];
 }
 
@@ -385,7 +425,7 @@ export function filterHistoryForAccessPoints(
 function orderedAccessPointsFromSql(sql: string): string[] {
   const ordered: string[] = [];
   const seen = new Set<string>();
-  for (const match of sql.matchAll(AP_CALL_PATTERN)) {
+  for (const match of accessPointCalls(sql)) {
     const path = match.groups?.pId ?? '';
     const dotIdx = path.lastIndexOf('.');
     const apName = dotIdx === -1 ? path : path.slice(dotIdx + 1);
@@ -396,6 +436,9 @@ function orderedAccessPointsFromSql(sql: string): string[] {
   }
   return ordered;
 }
+
+const MAX_HISTORY_ANSWER_LENGTH = 1500;
+const MAX_CONVERSATION_HISTORY_TURNS = 10;
 
 function buildTurnFromAssistant(
   userText: string,
@@ -426,7 +469,7 @@ function buildTurnFromAssistant(
   if (asstMsg.textAnswer) {
     return {
       question: userText,
-      sql: asstMsg.textAnswer,
+      sql: asstMsg.textAnswer.slice(0, MAX_HISTORY_ANSWER_LENGTH),
       intent: LegendAIQuestionIntent.METADATA,
     };
   }
@@ -465,6 +508,10 @@ export function classifyResponseOutcome(
   return LegendAIResponseOutcome.NO_ANSWER;
 }
 
+/**
+ * Pairs each question with the assistant turn that answered it, keeping only
+ * the most recent turns so prompts do not grow with conversation length.
+ */
 export function buildConversationHistory(
   messages: LegendAIMessage[],
 ): LegendAIConversationTurn[] {
@@ -486,7 +533,7 @@ export function buildConversationHistory(
       i += 1;
     }
   }
-  return history;
+  return history.slice(-MAX_CONVERSATION_HISTORY_TURNS);
 }
 
 function formatServiceParams(services: TDSServiceSchema[]): string[] {
@@ -968,6 +1015,118 @@ export function attachMetadataOverview(
   });
 }
 
+const PRODUCT_OVERVIEW_PATTERNS: readonly RegExp[] = [
+  /\bwhat\s+does\b.*\b(?:offer|provide|contain|have|include|cover)\b/,
+  /\b(?:describe|summarize|overview|summary)\b/,
+  /\bwhat\s+(?:access\s*points?|services?|data|datasets?)\b/,
+  /\bwhat\s+can\s+(?:i|we|you)\b/,
+  /\btell\s+me\s+(?:about|more)\b/,
+];
+
+const LISTING_VERB_PATTERN = /\b(?:list|show|what\s+are)\b/;
+const LISTING_NOUN_PATTERN =
+  /\b(?:access\s*points?|services?|endpoints?|datasets?|tables?)\b/;
+
+export function isProductOverviewQuestion(question: string): boolean {
+  const q = question.toLowerCase();
+  return (
+    PRODUCT_OVERVIEW_PATTERNS.some((pattern) => pattern.test(q)) ||
+    (LISTING_VERB_PATTERN.test(q) && LISTING_NOUN_PATTERN.test(q))
+  );
+}
+
+const CATALOG_MIN_SERVICES = 10;
+const CATALOG_MAX_ENTRIES = 200;
+
+// Buckets services under their access point group, groups in title order.
+function groupServicesByAccessPointGroup(
+  services: TDSServiceSchema[],
+): [string, TDSServiceSchema[]][] {
+  const byGroup = new Map<string, TDSServiceSchema[]>();
+  for (const svc of services) {
+    const group = svc.accessPointGroupTitle ?? '';
+    const existing = byGroup.get(group);
+    if (existing) {
+      existing.push(svc);
+    } else {
+      byGroup.set(group, [svc]);
+    }
+  }
+  return Array.from(byGroup.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+}
+
+// Renders each group as a heading followed by its services, up to the cap.
+function renderCatalogEntries(groups: [string, TDSServiceSchema[]][]): {
+  lines: string[];
+  rendered: number;
+} {
+  const lines: string[] = [];
+  let rendered = 0;
+  for (const [group, entries] of groups) {
+    if (rendered >= CATALOG_MAX_ENTRIES) {
+      break;
+    }
+    if (group) {
+      lines.push(`\n### ${group}`);
+    }
+    for (const svc of [...entries].sort((a, b) =>
+      a.title.localeCompare(b.title),
+    )) {
+      if (rendered >= CATALOG_MAX_ENTRIES) {
+        break;
+      }
+      const count = svc.columns.length;
+      lines.push(`- ${svc.title} (${count} column${count === 1 ? '' : 's'})`);
+      rendered += 1;
+    }
+  }
+  return { lines, rendered };
+}
+
+// Deterministic, grouped listing of a product's access points/services, so an
+// overview answer on a large product is never cut off by the LLM's token budget.
+export function buildAccessPointCatalog(services: TDSServiceSchema[]): string {
+  const noun = services.some(
+    (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
+  )
+    ? 'access points'
+    : 'services';
+  const { lines, rendered } = renderCatalogEntries(
+    groupServicesByAccessPointGroup(services),
+  );
+  const omitted = services.length - rendered;
+  if (omitted > 0) {
+    lines.push(
+      `\n- ...and ${omitted} more (ask about a specific group to see them).`,
+    );
+  }
+  const heading =
+    omitted > 0
+      ? `${rendered} of ${services.length}`
+      : `All ${services.length}`;
+  return [`## ${heading} ${noun}`, ...lines].join('\n');
+}
+
+const MAX_METADATA_PROMPT_SERVICES = 30;
+
+/**
+ * Ranks the access points against the question so a product with hundreds of
+ * them contributes a bounded, relevant slice of the metadata prompt.
+ */
+function selectMetadataPromptServices(
+  question: string,
+  services: TDSServiceSchema[] | undefined,
+): TDSServiceSchema[] | undefined {
+  if (!services || services.length <= MAX_METADATA_PROMPT_SERVICES) {
+    return services;
+  }
+  return preFilterServicesByRelevance(
+    question,
+    services,
+    MAX_METADATA_PROMPT_SERVICES,
+  );
+}
+
 export async function handleMetadataQuestion(
   question: string,
   metadata: LegendAIProductMetadata,
@@ -983,7 +1142,7 @@ export async function handleMetadataQuestion(
     question,
     metadata,
     history,
-    services,
+    selectMetadataPromptServices(question, services),
     modelContextEnrichment,
   );
   const rawAnswer = await plugin.callLLM(metadataPromptText, config);
@@ -993,9 +1152,15 @@ export async function handleMetadataQuestion(
     hasQueryableServices === false && !config.orchestratorUrl
       ? []
       : parsedSuggestions;
+  const textAnswer =
+    services !== undefined &&
+    services.length >= CATALOG_MIN_SERVICES &&
+    isProductOverviewQuestion(question)
+      ? `${answer}\n\n${buildAccessPointCatalog(services)}`
+      : answer;
   completeThinkingSteps(setMessages);
   updateLastAssistant(setMessages, () => ({
-    textAnswer: answer,
+    textAnswer,
     suggestedQueries,
     isProcessing: false,
     thinkingDuration: elapsedSeconds(startTime),
@@ -2025,6 +2190,7 @@ export async function processQuestionViaOrchestrator(
   pureExecutionContext?: QueryExplicitExecutionContextInfo,
   preResolvedEntities?: LegendAIResolvedEntities,
   modelContext?: LegendAIModelContext,
+  priorFailure?: LegendAIPriorSqlFailure,
 ): Promise<void> {
   const { config, plugin, setMessages } = context;
   const startTime = Date.now();
@@ -2047,7 +2213,7 @@ export async function processQuestionViaOrchestrator(
     }
 
     addThinkingStep(setMessages, 'Generating Legend query via orchestrator...');
-    const enrichedContext = modelContext
+    const baseContext = modelContext
       ? buildEnrichedBusinessContext(
           question,
           resolvedEntities.rootEntity,
@@ -2055,6 +2221,27 @@ export async function processQuestionViaOrchestrator(
           modelContext,
         )
       : undefined;
+    const priorFailureHints = priorFailure
+      ? buildPriorSqlFailureHints(
+          priorFailure.failedSql,
+          priorFailure.failedReason,
+        )
+      : [];
+    const enrichedContext =
+      priorFailureHints.length > 0
+        ? {
+            naturalLanguageQuery: question,
+            ...baseContext,
+            businessContextMatch: {
+              ...baseContext?.businessContextMatch,
+              additionalNlModelContext: [
+                ...(baseContext?.businessContextMatch
+                  ?.additionalNlModelContext ?? []),
+                ...priorFailureHints,
+              ],
+            },
+          }
+        : baseContext;
     const orchestratorResponse = await withTimeout(
       plugin.generateQueryViaOrchestrator(
         {
@@ -2463,14 +2650,16 @@ export function ensureSafeLimit(
   return `${sql.trimEnd()}\nLIMIT ${limit}`;
 }
 
+/**
+ * The one place generated SQL text is rewritten, working around engine
+ * transpiler limits on joins. Every step no-ops on a shape it cannot fix.
+ */
 function prepareSafeSql(sql: string, services: TDSServiceSchema[]): string {
-  const joined = sanitizeLiteralColumns(
-    sanitizeJoinSameKeyColumns(
-      sanitizeJoinOrderBy(sanitizeJoinDuplicateColumns(sql, services)),
-      services,
-    ),
-  );
-  const wrapped = wrapBareJoinAccessPoints(joined, services);
+  const deduped = sanitizeJoinDuplicateColumns(sql, services);
+  const ordered = sanitizeJoinOrderBy(deduped);
+  const keyed = sanitizeJoinSameKeyColumns(ordered, services);
+  const literals = sanitizeLiteralColumns(keyed);
+  const wrapped = wrapBareJoinAccessPoints(literals, services);
   const bounded = boundCrossAccessPointJoinDrivingSide(wrapped);
   const safeSql = ensureSafeLimit(ensureDateParameters(bounded, services));
   const unsupported = detectUnsupportedEnginePattern(safeSql);
@@ -2739,10 +2928,9 @@ function handleSqlGenerationFailure(
     updateLastAssistant(setMessages, () => ({
       textAnswer: orchestratorMessage,
       suggestedQueries: suggestions,
-      fallbackAction: {
-        label: ORCHESTRATOR_FALLBACK_LABEL,
-        actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-      },
+      fallbackAction: buildOrchestratorFallbackAction({
+        failedReason: orchestratorMessage,
+      }),
       isProcessing: false,
       thinkingDuration: elapsedSeconds(startTime),
     }));
@@ -2762,6 +2950,7 @@ interface QueryResultReport {
   question: string;
   services: TDSServiceSchema[];
   allAccessPoints?: TDSServiceSchema[];
+  zeroRowExplanation?: string;
 }
 
 async function reportQueryResults(
@@ -2771,7 +2960,14 @@ async function reportQueryResults(
   startTime: number,
   hasOrchestratorFallback: boolean,
 ): Promise<void> {
-  const { currentSql, sqlResult, question, services, allAccessPoints } = report;
+  const {
+    currentSql,
+    sqlResult,
+    question,
+    services,
+    allAccessPoints,
+    zeroRowExplanation,
+  } = report;
   const { config, plugin, setMessages } = context;
   if (sqlResult.rows.length > 0) {
     const columns = deduplicateColumns(sqlResult.columns);
@@ -2819,12 +3015,13 @@ async function reportQueryResults(
   } else {
     addThinkingStep(
       setMessages,
-      'Query returned 0 rows after correction attempts.',
+      zeroRowExplanation === undefined
+        ? 'Query returned 0 rows after correction attempts.'
+        : 'No overlapping join keys — the query would return 0 rows.',
     );
-    const joinExplanation = buildCrossJoinZeroRowExplanation(
-      currentSql,
-      services,
-    );
+    const joinExplanation =
+      zeroRowExplanation ??
+      buildCrossJoinZeroRowExplanation(currentSql, services);
     const joinSuggestions =
       joinExplanation === undefined
         ? []
@@ -2837,6 +3034,7 @@ async function reportQueryResults(
           metadata,
           config,
           joinExplanation,
+          services,
         )
         .catch((error: unknown) => {
           assertErrorThrown(error);
@@ -2849,19 +3047,18 @@ async function reportQueryResults(
       joinSuggestions.length > 0
         ? joinSuggestions
         : (llmAnalysis?.suggestedQueries ?? []);
+    const zeroRowReason =
+      llmAnalysis?.summary ?? joinExplanation ?? buildZeroRowMessage(services);
     const fallback = hasOrchestratorFallback
       ? {
-          fallbackAction: {
-            label: ORCHESTRATOR_FALLBACK_LABEL,
-            actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-          },
+          fallbackAction: buildOrchestratorFallbackAction({
+            failedSql: currentSql,
+            failedReason: zeroRowReason,
+          }),
         }
       : {};
     updateLastAssistant(setMessages, () => ({
-      textAnswer:
-        llmAnalysis?.summary ??
-        joinExplanation ??
-        buildZeroRowMessage(services),
+      textAnswer: zeroRowReason,
       ...(suggestions.length > 0 ? { suggestedQueries: suggestions } : {}),
       ...fallback,
       isProcessing: false,
@@ -3005,12 +3202,12 @@ export function applyMultiTurnBias(
   // Sort so that previously-used APs come first, preserving relative order
   const biased = [...services].sort((a, b) => {
     const aUsed =
-      previousAPs.has(a.pattern.replace(/^\//, '').toLowerCase()) ||
+      previousAPs.has(accessPointName(a).toLowerCase()) ||
       previousAPs.has(a.title.toLowerCase())
         ? 1
         : 0;
     const bUsed =
-      previousAPs.has(b.pattern.replace(/^\//, '').toLowerCase()) ||
+      previousAPs.has(accessPointName(b).toLowerCase()) ||
       previousAPs.has(b.title.toLowerCase())
         ? 1
         : 0;
@@ -3184,6 +3381,12 @@ export function resolveFilterLiteral(
 }
 
 type FilterValueProbe = (column: string) => Promise<string[] | undefined>;
+
+interface ColumnValueProbeOptions {
+  rowLimit?: number;
+  maxColumns?: number;
+  silent?: boolean;
+}
 
 // Rewrites `"col" = 'literal'` predicates in the WHERE clause whose literal
 // fuzzy-matches a real probed column value, returning the updated SQL and
@@ -3373,6 +3576,171 @@ function buildAccessPointColumnIndex(
   return index;
 }
 
+// Builds a memoized distinct-value prober for a query's columns: access-point
+// columns resolve via a relation query, service columns via SELECT DISTINCT.
+export function createColumnValueProbe(
+  services: TDSServiceSchema[],
+  dataProductCoordinates:
+    | LegendAIOrchestratorDataProductCoordinates
+    | undefined,
+  fromClause: string | undefined,
+  isAccessPointProbe: boolean,
+  context: LegendAIOperationContext,
+  options?: ColumnValueProbeOptions,
+): FilterValueProbe {
+  const { plugin, config, setMessages } = context;
+  const rowLimit = options?.rowLimit ?? DISTINCT_PROBE_ROW_LIMIT;
+  const maxColumns = options?.maxColumns ?? MAX_RECOVERED_FILTER_COLUMNS;
+  const accessPointByColumn = isAccessPointProbe
+    ? buildAccessPointColumnIndex(services)
+    : new Map<string, TDSServiceSchema>();
+  const probeAccessPointColumn = async (
+    column: string,
+  ): Promise<LegendAISqlExecutionResultData> => {
+    const accessPoint = accessPointByColumn.get(column.toLowerCase());
+    const pId = accessPoint ? servicePId(accessPoint) : undefined;
+    if (pId === undefined) {
+      return { columns: [], rows: [] };
+    }
+    const relationQuery = `#P{${pId}}#->select(~[${pureRelationColumnRef(column)}])->distinct()->take(${rowLimit})`;
+    return plugin.executeLakehouseRelationQuery(
+      relationQuery,
+      guaranteeNonNullable(dataProductCoordinates),
+      config,
+    );
+  };
+  const probedValues = new Map<string, string[] | undefined>();
+  return async (column: string): Promise<string[] | undefined> => {
+    if (probedValues.has(column)) {
+      return probedValues.get(column);
+    }
+    if (probedValues.size >= maxColumns) {
+      return undefined;
+    }
+    let values: string[] | undefined;
+    try {
+      const probe = isAccessPointProbe
+        ? await probeAccessPointColumn(column)
+        : await executeSqlForServices(
+            `SELECT DISTINCT "${column}" ${fromClause} LIMIT ${rowLimit}`,
+            services,
+            dataProductCoordinates,
+            plugin,
+            config,
+          );
+      values = probe.rows
+        .map((row) => row[column])
+        .filter(isNonNullable)
+        .map(String);
+    } catch (probeError) {
+      assertErrorThrown(probeError);
+      if (options?.silent !== true) {
+        addThinkingStep(setMessages, `Could not probe values for "${column}"`);
+      }
+      values = undefined;
+    }
+    probedValues.set(column, values);
+    return values;
+  };
+}
+
+// An empty inner join yields no rows, but an outer join, an aggregate, a
+// disjunctive predicate or a set operation can still return some.
+export function canSkipExecutionOnEmptyJoin(sql: string): boolean {
+  return (
+    !OUTER_JOIN_PATTERN.test(sql) &&
+    !HAS_AGGREGATION_PATTERN.test(sql) &&
+    !DISJUNCTIVE_PREDICATE_PATTERN.test(sql) &&
+    !SET_OPERATION_PATTERN.test(sql)
+  );
+}
+
+/**
+ * Reports the join key whose values do not overlap, so a two access point join
+ * can be explained instead of run. Text keys only, because dates and numbers
+ * serialize differently on either side and would read as disjoint when they
+ * are not, and only for exactly two access points, because a key belonging to
+ * another pair would otherwise be tested against the wrong relations.
+ */
+export async function probeJoinOverlap(
+  sql: string,
+  services: TDSServiceSchema[],
+  joinKeys: Set<string>,
+  dataProductCoordinates:
+    | LegendAIOrchestratorDataProductCoordinates
+    | undefined,
+  context: LegendAIOperationContext,
+): Promise<string | undefined> {
+  if (dataProductCoordinates === undefined) {
+    return undefined;
+  }
+  const involved = resolveJoinedAccessPoints(sql, services);
+  const apA = involved[0];
+  const apB = involved[1];
+  if (involved.length !== 2 || apA === undefined || apB === undefined) {
+    return undefined;
+  }
+  const sharedKeys = sharedColumnNames(apA, apB)
+    .filter((name) => joinKeys.has(name.toLowerCase()))
+    .slice(0, MAX_JOIN_OVERLAP_PROBE_KEYS);
+  if (sharedKeys.length === 0) {
+    return undefined;
+  }
+  const columnsA = buildColumnByNameIndex(apA.columns);
+  const columnsB = buildColumnByNameIndex(apB.columns);
+  const probeOptions: ColumnValueProbeOptions = {
+    rowLimit: JOIN_OVERLAP_PROBE_LIMIT,
+    maxColumns: MAX_JOIN_OVERLAP_PROBE_KEYS,
+    silent: true,
+  };
+  const probeA = createColumnValueProbe(
+    [apA],
+    dataProductCoordinates,
+    undefined,
+    true,
+    context,
+    probeOptions,
+  );
+  const probeB = createColumnValueProbe(
+    [apB],
+    dataProductCoordinates,
+    undefined,
+    true,
+    context,
+    probeOptions,
+  );
+  const fullyEnumerated = (values: string[] | undefined): values is string[] =>
+    values !== undefined &&
+    values.length > 0 &&
+    values.length < JOIN_OVERLAP_CONCLUSIVE_MAX;
+  for (const key of sharedKeys) {
+    const columnA = columnsA.get(key.toLowerCase());
+    const columnB = columnsB.get(key.toLowerCase());
+    if (columnA === undefined || columnB === undefined) {
+      continue;
+    }
+    const nameB = columnB.name;
+    if (!isStringTypedColumn(columnA) || !isStringTypedColumn(columnB)) {
+      continue;
+    }
+    const [valuesA, valuesB] = await Promise.all([probeA(key), probeB(nameB)]);
+    if (!fullyEnumerated(valuesA) || !fullyEnumerated(valuesB)) {
+      continue;
+    }
+    const setB = new Set(valuesB.map((v) => v.toLowerCase()));
+    if (!valuesA.some((v) => setB.has(v.toLowerCase()))) {
+      return buildDisjointJoinMessage(
+        apA.title,
+        apB.title,
+        key,
+        previewValues(valuesA),
+        previewValues(valuesB),
+      );
+    }
+  }
+  return undefined;
+}
+
 // Recovers a zero-row query by re-probing each WHERE-filter column's real distinct
 // values and rewriting equality/IN literals that don't match (casing/spelling).
 async function attemptDistinctValueRecovery(
@@ -3391,9 +3759,6 @@ async function attemptDistinctValueRecovery(
     selectedServices.some(
       (s) => s.sourceType === TDSServiceSourceType.ACCESS_POINT,
     );
-  const accessPointByColumn = isAccessPointProbe
-    ? buildAccessPointColumnIndex(selectedServices)
-    : new Map<string, TDSServiceSchema>();
   const fromClause = isAccessPointProbe
     ? undefined
     : extractFromClause(currentSql);
@@ -3401,55 +3766,13 @@ async function attemptDistinctValueRecovery(
     return undefined;
   }
 
-  const probeAccessPointColumn = async (
-    column: string,
-  ): Promise<LegendAISqlExecutionResultData> => {
-    const accessPoint = accessPointByColumn.get(column.toLowerCase());
-    const pId = accessPoint ? servicePId(accessPoint) : undefined;
-    if (pId === undefined) {
-      return { columns: [], rows: [] };
-    }
-    const relationQuery = `#P{${pId}}#->select(~[${pureRelationColumnRef(column)}])->distinct()->take(${DISTINCT_PROBE_ROW_LIMIT})`;
-    return plugin.executeLakehouseRelationQuery(
-      relationQuery,
-      guaranteeNonNullable(dataProductCoordinates),
-      config,
-    );
-  };
-
-  const probedValues = new Map<string, string[] | undefined>();
-  const probeColumnValues = async (
-    column: string,
-  ): Promise<string[] | undefined> => {
-    if (probedValues.has(column)) {
-      return probedValues.get(column);
-    }
-    if (probedValues.size >= MAX_RECOVERED_FILTER_COLUMNS) {
-      return undefined;
-    }
-    let values: string[] | undefined;
-    try {
-      const probe = isAccessPointProbe
-        ? await probeAccessPointColumn(column)
-        : await executeSqlForServices(
-            `SELECT DISTINCT "${column}" ${fromClause} LIMIT ${DISTINCT_PROBE_ROW_LIMIT}`,
-            selectedServices,
-            dataProductCoordinates,
-            plugin,
-            config,
-          );
-      values = probe.rows
-        .map((row) => row[column])
-        .filter(isNonNullable)
-        .map(String);
-    } catch (probeError) {
-      assertErrorThrown(probeError);
-      addThinkingStep(setMessages, `Could not probe values for "${column}"`);
-      values = undefined;
-    }
-    probedValues.set(column, values);
-    return values;
-  };
+  const probeColumnValues = createColumnValueProbe(
+    selectedServices,
+    dataProductCoordinates,
+    fromClause,
+    isAccessPointProbe,
+    context,
+  );
 
   await Promise.all(
     collectWhereFilterColumns(currentSql)
@@ -3794,7 +4117,7 @@ async function processAccessPointQuery(
   const selectedAPs = await selectBestServices(question, accessPoints, context);
 
   const currentAccessPoints = new Set(
-    selectedAPs.map((ap) => ap.pattern.replace(/^\//, '')),
+    selectedAPs.map((ap) => accessPointName(ap)),
   );
   const scopedContext: LegendAIOperationContext = {
     ...context,
@@ -3808,6 +4131,7 @@ async function processAccessPointQuery(
         selectedAPs,
         dataProductCoordinates,
         config,
+        question,
       ),
       VALUE_GROUNDING_TIME_BUDGET_MS,
     );
@@ -3855,9 +4179,55 @@ async function processAccessPointQuery(
   updateLastAssistant(setMessages, () => ({
     sql: finalSql,
     sqlGenTime: sqlGenTimeValue,
-    isExecuting: true,
     queriedAccessPoints: orderedAccessPointsFromSql(finalSql),
   }));
+
+  const joinKeys = canSkipExecutionOnEmptyJoin(finalSql)
+    ? extractJoinKeyColumns(finalSql)
+    : new Set<string>();
+  let disjointJoin =
+    joinKeys.size > 0
+      ? detectDisjointJoinUniverses(finalSql, selectedAPs, {
+          requireComplete: true,
+          restrictToColumns: joinKeys,
+        })
+      : undefined;
+  if (disjointJoin === undefined && joinKeys.size > 0) {
+    addThinkingStep(setMessages, 'Probing join-key overlap...');
+    disjointJoin = await withTimeout(
+      probeJoinOverlap(
+        finalSql,
+        selectedAPs,
+        joinKeys,
+        dataProductCoordinates,
+        scopedContext,
+      ),
+      JOIN_OVERLAP_PROBE_TIMEOUT_MS,
+    );
+  }
+  if (disjointJoin !== undefined) {
+    addThinkingStep(
+      setMessages,
+      'Join keys do not overlap — skipping execution',
+    );
+    await reportQueryResults(
+      {
+        currentSql: finalSql,
+        sqlResult: { columns: [], rows: [] },
+        question,
+        services: selectedAPs,
+        allAccessPoints: accessPoints,
+        zeroRowExplanation: disjointJoin,
+      },
+      metadata,
+      scopedContext,
+      startTime,
+      false,
+    );
+    return;
+  }
+
+  updateLastAssistant(setMessages, () => ({ isExecuting: true }));
 
   const execStartTime = Date.now();
   try {
@@ -3990,16 +4360,22 @@ async function processDataQuery(
   const missingParams = detectMissingServiceParams(judgedSql, selectedServices);
   if (missingParams.length > 0) {
     const sqlGenTimeValue = elapsedSeconds(startTime, 2);
+    const missingParamsReason = `Missing required parameter${missingParams.length > 1 ? 's' : ''}: ${missingParams.map((p) => p.name).join(', ')}`;
     completeThinkingSteps(setMessages);
-    addThinkingStep(
-      setMessages,
-      `Missing required parameter${missingParams.length > 1 ? 's' : ''}: ${missingParams.map((p) => p.name).join(', ')}`,
-    );
+    addThinkingStep(setMessages, missingParamsReason);
     completeThinkingSteps(setMessages);
     updateLastAssistant(setMessages, () => ({
       sql: judgedSql,
       sqlGenTime: sqlGenTimeValue,
       textAnswer: buildMissingParamsWarning(missingParams),
+      ...(hasOrchestratorFallback
+        ? {
+            fallbackAction: buildOrchestratorFallbackAction({
+              failedSql: judgedSql,
+              failedReason: missingParamsReason,
+            }),
+          }
+        : {}),
       isProcessing: false,
       isExecuting: false,
       thinkingDuration: elapsedSeconds(startTime),
@@ -4025,14 +4401,15 @@ async function processDataQuery(
   );
 
   if (execOutcome.error) {
-    const execErrorType = classifyError(new Error(execOutcome.error));
+    const execError = execOutcome.error;
+    const execErrorType = classifyError(new Error(execError));
     addThinkingStep(
       setMessages,
-      `Execution failed: ${execOutcome.error.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
+      `Execution failed: ${execError.slice(0, MAX_THINKING_ERROR_PREVIEW_LENGTH)}`,
     );
     finishWithThinkingError(
       setMessages,
-      buildExecutionErrorMessage(execOutcome.error, selectedServices),
+      buildExecutionErrorMessage(execError, selectedServices),
       startTime,
       execErrorType === LegendAIErrorType.GENERAL
         ? LegendAIErrorType.EXECUTION
@@ -4043,10 +4420,10 @@ async function processDataQuery(
       suggestedQueries: buildFallbackSuggestions(selectedServices),
       ...(hasOrchestratorFallback
         ? {
-            fallbackAction: {
-              label: ORCHESTRATOR_FALLBACK_LABEL,
-              actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-            },
+            fallbackAction: buildOrchestratorFallbackAction({
+              failedSql: execOutcome.sql,
+              failedReason: execError,
+            }),
           }
         : {}),
     }));
@@ -4217,10 +4594,7 @@ export async function processQuestion(
       );
       if (config.orchestratorUrl && dataProductCoordinates) {
         updateLastAssistant(setMessages, () => ({
-          fallbackAction: {
-            label: ORCHESTRATOR_FALLBACK_LABEL,
-            actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-          },
+          fallbackAction: buildOrchestratorFallbackAction(),
         }));
       }
       return;
@@ -4415,10 +4789,7 @@ export async function processQuestionWithIntent(
       getMetadataEnrichment(),
     );
     updateLastAssistant(setMessages, () => ({
-      fallbackAction: {
-        label: ORCHESTRATOR_FALLBACK_LABEL,
-        actionId: LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
-      },
+      fallbackAction: buildOrchestratorFallbackAction(),
     }));
     return;
   }

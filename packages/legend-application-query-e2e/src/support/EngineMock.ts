@@ -80,6 +80,12 @@ export interface CapturedEngineRequests {
   executeInputs: Record<string, unknown>[];
   /** Lambda protocol JSON posted to `jsonToGrammar/lambda`, in order. */
   lambdas: Record<string, unknown>[];
+  /**
+   * Engine endpoints forced to fail, keyed by path (e.g.
+   * `pure/v1/execution/execute`). Populate this to drive the app's error
+   * handling — see `QueryBuilderErrorHandling.spec.ts`.
+   */
+  failures: Map<string, { status: number; message: string }>;
 }
 
 /**
@@ -98,7 +104,11 @@ export interface CapturedEngineRequests {
 export const setupEngineMock = async (
   page: Page,
 ): Promise<CapturedEngineRequests> => {
-  const captured: CapturedEngineRequests = { executeInputs: [], lambdas: [] };
+  const captured: CapturedEngineRequests = {
+    executeInputs: [],
+    lambdas: [],
+    failures: new Map(),
+  };
 
   // reroute the app's engine URL to the dead mock port
   await page.route(/\/query\/config\.json$/, async (route) => {
@@ -126,6 +136,17 @@ export const setupEngineMock = async (
     // CORS preflight
     if (request.method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers: { ...CORS_HEADERS } });
+      return;
+    }
+
+    // endpoints a test has forced to fail, so the app's error handling runs
+    const failure = captured.failures.get(path);
+    if (failure) {
+      await route.fulfill({
+        status: failure.status,
+        headers: { ...CORS_HEADERS },
+        json: { status: failure.status, message: failure.message },
+      });
       return;
     }
 

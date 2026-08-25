@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-extension-dsl-diagram-studio",
-  "version": "0.0.83",
+  "version": "0.0.85",
   "description": "Legend extension for Diagram DSL Studio",
   "keywords": [
     "legend",

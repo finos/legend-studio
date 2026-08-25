@@ -58,6 +58,8 @@ export {
   attachMetadataOverview,
   elapsedSeconds,
   createMessagePair,
+  createAssistantMessage,
+  buildOrchestratorFallbackAction,
   analyzeOrchestratorResults,
   cleanLlmSqlResponse,
   isValidSqlCorrection,
@@ -92,6 +94,10 @@ export {
   wrapBareJoinAccessPoints,
 } from './stores/LegendAISqlJoinSanitizers.js';
 export {
+  accessPointName,
+  sharedColumnNames,
+} from './stores/LegendAISqlHelpers.js';
+export {
   preFilterServicesByRelevance,
   isFuzzyMatch,
   levenshteinDistance,
@@ -117,6 +123,7 @@ export {
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
+  extractServicePreFilters,
   extractModelContext,
   buildEnrichedBusinessContext,
   buildModelContextEnrichmentText,

@@ -60,6 +60,35 @@ export interface V1_PrimitiveValue extends V1_ValueSpecification {
   value: string | number | boolean;
 }
 
+export interface V1_Variable extends V1_ValueSpecification {
+  _type: 'var';
+  name: string;
+}
+
+/** A node of a graph fetch tree, e.g. one fetched property. */
+export interface V1_PropertyGraphFetchTree {
+  _type: string;
+  property: string;
+  subTrees: V1_PropertyGraphFetchTree[];
+}
+
+/** The root of a graph fetch tree, rooted at the queried class. */
+export interface V1_RootGraphFetchTree {
+  _type: string;
+  class: string;
+  subTrees: V1_PropertyGraphFetchTree[];
+}
+
+/**
+ * A wrapper the protocol uses for non-primitive instances such as graph
+ * fetch trees.
+ */
+export interface V1_ClassInstance extends V1_ValueSpecification {
+  _type: 'classInstance';
+  type: string;
+  value: V1_RootGraphFetchTree;
+}
+
 export interface V1_ExecuteInput {
   function: V1_Lambda;
   mapping: string;
@@ -116,6 +145,17 @@ export const getValue = (
     ? (node as V1_PrimitiveValue).value
     : fail(`expected a primitive value, got '${node?._type ?? 'nothing'}'`);
 
+/**
+ * The name of a variable reference, e.g. the query parameter a filter
+ * compares against.
+ */
+export const getVariableName = (
+  node: V1_ValueSpecification | undefined,
+): string =>
+  node?._type === 'var'
+    ? (node as V1_Variable).name
+    : fail(`expected a variable, got '${node?._type ?? 'nothing'}'`);
+
 /** The element a `getAll()` targets, e.g. `test::COVIDData`. */
 export const getElementPath = (
   node: V1_ValueSpecification | undefined,
@@ -161,6 +201,25 @@ export const getChainedFunction = (
   }
   return asFunction(current);
 };
+
+/** The graph fetch tree carried by a `classInstance` node. */
+export const asGraphFetchTree = (
+  node: V1_ValueSpecification | undefined,
+): V1_RootGraphFetchTree => {
+  if (node?._type !== 'classInstance') {
+    fail(`expected a class instance, got '${node?._type ?? 'nothing'}'`);
+  }
+  const instance = node as V1_ClassInstance;
+  if (instance.type !== 'rootGraphFetchTree') {
+    fail(`expected a graph fetch tree, got '${instance.type}'`);
+  }
+  return instance.value;
+};
+
+/** The properties fetched at the top level of a graph fetch tree. */
+export const getGraphFetchProperties = (
+  tree: V1_RootGraphFetchTree,
+): string[] => tree.subTrees.map((subTree) => subTree.property);
 
 /** The string values of a collection, e.g. projected column names. */
 export const getCollectionValues = (

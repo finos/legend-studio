@@ -18,8 +18,9 @@ import { describe, test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import {
   extractTDSServicesFromDataProduct,
+  extractTDSServicesFromDataProductSource,
   inferAccessPointRelationships,
-} from '../DataProduct/DataProductLegendAIIntegration.js';
+} from '../../stores/DataProduct/DataProductLegendAISchema.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
 import {
   V1_ServiceExecutableInfo,
@@ -35,11 +36,22 @@ import {
   V1_Multiplicity,
   V1_DatabaseDDL,
   V1_LakehouseAccessPoint,
+  type V1_AccessPoint,
+  V1_DataProductArtifact,
+  V1_AccessPointGroupInfo,
+  V1_AccessPointImplementation,
+  V1_RelationElement,
+  V1_RelationRowTestData,
   V1_CInteger,
+  V1_TaggedValue,
+  V1_TagPtr,
+  CORE_PURE_PATH,
+  PURE_DOC_TAG,
   RawLambda,
   VariableExpression,
   Multiplicity,
 } from '@finos/legend-graph';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import { TDSServiceSourceType } from '@finos/legend-lego/legend-ai';
 
 function makeTDSColumn(
@@ -261,12 +273,21 @@ function makeRelationTypeColumn(
     nullable?: boolean;
     typeVariableValues?: number[];
     description?: string;
+    docTaggedValue?: string;
   },
 ): V1_RelationTypeColumn {
   const col = new V1_RelationTypeColumn();
   col.name = name;
   if (opts?.description !== undefined) {
     col.description = opts.description;
+  }
+  if (opts?.docTaggedValue !== undefined) {
+    const taggedValue = new V1_TaggedValue();
+    taggedValue.tag = new V1_TagPtr();
+    taggedValue.tag.profile = CORE_PURE_PATH.PROFILE_DOC;
+    taggedValue.tag.value = PURE_DOC_TAG;
+    taggedValue.value = opts.docTaggedValue;
+    col.taggedValues = [taggedValue];
   }
   const gt = new V1_GenericType();
   const pt = new V1_PackageableType();
@@ -563,6 +584,41 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
     );
   });
 
+  test('falls back to the doc tagged value when the column has no description', async () => {
+    const apState = makeAccessPointState(
+      'positions',
+      [
+        makeRelationTypeColumn('id', 'String', {
+          docTaggedValue: 'Unique position identifier',
+        }),
+      ],
+      { title: 'Positions' },
+    );
+    const result = await extractTDSServicesFromDataProduct(
+      makeViewerStateStub([], undefined, [makeApgState('group1', [apState])]),
+    );
+    expect(result[0]?.columns[0]?.documentation).toBe(
+      'Unique position identifier',
+    );
+  });
+
+  test('prefers the column description over the doc tagged value', async () => {
+    const apState = makeAccessPointState(
+      'positions',
+      [
+        makeRelationTypeColumn('id', 'String', {
+          description: 'From description',
+          docTaggedValue: 'From doc tag',
+        }),
+      ],
+      { title: 'Positions' },
+    );
+    const result = await extractTDSServicesFromDataProduct(
+      makeViewerStateStub([], undefined, [makeApgState('group1', [apState])]),
+    );
+    expect(result[0]?.columns[0]?.documentation).toBe('From description');
+  });
+
   test('appends classification to description for LakehouseAccessPoint', async () => {
     const apState = makeAccessPointState(
       'positions',
@@ -808,5 +864,401 @@ describe(unitTest('inferAccessPointRelationships'), () => {
     expect(result[1]?.leftAccessPoint).toBe('Trades');
     expect(result[1]?.rightAccessPoint).toBe('Settlements');
     expect(result[1]?.sharedColumns).toEqual(['tradeId']);
+  });
+
+  test('stays bounded when every access point shares a universal column', () => {
+    const services = Array.from({ length: 300 }, (_, index) => ({
+      title: `AP_${index}`,
+      pattern: `/ap/${index}`,
+      columns: [{ name: 'businessDate' }, { name: `metric_${index}` }],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+    }));
+
+    expect(inferAccessPointRelationships(services)).toEqual([]);
+  });
+
+  test('reports selective keys and drops universal ones on a large product', () => {
+    const services = Array.from({ length: 300 }, (_, index) => ({
+      title: `AP_${index}`,
+      pattern: `/ap/${index}`,
+      columns: [
+        { name: 'businessDate' },
+        ...(index < 3 ? [{ name: 'tradeId' }] : []),
+      ],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+    }));
+
+    const result = inferAccessPointRelationships(services);
+    expect(result).toHaveLength(3);
+    expect(result[0]?.leftAccessPoint).toBe('AP_0');
+    expect(result[0]?.rightAccessPoint).toBe('AP_1');
+    expect(result[0]?.sharedColumns).toEqual(['tradeId', 'businessDate']);
+  });
+
+  test('leads with the join key when a pair shares many convention columns', () => {
+    const conventionColumns = Array.from({ length: 10 }, (_, index) => ({
+      name: `auditField${index}`,
+    }));
+    const services = Array.from({ length: 20 }, (_, index) => ({
+      title: `AP_${index}`,
+      pattern: `/ap/${index}`,
+      columns: [
+        ...conventionColumns,
+        ...(index < 2 ? [{ name: 'cusip' }] : []),
+      ],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+    }));
+
+    const result = inferAccessPointRelationships(services);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.sharedColumns[0]).toBe('cusip');
+  });
+
+  test('prefers access points in the same group when over the cap', () => {
+    const services = Array.from({ length: 40 }, (_, index) => ({
+      title: `AP_${index}`,
+      pattern: `/ap/${index}`,
+      columns: index < 15 ? [{ name: 'entityId' }] : [{ name: `own_${index}` }],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+      ...(index === 13 || index === 14
+        ? { accessPointGroupTitle: 'Reference' }
+        : {}),
+    }));
+
+    const result = inferAccessPointRelationships(services);
+    expect(result).toHaveLength(25);
+    expect(result).toContainEqual({
+      leftAccessPoint: 'AP_13',
+      rightAccessPoint: 'AP_14',
+      sharedColumns: ['entityId'],
+    });
+  });
+
+  test('caps the shared columns reported for a single pair', () => {
+    const columns = Array.from({ length: 12 }, (_, index) => ({
+      name: `key_${index}`,
+    }));
+    const services = [
+      {
+        title: 'Left',
+        pattern: '/left',
+        columns,
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+      {
+        title: 'Right',
+        pattern: '/right',
+        columns,
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      },
+    ];
+
+    expect(inferAccessPointRelationships(services)[0]?.sharedColumns).toEqual([
+      'key_0',
+      'key_1',
+      'key_2',
+      'key_3',
+      'key_4',
+      'key_5',
+      'key_6',
+      'key_7',
+    ]);
+  });
+});
+
+describe(unitTest('extractTDSServicesFromDataProductSource'), () => {
+  const makeAccessPoint = (
+    id: string,
+    opts?: { title?: string; classification?: string },
+  ): V1_AccessPoint => {
+    const ap = new V1_LakehouseAccessPoint();
+    ap.id = id;
+    ap.title = opts?.title;
+    if (opts?.classification !== undefined) {
+      ap.classification = opts.classification;
+    }
+    return ap;
+  };
+
+  const makeArtifact = (
+    groupId: string,
+    implementations: V1_AccessPointImplementation[],
+  ): V1_DataProductArtifact => {
+    const group = new V1_AccessPointGroupInfo();
+    group.id = groupId;
+    group.accessPointImplementations = implementations;
+    const artifact = new V1_DataProductArtifact();
+    artifact.accessPointGroups = [group];
+    return artifact;
+  };
+
+  const makeImplementation = (
+    id: string,
+    opts?: {
+      columns?: V1_RelationTypeColumn[];
+      relationElement?: { columns: string[]; rows: { values: string[] }[] };
+    },
+  ): V1_AccessPointImplementation => {
+    const impl = new V1_AccessPointImplementation();
+    impl.id = id;
+    if (opts?.columns) {
+      const relationType = new V1_RelationType();
+      relationType.columns = opts.columns;
+      const typeArgument = new V1_GenericType();
+      typeArgument.rawType = relationType;
+      const genericType = new V1_GenericType();
+      genericType.typeArguments = [typeArgument];
+      impl.lambdaGenericType = genericType;
+    }
+    if (opts?.relationElement) {
+      const relationElement = new V1_RelationElement();
+      relationElement.columns = opts.relationElement.columns;
+      relationElement.rows = opts.relationElement.rows.map((row) => {
+        const rowData = new V1_RelationRowTestData();
+        rowData.values = row.values;
+        return rowData;
+      });
+      impl.relationElement = relationElement;
+    }
+    return impl;
+  };
+
+  test('reads columns from the artifact without any engine-resolved state', async () => {
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: 'Group',
+          accessPoints: [
+            {
+              accessPoint: makeAccessPoint('positions', { title: 'Positions' }),
+            },
+          ],
+        },
+      ],
+      artifact: makeArtifact('grp', [
+        makeImplementation('positions', {
+          columns: [makeRelationTypeColumn('positionId', 'String')],
+        }),
+      ]),
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services).toHaveLength(1);
+    expect(services[0]?.title).toBe('Positions');
+    expect(services[0]?.accessPointGroupTitle).toBe('Group');
+    expect(services[0]?.columns[0]?.name).toBe('positionId');
+  });
+
+  test('takes titles and classification from the product, columns from the artifact', async () => {
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: 'Group',
+          accessPoints: [
+            {
+              accessPoint: makeAccessPoint('ap', {
+                title: 'Nice Title',
+                classification: 'MNPI',
+              }),
+            },
+          ],
+        },
+      ],
+      artifact: makeArtifact('grp', [
+        makeImplementation('ap', {
+          columns: [makeRelationTypeColumn('id', 'String')],
+        }),
+      ]),
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services[0]?.title).toBe('Nice Title');
+    expect(services[0]?.description).toContain('MNPI');
+  });
+
+  test('enriches sample values from the artifact relation element', async () => {
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: undefined,
+          accessPoints: [{ accessPoint: makeAccessPoint('ap') }],
+        },
+      ],
+      artifact: makeArtifact('grp', [
+        makeImplementation('ap', {
+          columns: [makeRelationTypeColumn('region', 'String')],
+          relationElement: {
+            columns: ['region'],
+            rows: [{ values: ['AMER'] }, { values: ['EMEA'] }],
+          },
+        }),
+      ]),
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services[0]?.columns[0]?.sampleValues).toBe('AMER, EMEA');
+  });
+
+  test('prefers the caller resolved relation element over the artifact one', async () => {
+    const engineRelationElement = new V1_RelationElement();
+    engineRelationElement.columns = ['region'];
+    const engineRow = new V1_RelationRowTestData();
+    engineRow.values = ['APAC'];
+    engineRelationElement.rows = [engineRow];
+
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: undefined,
+          accessPoints: [
+            {
+              accessPoint: makeAccessPoint('ap'),
+              relationElement: engineRelationElement,
+            },
+          ],
+        },
+      ],
+      artifact: makeArtifact('grp', [
+        makeImplementation('ap', {
+          columns: [makeRelationTypeColumn('region', 'String')],
+          relationElement: {
+            columns: ['region'],
+            rows: [{ values: ['AMER'] }, { values: ['EMEA'] }],
+          },
+        }),
+      ]),
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services[0]?.columns[0]?.sampleValues).toBe('APAC');
+  });
+
+  test('extracts sample query parameters when a graph manager is supplied', async () => {
+    const queryCode = '{orderId: String[1]| $orderId}';
+    const stub = makeViewerStateStub(
+      [],
+      new Map([[queryCode, new RawLambda([{ name: 'orderId' }], undefined)]]),
+    );
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [],
+      artifact: undefined,
+      sampleQueries: [
+        makeSampleQuery(
+          'Svc',
+          '/svc',
+          [makeTDSColumn('id', { type: 'String' })],
+          {
+            executable: queryCode,
+          },
+        ),
+      ],
+      elementDocs: [],
+      graphManagerState: stub.graphManagerState,
+    });
+
+    expect(services).toHaveLength(1);
+    expect(services[0]?.parameters).toEqual(['orderId']);
+    expect(services[0]?.parameterExtractionFailed).toBeUndefined();
+  });
+
+  test('prefers an engine-resolved relation type over the artifact', async () => {
+    const engineResolved = new V1_RelationType();
+    engineResolved.columns = [makeRelationTypeColumn('fromEngine', 'String')];
+
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: undefined,
+          accessPoints: [
+            {
+              accessPoint: makeAccessPoint('ap'),
+              relationType: engineResolved,
+            },
+          ],
+        },
+      ],
+      artifact: makeArtifact('grp', [
+        makeImplementation('ap', {
+          columns: [makeRelationTypeColumn('fromArtifact', 'String')],
+        }),
+      ]),
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services[0]?.columns.map((col) => col.name)).toEqual(['fromEngine']);
+  });
+
+  test('uses an engine-resolved relation type when there is no artifact', async () => {
+    const engineResolved = new V1_RelationType();
+    engineResolved.columns = [makeRelationTypeColumn('fromEngine', 'String')];
+
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: undefined,
+          accessPoints: [
+            {
+              accessPoint: makeAccessPoint('ap'),
+              relationType: engineResolved,
+            },
+          ],
+        },
+      ],
+      artifact: undefined,
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services).toHaveLength(1);
+    expect(services[0]?.columns.map((col) => col.name)).toEqual(['fromEngine']);
+  });
+
+  test('emits nothing for an access point the artifact has no columns for', async () => {
+    const services = await extractTDSServicesFromDataProductSource({
+      productPath: 'test::DataProduct',
+      accessPointGroups: [
+        {
+          id: 'grp',
+          title: undefined,
+          accessPoints: [{ accessPoint: makeAccessPoint('ap') }],
+        },
+      ],
+      artifact: makeArtifact('grp', []),
+      sampleQueries: [],
+      elementDocs: [],
+      graphManagerState: TEST__getTestGraphManagerState(),
+    });
+
+    expect(services).toEqual([]);
   });
 });
