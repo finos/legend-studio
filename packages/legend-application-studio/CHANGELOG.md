@@ -1,5 +1,23 @@
 # @finos/legend-application-studio
 
+## 28.21.35
+
+## 28.21.34
+
+## 28.21.33
+
+### Patch Changes
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Remove diagrams and featuredElements from modelAPG studio form-mode
+
+## 28.21.32
+
+### Patch Changes
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize "download project grammar with dependency" in the developer tools panel: dependency grammar is now fetched from Depot as a single `V1_PureModelContextData` payload and transformed to Pure code in one engine call, instead of building a metamodel graph and round-tripping element-by-element. Adds `DepotServerClient.collectDependencyEntitiesAsPureModelContextData` and `AbstractPureGraphManager.protocolToPureCode` (backed by the engine's `transformProtocolGraphToCode`). Also makes the entire download-grammar action row (icon + label) clickable.
+
+- [#5440](https://github.com/finos/legend-studio/pull/5440) [`6c85092`](https://github.com/finos/legend-studio/commit/6c850924de24587e14e4686905216708f17c0c58) ([@Rakan1837](https://github.com/Rakan1837)) - Add form-mode editor for the Availability lakehouse element, including a Definition tab (grammar view) and a Testing tab backed by the shared testable framework, with graph/protocol support for `Availability` roundtrip.
+
 ## 28.21.31
 
 ## 28.21.30

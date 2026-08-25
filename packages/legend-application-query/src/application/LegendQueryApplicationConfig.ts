@@ -161,7 +161,8 @@ export interface LegendQueryApplicationConfigurationData
     url: string;
   };
   legendAI?: {
-    url: string;
+    url?: string;
+    agentURL?: string;
   };
 }
 
@@ -178,6 +179,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly marketplaceProductionParallelUrl?: string;
   readonly lakehouseContractUrl?: string;
   readonly legendAIUrl?: string;
+  readonly legendAIAgentUrl?: string;
   readonly studioInstances: LegendStudioApplicationInstanceConfigurationData[] =
     [];
 
@@ -266,10 +268,17 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
       );
     }
 
-    // legend AI
+    // legend AI (AI-assisted features such as query title/description suggester)
     if (input.configData.legendAI?.url) {
       this.legendAIUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.legendAI.url,
+      );
+    }
+
+    // legend AI agent chat
+    if (input.configData.legendAI?.agentURL) {
+      this.legendAIAgentUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.legendAI.agentURL,
       );
     }
 

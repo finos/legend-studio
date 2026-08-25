@@ -158,7 +158,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
                       executionContextKey:
                         e.executionContextKey ??
                         queryBuilderState.dataSpace.defaultExecutionContext
-                          .name,
+                          ?.name,
                     }) as CuratedTemplateQuery,
                 )
               : [];
@@ -175,7 +175,7 @@ export class DSL_DataSpace_LegendApplicationPlugin
               templateQuery.executionContextKey
             ) {
               const executionContext =
-                queryBuilderState.dataSpace.executionContexts.find(
+                queryBuilderState.dataSpace.executionContexts?.find(
                   (c) => c.name === templateQuery.executionContextKey,
                 );
               if (executionContext) {

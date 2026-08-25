@@ -66,7 +66,13 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
   expect(element instanceof DataSpace).toEqual(true);
   const dataspace = guaranteeType(element, DataSpace);
   expect(dataspace.executables).toHaveLength(3);
-  const defaultMapping = dataspace.defaultExecutionContext.mapping.value;
+  const defaultMapping = guaranteeNonNullable(
+    guaranteeNonNullable(
+      dataspace.defaultExecutionContext,
+      'Default execution context is missing',
+    ).mapping,
+    'Default execution context mapping is missing',
+  ).value;
   expect(defaultMapping.path).toEqual(
     'showcase::northwind::mapping::NorthwindMapping',
   );

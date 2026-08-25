@@ -19,58 +19,64 @@ import type {
   NavigationZone,
 } from '@finos/legend-application';
 import {
+  type DataProductAccessType,
   type GraphManagerState,
+  type V1_BatchLambdaRelationTypeResult,
   type V1_DataProduct,
   type V1_DataProductDiagram,
+  type V1_DiagramInfo,
   type V1_EngineServerClient,
   type V1_EntitlementsDataProductDetails,
   type V1_EntitlementsDataProductOrigin,
-  type V1_PureModelContext,
-  PureClientVersion,
-  V1_AdHocDeploymentDataProductOrigin,
   type V1_NativeModelAccessInfo,
+  type V1_PackageableElement,
+  type V1_PureModelContext,
+  type V1_RawLambda,
+  type V1_SampleQuery,
+  GraphDataWithOrigin,
+  LegendSDLC,
+  PureClientVersion,
+  resolvePackagePathAndElementName,
+  V1_AdHocDeploymentDataProductOrigin,
+  V1_BatchLambdaRelationTypeInput,
   V1_DATA_PRODUCT_ELEMENT_PROTOCOL_TYPE,
   V1_DataProductArtifact,
+  V1_EngineRuntime,
+  V1_LakehouseAccessPoint,
   V1_LegendSDLC,
+  V1_Mapping,
   V1_ModelAccessPointGroup,
+  V1_ModelAccessPointGroupInfo,
+  V1_MultiExecutionServiceExecutableInfo,
+  V1_PackageableRuntime,
   V1_Protocol,
   V1_PureGraphManager,
   V1_PureModelContextPointer,
   V1_SdlcDeploymentDataProductOrigin,
-  type V1_SampleQuery,
-  V1_Mapping,
-  V1_PackageableRuntime,
-  V1_EngineRuntime,
-  resolvePackagePathAndElementName,
-  type V1_DiagramInfo,
-  type V1_PackageableElement,
-  V1_ModelAccessPointGroupInfo,
   V1_ServiceExecutableInfo,
-  V1_MultiExecutionServiceExecutableInfo,
-  GraphDataWithOrigin,
-  LegendSDLC,
-  type DataProductAccessType,
+  V1_buildBatchLambdaRelationTypeResult,
 } from '@finos/legend-graph';
 import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
 import {
-  ActionState,
-  assertErrorThrown,
-  guaranteeType,
   type GeneratorFn,
   type PlainObject,
   type UserSearchService,
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+  guaranteeType,
+  isNonNullable,
   LogEvent,
   uniq,
-  isNonNullable,
 } from '@finos/legend-shared';
 import { DataProductAPGState } from './DataProductAPGState.js';
 import type { DataProductConfig } from './DataProductConfig.js';
 import {
-  StoredFileGeneration,
   type ProjectGAVCoordinates,
+  StoredFileGeneration,
 } from '@finos/legend-storage';
 import {
   type DepotServerClient,
@@ -80,9 +86,9 @@ import {
 import { DataProductViewerModelsDocumentationState } from './DataProductModelsDocumentationState.js';
 import { DataProductDocumentationState } from './DataProductDocumentationState.js';
 import {
+  type Diagram,
   getDiagram,
   DiagramAnalysisResult,
-  type Diagram,
 } from '@finos/legend-extension-dsl-diagram';
 import type { ViewerModelsDocumentationState } from '@finos/legend-lego/model-documentation';
 import { DataProductViewerDiagramViewerState } from './DataProductViewerDiagramViewerState.js';
@@ -90,8 +96,8 @@ import type { RegistryServerClient } from '@finos/legend-server-marketplace';
 import type { DataProductDataAccessState } from './DataProductDataAccessState.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
-  DEFAULT_LEGEND_AI_CONFIG,
   type LegendAIConfig,
+  DEFAULT_LEGEND_AI_CONFIG,
 } from '@finos/legend-lego/legend-ai';
 
 export const APG_AUTO_COLLAPSE_THRESHOLD = 20;
@@ -152,7 +158,14 @@ export class DataProductViewerState extends BaseViewerState<
     | undefined;
   dataProductDataAccessState: DataProductDataAccessState | undefined;
 
+  batchRelationTypePromise: Promise<V1_BatchLambdaRelationTypeResult> =
+    Promise.resolve({
+      results: new Map(),
+      errors: new Map(),
+    });
+
   readonly fetchingDataProductArtifactState = ActionState.create();
+  readonly fetchingBatchRelationTypeState = ActionState.create();
 
   constructor(
     product: V1_DataProduct,
@@ -209,6 +222,7 @@ export class DataProductViewerState extends BaseViewerState<
       nativeModelAccessDataAccessState: observable,
       legendAIConfig: observable,
       dataProductDataAccessState: observable,
+      batchRelationTypePromise: observable,
       setDataProductDataAccessState: action,
       init: flow,
       isAllApgsCollapsed: computed,
@@ -330,7 +344,7 @@ export class DataProductViewerState extends BaseViewerState<
   getModelAccessPointDiagrams(): DiagramAnalysisResult[] {
     const modelAPG = this.getModelAccessPointGroup();
 
-    if (!modelAPG || modelAPG.diagrams.length === 0) {
+    if (!modelAPG?.diagrams?.length) {
       return [];
     }
 
@@ -589,6 +603,41 @@ export class DataProductViewerState extends BaseViewerState<
           : undefined;
   }
 
+  async fetchBatchRelationTypeFromEngine(): Promise<V1_BatchLambdaRelationTypeResult> {
+    const entries: [string, V1_RawLambda][] = [];
+    this.apgStates.forEach((apgState) => {
+      apgState.accessPointStates.forEach((apState) => {
+        if (apState.accessPoint instanceof V1_LakehouseAccessPoint) {
+          entries.push([
+            `${apgState.apg.id}::${apState.accessPoint.id}`,
+            apState.accessPoint.func,
+          ]);
+        }
+      });
+    });
+    this.fetchingBatchRelationTypeState.inProgress();
+    try {
+      const entitlementsOrigin = this.entitlementsDataProductDetails?.origin;
+      const model = guaranteeNonNullable(
+        this.getAccessPointModel(this.projectGAV, entitlementsOrigin),
+      );
+      const response = await this.engineServerClient.batchLambdasRelationType(
+        V1_BatchLambdaRelationTypeInput.serialization.toJson(
+          new V1_BatchLambdaRelationTypeInput(
+            model,
+            Object.fromEntries(entries),
+          ),
+        ),
+      );
+      return V1_buildBatchLambdaRelationTypeResult(response);
+    } catch (error) {
+      assertErrorThrown(error);
+      return { results: new Map() };
+    } finally {
+      this.fetchingBatchRelationTypeState.complete();
+    }
+  }
+
   async fetchDataProductArtifact(): Promise<
     V1_DataProductArtifact | undefined
   > {
@@ -718,15 +767,17 @@ export class DataProductViewerState extends BaseViewerState<
       ? Promise.resolve(prefetchedArtifact)
       : this.fetchDataProductArtifact();
     this.entitlementsDataProductDetails = entitlementsDataProductDetails;
-    const dataProductArtifact = (yield this.dataProductArtifactPromise) as
-      | V1_DataProductArtifact
-      | undefined;
-    this.dataProductArtifact = dataProductArtifact;
 
     const isSdlc =
       prefetchedArtifact !== undefined ||
       entitlementsDataProductDetails?.origin instanceof
         V1_SdlcDeploymentDataProductOrigin;
+
+    this.batchRelationTypePromise = this.fetchBatchRelationTypeFromEngine();
+    const dataProductArtifact = (yield this.dataProductArtifactPromise) as
+      | V1_DataProductArtifact
+      | undefined;
+    this.dataProductArtifact = dataProductArtifact;
 
     const modelAccessPointGroupInfo =
       dataProductArtifact?.accessPointGroups.find(

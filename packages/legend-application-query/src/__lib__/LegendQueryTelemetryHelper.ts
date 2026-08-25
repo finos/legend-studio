@@ -30,7 +30,7 @@ type Query_TelemetryData = {
     groupId: string;
     artifactId: string;
   };
-};
+} & Record<string, unknown>;
 
 type QueryGraphInitialization_TelemetryData = Query_TelemetryData & {
   graph: GraphInitializationReport;

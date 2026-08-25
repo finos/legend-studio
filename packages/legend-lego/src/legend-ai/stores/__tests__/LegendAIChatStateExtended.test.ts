@@ -33,9 +33,12 @@ import {
   addThinkingStep,
   completeThinkingSteps,
   finishWithThinkingError,
+  isProductOverviewQuestion,
+  buildAccessPointCatalog,
 } from '../LegendAIChatProcessors.js';
 import {
   type LegendAIMessage,
+  type TDSServiceSchema,
   LegendAIMessageRole,
   LegendAIQuestionIntent,
   LegendAIErrorType,
@@ -43,6 +46,7 @@ import {
 } from '../../LegendAITypes.js';
 import {
   type LegendAIOrchestratorDataProductCoordinates,
+  type LegendAI_LegendApplicationPlugin_Extension,
   LegendAIJudgeVerdict,
 } from '../../LegendAI_LegendApplicationPlugin_Extension.js';
 import type { QueryExplicitExecutionContextInfo } from '@finos/legend-graph';
@@ -461,7 +465,7 @@ describe(unitTest('processQuestion — error handling'), () => {
     });
 
     await processQuestion(
-      'What data does LSEG Programmatic News offer and how can I use it?',
+      'What data does Market News offer and how can I use it?',
       TEST_DATA__legendAIServices,
       'com.test:prod:1.0.0',
       TEST_DATA__legendAIMetadata,
@@ -621,6 +625,30 @@ describe(unitTest('processQuestionWithIntent — metadata intent'), () => {
 describe(unitTest('buildConversationHistory'), () => {
   test('returns empty array for no messages', () => {
     expect(buildConversationHistory([])).toEqual([]);
+  });
+
+  test('keeps only the most recent turns so prompts stay bounded', () => {
+    const messages: LegendAIMessage[] = Array.from(
+      { length: 25 },
+      (_, index) => index,
+    ).flatMap((index) => [
+      {
+        id: `user-${index}`,
+        role: LegendAIMessageRole.USER,
+        text: `question ${index}`,
+      },
+      {
+        ...createMessagePair('placeholder')[1],
+        id: `assistant-${index}`,
+        textAnswer: `answer ${index}`,
+        isProcessing: false,
+      },
+    ]);
+
+    const history = buildConversationHistory(messages);
+    expect(history).toHaveLength(10);
+    expect(history[0]?.question).toBe('question 15');
+    expect(history[9]?.question).toBe('question 24');
   });
 
   test('pairs user+assistant with SQL as DATA_QUERY', () => {
@@ -883,6 +911,92 @@ describe(unitTest('handleMetadataQuestion'), () => {
     const msg = TEST__getAssistantMessage(getMessages(), 1);
     expect(msg.suggestedQueries).toEqual([]);
   });
+
+  test('prompts with the access points relevant to the question, not the first few', async () => {
+    const { setter } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const services: TDSServiceSchema[] = Array.from(
+      { length: 300 },
+      (_, index) => ({
+        title: index === 250 ? 'BOND_PRICING_SCORES' : `AP_${index}`,
+        pattern: `/ap/${index}`,
+        columns: [{ name: 'businessDate', type: 'Date' }],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      }),
+    );
+    const buildMetadataPrompt =
+      createMock<
+        LegendAI_LegendApplicationPlugin_Extension['buildMetadataPrompt']
+      >().mockReturnValue('metadata prompt');
+    const plugin = TEST__createMockLegendAIPlugin({
+      buildMetadataPrompt,
+      callLLM: createMock().mockResolvedValue('Answer'),
+    });
+
+    await handleMetadataQuestion(
+      'what are the bond pricing scores?',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+      true,
+      services,
+    );
+
+    const selected = buildMetadataPrompt.mock.calls[0]?.[3];
+    expect(selected).toHaveLength(30);
+    expect(selected?.map((service) => service.title)).toContain(
+      'BOND_PRICING_SCORES',
+    );
+  });
+
+  test('trims the prompt but still catalogs every access point in the answer', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const services: TDSServiceSchema[] = Array.from(
+      { length: 120 },
+      (_, index) => ({
+        title: `AP${String(index).padStart(3, '0')}`,
+        pattern: `/ap/${index}`,
+        columns: [{ name: 'businessDate', type: 'Date' }],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      }),
+    );
+    const buildMetadataPrompt =
+      createMock<
+        LegendAI_LegendApplicationPlugin_Extension['buildMetadataPrompt']
+      >().mockReturnValue('metadata prompt');
+    const plugin = TEST__createMockLegendAIPlugin({
+      buildMetadataPrompt,
+      callLLM: createMock().mockResolvedValue('Thematic overview.'),
+    });
+
+    await handleMetadataQuestion(
+      'what does this product offer?',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      Date.now(),
+      true,
+      services,
+    );
+
+    expect(buildMetadataPrompt.mock.calls[0]?.[3]).toHaveLength(30);
+    const { textAnswer } = TEST__getAssistantMessage(getMessages(), 1);
+    expect(textAnswer).toContain('## All 120 access points');
+    expect(textAnswer).toContain('- AP000 (1 column)');
+    expect(textAnswer).toContain('- AP119 (1 column)');
+  });
 });
 
 // ─── generateAndJudgeSql ────────────────────────────────────────────────────
@@ -1030,3 +1144,144 @@ describe(unitTest('executeSqlAndReport — success'), () => {
     expect(msg.isProcessing).toBe(false);
   });
 });
+
+describe(unitTest('isProductOverviewQuestion'), () => {
+  test('true for overview / listing questions', () => {
+    expect(isProductOverviewQuestion('what does this product offer?')).toBe(
+      true,
+    );
+    expect(isProductOverviewQuestion('list the access points')).toBe(true);
+    expect(isProductOverviewQuestion('list all access points')).toBe(true);
+    expect(isProductOverviewQuestion('show me the available services')).toBe(
+      true,
+    );
+    expect(isProductOverviewQuestion('give me an overview')).toBe(true);
+    expect(isProductOverviewQuestion('what data is available?')).toBe(true);
+  });
+
+  test('false for targeted or data questions', () => {
+    expect(isProductOverviewQuestion('get the top 10 orders')).toBe(false);
+    expect(isProductOverviewQuestion('what columns does Address have')).toBe(
+      false,
+    );
+    expect(
+      isProductOverviewQuestion('show people in Building A on floor 2'),
+    ).toBe(false);
+  });
+});
+
+describe(unitTest('buildAccessPointCatalog'), () => {
+  const accessPoints: TDSServiceSchema[] = [
+    {
+      title: 'Address',
+      pattern: '/Address',
+      columns: [{ name: 'a' }, { name: 'b' }],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+      accessPointGroupTitle: 'Core',
+    },
+    {
+      title: 'PHONE_NUMBER',
+      pattern: '/PHONE_NUMBER',
+      columns: [{ name: 'p' }],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+      accessPointGroupTitle: 'Contact',
+    },
+  ];
+
+  test('lists every access point grouped and sorted, with counts and the right noun', () => {
+    expect(buildAccessPointCatalog(accessPoints)).toBe(
+      [
+        '## All 2 access points',
+        '',
+        '### Contact',
+        '- PHONE_NUMBER (1 column)',
+        '',
+        '### Core',
+        '- Address (2 columns)',
+      ].join('\n'),
+    );
+  });
+
+  test('caps the listing and reports how many were omitted', () => {
+    const many: TDSServiceSchema[] = Array.from({ length: 205 }, (_, i) => ({
+      title: `AP${String(i).padStart(3, '0')}`,
+      pattern: `/AP${i}`,
+      columns: [{ name: 'c' }],
+      parameters: [],
+      sourceType: TDSServiceSourceType.ACCESS_POINT,
+    }));
+    const catalog = buildAccessPointCatalog(many);
+    expect(catalog).toContain('## 200 of 205 access points');
+    expect(catalog).toContain(
+      '- ...and 5 more (ask about a specific group to see them).',
+    );
+    expect(catalog).not.toContain('- AP200 (1 column)');
+  });
+});
+
+describe(
+  unitTest('handleMetadataQuestion — deterministic catalog append'),
+  () => {
+    const manyAccessPoints: TDSServiceSchema[] = Array.from(
+      { length: 12 },
+      (_, i) => ({
+        title: `AP${String(i).padStart(2, '0')}`,
+        pattern: `/AP${i}`,
+        columns: [{ name: 'c' }],
+        parameters: [],
+        sourceType: TDSServiceSourceType.ACCESS_POINT,
+      }),
+    );
+
+    test('appends the complete catalog for an overview question on a large product', async () => {
+      const { setter, getMessages } = TEST__createMockSetter();
+      TEST__seedAssistant(setter);
+      const plugin = TEST__createMockLegendAIPlugin({
+        callLLM: createMock().mockResolvedValue('Short thematic overview.'),
+      });
+      await handleMetadataQuestion(
+        'what does this product offer?',
+        TEST_DATA__legendAIMetadata,
+        {
+          config: TEST_DATA__legendAIConfig,
+          plugin,
+          history: [],
+          setMessages: setter,
+        },
+        0,
+        true,
+        manyAccessPoints,
+      );
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
+      expect(msg.textAnswer).toContain('Short thematic overview.');
+      expect(msg.textAnswer).toContain('## All 12 access points');
+      expect(msg.textAnswer).toContain('- AP00 (1 column)');
+      expect(msg.textAnswer).toContain('- AP11 (1 column)');
+    });
+
+    test('does not append the catalog for a targeted question', async () => {
+      const { setter, getMessages } = TEST__createMockSetter();
+      TEST__seedAssistant(setter);
+      const plugin = TEST__createMockLegendAIPlugin({
+        callLLM: createMock().mockResolvedValue('Address has columns a, b.'),
+      });
+      await handleMetadataQuestion(
+        'what columns does Address have',
+        TEST_DATA__legendAIMetadata,
+        {
+          config: TEST_DATA__legendAIConfig,
+          plugin,
+          history: [],
+          setMessages: setter,
+        },
+        0,
+        true,
+        manyAccessPoints,
+      );
+      const msg = TEST__getAssistantMessage(getMessages(), 1);
+      expect(msg.textAnswer).toBe('Address has columns a, b.');
+    });
+  },
+);

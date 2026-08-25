@@ -38,6 +38,7 @@ import {
   METADATA_SIGNAL_PATTERNS,
   DATA_QUERY_SIGNAL_PATTERNS,
   buildColumnDefsFromNames,
+  parseTDSColumnDoc,
   extractParameterSchemas,
   type LegendAIServiceSummary,
   type LegendAIAccessPointInfo,
@@ -536,5 +537,30 @@ describe(unitTest('extractParameterSchemas'), () => {
     expect(result.parameterExtractionFailed).toBe(false);
     expect(result.parameters).toEqual([]);
     expect(result.parameterSchemas).toEqual([]);
+  });
+});
+
+describe(unitTest('parseTDSColumnDoc'), () => {
+  test('splits documentation from sample values', () => {
+    expect(parseTDSColumnDoc('Ticker symbol -- e.g. AAA, BBB')).toEqual({
+      documentation: 'Ticker symbol',
+      sampleValues: 'AAA, BBB',
+    });
+  });
+
+  test('treats a doc without the delimiter as documentation only', () => {
+    expect(parseTDSColumnDoc('  Ticker symbol  ')).toEqual({
+      documentation: 'Ticker symbol',
+    });
+  });
+
+  test('omits a blank half on either side of the delimiter', () => {
+    expect(parseTDSColumnDoc('   -- e.g. AAA')).toEqual({
+      sampleValues: 'AAA',
+    });
+    expect(parseTDSColumnDoc('Ticker symbol -- e.g.   ')).toEqual({
+      documentation: 'Ticker symbol',
+    });
+    expect(parseTDSColumnDoc('   ')).toEqual({});
   });
 });

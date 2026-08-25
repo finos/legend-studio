@@ -1,5 +1,23 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.109
+
+## 0.0.108
+
+## 0.0.107
+
+### Patch Changes
+
+- [#5449](https://github.com/finos/legend-studio/pull/5449) [`3d09d32`](https://github.com/finos/legend-studio/commit/3d09d3286e482e835ae80e7b12883cb039e3ebd9) ([@jackp5150](https://github.com/jackp5150)) - Added batching for lambdaRelationType in DataProductViewerState
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Make diagrams optional and omit empty featuredElements/diagrams from serialized json
+
+## 0.0.106
+
+### Patch Changes
+
+- [#5443](https://github.com/finos/legend-studio/pull/5443) [`e0a1c79`](https://github.com/finos/legend-studio/commit/e0a1c79ab73453ca40aed3c653717c0a012ee6d5) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve subscription contract selection by showing completed contracts and adding searchable filtering in the create dialog.
+
 ## 0.0.105
 
 ### Patch Changes

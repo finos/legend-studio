@@ -36,24 +36,42 @@ import {
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { guaranteeType } from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
+import { DataSpaceExecutableTemplateStateCache } from './DataSpaceExecutableTemplateState.js';
+
+export enum DATA_SPACE_TAB {
+  HOME = 'Home',
+  EXECUTION_CONTEXTS = 'Execution Contexts',
+  EXECUTABLES = 'Executables',
+}
 
 export class DataSpaceEditorState extends ElementEditorState {
   executionContextState: DataSpaceExecutionContextState;
+  readonly executableTemplateStates: DataSpaceExecutableTemplateStateCache;
+  selectedTab = DATA_SPACE_TAB.HOME;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
     super(editorStore, element);
 
     makeObservable(this, {
       executionContextState: observable,
+      selectedTab: observable,
       dataSpace: computed,
       reprocess: action,
       isValidDataSpaceElement: action,
       getDataSpaceElementOptions: action,
       getDiagramOptions: action,
       getDataSpaceExecutableOptions: action,
+      setSelectedTab: action,
     });
 
     this.executionContextState = new DataSpaceExecutionContextState(this);
+    this.executableTemplateStates = new DataSpaceExecutableTemplateStateCache(
+      editorStore,
+    );
+  }
+
+  setSelectedTab(tab: DATA_SPACE_TAB): void {
+    this.selectedTab = tab;
   }
 
   isValidDataSpaceElement(

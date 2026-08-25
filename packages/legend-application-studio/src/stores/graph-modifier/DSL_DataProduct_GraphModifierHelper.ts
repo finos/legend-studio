@@ -32,8 +32,6 @@ import {
   type PackageableElementReference,
   type Mapping,
   type ModelAccessPointGroup,
-  type DataProductDiagram,
-  type DataProductElementScope,
   observe_APG,
   type DataProductType,
   type ExternalDataProductType,
@@ -110,48 +108,6 @@ export const modelAccessPointGroup_setMapping = action(
     mapping: PackageableElementReference<Mapping>,
   ) => {
     group.mapping = mapping;
-  },
-);
-
-export const modelAccessPointGroup_addElement = action(
-  (group: ModelAccessPointGroup, element: DataProductElementScope): void => {
-    addUniqueEntry(group.featuredElements, element);
-  },
-);
-
-export const modelAccessPointGroup_removeElement = action(
-  (group: ModelAccessPointGroup, element: DataProductElementScope): void => {
-    deleteEntry(group.featuredElements, element);
-  },
-);
-
-export const modelAccessPointGroup_setElementExclude = action(
-  (element: DataProductElementScope, exclude: boolean): void => {
-    element.exclude = exclude;
-  },
-);
-
-export const modelAccessPointGroup_addDiagram = action(
-  (group: ModelAccessPointGroup, diagram: DataProductDiagram): void => {
-    addUniqueEntry(group.diagrams, diagram);
-  },
-);
-
-export const modelAccessPointGroup_removeDiagram = action(
-  (group: ModelAccessPointGroup, diagram: DataProductDiagram): void => {
-    deleteEntry(group.diagrams, diagram);
-  },
-);
-
-export const dataProductDiagram_setTitle = action(
-  (diagram: DataProductDiagram, title: string): void => {
-    diagram.title = title;
-  },
-);
-
-export const dataProductDiagram_setDescription = action(
-  (diagram: DataProductDiagram, desc: string | undefined): void => {
-    diagram.description = desc;
   },
 );
 

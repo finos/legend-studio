@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.344
+
+## 0.1.343
+
+## 0.1.342
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Restructure the Data Product form editor into a sidebar with Home/Execution Contexts/Executables tabs, add mapping provider support and inline (lambda-based) executables with a Query Builder action, and various validation/UI polish.
+
+## 0.1.341
+
 ## 0.1.340
 
 ## 0.1.339

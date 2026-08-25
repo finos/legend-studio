@@ -1,5 +1,27 @@
 # @finos/legend-graph
 
+## 32.6.28
+
+## 32.6.27
+
+### Patch Changes
+
+- [#5449](https://github.com/finos/legend-studio/pull/5449) [`3d09d32`](https://github.com/finos/legend-studio/commit/3d09d3286e482e835ae80e7b12883cb039e3ebd9) ([@jackp5150](https://github.com/jackp5150)) - Added batching for lambdaRelationType in DataProductViewerState
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Make diagrams optional and omit empty featuredElements/diagrams from serialized json
+
+## 32.6.26
+
+### Patch Changes
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize "download project grammar with dependency" in the developer tools panel: dependency grammar is now fetched from Depot as a single `V1_PureModelContextData` payload and transformed to Pure code in one engine call, instead of building a metamodel graph and round-tripping element-by-element. Adds `DepotServerClient.collectDependencyEntitiesAsPureModelContextData` and `AbstractPureGraphManager.protocolToPureCode` (backed by the engine's `transformProtocolGraphToCode`). Also makes the entire download-grammar action row (icon + label) clickable.
+
+- [#5444](https://github.com/finos/legend-studio/pull/5444) [`c3c9cd8`](https://github.com/finos/legend-studio/commit/c3c9cd867e561974990f578a4f3401a05d139c3c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix roundtrip hashCode drift for relational class mappings that reference tables from an ingest-generated (lakehouse) database via an outer `Database` `include`. When transforming a `TableAlias` back to a `V1_TablePtr`, we now preserve the user's originally-serialized database path (e.g. the outer `Database` the mapping actually referenced) whenever it differs from the synthetic `INTERNAL__LakehouseGeneratedDatabase.path`, instead of unconditionally rewriting to the owning ingest path. The guard also skips the rewrite when there is no serialized path so the resolved path is not clobbered with an empty string.
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix graph build failure `Can't find schema '<X>' in database '<DB>'` when a parent `Database` `include`s a child `Database` whose schemas come from `include Ingest`. The relation resolver in `V1_GraphBuilderContext.resolveRelation` now walks classic database includes transitively to find ingest-generated databases (child DB's `includedStoreSpecifications`), instead of only looking at the owner database's own ingest includes. Also fixes the `V1_findSchema` error message to render the database path instead of `[object Object]`.
+
+- [#5440](https://github.com/finos/legend-studio/pull/5440) [`6c85092`](https://github.com/finos/legend-studio/commit/6c850924de24587e14e4686905216708f17c0c58) ([@Rakan1837](https://github.com/Rakan1837)) - Add form-mode editor for the Availability lakehouse element, including a Definition tab (grammar view) and a Testing tab backed by the shared testable framework, with graph/protocol support for `Availability` roundtrip.
+
 ## 32.6.25
 
 ### Patch Changes

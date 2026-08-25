@@ -293,13 +293,13 @@ describe(unitTest('buildSuggestedQueries'), () => {
     const apServices: TDSServiceSchema[] = [
       {
         title: 'MetaDir Enterprise',
-        pattern: '/METADIR',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
           { name: 'GIVENNAME', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
-          { name: 'GSDEPARTMENTNAME', type: 'Varchar' },
-          { name: 'GSREGION', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
+          { name: 'DEPARTMENTNAME', type: 'Varchar' },
+          { name: 'REGION', type: 'Varchar' },
           { name: 'TITLE', type: 'Varchar' },
         ],
         parameters: [],
@@ -311,9 +311,9 @@ describe(unitTest('buildSuggestedQueries'), () => {
     expect(
       result.some(
         (s) =>
-          s.includes('GSDIVISIONNAME') ||
-          s.includes('GSREGION') ||
-          s.includes('GSDEPARTMENTNAME'),
+          s.includes('DIVISIONNAME') ||
+          s.includes('REGION') ||
+          s.includes('DEPARTMENTNAME'),
       ),
     ).toBe(true);
     // Should have at least overview + 2 data queries
@@ -324,65 +324,65 @@ describe(unitTest('buildSuggestedQueries'), () => {
     const apServices: TDSServiceSchema[] = [
       {
         title: 'MetaDir',
-        pattern: '/METADIR',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
       },
       {
-        title: 'CorpDir',
-        pattern: '/CORPDIR',
+        title: 'Accounts',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
-          { name: 'GSLEGALTITLE', type: 'Varchar' },
-          { name: 'GSHRDIVISIONNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
+          { name: 'LEGALTITLE', type: 'Varchar' },
+          { name: 'HRDIVISIONNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
       },
     ];
     const result = buildSuggestedQueries(apServices, metadata);
-    // Should include at least one suggestion referencing CorpDir
-    expect(result.some((s) => s.includes('CorpDir'))).toBe(true);
+    // Should include at least one suggestion referencing Directory
+    expect(result.some((s) => s.includes('Accounts'))).toBe(true);
   });
 
   test('generates cross-AP JOIN suggestion using unique columns', () => {
     const apServices: TDSServiceSchema[] = [
       {
         title: 'MetaDir',
-        pattern: '/METADIR',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
-          { name: 'GSDEPARTMENTNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
+          { name: 'DEPARTMENTNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
       },
       {
-        title: 'CorpDir',
-        pattern: '/CORPDIR',
+        title: 'Accounts',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
-          { name: 'GSLEGALTITLE', type: 'Varchar' },
-          { name: 'GSBUILDINGNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
+          { name: 'LEGALTITLE', type: 'Varchar' },
+          { name: 'ACCOUNTNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
       },
     ];
     const result = buildSuggestedQueries(apServices, metadata);
-    // Should suggest a cross-AP query using a column unique to CorpDir
+    // Should suggest a cross-AP query using a column unique to Directory
     expect(
       result.some(
         (s) =>
-          s.includes('CorpDir') &&
-          (s.includes('GSLEGALTITLE') || s.includes('GSBUILDINGNAME')),
+          s.includes('Accounts') &&
+          (s.includes('LEGALTITLE') || s.includes('ACCOUNTNAME')),
       ),
     ).toBe(true);
   });
@@ -391,20 +391,20 @@ describe(unitTest('buildSuggestedQueries'), () => {
     const apServices: TDSServiceSchema[] = [
       {
         title: 'MetaDir',
-        pattern: '/METADIR',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
       },
       {
-        title: 'CorpDir',
-        pattern: '/CORPDIR',
+        title: 'Accounts',
+        pattern: '/DIRECTORY',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
@@ -417,7 +417,7 @@ describe(unitTest('buildSuggestedQueries'), () => {
         (s) =>
           s.includes('Compare') ||
           s.includes('between') ||
-          s.includes('CorpDir'),
+          s.includes('Accounts'),
       ),
     ).toBe(true);
   });
@@ -428,13 +428,13 @@ describe(unitTest('buildSuggestedQueries'), () => {
         title: 'AP1',
         pattern: '/ap1',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSDIVISIONNAME', type: 'Varchar' },
-          { name: 'GSDEPARTMENTNAME', type: 'Varchar' },
-          { name: 'GSREGION', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'DIVISIONNAME', type: 'Varchar' },
+          { name: 'DEPARTMENTNAME', type: 'Varchar' },
+          { name: 'REGION', type: 'Varchar' },
           { name: 'TITLE', type: 'Varchar' },
-          { name: 'GSWORKERTYPE', type: 'Varchar' },
-          { name: 'GSBUSINESSUNIT', type: 'Varchar' },
+          { name: 'WORKERTYPE', type: 'Varchar' },
+          { name: 'BUSINESSUNIT', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,
@@ -443,9 +443,9 @@ describe(unitTest('buildSuggestedQueries'), () => {
         title: 'AP2',
         pattern: '/ap2',
         columns: [
-          { name: 'GSKERBEROSID', type: 'Varchar' },
-          { name: 'GSFLOORNUMBER', type: 'Varchar' },
-          { name: 'GSBUILDINGNAME', type: 'Varchar' },
+          { name: 'USERID', type: 'Varchar' },
+          { name: 'BRANCHCODE', type: 'Varchar' },
+          { name: 'ACCOUNTNAME', type: 'Varchar' },
         ],
         parameters: [],
         sourceType: TDSServiceSourceType.ACCESS_POINT,

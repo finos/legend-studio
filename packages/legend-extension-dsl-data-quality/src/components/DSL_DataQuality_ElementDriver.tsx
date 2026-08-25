@@ -48,6 +48,7 @@ import {
 } from '@finos/legend-lego/graph-editor';
 import {
   DataSpace,
+  hasMappingBasedDefaultExecutionContext,
   resolveUsableDataSpaceClasses,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { buildDefaultDataQualityRootGraphFetchTree } from './utils/DataQualityGraphFetchTreeUtil.js';
@@ -103,6 +104,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
   get dataSpaceOptions(): PackageableElementOption<DataSpace>[] {
     return this.editorStore.graphManagerState.graph.allOwnElements
       .filter(filterByType(DataSpace))
+      .filter(hasMappingBasedDefaultExecutionContext)
       .map(buildElementOption);
   }
 
@@ -206,10 +208,17 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
       const dataSpaceToSet = PackageableElementExplicitReference.create(
         guaranteeNonNullable(this.dataSpaceSelected).value,
       );
+      const defaultExecutionContext = guaranteeNonNullable(
+        dataSpaceToSet.value.defaultExecutionContext,
+        `Data product '${dataSpaceToSet.value.path}' does not have a default execution context`,
+      );
+      const defaultExecutionContextMapping = guaranteeNonNullable(
+        defaultExecutionContext.mapping,
+        `Default execution context '${defaultExecutionContext.name}' does not have a mapping`,
+      );
       const dataSpaceExecutionContext =
         new DataSpaceDataQualityExecutionContext();
-      dataSpaceExecutionContext.context =
-        dataSpaceToSet.value.defaultExecutionContext.name;
+      dataSpaceExecutionContext.context = defaultExecutionContext.name;
       dataSpaceExecutionContext.dataSpace = dataSpaceToSet;
       dataQualityClassConstraintsConfiguration.context =
         dataSpaceExecutionContext;
@@ -217,7 +226,7 @@ export class DataQuality_ElementDriver extends NewElementDriver<DataQualityValid
         undefined;
       usableClasses = resolveUsableDataSpaceClasses(
         dataSpaceToSet.value,
-        dataSpaceToSet.value.defaultExecutionContext.mapping.value,
+        defaultExecutionContextMapping.value,
         this.editorStore.graphManagerState,
       );
     } else {

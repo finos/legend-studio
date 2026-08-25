@@ -27,7 +27,7 @@ export type CuratedTemplateQuery = {
   title: string;
   description: string | undefined;
   query: RawLambda;
-  executionContextKey: string;
+  executionContextKey: string | undefined;
 };
 
 export type CuratedTemplateQuerySpecification = {
@@ -67,6 +67,10 @@ export type WarehouseEntitlementRender = {
   renderer: (dataAccessState: DataAccessState) => React.ReactNode;
 };
 
+export type QueryAgentChatRenderer = (
+  queryBuilderState: QueryBuilderState,
+) => React.ReactNode;
+
 export type TemplateQueryPanelContentRenderer = (
   queryBuilderState: QueryBuilderState,
 ) => React.ReactNode;
@@ -96,6 +100,16 @@ export type QueryBuilderPropagateExecutionContextChangeHelper = (
   queryBuilderState: QueryBuilderState,
   isGraphBuildingNotRequired?: boolean,
 ) => (() => Promise<void>) | undefined;
+
+/**
+ * Contributes extra key/value pairs that should ride along with query-builder
+ * telemetry events (e.g. run query launch/success/failure, save query, ...).
+ * The returned bag is shallow-merged into the event payload by the caller;
+ * return `undefined` (or an empty object) to contribute nothing.
+ */
+export type QueryBuilderTelemetryMetadataProvider = (
+  queryBuilderState: QueryBuilderState,
+) => Record<string, unknown> | undefined;
 
 export interface QueryBuilder_LegendApplicationPlugin_Extension
   extends LegendApplicationPlugin {
@@ -132,6 +146,11 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
   getExtraQueryUsageConfigurations?(): QueryExportUsageConfiguration[];
 
   /**
+   * Get the list of query AI agent chat configurations.
+   */
+  getExtraQueryAgentChatRenderers?(): QueryAgentChatRenderer[];
+
+  /**
    * Get the list of template query panel content render
    */
   getExtraTemplateQueryPanelContentRenderer?(): TemplateQueryPanelContentRenderer[];
@@ -160,4 +179,13 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of Query Builder Propagate Execution Context Change Helper
    */
   getExtraQueryBuilderPropagateExecutionContextChangeHelper?(): QueryBuilderPropagateExecutionContextChangeHelper[];
+
+  /**
+   * Get the list of providers that contribute extra key/value metadata to
+   * query-builder telemetry event payloads (agent-chat trace ids, custom
+   * environment tags, ...). Callers spread the aggregated metadata into
+   * their own event payloads via
+   * `QueryBuilderState.getExtraTelemetryMetadata()`.
+   */
+  getExtraQueryBuilderTelemetryMetadataProviders?(): QueryBuilderTelemetryMetadataProvider[];
 }

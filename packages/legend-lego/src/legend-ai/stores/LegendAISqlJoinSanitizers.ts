@@ -17,7 +17,7 @@
 import { escapeRegExp, isNonNullable } from '@finos/legend-shared';
 import type { TDSServiceSchema } from '../LegendAITypes.js';
 import {
-  AP_CALL_PATTERN,
+  accessPointCalls,
   HAS_LIMIT_PATTERN,
   buildColumnByNameIndex,
   buildServiceByPIdIndex,
@@ -229,7 +229,7 @@ export function sanitizeJoinDuplicateColumns(
   if (!JOIN_PATTERN.test(sql) || COMPLEX_SQL_SHAPE_PATTERN.test(sql)) {
     return sql;
   }
-  if ([...sql.matchAll(AP_CALL_PATTERN)].length < 2) {
+  if (accessPointCalls(sql).length < 2) {
     return sql;
   }
 
@@ -420,7 +420,7 @@ export function boundCrossAccessPointJoinDrivingSide(sql: string): string {
   if (!JOIN_PATTERN.test(sql) || COMPLEX_SQL_SHAPE_PATTERN.test(sql)) {
     return sql;
   }
-  if ([...sql.matchAll(AP_CALL_PATTERN)].length < 2) {
+  if (accessPointCalls(sql).length < 2) {
     return sql;
   }
   const openIdx = topLevelFromOpenParenIndex(sql);
@@ -448,7 +448,7 @@ export function wrapBareJoinAccessPoints(
   if (!JOIN_PATTERN.test(sql) || COMPLEX_SQL_SHAPE_PATTERN.test(sql)) {
     return sql;
   }
-  if ([...sql.matchAll(AP_CALL_PATTERN)].length < 2) {
+  if (accessPointCalls(sql).length < 2) {
     return sql;
   }
   const bareInputPattern =
