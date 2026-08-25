@@ -1784,3 +1784,119 @@ describe('RecommendedAddOnsModal - sort select', () => {
     });
   });
 });
+
+// ─── Column filters ────────────────────────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - column filters', () => {
+  test('category filter narrows the list to matching items', () => {
+    const terminal = makeTerminal();
+    const addon1 = makeAddOn({
+      id: 10,
+      productName: 'Data Feed',
+      category: 'Market Data',
+    });
+    const addon2 = makeAddOn({
+      id: 11,
+      productName: 'Analytics Suite',
+      category: 'Analytics',
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon1, addon2]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Data Feed')).toBeDefined();
+    expect(screen.getByText('Analytics Suite')).toBeDefined();
+
+    fireEvent.click(screen.getByLabelText('Filter by Category'));
+    fireEvent.click(screen.getByLabelText('Analytics'));
+
+    expect(screen.queryByText('Data Feed')).toBeNull();
+    expect(screen.getByText('Analytics Suite')).toBeDefined();
+  });
+
+  test('Action filter does not offer "Subscribed" outside the permission-override flow', () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10 });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    expect(screen.queryByLabelText('Subscribed')).toBeNull();
+    expect(screen.getByLabelText('In Cart')).toBeDefined();
+    expect(screen.getByLabelText('Add to Cart')).toBeDefined();
+  });
+
+  test('Action filter offers "Subscribed" in the permission-override flow', () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10 });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+        overridePermissionId={123}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    expect(screen.getByLabelText('Subscribed')).toBeDefined();
+  });
+
+  test('an item added via a skip-workflow add-to-cart is treated as "In Cart" by the Action filter', async () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10, productName: 'Newly Added Addon' });
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: true,
+      recommendations: [],
+      message: 'ok',
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // cartStore.isItemInCart(10) is still false at this point (skip-workflow
+    // items don't get pushed into cartStore.items), but the card's local
+    // "isAdded" state should still surface via onItemAdded.
+    await act(async () => {
+      fireEvent.click(
+        screen
+          .getAllByRole('button')
+          .find((b) => b.textContent?.includes('Add to Cart')) as HTMLElement,
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Added to Cart')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    fireEvent.click(screen.getByLabelText('In Cart'));
+
+    expect(screen.getByText('Newly Added Addon')).toBeDefined();
+  });
+});

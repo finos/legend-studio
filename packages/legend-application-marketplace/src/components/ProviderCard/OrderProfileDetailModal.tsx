@@ -56,7 +56,7 @@ export const OrderProfileDetailModal = observer(
     const { cartStore } = useLegendMarketplaceBaseStore();
     const items = profile.items;
     const { terminalCount, addOnCount } = getItemSummary(items);
-    const groupedItems = groupOrderProfileItems(items);
+    const groupedItems = useMemo(() => groupOrderProfileItems(items), [items]);
     const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
       () => new Set(),
     );
@@ -67,10 +67,27 @@ export const OrderProfileDetailModal = observer(
         ),
       [items],
     );
-    const filteredGroupedItems =
-      categoryFilter.size === 0
-        ? groupedItems
-        : groupedItems.filter(({ item }) => categoryFilter.has(item.category));
+    // When a category filter hides a terminal but not its add-ons, demote
+    // the orphaned add-ons to top-level rows (no sub-item indentation) so
+    // they don't render as children with no parent row above them.
+    const filteredGroupedItems = useMemo(() => {
+      const filtered =
+        categoryFilter.size === 0
+          ? groupedItems
+          : groupedItems.filter(({ item }) =>
+              categoryFilter.has(item.category),
+            );
+      return filtered.map((entry, index) => {
+        if (!entry.isSubItem) {
+          return entry;
+        }
+        const previous = filtered[index - 1];
+        const hasVisibleParent =
+          previous?.item.isTerminal === true &&
+          previous.item.model === entry.item.model;
+        return hasVisibleParent ? entry : { ...entry, isSubItem: false };
+      });
+    }, [groupedItems, categoryFilter]);
     const displayPrice =
       profile.multiselect && multiselectTotalPrice !== undefined
         ? multiselectTotalPrice

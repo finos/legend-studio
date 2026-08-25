@@ -15,7 +15,6 @@
  */
 
 import { type JSX, useState } from 'react';
-import { observer } from 'mobx-react-lite';
 import {
   Box,
   Button,
@@ -42,83 +41,83 @@ interface ColumnFilterButtonProps {
  * shared by the recommended add-ons list and the order profile / owned
  * terminal detail tables.
  */
-export const ColumnFilterButton = observer(
-  (props: ColumnFilterButtonProps): JSX.Element => {
-    const { columnLabel, options, selected, onChange } = props;
-    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
-    const isActive = selected.size > 0;
+export const ColumnFilterButton = (
+  props: ColumnFilterButtonProps,
+): JSX.Element => {
+  const { columnLabel, options, selected, onChange } = props;
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const isActive = selected.size > 0;
 
-    const toggleOption = (option: string): void => {
-      const next = new Set(selected);
-      if (next.has(option)) {
-        next.delete(option);
-      } else {
-        next.add(option);
-      }
-      onChange(next);
-    };
+  const toggleOption = (option: string): void => {
+    const next = new Set(selected);
+    if (next.has(option)) {
+      next.delete(option);
+    } else {
+      next.add(option);
+    }
+    onChange(next);
+  };
 
-    return (
-      <>
-        <IconButton
-          size="small"
-          aria-label={`Filter by ${columnLabel}`}
-          onClick={(event) => setAnchorEl(event.currentTarget)}
-          className={clsx('column-filter-button', {
-            'column-filter-button--active': isActive,
-          })}
-        >
-          <FilterIcon />
-        </IconButton>
-        <Popover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          onClose={() => setAnchorEl(null)}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          className="column-filter-button__popover"
-        >
-          <Box className="column-filter-button__popover-content">
+  return (
+    <>
+      <IconButton
+        size="small"
+        aria-label={`Filter by ${columnLabel}`}
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        className={clsx('column-filter-button', {
+          'column-filter-button--active': isActive,
+        })}
+      >
+        <FilterIcon />
+      </IconButton>
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        className="column-filter-button__popover"
+      >
+        <Box className="column-filter-button__popover-content">
+          <Typography
+            variant="subtitle2"
+            className="column-filter-button__popover-title"
+          >
+            Filter by {columnLabel}
+          </Typography>
+          {options.length === 0 ? (
             <Typography
-              variant="subtitle2"
-              className="column-filter-button__popover-title"
+              variant="body2"
+              className="column-filter-button__popover-empty"
             >
-              Filter by {columnLabel}
+              No values available
             </Typography>
-            {options.length === 0 ? (
-              <Typography
-                variant="body2"
-                className="column-filter-button__popover-empty"
-              >
-                No values available
-              </Typography>
-            ) : (
-              options.map((option) => (
-                <FormControlLabel
-                  key={option}
-                  className="column-filter-button__popover-option"
-                  control={
-                    <Checkbox
-                      size="small"
-                      checked={selected.has(option)}
-                      onChange={() => toggleOption(option)}
-                    />
-                  }
-                  label={option}
-                />
-              ))
-            )}
-            {isActive && (
-              <Button
-                size="small"
-                onClick={() => onChange(new Set())}
-                className="column-filter-button__popover-clear"
-              >
-                Clear filter
-              </Button>
-            )}
-          </Box>
-        </Popover>
-      </>
-    );
-  },
-);
+          ) : (
+            options.map((option) => (
+              <FormControlLabel
+                key={option}
+                className="column-filter-button__popover-option"
+                control={
+                  <Checkbox
+                    size="small"
+                    checked={selected.has(option)}
+                    onChange={() => toggleOption(option)}
+                  />
+                }
+                label={option}
+              />
+            ))
+          )}
+          {isActive && (
+            <Button
+              size="small"
+              onClick={() => onChange(new Set())}
+              className="column-filter-button__popover-clear"
+            >
+              Clear filter
+            </Button>
+          )}
+        </Box>
+      </Popover>
+    </>
+  );
+};
