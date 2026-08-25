@@ -51,7 +51,6 @@ import {
   V1_buildFullPath,
   V1_LakehouseRuntime,
   V1_packageableRuntimeModelSchema,
-  GenericType,
 } from '@finos/legend-graph';
 import type {
   Entity,

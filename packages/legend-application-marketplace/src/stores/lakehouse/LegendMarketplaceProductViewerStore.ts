@@ -906,12 +906,6 @@ export class LegendMarketplaceProductViewerStore {
             queryClass: (_class: Class): void => {
               const defaultExecutionContext =
                 analysisResult.defaultExecutionContext;
-              if (!defaultExecutionContext) {
-                this.marketplaceBaseStore.applicationStore.notificationService.notifyWarning(
-                  `Can't query class: data product '${analysisResult.path}' has no default execution context`,
-                );
-                return;
-              }
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
                   this.marketplaceBaseStore.applicationStore.config
