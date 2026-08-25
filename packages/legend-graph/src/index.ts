@@ -692,6 +692,7 @@ export {
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export { V1_propertyPointerModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
+  V1_deserializeGenericType,
   V1_genericTypeModelSchema,
   V1_relationTypeModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
@@ -1129,10 +1130,12 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_Defect.js';
 export { V1_CompilationError } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationError.js';
 export {
+  type V1_BatchLambdaRelationTypeResponse,
   type V1_BatchLambdaRelationTypeResult,
   type V1_LambdaReturnTypeResult,
   V1_LambdaReturnTypeInput,
   V1_BatchLambdaRelationTypeInput,
+  V1_buildBatchLambdaRelationTypeResult,
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
 export { V1_CompleteCodeInput } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompleteCodeInput.js';
 export { V1_RunTestsInput } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsInput.js';

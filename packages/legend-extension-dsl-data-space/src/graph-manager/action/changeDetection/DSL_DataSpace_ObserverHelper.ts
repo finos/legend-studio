@@ -30,12 +30,27 @@ import {
   type DataSpaceElementPointer,
   type DataSpaceExecutable,
   type DataSpaceExecutionContext,
+  type DataSpaceMappingProvider,
   type DataSpaceSupportInfo,
   DataSpaceExecutableTemplate,
   DataSpacePackageableElementExecutable,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
+
+export const observe_DataSpaceMappingProvider = skipObserved(
+  (metamodel: DataSpaceMappingProvider): DataSpaceMappingProvider => {
+    makeObservable(metamodel, {
+      element: observable,
+      keys: observable,
+      hashCode: computed,
+    });
+
+    observe_PackageableElementReference(metamodel.element);
+
+    return metamodel;
+  },
+);
 
 export const observe_DataSpaceExecutionContext = skipObserved(
   (metamodel: DataSpaceExecutionContext): DataSpaceExecutionContext => {
@@ -45,12 +60,20 @@ export const observe_DataSpaceExecutionContext = skipObserved(
       description: observable,
       mapping: observable,
       defaultRuntime: observable,
+      mappingProvider: observable,
       testData: observable,
       hashCode: computed,
     });
 
-    observe_PackageableElementReference(metamodel.mapping);
-    observe_PackageableElementReference(metamodel.defaultRuntime);
+    if (metamodel.mapping) {
+      observe_PackageableElementReference(metamodel.mapping);
+    }
+    if (metamodel.defaultRuntime) {
+      observe_PackageableElementReference(metamodel.defaultRuntime);
+    }
+    if (metamodel.mappingProvider) {
+      observe_DataSpaceMappingProvider(metamodel.mappingProvider);
+    }
     if (metamodel.testData) {
       observe_DataElementReference(metamodel.testData);
     }
@@ -209,8 +232,10 @@ export const observe_DataSpace = skipObserved(
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);
 
-    metamodel.executionContexts.forEach(observe_DataSpaceExecutionContext);
-    observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
+    metamodel.executionContexts?.forEach(observe_DataSpaceExecutionContext);
+    if (metamodel.defaultExecutionContext) {
+      observe_DataSpaceExecutionContext(metamodel.defaultExecutionContext);
+    }
     if (metamodel.elements) {
       metamodel.elements.forEach(observe_DataSpaceElementPointer);
     }

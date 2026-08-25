@@ -115,8 +115,10 @@ import {
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
+import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
+import { type QueryAgentChatState } from './QueryAgentChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 import { createDataCubeViewerStateFromQueryBuilder } from './data-cube/QueryBuilderDataCubeHelper.js';
 import type { QueryBuilderDataCubeViewerState } from './data-cube/QueryBuilderDataCubeViewerState.js';
@@ -214,6 +216,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
   changeHistoryState: QueryBuilderChangeHistoryState;
+  isAgentChatOpened: boolean;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
@@ -230,6 +233,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
   executionContextState: QueryBuilderExecutionContextState;
   internalizeState?: QueryBuilderInternalizeState | undefined;
+  queryAgentChatState?: QueryAgentChatState | undefined;
 
   // NOTE: This property contains information about workflow used
   // to create this state. This should only be used to add additional
@@ -269,6 +273,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeHistoryState: observable,
       executionContextState: observable,
       sourceElement: observable,
+      queryAgentChatState: observable,
+      isAgentChatOpened: observable,
       isLocalModeEnabled: observable,
       dataCubeViewerState: observable,
       getAllFunction: observable,
@@ -292,6 +298,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       openDataCubeEngine: action,
       setIsCheckingEntitlments: action,
       setSourceElement: action,
+      setIsAgentChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
       setLambdaWriteMode: action,
@@ -304,6 +311,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeMapping: action,
       changeRuntime: action,
       setExecutionContextState: action,
+      setQueryAgentChatState: action,
 
       rebuildWithQuery: action,
       compileQuery: flow,
@@ -335,6 +343,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.config = config;
     this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
+    this.isAgentChatOpened =
+      (!this.config?.TEMPORARY__disableQueryBuilderAgentChat &&
+        this.applicationStore.settingService.getBooleanValue(
+          QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_AGENT_CHAT_PANEL,
+        )) ??
+      false;
   }
 
   TEMPORARY_initializeExecContext(
@@ -458,6 +472,31 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   /**
+   * Aggregates extra telemetry metadata contributed by application plugins
+   * via `getExtraQueryBuilderTelemetryMetadataProviders`. Callers spread the
+   * result into their event payloads so telemetry helpers stay free of
+   * plugin-specific fields (e.g. agent chat trace ids).
+   */
+  getExtraTelemetryMetadata(): Record<string, unknown> {
+    const providers = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as QueryBuilder_LegendApplicationPlugin_Extension
+          ).getExtraQueryBuilderTelemetryMetadataProviders?.() ?? [],
+      );
+    const metadata: Record<string, unknown> = {};
+    for (const provider of providers) {
+      const extra = provider(this);
+      if (extra) {
+        Object.assign(metadata, extra);
+      }
+    }
+    return metadata;
+  }
+
+  /**
    * Gets information about the current queryBuilderState.
    * This information can be used as a part of analytics
    */
@@ -482,6 +521,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return undefined;
   }
 
+  setIsAgentChatOpened(val: boolean): void {
+    if (val && this.config?.TEMPORARY__disableQueryBuilderAgentChat) {
+      return;
+    }
+    this.isAgentChatOpened = val;
+    this.applicationStore.settingService.persistValue(
+      QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_AGENT_CHAT_PANEL,
+      val,
+    );
+  }
+
   setIsLocalModeEnabled(val: boolean): void {
     this.isLocalModeEnabled = val;
   }
@@ -494,6 +544,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setInternalize(val: QueryBuilderInternalizeState | undefined): void {
     this.internalizeState = val;
+  }
+
+  setQueryAgentChatState(val: QueryAgentChatState | undefined): void {
+    this.queryAgentChatState = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {

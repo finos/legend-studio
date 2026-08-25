@@ -708,4 +708,35 @@ export class LegendMarketplaceTelemetryHelper {
       { ...session },
     );
   }
+
+  static logEvent_AIAgentGeneratePython(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_GENERATE_PYTHON,
+      { ...session },
+    );
+  }
+
+  static logEvent_AIAgentCopyPython(telemetryService: TelemetryService): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_COPY_PYTHON,
+      { ...session },
+    );
+  }
+
+  static logEvent_AIAgentOpenInDataCube(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_OPEN_IN_DATACUBE,
+      { ...session },
+    );
+  }
 }

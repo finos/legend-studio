@@ -44,6 +44,10 @@ import {
   extractFromClause,
   extractWhereClause,
   resolveFilterLiteral,
+  createColumnValueProbe,
+  canSkipExecutionOnEmptyJoin,
+  probeJoinOverlap,
+  JOIN_OVERLAP_PROBE_LIMIT,
   IN_PREDICATE_PATTERN,
   IN_LIST_LITERAL_PATTERN,
 } from '../LegendAIChatProcessors.js';
@@ -53,6 +57,7 @@ import {
   buildServiceByPIdIndex,
   servicePId,
   pureRelationColumnRef,
+  extractJoinKeyColumns,
 } from '../LegendAISqlHelpers.js';
 import {
   boundCrossAccessPointJoinDrivingSide,
@@ -64,6 +69,7 @@ import {
 import {
   buildCrossJoinZeroRowExplanation,
   buildJoinablePairSuggestions,
+  detectDisjointJoinUniverses,
 } from '../LegendAIJoinAnalysis.js';
 import { splitIdentifierTokens } from '../../LegendAIDocEnrichment.js';
 import {
@@ -88,7 +94,11 @@ import {
   TEST__createMockSetter,
   TEST__makeAssistantMessage,
   TEST__getAssistantMessage,
+  TEST__createOperationContext,
+  TEST__createMockLegendAIPlugin,
 } from '../../__test-utils__/LegendAITestUtils.js';
+import { LegendAIOrchestratorDataProductCoordinates } from '../../LegendAI_LegendApplicationPlugin_Extension.js';
+import { type TDSRowDataType, PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 describe(unitTest('buildConversationHistory'), () => {
   test('returns empty array for empty messages', () => {
@@ -486,7 +496,7 @@ describe(unitTest('buildExecutionErrorMessage'), () => {
         pattern: '/ap_enriched_feed',
         columns: [{ name: 'productIdentifier' }, { name: 'primeCurrency' }],
         parameters: [],
-        dataProductPath: 'dp::PriceMaster',
+        dataProductPath: 'dp::TradeFeeds',
       },
     ];
     const err =
@@ -1030,7 +1040,7 @@ describe(unitTest('ensureDateParameters'), () => {
       'SELECT',
       '  "col1"',
       'FROM service(',
-      "    '/Bloomberg/test',",
+      "    '/Vendor/test',",
       "    coordinates => 'com.gs:bbg:1.0'",
       ')',
       'LIMIT 10',
@@ -1606,7 +1616,7 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
         { name: 'updateSource' },
       ],
       parameters: [],
-      dataProductPath: 'dp::PriceMaster',
+      dataProductPath: 'dp::TradeFeeds',
     },
     {
       title: 'Enriched Feed',
@@ -1617,20 +1627,20 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
         { name: 'updateSource' },
       ],
       parameters: [],
-      dataProductPath: 'dp::PriceMaster',
+      dataProductPath: 'dp::TradeFeeds',
     },
   ];
 
   test('returns unchanged SQL when no JOIN present', () => {
-    const sql = `SELECT a."price" FROM p('dp::PriceMaster.ap_refined_feed') AS a`;
+    const sql = `SELECT a."price" FROM p('dp::TradeFeeds.ap_refined_feed') AS a`;
     expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
   });
 
   test('aliases non-key columns projected from both access points', () => {
     const sql = [
       'SELECT a."price", b."price", a."updateSource", b."updateSource"',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     const result = sanitizeJoinDuplicateColumns(sql, feedServices);
@@ -1643,8 +1653,8 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('expands alias.* using the access-point schema and de-duplicates', () => {
     const sql = [
       'SELECT a.*, b.*',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     const result = sanitizeJoinDuplicateColumns(sql, feedServices);
@@ -1659,8 +1669,8 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('aliases a same-name join key projected on both sides', () => {
     const sql = [
       'SELECT a."productId", b."productId", a."price"',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     const result = sanitizeJoinDuplicateColumns(sql, feedServices);
@@ -1673,8 +1683,8 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('leaves already-uniquely-aliased projections unchanged', () => {
     const sql = [
       'SELECT a."price" AS refined_price, b."price" AS enriched_price',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
@@ -1683,8 +1693,8 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('no-ops on aggregation / GROUP BY joins', () => {
     const sql = [
       'SELECT a."updateSource", COUNT(*) AS n',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
       'GROUP BY a."updateSource"',
     ].join('\n');
@@ -1694,7 +1704,7 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('no-ops on a single access-point query', () => {
     const sql = [
       'SELECT a."price", a."updateSource"',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
     ].join('\n');
     expect(sanitizeJoinDuplicateColumns(sql, feedServices)).toBe(sql);
   });
@@ -1702,8 +1712,8 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('bails out untouched when a star cannot be expanded', () => {
     const sql = [
       'SELECT a."price", b.*',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_unknown') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_unknown') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     const result = sanitizeJoinDuplicateColumns(sql, [
@@ -1719,20 +1729,20 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
         pattern: '/ap_refined_feed',
         columns: [{ name: 'price' }, { name: 'a_price' }],
         parameters: [],
-        dataProductPath: 'dp::PriceMaster',
+        dataProductPath: 'dp::TradeFeeds',
       },
       {
         title: 'Enriched Feed',
         pattern: '/ap_enriched_feed',
         columns: [{ name: 'price' }],
         parameters: [],
-        dataProductPath: 'dp::PriceMaster',
+        dataProductPath: 'dp::TradeFeeds',
       },
     ];
     const sql = [
       'SELECT a."price", b."price", a."a_price"',
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     expect(sanitizeJoinDuplicateColumns(sql, collidingServices)).toBe(sql);
@@ -1741,8 +1751,8 @@ describe(unitTest('sanitizeJoinDuplicateColumns'), () => {
   test('does not mis-split a single-quoted literal containing a comma', () => {
     const sql = [
       `SELECT a."price", 'x,y' AS tag, b."price"`,
-      "FROM p('dp::PriceMaster.ap_refined_feed') AS a",
-      "JOIN p('dp::PriceMaster.ap_enriched_feed') AS b",
+      "FROM p('dp::TradeFeeds.ap_refined_feed') AS a",
+      "JOIN p('dp::TradeFeeds.ap_enriched_feed') AS b",
       '  ON a."productId" = b."productId"',
     ].join('\n');
     const result = sanitizeJoinDuplicateColumns(sql, feedServices);
@@ -1973,7 +1983,7 @@ describe(unitTest('detectUnsupportedEnginePattern'), () => {
   });
 
   test('detects aggregate inside a window ORDER BY at the same level as GROUP BY', () => {
-    const sql = `SELECT "GSREGION", "GSDIVISIONNAME", COUNT(*) AS cnt, ROW_NUMBER() OVER (PARTITION BY "GSREGION" ORDER BY COUNT(*) DESC) AS rn FROM p('my::dp.a') GROUP BY "GSREGION", "GSDIVISIONNAME"`;
+    const sql = `SELECT "REGION", "DIVISIONNAME", COUNT(*) AS cnt, ROW_NUMBER() OVER (PARTITION BY "REGION" ORDER BY COUNT(*) DESC) AS rn FROM p('my::dp.a') GROUP BY "REGION", "DIVISIONNAME"`;
     const result = detectUnsupportedEnginePattern(sql);
     expect(result?.kind).toBe('AGGREGATE_IN_WINDOW_ARGS');
     expect(result?.hint).toMatch(/Materialize/);
@@ -2462,7 +2472,7 @@ describe(unitTest('wrapBareJoinAccessPoints'), () => {
         { name: 'askPrice' },
       ],
       parameters: [],
-      dataProductPath: 'lakehouse::PM',
+      dataProductPath: 'lakehouse::TRADE',
     },
     {
       title: 'Enriched Feed',
@@ -2473,33 +2483,33 @@ describe(unitTest('wrapBareJoinAccessPoints'), () => {
         { name: 'country' },
       ],
       parameters: [],
-      dataProductPath: 'lakehouse::PM',
+      dataProductPath: 'lakehouse::TRADE',
     },
   ];
 
   test('wraps a bare driving p() into a prefixed, bounded subquery', () => {
     const sql = [
       'SELECT a."askPrice" AS refined_askPrice, b."enriched_country"',
-      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-      'JOIN ( SELECT "country" AS "enriched_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b',
+      "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "enriched_country", "productIdentifier" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b',
       '  ON a."productIdentifier" = b."productIdentifier"',
     ].join('\n');
     const result = wrapBareJoinAccessPoints(sql, services);
     expect(result).toMatch(
-      /FROM \(SELECT .*"askPrice" AS "a_askPrice".* FROM p\('lakehouse::PM\.ap_refined_feed'\) LIMIT 1000\) AS a/u,
+      /FROM \(SELECT .*"askPrice" AS "a_askPrice".* FROM p\('lakehouse::TRADE\.ap_refined_feed'\) LIMIT 1000\) AS a/u,
     );
     expect(result).toContain('a."a_askPrice" AS refined_askPrice');
     expect(result).toContain('a."a_productIdentifier" = b."productIdentifier"');
     expect(result).not.toMatch(
-      /FROM p\('lakehouse::PM\.ap_refined_feed'\) AS a/u,
+      /FROM p\('lakehouse::TRADE\.ap_refined_feed'\) AS a/u,
     );
   });
 
   test('is a no-op when both sides are already subqueries', () => {
     const sql = [
       'SELECT a."a_id", b."b_id"',
-      'FROM ( SELECT "productIdentifier" AS "a_id" FROM p(\'lakehouse::PM.ap_refined_feed\') ) AS a',
-      'JOIN ( SELECT "productIdentifier" AS "b_id" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."a_id" = b."b_id"',
+      'FROM ( SELECT "productIdentifier" AS "a_id" FROM p(\'lakehouse::TRADE.ap_refined_feed\') ) AS a',
+      'JOIN ( SELECT "productIdentifier" AS "b_id" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b ON a."a_id" = b."b_id"',
     ].join('\n');
     expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
   });
@@ -2507,8 +2517,8 @@ describe(unitTest('wrapBareJoinAccessPoints'), () => {
   test('rewrites a ref whose column casing differs from the schema', () => {
     const sql = [
       'SELECT a."ASKPRICE" AS refined_askPrice, b."enriched_country"',
-      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-      'JOIN ( SELECT "country" AS "enriched_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b',
+      "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "enriched_country", "productIdentifier" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b',
       '  ON a."productIdentifier" = b."productIdentifier"',
     ].join('\n');
     const result = wrapBareJoinAccessPoints(sql, services);
@@ -2520,22 +2530,22 @@ describe(unitTest('wrapBareJoinAccessPoints'), () => {
   test('is a no-op when the access-point schema is unknown', () => {
     const sql = [
       'SELECT a."askPrice", b."b_country"',
-      "FROM p('lakehouse::PM.ap_unknown') AS a",
-      'JOIN ( SELECT "country" AS "b_country" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."askPrice" = b."b_country"',
+      "FROM p('lakehouse::TRADE.ap_unknown') AS a",
+      'JOIN ( SELECT "country" AS "b_country" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b ON a."askPrice" = b."b_country"',
     ].join('\n');
     expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
   });
 
   test('is a no-op for a single access-point query', () => {
-    const sql = `SELECT "askPrice" FROM p('lakehouse::PM.ap_refined_feed') LIMIT 100`;
+    const sql = `SELECT "askPrice" FROM p('lakehouse::TRADE.ap_refined_feed') LIMIT 100`;
     expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
   });
 
   test('prefixes both bare sides, LIMIT only on the driving side', () => {
     const sql = [
       'SELECT a."askPrice" AS refined_askPrice, b."country" AS enriched_country',
-      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-      'JOIN p(\'lakehouse::PM.ap_enriched_feed\') AS b ON a."productIdentifier" = b."productIdentifier"',
+      "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+      'JOIN p(\'lakehouse::TRADE.ap_enriched_feed\') AS b ON a."productIdentifier" = b."productIdentifier"',
     ].join('\n');
     const result = wrapBareJoinAccessPoints(sql, services);
     expect(result).toMatch(/ap_refined_feed'\) LIMIT 1000\) AS a/u);
@@ -2549,19 +2559,21 @@ describe(unitTest('wrapBareJoinAccessPoints'), () => {
   test('rewrites references with whitespace around the dot', () => {
     const sql = [
       'SELECT a . "askPrice" AS refined_askPrice, b."b_country"',
-      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-      'JOIN ( SELECT "country" AS "b_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
+      "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "b_country", "productIdentifier" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
     ].join('\n');
     const result = wrapBareJoinAccessPoints(sql, services);
     expect(result).toContain('a."a_askPrice" AS refined_askPrice');
-    expect(result).not.toMatch(/\bp\('lakehouse::PM\.ap_refined_feed'\) AS a/u);
+    expect(result).not.toMatch(
+      /\bp\('lakehouse::TRADE\.ap_refined_feed'\) AS a/u,
+    );
   });
 
   test('does not over-match a longer alias that ends in the driving alias', () => {
     const sql = [
       'SELECT a."askPrice" AS x, ba."b_country"',
-      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-      'JOIN ( SELECT "country" AS "b_country", "productIdentifier" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS ba ON a."productIdentifier" = ba."productIdentifier"',
+      "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+      'JOIN ( SELECT "country" AS "b_country", "productIdentifier" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS ba ON a."productIdentifier" = ba."productIdentifier"',
     ].join('\n');
     const result = wrapBareJoinAccessPoints(sql, services);
     expect(result).toContain('a."a_askPrice" AS x');
@@ -2575,8 +2587,8 @@ describe(unitTest('wrapBareJoinAccessPoints'), () => {
   test('is a no-op for aggregation / GROUP BY joins', () => {
     const sql = [
       'SELECT a."country" AS c, COUNT(*) AS n',
-      "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-      'JOIN p(\'lakehouse::PM.ap_enriched_feed\') AS b ON a."productIdentifier" = b."productIdentifier"',
+      "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+      'JOIN p(\'lakehouse::TRADE.ap_enriched_feed\') AS b ON a."productIdentifier" = b."productIdentifier"',
       'GROUP BY a."country"',
     ].join('\n');
     expect(wrapBareJoinAccessPoints(sql, services)).toBe(sql);
@@ -2594,13 +2606,13 @@ describe(unitTest('buildCrossJoinZeroRowExplanation'), () => {
     pattern: `/${id}`,
     columns,
     parameters: [],
-    dataProductPath: 'lakehouse::PM',
+    dataProductPath: 'lakehouse::TRADE',
     sourceType: TDSServiceSourceType.ACCESS_POINT,
     ...(group === undefined ? {} : { accessPointGroupTitle: group }),
   });
   const joinSql = [
-    "FROM p('lakehouse::PM.ap_refined_feed') AS a",
-    'JOIN ( SELECT "assetClass" FROM p(\'lakehouse::PM.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
+    "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+    'JOIN ( SELECT "assetClass" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
   ].join('\n');
 
   test('explains disjoint universes via a shared classification column', () => {
@@ -2643,8 +2655,373 @@ describe(unitTest('buildCrossJoinZeroRowExplanation'), () => {
         { name: 'productIdentifier' },
       ]),
     ];
-    const sql = `SELECT "productIdentifier" FROM p('lakehouse::PM.ap_refined_feed') LIMIT 100`;
+    const sql = `SELECT "productIdentifier" FROM p('lakehouse::TRADE.ap_refined_feed') LIMIT 100`;
     expect(buildCrossJoinZeroRowExplanation(sql, services)).toBeUndefined();
+  });
+});
+
+describe(unitTest('detectDisjointJoinUniverses'), () => {
+  const makeAp = (
+    id: string,
+    title: string,
+    columns: TDSServiceSchema['columns'],
+  ): TDSServiceSchema => ({
+    title,
+    pattern: `/${id}`,
+    columns,
+    parameters: [],
+    dataProductPath: 'lakehouse::TRADE',
+    sourceType: TDSServiceSourceType.ACCESS_POINT,
+  });
+  const joinSql = [
+    "FROM p('lakehouse::TRADE.ap_refined_feed') AS a",
+    'JOIN ( SELECT "assetClass" FROM p(\'lakehouse::TRADE.ap_enriched_feed\') ) AS b ON a."productIdentifier" = b."productIdentifier"',
+  ].join('\n');
+
+  test('with requireComplete, skips disjoint samples that are not fully enumerated', () => {
+    const services = [
+      makeAp('ap_refined_feed', 'Refined Feed', [
+        { name: 'productIdentifier' },
+        { name: 'assetClass', sampleValues: 'FIXED INCOME' },
+      ]),
+      makeAp('ap_enriched_feed', 'Enriched Feed', [
+        { name: 'productIdentifier' },
+        { name: 'assetClass', sampleValues: 'OPTIONS' },
+      ]),
+    ];
+    expect(detectDisjointJoinUniverses(joinSql, services)).toContain(
+      'cover different data',
+    );
+    expect(
+      detectDisjointJoinUniverses(joinSql, services, {
+        requireComplete: true,
+      }),
+    ).toBeUndefined();
+  });
+
+  test('with requireComplete, reports disjoint fully-enumerated universes', () => {
+    const services = [
+      makeAp('ap_refined_feed', 'Refined Feed', [
+        { name: 'productIdentifier' },
+        {
+          name: 'assetClass',
+          sampleValues: 'FIXED INCOME',
+          sampleValuesComplete: true,
+        },
+      ]),
+      makeAp('ap_enriched_feed', 'Enriched Feed', [
+        { name: 'productIdentifier' },
+        {
+          name: 'assetClass',
+          sampleValues: 'OPTIONS',
+          sampleValuesComplete: true,
+        },
+      ]),
+    ];
+    const result = detectDisjointJoinUniverses(joinSql, services, {
+      requireComplete: true,
+    });
+    expect(result).toContain('cover different data');
+    expect(result).toContain('FIXED INCOME');
+    expect(result).toContain('OPTIONS');
+    expect(result).not.toContain('executed successfully');
+  });
+
+  test('restrictToColumns ignores a disjoint column that is not the join key', () => {
+    const services = [
+      makeAp('ap_refined_feed', 'Refined Feed', [
+        { name: 'productIdentifier' },
+        {
+          name: 'assetClass',
+          sampleValues: 'FIXED INCOME',
+          sampleValuesComplete: true,
+        },
+      ]),
+      makeAp('ap_enriched_feed', 'Enriched Feed', [
+        { name: 'productIdentifier' },
+        {
+          name: 'assetClass',
+          sampleValues: 'OPTIONS',
+          sampleValuesComplete: true,
+        },
+      ]),
+    ];
+    expect(
+      detectDisjointJoinUniverses(joinSql, services, {
+        requireComplete: true,
+        restrictToColumns: new Set(['productidentifier']),
+      }),
+    ).toBeUndefined();
+  });
+});
+
+describe(unitTest('extractJoinKeyColumns'), () => {
+  test('captures a same-named equi-join key across aliases', () => {
+    const sql =
+      'FROM p(\'lakehouse::TRADE.a\') AS a JOIN p(\'lakehouse::TRADE.b\') AS b ON a."productIdentifier" = b."productIdentifier"';
+    expect([...extractJoinKeyColumns(sql)]).toEqual(['productidentifier']);
+  });
+
+  test('ignores equalities across differently-named columns', () => {
+    const sql = 'ON a."left" = b."right" AND a."id" = b."id"';
+    expect([...extractJoinKeyColumns(sql)]).toEqual(['id']);
+  });
+
+  test('captures a key qualified by a quoted table alias', () => {
+    expect([...extractJoinKeyColumns('ON "a"."id" = "b"."id"')]).toEqual([
+      'id',
+    ]);
+  });
+
+  test('ignores a literal filter', () => {
+    expect([...extractJoinKeyColumns(`WHERE "region" = 'US'`)]).toEqual([]);
+  });
+});
+
+describe(unitTest('canSkipExecutionOnEmptyJoin'), () => {
+  const innerJoin =
+    'SELECT a."id" FROM p(\'lakehouse::TRADE.a\') AS a JOIN p(\'lakehouse::TRADE.b\') AS b ON a."id" = b."id"';
+
+  test('skips a plain inner join', () => {
+    expect(canSkipExecutionOnEmptyJoin(innerJoin)).toBe(true);
+  });
+
+  test('never skips an outer join — the preserved side still returns rows', () => {
+    expect(
+      canSkipExecutionOnEmptyJoin(innerJoin.replace('JOIN', 'LEFT OUTER JOIN')),
+    ).toBe(false);
+    expect(
+      canSkipExecutionOnEmptyJoin(innerJoin.replace('JOIN', 'FULL JOIN')),
+    ).toBe(false);
+  });
+
+  test('never skips an aggregate — COUNT still returns a row', () => {
+    expect(
+      canSkipExecutionOnEmptyJoin(
+        innerJoin.replace('SELECT a."id"', 'SELECT COUNT(*)'),
+      ),
+    ).toBe(false);
+  });
+
+  test('never skips a disjunctive predicate or a set operation', () => {
+    expect(
+      canSkipExecutionOnEmptyJoin(`${innerJoin} OR a."altId" = b."altId"`),
+    ).toBe(false);
+    expect(canSkipExecutionOnEmptyJoin(`${innerJoin} UNION ALL SELECT 1`)).toBe(
+      false,
+    );
+  });
+});
+
+describe(unitTest('createColumnValueProbe'), () => {
+  const coordinates = new LegendAIOrchestratorDataProductCoordinates();
+  coordinates.data_product = 'DP';
+  coordinates.group_id = 'g';
+  coordinates.artifact_id = 'a';
+  coordinates.version = '1.0.0';
+  const makeAccessPoint = (
+    columns: TDSServiceSchema['columns'],
+  ): TDSServiceSchema => ({
+    title: 'Accounts',
+    pattern: '/reference_directory',
+    columns,
+    parameters: [],
+    dataProductPath: 'lakehouse::REF',
+    sourceType: TDSServiceSourceType.ACCESS_POINT,
+  });
+
+  test('probes an access-point column, dropping nulls and stringifying values', async () => {
+    let calls = 0;
+    const context = TEST__createOperationContext({
+      plugin: TEST__createMockLegendAIPlugin({
+        executeLakehouseRelationQuery: () => {
+          calls += 1;
+          return Promise.resolve({
+            columns: ['accountCode'],
+            rows: [
+              { accountCode: 'SAMPLE2050' },
+              { accountCode: null },
+              { accountCode: 300 },
+            ],
+          });
+        },
+      }),
+    });
+    const probe = createColumnValueProbe(
+      [makeAccessPoint([{ name: 'accountCode' }])],
+      coordinates,
+      undefined,
+      true,
+      context,
+    );
+    expect(await probe('accountCode')).toEqual(['SAMPLE2050', '300']);
+    expect(await probe('accountCode')).toEqual(['SAMPLE2050', '300']);
+    expect(calls).toBe(1);
+  });
+
+  test('returns undefined once the probe-column cap is reached', async () => {
+    const names = ['c0', 'c1', 'c2', 'c3', 'c4'];
+    const context = TEST__createOperationContext({
+      plugin: TEST__createMockLegendAIPlugin({
+        executeLakehouseRelationQuery: () =>
+          Promise.resolve({
+            columns: names,
+            rows: [Object.fromEntries(names.map((n) => [n, 'x']))],
+          }),
+      }),
+    });
+    const probe = createColumnValueProbe(
+      [makeAccessPoint(names.map((name) => ({ name })))],
+      coordinates,
+      undefined,
+      true,
+      context,
+    );
+    for (const name of ['c0', 'c1', 'c2', 'c3']) {
+      expect(await probe(name)).toEqual(['x']);
+    }
+    expect(await probe('c4')).toBeUndefined();
+  });
+});
+
+describe(unitTest('probeJoinOverlap'), () => {
+  const coordinates = new LegendAIOrchestratorDataProductCoordinates();
+  coordinates.data_product = 'DP';
+  coordinates.group_id = 'g';
+  coordinates.artifact_id = 'a';
+  coordinates.version = '1.0.0';
+  const apA: TDSServiceSchema = {
+    title: 'Account A',
+    pattern: '/accounts_a',
+    columns: [{ name: 'accountCode', type: PRIMITIVE_TYPE.STRING }],
+    parameters: [],
+    dataProductPath: 'lakehouse::REF',
+    sourceType: TDSServiceSourceType.ACCESS_POINT,
+  };
+  const apB: TDSServiceSchema = {
+    ...apA,
+    title: 'Account B',
+    pattern: '/accounts_b',
+  };
+  const joinSql =
+    'FROM p(\'lakehouse::REF.accounts_a\') AS a JOIN p(\'lakehouse::REF.accounts_b\') AS b ON a."accountCode" = b."accountCode"';
+  const joinKeys = new Set(['accountcode']);
+  const contextProbing = (
+    rowsFor: (relationQuery: string) => TDSRowDataType[],
+  ) =>
+    TEST__createOperationContext({
+      plugin: TEST__createMockLegendAIPlugin({
+        executeLakehouseRelationQuery: (relationQuery: string) =>
+          Promise.resolve({
+            columns: ['accountCode'],
+            rows: rowsFor(relationQuery),
+          }),
+      }),
+    });
+
+  test('explains a provably-disjoint complete join key', async () => {
+    const context = contextProbing((q) =>
+      q.includes('accounts_a')
+        ? [{ accountCode: 'SAMPLE2050' }]
+        : [{ accountCode: 'SAMPLE5120' }],
+    );
+    const result = await probeJoinOverlap(
+      joinSql,
+      [apA, apB],
+      joinKeys,
+      coordinates,
+      context,
+    );
+    expect(result).toContain('cover different data');
+    expect(result).toContain('accountCode');
+    expect(result).toContain('SAMPLE2050');
+    expect(result).toContain('SAMPLE5120');
+  });
+
+  test('does not conclude disjoint on a non text join key', async () => {
+    const dateColumns = [{ name: 'accountCode', type: PRIMITIVE_TYPE.DATE }];
+    const dateA: TDSServiceSchema = { ...apA, columns: dateColumns };
+    const dateB: TDSServiceSchema = { ...apB, columns: dateColumns };
+    const probed: string[] = [];
+    const context = contextProbing((query) => {
+      probed.push(query);
+      return query.includes('accounts_a')
+        ? [{ accountCode: '2026-01-01' }]
+        : [{ accountCode: '2026-01-01T00:00:00' }];
+    });
+
+    const result = await probeJoinOverlap(
+      joinSql,
+      [dateA, dateB],
+      joinKeys,
+      coordinates,
+      context,
+    );
+
+    expect(result).toBeUndefined();
+    expect(probed).toEqual([]);
+  });
+
+  test('probes each access point with its own column casing', async () => {
+    const apUpper: TDSServiceSchema = {
+      ...apB,
+      columns: [{ name: 'ACCOUNTCODE', type: PRIMITIVE_TYPE.STRING }],
+    };
+    const probed: string[] = [];
+    const context = contextProbing((q) => {
+      probed.push(q);
+      return q.includes('accounts_a')
+        ? [{ accountCode: 'SAMPLE2050' }]
+        : [{ ACCOUNTCODE: 'ZZZ' }];
+    });
+    expect(
+      await probeJoinOverlap(
+        joinSql,
+        [apA, apUpper],
+        joinKeys,
+        coordinates,
+        context,
+      ),
+    ).toContain('Account A');
+    expect(probed.some((q) => q.includes('ACCOUNTCODE'))).toBe(true);
+  });
+
+  test('returns undefined when the probed keys overlap', async () => {
+    const context = contextProbing((q) =>
+      q.includes('accounts_a')
+        ? [{ accountCode: 'SAMPLE2050' }, { accountCode: 'SAMPLE5120' }]
+        : [{ accountCode: 'SAMPLE5120' }],
+    );
+    expect(
+      await probeJoinOverlap(
+        joinSql,
+        [apA, apB],
+        joinKeys,
+        coordinates,
+        context,
+      ),
+    ).toBeUndefined();
+  });
+
+  test('treats a probe within one row of the cap as inconclusive (NULL-truncation margin)', async () => {
+    const nearCap = Array.from(
+      { length: JOIN_OVERLAP_PROBE_LIMIT - 1 },
+      (_, i) => ({
+        accountCode: `A${i}`,
+      }),
+    );
+    const context = contextProbing((q) =>
+      q.includes('accounts_a') ? nearCap : [{ accountCode: 'ZZZ' }],
+    );
+    expect(
+      await probeJoinOverlap(
+        joinSql,
+        [apA, apB],
+        joinKeys,
+        coordinates,
+        context,
+      ),
+    ).toBeUndefined();
   });
 });
 
@@ -2658,7 +3035,7 @@ describe(unitTest('buildJoinablePairSuggestions'), () => {
     pattern: `/${title}`,
     columns,
     parameters: [],
-    dataProductPath: 'lakehouse::PM',
+    dataProductPath: 'lakehouse::TRADE',
     sourceType: TDSServiceSourceType.ACCESS_POINT,
     ...(group === undefined ? {} : { accessPointGroupTitle: group }),
   });
@@ -2885,14 +3262,11 @@ describe(unitTest('filterHistoryForAccessPoints'), () => {
   test('drops turns whose access points are disjoint from the current set', () => {
     const priorTurn = {
       question: 'employees on floor 2',
-      sql: "SELECT * FROM p('pkg.METADIR_ENTERPRISE_LATEST_ONLY') WHERE GSFLOORNUMBER = '2'",
-      queriedAccessPoints: ['METADIR_ENTERPRISE_LATEST_ONLY'],
+      sql: "SELECT * FROM p('pkg.DIRECTORY_LATEST_ONLY') WHERE BRANCHCODE = '2'",
+      queriedAccessPoints: ['DIRECTORY_LATEST_ONLY'],
     };
     expect(
-      filterHistoryForAccessPoints(
-        [priorTurn],
-        new Set(['CORPDIR_ENTERPRISE_LATEST_ONLY']),
-      ),
+      filterHistoryForAccessPoints([priorTurn], new Set(['ACCOUNTS_LATEST'])),
     ).toEqual([]);
   });
 
@@ -2918,7 +3292,7 @@ describe(unitTest('buildConversationHistory — access point tagging'), () => {
         id: 'a1',
         role: LegendAIMessageRole.ASSISTANT,
         thinkingSteps: [],
-        sql: "SELECT * FROM p('pkg.METADIR_ENTERPRISE_LATEST_ONLY') LIMIT 10",
+        sql: "SELECT * FROM p('pkg.DIRECTORY_LATEST_ONLY') LIMIT 10",
         textAnswer: null,
         dataContext: null,
         gridData: null,
@@ -2932,14 +3306,12 @@ describe(unitTest('buildConversationHistory — access point tagging'), () => {
         fallbackAction: null,
         errorType: null,
         queriedAccessPointGroups: [],
-        queriedAccessPoints: ['METADIR_ENTERPRISE_LATEST_ONLY'],
+        queriedAccessPoints: ['DIRECTORY_LATEST_ONLY'],
       },
     ];
     const history = buildConversationHistory(messages);
     expect(history).toHaveLength(1);
-    expect(history[0]?.queriedAccessPoints).toEqual([
-      'METADIR_ENTERPRISE_LATEST_ONLY',
-    ]);
+    expect(history[0]?.queriedAccessPoints).toEqual(['DIRECTORY_LATEST_ONLY']);
   });
 
   test('omits queriedAccessPoints for non-access-point SQL', () => {
@@ -2993,34 +3365,45 @@ describe(unitTest('extractFromClause'), () => {
 });
 
 describe(unitTest('resolveFilterLiteral'), () => {
-  const BUILDING_CODES = ['200W', '717NH', '30H', '1011G'];
+  const ACCOUNT_CODES = [
+    'SAMPLE2050',
+    'SAMPLE1001',
+    'SAMPLE3075',
+    'SAMPLE4090',
+  ];
 
-  test('self-heals a truncated code to the real value (717N -> 717NH)', () => {
-    expect(resolveFilterLiteral('717N', BUILDING_CODES)).toBe('717NH');
+  test('self-heals a truncated code to the real value', () => {
+    expect(resolveFilterLiteral('SAMPLE100', ACCOUNT_CODES)).toBe('SAMPLE1001');
   });
 
   test('fixes only casing when a case-insensitive match exists', () => {
-    expect(resolveFilterLiteral('717nh', BUILDING_CODES)).toBe('717NH');
+    expect(resolveFilterLiteral('sample1001', ACCOUNT_CODES)).toBe(
+      'SAMPLE1001',
+    );
   });
 
-  test('normalizes punctuation/spacing (717-nh -> 717NH)', () => {
-    expect(resolveFilterLiteral('717 nh', BUILDING_CODES)).toBe('717NH');
+  test('normalizes punctuation and spacing', () => {
+    expect(resolveFilterLiteral('SAMPLE 1001', ACCOUNT_CODES)).toBe(
+      'SAMPLE1001',
+    );
   });
 
   test('returns undefined when the literal is already valid', () => {
-    expect(resolveFilterLiteral('717NH', BUILDING_CODES)).toBeUndefined();
+    expect(resolveFilterLiteral('SAMPLE1001', ACCOUNT_CODES)).toBeUndefined();
   });
 
   test('does not guess when multiple values plausibly match', () => {
-    expect(resolveFilterLiteral('717', ['717NH', '717AB'])).toBeUndefined();
+    expect(
+      resolveFilterLiteral('SAMPLE100', ['SAMPLE1001', 'SAMPLE1002']),
+    ).toBeUndefined();
   });
 
   test('does not guess for very short literals with no exact/ci match', () => {
-    expect(resolveFilterLiteral('7', BUILDING_CODES)).toBeUndefined();
+    expect(resolveFilterLiteral('S', ACCOUNT_CODES)).toBeUndefined();
   });
 
   test('returns undefined when nothing plausibly matches', () => {
-    expect(resolveFilterLiteral('ZZZZ', BUILDING_CODES)).toBeUndefined();
+    expect(resolveFilterLiteral('ZZZZ', ACCOUNT_CODES)).toBeUndefined();
   });
 });
 
@@ -3044,9 +3427,11 @@ describe(unitTest('IN_PREDICATE_PATTERN'), () => {
   test('parses a multi-value list tolerating whitespace', () => {
     expect(
       parseInPredicates(
-        `SELECT * FROM t WHERE "GSBUILDINGCODE" IN ( '717NH' ,'200W' )`,
+        `SELECT * FROM t WHERE "ACCOUNTCODE" IN ( 'SAMPLE1001' ,'SAMPLE2050' )`,
       ),
-    ).toEqual([{ column: 'GSBUILDINGCODE', literals: ['717NH', '200W'] }]);
+    ).toEqual([
+      { column: 'ACCOUNTCODE', literals: ['SAMPLE1001', 'SAMPLE2050'] },
+    ]);
   });
 
   test('tolerates SQL-escaped quotes inside a literal', () => {
@@ -3067,16 +3452,16 @@ describe(unitTest('IN_PREDICATE_PATTERN'), () => {
 
   test('resolves each list element against real values independently', () => {
     const [predicate] = parseInPredicates(
-      `SELECT * FROM t WHERE "GSBUILDINGCODE" IN ('717N', '200W')`,
+      `SELECT * FROM t WHERE "ACCOUNTCODE" IN ('SAMPLE100', 'SAMPLE2050')`,
     );
-    const values = ['717NH', '200W', '30H'];
+    const values = ['SAMPLE1001', 'SAMPLE2050', 'SAMPLE3075'];
     const resolved = predicate?.literals.map((literal) => ({
       literal,
       resolved: resolveFilterLiteral(literal, values),
     }));
     expect(resolved).toEqual([
-      { literal: '717N', resolved: '717NH' },
-      { literal: '200W', resolved: undefined },
+      { literal: 'SAMPLE100', resolved: 'SAMPLE1001' },
+      { literal: 'SAMPLE2050', resolved: undefined },
     ]);
   });
 });
@@ -3185,9 +3570,9 @@ describe(unitTest('servicePId'), () => {
         pattern: '/ap_refined_feed',
         columns: [],
         parameters: [],
-        dataProductPath: 'lakehouse::PM',
+        dataProductPath: 'lakehouse::TRADE',
       }),
-    ).toBe('lakehouse::PM.ap_refined_feed');
+    ).toBe('lakehouse::TRADE.ap_refined_feed');
   });
 
   test('returns undefined when the service has no data-product path', () => {

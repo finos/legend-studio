@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.74
+
+## 2.1.73
+
+## 2.1.72
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Only offer Data Products with a mapping-based default execution context when creating data-space-based Data Quality validations, so a Lakehouse-style Data Product elsewhere in the project no longer breaks the selector.
+
+## 2.1.71
+
 ## 2.1.70
 
 ## 2.1.69

@@ -1,5 +1,21 @@
 # @finos/legend-query-builder
 
+## 4.19.5
+
+### Patch Changes
+
+- [#5453](https://github.com/finos/legend-studio/pull/5453) [`6eb07be`](https://github.com/finos/legend-studio/commit/6eb07bee43dd02a56c617c2d6d58a18a1577b47b) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Introduce the Legend AI agent chat panel to the Legend Query : the bundled Legend Query application picks up the `legendAI.agentURL` configuration, the query editor header exposes a Legend AI agent chat toggle gated by that configuration, and the query builder replaces the previous Legend AI query chat with the new agent chat panel, Agent chat telemetry is moved into a dedicated `LegendQueryAgentChatTelemetryHelper`, and a plugin extension is added so extra metadata (e.g. agent chat trace id) can be attached to query run launch/success/failure/cancel telemetry.
+
+## 4.19.4
+
+## 4.19.3
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Make `CuratedTemplateQuery.executionContextKey` optional to support Data Products with no default execution context.
+
+## 4.19.2
+
 ## 4.19.1
 
 ### Patch Changes

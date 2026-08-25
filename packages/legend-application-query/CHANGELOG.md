@@ -1,5 +1,21 @@
 # @finos/legend-application-query
 
+## 13.8.45
+
+### Patch Changes
+
+- [#5453](https://github.com/finos/legend-studio/pull/5453) [`6eb07be`](https://github.com/finos/legend-studio/commit/6eb07bee43dd02a56c617c2d6d58a18a1577b47b) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Introduce the Legend AI agent chat panel to the Legend Query : the bundled Legend Query application picks up the `legendAI.agentURL` configuration, the query editor header exposes a Legend AI agent chat toggle gated by that configuration, and the query builder replaces the previous Legend AI query chat with the new agent chat panel, Agent chat telemetry is moved into a dedicated `LegendQueryAgentChatTelemetryHelper`, and a plugin extension is added so extra metadata (e.g. agent chat trace id) can be attached to query run launch/success/failure/cancel telemetry.
+
+## 13.8.44
+
+## 13.8.43
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Stop throwing when a Data Product has no default execution context or an execution context has no mapping/runtime; the query editor now degrades gracefully (e.g. showing "(none)" in the info modal) instead of crashing (temporary).
+
+## 13.8.42
+
 ## 13.8.41
 
 ## 13.8.40

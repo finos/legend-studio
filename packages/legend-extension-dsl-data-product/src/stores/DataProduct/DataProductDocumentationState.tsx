@@ -48,7 +48,7 @@ export class DataProductDocumentationState
     );
   }
 
-  private static fromElementDocs(
+  static fromElementDocs(
     elementDocs: V1_ModelDocumentationEntry[],
     graphManagerState: GraphManagerState,
   ): NormalizedDocumentationEntry[] {
@@ -168,4 +168,18 @@ export class DataProductDocumentationState
   override deregisterCommands(): void {
     //To be implemented
   }
+}
+
+/**
+ * Normalizes protocol element docs for callers that need the entries without
+ * constructing the viewer documentation state.
+ */
+export function normalizeDataProductElementDocs(
+  elementDocs: V1_ModelDocumentationEntry[],
+  graphManagerState: GraphManagerState,
+): NormalizedDocumentationEntry[] {
+  return DataProductDocumentationState.fromElementDocs(
+    elementDocs,
+    graphManagerState,
+  );
 }

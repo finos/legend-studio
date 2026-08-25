@@ -40,15 +40,15 @@ export const DataSpaceEditor = observer(() => {
   }
 
   const validPreviewState = (): boolean => {
-    const stubDefault = Boolean(
-      isStubbed_PackageableElement(
-        dataSpace.defaultExecutionContext.defaultRuntime.value,
-      ) &&
-        isStubbed_PackageableElement(
-          dataSpace.defaultExecutionContext.mapping.value,
-        ),
-    );
-    return Boolean(!stubDefault);
+    const ec = dataSpace.defaultExecutionContext;
+    if (!ec?.mapping) {
+      return false;
+    }
+    const mappingIsStub = isStubbed_PackageableElement(ec.mapping.value);
+    const runtimeIsStub =
+      ec.defaultRuntime !== undefined &&
+      isStubbed_PackageableElement(ec.defaultRuntime.value);
+    return !mappingIsStub && !runtimeIsStub;
   };
 
   const previewDataSpace = (): void => {
@@ -69,7 +69,7 @@ export const DataSpaceEditor = observer(() => {
         darkMode={true}
         isReadOnly={dataSpaceState.isReadOnly}
       />
-      <PanelHeader title="General" darkMode={true}>
+      <PanelHeader darkMode={true}>
         <div className="panel__header__actions">
           <div className="btn__dropdown-combo btn__dropdown-combo--primary">
             <button

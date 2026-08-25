@@ -26,12 +26,26 @@ import {
   type V1_DataElementReference,
 } from '@finos/legend-graph';
 
+export class V1_DataSpaceMappingProvider implements Hashable {
+  element!: V1_PackageableElementPointer;
+  keys: string[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_MAPPING_PROVIDER,
+      this.element.path,
+      hashArray(this.keys),
+    ]);
+  }
+}
+
 export class V1_DataSpaceExecutionContext implements Hashable {
   name!: string;
   title?: string | undefined;
   description?: string | undefined;
-  mapping!: V1_PackageableElementPointer;
-  defaultRuntime!: V1_PackageableElementPointer;
+  mapping?: V1_PackageableElementPointer | undefined;
+  defaultRuntime?: V1_PackageableElementPointer | undefined;
+  mappingProvider?: V1_DataSpaceMappingProvider | undefined;
   testData: V1_DataElementReference | undefined;
 
   get hashCode(): string {
@@ -40,8 +54,9 @@ export class V1_DataSpaceExecutionContext implements Hashable {
       this.name,
       this.title ?? '',
       this.description ?? '',
-      this.mapping.path,
-      this.defaultRuntime.path,
+      this.mapping?.path ?? '',
+      this.defaultRuntime?.path ?? '',
+      this.mappingProvider ?? '',
       this.testData ?? '',
     ]);
   }
@@ -175,8 +190,8 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   taggedValues: V1_TaggedValue[] = [];
   title?: string | undefined;
   description?: string | undefined;
-  executionContexts!: V1_DataSpaceExecutionContext[];
-  defaultExecutionContext!: string;
+  executionContexts?: V1_DataSpaceExecutionContext[] | undefined;
+  defaultExecutionContext?: string | undefined;
   elements?: V1_DataSpaceElementPointer[] | undefined;
   executables?: V1_DataSpaceExecutable[] | undefined;
   diagrams?: V1_DataSpaceDiagram[] | undefined;
@@ -189,8 +204,8 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       hashArray(this.taggedValues),
       this.title ?? '',
       this.description ?? '',
-      hashArray(this.executionContexts),
-      this.defaultExecutionContext,
+      hashArray(this.executionContexts ?? []),
+      this.defaultExecutionContext ?? '',
       hashArray(this.elements ?? []),
       hashArray(this.executables ?? []),
       hashArray(this.diagrams ?? []),

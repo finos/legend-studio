@@ -202,8 +202,8 @@ export const observe_ModelAccessPointGroup = skipObserved(
       diagrams: observable,
     });
     observe_PackageableElementReference(metamodel.mapping);
-    metamodel.featuredElements.forEach(observe_DataProductElementScope);
-    metamodel.diagrams.forEach(observe_DataProductDiagram);
+    metamodel.featuredElements?.forEach(observe_DataProductElementScope);
+    metamodel.diagrams?.forEach(observe_DataProductDiagram);
 
     return metamodel;
   },

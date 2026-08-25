@@ -59,8 +59,48 @@ On failure, screenshots land in `build/test-results/`; in CI, traces are recorde
 4. Rely on Playwright's auto-waiting web-first assertions (`await expect(locator).toBeVisible()`) — never `waitForTimeout()`.
 5. Playwright UI mode (`test:e2e:ui`) and `npx playwright codegen localhost:9001/query/` are the fastest ways to author locators.
 
+### Asserting the generated query (lambda)
+
+UI assertions prove panels render, not that the query the app _builds_ is correct. To check semantics, assert on the lambda the app sends to the engine: `setupEngineMock()` returns a `CapturedEngineRequests` handle recording every `executeInputs` (from `Run Query`) and `lambdas` (from saving) payload, and [`QueryProtocol.ts`](./src/support/QueryProtocol.ts) provides typed helpers to navigate the Pure V1 protocol — `getFunctionChain()` for the operation order, plus `asFunction`/`asProperty`/`getValue`/`getCollectionValues` for the details. See `QueryBuilderProtocol.spec.ts`.
+
+Prefer this over scraping the `Show Protocol` viewer: the captured payload is exactly what a real engine would receive, and it needs no DOM parsing. Assert on meaningful fragments (function chain, properties, values) rather than snapshotting the whole JSON, which would break on every unrelated protocol change.
+
+### Testing error paths
+
+`setupEngineMock()`'s handle carries a `failures` map: set an engine path on it and the mock answers that endpoint with an error until you delete the entry, so the app's real error handling runs. Deleting mid-test lets you assert recovery.
+
+```ts
+captured.failures.set('pure/v1/execution/execute', {
+  status: 500,
+  message: 'table COVID_DATA does not exist',
+});
+// ... drive the UI, assert the message reaches the user ...
+captured.failures.delete('pure/v1/execution/execute'); // next call succeeds
+```
+
+See `QueryBuilderErrorHandling.spec.ts`. Assert on the user-visible message text rather than notification CSS classes — engine errors surface through more than one component.
+
+### Enriching depot data
+
+The mock depot server holds a single data space with a single execution
+context. Rather than growing that shared fixture — it backs local development
+for every Legend app — [`DepotMock.ts`](./src/support/DepotMock.ts) intercepts
+its responses and enriches them per-test: `mockAdditionalDataSpaces()` pads the
+listing out to N data spaces, and `mockSecondExecutionContext()` gives the
+fixture's data space a second execution context (patched into the project
+entities the graph is built from, not the analytics artifact). See
+`QueryBuilderDataSpaceSetup.spec.ts`.
+
+Two things to know about the setup panel's selectors: they are virtualized
+with `react-window`, so only the options in view exist in the DOM — assert on
+the selector's own "N results available" status message for list size, and
+search to reach entries beyond the rendered window. And the execution context
+selector only renders when a data space has more than one context.
+
 ### When your flow needs backend data that isn't mocked yet
 
+- **Result grid**: the app renders ag-grid's _community_ grid unless `TEMPORARY__enableGridEnterpriseMode` is set, and this suite runs against a dev build with no ag-grid license. Enterprise-only interactions — multi-cell range selection (needed for `Filter By` to build an `in` list) and `Copy Row Value` (needs row selection) — therefore cannot be covered here; `Filter By`/`Filter Out` fall back to the single right-clicked cell.
+- **Save/load round-trip**: the engine mock is stateful per test — created queries (`POST /pure/v1/query`) are stored in-memory and served back by id, and the lambda JSON sent to `jsonToGrammar/lambda` on save is echoed back by `grammarToJson/lambda` on load, so the app's own serialization round-trips without the mock needing a Pure grammar parser (see `QuerySaveLoad.spec.ts`).
 - **Engine endpoints**: unmocked engine calls fail loudly with a `501` response whose message names the endpoint (`Unmocked engine endpoint called in e2e test: ...`) — check the Playwright trace or browser console to find it. To add one: add a `case` for the endpoint in [`EngineMock.ts`](./src/support/EngineMock.ts), and put its response payload in [`TEST_DATA__EngineResponses.ts`](./src/support/TEST_DATA__EngineResponses.ts) (captured from a live engine when possible).
 - **Depot data**: extend the mock depot server in [`fixtures/legend-mock-server`](../../fixtures/legend-mock-server) (`src/depot.ts` / `src/depot-data.ts`) when a flow needs additional depot routes or entities.
 

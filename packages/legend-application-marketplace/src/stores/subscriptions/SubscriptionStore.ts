@@ -46,6 +46,7 @@ export class SubscriptionStore {
     makeObservable(this, {
       subscriptionFeeds: observable,
       totalCost: observable,
+      selectedUser: observable,
       selectedSubscriptions: observable,
       addSelectedSubscriptions: action,
       removeSelectedSubscription: action,
@@ -57,6 +58,8 @@ export class SubscriptionStore {
       cancelSubscription: flow,
     });
     this.baseStore = baseStore;
+    this.selectedUser.id =
+      baseStore.applicationStore.identityService.currentUser;
   }
 
   addSelectedSubscriptions(subscription: Subscription | null): void {
@@ -84,6 +87,8 @@ export class SubscriptionStore {
 
   resetSelectedUser(): void {
     this.selectedUser = new LegendUser();
+    this.selectedUser.id =
+      this.baseStore.applicationStore.identityService.currentUser;
   }
 
   *refresh(): GeneratorFn<void> {

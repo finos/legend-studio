@@ -65,7 +65,7 @@ export class DataProductViewerModelsDocumentationState
       );
     const allFeaturedElementsScopes = dataProduct.accessPointGroups
       .filter((apg) => apg instanceof ModelAccessPointGroup)
-      .flatMap((apg) => apg.featuredElements);
+      .flatMap((apg) => apg.featuredElements ?? []);
     const allFeaturedElements = allFeaturedElementsScopes.map((scope) => {
       return scope.element.value;
     });

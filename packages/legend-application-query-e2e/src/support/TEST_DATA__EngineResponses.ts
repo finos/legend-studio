@@ -215,9 +215,21 @@ export const TEST_DATA__ExecutionResult = {
   ],
   result: {
     columns: ['Cases', 'Case Type', 'Date', 'Fips', 'Id', 'Last Reported Flag'],
+    // `Case Type` intentionally repeats a few distinct values so grid
+    // interactions like `Filter By`/`Filter Out` (including multi-value `in`
+    // filters) have meaningful data to work against
     rows: [
       { values: [250, 'Confirmed', '2021-04-01', '00001', 1, true] },
       { values: [301, 'Confirmed', '2021-04-02', '00002', 2, false] },
+      { values: [180, 'Active', '2021-04-03', '00003', 3, true] },
+      { values: [420, 'Death', '2021-04-04', '00004', 4, false] },
+      { values: [95, 'Active', '2021-04-05', '00005', 5, true] },
+      { values: [512, 'Confirmed', '2021-04-06', '00006', 6, false] },
+      { values: [77, 'Death', '2021-04-07', '00007', 7, true] },
+      { values: [640, 'Confirmed', '2021-04-08', '00008', 8, false] },
     ],
   },
 };
+
+/** Row count of {@link TEST_DATA__ExecutionResult}. */
+export const TEST_DATA__EXECUTION_RESULT_ROW_COUNT = 8;

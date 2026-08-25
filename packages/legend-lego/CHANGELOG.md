@@ -1,5 +1,15 @@
 # @finos/legend-lego
 
+## 2.0.217
+
+## 2.0.216
+
+## 2.0.215
+
+### Patch Changes
+
+- [#5440](https://github.com/finos/legend-studio/pull/5440) [`6c85092`](https://github.com/finos/legend-studio/commit/6c850924de24587e14e4686905216708f17c0c58) ([@Rakan1837](https://github.com/Rakan1837)) - `CodeEditor` now accepts an optional `rightActions?: ReactNode` prop that is rendered in the editor header alongside the built-in word-wrap toggle. This lets callers add editor-scoped actions (e.g. an "add entry" button for a JSON editor) on the same row as the word-wrap control without having to redraw the editor header.
+
 ## 2.0.214
 
 ### Patch Changes

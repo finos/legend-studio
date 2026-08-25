@@ -18,6 +18,7 @@ import { action } from 'mobx';
 import {
   type DataQualityClassValidationsConfiguration,
   type DataQualityExecutionContext,
+  type DataQualityPersistenceStrategy,
   type DataQualityRelationValidation,
   type DataQualityRelationValidationConfiguration,
   type DataQualityRelationComparisonConfiguration,
@@ -43,6 +44,7 @@ import {
 import {
   observe_DataQualityRootGraphFetchTree,
   observe_DataQualityRelationValidation,
+  observe_DataQualityPersistenceStrategy,
   observe_DataSpaceDataQualityExecutionContext,
   observe_MappingAndRuntimeDataQualityExecutionContext,
 } from './action/changeDetection/DSL_DataQuality_ObserverHelper.js';
@@ -212,6 +214,19 @@ export const dataQualityRelationValidation_swapParameters = action(
     );
   },
 );
+
+export const dataQualityRelationValidationConfig_setPersistenceStrategy =
+  action(
+    (
+      element: DataQualityRelationValidationConfiguration,
+      val: DataQualityPersistenceStrategy | undefined,
+      observerContext: ObserverContext,
+    ): void => {
+      element.persistenceStrategy = val
+        ? observe_DataQualityPersistenceStrategy(val, observerContext)
+        : undefined;
+    },
+  );
 
 export const dataQualityRelationComparison_setSource = action(
   (
