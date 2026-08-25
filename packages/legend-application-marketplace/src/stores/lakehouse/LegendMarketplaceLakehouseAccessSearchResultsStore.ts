@@ -30,18 +30,19 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  DataProductSearchResponse,
-  ErrorDataProductSearchResultDetails,
-  LakehouseDataProductSearchResultDetails,
+  type DataProductSearchResponse,
   type MarketplaceServerClient,
   SearchType,
 } from '@finos/legend-server-marketplace';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
-import { V1_PureGraphManager } from '@finos/legend-graph';
+import type { V1_PureGraphManager } from '@finos/legend-graph';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
-import { ProductCardState } from './dataProducts/ProductCardState.js';
+import type { ProductCardState } from './dataProducts/ProductCardState.js';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import {
+  getOrCreateGraphManager,
+  processRawSearchResults,
+} from './SearchResultsStoreUtils.js';
 import {
   type DataProductSourceFilter,
   type FilterCounts,
@@ -104,6 +105,14 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
   readonly executingSearchState = ActionState.create();
   private _currentFetchToken = 0;
   private _abortController: AbortController | undefined = undefined;
+  /**
+   * Cache holder for `getOrCreateGraphManager` — a graph manager is expensive to
+   * construct and initialize, and is safe to reuse across searches from this store
+   * for as long as the store (and the page it backs) is alive.
+   */
+  private readonly _graphManagerCache: {
+    current: V1_PureGraphManager | undefined;
+  } = { current: undefined };
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -120,7 +129,7 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
 
     makeObservable<
       LegendMarketplaceLakehouseAccessSearchResultsStore,
-      '_currentFetchToken' | '_abortController'
+      '_currentFetchToken' | '_abortController' | '_graphManagerCache'
     >(this, {
       searchQuery: observable,
       productCardStates: observable,
@@ -136,6 +145,7 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
       hasFilteredDataProducts: observable,
       _currentFetchToken: false,
       _abortController: false,
+      _graphManagerCache: false,
       setSearchQuery: action,
       setProductCardStates: action,
       setSort: action,
@@ -349,22 +359,9 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
 
       const searchFilters = this.buildSearchFilters();
 
-      // Create graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
+      const graphManager = yield* getOrCreateGraphManager(
+        this.marketplaceBaseStore,
+        this._graphManagerCache,
       );
 
       const rawResults =
@@ -385,7 +382,8 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
         return;
       }
 
-      const { productCardStates, response } = this.processRawSearchResults(
+      const { productCardStates, response } = processRawSearchResults(
+        this.marketplaceBaseStore,
         rawResults,
         graphManager,
         token,
@@ -431,48 +429,6 @@ export class LegendMarketplaceLakehouseAccessSearchResultsStore {
         );
       }
     }
-  }
-
-  private processRawSearchResults(
-    rawResults: PlainObject<DataProductSearchResponse>,
-    graphManager: V1_PureGraphManager,
-    token: string | undefined,
-  ): {
-    productCardStates: ProductCardState[];
-    response: DataProductSearchResponse;
-  } {
-    const response =
-      DataProductSearchResponse.serialization.fromJson(rawResults);
-
-    const validResults = response.results.filter(
-      (result) =>
-        !(
-          result.dataProductDetails instanceof
-          ErrorDataProductSearchResultDetails
-        ) &&
-        !(
-          result.dataProductDetails instanceof
-            LakehouseDataProductSearchResultDetails &&
-          result.dataProductDetails.origin === null
-        ),
-    );
-
-    const usedImages = new Set<string>();
-    const productCardStates: ProductCardState[] = validResults.map(
-      (result) =>
-        new ProductCardState(
-          this.marketplaceBaseStore,
-          result,
-          graphManager,
-          new Map(),
-          usedImages,
-        ),
-    );
-    productCardStates.forEach((dataProductState) =>
-      dataProductState.init(token),
-    );
-
-    return { productCardStates, response };
   }
 
   dispose(): void {
