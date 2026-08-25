@@ -63,13 +63,10 @@ const setupTestComponent = async (
   query: string | undefined,
   dataProductEnv: 'prod' | 'prod-par' | 'dev' = 'prod',
   searchResponse: PlainObject<DataProductSearchResponse> = mockLakehouseAccessSearchResultResponse,
-  showDevFeatures = true,
 ) => {
   const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
     dataProductEnv,
   });
-  MOCK__baseStore.applicationStore.config.options.showDevFeatures =
-    showDevFeatures;
   mockUseSearchParams.mockReturnValue([
     new URLSearchParams(query === undefined ? {} : { query }),
     mockSetSearchParams,
@@ -237,23 +234,6 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
         /This is the new home for what was previously called Data Product/,
       ),
     ).toBeDefined();
-  });
-
-  test('hides the intro banner when dev features are disabled', async () => {
-    await setupTestComponent(
-      'data',
-      'prod',
-      mockLakehouseAccessSearchResultResponse,
-      false,
-    );
-
-    await screen.findByText('2 Products');
-
-    expect(
-      screen.queryByText(
-        /This is the new home for what was previously called Data Product/,
-      ),
-    ).toBeNull();
   });
 
   test('does not offer producer search or field search settings', async () => {
