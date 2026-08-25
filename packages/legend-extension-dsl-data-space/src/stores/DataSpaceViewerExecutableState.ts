@@ -131,19 +131,12 @@ export class DataSpaceExecutableTDSResultState extends DataSpaceExecutableAnalys
         return;
       } else {
         const analysis = this.execState.viewerState.dataSpaceAnalysisResult;
-        const executionContext = info.executionContextKey
+        const executionContextKey = info.executionContextKey
           ? (analysis.executionContextsIndex.get(info.executionContextKey) ??
             analysis.defaultExecutionContext)
           : analysis.defaultExecutionContext;
-        if (!executionContext?.defaultRuntime) {
-          this.execState.viewerState.applicationStore.logService.error(
-            LogEvent.create(DSL_DATASPACE_EVENT.ERROR_GENERATE_SAMPLE_VALUES),
-            'An execution context with a default runtime is required to generate sample values',
-          );
-          return;
-        }
-        mapping = executionContext.mapping.path;
-        runtime = executionContext.defaultRuntime.path;
+        mapping = executionContextKey.mapping.path;
+        runtime = executionContextKey.defaultRuntime.path;
       }
       this.setGridData(
         this.buildGridData({
@@ -192,7 +185,7 @@ export class DataSpaceViewerExecutableState {
   readonly uuid = uuid();
   readonly viewerState: DataSpaceViewerState;
   readonly value: DataSpaceExecutableAnalysisResult;
-  resultState: DataSpaceExecutableAnalysisResultState | undefined;
+  resultState: DataSpaceExecutableAnalysisResultState;
 
   constructor(
     dataSpaceViewerState: DataSpaceViewerState,
@@ -208,10 +201,10 @@ export class DataSpaceViewerExecutableState {
 
   buildResultState(
     value: DataSpaceExecutableAnalysisResult,
-  ): DataSpaceExecutableAnalysisResultState | undefined {
+  ): DataSpaceExecutableAnalysisResultState {
     if (value.result instanceof DataSpaceExecutableTDSResult) {
       return new DataSpaceExecutableTDSResultState(this, value.result);
     }
-    return undefined;
+    return new DataSpaceExecutableAnalysisResultState(this, value.result);
   }
 }

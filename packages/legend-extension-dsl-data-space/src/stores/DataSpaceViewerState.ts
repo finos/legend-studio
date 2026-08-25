@@ -25,7 +25,6 @@ import {
   type GraphManagerState,
   type PackageableRuntime,
 } from '@finos/legend-graph';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { action, computed, makeObservable, observable } from 'mobx';
 import {
   type DataSpaceAnalysisResult,
@@ -139,22 +138,16 @@ export class DataSpaceViewerState {
     this.openServiceQuery = actions.openServiceQuery;
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
 
-    this.currentExecutionContext = guaranteeNonNullable(
-      dataSpaceAnalysisResult.defaultExecutionContext ??
-        Array.from(dataSpaceAnalysisResult.executionContextsIndex.values())[0],
-      `Can't view data product '${dataSpaceAnalysisResult.path}': no execution context is available`,
-    );
-    this.currentRuntime = guaranteeNonNullable(
-      this.currentExecutionContext.defaultRuntime,
-      `Can't view data product '${dataSpaceAnalysisResult.path}': execution context '${this.currentExecutionContext.name}' has no default runtime`,
-    );
+    this.currentExecutionContext =
+      dataSpaceAnalysisResult.defaultExecutionContext;
+    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
     this.currentDataAccessState = new DataAccessState(
       this.applicationStore,
       this.graphManagerState,
       {
         initialDatasets: this.currentExecutionContext.datasets,
         mapping: this.currentExecutionContext.mapping.path,
-        runtime: this.currentRuntime.path,
+        runtime: this.currentExecutionContext.defaultRuntime.path,
         getQuery: async () => undefined,
         graphData: this.retrieveGraphData(),
       },
@@ -186,17 +179,14 @@ export class DataSpaceViewerState {
     val: DataSpaceExecutionContextAnalysisResult,
   ): void {
     this.currentExecutionContext = val;
-    this.currentRuntime = guaranteeNonNullable(
-      val.defaultRuntime,
-      `Execution context '${val.name}' has no default runtime`,
-    );
+    this.currentRuntime = val.defaultRuntime;
     this.currentDataAccessState = new DataAccessState(
       this.applicationStore,
       this.graphManagerState,
       {
         initialDatasets: val.datasets,
         mapping: val.mapping.path,
-        runtime: this.currentRuntime.path,
+        runtime: val.defaultRuntime.path,
         getQuery: async () => undefined,
         graphData: this.retrieveGraphData(),
       },

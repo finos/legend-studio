@@ -1182,15 +1182,6 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           );
           executable.result = tdsResult;
         }
-        if (executableProtocol.executableReturnType) {
-          executable.executableReturnType = new GenericType(
-            graph.getType(
-              V1_getGenericTypeFullPath(
-                executableProtocol.executableReturnType,
-              ),
-            ),
-          );
-        }
         return executable;
       },
     );

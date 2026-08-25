@@ -23,9 +23,6 @@ import {
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
   V1_MappingModelCoverageAnalysisResult,
-  type V1_GenericType,
-  V1_genericTypeModelSchema,
-  V1_deserializeGenericType,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -88,7 +85,7 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   description?: string | undefined;
   mapping!: string;
   mappingProvider?: V1_DataSpaceMappingProviderAnalysisResult;
-  defaultRuntime?: string | undefined;
+  defaultRuntime!: string;
   compatibleRuntimes!: string[];
   /**
    * @deprecated
@@ -136,7 +133,7 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
           V1_deserializeDatasetSpecification(val, plugins),
       ),
     ),
-    defaultRuntime: optional(primitive()),
+    defaultRuntime: primitive(),
     description: optional(primitive()),
     mappingModelCoverageAnalysisResult: optional(
       usingModelSchema(
@@ -493,8 +490,7 @@ export class V1_DataSpaceExecutableAnalysisResult {
   description?: string | undefined;
   executable?: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
-  result?: V1_DataSpaceExecutableResult | undefined;
-  executableReturnType?: V1_GenericType;
+  result!: V1_DataSpaceExecutableResult;
 }
 
 const V1_dataSpaceExecutableAnalysisResultModelSchema = (
@@ -508,13 +504,7 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
       (val: PlainObject<V1_DataSpaceExecutableInfo>) =>
         V1_deserializeDataSpaceExecutableInfo(plugins, val),
     ),
-    result: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
-    executableReturnType: optional(
-      custom(
-        (val) => serialize(V1_genericTypeModelSchema, val),
-        (val) => V1_deserializeGenericType(val),
-      ),
-    ),
+    result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
     title: primitive(),
   });
 
@@ -533,7 +523,7 @@ export class V1_DataSpaceAnalysisResult {
   model!: V1_PureModelContextData;
 
   executionContexts: V1_DataSpaceExecutionContextAnalysisResult[] = [];
-  defaultExecutionContext?: string | undefined;
+  defaultExecutionContext!: string;
 
   elements: string[] = [];
   elementDocs: V1_DataSpaceModelDocumentationEntry[] = [];
@@ -571,7 +561,7 @@ export const V1_dataSpaceAnalysisResultModelSchema = (
     executionContexts: customListWithSchema(
       V1_dataSpaceExecutionContextAnalysisResultModelSchema(plugins),
     ),
-    defaultExecutionContext: optional(primitive()),
+    defaultExecutionContext: primitive(),
 
     elements: list(primitive()),
     elementDocs: list(
