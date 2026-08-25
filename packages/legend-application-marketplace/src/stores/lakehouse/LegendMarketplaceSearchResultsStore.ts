@@ -22,15 +22,11 @@ import {
   isNonNullable,
   LogEvent,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataProductSearchResult,
   DataProductSearchResultDetailsType,
-  DataProductSearchResponse,
-  ErrorDataProductSearchResultDetails,
   LakehouseAdHocDataProductSearchResultOrigin,
-  LakehouseDataProductSearchResultDetails,
   LakehouseDataProductSearchResultOriginType,
   LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
@@ -38,24 +34,24 @@ import {
   type TaxonomyNode,
 } from '@finos/legend-server-marketplace';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   V1_deserializeDataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   V1_entitlementsDataProductLiteResponseToDataProductLite,
-  V1_PureGraphManager,
+  type V1_PureGraphManager,
   extractPackagePathFromPath,
   extractElementNameFromPath,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import {
-  type StoredSummaryEntity,
-  DepotScope,
-} from '@finos/legend-server-depot';
+import { StoredSummaryEntity, DepotScope } from '@finos/legend-server-depot';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import {
+  getOrCreateGraphManager,
+  processRawSearchResults,
+} from './SearchResultsStoreUtils.js';
 
 export const TAXONOMY_UNDEFINED_NODE_ID = '__undefined__';
 
@@ -222,6 +218,14 @@ export class LegendMarketplaceSearchResultsStore {
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
   readonly fetchingProducerSearchLegacyDataProductsState = ActionState.create();
+  /**
+   * Cache holder for `getOrCreateGraphManager` — a graph manager is expensive to
+   * construct and initialize, and is safe to reuse across searches from this store
+   * for as long as the store (and the page it backs) is alive.
+   */
+  private readonly _graphManagerCache: {
+    current: V1_PureGraphManager | undefined;
+  } = { current: undefined };
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -238,7 +242,7 @@ export class LegendMarketplaceSearchResultsStore {
 
     makeObservable<
       LegendMarketplaceSearchResultsStore,
-      '_lastTaxonomyQueryKey'
+      '_lastTaxonomyQueryKey' | '_graphManagerCache'
     >(this, {
       searchQuery: observable,
       useProducerSearch: observable,
@@ -254,6 +258,7 @@ export class LegendMarketplaceSearchResultsStore {
       selectedLicenses: observable,
       filterCounts: observable,
       _lastTaxonomyQueryKey: false,
+      _graphManagerCache: false,
       setSearchQuery: action,
       setUseProducerSearch: action,
       page: observable,
@@ -677,22 +682,9 @@ export class LegendMarketplaceSearchResultsStore {
 
       const searchFilters = this.buildSearchFilters();
 
-      // Create graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
+      const graphManager = yield* getOrCreateGraphManager(
+        this.marketplaceBaseStore,
+        this._graphManagerCache,
       );
 
       if (useProducerSearch) {
@@ -723,48 +715,6 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
-  private processRawSearchResults(
-    rawResults: PlainObject<DataProductSearchResponse>,
-    graphManager: V1_PureGraphManager,
-    token: string | undefined,
-  ): {
-    productCardStates: ProductCardState[];
-    response: DataProductSearchResponse;
-  } {
-    const response =
-      DataProductSearchResponse.serialization.fromJson(rawResults);
-
-    const validResults = response.results.filter(
-      (result) =>
-        !(
-          result.dataProductDetails instanceof
-          ErrorDataProductSearchResultDetails
-        ) &&
-        !(
-          result.dataProductDetails instanceof
-            LakehouseDataProductSearchResultDetails &&
-          result.dataProductDetails.origin === null
-        ),
-    );
-
-    const usedImages = new Set<string>();
-    const productCardStates: ProductCardState[] = validResults.map(
-      (result) =>
-        new ProductCardState(
-          this.marketplaceBaseStore,
-          result,
-          graphManager,
-          new Map(),
-          usedImages,
-        ),
-    );
-    productCardStates.forEach((dataProductState) =>
-      dataProductState.init(token),
-    );
-
-    return { productCardStates, response };
-  }
-
   private async executeSemanticSearch(
     query: string,
     graphManager: V1_PureGraphManager,
@@ -784,7 +734,8 @@ export class LegendMarketplaceSearchResultsStore {
         this.showAllProducts,
       );
 
-      const { productCardStates, response } = this.processRawSearchResults(
+      const { productCardStates, response } = processRawSearchResults(
+        this.marketplaceBaseStore,
         rawResults,
         graphManager,
         token,
@@ -933,14 +884,17 @@ export class LegendMarketplaceSearchResultsStore {
 
     this.fetchingProducerSearchLegacyDataProductsState.inProgress();
     try {
-      const dataSpaceEntitySummaries =
-        (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
+      const rawDataSpaceEntitySummaries =
+        await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             scope: DepotScope.RELEASES,
             summary: true,
           },
-        )) as unknown as StoredSummaryEntity[];
+        );
+      const dataSpaceEntitySummaries = rawDataSpaceEntitySummaries.map(
+        (entity) => StoredSummaryEntity.serialization.fromJson(entity),
+      );
       const usedImages = new Set<string>();
       const productCardStates = dataSpaceEntitySummaries
         .map((entity) => {
