@@ -32,6 +32,7 @@ import {
 import { type TerminalResult } from '@finos/legend-server-marketplace';
 import {
   formatItemPrice,
+  formatProfileSummaryLine,
   OrderProfileLabel,
   OrderProfileTableHeader,
 } from './orderProfileUtils.js';
@@ -51,7 +52,7 @@ export const OwnedTerminalDetailModal = observer(
 
     const ownedAddons = useMemo(() => terminal.items ?? [], [terminal.items]);
     const addOnCount = ownedAddons.length;
-    const summaryLine = `1 Terminal · ${addOnCount} Add-On${addOnCount === 1 ? '' : 's'}`;
+    const summaryLine = formatProfileSummaryLine(1, addOnCount);
     const totalPrice =
       terminal.price + ownedAddons.reduce((sum, addon) => sum + addon.price, 0);
 
@@ -71,6 +72,9 @@ export const OwnedTerminalDetailModal = observer(
       categoryFilter.size === 0
         ? ownedAddons
         : ownedAddons.filter((addon) => categoryFilter.has(addon.category));
+    // When the terminal row is filtered out, add-on rows lose their visible
+    // parent, so render them without sub-item indentation to avoid looking
+    // like an orphaned child (see `showTerminalRow` usage below).
 
     return (
       <Dialog
@@ -152,7 +156,9 @@ export const OwnedTerminalDetailModal = observer(
                     className="order-profile-modal__table-row"
                   >
                     <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">
-                      <Box className="order-profile-modal__product-name-wrapper order-profile-modal__product-name-wrapper--sub">
+                      <Box
+                        className={`order-profile-modal__product-name-wrapper ${showTerminalRow ? 'order-profile-modal__product-name-wrapper--sub' : ''}`}
+                      >
                         <Box className="order-profile-modal__row-accent order-profile-modal__row-accent--addon" />
                         <span>{addon.productName}</span>
                       </Box>

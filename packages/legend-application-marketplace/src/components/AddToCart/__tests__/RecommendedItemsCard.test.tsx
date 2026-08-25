@@ -265,6 +265,31 @@ describe('RecommendedItemsCard - non-association flow', () => {
     const btn = screen.getByText('Added to Cart').closest('button');
     expect(btn).toBeDefined();
   });
+  test('calls onItemAdded with the item id after a successful add to cart', async () => {
+    const item = makeTerminalResult({ id: 10 });
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: true,
+        recommendations: [],
+        message: '',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
+    const onItemAdded = jest.fn();
+
+    render(
+      <RecommendedItemsCard recommendedItem={item} onItemAdded={onItemAdded} />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onItemAdded).toHaveBeenCalledWith(10);
+  });
 });
 
 // ─── Association flow (onSelect provided) ─────────────────────────────────────
@@ -303,6 +328,22 @@ describe('RecommendedItemsCard - association flow', () => {
     expect(screen.getByText('In Cart')).toBeDefined();
   });
 
+  test('shows "In Cart" badge for non-marketplace item already in cart', () => {
+    const item = makeTerminalResult({
+      id: 9,
+      source: RecommendationSource.INVENTORY,
+    });
+    MOCK__baseStore.cartStore.items[99] = [makeCartItem(9)];
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={makeOnSelectMock()}
+      />,
+    );
+    expect(screen.getByText('In Cart')).toBeDefined();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   test('shows "Add to Cart" button for marketplace item NOT in cart', () => {
     const item = makeTerminalResult({
       id: 7,
@@ -324,6 +365,46 @@ describe('RecommendedItemsCard - association flow', () => {
       fireEvent.click(screen.getByRole('button'));
     });
     expect(onSelect).toHaveBeenCalledWith(item);
+  });
+
+  test('calls onItemAdded with the item id when association succeeds', async () => {
+    const item = makeTerminalResult({
+      id: 7,
+      source: RecommendationSource.MARKETPLACE,
+    });
+    const onSelect = makeOnSelectMock(true);
+    const onItemAdded = jest.fn();
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={onSelect}
+        onItemAdded={onItemAdded}
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onItemAdded).toHaveBeenCalledWith(7);
+  });
+
+  test('does not call onItemAdded when association is not successful', async () => {
+    const item = makeTerminalResult({
+      id: 7,
+      source: RecommendationSource.MARKETPLACE,
+    });
+    const onSelect = makeOnSelectMock(false);
+    const onItemAdded = jest.fn();
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={onSelect}
+        onItemAdded={onItemAdded}
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onItemAdded).not.toHaveBeenCalled();
   });
 
   test('shows "Adding..." state when marketplace item is currently being selected', () => {
