@@ -629,6 +629,261 @@ export class LegendMarketplaceTelemetryHelper {
     );
   }
 
+  static logEvent_ChangeIntelligenceCatalogType(
+    telemetryService: TelemetryService,
+    catalogType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_INTELLIGENCE_CATALOG_TYPE,
+      { catalogType, ...session },
+    );
+  }
+
+  static logEvent_SearchIntelligenceCatalog(
+    telemetryService: TelemetryService,
+    query: string,
+    catalogType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.SEARCH_INTELLIGENCE_CATALOG,
+      {
+        query,
+        catalogType,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickIntelligenceCatalogViewMore(
+    telemetryService: TelemetryService,
+    catalogType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_INTELLIGENCE_CATALOG_VIEW_MORE,
+      {
+        catalogType,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickIntelligenceCatalogRetry(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_INTELLIGENCE_CATALOG_RETRY,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ChangeIntelligenceCatalogPage(
+    telemetryService: TelemetryService,
+    page: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_INTELLIGENCE_CATALOG_PAGE,
+      {
+        page,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ChangeIntelligenceCatalogPageSize(
+    telemetryService: TelemetryService,
+    itemsPerPage: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_INTELLIGENCE_CATALOG_PAGE_SIZE,
+      {
+        itemsPerPage,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleIntelligenceCatalogVendorFilter(
+    telemetryService: TelemetryService,
+    vendor: string,
+    selected: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_INTELLIGENCE_CATALOG_VENDOR_FILTER,
+      {
+        vendor,
+        selected,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClearIntelligenceCatalogFilters(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLEAR_INTELLIGENCE_CATALOG_FILTERS,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ShowAllIntelligenceCatalogVendors(
+    telemetryService: TelemetryService,
+    expanded: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.SHOW_ALL_INTELLIGENCE_CATALOG_VENDORS,
+      {
+        expanded,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickAIAgentBackToCatalog(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_BACK_TO_CATALOG,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerBack(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_BACK,
+      {
+        mcpServerName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerCopy(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    field: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_COPY,
+      {
+        mcpServerName,
+        field,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerSupportLink(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    linkType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_SUPPORT_LINK,
+      {
+        mcpServerName,
+        linkType,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerRetry(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_RETRY,
+      {
+        mcpServerName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ExpandMcpServerTool(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    toolName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.EXPAND_MCP_SERVER_TOOL,
+      {
+        mcpServerName,
+        toolName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ExpandMcpServerGroundingRules(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    toolName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.EXPAND_MCP_SERVER_GROUNDING_RULES,
+      {
+        mcpServerName,
+        toolName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ViewMcpServer(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.VIEW_MCP_SERVER, {
+      mcpServerName,
+      ...session,
+    });
+  }
+
   static logEvent_AIAgentQuestionAsked(
     telemetryService: TelemetryService,
     questionLength: number,
