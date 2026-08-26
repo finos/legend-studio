@@ -138,31 +138,16 @@ test('navigates to search results page with producer search if search box contai
   );
 });
 
-test('navigates to the Lakehouse Access results page when that search mode is enabled', async () => {
-  const { MOCK__baseStore } = await setupTestComponent();
-  const mockGoToLocation = jest.fn();
-  MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
-    mockGoToLocation;
+test('does not offer a Lakehouse Access search mode option', async () => {
+  await setupTestComponent();
 
   const searchInput = screen.getByPlaceholderText(
     'Which data can I help you find?',
   );
   fireEvent.change(searchInput, { target: { value: 'data' } });
-
   fireEvent.click(screen.getByTitle('Search settings'));
-  const lakehouseAccessSwitch: HTMLInputElement = screen.getByRole('switch', {
-    name: /Lakehouse Access/,
-  });
-  fireEvent.click(lakehouseAccessSwitch);
-  expect(lakehouseAccessSwitch.checked).toBe(true);
 
-  fireEvent.click(screen.getByTitle('Search'));
-
-  await waitFor(() =>
-    expect(mockGoToLocation).toHaveBeenLastCalledWith(
-      '/lakehouseAccess/results?query=data',
-    ),
-  );
+  expect(screen.queryByRole('switch', { name: /Lakehouse Access/ })).toBeNull();
 });
 
 test('search modes are mutually exclusive', async () => {
@@ -180,20 +165,12 @@ test('search modes are mutually exclusive', async () => {
   const fieldSwitch: HTMLInputElement = screen.getByRole('switch', {
     name: /Field Search/,
   });
-  const lakehouseAccessSwitch: HTMLInputElement = screen.getByRole('switch', {
-    name: /Lakehouse Access/,
-  });
 
   fireEvent.click(producerSwitch);
   expect(producerSwitch.checked).toBe(true);
 
-  fireEvent.click(lakehouseAccessSwitch);
-  expect(lakehouseAccessSwitch.checked).toBe(true);
-  expect(producerSwitch.checked).toBe(false);
-
   fireEvent.click(fieldSwitch);
   expect(fieldSwitch.checked).toBe(true);
-  expect(lakehouseAccessSwitch.checked).toBe(false);
   expect(producerSwitch.checked).toBe(false);
 });
 

@@ -33,11 +33,7 @@ import { clsx, SearchIcon, TuneIcon } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { LegendMarketplaceInfoTooltip } from '../InfoTooltip/LegendMarketplaceInfoTooltip.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import {
-  LAKEHOUSE_ACCESS_SEARCH_MODE_LABEL,
-  LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP,
-  MarketplaceSearchMode,
-} from '../../__lib__/LegendMarketplaceSearchMode.js';
+import { MarketplaceSearchMode } from '../../__lib__/LegendMarketplaceSearchMode.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   createDefaultSuggestions,
@@ -92,11 +88,6 @@ const SEARCH_MODE_OPTIONS: SearchModeOption[] = [
     label: 'Field Search',
     tooltip:
       'Use this search to discover data products and datasets that contain a specific field',
-  },
-  {
-    mode: MarketplaceSearchMode.LAKEHOUSE_ACCESS,
-    label: LAKEHOUSE_ACCESS_SEARCH_MODE_LABEL,
-    tooltip: LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP,
   },
 ];
 
