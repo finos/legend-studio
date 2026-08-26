@@ -405,11 +405,14 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
         await this.fetchIcebergCatalogDetails(access_token);
       } catch (error) {
         assertErrorThrown(error);
-        this.setEnableIceberg(false);
+        // NOTE: leave the Iceberg selection alone - it is the user's to make, and
+        // silently flipping it is worse than letting them see it is still on and
+        // decide. `isValid` keeps them from building a source without a catalog.
         this.catalogUrl = undefined;
-        this._application.notificationService.notifyWarning(
-          `Can't load Iceberg catalog details: ${error.message}. Proceeding without Iceberg.`,
-        );
+        this._alertService.alertError(error, {
+          message: `Iceberg Catalog Failure: ${error.message}`,
+          text: `Iceberg is selected for this producer environment but its catalog could not be resolved, so a DataCube can't be created with it. Turn off "Use Iceberg" to continue without it.`,
+        });
       }
     }
 
@@ -425,11 +428,13 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
         await this.fetchIcebergCatalogDetails(access_token);
       } catch (error) {
         assertErrorThrown(error);
-        this.setEnableIceberg(false);
+        // keep Iceberg selected: the failure may well be transient, and toggling
+        // it off and on again is how the user retries
         this.catalogUrl = undefined;
-        this._application.notificationService.notifyWarning(
-          `Can't load Iceberg catalog details: ${error.message}. Proceeding without Iceberg.`,
-        );
+        this._alertService.alertError(error, {
+          message: `Iceberg Catalog Failure: ${error.message}`,
+          text: `A DataCube can't be created with Iceberg until its catalog resolves. Toggle "Use Iceberg" off and on to retry, or leave it off to continue without it.`,
+        });
       }
     }
   }
@@ -515,6 +520,10 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
   override get isValid(): boolean {
     return (
+      // an Iceberg source carries a required catalog URL, so it can't be built
+      // until the catalog resolves - better to keep the action disabled than to
+      // fail on `generateSourceData` after the user commits
+      (!this.enableIceberg || Boolean(this.catalogUrl)) &&
       Boolean(this.warehouse) &&
       Boolean(this.selectedIngestUrn) &&
       Boolean(this.selectedTable) &&

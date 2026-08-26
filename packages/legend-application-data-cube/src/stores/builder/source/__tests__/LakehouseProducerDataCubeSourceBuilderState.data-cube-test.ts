@@ -67,23 +67,31 @@ const TEST_INGEST_ENVIRONMENT = {
 };
 
 /**
- * Builds a state wired to a stub ingest server client, and collects the warnings
- * it surfaces so tests can assert the user is actually told what went wrong.
+ * Builds a state wired to a stub ingest server client, and collects the errors it
+ * surfaces so tests can assert the user is actually told what went wrong.
  */
 const buildHarness = (
   ingestServerClient: Partial<LakehouseIngestServerClient> = {},
 ) => {
-  const warnings: string[] = [];
+  const alertedErrors: Error[] = [];
   const application = {
     notificationService: {
-      notifyWarning: (content: string) => {
-        warnings.push(content);
+      notifyWarning: () => {
+        // no-op
       },
       notifyError: () => {
         // no-op
       },
     },
   } as unknown as LegendDataCubeApplicationStore;
+  const alertService = {
+    alertError: (error: Error) => {
+      alertedErrors.push(error);
+    },
+    alertUnhandledError: (error: Error) => {
+      alertedErrors.push(error);
+    },
+  } as unknown as DataCubeAlertService;
 
   const state = new LakehouseProducerDataCubeSourceBuilderState(
     application,
@@ -91,9 +99,9 @@ const buildHarness = (
     undefined as unknown as LakehousePlatformServerClient,
     ingestServerClient as LakehouseIngestServerClient,
     undefined as unknown as LakehouseContractServerClient,
-    undefined as unknown as DataCubeAlertService,
+    alertService,
   );
-  return { state, warnings };
+  return { state, alertedErrors };
 };
 
 const buildState = () => buildHarness().state;
@@ -194,7 +202,7 @@ test(unitTest('resetDownstreamState clears nonIcebergWarehouse'), () => {
 test(
   unitTest('fetchIngestUrns resolves the Iceberg catalog when it is available'),
   async () => {
-    const { state, warnings } = buildHarness({
+    const { state, alertedErrors } = buildHarness({
       getProducerEnvironmentDetails: async () =>
         TEST_PRODUCER_ENVIRONMENT(true),
       getIngestEnvironment: async () => TEST_INGEST_ENVIRONMENT,
@@ -209,7 +217,7 @@ test(
     expect(state.warehouse).toBe('TEST_CATALOG');
     expect(state.databaseName).toBe('TEST_DB');
     expect(state.ingestUrns).toEqual(['urn:ingest:1', 'urn:ingest:2']);
-    expect(warnings).toHaveLength(0);
+    expect(alertedErrors).toHaveLength(0);
   },
 );
 
@@ -218,7 +226,7 @@ test(
     'fetchIngestUrns still loads ingest definitions when the Iceberg catalog fails',
   ),
   async () => {
-    const { state, warnings } = buildHarness({
+    const { state, alertedErrors } = buildHarness({
       getProducerEnvironmentDetails: async () =>
         TEST_PRODUCER_ENVIRONMENT(true),
       getIngestEnvironment: async () => {
@@ -234,10 +242,10 @@ test(
     // else there is nothing left to select and turning Iceberg off can't recover
     expect(state.ingestUrns).toEqual(['urn:ingest:1', 'urn:ingest:2']);
     expect(state.databaseName).toBe('TEST_DB');
-    // fall back to non-Iceberg so the warehouse can be supplied manually
-    expect(state.enableIceberg).toBe(false);
+    // the selection stays as-is - it is the user's to change
+    expect(state.enableIceberg).toBe(true);
     expect(state.catalogUrl).toBeUndefined();
-    expect(warnings).toHaveLength(1);
+    expect(alertedErrors).toHaveLength(1);
   },
 );
 
@@ -280,11 +288,9 @@ test(
 );
 
 test(
-  unitTest(
-    'toggleIceberg(true) falls back to non-Iceberg when the catalog still fails',
-  ),
+  unitTest('toggleIceberg(true) keeps Iceberg selected when the catalog fails'),
   async () => {
-    const { state, warnings } = buildHarness({
+    const { state, alertedErrors } = buildHarness({
       getIngestEnvironment: async () => {
         throw new Error('catalog still unavailable');
       },
@@ -292,11 +298,58 @@ test(
 
     await state.toggleIceberg(true, undefined);
 
-    // leaving `enableIceberg` on without a catalog URL would only fail later,
-    // when generating the source, which is far too late to tell the user
-    expect(state.enableIceberg).toBe(false);
+    // the user asked for Iceberg, so the checkbox must reflect that even though
+    // the catalog didn't resolve; they can toggle it off and on again to retry
+    expect(state.enableIceberg).toBe(true);
     expect(state.catalogUrl).toBeUndefined();
-    expect(warnings).toHaveLength(1);
+    expect(alertedErrors).toHaveLength(1);
+  },
+);
+
+test(
+  unitTest('a source cannot be built while Iceberg has no resolved catalog'),
+  async () => {
+    const { state } = buildHarness({
+      getIngestEnvironment: async () => {
+        throw new Error('catalog unavailable');
+      },
+    } as unknown as Partial<LakehouseIngestServerClient>);
+    selectProducer(state);
+    state.deploymentId = 12345;
+    state.setSelectedIngestUrn('urn:ingest:1');
+    state.setSelectedTable('TEST_TABLE');
+    state.setWarehouse('SOME_WH');
+
+    expect(state.isValid).toBe(true);
+
+    await state.toggleIceberg(true, undefined);
+
+    // `generateSourceData` requires a catalog URL for an Iceberg source, so the
+    // action stays disabled rather than blowing up once the user commits
+    expect(state.enableIceberg).toBe(true);
+    expect(state.isValid).toBe(false);
+  },
+);
+
+test(
+  unitTest('a source can be built again once Iceberg is turned back off'),
+  async () => {
+    const { state } = buildHarness({
+      getIngestEnvironment: async () => {
+        throw new Error('catalog unavailable');
+      },
+    } as unknown as Partial<LakehouseIngestServerClient>);
+    selectProducer(state);
+    state.deploymentId = 12345;
+    state.setSelectedIngestUrn('urn:ingest:1');
+    state.setSelectedTable('TEST_TABLE');
+    state.setWarehouse('SOME_WH');
+
+    await state.toggleIceberg(true, undefined);
+    expect(state.isValid).toBe(false);
+
+    await state.toggleIceberg(false, undefined);
+    expect(state.isValid).toBe(true);
   },
 );
 
