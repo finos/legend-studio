@@ -1,5 +1,11 @@
 # @finos/legend-application-query
 
+## 13.8.46
+
+### Patch Changes
+
+- [#5465](https://github.com/finos/legend-studio/pull/5465) [`7f5bef3`](https://github.com/finos/legend-studio/commit/7f5bef3c861490e0ba8426dc95f37c1e60b8b815) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle changes in optional analytics fields during transform and when reading mappings to prevent NPEs.
+
 ## 13.8.45
 
 ### Patch Changes
