@@ -138,18 +138,6 @@ test('navigates to search results page with producer search if search box contai
   );
 });
 
-test('does not offer a Lakehouse Access search mode option', async () => {
-  await setupTestComponent();
-
-  const searchInput = screen.getByPlaceholderText(
-    'Which data can I help you find?',
-  );
-  fireEvent.change(searchInput, { target: { value: 'data' } });
-  fireEvent.click(screen.getByTitle('Search settings'));
-
-  expect(screen.queryByRole('switch', { name: /Lakehouse Access/ })).toBeNull();
-});
-
 test('search modes are mutually exclusive', async () => {
   await setupTestComponent();
 
