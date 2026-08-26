@@ -230,9 +230,7 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
     await setupTestComponent('data');
 
     expect(
-      await screen.findByText(
-        /This is the new home for what was previously called Data Product/,
-      ),
+      await screen.findByText(/This is the new home for Data Products/),
     ).toBeDefined();
   });
 
