@@ -188,6 +188,7 @@ export const LegendMarketplaceLakehouseAccessSearchResults =
               stateSearchMode={MarketplaceSearchMode.LAKEHOUSE_ACCESS}
               placeholder="Search Lakehouse data products"
               className="marketplace-lakehouse-search-results__search-bar"
+              enableAutosuggest={false}
             />
           </Container>
           <div className="legend-marketplace-search-results__sort-bar">

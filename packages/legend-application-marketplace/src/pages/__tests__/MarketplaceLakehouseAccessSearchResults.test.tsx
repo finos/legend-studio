@@ -83,6 +83,13 @@ const setupTestComponent = async (
     'dataProductSearch',
   ).mockResolvedValue(mockLakehouseAccessSearchResultResponse);
 
+  // Autosuggest is disabled on this page; a resolved spy still lets us assert it's
+  // never called, rather than assert on a hung pending promise.
+  createSpy(
+    MOCK__baseStore.marketplaceServerClient,
+    'getLakehouseAccessAutosuggestions',
+  ).mockResolvedValue({ results: [] });
+
   const mockEnvironment: PlainObject<IngestDeploymentServerConfig> = {
     ingestEnvironmentUrn: 'production-analytics',
     environmentClassification: 'prod',
@@ -248,6 +255,23 @@ describe('MarketplaceLakehouseAccessSearchResults', () => {
     await screen.findByText('2 Products');
 
     expect(screen.queryByLabelText('Search result type')).toBeNull();
+  });
+
+  test('does not offer autosuggest while typing a query', async () => {
+    const { MOCK__baseStore } = await setupTestComponent('data');
+
+    await screen.findByText('2 Products');
+
+    const searchInput = screen.getByDisplayValue('data');
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: 'orders' } });
+      await flushMicrotasks();
+    });
+
+    expect(
+      MOCK__baseStore.marketplaceServerClient.getLakehouseAccessAutosuggestions,
+    ).not.toHaveBeenCalled();
+    expect(screen.queryByRole('option', { hidden: true })).toBeNull();
   });
 
   describe('Filters', () => {
