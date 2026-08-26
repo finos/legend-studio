@@ -1,5 +1,17 @@
 # @finos/legend-lego
 
+## 2.0.218
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Keep the Legend AI metadata prompt bounded on data products with hundreds of access points, where it previously assembled a prompt the LLM gateway rejected.
+
+  Access point and service relationships are paired through an inverted column index that skips near-universal columns, metadata questions carry only the access points ranked most relevant, and conversation history is capped so prompt size no longer grows with the conversation.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
 ## 2.0.217
 
 ## 2.0.216
