@@ -1,5 +1,21 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.110
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Keep the Legend AI metadata prompt bounded on data products with hundreds of access points, where it previously assembled a prompt the LLM gateway rejected.
+
+  Access point and service relationships are paired through an inverted column index that skips near-universal columns, metadata questions carry only the access points ranked most relevant, and conversation history is capped so prompt size no longer grows with the conversation.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve access point schemas for the Intelligence & Agents tab from the data product element and its artifact instead of opening a product viewer, typing only the access points the artifact does not cover through the engine.
+
+  Access point sample values now fall back to the artifact's relation element, so the data product page shows sample values on columns that previously had none.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
 ## 0.0.109
 
 ## 0.0.108

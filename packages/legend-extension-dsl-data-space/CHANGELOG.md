@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.249
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve data space context for the Intelligence & Agents tab from the data space analysis instead of opening a product viewer, so a failed load no longer raises a data product notification at an Agents tab user.
+
+  The model context a data space builds now also lists its own callable functions, capped at twenty, which reaches the data space page as well.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
+- [#5465](https://github.com/finos/legend-studio/pull/5465) [`7f5bef3`](https://github.com/finos/legend-studio/commit/7f5bef3c861490e0ba8426dc95f37c1e60b8b815) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated the data product analytics builder to reflect the newly updated protocol shape
+
 ## 10.4.248
 
 ### Patch Changes
