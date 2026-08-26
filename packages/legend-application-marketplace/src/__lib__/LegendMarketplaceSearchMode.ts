@@ -36,11 +36,6 @@ export enum MarketplaceSearchMode {
   LAKEHOUSE_ACCESS = 'lakehouseAccess',
 }
 
-/** Shared label + tooltip copy for the Lakehouse Access search mode. */
-export const LAKEHOUSE_ACCESS_SEARCH_MODE_LABEL = 'Lakehouse Access';
-export const LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP =
-  'Lakehouse Access: is the new name for what you knew as Data Product — Lakehouse-scoped data API used for entitlements.';
-
 /**
  * Shared copy explaining the Data Product -> Lakehouse Access rename, shown on both
  * the DataSpaces search results page and the dedicated Lakehouse Access tab so the
