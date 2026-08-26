@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.30
+
+### Patch Changes
+
+- [#5469](https://github.com/finos/legend-studio/pull/5469) [`07f9d8c`](https://github.com/finos/legend-studio/commit/07f9d8c1516ef598f7d7e7f1657b5e89f223f437) ([@ywiamnog](https://github.com/ywiamnog)) - update availability classifier path
+
 ## 32.6.29
 
 ### Patch Changes
