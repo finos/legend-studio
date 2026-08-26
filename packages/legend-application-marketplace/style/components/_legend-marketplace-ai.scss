@@ -15,6 +15,7 @@
  */
 
 @use 'mixins' as *;
+@use '../marketplace-mixins' as *;
 
 :root {
   --ai-bg-page: var(--marketplace-bg-primary, var(--color-white));
@@ -146,116 +147,6 @@
     flex: 1;
     width: unset;
   }
-}
-
-.marketplace-agents__section-bar {
-  width: 100%;
-  background-color: var(--color-light-grey-50);
-  border-bottom: 1px solid var(--color-light-grey-200);
-
-  &__container {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    background-color: var(--color-light-grey-50);
-    max-width: 226rem;
-    margin: 0 auto;
-    box-sizing: border-box;
-    padding: 0.5rem;
-  }
-}
-
-.marketplace-agents__section-title {
-  font-weight: bold;
-  margin: 0.8em 0;
-  font-size: 2.2rem;
-}
-
-.marketplace-agents__content-container {
-  display: flex;
-  padding: 2rem;
-  gap: 2rem;
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.marketplace-agents__cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(36rem, 42rem));
-  gap: 2.4rem;
-  width: 100%;
-  align-content: start;
-}
-
-.marketplace-agents__agent-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2rem;
-  padding: 3.2rem;
-  min-height: 24rem;
-  background: var(--marketplace-bg-secondary);
-  border: 1px solid var(--color-light-grey-200);
-  border-radius: 1.6rem;
-  cursor: pointer;
-  text-align: left;
-  transition:
-    border-color var(--ai-transition),
-    box-shadow var(--ai-transition),
-    transform var(--ai-transition);
-
-  &:hover {
-    border-color: var(--ai-border-card-hover);
-    box-shadow: var(--ai-shadow-card-hover);
-    transform: translateY(-2px);
-  }
-}
-
-.marketplace-agents__agent-card-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.marketplace-agents__agent-card-logo {
-  max-height: 5.6rem;
-  width: auto;
-  object-fit: contain;
-}
-
-.marketplace-agents__agent-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-  flex: 1;
-}
-
-.marketplace-agents__agent-card-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--marketplace-text-primary);
-  margin: 0;
-  letter-spacing: -0.02rem;
-}
-
-.marketplace-agents__agent-card-desc {
-  font-size: 1.4rem;
-  font-weight: 400;
-  color: var(--marketplace-text-secondary);
-  margin: 0;
-  line-height: 1.6;
-}
-
-.marketplace-agents__agent-card-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  letter-spacing: 0.02rem;
-  color: var(--legend-marketplace-light-blue);
 }
 
 .marketplace-agents__chat-wrapper {
@@ -2054,5 +1945,43 @@
     width: 1.4rem;
     height: 1.4rem;
     color: var(--ai-accent-primary);
+  }
+}
+
+.marketplace-intelligence-catalog__type-selector {
+  @include flexCenter;
+
+  flex: 1;
+  padding: 1.6rem 0;
+}
+
+.marketplace-intelligence-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2.4rem;
+
+  &__header {
+    @include flexVCenter;
+
+    justify-content: space-between;
+  }
+
+  &__count {
+    margin-left: 0.6rem;
+    font-weight: 400;
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__view-more {
+    @include marketplacePillButton(0.2rem);
+  }
+
+  &__empty {
+    @include marketplaceEmptyState;
+  }
+
+  &__retry {
+    @include marketplaceInlineLinkButton;
   }
 }
