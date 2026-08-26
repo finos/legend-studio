@@ -273,7 +273,7 @@ export class LegendMarketplaceBaseStore {
     return undefined;
   }
 
-  private buildVendorImageMap(): Map<string, string> {
+  buildVendorImageMap(): Map<string, string> {
     const vendorImageMap = new Map<string, string>();
     const assetsBaseUrl = this.applicationStore.config.assetsBaseUrl;
     for (const [vendorName, filename] of Object.entries(

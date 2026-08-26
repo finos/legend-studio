@@ -68,13 +68,15 @@ export const LegendDataCubeQueryEditor = observer(() => {
           </FormButton>
           <FormButton
             className="ml-2"
-            disabled={!builder.dataCube || store.codeEditorState.isInProgress}
+            disabled={!builder.dataCube}
+            loading={store.codeEditorState.isInProgress}
             onClick={() => {
               const spec = DataCubeSpecification.serialization.fromJson(
                 guaranteeNonNullable(builder.persistentDataCube).content,
               );
               const finalSpec = guaranteeNonNullable(spec);
               finalSpec.query = state.code;
+              store.codeEditorState.inProgress();
               builder.dataCube
                 ?.applySpecification(finalSpec)
                 .then(() => {
@@ -85,17 +87,20 @@ export const LegendDataCubeQueryEditor = observer(() => {
                       guaranteeNonNullable(builder.persistentDataCube).name,
                     )
                     .then(() => {
+                      store.codeEditorState.pass();
                       store.application.navigationService.navigator.reload({
                         ignoreBlocking: true,
                       });
                     })
                     .catch((error) => {
                       assertErrorThrown(error);
+                      store.codeEditorState.fail();
                       store.alertService.alertUnhandledError(error);
                     });
                 })
                 .catch((error) => {
                   assertErrorThrown(error);
+                  store.codeEditorState.fail();
                   store.alertService.alertUnhandledError(error);
                 });
             }}

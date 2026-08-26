@@ -34,6 +34,7 @@ export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   DATA_CONTRACT_ID = 'dataContractId',
   DATA_CONTRACT_TASK_ID = 'dataContractTaskId',
   DATA_ACCESS_REQUEST_ID = 'dataAccessRequestId',
+  MCP_SERVER_NAME = 'mcpServerName',
 }
 
 export enum LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
@@ -59,6 +60,10 @@ export enum LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN {
 }
 
 export enum LEGEND_MARKETPLACE_DATA_APIS_QUERY_PARAM_TOKEN {
+  QUERY = 'query',
+}
+
+export enum LEGEND_MARKETPLACE_INTELLIGENCE_QUERY_PARAM_TOKEN {
   QUERY = 'query',
 }
 
@@ -90,6 +95,10 @@ export type WorkflowDataAccessRequestPathParams = {
   [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID]: string;
 };
 
+export type McpServerPathParams = {
+  [LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.MCP_SERVER_NAME]: string;
+};
+
 export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   HOME_PAGE: '/',
   OAUTH_CALLBACK: '/callback',
@@ -97,6 +106,7 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DATA_PRODUCTS: '/dataproducts',
   DATA_APIS: '/data-apis',
   AGENTS: '/agents',
+  MCP_SERVER: `/agents/mcp/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.MCP_SERVER_NAME}`,
   SUBSCRIPTIONS: '/subscriptions',
   ORDERS: '/orders',
   TERMINAL_PRODUCT: `/terminal/terminalProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.TERMINAL_ID}`,
@@ -123,6 +133,11 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEPRECATED_LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
   DEPRECATED_LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
 });
+
+export const generateMcpServerRoute = (mcpServerName: string): string =>
+  generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.MCP_SERVER, {
+    mcpServerName: encodeURIComponent(mcpServerName),
+  });
 
 export const generateLakehouseDataProductPath = (
   dataProductId: string,

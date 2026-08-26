@@ -37,6 +37,7 @@ import {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
 } from './providers/LegendMarketplaceFrameworkProvider.js';
+import { IntelligenceCatalogStoreProvider } from './providers/IntelligenceCatalogStoreProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type AuthProviderProps,
@@ -155,6 +156,11 @@ const LegacyDataProduct = React.lazy(() =>
 const LegendMarketplaceAgents = React.lazy(() =>
   import('../pages/Agents/LegendMarketplaceAgents.js').then((module) => ({
     default: module.LegendMarketplaceAgents,
+  })),
+);
+const McpServerViewer = React.lazy(() =>
+  import('../pages/Agents/McpServerViewer.js').then((module) => ({
+    default: module.McpServerViewer,
   })),
 );
 const LegendMarketplaceVendorData = React.lazy(() =>
@@ -320,11 +326,23 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={<LegendMarketplaceDataAPIs />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
-              element={React.createElement(
-                useProtectedPage(LegendMarketplaceAgents),
-              )}
-            />
+              element={
+                <IntelligenceCatalogStoreProvider>
+                  <Outlet />
+                </IntelligenceCatalogStoreProvider>
+              }
+            >
+              <Route
+                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
+                element={React.createElement(
+                  useProtectedPage(LegendMarketplaceAgents),
+                )}
+              />
+              <Route
+                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.MCP_SERVER}
+                element={React.createElement(useProtectedPage(McpServerViewer))}
+              />
+            </Route>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS}
               element={<LegendMarketplaceVendorData />}

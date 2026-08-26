@@ -151,16 +151,23 @@ export class LegendDataCubeCreatorState {
   }
 
   async finalize(sourceData?: PlainObject) {
-    if (!sourceData && !this.sourceBuilder.isValid) {
+    if (this.finalizeState.isInProgress) {
+      return;
+    }
+    // NOTE: hold on to the source builder we started with: `this.sourceBuilder`
+    // is swapped out when the source type changes, so reading it again after an
+    // await could have us finalize against a completely different source
+    const sourceBuilder = this.sourceBuilder;
+    if (!sourceData && !sourceBuilder.isValid) {
       throw new IllegalStateError(
         `Can't generate DataCube: source is not valid`,
       );
     }
 
     this.finalizeState.inProgress();
+    const task = this._store.taskService.newTask('Creating DataCube...');
     try {
-      sourceData =
-        sourceData ?? (await this.sourceBuilder.generateSourceData());
+      sourceData = sourceData ?? (await sourceBuilder.generateSourceData());
       try {
         const source = await this._engine.processSource(sourceData);
         const specification = await this._engine.generateBaseSpecification(
@@ -168,7 +175,7 @@ export class LegendDataCubeCreatorState {
           source,
         );
         if (specification.configuration) {
-          this.sourceBuilder.finalizeConfiguration(specification.configuration);
+          sourceBuilder.finalizeConfiguration(specification.configuration);
         }
 
         // reset
@@ -210,6 +217,8 @@ export class LegendDataCubeCreatorState {
         message: message,
       });
       this.finalizeState.fail();
+    } finally {
+      this._store.taskService.endTask(task);
     }
   }
 }
