@@ -41,6 +41,7 @@ import {
   DataSpaceAdvancedSearchModal,
   type ExecutionContextOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
+import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
@@ -66,9 +67,9 @@ const resolveExecutionContextRuntimes = (
   queryBuilderState: LegendQueryDataSpaceQueryBuilderState,
 ): PackageableRuntime[] => {
   const currentMapping = guaranteeNonNullable(
-    queryBuilderState.executionContext.mapping,
-    `Execution context '${queryBuilderState.executionContext.name}' does not have a mapping`,
-  ).value;
+    resolveExecutionContextMapping(queryBuilderState.executionContext),
+    `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
+  );
   if (queryBuilderState.dataSpaceAnalysisResult) {
     const executionContext = Array.from(
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
@@ -112,10 +113,12 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       }
       const value = option.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
+        queryBuilderState.queryAgentChatState?.abort();
         queryBuilderState
           .onDataSpaceChange(value)
           .catch(queryBuilderState.applicationStore.alertUnhandledError);
       } else if (value instanceof DepotEntityWithOrigin) {
+        queryBuilderState.queryAgentChatState?.abort();
         queryBuilderState.onDataProductChange(value);
       }
     };

@@ -2344,44 +2344,25 @@
     background: var(--color-dark-theme-bg-primary);
   }
 
+  .marketplace-mcp-server-viewer {
+    --mcp-viewer-surface: var(--color-dark-theme-bg-secondary);
+    --mcp-viewer-surface-muted: var(--color-dark-theme-bg-elevated);
+    --mcp-viewer-border: rgb(255 255 255 / 14%);
+    --mcp-viewer-chip-bg: rgb(255 255 255 / 10%);
+    --mcp-viewer-live-bg: rgb(7 125 85 / 26%);
+    --mcp-viewer-live-text: #6fdcae;
+    --mcp-viewer-approval-bg: rgb(165 97 13 / 28%);
+    --mcp-viewer-approval-text: #f0b667;
+    --mcp-viewer-category-bg: rgb(115 153 198 / 26%);
+    --mcp-viewer-category-text: #9dc4ee;
+    --mcp-viewer-version-bg: rgb(126 105 191 / 28%);
+    --mcp-viewer-version-text: #bda9f2;
+    --mcp-viewer-vendor-bg: rgb(255 255 255 / 12%);
+    --mcp-viewer-vendor-text: #d6dde4;
+  }
+
   .marketplace-agents__search-container {
     background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__section-bar {
-    background-color: var(--color-dark-theme-bg-secondary);
-    border-bottom: 1px solid var(--color-dark-theme-border);
-
-    &__container {
-      background-color: var(--color-dark-theme-bg-secondary);
-      color: var(--color-dark-theme-text-primary);
-    }
-  }
-
-  .marketplace-agents__section-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__content-container {
-    background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__agent-card {
-    background: var(--color-dark-theme-bg-secondary);
-    border-color: var(--color-dark-theme-border);
-
-    &:hover {
-      border-color: var(--color-dark-theme-blue-primary);
-      box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
-    }
-  }
-
-  .marketplace-agents__agent-card-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__agent-card-desc {
-    color: var(--color-dark-theme-text-muted);
   }
 
   .legend-marketplace-search-results__sort-bar {
@@ -4752,6 +4733,16 @@
   --ai-accent-blue-soft: var(--marketplace-link-color);
   --ai-accent-red: var(--color-ai-accent-red-dark);
   --ai-text-error: var(--color-ai-text-error-dark);
+  --ai-python-accent: var(--color-ai-python-accent-dark);
+  --ai-python-accent-hover: var(--color-ai-python-accent-hover-dark);
+  --ai-python-accent-subtle: rgb(251 191 119 / 10%);
+  --ai-python-border: rgb(251 191 119 / 36%);
+  --ai-python-border-strong: rgb(251 191 119 / 60%);
+  --ai-datacube-accent: var(--color-ai-datacube-accent-dark);
+  --ai-datacube-accent-hover: var(--color-ai-datacube-accent-hover-dark);
+  --ai-datacube-accent-subtle: rgb(103 216 228 / 10%);
+  --ai-datacube-border: rgb(103 216 228 / 36%);
+  --ai-datacube-border-strong: rgb(103 216 228 / 60%);
   --ai-shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
   --ai-shadow-card-hover: 0 8px 24px rgb(0 0 0 / 50%);
   --ai-shadow-input: 0 0 0 3px rgb(37 99 235 / 10%);

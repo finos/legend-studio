@@ -26,6 +26,7 @@ import {
   DataCubeSpecification,
   DataCubeEvent,
   DataCubeTitleBarMenuItems,
+  FormLoadingIndicator,
 } from '@finos/legend-data-cube';
 import {
   useLegendDataCubeBuilderStore,
@@ -389,7 +390,7 @@ export const LegendDataCubeBuilder = withLegendDataCubeBuilderStore(
         >
           {store.initializeState.isInProgress && (
             <div className="h-full w-full p-2">
-              <div>Initializing...</div>
+              <FormLoadingIndicator message="Initializing..." />
             </div>
           )}
           {store.initializeState.hasFailed && (

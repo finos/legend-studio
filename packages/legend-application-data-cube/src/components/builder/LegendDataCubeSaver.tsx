@@ -117,9 +117,9 @@ export const LegendDataCubeSaver = observer(() => {
             <>
               <FormButton
                 className="ml-2"
+                loading={store.saveState.isInProgress}
                 disabled={
                   !builder.dataCube ||
-                  store.saveState.isInProgress ||
                   !store.canCurrentUserManageDataCube(
                     builder.persistentDataCube,
                   )
@@ -140,7 +140,8 @@ export const LegendDataCubeSaver = observer(() => {
               </FormButton>
               <FormButton
                 className="ml-2"
-                disabled={!builder.dataCube || store.saveState.isInProgress}
+                disabled={!builder.dataCube}
+                loading={store.saveState.isInProgress}
                 onClick={() => {
                   store
                     .saveDataCube(name, {
@@ -161,7 +162,8 @@ export const LegendDataCubeSaver = observer(() => {
             <>
               <FormButton
                 className="ml-2"
-                disabled={!builder.dataCube || store.saveState.isInProgress}
+                disabled={!builder.dataCube}
+                loading={store.saveState.isInProgress}
                 onClick={() => {
                   store
                     .createNewDataCube(name, {

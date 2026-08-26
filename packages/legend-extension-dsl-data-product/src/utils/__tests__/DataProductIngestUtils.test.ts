@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { describe, expect, test } from '@jest/globals';
+import { describe, expect, jest, test } from '@jest/globals';
 import {
   type V1_Accessor,
   type RawLambda,
@@ -34,13 +34,34 @@ import {
   V1_LakehouseAccessPoint,
   V1_ProducerType,
   V1_RawLambda,
+  V1_EngineServerClient,
+  V1_EntitlementsDataProductDetails,
+  V1_EntitlementsLakehouseEnvironment,
+  V1_EntitlementsLakehouseEnvironmentType,
+  V1_IngestEnvironmentClassification,
+  V1_GenericType,
+  V1_LegendSDLC,
+  V1_PackageableType,
+  V1_PureModelContextPointer,
   V1_RelationStoreAccessor,
+  V1_RelationType,
 } from '@finos/legend-graph';
-import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
 import {
+  MASTER_SNAPSHOT_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import type { ProjectGAVCoordinates } from '@finos/legend-storage';
+import { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
+import {
+  buildAccessPointModel,
+  filterUserIngestEnvs,
   buildCandidateIngestUrns,
   collectDatasetsFromArtifact,
+  fetchAccessPointRelationTypes,
   isLegacyArtifact,
+  selectAccessPointsMissingRelationType,
   walkAccessPointGraphForIngestPaths,
   type LakehouseIngestDatasetInfo,
 } from '../DataProductIngestUtils.js';
@@ -583,5 +604,295 @@ describe('walkAccessPointGraphForIngestPaths', () => {
     ).toThrow(
       `Access point group 'NOT_PRESENT' not found in data product '${WALKER_DP_PATH}'`,
     );
+  });
+});
+
+const buildImplWithRelationType = (
+  id: string,
+): V1_AccessPointImplementation => {
+  const impl = buildAccessPointImpl(id, []);
+  const typeArgument = new V1_GenericType();
+  typeArgument.rawType = new V1_RelationType();
+  const genericType = new V1_GenericType();
+  genericType.typeArguments = [typeArgument];
+  impl.lambdaGenericType = genericType;
+  return impl;
+};
+
+// A lambda the artifact typed as something other than a relation, which the
+// schema extractor cannot read a column list from.
+const buildImplWithNonRelationType = (
+  id: string,
+): V1_AccessPointImplementation => {
+  const impl = buildAccessPointImpl(id, []);
+  const genericType = new V1_GenericType();
+  genericType.rawType = new V1_PackageableType();
+  impl.lambdaGenericType = genericType;
+  return impl;
+};
+
+const buildArtifactWithImpls = (
+  impls: V1_AccessPointImplementation[],
+): V1_DataProductArtifact => {
+  const apg = new V1_AccessPointGroupInfo();
+  apg.id = MAIN_APG_ID;
+  apg.accessPointImplementations = impls;
+  const artifact = new V1_DataProductArtifact();
+  artifact.accessPointGroups = [apg];
+  return artifact;
+};
+
+describe('selectAccessPointsMissingRelationType', () => {
+  test('keeps only the access points the artifact does not type', () => {
+    const missing = selectAccessPointsMissingRelationType(
+      [buildAccessPointGroup(MAIN_APG_ID, [AP1(), AP2()])],
+      buildArtifactWithImpls([buildImplWithRelationType('ap1')]),
+    );
+
+    expect(missing.map((ap) => ap.id)).toEqual(['ap2']);
+  });
+
+  test('treats an implementation without a lambda generic type as untyped', () => {
+    const missing = selectAccessPointsMissingRelationType(
+      [buildAccessPointGroup(MAIN_APG_ID, [AP1()])],
+      buildArtifactWithImpls([buildAccessPointImpl('ap1', [])]),
+    );
+
+    expect(missing.map((ap) => ap.id)).toEqual(['ap1']);
+  });
+
+  test('treats a lambda typed as something other than a relation as untyped', () => {
+    const missing = selectAccessPointsMissingRelationType(
+      [buildAccessPointGroup(MAIN_APG_ID, [AP1()])],
+      buildArtifactWithImpls([buildImplWithNonRelationType('ap1')]),
+    );
+
+    expect(missing.map((ap) => ap.id)).toEqual(['ap1']);
+  });
+
+  test('ignores an implementation the artifact records under another group', () => {
+    const missing = selectAccessPointsMissingRelationType(
+      [buildAccessPointGroup('OTHER_GROUP', [AP1()])],
+      buildArtifactWithImpls([buildImplWithRelationType('ap1')]),
+    );
+
+    expect(missing.map((ap) => ap.id)).toEqual(['ap1']);
+  });
+
+  test('keeps every access point when there is no artifact', () => {
+    const missing = selectAccessPointsMissingRelationType(
+      [buildAccessPointGroup(MAIN_APG_ID, [AP1(), AP2()])],
+      undefined,
+    );
+
+    expect(missing.map((ap) => ap.id)).toEqual(['ap1', 'ap2']);
+  });
+});
+
+describe('buildAccessPointModel', () => {
+  test('points at the SDLC project when the product has coordinates', () => {
+    const model = buildAccessPointModel(
+      { groupId: 'com.example', artifactId: 'my-artifact', versionId: '1.2.3' },
+      TEST__getTestGraphManagerState(),
+    );
+
+    const pointer = guaranteeType(model, V1_PureModelContextPointer);
+    const sdlc = guaranteeType(pointer.sdlcInfo, V1_LegendSDLC);
+    expect(sdlc.groupId).toBe('com.example');
+    expect(sdlc.artifactId).toBe('my-artifact');
+    expect(sdlc.version).toBe('1.2.3');
+  });
+
+  test('resolves a HEAD version to the latest snapshot alias', () => {
+    const model = buildAccessPointModel(
+      {
+        groupId: 'com.example',
+        artifactId: 'my-artifact',
+        versionId: SNAPSHOT_VERSION_ALIAS,
+      },
+      TEST__getTestGraphManagerState(),
+    );
+
+    const pointer = guaranteeType(model, V1_PureModelContextPointer);
+    expect(guaranteeType(pointer.sdlcInfo, V1_LegendSDLC).version).toBe(
+      MASTER_SNAPSHOT_ALIAS,
+    );
+  });
+
+  test('serializes the built graph when the product has no coordinates', async () => {
+    const graphManagerState = TEST__getTestGraphManagerState();
+    await graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+
+    const model = buildAccessPointModel(undefined, graphManagerState);
+
+    expect(model).not.toBeInstanceOf(V1_PureModelContextPointer);
+  });
+});
+
+describe('fetchAccessPointRelationTypes', () => {
+  test('types every lakehouse access point in one call and keys the result by id', async () => {
+    const engineServerClient = new V1_EngineServerClient({});
+    const batchLambdasRelationType = jest
+      .spyOn(engineServerClient, 'batchLambdasRelationType')
+      .mockResolvedValue({
+        results: { ap1: { columns: [] }, ap2: { columns: [] } },
+        errors: {},
+      });
+    const onFailure = jest.fn();
+
+    const resolved = await fetchAccessPointRelationTypes(
+      [AP1(), AP2()],
+      new V1_PureModelContextPointer(undefined),
+      engineServerClient,
+      onFailure,
+    );
+
+    expect(batchLambdasRelationType).toHaveBeenCalledTimes(1);
+    expect(Array.from(resolved.keys()).sort()).toEqual(['ap1', 'ap2']);
+    expect(onFailure).not.toHaveBeenCalled();
+    const sentLambdas = guaranteeNonNullable(
+      batchLambdasRelationType.mock.calls[0],
+    )[0].lambdas;
+    expect(Object.keys(sentLambdas as Record<string, unknown>).sort()).toEqual([
+      'ap1',
+      'ap2',
+    ]);
+  });
+
+  test('keeps the access points that resolve and reports the ones the engine rejects', async () => {
+    const engineServerClient = new V1_EngineServerClient({});
+    jest
+      .spyOn(engineServerClient, 'batchLambdasRelationType')
+      .mockResolvedValue({
+        results: { ap1: { columns: [] } },
+        errors: { ap2: { message: 'engine could not type ap2' } },
+      });
+    const onFailure = jest.fn();
+
+    const resolved = await fetchAccessPointRelationTypes(
+      [AP1(), AP2()],
+      new V1_PureModelContextPointer(undefined),
+      engineServerClient,
+      onFailure,
+    );
+
+    expect(Array.from(resolved.keys())).toEqual(['ap1']);
+    expect(onFailure).toHaveBeenCalledTimes(1);
+    const failure = guaranteeNonNullable(onFailure.mock.calls[0]);
+    expect(failure[0]).toBe('ap2');
+    expect((failure[1] as Error).message).toBe('engine could not type ap2');
+  });
+
+  test('makes no engine call when no access point is a lakehouse access point', async () => {
+    const engineServerClient = new V1_EngineServerClient({});
+    const batchLambdasRelationType = jest.spyOn(
+      engineServerClient,
+      'batchLambdasRelationType',
+    );
+    const onFailure = jest.fn();
+
+    const resolved = await fetchAccessPointRelationTypes(
+      [],
+      new V1_PureModelContextPointer(undefined),
+      engineServerClient,
+      onFailure,
+    );
+
+    expect(resolved.size).toBe(0);
+    expect(batchLambdasRelationType).not.toHaveBeenCalled();
+  });
+});
+
+// These pin the environment the data product page resolves for JDBC links,
+// DataCube launches, sample data and query runtimes.
+const buildIngestEnv = (
+  environmentName: string,
+  environmentClassification: V1_IngestEnvironmentClassification,
+): IngestDeploymentServerConfig => {
+  const env = new IngestDeploymentServerConfig();
+  env.environmentName = environmentName;
+  env.environmentClassification = environmentClassification;
+  env.ingestEnvironmentUrn = `urn:${environmentName}`;
+  env.ingestServerUrl = `https://${environmentName}.example.com`;
+  return env;
+};
+
+const buildDetailsWithEnv = (
+  type: V1_EntitlementsLakehouseEnvironmentType | undefined,
+): V1_EntitlementsDataProductDetails => {
+  const details = new V1_EntitlementsDataProductDetails();
+  if (type !== undefined) {
+    const lakehouseEnvironment = new V1_EntitlementsLakehouseEnvironment();
+    lakehouseEnvironment.type = type;
+    lakehouseEnvironment.producerEnvironmentName = 'producer';
+    details.lakehouseEnvironment = lakehouseEnvironment;
+  }
+  return details;
+};
+
+const PROD_ENV = (): IngestDeploymentServerConfig =>
+  buildIngestEnv('prod-env', V1_IngestEnvironmentClassification.PROD);
+const DEV_ENV = (): IngestDeploymentServerConfig =>
+  buildIngestEnv('dev-env', V1_IngestEnvironmentClassification.DEV);
+
+describe('filterUserIngestEnvs', () => {
+  test('keeps every environment when the product declares no classification', () => {
+    const result = filterUserIngestEnvs(
+      buildDetailsWithEnv(undefined),
+      [PROD_ENV(), DEV_ENV()],
+      undefined,
+    );
+
+    expect(result.map((env) => env.environmentName)).toEqual([
+      'prod-env',
+      'dev-env',
+    ]);
+  });
+
+  test('keeps only environments matching the product classification', () => {
+    const result = filterUserIngestEnvs(
+      buildDetailsWithEnv(V1_EntitlementsLakehouseEnvironmentType.PRODUCTION),
+      [PROD_ENV(), DEV_ENV()],
+      undefined,
+    );
+
+    expect(result.map((env) => env.environmentName)).toEqual(['prod-env']);
+  });
+
+  test('narrows to the environments the user is entitled to', () => {
+    const result = filterUserIngestEnvs(
+      buildDetailsWithEnv(undefined),
+      [PROD_ENV(), DEV_ENV()],
+      [{ name: 'u', userType: 'kerberos', lakehouseEnvironment: 'dev-env' }],
+    );
+
+    expect(result.map((env) => env.environmentName)).toEqual(['dev-env']);
+  });
+
+  test('ignores an empty entitlement list rather than filtering everything out', () => {
+    const result = filterUserIngestEnvs(
+      buildDetailsWithEnv(undefined),
+      [PROD_ENV(), DEV_ENV()],
+      [],
+    );
+
+    expect(result.map((env) => env.environmentName)).toEqual([
+      'prod-env',
+      'dev-env',
+    ]);
+  });
+
+  test('returns nothing when the user is entitled to no matching environment', () => {
+    const result = filterUserIngestEnvs(
+      buildDetailsWithEnv(V1_EntitlementsLakehouseEnvironmentType.PRODUCTION),
+      [PROD_ENV(), DEV_ENV()],
+      [{ name: 'u', userType: 'kerberos', lakehouseEnvironment: 'dev-env' }],
+    );
+
+    expect(result).toEqual([]);
   });
 });

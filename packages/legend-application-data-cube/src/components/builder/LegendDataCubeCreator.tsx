@@ -16,13 +16,14 @@
 
 import { observer } from 'mobx-react-lite';
 import { LegendDataCubeSourceBuilderType } from '../../stores/builder/source/LegendDataCubeSourceBuilderState.js';
-import { useDropdownMenu } from '@finos/legend-art';
+import { cn, useDropdownMenu } from '@finos/legend-art';
 import {
   FormBadge_WIP,
   FormButton,
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
+  FormLoadingIndicator,
 } from '@finos/legend-data-cube';
 import { LegendQueryDataCubeSourceBuilderState } from '../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
 import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSourceBuilder.js';
@@ -53,8 +54,21 @@ export const LegendDataCubeCreator = observer(() => {
 
   return (
     <>
-      <div className="h-[calc(100%_-_40px)] w-full px-2 pt-2">
-        <div className="h-full w-full border border-neutral-300 bg-white">
+      {/*
+        While creating, freeze the whole form: changing the source type or any of
+        its settings mid-flight would be silently discarded when the creation
+        completes and resets the creator, so it's clearer to not accept the input
+        at all. `inert` also takes it out of the tab order, unlike pointer-events.
+      */}
+      <div
+        className="h-[calc(100%_-_40px)] w-full px-2 pt-2"
+        inert={state.finalizeState.isInProgress}
+      >
+        <div
+          className={cn('h-full w-full border border-neutral-300 bg-white', {
+            'opacity-50': state.finalizeState.isInProgress,
+          })}
+        >
           <div className="h-full w-full select-none">
             <div className="flex h-10 w-full items-center p-2">
               <div className="flex h-full w-32 flex-shrink-0 items-center text-sm">
@@ -136,19 +150,29 @@ export const LegendDataCubeCreator = observer(() => {
           </div>
         </div>
       </div>
-      <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
-        <FormButton
-          className="ml-2"
-          disabled={!sourceBuilder.isValid || state.finalizeState.isInProgress}
-          onClick={() => {
-            state
-              .finalize()
-              .catch((error) => store.alertService.alertUnhandledError(error));
-          }}
-        >
-          OK
-        </FormButton>
+      <div className="flex h-10 items-center justify-between px-2">
+        <div className="flex-1 overflow-hidden">
+          {state.finalizeState.isInProgress && (
+            <FormLoadingIndicator message="Creating DataCube..." />
+          )}
+        </div>
+        <div className="flex flex-shrink-0 items-center">
+          <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
+          <FormButton
+            className="ml-2"
+            disabled={!sourceBuilder.isValid}
+            loading={state.finalizeState.isInProgress}
+            onClick={() => {
+              state
+                .finalize()
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
+            }}
+          >
+            OK
+          </FormButton>
+        </div>
       </div>
     </>
   );

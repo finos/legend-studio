@@ -36,6 +36,8 @@ export * from './stores/BaseViewerState.js';
 export * from './stores/DataProduct/DataProductAPGState.js';
 export * from './stores/DataProduct/DataProductConfig.js';
 export * from './stores/DataProduct/DataProductDataAccessState.js';
+export * from './stores/DataProduct/DataProductDocumentationState.js';
+export * from './stores/DataProduct/DataProductLegendAISchema.js';
 export * from './stores/DataProduct/DataProductSampleQueryTabState.js';
 export * from './stores/DataProduct/DataProductViewerState.js';
 export * from './stores/DataProduct/DataProductAccessPointState.js';

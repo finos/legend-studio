@@ -24,6 +24,11 @@ export class QueryBuilderConfig {
   TEMPORARY__enableExportToCube = false;
 
   /**
+   * This flag is to disable the Query Builder AI Agent chat panel toggle.
+   */
+  TEMPORARY__disableQueryBuilderAgentChat = false;
+
+  /**
    * This flag is to enable AG-GRID enterprise mode
    */
   TEMPORARY__enableGridEnterpriseMode = false;
@@ -50,6 +55,7 @@ export class QueryBuilderConfig {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
+      TEMPORARY__disableQueryBuilderAgentChat: optional(primitive()),
       TEMPORARY__enableExportToCube: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
       legendMCPServiceURL: optional(primitive()),

@@ -280,6 +280,7 @@ export class QueryCreatorState {
             artifactId: query.artifactId,
             versionId: query.versionId,
           },
+          ...queryBuilderState.getExtraTelemetryMetadata(),
         },
       );
       queryBuilderState.changeDetectionState.initialize(rawLambda);
@@ -1764,6 +1765,7 @@ export class ExistingQueryUpdateState {
             artifactId: query.artifactId,
             versionId: query.versionId,
           },
+          ...queryBuilderState.getExtraTelemetryMetadata(),
         },
       );
       config.onQueryUpdate?.(updatedQuery);
@@ -1800,6 +1802,8 @@ export class ExistingQueryUpdateState {
         `Successfully updated query!`,
       );
 
+      const extraTelemetryMetadata =
+        this.editorStore.queryBuilderState?.getExtraTelemetryMetadata() ?? {};
       LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
@@ -1810,6 +1814,7 @@ export class ExistingQueryUpdateState {
             artifactId: updatedQuery.artifactId,
             versionId: updatedQuery.versionId,
           },
+          ...extraTelemetryMetadata,
         },
       );
     } catch (error) {

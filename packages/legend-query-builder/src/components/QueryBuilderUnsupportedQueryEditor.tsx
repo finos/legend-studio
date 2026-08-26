@@ -28,6 +28,7 @@ import {
 } from '@finos/legend-art';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
+import { QueryAgentChat } from './QueryAgentChat.js';
 
 const QueryBuilderUnsupportedQueryViewer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -65,6 +66,9 @@ const QueryBuilderUnsupportedQueryViewer = observer(
 export const QueryBuilderUnsupportedQueryEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const showQueryAgentChatPanel =
+      queryBuilderState.isAgentChatOpened &&
+      !queryBuilderState.config?.TEMPORARY__disableQueryBuilderAgentChat;
 
     return (
       <ResizablePanelGroup orientation="vertical">
@@ -81,6 +85,12 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
             queryBuilderState={queryBuilderState}
           />
         </ResizablePanel>
+        {showQueryAgentChatPanel && <ResizablePanelSplitter />}
+        {showQueryAgentChatPanel && (
+          <ResizablePanel size={450}>
+            <QueryAgentChat queryBuilderState={queryBuilderState} />
+          </ResizablePanel>
+        )}
       </ResizablePanelGroup>
     );
   },

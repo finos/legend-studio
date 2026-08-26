@@ -31,12 +31,14 @@ import {
   DotIcon,
   MarkdownTextViewer,
   ExternalLinkIcon,
+  JupyterIcon,
 } from '@finos/legend-art';
 import { noop } from '@finos/legend-shared';
 import {
   type LegendAIAssistantMessage,
   LegendAIMessageRole,
   LegendAIErrorType,
+  LegendAIPythonCodeStatus,
   LegendAIResultGrid,
   LegendAIAnalysisPanel,
   renderStepStatusIcon,
@@ -44,6 +46,7 @@ import {
   COVERAGE_NAME_PROD,
   COVERAGE_NAME_SANDBOX,
 } from '@finos/legend-lego/legend-ai';
+import { useAuth } from 'react-oidc-context';
 import { useLegendMarketplaceAIChatStore } from '../../application/providers/LegendMarketplaceAIChatStoreProvider.js';
 import { MarketplaceAIChatStage } from '../../stores/ai/LegendMarketplaceAIChatStore.js';
 import { MarketplaceAIProductCards } from './MarketplaceAIProductCards.js';
@@ -56,11 +59,41 @@ const AISummaryRenderer = ({ value }: { value: string }): React.ReactNode => (
   <MarkdownTextViewer value={{ value }} className="legend-ai__text-answer-md" />
 );
 
+// Copies text to the clipboard and flags the button as copied for a moment.
+const useCopyFeedback = (): [boolean, (text: string) => void] => {
+  const [copied, setCopied] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(
+    () => () => {
+      if (timerRef.current !== undefined) {
+        clearTimeout(timerRef.current);
+      }
+    },
+    [],
+  );
+  const copy = useCallback((text: string) => {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        setCopied(true);
+        if (timerRef.current !== undefined) {
+          clearTimeout(timerRef.current);
+        }
+        timerRef.current = setTimeout(() => {
+          setCopied(false);
+          timerRef.current = undefined;
+        }, COPY_FEEDBACK_DURATION_MS);
+      })
+      .catch(noop());
+  }, []);
+  return [copied, copy];
+};
+
 const AssistantMessageView = observer(
   (props: {
     msg: LegendAIAssistantMessage;
     onSuggestedQueryClick?: (query: string) => void;
-    onFallbackAction?: (messageId: string, actionId: string) => void;
+    onFallbackAction?: (messageId: string) => void;
   }): React.ReactNode => {
     const { msg, onSuggestedQueryClick, onFallbackAction } = props;
     const store = useLegendMarketplaceAIChatStore();
@@ -72,19 +105,11 @@ const AssistantMessageView = observer(
     const [isThinkingVisible, setIsThinkingVisible] = useState(
       msg.isProcessing,
     );
-    const [sqlCopied, setSqlCopied] = useState(false);
-    const copyTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-      undefined,
-    );
-
-    useEffect(
-      () => () => {
-        if (copyTimerRef.current !== undefined) {
-          clearTimeout(copyTimerRef.current);
-        }
-      },
-      [],
-    );
+    const [sqlCopied, copySql] = useCopyFeedback();
+    const [pythonCopied, copyPython] = useCopyFeedback();
+    const [isPythonOpen, setIsPythonOpen] = useState(false);
+    const [isOpeningDataCube, setIsOpeningDataCube] = useState(false);
+    const pythonEntry = store.pythonCodeByMessageId.get(msg.id);
 
     useEffect(() => {
       setIsThinkingVisible(msg.isProcessing);
@@ -92,18 +117,38 @@ const AssistantMessageView = observer(
 
     const handleCopySql = useCallback(() => {
       if (msg.sql) {
-        navigator.clipboard.writeText(msg.sql).catch(noop());
+        copySql(msg.sql);
         store.logCopySql();
-        setSqlCopied(true);
-        if (copyTimerRef.current !== undefined) {
-          clearTimeout(copyTimerRef.current);
-        }
-        copyTimerRef.current = setTimeout(() => {
-          setSqlCopied(false);
-          copyTimerRef.current = undefined;
-        }, COPY_FEEDBACK_DURATION_MS);
       }
-    }, [msg.sql, store]);
+    }, [msg.sql, store, copySql]);
+
+    const handleTogglePython = useCallback(() => {
+      const opening = !isPythonOpen;
+      setIsPythonOpen(opening);
+      const status = store.pythonCodeByMessageId.get(msg.id)?.status;
+      if (
+        opening &&
+        status !== LegendAIPythonCodeStatus.LOADING &&
+        status !== LegendAIPythonCodeStatus.READY
+      ) {
+        flowResult(store.generatePythonCode(msg.id)).catch(noop());
+      }
+    }, [isPythonOpen, store, msg.id]);
+
+    const handleCopyPython = useCallback(() => {
+      const entry = store.pythonCodeByMessageId.get(msg.id);
+      if (entry?.status === LegendAIPythonCodeStatus.READY && entry.code) {
+        copyPython(entry.code);
+        store.logCopyPython();
+      }
+    }, [store, msg.id, copyPython]);
+
+    const handleOpenInDataCube = useCallback(() => {
+      setIsOpeningDataCube(true);
+      flowResult(store.openInDataCube(msg.id))
+        .catch(noop())
+        .finally(() => setIsOpeningDataCube(false));
+    }, [store, msg.id]);
 
     return (
       <div className="legend-ai__msg legend-ai__msg--assistant">
@@ -153,37 +198,45 @@ const AssistantMessageView = observer(
           )}
 
           {msg.sql && (
-            <div className="legend-ai__sql-block">
-              <div className="legend-ai__sql-block-header">
-                <span className="legend-ai__sql-block-header-icon">
-                  <CodeIcon />
-                </span>
-                <span>Generated Query</span>
-                {msg.sqlGenTime && (
-                  <span className="legend-ai__sql-block-time">
-                    {msg.sqlGenTime}s
+            <details
+              className="legend-ai__sql-details"
+              open={msg.gridData !== null}
+            >
+              <summary className="legend-ai__sql-details-summary">
+                {msg.gridData === null ? 'Show the query I tried' : 'Query'}
+              </summary>
+              <div className="legend-ai__sql-block">
+                <div className="legend-ai__sql-block-header">
+                  <span className="legend-ai__sql-block-header-icon">
+                    <CodeIcon />
                   </span>
-                )}
-                <button
-                  type="button"
-                  className="legend-ai__sql-copy-btn"
-                  title="Copy query"
-                  aria-label="Copy query"
-                  onClick={handleCopySql}
-                >
-                  {sqlCopied ? (
-                    <span className="legend-ai__sql-copy-btn--copied">
-                      <CheckIcon />
+                  <span>Generated Query</span>
+                  {msg.sqlGenTime && (
+                    <span className="legend-ai__sql-block-time">
+                      {msg.sqlGenTime}s
                     </span>
-                  ) : (
-                    <CopyIcon />
                   )}
-                </button>
+                  <button
+                    type="button"
+                    className="legend-ai__sql-copy-btn"
+                    title="Copy query"
+                    aria-label="Copy query"
+                    onClick={handleCopySql}
+                  >
+                    {sqlCopied ? (
+                      <span className="legend-ai__sql-copy-btn--copied">
+                        <CheckIcon />
+                      </span>
+                    ) : (
+                      <CopyIcon />
+                    )}
+                  </button>
+                </div>
+                <div className="legend-ai__sql-scroll">
+                  <pre className="legend-ai__sql-display">{msg.sql}</pre>
+                </div>
               </div>
-              <div className="legend-ai__sql-scroll">
-                <pre className="legend-ai__sql-display">{msg.sql}</pre>
-              </div>
-            </div>
+            </details>
           )}
 
           {msg.isExecuting && (
@@ -254,12 +307,7 @@ const AssistantMessageView = observer(
             <button
               type="button"
               className="legend-ai__fallback-action-btn"
-              onClick={(): void => {
-                const actionId = msg.fallbackAction?.actionId;
-                if (actionId) {
-                  onFallbackAction(msg.id, actionId);
-                }
-              }}
+              onClick={(): void => onFallbackAction(msg.id)}
             >
               <SparkleStarsIcon />
               <span>{msg.fallbackAction.label}</span>
@@ -306,6 +354,104 @@ const AssistantMessageView = observer(
             </div>
           )}
 
+          {msg.sql &&
+            !msg.isProcessing &&
+            msg.gridData !== null &&
+            (store.supportsDataCube || store.supportsPython) && (
+              <div className="legend-ai__cta-row">
+                {store.supportsDataCube && (
+                  <button
+                    type="button"
+                    className="legend-ai__datacube-cta"
+                    onClick={handleOpenInDataCube}
+                    disabled={isOpeningDataCube}
+                  >
+                    <span className="legend-ai__datacube-cta-launch">
+                      {isOpeningDataCube ? (
+                        <LoadingIcon isLoading={true} />
+                      ) : (
+                        <ExternalLinkIcon />
+                      )}
+                    </span>
+                    <span>Open in DataCube</span>
+                  </button>
+                )}
+                {store.supportsPython && (
+                  <button
+                    type="button"
+                    className="legend-ai__python-cta"
+                    onClick={handleTogglePython}
+                    aria-expanded={isPythonOpen}
+                  >
+                    <span className="legend-ai__python-cta-caret">
+                      {isPythonOpen ? <CaretDownIcon /> : <CaretRightIcon />}
+                    </span>
+                    <CodeIcon />
+                    <span>Python code</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+          {store.supportsPython && isPythonOpen && (
+            <div className="legend-ai__python-panel">
+              {pythonEntry?.status === LegendAIPythonCodeStatus.LOADING && (
+                <div className="legend-ai__python-status">
+                  <LoadingIcon isLoading={true} />
+                  <span>Generating Python code...</span>
+                </div>
+              )}
+              {pythonEntry?.status === LegendAIPythonCodeStatus.ERROR && (
+                <div className="legend-ai__python-status legend-ai__python-status--error">
+                  {pythonEntry.error}
+                </div>
+              )}
+              {pythonEntry?.status === LegendAIPythonCodeStatus.READY && (
+                <>
+                  <div className="legend-ai__python-panel-header">
+                    <span className="legend-ai__sql-block-header-icon">
+                      <CodeIcon />
+                    </span>
+                    <span>Python</span>
+                    <button
+                      type="button"
+                      className="legend-ai__sql-copy-btn"
+                      title="Copy Python code"
+                      aria-label="Copy Python code"
+                      onClick={handleCopyPython}
+                    >
+                      {pythonCopied ? (
+                        <span className="legend-ai__sql-copy-btn--copied">
+                          <CheckIcon />
+                        </span>
+                      ) : (
+                        <CopyIcon />
+                      )}
+                    </button>
+                  </div>
+                  <div className="legend-ai__sql-scroll">
+                    <pre className="legend-ai__sql-display">
+                      {pythonEntry.code}
+                    </pre>
+                  </div>
+                  {pythonEntry.notebookUrl !== undefined && (
+                    <div className="legend-ai__python-panel-actions">
+                      <a
+                        className="legend-ai__notebook-btn"
+                        href={pythonEntry.notebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <JupyterIcon />
+                        <span>Launch Notebook</span>
+                      </a>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
           {!msg.isProcessing &&
             msg.suggestedQueries.length > 0 &&
             onSuggestedQueryClick && (
@@ -335,16 +481,32 @@ export const MarketplaceAIChatView = observer(
   (props: { initialQuery?: string }): React.ReactNode => {
     const { initialQuery } = props;
     const store = useLegendMarketplaceAIChatStore();
+    const auth = useAuth();
+    const tokenRef = useRef(auth.user?.access_token);
+    tokenRef.current = auth.user?.access_token;
     const conversationRef = useRef<HTMLDivElement>(null);
     const hasMessages = store.messages.length > 0;
     const initialQuerySubmitted = useRef(false);
+    const lastMessage = store.messages.at(-1);
+    const lastMessageStepCount =
+      lastMessage?.role === LegendAIMessageRole.ASSISTANT
+        ? lastMessage.thinkingSteps.length
+        : 0;
+    const isLastMessageProcessing =
+      lastMessage?.role === LegendAIMessageRole.ASSISTANT &&
+      lastMessage.isProcessing;
+
+    useEffect(() => {
+      store.setTokenProvider(() => tokenRef.current);
+      return (): void => store.setTokenProvider(() => undefined);
+    }, [store]);
 
     useEffect(() => {
       const el = conversationRef.current;
       if (el) {
         el.scrollTop = el.scrollHeight;
       }
-    }, [store.messages.length]);
+    }, [store.messages.length, lastMessageStepCount, isLastMessageProcessing]);
 
     const dispatchQuery = useCallback(
       (text: string): void => {
@@ -368,7 +530,7 @@ export const MarketplaceAIChatView = observer(
         store.setQuestionText(initialQuery);
         flowResult(store.submitQuery(initialQuery)).catch(noop());
       }
-    }, [initialQuery, store]);
+    }, [initialQuery, store, store.isEnabled]);
 
     const handleSubmit = useCallback((): void => {
       if (!store.questionText.trim() || store.isSending) {
@@ -378,7 +540,7 @@ export const MarketplaceAIChatView = observer(
     }, [store, dispatchQuery]);
 
     const handleFallbackAction = useCallback(
-      (messageId: string, _actionId: string): void => {
+      (messageId: string): void => {
         flowResult(store.runOrchestratorFallback(messageId)).catch(noop());
       },
       [store],
@@ -533,21 +695,23 @@ export const MarketplaceAIChatView = observer(
                 onSubmit={handleSubmit}
               />
             </div>
-            <div className="marketplace-ai-chat__suggestions">
-              {store.welcomeSuggestedQueries.map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  className="marketplace-ai-chat__suggestion"
-                  onClick={(): void => {
-                    store.setQuestionText(q);
-                    dispatchQuery(q);
-                  }}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
+            {store.welcomeSuggestedQueries.length > 0 && (
+              <div className="marketplace-ai-chat__suggestions">
+                {store.welcomeSuggestedQueries.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    className="marketplace-ai-chat__suggestion"
+                    onClick={(): void => {
+                      store.setQuestionText(q);
+                      dispatchQuery(q);
+                    }}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="marketplace-ai-chat__welcome-spacer-bottom" />
           </div>
         )}
