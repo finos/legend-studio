@@ -15,27 +15,48 @@
  */
 
 import { Button, ButtonGroup } from '@mui/material';
+import { clsx } from '@finos/legend-art';
 
 export const LegendMarketplaceOptionSelector = <T extends string>(props: {
   options: readonly T[];
   selectedOption: T;
   onChange: (value: T) => void;
   ariaLabel: string;
+  disabledOptions?: readonly T[] | undefined;
+  disabledOptionTitle?: string | undefined;
+  size?: 'small' | 'medium' | undefined;
 }): React.ReactElement => {
-  const { options, selectedOption, onChange, ariaLabel } = props;
+  const {
+    options,
+    selectedOption,
+    onChange,
+    ariaLabel,
+    disabledOptions,
+    disabledOptionTitle,
+    size,
+  } = props;
+  const isMedium = size === 'medium';
 
   return (
     <ButtonGroup variant="outlined" role="radiogroup" aria-label={ariaLabel}>
       {options.map((option) => {
         const isSelected = selectedOption === option;
+        const isDisabled = disabledOptions?.includes(option) === true;
         return (
           <Button
             key={option}
-            onClick={() => onChange(option)}
+            onClick={isDisabled ? undefined : () => onChange(option)}
             variant={isSelected ? 'contained' : 'outlined'}
             role="radio"
             aria-checked={isSelected}
+            aria-disabled={isDisabled}
+            title={isDisabled ? disabledOptionTitle : undefined}
             tabIndex={isSelected ? 0 : -1}
+            className={clsx('legend-marketplace-option-selector__option', {
+              'legend-marketplace-option-selector__option--medium': isMedium,
+              'legend-marketplace-option-selector__option--unavailable':
+                isDisabled,
+            })}
             sx={{
               fontSize: '12px',
               backgroundColor: isSelected ? 'primary' : 'white',

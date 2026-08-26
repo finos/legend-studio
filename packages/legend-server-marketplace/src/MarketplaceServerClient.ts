@@ -42,6 +42,10 @@ import type {
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
 import type { FeedbackRequest, FeedbackResponse } from './models/Feedback.js';
+import type {
+  McpServerPage,
+  McpServerToolsResponse,
+} from './models/McpServer.js';
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
   type TerminalProductOrderResponse,
@@ -473,4 +477,33 @@ export class MarketplaceServerClient extends AbstractServerClient {
     feedbackData: FeedbackRequest,
   ): Promise<PlainObject<FeedbackResponse>> =>
     this.post(this._feedback(), feedbackData);
+
+  // ------------------------------------------- MCP Registry -------------------------------------------
+
+  private readonly _mcpServer = (): string =>
+    `${this.baseUrl}/v1/llm-conversation-service/admin/api/mcp_server`;
+
+  private readonly _token = (token: string): { Authorization: string } => ({
+    Authorization: `Bearer ${token}`,
+  });
+
+  getMcpServers = async (
+    page: number,
+    pageSize: number,
+    token: string,
+  ): Promise<PlainObject<McpServerPage>> =>
+    this.get(`${this._mcpServer()}/paginated`, {}, this._token(token), {
+      page,
+      page_size: pageSize,
+    });
+
+  getMcpServerTools = async (
+    serverName: string,
+    token: string,
+  ): Promise<PlainObject<McpServerToolsResponse>> =>
+    this.get(
+      `${this._mcpServer()}/${encodeURIComponent(serverName)}/tools`,
+      {},
+      this._token(token),
+    );
 }
