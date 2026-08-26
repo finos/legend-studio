@@ -44,6 +44,7 @@ import {
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
+  FormLoadingIndicator,
   FormTextInput,
   isPrimitiveType,
 } from '@finos/legend-data-cube';
@@ -253,10 +254,10 @@ const LegendQuerySearcher = observer((props: { state: QueryLoaderState }) => {
             </>
           )}
           {!state.searchQueriesState.hasCompleted && (
-            <div className="mb-1 flex h-5 w-full items-center px-1.5 text-sm text-neutral-600">
-              <DataCubeIcon.Loader className="animate-spin stroke-2 text-lg" />
-              <span className="ml-1">Searching...</span>
-            </div>
+            <FormLoadingIndicator
+              className="mb-1 px-1.5"
+              message="Searching..."
+            />
           )}
         </div>
       </div>

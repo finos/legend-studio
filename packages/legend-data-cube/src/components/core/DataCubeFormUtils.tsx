@@ -70,23 +70,59 @@ export function FormBadge_Advanced() {
   );
 }
 
+/**
+ * A simple inline spinner with a message, used to signal that some
+ * part of a form is still waiting on an asynchronous operation.
+ */
+export function FormLoadingIndicator(props: {
+  message?: string | undefined;
+  className?: string | undefined;
+}) {
+  const { message, className } = props;
+
+  return (
+    <div
+      className={cn('flex h-5 w-full items-center text-neutral-600', className)}
+    >
+      <DataCubeIcon.Loader className="flex-shrink-0 animate-spin stroke-2 text-lg" />
+      <div className="ml-1 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+        {message ?? 'Loading...'}
+      </div>
+    </div>
+  );
+}
+
 export const FormButton = forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     compact?: boolean | undefined;
+    // when set, the button shows a spinner and is disabled to signal
+    // that the action it triggers is still running
+    loading?: boolean | undefined;
   }
 >(function FormButton(props, ref) {
-  const { className, compact, ...otherProps } = props;
+  const { className, compact, loading, disabled, children, ...otherProps } =
+    props;
   return (
     <button
       ref={ref}
       {...otherProps}
+      disabled={Boolean(disabled) || Boolean(loading)}
       className={cn(
         'flex h-6 min-w-20 items-center justify-center border border-neutral-400 bg-neutral-300 px-2.5 hover:brightness-95 disabled:cursor-not-allowed disabled:border-neutral-300 disabled:text-neutral-400 disabled:hover:brightness-100',
         { 'h-5 text-sm': Boolean(compact) },
         className,
       )}
-    />
+    >
+      {Boolean(loading) && (
+        <DataCubeIcon.Loader
+          className={cn('mr-1 flex-shrink-0 animate-spin stroke-2', {
+            'text-sm': Boolean(compact),
+          })}
+        />
+      )}
+      {children}
+    </button>
   );
 });
 

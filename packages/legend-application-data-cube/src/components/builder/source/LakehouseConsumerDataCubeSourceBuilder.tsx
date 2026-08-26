@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 import { observer } from 'mobx-react-lite';
-import { DataCubeCodeEditor, FormTextInput } from '@finos/legend-data-cube';
+import {
+  DataCubeCodeEditor,
+  FormLoadingIndicator,
+  FormTextInput,
+} from '@finos/legend-data-cube';
 import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
-import { assertErrorThrown, guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { useEffect, type ReactNode } from 'react';
 import type { LakehouseConsumerDataCubeSourceBuilderState } from '../../../stores/builder/source/LakehouseConsumerDataCubeSourceBuilderState.js';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
@@ -66,15 +71,24 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
     );
   };
 
+  // NOTE: the auth context hands back a brand new value on every token refresh,
+  // so this must not depend on it directly, else a silent renew would re-run the
+  // initialization and wipe out the form the user has already filled out.
+  // We still retry while the data products have not been loaded successfully,
+  // to cover the case where the access token only arrives after the first render.
+  const accessToken = auth.user?.access_token;
   useEffect(() => {
-    sourceBuilder.reset();
-    try {
-      sourceBuilder.loadDataProducts(auth.user?.access_token);
-    } catch (error) {
-      assertErrorThrown(error);
-      store.alertService.alertUnhandledError(error);
+    if (
+      sourceBuilder.dataProductLoadingState.isInProgress ||
+      sourceBuilder.dataProductLoadingState.hasSucceeded
+    ) {
+      return;
     }
-  }, [sourceBuilder, auth, store]);
+    sourceBuilder.reset();
+    flowResult(sourceBuilder.loadDataProducts(accessToken)).catch(
+      store.application.alertUnhandledError,
+    );
+  }, [sourceBuilder, accessToken, store]);
 
   return (
     <div className="flex h-full w-full">
@@ -187,7 +201,8 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {sourceBuilder.accessPoints.size > 0 && (
+        {(sourceBuilder.accessPoints.size > 0 ||
+          sourceBuilder.accessPointLoadingState.isInProgress) && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">
               Access Point
@@ -200,8 +215,8 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                   value: id,
                 }),
               )}
-              disabled={false}
-              isLoading={false}
+              disabled={sourceBuilder.accessPointLoadingState.isInProgress}
+              isLoading={sourceBuilder.accessPointLoadingState.isInProgress}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const value = newValue?.value ?? '';
                 const label = newValue?.label ?? '';
@@ -253,7 +268,11 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                 position: 'relative',
               }}
             >
-              <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
+              {sourceBuilder.queryInitializationState.isInProgress ? (
+                <FormLoadingIndicator message="Generating query..." />
+              ) : (
+                <DataCubeCodeEditor state={sourceBuilder.codeEditorState} />
+              )}
             </div>
           </div>
         )}

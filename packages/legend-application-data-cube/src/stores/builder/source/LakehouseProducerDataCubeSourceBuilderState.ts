@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -79,6 +79,8 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   user: string | undefined;
   readonly initialLoadState = ActionState.create();
   readonly fetchProducerEnvironmentsState = ActionState.create();
+  readonly fetchIngestUrnsState = ActionState.create();
+  readonly fetchDatasetsState = ActionState.create();
 
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
@@ -260,8 +262,11 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setSelectedLakehouseEnv(matchingEnv);
     if (matchingEnv) {
       this.setSelectedProducerEnv(undefined);
-      // NOTE: we trigger this but don't await because it's a flow
-      this.fetchProducerEnvironments(access_token);
+      // NOTE: we trigger this but don't await because it's a flow, we still need
+      // to handle the rejection though, else a failure here goes unreported
+      flowResult(this.fetchProducerEnvironments(access_token)).catch(
+        this._application.alertUnhandledError,
+      );
     }
   }
 
@@ -352,26 +357,34 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   async fetchIngestUrns(access_token: string | undefined) {
-    const ingestServerUrl = guaranteeNonNullable(
-      this.selectedLakehouseEnv,
-    ).ingestServerUrl;
-    this.ingestionServerUrl = ingestServerUrl;
+    this.fetchIngestUrnsState.inProgress();
+    try {
+      const ingestServerUrl = guaranteeNonNullable(
+        this.selectedLakehouseEnv,
+      ).ingestServerUrl;
+      this.ingestionServerUrl = ingestServerUrl;
 
-    const producerUrn = guaranteeNonNullable(this.selectedProducerEnv);
+      const producerUrn = guaranteeNonNullable(this.selectedProducerEnv);
 
-    await this.fetchProducerEnvironmentDetails(
-      producerUrn,
-      ingestServerUrl,
-      access_token,
-    );
-
-    const ingestDefinitions =
-      await this._ingestServerClient.getIngestDefinitions(
+      await this.fetchProducerEnvironmentDetails(
         producerUrn,
         ingestServerUrl,
         access_token,
       );
-    this.setIngestUrns(ingestDefinitions);
+
+      const ingestDefinitions =
+        await this._ingestServerClient.getIngestDefinitions(
+          producerUrn,
+          ingestServerUrl,
+          access_token,
+        );
+      this.setIngestUrns(ingestDefinitions);
+      this.fetchIngestUrnsState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fetchIngestUrnsState.fail();
+      throw error;
+    }
   }
 
   private async fetchProducerEnvironmentDetails(
@@ -401,6 +414,18 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   async fetchDatasets(access_token: string | undefined) {
+    this.fetchDatasetsState.inProgress();
+    try {
+      await this.INTERNAL__fetchDatasets(access_token);
+      this.fetchDatasetsState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.fetchDatasetsState.fail();
+      throw error;
+    }
+  }
+
+  private async INTERNAL__fetchDatasets(access_token: string | undefined) {
     this.setTables([]);
     this.setSelectedTable(undefined);
 

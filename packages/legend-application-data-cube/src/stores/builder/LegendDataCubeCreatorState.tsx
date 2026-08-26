@@ -158,6 +158,7 @@ export class LegendDataCubeCreatorState {
     }
 
     this.finalizeState.inProgress();
+    const task = this._store.taskService.newTask('Creating DataCube...');
     try {
       sourceData =
         sourceData ?? (await this.sourceBuilder.generateSourceData());
@@ -210,6 +211,8 @@ export class LegendDataCubeCreatorState {
         message: message,
       });
       this.finalizeState.fail();
+    } finally {
+      this._store.taskService.endTask(task);
     }
   }
 }

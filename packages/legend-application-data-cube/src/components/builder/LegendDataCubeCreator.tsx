@@ -23,6 +23,7 @@ import {
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
+  FormLoadingIndicator,
 } from '@finos/legend-data-cube';
 import { LegendQueryDataCubeSourceBuilderState } from '../../stores/builder/source/LegendQueryDataCubeSourceBuilderState.js';
 import { LegendQueryDataCubeSourceBuilder } from './source/LegendQueryDataCubeSourceBuilder.js';
@@ -136,19 +137,29 @@ export const LegendDataCubeCreator = observer(() => {
           </div>
         </div>
       </div>
-      <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
-        <FormButton
-          className="ml-2"
-          disabled={!sourceBuilder.isValid || state.finalizeState.isInProgress}
-          onClick={() => {
-            state
-              .finalize()
-              .catch((error) => store.alertService.alertUnhandledError(error));
-          }}
-        >
-          OK
-        </FormButton>
+      <div className="flex h-10 items-center justify-between px-2">
+        <div className="flex-1 overflow-hidden">
+          {state.finalizeState.isInProgress && (
+            <FormLoadingIndicator message="Creating DataCube..." />
+          )}
+        </div>
+        <div className="flex flex-shrink-0 items-center">
+          <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
+          <FormButton
+            className="ml-2"
+            disabled={!sourceBuilder.isValid}
+            loading={state.finalizeState.isInProgress}
+            onClick={() => {
+              state
+                .finalize()
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
+            }}
+          >
+            OK
+          </FormButton>
+        </div>
       </div>
     </>
   );

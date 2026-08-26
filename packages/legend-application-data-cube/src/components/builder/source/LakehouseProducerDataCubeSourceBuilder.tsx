@@ -20,6 +20,7 @@ import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { useEffect } from 'react';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 
@@ -29,10 +30,24 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
 
+  // NOTE: the auth context hands back a brand new value on every token refresh,
+  // so this must not depend on it directly, else a silent renew would re-run the
+  // initialization and wipe out the form the user has already filled out.
+  // We still retry while the initial load has not succeeded, to cover the case
+  // where the access token only arrives after the first render.
+  const accessToken = auth.user?.access_token;
   useEffect(() => {
+    if (
+      state.initialLoadState.isInProgress ||
+      state.initialLoadState.hasSucceeded
+    ) {
+      return;
+    }
     state.resetAll();
-    state.initialLoad(auth.user?.access_token);
-  }, [state, auth]);
+    flowResult(state.initialLoad(accessToken)).catch(
+      store.application.alertUnhandledError,
+    );
+  }, [state, accessToken, store]);
 
   function createUrnPairs(
     urns: string[],
@@ -80,7 +95,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {state.userEntitledLakehouseEnv && (
+        {(Boolean(state.userEntitledLakehouseEnv) ||
+          state.initialLoadState.isInProgress) && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Producer</div>
             <CustomSelectorInput
@@ -109,7 +125,10 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
                     }
                   : null
               }
-              isLoading={state.fetchProducerEnvironmentsState.isInProgress}
+              isLoading={
+                state.initialLoadState.isInProgress ||
+                state.fetchProducerEnvironmentsState.isInProgress
+              }
               placeholder="Choose producer environment"
               isClearable={false}
               escapeClearsValue={true}
@@ -128,7 +147,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             </div>
           </div>
         )}
-        {state.ingestUrns.length > 0 && (
+        {(state.ingestUrns.length > 0 ||
+          state.fetchIngestUrnsState.isInProgress) && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Ingest Urn</div>
             <CustomSelectorInput
@@ -139,8 +159,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
                   label: guaranteeNonNullable(urn.decoratedUrn),
                   value: guaranteeNonNullable(urn.urn),
                 }))}
-              disabled={false}
-              isLoading={false}
+              disabled={state.fetchIngestUrnsState.isInProgress}
+              isLoading={state.fetchIngestUrnsState.isInProgress}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const ingestUrn = newValue?.value ?? '';
                 state.setSelectedIngestUrn(ingestUrn);
@@ -163,7 +183,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {state.tables.length > 0 && (
+        {(state.tables.length > 0 || state.fetchDatasetsState.isInProgress) && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Dataset</div>
             <CustomSelectorInput
@@ -172,8 +192,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
                 label: `${state.datasetGroup}.${table}`,
                 value: table,
               }))}
-              disabled={false}
-              isLoading={false}
+              disabled={state.fetchDatasetsState.isInProgress}
+              isLoading={state.fetchDatasetsState.isInProgress}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const table = newValue?.value ?? '';
                 state.setSelectedTable(table);
