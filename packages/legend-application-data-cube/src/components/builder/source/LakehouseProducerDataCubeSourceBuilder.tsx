@@ -20,6 +20,7 @@ import { CustomSelectorInput } from '@finos/legend-art';
 import { useAuth } from 'react-oidc-context';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { flowResult } from 'mobx';
 import { useEffect } from 'react';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 
@@ -29,10 +30,24 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
   const auth = useAuth();
   const store = useLegendDataCubeBuilderStore();
 
+  // NOTE: the auth context hands back a brand new value on every token refresh,
+  // so this must not depend on it directly, else a silent renew would re-run the
+  // initialization and wipe out the form the user has already filled out.
+  // We still retry while the initial load has not succeeded, to cover the case
+  // where the access token only arrives after the first render.
+  const accessToken = auth.user?.access_token;
   useEffect(() => {
+    if (
+      state.initialLoadState.isInProgress ||
+      state.initialLoadState.hasSucceeded
+    ) {
+      return;
+    }
     state.resetAll();
-    state.initialLoad(auth.user?.access_token);
-  }, [state, auth]);
+    flowResult(state.initialLoad(accessToken)).catch(
+      store.application.alertUnhandledError,
+    );
+  }, [state, accessToken, store]);
 
   function createUrnPairs(
     urns: string[],
@@ -123,7 +138,16 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
               <FormCheckbox
                 label="Use Iceberg"
                 checked={state.enableIceberg}
-                onChange={() => state.setEnableIceberg(!state.enableIceberg)}
+                onChange={() => {
+                  state
+                    .toggleIceberg(
+                      !state.enableIceberg,
+                      auth.user?.access_token,
+                    )
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
               />
             </div>
           </div>
