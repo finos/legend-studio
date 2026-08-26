@@ -34,6 +34,7 @@ import {
   DataCubePlaceholder,
 } from './DataCubePlaceholder.js';
 import { DataCubeEvent } from '../__lib__/DataCubeEvent.js';
+import { FormLoadingIndicator } from './core/DataCubeFormUtils.js';
 
 const DataCubeRoot = observer(() => {
   const dataCube = useDataCube();
@@ -126,6 +127,11 @@ export const DataCube = observer(
           layoutManager={dataCube.layoutService.manager}
           taskManager={dataCube.taskService.manager}
         >
+          {!dataCube.initializeState.hasFailed && (
+            <div className="h-full w-full p-2">
+              <FormLoadingIndicator message="Initializing DataCube..." />
+            </div>
+          )}
           {dataCube.initializeState.hasFailed && (
             <DataCubePlaceholderErrorDisplay
               message="Initialization Failure"

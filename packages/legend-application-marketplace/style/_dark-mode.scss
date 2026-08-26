@@ -2344,44 +2344,25 @@
     background: var(--color-dark-theme-bg-primary);
   }
 
+  .marketplace-mcp-server-viewer {
+    --mcp-viewer-surface: var(--color-dark-theme-bg-secondary);
+    --mcp-viewer-surface-muted: var(--color-dark-theme-bg-elevated);
+    --mcp-viewer-border: rgb(255 255 255 / 14%);
+    --mcp-viewer-chip-bg: rgb(255 255 255 / 10%);
+    --mcp-viewer-live-bg: rgb(7 125 85 / 26%);
+    --mcp-viewer-live-text: #6fdcae;
+    --mcp-viewer-approval-bg: rgb(165 97 13 / 28%);
+    --mcp-viewer-approval-text: #f0b667;
+    --mcp-viewer-category-bg: rgb(115 153 198 / 26%);
+    --mcp-viewer-category-text: #9dc4ee;
+    --mcp-viewer-version-bg: rgb(126 105 191 / 28%);
+    --mcp-viewer-version-text: #bda9f2;
+    --mcp-viewer-vendor-bg: rgb(255 255 255 / 12%);
+    --mcp-viewer-vendor-text: #d6dde4;
+  }
+
   .marketplace-agents__search-container {
     background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__section-bar {
-    background-color: var(--color-dark-theme-bg-secondary);
-    border-bottom: 1px solid var(--color-dark-theme-border);
-
-    &__container {
-      background-color: var(--color-dark-theme-bg-secondary);
-      color: var(--color-dark-theme-text-primary);
-    }
-  }
-
-  .marketplace-agents__section-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__content-container {
-    background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__agent-card {
-    background: var(--color-dark-theme-bg-secondary);
-    border-color: var(--color-dark-theme-border);
-
-    &:hover {
-      border-color: var(--color-dark-theme-blue-primary);
-      box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
-    }
-  }
-
-  .marketplace-agents__agent-card-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__agent-card-desc {
-    color: var(--color-dark-theme-text-muted);
   }
 
   .legend-marketplace-search-results__sort-bar {

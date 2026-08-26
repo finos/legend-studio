@@ -1,0 +1,426 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+@use '../marketplace-mixins' as *;
+
+.marketplace-mcp-server-viewer {
+  --mcp-viewer-rail-width: 50rem;
+  --mcp-viewer-gap: 2.4rem;
+  --mcp-viewer-radius: 0.8rem;
+  --mcp-viewer-surface: var(--marketplace-bg-primary);
+  --mcp-viewer-surface-muted: var(--marketplace-bg-secondary);
+  --mcp-viewer-border: rgb(128 128 128 / 24%);
+  --mcp-viewer-accent-connection: rgb(115 153 198 / 100%);
+  --mcp-viewer-accent-security: rgb(196 122 40 / 100%);
+  --mcp-viewer-accent-ownership: rgb(126 105 191 / 100%);
+  --mcp-viewer-accent-registry: rgb(88 154 122 / 100%);
+  --mcp-viewer-chip-bg: rgb(128 128 128 / 14%);
+  --mcp-viewer-chip-text: var(--marketplace-text-secondary);
+  --mcp-viewer-live-bg: #e0f7f0;
+  --mcp-viewer-live-text: #077d55;
+  --mcp-viewer-approval-bg: #fdf0dd;
+  --mcp-viewer-approval-text: #a5610d;
+  --mcp-viewer-category-bg: #deebff;
+  --mcp-viewer-category-text: #1c4f7c;
+  --mcp-viewer-version-bg: #ece8fb;
+  --mcp-viewer-version-text: #54419b;
+  --mcp-viewer-vendor-bg: rgb(128 128 128 / 14%);
+  --mcp-viewer-vendor-text: var(--marketplace-text-secondary);
+
+  &__page-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    padding-top: 1.6rem;
+    padding-bottom: 4rem;
+  }
+
+  &__back-btn {
+    @include marketplacePillButton(-0.2rem);
+
+    align-self: flex-start;
+  }
+
+  &__content-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mcp-viewer-gap);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 2.4rem;
+    border: 0.1rem solid var(--mcp-viewer-border);
+    border-radius: var(--mcp-viewer-radius);
+    background: var(--mcp-viewer-surface-muted);
+  }
+
+  &__vendor {
+    align-self: flex-start;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08rem;
+    background: var(--mcp-viewer-vendor-bg);
+    color: var(--mcp-viewer-vendor-text);
+  }
+
+  &__title {
+    font-weight: bold;
+    color: var(--marketplace-text-primary);
+    margin: 0;
+  }
+
+  &__tags {
+    @include flexVCenter;
+
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  &__tag {
+    --mcp-viewer-tag-bg: var(--mcp-viewer-chip-bg);
+    --mcp-viewer-tag-text: var(--mcp-viewer-chip-text);
+
+    // MUI sets a palette colour on .MuiChip-root at the same specificity, so the
+    // pill palette is bound to the compound selector to stay on top of it.
+    &.MuiChip-root {
+      font-size: 1.2rem;
+      font-weight: 600;
+      border-radius: 999px;
+      background: var(--mcp-viewer-tag-bg);
+      color: var(--mcp-viewer-tag-text);
+    }
+
+    &--live {
+      --mcp-viewer-tag-bg: var(--mcp-viewer-live-bg);
+      --mcp-viewer-tag-text: var(--mcp-viewer-live-text);
+    }
+
+    &--approval {
+      --mcp-viewer-tag-bg: var(--mcp-viewer-approval-bg);
+      --mcp-viewer-tag-text: var(--mcp-viewer-approval-text);
+    }
+
+    &--category {
+      --mcp-viewer-tag-bg: var(--mcp-viewer-category-bg);
+      --mcp-viewer-tag-text: var(--mcp-viewer-category-text);
+    }
+
+    &--version {
+      --mcp-viewer-tag-bg: var(--mcp-viewer-version-bg);
+      --mcp-viewer-tag-text: var(--mcp-viewer-version-text);
+
+      font-family: monospace;
+    }
+  }
+
+  &__description {
+    font-size: 1.8rem;
+    line-height: 1.7;
+    color: var(--marketplace-text-secondary);
+    max-width: 180ch;
+    margin: 0.4rem 0 0;
+    padding-top: 1.6rem;
+    border-top: 0.1rem solid var(--mcp-viewer-border);
+  }
+
+  &__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--mcp-viewer-rail-width);
+    gap: var(--mcp-viewer-gap);
+    align-items: start;
+
+    @media (width <= 1200px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mcp-viewer-gap);
+    min-width: 0;
+  }
+
+  &__rail {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    position: sticky;
+    top: 1.6rem;
+
+    @media (width <= 1200px) {
+      position: static;
+    }
+  }
+
+  &__section,
+  &__panel {
+    border: 0.1rem solid var(--mcp-viewer-border);
+    border-radius: var(--mcp-viewer-radius);
+    background: var(--mcp-viewer-surface);
+    overflow: hidden;
+  }
+
+  &__section-header {
+    @include flexVCenter;
+
+    gap: 0.8rem;
+    padding: 1.4rem 2rem;
+    border-bottom: 0.1rem solid var(--mcp-viewer-border);
+    background: var(--mcp-viewer-surface-muted);
+  }
+
+  &__section-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--marketplace-text-primary);
+    margin: 0;
+  }
+
+  &__section-count {
+    @include flexCenter;
+
+    min-width: 2.2rem;
+    padding: 0 0.6rem;
+    border-radius: 1.1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    background: var(--mcp-viewer-chip-bg);
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__section-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1.6rem 2rem;
+
+    &--scrollable {
+      max-height: 34rem;
+      overflow-y: auto;
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    border-left: 0.4rem solid var(--mcp-viewer-panel-accent);
+
+    &--connection {
+      --mcp-viewer-panel-accent: var(--mcp-viewer-accent-connection);
+    }
+
+    &--security {
+      --mcp-viewer-panel-accent: var(--mcp-viewer-accent-security);
+    }
+
+    &--ownership {
+      --mcp-viewer-panel-accent: var(--mcp-viewer-accent-ownership);
+    }
+
+    &--registry {
+      --mcp-viewer-panel-accent: var(--mcp-viewer-accent-registry);
+    }
+  }
+
+  &__panel-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08rem;
+    color: var(--marketplace-text-secondary);
+    padding: 1.4rem 2rem;
+    border-bottom: 0.1rem solid var(--mcp-viewer-border);
+    background: var(--mcp-viewer-surface-muted);
+    margin: 0;
+  }
+
+  &__fields {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    column-gap: 2rem;
+    row-gap: 1.2rem;
+    align-items: baseline;
+    padding: 1.6rem 2rem;
+    margin: 0;
+  }
+
+  &__field-label {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__field-value {
+    font-size: 1.4rem;
+    line-height: 1.5;
+    color: var(--marketplace-text-primary);
+    overflow-wrap: anywhere;
+    margin: 0;
+  }
+
+  &__url {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  &__url-text,
+  &__code {
+    font-family: monospace;
+    font-size: 1.3rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    background: var(--mcp-viewer-chip-bg);
+    overflow-wrap: anywhere;
+  }
+
+  &__copy-btn {
+    flex-shrink: 0;
+    color: var(--marketplace-text-secondary);
+
+    svg {
+      font-size: 1.4rem;
+    }
+  }
+
+  &__chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  &__chip {
+    font-size: 1.2rem;
+    background: var(--mcp-viewer-chip-bg);
+    color: var(--marketplace-text-primary);
+  }
+
+  &__link {
+    color: var(--marketplace-link-color);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__questions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  &__question {
+    @include flexVCenter;
+
+    justify-content: space-between;
+    gap: 1.2rem;
+    padding: 1.2rem 1.6rem;
+    border-radius: 0.6rem;
+    border: 0.1rem solid var(--mcp-viewer-border);
+    background: var(--mcp-viewer-surface-muted);
+    transition:
+      border-color 0.15s ease,
+      transform 0.15s ease;
+
+    &:hover {
+      border-color: var(--mcp-viewer-accent-connection);
+      transform: translateX(0.2rem);
+    }
+  }
+
+  &__question-text {
+    font-size: 1.4rem;
+    line-height: 1.6;
+    color: var(--marketplace-text-primary);
+  }
+
+  &__tool {
+    border: 0.1rem solid var(--mcp-viewer-border);
+    border-radius: 0.6rem;
+    background: var(--mcp-viewer-surface-muted);
+    transition: border-color 0.15s ease;
+
+    &::before {
+      display: none;
+    }
+
+    &:hover {
+      border-color: var(--mcp-viewer-accent-connection);
+    }
+  }
+
+  &__tool-summary {
+    .MuiAccordionSummary-expandIconWrapper {
+      color: var(--marketplace-text-primary);
+
+      svg {
+        font-size: 2.2rem;
+        stroke-width: 1;
+      }
+    }
+  }
+
+  &__tool-heading {
+    @include flexVCenter;
+
+    gap: 0.4rem;
+  }
+
+  &__tool-title {
+    font-family: monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--marketplace-text-primary);
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    background: var(--mcp-viewer-chip-bg);
+    user-select: text;
+  }
+
+  &__tool-pattern {
+    font-family: monospace;
+    font-size: 1.2rem;
+    margin-left: 1.2rem;
+    background: var(--mcp-viewer-chip-bg);
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__tool-details {
+    font-size: 1.4rem;
+    line-height: 1.7;
+    color: var(--marketplace-text-primary);
+  }
+
+  &__empty {
+    @include marketplaceEmptyState;
+  }
+
+  &__retry {
+    @include marketplaceInlineLinkButton;
+  }
+}

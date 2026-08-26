@@ -15,7 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { AlertType, FormAlert, FormCodeEditor } from '@finos/legend-data-cube';
+import {
+  AlertType,
+  FormAlert,
+  FormCodeEditor,
+  FormLoadingIndicator,
+} from '@finos/legend-data-cube';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import type { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
@@ -52,6 +57,9 @@ export const LocalFileDataCubePartialSourceLoader = observer(
             className="w-full"
           />
         </div>
+        {partialSourceLoader.processState.isInProgress && (
+          <FormLoadingIndicator className="mt-2" message="Processing file..." />
+        )}
         {partialSourceLoader.processState.hasFailed && (
           <div className="mt-2 h-40">
             <FormCodeEditor
