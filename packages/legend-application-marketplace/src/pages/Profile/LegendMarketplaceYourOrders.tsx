@@ -54,6 +54,8 @@ import {
   formatOrderDate,
   canCancelOrder,
   formatTimestamp,
+  getCurrentStageTrackingUrl,
+  getClosureInfo,
 } from '../../stores/orders/OrderHelpers.js';
 
 const OrderAccordion: React.FC<{
@@ -65,6 +67,8 @@ const OrderAccordion: React.FC<{
   const baseStore = useLegendMarketplaceBaseStore();
 
   const isCancellable = canCancelOrder(order);
+  const trackingUrl = getCurrentStageTrackingUrl(order);
+  const closureInfo = getClosureInfo(order);
 
   const handleCancelClick = (): void => {
     setCancelDialogOpen(true);
@@ -209,7 +213,7 @@ const OrderAccordion: React.FC<{
               <Box className="legend-marketplace-order-accordion__summary-actions">
                 <Tooltip
                   title={
-                    !order.workflow_details?.url_manager
+                    !trackingUrl
                       ? 'Tracking link is not yet available for this order'
                       : ''
                   }
@@ -220,13 +224,12 @@ const OrderAccordion: React.FC<{
                       variant="contained"
                       size="small"
                       startIcon={<OpenNewTabIcon />}
-                      disabled={!order.workflow_details?.url_manager}
+                      disabled={!trackingUrl}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const url = order.workflow_details?.url_manager;
-                        if (url) {
+                        if (trackingUrl) {
                           baseStore.applicationStore.navigationService.navigator.visitAddress(
-                            url,
+                            trackingUrl,
                           );
                         }
                       }}
@@ -239,7 +242,7 @@ const OrderAccordion: React.FC<{
                 <Tooltip
                   title={
                     !isCancellable
-                      ? 'Order cancellation is only available during approval stages'
+                      ? 'Order cancellation is not available once the order has reached the fulfillment stage'
                       : ''
                   }
                   arrow={true}
@@ -265,7 +268,7 @@ const OrderAccordion: React.FC<{
 
         <AccordionDetails className="legend-marketplace-order-accordion__details">
           <Box className="legend-marketplace-order-accordion__details-container">
-            {!isOpenOrder && order.workflow_details && (
+            {!isOpenOrder && closureInfo && (
               <Box className="legend-marketplace-order-accordion__closure-info">
                 <Typography
                   variant="h6"
@@ -279,13 +282,27 @@ const OrderAccordion: React.FC<{
                       variant="body2"
                       className="legend-marketplace-order-accordion__closure-label"
                     >
+                      Closed At Stage:
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-value"
+                    >
+                      {closureInfo.stageLabel}
+                    </Typography>
+                  </Box>
+                  <Box className="legend-marketplace-order-accordion__closure-row">
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-order-accordion__closure-label"
+                    >
                       Closure Reason:
                     </Typography>
                     <Typography
                       variant="body2"
                       className="legend-marketplace-order-accordion__closure-value"
                     >
-                      {order.workflow_details.manager_action ?? 'N/A'}
+                      {closureInfo.reason ?? 'N/A'}
                     </Typography>
                   </Box>
                   <Box className="legend-marketplace-order-accordion__closure-row">
@@ -299,7 +316,7 @@ const OrderAccordion: React.FC<{
                       variant="body2"
                       className="legend-marketplace-order-accordion__closure-value"
                     >
-                      {order.workflow_details.manager_actioned_by ?? 'N/A'}
+                      {closureInfo.actionedBy ?? 'N/A'}
                     </Typography>
                   </Box>
                   <Box className="legend-marketplace-order-accordion__closure-row">
@@ -313,14 +330,12 @@ const OrderAccordion: React.FC<{
                       variant="body2"
                       className="legend-marketplace-order-accordion__closure-value"
                     >
-                      {order.workflow_details.manager_actioned_timestamp
-                        ? formatTimestamp(
-                            order.workflow_details.manager_actioned_timestamp,
-                          )
+                      {closureInfo.actionedTimestamp
+                        ? formatTimestamp(closureInfo.actionedTimestamp)
                         : 'N/A'}
                     </Typography>
                   </Box>
-                  {order.workflow_details.manager_comment && (
+                  {closureInfo.comment && (
                     <Box className="legend-marketplace-order-accordion__closure-row">
                       <Typography
                         variant="body2"
@@ -332,7 +347,7 @@ const OrderAccordion: React.FC<{
                         variant="body2"
                         className="legend-marketplace-order-accordion__closure-value"
                       >
-                        {order.workflow_details.manager_comment}
+                        {closureInfo.comment}
                       </Typography>
                     </Box>
                   )}
