@@ -38,6 +38,7 @@ import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketpla
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { RecommendedItemsCard } from '../RecommendedItemsCard.js';
 import { createSpy } from '@finos/legend-shared/test';
+import { toastManager } from '../../Toast/CartToast.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -289,6 +290,58 @@ describe('RecommendedItemsCard - non-association flow', () => {
       fireEvent.click(screen.getByRole('button'));
     });
     expect(onItemAdded).toHaveBeenCalledWith(10);
+  });
+
+  test('shows a warning toast when addToCartWithAPI resolves unsuccessfully with a message', async () => {
+    const item = makeTerminalResult({ id: 20 });
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: false,
+        message: 'Item could not be added',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
+    const warningSpy = createSpy(toastManager, 'warning').mockImplementation(
+      () => {},
+    );
+
+    render(<RecommendedItemsCard recommendedItem={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+
+    expect(warningSpy).toHaveBeenCalledWith('Item could not be added');
+  });
+
+  test('does not show a toast when addToCartWithAPI resolves unsuccessfully without a message', async () => {
+    const item = makeTerminalResult({ id: 21 });
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: false,
+        message: '',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
+    const warningSpy = createSpy(toastManager, 'warning').mockImplementation(
+      () => {},
+    );
+
+    render(<RecommendedItemsCard recommendedItem={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+
+    expect(warningSpy).not.toHaveBeenCalled();
   });
 });
 

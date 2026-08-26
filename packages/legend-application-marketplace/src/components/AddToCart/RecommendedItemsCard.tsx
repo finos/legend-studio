@@ -44,9 +44,9 @@ interface RecommendedItemsCardProps {
    */
   onItemAdded?: (itemId: number) => void;
   isSelecting?: boolean;
-  selectedItemId?: number | undefined;
+  selectedItemId?: number;
   permissionIdOverride?: number;
-  modelOverride?: string | null | undefined;
+  modelOverride?: string | null;
 }
 
 export const RecommendedItemsCard = observer(
