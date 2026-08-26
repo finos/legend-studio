@@ -125,6 +125,9 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_ENTITLEMENTS_PERMIT_DATA_ACCESS_REQUEST: `/lakehouse/entitlements/permitDataAccessRequest/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID}`,
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
   // Deprecated
+  // `DATA_SPACE_SEARCH_RESULTS` was renamed from `/dataProduct/results` when the
+  // DataSpaces/Lakehouse Access tabs were split out — keep the old path working.
+  DEPRECATED_DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
   DEPRECATED_LAKEHOUSE: '/lakehouse',
   DEPRECATED_LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
   DEPRECATED_LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,

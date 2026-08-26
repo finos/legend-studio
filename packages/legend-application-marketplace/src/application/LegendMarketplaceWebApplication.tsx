@@ -44,6 +44,7 @@ import {
   AuthProvider,
   withAuthenticationRequired,
 } from 'react-oidc-context';
+import { useLocation } from 'react-router-dom';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
@@ -181,6 +182,13 @@ const LegendMarketplaceYourOrders = React.lazy(() =>
     default: module.LegendMarketplaceYourOrders,
   })),
 );
+
+const RedirectPreservingParams: React.FC<{ to: string }> = ({ to }) => {
+  const location = useLocation();
+  return (
+    <Navigate to={{ pathname: to, search: location.search }} replace={true} />
+  );
+};
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -401,6 +409,18 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
             />
 
             {/* Reroute pages */}
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_DATA_PRODUCT_SEARCH_RESULTS
+              }
+              element={
+                <RedirectPreservingParams
+                  to={
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS
+                  }
+                />
+              }
+            />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE}
               element={

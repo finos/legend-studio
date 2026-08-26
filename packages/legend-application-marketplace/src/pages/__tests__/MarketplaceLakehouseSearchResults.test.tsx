@@ -348,7 +348,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     expect(
       await screen.findByText(
-        /Results include both DataSpaces .* and Lakehouse Access items \(formerly Data Product\)/,
+        /Results include both DataSpaces .* and Lakehouse Access items \(Data Product\)/,
       ),
     ).toBeDefined();
   });
