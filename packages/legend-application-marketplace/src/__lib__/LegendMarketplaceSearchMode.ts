@@ -47,7 +47,7 @@ export const LAKEHOUSE_ACCESS_SEARCH_MODE_TOOLTIP =
  * two pages don't drift into two independently-edited versions of the same story.
  */
 export const LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT =
-  'This is the new home for what was previously called Data Product — the same entitled, Lakehouse-scoped API surface, now with its own search tab, dedicated filtering. DataSpace search on the homepage still surfaces these results for now.';
+  'This is the new home for Data Products — the same entitled, Lakehouse-scoped API surface, now with its own search tab, dedicated filtering. DataSpace search on the homepage still surfaces these results for now.';
 
 export const DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT =
-  "Results include both DataSpaces (firm's data-domain artifact for business concepts) and Lakehouse Access items (formerly Data Product). Lakehouse Access is moving to its own tab soon.";
+  "Results include both DataSpaces (firm's data-domain artifact for business concepts) and Lakehouse Access items (Data Product). Lakehouse Access is moving to its own tab soon.";
