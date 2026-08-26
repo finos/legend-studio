@@ -15,7 +15,11 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { FormButton, FormDropdownMenuTrigger } from '@finos/legend-data-cube';
+import {
+  FormButton,
+  FormDropdownMenuTrigger,
+  FormLoadingIndicator,
+} from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from '../LegendDataCubeBuilderStoreProvider.js';
 import type { LocalFileDataCubeSourceLoaderState } from '../../../stores/builder/source/LocalFileDataCubeSourceLoaderState.js';
 import { LocalFileDataCubePartialSourceLoader } from './LocalFileDataCubeSourceLoader.js';
@@ -92,26 +96,34 @@ export const LegendDataCubeSourceLoader = observer(
             </div>
           </div>
         </div>
-        <div className="flex h-10 items-center justify-end px-2">
-          <FormButton
-            onClick={() => {
-              state.display.onClose?.();
-              state.display.close();
-            }}
-          >
-            Cancel
-          </FormButton>
-          <FormButton
-            className="ml-2"
-            disabled={!state.isValid || state.finalizeState.isInProgress}
-            onClick={() => {
-              state.finalize().catch((error) => {
-                store.alertService.alertUnhandledError(error);
-              });
-            }}
-          >
-            OK
-          </FormButton>
+        <div className="flex h-10 items-center justify-between px-2">
+          <div className="flex-1 overflow-hidden">
+            {state.finalizeState.isInProgress && (
+              <FormLoadingIndicator message="Loading DataCube..." />
+            )}
+          </div>
+          <div className="flex flex-shrink-0 items-center">
+            <FormButton
+              onClick={() => {
+                state.display.onClose?.();
+                state.display.close();
+              }}
+            >
+              Cancel
+            </FormButton>
+            <FormButton
+              className="ml-2"
+              disabled={!state.isValid}
+              loading={state.finalizeState.isInProgress}
+              onClick={() => {
+                state.finalize().catch((error) => {
+                  store.alertService.alertUnhandledError(error);
+                });
+              }}
+            >
+              OK
+            </FormButton>
+          </div>
         </div>
       </>
     );

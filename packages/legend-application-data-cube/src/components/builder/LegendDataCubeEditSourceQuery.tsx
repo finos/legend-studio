@@ -67,11 +67,13 @@ export const LegendDataCubeEditSourceQuery = observer(() => {
           </FormButton>
           <FormButton
             className="ml-2"
+            loading={store.queryEditorState.isInProgress}
             onClick={() => {
-              // eslint-disable-next-line no-void
-              void (async () => {
-                await store.updateBuilderWithNewSpecification(state);
-              })();
+              store
+                .updateBuilderWithNewSpecification(state)
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
             }}
           >
             Apply

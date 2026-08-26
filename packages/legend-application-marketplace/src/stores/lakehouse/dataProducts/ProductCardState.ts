@@ -47,6 +47,12 @@ import {
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../__lib__/LegendMarketplaceAppEvent.js';
 import { getDataProductFromDetails } from '@finos/legend-extension-dsl-data-product';
 import type { IngestDeploymentServerConfig } from '@finos/legend-server-lakehouse';
+import {
+  buildGenericCardImageUrl,
+  findVendorImageUrl,
+  GENERIC_CARD_IMAGE_COUNT,
+  getGenericCardImageIndex,
+} from '../../CardImageUtils.js';
 
 export const MAX_PRODUCT_IMAGE_COUNT = 15;
 
@@ -221,32 +227,19 @@ export class ProductCardState {
     this.lakehouseOwners = value;
   }
 
-  private static hashString(str: string): number {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash * 31 + str.charCodeAt(i)) | 0;
-    }
-    return Math.abs(hash);
-  }
-
   private resolveDisplayImage(
     vendorImageMap: ReadonlyMap<string, string>,
     usedImages?: Set<string>,
   ): string {
-    const GENERIC_IMAGE_COUNT = 20;
-    const guidUpper = this.guid.toUpperCase();
-
-    for (const [vendorName, imagePath] of vendorImageMap.entries()) {
-      if (guidUpper.includes(vendorName.toUpperCase())) {
-        return imagePath;
-      }
+    const vendorImageUrl = findVendorImageUrl(vendorImageMap, this.guid);
+    if (vendorImageUrl !== undefined) {
+      return vendorImageUrl;
     }
 
-    const baseIndex =
-      ProductCardState.hashString(this.guid) % GENERIC_IMAGE_COUNT;
+    const baseIndex = getGenericCardImageIndex(this.guid);
     if (usedImages) {
-      for (let offset = 0; offset < GENERIC_IMAGE_COUNT; offset++) {
-        const candidate = `/assets/images${((baseIndex + offset) % GENERIC_IMAGE_COUNT) + 1}.jpg`;
+      for (let offset = 0; offset < GENERIC_CARD_IMAGE_COUNT; offset++) {
+        const candidate = buildGenericCardImageUrl(baseIndex + offset);
         if (!usedImages.has(candidate)) {
           usedImages.add(candidate);
           return candidate;
@@ -254,7 +247,7 @@ export class ProductCardState {
       }
     }
 
-    return `/assets/images${baseIndex + 1}.jpg`;
+    return buildGenericCardImageUrl(baseIndex);
   }
 
   async getLakehouseDataProduct(

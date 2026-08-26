@@ -94,6 +94,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   private readonly _depotServerClient: DepotServerClient;
   readonly dataProductLoadingState = ActionState.create();
   readonly ingestEnvLoadingState = ActionState.create();
+  readonly queryInitializationState = ActionState.create();
 
   constructor(
     application: LegendDataCubeApplicationStore,
@@ -288,18 +289,26 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   async initializeQuery() {
-    const query = new V1_ClassInstance();
-    query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
-    const dataProductAccessor = new V1_DataProductAccessor();
-    dataProductAccessor.path = [
-      guaranteeNonNullable(this.selectedDataProduct?.fullPath),
-      guaranteeNonNullable(this.selectedAccessPoint)[0],
-    ];
-    dataProductAccessor.parameters = [];
-    query.value = dataProductAccessor;
-    this.codeEditorState.initialize(
-      await this._engine.getValueSpecificationCode(query),
-    );
+    this.queryInitializationState.inProgress();
+    try {
+      const query = new V1_ClassInstance();
+      query.type = V1_ClassInstanceType.DATA_PRODUCT_ACCESSOR;
+      const dataProductAccessor = new V1_DataProductAccessor();
+      dataProductAccessor.path = [
+        guaranteeNonNullable(this.selectedDataProduct?.fullPath),
+        guaranteeNonNullable(this.selectedAccessPoint)[0],
+      ];
+      dataProductAccessor.parameters = [];
+      query.value = dataProductAccessor;
+      this.codeEditorState.initialize(
+        await this._engine.getValueSpecificationCode(query),
+      );
+      this.queryInitializationState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.queryInitializationState.fail();
+      throw error;
+    }
   }
 
   reset() {

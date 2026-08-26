@@ -34,6 +34,7 @@ import {
   FormDropdownMenu,
   FormDropdownMenuItem,
   FormDropdownMenuTrigger,
+  FormLoadingIndicator,
   FormTextInput,
 } from '@finos/legend-data-cube';
 import { useLegendDataCubeBuilderStore } from './LegendDataCubeBuilderStoreProvider.js';
@@ -236,10 +237,10 @@ const LegendDataCubeSearcher = observer(() => {
             </>
           )}
           {!state.searchState.hasCompleted && (
-            <div className="mb-1 flex h-5 w-full items-center px-1.5 text-sm text-neutral-600">
-              <DataCubeIcon.Loader className="animate-spin stroke-2 text-lg" />
-              <span className="ml-1">Searching...</span>
-            </div>
+            <FormLoadingIndicator
+              className="mb-1 px-1.5"
+              message="Searching..."
+            />
           )}
         </div>
       </div>
@@ -353,19 +354,29 @@ export const LegendDataCubeLoader = observer(() => {
           )}
         </div>
       </div>
-      <div className="flex h-10 items-center justify-end px-2">
-        <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
-        <FormButton
-          className="ml-2"
-          disabled={!selectedResult || state.finalizeState.isInProgress}
-          onClick={() => {
-            state
-              .finalize()
-              .catch((error) => store.alertService.alertUnhandledError(error));
-          }}
-        >
-          OK
-        </FormButton>
+      <div className="flex h-10 items-center justify-between px-2">
+        <div className="flex-1 overflow-hidden">
+          {state.finalizeState.isInProgress && (
+            <FormLoadingIndicator message="Loading DataCube..." />
+          )}
+        </div>
+        <div className="flex flex-shrink-0 items-center">
+          <FormButton onClick={() => state.display.close()}>Cancel</FormButton>
+          <FormButton
+            className="ml-2"
+            disabled={!selectedResult}
+            loading={state.finalizeState.isInProgress}
+            onClick={() => {
+              state
+                .finalize()
+                .catch((error) =>
+                  store.alertService.alertUnhandledError(error),
+                );
+            }}
+          >
+            OK
+          </FormButton>
+        </div>
       </div>
     </>
   );
