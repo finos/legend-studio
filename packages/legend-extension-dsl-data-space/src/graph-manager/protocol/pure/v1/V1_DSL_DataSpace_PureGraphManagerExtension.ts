@@ -87,6 +87,7 @@ import {
   DataSpaceExecutableTDSResult,
   DataSpaceExecutionContextAnalysisResult,
   DataSpaceServiceExecutableInfo,
+  DataSpaceInfoAnalysisResult,
   DataSpaceStereotypeInfo,
   DataSpaceTaggedValueInfo,
   DataSpaceMultiExecutionServiceExecutableInfo,
@@ -554,6 +555,16 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     result.path = analysisResult.path;
     result.title = analysisResult.title;
     result.description = analysisResult.description;
+    if (analysisResult.info) {
+      const info = new DataSpaceInfoAnalysisResult();
+      info.isVerified = analysisResult.info.isVerified;
+      info.isInDevelopment = analysisResult.info.isInDevelopment;
+      info.isExternal = analysisResult.info.isExternal;
+      info.topics = [...analysisResult.info.topics];
+      info.relatedDataSpaces = [...analysisResult.info.relatedDataSpaces];
+      info.deprecationNotice = analysisResult.info.deprecationNotice;
+      result.info = info;
+    }
 
     result.taggedValues = analysisResult.taggedValues.map((taggedValue) => {
       const info = new DataSpaceTaggedValueInfo();

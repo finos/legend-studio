@@ -1,6 +1,14 @@
 {
   "defaultExecutionContext": "dummyContext",
   "description": "Not over yet?",
+  "info": {
+    "deprecationNotice": "This data product is being replaced",
+    "isExternal": true,
+    "isInDevelopment": false,
+    "isVerified": true,
+    "relatedDataSpaces": ["domain::COVIDDatapaceV2", "domain::FluDatapace"],
+    "topics": ["Public Health", "Epidemiology"]
+  },
   "diagrams": [],
   "elementDocs": [],
   "elements": [],
