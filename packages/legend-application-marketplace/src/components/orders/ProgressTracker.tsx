@@ -136,7 +136,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = observer(
                     {step.label}
                   </Typography>
 
-                  {hasDetails && details && (
+                  {hasDetails && (
                     <Box className="legend-marketplace-progress-tracker__step-details">
                       {details.actionedBy && (
                         <Typography className="legend-marketplace-progress-tracker__step-detail">
