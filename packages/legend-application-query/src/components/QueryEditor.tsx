@@ -815,6 +815,18 @@ const QueryEditorExistingQueryInfoModal = observer(
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, query.artifactId, query.groupId, updateState]);
 
+    const dataSpaceQueryBuilderState =
+      existingEditorStore.queryBuilderState instanceof
+      DataSpaceQueryBuilderState
+        ? existingEditorStore.queryBuilderState
+        : undefined;
+    const mappingProviderElement =
+      dataSpaceQueryBuilderState?.executionContext.mappingProvider?.element
+        .value;
+    const dataSpaceDisplayName =
+      dataSpaceQueryBuilderState?.dataSpace.title ??
+      dataSpaceQueryBuilderState?.dataSpace.name;
+
     return (
       <Dialog
         open={updateState.showQueryInfo}
@@ -848,9 +860,13 @@ const QueryEditorExistingQueryInfoModal = observer(
               {executionContext instanceof QueryExplicitExecutionContext && (
                 <>
                   <div className="query-preview__field">
-                    <div className="query-preview__field__label">Mapping</div>
+                    <div className="query-preview__field__label">
+                      {mappingProviderElement ? 'Data Product' : 'Mapping'}
+                    </div>
                     <div className="query-preview__field__value">
-                      {executionContext.mapping.value.name}
+                      {mappingProviderElement
+                        ? mappingProviderElement.name
+                        : executionContext.mapping.value.name}
                     </div>
                   </div>
                   <div className="query-preview__field">
@@ -868,7 +884,7 @@ const QueryEditorExistingQueryInfoModal = observer(
                       Data Product
                     </div>
                     <div className="query-preview__field__value">
-                      {executionContext.dataSpacePath}
+                      {dataSpaceDisplayName ?? executionContext.dataSpacePath}
                     </div>
                   </div>
                   {executionContext.executionKey && (

@@ -45,6 +45,7 @@ export {
 export {
   QueryBuilderExecutionContextState,
   QueryBuilderEmbeddedFromExecutionContextState,
+  QueryBuilderExternalExecutionContextState,
 } from './stores/QueryBuilderExecutionContextState.js';
 export { QueryAgentChatState } from './stores/QueryAgentChatState.js';
 export {

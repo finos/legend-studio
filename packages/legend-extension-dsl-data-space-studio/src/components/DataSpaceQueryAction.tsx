@@ -24,6 +24,7 @@ import { flowResult } from 'mobx';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import {
   DataSpace,
+  resolveExecutionContextMapping,
   resolveUsableDataSpaceClasses,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -87,9 +88,9 @@ export const queryDataSpace = async (
         );
         queryBuilderState.setExecutionContext(initialDefaultExecutionContext);
         const mapping = guaranteeNonNullable(
-          queryBuilderState.executionContext.mapping,
-          `Can't query execution context '${queryBuilderState.executionContext.name}': no mapping configured`,
-        ).value;
+          resolveExecutionContextMapping(queryBuilderState.executionContext),
+          `Can't query execution context '${queryBuilderState.executionContext.name}': no resolvable mapping configured`,
+        );
         queryBuilderState.changeMapping(mapping);
         const mappingModelCoverageAnalysisResult =
           queryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(

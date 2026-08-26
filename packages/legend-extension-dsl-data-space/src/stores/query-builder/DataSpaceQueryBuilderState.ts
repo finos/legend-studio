@@ -27,10 +27,15 @@ import {
 import {
   type Class,
   type GraphManagerState,
+  type LambdaFunction,
   type QueryExecutionContext,
   type Runtime,
   type Mapping,
   type FunctionAnalysisInfo,
+  type RawLambda,
+  DataProduct,
+  RuntimePointer,
+  attachWithFromQuery,
   getMappingCompatibleClasses,
   Package,
   QueryDataSpaceExecutionContext,
@@ -204,6 +209,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       isLightGraphEnabled: observable,
       displayedTemplateQueries: observable,
       advancedSearchState: observable,
+      mappingProviderDataProduct: computed,
       selectedDataSpaceOption: computed,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
@@ -230,6 +236,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
         QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
       );
     }
+    this.reconcileExecutionContextState();
   }
 
   get dataSpaceOptions(): DataSpaceOption[] {
@@ -329,6 +336,50 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   setExecutionContext(val: DataSpaceExecutionContext): void {
     this.executionContext = val;
+    this.reconcileExecutionContextState({ allowDowngrade: true });
+  }
+
+  get mappingProviderDataProduct(): DataProduct | undefined {
+    const providerElement =
+      this.executionContext.mappingProvider?.element.value;
+    return providerElement instanceof DataProduct ? providerElement : undefined;
+  }
+
+  getMappingProviderDataProduct(): DataProduct | undefined {
+    const providerElement =
+      this.executionContext.mappingProvider?.element.value;
+    if (providerElement && !(providerElement instanceof DataProduct)) {
+      this.applicationStore.notificationService.notifyError(
+        `Data space '${this.dataSpace.path}' execution context '${this.executionContext.name}' has a mapping provider element ('${providerElement.path}') that is not a DataProduct; expected a DataProduct-backed mapping provider.`,
+      );
+      return undefined;
+    }
+    return providerElement;
+  }
+
+  override get requiresEmbeddedExecutionContext(): boolean {
+    return (
+      Boolean(this.mappingProviderDataProduct) || this.isFetchStructureTyped
+    );
+  }
+
+  override buildQueryForPersistence(): RawLambda {
+    return this.buildQueryLambdaWithoutExecutionContext();
+  }
+
+  override buildExecutionContextExpression(
+    lambdaFunction: LambdaFunction,
+  ): LambdaFunction {
+    const dataProduct = this.getMappingProviderDataProduct();
+    const runtimeValue = this.executionContextState.runtimeValue;
+    const runtime =
+      runtimeValue instanceof RuntimePointer
+        ? runtimeValue.packageableRuntime.value
+        : this.executionContext.defaultRuntime?.value;
+    if (!dataProduct || !runtime) {
+      return super.buildExecutionContextExpression(lambdaFunction);
+    }
+    return attachWithFromQuery(lambdaFunction, dataProduct, runtime);
   }
 
   setShowRuntimeSelector(val: boolean): void {

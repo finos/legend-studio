@@ -51,10 +51,12 @@ import {
 import {
   type DataSpaceExecutionContext,
   getDataSpace,
+  resolveExecutionContextMapping,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   QueryBuilderActionConfig_QueryApplication,
   QueryEditorStore,
+  resolveExecutionContext,
   type QueryPersistConfiguration,
 } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
@@ -431,12 +433,25 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
       queryableDataSpace.dataSpacePath,
       this.graphManagerState.graph,
     );
-    const executionContext = guaranteeNonNullable(
-      dataSpace.executionContexts?.find(
-        (context) => context.name === queryableDataSpace.executionContext,
-      ),
-      `Can't find execution context '${queryableDataSpace.executionContext}'`,
+    const executionContext = resolveExecutionContext(
+      dataSpace,
+      queryableDataSpace.executionContext,
+      undefined,
+      undefined,
     );
+    if (!executionContext) {
+      throw new Error(
+        `Execution context '${queryableDataSpace.executionContext}' does not exist in data space '${dataSpace.path}'.`,
+      );
+    }
+    if (
+      executionContext.mappingProvider &&
+      !resolveExecutionContextMapping(executionContext)
+    ) {
+      throw new Error(
+        `Execution context '${executionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
+      );
+    }
     const sourceInfo = {
       groupId: queryableDataSpace.groupId,
       artifactId: queryableDataSpace.artifactId,
@@ -494,7 +509,6 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
       this.productSelectorState.legacyDataProducts,
       this.productSelectorState.dataProducts,
     );
-    queryBuilderState.setExecutionContext(executionContext);
     await queryBuilderState.propagateExecutionContextChange(true);
 
     // set runtime if already chosen

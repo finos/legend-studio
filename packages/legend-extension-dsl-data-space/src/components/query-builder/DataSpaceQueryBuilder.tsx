@@ -118,6 +118,16 @@ export const buildExecutionContextOption = (
   value,
 });
 
+export const formatExecutionContextOptionLabel = (
+  option: ExecutionContextOption,
+): React.ReactNode => (
+  <div className="query-builder__setup__config-group__item__selector__option">
+    <div className="query-builder__setup__config-group__item__selector__option__label">
+      {option.label}
+    </div>
+  </div>
+);
+
 /**
  * This setup panel supports cascading in order: Data-space -> Execution context (-> Runtime) -> Class
  *
@@ -367,6 +377,7 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled
                 }
+                formatOptionLabel={formatExecutionContextOptionLabel}
               />
             </div>
           )}
