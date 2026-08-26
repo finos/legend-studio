@@ -94,7 +94,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   private readonly _depotServerClient: DepotServerClient;
   readonly dataProductLoadingState = ActionState.create();
   readonly ingestEnvLoadingState = ActionState.create();
-  readonly accessPointLoadingState = ActionState.create();
   readonly queryInitializationState = ActionState.create();
 
   constructor(
@@ -208,7 +207,6 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   async fetchAccessPoints() {
-    this.accessPointLoadingState.inProgress();
     try {
       this.resetEnvironment();
       const selectedDp = guaranteeNonNullable(this.selectedDataProduct);
@@ -282,10 +280,8 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
       });
 
       this.setAccessPoints(accessPointMap);
-      this.accessPointLoadingState.complete();
     } catch (error) {
       assertErrorThrown(error);
-      this.accessPointLoadingState.fail();
       this._application.notificationService.notifyError(
         `unable to fetch access points: ${error.message}`,
       );

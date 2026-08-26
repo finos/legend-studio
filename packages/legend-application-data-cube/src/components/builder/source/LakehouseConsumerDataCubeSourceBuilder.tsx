@@ -201,8 +201,7 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {(sourceBuilder.accessPoints.size > 0 ||
-          sourceBuilder.accessPointLoadingState.isInProgress) && (
+        {sourceBuilder.accessPoints.size > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">
               Access Point
@@ -215,8 +214,8 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
                   value: id,
                 }),
               )}
-              disabled={sourceBuilder.accessPointLoadingState.isInProgress}
-              isLoading={sourceBuilder.accessPointLoadingState.isInProgress}
+              disabled={false}
+              isLoading={false}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const value = newValue?.value ?? '';
                 const label = newValue?.label ?? '';

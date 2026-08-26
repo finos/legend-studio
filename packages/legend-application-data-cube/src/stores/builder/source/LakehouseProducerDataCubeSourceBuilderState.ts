@@ -79,8 +79,6 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   user: string | undefined;
   readonly initialLoadState = ActionState.create();
   readonly fetchProducerEnvironmentsState = ActionState.create();
-  readonly fetchIngestUrnsState = ActionState.create();
-  readonly fetchDatasetsState = ActionState.create();
 
   private LAKEHOUSE_SECTION = '###Lakehouse';
 
@@ -357,34 +355,26 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
   }
 
   async fetchIngestUrns(access_token: string | undefined) {
-    this.fetchIngestUrnsState.inProgress();
-    try {
-      const ingestServerUrl = guaranteeNonNullable(
-        this.selectedLakehouseEnv,
-      ).ingestServerUrl;
-      this.ingestionServerUrl = ingestServerUrl;
+    const ingestServerUrl = guaranteeNonNullable(
+      this.selectedLakehouseEnv,
+    ).ingestServerUrl;
+    this.ingestionServerUrl = ingestServerUrl;
 
-      const producerUrn = guaranteeNonNullable(this.selectedProducerEnv);
+    const producerUrn = guaranteeNonNullable(this.selectedProducerEnv);
 
-      await this.fetchProducerEnvironmentDetails(
+    await this.fetchProducerEnvironmentDetails(
+      producerUrn,
+      ingestServerUrl,
+      access_token,
+    );
+
+    const ingestDefinitions =
+      await this._ingestServerClient.getIngestDefinitions(
         producerUrn,
         ingestServerUrl,
         access_token,
       );
-
-      const ingestDefinitions =
-        await this._ingestServerClient.getIngestDefinitions(
-          producerUrn,
-          ingestServerUrl,
-          access_token,
-        );
-      this.setIngestUrns(ingestDefinitions);
-      this.fetchIngestUrnsState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.fetchIngestUrnsState.fail();
-      throw error;
-    }
+    this.setIngestUrns(ingestDefinitions);
   }
 
   private async fetchProducerEnvironmentDetails(
@@ -407,25 +397,44 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
     if (this.icebergEnabled) {
       this.setEnableIceberg(this.icebergEnabled);
-      await this.fetchIcebergCatalogDetails(access_token);
+      // NOTE: a failure to resolve the Iceberg catalog must not abort the rest of
+      // the setup: the ingest definitions below still need to load, else the form
+      // dead-ends with nothing to select and turning Iceberg off can't recover it.
+      // Fall back to non-Iceberg, which lets the user supply a warehouse manually.
+      try {
+        await this.fetchIcebergCatalogDetails(access_token);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.setEnableIceberg(false);
+        this.catalogUrl = undefined;
+        this._application.notificationService.notifyWarning(
+          `Can't load Iceberg catalog details: ${error.message}. Proceeding without Iceberg.`,
+        );
+      }
     }
 
     this.databaseName = producerEnv.databaseName;
   }
 
-  async fetchDatasets(access_token: string | undefined) {
-    this.fetchDatasetsState.inProgress();
-    try {
-      await this.INTERNAL__fetchDatasets(access_token);
-      this.fetchDatasetsState.complete();
-    } catch (error) {
-      assertErrorThrown(error);
-      this.fetchDatasetsState.fail();
-      throw error;
+  async toggleIceberg(enable: boolean, access_token: string | undefined) {
+    this.setEnableIceberg(enable);
+    // the catalog may never have resolved (or failed earlier), so retry here:
+    // without a catalog URL, generating the source would fail at the very last step
+    if (enable && this.catalogUrl === undefined) {
+      try {
+        await this.fetchIcebergCatalogDetails(access_token);
+      } catch (error) {
+        assertErrorThrown(error);
+        this.setEnableIceberg(false);
+        this.catalogUrl = undefined;
+        this._application.notificationService.notifyWarning(
+          `Can't load Iceberg catalog details: ${error.message}. Proceeding without Iceberg.`,
+        );
+      }
     }
   }
 
-  private async INTERNAL__fetchDatasets(access_token: string | undefined) {
+  async fetchDatasets(access_token: string | undefined) {
     this.setTables([]);
     this.setSelectedTable(undefined);
 

@@ -95,8 +95,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             escapeClearsValue={true}
           />
         </div>
-        {(Boolean(state.userEntitledLakehouseEnv) ||
-          state.initialLoadState.isInProgress) && (
+        {state.userEntitledLakehouseEnv && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Producer</div>
             <CustomSelectorInput
@@ -125,10 +124,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
                     }
                   : null
               }
-              isLoading={
-                state.initialLoadState.isInProgress ||
-                state.fetchProducerEnvironmentsState.isInProgress
-              }
+              isLoading={state.fetchProducerEnvironmentsState.isInProgress}
               placeholder="Choose producer environment"
               isClearable={false}
               escapeClearsValue={true}
@@ -142,13 +138,21 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
               <FormCheckbox
                 label="Use Iceberg"
                 checked={state.enableIceberg}
-                onChange={() => state.setEnableIceberg(!state.enableIceberg)}
+                onChange={() => {
+                  state
+                    .toggleIceberg(
+                      !state.enableIceberg,
+                      auth.user?.access_token,
+                    )
+                    .catch((error) =>
+                      store.alertService.alertUnhandledError(error),
+                    );
+                }}
               />
             </div>
           </div>
         )}
-        {(state.ingestUrns.length > 0 ||
-          state.fetchIngestUrnsState.isInProgress) && (
+        {state.ingestUrns.length > 0 && (
           <div className="query-setup__wizard__group mt-3">
             <div className="query-setup__wizard__group__title">Ingest Urn</div>
             <CustomSelectorInput
@@ -159,8 +163,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
                   label: guaranteeNonNullable(urn.decoratedUrn),
                   value: guaranteeNonNullable(urn.urn),
                 }))}
-              disabled={state.fetchIngestUrnsState.isInProgress}
-              isLoading={state.fetchIngestUrnsState.isInProgress}
+              disabled={false}
+              isLoading={false}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const ingestUrn = newValue?.value ?? '';
                 state.setSelectedIngestUrn(ingestUrn);
@@ -183,7 +187,7 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
             />
           </div>
         )}
-        {(state.tables.length > 0 || state.fetchDatasetsState.isInProgress) && (
+        {state.tables.length > 0 && (
           <div className="query-setup__wizard__group mt-2">
             <div className="query-setup__wizard__group__title">Dataset</div>
             <CustomSelectorInput
@@ -192,8 +196,8 @@ export const LakehouseProducerDataCubeSourceBuilder: React.FC<{
                 label: `${state.datasetGroup}.${table}`,
                 value: table,
               }))}
-              disabled={state.fetchDatasetsState.isInProgress}
-              isLoading={state.fetchDatasetsState.isInProgress}
+              disabled={false}
+              isLoading={false}
               onChange={(newValue: { label: string; value: string } | null) => {
                 const table = newValue?.value ?? '';
                 state.setSelectedTable(table);
