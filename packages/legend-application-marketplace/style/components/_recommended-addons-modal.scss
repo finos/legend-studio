@@ -142,6 +142,15 @@
     }
   }
 
+  &__alert-list {
+    margin: 0.4rem 0 0;
+    padding-left: 2rem;
+  }
+
+  &__alert-list-item {
+    line-height: 1.6;
+  }
+
   &__content-header {
     display: flex;
     flex-direction: column;
@@ -201,6 +210,36 @@
   &__items-per-page-select {
     .MuiOutlinedInput-root {
       font-size: 1.4rem;
+    }
+  }
+
+  &__sort-select {
+    min-width: 18rem;
+  }
+
+  &__items-per-page-select {
+    min-width: 12rem;
+  }
+
+  &__select-label {
+    font-size: 1rem;
+  }
+
+  &__select {
+    font-size: 1rem;
+  }
+
+  &__select-menu-item-label {
+    margin-left: 0.4rem;
+    font-size: 1rem;
+  }
+
+  // Select's MenuProps renders the dropdown in a portal (not nested under
+  // `.recommended-addons-modal`), so MenuItem font-size is scoped via this
+  // class name instead of BEM DOM nesting.
+  &__select-menu {
+    .MuiMenuItem-root {
+      font-size: 1rem;
     }
   }
 
@@ -268,12 +307,26 @@
     }
   }
 
+  &__empty-state--searching {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  &__search-spinner {
+    margin-right: 0.8rem;
+  }
+
   &__list-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 0.5rem;
     margin-bottom: 1rem;
+  }
+
+  &__list-info-text {
+    font-size: 1.4rem;
+    color: var(--color-dark-grey-300);
   }
 
   &__list {
@@ -317,10 +370,16 @@
   }
 
   &__header-name,
-  &__header-provider,
   &__header-price {
     display: flex;
     align-items: center;
+    white-space: nowrap;
+  }
+
+  &__header-category {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
     white-space: nowrap;
   }
 
@@ -328,6 +387,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 0.2rem;
   }
 
   &__list-item {
@@ -350,7 +410,7 @@
     line-height: 1.4;
   }
 
-  &__item-provider {
+  &__item-category {
     font-size: 1.4rem;
     font-weight: 500;
     color: var(--color-hclight-blue-60);
@@ -369,6 +429,10 @@
 
   &__source-section {
     margin-bottom: 1rem;
+  }
+
+  &__source-divider {
+    margin: 2rem 0;
   }
 
   &__source-header {

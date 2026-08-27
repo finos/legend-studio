@@ -94,7 +94,6 @@ describe('OrderProfileLabel', () => {
 describe('OrderProfileTableHeader', () => {
   test('has expected string values', () => {
     expect(OrderProfileTableHeader.PRODUCT_NAME).toBe('PRODUCT NAME');
-    expect(OrderProfileTableHeader.PROVIDER).toBe('PROVIDER');
     expect(OrderProfileTableHeader.CATEGORY).toBe('CATEGORY');
     expect(OrderProfileTableHeader.COST_MONTHLY).toBe('COST (Monthly)');
   });
@@ -111,9 +110,9 @@ describe('getRandomImageUrl', () => {
   test('index is within valid range (1 to 15)', () => {
     for (let i = 0; i < 30; i++) {
       const url = getRandomImageUrl('/assets');
-      const match = url.match(/images(?<num>\d+)\.jpg/);
+      const match = /images(?<num>\d+)\.jpg/.exec(url);
       expect(match).not.toBeNull();
-      const index = parseInt(match?.groups?.num ?? '0', 10);
+      const index = Number.parseInt(match?.groups?.num ?? '0', 10);
       expect(index).toBeGreaterThanOrEqual(1);
       expect(index).toBeLessThanOrEqual(15);
     }
@@ -393,8 +392,8 @@ describe('groupOrderProfileItems', () => {
     // terminal is added, but add-on with null model is unmatched (terminal.model is null skips matching)
     expect(result[0]?.item).toBe(terminal);
     // addOn should be in unmatched list
-    expect(result[result.length - 1]?.item).toBe(addOn);
-    expect(result[result.length - 1]?.isSubItem).toBe(false);
+    expect(result.at(-1)?.item).toBe(addOn);
+    expect(result.at(-1)?.isSubItem).toBe(false);
   });
 
   test('does not assign same add-on to multiple terminals', () => {

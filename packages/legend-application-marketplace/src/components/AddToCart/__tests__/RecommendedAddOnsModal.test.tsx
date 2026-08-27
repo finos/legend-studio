@@ -33,6 +33,8 @@ import { runInAction } from 'mobx';
 import {
   TerminalResult,
   RecommendationSource,
+  SortOrder,
+  type CartItem,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../__test-utils__/LegendMarketplaceStoreTestUtils.js';
@@ -45,6 +47,8 @@ jest.mock('react-oidc-context', () => {
   }>('@finos/legend-shared/test');
   return MOCK__reactOIDCContext;
 });
+
+let MOCK__baseStore: LegendMarketplaceBaseStore;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -80,9 +84,35 @@ const makeAddOn = (overrides: Partial<TerminalResult> = {}): TerminalResult => {
   });
 };
 
-// ─── Test Setup ───────────────────────────────────────────────────────────────
+type AddToCartResult = {
+  success: boolean;
+  recommendations?: TerminalResult[];
+  message: string;
+  totalCount?: number | null;
+};
 
-let MOCK__baseStore: LegendMarketplaceBaseStore;
+const makeAddToCartWithAPIMock = (result: AddToCartResult) =>
+  jest.fn((_cartItemData: unknown, _suppressSuccessToast?: boolean) =>
+    Promise.resolve(result),
+  );
+
+const makeFailingAddToCartWithAPIMock = (error: Error) =>
+  jest.fn((_cartItemData: unknown, _suppressSuccessToast?: boolean) =>
+    Promise.reject(error),
+  );
+
+const setAddToCartWithAPIMock = (
+  impl: (
+    cartItemData: unknown,
+    suppressSuccessToast?: boolean,
+  ) => Promise<AddToCartResult>,
+): void => {
+  (
+    MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+  ).addToCartWithAPI = impl;
+};
+
+// ─── Test Setup ───────────────────────────────────────────────────────────────
 
 beforeEach(async () => {
   MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
@@ -147,7 +177,7 @@ describe('RecommendedAddOnsModal - terminal type (TERMINAL)', () => {
     expect(screen.getByText('Item Added Successfully')).toBeDefined();
   });
 
-  test('shows "Available Add-Ons for {productName}" as section title', () => {
+  test('shows "Available Add-Ons for {productName} by {providerName}" as section title', () => {
     render(
       <RecommendedAddOnsModal
         terminal={makeTerminal({ productName: 'My Terminal' })}
@@ -157,7 +187,9 @@ describe('RecommendedAddOnsModal - terminal type (TERMINAL)', () => {
         setShowModal={jest.fn()}
       />,
     );
-    expect(screen.getByText('Available Add-Ons for My Terminal')).toBeDefined();
+    expect(
+      screen.getByText('Available Add-Ons for My Terminal by Bloomberg'),
+    ).toBeDefined();
   });
 
   test('shows "Close" button (not "Cancel") for terminal type', () => {
@@ -341,7 +373,7 @@ describe('RecommendedAddOnsModal - add-on type (ADD_ON)', () => {
     expect(screen.getByText('Unable to Add Item')).toBeDefined();
   });
 
-  test('shows "Available Terminals for {productName}" section title', () => {
+  test('shows "Available Terminals for {productName} by {providerName}" section title', () => {
     const addon = makeAddOn({ productName: 'Market Addon' });
     render(
       <RecommendedAddOnsModal
@@ -353,7 +385,7 @@ describe('RecommendedAddOnsModal - add-on type (ADD_ON)', () => {
       />,
     );
     expect(
-      screen.getByText('Available Terminals for Market Addon'),
+      screen.getByText('Available Terminals for Market Addon by Bloomberg'),
     ).toBeDefined();
   });
 
@@ -519,7 +551,7 @@ describe('RecommendedAddOnsModal - permission override flow', () => {
     expect(screen.queryByText('Item Added Successfully')).toBeNull();
   });
 
-  test('shows "Add-Ons available for {productName}" as section title', () => {
+  test('shows "Available Add-Ons for {productName} by {providerName}" as section title', () => {
     const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
     render(
       <RecommendedAddOnsModal
@@ -532,7 +564,7 @@ describe('RecommendedAddOnsModal - permission override flow', () => {
       />,
     );
     expect(
-      screen.getByText('Add-Ons available for Bloomberg Terminal'),
+      screen.getByText('Available Add-Ons for Bloomberg Terminal by Bloomberg'),
     ).toBeDefined();
   });
 
@@ -566,14 +598,12 @@ describe('RecommendedAddOnsModal - permission override flow', () => {
       marketplace_addons: [],
     });
 
-    const mockAddToCart = jest
-      .fn()
-      .mockReturnValue(
-        Promise.resolve({ success: true, recommendations: [], message: 'ok' }),
-      );
-    (
-      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
-    ).addToCartWithAPI = mockAddToCart;
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: true,
+      recommendations: [],
+      message: 'ok',
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
 
     const setShowModal = jest.fn();
     render(
@@ -1244,14 +1274,12 @@ describe('RecommendedAddOnsModal - handleCartResult', () => {
     const addon = makeAddOn();
     const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
 
-    const mockAddToCart = jest
-      .fn()
-      .mockReturnValue(
-        Promise.resolve({ success: false, recommendations: [], message: '' }),
-      );
-    (
-      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
-    ).addToCartWithAPI = mockAddToCart;
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: false,
+      recommendations: [],
+      message: '',
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
 
     const setShowModal = jest.fn();
     render(
@@ -1285,17 +1313,13 @@ describe('RecommendedAddOnsModal - handleCartResult', () => {
       productName: 'Recommended Addon',
     });
 
-    const mockAddToCart = jest.fn().mockReturnValue(
-      Promise.resolve({
-        success: true,
-        recommendations: [recommendation],
-        message: 'Terminal associated',
-        totalCount: 1,
-      }),
-    );
-    (
-      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
-    ).addToCartWithAPI = mockAddToCart;
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: true,
+      recommendations: [recommendation],
+      message: 'Terminal associated',
+      totalCount: 1,
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
 
     const setShowModal = jest.fn();
     const onTerminalSelected = jest.fn();
@@ -1333,14 +1357,12 @@ describe('RecommendedAddOnsModal - handleCartResult', () => {
     const addon = makeAddOn();
     const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
 
-    const mockAddToCart = jest
-      .fn()
-      .mockReturnValue(
-        Promise.resolve({ success: true, recommendations: [], message: 'ok' }),
-      );
-    (
-      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
-    ).addToCartWithAPI = mockAddToCart;
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: true,
+      recommendations: [],
+      message: 'ok',
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
 
     const setShowModal = jest.fn();
     render(
@@ -1374,11 +1396,9 @@ describe('RecommendedAddOnsModal - handleAssociateTerminal error', () => {
     const addon = makeAddOn();
     const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
 
-    (
-      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
-    ).addToCartWithAPI = jest
-      .fn()
-      .mockReturnValue(Promise.reject(new Error('Network Error')));
+    setAddToCartWithAPIMock(
+      makeFailingAddToCartWithAPIMock(new Error('Network Error')),
+    );
 
     const setShowModal = jest.fn();
     render(
@@ -1649,14 +1669,12 @@ describe('RecommendedAddOnsModal - MultiSourceContent onAssociate', () => {
       source: RecommendationSource.INVENTORY,
     });
 
-    const mockAddToCart = jest
-      .fn()
-      .mockReturnValue(
-        Promise.resolve({ success: true, recommendations: [], message: 'ok' }),
-      );
-    (
-      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
-    ).addToCartWithAPI = mockAddToCart;
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: true,
+      recommendations: [],
+      message: 'ok',
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
 
     const setShowModal = jest.fn();
     render(
@@ -1765,6 +1783,406 @@ describe('RecommendedAddOnsModal - sort select', () => {
     await waitFor(() => {
       const items = screen.queryAllByText(/\$\d+\.\d{2}/);
       expect(items.length).toBeGreaterThan(0);
+    });
+  });
+});
+
+// ─── Column filters ────────────────────────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - column filters', () => {
+  test('category filter narrows the list to matching items', () => {
+    const terminal = makeTerminal();
+    const addon1 = makeAddOn({
+      id: 10,
+      productName: 'Data Feed',
+      category: 'Market Data',
+    });
+    const addon2 = makeAddOn({
+      id: 11,
+      productName: 'Analytics Suite',
+      category: 'Analytics',
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon1, addon2]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Data Feed')).toBeDefined();
+    expect(screen.getByText('Analytics Suite')).toBeDefined();
+
+    fireEvent.click(screen.getByLabelText('Filter by Category'));
+    fireEvent.click(screen.getByLabelText('Analytics'));
+
+    expect(screen.queryByText('Data Feed')).toBeNull();
+    expect(screen.getByText('Analytics Suite')).toBeDefined();
+  });
+
+  test('Action filter does not offer "Subscribed" outside the permission-override flow', () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10 });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    expect(screen.queryByLabelText('Subscribed')).toBeNull();
+    expect(screen.getByLabelText('In Cart')).toBeDefined();
+    expect(screen.getByLabelText('Add to Cart')).toBeDefined();
+  });
+
+  test('Action filter offers "Subscribed" in the permission-override flow', () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10 });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+        overridePermissionId={123}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    expect(screen.getByLabelText('Subscribed')).toBeDefined();
+  });
+
+  test('an item added via a skip-workflow add-to-cart is treated as "In Cart" by the Action filter', async () => {
+    const terminal = makeTerminal();
+    const addon = makeAddOn({ id: 10, productName: 'Newly Added Addon' });
+    const mockAddToCart = makeAddToCartWithAPIMock({
+      success: true,
+      recommendations: [],
+      message: 'ok',
+    });
+    setAddToCartWithAPIMock(mockAddToCart);
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // cartStore.isItemInCart(10) is still false at this point (skip-workflow
+    // items don't get pushed into cartStore.items), but the card's local
+    // "isAdded" state should still surface via onItemAdded.
+    await act(async () => {
+      fireEvent.click(
+        screen
+          .getAllByRole('button')
+          .find((b) => b.textContent?.includes('Add to Cart')) as HTMLElement,
+      );
+    });
+    await waitFor(() => {
+      expect(screen.getByText('Added to Cart')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    fireEvent.click(screen.getByLabelText('In Cart'));
+
+    expect(screen.getByText('Newly Added Addon')).toBeDefined();
+  });
+});
+
+// ─── getItemActionStatus branches (owned / add-to-cart / exclusion) ──────────
+
+describe('RecommendedAddOnsModal - Action filter status branches', () => {
+  test('Action filter excludes owned and plain items, keeping only the matching "In Cart" item', () => {
+    const terminal = makeTerminal();
+    const ownedItem = makeAddOn({
+      id: 1,
+      productName: 'Owned Addon',
+      isOwned: true,
+    });
+    const inCartItem = makeAddOn({ id: 2, productName: 'InCart Addon' });
+    const plainItem = makeAddOn({ id: 3, productName: 'Plain Addon' });
+
+    const inCartCartItem: CartItem = {
+      cartId: 2,
+      id: 2,
+      productName: 'InCart Addon',
+      providerName: 'Bloomberg',
+      category: 'Market Data',
+      price: 100,
+      description: '',
+      isOwned: 'false',
+      skipWorkflow: false,
+    };
+    MOCK__baseStore.cartStore.items[99] = [inCartCartItem];
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[ownedItem, inCartItem, plainItem]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+        overridePermissionId={55}
+      />,
+    );
+
+    expect(screen.getByText('Owned Addon')).toBeDefined();
+    expect(screen.getByText('InCart Addon')).toBeDefined();
+    expect(screen.getByText('Plain Addon')).toBeDefined();
+
+    fireEvent.click(screen.getByLabelText('Filter by Action'));
+    fireEvent.click(screen.getByLabelText('In Cart'));
+
+    expect(screen.queryByText('Owned Addon')).toBeNull();
+    expect(screen.getByText('InCart Addon')).toBeDefined();
+    expect(screen.queryByText('Plain Addon')).toBeNull();
+  });
+});
+
+// ─── triggerSearch AbortError handling ────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - triggerSearch AbortError handling', () => {
+  test('silently ignores an AbortError from a superseded search request', async () => {
+    const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
+    const addon = makeAddOn({ id: 10, productName: 'Addon Alpha' });
+
+    const abortError = new Error('The operation was aborted');
+    abortError.name = 'AbortError';
+    const searchSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchVendorAddons',
+    ).mockRejectedValue(abortError);
+    const logSpy = createSpy(
+      MOCK__baseStore.applicationStore.logService,
+      'error',
+    );
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText('Search by Add-On name...');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Alpha' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
+
+    await waitFor(() => {
+      expect(searchSpy).toHaveBeenCalled();
+    });
+
+    // AbortError is swallowed silently: nothing gets logged and the original
+    // items remain displayed (search results are left untouched).
+    expect(logSpy).not.toHaveBeenCalled();
+    expect(screen.getByText('Addon Alpha')).toBeDefined();
+  });
+});
+
+// ─── MultiSourceContent empty state ───────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - MultiSourceContent empty state', () => {
+  test('shows the empty state message when a column filter excludes every item from all sources', () => {
+    const addon = makeAddOn({ productName: 'My AddOn' });
+    const cartTerm = makeTerminal({
+      id: 2,
+      productName: 'Cart Terminal',
+      source: RecommendationSource.CART,
+    });
+    const inventoryTerm = makeTerminal({
+      id: 3,
+      productName: 'Inventory Terminal',
+      source: RecommendationSource.INVENTORY,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[cartTerm, inventoryTerm]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+        overridePermissionId={1}
+      />,
+    );
+
+    // Sanity check: multi-source content is rendered initially.
+    expect(screen.getByText('From Your Cart')).toBeDefined();
+
+    // Each source section renders its own column header with an identical
+    // "Filter by Action" button (all sharing the same underlying filter
+    // state), so pick the first one.
+    fireEvent.click(screen.getAllByLabelText('Filter by Action')[0] as Element);
+    fireEvent.click(screen.getByLabelText('Subscribed'));
+
+    expect(
+      screen.getByText('No items match your search criteria.'),
+    ).toBeDefined();
+    expect(screen.queryByText('From Your Cart')).toBeNull();
+  });
+});
+
+// ─── handleAssociateTerminal catch block ──────────────────────────────────────
+
+describe('RecommendedAddOnsModal - handleAssociateTerminal unexpected rejection', () => {
+  test('alerts on an unhandled error and keeps the modal open', async () => {
+    const addon = makeAddOn();
+    const terminal = makeTerminal({ id: 2, productName: 'My Terminal' });
+
+    (
+      MOCK__baseStore.cartStore as unknown as Record<string, unknown>
+    ).associateAddOnToTerminal = jest
+      .fn()
+      .mockReturnValue(Promise.reject(new Error('Association crashed')));
+
+    const alertSpy = createSpy(
+      MOCK__baseStore.applicationStore,
+      'alertUnhandledError',
+    ).mockImplementation(() => {});
+
+    const setShowModal = jest.fn();
+    render(
+      <RecommendedAddOnsModal
+        terminal={addon}
+        recommendedItems={[terminal]}
+        message=""
+        showModal={true}
+        setShowModal={setShowModal}
+      />,
+    );
+
+    const addBtn = screen
+      .getAllByRole('button')
+      .find((b) => b.textContent?.includes('Add to Cart'));
+    expect(addBtn).toBeDefined();
+    await act(async () => {
+      fireEvent.click(addBtn as HTMLElement);
+    });
+
+    await waitFor(() => {
+      expect(alertSpy).toHaveBeenCalledWith(expect.any(Error));
+      expect(setShowModal).not.toHaveBeenCalledWith(false);
+    });
+  });
+});
+
+// ─── handleSortChange re-triggering an active server-side search ─────────────
+
+describe('RecommendedAddOnsModal - sort change with active server search', () => {
+  test('re-triggers the server-side vendor add-on search with the new sort order', async () => {
+    const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
+    const addon = makeAddOn({ id: 10, productName: 'Addon Alpha' });
+
+    const searchSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchVendorAddons',
+    ).mockResolvedValue({
+      marketplace_addons: [],
+      total_count: 0,
+      page: 1,
+      page_size: 300,
+    });
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={[addon]}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    const input = screen.getByPlaceholderText('Search by Add-On name...');
+    await act(async () => {
+      fireEvent.change(input, { target: { value: 'Alpha' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+    });
+
+    await waitFor(() => {
+      expect(searchSpy).toHaveBeenCalledTimes(1);
+    });
+
+    // Change the sort order while a server search is active; this should
+    // re-trigger the server-side search with the new sort order applied.
+    const comboboxes = screen.getAllByRole('combobox');
+    await act(async () => {
+      fireEvent.mouseDown(comboboxes[0] as HTMLElement);
+    });
+    const lowToHighOption = await screen.findByText('Low to High');
+    await act(async () => {
+      fireEvent.click(lowToHighOption);
+    });
+
+    await waitFor(() => {
+      expect(searchSpy).toHaveBeenCalledTimes(2);
+    });
+    expect(searchSpy).toHaveBeenLastCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.objectContaining({ sort_by_price: SortOrder.ASC }),
+      expect.anything(),
+    );
+  });
+});
+
+// ─── Items-per-page select ────────────────────────────────────────────────────
+
+describe('RecommendedAddOnsModal - items per page select', () => {
+  test('changing "Items per page" updates pagination and resets to page 1', async () => {
+    const terminal = makeTerminal();
+    const items = Array.from({ length: 15 }, (_, i) =>
+      makeAddOn({
+        id: 100 + i,
+        productName: `Addon ${String(i).padStart(2, '0')}`,
+      }),
+    );
+
+    render(
+      <RecommendedAddOnsModal
+        terminal={terminal}
+        recommendedItems={items}
+        message=""
+        showModal={true}
+        setShowModal={jest.fn()}
+      />,
+    );
+
+    // With the default itemsPerPage (15), all 15 items fit on a single page.
+    expect(screen.queryByRole('button', { name: /page 2/i })).toBeNull();
+
+    const comboboxes = screen.getAllByRole('combobox');
+    const itemsPerPageSelect = comboboxes.at(-1);
+    await act(async () => {
+      fireEvent.mouseDown(itemsPerPageSelect as HTMLElement);
+    });
+    const option10 = await screen.findByRole('option', { name: '10' });
+    await act(async () => {
+      fireEvent.click(option10);
+    });
+
+    // itemsPerPage=10 with 15 items now yields 2 pages.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /page 2/i })).toBeDefined();
     });
   });
 });

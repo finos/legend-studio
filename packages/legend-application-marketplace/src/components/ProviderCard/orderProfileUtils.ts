@@ -25,6 +25,9 @@ export enum OrderProfileLabel {
   ADD_TO_CART = 'Add to cart',
   IN_CART = 'In Cart',
   ADDING = 'Adding...',
+  FETCHING = 'Fetching...',
+  BROWSE_ADD_ONS = 'Browse Add-Ons',
+  PERMISSION_ID = 'Permission ID',
   SELECT_TERMINAL_TITLE = 'Select Terminal',
   SELECT_TERMINAL_DESCRIPTION = 'All Add-Ons will be added automatically after the terminal is confirmed.',
   CANCEL = 'Cancel',
@@ -38,7 +41,6 @@ export enum OrderProfileLabel {
 
 export enum OrderProfileTableHeader {
   PRODUCT_NAME = 'PRODUCT NAME',
-  PROVIDER = 'PROVIDER',
   CATEGORY = 'CATEGORY',
   COST_MONTHLY = 'COST (Monthly)',
 }

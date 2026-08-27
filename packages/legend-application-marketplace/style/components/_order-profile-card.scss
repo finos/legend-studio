@@ -110,6 +110,12 @@
     border-bottom: 2px solid var(--color-light-grey-200);
   }
 
+  &__table-header-cell-content {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
   &__table-row {
     &:hover {
       background: var(--marketplace-bg-secondary);

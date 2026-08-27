@@ -105,13 +105,6 @@ beforeEach(async () => {
     page: 1,
     page_size: 300,
   });
-  createSpy(
-    MOCK__baseStore.marketplaceServerClient,
-    'getPermissionAddons',
-  ).mockResolvedValue({
-    marketplace_addons: [],
-    total_count: 0,
-  });
 });
 
 afterEach(() => {
@@ -204,18 +197,7 @@ describe('LegendMarketplaceTerminalCard - rendering', () => {
     expect((btn as HTMLButtonElement).disabled).toBe(true);
   });
 
-  test('shows "Browse Add-Ons" button for cardAction="addService"', () => {
-    const item = makeTerminalResult();
-    render(
-      <LegendMarketplaceTerminalCard
-        terminalResult={item}
-        cardAction="addService"
-      />,
-    );
-    expect(screen.getByText(/Browse Add-Ons/)).toBeDefined();
-  });
-
-  test('defaults to "Add to cart" when cardAction is not provided', () => {
+  test('renders "Add to cart" button by default', () => {
     const item = makeTerminalResult();
     render(<LegendMarketplaceTerminalCard terminalResult={item} />);
     expect(screen.getByText(/Add to cart/)).toBeDefined();
@@ -350,139 +332,6 @@ describe('LegendMarketplaceTerminalCard - addToCart', () => {
     // After error, button should be re-enabled (not "Adding...")
     await waitFor(() => {
       expect(screen.queryByText(/Adding\.\.\./)).toBeNull();
-    });
-  });
-});
-
-// ─── addService flow ──────────────────────────────────────────────────────────
-
-describe('LegendMarketplaceTerminalCard - addService', () => {
-  test('clicking "Browse Add-Ons" calls getPermissionAddons', async () => {
-    const item = makeTerminalResult({ permissionId: 42 });
-    const addon = new TerminalResult();
-    addon.id = 10;
-    addon.category = 'Market Data';
-    addon.providerName = 'Bloomberg';
-    addon.productName = 'Service Addon';
-    addon.price = 100;
-    addon.model = null;
-
-    const getPermissionAddonsSpy = createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'getPermissionAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [addon],
-      total_count: 1,
-      permissionId: 42,
-    });
-
-    render(
-      <LegendMarketplaceTerminalCard
-        terminalResult={item}
-        cardAction="addService"
-      />,
-    );
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Browse Add-Ons/));
-    });
-
-    expect(getPermissionAddonsSpy).toHaveBeenCalled();
-  });
-
-  test('opens modal when getPermissionAddons returns addons', async () => {
-    const item = makeTerminalResult({
-      providerName: 'Bloomberg',
-      productName: 'Bloomberg Terminal',
-    });
-    const addon = new TerminalResult();
-    addon.id = 10;
-    addon.category = 'Market Data';
-    addon.providerName = 'Bloomberg';
-    addon.productName = 'Service Addon';
-    addon.price = 100;
-    addon.model = null;
-
-    createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'getPermissionAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [addon],
-      total_count: 1,
-      permissionId: 42,
-    });
-
-    render(
-      <LegendMarketplaceTerminalCard
-        terminalResult={item}
-        cardAction="addService"
-      />,
-    );
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Browse Add-Ons/));
-    });
-
-    await waitFor(() => {
-      // Modal opens with permission-override flow: section title is
-      // "Add-Ons available for {productName}"
-      expect(
-        screen.getByText(`Add-Ons available for ${item.productName}`),
-      ).toBeDefined();
-    });
-  });
-
-  test('handles getPermissionAddons rejection gracefully', async () => {
-    const item = makeTerminalResult({ productName: 'Test Terminal' });
-    createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'getPermissionAddons',
-    ).mockRejectedValue(new Error('Service Error'));
-
-    render(
-      <LegendMarketplaceTerminalCard
-        terminalResult={item}
-        cardAction="addService"
-      />,
-    );
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Browse Add-Ons/));
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByText(/Fetching\.\.\./)).toBeNull();
-    });
-  });
-
-  test('shows loading state while fetching services', async () => {
-    const item = makeTerminalResult();
-    let resolvePermissions!: (v: unknown) => void;
-    const pendingPermissions = new Promise((resolve) => {
-      resolvePermissions = resolve;
-    });
-
-    createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'getPermissionAddons',
-    ).mockReturnValue(
-      pendingPermissions as ReturnType<
-        typeof MOCK__baseStore.marketplaceServerClient.getPermissionAddons
-      >,
-    );
-
-    render(
-      <LegendMarketplaceTerminalCard
-        terminalResult={item}
-        cardAction="addService"
-      />,
-    );
-    await act(async () => {
-      fireEvent.click(screen.getByText(/Browse Add-Ons/));
-    });
-    expect(screen.getByText(/Fetching\.\.\./)).toBeDefined();
-    // cleanup
-    resolvePermissions({
-      marketplace_addons: [],
-      total_count: 0,
-      permissionId: undefined,
     });
   });
 });

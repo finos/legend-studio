@@ -27,34 +27,19 @@ import {
   CircularProgress,
   Typography,
 } from '@mui/material';
-import {
-  TerminalResult,
-  type PermissionAddonsSearchResponse,
-} from '@finos/legend-server-marketplace';
+import type { TerminalResult } from '@finos/legend-server-marketplace';
 import { CheckCircleIcon, ShoppingCartIcon } from '@finos/legend-art';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { observer } from 'mobx-react-lite';
 import { flowResult } from 'mobx';
 import { toastManager } from '../Toast/CartToast.js';
 import { RecommendedAddOnsModal } from '../AddToCart/RecommendedAddOnsModal.js';
-import { assertErrorThrown, type PlainObject } from '@finos/legend-shared';
+import { assertErrorThrown } from '@finos/legend-shared';
 import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
 
-const TERMINAL_CARD_ACTION = {
-  ADD_TO_CART: 'addToCart',
-  ADD_SERVICE: 'addService',
-} as const;
-
-type TerminalCardAction =
-  (typeof TERMINAL_CARD_ACTION)[keyof typeof TERMINAL_CARD_ACTION];
-
 export const LegendMarketplaceTerminalCard = observer(
-  (props: {
-    terminalResult: TerminalResult;
-    cardAction?: TerminalCardAction;
-  }): JSX.Element => {
-    const { terminalResult, cardAction = TERMINAL_CARD_ACTION.ADD_TO_CART } =
-      props;
+  (props: { terminalResult: TerminalResult }): JSX.Element => {
+    const { terminalResult } = props;
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [showRecommendationsModal, setShowRecommendationsModal] =
       useState(false);
@@ -65,9 +50,6 @@ export const LegendMarketplaceTerminalCard = observer(
     const [modalMessage, setModalMessage] = useState<string>('');
     const [modalTotalCount, setModalTotalCount] = useState<
       number | null | undefined
-    >(undefined);
-    const [modalPermissionId, setModalPermissionId] = useState<
-      number | undefined
     >(undefined);
 
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
@@ -100,52 +82,6 @@ export const LegendMarketplaceTerminalCard = observer(
         assertErrorThrown(error);
         toastManager.error(
           `Failed to add ${terminalResult.productName} to cart: ${error.message}`,
-        );
-      } finally {
-        setIsAddingToCart(false);
-      }
-    };
-
-    const handleAddService = async () => {
-      setIsAddingToCart(true);
-      try {
-        const kerberos = legendMarketplaceBaseStore.cartStore.cartUser;
-        const response =
-          (await legendMarketplaceBaseStore.marketplaceServerClient.getPermissionAddons(
-            kerberos,
-            terminalResult.providerName,
-            {
-              ...(terminalResult.permissionId === undefined
-                ? {}
-                : { permission_id: terminalResult.permissionId }),
-              page: 1,
-              page_size: 300,
-            },
-          )) as unknown as PermissionAddonsSearchResponse;
-        const addons = response.marketplace_addons.map((item) =>
-          TerminalResult.serialization.fromJson(
-            item as unknown as PlainObject<TerminalResult>,
-          ),
-        );
-        if (addons.length > 0) {
-          setRecommendedItems(addons);
-          setModalMessage(
-            `Services available for ${terminalResult.providerName}`,
-          );
-          setModalTotalCount(response.total_count);
-          setModalPermissionId(
-            response.permissionId ?? terminalResult.permissionId,
-          );
-          setShowRecommendationsModal(true);
-        } else {
-          toastManager.warning(
-            `No services found for ${terminalResult.providerName}`,
-          );
-        }
-      } catch (error) {
-        assertErrorThrown(error);
-        toastManager.error(
-          `Failed to fetch services for ${terminalResult.productName}: ${error.message}`,
         );
       } finally {
         setIsAddingToCart(false);
@@ -218,17 +154,13 @@ export const LegendMarketplaceTerminalCard = observer(
                 variant="outlined"
                 className="legend-marketplace-terminal-card__add-to-cart-button"
                 onClick={() => {
-                  (cardAction === TERMINAL_CARD_ACTION.ADD_SERVICE
-                    ? handleAddService()
-                    : handleAddToCart()
-                  ).catch(applicationStore.alertUnhandledError);
+                  handleAddToCart().catch(applicationStore.alertUnhandledError);
                 }}
                 disabled={isAddingToCart || isInCart}
               >
                 {isAddingToCart && (
                   <>
-                    {cardAction === 'addService' ? 'Fetching...' : 'Adding...'}{' '}
-                    &nbsp;
+                    Adding... &nbsp;
                     <CircularProgress size={16} />
                   </>
                 )}
@@ -242,10 +174,7 @@ export const LegendMarketplaceTerminalCard = observer(
                 )}
                 {!isAddingToCart && !isInCart && (
                   <>
-                    {cardAction === TERMINAL_CARD_ACTION.ADD_SERVICE
-                      ? 'Browse Add-Ons'
-                      : 'Add to cart'}{' '}
-                    &nbsp;
+                    Add to cart &nbsp;
                     <ShoppingCartIcon />
                   </>
                 )}
@@ -274,12 +203,6 @@ export const LegendMarketplaceTerminalCard = observer(
           onViewCart={handleViewCart}
           onTerminalSelected={handleTerminalSelected}
           totalCount={modalTotalCount}
-          overridePermissionId={modalPermissionId}
-          overrideModel={
-            cardAction === TERMINAL_CARD_ACTION.ADD_SERVICE
-              ? terminalResult.model
-              : undefined
-          }
         />
       </Card>
     );

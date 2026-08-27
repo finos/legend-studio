@@ -571,7 +571,7 @@ describe('VendorDataMainContent - OwnedServicesSection', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Owned Terminal')).toBeDefined();
+      expect(screen.getByText(/Owned Terminal/i)).toBeDefined();
     });
   });
 
@@ -658,7 +658,31 @@ describe('VendorDataMainContent - OwnedServicesSection', () => {
       <VendorDataMainContent marketPlaceVendorDataState={vendorDataStore} />,
     );
 
-    expect(screen.getByText(/Terminal Subscriptions/)).toBeDefined();
+    expect(
+      screen.getByText("Other User's Terminal Subscriptions"),
+    ).toBeDefined();
+  });
+
+  test('falls back to selected user id when target user displayName is whitespace', () => {
+    const ownedPermission = makeTerminalResult({ id: 101, isOwned: true });
+
+    runInAction(() => {
+      vendorDataStore.providerDisplayState =
+        VendorDataProviderType.TERMINAL_LICENSE;
+      vendorDataStore.ownedPermissions = [ownedPermission];
+      vendorDataStore.selectedUser = {
+        id: 'other-user',
+        displayName: '   ',
+      } as typeof vendorDataStore.selectedUser;
+    });
+
+    render(
+      <VendorDataMainContent marketPlaceVendorDataState={vendorDataStore} />,
+    );
+
+    expect(
+      screen.getByText("other-user's Terminal Subscriptions"),
+    ).toBeDefined();
   });
 });
 

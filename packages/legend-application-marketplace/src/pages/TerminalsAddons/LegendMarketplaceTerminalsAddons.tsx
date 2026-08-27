@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { type JSX, useEffect, useCallback, useState } from 'react';
+import { type JSX, useCallback, useEffect, useState } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
   Button,
@@ -33,6 +33,7 @@ import type {
 } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceTerminalCard } from '../../components/ProviderCard/LegendMarketplaceTerminalCard.js';
 import { LegendMarketplaceOrderProfileCard } from '../../components/ProviderCard/LegendMarketplaceOrderProfileCard.js';
+import { LegendMarketplaceOwnedTerminalCard } from '../../components/ProviderCard/LegendMarketplaceOwnedTerminalCard.js';
 import {
   type LegendMarketPlaceVendorDataStore,
   VendorDataProviderType,
@@ -50,7 +51,7 @@ import {
   UserSearchInput,
 } from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import type { LegendUser } from '@finos/legend-shared';
+import { type LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
@@ -246,8 +247,15 @@ const OwnedServicesSection = observer(
       vendorDataState.applicationStore.identityService.currentUser;
     const isTargetUserActive =
       vendorDataState.selectedUser.id !== currentUserId;
+    const trimmedSelectedUserDisplayName =
+      vendorDataState.selectedUser.displayName?.trim();
+    const selectedUserName =
+      trimmedSelectedUserDisplayName === undefined ||
+      trimmedSelectedUserDisplayName === ''
+        ? vendorDataState.selectedUser.id
+        : trimmedSelectedUserDisplayName;
     const titleText = isTargetUserActive
-      ? `${vendorDataState.selectedUser.displayName ?? vendorDataState.selectedUser.id}'s Terminal Subscriptions`
+      ? `${selectedUserName}'s Terminal Subscriptions`
       : 'My Terminal Subscriptions';
 
     return (
@@ -285,10 +293,9 @@ const OwnedServicesSection = observer(
             className="legend-marketplace-vendordata-main-search-results__card-group"
           >
             {vendorDataState.ownedPermissions.map((permission) => (
-              <LegendMarketplaceTerminalCard
+              <LegendMarketplaceOwnedTerminalCard
                 key={permission.id}
                 terminalResult={permission}
-                cardAction="addService"
               />
             ))}
           </div>
@@ -486,14 +493,14 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                 className="legend-marketplace__user-input"
                 userValue={marketPlaceVendorDataStore.selectedUser}
                 setUserValue={(_user: LegendUser): void => {
-                  if (!_user.id) {
-                    marketPlaceVendorDataStore.resetSelectedUser();
-                    flowResult(cartStore.setTargetUser(undefined)).catch(
+                  if (_user.id) {
+                    marketPlaceVendorDataStore.setSelectedUser(_user);
+                    flowResult(cartStore.setTargetUser(_user.id)).catch(
                       marketplaceStore.applicationStore.alertUnhandledError,
                     );
                   } else {
-                    marketPlaceVendorDataStore.setSelectedUser(_user);
-                    flowResult(cartStore.setTargetUser(_user.id)).catch(
+                    marketPlaceVendorDataStore.resetSelectedUser();
+                    flowResult(cartStore.setTargetUser(undefined)).catch(
                       marketplaceStore.applicationStore.alertUnhandledError,
                     );
                   }
