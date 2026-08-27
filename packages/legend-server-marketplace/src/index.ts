@@ -27,7 +27,6 @@ export * from './models/Feedback.js';
 export * from './models/TerminalProductOrder.js';
 export * from './models/Registry.js';
 export * from './models/FieldSearch.js';
-export * from './models/SearchType.js';
 export * from './models/McpServer.js';
 export {
   MarketplaceServerClient,

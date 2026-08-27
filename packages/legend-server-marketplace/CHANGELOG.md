@@ -1,5 +1,16 @@
 # @finos/legend-server-marketplace
 
+## 0.2.5
+
+## 0.2.4
+
+### Patch Changes
+
+- [#5466](https://github.com/finos/legend-studio/pull/5466) [`2670b55`](https://github.com/finos/legend-studio/commit/2670b55871be4dc0af06856098a8a284b59acb34) ([@bojja-gs](https://github.com/bojja-gs)) - Add MCP server registry models and read them from `MarketplaceServerClient`:
+
+  - `McpServer`, `McpServerPage`, `McpServerTool` and `McpServerToolsResponse` deserialize the MCP registry payloads. Nullable registry fields (`token_type`, `category`, `sample_questions`, `allowed_platforms`, `security_detail`, `mcp_support_info`) are mapped to `undefined` rather than `null`.
+  - `MarketplaceServerClient.getMcpServers` and `getMcpServerTools` read the registry with a bearer token.
+
 ## 0.2.3
 
 ## 0.2.2
