@@ -38,6 +38,7 @@ import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketpla
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { RecommendedItemsCard } from '../RecommendedItemsCard.js';
 import { createSpy } from '@finos/legend-shared/test';
+import { toastManager } from '../../Toast/CartToast.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -265,6 +266,83 @@ describe('RecommendedItemsCard - non-association flow', () => {
     const btn = screen.getByText('Added to Cart').closest('button');
     expect(btn).toBeDefined();
   });
+  test('calls onItemAdded with the item id after a successful add to cart', async () => {
+    const item = makeTerminalResult({ id: 10 });
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: true,
+        recommendations: [],
+        message: '',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
+    const onItemAdded = jest.fn();
+
+    render(
+      <RecommendedItemsCard recommendedItem={item} onItemAdded={onItemAdded} />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onItemAdded).toHaveBeenCalledWith(10);
+  });
+
+  test('shows a warning toast when addToCartWithAPI resolves unsuccessfully with a message', async () => {
+    const item = makeTerminalResult({ id: 20 });
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: false,
+        message: 'Item could not be added',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
+    const warningSpy = createSpy(toastManager, 'warning').mockImplementation(
+      () => {},
+    );
+
+    render(<RecommendedItemsCard recommendedItem={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+
+    expect(warningSpy).toHaveBeenCalledWith('Item could not be added');
+  });
+
+  test('does not show a toast when addToCartWithAPI resolves unsuccessfully without a message', async () => {
+    const item = makeTerminalResult({ id: 21 });
+    const mockAddToCart = jest
+      .fn<
+        (
+          cartItemData: unknown,
+          suppressSuccessToast?: boolean,
+        ) => Promise<AddToCartResult>
+      >()
+      .mockResolvedValue({
+        success: false,
+        message: '',
+      });
+    setAddToCartWithAPIMock(mockAddToCart);
+    const warningSpy = createSpy(toastManager, 'warning').mockImplementation(
+      () => {},
+    );
+
+    render(<RecommendedItemsCard recommendedItem={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+
+    expect(warningSpy).not.toHaveBeenCalled();
+  });
 });
 
 // ─── Association flow (onSelect provided) ─────────────────────────────────────
@@ -303,6 +381,22 @@ describe('RecommendedItemsCard - association flow', () => {
     expect(screen.getByText('In Cart')).toBeDefined();
   });
 
+  test('shows "In Cart" badge for non-marketplace item already in cart', () => {
+    const item = makeTerminalResult({
+      id: 9,
+      source: RecommendationSource.INVENTORY,
+    });
+    MOCK__baseStore.cartStore.items[99] = [makeCartItem(9)];
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={makeOnSelectMock()}
+      />,
+    );
+    expect(screen.getByText('In Cart')).toBeDefined();
+    expect(screen.queryByRole('button')).toBeNull();
+  });
+
   test('shows "Add to Cart" button for marketplace item NOT in cart', () => {
     const item = makeTerminalResult({
       id: 7,
@@ -324,6 +418,46 @@ describe('RecommendedItemsCard - association flow', () => {
       fireEvent.click(screen.getByRole('button'));
     });
     expect(onSelect).toHaveBeenCalledWith(item);
+  });
+
+  test('calls onItemAdded with the item id when association succeeds', async () => {
+    const item = makeTerminalResult({
+      id: 7,
+      source: RecommendationSource.MARKETPLACE,
+    });
+    const onSelect = makeOnSelectMock(true);
+    const onItemAdded = jest.fn();
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={onSelect}
+        onItemAdded={onItemAdded}
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onItemAdded).toHaveBeenCalledWith(7);
+  });
+
+  test('does not call onItemAdded when association is not successful', async () => {
+    const item = makeTerminalResult({
+      id: 7,
+      source: RecommendationSource.MARKETPLACE,
+    });
+    const onSelect = makeOnSelectMock(false);
+    const onItemAdded = jest.fn();
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={onSelect}
+        onItemAdded={onItemAdded}
+      />,
+    );
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onItemAdded).not.toHaveBeenCalled();
   });
 
   test('shows "Adding..." state when marketplace item is currently being selected', () => {

@@ -275,4 +275,50 @@ describe('LegendMarketplaceOwnedTerminalCard - detail modal', () => {
       await screen.findByRole('dialog', { name: /Bloomberg Terminal/i }),
     ).toBeDefined();
   });
+
+  test('closing the detail modal via the close button hides it', async () => {
+    const item = makeTerminalResult({ productName: 'Bloomberg Terminal' });
+    render(<LegendMarketplaceOwnedTerminalCard terminalResult={item} />);
+
+    fireEvent.click(screen.getByLabelText('View terminal details'));
+    expect(
+      await screen.findByRole('dialog', { name: /Bloomberg Terminal/i }),
+    ).toBeDefined();
+
+    fireEvent.click(screen.getByLabelText('close'));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+  });
+});
+
+// ─── View cart ────────────────────────────────────────────────────────────────
+
+describe('LegendMarketplaceOwnedTerminalCard - view cart', () => {
+  test('clicking "View Cart" in the add-ons modal calls cartStore.setOpen(true)', async () => {
+    const item = makeTerminalResult();
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getPermissionAddons',
+    ).mockResolvedValue({
+      marketplace_addons: [makeAddonJson(10)],
+      total_count: 1,
+    });
+    const setOpenSpy = jest.fn();
+    (MOCK__baseStore.cartStore as unknown as Record<string, unknown>).setOpen =
+      setOpenSpy;
+
+    render(<LegendMarketplaceOwnedTerminalCard terminalResult={item} />);
+    await act(async () => {
+      fireEvent.click(screen.getByText(/Browse Add-Ons/));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Service Addon 10')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByText('View Cart'));
+    expect(setOpenSpy).toHaveBeenCalledWith(true);
+  });
 });

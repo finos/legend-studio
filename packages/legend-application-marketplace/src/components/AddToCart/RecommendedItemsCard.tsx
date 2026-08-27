@@ -37,10 +37,16 @@ import { formatItemPrice } from '../ProviderCard/orderProfileUtils.js';
 interface RecommendedItemsCardProps {
   recommendedItem: TerminalResult;
   onSelect?: (item: TerminalResult) => Promise<boolean> | boolean;
+  /**
+   * Notifies the parent list that this item was successfully added, so
+   * column filters (Action status) that live outside this component can stay
+   * in sync with skip-workflow adds that don't register in cartStore.
+   */
+  onItemAdded?: (itemId: number) => void;
   isSelecting?: boolean;
-  selectedItemId?: number | undefined;
+  selectedItemId?: number;
   permissionIdOverride?: number;
-  modelOverride?: string | null | undefined;
+  modelOverride?: string | null;
 }
 
 export const RecommendedItemsCard = observer(
@@ -48,6 +54,7 @@ export const RecommendedItemsCard = observer(
     const {
       recommendedItem,
       onSelect,
+      onItemAdded,
       isSelecting,
       selectedItemId,
       permissionIdOverride,
@@ -90,6 +97,7 @@ export const RecommendedItemsCard = observer(
         .then((result) => {
           if (result.success) {
             setIsAdded(true);
+            onItemAdded?.(addon.id);
           } else if (result.message) {
             toastManager.warning(result.message);
           }
@@ -115,11 +123,17 @@ export const RecommendedItemsCard = observer(
           variant="outlined"
           onClick={() => {
             setIsAddingToCart(true);
+            // Note: `onSelect` can close this modal (or chain into a new one)
+            // on success, unmounting this card before the promise below
+            // resolves. That's safe under React 18+ (no-op setState on an
+            // unmounted component, no warning), so no cleanup/cancellation
+            // guard is added here.
             // eslint-disable-next-line no-void
             void Promise.resolve(onSelect?.(recommendedItem))
               .then((wasAssociated) => {
                 if (wasAssociated) {
                   setIsAdded(true);
+                  onItemAdded?.(recommendedItem.id);
                 }
               })
               .finally(() => {
@@ -238,7 +252,7 @@ export const RecommendedItemsCard = observer(
         </Typography>
         <Typography
           variant="body2"
-          className="recommended-addons-modal__item-provider"
+          className="recommended-addons-modal__item-category"
         >
           {recommendedItem.category}
         </Typography>

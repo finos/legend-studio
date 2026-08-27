@@ -64,11 +64,7 @@ import { RecommendedItemsCard } from './RecommendedItemsCard.js';
 import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import type { CartStore } from '../../stores/cart/CartStore.js';
-import {
-  assertErrorThrown,
-  LogEvent,
-  type PlainObject,
-} from '@finos/legend-shared';
+import { assertErrorThrown, LogEvent } from '@finos/legend-shared';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { flowResult } from 'mobx';
 
@@ -106,21 +102,27 @@ const ACTION_STATUS_OPTIONS = [
 const getItemActionStatus = (
   item: TerminalResult,
   cartStore: CartStore,
+  locallyAddedItemIds: ReadonlySet<number>,
 ): string => {
   if (item.isOwned) {
     return ACTION_STATUS_OWNED;
   }
-  if (cartStore.isItemInCart(item.id)) {
+  if (cartStore.isItemInCart(item.id) || locallyAddedItemIds.has(item.id)) {
     return ACTION_STATUS_IN_CART;
   }
   return ACTION_STATUS_ADD_TO_CART;
 };
 
+// `locallyAddedItemIds` covers items added via a skip-workflow add-to-cart
+// path (see RecommendedItemsCard's `isAdded` state) that don't (yet) show up
+// in `cartStore.isItemInCart`, so the Action filter/status stays in sync with
+// what the row actually displays.
 const filterItemsByColumnFilters = (
   items: TerminalResult[],
   categoryFilter: ReadonlySet<string>,
   actionFilter: ReadonlySet<string>,
   cartStore: CartStore,
+  locallyAddedItemIds: ReadonlySet<number>,
 ): TerminalResult[] =>
   items.filter((item) => {
     if (categoryFilter.size > 0 && !categoryFilter.has(item.category)) {
@@ -128,7 +130,9 @@ const filterItemsByColumnFilters = (
     }
     if (
       actionFilter.size > 0 &&
-      !actionFilter.has(getItemActionStatus(item, cartStore))
+      !actionFilter.has(
+        getItemActionStatus(item, cartStore, locallyAddedItemIds),
+      )
     ) {
       return false;
     }
@@ -163,7 +167,7 @@ const ListHeader = (props: ListHeaderProps): JSX.Element => {
       >
         {headerName}
       </Typography>
-      <Box className="recommended-addons-modal__header-provider">
+      <Box className="recommended-addons-modal__header-category">
         <Typography variant="subtitle2">Category</Typography>
         <ColumnFilterButton
           columnLabel="Category"
@@ -208,7 +212,8 @@ const getFilteredAndSortedItems = (
       items = items.filter(
         (item) =>
           item.productName.toLowerCase().includes(search) ||
-          item.providerName.toLowerCase().includes(search),
+          item.providerName.toLowerCase().includes(search) ||
+          item.category.toLowerCase().includes(search),
       );
     }
   }
@@ -299,9 +304,7 @@ const useVendorAddonSearch = (
         if (!signal?.aborted) {
           setTerminalSearchResults(
             response.marketplace_addons.map((item) =>
-              TerminalResult.serialization.fromJson(
-                item as unknown as PlainObject<TerminalResult>,
-              ),
+              TerminalResult.serialization.fromJson(item),
             ),
           );
           setSearchTotalCount(response.total_count);
@@ -380,6 +383,7 @@ interface MultiSourceContentProps {
   isAssociating: boolean;
   associatingItemId: number | undefined;
   onAssociate: (item: TerminalResult) => Promise<boolean> | boolean;
+  onItemAdded: (itemId: number) => void;
   categoryOptions: string[];
   categoryFilter: ReadonlySet<string>;
   onCategoryFilterChange: (next: Set<string>) => void;
@@ -397,6 +401,7 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
     isAssociating,
     associatingItemId,
     onAssociate,
+    onItemAdded,
     categoryOptions,
     categoryFilter,
     onCategoryFilterChange,
@@ -456,8 +461,11 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 key={item.id}
                 recommendedItem={item}
                 onSelect={onAssociate}
+                onItemAdded={onItemAdded}
                 isSelecting={isAssociating}
-                selectedItemId={associatingItemId}
+                {...(associatingItemId !== undefined && {
+                  selectedItemId: associatingItemId,
+                })}
               />
             ))}
           </Box>
@@ -466,7 +474,9 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
 
       {cartSourceItems.length > 0 &&
         (inventorySourceItems.length > 0 ||
-          marketplaceSourceItems.length > 0) && <Divider sx={{ my: 2 }} />}
+          marketplaceSourceItems.length > 0) && (
+          <Divider className="recommended-addons-modal__source-divider" />
+        )}
 
       {inventorySourceItems.length > 0 && (
         <Box className="recommended-addons-modal__source-section">
@@ -491,8 +501,11 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 key={item.id}
                 recommendedItem={item}
                 onSelect={onAssociate}
+                onItemAdded={onItemAdded}
                 isSelecting={isAssociating}
-                selectedItemId={associatingItemId}
+                {...(associatingItemId !== undefined && {
+                  selectedItemId: associatingItemId,
+                })}
               />
             ))}
           </Box>
@@ -500,7 +513,9 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
       )}
 
       {(cartSourceItems.length > 0 || inventorySourceItems.length > 0) &&
-        marketplaceSourceItems.length > 0 && <Divider sx={{ my: 2 }} />}
+        marketplaceSourceItems.length > 0 && (
+          <Divider className="recommended-addons-modal__source-divider" />
+        )}
 
       {marketplaceSourceItems.length > 0 && (
         <Box className="recommended-addons-modal__source-section">
@@ -525,8 +540,11 @@ const MultiSourceContent = (props: MultiSourceContentProps): JSX.Element => {
                 key={item.id}
                 recommendedItem={item}
                 onSelect={onAssociate}
+                onItemAdded={onItemAdded}
                 isSelecting={isAssociating}
-                selectedItemId={associatingItemId}
+                {...(associatingItemId !== undefined && {
+                  selectedItemId: associatingItemId,
+                })}
               />
             ))}
           </Box>
@@ -557,16 +575,13 @@ const MandatoryAddOnsAlert = (props: {
             {mandatoryAddOns[0]} Added To Cart
           </Typography>
         ) : (
-          <Box
-            component="ul"
-            sx={{ margin: '0.4rem 0 0', paddingLeft: '2rem' }}
-          >
+          <Box component="ul" className="recommended-addons-modal__alert-list">
             {mandatoryAddOns.map((name) => (
               <Typography
                 component="li"
                 variant="body2"
                 key={name}
-                sx={{ lineHeight: 1.6 }}
+                className="recommended-addons-modal__alert-list-item"
               >
                 {name}
               </Typography>
@@ -636,11 +651,10 @@ const FilterControls = (props: FilterControlsProps): JSX.Element => {
       <FormControl
         size="medium"
         className="recommended-addons-modal__sort-select"
-        sx={{ minWidth: 180 }}
       >
         <InputLabel
           id="recommended-addons-sort-label"
-          sx={{ fontSize: '1rem' }}
+          className="recommended-addons-modal__select-label"
         >
           Sort by Price
         </InputLabel>
@@ -649,23 +663,24 @@ const FilterControls = (props: FilterControlsProps): JSX.Element => {
           value={sortOrder ?? ''}
           label="Sort by Price"
           onChange={onSortChange}
-          sx={{ fontSize: '1rem' }}
+          className="recommended-addons-modal__select"
+          MenuProps={{ className: 'recommended-addons-modal__select-menu' }}
         >
-          <MenuItem value="" sx={{ fontSize: '1rem' }}>
+          <MenuItem value="">
             <em>None</em>
           </MenuItem>
-          <MenuItem value={SortOrder.ASC} sx={{ fontSize: '1rem' }}>
+          <MenuItem value={SortOrder.ASC}>
             <Box display="flex" alignItems="center">
               <ArrowUpIcon fontSize="small" />
-              <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
+              <Typography className="recommended-addons-modal__select-menu-item-label">
                 Low to High
               </Typography>
             </Box>
           </MenuItem>
-          <MenuItem value={SortOrder.DESC} sx={{ fontSize: '1rem' }}>
+          <MenuItem value={SortOrder.DESC}>
             <Box display="flex" alignItems="center">
               <ArrowDownIcon fontSize="small" />
-              <Typography sx={{ ml: 0.5, fontSize: '1rem' }}>
+              <Typography className="recommended-addons-modal__select-menu-item-label">
                 High to Low
               </Typography>
             </Box>
@@ -676,9 +691,11 @@ const FilterControls = (props: FilterControlsProps): JSX.Element => {
         <FormControl
           size="medium"
           className="recommended-addons-modal__items-per-page-select"
-          sx={{ minWidth: 120 }}
         >
-          <InputLabel id="items-per-page-label" sx={{ fontSize: '1rem' }}>
+          <InputLabel
+            id="items-per-page-label"
+            className="recommended-addons-modal__select-label"
+          >
             Items per page
           </InputLabel>
           <Select
@@ -686,10 +703,11 @@ const FilterControls = (props: FilterControlsProps): JSX.Element => {
             value={itemsPerPage}
             label="Items per page"
             onChange={onItemsPerPageChange}
-            sx={{ fontSize: '1rem' }}
+            className="recommended-addons-modal__select"
+            MenuProps={{ className: 'recommended-addons-modal__select-menu' }}
           >
             {ITEMS_PER_PAGE_LIST.map((items) => (
-              <MenuItem key={items} value={items} sx={{ fontSize: '1rem' }}>
+              <MenuItem key={items} value={items}>
                 {items}
               </MenuItem>
             ))}
@@ -726,6 +744,12 @@ export const RecommendedAddOnsModal = observer(
       () => new Set(),
     );
     const [actionFilter, setActionFilter] = useState<Set<string>>(
+      () => new Set(),
+    );
+    // Items added via a skip-workflow add-to-cart path that don't (yet) show
+    // up in cartStore.isItemInCart; keeps the Action filter in sync with what
+    // RecommendedItemsCard actually renders (see getItemActionStatus).
+    const [locallyAddedItemIds, setLocallyAddedItemIds] = useState<Set<number>>(
       () => new Set(),
     );
 
@@ -826,8 +850,66 @@ export const RecommendedAddOnsModal = observer(
           categoryFilter,
           actionFilter,
           cartStore,
+          locallyAddedItemIds,
         ),
-      [filteredAndSortedItems, categoryFilter, actionFilter, cartStore],
+      [
+        filteredAndSortedItems,
+        categoryFilter,
+        actionFilter,
+        cartStore,
+        locallyAddedItemIds,
+      ],
+    );
+    const columnFilteredCartSourceItems = useMemo(
+      () =>
+        filterItemsByColumnFilters(
+          cartSourceItems,
+          categoryFilter,
+          actionFilter,
+          cartStore,
+          locallyAddedItemIds,
+        ),
+      [
+        cartSourceItems,
+        categoryFilter,
+        actionFilter,
+        cartStore,
+        locallyAddedItemIds,
+      ],
+    );
+    const columnFilteredInventorySourceItems = useMemo(
+      () =>
+        filterItemsByColumnFilters(
+          inventorySourceItems,
+          categoryFilter,
+          actionFilter,
+          cartStore,
+          locallyAddedItemIds,
+        ),
+      [
+        inventorySourceItems,
+        categoryFilter,
+        actionFilter,
+        cartStore,
+        locallyAddedItemIds,
+      ],
+    );
+    const columnFilteredMarketplaceSourceItems = useMemo(
+      () =>
+        filterItemsByColumnFilters(
+          marketplaceSourceItems,
+          categoryFilter,
+          actionFilter,
+          cartStore,
+          locallyAddedItemIds,
+        ),
+      [
+        marketplaceSourceItems,
+        categoryFilter,
+        actionFilter,
+        cartStore,
+        locallyAddedItemIds,
+      ],
     );
 
     const totalPages = Math.ceil(columnFilteredItems.length / itemsPerPage);
@@ -851,6 +933,7 @@ export const RecommendedAddOnsModal = observer(
       setCurrentPage(1);
       setCategoryFilter(new Set());
       setActionFilter(new Set());
+      setLocallyAddedItemIds(new Set());
       resetSearch();
     }, [setShowModal, resetSearch]);
 
@@ -958,6 +1041,12 @@ export const RecommendedAddOnsModal = observer(
       setCurrentPage(1);
     }, []);
 
+    const handleItemAdded = useCallback((itemId: number) => {
+      setLocallyAddedItemIds((prev) =>
+        prev.has(itemId) ? prev : new Set(prev).add(itemId),
+      );
+    }, []);
+
     if (!showModal) {
       return null;
     }
@@ -988,10 +1077,7 @@ export const RecommendedAddOnsModal = observer(
           <Box className="recommended-addons-modal__list-info">
             <Typography
               variant="body2"
-              sx={{
-                fontSize: '1.4rem',
-                color: 'var(--color-dark-grey-300)',
-              }}
+              className="recommended-addons-modal__list-info-text"
             >
               Showing {(currentPage - 1) * itemsPerPage + 1} -{' '}
               {Math.min(currentPage * itemsPerPage, columnFilteredItems.length)}{' '}
@@ -1020,6 +1106,7 @@ export const RecommendedAddOnsModal = observer(
               <RecommendedItemsCard
                 key={item.id}
                 recommendedItem={item}
+                onItemAdded={handleItemAdded}
                 {...(isAddOnAssociation && {
                   onSelect: handleAssociateTerminal,
                   isSelecting: cartStore.associationState.isInProgress,
@@ -1029,7 +1116,9 @@ export const RecommendedAddOnsModal = observer(
                 })}
                 {...(isPermissionOverride && {
                   permissionIdOverride: overridePermissionId,
-                  modelOverride: overrideModel,
+                  ...(overrideModel !== undefined && {
+                    modelOverride: overrideModel,
+                  }),
                 })}
               />
             ))
@@ -1052,13 +1141,11 @@ export const RecommendedAddOnsModal = observer(
     );
 
     const searchContent: JSX.Element = isSearching ? (
-      <Box
-        className="recommended-addons-modal__empty-state"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <CircularProgress size={24} sx={{ mr: 1 }} />
+      <Box className="recommended-addons-modal__empty-state recommended-addons-modal__empty-state--searching">
+        <CircularProgress
+          size={24}
+          className="recommended-addons-modal__search-spinner"
+        />
         <Typography variant="body1">Searching...</Typography>
       </Box>
     ) : (
@@ -1068,28 +1155,14 @@ export const RecommendedAddOnsModal = observer(
     const nonEmptyContent: JSX.Element =
       isAddOnAssociation && hasMultipleSources ? (
         <MultiSourceContent
-          cartSourceItems={filterItemsByColumnFilters(
-            cartSourceItems,
-            categoryFilter,
-            actionFilter,
-            cartStore,
-          )}
-          inventorySourceItems={filterItemsByColumnFilters(
-            inventorySourceItems,
-            categoryFilter,
-            actionFilter,
-            cartStore,
-          )}
-          marketplaceSourceItems={filterItemsByColumnFilters(
-            marketplaceSourceItems,
-            categoryFilter,
-            actionFilter,
-            cartStore,
-          )}
+          cartSourceItems={columnFilteredCartSourceItems}
+          inventorySourceItems={columnFilteredInventorySourceItems}
+          marketplaceSourceItems={columnFilteredMarketplaceSourceItems}
           headerName={headerName}
           isAssociating={cartStore.associationState.isInProgress}
           associatingItemId={cartStore.associatingItemId}
           onAssociate={handleAssociateTerminal}
+          onItemAdded={handleItemAdded}
           categoryOptions={categoryOptions}
           categoryFilter={categoryFilter}
           onCategoryFilterChange={handleCategoryFilterChange}
@@ -1103,7 +1176,7 @@ export const RecommendedAddOnsModal = observer(
             searchTerm={searchTerm}
             sortOrder={sortOrder}
             itemsPerPage={itemsPerPage}
-            filteredItemsLength={filteredAndSortedItems.length}
+            filteredItemsLength={columnFilteredItems.length}
             isPermissionOverride={isPermissionOverride}
             isTerminalType={isTerminalType}
             onSearchChange={handleSearchTermChange}

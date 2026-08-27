@@ -43,6 +43,12 @@
     }
   }
 
+  &__popover-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
   &__popover-title {
     display: block;
     font-weight: 700;

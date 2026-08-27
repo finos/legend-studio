@@ -39,7 +39,7 @@ import { useLegendMarketplaceBaseStore } from '../../application/providers/Legen
 import { toastManager } from '../Toast/CartToast.js';
 import { RecommendedAddOnsModal } from '../AddToCart/RecommendedAddOnsModal.js';
 import { OwnedTerminalDetailModal } from './OwnedTerminalDetailModal.js';
-import { getRandomImageUrl } from './orderProfileUtils.js';
+import { getRandomImageUrl, OrderProfileLabel } from './orderProfileUtils.js';
 
 export const LegendMarketplaceOwnedTerminalCard = observer(
   (props: { terminalResult: TerminalResult }): JSX.Element => {
@@ -111,7 +111,7 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
     const permissionLabel =
       terminalResult.permissionId === undefined
         ? terminalResult.category
-        : 'Permission ID';
+        : OrderProfileLabel.PERMISSION_ID;
 
     return (
       <>
@@ -170,12 +170,12 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
             >
               {isAddingToCart ? (
                 <>
-                  Fetching... &nbsp;
+                  {OrderProfileLabel.FETCHING} &nbsp;
                   <CircularProgress size={16} />
                 </>
               ) : (
                 <>
-                  Browse Add-Ons &nbsp;
+                  {OrderProfileLabel.BROWSE_ADD_ONS} &nbsp;
                   <ShoppingCartIcon />
                 </>
               )}

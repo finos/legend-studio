@@ -370,4 +370,71 @@ describe('OrderProfileDetailModal', () => {
     const inCartBadges = screen.getAllByText('(In Cart)');
     expect(inCartBadges.length).toBe(1);
   });
+
+  describe('category column filter', () => {
+    test('filtering by an add-on category hides non-matching terminals and add-ons', () => {
+      const terminal = makeTerminal(1, 'Terminal A', 200, false, 'Model X');
+      const addOn = makeAddOn(2, 'Add-On X', 50, false, 'Model X');
+      const profile = makeProfile([terminal, addOn]);
+      render(
+        <OrderProfileDetailModal
+          profile={profile}
+          open={true}
+          onClose={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByLabelText('Filter by Category'));
+      fireEvent.click(screen.getByLabelText('Market Data'));
+
+      expect(screen.queryByText('Terminal A')).toBeNull();
+      expect(screen.getByText('Add-On X')).toBeDefined();
+    });
+
+    test('an add-on whose terminal is filtered out renders without sub-item indentation (not orphaned)', () => {
+      // Regression: previously the add-on row kept its "sub-item" indent/accent
+      // even though its parent terminal row was hidden by the category filter,
+      // making it look like a child with no parent above it.
+      const terminal = makeTerminal(1, 'Terminal A', 200, false, 'Model X');
+      const addOn = makeAddOn(2, 'Add-On X', 50, false, 'Model X');
+      const profile = makeProfile([terminal, addOn]);
+      render(
+        <OrderProfileDetailModal
+          profile={profile}
+          open={true}
+          onClose={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByLabelText('Filter by Category'));
+      fireEvent.click(screen.getByLabelText('Market Data'));
+
+      const addOnRow = screen.getByText('Add-On X').closest('tr');
+      expect(
+        addOnRow?.querySelector(
+          '.order-profile-modal__product-name-wrapper--sub',
+        ),
+      ).toBeNull();
+    });
+
+    test('clearing the category filter restores all rows', () => {
+      const terminal = makeTerminal(1, 'Terminal A', 200, false, 'Model X');
+      const addOn = makeAddOn(2, 'Add-On X', 50, false, 'Model X');
+      const profile = makeProfile([terminal, addOn]);
+      render(
+        <OrderProfileDetailModal
+          profile={profile}
+          open={true}
+          onClose={jest.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByLabelText('Filter by Category'));
+      fireEvent.click(screen.getByLabelText('Market Data'));
+      fireEvent.click(screen.getByText('Clear filter'));
+
+      expect(screen.getByText('Terminal A')).toBeDefined();
+      expect(screen.getByText('Add-On X')).toBeDefined();
+    });
+  });
 });
