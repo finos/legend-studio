@@ -23,7 +23,7 @@ import {
 export enum WorkflowStage {
   ORDER_PLACED = 'Order Placed',
   MANAGER_APPROVAL = 'Privilege Manager Approval',
-  FIRST_APPROVER = 'Market Data -First Approver',
+  FIRST_APPROVER = 'Market Data - First Approver',
   FULFILLMENT_APPROVER = 'Market Data - Fulfillment Approver',
   BUSINESS_ANALYST_APPROVAL = 'Market Data -Business Analyst Approval',
   PENDING_FULFILLMENT = 'Pending Fulfillment',

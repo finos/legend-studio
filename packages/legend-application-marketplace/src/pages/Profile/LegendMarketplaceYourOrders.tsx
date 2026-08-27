@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Box,
@@ -29,6 +29,9 @@ import {
   AccordionDetails,
   Stack,
   Tooltip,
+  TextField,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
 import { flowResult } from 'mobx';
 import {
@@ -36,6 +39,9 @@ import {
   ChevronDownIcon,
   TimesCircleIcon,
   OpenNewTabIcon,
+  SearchIcon,
+  CopyIcon,
+  CloseIcon,
 } from '@finos/legend-art';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
@@ -58,6 +64,51 @@ import {
   getClosureInfo,
 } from '../../stores/orders/OrderHelpers.js';
 
+const getEmptyOrdersTitle = (
+  hasSearchTerm: boolean,
+  selectedTab: 'open' | 'closed',
+): string => {
+  if (hasSearchTerm) {
+    return 'No orders match your search';
+  }
+  return `No ${selectedTab === 'open' ? 'active' : 'completed'} orders found`;
+};
+
+const getEmptyOrdersDescription = (
+  hasSearchTerm: boolean,
+  selectedTab: 'open' | 'closed',
+): string => {
+  if (hasSearchTerm) {
+    return 'Try adjusting your search terms and try again.';
+  }
+  return selectedTab === 'open'
+    ? "You don't have any orders in progress. Start shopping to place your first order!"
+    : "You don't have any completed orders yet. Your completed orders will appear here.";
+};
+
+const filterOrdersBySearchTerm = (
+  orders: TerminalProductOrder[],
+  searchTerm: string,
+): TerminalProductOrder[] => {
+  const query = searchTerm.trim().toLowerCase();
+  if (!query) {
+    return orders;
+  }
+  return orders.filter(
+    (order) =>
+      order.order_id.toLowerCase().includes(query) ||
+      (order.ordered_by_name || order.ordered_by)
+        .toLowerCase()
+        .includes(query) ||
+      (order.ordered_for_name || order.ordered_for)
+        .toLowerCase()
+        .includes(query) ||
+      order.service_pricing_items.some((item) =>
+        item.entity_name.toLowerCase().includes(query),
+      ),
+  );
+};
+
 const OrderAccordion: React.FC<{
   order: TerminalProductOrder;
   isOpenOrder: boolean;
@@ -72,6 +123,20 @@ const OrderAccordion: React.FC<{
 
   const handleCancelClick = (): void => {
     setCancelDialogOpen(true);
+  };
+
+  const handleCopyOrderId = (e: React.MouseEvent): void => {
+    e.stopPropagation();
+    baseStore.applicationStore.clipboardService
+      .copyTextToClipboard(order.order_id)
+      .then(() =>
+        baseStore.applicationStore.notificationService.notifySuccess(
+          'Order ID copied to clipboard',
+          undefined,
+          2500,
+        ),
+      )
+      .catch(baseStore.applicationStore.alertUnhandledError);
   };
 
   const formatCurrency = (
@@ -109,12 +174,24 @@ const OrderAccordion: React.FC<{
               >
                 Order #
               </Typography>
-              <Typography
-                variant="body2"
-                className="legend-marketplace-order-accordion__summary-value"
-              >
-                {order.order_id}
-              </Typography>
+              <Box className="legend-marketplace-order-accordion__summary-value-row">
+                <Typography
+                  variant="body2"
+                  className="legend-marketplace-order-accordion__summary-value"
+                >
+                  {order.order_id}
+                </Typography>
+                <Tooltip title="Copy Order ID" arrow={true}>
+                  <IconButton
+                    size="small"
+                    onClick={handleCopyOrderId}
+                    aria-label="Copy Order ID"
+                    className="legend-marketplace-order-accordion__copy-order-id-button"
+                  >
+                    <CopyIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
             </Box>
 
             <Box className="legend-marketplace-order-accordion__summary-field">
@@ -472,14 +549,49 @@ export const LegendMarketplaceYourOrders: React.FC =
         }
       }, [ordersStore, executeFlowSafely]);
 
+      const [searchTerm, setSearchTerm] = useState('');
+
       const currentOrders = ordersStore.currentOrders;
       const isLoading = ordersStore.currentFetchState.isInProgress;
+
+      const filteredOrders = useMemo(
+        () => filterOrdersBySearchTerm(currentOrders, searchTerm),
+        [currentOrders, searchTerm],
+      );
 
       return (
         <LegendMarketplacePage className="legend-marketplace-your-orders">
           <Box className="legend-marketplace-your-orders__content">
             <Box className="legend-marketplace-your-orders__header-section">
               <Typography variant="h1">Your Orders</Typography>
+              <TextField
+                variant="outlined"
+                size="small"
+                label="Search Your Orders"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="legend-marketplace-your-orders__search-field"
+                slotProps={{
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon />
+                      </InputAdornment>
+                    ),
+                    endAdornment: searchTerm && (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          aria-label="Clear search"
+                          onClick={() => setSearchTerm('')}
+                        >
+                          <CloseIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
             </Box>
 
             <Box className="legend-marketplace-your-orders__tabs">
@@ -500,7 +612,7 @@ export const LegendMarketplaceYourOrders: React.FC =
                   Loading your orders...
                 </Typography>
               </Box>
-            ) : currentOrders.length === 0 ? (
+            ) : filteredOrders.length === 0 ? (
               <Box className="legend-marketplace-your-orders__empty">
                 <ShoppingCartIcon
                   size={48}
@@ -510,14 +622,16 @@ export const LegendMarketplaceYourOrders: React.FC =
                   variant="h3"
                   className="legend-marketplace-your-orders__empty-title"
                 >
-                  No{' '}
-                  {ordersStore.selectedTab === 'open' ? 'active' : 'completed'}{' '}
-                  orders found
+                  {getEmptyOrdersTitle(
+                    Boolean(searchTerm.trim()),
+                    ordersStore.selectedTab,
+                  )}
                 </Typography>
                 <Typography className="legend-marketplace-your-orders__empty-description">
-                  {ordersStore.selectedTab === 'open'
-                    ? "You don't have any orders in progress. Start shopping to place your first order!"
-                    : "You don't have any completed orders yet. Your completed orders will appear here."}
+                  {getEmptyOrdersDescription(
+                    Boolean(searchTerm.trim()),
+                    ordersStore.selectedTab,
+                  )}
                 </Typography>
               </Box>
             ) : (
@@ -525,7 +639,7 @@ export const LegendMarketplaceYourOrders: React.FC =
                 spacing={2}
                 className="legend-marketplace-your-orders__orders-list"
               >
-                {currentOrders.map((order) => {
+                {filteredOrders.map((order) => {
                   const isOpenOrder =
                     order.workflow_details?.workflow_status ===
                       OrderStatus.IN_PROGRESS ||

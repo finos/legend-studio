@@ -70,6 +70,28 @@
     }
   }
 
+  &__search-field {
+    width: 380px;
+    max-width: 100%;
+
+    @media (width <= 768px) {
+      width: 100%;
+    }
+
+    .MuiInputBase-root {
+      font-size: 1.5rem;
+    }
+
+    .MuiInputLabel-root {
+      font-size: 1.5rem;
+    }
+
+    .MuiSvgIcon-root {
+      font-size: 1.75rem;
+      color: var(--color-dark-grey-300);
+    }
+  }
+
   &__tabs {
     border-bottom: 2px solid var(--color-light-grey-200);
     margin-bottom: 2rem;
@@ -216,6 +238,26 @@
     font-size: 1.8rem;
     font-weight: 500;
     color: var(--color-dark-grey-100);
+  }
+
+  &__summary-value-row {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  &__copy-order-id-button {
+    padding: 0.25rem;
+    color: var(--color-dark-grey-300);
+    @include transition-smooth;
+
+    &:hover {
+      color: var(--color-blue-100);
+    }
+
+    .MuiSvgIcon-root {
+      font-size: 1.4rem;
+    }
   }
 
   &__summary-actions {
@@ -458,20 +500,20 @@
   }
 
   &__step-label {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--color-dark-grey-100);
     margin-top: 0.5rem;
   }
 
   &__step-details {
-    margin-top: 0.75rem;
+    margin-top: 1.3rem;
     padding: 0.75rem;
     border-radius: 0.375rem;
   }
 
   &__step-detail {
-    font-size: 1rem;
+    font-size: 1.3rem;
     color: var(--color-dark-grey-400);
     margin-bottom: 0.25rem;
     line-height: 1.5;
