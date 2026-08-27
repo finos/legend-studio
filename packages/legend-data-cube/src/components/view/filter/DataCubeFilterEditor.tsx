@@ -18,9 +18,6 @@ import {
   BasePopover,
   cn,
   DataCubeIcon,
-  DateCalendar,
-  DatePicker,
-  DatePickerField,
   useDropdownMenu,
   useForkRef,
 } from '@finos/legend-art';
@@ -29,8 +26,18 @@ import {
   DataCubeOperationAdvancedValueType,
   DataCubeQueryFilterGroupOperator,
   getDataType,
+  isCurrentMomentValue,
+  isDateTimeType,
   type DataCubeOperationValue,
 } from '../../../stores/core/DataCubeQueryEngine.js';
+import {
+  buildDateValue,
+  DATE_VALUE_MODE_DESCRIPTION,
+  DATE_VALUE_MODE_LABEL,
+  getDateValueFormats,
+  getDateValueMode,
+  getDateValueModes,
+} from './DataCubeFilterEditorUtils.js';
 import {
   DataCubeFilterEditorConditionGroupTreeNode,
   DataCubeFilterEditorConditionTreeNode,
@@ -52,11 +59,7 @@ import {
   useState,
   useMemo,
 } from 'react';
-import {
-  DATE_FORMAT,
-  PRECISE_PRIMITIVE_TYPE,
-  PRIMITIVE_TYPE,
-} from '@finos/legend-graph';
+import { PRECISE_PRIMITIVE_TYPE, PRIMITIVE_TYPE } from '@finos/legend-graph';
 
 import {
   formatDate,
@@ -228,92 +231,130 @@ const DataCubeEditorFilterConditionNodeNumberValueEditor = observer(
   }),
 );
 
-// NOTE: this has to be declared here instead of defined inline in slot configuration of DatePicker
-// else, with each re-render, a new function will be created and the ref might be lost
-const CustomDateFieldPicker = forwardRef<HTMLInputElement>(
-  function CustomDateFieldPicker(p, r) {
-    return (
-      <DatePickerField
-        {...p}
-        ref={r}
-        className="h-5 w-full flex-shrink-0 border border-neutral-400 px-1 pr-5 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300"
-      />
-    );
-  },
-);
+const DATE_INPUT_CLASSNAME =
+  'h-5 w-full flex-shrink-0 border border-neutral-400 px-1 text-sm disabled:border-neutral-300 disabled:bg-neutral-50 disabled:text-neutral-300';
 
-const CustomDateFieldPickerOpenCalendarButton = observer(
-  (props: { value: string; updateValue: (value: string) => void }) => {
-    const { value, updateValue } = props;
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-    return (
-      <>
-        <button
-          className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center"
-          title="Open Date Picker..."
-          onClick={(event) => {
-            setAnchorEl(event.currentTarget);
-          }}
-          tabIndex={-1}
-        >
-          <DataCubeIcon.Calendar className="text-lg text-neutral-500 hover:text-neutral-600" />
-        </button>
-        <BasePopover
-          open={Boolean(anchorEl)}
-          anchorEl={anchorEl}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-          onClose={() => setAnchorEl(null)}
-          classes={{
-            root: 'data-cube-editor-date-calendar mt-0.5',
-            paper: 'shadow-md rounded-none border border-neutral-300',
-          }}
-        >
-          <DateCalendar
-            autoFocus={true}
-            value={parseISO(value)}
-            onChange={(newValue: Date) => {
-              updateValue(formatDate(newValue, DATE_FORMAT));
-              setAnchorEl(null);
-            }}
-          />
-        </BasePopover>
-      </>
-    );
-  },
-);
-
-const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
+/**
+ * Editor for an absolute date value, picked with the control of the browser,
+ * like the query builder does. A value which carries a time of day is edited
+ * down to the second, and is written back with the time zone of the browser.
+ */
+const DataCubeEditorFilterConditionNodeDatePicker = observer(
   forwardRef<
     HTMLInputElement,
     {
       value: string;
       updateValue: (value: string) => void;
+      valueType: string;
     }
-  >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
-    const { value, updateValue } = props;
+  >(function DataCubeEditorFilterConditionNodeDatePicker(props, ref) {
+    const { value, updateValue, valueType } = props;
+    const hasTime = isDateTimeType(valueType);
+    const { valueFormat, displayFormat } = getDateValueFormats(valueType);
+    const moment = parseISO(value);
 
     return (
-      <DatePicker
+      <input
         ref={ref}
-        value={parseISO(value)}
-        format={DATE_FORMAT}
-        slots={{
-          field: CustomDateFieldPicker,
-          openPickerButton: () => (
-            <CustomDateFieldPickerOpenCalendarButton
-              value={value}
-              updateValue={updateValue}
-            />
-          ),
-        }}
-        onChange={(newValue: Date | null) => {
-          if (newValue) {
-            updateValue(formatDate(newValue, DATE_FORMAT));
+        className={DATE_INPUT_CLASSNAME}
+        // NOTE: despite its name, `datetime-local` registers a moment in the
+        // time zone of the browser
+        // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#setting_timezones
+        type={hasTime ? 'datetime-local' : 'date'}
+        // NOTE: configure the step so the seconds can be picked
+        // See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local#step
+        step={hasTime ? '1' : undefined}
+        spellCheck={false}
+        value={
+          !Number.isNaN(moment.getTime())
+            ? formatDate(moment, displayFormat)
+            : ''
+        }
+        onChange={(event) => {
+          const newMoment = parseISO(event.target.value);
+          // NOTE: the control reports an empty value while the user is still
+          // filling it in
+          if (!Number.isNaN(newMoment.getTime())) {
+            updateValue(formatDate(newMoment, valueFormat));
           }
         }}
       />
+    );
+  }),
+);
+
+/**
+ * Date value editor for scalar filter conditions. For columns which carry a
+ * date, it lets the user pick how the value is specified: an absolute date, an
+ * absolute date and time, `today()` or `now()`.
+ */
+const DataCubeEditorFilterConditionNodeDateValueEditor = observer(
+  forwardRef<
+    HTMLInputElement,
+    {
+      node: DataCubeFilterEditorConditionTreeNode;
+    }
+  >(function DataCubeEditorFilterConditionNodeDateValueEditor(props, ref) {
+    const { node } = props;
+    const value = node.value;
+    const modes = getDateValueModes(node.column.type);
+    const mode = getDateValueMode(value);
+    const [
+      openModeDropdown,
+      closeModeDropdown,
+      modeDropdownProps,
+      modeDropdownPropsOpen,
+    ] = useDropdownMenu();
+
+    const datePicker = (
+      <DataCubeEditorFilterConditionNodeDatePicker
+        ref={ref}
+        value={value.value as string}
+        updateValue={(val) => node.updateValue(val)}
+        valueType={value.type}
+      />
+    );
+
+    // For columns which carry no date (e.g. a time-of-day column), only the
+    // date picker is shown, none of the modes apply.
+    if (!modes.length) {
+      return datePicker;
+    }
+
+    return (
+      <div className="flex h-full w-full items-center">
+        <FormDropdownMenuTrigger
+          className="relative mr-1 w-24 flex-shrink-0"
+          onClick={openModeDropdown}
+          open={modeDropdownPropsOpen}
+          title={DATE_VALUE_MODE_DESCRIPTION[mode]}
+        >
+          {DATE_VALUE_MODE_LABEL[mode]}
+        </FormDropdownMenuTrigger>
+        <FormDropdownMenu className="w-24" {...modeDropdownProps}>
+          {modes.map((_mode) => (
+            <FormDropdownMenuItem
+              key={_mode}
+              onClick={() => {
+                if (_mode !== mode) {
+                  node.setValue(buildDateValue(_mode, value));
+                }
+                closeModeDropdown();
+              }}
+              autoFocus={_mode === mode}
+              title={DATE_VALUE_MODE_DESCRIPTION[_mode]}
+            >
+              {DATE_VALUE_MODE_LABEL[_mode]}
+            </FormDropdownMenuItem>
+          ))}
+        </FormDropdownMenu>
+        {/* NOTE: the date control sizes itself against its container, so it
+        needs one which is only as wide as what the mode selector leaves, else
+        it overflows the value editor. */}
+        {!isCurrentMomentValue(value) && (
+          <div className="min-w-0 flex-1">{datePicker}</div>
+        )}
+      </div>
     );
   }),
 );
@@ -454,12 +495,13 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
         case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
         case PRECISE_PRIMITIVE_TYPE.TIMESTAMP: {
           // try parse ISO, else use formatted now
+          const { valueFormat } = getDateValueFormats(firstType);
           let dateVal = trimmed;
           try {
             const d = parseISO(trimmed);
-            dateVal = formatDate(d, DATE_FORMAT);
+            dateVal = formatDate(d, valueFormat);
           } catch {
-            dateVal = formatDate(new Date(), DATE_FORMAT);
+            dateVal = formatDate(new Date(), valueFormat);
           }
           newItem = { type: firstType, value: dateVal };
           break;
@@ -621,10 +663,14 @@ const DataCubeEditorFilterConditionNodeListValueEditor = observer(
                           case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
                           case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
                             return (
-                              <DataCubeEditorFilterConditionNodeDateValueEditor
+                              <DataCubeEditorFilterConditionNodeDatePicker
+                                valueType={it.type}
                                 value={String(
                                   it.value ??
-                                    formatDate(new Date(), DATE_FORMAT),
+                                    formatDate(
+                                      new Date(),
+                                      getDateValueFormats(it.type).valueFormat,
+                                    ),
                                 )}
                                 updateValue={(v: string) => {
                                   const next = localItems.slice();
@@ -719,12 +765,13 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
   forwardRef<
     HTMLElement,
     {
+      node: DataCubeFilterEditorConditionTreeNode;
       value: DataCubeOperationValue;
       updateValue: (value: unknown) => void;
       view: DataCubeViewState;
     }
   >(function DataCubeEditorFilterConditionNodeValueEditor(props, ref) {
-    const { value, updateValue, view } = props;
+    const { node, value, updateValue, view } = props;
     // WIP: support column
     switch (value.type) {
       case PRIMITIVE_TYPE.STRING:
@@ -774,11 +821,12 @@ const DataCubeEditorFilterConditionNodeValueEditor = observer(
       case PRECISE_PRIMITIVE_TYPE.DATETIME:
       case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
       case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
+      case DataCubeOperationAdvancedValueType.TODAY:
+      case DataCubeOperationAdvancedValueType.NOW:
         return (
           <DataCubeEditorFilterConditionNodeDateValueEditor
             ref={ref as React.RefObject<HTMLInputElement>}
-            value={value.value as string}
-            updateValue={(val) => updateValue(val)}
+            node={node}
           />
         );
       case DataCubeOperationAdvancedValueType.COLUMN:
@@ -909,6 +957,12 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
       () => valueEditorRef.current?.focus(),
       [],
     );
+    // NOTE: the value editor for columns which carry a date is wider to
+    // accommodate the selector for switching between a specific date and the
+    // `today()`/`now()` function.
+    const hasDateValueModeSelector = Boolean(
+      getDateValueModes(node.column.type).length,
+    );
 
     return (
       <div className="group flex h-6 items-center">
@@ -1034,9 +1088,17 @@ const DataCubeEditorFilterConditionNodeDisplay = observer(
               </FormDropdownMenuItem>
             ))}
         </FormDropdownMenu>
-        <div className="relative w-32 flex-shrink-0">
+        <div
+          className={cn('relative flex-shrink-0', {
+            // NOTE: wide enough for a date-time value, which the user can
+            // switch to whenever the mode selector is shown
+            'w-80': hasDateValueModeSelector,
+            'w-32': !hasDateValueModeSelector,
+          })}
+        >
           <DataCubeEditorFilterConditionNodeValueEditor
             ref={valueEditorRef}
+            node={node}
             value={node.value}
             updateValue={(val) => node.updateValue(val)}
             view={view}
