@@ -129,6 +129,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   GET_SERVICE_VERSION = 'get service version',
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
   GET_SERVICE_METADATA = 'get service metadata',
+  GET_SERVICE_OWNERSHIP = 'get service ownership',
   VALIDATE_SERVICE_ASSERTION_ID = 'validate service assertion id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
@@ -1268,17 +1269,6 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
-  isCurrentUserAnOwnerOnLatestVersion = (
-    serviceServerUrl: string,
-    servicePattern: string,
-  ): Promise<boolean> =>
-    this.getWithTracing(
-      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_METADATA),
-      `${this._service(
-        this.baseUrlForServiceRegistration ?? serviceServerUrl,
-      )}/isCurrentUserAnOwnerOnLatestVersion/${encodeURIComponent(servicePattern)}`,
-    );
-
   // ------------------------------------------- Dev Mode -------------------------------------------
   _devMetadata = (): string =>
     `${this.baseUrl}/lakehouse/metadata/deploy/project`;
@@ -1303,6 +1293,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._service(
         this.baseUrlForServiceRegistration ?? serviceServerUrl,
       )}/serviceMetadata/${encodeURIComponent(servicePattern)}`,
+    );
+
+  isCurrentUserAnOwnerOnLatestVersion = (
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<boolean> =>
+    this.getWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_OWNERSHIP),
+      `${this._service(
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
+      )}/isCurrentUserAnOwnerOnLatestVersion/${encodeURIComponent(servicePattern)}`,
     );
 
   // ------------------------------------------- Legend Services List -------------------------------------------
