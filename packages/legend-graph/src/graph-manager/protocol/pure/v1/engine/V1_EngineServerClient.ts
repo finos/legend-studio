@@ -1268,6 +1268,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
+  isCurrentUserAnOwnerOnLatestVersion = (
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<boolean> =>
+    this.getWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_METADATA),
+      `${this._service(
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
+      )}/isCurrentUserAnOwnerOnLatestVersion/${encodeURIComponent(servicePattern)}`,
+    );
+
   // ------------------------------------------- Dev Mode -------------------------------------------
   _devMetadata = (): string =>
     `${this.baseUrl}/lakehouse/metadata/deploy/project`;
