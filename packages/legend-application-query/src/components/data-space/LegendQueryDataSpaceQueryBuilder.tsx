@@ -71,9 +71,10 @@ const resolveExecutionContextRuntimes = (
     `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
   );
   if (queryBuilderState.dataSpaceAnalysisResult) {
-    const executionContext = Array.from(
-      queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-    ).find((e) => e.mapping.path === currentMapping.path);
+    const executionContext =
+      queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.get(
+        queryBuilderState.executionContext.name,
+      );
     return guaranteeNonNullable(executionContext).compatibleRuntimes;
   }
   return getMappingCompatibleRuntimes(

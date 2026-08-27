@@ -904,6 +904,8 @@ export class LegendMarketplaceProductViewerStore {
               }
             },
             queryClass: (_class: Class): void => {
+              const defaultExecutionContext =
+                analysisResult.defaultExecutionContext;
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
                   this.marketplaceBaseStore.applicationStore.config
@@ -912,7 +914,7 @@ export class LegendMarketplaceProductViewerStore {
                   artifactId,
                   versionId,
                   analysisResult.path,
-                  analysisResult.defaultExecutionContext.name,
+                  defaultExecutionContext.name,
                   undefined,
                   _class.path,
                 ),

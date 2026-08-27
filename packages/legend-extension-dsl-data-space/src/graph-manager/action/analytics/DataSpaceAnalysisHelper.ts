@@ -24,7 +24,11 @@ import type {
   DepotServerClient,
   StoreProjectData,
 } from '@finos/legend-server-depot';
-import { isNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  isNonNullable,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   type DataSpaceAnalysisResult,
   DataSpaceExecutableAnalysisResult,
@@ -111,10 +115,11 @@ export const buildDataSpaceExecutableAnalysisResultFromExecutable = async (
           }
         }
         if (info) {
-          info.executionContextKey =
+          info.executionContextKey = guaranteeNonNullable(
             executable.executionContextKey ??
-            dataspace.defaultExecutionContext?.name ??
-            '';
+              dataspace.defaultExecutionContext?.name,
+            `Can't build executable analysis result: no execution context key and data space '${dataspace.path}' has no default execution context`,
+          );
           if (query) {
             info.query =
               await graphManagerState.graphManager.lambdaToPureCode(query);
