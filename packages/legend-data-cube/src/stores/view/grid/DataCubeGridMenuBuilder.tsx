@@ -15,9 +15,12 @@
  */
 
 import type {
+  CellRange,
+  CellRangeParams,
   DefaultMenuItem,
   GetContextMenuItemsParams,
   GetMainMenuItemsParams,
+  GridApi,
   MenuItemDef,
 } from 'ag-grid-community';
 import {
@@ -193,6 +196,92 @@ function buildNewFilterConditionMenuItem(
   };
 }
 
+function _toCellRangeParams(range: CellRange): CellRangeParams {
+  return {
+    rowStartIndex: range.startRow?.rowIndex ?? null,
+    rowStartPinned: range.startRow?.rowPinned,
+    rowEndIndex: range.endRow?.rowIndex ?? null,
+    rowEndPinned: range.endRow?.rowPinned,
+    columns: range.columns,
+  };
+}
+
+/**
+ * NOTE: since the grid only supports cell (range) selection, not row/column selection,
+ * to copy the full row(s)/column(s) touched by the current cell selection, we temporarily
+ * replace the selection with one that spans the full row(s)/column(s), leverage the grid
+ * client's clipboard support to copy the content, then restore the original selection.
+ */
+function _copyExpandedSelectionToClipboard(
+  api: GridApi,
+  newRanges: CellRangeParams[],
+): void {
+  if (!newRanges.length) {
+    return;
+  }
+  const originalRanges = (api.getCellRanges() ?? []).map(_toCellRangeParams);
+  api.clearRangeSelection();
+  newRanges.forEach((range) => api.addCellRange(range));
+  api.copySelectedRangeToClipboard();
+  api.clearRangeSelection();
+  originalRanges.forEach((range) => api.addCellRange(range));
+}
+
+function copySelectionToClipboard(api: GridApi): void {
+  api.copySelectedRangeToClipboard();
+}
+
+function copySelectedRowsToClipboard(api: GridApi): void {
+  const ranges = api.getCellRanges();
+  if (!ranges?.length) {
+    return;
+  }
+  const allColumns = api.getAllDisplayedColumns();
+  const rows = new Map<string, CellRangeParams>();
+  ranges.forEach((range) => {
+    const startIndex = range.startRow?.rowIndex;
+    const endIndex = range.endRow?.rowIndex;
+    if (startIndex === undefined || endIndex === undefined) {
+      return;
+    }
+    const pinned = range.startRow?.rowPinned;
+    const lo = Math.min(startIndex, endIndex);
+    const hi = Math.max(startIndex, endIndex);
+    for (let i = lo; i <= hi; i++) {
+      rows.set(`${pinned ?? ''}-${i}`, {
+        rowStartIndex: i,
+        rowStartPinned: pinned,
+        rowEndIndex: i,
+        rowEndPinned: pinned,
+        columns: allColumns,
+      });
+    }
+  });
+  _copyExpandedSelectionToClipboard(api, Array.from(rows.values()));
+}
+
+function copySelectedColumnsToClipboard(api: GridApi): void {
+  const ranges = api.getCellRanges();
+  if (!ranges?.length) {
+    return;
+  }
+  const lastRowIndex = api.getDisplayedRowCount() - 1;
+  if (lastRowIndex < 0) {
+    return;
+  }
+  const columns = new Map<string, CellRangeParams>();
+  ranges.forEach((range) => {
+    range.columns.forEach((column) => {
+      columns.set(column.getColId(), {
+        rowStartIndex: 0,
+        rowEndIndex: lastRowIndex,
+        columns: [column],
+      });
+    });
+  });
+  _copyExpandedSelectionToClipboard(api, Array.from(columns.values()));
+}
+
 export function generateMenuBuilder(
   controller: DataCubeGridControllerState,
 ): (
@@ -302,6 +391,8 @@ export function generateMenuBuilder(
       );
     // NOTE: here we assume the value must be coming from the same column
     const value: unknown = 'value' in params ? params.value : undefined;
+
+    const hasCellSelection = Boolean(params.api.getCellRanges()?.length);
 
     const sortMenu = [
       {
@@ -598,26 +689,32 @@ export function generateMenuBuilder(
       },
       {
         name: 'Copy',
-        menuItem: WIP_GridMenuItem,
-        cssClasses: ['!opacity-100'],
         subMenu: [
           {
             name: 'Plain Text',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            disabled: !hasCellSelection,
+            action: () => {
+              copySelectionToClipboard(params.api);
+              logMenuItem('Copy', 'Plain Text');
+            },
           },
           {
             name: 'Selected Rows as Plain Text',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            // NOTE: when the menu is triggered from the header, there is no row
+            // context to work with, so this option is not applicable
+            disabled: !hasCellSelection || fromHeader,
+            action: () => {
+              copySelectedRowsToClipboard(params.api);
+              logMenuItem('Copy', 'Selected Rows as Plain Text');
+            },
           },
           {
             name: 'Selected Column as Plain Text',
-            menuItem: WIP_GridMenuItem,
-            cssClasses: ['!opacity-100'],
-            disabled: true,
+            disabled: !hasCellSelection,
+            action: () => {
+              copySelectedColumnsToClipboard(params.api);
+              logMenuItem('Copy', 'Selected Column as Plain Text');
+            },
           },
         ],
       },
