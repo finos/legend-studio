@@ -33,14 +33,11 @@ import {
 } from '@finos/legend-art';
 import type { TerminalProductOrder } from '@finos/legend-server-marketplace';
 import {
-  getWorkflowSteps,
-  STAGE_MAP,
-  isStageCompleted,
-  isStageRejected,
+  getOrderProgressSteps,
+  getStageActionDetails,
   formatTimestamp,
   WorkflowStage,
-  WorkflowStatus,
-  WorkflowCurrentStage,
+  OrderProgressStatus,
 } from '../../stores/orders/OrderHelpers.js';
 
 interface ProgressTrackerProps {
@@ -99,154 +96,77 @@ const StepIconComponent = (props: {
 
 export const ProgressTracker: React.FC<ProgressTrackerProps> = observer(
   ({ order }) => {
-    const steps = getWorkflowSteps(order);
-    const currentStageName = order.workflow_details?.current_stage
-      ? STAGE_MAP[order.workflow_details.current_stage as WorkflowCurrentStage]
-      : WorkflowStage.ORDER_PLACED;
-
-    const currentStageIndex = steps.indexOf(currentStageName);
-    const activeStepIndex = currentStageIndex >= 0 ? currentStageIndex : 0;
-
-    const getFinalStepIndex = (): number => {
-      if (!order.workflow_details) {
-        return 0;
-      }
-
-      for (let i = steps.length - 1; i >= 0; i--) {
-        if (
-          isStageRejected(order, steps[i] ?? WorkflowStage.ORDER_PLACED) &&
-          isStageCompleted(order, steps[i] ?? WorkflowStage.ORDER_PLACED)
-        ) {
-          return i;
-        }
-      }
-
-      for (let i = steps.length - 1; i >= 0; i--) {
-        if (isStageCompleted(order, steps[i] ?? WorkflowStage.ORDER_PLACED)) {
-          return i;
-        }
-      }
-
-      if (
-        order.workflow_details.rpm_ticket_id &&
-        order.workflow_details.current_stage === WorkflowCurrentStage.RPM
-      ) {
-        return steps.indexOf(WorkflowStage.PENDING_FULFILLMENT);
-      }
-
-      return activeStepIndex;
-    };
-
-    const isClosedOrder =
-      order.workflow_details?.workflow_status.toString() ===
-      WorkflowStatus.COMPLETED;
-    const finalStepIndex = isClosedOrder
-      ? getFinalStepIndex()
-      : activeStepIndex;
+    const steps = getOrderProgressSteps(order);
+    const activeIndex = steps.findIndex(
+      (step) =>
+        step.status === OrderProgressStatus.ACTIVE ||
+        step.status === OrderProgressStatus.PENDING,
+    );
+    const stepperActiveIndex =
+      activeIndex >= 0 ? activeIndex : steps.length - 1;
 
     return (
       <Box className="legend-marketplace-progress-tracker">
         <Stepper
           alternativeLabel={true}
-          activeStep={finalStepIndex}
+          activeStep={stepperActiveIndex}
           connector={<CustomConnector />}
         >
-          {steps.map((label, index) => {
-            const isCompleted = isClosedOrder
-              ? index <= finalStepIndex
-              : index < activeStepIndex;
-            const isActive = !isClosedOrder && index === activeStepIndex;
-            const stageCompleted = isStageCompleted(order, label);
-            const rejected = isStageRejected(order, label);
+          {steps.map((step) => {
+            const isCompleted = step.status === OrderProgressStatus.COMPLETED;
+            const isActive = step.status === OrderProgressStatus.ACTIVE;
+            const isRejected = step.status === OrderProgressStatus.REJECTED;
+            const details = getStageActionDetails(order, step.label);
+            const hasDetails =
+              details !== undefined &&
+              (details.actionedBy !== null ||
+                details.actionedTimestamp !== null ||
+                details.action !== null ||
+                details.comment !== null);
 
             return (
-              <Step key={label} completed={isCompleted && !rejected}>
+              <Step key={step.label} completed={isCompleted} active={isActive}>
                 <StepLabel
                   StepIconComponent={() =>
                     StepIconComponent({
                       active: isActive,
-                      completed: isCompleted && !rejected,
-                      rejected: rejected && isCompleted,
+                      completed: isCompleted,
+                      rejected: isRejected,
                     })
                   }
                 >
                   <Typography className="legend-marketplace-progress-tracker__step-label">
-                    {label}
+                    {step.label}
                   </Typography>
 
-                  {label === WorkflowStage.MANAGER_APPROVAL &&
-                    isCompleted &&
-                    stageCompleted &&
-                    order.workflow_details &&
-                    !isActive && (
-                      <Box className="legend-marketplace-progress-tracker__step-details">
-                        {order.workflow_details.manager_actioned_by && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Actioned by:</strong>{' '}
-                            {order.workflow_details.manager_actioned_by}
-                          </Typography>
-                        )}
-                        {order.workflow_details.manager_actioned_timestamp && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Date:</strong>{' '}
-                            {formatTimestamp(
-                              order.workflow_details.manager_actioned_timestamp,
-                            )}
-                          </Typography>
-                        )}
-                        {order.workflow_details.manager_action && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Action:</strong>{' '}
-                            {order.workflow_details.manager_action}
-                          </Typography>
-                        )}
-                        {order.workflow_details.manager_comment && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Comments:</strong>{' '}
-                            {order.workflow_details.manager_comment}
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
+                  {hasDetails && (
+                    <Box className="legend-marketplace-progress-tracker__step-details">
+                      {details.actionedBy && (
+                        <Typography className="legend-marketplace-progress-tracker__step-detail">
+                          <strong>Actioned by:</strong> {details.actionedBy}
+                        </Typography>
+                      )}
+                      {details.actionedTimestamp && (
+                        <Typography className="legend-marketplace-progress-tracker__step-detail">
+                          <strong>Date:</strong>{' '}
+                          {formatTimestamp(details.actionedTimestamp)}
+                        </Typography>
+                      )}
+                      {details.action && (
+                        <Typography className="legend-marketplace-progress-tracker__step-detail">
+                          <strong>Action:</strong> {details.action}
+                        </Typography>
+                      )}
+                      {details.comment && (
+                        <Typography className="legend-marketplace-progress-tracker__step-detail">
+                          <strong>Comments:</strong> {details.comment}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
 
-                  {label === WorkflowStage.BUSINESS_ANALYST_APPROVAL &&
-                    isCompleted &&
-                    stageCompleted &&
-                    order.workflow_details &&
-                    !isActive && (
-                      <Box className="legend-marketplace-progress-tracker__step-details">
-                        {order.workflow_details.bbg_approval_actioned_by && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Actioned by:</strong>{' '}
-                            {order.workflow_details.bbg_approval_actioned_by}
-                          </Typography>
-                        )}
-                        {order.workflow_details
-                          .bbg_approval_actioned_timestamp && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Date:</strong>{' '}
-                            {formatTimestamp(
-                              order.workflow_details
-                                .bbg_approval_actioned_timestamp,
-                            )}
-                          </Typography>
-                        )}
-                        {order.workflow_details.bbg_approval_action && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Action:</strong>{' '}
-                            {order.workflow_details.bbg_approval_action}
-                          </Typography>
-                        )}
-                        {order.workflow_details.bbg_approval_comment && (
-                          <Typography className="legend-marketplace-progress-tracker__step-detail">
-                            <strong>Comments:</strong>{' '}
-                            {order.workflow_details.bbg_approval_comment}
-                          </Typography>
-                        )}
-                      </Box>
-                    )}
-
-                  {label === WorkflowStage.PENDING_FULFILLMENT &&
+                  {(step.label === WorkflowStage.PENDING_FULFILLMENT ||
+                    step.label === WorkflowStage.ORDER_FULFILLED) &&
                     order.workflow_details?.rpm_ticket_id && (
                       <Box className="legend-marketplace-progress-tracker__step-details">
                         <Typography className="legend-marketplace-progress-tracker__step-detail">
