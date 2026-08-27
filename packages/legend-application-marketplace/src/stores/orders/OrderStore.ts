@@ -30,6 +30,11 @@ import {
   type TerminalProductOrderResponse,
 } from '@finos/legend-server-marketplace';
 
+export enum OrderTab {
+  OPEN = 'open',
+  CLOSED = 'closed',
+}
+
 export class OrdersStore {
   readonly baseStore: LegendMarketplaceBaseStore;
 
@@ -40,7 +45,7 @@ export class OrdersStore {
   readonly fetchOpenOrdersState = ActionState.create();
   readonly fetchClosedOrdersState = ActionState.create();
   readonly cancelOrderState = ActionState.create();
-  selectedTab: 'open' | 'closed' = 'open';
+  selectedTab: OrderTab = OrderTab.OPEN;
 
   constructor(baseStore: LegendMarketplaceBaseStore) {
     makeObservable(this, {
@@ -60,16 +65,18 @@ export class OrdersStore {
     this.baseStore = baseStore;
   }
 
-  setSelectedTab(tab: 'open' | 'closed'): void {
+  setSelectedTab(tab: OrderTab): void {
     this.selectedTab = tab;
   }
 
   get currentOrders(): TerminalProductOrder[] {
-    return this.selectedTab === 'open' ? this.openOrders : this.closedOrders;
+    return this.selectedTab === OrderTab.OPEN
+      ? this.openOrders
+      : this.closedOrders;
   }
 
   get currentFetchState(): ActionState {
-    return this.selectedTab === 'open'
+    return this.selectedTab === OrderTab.OPEN
       ? this.fetchOpenOrdersState
       : this.fetchClosedOrdersState;
   }

@@ -63,25 +63,26 @@ import {
   getCurrentStageTrackingUrl,
   getClosureInfo,
 } from '../../stores/orders/OrderHelpers.js';
+import { OrderTab } from '../../stores/orders/OrderStore.js';
 
 const getEmptyOrdersTitle = (
   hasSearchTerm: boolean,
-  selectedTab: 'open' | 'closed',
+  selectedTab: OrderTab,
 ): string => {
   if (hasSearchTerm) {
     return 'No orders match your search';
   }
-  return `No ${selectedTab === 'open' ? 'active' : 'completed'} orders found`;
+  return `No ${selectedTab === OrderTab.OPEN ? 'active' : 'completed'} orders found`;
 };
 
 const getEmptyOrdersDescription = (
   hasSearchTerm: boolean,
-  selectedTab: 'open' | 'closed',
+  selectedTab: OrderTab,
 ): string => {
   if (hasSearchTerm) {
     return 'Try adjusting your search terms and try again.';
   }
-  return selectedTab === 'open'
+  return selectedTab === OrderTab.OPEN
     ? "You don't have any orders in progress. Start shopping to place your first order!"
     : "You don't have any completed orders yet. Your completed orders will appear here.";
 };
@@ -526,15 +527,15 @@ export const LegendMarketplaceYourOrders: React.FC =
       );
 
       const handleTabChange = useCallback(
-        (_event: React.SyntheticEvent, newValue: 'open' | 'closed') => {
+        (_event: React.SyntheticEvent, newValue: OrderTab) => {
           ordersStore.setSelectedTab(newValue);
           if (
-            newValue === 'open' &&
+            newValue === OrderTab.OPEN &&
             ordersStore.fetchOpenOrdersState.isInInitialState
           ) {
             executeFlowSafely(() => ordersStore.fetchOpenOrders());
           } else if (
-            newValue === 'closed' &&
+            newValue === OrderTab.CLOSED &&
             ordersStore.fetchClosedOrdersState.isInInitialState
           ) {
             executeFlowSafely(() => ordersStore.fetchClosedOrders());
@@ -600,8 +601,8 @@ export const LegendMarketplaceYourOrders: React.FC =
                 onChange={handleTabChange}
                 aria-label="order status tabs"
               >
-                <Tab label="In Progress" value="open" />
-                <Tab label="Completed" value="closed" />
+                <Tab label="In Progress" value={OrderTab.OPEN} />
+                <Tab label="Completed" value={OrderTab.CLOSED} />
               </Tabs>
             </Box>
 

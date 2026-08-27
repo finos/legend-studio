@@ -46,12 +46,22 @@ export enum WorkflowCurrentStage {
 }
 
 /**
+ * The resolved visual status of a single progress-tracker step.
+ */
+export enum OrderProgressStatus {
+  COMPLETED = 'completed',
+  ACTIVE = 'active',
+  REJECTED = 'rejected',
+  PENDING = 'pending',
+}
+
+/**
  * A single, ordered step of the progress tracker along with its resolved
  * visual status, derived from the order's workflow/approval data.
  */
 export interface OrderProgressStep {
   label: string;
-  status: 'completed' | 'active' | 'rejected' | 'pending';
+  status: OrderProgressStatus;
 }
 
 export interface StageActionDetails {
@@ -149,7 +159,10 @@ const getProvisionProgressSteps = (
 
   const isClosed = details?.workflow_status === OrderStatus.COMPLETED;
   const steps: OrderProgressStep[] = [
-    { label: WorkflowStage.ORDER_PLACED, status: 'completed' },
+    {
+      label: WorkflowStage.ORDER_PLACED,
+      status: OrderProgressStatus.COMPLETED,
+    },
   ];
 
   // Once an approval stage is rejected (or is still outstanding), every
@@ -157,18 +170,23 @@ const getProvisionProgressSteps = (
   let allApprovalsPassed = true;
   for (const stage of approvalStages) {
     if (!allApprovalsPassed) {
-      steps.push({ label: stage, status: 'pending' });
+      steps.push({ label: stage, status: OrderProgressStatus.PENDING });
       continue;
     }
 
     const actionStatus = getApprovalActionStatus(details, stage);
     if (actionStatus === 'approved') {
-      steps.push({ label: stage, status: 'completed' });
+      steps.push({ label: stage, status: OrderProgressStatus.COMPLETED });
     } else if (actionStatus === 'rejected') {
-      steps.push({ label: stage, status: 'rejected' });
+      steps.push({ label: stage, status: OrderProgressStatus.REJECTED });
       allApprovalsPassed = false;
     } else {
-      steps.push({ label: stage, status: isClosed ? 'pending' : 'active' });
+      steps.push({
+        label: stage,
+        status: isClosed
+          ? OrderProgressStatus.PENDING
+          : OrderProgressStatus.ACTIVE,
+      });
       allApprovalsPassed = false;
     }
   }
@@ -176,13 +194,16 @@ const getProvisionProgressSteps = (
   if (!allApprovalsPassed) {
     steps.push({
       label: WorkflowStage.PENDING_FULFILLMENT,
-      status: 'pending',
+      status: OrderProgressStatus.PENDING,
     });
     return steps;
   }
 
   if (!isClosed) {
-    steps.push({ label: WorkflowStage.PENDING_FULFILLMENT, status: 'active' });
+    steps.push({
+      label: WorkflowStage.PENDING_FULFILLMENT,
+      status: OrderProgressStatus.ACTIVE,
+    });
     return steps;
   }
 
@@ -190,10 +211,13 @@ const getProvisionProgressSteps = (
   if (REJECTED_STATUSES.has(orderStatus)) {
     steps.push({
       label: `Order ${toTitleCase(order.status)}`,
-      status: 'rejected',
+      status: OrderProgressStatus.REJECTED,
     });
   } else {
-    steps.push({ label: WorkflowStage.ORDER_FULFILLED, status: 'completed' });
+    steps.push({
+      label: WorkflowStage.ORDER_FULFILLED,
+      status: OrderProgressStatus.COMPLETED,
+    });
   }
   return steps;
 };
@@ -203,25 +227,34 @@ const getCancellationProgressSteps = (
 ): OrderProgressStep[] => {
   const orderPlaced: OrderProgressStep = {
     label: WorkflowStage.ORDER_PLACED,
-    status: 'completed',
+    status: OrderProgressStatus.COMPLETED,
   };
   const status = normalizeStatus(order.status);
 
   if (status === 'IN PROGRESS') {
     return [
       orderPlaced,
-      { label: WorkflowStage.PENDING_FULFILLMENT, status: 'active' },
+      {
+        label: WorkflowStage.PENDING_FULFILLMENT,
+        status: OrderProgressStatus.ACTIVE,
+      },
     ];
   }
   if (status === APPROVED_ACTION) {
     return [
       orderPlaced,
-      { label: WorkflowStage.ORDER_FULFILLED, status: 'completed' },
+      {
+        label: WorkflowStage.ORDER_FULFILLED,
+        status: OrderProgressStatus.COMPLETED,
+      },
     ];
   }
   return [
     orderPlaced,
-    { label: `Order ${toTitleCase(order.status)}`, status: 'rejected' },
+    {
+      label: `Order ${toTitleCase(order.status)}`,
+      status: OrderProgressStatus.REJECTED,
+    },
   ];
 };
 
@@ -241,17 +274,18 @@ export const getOrderProgressSteps = (
  * Returns the actioned-by/date/action/comment details for a given approval
  * stage label, if applicable and available on the order.
  */
+const isApprovalStage = (stageLabel: string): stageLabel is ApprovalStage =>
+  Object.hasOwn(APPROVAL_STAGE_DETAIL_FIELDS, stageLabel);
+
 export const getStageActionDetails = (
   order: TerminalProductOrder,
   stageLabel: string,
 ): StageActionDetails | undefined => {
-  const fields = APPROVAL_STAGE_DETAIL_FIELDS[stageLabel as ApprovalStage] as
-    | (typeof APPROVAL_STAGE_DETAIL_FIELDS)[ApprovalStage]
-    | undefined;
   const details = order.workflow_details;
-  if (!fields || !details) {
+  if (!details || !isApprovalStage(stageLabel)) {
     return undefined;
   }
+  const fields = APPROVAL_STAGE_DETAIL_FIELDS[stageLabel];
   return {
     actionedBy: details[fields.actionedBy] ?? null,
     actionedTimestamp: details[fields.actionedTimestamp] ?? null,

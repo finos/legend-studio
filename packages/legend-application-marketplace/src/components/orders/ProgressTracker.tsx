@@ -37,6 +37,7 @@ import {
   getStageActionDetails,
   formatTimestamp,
   WorkflowStage,
+  OrderProgressStatus,
 } from '../../stores/orders/OrderHelpers.js';
 
 interface ProgressTrackerProps {
@@ -97,7 +98,9 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = observer(
   ({ order }) => {
     const steps = getOrderProgressSteps(order);
     const activeIndex = steps.findIndex(
-      (step) => step.status === 'active' || step.status === 'pending',
+      (step) =>
+        step.status === OrderProgressStatus.ACTIVE ||
+        step.status === OrderProgressStatus.PENDING,
     );
     const stepperActiveIndex =
       activeIndex >= 0 ? activeIndex : steps.length - 1;
@@ -110,9 +113,9 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = observer(
           connector={<CustomConnector />}
         >
           {steps.map((step) => {
-            const isCompleted = step.status === 'completed';
-            const isActive = step.status === 'active';
-            const isRejected = step.status === 'rejected';
+            const isCompleted = step.status === OrderProgressStatus.COMPLETED;
+            const isActive = step.status === OrderProgressStatus.ACTIVE;
+            const isRejected = step.status === OrderProgressStatus.REJECTED;
             const details = getStageActionDetails(order, step.label);
             const hasDetails =
               details !== undefined &&
