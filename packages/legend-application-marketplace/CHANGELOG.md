@@ -1,5 +1,42 @@
 # @finos/legend-application-marketplace
 
+## 0.4.1
+
+## 0.4.0
+
+### Minor Changes
+
+- [#5466](https://github.com/finos/legend-studio/pull/5466) [`2670b55`](https://github.com/finos/legend-studio/commit/2670b55871be4dc0af06856098a8a284b59acb34) ([@bojja-gs](https://github.com/bojja-gs)) - Add MCP servers to the Intelligence & Agents tab:
+
+  - The tab now has an `All` / `Agents` / `MCPs` selector, with the existing agent card in the Agents section and Legend MCP servers in a new MCPs section.
+  - Legend MCP servers are the ones published on the Legend execution server's MCP route, plus the Legend AI orchestrator; other applications' servers in the registry are not listed.
+  - The page reuses the data product search results layout: a search bar, the section selector, a left filter panel and a card grid. Searching matches an entry's name, display name or description, and is kept in the `query` URL parameter so a filtered catalog can be linked to.
+  - The filter panel lists providers as checkboxes with per-provider counts, has its own provider search, and collapses past the first eight. It is only shown for the sections that can be filtered.
+  - Agents and MCP servers render through one shared catalog card so both read identically.
+  - Selecting an MCP server opens a detail page at `/agents/mcp/:mcpServerName` showing its configuration, sample questions, tools, security classification, ownership and metadata. Tool documentation is rendered as markdown with the LLM grounding rules collapsed.
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve access point schemas for the Intelligence & Agents tab from the data product element and its artifact instead of opening a product viewer, typing only the access points the artifact does not cover through the engine.
+
+  Access point sample values now fall back to the artifact's relation element, so the data product page shows sample values on columns that previously had none.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve data space context for the Intelligence & Agents tab from the data space analysis instead of opening a product viewer, so a failed load no longer raises a data product notification at an Agents tab user.
+
+  The model context a data space builds now also lists its own callable functions, capped at twenty, which reaches the data space page as well.
+
+- [#5464](https://github.com/finos/legend-studio/pull/5464) [`d32defe`](https://github.com/finos/legend-studio/commit/d32defe82740097507fa8869ea9ade00e7f84aa6) ([@eradityash](https://github.com/eradityash)) - Fix "Cancel Subscription" on the Subscriptions page sending a blank
+  `kerberos` field in the cancellation request payload (causing the backend
+  to reject it with a 400 "Invalid Payload" error) when the user had not
+  explicitly changed the target user. `SubscriptionStore` now defaults
+  `selectedUser` to the current user, consistent with
+  `LegendMarketPlaceVendorDataStore`, and clearing the user search input
+  resets to the current user instead of leaving `selectedUser` blank.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
 ## 0.3.5
 
 ## 0.3.4
