@@ -66,6 +66,7 @@ export interface WorkflowDetails {
   piid_manager: string;
   taskid_manager: string;
   manager_actioned_by: string | null;
+  manager_actioned_by_name: string | null;
   manager_actioned_timestamp: string | null;
   manager_comment: string | null;
   manager_action: string | null;
@@ -73,6 +74,7 @@ export interface WorkflowDetails {
   piid_fa_approval: string | null;
   taskid_fa_approval: string | null;
   fa_approval_actioned_by: string | null;
+  fa_approval_actioned_by_name: string | null;
   fa_approval_actioned_timestamp: string | null;
   fa_approval_comment: string | null;
   fa_approval_action: string | null;
@@ -80,12 +82,14 @@ export interface WorkflowDetails {
   piid_ffa_approval: string | null;
   taskid_ffa_approval: string | null;
   ffa_approval_actioned_by: string | null;
+  ffa_approval_actioned_by_name: string | null;
   ffa_approval_actioned_timestamp: string | null;
   ffa_approval_comment: string | null;
   ffa_approval_action: string | null;
   url_bbg_approval: string | null;
   bbg_approval_process_id: string | null;
   bbg_approval_actioned_by: string | null;
+  bbg_approval_actioned_by_name: string | null;
   bbg_approval_actioned_timestamp: string | null;
   bbg_approval_comment: string | null;
   bbg_approval_action: string | null;
