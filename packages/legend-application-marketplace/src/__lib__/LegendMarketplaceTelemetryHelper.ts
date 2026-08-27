@@ -22,6 +22,7 @@ import {
   type V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
+import { MarketplaceSearchMode } from './LegendMarketplaceSearchMode.js';
 import { uuid } from '@finos/legend-shared';
 import {
   SEARCH_SESSION_KEY,
@@ -33,6 +34,7 @@ import {
 export enum LEGEND_MARKETPLACE_PAGE {
   HOME_PAGE = 'Home Page',
   SEARCH_RESULTS_PAGE = 'Search Results Page',
+  LAKEHOUSE_ACCESS_PAGE = 'Lakehouse Access Page',
 }
 
 export enum CONTRACT_ACTION {
@@ -306,34 +308,37 @@ export class LegendMarketplaceTelemetryHelper {
     });
   }
 
-  static logEvent_ToggleProducerSearch(
-    telemetryService: TelemetryService,
-    isEnabled: boolean,
-  ): void {
-    this.updateEventId();
-    const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
+  private static readonly TOGGLE_SEARCH_MODE_EVENT: Partial<
+    Record<MarketplaceSearchMode, LEGEND_MARKETPLACE_APP_EVENT>
+  > = {
+    [MarketplaceSearchMode.PRODUCER]:
       LEGEND_MARKETPLACE_APP_EVENT.PRODUCER_SEARCH_TOGGLE,
-      {
-        toggleAction: isEnabled ? 'enabled' : 'disabled',
-        ...session,
-      },
-    );
-  }
+    [MarketplaceSearchMode.DATA_FIELDS]:
+      LEGEND_MARKETPLACE_APP_EVENT.FIELD_SEARCH_TOGGLE,
+    [MarketplaceSearchMode.LAKEHOUSE_ACCESS]:
+      LEGEND_MARKETPLACE_APP_EVENT.LAKEHOUSE_ACCESS_SEARCH_TOGGLE,
+  };
 
-  static logEvent_ToggleFieldSearch(
+  /**
+   * Logs a search-mode switch on the search bar's settings menu. Each mode keeps
+   * its own event name (existing telemetry dashboards key on them), selected here
+   * via {@link TOGGLE_SEARCH_MODE_EVENT} instead of one near-identical method per mode.
+   */
+  static logEvent_ToggleSearchMode(
     telemetryService: TelemetryService,
+    mode: MarketplaceSearchMode,
     isEnabled: boolean,
   ): void {
+    const event = this.TOGGLE_SEARCH_MODE_EVENT[mode];
+    if (!event) {
+      return;
+    }
     this.updateEventId();
     const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
-      LEGEND_MARKETPLACE_APP_EVENT.FIELD_SEARCH_TOGGLE,
-      {
-        toggleAction: isEnabled ? 'enabled' : 'disabled',
-        ...session,
-      },
-    );
+    telemetryService.logEvent(event, {
+      toggleAction: isEnabled ? 'enabled' : 'disabled',
+      ...session,
+    });
   }
 
   static logEvent_ToggleThemeMode(

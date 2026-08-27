@@ -17,6 +17,34 @@
 @use 'mixins' as *;
 
 .marketplace-lakehouse-search-results {
+  // Explains what this tab searches and how it relates to the sibling tab, during the
+  // DataSpace / Lakehouse Access split. Centred and width-capped like the page's other
+  // content so it doesn't stretch full-bleed on wide screens.
+  // Sits above the result cards, inside the main-content column (i.e. beside the
+  // filters sidebar, not full page width), and auto-collapses — see TimedInfoBanner.
+  &__intro-banner {
+    width: 100%;
+    margin-bottom: 1.6rem;
+
+    .MuiAlert-icon {
+      font-size: 2.4rem;
+
+      svg {
+        font-size: 2.4rem;
+        width: 2.4rem;
+        height: 2.4rem;
+      }
+    }
+
+    .MuiAlert-message {
+      display: flex;
+      align-items: center;
+      font-size: 1.4rem;
+      text-align: left;
+      flex: 1;
+    }
+  }
+
   &__search-container {
     @include flexCenter;
 
@@ -77,6 +105,8 @@
     font-weight: bold;
     margin: 0.8em 0;
     font-size: 2.2rem;
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   &__data-product-cards {

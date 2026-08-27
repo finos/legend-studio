@@ -19,8 +19,10 @@ import type { DataProductAccessType } from '@finos/legend-graph';
 import {
   addQueryParametersToUrl,
   stringifyQueryParams,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import { generateGAVCoordinates } from '@finos/legend-storage';
+import { MarketplaceSearchMode } from './LegendMarketplaceSearchMode.js';
 
 export enum LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN {
   VENDOR_NAME = 'vendorName',
@@ -46,6 +48,10 @@ export enum LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
 }
 
 export enum LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
+  QUERY = 'query',
+}
+
+export enum LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN {
   QUERY = 'query',
 }
 
@@ -109,8 +115,9 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DATA_PRODUCT: `/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
   LEGACY_DATA_PRODUCT: `/dataProduct/legacy/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
   SDLC_DATA_PRODUCT: `/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
-  DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
+  DATA_SPACE_SEARCH_RESULTS: '/dataSpace/results',
   FIELD_SEARCH_RESULTS: '/dataProduct/fields/results',
+  LAKEHOUSE_ACCESS_SEARCH_RESULTS: '/lakehouseAccess/results',
   // Lakehouse
   LAKEHOUSE_ENTITLEMENTS: '/lakehouse/entitlements',
   LAKEHOUSE_ENTITLEMENTS_CONTRACT_TASK: `/lakehouse/entitlements/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_CONTRACT_TASK_ID}`,
@@ -118,6 +125,9 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   LAKEHOUSE_ENTITLEMENTS_PERMIT_DATA_ACCESS_REQUEST: `/lakehouse/entitlements/permitDataAccessRequest/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_ACCESS_REQUEST_ID}`,
   LAKEHOUSE_ADMIN: '/lakehouse/admin',
   // Deprecated
+  // `DATA_SPACE_SEARCH_RESULTS` was renamed from `/dataProduct/results` when the
+  // DataSpaces/Lakehouse Access tabs were split out — keep the old path working.
+  DEPRECATED_DATA_PRODUCT_SEARCH_RESULTS: '/dataProduct/results',
   DEPRECATED_LAKEHOUSE: '/lakehouse',
   DEPRECATED_LAKEHOUSE_SEARCH_RESULTS: '/lakehouse/results',
   DEPRECATED_LAKEHOUSE_PRODUCT: `/lakehouse/dataProduct/deployed/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ID}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DEPLOYMENT_ID}`,
@@ -193,7 +203,7 @@ export const generateLakehouseSearchResultsRoute = (
   useProducerSearch: boolean,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
         query ? query : undefined,
@@ -207,7 +217,7 @@ export const generateSearchResultsRoute = (
   query: string | undefined,
 ): string =>
   addQueryParametersToUrl(
-    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
     stringifyQueryParams({
       [LEGEND_MARKETPLACE_SEARCH_RESULTS_QUERY_PARAM_TOKEN.PROVIDER]: provider
         ? provider
@@ -227,6 +237,43 @@ export const generateFieldSearchResultsRoute = (
       [LEGEND_MARKETPLACE_FIELD_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]: query,
     }),
   );
+
+export const generateLakehouseAccessSearchResultsRoute = (
+  query: string | undefined,
+): string =>
+  addQueryParametersToUrl(
+    LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS,
+    stringifyQueryParams({
+      [LEGEND_MARKETPLACE_LAKEHOUSE_ACCESS_SEARCH_RESULTS_QUERY_PARAM_TOKEN.QUERY]:
+        query,
+    }),
+  );
+
+/**
+ * Routes a search-bar submission to the results route for its mode. The `default`
+ * case throws rather than falling back to the DataSpaces route, so a new
+ * `MarketplaceSearchMode` value can't be silently routed to the wrong page.
+ */
+export const generateSearchResultsRouteForMode = (
+  query: string,
+  mode: MarketplaceSearchMode,
+): string => {
+  switch (mode) {
+    case MarketplaceSearchMode.DATA_FIELDS:
+      return generateFieldSearchResultsRoute(query);
+    case MarketplaceSearchMode.LAKEHOUSE_ACCESS:
+      return generateLakehouseAccessSearchResultsRoute(query);
+    case MarketplaceSearchMode.PRODUCER:
+      return generateLakehouseSearchResultsRoute(query, true);
+    case MarketplaceSearchMode.DATA_SPACES:
+      return generateLakehouseSearchResultsRoute(query, false);
+    default:
+      throw new UnsupportedOperationError(
+        `Can't generate a search results route for search mode`,
+        mode,
+      );
+  }
+};
 
 export const generateLakehouseEntitlementsRoute = (
   selectedTab: string | undefined,

@@ -45,7 +45,7 @@ const setupTestComponent = async () => {
 
 test('renders header with Marketplace title and Entitlements button and Marketplace landing title', async () => {
   await setupTestComponent();
-  expect(screen.getByText('Data Products')).toBeDefined();
+  expect(screen.getByText('Dataspaces')).toBeDefined();
   expect(screen.getByText('Data APIs')).toBeDefined();
   expect(screen.getByText('Intelligence and AI Agents')).toBeDefined();
   expect(screen.getByText('Terminals and Addons')).toBeDefined();
@@ -101,7 +101,7 @@ test('navigates to search results page if search box contains text', async () =>
 
   await waitFor(() =>
     expect(mockGoToLocation).toHaveBeenLastCalledWith(
-      '/dataProduct/results?query=data',
+      '/dataSpace/results?query=data',
     ),
   );
 });
@@ -133,9 +133,33 @@ test('navigates to search results page with producer search if search box contai
 
   await waitFor(() =>
     expect(mockGoToLocation).toHaveBeenLastCalledWith(
-      '/dataProduct/results?query=data&useProducerSearch=true',
+      '/dataSpace/results?query=data&useProducerSearch=true',
     ),
   );
+});
+
+test('search modes are mutually exclusive', async () => {
+  await setupTestComponent();
+
+  const searchInput = screen.getByPlaceholderText(
+    'Which data can I help you find?',
+  );
+  fireEvent.change(searchInput, { target: { value: 'data' } });
+  fireEvent.click(screen.getByTitle('Search settings'));
+
+  const producerSwitch: HTMLInputElement = screen.getByRole('switch', {
+    name: /Producer Search/,
+  });
+  const fieldSwitch: HTMLInputElement = screen.getByRole('switch', {
+    name: /Field Search/,
+  });
+
+  fireEvent.click(producerSwitch);
+  expect(producerSwitch.checked).toBe(true);
+
+  fireEvent.click(fieldSwitch);
+  expect(fieldSwitch.checked).toBe(true);
+  expect(producerSwitch.checked).toBe(false);
 });
 
 test('does not render banners when no plugins provide banner configs', async () => {
@@ -226,7 +250,7 @@ test('homepage still renders when trending API fails', async () => {
   await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
 
   // Page should still render header and search box even after trending API failure
-  expect(screen.getByText('Data Products')).toBeDefined();
+  expect(screen.getByText('Dataspaces')).toBeDefined();
   expect(
     screen.getByPlaceholderText('Which data can I help you find?'),
   ).toBeDefined();

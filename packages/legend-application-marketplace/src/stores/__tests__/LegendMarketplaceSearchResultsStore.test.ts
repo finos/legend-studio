@@ -23,6 +23,7 @@ import {
   DataProductSourceFilter,
   DataProductLicenseFilter,
   TAXONOMY_UNDEFINED_NODE_ID,
+  SOURCE_FILTER_COUNT_KEY,
   getDataProductLicenseTooltip,
 } from '../lakehouse/LegendMarketplaceSearchResultsStore.js';
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
@@ -303,6 +304,22 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
     });
   });
 
+  describe('SOURCE_FILTER_COUNT_KEY', () => {
+    test('maps every DataProductSourceFilter to its correct FilterCounts key', () => {
+      expect(SOURCE_FILTER_COUNT_KEY[DataProductSourceFilter.EXTERNAL]).toBe(
+        'external_source_count',
+      );
+      expect(SOURCE_FILTER_COUNT_KEY[DataProductSourceFilter.INTERNAL]).toBe(
+        'internal_source_count',
+      );
+      // Guards against a new DataProductSourceFilter value silently falling
+      // through to the wrong count (or none at all).
+      expect(Object.keys(SOURCE_FILTER_COUNT_KEY)).toHaveLength(
+        Object.values(DataProductSourceFilter).length,
+      );
+    });
+  });
+
   describe('clearAllFilters', () => {
     test('clears all filter types', async () => {
       const { store } = await setupStore();
@@ -420,9 +437,7 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
     test('returns empty array when no filters are active', async () => {
       const { store } = await setupStore();
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toEqual([]);
     });
 
@@ -431,9 +446,7 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
 
       store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toEqual(['data_product_type=lakehouse']);
     });
 
@@ -443,9 +456,7 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
       store.toggleDataProductType(DataProductTypeFilter.LAKEHOUSE);
       store.toggleDataProductType(DataProductTypeFilter.LEGACY);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toEqual(
         expect.arrayContaining([
           expect.stringMatching(
@@ -461,9 +472,7 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
 
       store.toggleSource(DataProductSourceFilter.EXTERNAL);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toEqual(['data_product_source=External']);
     });
 
@@ -473,9 +482,7 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
 
       store.toggleTaxonomyNode('referenceData::marketData::esg');
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toHaveLength(1);
       expect(filters[0]).toBe('taxonomy=referenceData::marketData::esg');
     });
@@ -488,9 +495,7 @@ describe('LegendMarketplaceSearchResultsStore - Filters', () => {
       store.toggleSource(DataProductSourceFilter.EXTERNAL);
       store.toggleTaxonomyNode('referenceData::marketData::esg');
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toHaveLength(3);
       expect(filters).toEqual(
         expect.arrayContaining([
@@ -698,9 +703,7 @@ describe('LegendMarketplaceSearchResultsStore - Access (License) Filter', () => 
 
       store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toEqual(['license_to=Enterprise']);
     });
 
@@ -710,9 +713,7 @@ describe('LegendMarketplaceSearchResultsStore - Access (License) Filter', () => 
       store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
       store.toggleLicense(DataProductLicenseFilter.RESTRICTED);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toHaveLength(1);
       expect(filters[0]).toMatch(/^license_to=/);
       expect(filters[0]).toContain('Enterprise');
@@ -724,9 +725,7 @@ describe('LegendMarketplaceSearchResultsStore - Access (License) Filter', () => 
 
       store.toggleLicense(DataProductLicenseFilter.UNDEFINED);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toEqual(['license_to=']);
     });
 
@@ -736,9 +735,7 @@ describe('LegendMarketplaceSearchResultsStore - Access (License) Filter', () => 
       store.toggleLicense(DataProductLicenseFilter.ENTERPRISE);
       store.toggleLicense(DataProductLicenseFilter.UNDEFINED);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toHaveLength(1);
       const licenseFilter = filters[0] as string;
       expect(licenseFilter).toMatch(/^license_to=/);
@@ -758,9 +755,7 @@ describe('LegendMarketplaceSearchResultsStore - Undefined Taxonomy Node', () => 
 
       store.simpleToggleTaxonomyNode(TAXONOMY_UNDEFINED_NODE_ID);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toHaveLength(1);
       expect(filters[0]).toBe('taxonomy=');
     });
@@ -772,9 +767,7 @@ describe('LegendMarketplaceSearchResultsStore - Undefined Taxonomy Node', () => 
       store.toggleTaxonomyNode('referenceData::marketData::esg');
       store.simpleToggleTaxonomyNode(TAXONOMY_UNDEFINED_NODE_ID);
 
-      const filters = (
-        store as unknown as { buildSearchFilters: () => string[] }
-      ).buildSearchFilters();
+      const filters = store.buildSearchFilters();
       expect(filters).toHaveLength(1);
       const taxonomyFilter = filters[0] as string;
       expect(taxonomyFilter).toMatch(/^taxonomy=/);

@@ -198,6 +198,21 @@
     font-weight: 500;
   }
 
+  &__deployment-id-input {
+    .MuiFormHelperText-root {
+      font-size: 1.1rem;
+      margin-left: 0;
+      color: var(--marketplace-text-muted);
+    }
+  }
+
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.6rem;
+  }
+
   &__empty {
     padding: 1rem 0;
     font-size: 1.4rem;

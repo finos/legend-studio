@@ -15,7 +15,7 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Checkbox, InputAdornment, TextField, Typography } from '@mui/material';
 import {
   ChevronDownIcon,
@@ -28,16 +28,16 @@ import {
 } from '@finos/legend-art';
 import type { TaxonomyNode } from '@finos/legend-server-marketplace';
 import {
-  type LegendMarketplaceSearchResultsStore,
   DataProductLicenseFilter,
+  type SourceFilterableSearchStore,
+  type TaxonomyFilterableSearchStore,
   DataProductSourceFilter,
+  SOURCE_FILTER_COUNT_KEY,
   getDataProductLicenseDisplayLabel,
   getDataProductLicenseTooltip,
 } from '../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
-import { useAuth } from 'react-oidc-context';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
-import type { LegendMarketplaceBaseStore } from '../../stores/LegendMarketplaceBaseStore.js';
 import {
   buildUndefinedTaxonomyNode,
   matchesUndefinedTaxonomyNode,
@@ -87,11 +87,10 @@ const buildFlatSearchResults = (
 
 const TaxonomyTreeNode: React.FC<{
   node: TaxonomyNode;
-  store: LegendMarketplaceSearchResultsStore;
+  store: TaxonomyFilterableSearchStore;
   depth: number;
   onFilterChange: () => void;
 }> = observer(({ node, store, depth, onFilterChange }) => {
-  const baseStore = useLegendMarketplaceBaseStore();
   const [expanded, setExpanded] = useState(depth === 0);
   const hasChildren = node.children.length > 0;
   const isSelected = store.selectedTaxonomyNodeIds.has(node.id);
@@ -109,17 +108,9 @@ const TaxonomyTreeNode: React.FC<{
   );
 
   const handleCheckboxChange = useCallback(() => {
-    const wasSelected = store.selectedTaxonomyNodeIds.has(node.id);
     store.toggleTaxonomyNode(node.id);
-    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-      baseStore.applicationStore.telemetryService,
-      'taxonomy',
-      node.id,
-      wasSelected ? 'deselect' : 'select',
-      store.searchQuery,
-    );
     onFilterChange();
-  }, [store, node.id, onFilterChange, baseStore]);
+  }, [store, node.id, onFilterChange]);
 
   const renderExpandIcon = (): React.ReactNode => {
     if (!hasChildren) {
@@ -251,8 +242,7 @@ export const FilterCheckboxOption: React.FC<{
 const renderTaxonomySearchResults = (
   flatSearchResults: FlatSearchGroup[],
   filterSearchTerm: string,
-  store: LegendMarketplaceSearchResultsStore,
-  baseStore: LegendMarketplaceBaseStore,
+  store: TaxonomyFilterableSearchStore,
   triggerSearch: () => void,
 ): React.ReactNode => {
   if (flatSearchResults.length === 0) {
@@ -286,17 +276,7 @@ const renderTaxonomySearchResults = (
           )}
           {group.matches.map((matchNode) => {
             const handleFlatNodeToggle = (): void => {
-              const wasSelected = store.selectedTaxonomyNodeIds.has(
-                matchNode.id,
-              );
               store.simpleToggleTaxonomyNode(matchNode.id);
-              LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-                baseStore.applicationStore.telemetryService,
-                'taxonomy',
-                matchNode.id,
-                wasSelected ? 'deselect' : 'select',
-                store.searchQuery,
-              );
               triggerSearch();
             };
             return (
@@ -351,7 +331,7 @@ const renderTaxonomySearchResults = (
 };
 
 const renderTaxonomyTree = (
-  store: LegendMarketplaceSearchResultsStore,
+  store: TaxonomyFilterableSearchStore,
   triggerSearch: () => void,
 ): React.ReactNode => {
   const undefinedNode = buildUndefinedTaxonomyNode();
@@ -377,20 +357,67 @@ const renderTaxonomyTree = (
   );
 };
 
+/**
+ * "Filters" title plus the "Clear all" link, shared by every search experience's
+ * filters panel so the chrome around the filter sections isn't copy-pasted per panel.
+ */
+export const FiltersPanelHeader: React.FC<{
+  hasActiveFilters: boolean;
+  onClearAll: () => void;
+}> = observer(({ hasActiveFilters, onClearAll }) => (
+  <div className="marketplace-search-filters-panel__header">
+    <Typography className="marketplace-search-filters-panel__header__title">
+      Filters
+    </Typography>
+    {hasActiveFilters && (
+      <Typography
+        className="marketplace-search-filters-panel__header__clear"
+        onClick={onClearAll}
+        role="button"
+      >
+        Clear all
+      </Typography>
+    )}
+  </div>
+));
+
+/**
+ * The "Source" filter section, shared by every search experience's filters panel —
+ * telemetry for the toggle lives on the store's `toggleSource` action, so this
+ * component (and its callers) don't need to know about telemetry at all.
+ */
+export const SourceFilterSection: React.FC<{
+  store: SourceFilterableSearchStore;
+  onFilterChange: () => void;
+}> = observer(({ store, onFilterChange }) => (
+  <FilterSection title="Source">
+    {Object.values(DataProductSourceFilter).map((value) => (
+      <FilterCheckboxOption
+        key={value}
+        label={value}
+        checked={store.selectedSources.has(value)}
+        count={store.filterCounts[SOURCE_FILTER_COUNT_KEY[value]]}
+        onChange={() => {
+          store.toggleSource(value);
+          onFilterChange();
+        }}
+      />
+    ))}
+  </FilterSection>
+));
+
 export const MarketplaceSearchFiltersPanel: React.FC<{
-  store: LegendMarketplaceSearchResultsStore;
-}> = observer(({ store }) => {
-  const isFirstLoad = store.executingSemanticSearchState.isInInitialState;
+  store: TaxonomyFilterableSearchStore;
+  /**
+   * Invoked whenever a filter changes. The owning page decides how to re-run its
+   * own search — the panel deliberately knows nothing about search modes or auth.
+   */
+  onFiltersChanged: () => void;
+}> = observer(({ store, onFiltersChanged }) => {
+  const isFirstLoad = store.isFirstLoad;
   const hasTree = store.taxonomyTree.length > 0;
-  const auth = useAuth();
   const baseStore = useLegendMarketplaceBaseStore();
   const [filterSearchTerm, setFilterSearchTerm] = useState('');
-
-  const tokenRef = useRef(auth.user?.access_token);
-
-  useEffect(() => {
-    tokenRef.current = auth.user?.access_token;
-  }, [auth.user?.access_token]);
 
   const flatSearchResults = useMemo(
     () => buildFlatSearchResults(store.taxonomyTree, filterSearchTerm),
@@ -400,12 +427,8 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
 
   const triggerSearch = useCallback(() => {
     store.setPage(1);
-    store.executeSearch(
-      store.searchQuery ?? '',
-      store.useProducerSearch ?? false,
-      tokenRef.current,
-    );
-  }, [store]);
+    onFiltersChanged();
+  }, [store, onFiltersChanged]);
 
   const handleClearAll = useCallback(() => {
     store.clearAllFilters();
@@ -419,20 +442,10 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
 
   return (
     <div className="marketplace-search-filters-panel">
-      <div className="marketplace-search-filters-panel__header">
-        <Typography className="marketplace-search-filters-panel__header__title">
-          Filters
-        </Typography>
-        {store.hasActiveFilters && (
-          <Typography
-            className="marketplace-search-filters-panel__header__clear"
-            onClick={handleClearAll}
-            role="button"
-          >
-            Clear all
-          </Typography>
-        )}
-      </div>
+      <FiltersPanelHeader
+        hasActiveFilters={store.hasActiveFilters}
+        onClearAll={handleClearAll}
+      />
       <div className="marketplace-search-filters-panel__content">
         {isFirstLoad ? (
           <CubesLoadingIndicator
@@ -443,33 +456,7 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
           </CubesLoadingIndicator>
         ) : (
           <>
-            <FilterSection title="Source">
-              {Object.values(DataProductSourceFilter).map((value) => (
-                <FilterCheckboxOption
-                  key={value}
-                  label={value}
-                  checked={store.selectedSources.has(value)}
-                  count={
-                    value === DataProductSourceFilter.EXTERNAL
-                      ? store.filterCounts.external_source_count
-                      : store.totalItems -
-                        store.filterCounts.external_source_count
-                  }
-                  onChange={() => {
-                    const isSelected = store.selectedSources.has(value);
-                    store.toggleSource(value);
-                    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-                      baseStore.applicationStore.telemetryService,
-                      'source',
-                      value,
-                      isSelected ? 'deselect' : 'select',
-                      store.searchQuery,
-                    );
-                    triggerSearch();
-                  }}
-                />
-              ))}
-            </FilterSection>
+            <SourceFilterSection store={store} onFilterChange={triggerSearch} />
             <FilterSection title="Access">
               {Object.values(DataProductLicenseFilter).map((value) => (
                 <FilterCheckboxOption
@@ -478,15 +465,7 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                   checked={store.selectedLicenses.has(value)}
                   tooltip={getDataProductLicenseTooltip(value)}
                   onChange={() => {
-                    const isSelected = store.selectedLicenses.has(value);
                     store.toggleLicense(value);
-                    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
-                      baseStore.applicationStore.telemetryService,
-                      'license',
-                      value,
-                      isSelected ? 'deselect' : 'select',
-                      store.searchQuery,
-                    );
                     triggerSearch();
                   }}
                 />
@@ -527,7 +506,6 @@ export const MarketplaceSearchFiltersPanel: React.FC<{
                       flatSearchResults,
                       filterSearchTerm,
                       store,
-                      baseStore,
                       triggerSearch,
                     )}
                     {matchesUndefinedTaxonomyNode(filterSearchTerm) && (
