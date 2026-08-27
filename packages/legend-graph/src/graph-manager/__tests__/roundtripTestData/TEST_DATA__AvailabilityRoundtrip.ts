@@ -15,7 +15,7 @@
  */
 
 const availabilityClassifierPath =
-  'meta::external::lakehouse::specification::metamodel::Availability';
+  'meta::external::availability::specification::metamodel::Availability';
 
 const sectionIndexForSingleAvailability = {
   path: '__internal__::SectionIndex',
