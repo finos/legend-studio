@@ -29,7 +29,10 @@ import {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for later re-enable of Refresh mapping-provider access button
   IconButton,
 } from '@mui/material';
-import { type PackageableRuntime } from '@finos/legend-graph';
+import {
+  extractElementNameFromPath,
+  type PackageableRuntime,
+} from '@finos/legend-graph';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import type { DataSpaceMappingProviderAccessState } from '../stores/DataSpaceMappingProviderAccessState.js';
@@ -165,6 +168,36 @@ const DataSpaceMappingProviderEntry = observer(
   },
 );
 
+export const DataSpaceExecutionContextMappingIcon = (props: {
+  executionContext: DataSpaceExecutionContextAnalysisResult;
+}): React.ReactElement => {
+  const { executionContext } = props;
+  return executionContext.mappingProvider ? (
+    <PURE_DataProductIcon />
+  ) : (
+    <PURE_MappingIcon />
+  );
+};
+
+export const DataSpaceExecutionContextMappingLabel = (props: {
+  executionContext: DataSpaceExecutionContextAnalysisResult;
+}): React.ReactElement => {
+  const { executionContext } = props;
+  const mappingProvider = executionContext.mappingProvider;
+  if (mappingProvider) {
+    return (
+      <span title={`Data Product: ${mappingProvider.element}`}>
+        {extractElementNameFromPath(mappingProvider.element)}
+      </span>
+    );
+  }
+  return (
+    <span title={`Mapping: ${executionContext.mapping.path}`}>
+      {executionContext.mapping.path}
+    </span>
+  );
+};
+
 export const DataSpaceExecutionContextViewer = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
@@ -298,10 +331,14 @@ export const DataSpaceExecutionContextViewer = observer(
               ) : (
                 <>
                   <div className="data-space__viewer__execution-context__entry__icon">
-                    <PURE_MappingIcon />
+                    <DataSpaceExecutionContextMappingIcon
+                      executionContext={currentExecutionContext}
+                    />
                   </div>
                   <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text">
-                    {currentExecutionContext.mapping.path}
+                    <DataSpaceExecutionContextMappingLabel
+                      executionContext={currentExecutionContext}
+                    />
                   </div>
                 </>
               )}
