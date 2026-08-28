@@ -80,30 +80,33 @@ const makeWorkflowDetails = (
 });
 
 const makeOrder = (
-  overrides: Partial<TerminalProductOrder> = {},
-): TerminalProductOrder => ({
-  order_id: 'LM-1',
-  ordered_by: 'adishar',
-  ordered_by_name: 'Sharma, Aditya',
-  ordered_for: 'adishar',
-  ordered_for_name: 'Sharma, Aditya',
-  created_at: '2026-08-22T18:10:30',
-  updated_at: '2026-08-25T20:47:44',
-  order_cost: 2000,
-  order_category: OrderCategory.TERMINAL_WITH_ADD_ON,
-  order_type: 'PROVISION',
-  bbg_terminal_flag: false,
-  vendor_profile_id: 1,
-  vendor_profile_name: 'Bloomberg Anywhere',
-  permid: null,
-  vendor_name: 'Bloomberg',
-  reason_code_id: 1,
-  business_justification: 'New Hire',
-  status: 'IN PROGRESS',
-  service_pricing_items: [],
-  workflow_details: makeWorkflowDetails(),
-  ...overrides,
-});
+  overrides: Partial<Omit<TerminalProductOrder, 'workflow_details'>> & {
+    workflow_details?: WorkflowDetails | undefined;
+  } = {},
+): TerminalProductOrder =>
+  ({
+    order_id: 'LM-1',
+    ordered_by: 'adishar',
+    ordered_by_name: 'Sharma, Aditya',
+    ordered_for: 'adishar',
+    ordered_for_name: 'Sharma, Aditya',
+    created_at: '2026-08-22T18:10:30',
+    updated_at: '2026-08-25T20:47:44',
+    order_cost: 2000,
+    order_category: OrderCategory.TERMINAL_WITH_ADD_ON,
+    order_type: 'PROVISION',
+    bbg_terminal_flag: false,
+    vendor_profile_id: 1,
+    vendor_profile_name: 'Bloomberg Anywhere',
+    permid: null,
+    vendor_name: 'Bloomberg',
+    reason_code_id: 1,
+    business_justification: 'New Hire',
+    status: 'IN PROGRESS',
+    service_pricing_items: [],
+    workflow_details: makeWorkflowDetails(),
+    ...overrides,
+  }) as TerminalProductOrder;
 
 // ─── getOrderProgressSteps ──────────────────────────────────────────────────────
 
@@ -578,7 +581,7 @@ describe('getClosureInfo', () => {
 // ─── getCurrentStageTrackingUrl ──────────────────────────────────────────────────
 
 describe('getCurrentStageTrackingUrl', () => {
-  test.each([
+  test.each<[WorkflowCurrentStage, keyof WorkflowDetails, string]>([
     [WorkflowCurrentStage.DIRECT_MANAGER, 'url_manager', 'https://url/manager'],
     [WorkflowCurrentStage.FIRST_APPROVER, 'url_fa_approval', 'https://url/fa'],
     [
@@ -591,7 +594,7 @@ describe('getCurrentStageTrackingUrl', () => {
       'url_bbg_approval',
       'https://url/bbg',
     ],
-  ] as const)(
+  ])(
     'resolves the tracking URL for current_stage=%s from %s',
     (currentStage, field, url) => {
       const order = makeOrder({
@@ -639,7 +642,7 @@ describe('getCurrentStageTrackingUrl', () => {
 // ─── getProcessInstanceId ────────────────────────────────────────────────────────
 
 describe('getProcessInstanceId', () => {
-  test.each([
+  test.each<[WorkflowCurrentStage, keyof WorkflowDetails, string]>([
     [WorkflowCurrentStage.DIRECT_MANAGER, 'piid_manager', 'proc-manager'],
     [WorkflowCurrentStage.FIRST_APPROVER, 'piid_fa_approval', 'proc-fa'],
     [
@@ -652,7 +655,7 @@ describe('getProcessInstanceId', () => {
       'bbg_approval_process_id',
       'proc-bbg',
     ],
-  ] as const)(
+  ])(
     'resolves the process instance id for current_stage=%s from %s',
     (currentStage, field, piid) => {
       const order = makeOrder({

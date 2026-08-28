@@ -27,6 +27,7 @@ import { createSpy } from '@finos/legend-shared/test';
 import {
   type TerminalProductOrder,
   type TerminalProductOrderResponse,
+  type WorkflowDetails,
   OrderCategory,
   OrderStatus,
   OrderStatusCategory,
@@ -270,7 +271,7 @@ describe('LegendMarketplaceYourOrders - Track Order Button', () => {
   const makeOpenOrderWithoutUrl = (): TerminalProductOrder =>
     makeReutersOrder({
       workflow_details: {
-        ...mockOrderWithoutUrl.workflow_details,
+        ...(mockOrderWithoutUrl.workflow_details as WorkflowDetails),
         workflow_status: OrderStatus.IN_PROGRESS,
         current_stage: WorkflowCurrentStage.DIRECT_MANAGER,
       },
