@@ -29,6 +29,7 @@ import {
   type MarketplaceUserSession,
 } from '@finos/legend-extension-dsl-data-product';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../LegendMarketplaceAppEvent.js';
+import { MarketplaceSearchMode } from '../LegendMarketplaceSearchMode.js';
 import {
   CONTRACT_ACTION,
   ICON_TOOLBAR_TYPE,
@@ -354,11 +355,12 @@ describe('logEvent_LoadLegacyDataProduct', () => {
   });
 });
 
-describe('logEvent_ToggleProducerSearch', () => {
+describe('logEvent_ToggleSearchMode', () => {
   test('logs "enabled" when isEnabled is true', () => {
     const { service, calls } = buildTelemetryStub();
-    LegendMarketplaceTelemetryHelper.logEvent_ToggleProducerSearch(
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleSearchMode(
       service,
+      MarketplaceSearchMode.PRODUCER,
       true,
     );
 
@@ -371,8 +373,9 @@ describe('logEvent_ToggleProducerSearch', () => {
 
   test('logs "disabled" when isEnabled is false', () => {
     const { service, calls } = buildTelemetryStub();
-    LegendMarketplaceTelemetryHelper.logEvent_ToggleProducerSearch(
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleSearchMode(
       service,
+      MarketplaceSearchMode.PRODUCER,
       false,
     );
 
