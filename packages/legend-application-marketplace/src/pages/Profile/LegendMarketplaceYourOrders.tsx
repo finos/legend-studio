@@ -165,8 +165,10 @@ const OrderAccordion: React.FC<{
         sx={{ '&:before': { display: 'none' }, mb: 2 }}
       >
         <AccordionSummary
+          component="div"
           expandIcon={<ChevronDownIcon />}
           aria-controls={`${order.order_id}-content`}
+          aria-label={`Order ${order.order_id} summary`}
           id={`${order.order_id}-header`}
           className="legend-marketplace-order-accordion__summary"
         >
@@ -332,19 +334,21 @@ const OrderAccordion: React.FC<{
                   }
                   arrow={true}
                 >
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<TimesCircleIcon />}
-                    disabled={!isCancellable}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCancelClick();
-                    }}
-                    className="legend-marketplace-order-accordion__cancel-button"
-                  >
-                    Cancel Order
-                  </Button>
+                  <span>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<TimesCircleIcon />}
+                      disabled={!isCancellable}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancelClick();
+                      }}
+                      className="legend-marketplace-order-accordion__cancel-button"
+                    >
+                      Cancel Order
+                    </Button>
+                  </span>
                 </Tooltip>
               </Box>
             )}

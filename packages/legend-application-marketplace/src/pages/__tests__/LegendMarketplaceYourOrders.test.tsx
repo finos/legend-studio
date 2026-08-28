@@ -15,11 +15,14 @@
  */
 
 import { describe, expect, test, jest, beforeEach } from '@jest/globals';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
-  TEST__provideMockLegendMarketplaceBaseStore,
-  TEST__setUpMarketplaceLakehouse,
-} from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+import { TEST__provideMockLegendMarketplaceBaseStore } from '../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import { createSpy } from '@finos/legend-shared/test';
 import {
   type TerminalProductOrder,
@@ -29,8 +32,8 @@ import {
   OrderStatusCategory,
 } from '@finos/legend-server-marketplace';
 import type { PlainObject } from '@finos/legend-shared';
-import { LEGEND_MARKETPLACE_TEST_ID } from '../../__lib__/LegendMarketplaceTesting.js';
-import searchResults from '../__test-utils__/TEST_DATA__SearchResults.json' with { type: 'json' };
+import { LegendMarketplaceYourOrders } from '../Profile/LegendMarketplaceYourOrders.js';
+import { WorkflowCurrentStage } from '../../stores/orders/OrderHelpers.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -101,7 +104,7 @@ const mockOrderWithUrl: TerminalProductOrder = {
     bbg_approval_action: null,
     rpm_ticket_id: null,
     rpm_comment: null,
-    current_stage: null,
+    current_stage: WorkflowCurrentStage.DIRECT_MANAGER,
     workflow_status: OrderStatus.IN_PROGRESS,
     rpm_action: null,
   },
@@ -169,18 +172,66 @@ const mockOrderWithoutUrl: TerminalProductOrder = {
     bbg_approval_action: null,
     rpm_ticket_id: null,
     rpm_comment: null,
-    current_stage: null,
+    current_stage: WorkflowCurrentStage.DIRECT_MANAGER,
     workflow_status: OrderStatus.COMPLETED,
     rpm_action: null,
   },
 };
 
-const setupTestComponent = async (openOrders: TerminalProductOrder[] = []) => {
-  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore({
-    dataProductEnv: 'prod',
-  });
+beforeEach(() => {
+  localStorage.clear();
+});
 
-  // Mock navigation
+// ─── Shared render helper ───────────────────────────────────────────────────
+//
+// These tests render `LegendMarketplaceYourOrders` directly (rather than through
+// the full app router) since `useLegendMarketplaceBaseStore` is already mocked
+// by `TEST__provideMockLegendMarketplaceBaseStore`, and the component itself is
+// not behind any auth wrapper - only the route is.
+
+const makeBloombergOrder = (
+  overrides: Partial<TerminalProductOrder> = {},
+): TerminalProductOrder => ({
+  ...mockOrderWithUrl,
+  order_id: 'ORD-123',
+  ordered_by_name: 'Alice Anderson',
+  vendor_name: 'Bloomberg',
+  service_pricing_items: [
+    {
+      entity_id: 1,
+      entity_name: 'Bloomberg Terminal',
+      entity_category: 'Terminal',
+      entity_type: 'Standard',
+      entity_cost: 2000,
+    },
+  ],
+  ...overrides,
+});
+
+const makeReutersOrder = (
+  overrides: Partial<TerminalProductOrder> = {},
+): TerminalProductOrder => ({
+  ...mockOrderWithoutUrl,
+  order_id: 'ORD-456',
+  ordered_by_name: 'Bob Brown',
+  vendor_name: 'Reuters',
+  service_pricing_items: [
+    {
+      entity_id: 2,
+      entity_name: 'Reuters Terminal',
+      entity_category: 'Terminal',
+      entity_type: 'Basic',
+      entity_cost: 1500,
+    },
+  ],
+  ...overrides,
+});
+
+const renderYourOrdersPage = async (
+  openOrders: TerminalProductOrder[] = [],
+) => {
+  const MOCK__baseStore = await TEST__provideMockLegendMarketplaceBaseStore();
+
   const mockVisitAddress = jest.fn();
   jest
     .spyOn(
@@ -189,84 +240,55 @@ const setupTestComponent = async (openOrders: TerminalProductOrder[] = []) => {
     )
     .mockImplementation(mockVisitAddress);
 
-  jest
-    .spyOn(
-      MOCK__baseStore.applicationStore.navigationService.navigator,
-      'getCurrentAddress',
-    )
-    .mockReturnValue('http://localhost/orders');
-
-  // Mock the orders API
-  const mockOpenOrdersResponse: PlainObject<TerminalProductOrderResponse> = {
-    orders: openOrders,
-    total_count: openOrders.length,
-    status_filter: OrderStatusCategory.OPEN,
-    kerberos: 'test-user',
-  };
-
-  const mockClosedOrdersResponse: PlainObject<TerminalProductOrderResponse> = {
-    orders: [],
-    total_count: 0,
-    status_filter: OrderStatusCategory.CLOSED,
-    kerberos: 'test-user',
-  };
-
   createSpy(
     MOCK__baseStore.marketplaceServerClient,
     'fetchOrders',
   ).mockImplementation(
     async (
-      user: string,
+      _user: string,
       category: OrderStatusCategory = OrderStatusCategory.OPEN,
-    ) => {
-      if (category === OrderStatusCategory.OPEN) {
-        return mockOpenOrdersResponse;
-      }
-      return mockClosedOrdersResponse;
-    },
+    ): Promise<PlainObject<TerminalProductOrderResponse>> => ({
+      orders: category === OrderStatusCategory.OPEN ? openOrders : [],
+      total_count:
+        category === OrderStatusCategory.OPEN ? openOrders.length : 0,
+      status_filter: category,
+      kerberos: 'test-user',
+    }),
   );
 
-  createSpy(
-    MOCK__baseStore.marketplaceServerClient,
-    'dataProductSearch',
-  ).mockResolvedValue({
-    dataProducts: searchResults,
+  await act(async () => {
+    render(<LegendMarketplaceYourOrders />);
   });
 
-  const { renderResult } =
-    await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
-
-  // Wait for home page to load
-  await waitFor(() =>
-    renderResult.getByTestId(LEGEND_MARKETPLACE_TEST_ID.HEADER),
-  );
-
-  return { MOCK__baseStore, renderResult, mockVisitAddress };
+  return { MOCK__baseStore, mockVisitAddress };
 };
 
-beforeEach(() => {
-  localStorage.clear();
-});
+describe('LegendMarketplaceYourOrders - Track Order Button', () => {
+  // An open order (workflow still in progress) with no tracking URL available
+  // for its current stage - distinct from `makeReutersOrder`'s base fixture,
+  // which represents a completed order.
+  const makeOpenOrderWithoutUrl = (): TerminalProductOrder =>
+    makeReutersOrder({
+      workflow_details: {
+        ...mockOrderWithoutUrl.workflow_details,
+        workflow_status: OrderStatus.IN_PROGRESS,
+        current_stage: WorkflowCurrentStage.DIRECT_MANAGER,
+      },
+    });
 
-// NOTE: These tests are currently skipped because the /orders route is protected
-// by withAuthenticationRequired and requires LegendMarketplaceOrdersStore provider.
-describe.skip('LegendMarketplaceYourOrders - Track Order Button', () => {
   test('renders Track Order button and calls navigationService when clicked', async () => {
-    const { mockVisitAddress } = await setupTestComponent([mockOrderWithUrl]);
-
-    // Wait for orders to load
+    const { mockVisitAddress } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    // Find and click the Track Order button
     const trackOrderButton = screen.getByRole('button', {
       name: /Track Order/i,
     });
     expect(trackOrderButton.hasAttribute('disabled')).toBe(false);
 
-    // Click the button
     fireEvent.click(trackOrderButton);
 
-    // Verify navigationService.visitAddress was called with correct URL
     expect(mockVisitAddress).toHaveBeenCalledWith(
       'https://workflow.example.com/order/123',
     );
@@ -274,67 +296,220 @@ describe.skip('LegendMarketplaceYourOrders - Track Order Button', () => {
   });
 
   test('Track Order button is disabled when url_manager is not available', async () => {
-    await setupTestComponent([mockOrderWithoutUrl]);
-
-    // Wait for orders to load
+    await renderYourOrdersPage([makeOpenOrderWithoutUrl()]);
     await waitFor(() => screen.getByText('Reuters Terminal'));
 
-    // Find the Track Order button
     const trackOrderButton = screen.getByRole('button', {
       name: /Track Order/i,
     });
 
-    // Verify button is disabled
     expect(trackOrderButton.hasAttribute('disabled')).toBe(true);
   });
 
   test('Track Order button is enabled when url_manager is available', async () => {
-    await setupTestComponent([mockOrderWithUrl]);
-
-    // Wait for orders to load
+    await renderYourOrdersPage([makeBloombergOrder()]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    // Find the Track Order button
     const trackOrderButton = screen.getByRole('button', {
       name: /Track Order/i,
     });
 
-    // Verify button is enabled
     expect(trackOrderButton.hasAttribute('disabled')).toBe(false);
   });
 
   test('handles multiple orders with mixed url availability', async () => {
-    const { mockVisitAddress } = await setupTestComponent([
-      mockOrderWithUrl,
-      mockOrderWithoutUrl,
+    const { mockVisitAddress } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+      makeOpenOrderWithoutUrl(),
     ]);
 
-    // Wait for both orders to load
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
     await waitFor(() => screen.getByText('Reuters Terminal'));
 
-    // Get all Track Order buttons
     const trackOrderButtons = screen.getAllByRole('button', {
       name: /Track Order/i,
     });
 
     expect(trackOrderButtons).toHaveLength(2);
-
-    // First button (with URL) should be enabled
     expect(trackOrderButtons[0]?.hasAttribute('disabled')).toBe(false);
-
-    // Second button (without URL) should be disabled
     expect(trackOrderButtons[1]?.hasAttribute('disabled')).toBe(true);
 
-    // Click the enabled button
     if (trackOrderButtons[0]) {
       fireEvent.click(trackOrderButtons[0]);
     }
 
-    // Verify only one call was made
     expect(mockVisitAddress).toHaveBeenCalledTimes(1);
     expect(mockVisitAddress).toHaveBeenCalledWith(
       'https://workflow.example.com/order/123',
     );
+  });
+});
+
+describe('LegendMarketplaceYourOrders - search', () => {
+  test('filters orders by order id', async () => {
+    await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+    expect(screen.getByText('Reuters Terminal')).toBeDefined();
+
+    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+      target: { value: 'ORD-123' },
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText('Reuters Terminal')).toBeNull(),
+    );
+    expect(screen.getByText('Bloomberg Terminal')).toBeDefined();
+  });
+
+  test('filters orders by ordered-by name', async () => {
+    await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+      target: { value: 'brown' },
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText('Bloomberg Terminal')).toBeNull(),
+    );
+    expect(screen.getByText('Reuters Terminal')).toBeDefined();
+  });
+
+  test('filters orders by service pricing item entity name', async () => {
+    await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+      target: { value: 'reuters terminal' },
+    });
+
+    await waitFor(() =>
+      expect(screen.queryByText('Bloomberg Terminal')).toBeNull(),
+    );
+    expect(screen.getByText('Reuters Terminal')).toBeDefined();
+  });
+
+  test('search is case-insensitive and matches on partial text', async () => {
+    await renderYourOrdersPage([makeBloombergOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+      target: { value: 'BLOOM' },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('Bloomberg Terminal')).toBeDefined(),
+    );
+  });
+
+  test('shows a "no orders match your search" empty state when nothing matches', async () => {
+    await renderYourOrdersPage([makeBloombergOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+      target: { value: 'nonexistent-order' },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('No orders match your search')).toBeDefined(),
+    );
+    expect(
+      screen.getByText('Try adjusting your search terms and try again.'),
+    ).toBeDefined();
+  });
+
+  test('clear button appears once text is entered and clears the search term', async () => {
+    await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    expect(screen.queryByLabelText('Clear search')).toBeNull();
+
+    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+      target: { value: 'ORD-123' },
+    });
+
+    const clearButton = await waitFor(() =>
+      screen.getByLabelText('Clear search'),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText('Reuters Terminal')).toBeNull(),
+    );
+
+    fireEvent.click(clearButton);
+
+    await waitFor(() =>
+      expect(screen.getByText('Reuters Terminal')).toBeDefined(),
+    );
+    expect(screen.getByText('Bloomberg Terminal')).toBeDefined();
+  });
+});
+
+describe('LegendMarketplaceYourOrders - empty states', () => {
+  test('shows default (no-search) empty state when there are no open orders', async () => {
+    await renderYourOrdersPage([]);
+
+    await waitFor(() =>
+      expect(screen.getByText('No active orders found')).toBeDefined(),
+    );
+    expect(
+      screen.getByText(
+        "You don't have any orders in progress. Start shopping to place your first order!",
+      ),
+    ).toBeDefined();
+  });
+});
+
+describe('LegendMarketplaceYourOrders - copy order id', () => {
+  test('copies the order id to clipboard and shows a success notification', async () => {
+    const { MOCK__baseStore } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    const copySpy = jest
+      .spyOn(
+        MOCK__baseStore.applicationStore.clipboardService,
+        'copyTextToClipboard',
+      )
+      .mockResolvedValue(undefined);
+    const notifySuccessSpy = jest.spyOn(
+      MOCK__baseStore.applicationStore.notificationService,
+      'notifySuccess',
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('Copy Order ID'));
+    });
+
+    await waitFor(() => expect(copySpy).toHaveBeenCalledWith('ORD-123'));
+    expect(notifySuccessSpy).toHaveBeenCalledWith(
+      'Order ID copied to clipboard',
+      undefined,
+      2500,
+    );
+  });
+
+  test('surfaces clipboard failures via alertUnhandledError instead of failing silently', async () => {
+    const { MOCK__baseStore } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    jest
+      .spyOn(
+        MOCK__baseStore.applicationStore.clipboardService,
+        'copyTextToClipboard',
+      )
+      .mockRejectedValue(new Error('clipboard unavailable'));
+    const alertSpy = jest.spyOn(
+      MOCK__baseStore.applicationStore,
+      'alertUnhandledError',
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByLabelText('Copy Order ID'));
+    });
+
+    await waitFor(() => expect(alertSpy).toHaveBeenCalled());
   });
 });
