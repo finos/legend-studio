@@ -1,5 +1,26 @@
 # @finos/legend-application-marketplace
 
+## 0.4.2
+
+### Patch Changes
+
+- [#5472](https://github.com/finos/legend-studio/pull/5472) [`d4b1712`](https://github.com/finos/legend-studio/commit/d4b1712006c8af46c9562cf0365434a34fe478a9) ([@eradityash](https://github.com/eradityash)) - Marketplace Terminals and Add-Ons - Owned Terminal Flow and Association Fixes
+
+  - Owned terminal rendering and actions
+  - Permission-aware add-on browsing
+  - AddToCart modal and association-flow behavior fixes
+  - Error handling and reliability cleanup
+  - Model serialization support
+
+- [#5478](https://github.com/finos/legend-studio/pull/5478) [`87eac9e`](https://github.com/finos/legend-studio/commit/87eac9ef6bed8b542f8cd96efd3f9fc0d971e68f) ([@eradityash](https://github.com/eradityash)) - Marketplace Terminals and Add-Ons - Order progress tracker update to reflect new approval stages
+
+  - Order progress tracker now reflects the full Privilege Manager / Market Data First Approver / Fulfillment Approver / Business Analyst approval chain (branching on `order_type` and `bbg_terminal_flag`) with rejected/cancelled/auto-terminated terminal states
+  - Track Order now links to the tracking URL of the order's _current_ workflow stage instead of always the Privilege Manager URL
+  - Cancel Order is now available at any approval stage and is only disabled once the order reaches the RPM/fulfillment stage
+  - Closure Information now shows the details of whichever stage actually closed the order (the rejecting stage, or the final approval/fulfillment stage) instead of always showing the Privilege Manager stage's details
+
+- [#5481](https://github.com/finos/legend-studio/pull/5481) [`38dc221`](https://github.com/finos/legend-studio/commit/38dc2218b176a9fc09d9f2c08dc3660786f62ab5) ([@deekshith98](https://github.com/deekshith98)) - Add a dedicated "Lakehouse Access" search tab and rename Data Products tab to dataspaces
+
 ## 0.4.1
 
 ## 0.4.0
