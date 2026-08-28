@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.19.9
+
+### Patch Changes
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Adjust UI to reflect accessing mappings through a Data Product instead of a concrete mapping. Add fallbacks to protect against NPEs.
+
 ## 4.19.8
 
 ## 4.19.7

@@ -1,5 +1,15 @@
 # @finos/legend-application-query
 
+## 13.8.49
+
+### Patch Changes
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Adjust UI to reflect accessing mappings through a Data Product instead of a concrete mapping. Add fallbacks to protect against NPEs.
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Guard `defaultRuntime` and `defaultExecutionContext` when serializing a data space back to V1 protocol in the query builder plugin, so query builder no longer crashes when the underlying analytics result is missing either field.
+
+- [#5482](https://github.com/finos/legend-studio/pull/5482) [`85bbec3`](https://github.com/finos/legend-studio/commit/85bbec3dbd544282958959b6920bb48ed86ed8e5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add info to dataSpace Analytics
+
 ## 13.8.48
 
 ## 13.8.47

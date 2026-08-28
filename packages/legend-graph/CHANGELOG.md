@@ -1,5 +1,15 @@
 # @finos/legend-graph
 
+## 32.6.31
+
+### Patch Changes
+
+- [#5483](https://github.com/finos/legend-studio/pull/5483) [`908f9c8`](https://github.com/finos/legend-studio/commit/908f9c875ee026dea349bdc2ad9ddf9fba8c8bd6) ([@kelly-thai](https://github.com/kelly-thai)) - Add isCurrentUserAnOwnerOnLatestVersion API to Engine Server Client to check service ownership
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Attach runtime and mapping sourced from MAPGs to query which enables execution and plan generation
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Export V1_buildRelationTypeFromV1RelationType
+
 ## 32.6.30
 
 ### Patch Changes

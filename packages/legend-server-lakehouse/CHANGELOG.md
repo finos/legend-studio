@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.80
+
+### Patch Changes
+
+- [#5490](https://github.com/finos/legend-studio/pull/5490) [`5703b61`](https://github.com/finos/legend-studio/commit/5703b617c31d41bcd42ea75337c9fd68b413ac26) ([@TharunRajeev](https://github.com/TharunRajeev)) - Made business justification optional when approving entitlement contract requests, while keeping it required when denying them.
+
 ## 0.3.79
 
 ## 0.3.78

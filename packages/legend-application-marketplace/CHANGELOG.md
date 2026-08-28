@@ -1,5 +1,17 @@
 # @finos/legend-application-marketplace
 
+## 0.4.3
+
+### Patch Changes
+
+- [#5490](https://github.com/finos/legend-studio/pull/5490) [`5703b61`](https://github.com/finos/legend-studio/commit/5703b617c31d41bcd42ea75337c9fd68b413ac26) ([@TharunRajeev](https://github.com/TharunRajeev)) - Made business justification optional when approving entitlement contract requests, while keeping it required when denying them.
+
+- [#5487](https://github.com/finos/legend-studio/pull/5487) [`1f2af74`](https://github.com/finos/legend-studio/commit/1f2af746605c68f2b744e39dcdce1c74b1f21d7b) ([@eradityash](https://github.com/eradityash)) - Add telemetry for Terminals/Add-ons, Orders, and Subscriptions flows
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Wire the legacy data product (data space) viewer to the new mapping-provider access flow: `LegendMarketplaceProductViewerStore` now supplies `viewDataProduct` and `mappingProviderAccessConfig` so the viewer can render the Request Access control and open the underlying Lakehouse data product from a mapping-provider–backed execution context.
+
+  Handle data space analytics results that are missing a `defaultExecutionContext` or `defaultRuntime` in `LegendMarketplaceProductViewerStore` and `LegendMarketplaceAIChatStore` (Query Class bails with a warning; AI chat falls back to empty values instead of throwing).
+
 ## 0.4.2
 
 ### Patch Changes

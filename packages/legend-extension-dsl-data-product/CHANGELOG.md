@@ -1,5 +1,15 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.113
+
+### Patch Changes
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Extract the "Request Access" control from `DataProductDataAccess` into a standalone `DataProductAPGAccessRequestControl` so it can be reused outside the data-access panel (the data space viewer now renders it next to a mapping-provider–backed execution context).
+
+  Add `SDLCDataProductResolver` to resolve a legacy SDLC-hosted data product to its Lakehouse deployment, so mapping-provider references from a data space can be opened as a Lakehouse data product from any consumer.
+
+- [#5489](https://github.com/finos/legend-studio/pull/5489) [`0e936bc`](https://github.com/finos/legend-studio/commit/0e936bc972082784597b0eef9af7588dd6fd8b98) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disable Open in Query and Open in Datacube for parameterized access points.
+
 ## 0.0.112
 
 ## 0.0.111

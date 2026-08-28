@@ -1,5 +1,11 @@
 # @finos/legend-server-marketplace
 
+## 0.2.7
+
+### Patch Changes
+
+- [#5487](https://github.com/finos/legend-studio/pull/5487) [`1f2af74`](https://github.com/finos/legend-studio/commit/1f2af746605c68f2b744e39dcdce1c74b1f21d7b) ([@eradityash](https://github.com/eradityash)) - Add telemetry for Terminals/Add-ons, Orders, and Subscriptions flows
+
 ## 0.2.6
 
 ### Patch Changes

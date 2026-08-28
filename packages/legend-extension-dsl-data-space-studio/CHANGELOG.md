@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.348
+
+### Patch Changes
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Update the Studio data space editor preview validation to treat `defaultRuntime` on an execution context as optional, so previewing a data space whose execution context has no default runtime no longer disables the Preview button.
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Add support for resolving execution context mappings from dataspace queries
+
 ## 0.1.347
 
 ## 0.1.346
