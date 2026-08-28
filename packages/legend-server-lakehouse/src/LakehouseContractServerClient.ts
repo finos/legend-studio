@@ -259,7 +259,7 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   approveTask = (
     id: string,
     token: string | undefined,
-    justification: string,
+    justification: string | undefined,
   ): Promise<PlainObject<V1_TaskStatus>> =>
     this.post(
       `${this._tasks()}/${encodeURIComponent(id)}/approve`,

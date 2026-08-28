@@ -31,7 +31,7 @@ export function showTaskActionAlert(options: {
   requireJustification?: boolean;
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
-  onConfirm: (justification: string) => Promise<void>;
+  onConfirm: (justification: string | undefined) => Promise<void>;
   errorPrefix: string;
 }): void {
   const {
@@ -80,7 +80,7 @@ export function showTaskActionAlert(options: {
           }
           if (!isLoading) {
             setIsLoading(true);
-            onConfirm(justification)
+            onConfirm(justification.trim() ? justification : undefined)
               .catch((error) => {
                 assertErrorThrown(error);
                 applicationStore.notificationService.notifyError(

@@ -135,7 +135,7 @@ export const PermitDataAccessRequestTask =
 
       const handleTaskAction = async (
         action: V1_PermitTaskAction,
-        justification: string,
+        justification: string | undefined,
       ): Promise<void> => {
         if (!actionableTask || !permitState) {
           return;
@@ -144,7 +144,7 @@ export const PermitDataAccessRequestTask =
           permitState.performTaskAction(
             actionableTask.taskId,
             action,
-            justification,
+            justification ?? '',
             tokenRef.current,
           ),
         );

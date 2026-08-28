@@ -54,7 +54,7 @@ import { flowResult } from 'mobx';
 import { useAuth } from 'react-oidc-context';
 import { observer } from 'mobx-react-lite';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
-import { startCase } from '@finos/legend-shared';
+import { guaranteeNonNullable, startCase } from '@finos/legend-shared';
 import { showTaskActionAlert } from './showTaskActionAlert.js';
 import {
   type ContractErrorLayer,
@@ -231,25 +231,29 @@ export const EntitlementsPendingTasksDashboard = observer(
 
     const runBulkAction = async (
       action: TaskApprovalAction,
-      justification: string,
+      justification: string | undefined,
     ): Promise<void> => {
       const tasks =
         pendingTasks?.filter((task) => selectedTaskIdsSet.has(task.taskId)) ??
         [];
-      const actionFunction =
-        action === TaskApprovalAction.APPROVE
-          ? dashboardState.approve.bind(dashboardState)
-          : dashboardState.deny.bind(dashboardState);
       const currentErrorMessages: [V1_PendingTaskRecord, string][] = [];
       let successCount = 0;
       await Promise.all(
-        tasks.map(async (task) =>
-          flowResult(actionFunction(task, tokenRef.current, justification))
+        tasks.map(async (task) => {
+          const actionResult =
+            action === TaskApprovalAction.APPROVE
+              ? dashboardState.approve(task, tokenRef.current, justification)
+              : dashboardState.deny(
+                  task,
+                  tokenRef.current,
+                  guaranteeNonNullable(justification),
+                );
+          return flowResult(actionResult)
             .then(() => {
               successCount += 1;
             })
-            .catch((error) => currentErrorMessages.push([task, error.message])),
-        ),
+            .catch((error) => currentErrorMessages.push([task, error.message]));
+        }),
       );
       if (currentErrorMessages.length === 0) {
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(

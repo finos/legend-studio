@@ -1066,7 +1066,7 @@ export class EntitlementsDashboardState {
     task: V1_PendingTaskRecord,
     token: string | undefined,
     taskAction: TaskApprovalAction,
-    justification: string,
+    justification: string | undefined,
   ): GeneratorFn<void> {
     const isApprove = taskAction === TaskApprovalAction.APPROVE;
 
@@ -1096,7 +1096,7 @@ export class EntitlementsDashboardState {
         : contractClient.denyTask(
             task.taskId,
             token,
-            justification,
+            guaranteeNonNullable(justification),
           )) as PlainObject<V1_TaskStatusChangeResponse>;
       const change = deserialize(
         V1_TaskStatusChangeResponseModelSchema,
@@ -1116,7 +1116,7 @@ export class EntitlementsDashboardState {
   *approve(
     task: V1_PendingTaskRecord,
     token: string | undefined,
-    justification: string,
+    justification: string | undefined,
   ): GeneratorFn<void> {
     try {
       this.changingState.inProgress();

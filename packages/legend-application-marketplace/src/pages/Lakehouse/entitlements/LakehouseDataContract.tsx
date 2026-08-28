@@ -222,7 +222,7 @@ export const LakehouseDataContractTask =
         }
       };
 
-      const handleApprove = async (justification: string) => {
+      const handleApprove = async (justification: string | undefined) => {
         const response =
           await marketplaceBaseStore.lakehouseContractServerClient.approveTask(
             currentTaskId,
@@ -297,7 +297,8 @@ export const LakehouseDataContractTask =
           requireJustification: true,
           isLoading,
           setIsLoading,
-          onConfirm: (justification) => handleDeny(justification),
+          onConfirm: (justification) =>
+            handleDeny(guaranteeNonNullable(justification)),
           errorPrefix: 'Error denying task',
         });
       };

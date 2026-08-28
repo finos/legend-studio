@@ -370,7 +370,11 @@ describe('Lakehouse Data Contract', () => {
       await waitFor(() => {
         expect(
           marketplaceBaseStore.lakehouseContractServerClient.approveTask,
-        ).toHaveBeenCalledWith('do-task-pending-id', expect.any(String), '');
+        ).toHaveBeenCalledWith(
+          'do-task-pending-id',
+          expect.any(String),
+          undefined,
+        );
       });
     });
 
