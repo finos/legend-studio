@@ -567,7 +567,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     });
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
-      expect.stringContaining('/dataProduct/results'),
+      expect.stringContaining('/dataSpace/results'),
     );
   });
 
@@ -709,14 +709,14 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     expect(resultState.distinctDataProducts[1]?.name).toBe('LegacyProductB');
   });
 
-  test('clicking the Data Products tab navigates back to product search', async () => {
+  test('clicking the Dataspaces tab navigates back to product search', async () => {
     const { MOCK__baseStore } = await setupFieldSearchTestComponent('customer');
     const mockGoToLocation = jest.fn();
     MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
       mockGoToLocation;
 
     await screen.findByText('4 Fields');
-    fireEvent.click(screen.getByRole('radio', { name: 'Data Products' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Dataspaces' }));
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
       generateLakehouseSearchResultsRoute('customer', false),

@@ -121,6 +121,26 @@ class V1_DataSpaceExecutionContextRuntimeMetadata {
   );
 }
 
+export class V1_DataSpaceInfoAnalysisResult {
+  isVerified?: boolean;
+  isInDevelopment?: boolean;
+  isExternal?: boolean;
+  topics: string[] = [];
+  relatedDataSpaces: string[] = [];
+  deprecationNotice?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceInfoAnalysisResult, {
+      isVerified: optional(primitive()),
+      isInDevelopment: optional(primitive()),
+      isExternal: optional(primitive()),
+      topics: list(primitive()),
+      relatedDataSpaces: list(primitive()),
+      deprecationNotice: optional(primitive()),
+    }),
+  );
+}
+
 const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceExecutionContextAnalysisResult> =>
@@ -518,6 +538,7 @@ export class V1_DataSpaceAnalysisResult {
 
   title?: string | undefined;
   description?: string | undefined;
+  info?: V1_DataSpaceInfoAnalysisResult | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
   model!: V1_PureModelContextData;
@@ -550,6 +571,9 @@ export const V1_dataSpaceAnalysisResultModelSchema = (
 
     title: optional(primitive()),
     description: optional(primitive()),
+    info: optional(
+      usingModelSchema(V1_DataSpaceInfoAnalysisResult.serialization.schema),
+    ),
 
     supportInfo: optionalCustom(
       () => SKIP,

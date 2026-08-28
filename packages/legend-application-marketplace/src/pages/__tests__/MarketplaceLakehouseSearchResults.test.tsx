@@ -178,7 +178,7 @@ const setupTestComponent = async (
 
   const { renderResult } = await TEST__setUpMarketplaceLakehouse(
     MOCK__baseStore,
-    `/dataProduct/results?query=${query}${useProducerSearch ? '&useProducerSearch=true' : ''}`,
+    `/dataSpace/results?query=${query}${useProducerSearch ? '&useProducerSearch=true' : ''}`,
   );
 
   return { MOCK__baseStore, renderResult };
@@ -343,11 +343,21 @@ describe('MarketplaceLakehouseSearchResults', () => {
     );
   });
 
+  test('shows an intro banner explaining Lakehouse Access results are included', async () => {
+    await setupTestComponent('data', 'prod');
+
+    expect(
+      await screen.findByText(
+        /Results include both DataSpaces .* and Lakehouse Access items \(Data Product\)/,
+      ),
+    ).toBeDefined();
+  });
+
   test('search type tabs are not shown when there is no search query', async () => {
     await setupTestComponent('', 'prod');
 
     await screen.findByPlaceholderText('Search Legend Marketplace');
-    expect(screen.queryByRole('radio', { name: 'Data Products' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'Dataspaces' })).toBeNull();
     expect(screen.queryByRole('radio', { name: 'Data Fields' })).toBeNull();
   });
 
@@ -723,8 +733,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(await screen.findByText('3 Products'));
 
-      // Check for 2 lakehouse chips (text may include environment name)
-      expect(screen.getAllByText(/Lakehouse/)).toHaveLength(2);
+      // Check for 2 lakehouse chips (text may include environment name).
+      // NOTE: match the `Lakehouse - <env>` chip format specifically rather than a bare
+      // /Lakehouse/, which would also pick up the "Lakehouse Access" header tab.
+      expect(screen.getAllByText(/^Lakehouse - /)).toHaveLength(2);
       // Check that legacy data product is rendered
       expect(await screen.findByText('LegacyDataProduct'));
     });
@@ -929,7 +941,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       await TEST__setUpMarketplaceLakehouse(
         MOCK__baseStore,
-        '/dataProduct/results?query=data',
+        '/dataSpace/results?query=data',
       );
 
       await waitFor(() => {

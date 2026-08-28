@@ -16,8 +16,8 @@
       "_type": "profile",
       "name": "DataSpaceInfo",
       "package": "meta::pure::metamodel::dataSpace::profiles",
-      "stereotypes": ["Verified"],
-      "tags": ["deprecationNotice"]
+      "stereotypes": ["Verified", "InDevelopment", "External"],
+      "tags": ["deprecationNotice", "relatedDataSpaces", "topics"]
     }
   ]
 }

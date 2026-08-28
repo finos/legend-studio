@@ -19,6 +19,7 @@ import {
   LegendMarketplaceTelemetryHelper,
   TERMINAL_SEARCH_LOCATION,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { MarketplaceSearchMode } from '../../__lib__/LegendMarketplaceSearchMode.js';
 import {
   ApplicationStore,
   type TelemetryService,
@@ -473,8 +474,9 @@ describe('Field Search Toggle Telemetry', () => {
   });
 
   test('logs field search toggle enabled event', () => {
-    LegendMarketplaceTelemetryHelper.logEvent_ToggleFieldSearch(
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleSearchMode(
       mockTelemetryService,
+      MarketplaceSearchMode.DATA_FIELDS,
       true,
     );
 
@@ -488,8 +490,9 @@ describe('Field Search Toggle Telemetry', () => {
   });
 
   test('logs field search toggle disabled event', () => {
-    LegendMarketplaceTelemetryHelper.logEvent_ToggleFieldSearch(
+    LegendMarketplaceTelemetryHelper.logEvent_ToggleSearchMode(
       mockTelemetryService,
+      MarketplaceSearchMode.DATA_FIELDS,
       false,
     );
 

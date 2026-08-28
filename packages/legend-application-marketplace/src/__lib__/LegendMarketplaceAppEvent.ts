@@ -31,6 +31,8 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   CLICK_BROWSE_HISTORICAL_NEWSLETTERS = 'marketplace.click.browse.historical.newsletters',
   PRODUCER_SEARCH_TOGGLE = 'marketplace.producer.search.toggle',
   FIELD_SEARCH_TOGGLE = 'marketplace.field.search.toggle',
+  LAKEHOUSE_ACCESS_SEARCH_TOGGLE = 'marketplace.lakehouse-access.search.toggle',
+  LAKEHOUSE_ACCESS_SEARCH_FAILURE = 'marketplace.lakehouse-access.search.failure',
   FIELD_SEARCH_FAILURE = 'marketplace.field.search.failure',
   FETCH_PENDING_TASKS_FAILURE = 'marketplace.fetch.pending-tasks.failure',
   ORDER_CANCELLATION_FAILURE = 'marketplace.order.cancellation.failure',

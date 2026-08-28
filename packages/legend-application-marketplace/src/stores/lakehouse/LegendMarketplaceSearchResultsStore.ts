@@ -22,38 +22,36 @@ import {
   isNonNullable,
   LogEvent,
   type GeneratorFn,
-  type PlainObject,
 } from '@finos/legend-shared';
 import {
   DataProductSearchResult,
   DataProductSearchResultDetailsType,
-  DataProductSearchResponse,
-  ErrorDataProductSearchResultDetails,
   LakehouseAdHocDataProductSearchResultOrigin,
-  LakehouseDataProductSearchResultDetails,
   LakehouseDataProductSearchResultOriginType,
   LakehouseSDLCDataProductSearchResultOrigin,
   type MarketplaceServerClient,
+  SearchType,
   type TaxonomyNode,
 } from '@finos/legend-server-marketplace';
 import { ProductCardState } from './dataProducts/ProductCardState.js';
-import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import {
   DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
   V1_deserializeDataSpace,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   V1_entitlementsDataProductLiteResponseToDataProductLite,
-  V1_PureGraphManager,
+  type V1_PureGraphManager,
   extractPackagePathFromPath,
   extractElementNameFromPath,
   V1_SdlcDeploymentDataProductOrigin,
 } from '@finos/legend-graph';
-import {
-  type StoredSummaryEntity,
-  DepotScope,
-} from '@finos/legend-server-depot';
+import { StoredSummaryEntity, DepotScope } from '@finos/legend-server-depot';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import {
+  getOrCreateGraphManager,
+  processRawSearchResults,
+} from './SearchResultsStoreUtils.js';
 
 export const TAXONOMY_UNDEFINED_NODE_ID = '__undefined__';
 
@@ -71,6 +69,18 @@ export enum DataProductTypeFilter {
 export enum DataProductSourceFilter {
   EXTERNAL = 'External',
   INTERNAL = 'Internal',
+}
+
+/**
+ * Query-string keys accepted by the `search_filters` parameter on the
+ * DataSpaces and Lakehouse Access search endpoints.
+ */
+export enum SearchFilterKey {
+  DATA_PRODUCT_TYPE = 'data_product_type',
+  DATA_PRODUCT_SOURCE = 'data_product_source',
+  LICENSE_TO = 'license_to',
+  TAXONOMY = 'taxonomy',
+  DEPLOYMENT_ID = 'deployment_id',
 }
 
 export enum DataProductLicenseFilter {
@@ -109,7 +119,21 @@ export interface FilterCounts {
   lakehouse_count: number;
   legacy_count: number;
   external_source_count: number;
+  internal_source_count: number;
 }
+
+/**
+ * Which {@link FilterCounts} key backs the count shown next to each
+ * {@link DataProductSourceFilter} option. A lookup table rather than a ternary so a
+ * third source value can't silently fall through to the wrong count.
+ */
+export const SOURCE_FILTER_COUNT_KEY: Record<
+  DataProductSourceFilter,
+  keyof FilterCounts
+> = {
+  [DataProductSourceFilter.EXTERNAL]: 'external_source_count',
+  [DataProductSourceFilter.INTERNAL]: 'internal_source_count',
+};
 
 export enum SearchResultsViewMode {
   TILE = 'tile',
@@ -117,12 +141,47 @@ export enum SearchResultsViewMode {
 }
 
 export enum SearchResultViewOption {
-  DATA_PRODUCTS = 'Data Products',
+  DATA_SPACES = 'Dataspaces',
   DATA_FIELDS = 'Data Fields',
 }
 
-const LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE =
+export const LEGEND_MARKETPLACE_SETTING_KEY_VIEW_MODE =
   'marketplace.search-results.viewMode';
+
+/**
+ * The subset of a search results store that {@link SourceFilterSection} (the "Source"
+ * filter section shared by every search experience's filters panel) needs.
+ *
+ * Declared structurally so that any search experience can reuse the section. The
+ * concrete stores have private members, which would otherwise make them mutually
+ * incompatible even where their public shapes match.
+ */
+export interface SourceFilterableSearchStore {
+  searchQuery: string | undefined;
+  selectedSources: Set<DataProductSourceFilter>;
+  filterCounts: FilterCounts;
+  hasActiveFilters: boolean;
+  isFirstLoad: boolean;
+  toggleSource(value: DataProductSourceFilter): void;
+  clearAllFilters(): void;
+  setPage(value: number): void;
+}
+
+/**
+ * The subset of a search results store that {@link MarketplaceSearchFiltersPanel} needs.
+ * Extends {@link SourceFilterableSearchStore} with the taxonomy- and license-specific
+ * members that only the DataSpaces search experience has.
+ */
+export interface TaxonomyFilterableSearchStore
+  extends SourceFilterableSearchStore {
+  taxonomyTree: TaxonomyNode[];
+  selectedTaxonomyNodeIds: Set<string>;
+  selectedLicenses: Set<DataProductLicenseFilter>;
+  totalItems: number;
+  toggleTaxonomyNode(nodeId: string): void;
+  simpleToggleTaxonomyNode(nodeId: string): void;
+  toggleLicense(value: DataProductLicenseFilter): void;
+}
 
 export class LegendMarketplaceSearchResultsStore {
   readonly marketplaceBaseStore: LegendMarketplaceBaseStore;
@@ -147,6 +206,7 @@ export class LegendMarketplaceSearchResultsStore {
     lakehouse_count: 0,
     legacy_count: 0,
     external_source_count: 0,
+    internal_source_count: 0,
   };
 
   page = 1;
@@ -158,6 +218,14 @@ export class LegendMarketplaceSearchResultsStore {
   readonly executingSemanticSearchState = ActionState.create();
   readonly fetchingProducerSearchDataProductsState = ActionState.create();
   readonly fetchingProducerSearchLegacyDataProductsState = ActionState.create();
+  /**
+   * Cache holder for `getOrCreateGraphManager` — a graph manager is expensive to
+   * construct and initialize, and is safe to reuse across searches from this store
+   * for as long as the store (and the page it backs) is alive.
+   */
+  private readonly _graphManagerCache: {
+    current: V1_PureGraphManager | undefined;
+  } = { current: undefined };
 
   constructor(marketplaceBaseStore: LegendMarketplaceBaseStore) {
     this.marketplaceBaseStore = marketplaceBaseStore;
@@ -174,7 +242,7 @@ export class LegendMarketplaceSearchResultsStore {
 
     makeObservable<
       LegendMarketplaceSearchResultsStore,
-      '_lastTaxonomyQueryKey'
+      '_lastTaxonomyQueryKey' | '_graphManagerCache'
     >(this, {
       searchQuery: observable,
       useProducerSearch: observable,
@@ -190,6 +258,7 @@ export class LegendMarketplaceSearchResultsStore {
       selectedLicenses: observable,
       filterCounts: observable,
       _lastTaxonomyQueryKey: false,
+      _graphManagerCache: false,
       setSearchQuery: action,
       setUseProducerSearch: action,
       page: observable,
@@ -218,6 +287,7 @@ export class LegendMarketplaceSearchResultsStore {
       clearAllFilters: action,
       filterSortProducts: computed,
       isLoading: computed,
+      isFirstLoad: computed,
       isOnLastPage: computed,
       hasActiveFilters: computed,
       executeSearch: flow,
@@ -285,6 +355,10 @@ export class LegendMarketplaceSearchResultsStore {
           this.fetchingProducerSearchLegacyDataProductsState.isInProgress
       : this.executingSemanticSearchState.isInProgress ||
           this.executingSemanticSearchState.isInInitialState;
+  }
+
+  get isFirstLoad(): boolean {
+    return this.executingSemanticSearchState.isInInitialState;
   }
 
   setPage(value: number): void {
@@ -395,11 +469,19 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   toggleTaxonomyNode(nodeId: string): void {
-    if (this.selectedTaxonomyNodeIds.has(nodeId)) {
+    const wasSelected = this.selectedTaxonomyNodeIds.has(nodeId);
+    if (wasSelected) {
       this.deselectTaxonomyNode(nodeId);
     } else {
       this.selectTaxonomyNode(nodeId);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'taxonomy',
+      nodeId,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   private deselectTaxonomyNode(nodeId: string): void {
@@ -433,11 +515,19 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   simpleToggleTaxonomyNode(nodeId: string): void {
-    if (this.selectedTaxonomyNodeIds.has(nodeId)) {
+    const wasSelected = this.selectedTaxonomyNodeIds.has(nodeId);
+    if (wasSelected) {
       this.selectedTaxonomyNodeIds.delete(nodeId);
     } else {
       this.selectedTaxonomyNodeIds.add(nodeId);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'taxonomy',
+      nodeId,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   toggleDataProductType(value: DataProductTypeFilter): void {
@@ -449,19 +539,35 @@ export class LegendMarketplaceSearchResultsStore {
   }
 
   toggleSource(value: DataProductSourceFilter): void {
-    if (this.selectedSources.has(value)) {
+    const wasSelected = this.selectedSources.has(value);
+    if (wasSelected) {
       this.selectedSources.delete(value);
     } else {
       this.selectedSources.add(value);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'source',
+      value,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   toggleLicense(value: DataProductLicenseFilter): void {
-    if (this.selectedLicenses.has(value)) {
+    const wasSelected = this.selectedLicenses.has(value);
+    if (wasSelected) {
       this.selectedLicenses.delete(value);
     } else {
       this.selectedLicenses.add(value);
     }
+    LegendMarketplaceTelemetryHelper.logEvent_ApplySearchFilter(
+      this.marketplaceBaseStore.applicationStore.telemetryService,
+      'license',
+      value,
+      wasSelected ? 'deselect' : 'select',
+      this.searchQuery,
+    );
   }
 
   clearAllFilters(): void {
@@ -529,16 +635,16 @@ export class LegendMarketplaceSearchResultsStore {
     return filterIds;
   }
 
-  private buildSearchFilters(): string[] {
+  buildSearchFilters(): string[] {
     const filters: string[] = [];
     if (this.selectedDataProductTypes.size > 0) {
       filters.push(
-        `data_product_type=${Array.from(this.selectedDataProductTypes).join(',')}`,
+        `${SearchFilterKey.DATA_PRODUCT_TYPE}=${Array.from(this.selectedDataProductTypes).join(',')}`,
       );
     }
     if (this.selectedSources.size > 0) {
       filters.push(
-        `data_product_source=${Array.from(this.selectedSources).join(',')}`,
+        `${SearchFilterKey.DATA_PRODUCT_SOURCE}=${Array.from(this.selectedSources).join(',')}`,
       );
     }
     if (this.selectedLicenses.size > 0) {
@@ -546,7 +652,7 @@ export class LegendMarketplaceSearchResultsStore {
       const licenseValues = Array.from(this.selectedLicenses).map((l) =>
         l === DataProductLicenseFilter.UNDEFINED ? '' : l,
       );
-      filters.push(`license_to=${licenseValues.join(',')}`);
+      filters.push(`${SearchFilterKey.LICENSE_TO}=${licenseValues.join(',')}`);
     }
     // Map TAXONOMY_UNDEFINED_NODE_ID to '' so the backend can filter for products
     // with no taxonomy tags, the same way license_to='' handles undefined licenses.
@@ -557,7 +663,9 @@ export class LegendMarketplaceSearchResultsStore {
       taxonomyFilterIds.push('');
     }
     if (taxonomyFilterIds.length > 0) {
-      filters.push(`taxonomy=${taxonomyFilterIds.join(',')}`);
+      filters.push(
+        `${SearchFilterKey.TAXONOMY}=${taxonomyFilterIds.join(',')}`,
+      );
     }
     return filters;
   }
@@ -574,22 +682,9 @@ export class LegendMarketplaceSearchResultsStore {
 
       const searchFilters = this.buildSearchFilters();
 
-      // Create graph manager for parsing ad-hoc deployed data products
-      const graphManager = new V1_PureGraphManager(
-        this.marketplaceBaseStore.applicationStore.pluginManager,
-        this.marketplaceBaseStore.applicationStore.logService,
-        this.marketplaceBaseStore.remoteEngine,
-      );
-      yield graphManager.initialize(
-        {
-          env: this.marketplaceBaseStore.applicationStore.config.env,
-          tabSize: DEFAULT_TAB_SIZE,
-          clientConfig: {
-            baseUrl:
-              this.marketplaceBaseStore.applicationStore.config.engineServerUrl,
-          },
-        },
-        { engine: this.marketplaceBaseStore.remoteEngine },
+      const graphManager = yield* getOrCreateGraphManager(
+        this.marketplaceBaseStore,
+        this._graphManagerCache,
       );
 
       if (useProducerSearch) {
@@ -620,48 +715,6 @@ export class LegendMarketplaceSearchResultsStore {
     }
   }
 
-  private processRawSearchResults(
-    rawResults: PlainObject<DataProductSearchResponse>,
-    graphManager: V1_PureGraphManager,
-    token: string | undefined,
-  ): {
-    productCardStates: ProductCardState[];
-    response: DataProductSearchResponse;
-  } {
-    const response =
-      DataProductSearchResponse.serialization.fromJson(rawResults);
-
-    const validResults = response.results.filter(
-      (result) =>
-        !(
-          result.dataProductDetails instanceof
-          ErrorDataProductSearchResultDetails
-        ) &&
-        !(
-          result.dataProductDetails instanceof
-            LakehouseDataProductSearchResultDetails &&
-          result.dataProductDetails.origin === null
-        ),
-    );
-
-    const usedImages = new Set<string>();
-    const productCardStates: ProductCardState[] = validResults.map(
-      (result) =>
-        new ProductCardState(
-          this.marketplaceBaseStore,
-          result,
-          graphManager,
-          new Map(),
-          usedImages,
-        ),
-    );
-    productCardStates.forEach((dataProductState) =>
-      dataProductState.init(token),
-    );
-
-    return { productCardStates, response };
-  }
-
   private async executeSemanticSearch(
     query: string,
     graphManager: V1_PureGraphManager,
@@ -674,14 +727,15 @@ export class LegendMarketplaceSearchResultsStore {
       const rawResults = await this.marketplaceServerClient.dataProductSearch(
         query,
         this.marketplaceBaseStore.envState.lakehouseEnvironment,
-        'hybrid',
+        SearchType.HYBRID,
         filters,
         this.itemsPerPage,
         this.page,
         this.showAllProducts,
       );
 
-      const { productCardStates, response } = this.processRawSearchResults(
+      const { productCardStates, response } = processRawSearchResults(
+        this.marketplaceBaseStore,
         rawResults,
         graphManager,
         token,
@@ -705,9 +759,12 @@ export class LegendMarketplaceSearchResultsStore {
         lakehouse_count: response.metadata.lakehouse_count ?? 0,
         legacy_count: response.metadata.legacy_count ?? 0,
         external_source_count: response.metadata.external_source_count ?? 0,
+        internal_source_count: response.metadata.internal_source_count ?? 0,
       });
-    } finally {
-      this.executingSemanticSearchState.complete();
+      this.executingSemanticSearchState.pass();
+    } catch (error) {
+      this.executingSemanticSearchState.fail();
+      throw error;
     }
   }
 
@@ -809,8 +866,10 @@ export class LegendMarketplaceSearchResultsStore {
         dataProductState.init(token),
       );
       this.setProducerSearchDataProductCardStates(filteredProductCardStates);
-    } finally {
-      this.fetchingProducerSearchDataProductsState.complete();
+      this.fetchingProducerSearchDataProductsState.pass();
+    } catch (error) {
+      this.fetchingProducerSearchDataProductsState.fail();
+      throw error;
     }
   }
 
@@ -825,14 +884,17 @@ export class LegendMarketplaceSearchResultsStore {
 
     this.fetchingProducerSearchLegacyDataProductsState.inProgress();
     try {
-      const dataSpaceEntitySummaries =
-        (await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
+      const rawDataSpaceEntitySummaries =
+        await this.marketplaceBaseStore.depotServerClient.getEntitiesSummaryByClassifier(
           DATA_SPACE_ELEMENT_CLASSIFIER_PATH,
           {
             scope: DepotScope.RELEASES,
             summary: true,
           },
-        )) as unknown as StoredSummaryEntity[];
+        );
+      const dataSpaceEntitySummaries = rawDataSpaceEntitySummaries.map(
+        (entity) => StoredSummaryEntity.serialization.fromJson(entity),
+      );
       const usedImages = new Set<string>();
       const productCardStates = dataSpaceEntitySummaries
         .map((entity) => {
@@ -888,8 +950,10 @@ export class LegendMarketplaceSearchResultsStore {
       this.setProducerSearchLegacyDataProductCardStates(
         filteredProductCardStates,
       );
-    } finally {
-      this.fetchingProducerSearchLegacyDataProductsState.complete();
+      this.fetchingProducerSearchLegacyDataProductsState.pass();
+    } catch (error) {
+      this.fetchingProducerSearchLegacyDataProductsState.fail();
+      throw error;
     }
   }
 }

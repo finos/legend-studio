@@ -65,6 +65,15 @@ export class DataSpaceStereotypeInfo {
   value!: string;
 }
 
+export class DataSpaceInfoAnalysisResult {
+  isVerified?: boolean | undefined;
+  isInDevelopment?: boolean | undefined;
+  isExternal?: boolean | undefined;
+  topics: string[] = [];
+  relatedDataSpaces: string[] = [];
+  deprecationNotice?: string | undefined;
+}
+
 export abstract class DataSpaceExecutableInfo {
   id!: string;
   executionContextKey!: string;
@@ -136,6 +145,7 @@ export class DataSpaceAnalysisResult {
 
   title?: string | undefined;
   description?: string | undefined;
+  info?: DataSpaceInfoAnalysisResult | undefined;
 
   graph!: PureModel;
 

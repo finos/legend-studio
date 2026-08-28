@@ -145,6 +145,7 @@ import {
   LegacyDataProductSearchResultDetails,
   EntitySearchResponse,
   type EntitySearchResult,
+  SearchType,
 } from '@finos/legend-server-marketplace';
 import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceAppEvent.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
@@ -778,7 +779,7 @@ export class LegendMarketplaceAIChatStore {
       this.baseStore.marketplaceServerClient.dataProductSearch(
         question,
         env,
-        FieldSearchType.HYBRID,
+        SearchType.HYBRID,
         [],
         PRODUCT_SEARCH_PAGE_SIZE,
         1,

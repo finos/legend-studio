@@ -15,6 +15,7 @@
  */
 
 import { stub_RawLambda } from '@finos/legend-graph';
+import { guaranteeType } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
 import { test, expect, jest } from '@jest/globals';
 import TEST_DATA__DSL_DataSpace_AnalyticsResult from './TEST_DATA__DSL_DataSpace_AnalyticsResult.json' with { type: 'json' };
@@ -35,7 +36,10 @@ import {
   getByDisplayValue,
   waitFor,
 } from '@testing-library/react';
-import { DSL_DataSpace_LegendApplicationPlugin } from '@finos/legend-extension-dsl-data-space/application';
+import {
+  DSL_DataSpace_LegendApplicationPlugin,
+  DataSpaceQueryBuilderState,
+} from '@finos/legend-extension-dsl-data-space/application';
 import {
   QUERY_BUILDER_TEST_ID,
   QueryBuilder_GraphManagerPreset,
@@ -59,6 +63,18 @@ test(
         TEST_DATA__DSL_DataSpace_Entities,
       );
     const _class = 'domain::COVIDData';
+    const dataSpaceQueryBuilderState = guaranteeType(
+      queryBuilderState,
+      DataSpaceQueryBuilderState,
+    );
+    expect(dataSpaceQueryBuilderState.dataSpaceAnalysisResult?.info).toEqual({
+      deprecationNotice: 'This data product is being replaced',
+      isExternal: true,
+      isInDevelopment: false,
+      isVerified: true,
+      relatedDataSpaces: ['domain::COVIDDatapaceV2', 'domain::FluDatapace'],
+      topics: ['Public Health', 'Epidemiology'],
+    });
     const _modelClass =
       queryBuilderState.graphManagerState.graph.getClass(_class);
     await act(async () => {
@@ -238,6 +254,18 @@ test(
       );
 
     const _class = 'domain::COVIDData';
+    const dataSpaceQueryBuilderState = guaranteeType(
+      queryBuilderState,
+      DataSpaceQueryBuilderState,
+    );
+    expect(dataSpaceQueryBuilderState.dataSpaceAnalysisResult?.info).toEqual({
+      deprecationNotice: 'This data product is being replaced',
+      isExternal: true,
+      isInDevelopment: false,
+      isVerified: true,
+      relatedDataSpaces: ['domain::COVIDDatapaceV2', 'domain::FluDatapace'],
+      topics: ['Public Health', 'Epidemiology'],
+    });
     const _modelClass =
       queryBuilderState.graphManagerState.graph.getClass(_class);
     await act(async () => {
