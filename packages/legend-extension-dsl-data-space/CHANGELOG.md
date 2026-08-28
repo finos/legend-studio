@@ -1,5 +1,19 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.252
+
+### Patch Changes
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Adjust UI to reflect accessing mappings through a Data Product instead of a concrete mapping. Add fallbacks to protect against NPEs.
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Make the data space viewer resilient to partial analytics results returned by the engine:
+
+  - `defaultExecutionContext`, `defaultRuntime`, `compatibleRuntimes`, and executable `result` are now optional on both the analytics metamodel and V1 protocol. `executableReturnType` is preserved end-to-end.
+  - The runtime dropdown is hidden when the selected execution context has no `defaultRuntime`, and the data-access panel/Legend AI integration handle a missing execution context and runtime.
+  - Added `DataSpaceMappingProviderAccessState` and cache mapping-provider access states in `DataSpaceViewerState` keyed by data product path, with a Refresh button next to the execution context selector to re-run the access lookup on demand.
+
+- [#5482](https://github.com/finos/legend-studio/pull/5482) [`85bbec3`](https://github.com/finos/legend-studio/commit/85bbec3dbd544282958959b6920bb48ed86ed8e5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add info to dataSpace Analytics
+
 ## 10.4.251
 
 ## 10.4.250
