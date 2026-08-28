@@ -406,7 +406,7 @@ interface SimpleTelemetryCase {
   readonly description: string;
   readonly expectedEvent: LEGEND_MARKETPLACE_APP_EVENT;
   readonly expectedPayload: Record<string, unknown>;
-  invoke(service: TelemetryService): void;
+  readonly invoke: (service: TelemetryService) => void;
 }
 
 const simpleTelemetryCases: SimpleTelemetryCase[] = [
@@ -1078,7 +1078,9 @@ describe('simple pass-through telemetry events', () => {
 
       expect(calls).toHaveLength(1);
       expect(getLoggedCall(calls).event).toBe(expectedEvent);
-      expect(calls[0]?.data).toEqual(expect.objectContaining(expectedPayload));
+      expect(getLoggedCall(calls).data).toEqual(
+        expect.objectContaining(expectedPayload),
+      );
     },
   );
 });
