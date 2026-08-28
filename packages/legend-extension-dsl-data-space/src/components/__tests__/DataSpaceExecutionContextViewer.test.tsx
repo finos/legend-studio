@@ -55,7 +55,7 @@ const renderIcon = (
 ): ReactElement =>
   DataSpaceExecutionContextMappingIcon({
     executionContext,
-  }) as ReactElement;
+  });
 
 const renderLabelProps = (
   executionContext: DataSpaceExecutionContextAnalysisResult,

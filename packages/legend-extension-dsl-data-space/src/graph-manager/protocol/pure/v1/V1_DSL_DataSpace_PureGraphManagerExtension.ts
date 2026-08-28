@@ -849,7 +849,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             .filter(isNonNullable),
         )
         .concat(mappingModels)
-        .concat(runtimeModels);
+        .concat(runtimeModels)
+        .concat(dataProductModels);
       const alreadyContainsDataspace = elements.find(
         (e) => e.path === dataspaceEntity.path,
       );
