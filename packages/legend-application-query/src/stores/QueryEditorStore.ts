@@ -147,6 +147,7 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   getOwnDataSpace,
   QUERY_PROFILE_TAG_DATA_SPACE,
+  resolveExecutionContextMapping,
   retrieveAnalyticsResultCache,
   retrieveDataspaceArtifactsCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -810,7 +811,7 @@ export abstract class QueryEditorStore {
       supportBuildMinimalGraph
     ) {
       try {
-        this.initState.setMessage('Fetching data product analysis result...');
+        this.initState.setMessage('Fetching data space analysis result...');
         const project = StoreProjectData.serialization.fromJson(
           await this.depotServerClient.getProject(groupId, artifactId),
         );
@@ -1835,7 +1836,7 @@ export class ExistingQueryUpdateState {
  * navigating to a chosen revision. A revision is keyed by its `version`
  * identifier, which is passed as the `revisionId` route param.
  */
-const resolveExecutionContext = (
+export const resolveExecutionContext = (
   dataSpace: DataSpace,
   ex: string | undefined,
   queryMapping: Mapping | undefined,
@@ -1847,20 +1848,22 @@ const resolveExecutionContext = (
   }
   const defaultExecutionContext = dataSpace.defaultExecutionContext;
   if (!defaultExecutionContext) {
-    return undefined;
+    return executionContexts[0];
   }
   if (queryMapping && queryRuntime) {
-    const defaultExecutionContextMapping = defaultExecutionContext.mapping;
+    const defaultExecutionContextMapping = resolveExecutionContextMapping(
+      defaultExecutionContext,
+    );
     const defaultExecutionContextRuntime =
       defaultExecutionContext.defaultRuntime;
     if (
       defaultExecutionContextMapping &&
       defaultExecutionContextRuntime &&
-      defaultExecutionContextMapping.value !== queryMapping &&
+      defaultExecutionContextMapping !== queryMapping &&
       defaultExecutionContextRuntime.value.path !== queryRuntime.path
     ) {
       const matchingExecContexts = executionContexts.filter(
-        (ec) => ec.mapping?.value === queryMapping,
+        (ec) => resolveExecutionContextMapping(ec) === queryMapping,
       );
       if (matchingExecContexts.length > 1) {
         const matchRuntime = matchingExecContexts.find(
@@ -2228,24 +2231,33 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             this.applicationStore.config.options.queryBuilderConfig,
             sourceInfo,
           );
-        const matchingExecutionContextMapping = guaranteeNonNullable(
-          matchingExecutionContext.mapping,
-          `Execution context '${matchingExecutionContext.name}' does not have a mapping`,
+        const matchingExecutionContextMapping = resolveExecutionContextMapping(
+          matchingExecutionContext,
         );
+        if (
+          matchingExecutionContext.mappingProvider &&
+          !matchingExecutionContextMapping
+        ) {
+          throw new Error(
+            `Execution context '${matchingExecutionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
+          );
+        }
         const matchingExecutionContextRuntime = guaranteeNonNullable(
           matchingExecutionContext.defaultRuntime,
           `Execution context '${matchingExecutionContext.name}' does not have a default runtime`,
         );
         const mappingModelCoverageAnalysisResult =
-          dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
-            matchingExecutionContextMapping.value.path,
-          );
+          matchingExecutionContextMapping
+            ? dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+                matchingExecutionContextMapping.path,
+              )
+            : undefined;
         if (mappingModelCoverageAnalysisResult) {
           dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
             mappingModelCoverageAnalysisResult;
         }
         dataSpaceQueryBuilderState.executionContextState.setMapping(
-          matchingExecutionContextMapping.value,
+          matchingExecutionContextMapping,
         );
         dataSpaceQueryBuilderState.executionContextState.setRuntimeValue(
           new RuntimePointer(
@@ -2256,8 +2268,8 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         );
         return dataSpaceQueryBuilderState;
       } else {
-        throw new UnsupportedOperationError(
-          `Unsupported execution context ${exec.executionKey}`,
+        throw new Error(
+          `Execution context '${exec.executionKey}' does not exist in data space '${dataSpace.path}'.`,
         );
       }
     } else if (exec instanceof QueryExplicitExecutionContextInfo) {

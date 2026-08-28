@@ -39,6 +39,7 @@ import {
 import {
   buildExecutionContextOption,
   DataSpaceAdvancedSearchModal,
+  formatExecutionContextOptionLabel,
   type ExecutionContextOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
 import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
@@ -147,17 +148,14 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
-      const currentMappingPath = guaranteeNonNullable(
-        queryBuilderState.executionContext.mapping,
-        `Execution context '${queryBuilderState.executionContext.name}' does not have a mapping`,
-      ).value.path;
-      const nextMappingPath = guaranteeNonNullable(
-        option.value.mapping,
-        `Execution context '${option.value.name}' does not have a mapping`,
-      ).value.path;
+      const currentMappingPath = resolveExecutionContextMapping(
+        queryBuilderState.executionContext,
+      )?.path;
       queryBuilderState.setExecutionContext(option.value);
       await queryBuilderState.propagateExecutionContextChange(
-        currentMappingPath === nextMappingPath,
+        currentMappingPath !== undefined &&
+          currentMappingPath ===
+            resolveExecutionContextMapping(option.value)?.path,
       );
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
@@ -200,12 +198,13 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     });
 
     // class
+    const executionContextMapping = guaranteeNonNullable(
+      resolveExecutionContextMapping(queryBuilderState.executionContext),
+      `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
+    );
     const classes = resolveUsableDataSpaceClasses(
       queryBuilderState.dataSpace,
-      guaranteeNonNullable(
-        queryBuilderState.executionContext.mapping,
-        `Execution context '${queryBuilderState.executionContext.name}' does not have a mapping`,
-      ).value,
+      executionContextMapping,
       queryBuilderState.graphManagerState,
       queryBuilderState,
     );
@@ -333,6 +332,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled
                 }
+                formatOptionLabel={formatExecutionContextOptionLabel}
               />
             </div>
           )}

@@ -304,6 +304,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       setLambdaWriteMode: action,
       setINTERNAL__enableInitializingDefaultSimpleExpressionValue: action,
       TEMPORARY_initializeExecContext: action,
+      reconcileExecutionContextState: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -355,11 +356,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     isTypedTDS: boolean,
   ): QueryBuilderExecutionContextState {
     if (isTypedTDS) {
-      const context = new QueryBuilderEmbeddedFromExecutionContextState(this);
-      this.setLambdaWriteMode(
-        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
-      );
-      return context;
+      this.lambdaWriteMode =
+        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE;
+      return new QueryBuilderEmbeddedFromExecutionContextState(this);
     }
     return new QueryBuilderExternalExecutionContextState(this);
   }
@@ -421,6 +420,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
+  get requiresEmbeddedExecutionContext(): boolean {
+    return (
+      this.isFetchStructureTyped && Boolean(this.executionContextState.mapping)
+    );
+  }
+
   get forceFromExpressionForExec(): boolean {
     return this.isFetchStructureTyped;
   }
@@ -431,6 +436,29 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setLambdaWriteMode(val: QUERY_BUILDER_LAMBDA_WRITER_MODE): void {
     this.lambdaWriteMode = val;
+    this.reconcileExecutionContextState();
+  }
+  reconcileExecutionContextState(options?: {
+    allowDowngrade?: boolean | undefined;
+  }): void {
+    const requiresEmbedded = this.requiresEmbeddedExecutionContext;
+    const isEmbedded =
+      this.executionContextState instanceof
+      QueryBuilderEmbeddedFromExecutionContextState;
+    if (requiresEmbedded === isEmbedded) {
+      return;
+    }
+    if (isEmbedded && !options?.allowDowngrade) {
+      return;
+    }
+    const preservedMapping = this.executionContextState.mapping;
+    const preservedRuntime = this.executionContextState.runtimeValue;
+    const next = requiresEmbedded
+      ? new QueryBuilderEmbeddedFromExecutionContextState(this)
+      : new QueryBuilderExternalExecutionContextState(this);
+    next.setMapping(preservedMapping);
+    next.setRuntimeValue(preservedRuntime);
+    this.setExecutionContextState(next);
   }
 
   getQueryExecutionContext(): QueryExecutionContext {
@@ -792,6 +820,19 @@ export abstract class QueryBuilderState implements CommandRegistrar {
    */
   buildQueryForPersistence(): RawLambda {
     return this.buildQuery();
+  }
+
+  protected buildQueryLambdaWithoutExecutionContext(): RawLambda {
+    if (!this.isQuerySupported) {
+      return this.buildQuery();
+    }
+    return buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        skipExecutionContext: true,
+        useTypedRelationFunctions: this.isFetchStructureTyped,
+      }),
+      this.graphManagerState,
+    );
   }
 
   buildFromQuery(): RawLambda {

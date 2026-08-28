@@ -35,6 +35,7 @@ import {
   GRAPH_MANAGER_EVENT,
   V1_buildDatasetSpecification,
   V1_buildModelCoverageAnalysisResult,
+  V1_DataProduct,
   V1_deserializePackageableElement,
   QueryDataSpaceExecutionContextInfo,
   V1_RemoteEngine,
@@ -79,6 +80,7 @@ import {
 import {
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceMappingProvider,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
   V1_DataSpaceTemplateExecutable,
@@ -665,6 +667,18 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       return runtime;
     });
 
+    const dataProductModels = uniq(
+      analysisResult.executionContexts
+        .map((context) => context.mappingProvider?.element)
+        .filter(isNonNullable),
+    ).map((path) => {
+      const dataProduct = new V1_DataProduct();
+      const [packagePath, name] = resolvePackagePathAndElementName(path);
+      dataProduct.package = packagePath;
+      dataProduct.name = name;
+      return dataProduct;
+    });
+
     // The DataSpace entity is excluded from AnalyticsResult.Json to reduce the JSON size
     // because all its information can be found in V1_DataSpaceAnalysisResult.
     // Therefore, we are building a simple v1_DataSpace entity based on V1_DataSpaceAnalysisResult.
@@ -687,6 +701,15 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             PackageableElementPointerType.RUNTIME,
             execContext.defaultRuntime,
           );
+        }
+        if (execContext.mappingProvider) {
+          const mappingProvider = new V1_DataSpaceMappingProvider();
+          mappingProvider.element = new V1_PackageableElementPointer(
+            undefined,
+            execContext.mappingProvider.element,
+          );
+          mappingProvider.keys = execContext.mappingProvider.keys;
+          contextProtocol.mappingProvider = mappingProvider;
         }
         return contextProtocol;
       },
@@ -715,6 +738,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       graphEntities = pmcd.elements
         .concat(mappingModels)
         .concat(runtimeModels)
+        .concat(dataProductModels)
         .concat(dataspaceEntity)
         // NOTE: if an element could be found in the graph already it means it comes from system
         // so we could rid of it
@@ -825,7 +849,8 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             .filter(isNonNullable),
         )
         .concat(mappingModels)
-        .concat(runtimeModels);
+        .concat(runtimeModels)
+        .concat(dataProductModels);
       const alreadyContainsDataspace = elements.find(
         (e) => e.path === dataspaceEntity.path,
       );

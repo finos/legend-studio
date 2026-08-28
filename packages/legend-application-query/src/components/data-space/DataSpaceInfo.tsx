@@ -103,6 +103,8 @@ export const QueryEditorDataspaceInfoModal = observer(
     )?.runtimeMetadata;
     const defaultRuntimeValue = executionContext.defaultRuntime?.value;
     const executionContextMappingValue = executionContext.mapping?.value;
+    const mappingProviderElement =
+      executionContext.mappingProvider?.element.value;
     const connection = defaultRuntimeValue?.runtimeValue.connections.length
       ? defaultRuntimeValue.runtimeValue.connections[0]?.storeConnections?.[0]
           ?.connection instanceof ConnectionPointer
@@ -209,9 +211,18 @@ export const QueryEditorDataspaceInfoModal = observer(
               </div>
               <div className="dataspace-info-modal__field">
                 <div className="dataspace-info-modal__field__label">
-                  Mapping
+                  {mappingProviderElement ? 'Data Product' : 'Mapping'}
                 </div>
-                {executionContextMappingValue ? (
+                {mappingProviderElement ? (
+                  <div
+                    className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
+                    onClick={() =>
+                      flowResult(visitElement(mappingProviderElement.path))
+                    }
+                  >
+                    {mappingProviderElement.name}
+                  </div>
+                ) : executionContextMappingValue ? (
                   <div
                     className="dataspace-info-modal__field__value dataspace-info-modal__field__value--linkable"
                     onClick={() =>

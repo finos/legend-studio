@@ -126,9 +126,11 @@ import {
   configureCodeEditorComponent,
 } from '@finos/legend-lego/code-editor';
 import {
+  resolveExecutionContextMapping,
   resolveUsableDataSpaceClasses,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceMappingProvider,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { flowResult } from 'mobx';
 import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
@@ -990,10 +992,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             queryBuilderState,
             DataSpaceQueryBuilderState,
           );
+
           const mapping = guaranteeNonNullable(
-            dataSpaceQueryBuilderState.executionContext.mapping,
+            resolveExecutionContextMapping(
+              dataSpaceQueryBuilderState.executionContext,
+            ),
             `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a mapping`,
-          ).value;
+          );
           const mappingModelCoverageAnalysisResult =
             dataSpaceQueryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
               mapping.path,
@@ -1079,6 +1084,18 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     contextProtocol.name = execContext.name;
                     contextProtocol.title = execContext.title;
                     contextProtocol.description = execContext.description;
+                    if (execContext.mappingProvider) {
+                      const mappingProviderProtocol =
+                        new V1_DataSpaceMappingProvider();
+                      mappingProviderProtocol.element =
+                        new V1_PackageableElementPointer(
+                          undefined,
+                          execContext.mappingProvider.element,
+                        );
+                      mappingProviderProtocol.keys =
+                        execContext.mappingProvider.keys;
+                      contextProtocol.mappingProvider = mappingProviderProtocol;
+                    }
                     contextProtocol.mapping = new V1_PackageableElementPointer(
                       PackageableElementPointerType.MAPPING,
                       execContext.mapping.path,
@@ -1183,14 +1200,17 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             dataSpaceQueryBuilderState,
           );
           dataSpaceQueryBuilderState.changeMapping(mapping);
-          dataSpaceQueryBuilderState.changeRuntime(
-            new RuntimePointer(
-              guaranteeNonNullable(
-                dataSpaceQueryBuilderState.executionContext.defaultRuntime,
-                `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a default runtime`,
-              ),
-            ),
-          );
+          const defaultRuntime =
+            dataSpaceQueryBuilderState.executionContext.defaultRuntime;
+          if (defaultRuntime) {
+            dataSpaceQueryBuilderState.changeRuntime(
+              new RuntimePointer(defaultRuntime),
+            );
+          } else {
+            dataSpaceQueryBuilderState.applicationStore.notificationService.notifyWarning(
+              `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a default runtime`,
+            );
+          }
           // if there is no chosen class or the chosen one is not compatible
           // with the mapping then pick a compatible class if possible
           if (

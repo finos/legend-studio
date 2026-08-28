@@ -50,5 +50,6 @@ export {
 export {
   V1_DataSpaceExecutionContext,
   V1_DataSpace,
+  V1_DataSpaceMappingProvider,
 } from '../graph-manager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 export { V1_deserializeDataSpace } from '../graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';

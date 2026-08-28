@@ -28,6 +28,7 @@ import {
   getDataSpace,
   getExecutionContextFromDataspaceExecutable,
   getQueryFromDataspaceExecutable,
+  resolveExecutionContextMapping,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   type ResolvedDataSpaceEntityWithOrigin,
@@ -157,12 +158,20 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
     }
     if (!query) {
       throw new IllegalStateError(
-        `Can't fetch query from data product executable`,
+        `Can't fetch query from data space executable`,
       );
     }
     if (!executionContext) {
       throw new IllegalStateError(
         `Can't find a correpsonding execution context`,
+      );
+    }
+    if (
+      executionContext.mappingProvider &&
+      !resolveExecutionContextMapping(executionContext)
+    ) {
+      throw new IllegalStateError(
+        `Execution context '${executionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
       );
     }
     const sourceInfo = {
@@ -188,7 +197,7 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
       undefined,
       async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
         this.applicationStore.notificationService.notifyWarning(
-          `Can't switch data product to visit current template query`,
+          `Can't switch data space to visit current template query`,
         );
       },
       new DataProductSelectorState(
@@ -197,7 +206,7 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
       ),
       () => {
         this.applicationStore.notificationService.notifyWarning(
-          `Can't switch data product to visit current template query`,
+          `Can't switch data space to visit current template query`,
         );
       },
       dataSpaceAnalysisResult,

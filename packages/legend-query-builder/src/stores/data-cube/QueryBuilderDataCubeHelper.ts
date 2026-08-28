@@ -37,6 +37,7 @@ export const createDataCubeViewerStateFromQueryBuilder = async (
   }
   const mappingPath = queryBuilderState.executionContextState.mapping?.path;
   const currentLambdaWriterMode = queryBuilderState.lambdaWriteMode;
+  const currentExecutionContextState = queryBuilderState.executionContextState;
   // ensure we write in new tds mode
   queryBuilderState.setLambdaWriteMode(
     QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
@@ -55,6 +56,11 @@ export const createDataCubeViewerStateFromQueryBuilder = async (
     queryBuilderState,
   );
   queryBuilderState.setLambdaWriteMode(currentLambdaWriterMode);
+  if (
+    queryBuilderState.executionContextState !== currentExecutionContextState
+  ) {
+    queryBuilderState.setExecutionContextState(currentExecutionContextState);
+  }
   const query = await engine.generateInitialSpecification();
   return new QueryBuilderDataCubeViewerState(query, engine);
 };

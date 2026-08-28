@@ -59,7 +59,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../DataSpaceQueryBuilderHelper.js';
-import { guaranteeNonNullable, type GeneratorFn } from '@finos/legend-shared';
+import { type GeneratorFn } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type {
   DepotEntityWithOrigin,
@@ -220,10 +220,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
         this.dataSpace.title,
         this.dataSpace.name,
         this.dataSpace.path,
-        guaranteeNonNullable(
-          this.dataSpace.defaultExecutionContext,
-          `Data space '${this.dataSpace.path}' does not have a default execution context`,
-        ).name,
+        this.dataSpace.defaultExecutionContext?.name,
       ),
     };
   }
@@ -296,10 +293,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
         dataSpace.title,
         dataSpace.name,
         dataSpace.path,
-        guaranteeNonNullable(
-          dataSpace.defaultExecutionContext,
-          `Data space '${dataSpace.path}' does not have a default execution context`,
-        ).name,
+        dataSpace.defaultExecutionContext?.name,
       ),
       this.project.versionId === SNAPSHOT_VERSION_ALIAS,
     );
