@@ -302,7 +302,7 @@ export function extractExecutableInfo(
  */
 export interface DataSpaceSchemaSource {
   analysisResult: DataSpaceAnalysisResult;
-  executionContext: DataSpaceExecutionContextAnalysisResult;
+  executionContext: DataSpaceExecutionContextAnalysisResult | undefined;
   graphManagerState: GraphManagerState;
 }
 
@@ -482,11 +482,13 @@ export function buildDataSpaceModelContextFromSource(
   if (!ctx) {
     return undefined;
   }
-  const mappingPath = source.executionContext.mapping.path;
-  enrichModelContextWithMappingCoverage(
-    ctx,
-    result.mappingToMappingCoverageResult?.get(mappingPath),
-  );
+  if (source.executionContext) {
+    const mappingPath = source.executionContext.mapping.path;
+    enrichModelContextWithMappingCoverage(
+      ctx,
+      result.mappingToMappingCoverageResult?.get(mappingPath),
+    );
+  }
   if (result.executables.length > 0) {
     const execInfos = extractExecutableInfo(result.executables, ctx, services);
     if (execInfos.length > 0) {
@@ -497,7 +499,7 @@ export function buildDataSpaceModelContextFromSource(
   if (functions.length > 0) {
     ctx.functions = functions;
   }
-  const physicalDatasets = source.executionContext.datasets;
+  const physicalDatasets = source.executionContext?.datasets ?? [];
   if (physicalDatasets.length > 0) {
     ctx.datasets = physicalDatasets.map((ds) =>
       ds instanceof RelationalDatabaseTableSpecification

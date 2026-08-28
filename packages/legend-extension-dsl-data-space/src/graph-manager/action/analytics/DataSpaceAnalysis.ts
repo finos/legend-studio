@@ -21,6 +21,7 @@ import type {
   DatasetSpecification,
   MappingModelCoverageAnalysisResult,
   FunctionAnalysisInfo,
+  GenericType,
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -33,7 +34,7 @@ export class DataSpaceExecutionContextAnalysisResult {
   description?: string | undefined;
   mapping!: Mapping;
   mappingProvider?: DataSpaceMappingProviderAnalysisResult;
-  defaultRuntime!: PackageableRuntime;
+  defaultRuntime?: PackageableRuntime | undefined;
   compatibleRuntimes!: PackageableRuntime[];
   datasets: DatasetSpecification[] = [];
   runtimeMetadata?: DataSpaceExecutionContextRuntimeMetadata;
@@ -127,12 +128,12 @@ export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
 
 export class DataSpaceExecutableAnalysisResult {
   readonly uuid = uuid();
-
   title!: string;
   description?: string | undefined;
   executable?: string;
   info?: DataSpaceExecutableInfo | undefined;
-  result!: DataSpaceExecutableResult;
+  result?: DataSpaceExecutableResult | undefined;
+  executableReturnType?: GenericType | undefined;
 }
 
 export class DataSpaceAnalysisResult {
@@ -150,7 +151,7 @@ export class DataSpaceAnalysisResult {
   graph!: PureModel;
 
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
-  defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
+  defaultExecutionContext?: DataSpaceExecutionContextAnalysisResult | undefined;
 
   elementDocs: NormalizedDocumentationEntry[] = [];
 

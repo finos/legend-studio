@@ -1,0 +1,39 @@
+{
+  "name": "ExecutablesOnlyDataProduct",
+  "package": "test::domain",
+  "path": "test::domain::ExecutablesOnlyDataProduct",
+  "title": "Executables-only Data Product",
+  "description": "Fixture for a DataSpace that has no execution contexts, only executables. No execution-context UI should render.",
+  "taggedValues": [],
+  "stereotypes": [],
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "elements": [],
+  "elementDocs": [],
+  "executionContexts": [],
+  "defaultExecutionContext": "",
+  "diagrams": [],
+  "executables": [
+    {
+      "title": "Sample TDS Executable",
+      "description": "A simple TDS-returning executable",
+      "info": {
+        "_type": "templateExecutableInfo",
+        "executionContextKey": "default",
+        "id": "sampleTds",
+        "query": "|test::domain::MyClass.all()->project([x|$x.name], ['name'])"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      }
+    }
+  ]
+}

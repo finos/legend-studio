@@ -32,14 +32,17 @@ import {
 import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
+  RelationType,
   TDSExecutionResult,
   type ExecutionResultWithMetadata,
+  type RelationColumn,
 } from '@finos/legend-graph';
 import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
 
 export interface ResultColumnData {
   id: string;
   name: string;
+  type?: string | undefined;
   documentation?: string | undefined;
   isLoadingSamples?: boolean | undefined;
   sampleValues?: string | undefined;
@@ -91,6 +94,7 @@ export class DataSpaceExecutableTDSResultState extends DataSpaceExecutableAnalys
     return this.value.columns.map((v) => ({
       id: uuid(),
       name: v.name,
+      type: v.type ?? v.relationalType,
       documentation: v.documentation,
       sampleValues: v.sampleValues ?? sampleValuesOptions?.values?.get(v.name),
       isLoadingSamples: sampleValuesOptions?.isLoadingSamples,
@@ -135,8 +139,8 @@ export class DataSpaceExecutableTDSResultState extends DataSpaceExecutableAnalys
           ? (analysis.executionContextsIndex.get(info.executionContextKey) ??
             analysis.defaultExecutionContext)
           : analysis.defaultExecutionContext;
-        mapping = executionContextKey.mapping.path;
-        runtime = executionContextKey.defaultRuntime.path;
+        mapping = executionContextKey?.mapping.path;
+        runtime = executionContextKey?.defaultRuntime?.path;
       }
       this.setGridData(
         this.buildGridData({
@@ -181,11 +185,46 @@ export class DataSpaceExecutableTDSResultState extends DataSpaceExecutableAnalys
   }
 }
 
+export class DataSpaceExecutableRelationResultState {
+  readonly execState: DataSpaceViewerExecutableState;
+  readonly columns: RelationColumn[];
+  gridData: ResultColumnData[] = [];
+
+  constructor(
+    viewerState: DataSpaceViewerExecutableState,
+    columns: RelationColumn[],
+  ) {
+    makeObservable(this, {
+      gridData: observable,
+      setGridData: action,
+    });
+    this.execState = viewerState;
+    this.columns = columns;
+    this.gridData = this.buildGridData();
+  }
+
+  setGridData(val: ResultColumnData[]): void {
+    this.gridData = val;
+  }
+
+  buildGridData(): ResultColumnData[] {
+    return this.columns.map((col) => ({
+      id: uuid(),
+      name: col.name,
+      type: col.genericType.value.rawType.name,
+    }));
+  }
+}
+
+export type DataSpaceExecutableViewResultState =
+  | DataSpaceExecutableAnalysisResultState
+  | DataSpaceExecutableRelationResultState;
+
 export class DataSpaceViewerExecutableState {
   readonly uuid = uuid();
   readonly viewerState: DataSpaceViewerState;
   readonly value: DataSpaceExecutableAnalysisResult;
-  resultState: DataSpaceExecutableAnalysisResultState;
+  resultState: DataSpaceExecutableViewResultState | undefined;
 
   constructor(
     dataSpaceViewerState: DataSpaceViewerState,
@@ -201,10 +240,20 @@ export class DataSpaceViewerExecutableState {
 
   buildResultState(
     value: DataSpaceExecutableAnalysisResult,
-  ): DataSpaceExecutableAnalysisResultState {
+  ): DataSpaceExecutableViewResultState | undefined {
+    const returnRawType = value.executableReturnType?.rawType;
+    if (returnRawType instanceof RelationType) {
+      return new DataSpaceExecutableRelationResultState(
+        this,
+        returnRawType.columns,
+      );
+    }
     if (value.result instanceof DataSpaceExecutableTDSResult) {
       return new DataSpaceExecutableTDSResultState(this, value.result);
     }
-    return new DataSpaceExecutableAnalysisResultState(this, value.result);
+    if (value.result) {
+      return new DataSpaceExecutableAnalysisResultState(this, value.result);
+    }
+    return undefined;
   }
 }

@@ -136,11 +136,16 @@ export const DataSpaceViewerActivityBar = observer(
     ];
 
     const activities: ActivityBarItemConfig[] = [
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT,
-        title: 'Execution Context',
-        icon: <PlayIcon />,
-      },
+      ...(dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex
+        .size > 0
+        ? [
+            {
+              mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT,
+              title: 'Execution Context',
+              icon: <PlayIcon />,
+            },
+          ]
+        : []),
       {
         mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES,
         title: 'Data Stores (Work In Progress)',

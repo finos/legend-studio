@@ -16,7 +16,6 @@
 
 import {
   AnchorLinkIcon,
-  CaretDownIcon,
   clsx,
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -54,7 +53,6 @@ import {
   type V1_RelationTypeColumn,
   DataProductAccessType,
   extractElementNameFromPath,
-  V1_AccessPointGroupReference,
   V1_AppDirProducer,
   V1_AppliedFunction,
   V1_AppliedProperty,
@@ -74,7 +72,6 @@ import {
   LakehouseTargetEnv,
   V1_LakehouseAccessPoint,
   V1_SdlcDeploymentDataProductOrigin,
-  V1_transformDataContractToLiteDatacontract,
   V1_IngestEnvironmentClassification,
 } from '@finos/legend-graph';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
@@ -90,15 +87,11 @@ import {
   Button,
   ButtonGroup,
   Chip,
-  CircularProgress,
   IconButton,
   InputAdornment,
-  Menu,
-  MenuItem,
   Tab,
   Tabs,
   TextField,
-  Tooltip,
 } from '@mui/material';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -106,7 +99,6 @@ import {
   assertNonNullable,
   guaranteeNonNullable,
   isEmpty,
-  isNonEmptyString,
   isNonNullable,
   noop,
 } from '@finos/legend-shared';
@@ -122,8 +114,7 @@ import {
   generateAnchorForSection,
   DATA_PRODUCT_VIEWER_SECTION,
 } from '../../stores/ProductViewerNavigation.js';
-import { EntitlementsDataContractCreator } from './DataContract/EntitlementsDataContractCreator.js';
-import { DataProductSubscriptionViewer } from './Subscriptions/DataProductSubscriptionsViewer.js';
+import { DataProductAPGAccessRequestControl } from './DataProductAPGAccessRequestControl.js';
 import {
   type DataProductAPGState,
   AccessPointGroupAccess,
@@ -144,12 +135,6 @@ import {
   PRODUCT_INTEGRATION_TYPE,
 } from '../../__lib__/DataProductTelemetryHelper.js';
 import { flowResult } from 'mobx';
-import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/DataContractViewerState.js';
-import {
-  type ContractErrorLayer,
-  DataAccessRequestViewer,
-  buildContractErrorsRoot,
-} from './DataContract/DataAccessRequestViewer.js';
 import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 import {
   buildIngestDefinitionOperationsPath,
@@ -1923,20 +1908,12 @@ export const DataProductAccessPointGroupViewer = observer(
     const { apgState, dataAccessState } = props;
 
     const accessPointStates = apgState.accessPointStates;
-    const contractViewerContractAndSubscription =
-      dataAccessState?.contractViewerContractAndSubscription;
-    const dataAccessRequestViewerState =
-      dataAccessState?.dataAccessRequestViewerState;
 
     const auth = useAuth();
     const tokenRef = useRef(auth.user?.access_token);
     tokenRef.current = auth.user?.access_token;
-    const [showSubscriptionsModal, setShowSubscriptionsModal] = useState(false);
     const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
       useState(false);
-    const [isEntitledButtonGroupMenuOpen, setIsEntitledButtonGroupMenuOpen] =
-      useState(false);
-    const requestAccessButtonGroupRef = useRef<HTMLDivElement | null>(null);
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(`apg-${apgState.apg.id}`);
 
@@ -1974,226 +1951,6 @@ export const DataProductAccessPointGroupViewer = observer(
         ).catch(() => undefined);
       }
     }, [apgState, dataAccessState, canViewApprovedUsers]);
-
-    const apgContractErrors = useMemo(() => {
-      const missingIngests = dataAccessState?.missingIngests ?? [];
-      const ingestLayer: ContractErrorLayer | undefined =
-        missingIngests.length === 0
-          ? undefined
-          : {
-              title: `Ingest${missingIngests.length === 1 ? '' : 's'} Not Found:`,
-              errorItems: missingIngests,
-            };
-      return buildContractErrorsRoot([ingestLayer]);
-    }, [dataAccessState?.missingIngests]);
-
-    const dataContractViewerState = useMemo(() => {
-      return contractViewerContractAndSubscription &&
-        contractViewerContractAndSubscription.dataContract.resource instanceof
-          V1_AccessPointGroupReference &&
-        contractViewerContractAndSubscription.dataContract.resource
-          .accessPointGroup === apgState.apg.id
-        ? new DataContractViewerState(
-            V1_transformDataContractToLiteDatacontract(
-              contractViewerContractAndSubscription.dataContract,
-            ),
-            (contractId: string, taskId: string) =>
-              dataAccessState.getContractTaskUrl(contractId, taskId),
-            contractViewerContractAndSubscription.subscriptions?.[0],
-            apgState.applicationStore,
-            dataAccessState.lakehouseContractServerClient,
-            apgState.dataProductViewerState.graphManagerState,
-            apgState.dataProductViewerState.userSearchService,
-          )
-        : undefined;
-    }, [
-      apgState.apg.id,
-      apgState.applicationStore,
-      apgState.dataProductViewerState.graphManagerState,
-      apgState.dataProductViewerState.userSearchService,
-      contractViewerContractAndSubscription,
-      dataAccessState,
-    ]);
-
-    const handleContractsClick = (): void => {
-      if (dataAccessState) {
-        const dataProductPath =
-          dataAccessState.dataProductViewerState.product.path;
-        const accessPointGroup = apgState.apg.id;
-        DataProductTelemetryHelper.logEvent_requestContract(
-          dataAccessState.applicationStore.telemetryService,
-          dataProductPath,
-          accessPointGroup,
-        );
-        apgState.handleContractClick(dataAccessState);
-      }
-    };
-
-    const handleSubscriptionsClick = (): void => {
-      setShowSubscriptionsModal(true);
-    };
-    const renderAccess = (val: AccessPointGroupAccess): React.ReactNode => {
-      let buttonLabel: string | undefined = undefined;
-      let onClick: (() => void) | undefined = undefined;
-      let buttonColor:
-        | 'info'
-        | 'primary'
-        | 'warning'
-        | 'success'
-        | 'error'
-        | undefined = undefined;
-      switch (val) {
-        case AccessPointGroupAccess.UNKNOWN:
-          buttonLabel = 'UNKNOWN';
-          buttonColor = 'info';
-          break;
-        case AccessPointGroupAccess.NO_ACCESS:
-        case AccessPointGroupAccess.DENIED:
-          buttonLabel = 'REQUEST ACCESS';
-          onClick = handleContractsClick;
-          buttonColor = 'primary';
-          break;
-        case AccessPointGroupAccess.PENDING_MANAGER_APPROVAL:
-          buttonLabel = 'PENDING MANAGER APPROVAL';
-          onClick = handleContractsClick;
-          buttonColor = 'warning';
-          break;
-        case AccessPointGroupAccess.SUBMITTED_FOR_APPROVALS:
-          buttonLabel = 'SUBMITTED FOR APPROVALS';
-          onClick = handleContractsClick;
-          buttonColor = 'warning';
-          break;
-        case AccessPointGroupAccess.PENDING_DATA_OWNER_APPROVAL:
-          buttonLabel = 'PENDING DATA OWNER APPROVAL';
-          onClick = handleContractsClick;
-          buttonColor = 'warning';
-          break;
-        case AccessPointGroupAccess.APPROVED:
-          if (apgState.isEntitlementsSyncing) {
-            buttonLabel = 'ENTITLEMENTS SYNCING';
-            onClick = handleContractsClick;
-            buttonColor = 'success';
-          } else {
-            buttonLabel = 'ENTITLED';
-            onClick = handleContractsClick;
-            buttonColor = 'success';
-          }
-          break;
-        case AccessPointGroupAccess.ENTERPRISE:
-          buttonLabel = 'ENTERPRISE ACCESS';
-          buttonColor = 'success';
-          break;
-        default:
-          buttonLabel = undefined;
-      }
-
-      if (buttonLabel === undefined) {
-        return null;
-      }
-      const tooltipText =
-        (val === AccessPointGroupAccess.APPROVED ||
-          val === AccessPointGroupAccess.ENTERPRISE) &&
-        apgState.isEntitlementsSyncing
-          ? 'Your contract has been approved but your entitlements are still syncing. The status will refresh automatically once your entitlements have synced.'
-          : dataAccessState?.dataAccessPlugins
-              .flatMap((plugin) =>
-                plugin.getExtraAccessPointGroupAccessInfo?.(val),
-              )
-              .filter(isNonEmptyString)[0];
-
-      return (
-        <>
-          <ButtonGroup
-            variant="contained"
-            color={buttonColor ?? 'primary'}
-            ref={requestAccessButtonGroupRef}
-          >
-            <Button
-              onClick={onClick}
-              loading={
-                apgState.fetchingAccessState.isInProgress ||
-                apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress ||
-                apgState.fetchingDataRequestAccessState.isInProgress
-              }
-              disabled={dataAccessState === undefined}
-              title={
-                dataAccessState === undefined
-                  ? 'Data access state not configured'
-                  : undefined
-              }
-              sx={{ cursor: onClick === undefined ? 'default' : 'pointer' }}
-            >
-              {apgState.isEntitlementsSyncing && (
-                <CircularProgress
-                  size={16}
-                  sx={{ marginLeft: 1, color: 'inherit' }}
-                />
-              )}
-              {buttonLabel}
-              {tooltipText !== undefined && (
-                <Tooltip
-                  className="data-product__viewer__access-group__item__access__tooltip__icon"
-                  title={tooltipText}
-                  arrow={true}
-                  slotProps={{
-                    tooltip: {
-                      className:
-                        'data-product__viewer__access-group__item__access__tooltip',
-                    },
-                  }}
-                >
-                  <InfoCircleOutlineIcon />
-                </Tooltip>
-              )}
-            </Button>
-            <Button
-              size="small"
-              onClick={() => setIsEntitledButtonGroupMenuOpen((prev) => !prev)}
-              title={
-                dataAccessState === undefined
-                  ? 'Data access state not configured'
-                  : 'More options'
-              }
-              disabled={
-                dataAccessState === undefined ||
-                apgState.fetchingAccessState.isInProgress ||
-                apgState.handlingContractsState.isInProgress ||
-                apgState.fetchingUserAccessState.isInProgress ||
-                apgState.fetchingDataRequestAccessState.isInProgress
-              }
-            >
-              <CaretDownIcon />
-            </Button>
-          </ButtonGroup>
-          <Menu
-            anchorEl={requestAccessButtonGroupRef.current}
-            open={isEntitledButtonGroupMenuOpen}
-            onClose={() => setIsEntitledButtonGroupMenuOpen(false)}
-          >
-            {val !== AccessPointGroupAccess.NO_ACCESS &&
-              val !== AccessPointGroupAccess.DENIED && (
-                <MenuItem
-                  onClick={() => {
-                    dataAccessState?.setContractCreatorAPG(apgState.apg);
-                    setIsEntitledButtonGroupMenuOpen(false);
-                  }}
-                >
-                  Request Access for Others
-                </MenuItem>
-              )}
-            <MenuItem
-              onClick={() => {
-                handleSubscriptionsClick();
-                setIsEntitledButtonGroupMenuOpen(false);
-              }}
-            >
-              Manage Subscriptions
-            </MenuItem>
-          </Menu>
-        </>
-      );
-    };
 
     const searchText = apgState.dataProductViewerState.apgSearchText
       .trim()
@@ -2269,7 +2026,22 @@ export const DataProductAccessPointGroupViewer = observer(
                   popoverContentClassName="data-product__viewer__access-group__approved-users__popover-content"
                 />
               )}
-            {renderAccess(apgState.access)}
+            {dataAccessState ? (
+              <DataProductAPGAccessRequestControl
+                apgState={apgState}
+                dataAccessState={dataAccessState}
+                tokenProvider={() => tokenRef.current}
+              />
+            ) : (
+              <ButtonGroup variant="contained" color="info">
+                <Button
+                  disabled={true}
+                  title="Data access state not configured"
+                >
+                  UNKNOWN
+                </Button>
+              </ButtonGroup>
+            )}
           </Box>
         </div>
         {Boolean(dataAccessState?.missingIngests.length) &&
@@ -2327,56 +2099,6 @@ export const DataProductAccessPointGroupViewer = observer(
               </div>
             </div>
           </div>
-        )}
-        {dataAccessState?.contractCreatorAPG === apgState.apg && (
-          <EntitlementsDataContractCreator
-            open={true}
-            onClose={() => dataAccessState.setContractCreatorAPG(undefined)}
-            apgState={apgState}
-            dataAccessState={dataAccessState}
-            tokenProvider={() => tokenRef.current}
-          />
-        )}
-        {dataContractViewerState && dataAccessState && (
-          <DataAccessRequestViewer
-            open={true}
-            onClose={() =>
-              dataAccessState.setContractViewerContractAndSubscription(
-                undefined,
-              )
-            }
-            viewerState={dataContractViewerState}
-            onRefresh={() => {
-              if (apgState.associatedUserContract) {
-                apgState.fetchUserAccessStatus(
-                  apgState.associatedUserContract.guid,
-                  dataAccessState.lakehouseContractServerClient,
-                  () => tokenRef.current,
-                );
-              }
-            }}
-            getDataProductUrl={dataAccessState.getDataProductUrl}
-            contractErrors={apgContractErrors}
-          />
-        )}
-        {dataAccessRequestViewerState && (
-          <DataAccessRequestViewer
-            open={true}
-            onClose={() =>
-              dataAccessState.setDataAccessRequestViewerState(undefined)
-            }
-            viewerState={dataAccessRequestViewerState}
-            getDataProductUrl={dataAccessState.getDataProductUrl}
-            contractErrors={apgContractErrors}
-          />
-        )}
-        {dataAccessState && apgState.associatedUserContract !== false && (
-          <DataProductSubscriptionViewer
-            open={showSubscriptionsModal}
-            apgState={apgState}
-            dataAccessState={dataAccessState}
-            onClose={() => setShowSubscriptionsModal(false)}
-          />
         )}
       </div>
     );

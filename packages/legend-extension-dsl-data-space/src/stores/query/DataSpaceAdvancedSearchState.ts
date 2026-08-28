@@ -249,17 +249,23 @@ export class DataSpaceAdvancedSearchState {
 
   *proceedToCreateQuery(_class?: Class): GeneratorFn<void> {
     if (this.dataSpaceViewerState) {
+      const currentExecutionContext =
+        this.dataSpaceViewerState.currentExecutionContext;
+      if (!currentExecutionContext) {
+        return;
+      }
+      const currentRuntime = this.dataSpaceViewerState.currentRuntime;
       this.applicationStore.navigationService.navigator.goToLocation(
         generateDataSpaceQueryCreatorRoute(
           this.dataSpaceViewerState.groupId,
           this.dataSpaceViewerState.artifactId,
           this.dataSpaceViewerState.versionId,
           this.dataSpaceViewerState.dataSpaceAnalysisResult.path,
-          this.dataSpaceViewerState.currentExecutionContext.name,
-          this.dataSpaceViewerState.currentRuntime ===
-            this.dataSpaceViewerState.currentExecutionContext.defaultRuntime
+          currentExecutionContext.name,
+          !currentRuntime ||
+            currentRuntime === currentExecutionContext.defaultRuntime
             ? undefined
-            : this.dataSpaceViewerState.currentRuntime.path,
+            : currentRuntime.path,
           _class?.path,
         ),
       );

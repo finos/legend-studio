@@ -1,0 +1,31 @@
+{
+  "name": "SampleDataProduct",
+  "package": "test::domain",
+  "path": "test::domain::SampleDataProduct",
+  "title": "Sample Data Product (mapping provider, no runtime)",
+  "description": "Fixture for a DataSpace whose sole execution context points at a mappingProvider (Data Product) and has no runtimes wired up.",
+  "taggedValues": [],
+  "stereotypes": [],
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "elements": [],
+  "elementDocs": [],
+  "executionContexts": [
+    {
+      "name": "default",
+      "mapping": "test::mapping::EmptyMapping",
+      "mappingProvider": {
+        "element": "test::product::UpstreamDataProduct",
+        "keys": ["primary"]
+      },
+      "compatibleRuntimes": [],
+      "datasets": [],
+      "runtimeMetadata": {}
+    }
+  ],
+  "defaultExecutionContext": "default",
+  "diagrams": [],
+  "executables": []
+}

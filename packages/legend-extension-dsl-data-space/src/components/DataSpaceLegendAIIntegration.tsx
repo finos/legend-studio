@@ -118,16 +118,21 @@ const DataSpaceLegendAIIntegrationInner = observer(
       ],
     );
 
-    const pureExecutionContext = useMemo(
-      (): QueryExplicitExecutionContextInfo => ({
-        mapping: dataSpaceViewerState.currentExecutionContext.mapping.path,
-        runtime: dataSpaceViewerState.currentRuntime.path,
-      }),
-      [
-        dataSpaceViewerState.currentExecutionContext.mapping,
-        dataSpaceViewerState.currentRuntime,
-      ],
-    );
+    const pureExecutionContext = useMemo(():
+      | QueryExplicitExecutionContextInfo
+      | undefined => {
+      const executionContext = dataSpaceViewerState.currentExecutionContext;
+      const runtime = dataSpaceViewerState.currentRuntime;
+      return executionContext && runtime
+        ? {
+            mapping: executionContext.mapping.path,
+            runtime: runtime.path,
+          }
+        : undefined;
+    }, [
+      dataSpaceViewerState.currentExecutionContext,
+      dataSpaceViewerState.currentRuntime,
+    ]);
 
     const metadata = useMemo(
       () =>
@@ -146,8 +151,8 @@ const DataSpaceLegendAIIntegrationInner = observer(
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [
         dataSpaceViewerState.dataSpaceAnalysisResult,
-        dataSpaceViewerState.currentExecutionContext.mapping,
-        dataSpaceViewerState.currentExecutionContext.datasets,
+        dataSpaceViewerState.currentExecutionContext?.mapping,
+        dataSpaceViewerState.currentExecutionContext?.datasets,
         services,
       ],
     );
@@ -198,7 +203,7 @@ const DataSpaceLegendAIIntegrationInner = observer(
         onMessageFeedback={handleMessageFeedback}
         contextBannerMessage="You can query available TDS Executables within Data Space, or use Legend AI MCP for Pure queries on models."
         dataProductCoordinates={dataProductCoordinates}
-        pureExecutionContext={pureExecutionContext}
+        {...(pureExecutionContext ? { pureExecutionContext } : {})}
         {...(modelContext ? { modelContext } : {})}
         {...(onClose ? { onClose } : {})}
         {...(onMinimize ? { onMinimize } : {})}

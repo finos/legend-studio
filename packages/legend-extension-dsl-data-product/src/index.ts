@@ -16,6 +16,7 @@
 
 export { Core_DataProductDataAccess_LegendApplicationPlugin } from './components/Core_DataProductDataAccess_LegendApplicationPlugin.js';
 export { EntitlementsDataContractCreator } from './components/DataProduct/DataContract/EntitlementsDataContractCreator.js';
+export { DataProductAPGAccessRequestControl } from './components/DataProduct/DataProductAPGAccessRequestControl.js';
 export { LakehouseResiliencyDisclaimer } from './components/DataProduct/DataContract/LakehouseResiliencyDisclaimer.js';
 export {
   type ContractErrorLayer,
@@ -56,5 +57,6 @@ export {
 export * from './utils/DataContractUtils.js';
 export * from './utils/DataProductIngestUtils.js';
 export * from './utils/LakehouseUtils.js';
+export * from './utils/SDLCDataProductResolver.js';
 
 export * from './__lib__/DataProductTelemetryHelper.js';
