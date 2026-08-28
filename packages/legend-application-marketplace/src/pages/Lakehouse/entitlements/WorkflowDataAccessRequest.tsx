@@ -147,14 +147,14 @@ export const WorkflowDataAccessRequestTask =
         }
       };
 
-      const handleApprove = async (justification: string) => {
+      const handleApprove = async (justification: string | undefined) => {
         if (!actionableTask || !currentUser) {
           return;
         }
         await marketplaceBaseStore.lakehouseWorkflowServerClient.approveTask(
           actionableTask.taskId,
           currentUser,
-          justification,
+          justification ?? '',
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
@@ -164,14 +164,14 @@ export const WorkflowDataAccessRequestTask =
         await handleRefresh();
       };
 
-      const handleDeny = async (justification: string) => {
+      const handleDeny = async (justification: string | undefined) => {
         if (!actionableTask || !currentUser) {
           return;
         }
         await marketplaceBaseStore.lakehouseWorkflowServerClient.rejectTask(
           actionableTask.taskId,
           currentUser,
-          justification,
+          justification ?? '',
         );
 
         marketplaceBaseStore.applicationStore.notificationService.notifySuccess(

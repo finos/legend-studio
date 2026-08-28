@@ -15,17 +15,24 @@
  */
 
 import { describe, test, expect } from '@jest/globals';
+import { flowResult } from 'mobx';
+import { createSpy } from '@finos/legend-shared/test';
 import {
   V1_LiteDataContract,
   V1_LiteDataContractWithUserStatus,
   V1_ContractUserEventRecord,
+  V1_DataRequestUserEventRecord,
   V1_EntitlementsLakehouseEnvironmentType,
+  V1_UserApprovalStatus,
+  V1_PermitTaskAction,
+  V1_Workflow,
   type V1_DataRequestWithWorkflow,
 } from '@finos/legend-graph';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import {
   EntitlementsDashboardState,
   ContractCreatedByUserDetails,
+  TaskApprovalAction,
 } from '../EntitlementsDashboardState.js';
 import { LakehouseEntitlementsStore } from '../LakehouseEntitlementsStore.js';
 
@@ -275,5 +282,153 @@ describe('EntitlementsDashboardState', () => {
       expect(result.filteredCreatedByUserMap.has('prod-1')).toBe(false);
       expect(result.filteredCreatedByUserMap.has('prod-2')).toBe(false);
     });
+  });
+
+  describe('approve / deny', () => {
+    test('approve on a contract task sends the justification to approveTask', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const task = createMockTask('task-1', 'contract-1');
+      const approveTaskSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'approveTask',
+      ).mockResolvedValue({ status: V1_UserApprovalStatus.APPROVED });
+
+      await flowResult(
+        dashboardState.approve(task, 'token-1', 'because I said so'),
+      );
+
+      expect(approveTaskSpy).toHaveBeenCalledWith(
+        'task-1',
+        'token-1',
+        'because I said so',
+      );
+      expect(task.status).toBe(V1_UserApprovalStatus.APPROVED);
+    });
+
+    test('deny on a contract task sends the justification to denyTask', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const task = createMockTask('task-2', 'contract-2');
+      const denyTaskSpy = createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'denyTask',
+      ).mockResolvedValue({ status: V1_UserApprovalStatus.DENIED });
+
+      await flowResult(
+        dashboardState.deny(task, 'token-2', 'does not meet policy'),
+      );
+
+      expect(denyTaskSpy).toHaveBeenCalledWith(
+        'task-2',
+        'token-2',
+        'does not meet policy',
+      );
+      expect(task.status).toBe(V1_UserApprovalStatus.DENIED);
+    });
+
+    test('approve on a data request task sends the justification to performTaskAction', async () => {
+      const dashboardState = await setupDashboardState('prod');
+
+      const task = new V1_DataRequestUserEventRecord();
+      task.taskId = 'task-3';
+      task.dataRequestId = 'data-request-1';
+
+      const workflow = new V1_Workflow();
+      workflow.workflowId = 'workflow-1';
+      const dataRequestWithWorkflow: V1_DataRequestWithWorkflow = {
+        workflows: [workflow],
+      } as V1_DataRequestWithWorkflow;
+      dashboardState.pendingDataRequestDetailsMap.set(
+        'data-request-1',
+        dataRequestWithWorkflow,
+      );
+
+      const permitClient =
+        dashboardState.lakehouseEntitlementsStore.marketplaceBaseStore
+          .permitWorkflowServerClient;
+      if (!permitClient) {
+        throw new Error('Permit workflow client is not configured in tests');
+      }
+      const performTaskActionSpy = createSpy(
+        permitClient,
+        'performTaskAction',
+      ).mockResolvedValue({});
+
+      await flowResult(
+        dashboardState.approve(task, 'token-3', 'looks good to me'),
+      );
+
+      expect(performTaskActionSpy).toHaveBeenCalledWith(
+        'workflow-1',
+        'task-3',
+        V1_PermitTaskAction.APPROVE,
+        'looks good to me',
+        'token-3',
+      );
+      expect(task.status).toBe(V1_UserApprovalStatus.APPROVED);
+    });
+
+    test('deny on a data request task sends the justification to performTaskAction', async () => {
+      const dashboardState = await setupDashboardState('prod');
+
+      const task = new V1_DataRequestUserEventRecord();
+      task.taskId = 'task-4';
+      task.dataRequestId = 'data-request-2';
+
+      const workflow = new V1_Workflow();
+      workflow.workflowId = 'workflow-2';
+      const dataRequestWithWorkflow: V1_DataRequestWithWorkflow = {
+        workflows: [workflow],
+      } as V1_DataRequestWithWorkflow;
+      dashboardState.pendingDataRequestDetailsMap.set(
+        'data-request-2',
+        dataRequestWithWorkflow,
+      );
+
+      const permitClient =
+        dashboardState.lakehouseEntitlementsStore.marketplaceBaseStore
+          .permitWorkflowServerClient;
+      if (!permitClient) {
+        throw new Error('Permit workflow client is not configured in tests');
+      }
+      const performTaskActionSpy = createSpy(
+        permitClient,
+        'performTaskAction',
+      ).mockResolvedValue({});
+
+      await flowResult(dashboardState.deny(task, 'token-4', 'not authorized'));
+
+      expect(performTaskActionSpy).toHaveBeenCalledWith(
+        'workflow-2',
+        'task-4',
+        V1_PermitTaskAction.REJECT,
+        'not authorized',
+        'token-4',
+      );
+      expect(task.status).toBe(V1_UserApprovalStatus.DENIED);
+    });
+
+    test('surfaces an error and does not update task status when approveTask fails', async () => {
+      const dashboardState = await setupDashboardState('prod');
+      const task = createMockTask('task-5', 'contract-5');
+      createSpy(
+        dashboardState.lakehouseEntitlementsStore.lakehouseContractServerClient,
+        'approveTask',
+      ).mockResolvedValue({
+        status: V1_UserApprovalStatus.PENDING,
+        errorMessage: 'boom',
+      });
+
+      await expect(
+        flowResult(dashboardState.approve(task, 'token-5', 'justification')),
+      ).rejects.toThrow(/boom/);
+      expect(task.status).toBeUndefined();
+    });
+  });
+});
+
+describe('TaskApprovalAction', () => {
+  test('is a string enum of approve/deny', () => {
+    expect(TaskApprovalAction.APPROVE).toBe('approve');
+    expect(TaskApprovalAction.DENY).toBe('deny');
   });
 });
