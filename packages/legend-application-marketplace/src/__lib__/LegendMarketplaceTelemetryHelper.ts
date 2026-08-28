@@ -35,6 +35,14 @@ export enum LEGEND_MARKETPLACE_PAGE {
   HOME_PAGE = 'Home Page',
   SEARCH_RESULTS_PAGE = 'Search Results Page',
   LAKEHOUSE_ACCESS_PAGE = 'Lakehouse Access Page',
+  TERMINALS_ADDONS_PAGE = 'Terminals and Add-ons Page',
+  YOUR_ORDERS_PAGE = 'Your Orders Page',
+  SUBSCRIPTIONS_PAGE = 'Subscriptions Page',
+}
+
+export enum TERMINAL_SEARCH_LOCATION {
+  MAIN_CATALOG = 'Main Catalog',
+  ADDONS_POPUP = 'Add-ons Popup',
 }
 
 export enum CONTRACT_ACTION {
@@ -961,6 +969,313 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_COPY_SQL,
       { ...session },
+    );
+  }
+
+  static logEvent_ViewTerminalsAddonsPage(
+    telemetryService: TelemetryService,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_TERMINALS_ADDONS_PAGE,
+      {
+        page: LEGEND_MARKETPLACE_PAGE.TERMINALS_ADDONS_PAGE,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_TerminalsAddonsSearch(
+    telemetryService: TelemetryService,
+    query: string,
+    searchLocation: TERMINAL_SEARCH_LOCATION,
+    filterTab: string,
+    isTargetUser: boolean,
+  ): void {
+    this.updateSearchSessionId(uuid());
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TERMINALS_ADDONS_SEARCH,
+      {
+        query,
+        searchLocation,
+        filterTab,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_TerminalsAddonsFilterTab(
+    telemetryService: TelemetryService,
+    tab: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TERMINALS_ADDONS_FILTER_TAB,
+      {
+        tab,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_SelectTargetUser(
+    telemetryService: TelemetryService,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TERMINALS_ADDONS_SELECT_TARGET_USER,
+      {
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickTerminalAddonCard(
+    telemetryService: TelemetryService,
+    productId: string | number,
+    productName: string,
+    providerName: string,
+    itemType: string,
+    searchLocation: TERMINAL_SEARCH_LOCATION,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_TERMINAL_ADDON_CARD,
+      {
+        productId,
+        productName,
+        providerName,
+        itemType,
+        searchLocation,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AddTerminalAddonToCart(
+    telemetryService: TelemetryService,
+    productId: string | number,
+    productName: string,
+    providerName: string,
+    itemType: string,
+    addedFrom: TERMINAL_SEARCH_LOCATION,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADD_TERMINAL_ADDON_TO_CART,
+      {
+        productId,
+        productName,
+        providerName,
+        itemType,
+        addedFrom,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_OpenAddonsPopup(
+    telemetryService: TelemetryService,
+    terminalProductName: string,
+    providerName: string,
+    totalAddonCount: number | null,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.OPEN_ADDONS_POPUP, {
+      terminalProductName,
+      providerName,
+      totalAddonCount,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
+  static logEvent_AddonsPopupSearch(
+    telemetryService: TelemetryService,
+    query: string,
+    terminalProductName: string,
+  ): void {
+    this.updateSearchSessionId(uuid());
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADDONS_POPUP_SEARCH,
+      {
+        query,
+        terminalProductName,
+        searchLocation: TERMINAL_SEARCH_LOCATION.ADDONS_POPUP,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AddonsPopupSort(
+    telemetryService: TelemetryService,
+    sortOrder: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.ADDONS_POPUP_SORT, {
+      sortOrder,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
+  static logEvent_AddonsPopupPaginate(
+    telemetryService: TelemetryService,
+    page: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADDONS_POPUP_PAGINATE,
+      {
+        page,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleTerminalSubscriptions(
+    telemetryService: TelemetryService,
+    isExpanded: boolean,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_TERMINAL_SUBSCRIPTIONS,
+      {
+        isExpanded,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ViewOrderProfileDetails(
+    telemetryService: TelemetryService,
+    profileName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_ORDER_PROFILE_DETAILS,
+      {
+        profileName,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AddOrderProfileToCart(
+    telemetryService: TelemetryService,
+    profileName: string,
+    isMultiselect: boolean,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADD_ORDER_PROFILE_TO_CART,
+      {
+        profileName,
+        isMultiselect,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_SubmitOrder(
+    telemetryService: TelemetryService,
+    itemCount: number,
+    totalCost: number,
+    isTargetUser: boolean,
+    businessReason: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SUBMIT_ORDER, {
+      itemCount,
+      totalCost,
+      isTargetUser,
+      businessReason,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
+  static logEvent_ViewYourOrdersPage(telemetryService: TelemetryService): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_YOUR_ORDERS_PAGE,
+      {
+        page: LEGEND_MARKETPLACE_PAGE.YOUR_ORDERS_PAGE,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickOrderEtaskLink(
+    telemetryService: TelemetryService,
+    orderId: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_ORDER_ETASK_LINK,
+      {
+        orderId,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ViewSubscriptionsPage(
+    telemetryService: TelemetryService,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_SUBSCRIPTIONS_PAGE,
+      {
+        page: LEGEND_MARKETPLACE_PAGE.SUBSCRIPTIONS_PAGE,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
     );
   }
 

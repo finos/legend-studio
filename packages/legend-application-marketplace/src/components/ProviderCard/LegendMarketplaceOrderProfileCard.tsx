@@ -54,6 +54,7 @@ import {
   getRandomImageUrl,
   OrderProfileLabel,
 } from './orderProfileUtils.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LegendMarketplaceOrderProfileCard = observer(
   (props: { traderProfile: TraderProfile }): JSX.Element => {
@@ -65,6 +66,8 @@ export const LegendMarketplaceOrderProfileCard = observer(
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const { cartStore, applicationStore } = legendMarketplaceBaseStore;
     const assetUrl = applicationStore.config.assetsBaseUrl;
+    const isTargetUser =
+      cartStore.cartUser !== applicationStore.identityService.currentUser;
 
     const [imageUrl] = useState(() => getRandomImageUrl(assetUrl));
 
@@ -110,6 +113,12 @@ export const LegendMarketplaceOrderProfileCard = observer(
       }
       executeCartAction(async () => {
         await flowResult(cartStore.addOrderProfileItemsToCart(items, true));
+        LegendMarketplaceTelemetryHelper.logEvent_AddOrderProfileToCart(
+          applicationStore.telemetryService,
+          traderProfile.productName,
+          false,
+          isTargetUser,
+        );
       }).catch(applicationStore.alertUnhandledError);
     };
 
@@ -158,6 +167,12 @@ export const LegendMarketplaceOrderProfileCard = observer(
             true,
           ),
         );
+        LegendMarketplaceTelemetryHelper.logEvent_AddOrderProfileToCart(
+          applicationStore.telemetryService,
+          traderProfile.productName,
+          true,
+          isTargetUser,
+        );
       }).catch(applicationStore.alertUnhandledError);
     };
 
@@ -195,6 +210,10 @@ export const LegendMarketplaceOrderProfileCard = observer(
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowDetailModal(true);
+                    LegendMarketplaceTelemetryHelper.logEvent_ViewOrderProfileDetails(
+                      applicationStore.telemetryService,
+                      traderProfile.productName,
+                    );
                   }}
                   className="legend-marketplace-order-profile-card__info-button"
                   aria-label="View profile details"

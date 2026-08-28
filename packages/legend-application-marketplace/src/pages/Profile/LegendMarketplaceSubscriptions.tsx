@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { Button, Typography, CircularProgress } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   Subscription,
   ProductSubscription,
@@ -36,6 +36,7 @@ import {
   useLegendMarketplaceSubscriptionsStore,
   withLegendMarketplaceSubscriptionsStore,
 } from '../../application/providers/LegendMarketplaceSubscriptionsStoreProvider.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LegendMarketplaceSubscriptions =
   withLegendMarketplaceSubscriptionsStore(
@@ -44,6 +45,7 @@ export const LegendMarketplaceSubscriptions =
       const subscriptionStore = useLegendMarketplaceSubscriptionsStore();
       const [userSearchEnabled, setUserSearchEnabled] =
         useState<boolean>(false);
+      const hasLoggedPageViewRef = useRef(false);
       const initialUser =
         marketplaceStore.applicationStore.identityService.currentUser;
 
@@ -95,6 +97,23 @@ export const LegendMarketplaceSubscriptions =
         subscriptionStore,
         marketplaceStore.applicationStore.alertUnhandledError,
       ]);
+
+      useEffect(() => {
+        if (hasLoggedPageViewRef.current) {
+          return;
+        }
+        const selectedUserId = subscriptionStore.selectedUser.id;
+        const currentUserId =
+          marketplaceStore.applicationStore.identityService.currentUser;
+        const isTargetUser = selectedUserId
+          ? selectedUserId !== currentUserId
+          : false;
+        LegendMarketplaceTelemetryHelper.logEvent_ViewSubscriptionsPage(
+          marketplaceStore.applicationStore.telemetryService,
+          isTargetUser,
+        );
+        hasLoggedPageViewRef.current = true;
+      }, [marketplaceStore, subscriptionStore.selectedUser.id]);
 
       return (
         <LegendMarketplacePage className="legend-marketplace-home">

@@ -24,7 +24,6 @@ import {
 } from 'mobx';
 import {
   LogEvent,
-  type PlainObject,
   type GeneratorFn,
   assertErrorThrown,
   ActionState,
@@ -48,6 +47,7 @@ import {
   ActionAlertType,
 } from '@finos/legend-application';
 import { toastManager } from '../../components/Toast/CartToast.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const boolToString = (val: boolean | undefined): 'true' | 'false' =>
   val ? 'true' : 'false';
@@ -324,9 +324,8 @@ export class CartStore {
         toastManager.success(responseMessage);
       }
 
-      const recommendationPayloads = (response.marketplace_addons ??
-        response.marketplace_terminals ??
-        []) as unknown as PlainObject<TerminalResult>[];
+      const recommendationPayloads =
+        response.marketplace_addons ?? response.marketplace_terminals ?? [];
       const recommendations = recommendationPayloads.map((payload) =>
         TerminalResult.serialization.fromJson(payload),
       );
@@ -740,6 +739,7 @@ export class CartStore {
       );
       return;
     }
+    const businessReason = this.businessReason;
     if (this.cartSummary.total_items === 0) {
       toastManager.warning('Cart is empty - nothing to order');
       return;
@@ -760,6 +760,14 @@ export class CartStore {
       };
 
       yield this.baseStore.marketplaceServerClient.submitOrder(user, orderData);
+
+      LegendMarketplaceTelemetryHelper.logEvent_SubmitOrder(
+        this.baseStore.applicationStore.telemetryService,
+        this.cartSummary.total_items,
+        this.cartSummary.total_cost,
+        this.targetUser !== this.currentUser,
+        businessReason,
+      );
 
       toastManager.notify('Order created successfully!', 'success');
 

@@ -63,6 +63,7 @@ import {
   getCurrentStageTrackingUrl,
   getClosureInfo,
 } from '../../stores/orders/OrderHelpers.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { OrderTab } from '../../stores/orders/OrderStore.js';
 
 const getEmptyOrdersTitle = (
@@ -143,12 +144,14 @@ const OrderAccordion: React.FC<{
   const formatCurrency = (
     amount: number | string | null | undefined,
   ): string => {
-    const numAmount =
-      isNullable(amount) || amount === 'null'
-        ? 0
-        : typeof amount === 'string'
-          ? parseFloat(amount)
-          : amount;
+    let numAmount: number;
+    if (isNullable(amount) || amount === 'null') {
+      numAmount = 0;
+    } else if (typeof amount === 'string') {
+      numAmount = Number.parseFloat(amount);
+    } else {
+      numAmount = amount;
+    }
     return numAmount.toLocaleString('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -162,8 +165,10 @@ const OrderAccordion: React.FC<{
         sx={{ '&:before': { display: 'none' }, mb: 2 }}
       >
         <AccordionSummary
+          component="div"
           expandIcon={<ChevronDownIcon />}
           aria-controls={`${order.order_id}-content`}
+          aria-label={`Order ${order.order_id} summary`}
           id={`${order.order_id}-header`}
           className="legend-marketplace-order-accordion__summary"
         >
@@ -306,6 +311,10 @@ const OrderAccordion: React.FC<{
                       onClick={(e) => {
                         e.stopPropagation();
                         if (trackingUrl) {
+                          LegendMarketplaceTelemetryHelper.logEvent_ClickOrderEtaskLink(
+                            baseStore.applicationStore.telemetryService,
+                            String(order.order_id),
+                          );
                           baseStore.applicationStore.navigationService.navigator.visitAddress(
                             trackingUrl,
                           );
@@ -325,19 +334,21 @@ const OrderAccordion: React.FC<{
                   }
                   arrow={true}
                 >
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<TimesCircleIcon />}
-                    disabled={!isCancellable}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCancelClick();
-                    }}
-                    className="legend-marketplace-order-accordion__cancel-button"
-                  >
-                    Cancel Order
-                  </Button>
+                  <span>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<TimesCircleIcon />}
+                      disabled={!isCancellable}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancelClick();
+                      }}
+                      className="legend-marketplace-order-accordion__cancel-button"
+                    >
+                      Cancel Order
+                    </Button>
+                  </span>
                 </Tooltip>
               </Box>
             )}
@@ -550,6 +561,11 @@ export const LegendMarketplaceYourOrders: React.FC =
         }
       }, [ordersStore, executeFlowSafely]);
 
+      useEffect(() => {
+        LegendMarketplaceTelemetryHelper.logEvent_ViewYourOrdersPage(
+          baseStore.applicationStore.telemetryService,
+        );
+      }, [baseStore.applicationStore.telemetryService]);
       const [searchTerm, setSearchTerm] = useState('');
 
       const currentOrders = ordersStore.currentOrders;
@@ -605,7 +621,6 @@ export const LegendMarketplaceYourOrders: React.FC =
                 <Tab label="Completed" value={OrderTab.CLOSED} />
               </Tabs>
             </Box>
-
             {isLoading ? (
               <Box className="legend-marketplace-your-orders__loading">
                 <CircularProgress size={40} />

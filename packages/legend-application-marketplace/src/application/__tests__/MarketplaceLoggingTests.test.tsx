@@ -17,6 +17,7 @@ import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
+  TERMINAL_SEARCH_LOCATION,
 } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import { MarketplaceSearchMode } from '../../__lib__/LegendMarketplaceSearchMode.js';
 import {
@@ -31,6 +32,7 @@ import {
   PRODUCT_INTEGRATION_TYPE,
   DataProductTelemetryHelper,
 } from '@finos/legend-extension-dsl-data-product';
+import { VendorDataProviderType } from '../../stores/LegendMarketPlaceVendorDataStore.js';
 
 // Mock localStorage implementation
 const createMockStorage = () => {
@@ -500,6 +502,116 @@ describe('Field Search Toggle Telemetry', () => {
     expect((calls[0] as unknown[])[1]).toMatchObject({
       toggleAction: 'disabled',
       eventId: 1,
+    });
+  });
+});
+
+describe('Terminals and Add-ons Telemetry', () => {
+  let mockTelemetryService: ReturnType<typeof createMockTelemetryService>;
+
+  beforeEach(() => {
+    mockStorage.clear();
+    jest.clearAllMocks();
+    mockStorage.getItem.mockClear();
+    mockStorage.setItem.mockClear();
+    mockStorage.removeItem.mockClear();
+    mockTelemetryService = createMockTelemetryService();
+  });
+
+  test('logs terminals and add-ons page view event', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_ViewTerminalsAddonsPage(
+      mockTelemetryService,
+      true,
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe(
+      'marketplace.view.terminals-addons.page',
+    );
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      page: 'Terminals and Add-ons Page',
+      isTargetUser: true,
+      eventId: 1,
+      timestamp: expect.any(Number),
+    });
+  });
+
+  test('logs terminals/add-ons search and rotates search session id', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_TerminalsAddonsSearch(
+      mockTelemetryService,
+      'bloomberg',
+      TERMINAL_SEARCH_LOCATION.MAIN_CATALOG,
+      VendorDataProviderType.TERMINAL_LICENSE,
+      false,
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe(
+      'marketplace.search.terminals-addons',
+    );
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      query: 'bloomberg',
+      searchLocation: 'Main Catalog',
+      filterTab: VendorDataProviderType.TERMINAL_LICENSE,
+      isTargetUser: false,
+      eventId: 1,
+      timestamp: expect.any(Number),
+    });
+
+    const savedSessionData = JSON.parse(
+      mockStorage.getItem(SEARCH_SESSION_KEY) as string,
+    ) as MarketplaceUserSession;
+    expect(typeof savedSessionData.searchSessionId).toBe('string');
+    expect(savedSessionData.searchSessionId).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+    );
+  });
+
+  test('logs add-ons popup search and rotates search session id', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_AddonsPopupSearch(
+      mockTelemetryService,
+      'alpha',
+      'BLOOMBERG TERMINAL',
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe('marketplace.search.addons-popup');
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      query: 'alpha',
+      terminalProductName: 'BLOOMBERG TERMINAL',
+      searchLocation: 'Add-ons Popup',
+      eventId: 1,
+      timestamp: expect.any(Number),
+    });
+
+    const savedSessionData = JSON.parse(
+      mockStorage.getItem(SEARCH_SESSION_KEY) as string,
+    ) as MarketplaceUserSession;
+    expect(typeof savedSessionData.searchSessionId).toBe('string');
+  });
+
+  test('logs submit order telemetry with payload details', () => {
+    LegendMarketplaceTelemetryHelper.logEvent_SubmitOrder(
+      mockTelemetryService,
+      3,
+      250,
+      true,
+      'New Hire',
+    );
+
+    const calls = (mockTelemetryService.logEvent as jest.Mock).mock.calls;
+    expect(calls).toHaveLength(1);
+    expect((calls[0] as unknown[])[0]).toBe('marketplace.submit.order');
+    expect((calls[0] as unknown[])[1]).toMatchObject({
+      itemCount: 3,
+      totalCost: 250,
+      isTargetUser: true,
+      businessReason: 'New Hire',
+      eventId: 1,
+      timestamp: expect.any(Number),
     });
   });
 });

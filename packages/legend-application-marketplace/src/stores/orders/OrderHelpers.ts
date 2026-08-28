@@ -92,25 +92,25 @@ const APPROVAL_STAGE_DETAIL_FIELDS: Record<
   }
 > = {
   [WorkflowStage.MANAGER_APPROVAL]: {
-    actionedBy: 'manager_actioned_by',
+    actionedBy: 'manager_actioned_by_name',
     actionedTimestamp: 'manager_actioned_timestamp',
     action: 'manager_action',
     comment: 'manager_comment',
   },
   [WorkflowStage.FIRST_APPROVER]: {
-    actionedBy: 'fa_approval_actioned_by',
+    actionedBy: 'fa_approval_actioned_by_name',
     actionedTimestamp: 'fa_approval_actioned_timestamp',
     action: 'fa_approval_action',
     comment: 'fa_approval_comment',
   },
   [WorkflowStage.FULFILLMENT_APPROVER]: {
-    actionedBy: 'ffa_approval_actioned_by',
+    actionedBy: 'ffa_approval_actioned_by_name',
     actionedTimestamp: 'ffa_approval_actioned_timestamp',
     action: 'ffa_approval_action',
     comment: 'ffa_approval_comment',
   },
   [WorkflowStage.BUSINESS_ANALYST_APPROVAL]: {
-    actionedBy: 'bbg_approval_actioned_by',
+    actionedBy: 'bbg_approval_actioned_by_name',
     actionedTimestamp: 'bbg_approval_actioned_timestamp',
     action: 'bbg_approval_action',
     comment: 'bbg_approval_comment',

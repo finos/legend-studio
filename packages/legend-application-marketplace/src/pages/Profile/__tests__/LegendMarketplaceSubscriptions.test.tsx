@@ -154,3 +154,204 @@ describe('LegendMarketplaceSubscriptions page - target user selection', () => {
     expect(getSubscriptionsSpy).not.toHaveBeenCalledWith('');
   });
 });
+
+// ─── New feature coverage: loading state, selection, and cancellation ───────
+
+const makeSubscriptionFeed = (overrides: Record<string, unknown> = {}) => ({
+  CarrierVendor: 'Bloomberg',
+  Model: 'B-PIPE',
+  SourceVendor: 'NYSE',
+  ItemName: 'Market Data',
+  ServiceName: 'Level 1',
+  AnnualAmount: 1200,
+  TaxValue: 100,
+  CostCode: 'CC-1',
+  price: 100,
+  servicepriceId: 55,
+  permId: 999,
+  id: 'sub-1',
+  ...overrides,
+});
+
+describe('LegendMarketplaceSubscriptions - loading state', () => {
+  test('shows a loading spinner while subscriptions are being fetched, then renders the grid', async () => {
+    let resolveSubscriptions: (value: {
+      subscription_feeds: unknown[];
+      TotalMonthlyCost: number;
+    }) => void = () => {};
+    const subscriptionsPromise = new Promise<{
+      subscription_feeds: unknown[];
+      TotalMonthlyCost: number;
+    }>((resolve) => {
+      resolveSubscriptions = resolve;
+    });
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockReturnValue(subscriptionsPromise);
+
+    await act(async () => {
+      render(
+        <ApplicationStoreProvider store={MOCK__baseStore.applicationStore}>
+          <LegendMarketplaceSubscriptions />
+        </ApplicationStoreProvider>,
+      );
+    });
+
+    expect(screen.getByRole('progressbar')).toBeDefined();
+    expect(document.querySelector('.ag-theme-balham')).toBeNull();
+
+    await act(async () => {
+      resolveSubscriptions({
+        subscription_feeds: [makeSubscriptionFeed()],
+        TotalMonthlyCost: 1200,
+      });
+      await subscriptionsPromise;
+    });
+
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+    expect(screen.queryByRole('progressbar')).toBeNull();
+  });
+});
+
+describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
+  test('Cancel Subscription button is disabled when nothing is selected', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [makeSubscriptionFeed()],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const cancelButton = screen.getByRole('button', {
+      name: 'Cancel Subscription',
+    });
+    expect(cancelButton.hasAttribute('disabled')).toBe(true);
+  });
+
+  test('selecting a subscription enables the Cancel Subscription button, and unselecting it disables it again', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [makeSubscriptionFeed()],
+      TotalMonthlyCost: 1200,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const getCheckbox = () => screen.getAllByRole('checkbox')[0];
+    const firstCheckbox = await waitFor(() => {
+      const checkbox = getCheckbox();
+      if (!checkbox) {
+        throw new Error('Expected a subscription checkbox to be rendered');
+      }
+      return checkbox;
+    });
+
+    await act(async () => {
+      fireEvent.click(firstCheckbox);
+    });
+
+    const cancelButton = screen.getByRole('button', {
+      name: 'Cancel Subscription',
+    });
+    expect(cancelButton.hasAttribute('disabled')).toBe(false);
+
+    // AG Grid re-renders the cell (and its checkbox DOM node) whenever the
+    // grid's `columnDefs` are recreated on each observer re-render, so the
+    // checkbox must be re-queried rather than reusing the earlier reference.
+    const secondCheckbox = getCheckbox();
+    if (!secondCheckbox) {
+      throw new Error('Expected a subscription checkbox to be rendered');
+    }
+    await act(async () => {
+      fireEvent.click(secondCheckbox);
+    });
+
+    expect(cancelButton.hasAttribute('disabled')).toBe(true);
+  });
+
+  test('cancelling selected subscriptions groups them by permId, shows a transient "Cancelling..." state, and refreshes the grid on success', async () => {
+    const getSubscriptionsSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [makeSubscriptionFeed({ id: 'sub-1', permId: 999 })],
+      TotalMonthlyCost: 1200,
+    });
+
+    let resolveCancel: (value: { message: string }) => void = () => {};
+    const cancelPromise = new Promise<{ message: string }>((resolve) => {
+      resolveCancel = resolve;
+    });
+    const cancelSubscriptionsSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'cancelSubscriptions',
+    ).mockReturnValue(cancelPromise);
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    const checkbox = await waitFor(() => screen.getAllByRole('checkbox')[0]);
+    if (!checkbox) {
+      throw new Error('Expected a subscription checkbox to be rendered');
+    }
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+
+    const cancelButton = screen.getByRole('button', {
+      name: 'Cancel Subscription',
+    });
+
+    await act(async () => {
+      fireEvent.click(cancelButton);
+    });
+
+    expect(cancelSubscriptionsSpy).toHaveBeenCalledWith({
+      ordered_by: MOCK__baseStore.applicationStore.identityService.currentUser,
+      kerberos: MOCK__baseStore.applicationStore.identityService.currentUser,
+      order_items: {
+        999: [
+          {
+            providerName: 'Bloomberg',
+            productName: 'Level 1',
+            category: 'Market Data',
+            price: 100,
+            servicepriceId: 55,
+            model: 'B-PIPE',
+          },
+        ],
+      },
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('Cancelling...')).toBeDefined(),
+    );
+    expect(cancelButton.hasAttribute('disabled')).toBe(true);
+
+    await act(async () => {
+      resolveCancel({ message: 'Done' });
+      await cancelPromise;
+    });
+
+    await waitFor(() => expect(getSubscriptionsSpy).toHaveBeenCalledTimes(2));
+    expect(
+      screen.getByRole('button', { name: 'Cancel Subscription' }),
+    ).toBeDefined();
+  });
+});

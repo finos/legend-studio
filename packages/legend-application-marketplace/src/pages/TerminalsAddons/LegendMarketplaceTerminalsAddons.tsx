@@ -56,6 +56,10 @@ import { useLegendMarketplaceBaseStore } from '../../application/providers/Legen
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 import { LegendMarketplaceOptionSelector } from '../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
+import {
+  LegendMarketplaceTelemetryHelper,
+  TERMINAL_SEARCH_LOCATION,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -69,6 +73,10 @@ export const RefinedVendorRadioSelector = observer(
 
     const onRadioChange = useCallback(
       (value: VendorDataProviderType) => {
+        LegendMarketplaceTelemetryHelper.logEvent_TerminalsAddonsFilterTab(
+          vendorDataState.applicationStore.telemetryService,
+          value,
+        );
         vendorDataState.setProviderDisplayState(value);
         flowResult(vendorDataState.populateProviders()).catch(
           vendorDataState.applicationStore.alertUnhandledError,
@@ -238,15 +246,20 @@ const OwnedServicesSection = observer(
   }): JSX.Element => {
     const { vendorDataState } = props;
     const [isExpanded, setIsExpanded] = useState(false);
-
-    const handleToggle = () => {
-      setIsExpanded(!isExpanded);
-    };
-
     const currentUserId =
       vendorDataState.applicationStore.identityService.currentUser;
     const isTargetUserActive =
       vendorDataState.selectedUser.id !== currentUserId;
+
+    const handleToggle = () => {
+      const nextExpanded = !isExpanded;
+      setIsExpanded(nextExpanded);
+      LegendMarketplaceTelemetryHelper.logEvent_ToggleTerminalSubscriptions(
+        vendorDataState.applicationStore.telemetryService,
+        nextExpanded,
+        isTargetUserActive,
+      );
+    };
     const trimmedSelectedUserDisplayName =
       vendorDataState.selectedUser.displayName?.trim();
     const selectedUserName =
@@ -444,15 +457,24 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
 
     const marketplaceStore = useLegendMarketplaceBaseStore();
     const cartStore = marketplaceStore.cartStore;
+    const currentUserId =
+      marketplaceStore.applicationStore.identityService.currentUser;
 
     const handleSearch = useCallback(
       (query: string | undefined) => {
+        LegendMarketplaceTelemetryHelper.logEvent_TerminalsAddonsSearch(
+          marketplaceStore.applicationStore.telemetryService,
+          query ?? '',
+          TERMINAL_SEARCH_LOCATION.MAIN_CATALOG,
+          marketPlaceVendorDataStore.providerDisplayState,
+          marketPlaceVendorDataStore.selectedUser.id !== currentUserId,
+        );
         marketPlaceVendorDataStore.setSearchTerm(query ?? '');
         flowResult(marketPlaceVendorDataStore.populateProviders()).catch(
           marketPlaceVendorDataStore.applicationStore.alertUnhandledError,
         );
       },
-      [marketPlaceVendorDataStore],
+      [marketPlaceVendorDataStore, marketplaceStore, currentUserId],
     );
 
     const handleSearchChange = useCallback(
@@ -469,7 +491,11 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
 
     useEffect(() => {
       marketPlaceVendorDataStore.init();
-    }, [marketPlaceVendorDataStore]);
+      LegendMarketplaceTelemetryHelper.logEvent_ViewTerminalsAddonsPage(
+        marketplaceStore.applicationStore.telemetryService,
+        marketPlaceVendorDataStore.selectedUser.id !== currentUserId,
+      );
+    }, [marketPlaceVendorDataStore, marketplaceStore, currentUserId]);
 
     return (
       <LegendMarketplacePage className="legend-marketplace-vendor-data">
@@ -494,11 +520,19 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                 userValue={marketPlaceVendorDataStore.selectedUser}
                 setUserValue={(_user: LegendUser): void => {
                   if (_user.id) {
+                    LegendMarketplaceTelemetryHelper.logEvent_SelectTargetUser(
+                      marketplaceStore.applicationStore.telemetryService,
+                      _user.id !== currentUserId,
+                    );
                     marketPlaceVendorDataStore.setSelectedUser(_user);
                     flowResult(cartStore.setTargetUser(_user.id)).catch(
                       marketplaceStore.applicationStore.alertUnhandledError,
                     );
                   } else {
+                    LegendMarketplaceTelemetryHelper.logEvent_SelectTargetUser(
+                      marketplaceStore.applicationStore.telemetryService,
+                      false,
+                    );
                     marketPlaceVendorDataStore.resetSelectedUser();
                     flowResult(cartStore.setTargetUser(undefined)).catch(
                       marketplaceStore.applicationStore.alertUnhandledError,
