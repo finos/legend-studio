@@ -19,10 +19,13 @@ import {
   type V1_PureModelContextData,
   type V1_DatasetSpecification,
   type PureProtocolProcessorPlugin,
+  type V1_GenericType,
   V1_multiplicityModelSchema,
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
   V1_MappingModelCoverageAnalysisResult,
+  V1_deserializeGenericType,
+  V1_genericTypeModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -85,8 +88,8 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   description?: string | undefined;
   mapping!: string;
   mappingProvider?: V1_DataSpaceMappingProviderAnalysisResult;
-  defaultRuntime!: string;
-  compatibleRuntimes!: string[];
+  defaultRuntime?: string | undefined;
+  compatibleRuntimes: string[] = [];
   /**
    * @deprecated
    */
@@ -133,7 +136,7 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
           V1_deserializeDatasetSpecification(val, plugins),
       ),
     ),
-    defaultRuntime: primitive(),
+    defaultRuntime: optional(primitive()),
     description: optional(primitive()),
     mappingModelCoverageAnalysisResult: optional(
       usingModelSchema(
@@ -490,7 +493,8 @@ export class V1_DataSpaceExecutableAnalysisResult {
   description?: string | undefined;
   executable?: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
-  result!: V1_DataSpaceExecutableResult;
+  result?: V1_DataSpaceExecutableResult | undefined;
+  executableReturnType?: V1_GenericType | undefined;
 }
 
 const V1_dataSpaceExecutableAnalysisResultModelSchema = (
@@ -504,8 +508,12 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
       (val: PlainObject<V1_DataSpaceExecutableInfo>) =>
         V1_deserializeDataSpaceExecutableInfo(plugins, val),
     ),
-    result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
+    result: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
     title: primitive(),
+    executableReturnType: optionalCustom(
+      (val) => serialize(V1_genericTypeModelSchema, val),
+      (val) => V1_deserializeGenericType(val),
+    ),
   });
 
 export class V1_DataSpaceAnalysisResult {

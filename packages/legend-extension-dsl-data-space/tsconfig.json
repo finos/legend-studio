@@ -10,9 +10,11 @@
   "references": [
     { "path": "./tsconfig.package.json" },
     { "path": "../legend-graph" },
+    { "path": "../legend-extension-dsl-data-product" },
     { "path": "../legend-extension-dsl-diagram" },
     { "path": "../legend-query-builder" },
     { "path": "../legend-server-depot" },
+    { "path": "../legend-server-lakehouse" },
     { "path": "../legend-server-sdlc" },
     { "path": "../legend-shared" },
     { "path": "../legend-storage" },

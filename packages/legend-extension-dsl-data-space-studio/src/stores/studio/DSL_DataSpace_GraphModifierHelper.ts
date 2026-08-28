@@ -142,6 +142,13 @@ export const dataSpace_removeExecutionContext = action(
     if (dataSpace.defaultExecutionContext === dataSpaceExecutionContext) {
       dataSpace.defaultExecutionContext = undefined;
     }
+    // Clear executionContextKey on any executables that referenced the
+    // now-removed context so we don't leave dangling references behind.
+    dataSpace.executables?.forEach((executable) => {
+      if (executable.executionContextKey === dataSpaceExecutionContext.name) {
+        executable.executionContextKey = undefined;
+      }
+    });
   },
 );
 

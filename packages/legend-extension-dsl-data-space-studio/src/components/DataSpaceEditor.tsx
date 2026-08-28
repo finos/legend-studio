@@ -22,6 +22,7 @@ import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGenera
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { flowResult } from 'mobx';
 import { isStubbed_PackageableElement } from '@finos/legend-graph';
+import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 
@@ -40,11 +41,19 @@ export const DataSpaceEditor = observer(() => {
   }
 
   const validPreviewState = (): boolean => {
-    const ec = dataSpace.defaultExecutionContext;
-    if (!ec?.mapping) {
+    if (!dataSpace.executionContexts?.length) {
+      return true;
+    }
+    const ec =
+      dataSpace.defaultExecutionContext ?? dataSpace.executionContexts[0];
+    if (!ec) {
       return false;
     }
-    const mappingIsStub = isStubbed_PackageableElement(ec.mapping.value);
+    const resolvedMapping = resolveExecutionContextMapping(ec);
+    if (!resolvedMapping) {
+      return false;
+    }
+    const mappingIsStub = isStubbed_PackageableElement(resolvedMapping);
     const runtimeIsStub =
       ec.defaultRuntime !== undefined &&
       isStubbed_PackageableElement(ec.defaultRuntime.value);

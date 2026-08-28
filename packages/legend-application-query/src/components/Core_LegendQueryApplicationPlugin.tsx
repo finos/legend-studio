@@ -1083,15 +1083,18 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                       PackageableElementPointerType.MAPPING,
                       execContext.mapping.path,
                     );
-                    contextProtocol.defaultRuntime =
-                      new V1_PackageableElementPointer(
-                        PackageableElementPointerType.RUNTIME,
-                        execContext.defaultRuntime.path,
-                      );
+                    if (execContext.defaultRuntime) {
+                      contextProtocol.defaultRuntime =
+                        new V1_PackageableElementPointer(
+                          PackageableElementPointerType.RUNTIME,
+                          execContext.defaultRuntime.path,
+                        );
+                    }
                     return contextProtocol;
                   });
                   dataspaceProtocol.defaultExecutionContext =
-                    dataSpaceQueryBuilderState.dataSpaceAnalysisResult.defaultExecutionContext.name;
+                    dataSpaceQueryBuilderState.dataSpaceAnalysisResult
+                      .defaultExecutionContext?.name ?? '';
                   dataspaceProtocol.title =
                     dataSpaceQueryBuilderState.dataSpaceAnalysisResult.title;
                   dataspaceProtocol.description =

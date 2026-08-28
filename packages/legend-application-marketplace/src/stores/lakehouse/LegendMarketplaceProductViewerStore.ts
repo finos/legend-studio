@@ -64,6 +64,7 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   type StoredFileGeneration,
+  generateGAVCoordinates,
   parseGAVCoordinates,
   parseProjectIdentifier,
 } from '@finos/legend-storage';
@@ -75,6 +76,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
+  generateSdlcDataProductPath,
   generateContractPagePath,
   generatePermitDataAccessRequestPagePath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -761,7 +763,11 @@ export class LegendMarketplaceProductViewerStore {
     }
   }
 
-  *initWithLegacyProduct(gav: string, path: string): GeneratorFn<void> {
+  *initWithLegacyProduct(
+    gav: string,
+    path: string,
+    tokenProvider?: (() => string | undefined) | undefined,
+  ): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
       const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
@@ -904,6 +910,12 @@ export class LegendMarketplaceProductViewerStore {
               }
             },
             queryClass: (_class: Class): void => {
+              if (!analysisResult.defaultExecutionContext) {
+                this.marketplaceBaseStore.applicationStore.notificationService.notifyWarning(
+                  `Data product has no default execution context`,
+                );
+                return;
+              }
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl(
                   this.marketplaceBaseStore.applicationStore.config
@@ -959,6 +971,57 @@ export class LegendMarketplaceProductViewerStore {
                 tabKey,
                 executableTitle,
               );
+            },
+            viewDataProduct: (
+              _groupId: string,
+              _artifactId: string,
+              _versionId: string,
+              dataProductPath: string,
+            ): void => {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                  generateSdlcDataProductPath(
+                    generateGAVCoordinates(_groupId, _artifactId, _versionId),
+                    dataProductPath,
+                  ),
+                ),
+              );
+            },
+            mappingProviderAccessConfig: {
+              depotServerClient: this.marketplaceBaseStore.depotServerClient,
+              engineServerClient: this.marketplaceBaseStore.engineServerClient,
+              lakehouseContractServerClient:
+                this.marketplaceBaseStore.lakehouseContractServerClient,
+              lakehousePlatformServerClient:
+                this.marketplaceBaseStore.lakehousePlatformServerClient,
+              lakehouseIngestServerClient:
+                this.marketplaceBaseStore.lakehouseIngestServerClient,
+              permitWorkflowServerClient:
+                this.marketplaceBaseStore.permitWorkflowServerClient,
+              dataAccessPlugins:
+                this.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
+              userSearchService: this.marketplaceBaseStore.userSearchService,
+              dataAccessStateActions: {
+                getContractTaskUrl: (contractId: string, taskId: string) =>
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateContractPagePath(contractId, taskId),
+                  ),
+                getDataProductUrl: (
+                  _dataProductId: string,
+                  _deploymentId: number,
+                ) =>
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generateLakehouseDataProductPath(
+                      _dataProductId,
+                      _deploymentId,
+                    ),
+                  ),
+                getTaskPageUrl: (id: string) =>
+                  this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                    generatePermitDataAccessRequestPagePath(id),
+                  ),
+              },
+              tokenProvider: () => tokenProvider?.(),
             },
           },
         );

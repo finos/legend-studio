@@ -51,6 +51,9 @@ import {
   V1_buildFullPath,
   V1_LakehouseRuntime,
   V1_packageableRuntimeModelSchema,
+  V1_RelationType,
+  GenericType,
+  V1_buildRelationTypeFromV1RelationType,
 } from '@finos/legend-graph';
 import type {
   Entity,
@@ -1180,6 +1183,27 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             },
           );
           executable.result = tdsResult;
+        }
+        if (executableProtocol.executableReturnType) {
+          const v1ReturnType = executableProtocol.executableReturnType;
+          const v1RelationType =
+            v1ReturnType.rawType instanceof V1_RelationType
+              ? v1ReturnType.rawType
+              : v1ReturnType.typeArguments
+                  .map((typeArg) => typeArg.rawType)
+                  .find(
+                    (rawType): rawType is V1_RelationType =>
+                      rawType instanceof V1_RelationType,
+                  );
+          if (v1RelationType) {
+            executable.executableReturnType = new GenericType(
+              V1_buildRelationTypeFromV1RelationType(v1RelationType, graph),
+            );
+          } else {
+            executable.executableReturnType = new GenericType(
+              graph.getType(V1_getGenericTypeFullPath(v1ReturnType)),
+            );
+          }
         }
         return executable;
       },

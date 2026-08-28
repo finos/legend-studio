@@ -1748,8 +1748,14 @@ export class LegendMarketplaceAIChatStore {
       };
       const services = await extractTDSServicesFromDataSpaceSource(source);
       const pureExecutionContext = new QueryExplicitExecutionContextInfo();
-      pureExecutionContext.mapping = executionContext.mapping.path;
-      pureExecutionContext.runtime = executionContext.defaultRuntime.path;
+      pureExecutionContext.mapping = guaranteeNonNullable(
+        executionContext?.mapping.path,
+        `Data product '${path}' default execution context is missing a mapping`,
+      );
+      pureExecutionContext.runtime = guaranteeNonNullable(
+        executionContext?.defaultRuntime?.path,
+        `Data product '${path}' default execution context is missing a default runtime`,
+      );
       return {
         services,
         metadata: extractMetadataFromDataSpaceAnalysis(

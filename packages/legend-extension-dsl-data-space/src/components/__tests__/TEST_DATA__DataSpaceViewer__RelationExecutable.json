@@ -1,0 +1,86 @@
+{
+  "name": "RelationExecutableDataProduct",
+  "package": "test::domain",
+  "path": "test::domain::RelationExecutableDataProduct",
+  "title": "Relation Executable Data Product",
+  "description": "Fixture for a DataSpace with an executable whose executableReturnType is a Relation. QuickStart should surface a 'Relation' label.",
+  "taggedValues": [],
+  "stereotypes": [],
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "elements": [],
+  "elementDocs": [],
+  "executionContexts": [
+    {
+      "name": "default",
+      "mapping": "test::mapping::EmptyMapping",
+      "defaultRuntime": "test::runtime::EmptyRuntime",
+      "compatibleRuntimes": ["test::runtime::EmptyRuntime"],
+      "datasets": [],
+      "runtimeMetadata": {}
+    }
+  ],
+  "defaultExecutionContext": "default",
+  "diagrams": [],
+  "executables": [
+    {
+      "title": "Sample Relation Executable",
+      "description": "An executable that returns a Relation with two columns.",
+      "info": {
+        "_type": "templateExecutableInfo",
+        "executionContextKey": "default",
+        "id": "sampleRelation",
+        "query": "|test::domain::MyClass.all()->project(~[id, name])"
+      },
+      "executableReturnType": {
+        "multiplicityArguments": [],
+        "typeArguments": [
+          {
+            "multiplicityArguments": [],
+            "rawType": {
+              "_type": "relationType",
+              "columns": [
+                {
+                  "name": "id",
+                  "multiplicity": {
+                    "lowerBound": 1,
+                    "upperBound": 1
+                  },
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "typeArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "Integer"
+                    }
+                  }
+                },
+                {
+                  "name": "name",
+                  "multiplicity": {
+                    "lowerBound": 0,
+                    "upperBound": 1
+                  },
+                  "genericType": {
+                    "multiplicityArguments": [],
+                    "typeArguments": [],
+                    "rawType": {
+                      "_type": "packageableType",
+                      "fullPath": "String"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "rawType": {
+          "_type": "packageableType",
+          "fullPath": "meta::pure::metamodel::relation::Relation"
+        }
+      }
+    }
+  ]
+}
