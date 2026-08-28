@@ -594,12 +594,18 @@ const DataCubeScreen = observer(
         <button
           onClick={loadDataCube}
           tabIndex={-1}
-          disabled={hasNoAccess || !(selectedEnvironment ?? resolvedUserEnv)}
+          disabled={
+            hasNoAccess ||
+            accessPointState.isParameterized ||
+            !(selectedEnvironment ?? resolvedUserEnv)
+          }
           className="data-product__viewer__tab-screen__btn"
           title={
             hasNoAccess
               ? 'You do not have access to this access point group. Please request access first.'
-              : 'Open in Datacube'
+              : accessPointState.isParameterized
+                ? 'Open in Datacube is not available for parameterized access points'
+                : 'Open in Datacube'
           }
         >
           Open in Datacube
@@ -664,8 +670,13 @@ const LegendQueryScreen = observer(
         <button
           onClick={loadLegendQuery}
           tabIndex={-1}
+          disabled={accessPointState.isParameterized}
           className="data-product__viewer__tab-screen__btn"
-          title="Open in Legend Query"
+          title={
+            accessPointState.isParameterized
+              ? 'Open in Legend Query is not available for parameterized access points'
+              : 'Open in Legend Query'
+          }
         >
           Open in Legend Query
         </button>

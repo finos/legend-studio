@@ -82,6 +82,7 @@ export class DataProductAccessPointState {
       setIsCollapsed: action,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
+      isParameterized: computed,
     });
 
     this.apgState = apgState;
@@ -104,6 +105,14 @@ export class DataProductAccessPointState {
       return this.accessPoint.targetEnvironment;
     }
     return undefined;
+  }
+
+  get isParameterized(): boolean {
+    return (
+      this.accessPoint instanceof V1_LakehouseAccessPoint &&
+      Array.isArray(this.accessPoint.func.parameters) &&
+      this.accessPoint.func.parameters.length > 0
+    );
   }
 
   setIsCollapsed(val: boolean): void {

@@ -67,6 +67,7 @@ import {
   mockMultiGroupLargeSDLCDataProduct,
   mockSDLCDataProduct,
   mockSDLCDataProductDatabricksAP,
+  mockSDLCDataProductParameterizedAP,
   mockSDLCDataProductNoSupportInfo,
   buildMockDataProductArtifactWithSampleQueries,
   MOCK__TDS_SAMPLE_QUERY_ID,
@@ -4224,6 +4225,140 @@ describe('DataProductViewer', () => {
 
       await screen.findByRole('button', { name: 'Open SQL Playground' });
       expect(screen.queryByText(unsupportedMessage)).toBeNull();
+    });
+  });
+
+  describe('Parameterized access point guard', () => {
+    const parameterizedDatacubeTitle =
+      'Open in Datacube is not available for parameterized access points';
+    const parameterizedQueryTitle =
+      'Open in Legend Query is not available for parameterized access points';
+
+    test('Datacube tab button is disabled with an explanatory title for a parameterized access point', async () => {
+      const mockLiteContracts: V1_LiteDataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resourceId: 'MOCK_SDLC_DATAPRODUCT',
+          resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+          deploymentId: 11111,
+          accessPointGroup: 'GROUP1',
+        },
+      ];
+
+      const mockDataContracts: V1_DataContract[] = [
+        {
+          description: 'Test approved contract',
+          guid: 'test-approved-contract-id',
+          version: 0,
+          state: V1_ContractState.COMPLETED,
+          members: [],
+          consumer: {
+            _type: V1_OrganizationalScopeType.AdHocTeam,
+            users: [
+              {
+                name: 'test-consumer-user-id',
+                type: V1_UserType.WORKFORCE_USER,
+              },
+            ],
+          },
+          createdBy: 'test-user',
+          createdAt: '2025-12-22T15:18:41.998+00:00',
+          resource: {
+            _type: V1_AccessPointGroupReferenceType.AccessPointGroupReference,
+            accessPointGroup: 'GROUP1',
+            dataProduct: {
+              name: 'MOCK_SDLC_DATAPRODUCT',
+              owner: {
+                appDirId: 12345,
+              },
+            },
+          },
+        },
+      ];
+
+      const openDataCubeMock = jest.fn();
+      const { dataProductDataAccessState } =
+        await setupLakehouseDataProductTest(
+          mockSDLCDataProductParameterizedAP,
+          mockEntitlementsSDLCDataProduct,
+          mockLiteContracts,
+          mockDataContracts,
+          {
+            groupId: 'test.group',
+            artifactId: 'test-artifact',
+            versionId: '1.0.0',
+          },
+          getMockDataProductGenerationFilesByType(
+            mockSDLCDataProductParameterizedAP,
+          ),
+          { openDataCube: openDataCubeMock },
+        );
+
+      await screen.findByText('Mock SDLC Data Product');
+      await screen.findByText('Customer demographics data access point');
+
+      act(() => {
+        dataProductDataAccessState?.setLakehouseIngestEnvironmentSummaries([
+          IngestDeploymentServerConfig.serialization.fromJson({
+            ingestServerUrl: 'https://dev-test.example.com',
+            ingestEnvironmentUrn: 'urn:dev:test',
+            environmentName: 'Development',
+            environmentClassification: 'FULL',
+          }),
+        ]);
+      });
+
+      const dataCubeTab = await screen.findByRole('tab', {
+        name: 'Datacube',
+      });
+      fireEvent.click(dataCubeTab);
+      const openDataCubeBtn = await screen.findByTitle(
+        parameterizedDatacubeTitle,
+      );
+      expect(openDataCubeBtn).toBeDefined();
+      expect(openDataCubeBtn.hasAttribute('disabled')).toBe(true);
+      fireEvent.click(openDataCubeBtn);
+      expect(openDataCubeMock).not.toHaveBeenCalled();
+    });
+
+    test('Query tab button is disabled with an explanatory title for a parameterized access point', async () => {
+      const mockOpenQuery = jest.fn();
+      await setupLakehouseDataProductTest(
+        mockSDLCDataProductParameterizedAP,
+        mockEntitlementsSDLCDataProduct,
+        [],
+        [],
+        undefined,
+        undefined,
+        { openQuery: mockOpenQuery },
+      );
+
+      await screen.findByText('Mock SDLC Data Product');
+      const queryTab = await screen.findByRole('tab', { name: 'Query' });
+      await act(async () => {
+        fireEvent.click(queryTab);
+      });
+
+      const openQueryBtn = await screen.findByTitle(parameterizedQueryTitle);
+      expect(openQueryBtn).toBeDefined();
+      expect(openQueryBtn.hasAttribute('disabled')).toBe(true);
+      fireEvent.click(openQueryBtn);
+      expect(mockOpenQuery).not.toHaveBeenCalled();
     });
   });
 
