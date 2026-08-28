@@ -50,6 +50,7 @@ import {
   type ValueSpecification,
   type GraphInitializationReport,
   PackageableRuntime,
+  createPath,
   type QueryInfo,
   GraphManagerState,
   Query,
@@ -69,6 +70,7 @@ import {
   cloneQueryTaggedValue,
   QueryProjectCoordinates,
   CORE_PURE_PATH,
+  INTERNAL_ELEMENT_PATH,
   isValidFullPath,
   QUERY_PROFILE_PATH,
   QueryDataSpaceExecutionContextInfo,
@@ -1143,24 +1145,9 @@ export abstract class QueryEditorStore {
     );
   }
 
-  /**
-   * Resolves the user's lakehouse environment and warehouse, creates a
-   * `LakehouseRuntime`, and wraps it in a `PackageableRuntime`.
-   *
-   * Resolution order:
-   * 1. Check local storage (`LakehouseUserInfo`) for a previously persisted value.
-   * 2. If not found, fetch from the lakehouse contract server via
-   *    `getUserEntitlementEnvs()` and persist the result to local storage.
-   */
-  async createLakehousePackageableRuntime(
-    dataProductPath: string,
-    gav: {
-      groupId: string;
-      artifactId: string;
-      versionId: string;
-    },
-  ): Promise<PackageableRuntime> {
-    // 1. Check local storage for persisted lakehouse user info
+  async resolveLakehouseEnvAndWarehouse(
+    isSnapshot: boolean,
+  ): Promise<{ env: string; warehouse: string }> {
     const persistedInfo = LegendQueryUserDataHelper.getLakehouseUserInfo(
       this.applicationStore.userDataService,
     );
@@ -1168,7 +1155,6 @@ export abstract class QueryEditorStore {
     let userEnvironment: string | undefined = persistedInfo?.env;
     const userWarehouse: string =
       persistedInfo?.snowflakeWarehouse ?? 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
-    // 2. If no persisted environment, fetch from the server
     if (userEnvironment === undefined && this.lakehouseState) {
       try {
         const entitlementEnvs =
@@ -1179,7 +1165,6 @@ export abstract class QueryEditorStore {
         userEnvironment = entitlementEnvs.users
           .map((e) => e.lakehouseEnvironment)
           .at(0);
-        // Persist to local storage for future use
         LegendQueryUserDataHelper.persistLakehouseUserInfo(
           this.applicationStore.userDataService,
           {
@@ -1198,28 +1183,80 @@ export abstract class QueryEditorStore {
 
     if (userEnvironment === undefined) {
       throw new Error(
-        `Can't query data product '${dataProductPath}': unable to resolve lakehouse user environment. ` +
-          `Please ensure your lakehouse entitlements are configured.`,
+        `Unable to resolve lakehouse user environment. Please ensure your lakehouse entitlements are configured.`,
       );
     }
-    if (
-      isSnapshotVersion(gav.versionId) ||
-      gav.versionId === SNAPSHOT_VERSION_ALIAS
-    ) {
+    if (isSnapshot) {
       userEnvironment = decorateEnvWithRealm(
         userEnvironment,
         LakehouseEnvironmentType.PRODUCTION_PARALLEL,
       );
     }
-    const lakehouseRuntime = new LakehouseRuntime(
-      userEnvironment,
-      userWarehouse,
-    );
+    return { env: userEnvironment, warehouse: userWarehouse };
+  }
+
+  async createLakehousePackageableRuntime(
+    dataProductPath: string,
+    gav: {
+      groupId: string;
+      artifactId: string;
+      versionId: string;
+    },
+  ): Promise<PackageableRuntime> {
+    const isSnapshot =
+      isSnapshotVersion(gav.versionId) ||
+      gav.versionId === SNAPSHOT_VERSION_ALIAS;
+    const { env, warehouse } =
+      await this.resolveLakehouseEnvAndWarehouse(isSnapshot);
     const packageableRuntime = new PackageableRuntime(
       `${dataProductPath}_LakehouseRuntime`,
     );
-    packageableRuntime.runtimeValue = lakehouseRuntime;
+    packageableRuntime.runtimeValue = new LakehouseRuntime(env, warehouse);
     return packageableRuntime;
+  }
+
+  async createOrGetDataSpaceLakehouseFallbackRuntime(
+    isSnapshot: boolean,
+  ): Promise<PackageableRuntime> {
+    const runtimePath = createPath(INTERNAL_ELEMENT_PATH, 'LakehouseRuntime');
+    const existing =
+      this.graphManagerState.graph.getNullableRuntime(runtimePath);
+    if (existing) {
+      return existing;
+    }
+    const { env, warehouse } =
+      await this.resolveLakehouseEnvAndWarehouse(isSnapshot);
+    const created = new PackageableRuntime('LakehouseRuntime');
+    created.runtimeValue = new LakehouseRuntime(env, warehouse);
+    this.graphManagerState.graph.addElement(created, INTERNAL_ELEMENT_PATH);
+    return created;
+  }
+
+  async attachDataSpaceFallbackRuntimes(
+    dataSpace: DataSpace,
+    dataSpaceAnalysisResult: DataSpaceAnalysisResult | undefined,
+    isSnapshot: boolean,
+  ): Promise<void> {
+    const contexts = dataSpace.executionContexts ?? [];
+    let sharedRuntime: PackageableRuntime | undefined;
+    for (const context of contexts) {
+      const analyticsContext =
+        dataSpaceAnalysisResult?.executionContextsIndex.get(context.name);
+
+      if (
+        context.mappingProvider === undefined ||
+        context.defaultRuntime !== undefined ||
+        (analyticsContext?.compatibleRuntimes.length ?? 0) !== 0
+      ) {
+        continue;
+      }
+      if (!sharedRuntime) {
+        sharedRuntime =
+          await this.createOrGetDataSpaceLakehouseFallbackRuntime(isSnapshot);
+      }
+      context.defaultRuntime =
+        PackageableElementExplicitReference.create(sharedRuntime);
+    }
   }
 
   /**
@@ -1281,7 +1318,10 @@ export abstract class QueryEditorStore {
           versionId,
         },
       );
-      this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+      this.graphManagerState.graph.addElement(
+        packageableRuntime,
+        INTERNAL_ELEMENT_PATH,
+      );
     }
     // 6. Create query builder state
     const projectInfo = { groupId, artifactId, versionId };
@@ -2103,6 +2143,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         exec.dataSpacePath,
         this.graphManagerState.graph,
       );
+      await this.attachDataSpaceFallbackRuntimes(
+        dataSpace,
+        dataSpaceAnalysisResult,
+        isSnapshotVersion(queryInfo.versionId) ||
+          queryInfo.versionId === SNAPSHOT_VERSION_ALIAS,
+      );
       const mapping = queryInfo.mapping
         ? this.graphManagerState.graph.getMapping(queryInfo.mapping)
         : undefined;
@@ -2242,10 +2288,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             `Execution context '${matchingExecutionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
           );
         }
-        const matchingExecutionContextRuntime = guaranteeNonNullable(
-          matchingExecutionContext.defaultRuntime,
-          `Execution context '${matchingExecutionContext.name}' does not have a default runtime`,
-        );
         const mappingModelCoverageAnalysisResult =
           matchingExecutionContextMapping
             ? dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
@@ -2256,15 +2298,17 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
           dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
             mappingModelCoverageAnalysisResult;
         }
-        dataSpaceQueryBuilderState.executionContextState.setMapping(
-          matchingExecutionContextMapping,
-        );
+        if (matchingExecutionContextMapping) {
+          dataSpaceQueryBuilderState.executionContextState.setMapping(
+            matchingExecutionContextMapping,
+          );
+        }
+        const matchingExecutionContextRuntime =
+          matchingExecutionContext.defaultRuntime
+            ? new RuntimePointer(matchingExecutionContext.defaultRuntime)
+            : undefined;
         dataSpaceQueryBuilderState.executionContextState.setRuntimeValue(
-          new RuntimePointer(
-            PackageableElementExplicitReference.create(
-              matchingExecutionContextRuntime.value,
-            ),
-          ),
+          matchingExecutionContextRuntime,
         );
         return dataSpaceQueryBuilderState;
       } else {
@@ -2359,7 +2403,10 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         exec.ingestDefinitionPath,
         projectInfo,
       );
-      this.graphManagerState.graph.addElement(adhocRuntime, '_internal_');
+      this.graphManagerState.graph.addElement(
+        adhocRuntime,
+        INTERNAL_ELEMENT_PATH,
+      );
 
       // Tracked separately from the closure on `ingestQueryBuilderState` so
       // the swap callback can capture it directly without forming a self-

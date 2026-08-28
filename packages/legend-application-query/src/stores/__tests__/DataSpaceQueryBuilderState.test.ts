@@ -421,6 +421,97 @@ describe('DataSpaceQueryBuilderState with a mappingProvider-backed context', () 
       expect(result.expressionSequence[0]).toBe(bodyExpression);
     },
   );
+
+  test(
+    unitTest(
+      'setExecutionContextState fills in the MAPG-resolved mapping when the incoming embedded state has none — mirrors what happens on query load once `processFromFunction` builds a fresh embedded state from a `from(with(...), runtime)` lambda (from() arity 2 carries no mapping), so the explorer tree can still be built',
+    ),
+    () => {
+      const usageStatsMapping = buildMapping('UsageStatsMapping');
+      const runtime = buildRuntime('LakehouseRuntime');
+
+      const mapgContext = buildContext('lakehouse', {
+        mappingProvider: buildMappingProvider(usageStatsMapping),
+        defaultRuntime: runtime,
+      });
+
+      const state = buildState(
+        buildDataSpace('UsageStatsDataSpace', [mapgContext], 'lakehouse'),
+        mapgContext,
+      );
+
+      const freshEmbedded = new QueryBuilderEmbeddedFromExecutionContextState(
+        state,
+      );
+      freshEmbedded.setRuntimeValue(
+        new RuntimePointer(PackageableElementExplicitReference.create(runtime)),
+      );
+      expect(freshEmbedded.mapping).toBeUndefined();
+
+      state.setExecutionContextState(freshEmbedded);
+
+      expect(state.executionContextState).toBe(freshEmbedded);
+      expect(state.executionContextState.mapping).toBe(usageStatsMapping);
+    },
+  );
+
+  test(
+    unitTest(
+      'setExecutionContextState preserves an already-set mapping on the incoming embedded state (direct-mapping `from()` arity-3 path)',
+    ),
+    () => {
+      const usageStatsMapping = buildMapping('UsageStatsMapping');
+      const otherMapping = buildMapping('OtherMapping');
+      const runtime = buildRuntime('LakehouseRuntime');
+
+      const mapgContext = buildContext('lakehouse', {
+        mappingProvider: buildMappingProvider(usageStatsMapping),
+        defaultRuntime: runtime,
+      });
+
+      const state = buildState(
+        buildDataSpace('UsageStatsDataSpace', [mapgContext], 'lakehouse'),
+        mapgContext,
+      );
+
+      const embeddedWithMapping =
+        new QueryBuilderEmbeddedFromExecutionContextState(state);
+      embeddedWithMapping.setMapping(otherMapping);
+
+      state.setExecutionContextState(embeddedWithMapping);
+
+      expect(state.executionContextState.mapping).toBe(otherMapping);
+    },
+  );
+
+  test(
+    unitTest(
+      'setExecutionContextState leaves an external (non-embedded) execution context state untouched',
+    ),
+    () => {
+      const usageStatsMapping = buildMapping('UsageStatsMapping');
+      const runtime = buildRuntime('LakehouseRuntime');
+
+      const mapgContext = buildContext('lakehouse', {
+        mappingProvider: buildMappingProvider(usageStatsMapping),
+        defaultRuntime: runtime,
+      });
+
+      const state = buildState(
+        buildDataSpace('UsageStatsDataSpace', [mapgContext], 'lakehouse'),
+        mapgContext,
+      );
+
+      const externalState = new QueryBuilderExternalExecutionContextState(
+        state,
+      );
+      expect(externalState.mapping).toBeUndefined();
+
+      state.setExecutionContextState(externalState);
+
+      expect(state.executionContextState.mapping).toBeUndefined();
+    },
+  );
 });
 
 describe(

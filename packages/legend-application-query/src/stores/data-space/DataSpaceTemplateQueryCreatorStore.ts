@@ -21,7 +21,11 @@ import {
 } from '@finos/legend-query-builder';
 import { QueryBuilderActionConfig_QueryApplication } from '../QueryEditorStore.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
-import type { DepotServerClient } from '@finos/legend-server-depot';
+import {
+  type DepotServerClient,
+  isSnapshotVersion,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
 import { generateDataSpaceTemplateQueryCreatorRoute } from '../../__lib__/DSL_DataSpace_LegendQueryNavigation.js';
 import {
   DataSpacePackageableElementExecutable,
@@ -174,6 +178,12 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
         `Execution context '${executionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
       );
     }
+    await this.attachDataSpaceFallbackRuntimes(
+      dataSpace,
+      dataSpaceAnalysisResult,
+      isSnapshotVersion(this.versionId) ||
+        this.versionId === SNAPSHOT_VERSION_ALIAS,
+    );
     const sourceInfo = {
       groupId: this.groupId,
       artifactId: this.artifactId,

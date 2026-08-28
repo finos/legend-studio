@@ -27,7 +27,9 @@ import {
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
+  isSnapshotVersion,
   LATEST_VERSION_ALIAS,
+  SNAPSHOT_VERSION_ALIAS,
 } from '@finos/legend-server-depot';
 import {
   LogEvent,
@@ -452,6 +454,13 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
         `Execution context '${executionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
       );
     }
+
+    await this.attachDataSpaceFallbackRuntimes(
+      dataSpace,
+      dataSpaceAnalysisResult,
+      isSnapshotVersion(queryableDataSpace.versionId) ||
+        queryableDataSpace.versionId === SNAPSHOT_VERSION_ALIAS,
+    );
     const sourceInfo = {
       groupId: queryableDataSpace.groupId,
       artifactId: queryableDataSpace.artifactId,

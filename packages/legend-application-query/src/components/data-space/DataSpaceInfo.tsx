@@ -31,7 +31,6 @@ import { type QueryEditorStore } from '../../stores/QueryEditorStore.js';
 import {
   type DataSpace,
   type DataSpaceExecutionContext,
-  DataSpaceQueryBuilderState,
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
@@ -39,11 +38,13 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl,
 } from '../../__lib__/LegendQueryNavigation.js';
 import { flowResult } from 'mobx';
-import { assertErrorThrown } from '@finos/legend-shared';
+import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
 import {
   ConnectionPointer,
+  INTERNAL_ELEMENT_PATH,
   RelationalDatabaseConnection,
 } from '@finos/legend-graph';
+import { LegendQueryDataSpaceQueryBuilderState } from '../../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 
 export const QueryEditorDataspaceInfoModal = observer(
   (props: {
@@ -55,8 +56,16 @@ export const QueryEditorDataspaceInfoModal = observer(
   }) => {
     const { editorStore, dataspace, executionContext, open, closeModal } =
       props;
+    const queryBuilderState = guaranteeType(
+      editorStore.queryBuilderState,
+      LegendQueryDataSpaceQueryBuilderState,
+      `Data product info modal expects a ${LegendQueryDataSpaceQueryBuilderState.name}`,
+    );
     const projectInfo = editorStore.getProjectInfo();
     const visitElement = async (path: string | undefined): Promise<void> => {
+      if (path?.startsWith(`${INTERNAL_ELEMENT_PATH}::`)) {
+        return;
+      }
       try {
         if (projectInfo) {
           const project = StoreProjectData.serialization.fromJson(
@@ -94,10 +103,7 @@ export const QueryEditorDataspaceInfoModal = observer(
       }
     };
 
-    const dataSpaceAnalysisResult =
-      editorStore.queryBuilderState instanceof DataSpaceQueryBuilderState
-        ? editorStore.queryBuilderState.dataSpaceAnalysisResult
-        : undefined;
+    const dataSpaceAnalysisResult = queryBuilderState.dataSpaceAnalysisResult;
     const dataSpaceMedata = dataSpaceAnalysisResult?.executionContextsIndex.get(
       executionContext.name,
     )?.runtimeMetadata;
