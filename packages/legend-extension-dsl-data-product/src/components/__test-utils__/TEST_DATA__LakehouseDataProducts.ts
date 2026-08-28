@@ -195,6 +195,73 @@ export const mockSDLCDataProductDatabricksAP: V1_DataProduct = deserialize(
   },
 );
 
+export const mockSDLCDataProductParameterizedAP: V1_DataProduct = deserialize(
+  V1_dataProductModelSchema([]),
+  {
+    _type: 'dataProduct',
+    package: 'test',
+    name: 'Mock_SDLC_DataProduct',
+    title: 'Mock SDLC Data Product',
+    description:
+      'Comprehensive customer analytics data for business intelligence and reporting',
+    accessPointGroups: [
+      {
+        _type: 'defaultAccessPointGroup',
+        id: 'GROUP1',
+        title: 'Main Group Test',
+        description: 'Test access point group',
+        accessPoints: [
+          {
+            _type: 'lakehouseAccessPoint',
+            id: 'customer_demographics',
+            title: 'Customer Demographics',
+            description: 'Customer demographics data access point',
+            targetEnvironment: 'Snowflake',
+            func: {
+              _type: 'lambda',
+              body: [
+                {
+                  _type: 'classInstance',
+                  type: 'I',
+                  value: {
+                    metadata: false,
+                    path: ['test', 'IngestDefinition'],
+                  },
+                },
+              ],
+              parameters: [
+                {
+                  _type: 'var',
+                  name: 'startDate',
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+    supportInfo: {
+      documentation: {
+        label: 'Documentation Link Label',
+        url: 'https://example.com/docs',
+      },
+      website: {
+        url: 'https://example-website.com',
+      },
+      emails: [
+        {
+          title: 'Person 1 Email',
+          address: 'person1@example.com',
+        },
+        {
+          title: 'Person 2 Email',
+          address: 'person2@example.com',
+        },
+      ],
+    },
+  },
+);
+
 export const mockEntitlementsSDLCDataProductNoSupportInfo: V1_EntitlementsDataProductDetails =
   deserialize(V1_EntitlementsDataProductDetailsModelSchema, {
     id: 'MOCK_SDLC_DATAPRODUCT',
