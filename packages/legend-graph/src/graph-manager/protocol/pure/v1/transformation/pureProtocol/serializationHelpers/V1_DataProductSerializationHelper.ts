@@ -57,6 +57,7 @@ import {
   V1_AppDirOwner,
   V1_DataProductOwnerType,
   type V1_DataProductOwner,
+  V1_SecureView,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -248,6 +249,12 @@ export const V1_ElementScopeModelSchema = createModelSchema(V1_ElementScope, {
   exclude: optional(primitive()),
 });
 
+export const V1_SecureViewModelSchema = createModelSchema(V1_SecureView, {
+  datasetName: primitive(),
+  func: usingModelSchema(V1_rawLambdaModelSchema),
+  ingestPath: primitive(),
+});
+
 export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
   V1_ModelAccessPointGroup,
   {
@@ -265,6 +272,9 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema),
     mapping: usingModelSchema(V1_packageableElementPointerModelSchema),
+    secureViews: customListWithSchema(V1_SecureViewModelSchema, {
+      INTERNAL__forceReturnEmptyInTest: true,
+    }),
   },
 );
 

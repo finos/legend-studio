@@ -44,6 +44,8 @@ import {
   type DataProductOwner,
   type AppDirOwner,
   type AppDirNode,
+  type SecureView,
+  observe_SecureView,
 } from '@finos/legend-graph';
 import { addUniqueEntry, deleteEntry, swapEntry } from '@finos/legend-shared';
 import { action } from 'mobx';
@@ -390,5 +392,17 @@ export const appDirOwner_setProdParallel = action(
 export const appDirNode_setAppDirId = action(
   (node: AppDirNode, appDirId: number) => {
     node.appDirId = appDirId;
+  },
+);
+
+export const modelAccessPointGroup_addSecureView = action(
+  (group: ModelAccessPointGroup, secureView: SecureView): void => {
+    addUniqueEntry(group.secureViews, observe_SecureView(secureView));
+  },
+);
+
+export const modelAccessPointGroup_removeSecureView = action(
+  (group: ModelAccessPointGroup, secureView: SecureView): void => {
+    deleteEntry(group.secureViews, secureView);
   },
 );

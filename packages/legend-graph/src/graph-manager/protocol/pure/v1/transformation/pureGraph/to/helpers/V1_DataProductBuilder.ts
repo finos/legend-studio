@@ -45,6 +45,7 @@ import {
   NativeModelExecutionContext,
   type DataProductOwner,
   AppDirOwner,
+  SecureView,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { AppDirNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
@@ -236,6 +237,17 @@ export const V1_buildAccessPointGroup = (
         );
       });
     }
+    group.secureViews = elementGroup.secureViews.map((v1SecureView) => {
+      const secureView = new SecureView();
+      secureView.ingestPath = v1SecureView.ingestPath;
+      secureView.datasetName = v1SecureView.datasetName;
+      secureView.func = V1_buildRawLambdaWithResolvedPaths(
+        v1SecureView.func.parameters,
+        v1SecureView.func.body,
+        context,
+      );
+      return secureView;
+    });
     return group;
   } else {
     const group = new AccessPointGroup();

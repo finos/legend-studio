@@ -34,6 +34,7 @@ import {
   type Expertise,
   type DataProductOperationalMetadata,
   AppDirOwner,
+  type SecureView,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { AppDirNode } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
@@ -55,6 +56,7 @@ import {
 } from './DomainObserverHelper.js';
 import { observe_EmbeddedData } from './DSL_Data_ObserverHelper.js';
 import { observe_AtomicTest } from './Testable_ObserverHelper.js';
+import { observe_RawLambda } from './RawValueSpecificationObserver.js';
 
 export const observe_AccessPoint = skipObserved(
   (metamodel: AccessPoint): AccessPoint => {
@@ -192,6 +194,18 @@ export const observe_AccessPointGroup = skipObserved(
   },
 );
 
+export const observe_SecureView = skipObserved(
+  (metamodel: SecureView): SecureView => {
+    makeObservable(metamodel, {
+      ingestPath: observable,
+      datasetName: observable,
+      func: observable,
+    });
+    observe_RawLambda(metamodel.func);
+    return metamodel;
+  },
+);
+
 export const observe_ModelAccessPointGroup = skipObserved(
   (metamodel: ModelAccessPointGroup): ModelAccessPointGroup => {
     observe_AccessPointGroup(metamodel);
@@ -200,10 +214,12 @@ export const observe_ModelAccessPointGroup = skipObserved(
       mapping: observable,
       featuredElements: observable,
       diagrams: observable,
+      secureViews: observable,
     });
     observe_PackageableElementReference(metamodel.mapping);
     metamodel.featuredElements?.forEach(observe_DataProductElementScope);
     metamodel.diagrams?.forEach(observe_DataProductDiagram);
+    metamodel.secureViews.forEach(observe_SecureView);
 
     return metamodel;
   },
