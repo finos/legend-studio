@@ -28,6 +28,7 @@ import {
   TDSServiceSourceType,
   LegendAIQuestionIntent,
   LegendAIThinkingStepStatus,
+  LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
 } from '../../LegendAITypes.js';
 import {
   type LegendAIJudgeResult,
@@ -347,6 +348,76 @@ describe(unitTest('processQuestion'), () => {
     expect(msg.gridData?.rowData).toHaveLength(1);
     expect(msg.isProcessing).toBe(false);
     expect(msg.isExecuting).toBe(false);
+  });
+
+  const TEST_DATA__paramService: TDSServiceSchema = {
+    title: 'OrderDetailsByIdTDS',
+    pattern: '/orderDetailsByIdTDS/{id}',
+    columns: [{ name: 'quantity', type: 'Number' }],
+    parameters: ['orderId'],
+  };
+
+  test('missing required parameter attaches orchestrator fallback when configured', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const plugin = TEST__createMockLegendAIPlugin({
+      callLLM: createMock().mockResolvedValue('sql response'),
+    });
+
+    await processQuestion(
+      'top 10 customers by quantity',
+      [TEST_DATA__paramService],
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: {
+          ...TEST_DATA__legendAIConfig,
+          orchestratorUrl: 'http://localhost/orch',
+        },
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+      {
+        data_product: 'my::DataProduct',
+        group_id: 'com.test',
+        artifact_id: 'prod',
+        version: '1.0.0',
+      },
+    );
+
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
+    expect(msg.textAnswer).toContain('parameter');
+    expect(msg.fallbackAction?.actionId).toBe(
+      LEGEND_AI_ORCHESTRATOR_FALLBACK_ACTION_ID,
+    );
+    expect(msg.fallbackAction?.failedReason).toContain('orderId');
+    expect(msg.fallbackAction?.failedSql).toBe('SELECT * FROM t');
+  });
+
+  test('missing required parameter does not attach fallback without orchestrator', async () => {
+    const { setter, getMessages } = TEST__createMockSetter();
+    TEST__seedAssistant(setter);
+    const plugin = TEST__createMockLegendAIPlugin({
+      callLLM: createMock().mockResolvedValue('sql response'),
+    });
+
+    await processQuestion(
+      'top 10 customers by quantity',
+      [TEST_DATA__paramService],
+      'com.test:prod:1.0.0',
+      TEST_DATA__legendAIMetadata,
+      {
+        config: TEST_DATA__legendAIConfig,
+        plugin,
+        history: [],
+        setMessages: setter,
+      },
+    );
+
+    const msg = TEST__getAssistantMessage(getMessages(), 1);
+    expect(msg.textAnswer).toContain('parameter');
+    expect(msg.fallbackAction).toBeNull();
   });
 
   test('handles LLM call error gracefully', async () => {

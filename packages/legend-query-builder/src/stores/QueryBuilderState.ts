@@ -118,7 +118,7 @@ import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
-import { type QueryChatState } from './QueryChatState.js';
+import { type QueryAgentChatState } from './QueryAgentChatState.js';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from './QueryBuilder_LegendApplicationPlugin_Extension.js';
 import { createDataCubeViewerStateFromQueryBuilder } from './data-cube/QueryBuilderDataCubeHelper.js';
 import type { QueryBuilderDataCubeViewerState } from './data-cube/QueryBuilderDataCubeViewerState.js';
@@ -216,7 +216,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   textEditorState: QueryBuilderTextEditorState;
   unsupportedQueryState: QueryBuilderUnsupportedQueryState;
   changeHistoryState: QueryBuilderChangeHistoryState;
-  isQueryChatOpened: boolean;
+  isAgentChatOpened: boolean;
   showFunctionsExplorerPanel = false;
   showParametersPanel = false;
   isEditingWatermark = false;
@@ -233,7 +233,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL;
   executionContextState: QueryBuilderExecutionContextState;
   internalizeState?: QueryBuilderInternalizeState | undefined;
-  queryChatState?: QueryChatState | undefined;
+  queryAgentChatState?: QueryAgentChatState | undefined;
 
   // NOTE: This property contains information about workflow used
   // to create this state. This should only be used to add additional
@@ -273,8 +273,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeHistoryState: observable,
       executionContextState: observable,
       sourceElement: observable,
-      queryChatState: observable,
-      isQueryChatOpened: observable,
+      queryAgentChatState: observable,
+      isAgentChatOpened: observable,
       isLocalModeEnabled: observable,
       dataCubeViewerState: observable,
       getAllFunction: observable,
@@ -298,12 +298,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       openDataCubeEngine: action,
       setIsCheckingEntitlments: action,
       setSourceElement: action,
-      setIsQueryChatOpened: action,
+      setIsAgentChatOpened: action,
       setIsLocalModeEnabled: action,
       setGetAllFunction: action,
       setLambdaWriteMode: action,
       setINTERNAL__enableInitializingDefaultSimpleExpressionValue: action,
       TEMPORARY_initializeExecContext: action,
+      reconcileExecutionContextState: action,
 
       resetQueryResult: action,
       resetQueryContent: action,
@@ -311,7 +312,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       changeMapping: action,
       changeRuntime: action,
       setExecutionContextState: action,
-      setQueryChatState: action,
+      setQueryAgentChatState: action,
 
       rebuildWithQuery: action,
       compileQuery: flow,
@@ -343,10 +344,10 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.config = config;
     this.workflowState = workflowState;
     this.sourceInfo = sourceInfo;
-    this.isQueryChatOpened =
-      (!this.config?.TEMPORARY__disableQueryBuilderChat &&
+    this.isAgentChatOpened =
+      (!this.config?.TEMPORARY__disableQueryBuilderAgentChat &&
         this.applicationStore.settingService.getBooleanValue(
-          QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
+          QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_AGENT_CHAT_PANEL,
         )) ??
       false;
   }
@@ -355,11 +356,9 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     isTypedTDS: boolean,
   ): QueryBuilderExecutionContextState {
     if (isTypedTDS) {
-      const context = new QueryBuilderEmbeddedFromExecutionContextState(this);
-      this.setLambdaWriteMode(
-        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
-      );
-      return context;
+      this.lambdaWriteMode =
+        QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE;
+      return new QueryBuilderEmbeddedFromExecutionContextState(this);
     }
     return new QueryBuilderExternalExecutionContextState(this);
   }
@@ -421,6 +420,12 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     );
   }
 
+  get requiresEmbeddedExecutionContext(): boolean {
+    return (
+      this.isFetchStructureTyped && Boolean(this.executionContextState.mapping)
+    );
+  }
+
   get forceFromExpressionForExec(): boolean {
     return this.isFetchStructureTyped;
   }
@@ -431,6 +436,29 @@ export abstract class QueryBuilderState implements CommandRegistrar {
 
   setLambdaWriteMode(val: QUERY_BUILDER_LAMBDA_WRITER_MODE): void {
     this.lambdaWriteMode = val;
+    this.reconcileExecutionContextState();
+  }
+  reconcileExecutionContextState(options?: {
+    allowDowngrade?: boolean | undefined;
+  }): void {
+    const requiresEmbedded = this.requiresEmbeddedExecutionContext;
+    const isEmbedded =
+      this.executionContextState instanceof
+      QueryBuilderEmbeddedFromExecutionContextState;
+    if (requiresEmbedded === isEmbedded) {
+      return;
+    }
+    if (isEmbedded && !options?.allowDowngrade) {
+      return;
+    }
+    const preservedMapping = this.executionContextState.mapping;
+    const preservedRuntime = this.executionContextState.runtimeValue;
+    const next = requiresEmbedded
+      ? new QueryBuilderEmbeddedFromExecutionContextState(this)
+      : new QueryBuilderExternalExecutionContextState(this);
+    next.setMapping(preservedMapping);
+    next.setRuntimeValue(preservedRuntime);
+    this.setExecutionContextState(next);
   }
 
   getQueryExecutionContext(): QueryExecutionContext {
@@ -472,6 +500,31 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   /**
+   * Aggregates extra telemetry metadata contributed by application plugins
+   * via `getExtraQueryBuilderTelemetryMetadataProviders`. Callers spread the
+   * result into their event payloads so telemetry helpers stay free of
+   * plugin-specific fields (e.g. agent chat trace ids).
+   */
+  getExtraTelemetryMetadata(): Record<string, unknown> {
+    const providers = this.applicationStore.pluginManager
+      .getApplicationPlugins()
+      .flatMap(
+        (plugin) =>
+          (
+            plugin as QueryBuilder_LegendApplicationPlugin_Extension
+          ).getExtraQueryBuilderTelemetryMetadataProviders?.() ?? [],
+      );
+    const metadata: Record<string, unknown> = {};
+    for (const provider of providers) {
+      const extra = provider(this);
+      if (extra) {
+        Object.assign(metadata, extra);
+      }
+    }
+    return metadata;
+  }
+
+  /**
    * Gets information about the current queryBuilderState.
    * This information can be used as a part of analytics
    */
@@ -496,10 +549,13 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     return undefined;
   }
 
-  setIsQueryChatOpened(val: boolean): void {
-    this.isQueryChatOpened = val;
+  setIsAgentChatOpened(val: boolean): void {
+    if (val && this.config?.TEMPORARY__disableQueryBuilderAgentChat) {
+      return;
+    }
+    this.isAgentChatOpened = val;
     this.applicationStore.settingService.persistValue(
-      QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_CHAT_PANEL,
+      QUERY_BUILDER_SETTING_KEY.SHOW_QUERY_AGENT_CHAT_PANEL,
       val,
     );
   }
@@ -518,8 +574,8 @@ export abstract class QueryBuilderState implements CommandRegistrar {
     this.internalizeState = val;
   }
 
-  setQueryChatState(val: QueryChatState | undefined): void {
-    this.queryChatState = val;
+  setQueryAgentChatState(val: QueryAgentChatState | undefined): void {
+    this.queryAgentChatState = val;
   }
 
   setShowFunctionsExplorerPanel(val: boolean): void {
@@ -764,6 +820,19 @@ export abstract class QueryBuilderState implements CommandRegistrar {
    */
   buildQueryForPersistence(): RawLambda {
     return this.buildQuery();
+  }
+
+  protected buildQueryLambdaWithoutExecutionContext(): RawLambda {
+    if (!this.isQuerySupported) {
+      return this.buildQuery();
+    }
+    return buildRawLambdaFromLambdaFunction(
+      buildLambdaFunction(this, {
+        skipExecutionContext: true,
+        useTypedRelationFunctions: this.isFetchStructureTyped,
+      }),
+      this.graphManagerState,
+    );
   }
 
   buildFromQuery(): RawLambda {

@@ -33,8 +33,17 @@ import { useAuth } from 'react-oidc-context';
 const HEADER_HEIGHT = 64;
 const MIN_HEADER_OPACITY = 0.75;
 
+interface LegendMarketplaceHeaderPage {
+  title: string;
+  urlRoute: string;
+  /**
+   * Optional short label rendered as a pill next to the tab title, e.g. `NEW`.
+   */
+  badge?: string;
+}
+
 const LegendMarketPlaceHeaderTabs = observer(
-  (props: { pages: { title: string; urlRoute: string }[] }) => {
+  (props: { pages: LegendMarketplaceHeaderPage[] }) => {
     const { pages } = props;
 
     const applicationStore = useApplicationStore();
@@ -67,6 +76,11 @@ const LegendMarketPlaceHeaderTabs = observer(
               }}
             >
               {page.title}
+              {page.badge !== undefined && (
+                <span className="legend-marketplace-header__tab__badge">
+                  {page.badge}
+                </span>
+              )}
             </a>
           );
         })}
@@ -79,7 +93,7 @@ const LegendMarketplaceBaseHeader = observer(
   (props: {
     headerName: string;
     homeUrl: string;
-    pages: { title: string; urlRoute: string }[];
+    pages: LegendMarketplaceHeaderPage[];
     showIcons?: boolean;
   }) => {
     const { homeUrl, pages, showIcons } = props;
@@ -185,9 +199,14 @@ export const MarketplaceLakehouseHeader = observer(() => {
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
       pages={[
         {
-          title: 'Data Products',
+          title: 'Dataspaces',
+          urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
+        },
+        {
+          title: 'Lakehouse Access',
           urlRoute:
-            LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS,
+            LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS,
+          badge: 'NEW',
         },
         {
           title: 'Data APIs',

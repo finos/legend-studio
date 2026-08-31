@@ -40,6 +40,7 @@ import { PackageableElementExplicitReference } from '../metamodel/pure/packageab
 import { Multiplicity } from '../metamodel/pure/packageableElements/domain/Multiplicity.js';
 import type { Mapping } from '../metamodel/pure/packageableElements/mapping/Mapping.js';
 import type { PackageableRuntime } from '../metamodel/pure/packageableElements/runtime/PackageableRuntime.js';
+import type { DataProduct } from '../metamodel/pure/dataProduct/DataProduct.js';
 
 const getRelationGenericType = (
   val: ValueSpecification,
@@ -131,5 +132,35 @@ export const attachFromQuery = (
     runtimeInstance,
   ];
   lambdaFunc.expressionSequence = [_func];
+  return lambdaFunc;
+};
+
+export const attachWithFromQuery = (
+  lambdaFunc: LambdaFunction,
+  dataProduct: DataProduct,
+  runtime: PackageableRuntime,
+): LambdaFunction => {
+  let precedingExpression = guaranteeNonNullable(
+    lambdaFunc.expressionSequence[0],
+    `Can't build ->with()->from() expression: preceding expression is not defined`,
+  );
+  const withFunc = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.WITH),
+  );
+  const dataProductInstance = new InstanceValue(Multiplicity.ONE, undefined);
+  dataProductInstance.values = [
+    PackageableElementExplicitReference.create(dataProduct),
+  ];
+  withFunc.parametersValues = [precedingExpression, dataProductInstance];
+  precedingExpression = withFunc;
+  const fromFunc = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
+  );
+  const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
+  runtimeInstance.values = [
+    PackageableElementExplicitReference.create(runtime),
+  ];
+  fromFunc.parametersValues = [precedingExpression, runtimeInstance];
+  lambdaFunc.expressionSequence[0] = fromFunc;
   return lambdaFunc;
 };

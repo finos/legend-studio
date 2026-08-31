@@ -44,6 +44,7 @@ import {
 import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import {
   type V1_LambdaReturnTypeResult,
+  V1_BatchLambdaRelationTypeInput,
   V1_LambdaReturnTypeInput,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
@@ -58,12 +59,14 @@ import { V1_GenerationConfigurationDescription } from './generation/V1_Generatio
 import { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import { V1_ParserError } from './grammar/V1_ParserError.js';
 import { V1_CompilationError } from './compilation/V1_CompilationError.js';
+import { V1_EngineError } from './V1_EngineError.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { RawRelationalOperationElement } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext.js';
 import type { PureProtocolProcessorPlugin } from '../../PureProtocolProcessorPlugin.js';
 import {
   V1_buildCompilationError,
+  V1_buildEngineError,
   V1_buildExecutionError,
   V1_buildExternalFormatDescription,
   V1_buildGenerationConfigurationDescription,
@@ -100,6 +103,7 @@ import { V1_QuerySearchSpecification } from './query/V1_QuerySearchSpecification
 import type {
   ExecutionOptions,
   TEMPORARY__EngineSetupConfig,
+  BatchLambdasRelationTypeResult,
 } from '../../../../AbstractPureGraphManager.js';
 import type { ExternalFormatDescription } from '../../../../action/externalFormat/ExternalFormatDescription.js';
 import { V1_ExternalFormatDescription } from './externalFormat/V1_ExternalFormatDescription.js';
@@ -165,6 +169,7 @@ import {
   RelationTypeColumnMetadata,
   RelationTypeMetadata,
 } from '../../../../action/relation/RelationTypeMetadata.js';
+import type { EngineError } from '../../../../action/EngineError.js';
 import { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import { DeploymentResult } from '../../../../action/DeploymentResult.js';
@@ -353,6 +358,16 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   ): Promise<string> {
     return this.engineServerClient.JSONToGrammar_model(
       this.serializePureModelContext(graph),
+      pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
+    );
+  }
+
+  transformProtocolGraphToCode(
+    graph: PlainObject<V1_PureModelContextData>,
+    pretty: boolean,
+  ): Promise<string> {
+    return this.engineServerClient.JSONToGrammar_model(
+      graph,
       pretty ? V1_RenderStyle.PRETTY : V1_RenderStyle.STANDARD,
     );
   }
@@ -782,6 +797,39 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return relationType;
   }
 
+  async getBatchLambdasRelationTypeFromRawInput(
+    rawInput: V1_BatchLambdaRelationTypeInput,
+  ): Promise<BatchLambdasRelationTypeResult> {
+    const response = await this.engineServerClient.batchLambdasRelationType(
+      V1_BatchLambdaRelationTypeInput.serialization.toJson(rawInput),
+    );
+    const results = new Map<string, RelationTypeMetadata>();
+    const errors = new Map<string, EngineError>();
+    Object.entries(response.results).forEach(([key, columns]) => {
+      const relationType = deserialize(V1_relationTypeModelSchema, columns);
+      const meta = new RelationTypeMetadata();
+      meta.columns = relationType.columns.map(
+        (column) =>
+          new RelationTypeColumnMetadata(
+            V1_getGenericTypeFullPath(column.genericType),
+            column.name,
+            new Multiplicity(
+              column.multiplicity.lowerBound,
+              column.multiplicity.upperBound,
+            ),
+          ),
+      );
+      results.set(key, meta);
+    });
+    Object.entries(response.errors).forEach(([key, error]) => {
+      errors.set(
+        key,
+        V1_buildEngineError(V1_EngineError.serialization.fromJson(error)),
+      );
+    });
+    return { results, errors };
+  }
+
   async getCodeCompletion(
     rawInput: V1_CompleteCodeInput,
   ): Promise<CodeCompletionResult> {
@@ -1193,6 +1241,15 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
     return V1_Query.serialization.fromJson(
       await this.engineServerClient.getQuery(queryId),
     );
+  }
+
+  async getQueryHistory(
+    queryId: string,
+    version?: string | undefined,
+  ): Promise<V1_Query[]> {
+    return (
+      await this.engineServerClient.getQueryHistory(queryId, version)
+    ).map((query) => V1_Query.serialization.fromJson(query));
   }
 
   async createQuery(query: V1_Query): Promise<V1_Query> {

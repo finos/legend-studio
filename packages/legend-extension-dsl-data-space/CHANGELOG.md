@@ -1,5 +1,61 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.252
+
+### Patch Changes
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Adjust UI to reflect accessing mappings through a Data Product instead of a concrete mapping. Add fallbacks to protect against NPEs.
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Make the data space viewer resilient to partial analytics results returned by the engine:
+
+  - `defaultExecutionContext`, `defaultRuntime`, `compatibleRuntimes`, and executable `result` are now optional on both the analytics metamodel and V1 protocol. `executableReturnType` is preserved end-to-end.
+  - The runtime dropdown is hidden when the selected execution context has no `defaultRuntime`, and the data-access panel/Legend AI integration handle a missing execution context and runtime.
+  - Added `DataSpaceMappingProviderAccessState` and cache mapping-provider access states in `DataSpaceViewerState` keyed by data product path, with a Refresh button next to the execution context selector to re-run the access lookup on demand.
+
+- [#5482](https://github.com/finos/legend-studio/pull/5482) [`85bbec3`](https://github.com/finos/legend-studio/commit/85bbec3dbd544282958959b6920bb48ed86ed8e5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add info to dataSpace Analytics
+
+## 10.4.251
+
+## 10.4.250
+
+## 10.4.249
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve data space context for the Intelligence & Agents tab from the data space analysis instead of opening a product viewer, so a failed load no longer raises a data product notification at an Agents tab user.
+
+  The model context a data space builds now also lists its own callable functions, capped at twenty, which reaches the data space page as well.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
+- [#5465](https://github.com/finos/legend-studio/pull/5465) [`7f5bef3`](https://github.com/finos/legend-studio/commit/7f5bef3c861490e0ba8426dc95f37c1e60b8b815) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated the data product analytics builder to reflect the newly updated protocol shape
+
+## 10.4.248
+
+### Patch Changes
+
+- [#5453](https://github.com/finos/legend-studio/pull/5453) [`6eb07be`](https://github.com/finos/legend-studio/commit/6eb07bee43dd02a56c617c2d6d58a18a1577b47b) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Introduce the Legend AI agent chat panel to the Legend Query : the bundled Legend Query application picks up the `legendAI.agentURL` configuration, the query editor header exposes a Legend AI agent chat toggle gated by that configuration, and the query builder replaces the previous Legend AI query chat with the new agent chat panel, Agent chat telemetry is moved into a dedicated `LegendQueryAgentChatTelemetryHelper`, and a plugin extension is added so extra metadata (e.g. agent chat trace id) can be attached to query run launch/success/failure/cancel telemetry.
+
+## 10.4.247
+
+## 10.4.246
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Make execution contexts, their default mapping/runtime, and `executionContextKey` optional on Data Products, and add a `mappingProvider` alternative to `mapping` on execution contexts (resolved via a referenced Data Product's model access point group). Harden query-builder/graph-manager helpers accordingly.
+
+## 10.4.245
+
+## 10.4.244
+
+## 10.4.243
+
+### Patch Changes
+
+- [#5417](https://github.com/finos/legend-studio/pull/5417) [`b7312d7`](https://github.com/finos/legend-studio/commit/b7312d781d6080a7903dca1cd6c006d9385039f5) ([@bojja-gs](https://github.com/bojja-gs)) - Make the Legend AI chat launcher a floating, draggable button so it can be moved clear of transient notifications in the bottom-right corner. The launcher docks to the nearest viewport corner when dropped, re-clamps itself on window resize, distinguishes a drag from a click, and opens the chat on a plain click. Long data product names are now truncated with an ellipsis in the chat header (so the minimize/close actions stay visible) and in the launcher's hover label.
+
 ## 10.4.242
 
 ## 10.4.241

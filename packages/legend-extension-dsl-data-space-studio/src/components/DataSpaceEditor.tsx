@@ -22,6 +22,7 @@ import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGenera
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { flowResult } from 'mobx';
 import { isStubbed_PackageableElement } from '@finos/legend-graph';
+import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
 import { useApplicationNavigationContext } from '@finos/legend-application';
 
@@ -40,15 +41,23 @@ export const DataSpaceEditor = observer(() => {
   }
 
   const validPreviewState = (): boolean => {
-    const stubDefault = Boolean(
-      isStubbed_PackageableElement(
-        dataSpace.defaultExecutionContext.defaultRuntime.value,
-      ) &&
-        isStubbed_PackageableElement(
-          dataSpace.defaultExecutionContext.mapping.value,
-        ),
-    );
-    return Boolean(!stubDefault);
+    if (!dataSpace.executionContexts?.length) {
+      return true;
+    }
+    const ec =
+      dataSpace.defaultExecutionContext ?? dataSpace.executionContexts[0];
+    if (!ec) {
+      return false;
+    }
+    const resolvedMapping = resolveExecutionContextMapping(ec);
+    if (!resolvedMapping) {
+      return false;
+    }
+    const mappingIsStub = isStubbed_PackageableElement(resolvedMapping);
+    const runtimeIsStub =
+      ec.defaultRuntime !== undefined &&
+      isStubbed_PackageableElement(ec.defaultRuntime.value);
+    return !mappingIsStub && !runtimeIsStub;
   };
 
   const previewDataSpace = (): void => {
@@ -69,7 +78,7 @@ export const DataSpaceEditor = observer(() => {
         darkMode={true}
         isReadOnly={dataSpaceState.isReadOnly}
       />
-      <PanelHeader title="General" darkMode={true}>
+      <PanelHeader darkMode={true}>
         <div className="panel__header__actions">
           <div className="btn__dropdown-combo btn__dropdown-combo--primary">
             <button

@@ -162,6 +162,7 @@ export enum CORE_PURE_PATH {
   DATA_PRODUCT = 'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   INGEST_DEFINITION = 'meta::external::ingest::specification::metamodel::IngestDefinition',
   COMPUTE = 'meta::external::compute::specification::metamodel::Compute',
+  AVAILABILITY = 'meta::external::availability::specification::metamodel::Availability',
 }
 
 export const PURE_DOC_TAG = 'doc';

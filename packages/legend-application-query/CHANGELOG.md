@@ -1,5 +1,49 @@
 # @finos/legend-application-query
 
+## 13.8.49
+
+### Patch Changes
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Adjust UI to reflect accessing mappings through a Data Product instead of a concrete mapping. Add fallbacks to protect against NPEs.
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Guard `defaultRuntime` and `defaultExecutionContext` when serializing a data space back to V1 protocol in the query builder plugin, so query builder no longer crashes when the underlying analytics result is missing either field.
+
+- [#5482](https://github.com/finos/legend-studio/pull/5482) [`85bbec3`](https://github.com/finos/legend-studio/commit/85bbec3dbd544282958959b6920bb48ed86ed8e5) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add info to dataSpace Analytics
+
+## 13.8.48
+
+## 13.8.47
+
+## 13.8.46
+
+### Patch Changes
+
+- [#5465](https://github.com/finos/legend-studio/pull/5465) [`7f5bef3`](https://github.com/finos/legend-studio/commit/7f5bef3c861490e0ba8426dc95f37c1e60b8b815) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle changes in optional analytics fields during transform and when reading mappings to prevent NPEs.
+
+## 13.8.45
+
+### Patch Changes
+
+- [#5453](https://github.com/finos/legend-studio/pull/5453) [`6eb07be`](https://github.com/finos/legend-studio/commit/6eb07bee43dd02a56c617c2d6d58a18a1577b47b) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Introduce the Legend AI agent chat panel to the Legend Query : the bundled Legend Query application picks up the `legendAI.agentURL` configuration, the query editor header exposes a Legend AI agent chat toggle gated by that configuration, and the query builder replaces the previous Legend AI query chat with the new agent chat panel, Agent chat telemetry is moved into a dedicated `LegendQueryAgentChatTelemetryHelper`, and a plugin extension is added so extra metadata (e.g. agent chat trace id) can be attached to query run launch/success/failure/cancel telemetry.
+
+## 13.8.44
+
+## 13.8.43
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Stop throwing when a Data Product has no default execution context or an execution context has no mapping/runtime; the query editor now degrades gracefully (e.g. showing "(none)" in the info modal) instead of crashing (temporary).
+
+## 13.8.42
+
+## 13.8.41
+
+## 13.8.40
+
+### Patch Changes
+
+- [#5401](https://github.com/finos/legend-studio/pull/5401) [`f6d3aa8`](https://github.com/finos/legend-studio/commit/f6d3aa87a19a7553e59a4f2efcfac68c4fc46384) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add support for viewing and loading a query's version history in Legend Query. A saved query can be opened from the `/query/{queryId}/history` endpoint, and a specific revision (identified by its `version`) can be loaded via a new `revisionId` route parameter. The history is surfaced through a "Query History" action in the query editor help menu and a "Show Query History" action per query in the load-query dialog.
+
 ## 13.8.39
 
 ## 13.8.38

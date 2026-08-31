@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-import type { JSX } from 'react';
+import { useMemo, useState, type JSX } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Typography,
-  Box,
-  IconButton,
-  Chip,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Box,
 } from '@mui/material';
-import { CloseIcon, DocumentIcon } from '@finos/legend-art';
 import type { TraderProfile } from '@finos/legend-server-marketplace';
 import {
   formatItemPrice,
@@ -44,24 +39,11 @@ import {
   OrderProfileLabel,
   OrderProfileTableHeader,
 } from './orderProfileUtils.js';
-
-const CategoryChip = (props: {
-  category: string;
-  isTerminal: boolean;
-}): JSX.Element => {
-  const { category, isTerminal } = props;
-  return (
-    <Chip
-      label={category}
-      size="small"
-      className={
-        isTerminal
-          ? 'order-profile-modal__category-chip--terminal'
-          : 'order-profile-modal__category-chip--addon'
-      }
-    />
-  );
-};
+import {
+  CategoryChip,
+  OrderProfileModalHeader,
+} from './OrderProfileModalHeader.js';
+import { ColumnFilterButton } from '../Filters/ColumnFilterButton.js';
 
 export const OrderProfileDetailModal = observer(
   (props: {
@@ -74,7 +56,38 @@ export const OrderProfileDetailModal = observer(
     const { cartStore } = useLegendMarketplaceBaseStore();
     const items = profile.items;
     const { terminalCount, addOnCount } = getItemSummary(items);
-    const groupedItems = groupOrderProfileItems(items);
+    const groupedItems = useMemo(() => groupOrderProfileItems(items), [items]);
+    const [categoryFilter, setCategoryFilter] = useState<Set<string>>(
+      () => new Set(),
+    );
+    const categoryOptions = useMemo(
+      () =>
+        Array.from(new Set(items.map((item) => item.category))).sort((a, b) =>
+          a.localeCompare(b),
+        ),
+      [items],
+    );
+    // When a category filter hides a terminal but not its add-ons, demote
+    // the orphaned add-ons to top-level rows (no sub-item indentation) so
+    // they don't render as children with no parent row above them.
+    const filteredGroupedItems = useMemo(() => {
+      const filtered =
+        categoryFilter.size === 0
+          ? groupedItems
+          : groupedItems.filter(({ item }) =>
+              categoryFilter.has(item.category),
+            );
+      return filtered.map((entry, index) => {
+        if (!entry.isSubItem) {
+          return entry;
+        }
+        const previous = filtered[index - 1];
+        const hasVisibleParent =
+          previous?.item.isTerminal === true &&
+          previous.item.model === entry.item.model;
+        return hasVisibleParent ? entry : { ...entry, isSubItem: false };
+      });
+    }, [groupedItems, categoryFilter]);
     const displayPrice =
       profile.multiselect && multiselectTotalPrice !== undefined
         ? multiselectTotalPrice
@@ -89,52 +102,36 @@ export const OrderProfileDetailModal = observer(
         className="order-profile-modal"
         aria-labelledby="order-profile-modal-title"
       >
-        <DialogTitle
-          id="order-profile-modal-title"
-          className="order-profile-modal__header"
-        >
-          <Box className="order-profile-modal__header-content">
-            <Box className="order-profile-modal__header-title">
-              <DocumentIcon className="order-profile-modal__header-icon" />
-              <Typography
-                variant="h6"
-                className="order-profile-modal__profile-name"
-              >
-                {profile.productName}
-              </Typography>
-            </Box>
-            <IconButton
-              onClick={onClose}
-              size="small"
-              aria-label="close"
-              className="order-profile-modal__close-button"
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <Typography
-            variant="body2"
-            className="order-profile-modal__header-summary"
-          >
-            {formatProfileSummaryLine(terminalCount, addOnCount)}
-            {OrderProfileLabel.PRICE_TOTAL_SEPARATOR}
-            <strong>{formatItemPrice(displayPrice)}</strong>
-          </Typography>
-        </DialogTitle>
+        <OrderProfileModalHeader
+          titleId="order-profile-modal-title"
+          productName={profile.productName}
+          summaryLine={formatProfileSummaryLine(terminalCount, addOnCount)}
+          totalPrice={displayPrice}
+          onClose={onClose}
+        />
 
         <DialogContent className="order-profile-modal__content" dividers={true}>
           <TableContainer>
-            <Table size="small" aria-label="order profile items">
+            <Table
+              size="small"
+              aria-label="order profile items"
+              stickyHeader={true}
+            >
               <TableHead>
                 <TableRow className="order-profile-modal__table-head">
                   <TableCell className="order-profile-modal__table-header-cell">
                     {OrderProfileTableHeader.PRODUCT_NAME}
                   </TableCell>
                   <TableCell className="order-profile-modal__table-header-cell">
-                    {OrderProfileTableHeader.PROVIDER}
-                  </TableCell>
-                  <TableCell className="order-profile-modal__table-header-cell">
-                    {OrderProfileTableHeader.CATEGORY}
+                    <Box className="order-profile-modal__table-header-cell-content">
+                      <span>{OrderProfileTableHeader.CATEGORY}</span>
+                      <ColumnFilterButton
+                        columnLabel="Category"
+                        options={categoryOptions}
+                        selected={categoryFilter}
+                        onChange={setCategoryFilter}
+                      />
+                    </Box>
                   </TableCell>
                   <TableCell
                     align="center"
@@ -145,9 +142,12 @@ export const OrderProfileDetailModal = observer(
                 </TableRow>
               </TableHead>
               <TableBody>
-                {groupedItems.map(({ item, isSubItem }) => {
+                {filteredGroupedItems.map(({ item, isSubItem }) => {
                   const isInCart =
-                    !item.isOwned && cartStore.isItemInCart(item.id);
+                    !item.isOwned &&
+                    (item.isTerminal
+                      ? cartStore.isItemInCart(item.id)
+                      : cartStore.isAddOnInCartForModel(item.id, item.model));
                   const rowModifierClass = (() => {
                     if (item.isOwned) {
                       return 'order-profile-modal__table-row--owned';
@@ -159,7 +159,7 @@ export const OrderProfileDetailModal = observer(
                   })();
                   return (
                     <TableRow
-                      key={item.id}
+                      key={`${item.id}-${item.model ?? ''}`}
                       className={`order-profile-modal__table-row ${rowModifierClass}`}
                     >
                       <TableCell className="order-profile-modal__table-cell order-profile-modal__table-cell--name">
@@ -185,9 +185,6 @@ export const OrderProfileDetailModal = observer(
                             )}
                           </span>
                         </Box>
-                      </TableCell>
-                      <TableCell className="order-profile-modal__table-cell">
-                        {item.providerName}
                       </TableCell>
                       <TableCell className="order-profile-modal__table-cell">
                         <CategoryChip

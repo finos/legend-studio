@@ -25,6 +25,7 @@ export {
   LEGEND_AI_ANCHOR_ID,
   renderStepStatusIcon,
 } from './components/LegendAIChat.js';
+export { LegendAIChatToggle } from './components/LegendAIChatToggle.js';
 export {
   isStringColumn,
   isNumericColumn,
@@ -57,6 +58,8 @@ export {
   attachMetadataOverview,
   elapsedSeconds,
   createMessagePair,
+  createAssistantMessage,
+  buildOrchestratorFallbackAction,
   analyzeOrchestratorResults,
   cleanLlmSqlResponse,
   isValidSqlCorrection,
@@ -91,6 +94,10 @@ export {
   wrapBareJoinAccessPoints,
 } from './stores/LegendAISqlJoinSanitizers.js';
 export {
+  accessPointName,
+  sharedColumnNames,
+} from './stores/LegendAISqlHelpers.js';
+export {
   preFilterServicesByRelevance,
   isFuzzyMatch,
   levenshteinDistance,
@@ -116,6 +123,7 @@ export {
   enrichColumnsFromElementDocs,
   inferServiceRelationshipsFromAssociations,
   extractLambdaPreFilters,
+  extractServicePreFilters,
   extractModelContext,
   buildEnrichedBusinessContext,
   buildModelContextEnrichmentText,

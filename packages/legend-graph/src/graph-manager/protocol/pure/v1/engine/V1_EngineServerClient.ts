@@ -27,6 +27,8 @@ import {
 import type { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
 import type {
   V1_LambdaReturnTypeInput,
+  V1_BatchLambdaRelationTypeInput,
+  V1_BatchLambdaRelationTypeResponse,
   V1_LambdaReturnTypeResult,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_ServiceRegistrationResult } from './service/V1_ServiceRegistrationResult.js';
@@ -127,6 +129,7 @@ enum CORE_ENGINE_ACTIVITY_TRACE {
   GET_SERVICE_VERSION = 'get service version',
   ACTIVATE_SERVICE_GENERATION_ID = 'activate service generation id',
   GET_SERVICE_METADATA = 'get service metadata',
+  GET_SERVICE_OWNERSHIP = 'get service ownership',
   VALIDATE_SERVICE_ASSERTION_ID = 'validate service assertion id',
   RUN_SERVICE_TESTS = 'run service tests',
   GENERATE_TEST_DATA_WITH_DEFAULT_SEED = 'generate test data with default seed',
@@ -736,6 +739,24 @@ export class V1_EngineServerClient extends AbstractServerClient {
       { enableCompression: true },
     );
 
+  batchLambdasRelationType = (
+    input: PlainObject<V1_BatchLambdaRelationTypeInput>,
+    options?: {
+      abortController?: AbortController | undefined;
+    },
+  ): Promise<V1_BatchLambdaRelationTypeResponse> =>
+    this.postWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_LAMBDA_RETURN_TYPE),
+      `${this._pure()}/compilation/lambdaRelationType/batch`,
+      input,
+      {
+        signal: options?.abortController?.signal ?? null,
+      },
+      undefined,
+      undefined,
+      { enableCompression: true },
+    );
+
   completeCode = (
     input: PlainObject<V1_CompleteCodeInput>,
   ): Promise<PlainObject<CodeCompletionResult>> =>
@@ -895,6 +916,16 @@ export class V1_EngineServerClient extends AbstractServerClient {
     this.get(`${this._query()}/batch`, {}, undefined, { queryIds });
   getQuery = (queryId: string): Promise<PlainObject<V1_Query>> =>
     this.get(this._query(queryId));
+  getQueryHistory = (
+    queryId: string,
+    version?: string | undefined,
+  ): Promise<PlainObject<V1_Query>[]> =>
+    this.get(
+      `${this._query(queryId)}/history`,
+      {},
+      undefined,
+      version !== undefined ? { version } : {},
+    );
   createQuery = (
     query: PlainObject<V1_Query>,
   ): Promise<PlainObject<V1_Query>> =>
@@ -1262,6 +1293,17 @@ export class V1_EngineServerClient extends AbstractServerClient {
       `${this._service(
         this.baseUrlForServiceRegistration ?? serviceServerUrl,
       )}/serviceMetadata/${encodeURIComponent(servicePattern)}`,
+    );
+
+  isCurrentUserAnOwnerOnLatestVersion = (
+    serviceServerUrl: string,
+    servicePattern: string,
+  ): Promise<boolean> =>
+    this.getWithTracing(
+      this.getTraceData(CORE_ENGINE_ACTIVITY_TRACE.GET_SERVICE_OWNERSHIP),
+      `${this._service(
+        this.baseUrlForServiceRegistration ?? serviceServerUrl,
+      )}/isCurrentUserAnOwnerOnLatestVersion/${encodeURIComponent(servicePattern)}`,
     );
 
   // ------------------------------------------- Legend Services List -------------------------------------------

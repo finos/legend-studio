@@ -24,6 +24,7 @@ import {
   generateAnchorForActivity,
 } from '../stores/DataSpaceViewerNavigation.js';
 import { DataAccessOverview } from '@finos/legend-query-builder';
+import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 
 export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -80,9 +81,13 @@ export const DataSpaceDataAccess = observer(
         </div>
         <div className="data-space__viewer__wiki__section__content">
           <div className="data-space__viewer__data-access">
-            <DataAccessOverview
-              dataAccessState={dataSpaceViewerState.currentDataAccessState}
-            />
+            {dataSpaceViewerState.currentDataAccessState ? (
+              <DataAccessOverview
+                dataAccessState={dataSpaceViewerState.currentDataAccessState}
+              />
+            ) : (
+              <DataSpaceWikiPlaceholder message="(not specified)" />
+            )}
           </div>
         </div>
       </div>

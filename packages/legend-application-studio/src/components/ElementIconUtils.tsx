@@ -112,6 +112,8 @@ export const getElementTypeIcon = (
       return <PURE_SnowflakeM2MUdfIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.INGEST_DEFINITION:
       return <PURE_IngestIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE.AVAILABILITY:
+      return <PURE_IngestIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.MEM_SQL_FUNCTION:
       return <PURE_MemSQLFunctionIcon />;
     default: {

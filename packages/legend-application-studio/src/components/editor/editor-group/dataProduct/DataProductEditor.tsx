@@ -86,7 +86,6 @@ import {
   type ChangeEventHandler,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -114,15 +113,12 @@ import { DataProductTestableEditor } from './testable/DataProductTestableEditor.
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
 import {
-  type DataProductElement,
-  type DataProductElementScope,
   type Expertise,
   type GraphManagerState,
   type LakehouseAccessPoint,
   type Mapping,
   type PackageableElement,
   type DataProduct,
-  type DataProductDiagram,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
@@ -174,8 +170,6 @@ import {
   dataProduct_setOperationalMetadataIfAbsent,
   operationalMetadata_deleteCoverageRegion,
   operationalMetadata_addCoverageRegion,
-  dataProductDiagram_setTitle,
-  dataProductDiagram_setDescription,
   operationalMetadata_setUpdateFrequency,
   dataProduct_setOwner,
   appDirOwner_setProduction,
@@ -731,17 +725,6 @@ export const LakehouseDataProductAccessPointEditor = observer(
         editorStore.applicationStore.alertUnhandledError,
       );
     }, [lambdaEditorState, editorStore.applicationStore]);
-
-    // Load the relation columns for access points that already have sample
-    // values so mismatches surface on load. This only runs for rendered access
-    // points, keeping the number of concurrent calls bounded to the visible set.
-    useEffect(() => {
-      if (accessPointState.relationElementState !== undefined) {
-        flowResult(lambdaEditorState.updateLambdaRelationColumns()).catch(
-          editorStore.applicationStore.alertUnhandledError,
-        );
-      }
-    }, [accessPointState, lambdaEditorState, editorStore.applicationStore]);
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {
@@ -1394,277 +1377,6 @@ const AccessPointGroupPublicToggle = observer(
   },
 );
 
-export const CompatibleDiagramsEditor = observer(
-  (props: { groupState: ModelAccessPointGroupState }) => {
-    const { groupState } = props;
-    const group = groupState.value;
-
-    const handleDiagramTitleChange = (
-      diagram: DataProductDiagram,
-      value: string | undefined,
-    ): void => {
-      dataProductDiagram_setTitle(diagram, value ?? '');
-    };
-
-    const handleDiagramDescriptionChange = (
-      diagram: DataProductDiagram,
-      value: string | undefined,
-    ): void => {
-      dataProductDiagram_setDescription(diagram, value);
-    };
-
-    const handleAddDiagram = (option: {
-      label: string;
-      value: PackageableElement;
-    }): void => {
-      groupState.addDiagram(option);
-    };
-
-    const handleRemoveDiagram = (diagram: DataProductDiagram): void => {
-      groupState.handleRemoveDiagram(diagram);
-    };
-
-    // ListEditor component renderers
-    const DiagramComponent = observer(
-      (diagramComponentProps: {
-        item: DataProductDiagram;
-      }): React.ReactElement => {
-        const { item } = diagramComponentProps;
-
-        return (
-          <>
-            <div className="panel__content__form__section__list__item__content">
-              <div className="panel__content__form__section__header__label">
-                Diagram
-              </div>
-              <div className="panel__content__form__section__list__item__content__title">
-                {item.diagram.name}
-              </div>
-            </div>
-            <div className="panel__content__form__section__list__item__form">
-              <PanelFormTextField
-                name="Title"
-                value={item.title}
-                update={(value) => handleDiagramTitleChange(item, value)}
-                placeholder="Enter title"
-                className="dataSpace-editor__general__diagrams__title"
-              />
-              <PanelFormTextField
-                name="Description"
-                value={item.description ?? ''}
-                update={(value) => handleDiagramDescriptionChange(item, value)}
-                placeholder="Enter description"
-                className="dataSpace-editor__general__diagrams__description"
-              />
-            </div>
-          </>
-        );
-      },
-    );
-
-    const hasMappingSet = group.mapping.value.path !== '';
-    const noDiagramsInProject =
-      groupState.getCompatibleDiagramOptions().length === 0 &&
-      group.diagrams.length === 0;
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [isAddingDiagram, setIsAddingDiagram] = useState(false);
-
-    const handleGenerateFromMapping = (): void => {
-      setIsGenerating(true);
-      flowResult(groupState.generateDiagramFromMapping())
-        .catch(
-          groupState.state.editorStore.applicationStore.alertUnhandledError,
-        )
-        .finally(() => setIsGenerating(false));
-    };
-
-    const NewDiagramComponent = observer(
-      (newDiagramProps: {
-        onFinishEditing: () => void;
-      }): React.ReactElement => {
-        const { onFinishEditing } = newDiagramProps;
-
-        useLayoutEffect(() => {
-          setIsAddingDiagram(true);
-          return () => setIsAddingDiagram(false);
-        }, []);
-
-        return (
-          <>
-            <div className="panel__content__form__section__list__new-item__input">
-              <CustomSelectorInput
-                options={groupState.getCompatibleDiagramOptions()}
-                onChange={(event: {
-                  label: string;
-                  value: PackageableElement;
-                }) => {
-                  onFinishEditing();
-                  handleAddDiagram(event);
-                }}
-                placeholder="Select a diagram to add..."
-                darkMode={
-                  !groupState.state.editorStore.applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-            </div>
-            {noDiagramsInProject &&
-              hasMappingSet &&
-              !groupState.state.isReadOnly && (
-                <button
-                  className="panel__content__form__section__list__new-item__cancel-btn btn btn--dark"
-                  disabled={isGenerating}
-                  onClick={() => {
-                    onFinishEditing();
-                    handleGenerateFromMapping();
-                  }}
-                  title="Auto-generate a diagram from the mapping"
-                  tabIndex={-1}
-                >
-                  {isGenerating ? 'Generating...' : 'Generate from Mapping'}
-                </button>
-              )}
-          </>
-        );
-      },
-    );
-
-    return (
-      <div className="data-product-editor__diagrams-section">
-        <ListEditor
-          title="Diagrams"
-          prompt="Add diagrams to include in this Data Product. Diagrams are required to showcase and explain your curated data models"
-          items={group.diagrams}
-          keySelector={(element: DataProductDiagram) => element.diagram.name}
-          ItemComponent={DiagramComponent}
-          NewItemComponent={NewDiagramComponent}
-          handleRemoveItem={handleRemoveDiagram}
-          isReadOnly={groupState.state.isReadOnly}
-          emptyMessage="⚠ No Diagrams specified. Add at least one diagram to this Data Product."
-          emptyClassName="data-product-editor__empty-diagram"
-        />
-        {noDiagramsInProject &&
-          !isAddingDiagram &&
-          hasMappingSet &&
-          !groupState.state.isReadOnly && (
-            <div className="data-product-editor__generate-diagram-btn">
-              <button
-                className="panel__content__form__section__list__new-item__add-btn btn btn--dark"
-                disabled={isGenerating}
-                onClick={handleGenerateFromMapping}
-                title="Generate a Diagram from the Mapping"
-                tabIndex={-1}
-              >
-                {isGenerating ? 'Generating...' : 'Generate from Mapping'}
-              </button>
-            </div>
-          )}
-      </div>
-    );
-  },
-);
-
-export const FeaturedElementsEditor = observer(
-  (props: { groupState: ModelAccessPointGroupState; isReadOnly: boolean }) => {
-    const { groupState, isReadOnly } = props;
-    const group = groupState.value;
-
-    // Event handlers
-    const handleAddElement = (option: {
-      label: string;
-      value: DataProductElement;
-    }): void => {
-      if (typeof option.value === 'object') {
-        groupState.addFeaturedElement(option.value);
-      }
-    };
-
-    const handleRemoveElement = (element: DataProductElementScope): void => {
-      groupState.removeFeaturedElement(element);
-    };
-
-    const handleElementExcludeChange = (
-      element: DataProductElementScope,
-      event: React.ChangeEvent<HTMLInputElement>,
-    ): void => {
-      groupState.excludeFeaturedElement(element, event.target.checked);
-    };
-
-    // ListEditor component renderers
-    const ElementComponent = observer(
-      (elementComponentProps: {
-        item: DataProductElementScope;
-      }): React.ReactElement => {
-        const { item } = elementComponentProps;
-
-        return (
-          <div className="data-product-editor__element-item">
-            <div className="panel__content__form__section__list__item__content__label">
-              {item.element.value.path}
-            </div>
-            <div className="panel__content__form__section__list__item__content__actions">
-              <div className="panel__content__form__section__list__item__content__actions-exclude">
-                <Checkbox
-                  disabled={isReadOnly}
-                  checked={item.exclude ?? false}
-                  onChange={(event) => handleElementExcludeChange(item, event)}
-                  size="small"
-                  className="panel__content__form__section__list__item__content__actions-exclude__btn"
-                />
-                <span className="panel__content__form__section__list__item__content__actions__label">
-                  Exclude
-                </span>
-              </div>
-            </div>
-          </div>
-        );
-      },
-    );
-
-    const NewElementComponent = observer(
-      (newElementProps: { onFinishEditing: () => void }) => {
-        const { onFinishEditing } = newElementProps;
-
-        return (
-          <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput
-              options={groupState.getFeaturedElementOptions()}
-              onChange={(event: {
-                label: string;
-                value: DataProductElement;
-              }) => {
-                onFinishEditing();
-                handleAddElement(event);
-              }}
-              placeholder="Select an element to add..."
-              darkMode={
-                !groupState.state.editorStore.applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-            />
-          </div>
-        );
-      },
-    );
-
-    return (
-      <ListEditor
-        title="Featured Elements"
-        prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Product entirely."
-        items={group.featuredElements}
-        keySelector={(element: DataProductElementScope) =>
-          element.element.value.path
-        }
-        ItemComponent={ElementComponent}
-        NewItemComponent={NewElementComponent}
-        handleRemoveItem={handleRemoveElement}
-        isReadOnly={isReadOnly}
-        emptyMessage="No elements specified"
-      />
-    );
-  },
-);
-
 const ModelAccessPointGroupEditor = observer(
   (props: { groupState: ModelAccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
@@ -1729,11 +1441,6 @@ const ModelAccessPointGroupEditor = observer(
             <LongArrowRightIcon />
           </button>
         </div>
-        <FeaturedElementsEditor
-          groupState={groupState}
-          isReadOnly={isReadOnly}
-        />
-        <CompatibleDiagramsEditor groupState={groupState} />
       </div>
     );
   },
@@ -1784,6 +1491,20 @@ const AccessPointGroupEditor = observer(
       intersectionObserver.observe(sentinel);
       return () => intersectionObserver.disconnect();
     }, [accessPointCount, renderedCount]);
+
+    useEffect(() => {
+      flowResult(
+        productEditorState.batchUpdateLambdaRelationColumns(
+          lakehouseAccessPointStates.slice(0, renderedCount),
+        ),
+      ).catch(editorStore.applicationStore.alertUnhandledError);
+    }, [
+      renderedCount,
+      accessPointCount,
+      lakehouseAccessPointStates,
+      productEditorState,
+      editorStore.applicationStore.alertUnhandledError,
+    ]);
 
     const handleDescriptionEdit = () => setEditingDescription(true);
     const handleDescriptionBlur = () => {

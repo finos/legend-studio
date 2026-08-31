@@ -566,7 +566,7 @@ describe(unitTest('DataSpace – buildQuery vs buildQueryForPersistence'), () =>
         graphManagerState.graph,
       );
       const executionContext = guaranteeNonNullable(
-        dataSpace.executionContexts.find((ctx) => ctx.name === 'dummyContext'),
+        dataSpace.executionContexts?.find((ctx) => ctx.name === 'dummyContext'),
         `Can't find execution context 'dummyContext'`,
       );
 
@@ -585,11 +585,19 @@ describe(unitTest('DataSpace – buildQuery vs buildQueryForPersistence'), () =>
       );
 
       // Wire the execution context (mapping + runtime) into the query builder
-      state.executionContextState.setMapping(executionContext.mapping.value);
+      state.executionContextState.setMapping(
+        guaranteeNonNullable(
+          executionContext.mapping,
+          `Execution context '${executionContext.name}' does not have a mapping`,
+        ).value,
+      );
       state.executionContextState.setRuntimeValue(
         new RuntimePointer(
           PackageableElementExplicitReference.create(
-            executionContext.defaultRuntime.value,
+            guaranteeNonNullable(
+              executionContext.defaultRuntime,
+              `Execution context '${executionContext.name}' does not have a default runtime`,
+            ).value,
           ),
         ),
       );

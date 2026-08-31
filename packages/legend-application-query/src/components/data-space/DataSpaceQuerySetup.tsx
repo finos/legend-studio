@@ -87,7 +87,7 @@ const DataProductQuerySetupSetupPanelContent = observer(
     const onDataSpaceOptionChange = (
       option: DataSpaceOption | DataProductOption | null,
     ): void => {
-      queryBuilderState.queryChatState?.abort();
+      queryBuilderState.queryAgentChatState?.abort();
       const value = option?.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
         queryBuilderState.changeHandlers.onDataSpaceChange(value);

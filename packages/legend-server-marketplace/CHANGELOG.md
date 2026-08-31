@@ -1,5 +1,65 @@
 # @finos/legend-server-marketplace
 
+## 0.2.7
+
+### Patch Changes
+
+- [#5487](https://github.com/finos/legend-studio/pull/5487) [`1f2af74`](https://github.com/finos/legend-studio/commit/1f2af746605c68f2b744e39dcdce1c74b1f21d7b) ([@eradityash](https://github.com/eradityash)) - Add telemetry for Terminals/Add-ons, Orders, and Subscriptions flows
+
+## 0.2.6
+
+### Patch Changes
+
+- [#5472](https://github.com/finos/legend-studio/pull/5472) [`d4b1712`](https://github.com/finos/legend-studio/commit/d4b1712006c8af46c9562cf0365434a34fe478a9) ([@eradityash](https://github.com/eradityash)) - Marketplace Terminals and Add-Ons - Owned Terminal Flow and Association Fixes
+
+  - Owned terminal rendering and actions
+  - Permission-aware add-on browsing
+  - AddToCart modal and association-flow behavior fixes
+  - Error handling and reliability cleanup
+  - Model serialization support
+
+- [#5478](https://github.com/finos/legend-studio/pull/5478) [`87eac9e`](https://github.com/finos/legend-studio/commit/87eac9ef6bed8b542f8cd96efd3f9fc0d971e68f) ([@eradityash](https://github.com/eradityash)) - Marketplace Terminals and Add-Ons - Order progress tracker update to reflect new approval stages
+
+  - Order progress tracker now reflects the full Privilege Manager / Market Data First Approver / Fulfillment Approver / Business Analyst approval chain (branching on `order_type` and `bbg_terminal_flag`) with rejected/cancelled/auto-terminated terminal states
+  - Track Order now links to the tracking URL of the order's _current_ workflow stage instead of always the Privilege Manager URL
+  - Cancel Order is now available at any approval stage and is only disabled once the order reaches the RPM/fulfillment stage
+  - Closure Information now shows the details of whichever stage actually closed the order (the rejecting stage, or the final approval/fulfillment stage) instead of always showing the Privilege Manager stage's details
+
+- [#5481](https://github.com/finos/legend-studio/pull/5481) [`38dc221`](https://github.com/finos/legend-studio/commit/38dc2218b176a9fc09d9f2c08dc3660786f62ab5) ([@deekshith98](https://github.com/deekshith98)) - Add a dedicated "Lakehouse Access" search tab and rename Data Products tab to dataspaces
+
+## 0.2.5
+
+## 0.2.4
+
+### Patch Changes
+
+- [#5466](https://github.com/finos/legend-studio/pull/5466) [`2670b55`](https://github.com/finos/legend-studio/commit/2670b55871be4dc0af06856098a8a284b59acb34) ([@bojja-gs](https://github.com/bojja-gs)) - Add MCP server registry models and read them from `MarketplaceServerClient`:
+
+  - `McpServer`, `McpServerPage`, `McpServerTool` and `McpServerToolsResponse` deserialize the MCP registry payloads. Nullable registry fields (`token_type`, `category`, `sample_questions`, `allowed_platforms`, `security_detail`, `mcp_support_info`) are mapped to `undefined` rather than `null`.
+  - `MarketplaceServerClient.getMcpServers` and `getMcpServerTools` read the registry with a bearer token.
+
+## 0.2.3
+
+## 0.2.2
+
+## 0.2.1
+
+### Patch Changes
+
+- [#5437](https://github.com/finos/legend-studio/pull/5437) [`85f0562`](https://github.com/finos/legend-studio/commit/85f05624141d5b115d78a1eea54763002ea62f2e) ([@eradityash](https://github.com/eradityash)) - Order Profile Add-to-Cart Fixes, Model-Aware Cart Logic & Add Service for Owned Terminals
+
+  - Implement Order Profile Add-to-Cart Payload Fixes
+  - Implement Model-Aware Cart Logic
+  - Implement Order Profile Detail Modal Fixes
+  - Implement "Add Service" for Owned Terminals functionality
+  - Cart Drawer UI Overhaul & Refactors
+
+## 0.2.0
+
+### Minor Changes
+
+- [#5425](https://github.com/finos/legend-studio/pull/5425) [`7604941`](https://github.com/finos/legend-studio/commit/76049418e1e3dba6f728a481b2a7b549b44356b2) ([@nguyenqchi](https://github.com/nguyenqchi)) - Added an "Access" filter (Enterprise, Partial Enterprise, Restricted, Undefined) to the Marketplace search filters panel, and an "Undefined" node to the Taxonomy filter tree for data products without a taxonomy tag.
+
 ## 0.1.88
 
 ## 0.1.87

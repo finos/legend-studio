@@ -54,6 +54,7 @@ import {
   getRandomImageUrl,
   OrderProfileLabel,
 } from './orderProfileUtils.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LegendMarketplaceOrderProfileCard = observer(
   (props: { traderProfile: TraderProfile }): JSX.Element => {
@@ -65,6 +66,8 @@ export const LegendMarketplaceOrderProfileCard = observer(
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const { cartStore, applicationStore } = legendMarketplaceBaseStore;
     const assetUrl = applicationStore.config.assetsBaseUrl;
+    const isTargetUser =
+      cartStore.cartUser !== applicationStore.identityService.currentUser;
 
     const [imageUrl] = useState(() => getRandomImageUrl(assetUrl));
 
@@ -108,12 +111,42 @@ export const LegendMarketplaceOrderProfileCard = observer(
         setShowMultiselectModal(true);
         return;
       }
-      const terminals = items.filter((item) => item.isTerminal);
-      const addOns = items.filter((item) => !item.isTerminal);
       executeCartAction(async () => {
-        await flowResult(cartStore.addOrderProfileItemsToCart(terminals, true));
-        await flowResult(cartStore.addOrderProfileItemsToCart(addOns, true));
+        await flowResult(cartStore.addOrderProfileItemsToCart(items, true));
+        LegendMarketplaceTelemetryHelper.logEvent_AddOrderProfileToCart(
+          applicationStore.telemetryService,
+          traderProfile.productName,
+          false,
+          isTargetUser,
+        );
       }).catch(applicationStore.alertUnhandledError);
+    };
+
+    const getCartButtonContent = (): JSX.Element => {
+      if (isAddingToCart) {
+        return (
+          <>
+            {OrderProfileLabel.ADDING} &nbsp;
+            <CircularProgress size={16} />
+          </>
+        );
+      }
+      if (isInCart) {
+        return (
+          <>
+            {OrderProfileLabel.IN_CART} &nbsp;
+            <Box className="legend-marketplace-terminal-card__in-cart-check">
+              <CheckCircleIcon />
+            </Box>
+          </>
+        );
+      }
+      return (
+        <>
+          {OrderProfileLabel.ADD_TO_CART} &nbsp;
+          <ShoppingCartIcon />
+        </>
+      );
     };
 
     const handleMultiselectConfirm = (
@@ -129,10 +162,16 @@ export const LegendMarketplaceOrderProfileCard = observer(
       );
       executeCartAction(async () => {
         await flowResult(
-          cartStore.addOrderProfileItemsToCart(selectedTerminals, true),
+          cartStore.addOrderProfileItemsToCart(
+            [...selectedTerminals, ...addOnItems],
+            true,
+          ),
         );
-        await flowResult(
-          cartStore.addOrderProfileItemsToCart(addOnItems, true),
+        LegendMarketplaceTelemetryHelper.logEvent_AddOrderProfileToCart(
+          applicationStore.telemetryService,
+          traderProfile.productName,
+          true,
+          isTargetUser,
         );
       }).catch(applicationStore.alertUnhandledError);
     };
@@ -171,6 +210,10 @@ export const LegendMarketplaceOrderProfileCard = observer(
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowDetailModal(true);
+                    LegendMarketplaceTelemetryHelper.logEvent_ViewOrderProfileDetails(
+                      applicationStore.telemetryService,
+                      traderProfile.productName,
+                    );
                   }}
                   className="legend-marketplace-order-profile-card__info-button"
                   aria-label="View profile details"
@@ -195,26 +238,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
                   onClick={handleAddToCart}
                   disabled={isAddingToCart || isInCart}
                 >
-                  {isAddingToCart && (
-                    <>
-                      {OrderProfileLabel.ADDING} &nbsp;
-                      <CircularProgress size={16} />
-                    </>
-                  )}
-                  {!isAddingToCart && isInCart && (
-                    <>
-                      {OrderProfileLabel.IN_CART} &nbsp;
-                      <Box className="legend-marketplace-terminal-card__in-cart-check">
-                        <CheckCircleIcon />
-                      </Box>
-                    </>
-                  )}
-                  {!isAddingToCart && !isInCart && (
-                    <>
-                      {OrderProfileLabel.ADD_TO_CART} &nbsp;
-                      <ShoppingCartIcon />
-                    </>
-                  )}
+                  {getCartButtonContent()}
                 </Button>
                 <Chip
                   label={formatCardPrice(displayPrice)}
@@ -229,9 +253,9 @@ export const LegendMarketplaceOrderProfileCard = observer(
           profile={traderProfile}
           open={showDetailModal}
           onClose={() => setShowDetailModal(false)}
-          {...(multiselectTotalPrice !== undefined
-            ? { multiselectTotalPrice }
-            : {})}
+          {...(multiselectTotalPrice === undefined
+            ? {}
+            : { multiselectTotalPrice })}
         />
 
         <OrderProfileMultiselectModal

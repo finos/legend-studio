@@ -17,7 +17,10 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { Box, Container } from '@mui/material';
-import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import {
+  LegendMarketplaceSearchBar,
+  MarketplaceSearchMode,
+} from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useAuth } from 'react-oidc-context';
 import {
@@ -25,10 +28,7 @@ import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
 } from '@finos/legend-art';
-import {
-  generateFieldSearchResultsRoute,
-  generateLakehouseSearchResultsRoute,
-} from '../../__lib__/LegendMarketplaceNavigation.js';
+import { generateSearchResultsRouteForMode } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   assertErrorThrown,
   isNonEmptyString,
@@ -219,21 +219,18 @@ export const MarketplaceLakehouseHome = observer(() => {
 
   const handleSearch = (
     _query: string | undefined,
-    _useProducerSearch: boolean,
-    _useFieldSearch: boolean,
+    _mode: MarketplaceSearchMode,
   ): void => {
     if (isNonEmptyString(_query)) {
       applicationStore.navigationService.navigator.goToLocation(
-        _useFieldSearch
-          ? generateFieldSearchResultsRoute(_query)
-          : generateLakehouseSearchResultsRoute(_query, _useProducerSearch),
+        generateSearchResultsRouteForMode(_query, _mode),
       );
       LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
         applicationStore.telemetryService,
         _query,
-        _useProducerSearch,
+        _mode === MarketplaceSearchMode.PRODUCER,
         LEGEND_MARKETPLACE_PAGE.HOME_PAGE,
-        _useFieldSearch,
+        _mode === MarketplaceSearchMode.DATA_FIELDS,
       );
     }
   };

@@ -54,12 +54,13 @@ import {
 } from '../stores/DataSpaceViewerNavigation.js';
 import { DataAccessOverview } from '@finos/legend-query-builder';
 import {
+  DataSpaceExecutableRelationResultState,
   DataSpaceExecutableTDSResultState,
   type DataSpaceViewerExecutableState,
   type ResultColumnData,
 } from '../stores/DataSpaceViewerExecutableState.js';
 
-enum TDS_EXECUTABLE_ACTION_TAB {
+enum EXECUTABLE_ACTION_TAB {
   COLUMN_SPECS = 'COLUMN_SPECS',
   QUERY = 'QUERY',
 
@@ -102,26 +103,46 @@ const TDSColumnSampleValuesCellRenderer = (
   );
 };
 
-const DataSpaceExecutableTDSResultView = observer(
+const TDSColumnTypeCellRenderer = (
+  params: DataGridCellRendererParams<ResultColumnData>,
+): React.ReactNode => {
+  const data = params.data;
+  if (!data) {
+    return null;
+  }
+  return data.type?.trim() ? (
+    data.type
+  ) : (
+    <div className="data-space__viewer__grid__empty-cell">No type provided</div>
+  );
+};
+
+const DataSpaceExecutableResultView = observer(
   (props: {
     executableState: DataSpaceViewerExecutableState;
-    resultState: DataSpaceExecutableTDSResultState;
+    resultState:
+      | DataSpaceExecutableTDSResultState
+      | DataSpaceExecutableRelationResultState;
   }) => {
     const { executableState, resultState } = props;
     const executableAnalysisResult = executableState.value;
     const dataSpaceViewerState = executableState.viewerState;
     const applicationStore = useApplicationStore();
     const [selectedTab, setSelectedTab] = useState<string>(
-      TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
+      EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
     );
     const queryText = executableAnalysisResult.info?.query;
     const dataAccessState =
       dataSpaceViewerState.quickStartState.dataAccessStateIndex.get(
         executableAnalysisResult,
       );
+    const isTDSResult =
+      resultState instanceof DataSpaceExecutableTDSResultState;
 
     useEffect(() => {
-      resultState.buildSampleValues();
+      if (resultState instanceof DataSpaceExecutableTDSResultState) {
+        resultState.buildSampleValues();
+      }
     }, [resultState]);
 
     const openServiceQuery = (): void => {
@@ -139,22 +160,23 @@ const DataSpaceExecutableTDSResultView = observer(
       }
     };
     const columnSpecifications = resultState.gridData;
-    const extractTDSExecutableActionConfigurations =
-      applicationStore.pluginManager
-        .getApplicationPlugins()
-        .flatMap(
-          (plugin) =>
-            (
-              plugin as DSL_DataSpace_LegendApplicationPlugin_Extension
-            ).getExtraDataSpaceTDSExecutableActionConfigurations?.() ?? [],
-        )
-        .filter((configuration) =>
-          configuration.isSupported(
-            dataSpaceViewerState,
-            executableAnalysisResult,
-            resultState.value,
-          ),
-        );
+    const extractTDSExecutableActionConfigurations = isTDSResult
+      ? applicationStore.pluginManager
+          .getApplicationPlugins()
+          .flatMap(
+            (plugin) =>
+              (
+                plugin as DSL_DataSpace_LegendApplicationPlugin_Extension
+              ).getExtraDataSpaceTDSExecutableActionConfigurations?.() ?? [],
+          )
+          .filter((configuration) =>
+            configuration.isSupported(
+              dataSpaceViewerState,
+              executableAnalysisResult,
+              resultState.value,
+            ),
+          )
+      : [];
     const currentTabExtensionConfig =
       extractTDSExecutableActionConfigurations.find(
         (config) => config.key === selectedTab,
@@ -171,13 +193,11 @@ const DataSpaceExecutableTDSResultView = observer(
                 'data-space__viewer__quickstart__item__content__tab',
                 {
                   'data-space__viewer__quickstart__item__content__tab--active':
-                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
+                    selectedTab === EXECUTABLE_ACTION_TAB.COLUMN_SPECS,
                 },
               )}
               tabIndex={-1}
-              onClick={() =>
-                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS)
-              }
+              onClick={() => setSelectedTab(EXECUTABLE_ACTION_TAB.COLUMN_SPECS)}
             >
               <div className="data-space__viewer__quickstart__item__content__tab__label">
                 Column Specifications
@@ -188,11 +208,11 @@ const DataSpaceExecutableTDSResultView = observer(
                 'data-space__viewer__quickstart__item__content__tab',
                 {
                   'data-space__viewer__quickstart__item__content__tab--active':
-                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY,
+                    selectedTab === EXECUTABLE_ACTION_TAB.QUERY,
                 },
               )}
               tabIndex={-1}
-              onClick={() => setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY)}
+              onClick={() => setSelectedTab(EXECUTABLE_ACTION_TAB.QUERY)}
             >
               <div className="data-space__viewer__quickstart__item__content__tab__icon">
                 <LegendLogo className="data-space__viewer__quickstart__item__content__tab__icon--query" />
@@ -201,6 +221,26 @@ const DataSpaceExecutableTDSResultView = observer(
                 Query
               </div>
             </button>
+            {queryText !== undefined && (
+              <button
+                className={clsx(
+                  'data-space__viewer__quickstart__item__content__tab',
+                  {
+                    'data-space__viewer__quickstart__item__content__tab--active':
+                      selectedTab === EXECUTABLE_ACTION_TAB.QUERY_TEXT,
+                  },
+                )}
+                tabIndex={-1}
+                onClick={() => setSelectedTab(EXECUTABLE_ACTION_TAB.QUERY_TEXT)}
+              >
+                <div className="data-space__viewer__quickstart__item__content__tab__icon">
+                  <CodeIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
+                </div>
+                <div className="data-space__viewer__quickstart__item__content__tab__label">
+                  Grammar
+                </div>
+              </button>
+            )}
             {extractTDSExecutableActionConfigurations.map((config) => (
               <button
                 key={config.key}
@@ -237,14 +277,12 @@ const DataSpaceExecutableTDSResultView = observer(
                 'data-space__viewer__quickstart__item__content__tab',
                 {
                   'data-space__viewer__quickstart__item__content__tab--active':
-                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS,
+                    selectedTab === EXECUTABLE_ACTION_TAB.DATA_ACCESS,
                 },
               )}
               tabIndex={-1}
               title="Data Access"
-              onClick={() =>
-                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS)
-              }
+              onClick={() => setSelectedTab(EXECUTABLE_ACTION_TAB.DATA_ACCESS)}
             >
               <div className="data-space__viewer__quickstart__item__content__tab__icon">
                 <DataAccessIcon />
@@ -258,43 +296,21 @@ const DataSpaceExecutableTDSResultView = observer(
                 'data-space__viewer__quickstart__item__content__tab',
                 {
                   'data-space__viewer__quickstart__item__content__tab--active':
-                    selectedTab === TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS,
+                    selectedTab === EXECUTABLE_ACTION_TAB.USAGE_STATS,
                 },
               )}
               tabIndex={-1}
               title="Usage Statistics"
-              onClick={() =>
-                setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS)
-              }
+              onClick={() => setSelectedTab(EXECUTABLE_ACTION_TAB.USAGE_STATS)}
             >
               <div className="data-space__viewer__quickstart__item__content__tab__icon">
                 <StatisticsIcon />
               </div>
             </button>
-            {queryText !== undefined && (
-              <button
-                className={clsx(
-                  'data-space__viewer__quickstart__item__content__tab',
-                  {
-                    'data-space__viewer__quickstart__item__content__tab--active':
-                      selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT,
-                  },
-                )}
-                tabIndex={-1}
-                title="Pure Query"
-                onClick={() =>
-                  setSelectedTab(TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT)
-                }
-              >
-                <div className="data-space__viewer__quickstart__item__content__tab__icon">
-                  <CodeIcon className="data-space__viewer__quickstart__item__content__tab__icon--query" />
-                </div>
-              </button>
-            )}
           </div>
         </div>
         <div className="data-space__viewer__quickstart__item__content__tab__content">
-          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
+          {selectedTab === EXECUTABLE_ACTION_TAB.COLUMN_SPECS && (
             <div
               className={clsx(
                 'data-space__viewer__quickstart__tds__column-specs',
@@ -330,6 +346,14 @@ const DataSpaceExecutableTDSResultView = observer(
                     minWidth: 50,
                     sortable: false,
                     resizable: true,
+                    cellRenderer: TDSColumnTypeCellRenderer,
+                    headerName: 'Type',
+                    flex: 1,
+                  },
+                  {
+                    minWidth: 50,
+                    sortable: false,
+                    resizable: true,
                     cellRenderer: TDSColumnDocumentationCellRenderer,
                     headerName: 'Documentation',
                     flex: 1,
@@ -352,7 +376,7 @@ const DataSpaceExecutableTDSResultView = observer(
               />
             </div>
           )}
-          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY && (
+          {selectedTab === EXECUTABLE_ACTION_TAB.QUERY && (
             <div className="data-space__viewer__quickstart__tds__query">
               <div className="data-space__viewer__quickstart__tds__query__actions">
                 <button
@@ -372,7 +396,7 @@ const DataSpaceExecutableTDSResultView = observer(
               </div>
             </div>
           )}
-          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.DATA_ACCESS &&
+          {selectedTab === EXECUTABLE_ACTION_TAB.DATA_ACCESS &&
             (dataAccessState ? (
               <DataAccessOverview
                 dataAccessState={dataAccessState}
@@ -385,14 +409,14 @@ const DataSpaceExecutableTDSResultView = observer(
                 </BlankPanelContent>
               </div>
             ))}
-          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.USAGE_STATS && (
+          {selectedTab === EXECUTABLE_ACTION_TAB.USAGE_STATS && (
             <div className="data-space__viewer__quickstart__tds__placeholder-panel">
               <BlankPanelContent>
                 Usage Statistics (Work in Progress)
               </BlankPanelContent>
             </div>
           )}
-          {selectedTab === TDS_EXECUTABLE_ACTION_TAB.QUERY_TEXT &&
+          {selectedTab === EXECUTABLE_ACTION_TAB.QUERY_TEXT &&
             queryText !== undefined && (
               <div className="data-space__viewer__quickstart__tds__query-text">
                 <div className="data-space__viewer__quickstart__tds__query-text__content">
@@ -427,11 +451,12 @@ const DataSpaceExecutableTDSResultView = observer(
                 </div>
               </div>
             )}
-          {currentTabExtensionConfig?.renderer(
-            dataSpaceViewerState,
-            executableAnalysisResult,
-            resultState.value,
-          )}
+          {resultState instanceof DataSpaceExecutableTDSResultState &&
+            currentTabExtensionConfig?.renderer(
+              dataSpaceViewerState,
+              executableAnalysisResult,
+              resultState.value,
+            )}
         </div>
       </div>
     );
@@ -456,6 +481,23 @@ const DataSpaceExecutableAnalysisResultView = observer(
       return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
+    const executableTypeLabel = ((): string => {
+      if (
+        executableState.resultState instanceof
+        DataSpaceExecutableRelationResultState
+      ) {
+        return 'Relation';
+      }
+      if (
+        executableAnalysisResult.result instanceof DataSpaceExecutableTDSResult
+      ) {
+        return 'TDS';
+      }
+      return (
+        executableAnalysisResult.executableReturnType?.rawType.name ?? 'UNKNOWN'
+      );
+    })();
+
     return (
       <div ref={quickStartRef} className="data-space__viewer__quickstart__item">
         <div className="data-space__viewer__quickstart__item__header">
@@ -463,10 +505,7 @@ const DataSpaceExecutableAnalysisResultView = observer(
             {executableAnalysisResult.title}
           </div>
           <div className="data-space__viewer__quickstart__item__header__type">
-            {executableAnalysisResult.result instanceof
-            DataSpaceExecutableTDSResult
-              ? 'TDS'
-              : 'UNKNOWN'}
+            {executableTypeLabel}
           </div>
           <button
             className="data-space__viewer__quickstart__item__header__anchor"
@@ -483,9 +522,11 @@ const DataSpaceExecutableAnalysisResultView = observer(
             />
           </div>
         )}
-        {executableState.resultState instanceof
-          DataSpaceExecutableTDSResultState && (
-          <DataSpaceExecutableTDSResultView
+        {(executableState.resultState instanceof
+          DataSpaceExecutableTDSResultState ||
+          executableState.resultState instanceof
+            DataSpaceExecutableRelationResultState) && (
+          <DataSpaceExecutableResultView
             executableState={executableState}
             resultState={executableState.resultState}
           />

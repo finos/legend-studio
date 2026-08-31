@@ -1,5 +1,55 @@
 # @finos/legend-query-builder
 
+## 4.19.9
+
+### Patch Changes
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Adjust UI to reflect accessing mappings through a Data Product instead of a concrete mapping. Add fallbacks to protect against NPEs.
+
+## 4.19.8
+
+## 4.19.7
+
+## 4.19.6
+
+## 4.19.5
+
+### Patch Changes
+
+- [#5453](https://github.com/finos/legend-studio/pull/5453) [`6eb07be`](https://github.com/finos/legend-studio/commit/6eb07bee43dd02a56c617c2d6d58a18a1577b47b) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Introduce the Legend AI agent chat panel to the Legend Query : the bundled Legend Query application picks up the `legendAI.agentURL` configuration, the query editor header exposes a Legend AI agent chat toggle gated by that configuration, and the query builder replaces the previous Legend AI query chat with the new agent chat panel, Agent chat telemetry is moved into a dedicated `LegendQueryAgentChatTelemetryHelper`, and a plugin extension is added so extra metadata (e.g. agent chat trace id) can be attached to query run launch/success/failure/cancel telemetry.
+
+## 4.19.4
+
+## 4.19.3
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Make `CuratedTemplateQuery.executionContextKey` optional to support Data Products with no default execution context.
+
+## 4.19.2
+
+## 4.19.1
+
+### Patch Changes
+
+- [#5430](https://github.com/finos/legend-studio/pull/5430) [`5393092`](https://github.com/finos/legend-studio/commit/5393092df434e7937498c9c9ef59db3cb11b88fd) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed "Can't filter column" error when using Filter By/Filter Out on window function and relation-type projection columns in the query result grid.
+
+## 4.19.0
+
+### Minor Changes
+
+- [#5409](https://github.com/finos/legend-studio/pull/5409) [`2f7fb59`](https://github.com/finos/legend-studio/commit/2f7fb59993fc1eb11383fe9a2fef6f05bf2d4a9d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `IngestionDefinitionArtifactViewer` for viewing generated ingest definition artifacts (mat view explorer, schema grid, SQL sub-tabs for view function / barrier / select, JSON view, fullscreen toggle). Wire a "View SQL" action into the Ingest Definition editor that generates and caches the artifact by hash. Extend `tryToFormatSql` with an optional `language` parameter (defaults to `mysql`) so the viewer can format Snowflake SQL.
+
+### Patch Changes
+
+- [#5406](https://github.com/finos/legend-studio/pull/5406) [`28497ab`](https://github.com/finos/legend-studio/commit/28497ab69c55bafb2790b14139e2539e94b25aeb) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix Data Product query builder for Lakehouse access points:
+
+  - `initWithDataProduct` now wires the accessor as the source element for Lakehouse execution contexts even when the graph has no compatible `LakehouseRuntime`, so the relation explorer loads instead of falling back to the class explorer.
+  - Always render the runtime selector in the Data Product setup panel. When no compatible runtime is available, it renders disabled with a red border and a "No compatible runtimes available" placeholder.
+  - Show the enclosing access point group id as a subtitle in the Execution ID dropdown option label for Lakehouse access points, to disambiguate access points that share the same title/id across different groups.
+
+- [#5401](https://github.com/finos/legend-studio/pull/5401) [`f6d3aa8`](https://github.com/finos/legend-studio/commit/f6d3aa87a19a7553e59a4f2efcfac68c4fc46384) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add support for viewing and loading a query's version history in Legend Query. A saved query can be opened from the `/query/{queryId}/history` endpoint, and a specific revision (identified by its `version`) can be loaded via a new `revisionId` route parameter. The history is surfaced through a "Query History" action in the query editor help menu and a "Show Query History" action per query in the load-query dialog.
+
 ## 4.18.32
 
 ## 4.18.31

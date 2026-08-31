@@ -21,6 +21,8 @@ export * from './application/LegendQueryPluginManager.js';
 
 export * from './__lib__/LegendQueryEvent.js';
 export * from './__lib__/LegendQueryEventHelper.js';
+export { LegendQueryTelemetryHelper } from './__lib__/LegendQueryTelemetryHelper.js';
+export { LegendQueryAgentChatTelemetryHelper } from './__lib__/LegendQueryAgentChatTelemetryHelper.js';
 export {
   generateExistingQueryEditorRoute,
   generateServiceQueryCreatorRoute,

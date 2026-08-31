@@ -40,10 +40,13 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
       applicationStore,
       this.graphManagerState.graphManager,
       {
-        loadQuery: (query: LightQuery): void => {
+        loadQuery: (
+          query: LightQuery,
+          revisionId?: string | undefined,
+        ): void => {
           this.queryLoaderState.setQueryLoaderDialogOpen(false);
           this.applicationStore.navigationService.navigator.goToLocation(
-            generateExistingQueryEditorRoute(query.id),
+            generateExistingQueryEditorRoute(query.id, revisionId),
             { ignoreBlocking: true },
           );
         },

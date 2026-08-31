@@ -1,5 +1,67 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.113
+
+### Patch Changes
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Extract the "Request Access" control from `DataProductDataAccess` into a standalone `DataProductAPGAccessRequestControl` so it can be reused outside the data-access panel (the data space viewer now renders it next to a mapping-provider–backed execution context).
+
+  Add `SDLCDataProductResolver` to resolve a legacy SDLC-hosted data product to its Lakehouse deployment, so mapping-provider references from a data space can be opened as a Lakehouse data product from any consumer.
+
+- [#5489](https://github.com/finos/legend-studio/pull/5489) [`0e936bc`](https://github.com/finos/legend-studio/commit/0e936bc972082784597b0eef9af7588dd6fd8b98) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disable Open in Query and Open in Datacube for parameterized access points.
+
+## 0.0.112
+
+## 0.0.111
+
+## 0.0.110
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Keep the Legend AI metadata prompt bounded on data products with hundreds of access points, where it previously assembled a prompt the LLM gateway rejected.
+
+  Access point and service relationships are paired through an inverted column index that skips near-universal columns, metadata questions carry only the access points ranked most relevant, and conversation history is capped so prompt size no longer grows with the conversation.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve access point schemas for the Intelligence & Agents tab from the data product element and its artifact instead of opening a product viewer, typing only the access points the artifact does not cover through the engine.
+
+  Access point sample values now fall back to the artifact's relation element, so the data product page shows sample values on columns that previously had none.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
+## 0.0.109
+
+## 0.0.108
+
+## 0.0.107
+
+### Patch Changes
+
+- [#5449](https://github.com/finos/legend-studio/pull/5449) [`3d09d32`](https://github.com/finos/legend-studio/commit/3d09d3286e482e835ae80e7b12883cb039e3ebd9) ([@jackp5150](https://github.com/jackp5150)) - Added batching for lambdaRelationType in DataProductViewerState
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Make diagrams optional and omit empty featuredElements/diagrams from serialized json
+
+## 0.0.106
+
+### Patch Changes
+
+- [#5443](https://github.com/finos/legend-studio/pull/5443) [`e0a1c79`](https://github.com/finos/legend-studio/commit/e0a1c79ab73453ca40aed3c653717c0a012ee6d5) ([@TharunRajeev](https://github.com/TharunRajeev)) - Improve subscription contract selection by showing completed contracts and adding searchable filtering in the create dialog.
+
+## 0.0.105
+
+### Patch Changes
+
+- [#5432](https://github.com/finos/legend-studio/pull/5432) [`2409086`](https://github.com/finos/legend-studio/commit/24090864a31395eb3941759253c7ff937789adef) ([@TharunRajeev](https://github.com/TharunRajeev)) - Enable "User" and "Permit" as a request-access consumer type for Enterprise Access Point Groups.
+
+## 0.0.104
+
+### Patch Changes
+
+- [#5412](https://github.com/finos/legend-studio/pull/5412) [`21903b4`](https://github.com/finos/legend-studio/commit/21903b4ded183a57a02f620b2d8296d2641fec70) ([@TharunRajeev](https://github.com/TharunRajeev)) - Disabled DataCube, SQL Playground, Legend Query, and Power BI tabs in the Data Product Viewer for access points whose target environment isn't Snowflake (e.g. Databricks, BigQuery, DuckDb), showing a not-supported message instead. The Data Product Viewer's auto-generated Lakehouse runtime only ever synthesizes a Snowflake connection, so non-Snowflake access points would otherwise fail at query time.
+
+- [#5417](https://github.com/finos/legend-studio/pull/5417) [`b7312d7`](https://github.com/finos/legend-studio/commit/b7312d781d6080a7903dca1cd6c006d9385039f5) ([@bojja-gs](https://github.com/bojja-gs)) - Make the Legend AI chat launcher a floating, draggable button so it can be moved clear of transient notifications in the bottom-right corner. The launcher docks to the nearest viewport corner when dropped, re-clamps itself on window resize, distinguishes a drag from a click, and opens the chat on a plain click. Long data product names are now truncated with an ellipsis in the chat header (so the minimize/close actions stay visible) and in the launcher's hover label.
+
 ## 0.0.103
 
 ### Patch Changes

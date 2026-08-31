@@ -37,12 +37,14 @@ import {
   useLegendMarketplaceApplicationStore,
   useLegendMarketplaceBaseStore,
 } from './providers/LegendMarketplaceFrameworkProvider.js';
+import { IntelligenceCatalogStoreProvider } from './providers/IntelligenceCatalogStoreProvider.js';
 import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type AuthProviderProps,
   AuthProvider,
   withAuthenticationRequired,
 } from 'react-oidc-context';
+import { useLocation } from 'react-router-dom';
 import type { User } from 'oidc-client-ts';
 import type { LegendMarketplaceOidcConfig } from './LegendMarketplaceApplicationConfig.js';
 import { MarketplaceLakehouseHeader } from '../components/Header/LegendMarketplaceHeader.js';
@@ -137,6 +139,13 @@ const LegendMarketplaceFieldSearchResults = React.lazy(() =>
     default: module.LegendMarketplaceFieldSearchResults,
   })),
 );
+const LegendMarketplaceLakehouseAccessSearchResults = React.lazy(() =>
+  import(
+    '../pages/Lakehouse/searchResults/LegendMarketplaceLakehouseAccessSearchResults.js'
+  ).then((module) => ({
+    default: module.LegendMarketplaceLakehouseAccessSearchResults,
+  })),
+);
 const LegacyDataProduct = React.lazy(() =>
   import('../pages/Lakehouse/dataProduct/LegacyDataProduct.js').then(
     (module) => ({
@@ -147,6 +156,11 @@ const LegacyDataProduct = React.lazy(() =>
 const LegendMarketplaceAgents = React.lazy(() =>
   import('../pages/Agents/LegendMarketplaceAgents.js').then((module) => ({
     default: module.LegendMarketplaceAgents,
+  })),
+);
+const McpServerViewer = React.lazy(() =>
+  import('../pages/Agents/McpServerViewer.js').then((module) => ({
+    default: module.McpServerViewer,
   })),
 );
 const LegendMarketplaceVendorData = React.lazy(() =>
@@ -168,6 +182,13 @@ const LegendMarketplaceYourOrders = React.lazy(() =>
     default: module.LegendMarketplaceYourOrders,
   })),
 );
+
+const RedirectPreservingParams: React.FC<{ to: string }> = ({ to }) => {
+  const location = useLocation();
+  return (
+    <Navigate to={{ pathname: to, search: location.search }} replace={true} />
+  );
+};
 
 const NotFoundPage = observer(() => {
   const applicationStore = useApplicationStore();
@@ -281,9 +302,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 
             {/* Marketplace Routes */}
             <Route
-              path={
-                LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
-              }
+              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS}
               element={React.createElement(
                 useProtectedPage(LegendMarketplaceSearchResults),
               )}
@@ -295,13 +314,35 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               )}
             />
             <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS
+              }
+              element={React.createElement(
+                useProtectedPage(LegendMarketplaceLakehouseAccessSearchResults),
+              )}
+            />
+            <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_APIS}
               element={<LegendMarketplaceDataAPIs />}
             />
             <Route
-              path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
-              element={<LegendMarketplaceAgents />}
-            />
+              element={
+                <IntelligenceCatalogStoreProvider>
+                  <Outlet />
+                </IntelligenceCatalogStoreProvider>
+              }
+            >
+              <Route
+                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.AGENTS}
+                element={React.createElement(
+                  useProtectedPage(LegendMarketplaceAgents),
+                )}
+              />
+              <Route
+                path={LEGEND_MARKETPLACE_ROUTE_PATTERN.MCP_SERVER}
+                element={React.createElement(useProtectedPage(McpServerViewer))}
+              />
+            </Route>
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.TERMINAL_ADD_ONS}
               element={<LegendMarketplaceVendorData />}
@@ -369,6 +410,18 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
 
             {/* Reroute pages */}
             <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_DATA_PRODUCT_SEARCH_RESULTS
+              }
+              element={
+                <RedirectPreservingParams
+                  to={
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS
+                  }
+                />
+              }
+            />
+            <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE}
               element={
                 <Navigate
@@ -384,7 +437,7 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
               element={
                 <Navigate
                   to={
-                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_PRODUCT_SEARCH_RESULTS
+                    LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS
                   }
                   replace={true}
                 />

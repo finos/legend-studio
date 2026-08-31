@@ -616,6 +616,29 @@
         }
       }
     }
+
+    &-owned-services {
+      &__title {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__count {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__subtitle {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      &__toggle-btn {
+        color: var(--color-dark-theme-text-secondary);
+
+        &:hover {
+          color: var(--color-dark-theme-text-primary);
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+    }
   }
 
   // Cards
@@ -1041,7 +1064,7 @@
       color: var(--color-dark-theme-text-primary);
     }
 
-    &__item-provider {
+    &__item-category {
       color: var(--color-dark-theme-text-primary);
     }
 
@@ -1339,6 +1362,117 @@
       background: transparent;
     }
 
+    &__expand-controls {
+      background: var(--color-dark-theme-bg-secondary);
+      border-bottom: 1px solid var(--color-dark-theme-border);
+
+      &__group {
+        .MuiToggleButton-root {
+          color: var(--color-dark-theme-blue-primary);
+          border-color: var(--color-dark-theme-border);
+          background: var(--color-dark-theme-bg-elevated);
+
+          &:hover {
+            background: rgb(115 153 198 / 15%);
+          }
+
+          &.Mui-selected {
+            background: rgb(115 153 198 / 22%);
+            color: var(--color-dark-theme-blue-primary);
+
+            &:hover {
+              background: rgb(115 153 198 / 30%);
+            }
+          }
+        }
+      }
+    }
+
+    &__summary-bar {
+      background: var(--color-dark-theme-bg-secondary);
+      border-top: 1px solid var(--color-dark-theme-border);
+      box-shadow: 0 -2px 8px rgb(0 0 0 / 30%);
+
+      &__label {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__total {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__subtitle {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__vendor-group {
+      &__toggle {
+        border-top-color: var(--color-dark-theme-border);
+
+        &:hover {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+
+      &__chevron {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__summary {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__addon-card {
+      background-color: var(--color-dark-theme-bg-secondary);
+      border-color: var(--color-dark-theme-border);
+      border-left-color: var(--color-dark-theme-blue-primary);
+
+      &:hover {
+        box-shadow: 0 2px 8px rgb(115 153 198 / 20%);
+      }
+
+      &__provider-chip {
+        background: var(--color-dark-theme-blue-accent);
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__category-chip {
+        background: linear-gradient(
+          135deg,
+          var(--color-dark-theme-bg-elevated) 0%,
+          var(--color-dark-theme-bg-tertiary) 100%
+        );
+
+        span {
+          color: var(--color-dark-theme-text-secondary);
+        }
+      }
+
+      &__mandatory-indicator {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__name {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__price {
+        color: var(--color-dark-theme-blue-primary);
+      }
+
+      &__price-suffix {
+        color: var(--color-dark-theme-text-muted);
+      }
+    }
+
+    &__item-card__provider-name {
+      // NOTE: provider name is no longer rendered on vendor cards (bug fix #1)
+      // keeping selector in case it is re-added
+      color: var(--color-dark-theme-text-secondary);
+    }
+
     &__item-card {
       background: var(--color-dark-theme-bg-secondary);
       border: 1px solid var(--color-dark-theme-border);
@@ -1363,13 +1497,9 @@
       }
 
       &__provider {
-        background: linear-gradient(
-          135deg,
-          var(--color-dark-theme-blue-accent) 0%,
-          var(--color-dark-theme-blue-primary) 100%
-        );
+        // Solid dark equivalent of light-mode #4f6baa
+        background: #3a5080;
         color: var(--color-dark-theme-text-primary);
-        box-shadow: 0 2px 8px rgb(115 153 198 / 40%);
       }
 
       &__remove-btn {
@@ -1387,13 +1517,6 @@
 
       &__price {
         color: var(--color-dark-theme-blue-primary);
-        background: linear-gradient(
-          135deg,
-          var(--color-dark-theme-blue-primary) 0%,
-          var(--color-dark-theme-blue-accent) 100%
-        );
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
       }
 
       &__price-suffix {
@@ -1401,14 +1524,30 @@
       }
 
       &__category {
-        background: linear-gradient(
-          135deg,
-          var(--color-dark-theme-bg-elevated) 0%,
-          var(--color-dark-theme-bg-tertiary) 100%
-        );
+        // Solid dark equivalent of light-mode #1a7a4a
+        background: #155e38;
 
         span {
-          color: var(--color-dark-theme-text-secondary);
+          color: var(--color-dark-theme-text-primary);
+        }
+
+        &--owned {
+          background: var(--color-dark-theme-bg-tertiary);
+        }
+      }
+
+      &__subscribed-badge {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-secondary);
+        border-color: var(--color-dark-theme-border);
+      }
+
+      &--synthetic {
+        // Synthetic card now shares the same styling as Vendor Profile —
+        // only the name text color differs in dark mode.
+        .legend-marketplace-cart-drawer__item-card__name {
+          color: var(--color-dark-theme-text-primary);
+          font-style: normal;
         }
       }
     }
@@ -1417,6 +1556,10 @@
       background: var(--color-dark-theme-bg-secondary);
       border-top: 1px solid var(--color-dark-theme-border);
       box-shadow: 0 -4px 20px rgb(0 0 0 / 40%);
+    }
+
+    &__order-button-helper {
+      color: var(--color-dark-theme-text-muted);
     }
 
     &__clear-button {
@@ -1457,8 +1600,10 @@
         box-shadow: 0 8px 24px rgb(115 153 198 / 50%);
       }
 
-      &:disabled {
-        opacity: 0.5;
+      &.Mui-disabled {
+        background: var(--color-dark-theme-bg-elevated) !important;
+        color: var(--color-dark-theme-text-muted) !important;
+        opacity: 0.6;
       }
     }
   }
@@ -2199,44 +2344,25 @@
     background: var(--color-dark-theme-bg-primary);
   }
 
+  .marketplace-mcp-server-viewer {
+    --mcp-viewer-surface: var(--color-dark-theme-bg-secondary);
+    --mcp-viewer-surface-muted: var(--color-dark-theme-bg-elevated);
+    --mcp-viewer-border: rgb(255 255 255 / 14%);
+    --mcp-viewer-chip-bg: rgb(255 255 255 / 10%);
+    --mcp-viewer-live-bg: rgb(7 125 85 / 26%);
+    --mcp-viewer-live-text: #6fdcae;
+    --mcp-viewer-approval-bg: rgb(165 97 13 / 28%);
+    --mcp-viewer-approval-text: #f0b667;
+    --mcp-viewer-category-bg: rgb(115 153 198 / 26%);
+    --mcp-viewer-category-text: #9dc4ee;
+    --mcp-viewer-version-bg: rgb(126 105 191 / 28%);
+    --mcp-viewer-version-text: #bda9f2;
+    --mcp-viewer-vendor-bg: rgb(255 255 255 / 12%);
+    --mcp-viewer-vendor-text: #d6dde4;
+  }
+
   .marketplace-agents__search-container {
     background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__section-bar {
-    background-color: var(--color-dark-theme-bg-secondary);
-    border-bottom: 1px solid var(--color-dark-theme-border);
-
-    &__container {
-      background-color: var(--color-dark-theme-bg-secondary);
-      color: var(--color-dark-theme-text-primary);
-    }
-  }
-
-  .marketplace-agents__section-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__content-container {
-    background: var(--color-dark-theme-bg-primary);
-  }
-
-  .marketplace-agents__agent-card {
-    background: var(--color-dark-theme-bg-secondary);
-    border-color: var(--color-dark-theme-border);
-
-    &:hover {
-      border-color: var(--color-dark-theme-blue-primary);
-      box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
-    }
-  }
-
-  .marketplace-agents__agent-card-title {
-    color: var(--color-dark-theme-text-primary);
-  }
-
-  .marketplace-agents__agent-card-desc {
-    color: var(--color-dark-theme-text-muted);
   }
 
   .legend-marketplace-search-results__sort-bar {
@@ -3961,12 +4087,6 @@
     }
   }
 
-  .marketplace-lakehouse-entitlements__data-contract-creator {
-    &__enterprise-apg-notice {
-      color: var(--color-dark-theme-text-muted);
-    }
-  }
-
   .marketplace-lakehouse-entitlements__data-access-request-viewer {
     &__content {
       background: var(--color-dark-theme-bg-secondary);
@@ -4435,7 +4555,12 @@
     }
 
     &__table-header-cell {
-      color: var(--color-dark-theme-text-secondary);
+      // MUI's `stickyHeader` TableCell variant applies an inline
+      // `background-color: theme.palette.background.default` (white, since
+      // the app never switches the underlying MUI theme palette to dark
+      // mode). Override it so the header doesn't render as a white bar.
+      background-color: var(--color-dark-theme-bg-tertiary) !important;
+      color: var(--color-dark-theme-text-secondary) !important;
       border-bottom-color: var(--color-dark-theme-border) !important;
     }
 
@@ -4608,6 +4733,16 @@
   --ai-accent-blue-soft: var(--marketplace-link-color);
   --ai-accent-red: var(--color-ai-accent-red-dark);
   --ai-text-error: var(--color-ai-text-error-dark);
+  --ai-python-accent: var(--color-ai-python-accent-dark);
+  --ai-python-accent-hover: var(--color-ai-python-accent-hover-dark);
+  --ai-python-accent-subtle: rgb(251 191 119 / 10%);
+  --ai-python-border: rgb(251 191 119 / 36%);
+  --ai-python-border-strong: rgb(251 191 119 / 60%);
+  --ai-datacube-accent: var(--color-ai-datacube-accent-dark);
+  --ai-datacube-accent-hover: var(--color-ai-datacube-accent-hover-dark);
+  --ai-datacube-accent-subtle: rgb(103 216 228 / 10%);
+  --ai-datacube-border: rgb(103 216 228 / 36%);
+  --ai-datacube-border-strong: rgb(103 216 228 / 60%);
   --ai-shadow-card: 0 1px 3px rgb(0 0 0 / 40%);
   --ai-shadow-card-hover: 0 8px 24px rgb(0 0 0 / 50%);
   --ai-shadow-input: 0 0 0 3px rgb(37 99 235 / 10%);

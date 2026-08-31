@@ -147,6 +147,7 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
   getOwnDataSpace,
   QUERY_PROFILE_TAG_DATA_SPACE,
+  resolveExecutionContextMapping,
   retrieveAnalyticsResultCache,
   retrieveDataspaceArtifactsCache,
 } from '@finos/legend-extension-dsl-data-space/graph';
@@ -165,7 +166,10 @@ import {
   LakehouseContractServerClient,
   LakehouseEnvironmentType,
 } from '@finos/legend-server-lakehouse';
-import { processQueryParameters } from '../components/utils/QueryParameterUtils.js';
+import {
+  buildQueryParamsFromParameterValues,
+  processQueryParameters,
+} from '../components/utils/QueryParameterUtils.js';
 
 export interface QueryPersistConfiguration {
   defaultName?: string | undefined;
@@ -277,6 +281,7 @@ export class QueryCreatorState {
             artifactId: query.artifactId,
             versionId: query.versionId,
           },
+          ...queryBuilderState.getExtraTelemetryMetadata(),
         },
       );
       queryBuilderState.changeDetectionState.initialize(rawLambda);
@@ -376,12 +381,24 @@ export abstract class QueryEditorStore {
       applicationStore,
       this.graphManagerState.graphManager,
       {
-        loadQuery: (query: LightQuery): void => {
+        loadQuery: (
+          query: LightQuery,
+          revisionId?: string | undefined,
+        ): void => {
+          // carry any active parameter-value overrides across the navigation so
+          // a revert/load-revision keeps the values the user currently has set
+          const extraQueryParams = buildQueryParamsFromParameterValues(
+            this.getPreservedParameterOverrides(),
+          );
           this.queryBuilderState?.changeDetectionState.alertUnsavedChanges(
             () => {
               this.queryLoaderState.setQueryLoaderDialogOpen(false);
               applicationStore.navigationService.navigator.goToLocation(
-                generateExistingQueryEditorRoute(query.id),
+                generateExistingQueryEditorRoute(
+                  query.id,
+                  revisionId,
+                  extraQueryParams,
+                ),
                 { ignoreBlocking: true },
               );
             },
@@ -445,6 +462,16 @@ export abstract class QueryEditorStore {
 
   get canPersistToSavedQuery(): boolean {
     return true;
+  }
+
+  /**
+   * Parameter-value overrides (raw `p:` values, keyed by parameter name) that
+   * should be carried across a revert/load-revision navigation so the values
+   * the user currently has set are preserved. Only existing-query editors have
+   * these; other editor kinds return `undefined`.
+   */
+  getPreservedParameterOverrides(): Record<string, string> | undefined {
+    return undefined;
   }
 
   setExistingQueryName(val: string | undefined): void {
@@ -784,7 +811,7 @@ export abstract class QueryEditorStore {
       supportBuildMinimalGraph
     ) {
       try {
-        this.initState.setMessage('Fetching data product analysis result...');
+        this.initState.setMessage('Fetching data space analysis result...');
         const project = StoreProjectData.serialization.fromJson(
           await this.depotServerClient.getProject(groupId, artifactId),
         );
@@ -1739,6 +1766,7 @@ export class ExistingQueryUpdateState {
             artifactId: query.artifactId,
             versionId: query.versionId,
           },
+          ...queryBuilderState.getExtraTelemetryMetadata(),
         },
       );
       config.onQueryUpdate?.(updatedQuery);
@@ -1775,6 +1803,8 @@ export class ExistingQueryUpdateState {
         `Successfully updated query!`,
       );
 
+      const extraTelemetryMetadata =
+        this.editorStore.queryBuilderState?.getExtraTelemetryMetadata() ?? {};
       LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
@@ -1785,6 +1815,7 @@ export class ExistingQueryUpdateState {
             artifactId: updatedQuery.artifactId,
             versionId: updatedQuery.versionId,
           },
+          ...extraTelemetryMetadata,
         },
       );
     } catch (error) {
@@ -1800,43 +1831,57 @@ export class ExistingQueryUpdateState {
   }
 }
 
-const resolveExecutionContext = (
+/**
+ * Manages the query's version history: fetching the list of revisions and
+ * navigating to a chosen revision. A revision is keyed by its `version`
+ * identifier, which is passed as the `revisionId` route param.
+ */
+export const resolveExecutionContext = (
   dataSpace: DataSpace,
   ex: string | undefined,
   queryMapping: Mapping | undefined,
   queryRuntime: PackageableRuntime | undefined,
 ): DataSpaceExecutionContext | undefined => {
-  if (!ex) {
-    if (queryMapping && queryRuntime) {
-      if (
-        dataSpace.defaultExecutionContext.mapping.value !== queryMapping &&
-        dataSpace.defaultExecutionContext.defaultRuntime.value.path !==
-          queryRuntime.path
-      ) {
-        const matchingExecContexts = dataSpace.executionContexts.filter(
-          (ec) => ec.mapping.value === queryMapping,
-        );
-        if (matchingExecContexts.length > 1) {
-          const matchRuntime = matchingExecContexts.find(
-            (exec) => exec.defaultRuntime.value.path === queryRuntime.path,
-          );
-          // TODO: we will safely do this for now. Long term we should save exec context key into query store
-          // we should make runtime/mapping optional
-          return matchRuntime ?? matchingExecContexts[0];
-        }
-        return matchingExecContexts[0];
-      }
-    }
-    return dataSpace.defaultExecutionContext;
+  const executionContexts = dataSpace.executionContexts ?? [];
+  if (ex) {
+    return executionContexts.find((ec) => ec.name === ex);
   }
-  const matchingExecContexts = dataSpace.executionContexts.filter(
-    (ec) => ec.name === ex,
-  );
-  return matchingExecContexts[0];
+  const defaultExecutionContext = dataSpace.defaultExecutionContext;
+  if (!defaultExecutionContext) {
+    return executionContexts[0];
+  }
+  if (queryMapping && queryRuntime) {
+    const defaultExecutionContextMapping = resolveExecutionContextMapping(
+      defaultExecutionContext,
+    );
+    const defaultExecutionContextRuntime =
+      defaultExecutionContext.defaultRuntime;
+    if (
+      defaultExecutionContextMapping &&
+      defaultExecutionContextRuntime &&
+      defaultExecutionContextMapping !== queryMapping &&
+      defaultExecutionContextRuntime.value.path !== queryRuntime.path
+    ) {
+      const matchingExecContexts = executionContexts.filter(
+        (ec) => resolveExecutionContextMapping(ec) === queryMapping,
+      );
+      if (matchingExecContexts.length > 1) {
+        const matchRuntime = matchingExecContexts.find(
+          (exec) => exec.defaultRuntime?.value.path === queryRuntime.path,
+        );
+        return matchRuntime ?? matchingExecContexts[0];
+      }
+      return matchingExecContexts[0];
+    }
+  }
+  return defaultExecutionContext;
 };
 
 export class ExistingQueryEditorStore extends QueryEditorStore {
   private queryId: string;
+  // A specific revision from the query's version history to load, keyed by the
+  // revision's `version` identifier. When undefined, the latest is loaded.
+  readonly revisionId: string | undefined;
   private _lightQuery?: LightQuery | undefined;
   query: Query | undefined;
   queryInfo: QueryInfo | undefined;
@@ -1848,6 +1893,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     depotServerClient: DepotServerClient,
     queryId: string,
     urlQueryParamValues: Record<string, string> | undefined,
+    revisionId?: string | undefined,
   ) {
     super(applicationStore, depotServerClient);
 
@@ -1864,8 +1910,27 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     });
 
     this.queryId = queryId;
+    this.revisionId = revisionId;
     this.urlQueryParamValues = urlQueryParamValues;
     this.updateState = new ExistingQueryUpdateState(this);
+  }
+
+  get id(): string {
+    return this.queryId;
+  }
+
+  // Open the query version history in the query loader (the same viewer used by
+  // "load query"), loading this query's revisions.
+  showQueryVersionHistory(): void {
+    if (this.query) {
+      this.queryLoaderState.setQueryLoaderDialogOpen(true);
+      // opened directly into history (not drilled in from the query list), so
+      // there is no list to go back to
+      this.queryLoaderState.setHistoryViewerStandalone(true);
+      flowResult(this.queryLoaderState.getQueryHistory(this.lightQuery)).catch(
+        this.applicationStore.alertUnhandledError,
+      );
+    }
   }
 
   get lightQuery(): LightQuery {
@@ -1874,6 +1939,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
 
   override getEditorRoute(): string {
     return generateExistingQueryEditorRoute(this.queryId);
+  }
+
+  override getPreservedParameterOverrides():
+    | Record<string, string>
+    | undefined {
+    return this.urlQueryParamValues;
   }
 
   override get isPerformingBlockingAction(): boolean {
@@ -2001,6 +2072,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
   override async setUpEditorState(): Promise<void> {
     const queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
       this.queryId,
+      this.revisionId,
     );
     this.setLightQuery(
       await this.graphManagerState.graphManager.getLightQuery(this.queryId),
@@ -2159,28 +2231,45 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             this.applicationStore.config.options.queryBuilderConfig,
             sourceInfo,
           );
-        const mappingModelCoverageAnalysisResult =
-          dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
-            matchingExecutionContext.mapping.value.path,
+        const matchingExecutionContextMapping = resolveExecutionContextMapping(
+          matchingExecutionContext,
+        );
+        if (
+          matchingExecutionContext.mappingProvider &&
+          !matchingExecutionContextMapping
+        ) {
+          throw new Error(
+            `Execution context '${matchingExecutionContext.name}' in data space '${dataSpace.path}' sources its mapping from a data product access point group that does not exist.`,
           );
+        }
+        const matchingExecutionContextRuntime = guaranteeNonNullable(
+          matchingExecutionContext.defaultRuntime,
+          `Execution context '${matchingExecutionContext.name}' does not have a default runtime`,
+        );
+        const mappingModelCoverageAnalysisResult =
+          matchingExecutionContextMapping
+            ? dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
+                matchingExecutionContextMapping.path,
+              )
+            : undefined;
         if (mappingModelCoverageAnalysisResult) {
           dataSpaceQueryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
             mappingModelCoverageAnalysisResult;
         }
         dataSpaceQueryBuilderState.executionContextState.setMapping(
-          matchingExecutionContext.mapping.value,
+          matchingExecutionContextMapping,
         );
         dataSpaceQueryBuilderState.executionContextState.setRuntimeValue(
           new RuntimePointer(
             PackageableElementExplicitReference.create(
-              matchingExecutionContext.defaultRuntime.value,
+              matchingExecutionContextRuntime.value,
             ),
           ),
         );
         return dataSpaceQueryBuilderState;
       } else {
-        throw new UnsupportedOperationError(
-          `Unsupported execution context ${exec.executionKey}`,
+        throw new Error(
+          `Execution context '${exec.executionKey}' does not exist in data space '${dataSpace.path}'.`,
         );
       }
     } else if (exec instanceof QueryExplicitExecutionContextInfo) {
@@ -2333,6 +2422,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     if (!queryInfo) {
       queryInfo = await this.graphManagerState.graphManager.getQueryInfo(
         this.queryId,
+        this.revisionId,
       );
     }
     const queryBuilderState =
@@ -2344,6 +2434,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     const query = await this.graphManagerState.graphManager.getQuery(
       this.queryId,
       this.graphManagerState.graph,
+      this.revisionId,
     );
     this.setQuery(query);
     LegendQueryUserDataHelper.addRecentlyViewedQuery(

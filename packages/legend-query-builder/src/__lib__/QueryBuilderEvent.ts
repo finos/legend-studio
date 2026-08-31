@@ -22,6 +22,8 @@ export enum QUERY_BUILDER_EVENT {
   EMBEDDED_DATA_CUBE__LAUNCH = 'query-builder.embedded-data-cube.launch',
 
   RUN_QUERY__SUCCESS = 'query-builder.run-query.success',
+  RUN_QUERY__FAILURE = 'query-builder.run-query.failure',
+  RUN_QUERY__CANCELLED = 'query-builder.run-query.cancelled',
   GENERATE_EXECUTION_PLAN__SUCCESS = 'query-builder.generate-plan.success',
   DEBUG_EXECUTION_PLAN__SUCCESS = 'query-builder.debug-plan.success',
   BUILD_EXECUTION_PLAN__SUCCESS = 'query-builder.build-plan.success',

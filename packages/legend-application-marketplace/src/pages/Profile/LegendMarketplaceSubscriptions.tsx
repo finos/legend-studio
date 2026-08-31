@@ -17,7 +17,7 @@
 import { observer } from 'mobx-react-lite';
 import { Button, Typography, CircularProgress } from '@mui/material';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   Subscription,
   ProductSubscription,
@@ -36,6 +36,7 @@ import {
   useLegendMarketplaceSubscriptionsStore,
   withLegendMarketplaceSubscriptionsStore,
 } from '../../application/providers/LegendMarketplaceSubscriptionsStoreProvider.js';
+import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LegendMarketplaceSubscriptions =
   withLegendMarketplaceSubscriptionsStore(
@@ -44,6 +45,7 @@ export const LegendMarketplaceSubscriptions =
       const subscriptionStore = useLegendMarketplaceSubscriptionsStore();
       const [userSearchEnabled, setUserSearchEnabled] =
         useState<boolean>(false);
+      const hasLoggedPageViewRef = useRef(false);
       const initialUser =
         marketplaceStore.applicationStore.identityService.currentUser;
 
@@ -96,6 +98,23 @@ export const LegendMarketplaceSubscriptions =
         marketplaceStore.applicationStore.alertUnhandledError,
       ]);
 
+      useEffect(() => {
+        if (hasLoggedPageViewRef.current) {
+          return;
+        }
+        const selectedUserId = subscriptionStore.selectedUser.id;
+        const currentUserId =
+          marketplaceStore.applicationStore.identityService.currentUser;
+        const isTargetUser = selectedUserId
+          ? selectedUserId !== currentUserId
+          : false;
+        LegendMarketplaceTelemetryHelper.logEvent_ViewSubscriptionsPage(
+          marketplaceStore.applicationStore.telemetryService,
+          isTargetUser,
+        );
+        hasLoggedPageViewRef.current = true;
+      }, [marketplaceStore, subscriptionStore.selectedUser.id]);
+
       return (
         <LegendMarketplacePage className="legend-marketplace-home">
           <div className="legend-marketplace-subscriptions-content">
@@ -108,10 +127,17 @@ export const LegendMarketplaceSubscriptions =
                   className="legend-marketplace-subscriptions__user-input"
                   userValue={subscriptionStore.selectedUser}
                   setUserValue={(_user: LegendUser): void => {
-                    subscriptionStore.setSelectedUser(_user);
-                    fetchSubscriptions(_user.id).catch(
-                      marketplaceStore.applicationStore.alertUnhandledError,
-                    );
+                    if (_user.id) {
+                      subscriptionStore.setSelectedUser(_user);
+                      fetchSubscriptions(_user.id).catch(
+                        marketplaceStore.applicationStore.alertUnhandledError,
+                      );
+                    } else {
+                      subscriptionStore.resetSelectedUser();
+                      fetchSubscriptions(initialUser).catch(
+                        marketplaceStore.applicationStore.alertUnhandledError,
+                      );
+                    }
                   }}
                   userSearchService={marketplaceStore.userSearchService}
                   label="Search user"

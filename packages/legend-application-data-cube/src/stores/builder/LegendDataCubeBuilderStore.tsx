@@ -680,7 +680,13 @@ export class LegendDataCubeBuilderStore {
   async updateBuilderWithNewSpecification(
     state: LegendDataCubeCodeEditorState,
   ): Promise<void> {
+    if (this.queryEditorState.isInProgress) {
+      return;
+    }
     const builder = this.builder;
+
+    this.queryEditorState.inProgress();
+    const task = this.taskService.newTask('Updating source query...');
 
     try {
       if (
@@ -724,6 +730,7 @@ export class LegendDataCubeBuilderStore {
 
       this.setBuilder(new LegendDataCubeBuilderState(this, newSpecification));
       this.queryEditorDisplay.close();
+      this.queryEditorState.pass();
     } catch (error) {
       assertErrorThrown(error);
       const message = `DataCube reload Failure: ${error.message}`;
@@ -731,6 +738,9 @@ export class LegendDataCubeBuilderStore {
       this.alertService.alertError(error, {
         message: message,
       });
+      this.queryEditorState.fail();
+    } finally {
+      this.taskService.endTask(task);
     }
   }
 

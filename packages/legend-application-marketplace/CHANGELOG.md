@@ -1,5 +1,115 @@
 # @finos/legend-application-marketplace
 
+## 0.4.3
+
+### Patch Changes
+
+- [#5490](https://github.com/finos/legend-studio/pull/5490) [`5703b61`](https://github.com/finos/legend-studio/commit/5703b617c31d41bcd42ea75337c9fd68b413ac26) ([@TharunRajeev](https://github.com/TharunRajeev)) - Made business justification optional when approving entitlement contract requests, while keeping it required when denying them.
+
+- [#5487](https://github.com/finos/legend-studio/pull/5487) [`1f2af74`](https://github.com/finos/legend-studio/commit/1f2af746605c68f2b744e39dcdce1c74b1f21d7b) ([@eradityash](https://github.com/eradityash)) - Add telemetry for Terminals/Add-ons, Orders, and Subscriptions flows
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Wire the legacy data product (data space) viewer to the new mapping-provider access flow: `LegendMarketplaceProductViewerStore` now supplies `viewDataProduct` and `mappingProviderAccessConfig` so the viewer can render the Request Access control and open the underlying Lakehouse data product from a mapping-provider–backed execution context.
+
+  Handle data space analytics results that are missing a `defaultExecutionContext` or `defaultRuntime` in `LegendMarketplaceProductViewerStore` and `LegendMarketplaceAIChatStore` (Query Class bails with a warning; AI chat falls back to empty values instead of throwing).
+
+## 0.4.2
+
+### Patch Changes
+
+- [#5472](https://github.com/finos/legend-studio/pull/5472) [`d4b1712`](https://github.com/finos/legend-studio/commit/d4b1712006c8af46c9562cf0365434a34fe478a9) ([@eradityash](https://github.com/eradityash)) - Marketplace Terminals and Add-Ons - Owned Terminal Flow and Association Fixes
+
+  - Owned terminal rendering and actions
+  - Permission-aware add-on browsing
+  - AddToCart modal and association-flow behavior fixes
+  - Error handling and reliability cleanup
+  - Model serialization support
+
+- [#5478](https://github.com/finos/legend-studio/pull/5478) [`87eac9e`](https://github.com/finos/legend-studio/commit/87eac9ef6bed8b542f8cd96efd3f9fc0d971e68f) ([@eradityash](https://github.com/eradityash)) - Marketplace Terminals and Add-Ons - Order progress tracker update to reflect new approval stages
+
+  - Order progress tracker now reflects the full Privilege Manager / Market Data First Approver / Fulfillment Approver / Business Analyst approval chain (branching on `order_type` and `bbg_terminal_flag`) with rejected/cancelled/auto-terminated terminal states
+  - Track Order now links to the tracking URL of the order's _current_ workflow stage instead of always the Privilege Manager URL
+  - Cancel Order is now available at any approval stage and is only disabled once the order reaches the RPM/fulfillment stage
+  - Closure Information now shows the details of whichever stage actually closed the order (the rejecting stage, or the final approval/fulfillment stage) instead of always showing the Privilege Manager stage's details
+
+- [#5481](https://github.com/finos/legend-studio/pull/5481) [`38dc221`](https://github.com/finos/legend-studio/commit/38dc2218b176a9fc09d9f2c08dc3660786f62ab5) ([@deekshith98](https://github.com/deekshith98)) - Add a dedicated "Lakehouse Access" search tab and rename Data Products tab to dataspaces
+
+## 0.4.1
+
+## 0.4.0
+
+### Minor Changes
+
+- [#5466](https://github.com/finos/legend-studio/pull/5466) [`2670b55`](https://github.com/finos/legend-studio/commit/2670b55871be4dc0af06856098a8a284b59acb34) ([@bojja-gs](https://github.com/bojja-gs)) - Add MCP servers to the Intelligence & Agents tab:
+
+  - The tab now has an `All` / `Agents` / `MCPs` selector, with the existing agent card in the Agents section and Legend MCP servers in a new MCPs section.
+  - Legend MCP servers are the ones published on the Legend execution server's MCP route, plus the Legend AI orchestrator; other applications' servers in the registry are not listed.
+  - The page reuses the data product search results layout: a search bar, the section selector, a left filter panel and a card grid. Searching matches an entry's name, display name or description, and is kept in the `query` URL parameter so a filtered catalog can be linked to.
+  - The filter panel lists providers as checkboxes with per-provider counts, has its own provider search, and collapses past the first eight. It is only shown for the sections that can be filtered.
+  - Agents and MCP servers render through one shared catalog card so both read identically.
+  - Selecting an MCP server opens a detail page at `/agents/mcp/:mcpServerName` showing its configuration, sample questions, tools, security classification, ownership and metadata. Tool documentation is rendered as markdown with the LLM grounding rules collapsed.
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve access point schemas for the Intelligence & Agents tab from the data product element and its artifact instead of opening a product viewer, typing only the access points the artifact does not cover through the engine.
+
+  Access point sample values now fall back to the artifact's relation element, so the data product page shows sample values on columns that previously had none.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Resolve data space context for the Intelligence & Agents tab from the data space analysis instead of opening a product viewer, so a failed load no longer raises a data product notification at an Agents tab user.
+
+  The model context a data space builds now also lists its own callable functions, capped at twenty, which reaches the data space page as well.
+
+- [#5464](https://github.com/finos/legend-studio/pull/5464) [`d32defe`](https://github.com/finos/legend-studio/commit/d32defe82740097507fa8869ea9ade00e7f84aa6) ([@eradityash](https://github.com/eradityash)) - Fix "Cancel Subscription" on the Subscriptions page sending a blank
+  `kerberos` field in the cancellation request payload (causing the backend
+  to reject it with a 400 "Invalid Payload" error) when the user had not
+  explicitly changed the target user. `SubscriptionStore` now defaults
+  `selectedUser` to the current user, consistent with
+  `LegendMarketPlaceVendorDataStore`, and clearing the user search input
+  resets to the current user instead of leaving `selectedUser` blank.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
+## 0.3.5
+
+## 0.3.4
+
+## 0.3.3
+
+### Patch Changes
+
+- [#5448](https://github.com/finos/legend-studio/pull/5448) [`30f7578`](https://github.com/finos/legend-studio/commit/30f7578fe64ff09061ff9b0944409b8e5c8ca58a) ([@yash0024](https://github.com/yash0024)) - Guard against Data Products whose execution context has no mapping or runtime when resolving the AI chat's execution context, matching the now-optional Data Product execution context model.
+
+## 0.3.2
+
+### Patch Changes
+
+- [#5437](https://github.com/finos/legend-studio/pull/5437) [`85f0562`](https://github.com/finos/legend-studio/commit/85f05624141d5b115d78a1eea54763002ea62f2e) ([@eradityash](https://github.com/eradityash)) - Order Profile Add-to-Cart Fixes, Model-Aware Cart Logic & Add Service for Owned Terminals
+
+  - Implement Order Profile Add-to-Cart Payload Fixes
+  - Implement Model-Aware Cart Logic
+  - Implement Order Profile Detail Modal Fixes
+  - Implement "Add Service" for Owned Terminals functionality
+  - Cart Drawer UI Overhaul & Refactors
+
+## 0.3.1
+
+### Patch Changes
+
+- [#5432](https://github.com/finos/legend-studio/pull/5432) [`2409086`](https://github.com/finos/legend-studio/commit/24090864a31395eb3941759253c7ff937789adef) ([@TharunRajeev](https://github.com/TharunRajeev)) - Enable "User" and "Permit" as a request-access consumer type for Enterprise Access Point Groups.
+
+## 0.3.0
+
+### Minor Changes
+
+- [#5425](https://github.com/finos/legend-studio/pull/5425) [`7604941`](https://github.com/finos/legend-studio/commit/76049418e1e3dba6f728a481b2a7b549b44356b2) ([@nguyenqchi](https://github.com/nguyenqchi)) - Added an "Access" filter (Enterprise, Partial Enterprise, Restricted, Undefined) to the Marketplace search filters panel, and an "Undefined" node to the Taxonomy filter tree for data products without a taxonomy tag.
+
+### Patch Changes
+
+- [#5414](https://github.com/finos/legend-studio/pull/5414) [`9317541`](https://github.com/finos/legend-studio/commit/931754190a05f001a4187bde72b282c2a8bbd74b) ([@TharunRajeev](https://github.com/TharunRajeev)) - Fixed Sql Playground result panel color.
+
+- [#5417](https://github.com/finos/legend-studio/pull/5417) [`b7312d7`](https://github.com/finos/legend-studio/commit/b7312d781d6080a7903dca1cd6c006d9385039f5) ([@bojja-gs](https://github.com/bojja-gs)) - Make the Legend AI chat launcher a floating, draggable button so it can be moved clear of transient notifications in the bottom-right corner. The launcher docks to the nearest viewport corner when dropped, re-clamps itself on window resize, distinguishes a drag from a click, and opens the chat on a plain click. Long data product names are now truncated with an ellipsis in the chat header (so the minimize/close actions stay visible) and in the launcher's hover label.
+
 ## 0.2.37
 
 ### Patch Changes

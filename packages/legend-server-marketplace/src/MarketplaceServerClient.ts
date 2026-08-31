@@ -35,11 +35,17 @@ import type {
   CartItemResponse,
   CartSummary,
   DeleteCartItemResponse,
+  PermissionAddonsSearchParams,
+  PermissionAddonsSearchResponse,
   VendorAddonsSearchParams,
   VendorAddonsSearchResponse,
 } from './models/Cart.js';
 import type { OrderDetails } from './models/Order.js';
 import type { FeedbackRequest, FeedbackResponse } from './models/Feedback.js';
+import type {
+  McpServerPage,
+  McpServerToolsResponse,
+} from './models/McpServer.js';
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
   type TerminalProductOrderResponse,
@@ -57,6 +63,7 @@ import type {
   FieldSearchResponse,
 } from './models/DatasetSearchResult.js';
 import type { EntitySearchResponse } from './models/EntitySearchResult.js';
+import { SearchType } from './models/SearchType.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -141,10 +148,33 @@ export class MarketplaceServerClient extends AbstractServerClient {
 
   private _autosuggest = (): string => `${this.baseUrl}/v1/autosuggest`;
 
+  /**
+   * Shared query-param shape for `dataProductSearch` and `lakehouseAccessSearch` —
+   * the two endpoints differ only in URL segment and default `searchType`.
+   */
+  private _buildSearchQueryParams(
+    query: string,
+    searchType: SearchType,
+    searchFilters: string[],
+    pageSize: number,
+    pageNumber: number,
+    showAll: boolean,
+  ): Record<string, string | number | boolean | string[]> {
+    return {
+      query,
+      search_type: searchType,
+      ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
+      page_size: pageSize,
+      page_number: pageNumber,
+      include_filter_metadata: true,
+      show_all: showAll,
+    };
+  }
+
   dataProductSearch = async (
     query: string,
     lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
-    searchType: string = 'hybrid',
+    searchType: SearchType = SearchType.HYBRID,
     searchFilters: string[] = [],
     pageSize: number = 12,
     pageNumber: number = 1,
@@ -154,15 +184,45 @@ export class MarketplaceServerClient extends AbstractServerClient {
       `${this._search()}/dataProducts/${lakehouseEnv}`,
       {},
       undefined,
-      {
+      this._buildSearchQueryParams(
         query,
-        search_type: searchType,
-        ...(searchFilters.length > 0 ? { search_filters: searchFilters } : {}),
-        page_size: pageSize,
-        page_number: pageNumber,
-        include_filter_metadata: true,
-        show_all: showAll,
-      },
+        searchType,
+        searchFilters,
+        pageSize,
+        pageNumber,
+        showAll,
+      ),
+    );
+
+  /**
+   * Search Lakehouse Data Products only, over the lightweight lexical path.
+   * The server enforces `data_product_type=lakehouse`, so DataSpaces are never
+   * returned regardless of the filters supplied here.
+   */
+  lakehouseAccessSearch = async (
+    query: string,
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    options?: {
+      searchType?: SearchType;
+      searchFilters?: string[];
+      pageSize?: number;
+      pageNumber?: number;
+      showAll?: boolean;
+      signal?: AbortSignal;
+    },
+  ): Promise<PlainObject<DataProductSearchResponse>> =>
+    this.get<PlainObject<DataProductSearchResponse>>(
+      `${this._search()}/lakehouseAccess/${lakehouseEnv}`,
+      options?.signal ? { signal: options.signal } : {},
+      undefined,
+      this._buildSearchQueryParams(
+        query,
+        options?.searchType ?? SearchType.FULL_TEXT,
+        options?.searchFilters ?? [],
+        options?.pageSize ?? 12,
+        options?.pageNumber ?? 1,
+        options?.showAll ?? false,
+      ),
     );
 
   fieldSearch = async (
@@ -185,17 +245,46 @@ export class MarketplaceServerClient extends AbstractServerClient {
       },
     );
 
+  private _fetchAutosuggestions = async (
+    endpoint: 'dataProducts' | 'lakehouseAccess',
+    query: string,
+    environment: string,
+    limit: number,
+    signal?: AbortSignal,
+  ): Promise<AutosuggestResponse> =>
+    this.get<AutosuggestResponse>(
+      `${this._autosuggest()}/${endpoint}/${environment}`,
+      signal ? { signal } : {},
+      undefined,
+      { query, limit },
+    );
+
   getAutosuggestions = async (
     query: string,
     environment: string,
     limit: number = 5,
     signal?: AbortSignal,
   ): Promise<AutosuggestResponse> =>
-    this.get<AutosuggestResponse>(
-      `${this._autosuggest()}/dataProducts/${environment}`,
-      signal ? { signal } : {},
-      undefined,
-      { query, limit },
+    this._fetchAutosuggestions(
+      'dataProducts',
+      query,
+      environment,
+      limit,
+      signal,
+    );
+
+  getLakehouseAccessAutosuggestions = async (
+    query: string,
+    environment: string,
+    limit: number = 5,
+    signal?: AbortSignal,
+  ): Promise<AutosuggestResponse> =>
+    this._fetchAutosuggestions(
+      'lakehouseAccess',
+      query,
+      environment,
+      limit,
+      signal,
     );
 
   datasetSearch = async (
@@ -217,7 +306,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
         version_id: versionId,
         path,
         query,
-        search_type: options?.searchType ?? 'hybrid',
+        search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 20,
         page_number: options?.pageNumber ?? 1,
       },
@@ -240,7 +329,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
         artifact_id: artifactId,
         version_id: versionId,
         path,
-        search_type: options?.searchType ?? 'hybrid',
+        search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 20,
         page_number: options?.pageNumber ?? 1,
       },
@@ -274,7 +363,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
         path: options?.path,
         data_product_id: options?.dataProductId,
         deployment_id: options?.deploymentId,
-        search_type: options?.searchType ?? 'hybrid',
+        search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 10,
         page_number: options?.pageNumber ?? 1,
         include_primitive_fields: options?.includePrimitiveFields ?? true,
@@ -397,6 +486,41 @@ export class MarketplaceServerClient extends AbstractServerClient {
     );
   };
 
+  getPermissionAddons = async (
+    kerberos: string,
+    providerName: string,
+    params?: PermissionAddonsSearchParams,
+    signal?: AbortSignal,
+  ): Promise<PlainObject<PermissionAddonsSearchResponse>> => {
+    const queryParams: Record<string, string | number | boolean> = {
+      kerberos,
+      provider_name: providerName,
+    };
+
+    if (params?.permission_id !== undefined) {
+      queryParams.permission_id = params.permission_id;
+    }
+    if (params?.page !== undefined) {
+      queryParams.page = params.page;
+    }
+    if (params?.page_size !== undefined) {
+      queryParams.page_size = params.page_size;
+    }
+    if (isNonEmptyString(params?.search)) {
+      queryParams.search = params.search;
+    }
+    if (params?.sort_by_price !== undefined) {
+      queryParams.sort_by_price = params.sort_by_price;
+    }
+
+    return this.get<PlainObject<PermissionAddonsSearchResponse>>(
+      `${this.baseUrl}/v1/workflow/products/permission-addons`,
+      signal ? { signal } : {},
+      undefined,
+      queryParams,
+    );
+  };
+
   submitOrder = async (
     user: string,
     orderData: OrderDetails,
@@ -436,4 +560,33 @@ export class MarketplaceServerClient extends AbstractServerClient {
     feedbackData: FeedbackRequest,
   ): Promise<PlainObject<FeedbackResponse>> =>
     this.post(this._feedback(), feedbackData);
+
+  // ------------------------------------------- MCP Registry -------------------------------------------
+
+  private readonly _mcpServer = (): string =>
+    `${this.baseUrl}/v1/llm-conversation-service/admin/api/mcp_server`;
+
+  private readonly _token = (token: string): { Authorization: string } => ({
+    Authorization: `Bearer ${token}`,
+  });
+
+  getMcpServers = async (
+    page: number,
+    pageSize: number,
+    token: string,
+  ): Promise<PlainObject<McpServerPage>> =>
+    this.get(`${this._mcpServer()}/paginated`, {}, this._token(token), {
+      page,
+      page_size: pageSize,
+    });
+
+  getMcpServerTools = async (
+    serverName: string,
+    token: string,
+  ): Promise<PlainObject<McpServerToolsResponse>> =>
+    this.get(
+      `${this._mcpServer()}/${encodeURIComponent(serverName)}/tools`,
+      {},
+      this._token(token),
+    );
 }

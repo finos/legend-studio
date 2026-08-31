@@ -15,15 +15,17 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { type JSX, useEffect, useCallback } from 'react';
+import { type JSX, useCallback, useEffect, useState } from 'react';
 import { LegendMarketplaceSearchBar } from '../../components/SearchBar/LegendMarketplaceSearchBar.js';
 import {
   Button,
+  IconButton,
   Tooltip,
   Typography,
   List,
   ListItem,
   CircularProgress,
+  Collapse,
 } from '@mui/material';
 import type {
   TerminalResult,
@@ -31,6 +33,7 @@ import type {
 } from '@finos/legend-server-marketplace';
 import { LegendMarketplaceTerminalCard } from '../../components/ProviderCard/LegendMarketplaceTerminalCard.js';
 import { LegendMarketplaceOrderProfileCard } from '../../components/ProviderCard/LegendMarketplaceOrderProfileCard.js';
+import { LegendMarketplaceOwnedTerminalCard } from '../../components/ProviderCard/LegendMarketplaceOwnedTerminalCard.js';
 import {
   type LegendMarketPlaceVendorDataStore,
   VendorDataProviderType,
@@ -41,13 +44,22 @@ import {
   withLegendMarketplaceVendorDataStore,
 } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 import { useParams } from '@finos/legend-application/browser';
-import { InfoCircleIcon, UserSearchInput } from '@finos/legend-art';
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  InfoCircleIcon,
+  UserSearchInput,
+} from '@finos/legend-art';
 import { flowResult } from 'mobx';
-import type { LegendUser } from '@finos/legend-shared';
+import { type LegendUser } from '@finos/legend-shared';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import { UserRenderer } from '@finos/legend-extension-dsl-data-product';
 import { LegendMarketplaceOptionSelector } from '../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
+import {
+  LegendMarketplaceTelemetryHelper,
+  TERMINAL_SEARCH_LOCATION,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const RefinedVendorRadioSelector = observer(
   (props: { vendorDataState: LegendMarketPlaceVendorDataStore }) => {
@@ -61,6 +73,10 @@ export const RefinedVendorRadioSelector = observer(
 
     const onRadioChange = useCallback(
       (value: VendorDataProviderType) => {
+        LegendMarketplaceTelemetryHelper.logEvent_TerminalsAddonsFilterTab(
+          vendorDataState.applicationStore.telemetryService,
+          value,
+        );
         vendorDataState.setProviderDisplayState(value);
         flowResult(vendorDataState.populateProviders()).catch(
           vendorDataState.applicationStore.alertUnhandledError,
@@ -224,6 +240,84 @@ const OrderProfileSearchResultsRenderer = observer(
   },
 );
 
+const OwnedServicesSection = observer(
+  (props: {
+    vendorDataState: LegendMarketPlaceVendorDataStore;
+  }): JSX.Element => {
+    const { vendorDataState } = props;
+    const [isExpanded, setIsExpanded] = useState(false);
+    const currentUserId =
+      vendorDataState.applicationStore.identityService.currentUser;
+    const isTargetUserActive =
+      vendorDataState.selectedUser.id !== currentUserId;
+
+    const handleToggle = () => {
+      const nextExpanded = !isExpanded;
+      setIsExpanded(nextExpanded);
+      LegendMarketplaceTelemetryHelper.logEvent_ToggleTerminalSubscriptions(
+        vendorDataState.applicationStore.telemetryService,
+        nextExpanded,
+        isTargetUserActive,
+      );
+    };
+    const trimmedSelectedUserDisplayName =
+      vendorDataState.selectedUser.displayName?.trim();
+    const selectedUserName =
+      trimmedSelectedUserDisplayName === undefined ||
+      trimmedSelectedUserDisplayName === ''
+        ? vendorDataState.selectedUser.id
+        : trimmedSelectedUserDisplayName;
+    const titleText = isTargetUserActive
+      ? `${selectedUserName}'s Terminal Subscriptions`
+      : 'My Terminal Subscriptions';
+
+    return (
+      <div className="legend-marketplace-vendordata-main-owned-services">
+        <div className="legend-marketplace-vendordata-main-owned-services__header">
+          <div className="legend-marketplace-vendordata-main-owned-services__title-row">
+            <span className="legend-marketplace-vendordata-main-sidebar__title">
+              {titleText}
+              <span className="legend-marketplace-vendordata-main-sidebar__title__count">
+                ({vendorDataState.totalOwnedPermissions})
+              </span>
+            </span>
+            <IconButton
+              size="small"
+              onClick={handleToggle}
+              aria-expanded={isExpanded}
+              aria-controls="terminal-subscriptions-grid"
+              aria-label={
+                isExpanded
+                  ? 'Collapse my terminal subscriptions'
+                  : 'Expand my terminal subscriptions'
+              }
+              className="legend-marketplace-vendordata-main-owned-services__toggle-btn"
+            >
+              {isExpanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
+            </IconButton>
+          </div>
+          <p className="legend-marketplace-vendordata-main-owned-services__subtitle">
+            Select a subscription to browse and order available Add-Ons.
+          </p>
+        </div>
+        <Collapse in={isExpanded}>
+          <div
+            id="terminal-subscriptions-grid"
+            className="legend-marketplace-vendordata-main-search-results__card-group"
+          >
+            {vendorDataState.ownedPermissions.map((permission) => (
+              <LegendMarketplaceOwnedTerminalCard
+                key={permission.id}
+                terminalResult={permission}
+              />
+            ))}
+          </div>
+        </Collapse>
+      </div>
+    );
+  },
+);
+
 export const VendorDataMainContent = observer(
   (props: { marketPlaceVendorDataState: LegendMarketPlaceVendorDataStore }) => {
     const { marketPlaceVendorDataState } = props;
@@ -296,13 +390,23 @@ export const VendorDataMainContent = observer(
               )}
               {marketPlaceVendorDataState.providerDisplayState ===
                 VendorDataProviderType.TERMINAL_LICENSE && (
-                <SearchResultsRenderer
-                  vendorDataState={marketPlaceVendorDataState}
-                  terminalResults={marketPlaceVendorDataState.providers}
-                  sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
-                  totalCount={marketPlaceVendorDataState.totalItems}
-                  seeAll={false}
-                />
+                <>
+                  {marketPlaceVendorDataState.ownedPermissions.length > 0 && (
+                    <>
+                      <OwnedServicesSection
+                        vendorDataState={marketPlaceVendorDataState}
+                      />
+                      <hr />
+                    </>
+                  )}
+                  <SearchResultsRenderer
+                    vendorDataState={marketPlaceVendorDataState}
+                    terminalResults={marketPlaceVendorDataState.providers}
+                    sectionTitle={VendorDataProviderType.TERMINAL_LICENSE}
+                    totalCount={marketPlaceVendorDataState.totalItems}
+                    seeAll={false}
+                  />
+                </>
               )}
               {marketPlaceVendorDataState.providerDisplayState ===
                 VendorDataProviderType.ADD_ONS && (
@@ -353,15 +457,24 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
 
     const marketplaceStore = useLegendMarketplaceBaseStore();
     const cartStore = marketplaceStore.cartStore;
+    const currentUserId =
+      marketplaceStore.applicationStore.identityService.currentUser;
 
     const handleSearch = useCallback(
       (query: string | undefined) => {
+        LegendMarketplaceTelemetryHelper.logEvent_TerminalsAddonsSearch(
+          marketplaceStore.applicationStore.telemetryService,
+          query ?? '',
+          TERMINAL_SEARCH_LOCATION.MAIN_CATALOG,
+          marketPlaceVendorDataStore.providerDisplayState,
+          marketPlaceVendorDataStore.selectedUser.id !== currentUserId,
+        );
         marketPlaceVendorDataStore.setSearchTerm(query ?? '');
         flowResult(marketPlaceVendorDataStore.populateProviders()).catch(
           marketPlaceVendorDataStore.applicationStore.alertUnhandledError,
         );
       },
-      [marketPlaceVendorDataStore],
+      [marketPlaceVendorDataStore, marketplaceStore, currentUserId],
     );
 
     const handleSearchChange = useCallback(
@@ -378,7 +491,11 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
 
     useEffect(() => {
       marketPlaceVendorDataStore.init();
-    }, [marketPlaceVendorDataStore]);
+      LegendMarketplaceTelemetryHelper.logEvent_ViewTerminalsAddonsPage(
+        marketplaceStore.applicationStore.telemetryService,
+        marketPlaceVendorDataStore.selectedUser.id !== currentUserId,
+      );
+    }, [marketPlaceVendorDataStore, marketplaceStore, currentUserId]);
 
     return (
       <LegendMarketplacePage className="legend-marketplace-vendor-data">
@@ -402,14 +519,22 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
                 className="legend-marketplace__user-input"
                 userValue={marketPlaceVendorDataStore.selectedUser}
                 setUserValue={(_user: LegendUser): void => {
-                  if (!_user.id) {
-                    marketPlaceVendorDataStore.resetSelectedUser();
-                    flowResult(cartStore.setTargetUser(undefined)).catch(
+                  if (_user.id) {
+                    LegendMarketplaceTelemetryHelper.logEvent_SelectTargetUser(
+                      marketplaceStore.applicationStore.telemetryService,
+                      _user.id !== currentUserId,
+                    );
+                    marketPlaceVendorDataStore.setSelectedUser(_user);
+                    flowResult(cartStore.setTargetUser(_user.id)).catch(
                       marketplaceStore.applicationStore.alertUnhandledError,
                     );
                   } else {
-                    marketPlaceVendorDataStore.setSelectedUser(_user);
-                    flowResult(cartStore.setTargetUser(_user.id)).catch(
+                    LegendMarketplaceTelemetryHelper.logEvent_SelectTargetUser(
+                      marketplaceStore.applicationStore.telemetryService,
+                      false,
+                    );
+                    marketPlaceVendorDataStore.resetSelectedUser();
+                    flowResult(cartStore.setTargetUser(undefined)).catch(
                       marketplaceStore.applicationStore.alertUnhandledError,
                     );
                   }

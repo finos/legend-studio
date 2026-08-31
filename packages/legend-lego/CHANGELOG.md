@@ -1,5 +1,37 @@
 # @finos/legend-lego
 
+## 2.0.220
+
+## 2.0.219
+
+## 2.0.218
+
+### Patch Changes
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Keep the Legend AI metadata prompt bounded on data products with hundreds of access points, where it previously assembled a prompt the LLM gateway rejected.
+
+  Access point and service relationships are paired through an inverted column index that skips near-universal columns, metadata questions carry only the access points ranked most relevant, and conversation history is capped so prompt size no longer grows with the conversation.
+
+- [#5461](https://github.com/finos/legend-studio/pull/5461) [`55d60bb`](https://github.com/finos/legend-studio/commit/55d60bbb97d05975d2fb304e42a3f3681c9bd706) ([@bojja-gs](https://github.com/bojja-gs)) - Legend Marketplace **Intelligence & Agents** tab: route data product and data space questions through the shared Legend AI pipeline for query generation, execution and analysis, auto-routing to the Legend AI Orchestrator when a SQL attempt dead-ends, and protect the `/agents` route so its OIDC token stays refreshed.
+
+  Adds question-driven value grounding, a join overlap probe, a deterministic access point catalog, Python and Open-in-DataCube actions, and telemetry. The probe runs wherever the shared pipeline runs, so the data product and data space pages pay it too.
+
+## 2.0.217
+
+## 2.0.216
+
+## 2.0.215
+
+### Patch Changes
+
+- [#5440](https://github.com/finos/legend-studio/pull/5440) [`6c85092`](https://github.com/finos/legend-studio/commit/6c850924de24587e14e4686905216708f17c0c58) ([@Rakan1837](https://github.com/Rakan1837)) - `CodeEditor` now accepts an optional `rightActions?: ReactNode` prop that is rendered in the editor header alongside the built-in word-wrap toggle. This lets callers add editor-scoped actions (e.g. an "add entry" button for a JSON editor) on the same row as the word-wrap control without having to redraw the editor header.
+
+## 2.0.214
+
+### Patch Changes
+
+- [#5417](https://github.com/finos/legend-studio/pull/5417) [`b7312d7`](https://github.com/finos/legend-studio/commit/b7312d781d6080a7903dca1cd6c006d9385039f5) ([@bojja-gs](https://github.com/bojja-gs)) - Make the Legend AI chat launcher a floating, draggable button so it can be moved clear of transient notifications in the bottom-right corner. The launcher docks to the nearest viewport corner when dropped, re-clamps itself on window resize, distinguishes a drag from a click, and opens the chat on a plain click. Long data product names are now truncated with an ellipsis in the chat header (so the minimize/close actions stay visible) and in the launcher's hover label.
+
 ## 2.0.213
 
 ## 2.0.212

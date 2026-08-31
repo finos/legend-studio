@@ -56,6 +56,7 @@ import {
   LegendAIThinkingStepStatus,
   LegendAIMessageRole,
   LegendAIErrorType,
+  LegendAIPythonCodeStatus,
   TDSServiceSourceType,
   LEGEND_AI_FEEDBACK_PROMPT,
   classifyQuestionIntentFast,
@@ -65,6 +66,7 @@ import {
 } from '../LegendAITypes.js';
 import { useLegendAIChatState } from '../stores/LegendAIChatState.js';
 import { looksLikeAccessError } from '../stores/LegendAIChatProcessors.js';
+import { accessPointName } from '../stores/LegendAISqlHelpers.js';
 import { LegendAIResultGrid } from './LegendAIResultGrid.js';
 import { LegendAIAnalysisPanel } from './LegendAIAnalysisPanel.js';
 import { LegendAIChatInput } from './LegendAIChatInput.js';
@@ -76,9 +78,12 @@ const COPY_FEEDBACK_DURATION_MS = 2000;
 const CONTEXT_BANNER_AUTO_DISMISS_MS = 20000;
 
 type LegendAIPythonCodeEntry =
-  | { status: 'loading' }
-  | { status: 'ready'; code: LegendAIPythonQueryCode | undefined }
-  | { status: 'error'; errorMessage: string };
+  | { status: LegendAIPythonCodeStatus.LOADING }
+  | {
+      status: LegendAIPythonCodeStatus.READY;
+      code: LegendAIPythonQueryCode | undefined;
+    }
+  | { status: LegendAIPythonCodeStatus.ERROR; errorMessage: string };
 
 const LegendAIContextBanner = (props: {
   message: string;
@@ -328,37 +333,48 @@ const AssistantMessageView = memo(function AssistantMessageView(props: {
 
   const handleCopySql = useCallback(() => {
     if (msg.sql) {
-      navigator.clipboard.writeText(msg.sql).catch(noop);
-      setSqlCopied(true);
+      navigator.clipboard
+        .writeText(msg.sql)
+        .then(() => {
+          setSqlCopied(true);
+          if (copyTimerRef.current !== undefined) {
+            clearTimeout(copyTimerRef.current);
+          }
+          copyTimerRef.current = setTimeout(() => {
+            setSqlCopied(false);
+            copyTimerRef.current = undefined;
+          }, COPY_FEEDBACK_DURATION_MS);
+        })
+        .catch(noop());
       onLogTelemetryEvent?.({
         type: LegendAIChatTelemetryEventType.ARTIFACT_COPIED,
         artifact: LegendAITelemetryArtifact.SQL,
       });
-      if (copyTimerRef.current !== undefined) {
-        clearTimeout(copyTimerRef.current);
-      }
-      copyTimerRef.current = setTimeout(() => {
-        setSqlCopied(false);
-        copyTimerRef.current = undefined;
-      }, COPY_FEEDBACK_DURATION_MS);
     }
   }, [msg.sql, onLogTelemetryEvent]);
 
   const handleCopyPython = useCallback(() => {
-    if (pythonEntry?.status === 'ready' && pythonEntry.code) {
-      navigator.clipboard.writeText(pythonEntry.code.code).catch(noop);
-      setPythonCopied(true);
+    if (
+      pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
+      pythonEntry.code
+    ) {
+      navigator.clipboard
+        .writeText(pythonEntry.code.code)
+        .then(() => {
+          setPythonCopied(true);
+          if (pythonCopyTimerRef.current !== undefined) {
+            clearTimeout(pythonCopyTimerRef.current);
+          }
+          pythonCopyTimerRef.current = setTimeout(() => {
+            setPythonCopied(false);
+            pythonCopyTimerRef.current = undefined;
+          }, COPY_FEEDBACK_DURATION_MS);
+        })
+        .catch(noop());
       onLogTelemetryEvent?.({
         type: LegendAIChatTelemetryEventType.ARTIFACT_COPIED,
         artifact: LegendAITelemetryArtifact.PYTHON,
       });
-      if (pythonCopyTimerRef.current !== undefined) {
-        clearTimeout(pythonCopyTimerRef.current);
-      }
-      pythonCopyTimerRef.current = setTimeout(() => {
-        setPythonCopied(false);
-        pythonCopyTimerRef.current = undefined;
-      }, COPY_FEEDBACK_DURATION_MS);
     }
   }, [pythonEntry, onLogTelemetryEvent]);
 
@@ -414,7 +430,7 @@ const AssistantMessageView = memo(function AssistantMessageView(props: {
           : { rowCount: msg.gridData.rowData.length }),
       });
       if (result instanceof Promise) {
-        result.catch(noop);
+        result.catch(noop());
       }
     },
     [msg, onMessageFeedback, questionText],
@@ -732,31 +748,32 @@ const AssistantMessageView = memo(function AssistantMessageView(props: {
                       <CodeIcon />
                     </span>
                     <span>Python</span>
-                    {pythonEntry?.status === 'ready' && pythonEntry.code && (
-                      <button
-                        type="button"
-                        className="legend-ai__sql-copy-btn"
-                        title="Copy Python code"
-                        aria-label="Copy Python code"
-                        onClick={handleCopyPython}
-                      >
-                        {pythonCopied ? (
-                          <span className="legend-ai__sql-copy-btn--copied">
-                            <CheckIcon />
-                          </span>
-                        ) : (
-                          <CopyIcon />
-                        )}
-                      </button>
-                    )}
+                    {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
+                      pythonEntry.code && (
+                        <button
+                          type="button"
+                          className="legend-ai__sql-copy-btn"
+                          title="Copy Python code"
+                          aria-label="Copy Python code"
+                          onClick={handleCopyPython}
+                        >
+                          {pythonCopied ? (
+                            <span className="legend-ai__sql-copy-btn--copied">
+                              <CheckIcon />
+                            </span>
+                          ) : (
+                            <CopyIcon />
+                          )}
+                        </button>
+                      )}
                   </div>
-                  {pythonEntry?.status === 'loading' && (
+                  {pythonEntry?.status === LegendAIPythonCodeStatus.LOADING && (
                     <div className="legend-ai__python-panel-loading">
                       <LoadingIcon isLoading={true} />
                       <span>Generating Python…</span>
                     </div>
                   )}
-                  {pythonEntry?.status === 'error' && (
+                  {pythonEntry?.status === LegendAIPythonCodeStatus.ERROR && (
                     <div className="legend-ai__python-panel-error">
                       <span>
                         Could not generate Python code. Try again in a moment.
@@ -775,7 +792,7 @@ const AssistantMessageView = memo(function AssistantMessageView(props: {
                       </button>
                     </div>
                   )}
-                  {pythonEntry?.status === 'ready' &&
+                  {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
                     pythonEntry.code === undefined && (
                       <div className="legend-ai__python-panel-loading">
                         <span>
@@ -783,28 +800,29 @@ const AssistantMessageView = memo(function AssistantMessageView(props: {
                         </span>
                       </div>
                     )}
-                  {pythonEntry?.status === 'ready' && pythonEntry.code && (
-                    <>
-                      <div className="legend-ai__sql-scroll">
-                        <pre className="legend-ai__sql-display">
-                          {pythonEntry.code.code}
-                        </pre>
-                      </div>
-                      {pythonEntry.code.notebookUrl && (
-                        <div className="legend-ai__python-panel-actions">
-                          <a
-                            className="legend-ai__permission-error-btn"
-                            href={pythonEntry.code.notebookUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <JupyterIcon />
-                            <span>Launch Notebook</span>
-                          </a>
+                  {pythonEntry?.status === LegendAIPythonCodeStatus.READY &&
+                    pythonEntry.code && (
+                      <>
+                        <div className="legend-ai__sql-scroll">
+                          <pre className="legend-ai__sql-display">
+                            {pythonEntry.code.code}
+                          </pre>
                         </div>
-                      )}
-                    </>
-                  )}
+                        {pythonEntry.code.notebookUrl && (
+                          <div className="legend-ai__python-panel-actions">
+                            <a
+                              className="legend-ai__permission-error-btn"
+                              href={pythonEntry.code.notebookUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <JupyterIcon />
+                              <span>Launch Notebook</span>
+                            </a>
+                          </div>
+                        )}
+                      </>
+                    )}
                 </div>
               )}
             </div>
@@ -933,25 +951,40 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
   >(new Map());
   const pythonCodeByMessageIdRef = useRef(pythonCodeByMessageId);
   pythonCodeByMessageIdRef.current = pythonCodeByMessageId;
+  /**
+   * Generates Python for the access point the answer actually queried. When the
+   * message names one that is not loaded, no code is offered rather than a guess.
+   */
   const requestPythonCode = useCallback(
     async (msg: LegendAIAssistantMessage): Promise<void> => {
       const existing = pythonCodeByMessageIdRef.current.get(msg.id);
-      if (existing?.status === 'loading' || existing?.status === 'ready') {
+      if (
+        existing?.status === LegendAIPythonCodeStatus.LOADING ||
+        existing?.status === LegendAIPythonCodeStatus.READY
+      ) {
         return;
       }
       setPythonCodeByMessageId((prev) => {
         const next = new Map(prev);
-        next.set(msg.id, { status: 'loading' });
+        next.set(msg.id, { status: LegendAIPythonCodeStatus.LOADING });
         return next;
       });
-      const resolvedSet = new Set(msg.queriedAccessPoints);
+      const resolvedSet = new Set(
+        msg.queriedAccessPoints.map((name) => name.toLowerCase()),
+      );
       const service =
-        services.find((s) => resolvedSet.has(s.pattern.replace(/^\//u, ''))) ??
-        services[0];
+        resolvedSet.size > 0
+          ? services.find((s) =>
+              resolvedSet.has(accessPointName(s).toLowerCase()),
+            )
+          : services[0];
       if (!service) {
         setPythonCodeByMessageId((prev) => {
           const next = new Map(prev);
-          next.set(msg.id, { status: 'ready', code: undefined });
+          next.set(msg.id, {
+            status: LegendAIPythonCodeStatus.READY,
+            code: undefined,
+          });
           return next;
         });
         return;
@@ -974,14 +1007,17 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
         const code = await plugin.generatePythonQueryCodeAsync(request);
         setPythonCodeByMessageId((prev) => {
           const next = new Map(prev);
-          next.set(msg.id, { status: 'ready', code });
+          next.set(msg.id, { status: LegendAIPythonCodeStatus.READY, code });
           return next;
         });
       } catch (error) {
         assertErrorThrown(error);
         setPythonCodeByMessageId((prev) => {
           const next = new Map(prev);
-          next.set(msg.id, { status: 'error', errorMessage: error.message });
+          next.set(msg.id, {
+            status: LegendAIPythonCodeStatus.ERROR,
+            errorMessage: error.message,
+          });
           return next;
         });
       }
@@ -999,13 +1035,13 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
       if (!onOpenInDataCube || msg.sql === null) {
         return;
       }
-      const accessPointName = msg.queriedAccessPoints[0];
-      if (accessPointName === undefined) {
+      const apName = msg.queriedAccessPoints[0];
+      if (apName === undefined) {
         return;
       }
       const service =
         services.find(
-          (s) => s.pattern.replace(/^\//u, '') === accessPointName,
+          (s) => accessPointName(s).toLowerCase() === apName.toLowerCase(),
         ) ?? services[0];
       if (!service) {
         return;
@@ -1038,7 +1074,7 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
         assertErrorThrown(error);
       }
       try {
-        onOpenInDataCube(accessPointName, pureQuery);
+        onOpenInDataCube(apName, pureQuery);
       } finally {
         setOpeningDataCubeMessageIds((prev) => {
           if (!prev.has(msg.id)) {
@@ -1119,13 +1155,13 @@ export const LegendAIChat = (props: LegendAIChatProps): React.ReactNode => {
   );
   const handleRequestPython = useCallback(
     (message: LegendAIAssistantMessage): void => {
-      requestPythonCode(message).catch(noop);
+      requestPythonCode(message).catch(noop());
     },
     [requestPythonCode],
   );
   const handleOpenInDataCube = useCallback(
     (message: LegendAIAssistantMessage): void => {
-      handleOpenInDataCubeMsg(message).catch(noop);
+      handleOpenInDataCubeMsg(message).catch(noop());
     },
     [handleOpenInDataCubeMsg],
   );

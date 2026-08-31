@@ -658,7 +658,12 @@ export function generateBaseGridOptions(view: DataCubeViewState): GridOptions {
     // to not work properly for pivot result columns, so we must disable this mechanism.
     serverSideSortAllLevels: true,
     // -------------------------------------- SELECTION --------------------------------------
-    cellSelection: true,
+    // NOTE: enable column selection so that clicking a column header selects the entire
+    // column, which is needed to support copying the whole column via the grid menu
+    cellSelection: {
+      enableColumnSelection: true,
+      enableHeaderHighlight: true,
+    },
     // -------------------------------------- SIDEBAR --------------------------------------
     sideBar: {
       toolPanels: [

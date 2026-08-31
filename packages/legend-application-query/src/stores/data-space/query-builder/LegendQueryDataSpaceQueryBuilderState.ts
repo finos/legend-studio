@@ -59,7 +59,7 @@ import {
   createViewProjectHandler,
   createViewSDLCProjectHandler,
 } from '../DataSpaceQueryBuilderHelper.js';
-import type { GeneratorFn } from '@finos/legend-shared';
+import { type GeneratorFn } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type {
   DepotEntityWithOrigin,
@@ -220,7 +220,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
         this.dataSpace.title,
         this.dataSpace.name,
         this.dataSpace.path,
-        this.dataSpace.defaultExecutionContext.name,
+        this.dataSpace.defaultExecutionContext?.name,
       ),
     };
   }
@@ -293,7 +293,7 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
         dataSpace.title,
         dataSpace.name,
         dataSpace.path,
-        dataSpace.defaultExecutionContext.name,
+        dataSpace.defaultExecutionContext?.name,
       ),
       this.project.versionId === SNAPSHOT_VERSION_ALIAS,
     );

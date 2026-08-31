@@ -95,7 +95,7 @@ describe(unitTest('classifyQuestionIntentFast — metadata questions'), () => {
 
   test('capability discovery question → metadata (not ambiguous)', () => {
     const result = classifyQuestionIntentFast(
-      'What data does LSEG Programmatic News offer and how can I use it?',
+      'What data does Market News offer and how can I use it?',
       true,
     );
     expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);
@@ -106,7 +106,7 @@ describe(unitTest('classifyQuestionIntentFast — metadata questions'), () => {
 
   test('capability discovery overrides financial term in product name', () => {
     const result = classifyQuestionIntentFast(
-      'What data does Bloomberg Fund Holdings offer and how can I use it?',
+      'What data does Global Fund Holdings offer and how can I use it?',
       true,
     );
     expect(result.intent).toBe(LegendAIQuestionIntent.METADATA);

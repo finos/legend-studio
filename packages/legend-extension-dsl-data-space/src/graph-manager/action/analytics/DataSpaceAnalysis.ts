@@ -21,6 +21,7 @@ import type {
   DatasetSpecification,
   MappingModelCoverageAnalysisResult,
   FunctionAnalysisInfo,
+  GenericType,
 } from '@finos/legend-graph';
 import { prettyCONSTName, uuid } from '@finos/legend-shared';
 import type { DataSpaceSupportInfo } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
@@ -32,7 +33,8 @@ export class DataSpaceExecutionContextAnalysisResult {
   title?: string | undefined;
   description?: string | undefined;
   mapping!: Mapping;
-  defaultRuntime!: PackageableRuntime;
+  mappingProvider?: DataSpaceMappingProviderAnalysisResult;
+  defaultRuntime?: PackageableRuntime | undefined;
   compatibleRuntimes!: PackageableRuntime[];
   datasets: DatasetSpecification[] = [];
   runtimeMetadata?: DataSpaceExecutionContextRuntimeMetadata;
@@ -42,6 +44,11 @@ export class DataSpaceExecutionContextRuntimeMetadata {
   storePath?: string;
   connectionPath?: string;
   connectionType?: string;
+}
+
+export class DataSpaceMappingProviderAnalysisResult {
+  element!: string;
+  keys: string[] = [];
 }
 
 export class DataSpaceTaggedValueInfo {
@@ -57,6 +64,15 @@ export class DataSpaceStereotypeInfo {
 
   profile!: string;
   value!: string;
+}
+
+export class DataSpaceInfoAnalysisResult {
+  isVerified?: boolean | undefined;
+  isInDevelopment?: boolean | undefined;
+  isExternal?: boolean | undefined;
+  topics: string[] = [];
+  relatedDataSpaces: string[] = [];
+  deprecationNotice?: string | undefined;
 }
 
 export abstract class DataSpaceExecutableInfo {
@@ -112,12 +128,12 @@ export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
 
 export class DataSpaceExecutableAnalysisResult {
   readonly uuid = uuid();
-
   title!: string;
   description?: string | undefined;
   executable?: string;
   info?: DataSpaceExecutableInfo | undefined;
-  result!: DataSpaceExecutableResult;
+  result?: DataSpaceExecutableResult | undefined;
+  executableReturnType?: GenericType | undefined;
 }
 
 export class DataSpaceAnalysisResult {
@@ -130,11 +146,12 @@ export class DataSpaceAnalysisResult {
 
   title?: string | undefined;
   description?: string | undefined;
+  info?: DataSpaceInfoAnalysisResult | undefined;
 
   graph!: PureModel;
 
   executionContextsIndex!: Map<string, DataSpaceExecutionContextAnalysisResult>;
-  defaultExecutionContext!: DataSpaceExecutionContextAnalysisResult;
+  defaultExecutionContext?: DataSpaceExecutionContextAnalysisResult | undefined;
 
   elementDocs: NormalizedDocumentationEntry[] = [];
 

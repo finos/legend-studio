@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   LegendDataCubeSourceBuilderState,
   LegendDataCubeSourceBuilderType,
@@ -260,8 +260,11 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
     this.setSelectedLakehouseEnv(matchingEnv);
     if (matchingEnv) {
       this.setSelectedProducerEnv(undefined);
-      // NOTE: we trigger this but don't await because it's a flow
-      this.fetchProducerEnvironments(access_token);
+      // NOTE: we trigger this but don't await because it's a flow, we still need
+      // to handle the rejection though, else a failure here goes unreported
+      flowResult(this.fetchProducerEnvironments(access_token)).catch(
+        this._application.alertUnhandledError,
+      );
     }
   }
 
@@ -394,10 +397,46 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
     if (this.icebergEnabled) {
       this.setEnableIceberg(this.icebergEnabled);
-      await this.fetchIcebergCatalogDetails(access_token);
+      // NOTE: a failure to resolve the Iceberg catalog must not abort the rest of
+      // the setup: the ingest definitions below still need to load, else the form
+      // dead-ends with nothing to select and turning Iceberg off can't recover it.
+      // Fall back to non-Iceberg, which lets the user supply a warehouse manually.
+      try {
+        await this.fetchIcebergCatalogDetails(access_token);
+      } catch (error) {
+        assertErrorThrown(error);
+        // NOTE: leave the Iceberg selection alone - it is the user's to make, and
+        // silently flipping it is worse than letting them see it is still on and
+        // decide. `isValid` keeps them from building a source without a catalog.
+        this.catalogUrl = undefined;
+        this._alertService.alertError(error, {
+          message: `Iceberg Catalog Failure: ${error.message}`,
+          text: `Iceberg is selected for this producer environment but its catalog could not be resolved, so a DataCube can't be created with it. Turn off "Use Iceberg" to continue without it.`,
+        });
+      }
     }
 
     this.databaseName = producerEnv.databaseName;
+  }
+
+  async toggleIceberg(enable: boolean, access_token: string | undefined) {
+    this.setEnableIceberg(enable);
+    // the catalog may never have resolved (or failed earlier), so retry here:
+    // without a catalog URL, generating the source would fail at the very last step
+    if (enable && this.catalogUrl === undefined) {
+      try {
+        await this.fetchIcebergCatalogDetails(access_token);
+      } catch (error) {
+        assertErrorThrown(error);
+        // keep Iceberg selected: the failure may well be transient, and toggling
+        // it off and on again is how the user retries
+        this.catalogUrl = undefined;
+        this._alertService.alertError(error, {
+          message: `Iceberg Catalog Failure: ${error.message}`,
+          text: `A DataCube can't be created with Iceberg until its catalog resolves. Toggle "Use Iceberg" off and on to retry, or leave it off to continue without it.`,
+        });
+      }
+    }
   }
 
   async fetchDatasets(access_token: string | undefined) {
@@ -481,6 +520,10 @@ export class LakehouseProducerDataCubeSourceBuilderState extends LegendDataCubeS
 
   override get isValid(): boolean {
     return (
+      // an Iceberg source carries a required catalog URL, so it can't be built
+      // until the catalog resolves - better to keep the action disabled than to
+      // fail on `generateSourceData` after the user commits
+      (!this.enableIceberg || Boolean(this.catalogUrl)) &&
       Boolean(this.warehouse) &&
       Boolean(this.selectedIngestUrn) &&
       Boolean(this.selectedTable) &&

@@ -282,7 +282,10 @@ import { CompilationWarning } from '../../../action/compilation/CompilationWarni
 import { V1_transformParameterValue } from './transformation/pureGraph/from/V1_ServiceTransformer.js';
 import { V1_transformModelUnit } from './transformation/pureGraph/from/V1_DSL_ExternalFormat_Transformer.js';
 import type { ModelUnit } from '../../../../graph/metamodel/pure/packageableElements/externalFormat/store/DSL_ExternalFormat_ModelUnit.js';
-import { V1_LambdaReturnTypeInput } from './engine/compilation/V1_LambdaReturnType.js';
+import {
+  V1_BatchLambdaRelationTypeInput,
+  V1_LambdaReturnTypeInput,
+} from './engine/compilation/V1_LambdaReturnType.js';
 import type { ParameterValue } from '../../../../graph/metamodel/pure/packageableElements/service/ParameterValue.js';
 import type { Service } from '../../../../graph/metamodel/pure/packageableElements/service/Service.js';
 import { V1_ExecutionEnvironmentInstance } from './model/packageableElements/service/V1_ExecutionEnvironmentInstance.js';
@@ -343,6 +346,10 @@ import {
 } from './engine/service/V1_TableRowIdentifiers.js';
 import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_DatabaseTransformer.js';
 import { EngineError } from '../../../action/EngineError.js';
+import type {
+  BatchLambdasRelationTypeResult,
+  LambdasReturnTypeResult,
+} from '../../../AbstractPureGraphManager.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_SnowflakeM2MUdf } from './model/packageableElements/function/V1_SnowflakeM2MUdf.js';
 import {
@@ -373,7 +380,10 @@ import type {
   LightPersistentDataCube,
   PersistentDataCube,
 } from '../../../action/query/PersistentDataCube.js';
-import { V1_QueryParameterValue } from './engine/query/V1_Query.js';
+import {
+  type V1_Query,
+  V1_QueryParameterValue,
+} from './engine/query/V1_Query.js';
 import { V1_Multiplicity } from './model/packageableElements/domain/V1_Multiplicity.js';
 import {
   V1_buildFunctionSignature,
@@ -381,6 +391,7 @@ import {
 } from './helpers/V1_DomainHelper.js';
 import { V1_DataProduct } from './model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_Compute } from './model/packageableElements/compute/V1_Compute.js';
+import { V1_Availability } from './model/packageableElements/availability/V1_Availability.js';
 import {
   V1_DataProductArtifact,
   V1_ModelAccessPointGroupInfo,
@@ -518,6 +529,9 @@ export const V1_indexPureModelContextData = (
     if (el instanceof V1_INTERNAL__UnknownElement) {
       index.INTERNAL__UnknownElement.push(el);
     } else if (el instanceof V1_INTERNAL__UnknownPackageableElement) {
+      // `V1_Availability` and `V1_IngestDefinition` both extend this and are
+      // routed here; each is picked out downstream by an `instanceof` filter
+      // when its second-pass builder runs.
       index.INTERNAL__unknownElements.push(el);
     } else if (el instanceof V1_Association) {
       index.associations.push(el);
@@ -1247,6 +1261,10 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     await this.buildComputes(graph, inputs, options);
     stopWatch.record(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_BUILD_COMPUTES__SUCCESS);
 
+    // build availabilities
+    graphBuilderState.setMessage(`Building availabilities...`);
+    await this.buildAvailabilities(graph, inputs, options);
+
     // build mappings
     graphBuilderState.setMessage(`Building mappings...`);
     await this.buildMappings(graph, inputs, options);
@@ -1641,6 +1659,28 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  private async buildAvailabilities(
+    graph: PureModel,
+    inputs: V1_PureGraphBuilderInput[],
+    options?: GraphBuilderOptions,
+  ): Promise<void> {
+    // Only second pass is meaningful for availability: it lifts the typed
+    // test suites off the raw content payload built in the first pass.
+    // Availabilities live in `INTERNAL__unknownElements` (same pattern as
+    // ingest); filter them out here.
+    await this.processElementsInBatches(
+      graph,
+      inputs,
+      (data) =>
+        data.INTERNAL__unknownElements.filter(
+          (element): element is V1_Availability =>
+            element instanceof V1_Availability,
+        ),
+      (ctx) => new V1_ElementSecondPassBuilder(ctx),
+      options,
+    );
+  }
+
   private async buildFileGenerations(
     graph: PureModel,
     inputs: V1_PureGraphBuilderInput[],
@@ -1841,6 +1881,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     const startTime = Date.now();
     const grammarToJson = await this.engine.transformPureModelContextDataToCode(
       await this.entitiesToPureModelContextData(entities),
+      Boolean(options?.pretty),
+    );
+    this.logService.info(
+      LogEvent.create(
+        GRAPH_MANAGER_EVENT.TRANSFORM_GRAPH_META_MODEL_TO_GRAMMAR__SUCCESS,
+      ),
+      Date.now() - startTime,
+      'ms',
+    );
+    return grammarToJson;
+  }
+
+  async protocolToPureCode(
+    protocolGraph: PlainObject<V1_PureModelContextData>,
+    options?: { pretty?: boolean | undefined },
+  ): Promise<string> {
+    const startTime = Date.now();
+    const grammarToJson = await this.engine.transformProtocolGraphToCode(
+      protocolGraph,
       Boolean(options?.pretty),
     );
     this.logService.info(
@@ -2104,6 +2163,16 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  override getBatchLambdasRelationType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<BatchLambdasRelationTypeResult> {
+    return this.engine.getBatchLambdasRelationTypeFromRawInput(
+      this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
+    );
+  }
+
   getCodeComplete(
     codeBlock: string,
     graph: PureModel,
@@ -2133,11 +2202,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambdas: Map<string, RawLambda>,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): Promise<{
-    results: Map<string, string>;
-    errors: Map<string, EngineError>;
-  }> {
-    const returnTypes = {
+  ): Promise<LambdasReturnTypeResult> {
+    const returnTypes: LambdasReturnTypeResult = {
       results: new Map<string, string>(),
       errors: new Map<string, EngineError>(),
     };
@@ -2166,10 +2232,7 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     key: string,
     lambda: RawLambda,
     plainGraph: PlainObject<V1_PureModelContext>,
-    finalResult: {
-      results: Map<string, string>;
-      errors: Map<string, EngineError>;
-    },
+    finalResult: LambdasReturnTypeResult,
     options?: { keepSourceInformation?: boolean },
   ): Promise<void> {
     try {
@@ -2300,6 +2363,20 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  private buildBatchLambdasRelationTypeInput(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): V1_BatchLambdaRelationTypeInput {
+    return new V1_BatchLambdaRelationTypeInput(
+      this.getFullGraphModelContext(
+        graph,
+        V1_PureGraphManager.DEV_PROTOCOL_VERSION,
+      ),
+      this.buildV1BatchRawLambdas(lambdas, options),
+    );
+  }
+
   private buildV1RawLambda(
     lambda: RawLambda,
     options?: { keepSourceInformation?: boolean },
@@ -2315,6 +2392,24 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           .build(),
       ),
     ) as V1_RawLambda;
+  }
+
+  private buildV1BatchRawLambdas(
+    lambdas: Map<string, RawLambda>,
+    options?: { keepSourceInformation?: boolean },
+  ): Record<string, V1_RawLambda> {
+    const context = new V1_GraphTransformerContextBuilder(
+      this.pluginManager.getPureProtocolProcessorPlugins(),
+    )
+      .withKeepSourceInformationFlag(Boolean(options?.keepSourceInformation))
+      .build();
+    const result: Record<string, V1_RawLambda> = {};
+    lambdas.forEach((lambda, key) => {
+      result[key] = lambda.accept_RawValueSpecificationVisitor(
+        new V1_RawValueSpecificationTransformer(context),
+      ) as V1_RawLambda;
+    });
+    return result;
   }
 
   // ------------------------------------------- Generation -------------------------------------------
@@ -3505,21 +3600,49 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
-  async getQuery(queryId: string, graph: PureModel): Promise<Query> {
+  /**
+   * Fetch the query protocol, optionally for a specific revision from the
+   * query's version history (keyed by `revisionId`, i.e. `lastUpdatedAt`).
+   */
+  private async getQueryProtocol(
+    queryId: string,
+    revisionId?: string | undefined,
+  ): Promise<V1_Query> {
+    if (revisionId !== undefined) {
+      return guaranteeNonNullable(
+        (await this.engine.getQueryHistory(queryId, revisionId))[0],
+        `Can't find revision '${revisionId}' for query '${queryId}'`,
+      );
+    }
+    return this.engine.getQuery(queryId);
+  }
+
+  async getQueryHistory(queryId: string): Promise<V1_Query[]> {
+    return this.engine.getQueryHistory(queryId);
+  }
+
+  async getQuery(
+    queryId: string,
+    graph: PureModel,
+    revisionId?: string | undefined,
+  ): Promise<Query> {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     return V1_buildQuery(
-      await this.engine.getQuery(queryId),
+      await this.getQueryProtocol(queryId, revisionId),
       graph,
       this.engine.getCurrentUserId(),
     );
   }
-  async getQueryInfo(queryId: string): Promise<QueryInfo> {
+  async getQueryInfo(
+    queryId: string,
+    revisionId?: string | undefined,
+  ): Promise<QueryInfo> {
     const currentUserId =
       this.engine instanceof V1_RemoteEngine
         ? this.engine.getCurrentUserId()
         : undefined;
 
-    const query = await this.engine.getQuery(queryId);
+    const query = await this.getQueryProtocol(queryId, revisionId);
     return {
       name: query.name,
       id: query.id,
@@ -3590,6 +3713,21 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     // TODO: improve abstraction so that we can get the current user ID from any abstract engine
     return V1_buildLightQuery(
       await this.engine.updateQuery(query),
+      this.engine.getCurrentUserId(),
+    );
+  }
+
+  async revertQueryToRevision(
+    queryId: string,
+    revisionId: string,
+  ): Promise<LightQuery> {
+    const currentQuery = await this.engine.getQuery(queryId);
+    const revision = await this.getQueryProtocol(queryId, revisionId);
+    // revert only the query body; keep the current head's metadata intact
+    currentQuery.content = revision.content;
+    // TODO: improve abstraction so that we can get the current user ID from any abstract engine
+    return V1_buildLightQuery(
+      await this.engine.updateQuery(currentQuery),
       this.engine.getCurrentUserId(),
     );
   }
@@ -5263,6 +5401,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     ) {
       if (protocol instanceof V1_IngestDefinition) {
         return CORE_PURE_PATH.INGEST_DEFINITION;
+      }
+      if (protocol instanceof V1_Availability) {
+        return CORE_PURE_PATH.AVAILABILITY;
       }
       const _type = protocol.content._type;
       const classifierPath = isString(_type)

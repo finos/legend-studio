@@ -1,5 +1,43 @@
 # @finos/legend-application-studio
 
+## 28.21.39
+
+## 28.21.38
+
+## 28.21.37
+
+## 28.21.36
+
+## 28.21.35
+
+## 28.21.34
+
+## 28.21.33
+
+### Patch Changes
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Remove diagrams and featuredElements from modelAPG studio form-mode
+
+## 28.21.32
+
+### Patch Changes
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize "download project grammar with dependency" in the developer tools panel: dependency grammar is now fetched from Depot as a single `V1_PureModelContextData` payload and transformed to Pure code in one engine call, instead of building a metamodel graph and round-tripping element-by-element. Adds `DepotServerClient.collectDependencyEntitiesAsPureModelContextData` and `AbstractPureGraphManager.protocolToPureCode` (backed by the engine's `transformProtocolGraphToCode`). Also makes the entire download-grammar action row (icon + label) clickable.
+
+- [#5440](https://github.com/finos/legend-studio/pull/5440) [`6c85092`](https://github.com/finos/legend-studio/commit/6c850924de24587e14e4686905216708f17c0c58) ([@Rakan1837](https://github.com/Rakan1837)) - Add form-mode editor for the Availability lakehouse element, including a Definition tab (grammar view) and a Testing tab backed by the shared testable framework, with graph/protocol support for `Availability` roundtrip.
+
+## 28.21.31
+
+## 28.21.30
+
+### Patch Changes
+
+- [#5409](https://github.com/finos/legend-studio/pull/5409) [`2f7fb59`](https://github.com/finos/legend-studio/commit/2f7fb59993fc1eb11383fe9a2fef6f05bf2d4a9d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `IngestionDefinitionArtifactViewer` for viewing generated ingest definition artifacts (mat view explorer, schema grid, SQL sub-tabs for view function / barrier / select, JSON view, fullscreen toggle). Wire a "View SQL" action into the Ingest Definition editor that generates and caches the artifact by hash. Extend `tryToFormatSql` with an optional `language` parameter (defaults to `mysql`) so the viewer can format Snowflake SQL.
+
+- [#5400](https://github.com/finos/legend-studio/pull/5400) [`7c7ddd6`](https://github.com/finos/legend-studio/commit/7c7ddd60830d0eeed54a889ee36c64e9479451c0) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add support for lambda-based relation function class mapping (`~src` sourceLambda on class mapping, expression-based `valueFn` on property mapping).
+
+- [#5413](https://github.com/finos/legend-studio/pull/5413) [`14da71f`](https://github.com/finos/legend-studio/commit/14da71fa602c229f2804570f88bdcd482e4bb2e3) ([@jackp5150](https://github.com/jackp5150)) - Added bulk lambda api to DataProductEditor to retrieve all monaco editor lambdas in one api call
+
 ## 28.21.29
 
 ### Patch Changes

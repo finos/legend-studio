@@ -98,6 +98,7 @@ import {
 import {
   getFilter,
   getJoin,
+  getAllIncludedDatabases,
 } from '../../../../../../../graph/helpers/STO_Relational_Helper.js';
 import {
   getRootRecordType,
@@ -484,7 +485,7 @@ export class V1_GraphBuilderContext {
     contextDatabse?:
       | Map<string, INTERNAL__LakehouseGeneratedDatabase>
       | undefined,
-    allowImplicitToGeneratedDatabse?: boolean | undefined,
+    allowImplicitToGeneratedDatabase?: boolean | undefined,
   ): ViewImplicitReference | TableImplicitReference => {
     assertNonEmptyString(
       tablePtr.database,
@@ -512,7 +513,7 @@ export class V1_GraphBuilderContext {
       return createImplicitRelationReference(ownerReference, value);
     } catch (error) {
       if (
-        allowImplicitToGeneratedDatabse &&
+        allowImplicitToGeneratedDatabase &&
         ownerReference.value.includedStoreSpecifications.length > 0
       ) {
         const generatedDatabase =
@@ -536,6 +537,36 @@ export class V1_GraphBuilderContext {
           tablePtr.database,
         );
         return createImplicitRelationReference(ref, value);
+      }
+      // Walk classic includes transitively to find any database that carries
+      // ingest-generated databases (from `include Ingest`). This is needed
+      // when a parent database `include`s a child database whose ingest
+      // includes provide the target schema.
+      if (allowImplicitToGeneratedDatabase) {
+        const allIncludedGeneratedSpecs = Array.from(
+          getAllIncludedDatabases(ownerReference.value),
+        ).flatMap((db) => db.includedStoreSpecifications);
+        if (allIncludedGeneratedSpecs.length > 0) {
+          const generatedDatabase =
+            allIncludedGeneratedSpecs.find((_s) =>
+              _s.generatedDatabase.schemas.find(
+                (_schema) => _schema.name === tablePtr.schema,
+              ),
+            )?.generatedDatabase ??
+            guaranteeNonNullable(
+              allIncludedGeneratedSpecs[0]?.generatedDatabase,
+            );
+          const value = V1_getRelation(
+            generatedDatabase,
+            tablePtr.schema,
+            tablePtr.table,
+          );
+          const ref = PackageableElementImplicitReference.create(
+            generatedDatabase,
+            tablePtr.database,
+          );
+          return createImplicitRelationReference(ref, value);
+        }
       }
       throw error;
     }

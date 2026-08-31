@@ -38,7 +38,6 @@ import {
   BlankPanelContent,
   ModalFooterButton,
   CalendarClockIcon,
-  ChatIcon,
   PanelLoadingIndicator,
   SerializeIcon,
   DataAccessIcon,
@@ -80,7 +79,7 @@ import { QueryBuilderConstantExpressionPanel } from './QueryBuilderConstantExpre
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './QueryBuilderComponentElement.js';
 import { DataAccessOverview } from './data-access/DataAccessOverview.js';
-import { QueryChat } from './QueryChat.js';
+import { QueryAgentChat } from './QueryAgentChat.js';
 import { Fragment, useEffect, useRef } from 'react';
 import { RedoButton, UndoButton } from '@finos/legend-lego/application';
 import { FETCH_STRUCTURE_IMPLEMENTATION } from '../stores/fetch-structure/QueryBuilderFetchStructureImplementationState.js';
@@ -118,8 +117,6 @@ const QueryBuilderStatusBar = observer(
     );
     const toggleAssistant = (): void =>
       applicationStore.assistantService.toggleAssistant();
-    const openQueryChat = (): void =>
-      queryBuilderState.setIsQueryChatOpened(true);
 
     return (
       <div className="query-builder__status-bar">
@@ -155,25 +152,6 @@ const QueryBuilderStatusBar = observer(
                 />
               )}
             </>
-          )}
-          {queryBuilderState.isQueryChatOpened && (
-            <QueryChat queryBuilderState={queryBuilderState} />
-          )}
-          {!queryBuilderState.config?.TEMPORARY__disableQueryBuilderChat && (
-            <button
-              className={clsx(
-                'query-builder__status-bar__action query-builder__status-bar__action__toggler',
-                {
-                  'query-builder__status-bar__action__toggler--toggled':
-                    queryBuilderState.isQueryChatOpened === true,
-                },
-              )}
-              onClick={openQueryChat}
-              tabIndex={-1}
-              title="Open Query Chat"
-            >
-              <ChatIcon />
-            </button>
           )}
           <button
             className={clsx(
@@ -268,6 +246,9 @@ export const QueryBuilder = observer(
     const fetchStructureState = queryBuilderState.fetchStructureState;
     const isTDSState =
       fetchStructureState.implementation instanceof QueryBuilderTDSState;
+    const showQueryAgentChatPanel =
+      queryBuilderState.isAgentChatOpened &&
+      !queryBuilderState.config?.TEMPORARY__disableQueryBuilderAgentChat;
     const openLambdaEditor = (mode: QueryBuilderTextEditorMode): void =>
       queryBuilderState.textEditorState.openModal(mode);
     const openPure = (): void =>
@@ -1051,12 +1032,12 @@ export const QueryBuilder = observer(
                           {renderPostFetchStructure()}
                         </ResizablePanel>
                       )}
-                      {queryBuilderState.isQueryChatOpened && (
-                        <ResizablePanelSplitter />
-                      )}
-                      {queryBuilderState.isQueryChatOpened && (
+                      {showQueryAgentChatPanel && <ResizablePanelSplitter />}
+                      {showQueryAgentChatPanel && (
                         <ResizablePanel size={450}>
-                          <QueryChat queryBuilderState={queryBuilderState} />
+                          <QueryAgentChat
+                            queryBuilderState={queryBuilderState}
+                          />
                         </ResizablePanel>
                       )}
                     </ResizablePanelGroup>
@@ -1145,9 +1126,9 @@ export const QueryBuilder = observer(
             />
           )}
         </div>
-        {queryBuilderState.workflowState.showStatusBar ? (
+        {queryBuilderState.workflowState.showStatusBar && (
           <QueryBuilderStatusBar queryBuilderState={queryBuilderState} />
-        ) : null}
+        )}
       </div>
     );
   },

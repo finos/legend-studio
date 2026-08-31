@@ -20,6 +20,7 @@ import {
   withLegendMarketplaceProductViewerStore,
 } from '../../../application/providers/LegendMarketplaceProductViewerStoreProvider.js';
 import { useEffect } from 'react';
+import { useAuth } from 'react-oidc-context';
 import {
   CubesLoadingIndicator,
   CubesLoadingIndicatorIcon,
@@ -37,6 +38,7 @@ export const LegacyDataProduct = withLegendMarketplaceProductViewerStore(
   observer(() => {
     const productViewerStore = useLegendMarketplaceProductViewerStore();
     const params = useParams<LegacyDataProductPathParams>();
+    const auth = useAuth();
     const gav = guaranteeNonNullable(
       params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
     );
@@ -46,9 +48,13 @@ export const LegacyDataProduct = withLegendMarketplaceProductViewerStore(
 
     useEffect(() => {
       if (!productViewerStore.loadingProductState.hasCompleted) {
-        productViewerStore.initWithLegacyProduct(gav, path);
+        productViewerStore.initWithLegacyProduct(
+          gav,
+          path,
+          () => auth.user?.access_token,
+        );
       }
-    }, [gav, productViewerStore, path]);
+    }, [auth, gav, productViewerStore, path]);
 
     return (
       <LegendMarketplacePage className="legend-marketplace-lakehouse-data-product">

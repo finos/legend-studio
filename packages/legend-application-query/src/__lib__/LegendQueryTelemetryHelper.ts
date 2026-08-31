@@ -30,7 +30,7 @@ type Query_TelemetryData = {
     groupId: string;
     artifactId: string;
   };
-};
+} & Record<string, unknown>;
 
 type QueryGraphInitialization_TelemetryData = Query_TelemetryData & {
   graph: GraphInitializationReport;
@@ -107,10 +107,6 @@ export class LegendQueryTelemetryHelper {
     data: Query_TelemetryData,
   ): void {
     service.logEvent(LEGEND_QUERY_APP_EVENT.RENAME_QUERY__SUCCESS, data);
-  }
-
-  static logEvent_QueryChatOpened(service: TelemetryService): void {
-    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_CHAT__OPENED, {});
   }
 
   static logEvent_QueryAISuggestLaunched(service: TelemetryService): void {

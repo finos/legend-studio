@@ -119,6 +119,9 @@ export {
 export * from './graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 export { HostedServiceDeploymentConfiguration } from './graph/metamodel/pure/functionActivator/HostedServiceDeploymentConfiguration.js';
 export { PostDeploymentAction } from './graph/metamodel/pure/functionActivator/PostDeploymentAction.js';
+export * from './graph/metamodel/pure/packageableElements/availability/Availability.js';
+export * from './graph/metamodel/pure/packageableElements/availability/AvailabilityTestSuite.js';
+export * from './graph/metamodel/pure/packageableElements/availability/AvailabilityBarrierTest.js';
 export {
   PostDeploymentProperties,
   INTERNAL__UnknownPostDeploymentProperties,
@@ -195,6 +198,9 @@ export { V1_Lambda } from './graph-manager/protocol/pure/v1/model/valueSpecifica
 export { V1_Variable } from './graph-manager/protocol/pure/v1/model/valueSpecification/V1_Variable.js';
 export { V1_ValueSpecification } from './graph-manager/protocol/pure/v1/model/valueSpecification/V1_ValueSpecification.js';
 export { V1_Multiplicity } from './graph-manager/protocol/pure/v1/model/packageableElements/domain/V1_Multiplicity.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_Availability.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_AvailabilityTestSuite.js';
+export * from './graph-manager/protocol/pure/v1/model/packageableElements/availability/V1_AvailabilityBarrierTest.js';
 export { V1_ExternalFormatDescription } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatDescription.js';
 export { V1_ExternalFormatModelGenerationInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_ExternalFormatModelGeneration.js';
 export { V1_GenerateSchemaInput } from './graph-manager/protocol/pure/v1/engine/externalFormat/V1_GenerateSchemaInput.js';
@@ -534,6 +540,8 @@ export {
 export {
   AbstractPureGraphManagerExtension,
   AbstractPureGraphManager,
+  type LambdasReturnTypeResult,
+  type BatchLambdasRelationTypeResult,
   type ExecutionOptions,
   type GraphBuilderOptions,
   type TEMPORARY__EngineSetupConfig,
@@ -685,6 +693,7 @@ export {
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_PureProtocolSerialization.js';
 export { V1_propertyPointerModelSchema } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_DomainSerializationHelper.js';
 export {
+  V1_deserializeGenericType,
   V1_genericTypeModelSchema,
   V1_relationTypeModelSchema,
 } from './graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
@@ -767,6 +776,7 @@ export * from './graph-manager/action/changeDetection/DSL_Service_ObserverHelper
 export * from './graph-manager/action/changeDetection/DSL_Generation_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/Testable_ObserverHelper.js';
 export * from './graph-manager/action/changeDetection/DSL_FunctionActivatorObserverHelper.js';
+export * from './graph-manager/action/changeDetection/AvailabilityObserveHelper.js';
 
 // ------------------------------------- Data Product --------------------------------------------
 export {
@@ -945,6 +955,7 @@ export {
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationElementsDataFromAccessors,
   V1_buildRelationTypeFromAccessPointImplementation,
+  V1_buildRelationTypeFromV1RelationType,
 } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
@@ -1122,8 +1133,12 @@ export {
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_Defect.js';
 export { V1_CompilationError } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompilationError.js';
 export {
+  type V1_BatchLambdaRelationTypeResponse,
+  type V1_BatchLambdaRelationTypeResult,
   type V1_LambdaReturnTypeResult,
   V1_LambdaReturnTypeInput,
+  V1_BatchLambdaRelationTypeInput,
+  V1_buildBatchLambdaRelationTypeResult,
 } from './graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.js';
 export { V1_CompleteCodeInput } from './graph-manager/protocol/pure/v1/engine/compilation/V1_CompleteCodeInput.js';
 export { V1_RunTestsInput } from './graph-manager/protocol/pure/v1/engine/test/V1_RunTestsInput.js';

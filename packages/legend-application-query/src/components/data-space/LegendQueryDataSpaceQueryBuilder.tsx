@@ -39,8 +39,10 @@ import {
 import {
   buildExecutionContextOption,
   DataSpaceAdvancedSearchModal,
+  formatExecutionContextOptionLabel,
   type ExecutionContextOption,
 } from '@finos/legend-extension-dsl-data-space/application-query';
+import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   getMappingCompatibleRuntimes,
   PackageableElementExplicitReference,
@@ -65,18 +67,18 @@ import type { LegendQueryDataSpaceQueryBuilderState } from '../../stores/data-sp
 const resolveExecutionContextRuntimes = (
   queryBuilderState: LegendQueryDataSpaceQueryBuilderState,
 ): PackageableRuntime[] => {
+  const currentMapping = guaranteeNonNullable(
+    resolveExecutionContextMapping(queryBuilderState.executionContext),
+    `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
+  );
   if (queryBuilderState.dataSpaceAnalysisResult) {
     const executionContext = Array.from(
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-    ).find(
-      (e) =>
-        e.mapping.path ===
-        queryBuilderState.executionContext.mapping.value.path,
-    );
+    ).find((e) => e.mapping.path === currentMapping.path);
     return guaranteeNonNullable(executionContext).compatibleRuntimes;
   }
   return getMappingCompatibleRuntimes(
-    queryBuilderState.executionContext.mapping.value,
+    currentMapping,
     queryBuilderState.graphManagerState.usableRuntimes,
   );
 };
@@ -112,12 +114,12 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       }
       const value = option.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
-        queryBuilderState.queryChatState?.abort();
+        queryBuilderState.queryAgentChatState?.abort();
         queryBuilderState
           .onDataSpaceChange(value)
           .catch(queryBuilderState.applicationStore.alertUnhandledError);
       } else if (value instanceof DepotEntityWithOrigin) {
-        queryBuilderState.queryChatState?.abort();
+        queryBuilderState.queryAgentChatState?.abort();
         queryBuilderState.onDataProductChange(value);
       }
     };
@@ -129,10 +131,12 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     };
 
     // execution context
-    const executionContextOptions =
-      queryBuilderState.dataSpace.executionContexts
-        .map(buildExecutionContextOption)
-        .sort(compareLabelFn);
+    const executionContextOptions = guaranteeNonNullable(
+      queryBuilderState.dataSpace.executionContexts,
+      `Data product '${queryBuilderState.dataSpace.path}' does not have any execution contexts`,
+    )
+      .map(buildExecutionContextOption)
+      .sort(compareLabelFn);
     const showExecutionContextOptions = executionContextOptions.length > 1;
     const selectedExecutionContextOption = buildExecutionContextOption(
       queryBuilderState.executionContext,
@@ -144,11 +148,14 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       if (option.value === queryBuilderState.executionContext) {
         return;
       }
-      const currentMapping =
-        queryBuilderState.executionContext.mapping.value.path;
+      const currentMappingPath = resolveExecutionContextMapping(
+        queryBuilderState.executionContext,
+      )?.path;
       queryBuilderState.setExecutionContext(option.value);
       await queryBuilderState.propagateExecutionContextChange(
-        currentMapping === option.value.mapping.value.path,
+        currentMappingPath !== undefined &&
+          currentMappingPath ===
+            resolveExecutionContextMapping(option.value)?.path,
       );
       queryBuilderState.onExecutionContextChange?.(option.value);
     };
@@ -191,9 +198,13 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     });
 
     // class
+    const executionContextMapping = guaranteeNonNullable(
+      resolveExecutionContextMapping(queryBuilderState.executionContext),
+      `Execution context '${queryBuilderState.executionContext.name}' does not have a resolvable mapping`,
+    );
     const classes = resolveUsableDataSpaceClasses(
       queryBuilderState.dataSpace,
-      queryBuilderState.executionContext.mapping.value,
+      executionContextMapping,
       queryBuilderState.graphManagerState,
       queryBuilderState,
     );
@@ -321,6 +332,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
                   !applicationStore.layoutService
                     .TEMPORARY__isLightColorThemeEnabled
                 }
+                formatOptionLabel={formatExecutionContextOptionLabel}
               />
             </div>
           )}

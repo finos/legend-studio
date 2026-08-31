@@ -14,136 +14,431 @@
  * limitations under the License.
  */
 
-import type { TerminalProductOrder } from '@finos/legend-server-marketplace';
+import {
+  OrderStatus,
+  type TerminalProductOrder,
+  type WorkflowDetails,
+} from '@finos/legend-server-marketplace';
 
 export enum WorkflowStage {
   ORDER_PLACED = 'Order Placed',
-  MANAGER_APPROVAL = 'Manager Approval',
-  BUSINESS_ANALYST_APPROVAL = 'Business Analyst Approval',
+  MANAGER_APPROVAL = 'Privilege Manager Approval',
+  FIRST_APPROVER = 'Market Data - First Approver',
+  FULFILLMENT_APPROVER = 'Market Data - Fulfillment Approver',
+  BUSINESS_ANALYST_APPROVAL = 'Market Data -Business Analyst Approval',
   PENDING_FULFILLMENT = 'Pending Fulfillment',
-  CANCELLED = 'Cancelled',
-}
-
-export enum WorkflowStatus {
-  COMPLETED = 'COMPLETED',
+  ORDER_FULFILLED = 'Order Fulfilled',
 }
 
 export enum OrderType {
+  PROVISION = 'PROVISION',
   CANCELLATION = 'CANCELLATION',
 }
 
 export enum WorkflowCurrentStage {
   DIRECT_MANAGER = 'DIRECT MANAGER',
+  // NOTE: not confirmed against a live backend payload - inferred from the
+  // naming convention of the confirmed 'MARKET DATA FIRST APPROVER' code.
+  FULFILLMENT_APPROVER = 'MARKET DATA FULFILLMENT APPROVER',
+  FIRST_APPROVER = 'MARKET DATA FIRST APPROVER',
   BUSINESS_ANALYST = 'Business Analyst',
   RPM = 'RPM',
 }
 
-export enum RejectedActionStatus {
+/**
+ * The resolved visual status of a single progress-tracker step.
+ */
+export enum OrderProgressStatus {
+  COMPLETED = 'completed',
+  ACTIVE = 'active',
   REJECTED = 'rejected',
-  CANCELLED = 'cancelled',
-  AUTO_CANCELLED = 'auto cancelled',
-  DENIED = 'denied',
+  PENDING = 'pending',
 }
 
-export const STAGE_MAP: Record<WorkflowCurrentStage, WorkflowStage> = {
-  [WorkflowCurrentStage.DIRECT_MANAGER]: WorkflowStage.MANAGER_APPROVAL,
-  [WorkflowCurrentStage.BUSINESS_ANALYST]:
-    WorkflowStage.BUSINESS_ANALYST_APPROVAL,
-  [WorkflowCurrentStage.RPM]: WorkflowStage.PENDING_FULFILLMENT,
+/**
+ * A single, ordered step of the progress tracker along with its resolved
+ * visual status, derived from the order's workflow/approval data.
+ */
+export interface OrderProgressStep {
+  label: string;
+  status: OrderProgressStatus;
+}
+
+export interface StageActionDetails {
+  actionedBy: string | null;
+  actionedTimestamp: string | null;
+  action: string | null;
+  comment: string | null;
+}
+
+type ApprovalStage =
+  | WorkflowStage.MANAGER_APPROVAL
+  | WorkflowStage.FIRST_APPROVER
+  | WorkflowStage.FULFILLMENT_APPROVER
+  | WorkflowStage.BUSINESS_ANALYST_APPROVAL;
+
+const APPROVED_ACTION = 'APPROVED';
+// Terminal, non-approved outcomes an individual approval stage (or the
+// overall order) can end up in.
+const REJECTED_STATUSES = new Set(['REJECTED', 'CANCELLED', 'AUTO TERMINATED']);
+
+const APPROVAL_STAGE_DETAIL_FIELDS: Record<
+  ApprovalStage,
+  {
+    actionedBy: keyof WorkflowDetails;
+    actionedTimestamp: keyof WorkflowDetails;
+    action: keyof WorkflowDetails;
+    comment: keyof WorkflowDetails;
+  }
+> = {
+  [WorkflowStage.MANAGER_APPROVAL]: {
+    actionedBy: 'manager_actioned_by_name',
+    actionedTimestamp: 'manager_actioned_timestamp',
+    action: 'manager_action',
+    comment: 'manager_comment',
+  },
+  [WorkflowStage.FIRST_APPROVER]: {
+    actionedBy: 'fa_approval_actioned_by_name',
+    actionedTimestamp: 'fa_approval_actioned_timestamp',
+    action: 'fa_approval_action',
+    comment: 'fa_approval_comment',
+  },
+  [WorkflowStage.FULFILLMENT_APPROVER]: {
+    actionedBy: 'ffa_approval_actioned_by_name',
+    actionedTimestamp: 'ffa_approval_actioned_timestamp',
+    action: 'ffa_approval_action',
+    comment: 'ffa_approval_comment',
+  },
+  [WorkflowStage.BUSINESS_ANALYST_APPROVAL]: {
+    actionedBy: 'bbg_approval_actioned_by_name',
+    actionedTimestamp: 'bbg_approval_actioned_timestamp',
+    action: 'bbg_approval_action',
+    comment: 'bbg_approval_comment',
+  },
 };
 
-export const getWorkflowSteps = (
+const normalizeStatus = (value: string | null | undefined): string =>
+  (value ?? '').trim().toUpperCase();
+
+const toTitleCase = (value: string): string =>
+  value
+    .toLowerCase()
+    .split(' ')
+    .filter((word) => word.length > 0)
+    .map((word) => `${word.charAt(0).toUpperCase()}${word.slice(1)}`)
+    .join(' ');
+
+const getApprovalActionStatus = (
+  details: WorkflowDetails | undefined,
+  stage: ApprovalStage,
+): 'approved' | 'rejected' | 'pending' => {
+  const action = normalizeStatus(
+    details?.[APPROVAL_STAGE_DETAIL_FIELDS[stage].action],
+  );
+  if (action === APPROVED_ACTION) {
+    return 'approved';
+  }
+  if (REJECTED_STATUSES.has(action)) {
+    return 'rejected';
+  }
+  return 'pending';
+};
+
+const getProvisionProgressSteps = (
   order: TerminalProductOrder,
-): WorkflowStage[] => {
-  if (order.order_type.toUpperCase() === OrderType.CANCELLATION) {
-    return [
-      WorkflowStage.ORDER_PLACED,
-      WorkflowStage.MANAGER_APPROVAL,
-      WorkflowStage.CANCELLED,
-    ];
+): OrderProgressStep[] => {
+  const details = order.workflow_details;
+  const approvalStages: ApprovalStage[] = order.bbg_terminal_flag
+    ? [
+        WorkflowStage.MANAGER_APPROVAL,
+        WorkflowStage.FIRST_APPROVER,
+        WorkflowStage.FULFILLMENT_APPROVER,
+        WorkflowStage.BUSINESS_ANALYST_APPROVAL,
+      ]
+    : [WorkflowStage.MANAGER_APPROVAL, WorkflowStage.FIRST_APPROVER];
+
+  const isClosed = details?.workflow_status === OrderStatus.COMPLETED;
+  const steps: OrderProgressStep[] = [
+    {
+      label: WorkflowStage.ORDER_PLACED,
+      status: OrderProgressStatus.COMPLETED,
+    },
+  ];
+
+  // Once an approval stage is rejected (or is still outstanding), every
+  // subsequent stage - including final fulfillment - can never be reached.
+  let allApprovalsPassed = true;
+  for (const stage of approvalStages) {
+    if (!allApprovalsPassed) {
+      steps.push({ label: stage, status: OrderProgressStatus.PENDING });
+      continue;
+    }
+
+    const actionStatus = getApprovalActionStatus(details, stage);
+    if (actionStatus === 'approved') {
+      steps.push({ label: stage, status: OrderProgressStatus.COMPLETED });
+    } else if (actionStatus === 'rejected') {
+      steps.push({ label: stage, status: OrderProgressStatus.REJECTED });
+      allApprovalsPassed = false;
+    } else {
+      steps.push({
+        label: stage,
+        status: isClosed
+          ? OrderProgressStatus.PENDING
+          : OrderProgressStatus.ACTIVE,
+      });
+      allApprovalsPassed = false;
+    }
   }
 
+  if (!allApprovalsPassed) {
+    steps.push({
+      label: WorkflowStage.PENDING_FULFILLMENT,
+      status: OrderProgressStatus.PENDING,
+    });
+    return steps;
+  }
+
+  if (!isClosed) {
+    steps.push({
+      label: WorkflowStage.PENDING_FULFILLMENT,
+      status: OrderProgressStatus.ACTIVE,
+    });
+    return steps;
+  }
+
+  const orderStatus = normalizeStatus(order.status);
+  if (REJECTED_STATUSES.has(orderStatus)) {
+    steps.push({
+      label: `Order ${toTitleCase(order.status)}`,
+      status: OrderProgressStatus.REJECTED,
+    });
+  } else {
+    steps.push({
+      label: WorkflowStage.ORDER_FULFILLED,
+      status: OrderProgressStatus.COMPLETED,
+    });
+  }
+  return steps;
+};
+
+const getCancellationProgressSteps = (
+  order: TerminalProductOrder,
+): OrderProgressStep[] => {
+  const orderPlaced: OrderProgressStep = {
+    label: WorkflowStage.ORDER_PLACED,
+    status: OrderProgressStatus.COMPLETED,
+  };
+  const status = normalizeStatus(order.status);
+
+  if (status === 'IN PROGRESS') {
+    return [
+      orderPlaced,
+      {
+        label: WorkflowStage.PENDING_FULFILLMENT,
+        status: OrderProgressStatus.ACTIVE,
+      },
+    ];
+  }
+  if (status === APPROVED_ACTION) {
+    return [
+      orderPlaced,
+      {
+        label: WorkflowStage.ORDER_FULFILLED,
+        status: OrderProgressStatus.COMPLETED,
+      },
+    ];
+  }
   return [
-    WorkflowStage.ORDER_PLACED,
-    WorkflowStage.MANAGER_APPROVAL,
-    WorkflowStage.PENDING_FULFILLMENT,
+    orderPlaced,
+    {
+      label: `Order ${toTitleCase(order.status)}`,
+      status: OrderProgressStatus.REJECTED,
+    },
   ];
+};
+
+/**
+ * Resolves the ordered list of progress-tracker steps (and each step's
+ * visual status) for an order, based on its `order_type`, `bbg_terminal_flag`,
+ * and workflow/approval action data.
+ */
+export const getOrderProgressSteps = (
+  order: TerminalProductOrder,
+): OrderProgressStep[] =>
+  order.order_type.toUpperCase() === OrderType.CANCELLATION
+    ? getCancellationProgressSteps(order)
+    : getProvisionProgressSteps(order);
+
+/**
+ * Returns the actioned-by/date/action/comment details for a given approval
+ * stage label, if applicable and available on the order.
+ */
+const isApprovalStage = (stageLabel: string): stageLabel is ApprovalStage =>
+  Object.hasOwn(APPROVAL_STAGE_DETAIL_FIELDS, stageLabel);
+
+export const getStageActionDetails = (
+  order: TerminalProductOrder,
+  stageLabel: string,
+): StageActionDetails | undefined => {
+  const details = order.workflow_details;
+  if (!details || !isApprovalStage(stageLabel)) {
+    return undefined;
+  }
+  const fields = APPROVAL_STAGE_DETAIL_FIELDS[stageLabel];
+  return {
+    actionedBy: details[fields.actionedBy] ?? null,
+    actionedTimestamp: details[fields.actionedTimestamp] ?? null,
+    action: details[fields.action] ?? null,
+    comment: details[fields.comment] ?? null,
+  };
+};
+
+export interface ClosureInfo {
+  stageLabel: string;
+  reason: string | null;
+  actionedBy: string | null;
+  actionedTimestamp: string | null;
+  comment: string | null;
+}
+
+/**
+ * Resolves the details of the last stage that actually closed a closed
+ * (`workflow_status === COMPLETED`) order - i.e. whichever approval stage
+ * rejected it, or (if every approval stage passed) the fulfillment/RPM stage
+ * that completed it - rather than always assuming the Privilege Manager
+ * stage. Returns `undefined` for orders that aren't closed.
+ */
+export const getClosureInfo = (
+  order: TerminalProductOrder,
+): ClosureInfo | undefined => {
+  const details = order.workflow_details;
+  if (details?.workflow_status !== OrderStatus.COMPLETED) {
+    return undefined;
+  }
+
+  if (order.order_type.toUpperCase() === OrderType.CANCELLATION) {
+    return {
+      stageLabel: WorkflowStage.PENDING_FULFILLMENT,
+      reason: order.status,
+      actionedBy: null,
+      actionedTimestamp: order.updated_at,
+      comment: null,
+    };
+  }
+
+  const approvalStages: ApprovalStage[] = order.bbg_terminal_flag
+    ? [
+        WorkflowStage.MANAGER_APPROVAL,
+        WorkflowStage.FIRST_APPROVER,
+        WorkflowStage.FULFILLMENT_APPROVER,
+        WorkflowStage.BUSINESS_ANALYST_APPROVAL,
+      ]
+    : [WorkflowStage.MANAGER_APPROVAL, WorkflowStage.FIRST_APPROVER];
+
+  // Walk the approval stages in order, tracking the last one that was
+  // actually actioned; stop early at the first rejection since that's what
+  // closed the order.
+  let lastActionedStage: ApprovalStage | undefined;
+  for (const stage of approvalStages) {
+    const status = getApprovalActionStatus(details, stage);
+    if (status === 'pending') {
+      break;
+    }
+    lastActionedStage = stage;
+    if (status === 'rejected') {
+      break;
+    }
+  }
+
+  if (lastActionedStage) {
+    const stageDetails = getStageActionDetails(order, lastActionedStage);
+    if (stageDetails) {
+      return {
+        stageLabel: lastActionedStage,
+        reason: stageDetails.action,
+        actionedBy: stageDetails.actionedBy,
+        actionedTimestamp: stageDetails.actionedTimestamp,
+        comment: stageDetails.comment,
+      };
+    }
+  }
+
+  // Every approval stage passed - the order was closed at the
+  // fulfillment/RPM stage, which doesn't track an actioned-by/timestamp.
+  return {
+    stageLabel: WorkflowStage.PENDING_FULFILLMENT,
+    reason: details.rpm_action ?? order.status,
+    actionedBy: null,
+    actionedTimestamp: order.updated_at,
+    comment: details.rpm_comment,
+  };
+};
+
+// Maps each known `current_stage` code to the `WorkflowDetails` field that
+// holds the tracking URL for that stage.
+const CURRENT_STAGE_URL_FIELD: Partial<
+  Record<WorkflowCurrentStage, keyof WorkflowDetails>
+> = {
+  [WorkflowCurrentStage.DIRECT_MANAGER]: 'url_manager',
+  [WorkflowCurrentStage.FIRST_APPROVER]: 'url_fa_approval',
+  [WorkflowCurrentStage.FULFILLMENT_APPROVER]: 'url_ffa_approval',
+  [WorkflowCurrentStage.BUSINESS_ANALYST]: 'url_bbg_approval',
+};
+
+// Maps each known `current_stage` code to the `WorkflowDetails` field that
+// holds the process instance ID for that stage (used to cancel the order).
+const CURRENT_STAGE_PROCESS_INSTANCE_ID_FIELD: Partial<
+  Record<WorkflowCurrentStage, keyof WorkflowDetails>
+> = {
+  [WorkflowCurrentStage.DIRECT_MANAGER]: 'piid_manager',
+  [WorkflowCurrentStage.FIRST_APPROVER]: 'piid_fa_approval',
+  [WorkflowCurrentStage.FULFILLMENT_APPROVER]: 'piid_ffa_approval',
+  [WorkflowCurrentStage.BUSINESS_ANALYST]: 'bbg_approval_process_id',
+};
+
+/**
+ * Returns the tracking URL for the order's *current* workflow stage (e.g. the
+ * Privilege Manager's URL while pending manager approval, the Business
+ * Analyst's URL once at that stage, etc.) rather than always the Privilege
+ * Manager's URL. Stages without a trackable URL (e.g. RPM/fulfillment) return
+ * `null`.
+ */
+export const getCurrentStageTrackingUrl = (
+  order: TerminalProductOrder,
+): string | null => {
+  const details = order.workflow_details;
+  const currentStage = details?.current_stage as
+    | WorkflowCurrentStage
+    | undefined;
+  if (!details || !currentStage) {
+    return null;
+  }
+  const field = CURRENT_STAGE_URL_FIELD[currentStage];
+  return field ? (details[field] ?? null) : null;
 };
 
 export const getProcessInstanceId = (
   order: TerminalProductOrder,
 ): string | null => {
-  if (!order.workflow_details) {
+  const details = order.workflow_details;
+  const currentStage = details?.current_stage as
+    | WorkflowCurrentStage
+    | undefined;
+  if (!details || !currentStage) {
     return null;
   }
-
-  if (
-    order.workflow_details.current_stage === WorkflowCurrentStage.DIRECT_MANAGER
-  ) {
-    return order.workflow_details.piid_manager;
-  } else if (
-    order.workflow_details.current_stage ===
-    WorkflowCurrentStage.BUSINESS_ANALYST
-  ) {
-    return order.workflow_details.bbg_approval_process_id;
-  }
-  return null;
+  const field = CURRENT_STAGE_PROCESS_INSTANCE_ID_FIELD[currentStage];
+  return field ? (details[field] ?? null) : null;
 };
 
+/**
+ * An order can be cancelled at any approval stage; once it reaches RPM
+ * (fulfillment), it can no longer be cancelled.
+ */
 export const canCancelOrder = (order: TerminalProductOrder): boolean => {
   const currentStage = order.workflow_details?.current_stage;
-  return (
-    currentStage === WorkflowCurrentStage.DIRECT_MANAGER ||
-    currentStage === WorkflowCurrentStage.BUSINESS_ANALYST
-  );
-};
-
-export const isStageCompleted = (
-  order: TerminalProductOrder,
-  stageName: string,
-): boolean => {
-  if (!order.workflow_details) {
-    return false;
-  }
-
-  if (stageName === WorkflowStage.MANAGER_APPROVAL) {
-    return !!order.workflow_details.manager_actioned_by;
-  } else if (stageName === WorkflowStage.BUSINESS_ANALYST_APPROVAL) {
-    return !!order.workflow_details.bbg_approval_actioned_by;
-  }
-  return false;
-};
-
-export const isStageRejected = (
-  order: TerminalProductOrder,
-  stageName: string,
-): boolean => {
-  if (!order.workflow_details) {
-    return false;
-  }
-
-  const rejectedStatuses = Object.values(RejectedActionStatus);
-
-  if (stageName === WorkflowStage.MANAGER_APPROVAL) {
-    return rejectedStatuses.some((status) =>
-      order.workflow_details?.manager_action
-        ?.toLowerCase()
-        .includes(status.toLowerCase()),
-    );
-  } else if (stageName === WorkflowStage.BUSINESS_ANALYST_APPROVAL) {
-    return rejectedStatuses.some((status) =>
-      order.workflow_details?.bbg_approval_action
-        ?.toLowerCase()
-        .includes(status.toLowerCase()),
-    );
-  } else if (stageName === WorkflowStage.PENDING_FULFILLMENT) {
-    return rejectedStatuses.some((status) =>
-      order.workflow_details?.rpm_action
-        ?.toLowerCase()
-        .includes(status.toLowerCase()),
-    );
-  }
-  return false;
+  return !!currentStage && currentStage !== WorkflowCurrentStage.RPM;
 };
 
 export const formatOrderDate = (dateString?: string): string | undefined => {

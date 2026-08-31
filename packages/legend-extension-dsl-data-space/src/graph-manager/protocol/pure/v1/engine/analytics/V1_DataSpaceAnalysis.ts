@@ -19,10 +19,13 @@ import {
   type V1_PureModelContextData,
   type V1_DatasetSpecification,
   type PureProtocolProcessorPlugin,
+  type V1_GenericType,
   V1_multiplicityModelSchema,
   V1_deserializeDatasetSpecification,
   V1_pureModelContextDataPropSchema,
   V1_MappingModelCoverageAnalysisResult,
+  V1_deserializeGenericType,
+  V1_genericTypeModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -84,14 +87,27 @@ class V1_DataSpaceExecutionContextAnalysisResult {
   title?: string | undefined;
   description?: string | undefined;
   mapping!: string;
-  defaultRuntime!: string;
-  compatibleRuntimes!: string[];
+  mappingProvider?: V1_DataSpaceMappingProviderAnalysisResult;
+  defaultRuntime?: string | undefined;
+  compatibleRuntimes: string[] = [];
   /**
    * @deprecated
    */
   mappingModelCoverageAnalysisResult?: V1_MappingModelCoverageAnalysisResult;
   datasets: V1_DatasetSpecification[] = [];
   runtimeMetadata?: V1_DataSpaceExecutionContextRuntimeMetadata;
+}
+
+class V1_DataSpaceMappingProviderAnalysisResult {
+  element!: string;
+  keys: string[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceMappingProviderAnalysisResult, {
+      element: primitive(),
+      keys: list(primitive()),
+    }),
+  );
 }
 
 class V1_DataSpaceExecutionContextRuntimeMetadata {
@@ -108,6 +124,26 @@ class V1_DataSpaceExecutionContextRuntimeMetadata {
   );
 }
 
+export class V1_DataSpaceInfoAnalysisResult {
+  isVerified?: boolean;
+  isInDevelopment?: boolean;
+  isExternal?: boolean;
+  topics: string[] = [];
+  relatedDataSpaces: string[] = [];
+  deprecationNotice?: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataSpaceInfoAnalysisResult, {
+      isVerified: optional(primitive()),
+      isInDevelopment: optional(primitive()),
+      isExternal: optional(primitive()),
+      topics: list(primitive()),
+      relatedDataSpaces: list(primitive()),
+      deprecationNotice: optional(primitive()),
+    }),
+  );
+}
+
 const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceExecutionContextAnalysisResult> =>
@@ -120,7 +156,7 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
           V1_deserializeDatasetSpecification(val, plugins),
       ),
     ),
-    defaultRuntime: primitive(),
+    defaultRuntime: optional(primitive()),
     description: optional(primitive()),
     mappingModelCoverageAnalysisResult: optional(
       usingModelSchema(
@@ -128,10 +164,17 @@ const V1_dataSpaceExecutionContextAnalysisResultModelSchema = (
       ),
     ),
     mapping: primitive(),
+    mappingProvider: optional(
+      usingModelSchema(
+        V1_DataSpaceMappingProviderAnalysisResult.serialization.schema,
+      ),
+    ),
     name: primitive(),
     title: optional(primitive()),
-    runtimeMetadata: usingModelSchema(
-      V1_DataSpaceExecutionContextRuntimeMetadata.serialization.schema,
+    runtimeMetadata: optional(
+      usingModelSchema(
+        V1_DataSpaceExecutionContextRuntimeMetadata.serialization.schema,
+      ),
     ),
   });
 
@@ -377,7 +420,7 @@ const V1_dataSpaceMultiExecutionServiceExecutableInfoModelSchema = (
     _type: usingConstantValueSchema(
       V1_DATA_SPACE_MULTI_EXECUTION_SERVICE_EXECUTABLE_INFO_TYPE,
     ),
-    keyedExecutableInfoList: list(
+    keyedExecutableInfos: list(
       usingModelSchema(
         V1_dataSpaceMultiExecutionServiceKeyedExecutableInfoModelSchema(
           plugins,
@@ -472,7 +515,8 @@ export class V1_DataSpaceExecutableAnalysisResult {
   description?: string | undefined;
   executable?: string;
   info?: V1_DataSpaceExecutableInfo | undefined;
-  result!: V1_DataSpaceExecutableResult;
+  result?: V1_DataSpaceExecutableResult | undefined;
+  executableReturnType?: V1_GenericType | undefined;
 }
 
 const V1_dataSpaceExecutableAnalysisResultModelSchema = (
@@ -486,8 +530,12 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
       (val: PlainObject<V1_DataSpaceExecutableInfo>) =>
         V1_deserializeDataSpaceExecutableInfo(plugins, val),
     ),
-    result: custom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
+    result: optionalCustom(() => SKIP, V1_deserializeDataSpaceExecutableResult),
     title: primitive(),
+    executableReturnType: optionalCustom(
+      (val) => serialize(V1_genericTypeModelSchema, val),
+      (val) => V1_deserializeGenericType(val),
+    ),
   });
 
 export class V1_DataSpaceAnalysisResult {
@@ -500,6 +548,7 @@ export class V1_DataSpaceAnalysisResult {
 
   title?: string | undefined;
   description?: string | undefined;
+  info?: V1_DataSpaceInfoAnalysisResult | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
 
   model!: V1_PureModelContextData;
@@ -519,7 +568,7 @@ export class V1_DataSpaceAnalysisResult {
   >;
 }
 
-const V1_dataSpaceAnalysisResultModelSchema = (
+export const V1_dataSpaceAnalysisResultModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataSpaceAnalysisResult> =>
   createModelSchema(V1_DataSpaceAnalysisResult, {
@@ -532,6 +581,9 @@ const V1_dataSpaceAnalysisResultModelSchema = (
 
     title: optional(primitive()),
     description: optional(primitive()),
+    info: optional(
+      usingModelSchema(V1_DataSpaceInfoAnalysisResult.serialization.schema),
+    ),
 
     supportInfo: optionalCustom(
       () => SKIP,
@@ -557,23 +609,21 @@ const V1_dataSpaceAnalysisResultModelSchema = (
     executables: customListWithSchema(
       V1_dataSpaceExecutableAnalysisResultModelSchema(plugins),
     ),
-    mappingToMappingCoverageResult: optional(
-      custom(
-        (val) =>
-          serializeMap(val, (_val) =>
-            serialize(
-              V1_MappingModelCoverageAnalysisResult.serialization.schema,
-              _val,
-            ),
+    mappingToMappingCoverageResult: optionalCustom(
+      (val) =>
+        serializeMap(val, (_val) =>
+          serialize(
+            V1_MappingModelCoverageAnalysisResult.serialization.schema,
+            _val,
           ),
-        (val) =>
-          deserializeMap(val, (_val) =>
-            deserialize(
-              V1_MappingModelCoverageAnalysisResult.serialization.schema,
-              _val,
-            ),
+        ),
+      (val) =>
+        deserializeMap(val, (_val) =>
+          deserialize(
+            V1_MappingModelCoverageAnalysisResult.serialization.schema,
+            _val,
           ),
-      ),
+        ),
     ),
   });
 

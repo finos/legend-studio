@@ -354,28 +354,30 @@ export const V1_transformDataProduct = (
           metamodelGroup.mapping.valueForSerialization ?? '',
         );
 
-        modelGroup.featuredElements = metamodelGroup.featuredElements.map(
-          (pointer) => {
-            const scope = new V1_ElementScope();
-            scope.exclude = pointer.exclude;
-            scope.element = new V1_PackageableElementPointer(
-              undefined,
-              pointer.element.valueForSerialization ?? '',
-            );
-            return scope;
-          },
-        );
+        modelGroup.featuredElements = metamodelGroup.featuredElements?.length
+          ? metamodelGroup.featuredElements.map((pointer) => {
+              const scope = new V1_ElementScope();
+              scope.exclude = pointer.exclude;
+              scope.element = new V1_PackageableElementPointer(
+                undefined,
+                pointer.element.valueForSerialization ?? '',
+              );
+              return scope;
+            })
+          : undefined;
 
-        modelGroup.diagrams = metamodelGroup.diagrams.map((diagram) => {
-          const v1Diagram = new V1_DataProductDiagram();
-          v1Diagram.title = diagram.title;
-          v1Diagram.description = diagram.description;
-          v1Diagram.diagram = new V1_PackageableElementPointer(
-            undefined,
-            diagram.diagram.path,
-          );
-          return v1Diagram;
-        });
+        modelGroup.diagrams = metamodelGroup.diagrams?.length
+          ? metamodelGroup.diagrams.map((diagram) => {
+              const v1Diagram = new V1_DataProductDiagram();
+              v1Diagram.title = diagram.title;
+              v1Diagram.description = diagram.description;
+              v1Diagram.diagram = new V1_PackageableElementPointer(
+                undefined,
+                diagram.diagram.path,
+              );
+              return v1Diagram;
+            })
+          : undefined;
 
         modelGroup.secureViews = metamodelGroup.secureViews.map(
           (secureView) => {

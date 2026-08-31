@@ -36,6 +36,10 @@ import { toastManager } from '../Toast/CartToast.js';
 import { RecommendedAddOnsModal } from '../AddToCart/RecommendedAddOnsModal.js';
 import { assertErrorThrown } from '@finos/legend-shared';
 import { MAX_PRODUCT_IMAGE_COUNT } from '../../stores/lakehouse/dataProducts/ProductCardState.js';
+import {
+  LegendMarketplaceTelemetryHelper,
+  TERMINAL_SEARCH_LOCATION,
+} from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LegendMarketplaceTerminalCard = observer(
   (props: { terminalResult: TerminalResult }): JSX.Element => {
@@ -55,6 +59,7 @@ export const LegendMarketplaceTerminalCard = observer(
     const legendMarketplaceBaseStore = useLegendMarketplaceBaseStore();
     const applicationStore = legendMarketplaceBaseStore.applicationStore;
     const assetUrl = applicationStore.config.assetsBaseUrl;
+    const telemetryService = applicationStore.telemetryService;
 
     const [imageUrl] = useState(() => {
       const randomIndex =
@@ -72,11 +77,29 @@ export const LegendMarketplaceTerminalCard = observer(
             ),
           ),
         );
+        if (result.success) {
+          LegendMarketplaceTelemetryHelper.logEvent_AddTerminalAddonToCart(
+            telemetryService,
+            terminalResult.id,
+            terminalResult.productName,
+            terminalResult.providerName,
+            terminalResult.terminalItemType,
+            TERMINAL_SEARCH_LOCATION.MAIN_CATALOG,
+            legendMarketplaceBaseStore.cartStore.cartUser !==
+              applicationStore.identityService.currentUser,
+          );
+        }
         if (result.recommendations && result.recommendations.length > 0) {
           setRecommendedItems(result.recommendations);
           setModalMessage(result.message);
           setModalTotalCount(result.totalCount);
           setShowRecommendationsModal(true);
+          LegendMarketplaceTelemetryHelper.logEvent_OpenAddonsPopup(
+            telemetryService,
+            terminalResult.productName,
+            terminalResult.providerName,
+            result.totalCount ?? null,
+          );
         }
       } catch (error) {
         assertErrorThrown(error);
@@ -107,13 +130,33 @@ export const LegendMarketplaceTerminalCard = observer(
         setModalMessage(responseMessage);
         setModalTotalCount(totalCount);
         setShowRecommendationsModal(true);
+        LegendMarketplaceTelemetryHelper.logEvent_OpenAddonsPopup(
+          telemetryService,
+          _selectedTerminal.productName,
+          _selectedTerminal.providerName,
+          totalCount ?? null,
+        );
       },
-      [],
+      [telemetryService],
     );
+
+    const handleCardClick = useCallback(() => {
+      LegendMarketplaceTelemetryHelper.logEvent_ClickTerminalAddonCard(
+        telemetryService,
+        terminalResult.id,
+        terminalResult.productName,
+        terminalResult.providerName,
+        terminalResult.terminalItemType,
+        TERMINAL_SEARCH_LOCATION.MAIN_CATALOG,
+      );
+    }, [telemetryService, terminalResult]);
 
     return (
       <Card className="legend-marketplace-terminal-card">
-        <CardActionArea className="legend-marketplace-terminal-card__action">
+        <CardActionArea
+          className="legend-marketplace-terminal-card__action"
+          onClick={handleCardClick}
+        >
           <CardMedia
             component="img"
             className="legend-marketplace-terminal-card__image"
@@ -154,7 +197,7 @@ export const LegendMarketplaceTerminalCard = observer(
                 variant="outlined"
                 className="legend-marketplace-terminal-card__add-to-cart-button"
                 onClick={() => {
-                  handleAddToCart().catch(() => {});
+                  handleAddToCart().catch(applicationStore.alertUnhandledError);
                 }}
                 disabled={isAddingToCart || isInCart}
               >

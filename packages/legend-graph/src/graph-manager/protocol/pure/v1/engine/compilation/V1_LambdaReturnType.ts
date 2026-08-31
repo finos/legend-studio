@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-import { SerializationFactory, usingModelSchema } from '@finos/legend-shared';
-import { createModelSchema } from 'serializr';
+import {
+  type PlainObject,
+  SerializationFactory,
+  usingModelSchema,
+} from '@finos/legend-shared';
+import { createModelSchema, custom, deserialize, serialize } from 'serializr';
 import type { V1_PureModelContext } from '../../model/context/V1_PureModelContext.js';
 import type { V1_RawLambda } from '../../model/rawValueSpecification/V1_RawLambda.js';
+import type { V1_RelationType } from '../../model/packageableElements/type/V1_RelationType.js';
+import { V1_EngineError } from '../V1_EngineError.js';
 import { V1_rawLambdaModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_RawValueSpecificationSerializationHelper.js';
 import { V1_pureModelContextPropSchema } from '../../transformation/pureProtocol/V1_PureProtocolSerialization.js';
+import { V1_relationTypeModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 
 export class V1_LambdaReturnTypeInput {
   model: V1_PureModelContext;
@@ -38,6 +45,68 @@ export class V1_LambdaReturnTypeInput {
   );
 }
 
+export class V1_BatchLambdaRelationTypeInput {
+  model: V1_PureModelContext;
+  lambdas: Record<string, V1_RawLambda>;
+
+  constructor(
+    model: V1_PureModelContext,
+    lambdas: Record<string, V1_RawLambda>,
+  ) {
+    this.model = model;
+    this.lambdas = lambdas;
+  }
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_BatchLambdaRelationTypeInput, {
+      model: V1_pureModelContextPropSchema,
+      lambdas: custom(
+        (lambdas: Record<string, V1_RawLambda>) =>
+          Object.fromEntries(
+            Object.entries(lambdas).map(([key, lambda]) => [
+              key,
+              serialize(V1_rawLambdaModelSchema, lambda),
+            ]),
+          ),
+        (json: Record<string, PlainObject<V1_RawLambda>>) =>
+          Object.fromEntries(
+            Object.entries(json).map(([key, value]) => [
+              key,
+              deserialize(V1_rawLambdaModelSchema, value),
+            ]),
+          ),
+      ),
+    }),
+  );
+}
+
 export interface V1_LambdaReturnTypeResult {
   returnType: string;
 }
+
+export type V1_BatchLambdaRelationTypeResponse = {
+  results: Record<string, PlainObject<V1_RelationType>>;
+  errors: Record<string, PlainObject<V1_EngineError>>;
+};
+
+export type V1_BatchLambdaRelationTypeResult = {
+  results: Map<string, V1_RelationType>;
+  errors?: Map<string, V1_EngineError>;
+};
+
+export const V1_buildBatchLambdaRelationTypeResult = (
+  response: V1_BatchLambdaRelationTypeResponse,
+): V1_BatchLambdaRelationTypeResult => ({
+  results: new Map(
+    Object.entries(response.results).map(([key, columns]) => [
+      key,
+      deserialize(V1_relationTypeModelSchema, columns),
+    ]),
+  ),
+  errors: new Map(
+    Object.entries(response.errors).map(([key, error]) => [
+      key,
+      V1_EngineError.serialization.fromJson(error),
+    ]),
+  ),
+});

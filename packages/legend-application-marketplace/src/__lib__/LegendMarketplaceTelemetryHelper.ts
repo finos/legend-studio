@@ -22,6 +22,7 @@ import {
   type V1_EntitlementsLakehouseEnvironmentType,
 } from '@finos/legend-graph';
 import { LEGEND_MARKETPLACE_APP_EVENT } from './LegendMarketplaceAppEvent.js';
+import { MarketplaceSearchMode } from './LegendMarketplaceSearchMode.js';
 import { uuid } from '@finos/legend-shared';
 import {
   SEARCH_SESSION_KEY,
@@ -33,6 +34,15 @@ import {
 export enum LEGEND_MARKETPLACE_PAGE {
   HOME_PAGE = 'Home Page',
   SEARCH_RESULTS_PAGE = 'Search Results Page',
+  LAKEHOUSE_ACCESS_PAGE = 'Lakehouse Access Page',
+  TERMINALS_ADDONS_PAGE = 'Terminals and Add-ons Page',
+  YOUR_ORDERS_PAGE = 'Your Orders Page',
+  SUBSCRIPTIONS_PAGE = 'Subscriptions Page',
+}
+
+export enum TERMINAL_SEARCH_LOCATION {
+  MAIN_CATALOG = 'Main Catalog',
+  ADDONS_POPUP = 'Add-ons Popup',
 }
 
 export enum CONTRACT_ACTION {
@@ -306,34 +316,37 @@ export class LegendMarketplaceTelemetryHelper {
     });
   }
 
-  static logEvent_ToggleProducerSearch(
-    telemetryService: TelemetryService,
-    isEnabled: boolean,
-  ): void {
-    this.updateEventId();
-    const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
+  private static readonly TOGGLE_SEARCH_MODE_EVENT: Partial<
+    Record<MarketplaceSearchMode, LEGEND_MARKETPLACE_APP_EVENT>
+  > = {
+    [MarketplaceSearchMode.PRODUCER]:
       LEGEND_MARKETPLACE_APP_EVENT.PRODUCER_SEARCH_TOGGLE,
-      {
-        toggleAction: isEnabled ? 'enabled' : 'disabled',
-        ...session,
-      },
-    );
-  }
+    [MarketplaceSearchMode.DATA_FIELDS]:
+      LEGEND_MARKETPLACE_APP_EVENT.FIELD_SEARCH_TOGGLE,
+    [MarketplaceSearchMode.LAKEHOUSE_ACCESS]:
+      LEGEND_MARKETPLACE_APP_EVENT.LAKEHOUSE_ACCESS_SEARCH_TOGGLE,
+  };
 
-  static logEvent_ToggleFieldSearch(
+  /**
+   * Logs a search-mode switch on the search bar's settings menu. Each mode keeps
+   * its own event name (existing telemetry dashboards key on them), selected here
+   * via {@link TOGGLE_SEARCH_MODE_EVENT} instead of one near-identical method per mode.
+   */
+  static logEvent_ToggleSearchMode(
     telemetryService: TelemetryService,
+    mode: MarketplaceSearchMode,
     isEnabled: boolean,
   ): void {
+    const event = this.TOGGLE_SEARCH_MODE_EVENT[mode];
+    if (!event) {
+      return;
+    }
     this.updateEventId();
     const session = this.getOrCreateUserSession();
-    telemetryService.logEvent(
-      LEGEND_MARKETPLACE_APP_EVENT.FIELD_SEARCH_TOGGLE,
-      {
-        toggleAction: isEnabled ? 'enabled' : 'disabled',
-        ...session,
-      },
-    );
+    telemetryService.logEvent(event, {
+      toggleAction: isEnabled ? 'enabled' : 'disabled',
+      ...session,
+    });
   }
 
   static logEvent_ToggleThemeMode(
@@ -621,6 +634,261 @@ export class LegendMarketplaceTelemetryHelper {
     );
   }
 
+  static logEvent_ChangeIntelligenceCatalogType(
+    telemetryService: TelemetryService,
+    catalogType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_INTELLIGENCE_CATALOG_TYPE,
+      { catalogType, ...session },
+    );
+  }
+
+  static logEvent_SearchIntelligenceCatalog(
+    telemetryService: TelemetryService,
+    query: string,
+    catalogType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.SEARCH_INTELLIGENCE_CATALOG,
+      {
+        query,
+        catalogType,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickIntelligenceCatalogViewMore(
+    telemetryService: TelemetryService,
+    catalogType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_INTELLIGENCE_CATALOG_VIEW_MORE,
+      {
+        catalogType,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickIntelligenceCatalogRetry(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_INTELLIGENCE_CATALOG_RETRY,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ChangeIntelligenceCatalogPage(
+    telemetryService: TelemetryService,
+    page: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_INTELLIGENCE_CATALOG_PAGE,
+      {
+        page,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ChangeIntelligenceCatalogPageSize(
+    telemetryService: TelemetryService,
+    itemsPerPage: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_INTELLIGENCE_CATALOG_PAGE_SIZE,
+      {
+        itemsPerPage,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleIntelligenceCatalogVendorFilter(
+    telemetryService: TelemetryService,
+    vendor: string,
+    selected: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_INTELLIGENCE_CATALOG_VENDOR_FILTER,
+      {
+        vendor,
+        selected,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClearIntelligenceCatalogFilters(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLEAR_INTELLIGENCE_CATALOG_FILTERS,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ShowAllIntelligenceCatalogVendors(
+    telemetryService: TelemetryService,
+    expanded: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.SHOW_ALL_INTELLIGENCE_CATALOG_VENDORS,
+      {
+        expanded,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickAIAgentBackToCatalog(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_BACK_TO_CATALOG,
+      {
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerBack(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_BACK,
+      {
+        mcpServerName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerCopy(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    field: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_COPY,
+      {
+        mcpServerName,
+        field,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerSupportLink(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    linkType: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_SUPPORT_LINK,
+      {
+        mcpServerName,
+        linkType,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickMcpServerRetry(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_MCP_SERVER_RETRY,
+      {
+        mcpServerName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ExpandMcpServerTool(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    toolName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.EXPAND_MCP_SERVER_TOOL,
+      {
+        mcpServerName,
+        toolName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ExpandMcpServerGroundingRules(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+    toolName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.EXPAND_MCP_SERVER_GROUNDING_RULES,
+      {
+        mcpServerName,
+        toolName,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ViewMcpServer(
+    telemetryService: TelemetryService,
+    mcpServerName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.VIEW_MCP_SERVER, {
+      mcpServerName,
+      ...session,
+    });
+  }
+
   static logEvent_AIAgentQuestionAsked(
     telemetryService: TelemetryService,
     questionLength: number,
@@ -700,6 +968,344 @@ export class LegendMarketplaceTelemetryHelper {
     const session = this.getOrCreateUserSession();
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_COPY_SQL,
+      { ...session },
+    );
+  }
+
+  static logEvent_ViewTerminalsAddonsPage(
+    telemetryService: TelemetryService,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_TERMINALS_ADDONS_PAGE,
+      {
+        page: LEGEND_MARKETPLACE_PAGE.TERMINALS_ADDONS_PAGE,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_TerminalsAddonsSearch(
+    telemetryService: TelemetryService,
+    query: string,
+    searchLocation: TERMINAL_SEARCH_LOCATION,
+    filterTab: string,
+    isTargetUser: boolean,
+  ): void {
+    this.updateSearchSessionId(uuid());
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TERMINALS_ADDONS_SEARCH,
+      {
+        query,
+        searchLocation,
+        filterTab,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_TerminalsAddonsFilterTab(
+    telemetryService: TelemetryService,
+    tab: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TERMINALS_ADDONS_FILTER_TAB,
+      {
+        tab,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_SelectTargetUser(
+    telemetryService: TelemetryService,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TERMINALS_ADDONS_SELECT_TARGET_USER,
+      {
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickTerminalAddonCard(
+    telemetryService: TelemetryService,
+    productId: string | number,
+    productName: string,
+    providerName: string,
+    itemType: string,
+    searchLocation: TERMINAL_SEARCH_LOCATION,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_TERMINAL_ADDON_CARD,
+      {
+        productId,
+        productName,
+        providerName,
+        itemType,
+        searchLocation,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AddTerminalAddonToCart(
+    telemetryService: TelemetryService,
+    productId: string | number,
+    productName: string,
+    providerName: string,
+    itemType: string,
+    addedFrom: TERMINAL_SEARCH_LOCATION,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADD_TERMINAL_ADDON_TO_CART,
+      {
+        productId,
+        productName,
+        providerName,
+        itemType,
+        addedFrom,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_OpenAddonsPopup(
+    telemetryService: TelemetryService,
+    terminalProductName: string,
+    providerName: string,
+    totalAddonCount: number | null,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.OPEN_ADDONS_POPUP, {
+      terminalProductName,
+      providerName,
+      totalAddonCount,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
+  static logEvent_AddonsPopupSearch(
+    telemetryService: TelemetryService,
+    query: string,
+    terminalProductName: string,
+  ): void {
+    this.updateSearchSessionId(uuid());
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADDONS_POPUP_SEARCH,
+      {
+        query,
+        terminalProductName,
+        searchLocation: TERMINAL_SEARCH_LOCATION.ADDONS_POPUP,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AddonsPopupSort(
+    telemetryService: TelemetryService,
+    sortOrder: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.ADDONS_POPUP_SORT, {
+      sortOrder,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
+  static logEvent_AddonsPopupPaginate(
+    telemetryService: TelemetryService,
+    page: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADDONS_POPUP_PAGINATE,
+      {
+        page,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleTerminalSubscriptions(
+    telemetryService: TelemetryService,
+    isExpanded: boolean,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_TERMINAL_SUBSCRIPTIONS,
+      {
+        isExpanded,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ViewOrderProfileDetails(
+    telemetryService: TelemetryService,
+    profileName: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_ORDER_PROFILE_DETAILS,
+      {
+        profileName,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AddOrderProfileToCart(
+    telemetryService: TelemetryService,
+    profileName: string,
+    isMultiselect: boolean,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADD_ORDER_PROFILE_TO_CART,
+      {
+        profileName,
+        isMultiselect,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_SubmitOrder(
+    telemetryService: TelemetryService,
+    itemCount: number,
+    totalCost: number,
+    isTargetUser: boolean,
+    businessReason: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.SUBMIT_ORDER, {
+      itemCount,
+      totalCost,
+      isTargetUser,
+      businessReason,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
+  static logEvent_ViewYourOrdersPage(telemetryService: TelemetryService): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_YOUR_ORDERS_PAGE,
+      {
+        page: LEGEND_MARKETPLACE_PAGE.YOUR_ORDERS_PAGE,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClickOrderEtaskLink(
+    telemetryService: TelemetryService,
+    orderId: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_ORDER_ETASK_LINK,
+      {
+        orderId,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ViewSubscriptionsPage(
+    telemetryService: TelemetryService,
+    isTargetUser: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.VIEW_SUBSCRIPTIONS_PAGE,
+      {
+        page: LEGEND_MARKETPLACE_PAGE.SUBSCRIPTIONS_PAGE,
+        isTargetUser,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_AIAgentGeneratePython(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_GENERATE_PYTHON,
+      { ...session },
+    );
+  }
+
+  static logEvent_AIAgentCopyPython(telemetryService: TelemetryService): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_COPY_PYTHON,
+      { ...session },
+    );
+  }
+
+  static logEvent_AIAgentOpenInDataCube(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_OPEN_IN_DATACUBE,
       { ...session },
     );
   }

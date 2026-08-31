@@ -24,19 +24,15 @@ export class QueryBuilderConfig {
   TEMPORARY__enableExportToCube = false;
 
   /**
-   * This flag is to disable query builder chat features
+   * This flag is to disable the Query Builder AI Agent chat panel toggle.
    */
-  TEMPORARY__disableQueryBuilderChat = false;
+  TEMPORARY__disableQueryBuilderAgentChat = false;
 
   /**
    * This flag is to enable AG-GRID enterprise mode
    */
   TEMPORARY__enableGridEnterpriseMode = false;
 
-  /**
-   * This is the URL of the LegendAI service
-   */
-  legendAIServiceURL = '';
   /**
    * This is the URL of the Legend MCP service
    */
@@ -59,10 +55,9 @@ export class QueryBuilderConfig {
 
   static readonly serialization = new SerializationFactory(
     createModelSchema(QueryBuilderConfig, {
-      TEMPORARY__disableQueryBuilderChat: optional(primitive()),
+      TEMPORARY__disableQueryBuilderAgentChat: optional(primitive()),
       TEMPORARY__enableExportToCube: optional(primitive()),
       TEMPORARY__enableGridEnterpriseMode: optional(primitive()),
-      legendAIServiceURL: optional(primitive()),
       legendMCPServiceURL: optional(primitive()),
       zipkinTraceBaseURL: optional(primitive()),
       enableTypedTDS: optional(primitive()),

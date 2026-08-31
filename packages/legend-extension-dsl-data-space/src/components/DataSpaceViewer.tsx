@@ -25,9 +25,9 @@ import {
   MoreVerticalIcon,
   PlayIcon,
   VerifiedIcon,
-  SparkleStarsIcon,
   clsx,
 } from '@finos/legend-art';
+import { LegendAIChatToggle } from '@finos/legend-lego/legend-ai';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { DataSpaceExecutionContextViewer } from './DataSpaceExecutionContextViewer.js';
 import { DataSpaceInfoPanel } from './DataSpaceInfoPanel.js';
@@ -44,6 +44,7 @@ import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceLegendAIIntegration } from './DataSpaceLegendAIIntegration.js';
 import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -91,51 +92,55 @@ const DataSpaceHeader = observer(
             )}
           </div>
           <div className="data-space__viewer__header__actions">
-            <ControlledDropdownMenu
-              className="data-space__viewer__header__execution-context-selector"
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-                transformOrigin: { vertical: 'top', horizontal: 'center' },
-                elevation: 7,
-              }}
-              title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
-              content={
-                <MenuContent>
-                  {Array.from(
-                    dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-                  ).map((context) => (
-                    <MenuContentItem
-                      key={context.name}
-                      className={clsx(
-                        'data-space__viewer__header__execution-context-selector__option',
-                        {
-                          'data-space__viewer__header__execution-context-selector__option--active':
-                            context ===
-                            dataSpaceViewerState.currentExecutionContext,
-                        },
-                      )}
-                      onClick={() =>
-                        dataSpaceViewerState.setCurrentExecutionContext(context)
-                      }
-                    >
-                      {context.name}
-                    </MenuContentItem>
-                  ))}
-                </MenuContent>
-              }
-            >
-              <div className="data-space__viewer__header__execution-context-selector__trigger">
-                <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
-                  <PlayIcon />
+            {dataSpaceViewerState.currentExecutionContext && (
+              <ControlledDropdownMenu
+                className="data-space__viewer__header__execution-context-selector"
+                menuProps={{
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+                  transformOrigin: { vertical: 'top', horizontal: 'center' },
+                  elevation: 7,
+                }}
+                title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
+                content={
+                  <MenuContent>
+                    {Array.from(
+                      dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+                    ).map((context) => (
+                      <MenuContentItem
+                        key={context.name}
+                        className={clsx(
+                          'data-space__viewer__header__execution-context-selector__option',
+                          {
+                            'data-space__viewer__header__execution-context-selector__option--active':
+                              context ===
+                              dataSpaceViewerState.currentExecutionContext,
+                          },
+                        )}
+                        onClick={() =>
+                          dataSpaceViewerState.setCurrentExecutionContext(
+                            context,
+                          )
+                        }
+                      >
+                        {context.name}
+                      </MenuContentItem>
+                    ))}
+                  </MenuContent>
+                }
+              >
+                <div className="data-space__viewer__header__execution-context-selector__trigger">
+                  <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
+                    <PlayIcon />
+                  </div>
+                  <div className="data-space__viewer__header__execution-context-selector__trigger__label">
+                    {dataSpaceViewerState.currentExecutionContext.name}
+                  </div>
+                  <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
+                    <CaretDownIcon />
+                  </div>
                 </div>
-                <div className="data-space__viewer__header__execution-context-selector__trigger__label">
-                  {dataSpaceViewerState.currentExecutionContext.name}
-                </div>
-                <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
-                  <CaretDownIcon />
-                </div>
-              </div>
-            </ControlledDropdownMenu>
+              </ControlledDropdownMenu>
+            )}
             <ControlledDropdownMenu
               className="data-space__viewer__header__actions-selector"
               menuProps={{
@@ -146,16 +151,22 @@ const DataSpaceHeader = observer(
               title="More Actions..."
               content={
                 <MenuContent>
-                  <MenuContentItem
-                    onClick={() =>
-                      dataSpaceViewerState.queryDataSpace(
-                        dataSpaceViewerState.currentExecutionContext.name,
-                      )
-                    }
-                  >
-                    Query Data Product
-                  </MenuContentItem>
-                  <MenuContentDivider />
+                  {dataSpaceViewerState.currentExecutionContext && (
+                    <>
+                      <MenuContentItem
+                        onClick={() =>
+                          dataSpaceViewerState.queryDataSpace(
+                            guaranteeNonNullable(
+                              dataSpaceViewerState.currentExecutionContext,
+                            ).name,
+                          )
+                        }
+                      >
+                        Query Data Product
+                      </MenuContentItem>
+                      <MenuContentDivider />
+                    </>
+                  )}
                   <MenuContentItem
                     onClick={() =>
                       dataSpaceViewerState.viewProject(analysisResult.path)
@@ -348,11 +359,12 @@ export const DataSpaceViewer = observer(
                 <DataSpaceWiki dataSpaceViewerState={dataSpaceViewerState} />
               )}
               {dataSpaceViewerState.currentActivity ===
-                DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT && (
-                <DataSpaceExecutionContextViewer
-                  dataSpaceViewerState={dataSpaceViewerState}
-                />
-              )}
+                DATA_SPACE_VIEWER_ACTIVITY_MODE.EXECUTION_CONTEXT &&
+                dataSpaceViewerState.currentExecutionContext && (
+                  <DataSpaceExecutionContextViewer
+                    dataSpaceViewerState={dataSpaceViewerState}
+                  />
+                )}
               {dataSpaceViewerState.currentActivity ===
                 DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_STORES && (
                 <DataSpacePlaceholderPanel
@@ -436,18 +448,10 @@ export const DataSpaceViewer = observer(
               />
             </div>
             {!isAIChatOpen && (
-              <button
-                className="legend-ai-chat-toggle"
-                onClick={handleOpenAIChat}
-                title={`Ask ${dsTitle}`}
-              >
-                <span className="legend-ai-chat-toggle__icon">
-                  <SparkleStarsIcon />
-                </span>
-                <span className="legend-ai-chat-toggle__label">
-                  Ask {dsTitle}
-                </span>
-              </button>
+              <LegendAIChatToggle
+                label={`Ask ${dsTitle}`}
+                onOpen={handleOpenAIChat}
+              />
             )}
           </>
         )}

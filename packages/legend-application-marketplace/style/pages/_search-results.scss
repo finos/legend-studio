@@ -50,9 +50,6 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .legend-marketplace-search-results__search-type-tab {
@@ -106,6 +103,16 @@
     margin: 0 auto;
     box-sizing: border-box;
     padding: 0.5rem;
+  }
+
+  // Centres the search-type tabs (see `__search-type-tabs` below) between the result
+  // count and the view/sort controls, independent of either one's width.
+  &__center-slot {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
   }
 
   &__controls {

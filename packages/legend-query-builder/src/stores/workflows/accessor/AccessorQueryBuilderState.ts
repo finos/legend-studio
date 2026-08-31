@@ -149,6 +149,10 @@ export class AccessorQueryBuilderState extends QueryBuilderState {
     return false;
   }
 
+  override get requiresEmbeddedExecutionContext(): boolean {
+    return true;
+  }
+
   /**
    * In accessor mode, configure both filter and post-filter panels to be visible.
    */

@@ -41,6 +41,7 @@ import {
   CubeIcon,
   CopyIcon,
   MoreVerticalIcon,
+  HistoryIcon,
 } from '@finos/legend-art';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl,
@@ -110,6 +111,7 @@ import {
   buildUrl,
   guaranteeNonNullable,
   guaranteeType,
+  isNonNullable,
   LogEvent,
   StopWatch,
   uniq,
@@ -124,9 +126,11 @@ import {
   configureCodeEditorComponent,
 } from '@finos/legend-lego/code-editor';
 import {
+  resolveExecutionContextMapping,
   resolveUsableDataSpaceClasses,
   V1_DataSpace,
   V1_DataSpaceExecutionContext,
+  V1_DataSpaceMappingProvider,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import { flowResult } from 'mobx';
 import { LEGEND_QUERY_APP_EVENT } from '../__lib__/LegendQueryEvent.js';
@@ -551,6 +555,36 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         icon: <InfoCircleIcon />,
       },
       {
+        key: 'query-version-history',
+        title: 'Show the history of this query',
+        label: 'Query History',
+        disableFunc: (queryBuilderState): boolean => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            return !(
+              queryBuilderState.workflowState.actionConfig
+                .editorStore instanceof ExistingQueryEditorStore
+            );
+          }
+          return true;
+        },
+        onClick: (queryBuilderState): void => {
+          if (
+            queryBuilderState.workflowState.actionConfig instanceof
+            QueryBuilderActionConfig_QueryApplication
+          ) {
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            if (editorStore instanceof ExistingQueryEditorStore) {
+              editorStore.showQueryVersionHistory();
+            }
+          }
+        },
+        icon: <HistoryIcon />,
+      },
+      {
         key: 'about-query-sdlc-project',
         title: 'Go to Project',
         label: 'Go to Project',
@@ -958,8 +992,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             queryBuilderState,
             DataSpaceQueryBuilderState,
           );
-          const mapping =
-            dataSpaceQueryBuilderState.executionContext.mapping.value;
+
+          const mapping = guaranteeNonNullable(
+            resolveExecutionContextMapping(
+              dataSpaceQueryBuilderState.executionContext,
+            ),
+            `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a mapping`,
+          );
           const mappingModelCoverageAnalysisResult =
             dataSpaceQueryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
               mapping.path,
@@ -1012,6 +1051,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                       dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
                     )
                       .map((context) => context.defaultRuntime)
+                      .filter(isNonNullable)
                       .concat(
                         Array.from(
                           dataSpaceQueryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
@@ -1044,19 +1084,34 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
                     contextProtocol.name = execContext.name;
                     contextProtocol.title = execContext.title;
                     contextProtocol.description = execContext.description;
+                    if (execContext.mappingProvider) {
+                      const mappingProviderProtocol =
+                        new V1_DataSpaceMappingProvider();
+                      mappingProviderProtocol.element =
+                        new V1_PackageableElementPointer(
+                          undefined,
+                          execContext.mappingProvider.element,
+                        );
+                      mappingProviderProtocol.keys =
+                        execContext.mappingProvider.keys;
+                      contextProtocol.mappingProvider = mappingProviderProtocol;
+                    }
                     contextProtocol.mapping = new V1_PackageableElementPointer(
                       PackageableElementPointerType.MAPPING,
                       execContext.mapping.path,
                     );
-                    contextProtocol.defaultRuntime =
-                      new V1_PackageableElementPointer(
-                        PackageableElementPointerType.RUNTIME,
-                        execContext.defaultRuntime.path,
-                      );
+                    if (execContext.defaultRuntime) {
+                      contextProtocol.defaultRuntime =
+                        new V1_PackageableElementPointer(
+                          PackageableElementPointerType.RUNTIME,
+                          execContext.defaultRuntime.path,
+                        );
+                    }
                     return contextProtocol;
                   });
                   dataspaceProtocol.defaultExecutionContext =
-                    dataSpaceQueryBuilderState.dataSpaceAnalysisResult.defaultExecutionContext.name;
+                    dataSpaceQueryBuilderState.dataSpaceAnalysisResult
+                      .defaultExecutionContext?.name ?? '';
                   dataspaceProtocol.title =
                     dataSpaceQueryBuilderState.dataSpaceAnalysisResult.title;
                   dataspaceProtocol.description =
@@ -1145,11 +1200,17 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             dataSpaceQueryBuilderState,
           );
           dataSpaceQueryBuilderState.changeMapping(mapping);
-          dataSpaceQueryBuilderState.changeRuntime(
-            new RuntimePointer(
-              dataSpaceQueryBuilderState.executionContext.defaultRuntime,
-            ),
-          );
+          const defaultRuntime =
+            dataSpaceQueryBuilderState.executionContext.defaultRuntime;
+          if (defaultRuntime) {
+            dataSpaceQueryBuilderState.changeRuntime(
+              new RuntimePointer(defaultRuntime),
+            );
+          } else {
+            dataSpaceQueryBuilderState.applicationStore.notificationService.notifyWarning(
+              `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a default runtime`,
+            );
+          }
           // if there is no chosen class or the chosen one is not compatible
           // with the mapping then pick a compatible class if possible
           if (

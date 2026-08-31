@@ -20,41 +20,29 @@ import {
   useLegendMarketplaceSearchResultsStore,
   withLegendMarketplaceSearchResultsStore,
 } from '../../../application/providers/LegendMarketplaceSearchResultsStoreProvider.js';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
+import { Container, Typography } from '@mui/material';
 import {
-  CheckIcon,
-  clsx,
-  CubesLoadingIndicator,
-  CubesLoadingIndicatorIcon,
-  ViewHeadlineIcon,
-  WindowIcon,
-  InfoCircleIcon,
-} from '@finos/legend-art';
-import {
-  Container,
-  FormControl,
-  Grid,
-  IconButton,
-  MenuItem,
-  Select,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import {
-  DataProductSort,
+  type DataProductSort,
   SearchResultViewOption,
   SearchResultsViewMode,
-  type LegendMarketplaceSearchResultsStore,
 } from '../../../stores/lakehouse/LegendMarketplaceSearchResultsStore.js';
 import {
   generateFieldSearchResultsRoute,
+  generateLakehouseAccessSearchResultsRoute,
   LEGEND_MARKETPLACE_LAKEHOUSE_SEARCH_RESULTS_QUERY_PARAM_TOKEN,
 } from '../../../__lib__/LegendMarketplaceNavigation.js';
-import { LegendMarketplaceSearchBar } from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import {
+  LegendMarketplaceSearchBar,
+  MarketplaceSearchMode,
+} from '../../../components/SearchBar/LegendMarketplaceSearchBar.js';
+import { DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT } from '../../../__lib__/LegendMarketplaceSearchMode.js';
 import { LegendMarketplacePage } from '../../LegendMarketplacePage.js';
-import { useAuth } from 'react-oidc-context';
-import { LakehouseProductCard } from '../../../components/LakehouseProductCard/LakehouseProductCard.js';
-import { LakehouseProductListItem } from '../../../components/LakehouseProductCard/LakehouseProductListItem.js';
+import { TimedInfoBanner } from '../../../components/TimedInfoBanner/TimedInfoBanner.js';
+import {
+  useAccessTokenRef,
+  useHasReadSearchParams,
+} from '../../../utils/SearchResultsPageHooks.js';
 import type { ProductCardState } from '../../../stores/lakehouse/dataProducts/ProductCardState.js';
 import {
   LEGEND_MARKETPLACE_PAGE,
@@ -65,171 +53,31 @@ import { logClickingDataProductCard } from '../../../utils/LogUtils.js';
 import { useSyncStateAndSearchParam } from '@finos/legend-application';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { isNonEmptyString } from '@finos/legend-shared';
-import { PaginationControls } from '../../../components/Pagination/PaginationControls.js';
 import { MarketplaceSearchFiltersPanel } from '../../../components/MarketplaceSearchFiltersPanel/MarketplaceSearchFiltersPanel.js';
 import { LegendMarketplaceOptionSelector } from '../../../components/OptionSelector/LegendMarketplaceOptionSelector.js';
-
-const SearchResultsContent = observer(
-  (props: {
-    searchResultsStore: LegendMarketplaceSearchResultsStore;
-    isLoadingDataProducts: boolean;
-    handleProductCardClick: (productCardState: ProductCardState) => void;
-    handlePageChange: (page: number) => void;
-    handleItemsPerPageChange: (itemsPerPage: number) => void;
-    handleShowAllProducts: () => void;
-  }) => {
-    const {
-      searchResultsStore,
-      isLoadingDataProducts,
-      handleProductCardClick,
-      handlePageChange,
-      handleItemsPerPageChange,
-      handleShowAllProducts,
-    } = props;
-
-    if (isLoadingDataProducts) {
-      return (
-        <div className="marketplace-lakehouse-search-results__loading-container">
-          <CubesLoadingIndicator
-            isLoading={true}
-            className="marketplace-lakehouse-search-results__loading-data-products-indicator"
-          >
-            <CubesLoadingIndicatorIcon />
-          </CubesLoadingIndicator>
-        </div>
-      );
-    }
-    if (searchResultsStore.totalItems === 0) {
-      return (
-        <div className="marketplace-lakehouse-search-results__empty-state">
-          <Typography
-            variant="h5"
-            className="marketplace-lakehouse-search-results__empty-state__title"
-          >
-            No results found
-          </Typography>
-          <Typography
-            variant="body1"
-            className="marketplace-lakehouse-search-results__empty-state__message"
-          >
-            We couldn&apos;t find any data products matching your search. Try
-            adjusting your search terms or clearing filters.
-          </Typography>
-        </div>
-      );
-    }
-    return (
-      <>
-        {searchResultsStore.viewMode === SearchResultsViewMode.TILE && (
-          <Grid
-            container={true}
-            spacing={{ xs: 2, sm: 3, xxl: 4 }}
-            columns={{ sm: 1, md: 2, lg: 3, xxl: 4 }}
-            className="marketplace-lakehouse-search-results__data-product-cards"
-          >
-            {searchResultsStore.filterSortProducts?.map((productCardState) => (
-              <Grid key={productCardState.guid} size={1}>
-                <LakehouseProductCard
-                  productCardState={productCardState}
-                  moreInfoPreview="small"
-                  onClick={() => handleProductCardClick(productCardState)}
-                />
-              </Grid>
-            ))}
-          </Grid>
-        )}
-        {searchResultsStore.viewMode === SearchResultsViewMode.LIST && (
-          <div className="marketplace-lakehouse-search-results__list-view">
-            {searchResultsStore.filterSortProducts?.map((productCardState) => (
-              <LakehouseProductListItem
-                key={productCardState.guid}
-                productCardState={productCardState}
-                onClick={handleProductCardClick}
-              />
-            ))}
-          </div>
-        )}
-        {searchResultsStore.isOnLastPage &&
-          !searchResultsStore.showAllProducts &&
-          !searchResultsStore.useProducerSearch &&
-          searchResultsStore.hasFilteredDataProducts && (
-            <div className="marketplace-lakehouse-search-results__show-all-container">
-              <div className="marketplace-lakehouse-search-results__show-all-text-row">
-                <Typography
-                  variant="body1"
-                  className="marketplace-lakehouse-search-results__show-all-text"
-                >
-                  Can&apos;t find what you&apos;re looking for?
-                </Typography>
-                <Tooltip
-                  title="Data products might be automatically filtered out if they are identified as duplicates (e.g. QA, UAT, DEV)"
-                  placement="top"
-                  arrow={true}
-                >
-                  <span className="marketplace-lakehouse-search-results__show-all-info-icon">
-                    <InfoCircleIcon />
-                  </span>
-                </Tooltip>
-              </div>
-              <button
-                className="marketplace-lakehouse-search-results__show-all-btn"
-                onClick={handleShowAllProducts}
-              >
-                Show all data products
-              </button>
-            </div>
-          )}
-        <PaginationControls
-          totalItems={searchResultsStore.totalItems}
-          itemsPerPage={searchResultsStore.itemsPerPage}
-          page={searchResultsStore.page}
-          onPageChange={handlePageChange}
-          onItemsPerPageChange={handleItemsPerPageChange}
-          disabled={isLoadingDataProducts}
-        />
-      </>
-    );
-  },
-);
+import { SearchResultsCardGrid } from '../../../components/SearchResultsCardGrid/SearchResultsCardGrid.js';
+import { SearchResultsSortControls } from '../../../components/SearchResultsSortControls/SearchResultsSortControls.js';
 
 export const LegendMarketplaceSearchResults =
   withLegendMarketplaceSearchResultsStore(
     observer(() => {
       const searchResultsStore = useLegendMarketplaceSearchResultsStore();
-      const auth = useAuth();
       const [searchParams, setSearchParams] = useSearchParams();
 
       const marketplaceBaseStore = searchResultsStore.marketplaceBaseStore;
       const applicationStore = marketplaceBaseStore.applicationStore;
 
-      const tokenRef = useRef(auth.user?.access_token);
+      const tokenRef = useAccessTokenRef();
 
-      useEffect(() => {
-        tokenRef.current = auth.user?.access_token;
-      }, [auth.user?.access_token]);
-
-      useEffect(() => {
-        if (searchResultsStore.useProducerSearch === undefined) {
-          return;
-        }
-        searchResultsStore.clearAllFilters();
-        searchResultsStore.setPage(1);
-        searchResultsStore.setShowAllProducts(false);
+      const runSearch = useCallback(() => {
         flowResult(
           searchResultsStore.executeSearch(
             searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch,
+            searchResultsStore.useProducerSearch ?? false,
             tokenRef.current,
           ),
         ).catch(applicationStore.alertUnhandledError);
-      }, [
-        applicationStore.telemetryService,
-        tokenRef,
-        searchResultsStore,
-        searchResultsStore.searchQuery,
-        searchResultsStore.useProducerSearch,
-        applicationStore,
-      ]);
+      }, [searchResultsStore, applicationStore, tokenRef]);
 
       useSyncStateAndSearchParam(
         searchResultsStore.useProducerSearch,
@@ -265,15 +113,34 @@ export const LegendMarketplaceSearchResults =
         useCallback(() => true, []),
       );
 
+      // See `useHasReadSearchParams` for why the initial search is gated on this
+      // rather than on `useProducerSearch`/`searchQuery` being defined.
+      const hasReadSearchParams = useHasReadSearchParams();
+
+      useEffect(() => {
+        if (!hasReadSearchParams) {
+          return;
+        }
+        searchResultsStore.clearAllFilters();
+        searchResultsStore.setPage(1);
+        searchResultsStore.setShowAllProducts(false);
+        runSearch();
+      }, [
+        hasReadSearchParams,
+        searchResultsStore,
+        searchResultsStore.searchQuery,
+        searchResultsStore.useProducerSearch,
+        runSearch,
+      ]);
+
       const isLoadingDataProducts = searchResultsStore.isLoading;
 
       const handleSearch = (
         _query: string | undefined,
-        _useProducerSearch: boolean,
-        _useFieldSearch: boolean,
+        _mode: MarketplaceSearchMode,
       ): void => {
         if (isNonEmptyString(_query)) {
-          if (_useFieldSearch) {
+          if (_mode === MarketplaceSearchMode.DATA_FIELDS) {
             applicationStore.navigationService.navigator.goToLocation(
               generateFieldSearchResultsRoute(_query),
             );
@@ -286,8 +153,22 @@ export const LegendMarketplaceSearchResults =
             );
             return;
           }
+          if (_mode === MarketplaceSearchMode.LAKEHOUSE_ACCESS) {
+            applicationStore.navigationService.navigator.goToLocation(
+              generateLakehouseAccessSearchResultsRoute(_query),
+            );
+            LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
+              applicationStore.telemetryService,
+              _query,
+              false,
+              LEGEND_MARKETPLACE_PAGE.SEARCH_RESULTS_PAGE,
+            );
+            return;
+          }
           searchResultsStore.setSearchQuery(_query);
-          searchResultsStore.setUseProducerSearch(_useProducerSearch);
+          searchResultsStore.setUseProducerSearch(
+            _mode === MarketplaceSearchMode.PRODUCER,
+          );
           LegendMarketplaceTelemetryHelper.logEvent_SearchQuery(
             applicationStore.telemetryService,
             searchResultsStore.searchQuery,
@@ -300,29 +181,17 @@ export const LegendMarketplaceSearchResults =
       const handlePageChange = useCallback(
         (page: number) => {
           searchResultsStore.setPage(page);
-          flowResult(
-            searchResultsStore.executeSearch(
-              searchResultsStore.searchQuery ?? '',
-              searchResultsStore.useProducerSearch ?? false,
-              tokenRef.current,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          runSearch();
         },
-        [searchResultsStore, applicationStore],
+        [searchResultsStore, runSearch],
       );
 
       const handleItemsPerPageChange = useCallback(
         (itemsPerPage: number) => {
           searchResultsStore.setItemsPerPage(itemsPerPage);
-          flowResult(
-            searchResultsStore.executeSearch(
-              searchResultsStore.searchQuery ?? '',
-              searchResultsStore.useProducerSearch ?? false,
-              tokenRef.current,
-            ),
-          ).catch(applicationStore.alertUnhandledError);
+          runSearch();
         },
-        [searchResultsStore, applicationStore],
+        [searchResultsStore, runSearch],
       );
 
       const handleProductCardClick = useCallback(
@@ -351,14 +220,8 @@ export const LegendMarketplaceSearchResults =
           searchResultsStore.searchQuery,
         );
         searchResultsStore.setShowAllProducts(true);
-        flowResult(
-          searchResultsStore.executeSearch(
-            searchResultsStore.searchQuery ?? '',
-            searchResultsStore.useProducerSearch ?? false,
-            tokenRef.current,
-          ),
-        ).catch(applicationStore.alertUnhandledError);
-      }, [searchResultsStore, applicationStore]);
+        runSearch();
+      }, [searchResultsStore, applicationStore, runSearch]);
 
       return (
         <LegendMarketplacePage className="marketplace-lakehouse-search-results">
@@ -367,8 +230,11 @@ export const LegendMarketplaceSearchResults =
               showSettings={true}
               onSearch={handleSearch}
               stateSearchQuery={searchResultsStore.searchQuery}
-              stateUseProducerSearch={searchResultsStore.useProducerSearch}
-              stateUseFieldSearch={false}
+              stateSearchMode={
+                searchResultsStore.useProducerSearch === true
+                  ? MarketplaceSearchMode.PRODUCER
+                  : MarketplaceSearchMode.DATA_SPACES
+              }
               placeholder="Search Legend Marketplace"
               className="marketplace-lakehouse-search-results__search-bar"
               enableAutosuggest={false}
@@ -384,111 +250,50 @@ export const LegendMarketplaceSearchResults =
                   ? `${searchResultsStore.filterSortProducts?.length ?? 0} Products`
                   : `${searchResultsStore.totalItems} Products`}
               </Typography>
-              {isNonEmptyString(searchResultsStore.searchQuery) && (
-                <div className="legend-marketplace-search-results__search-type-tabs">
-                  <LegendMarketplaceOptionSelector
-                    options={[
-                      SearchResultViewOption.DATA_PRODUCTS,
-                      SearchResultViewOption.DATA_FIELDS,
-                    ]}
-                    selectedOption={SearchResultViewOption.DATA_PRODUCTS}
-                    onChange={(option) => {
-                      if (option === SearchResultViewOption.DATA_FIELDS) {
-                        applicationStore.navigationService.navigator.goToLocation(
-                          generateFieldSearchResultsRoute(
-                            searchResultsStore.searchQuery,
-                          ),
-                        );
-                      }
-                    }}
-                    ariaLabel="Search result type"
-                  />
-                </div>
-              )}
-              <div className="legend-marketplace-search-results__sort-bar__controls">
-                <div className="legend-marketplace-search-results__view-toggle">
-                  <div
-                    className={clsx(
-                      'legend-marketplace-search-results__view-toggle__slider',
-                      searchResultsStore.viewMode ===
-                        SearchResultsViewMode.LIST &&
-                        'legend-marketplace-search-results__view-toggle__slider--right',
-                    )}
-                  />
-                  <IconButton
-                    className={clsx(
-                      'legend-marketplace-search-results__view-toggle__btn',
-                      searchResultsStore.viewMode ===
-                        SearchResultsViewMode.TILE &&
-                        'legend-marketplace-search-results__view-toggle__btn--active',
-                    )}
-                    onClick={() => {
-                      searchResultsStore.setViewMode(
-                        SearchResultsViewMode.TILE,
-                      );
-                      LegendMarketplaceTelemetryHelper.logEvent_ToggleViewMode(
-                        applicationStore.telemetryService,
-                        SearchResultsViewMode.TILE,
-                      );
-                    }}
-                    title="Tile View"
-                    size="small"
-                  >
-                    <WindowIcon />
-                  </IconButton>
-                  <IconButton
-                    className={clsx(
-                      'legend-marketplace-search-results__view-toggle__btn',
-                      searchResultsStore.viewMode ===
-                        SearchResultsViewMode.LIST &&
-                        'legend-marketplace-search-results__view-toggle__btn--active',
-                    )}
-                    onClick={() => {
-                      searchResultsStore.setViewMode(
-                        SearchResultsViewMode.LIST,
-                      );
-                      LegendMarketplaceTelemetryHelper.logEvent_ToggleViewMode(
-                        applicationStore.telemetryService,
-                        SearchResultsViewMode.LIST,
-                      );
-                    }}
-                    title="List View"
-                    size="small"
-                  >
-                    <ViewHeadlineIcon />
-                  </IconButton>
-                </div>
-                <span className="legend-marketplace-search-results__sort-bar__controls-divider" />
-                <FormControl>
-                  <Select
-                    autoWidth={true}
-                    displayEmpty={true}
-                    value={'Sort'}
-                    onChange={(e) => {
-                      searchResultsStore.setSort(
-                        e.target.value as DataProductSort,
-                      );
-                    }}
-                    className="legend-marketplace-search-results__sort-select"
-                  >
-                    <MenuItem disabled={true} value="Sort">
-                      Sort
-                    </MenuItem>
-                    {Object.values(DataProductSort).map((sortValue) => (
-                      <MenuItem
-                        key={sortValue}
-                        value={sortValue}
-                        sx={{
-                          gap: '0.5rem',
-                        }}
-                      >
-                        {sortValue}
-                        {searchResultsStore.sort === sortValue && <CheckIcon />}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+              <div className="legend-marketplace-search-results__sort-bar__center-slot">
+                {isNonEmptyString(searchResultsStore.searchQuery) && (
+                  <div className="legend-marketplace-search-results__search-type-tabs">
+                    <LegendMarketplaceOptionSelector
+                      options={[
+                        SearchResultViewOption.DATA_SPACES,
+                        SearchResultViewOption.DATA_FIELDS,
+                      ]}
+                      selectedOption={SearchResultViewOption.DATA_SPACES}
+                      onChange={(option) => {
+                        if (option === SearchResultViewOption.DATA_FIELDS) {
+                          applicationStore.navigationService.navigator.goToLocation(
+                            generateFieldSearchResultsRoute(
+                              searchResultsStore.searchQuery,
+                            ),
+                          );
+                        }
+                      }}
+                      ariaLabel="Search result type"
+                    />
+                  </div>
+                )}
               </div>
+              <SearchResultsSortControls
+                viewMode={searchResultsStore.viewMode}
+                onTileViewClick={() => {
+                  searchResultsStore.setViewMode(SearchResultsViewMode.TILE);
+                  LegendMarketplaceTelemetryHelper.logEvent_ToggleViewMode(
+                    applicationStore.telemetryService,
+                    SearchResultsViewMode.TILE,
+                  );
+                }}
+                onListViewClick={() => {
+                  searchResultsStore.setViewMode(SearchResultsViewMode.LIST);
+                  LegendMarketplaceTelemetryHelper.logEvent_ToggleViewMode(
+                    applicationStore.telemetryService,
+                    SearchResultsViewMode.LIST,
+                  );
+                }}
+                sort={searchResultsStore.sort}
+                onSortChange={(sort: DataProductSort) => {
+                  searchResultsStore.setSort(sort);
+                }}
+              />
             </div>
           </div>
           <Container
@@ -498,17 +303,33 @@ export const LegendMarketplaceSearchResults =
             <div className="marketplace-lakehouse-search-results__results-layout">
               {!searchResultsStore.useProducerSearch && (
                 <div className="marketplace-lakehouse-search-results__sidebar">
-                  <MarketplaceSearchFiltersPanel store={searchResultsStore} />
+                  <MarketplaceSearchFiltersPanel
+                    store={searchResultsStore}
+                    onFiltersChanged={runSearch}
+                  />
                 </div>
               )}
               <div className="marketplace-lakehouse-search-results__main-content">
-                <SearchResultsContent
-                  searchResultsStore={searchResultsStore}
-                  isLoadingDataProducts={isLoadingDataProducts}
-                  handleProductCardClick={handleProductCardClick}
-                  handlePageChange={handlePageChange}
-                  handleItemsPerPageChange={handleItemsPerPageChange}
-                  handleShowAllProducts={handleShowAllProducts}
+                <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
+                  {DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT}
+                </TimedInfoBanner>
+                <SearchResultsCardGrid
+                  isLoading={isLoadingDataProducts}
+                  totalItems={searchResultsStore.totalItems}
+                  viewMode={searchResultsStore.viewMode}
+                  products={searchResultsStore.filterSortProducts}
+                  onProductCardClick={handleProductCardClick}
+                  canShowAll={
+                    searchResultsStore.isOnLastPage &&
+                    !searchResultsStore.showAllProducts &&
+                    !searchResultsStore.useProducerSearch &&
+                    searchResultsStore.hasFilteredDataProducts
+                  }
+                  onShowAllProducts={handleShowAllProducts}
+                  itemsPerPage={searchResultsStore.itemsPerPage}
+                  page={searchResultsStore.page}
+                  onPageChange={handlePageChange}
+                  onItemsPerPageChange={handleItemsPerPageChange}
                 />
               </div>
             </div>

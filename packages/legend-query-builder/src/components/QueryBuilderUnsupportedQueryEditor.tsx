@@ -28,7 +28,7 @@ import {
 } from '@finos/legend-art';
 import { QueryBuilderSidebar } from './QueryBuilderSideBar.js';
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
-import { QueryChat } from './QueryChat.js';
+import { QueryAgentChat } from './QueryAgentChat.js';
 
 const QueryBuilderUnsupportedQueryViewer = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
@@ -66,6 +66,9 @@ const QueryBuilderUnsupportedQueryViewer = observer(
 export const QueryBuilderUnsupportedQueryEditor = observer(
   (props: { queryBuilderState: QueryBuilderState }) => {
     const { queryBuilderState } = props;
+    const showQueryAgentChatPanel =
+      queryBuilderState.isAgentChatOpened &&
+      !queryBuilderState.config?.TEMPORARY__disableQueryBuilderAgentChat;
 
     return (
       <ResizablePanelGroup orientation="vertical">
@@ -82,10 +85,10 @@ export const QueryBuilderUnsupportedQueryEditor = observer(
             queryBuilderState={queryBuilderState}
           />
         </ResizablePanel>
-        {queryBuilderState.isQueryChatOpened && <ResizablePanelSplitter />}
-        {queryBuilderState.isQueryChatOpened && (
+        {showQueryAgentChatPanel && <ResizablePanelSplitter />}
+        {showQueryAgentChatPanel && (
           <ResizablePanel size={450}>
-            <QueryChat queryBuilderState={queryBuilderState} />
+            <QueryAgentChat queryBuilderState={queryBuilderState} />
           </ResizablePanel>
         )}
       </ResizablePanelGroup>

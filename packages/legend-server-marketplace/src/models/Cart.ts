@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
 import type { TerminalResult } from './Provider.js';
 
 export interface CartItemRequest {
@@ -47,8 +48,8 @@ export interface CartItemResponse {
   message: string;
   status_code: number;
   vendor_profile_id: number;
-  marketplace_addons: TerminalResult[] | null;
-  marketplace_terminals: TerminalResult[] | null;
+  marketplace_addons: PlainObject<TerminalResult>[] | null;
+  marketplace_terminals: PlainObject<TerminalResult>[] | null;
   total_count: number | null;
   page: number | null;
   page_size: number | null;
@@ -75,12 +76,31 @@ export interface VendorAddonsSearchParams {
   sort_by_price?: SortOrder;
 }
 
+export interface PermissionAddonsSearchParams {
+  permission_id?: number;
+  page?: number;
+  page_size?: number;
+  search?: string;
+  sort_by_price?: SortOrder;
+}
+
 export interface VendorAddonsSearchResponse {
-  marketplace_addons: TerminalResult[];
+  marketplace_addons: PlainObject<TerminalResult>[];
   total_count: number;
   page: number;
   page_size: number;
   total_pages: number;
   has_next: boolean;
   has_previous: boolean;
+}
+
+export interface PermissionAddonsSearchResponse {
+  marketplace_addons: PlainObject<TerminalResult>[];
+  total_count: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+  has_next: boolean;
+  has_previous: boolean;
+  permissionId?: number;
 }

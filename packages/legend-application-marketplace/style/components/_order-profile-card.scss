@@ -92,6 +92,8 @@
   &__content {
     padding: 0;
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 66rem;
   }
 
   &__table-head {
@@ -106,6 +108,12 @@
     color: var(--marketplace-text-secondary);
     padding: 10px 14px;
     border-bottom: 2px solid var(--color-light-grey-200);
+  }
+
+  &__table-header-cell-content {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
   }
 
   &__table-row {

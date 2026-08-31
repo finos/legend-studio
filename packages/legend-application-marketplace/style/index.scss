@@ -19,7 +19,9 @@
 
 @forward 'components/legend-service-card';
 @forward 'components/cart-drawer';
+@forward 'components/catalog-card';
 @forward 'components/coming-soon-display';
+@forward 'components/column-filter-button';
 @forward 'components/dataContract-creator';
 @forward 'components/feedback-widget';
 @forward 'components/header';
@@ -30,6 +32,7 @@
 @forward 'components/legend-marketplace-list-item';
 @forward 'components/multi-user-cell-renderer';
 @forward 'components/notification';
+@forward 'components/option-selector';
 @forward 'components/product-search-card';
 @forward 'components/radio-selector';
 @forward 'components/recommended-addons-modal';
@@ -44,6 +47,7 @@
 @forward 'pages/data-apis';
 @forward 'pages/home';
 @forward 'pages/marketplace-subscriptions';
+@forward 'pages/mcp-server-viewer';
 @forward 'pages/your-orders';
 @forward 'pages/not-found-screen';
 @forward 'pages/search-results';

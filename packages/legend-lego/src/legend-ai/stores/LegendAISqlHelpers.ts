@@ -16,13 +16,43 @@
 
 import type { TDSColumnSchema, TDSServiceSchema } from '../LegendAITypes.js';
 
-export const AP_CALL_PATTERN = /(?<!\w)p\(\s*'(?<pId>[^']+)'\s*\)/g;
+const AP_CALL_PATTERN = /(?<!\w)p\(\s*'(?<pId>[^']+)'\s*\)/g;
 export const HAS_LIMIT_PATTERN = /\bLIMIT\s+\d+/i;
+
+/** Lists every `p('...')` access point call in a SQL string. */
+export function accessPointCalls(sql: string): RegExpMatchArray[] {
+  return [...sql.matchAll(AP_CALL_PATTERN)];
+}
+
+const QUALIFIED_COLUMN_PATTERN = String.raw`(?:(?:"[^"]+"|\w+)\.)?"([^"]+)"`;
+const JOIN_KEY_EQUALITY_PATTERN = new RegExp(
+  String.raw`${QUALIFIED_COLUMN_PATTERN}\s*=\s*${QUALIFIED_COLUMN_PATTERN}`,
+  'g',
+);
+
+// Lowercased equi-join key names — same quoted column on both sides of `=`
+// (e.g. `a."id" = b."id"`); a filter (`= 'literal'`) never matches both sides.
+export function extractJoinKeyColumns(sql: string): Set<string> {
+  const keys = new Set<string>();
+  for (const [, left, right] of sql.matchAll(JOIN_KEY_EQUALITY_PATTERN)) {
+    const key = left?.toLowerCase();
+    if (key !== undefined && key === right?.toLowerCase()) {
+      keys.add(key);
+    }
+  }
+  return keys;
+}
+
+// The access point's name as used in `p('<dataProductPath>.<name>')` and in a
+// message's `queriedAccessPoints` — the service pattern without its leading `/`.
+export function accessPointName(service: TDSServiceSchema): string {
+  return service.pattern.replace(/^\//u, '');
+}
 
 export function servicePId(service: TDSServiceSchema): string | undefined {
   return service.dataProductPath === undefined
     ? undefined
-    : `${service.dataProductPath}.${service.pattern.replace(/^\//, '')}`;
+    : `${service.dataProductPath}.${accessPointName(service)}`;
 }
 
 export function pureRelationColumnRef(column: string): string {

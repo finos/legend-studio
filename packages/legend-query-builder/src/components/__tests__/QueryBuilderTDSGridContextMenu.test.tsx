@@ -16,8 +16,11 @@
 
 import { test, expect } from '@jest/globals';
 import { integrationTest, createSpy } from '@finos/legend-shared/test';
+import { LogService } from '@finos/legend-shared';
 import {
   create_RawLambda,
+  GraphManagerState,
+  Core_GraphManagerPreset,
   PackageableElementExplicitReference,
   RuntimePointer,
   type TDSRowDataType,
@@ -33,12 +36,26 @@ import {
   TEST__getGenericApplicationConfig,
 } from '../../stores/__test-utils__/QueryBuilderStateTestUtils.js';
 import { INTERNAL__BasicQueryBuilderState } from '../../stores/QueryBuilderState.js';
-import { QueryBuilderAdvancedWorkflowState } from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
+import {
+  QueryBuilderActionConfig,
+  QueryBuilderAdvancedWorkflowState,
+} from '../../stores/query-workflow/QueryBuilderWorkFlowState.js';
 import { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { AccessorQueryBuilderState } from '../../stores/workflows/accessor/AccessorQueryBuilderState.js';
+import { QueryBuilder_GraphManagerPreset } from '../../graph-manager/QueryBuilder_GraphManagerPreset.js';
+import { QueryBuilderWindowColumnState } from '../../stores/fetch-structure/tds/window/QueryBuilderWindowState.js';
+import { QueryBuilderRelationColumnProjectionColumnState } from '../../stores/fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import { buildTDSGridContextMenuItems } from '../result/tds/QueryBuilderTDSGridShared.js';
-import { TEST_DATA__simpleProjection } from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
+import {
+  TEST_DATA__simpleProjection,
+  TEST_DATA_projectionWithWindowFunction,
+} from '../../stores/__tests__/TEST_DATA__QueryBuilder_Generic.js';
 import { TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational } from '../../stores/__tests__/TEST_DATA__ModelCoverageAnalysisResult.js';
 import TEST_DATA__ComplexRelationalModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_ComplexRelational.json' with { type: 'json' };
+import {
+  TEST_DATA__QueryBuilder_Accessors,
+  TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+} from '../../stores/__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
 /**
  * Build a minimal mock of DataGridGetContextMenuItemsParams.
@@ -219,5 +236,293 @@ test(
 
     // A filter condition node should have been created
     expect(queryBuilderState.filterState.nodes.size).toBeGreaterThan(0);
+  },
+);
+
+test(
+  integrationTest(
+    'Filter By / Filter Out create post-filter nodes for window function columns',
+  ),
+  async () => {
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    const graphManagerState = await TEST__setUpGraphManagerState(
+      TEST_DATA__ComplexRelationalModel,
+      pluginManager,
+    );
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+    const queryBuilderState = new INTERNAL__BasicQueryBuilderState(
+      applicationStore,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      undefined,
+    );
+
+    const mapping = graphManagerState.graph.getMapping(
+      'model::relational::tests::simpleRelationalMapping',
+    );
+    queryBuilderState.executionContextState.setMapping(mapping);
+    queryBuilderState.executionContextState.setRuntimeValue(
+      new RuntimePointer(
+        PackageableElementExplicitReference.create(
+          graphManagerState.graph.getRuntime('model::MyRuntime'),
+        ),
+      ),
+    );
+
+    createSpy(
+      graphManagerState.graphManager,
+      'analyzeMappingModelCoverage',
+    ).mockResolvedValue(
+      graphManagerState.graphManager.buildMappingModelCoverageAnalysisResult(
+        TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+        mapping,
+      ),
+    );
+
+    const _personClass = graphManagerState.graph.getClass(
+      'model::pure::tests::model::simple::Person',
+    );
+    queryBuilderState.changeSourceElement(_personClass);
+
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(
+        TEST_DATA_projectionWithWindowFunction.parameters,
+        TEST_DATA_projectionWithWindowFunction.body,
+      ),
+    );
+
+    const tdsState = queryBuilderState.fetchStructureState
+      .implementation as QueryBuilderTDSState;
+    expect(tdsState).toBeInstanceOf(QueryBuilderTDSState);
+    expect(tdsState.windowState.windowColumns.length).toBeGreaterThan(0);
+
+    const windowColumn = tdsState.windowState.windowColumns[0];
+    expect(windowColumn).toBeInstanceOf(QueryBuilderWindowColumnState);
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const windowColumnName = windowColumn!.columnName;
+
+    const resultState = queryBuilderState.resultState;
+
+    // ----- Filter By on a window function column -----
+    resultState.setMouseOverCell({
+      value: 1,
+      columnName: windowColumnName,
+      coordinates: { rowIndex: 0, colIndex: 0 },
+    });
+
+    const filterByParams = makeMockContextMenuParams(1, windowColumnName, 0, {
+      [windowColumnName]: 1,
+      rowNumber: 0,
+    });
+
+    const menuItems = buildTDSGridContextMenuItems(
+      filterByParams,
+      applicationStore,
+      resultState,
+      (e) => {
+        throw e;
+      },
+    );
+
+    const filterByItem = menuItems.find(
+      (item) => typeof item === 'object' && item.name === 'Filter By',
+    ) as DataGridMenuItemDef | undefined;
+    expect(filterByItem).toBeDefined();
+
+    expect(tdsState.postFilterState.nodes.size).toBe(0);
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    filterByItem!.action!(undefined as never);
+
+    // A post-filter condition node should have been created, not an error
+    expect(tdsState.postFilterState.nodes.size).toBeGreaterThan(0);
+
+    // Clean up
+    tdsState.postFilterState.rootIds.forEach((id) => {
+      const node = tdsState.postFilterState.nodes.get(id);
+      if (node) {
+        tdsState.postFilterState.removeNodeAndPruneBranch(node);
+      }
+    });
+    expect(tdsState.postFilterState.nodes.size).toBe(0);
+
+    // ----- Filter Out on the same window function column -----
+    resultState.setSelectedCells([]);
+    resultState.setMouseOverCell({
+      value: 2,
+      columnName: windowColumnName,
+      coordinates: { rowIndex: 1, colIndex: 0 },
+    });
+
+    const filterOutParams = makeMockContextMenuParams(2, windowColumnName, 1, {
+      [windowColumnName]: 2,
+      rowNumber: 1,
+    });
+
+    const menuItems2 = buildTDSGridContextMenuItems(
+      filterOutParams,
+      applicationStore,
+      resultState,
+      (e) => {
+        throw e;
+      },
+    );
+
+    const filterOutItem = menuItems2.find(
+      (item) => typeof item === 'object' && item.name === 'Filter Out',
+    ) as DataGridMenuItemDef | undefined;
+    expect(filterOutItem).toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    filterOutItem!.action!(undefined as never);
+
+    expect(tdsState.postFilterState.nodes.size).toBeGreaterThan(0);
+  },
+);
+
+test(
+  integrationTest(
+    'Filter By / Filter Out create post-filter nodes for Relation-type projection columns',
+  ),
+  async () => {
+    // ----- Set up AccessorQueryBuilderState (store-only, no rendering) -----
+    const pluginManager = TEST__LegendApplicationPluginManager.create();
+    pluginManager
+      .usePresets([
+        new Core_GraphManagerPreset(),
+        new QueryBuilder_GraphManagerPreset(),
+      ])
+      .install();
+    const graphManagerState = new GraphManagerState(
+      pluginManager,
+      new LogService(),
+    );
+    await graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await graphManagerState.initializeSystem();
+    await graphManagerState.graphManager.buildGraph(
+      graphManagerState.graph,
+      TEST_DATA__QueryBuilder_Accessors,
+      graphManagerState.graphBuildState,
+    );
+    const applicationStore = new ApplicationStore(
+      TEST__getGenericApplicationConfig(),
+      pluginManager,
+    );
+    const queryBuilderState = new AccessorQueryBuilderState(
+      applicationStore,
+      undefined,
+      graphManagerState,
+      QueryBuilderAdvancedWorkflowState.INSTANCE,
+      QueryBuilderActionConfig.INSTANCE,
+    );
+
+    queryBuilderState.initializeWithQuery(
+      create_RawLambda(
+        TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest.parameters,
+        TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest.body,
+      ),
+    );
+
+    const tdsState = queryBuilderState.fetchStructureState
+      .implementation as QueryBuilderTDSState;
+    expect(tdsState).toBeInstanceOf(QueryBuilderTDSState);
+    expect(tdsState.projectionColumns.length).toBeGreaterThan(0);
+
+    const relationColumn = tdsState.projectionColumns[0];
+    expect(relationColumn).toBeInstanceOf(
+      QueryBuilderRelationColumnProjectionColumnState,
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const relationColumnName = relationColumn!.columnName;
+
+    const resultState = queryBuilderState.resultState;
+
+    // ----- Filter By on a Relation-type projection column -----
+    resultState.setMouseOverCell({
+      value: 'US',
+      columnName: relationColumnName,
+      coordinates: { rowIndex: 0, colIndex: 0 },
+    });
+
+    const filterByParams = makeMockContextMenuParams(
+      'US',
+      relationColumnName,
+      0,
+      { [relationColumnName]: 'US', rowNumber: 0 },
+    );
+
+    const menuItems = buildTDSGridContextMenuItems(
+      filterByParams,
+      applicationStore,
+      resultState,
+      (e) => {
+        throw e;
+      },
+    );
+
+    const filterByItem = menuItems.find(
+      (item) => typeof item === 'object' && item.name === 'Filter By',
+    ) as DataGridMenuItemDef | undefined;
+    expect(filterByItem).toBeDefined();
+
+    expect(tdsState.postFilterState.nodes.size).toBe(0);
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    filterByItem!.action!(undefined as never);
+
+    // A post-filter condition node should have been created, not an error
+    expect(tdsState.postFilterState.nodes.size).toBeGreaterThan(0);
+
+    // Clean up
+    tdsState.postFilterState.rootIds.forEach((id) => {
+      const node = tdsState.postFilterState.nodes.get(id);
+      if (node) {
+        tdsState.postFilterState.removeNodeAndPruneBranch(node);
+      }
+    });
+    expect(tdsState.postFilterState.nodes.size).toBe(0);
+
+    // ----- Filter Out on the same Relation-type projection column -----
+    resultState.setSelectedCells([]);
+    resultState.setMouseOverCell({
+      value: 'FR',
+      columnName: relationColumnName,
+      coordinates: { rowIndex: 1, colIndex: 0 },
+    });
+
+    const filterOutParams = makeMockContextMenuParams(
+      'FR',
+      relationColumnName,
+      1,
+      { [relationColumnName]: 'FR', rowNumber: 1 },
+    );
+
+    const menuItems2 = buildTDSGridContextMenuItems(
+      filterOutParams,
+      applicationStore,
+      resultState,
+      (e) => {
+        throw e;
+      },
+    );
+
+    const filterOutItem = menuItems2.find(
+      (item) => typeof item === 'object' && item.name === 'Filter Out',
+    ) as DataGridMenuItemDef | undefined;
+    expect(filterOutItem).toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    filterOutItem!.action!(undefined as never);
+
+    expect(tdsState.postFilterState.nodes.size).toBeGreaterThan(0);
   },
 );

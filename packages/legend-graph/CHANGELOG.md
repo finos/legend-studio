@@ -1,5 +1,61 @@
 # @finos/legend-graph
 
+## 32.6.31
+
+### Patch Changes
+
+- [#5483](https://github.com/finos/legend-studio/pull/5483) [`908f9c8`](https://github.com/finos/legend-studio/commit/908f9c875ee026dea349bdc2ad9ddf9fba8c8bd6) ([@kelly-thai](https://github.com/kelly-thai)) - Add isCurrentUserAnOwnerOnLatestVersion API to Engine Server Client to check service ownership
+
+- [#5491](https://github.com/finos/legend-studio/pull/5491) [`a8c5a84`](https://github.com/finos/legend-studio/commit/a8c5a84db7cf61a1d584ddde55c19f8751911e29) ([@jackp5150](https://github.com/jackp5150)) - Attach runtime and mapping sourced from MAPGs to query which enables execution and plan generation
+
+- [#5488](https://github.com/finos/legend-studio/pull/5488) [`ce3de99`](https://github.com/finos/legend-studio/commit/ce3de998701dedd96c82dcd8b852dd18829e9ea3) ([@yash0024](https://github.com/yash0024)) - Export V1_buildRelationTypeFromV1RelationType
+
+## 32.6.30
+
+### Patch Changes
+
+- [#5469](https://github.com/finos/legend-studio/pull/5469) [`07f9d8c`](https://github.com/finos/legend-studio/commit/07f9d8c1516ef598f7d7e7f1657b5e89f223f437) ([@ywiamnog](https://github.com/ywiamnog)) - update availability classifier path
+
+## 32.6.29
+
+### Patch Changes
+
+- [#5465](https://github.com/finos/legend-studio/pull/5465) [`7f5bef3`](https://github.com/finos/legend-studio/commit/7f5bef3c861490e0ba8426dc95f37c1e60b8b815) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated the data product analytics builder to reflect the newly updated protocol shape
+
+## 32.6.28
+
+## 32.6.27
+
+### Patch Changes
+
+- [#5449](https://github.com/finos/legend-studio/pull/5449) [`3d09d32`](https://github.com/finos/legend-studio/commit/3d09d3286e482e835ae80e7b12883cb039e3ebd9) ([@jackp5150](https://github.com/jackp5150)) - Added batching for lambdaRelationType in DataProductViewerState
+
+- [#5450](https://github.com/finos/legend-studio/pull/5450) [`91fc2ea`](https://github.com/finos/legend-studio/commit/91fc2ea3b602d53b0327e0e61c83a275932c592d) ([@yash0024](https://github.com/yash0024)) - Make diagrams optional and omit empty featuredElements/diagrams from serialized json
+
+## 32.6.26
+
+### Patch Changes
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Optimize "download project grammar with dependency" in the developer tools panel: dependency grammar is now fetched from Depot as a single `V1_PureModelContextData` payload and transformed to Pure code in one engine call, instead of building a metamodel graph and round-tripping element-by-element. Adds `DepotServerClient.collectDependencyEntitiesAsPureModelContextData` and `AbstractPureGraphManager.protocolToPureCode` (backed by the engine's `transformProtocolGraphToCode`). Also makes the entire download-grammar action row (icon + label) clickable.
+
+- [#5444](https://github.com/finos/legend-studio/pull/5444) [`c3c9cd8`](https://github.com/finos/legend-studio/commit/c3c9cd867e561974990f578a4f3401a05d139c3c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix roundtrip hashCode drift for relational class mappings that reference tables from an ingest-generated (lakehouse) database via an outer `Database` `include`. When transforming a `TableAlias` back to a `V1_TablePtr`, we now preserve the user's originally-serialized database path (e.g. the outer `Database` the mapping actually referenced) whenever it differs from the synthetic `INTERNAL__LakehouseGeneratedDatabase.path`, instead of unconditionally rewriting to the owning ingest path. The guard also skips the rewrite when there is no serialized path so the resolved path is not clobbered with an empty string.
+
+- [#5439](https://github.com/finos/legend-studio/pull/5439) [`dcab0ed`](https://github.com/finos/legend-studio/commit/dcab0ed1bca3f488d0f211309df93638377dbbd6) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix graph build failure `Can't find schema '<X>' in database '<DB>'` when a parent `Database` `include`s a child `Database` whose schemas come from `include Ingest`. The relation resolver in `V1_GraphBuilderContext.resolveRelation` now walks classic database includes transitively to find ingest-generated databases (child DB's `includedStoreSpecifications`), instead of only looking at the owner database's own ingest includes. Also fixes the `V1_findSchema` error message to render the database path instead of `[object Object]`.
+
+- [#5440](https://github.com/finos/legend-studio/pull/5440) [`6c85092`](https://github.com/finos/legend-studio/commit/6c850924de24587e14e4686905216708f17c0c58) ([@Rakan1837](https://github.com/Rakan1837)) - Add form-mode editor for the Availability lakehouse element, including a Definition tab (grammar view) and a Testing tab backed by the shared testable framework, with graph/protocol support for `Availability` roundtrip.
+
+## 32.6.25
+
+### Patch Changes
+
+- [#5409](https://github.com/finos/legend-studio/pull/5409) [`2f7fb59`](https://github.com/finos/legend-studio/commit/2f7fb59993fc1eb11383fe9a2fef6f05bf2d4a9d) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `IngestionDefinitionArtifact` model with serialization support and a `buildIngestDefinitionArtifact` graph manager method that resolves mat view schemas into metamodel `RelationType`s.
+
+- [#5401](https://github.com/finos/legend-studio/pull/5401) [`f6d3aa8`](https://github.com/finos/legend-studio/commit/f6d3aa87a19a7553e59a4f2efcfac68c4fc46384) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add support for viewing and loading a query's version history in Legend Query. A saved query can be opened from the `/query/{queryId}/history` endpoint, and a specific revision (identified by its `version`) can be loaded via a new `revisionId` route parameter. The history is surfaced through a "Query History" action in the query editor help menu and a "Show Query History" action per query in the load-query dialog.
+
+- [#5400](https://github.com/finos/legend-studio/pull/5400) [`7c7ddd6`](https://github.com/finos/legend-studio/commit/7c7ddd60830d0eeed54a889ee36c64e9479451c0) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add support for lambda-based relation function class mapping (`~src` sourceLambda on class mapping, expression-based `valueFn` on property mapping).
+
+- [#5413](https://github.com/finos/legend-studio/pull/5413) [`14da71f`](https://github.com/finos/legend-studio/commit/14da71fa602c229f2804570f88bdcd482e4bb2e3) ([@jackp5150](https://github.com/jackp5150)) - Added serializers for new V1_LambdaReturnTypeBatchInput class for batched lambda calls
+
 ## 32.6.24
 
 ### Patch Changes

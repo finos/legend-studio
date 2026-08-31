@@ -43,6 +43,7 @@ import {
   MoonIcon,
   SunIcon,
   SparkleIcon,
+  RobotIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -50,13 +51,14 @@ import {
   type MappingQueryCreatorPathParams,
   type ExistingQueryEditorPathParams,
   type ServiceQueryCreatorPathParams,
+  type ExistingQueryEditorQueryParams,
   LEGEND_QUERY_QUERY_PARAM_TOKEN,
   LEGEND_QUERY_ROUTE_PATTERN_TOKEN,
   generateQuerySetupRoute,
   generateExistingQueryEditorRoute,
 } from '../__lib__/LegendQueryNavigation.js';
 import { ExistingQueryEditorStore } from '../stores/QueryEditorStore.js';
-import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import { LegendQueryAgentChatTelemetryHelper } from '../__lib__/LegendQueryAgentChatTelemetryHelper.js';
 import {
   LEGEND_APPLICATION_COLOR_THEME,
   ReleaseLogManager,
@@ -105,7 +107,6 @@ import { QueryEditorDataProductInfoModal } from './data-product/DataProductInfo.
 import { QueryEditorIngestInfoModal } from './ingest/IngestInfo.js';
 import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { DataSpaceQueryBuilderState } from '@finos/legend-extension-dsl-data-space/application';
-import { LegendQueryBareQueryBuilderState } from '../stores/data-space/LegendQueryBareQueryBuilderState.js';
 import { extractQueryParams } from './utils/QueryParameterUtils.js';
 import type { QueryTitleDescriptionAISuggestionRequest } from '../stores/LegendQueryApplicationPlugin.js';
 
@@ -186,7 +187,7 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
-    LegendQueryTelemetryHelper.logEvent_QueryAISuggestLaunched(
+    LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestLaunched(
       applicationStore.telemetryService,
     );
     setIsSuggestingWithAI(true);
@@ -199,7 +200,7 @@ const CreateQueryDialog = observer(() => {
       setAISuggestion(suggestion);
     } catch (error) {
       assertErrorThrown(error);
-      LegendQueryTelemetryHelper.logEvent_QueryAISuggestFailure(
+      LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestFailure(
         applicationStore.telemetryService,
         error.message,
       );
@@ -224,7 +225,7 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggestion) {
       return;
     }
-    LegendQueryTelemetryHelper.logEvent_QueryAISuggestApplied(
+    LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestApplied(
       applicationStore.telemetryService,
     );
     createQueryState.setQueryName(aiSuggestion.title);
@@ -232,7 +233,7 @@ const CreateQueryDialog = observer(() => {
     setAISuggestion(undefined);
   };
   const discardAISuggestion = (): void => {
-    LegendQueryTelemetryHelper.logEvent_QueryAISuggestDiscarded(
+    LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestDiscarded(
       applicationStore.telemetryService,
     );
     setAISuggestion(undefined);
@@ -519,7 +520,7 @@ const RenameQueryDialog = observer(
         setAISuggestion(suggestion);
       } catch (error) {
         assertErrorThrown(error);
-        LegendQueryTelemetryHelper.logEvent_QueryAISuggestFailure(
+        LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestFailure(
           applicationStore.telemetryService,
           error.message,
         );
@@ -814,6 +815,18 @@ const QueryEditorExistingQueryInfoModal = observer(
       ).catch(applicationStore.alertUnhandledError);
     }, [applicationStore, query.artifactId, query.groupId, updateState]);
 
+    const dataSpaceQueryBuilderState =
+      existingEditorStore.queryBuilderState instanceof
+      DataSpaceQueryBuilderState
+        ? existingEditorStore.queryBuilderState
+        : undefined;
+    const mappingProviderElement =
+      dataSpaceQueryBuilderState?.executionContext.mappingProvider?.element
+        .value;
+    const dataSpaceDisplayName =
+      dataSpaceQueryBuilderState?.dataSpace.title ??
+      dataSpaceQueryBuilderState?.dataSpace.name;
+
     return (
       <Dialog
         open={updateState.showQueryInfo}
@@ -847,9 +860,13 @@ const QueryEditorExistingQueryInfoModal = observer(
               {executionContext instanceof QueryExplicitExecutionContext && (
                 <>
                   <div className="query-preview__field">
-                    <div className="query-preview__field__label">Mapping</div>
+                    <div className="query-preview__field__label">
+                      {mappingProviderElement ? 'Data Product' : 'Mapping'}
+                    </div>
                     <div className="query-preview__field__value">
-                      {executionContext.mapping.value.name}
+                      {mappingProviderElement
+                        ? mappingProviderElement.name
+                        : executionContext.mapping.value.name}
                     </div>
                   </div>
                   <div className="query-preview__field">
@@ -867,7 +884,7 @@ const QueryEditorExistingQueryInfoModal = observer(
                       Data Product
                     </div>
                     <div className="query-preview__field__value">
-                      {executionContext.dataSpacePath}
+                      {dataSpaceDisplayName ?? executionContext.dataSpacePath}
                     </div>
                   </div>
                   {executionContext.executionKey && (
@@ -1093,13 +1110,24 @@ export const QueryEditor = observer(() => {
     );
   };
 
-  //open legend ai query chat
-  const openQueryChat = (): void => {
-    if (!editorStore.queryBuilderState?.isQueryChatOpened) {
-      LegendQueryTelemetryHelper.logEvent_QueryChatOpened(
+  const toggleAgentChat = (): void => {
+    const qbState = editorStore.queryBuilderState;
+    if (!qbState) {
+      return;
+    }
+    const nextOpened = !qbState.isAgentChatOpened;
+    if (nextOpened) {
+      LegendQueryAgentChatTelemetryHelper.logEvent_QueryAgentChatOpened(
         applicationStore.telemetryService,
       );
-      editorStore.queryBuilderState?.setIsQueryChatOpened(true);
+    }
+    qbState.setIsAgentChatOpened(nextOpened);
+  };
+
+  // open the query version history (same viewer used by the query loader)
+  const showQueryHistory = (): void => {
+    if (editorStore instanceof ExistingQueryEditorStore) {
+      editorStore.showQueryVersionHistory();
     }
   };
 
@@ -1131,6 +1159,14 @@ export const QueryEditor = observer(() => {
                   <MenuContentItem onClick={goToQuerySetup}>
                     Back to query setup
                   </MenuContentItem>
+                  {isExistingQuery && (
+                    <MenuContentItem
+                      disabled={isLoadingEditor}
+                      onClick={showQueryHistory}
+                    >
+                      Query History
+                    </MenuContentItem>
+                  )}
                   <MenuContentItem
                     disabled={!appDocUrl}
                     onClick={goToDocumentation}
@@ -1162,16 +1198,22 @@ export const QueryEditor = observer(() => {
         <div className="query-editor__header__action__content">
           {!isLoadingEditor &&
             !editorStore.queryBuilderState?.config
-              ?.TEMPORARY__disableQueryBuilderChat &&
-            (editorStore.queryBuilderState instanceof
-              DataSpaceQueryBuilderState ||
-              editorStore.queryBuilderState instanceof
-                LegendQueryBareQueryBuilderState) &&
-            editorStore.queryBuilderState.canBuildQuery && (
+              ?.TEMPORARY__disableQueryBuilderAgentChat &&
+            editorStore.queryBuilderState?.canBuildQuery && (
               <button
-                title="Open Query Chat."
-                onClick={() => openQueryChat()}
-                className="query-editor__header__action query-editor__header__action__theme-toggler"
+                title={
+                  editorStore.queryBuilderState.isAgentChatOpened
+                    ? 'Close Legend AI Agent Chat'
+                    : 'Open Legend AI Agent Chat'
+                }
+                onClick={toggleAgentChat}
+                className={clsx(
+                  'query-editor__header__action query-editor__header__action__theme-toggler',
+                  {
+                    'query-editor__header__action--toggled':
+                      editorStore.queryBuilderState.isAgentChatOpened,
+                  },
+                )}
               >
                 <div
                   className={
@@ -1183,6 +1225,15 @@ export const QueryEditor = observer(() => {
                 >
                   Legend AI
                 </div>
+                <RobotIcon
+                  className={clsx(
+                    'query-editor__header__action__chat__icon',
+                    applicationStore.layoutService
+                      .TEMPORARY__isLightColorThemeEnabled
+                      ? 'query-editor__header__action__chat__label--light'
+                      : 'query-editor__header__action__chat__label--dark',
+                  )}
+                />
               </button>
             )}
           <button
@@ -1303,19 +1354,25 @@ export const ExistingQueryEditor = observer(() => {
     params[LEGEND_QUERY_ROUTE_PATTERN_TOKEN.QUERY_ID],
   );
   const queryParams =
-    applicationStore.navigationService.navigator.getCurrentLocationParameters();
+    applicationStore.navigationService.navigator.getCurrentLocationParameters<ExistingQueryEditorQueryParams>();
   const processed = extractQueryParams(queryParams);
+  const revisionId = queryParams[LEGEND_QUERY_QUERY_PARAM_TOKEN.REVISION_ID];
   useEffect(() => {
-    // clear params
+    // clear the query-parameter values from the URL while preserving the
+    // revisionId so the loaded revision remains reflected in a shareable link
     if (processed && Object.keys(processed).length) {
       applicationStore.navigationService.navigator.updateCurrentLocation(
-        generateExistingQueryEditorRoute(queryId),
+        generateExistingQueryEditorRoute(queryId, revisionId),
       );
     }
-  }, [applicationStore, queryId, processed]);
+  }, [applicationStore, queryId, processed, revisionId]);
 
   return (
-    <ExistingQueryEditorStoreProvider queryId={queryId} params={processed}>
+    <ExistingQueryEditorStoreProvider
+      queryId={queryId}
+      params={processed}
+      revisionId={revisionId}
+    >
       <QueryEditor />
     </ExistingQueryEditorStoreProvider>
   );

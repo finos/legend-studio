@@ -146,6 +146,9 @@ export class DataProductSearchResultMetadata {
   lakehouse_count: number | undefined;
   legacy_count: number | undefined;
   external_source_count: number | undefined;
+  internal_source_count: number | undefined;
+  enterprise_license_count: number | undefined;
+  non_enterprise_license_count: number | undefined;
   has_filtered_products: boolean | undefined;
 
   static readonly serialization = new SerializationFactory(
@@ -159,6 +162,9 @@ export class DataProductSearchResultMetadata {
       lakehouse_count: optional(primitive()),
       legacy_count: optional(primitive()),
       external_source_count: optional(primitive()),
+      internal_source_count: optional(primitive()),
+      enterprise_license_count: optional(primitive()),
+      non_enterprise_license_count: optional(primitive()),
       has_filtered_products: optional(primitive()),
     }),
   );
@@ -182,8 +188,6 @@ export class DataProductSearchResult {
     createModelSchema(DataProductSearchResult, {
       dataProductTitle: optional(primitive()),
       dataProductDescription: optional(primitive()),
-      embedding_type: primitive(),
-      vendor_name: primitive(),
       tags1: list(primitive()),
       tags2: list(primitive()),
       tag_score: primitive(),

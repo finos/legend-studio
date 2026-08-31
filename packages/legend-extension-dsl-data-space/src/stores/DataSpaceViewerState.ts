@@ -25,7 +25,7 @@ import {
   type GraphManagerState,
   type PackageableRuntime,
 } from '@finos/legend-graph';
-import { action, computed, makeObservable, observable } from 'mobx';
+import { action, computed, flowResult, makeObservable, observable } from 'mobx';
 import {
   type DataSpaceAnalysisResult,
   type DataSpaceExecutionContextAnalysisResult,
@@ -51,6 +51,10 @@ import {
 } from '@finos/legend-lego/legend-ai';
 import { DataSpaceQuickStartState } from './DataSpaceQuickStartState.js';
 import { DataSpaceViewerExecutableState } from './DataSpaceViewerExecutableState.js';
+import {
+  type DataSpaceMappingProviderAccessConfig,
+  DataSpaceMappingProviderAccessState,
+} from './DataSpaceMappingProviderAccessState.js';
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -73,6 +77,17 @@ export class DataSpaceViewerState {
   readonly onQuickStartTabChange?:
     | ((tabKey: string, executableTitle: string) => void)
     | undefined;
+  readonly viewDataProduct?:
+    | ((
+        groupId: string,
+        artifactId: string,
+        versionId: string,
+        dataProductPath: string,
+      ) => void)
+    | undefined;
+  readonly mappingProviderAccessConfig?:
+    | DataSpaceMappingProviderAccessConfig
+    | undefined;
 
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
@@ -81,9 +96,19 @@ export class DataSpaceViewerState {
   executableStates: DataSpaceViewerExecutableState[] = [];
 
   currentActivity = DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION;
-  currentDataAccessState: DataAccessState;
-  currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
-  currentRuntime: PackageableRuntime;
+  currentDataAccessState?: DataAccessState | undefined;
+  currentExecutionContext?: DataSpaceExecutionContextAnalysisResult | undefined;
+  currentRuntime?: PackageableRuntime | undefined;
+  /**
+   * Cache of mapping-provider access states keyed by the mapping provider
+   * (Data Product) element path. Multiple execution contexts often point at
+   * the same underlying Data Product, so caching avoids re-hitting
+   * depot + Lakehouse every time the user switches execution context.
+   */
+  mappingProviderAccessStates = new Map<
+    string,
+    DataSpaceMappingProviderAccessState
+  >();
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -103,6 +128,17 @@ export class DataSpaceViewerState {
       onQuickStartTabChange?:
         | ((tabKey: string, executableTitle: string) => void)
         | undefined;
+      viewDataProduct?:
+        | ((
+            groupId: string,
+            artifactId: string,
+            versionId: string,
+            dataProductPath: string,
+          ) => void)
+        | undefined;
+      mappingProviderAccessConfig?:
+        | DataSpaceMappingProviderAccessConfig
+        | undefined;
     },
   ) {
     makeObservable(this, {
@@ -110,12 +146,15 @@ export class DataSpaceViewerState {
       currentExecutionContext: observable,
       currentRuntime: observable,
       currentDataAccessState: observable,
+      mappingProviderAccessStates: observable.shallow,
+      currentMappingProviderAccessState: computed,
       executableStates: observable,
       legendAIConfig: observable,
       isVerified: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
+      refreshCurrentMappingProviderAccessState: action,
     });
 
     this.applicationStore = applicationStore;
@@ -137,21 +176,26 @@ export class DataSpaceViewerState {
     this.queryClass = actions.queryClass;
     this.openServiceQuery = actions.openServiceQuery;
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
+    this.viewDataProduct = actions.viewDataProduct;
+    this.mappingProviderAccessConfig = actions.mappingProviderAccessConfig;
 
     this.currentExecutionContext =
-      dataSpaceAnalysisResult.defaultExecutionContext;
-    this.currentRuntime = this.currentExecutionContext.defaultRuntime;
-    this.currentDataAccessState = new DataAccessState(
-      this.applicationStore,
-      this.graphManagerState,
-      {
-        initialDatasets: this.currentExecutionContext.datasets,
-        mapping: this.currentExecutionContext.mapping.path,
-        runtime: this.currentExecutionContext.defaultRuntime.path,
-        getQuery: async () => undefined,
-        graphData: this.retrieveGraphData(),
-      },
-    );
+      dataSpaceAnalysisResult.defaultExecutionContext ??
+      Array.from(dataSpaceAnalysisResult.executionContextsIndex.values())[0];
+    this.currentRuntime = this.currentExecutionContext?.defaultRuntime;
+    if (this.currentExecutionContext && this.currentRuntime) {
+      this.currentDataAccessState = new DataAccessState(
+        this.applicationStore,
+        this.graphManagerState,
+        {
+          initialDatasets: this.currentExecutionContext.datasets,
+          mapping: this.currentExecutionContext.mapping.path,
+          runtime: this.currentRuntime.path,
+          getQuery: async () => undefined,
+          graphData: this.retrieveGraphData(),
+        },
+      );
+    }
 
     this.modelsDocumentationState = new DataSpaceViewerModelsDocumentationState(
       this,
@@ -159,6 +203,7 @@ export class DataSpaceViewerState {
     this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
     this.quickStartState = new DataSpaceQuickStartState(this);
     this.legendAIConfig = DEFAULT_LEGEND_AI_CONFIG;
+    this.initMappingProviderAccessState();
   }
 
   get isVerified(): boolean {
@@ -171,6 +216,17 @@ export class DataSpaceViewerState {
     );
   }
 
+  get currentMappingProviderAccessState():
+    | DataSpaceMappingProviderAccessState
+    | undefined {
+    const mappingProvider =
+      this.currentExecutionContext?.mappingProvider?.element;
+    if (!mappingProvider) {
+      return undefined;
+    }
+    return this.mappingProviderAccessStates.get(mappingProvider);
+  }
+
   setCurrentActivity(val: DATA_SPACE_VIEWER_ACTIVITY_MODE): void {
     this.currentActivity = val;
   }
@@ -180,17 +236,69 @@ export class DataSpaceViewerState {
   ): void {
     this.currentExecutionContext = val;
     this.currentRuntime = val.defaultRuntime;
-    this.currentDataAccessState = new DataAccessState(
+    if (this.currentRuntime) {
+      this.currentDataAccessState = new DataAccessState(
+        this.applicationStore,
+        this.graphManagerState,
+        {
+          initialDatasets: val.datasets,
+          mapping: val.mapping.path,
+          runtime: this.currentRuntime.path,
+          getQuery: async () => undefined,
+          graphData: this.retrieveGraphData(),
+        },
+      );
+    } else {
+      this.currentDataAccessState = undefined;
+    }
+    this.initMappingProviderAccessState();
+  }
+
+  /**
+   * Ensures a `DataSpaceMappingProviderAccessState` exists (and has been
+   * initialized) for the current execution context's mapping provider. Reuses
+   * the cached entry keyed by the mapping provider (Data Product) path when
+   * possible so switching execution contexts does not re-hit depot / Lakehouse.
+   */
+  private initMappingProviderAccessState(): void {
+    const mappingProvider =
+      this.currentExecutionContext?.mappingProvider?.element;
+    if (!mappingProvider || !this.mappingProviderAccessConfig) {
+      return;
+    }
+    if (this.mappingProviderAccessStates.has(mappingProvider)) {
+      return;
+    }
+    const state = new DataSpaceMappingProviderAccessState(
       this.applicationStore,
       this.graphManagerState,
       {
-        initialDatasets: val.datasets,
-        mapping: val.mapping.path,
-        runtime: val.defaultRuntime.path,
-        getQuery: async () => undefined,
-        graphData: this.retrieveGraphData(),
+        groupId: this.groupId,
+        artifactId: this.artifactId,
+        versionId: this.versionId,
       },
+      mappingProvider,
+      this.mappingProviderAccessConfig,
     );
+    this.mappingProviderAccessStates.set(mappingProvider, state);
+    // eslint-disable-next-line no-void
+    void flowResult(state.initialize()).catch(() => undefined);
+  }
+
+  /**
+   * Evicts the cached access state for the current execution context's mapping
+   * provider and rebuilds it, re-running the full resolve + init flow (depot
+   * artifact fetch, Lakehouse data-product details, contracts / entitlements
+   * / ingest fetches, and per-APG user access status).
+   */
+  refreshCurrentMappingProviderAccessState(): void {
+    const mappingProvider =
+      this.currentExecutionContext?.mappingProvider?.element;
+    if (!mappingProvider) {
+      return;
+    }
+    this.mappingProviderAccessStates.delete(mappingProvider);
+    this.initMappingProviderAccessState();
   }
 
   setCurrentRuntime(val: PackageableRuntime): void {

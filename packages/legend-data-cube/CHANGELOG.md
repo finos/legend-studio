@@ -1,5 +1,29 @@
 # @finos/legend-data-cube
 
+## 0.3.118
+
+## 0.3.117
+
+### Patch Changes
+
+- [#5476](https://github.com/finos/legend-studio/pull/5476) [`c6a6d0f`](https://github.com/finos/legend-studio/commit/c6a6d0ff27d49bdd511de64ea1c25246af4ca315) ([@TharunRajeev](https://github.com/TharunRajeev)) - Make the grid's "Copy" menu functional: "Plain Text" copies the current cell selection, "Selected Rows as Plain Text" and "Selected Column as Plain Text" expand the selection to the full row(s)/column(s) it touches before copying. These options are disabled when there is no cell selection, and "Selected Rows as Plain Text" is also disabled when the menu is opened from the column header. Clicking a column header now selects the entire column.
+
+## 0.3.116
+
+## 0.3.115
+
+### Patch Changes
+
+- [#5467](https://github.com/finos/legend-studio/pull/5467) [`71d24e0`](https://github.com/finos/legend-studio/commit/71d24e09e4ac610a00a03f453d342e212f6762bd) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add loading indicators across the DataCube builder flows so long-running actions no longer look frozen: the creation/load/save dialogs now show progress and register a task, and the DataCube initialization placeholder is no longer blank. Freeze the New DataCube form while creation is in flight, and hold on to the source builder it started with, so switching the source type mid-flight can no longer be silently discarded or applied to the wrong source. Fix the Lakehouse consumer and producer source builders resetting an already filled out form on OAuth token refresh, stop a failure to resolve the Iceberg catalog from aborting the rest of the producer setup, and report failures from initialization instead of leaving them as unhandled promise rejections.
+
+## 0.3.114
+
+## 0.3.113
+
+## 0.3.112
+
+## 0.3.111
+
 ## 0.3.110
 
 ## 0.3.109

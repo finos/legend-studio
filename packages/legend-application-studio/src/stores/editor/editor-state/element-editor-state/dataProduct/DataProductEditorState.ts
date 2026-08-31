@@ -17,11 +17,12 @@
 import {
   type AppDirNode,
   type ArtifactGenerationExtensionResult,
-  type DataProductElement,
+  type BatchLambdasRelationTypeResult,
   type IngestDefinition,
   type Mapping,
   type PackageableElement,
   type RawLambda,
+  type RelationTypeMetadata,
   type Stereotype,
   type StereotypeReference,
   type V1_AccessPointGroupInfo,
@@ -31,15 +32,10 @@ import {
   AccessPoint,
   AccessPointGroup,
   AppDirOwner,
-  Association,
-  Class,
   CodeCompletionResult,
   DataElement,
   DataElementReference,
   DataProduct,
-  DataProductDiagram,
-  DataProductElementScope,
-  Enumeration,
   Expertise,
   getStereotype,
   GRAPH_MANAGER_EVENT,
@@ -48,23 +44,14 @@ import {
   LakehouseTargetEnv,
   LAMBDA_PIPE,
   ModelAccessPointGroup,
-  observe_DataProductDiagram,
-  observe_DataProductElementScope,
   observe_RelationElement,
   observe_RelationElementsData,
-  Package,
   PackageableElementExplicitReference,
   ParserError,
   RelationElement,
   RelationElementsData,
   stub_Mapping,
   stub_RawLambda,
-  V1_GraphTransformerContextBuilder,
-  V1_LambdaReturnTypeInput,
-  V1_PureGraphManager,
-  V1_relationTypeModelSchema,
-  V1_RemoteEngine,
-  V1_transformRawLambda,
 } from '@finos/legend-graph';
 import type { EditorStore } from '../../../EditorStore.js';
 import { ElementEditorState } from '../ElementEditorState.js';
@@ -101,11 +88,6 @@ import {
   dataProduct_deleteAccessPointGroup,
   dataProduct_setSupportInfoIfAbsent,
   dataProduct_swapAccessPointGroups,
-  modelAccessPointGroup_addDiagram,
-  modelAccessPointGroup_addElement,
-  modelAccessPointGroup_removeDiagram,
-  modelAccessPointGroup_removeElement,
-  modelAccessPointGroup_setElementExclude,
   modelAccessPointGroup_setMapping,
   supportInfo_addExpertise,
 } from '../../../../graph-modifier/DSL_DataProduct_GraphModifierHelper.js';
@@ -120,10 +102,7 @@ import type {
   AdhocDataProductDeployResponse,
   LakehouseIngestionManager,
 } from '@finos/legend-server-lakehouse';
-import { deserialize } from 'serializr';
-import { Diagram } from '@finos/legend-extension-dsl-diagram';
 import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
-import { onGeneratingDiagramFromMapping } from '../mapping/MappingEditorState.js';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -195,7 +174,6 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   }
 
   *updateLambdaRelationColumns(): GeneratorFn<void> {
-    // Prevent concurrent calls
     if (this.isUpdatingRelationColumns) {
       return;
     }
@@ -207,36 +185,11 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
 
     this.setIsUpdatingRelationColumns(true);
     try {
-      const model = guaranteeType(
-        this.editorStore.graphManagerState.graphManager,
-        V1_PureGraphManager,
-      ).getFullGraphModelData(this.editorStore.graphManagerState.graph);
-
-      const relationTypeInput = new V1_LambdaReturnTypeInput(
-        model,
-        V1_transformRawLambda(
+      const relationType =
+        (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
           this.val.accessPoint.func,
-          new V1_GraphTransformerContextBuilder(
-            this.editorStore.pluginManager.getPureProtocolProcessorPlugins(),
-          ).build(),
-        ),
-      );
-
-      const relationType = deserialize(
-        V1_relationTypeModelSchema,
-        (yield guaranteeType(
-          guaranteeType(
-            this.editorStore.graphManagerState.graphManager,
-            V1_PureGraphManager,
-          ).engine,
-          V1_RemoteEngine,
-        )
-          .getEngineServerClient()
-          .lambdaRelationType(
-            V1_LambdaReturnTypeInput.serialization.toJson(relationTypeInput),
-          )) as object,
-      );
-
+          this.editorStore.graphManagerState.graph,
+        )) as RelationTypeMetadata;
       this.setLambdaRelationColumns(
         relationType.columns.map((column) => column.name),
       );
@@ -795,16 +748,11 @@ export class AccessPointGroupState {
 export class ModelAccessPointGroupState extends AccessPointGroupState {
   declare value: ModelAccessPointGroup;
   readonly editorState: DataProductEditorState;
-  showNewModal = false;
 
   constructor(val: ModelAccessPointGroup, editorState: DataProductEditorState) {
     super(val, editorState);
     this.value = val;
     this.editorState = editorState;
-
-    makeObservable(this, {
-      generateDiagramFromMapping: flow,
-    });
   }
 
   override hasErrors(): boolean {
@@ -812,8 +760,7 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       this.value.id === '' ||
       !this.value.description ||
       !this.value.title ||
-      this.value.mapping.value.path === '' ||
-      this.value.diagrams.length === 0
+      this.value.mapping.value.path === ''
     );
   }
 
@@ -822,145 +769,6 @@ export class ModelAccessPointGroupState extends AccessPointGroupState {
       this.value,
       PackageableElementExplicitReference.create(mapping),
     );
-  }
-
-  getCompatibleDiagramOptions(): {
-    label: string;
-    value: PackageableElement;
-  }[] {
-    const currentDiagrams = this.value.diagrams.map(
-      (diagram) => diagram.diagram,
-    );
-
-    return this.state.editorStore.graphManagerState.graph.allOwnElements
-      .filter((element): element is Diagram => element instanceof Diagram)
-      .filter((diagram) => !currentDiagrams.includes(diagram))
-      .map((diagram) => ({
-        label: diagram.path,
-        value: diagram,
-      }));
-  }
-
-  collectFeaturedClasses = (
-    element: PackageableElement,
-    excludedPaths: string[],
-    elements: Set<Class>,
-  ): void => {
-    if (excludedPaths.includes(element.path)) {
-      return;
-    }
-    if (element instanceof Class) {
-      elements.add(element);
-    } else if (element instanceof Package) {
-      this.collectClassesFromPackage(element, excludedPaths, elements);
-    }
-  };
-
-  collectClassesFromPackage = (
-    element: Package,
-    excludedPaths: string[],
-    elements: Set<Class>,
-  ): void => {
-    element.children.forEach((child) => {
-      if (excludedPaths.includes(child.path)) {
-        return;
-      }
-      if (child instanceof Class) {
-        elements.add(child);
-      } else if (child instanceof Package) {
-        this.collectClassesFromPackage(child, excludedPaths, elements);
-      }
-    });
-  };
-
-  addDiagram = (option: { label: string; value: PackageableElement }): void => {
-    const diagramValue = option.value;
-    const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
-    newDiagram.title = diagramValue.name;
-    newDiagram.diagram = diagramValue;
-    modelAccessPointGroup_addDiagram(this.value, newDiagram);
-  };
-
-  handleRemoveDiagram = (diagram: DataProductDiagram): void => {
-    modelAccessPointGroup_removeDiagram(this.value, diagram);
-  };
-
-  *generateDiagramFromMapping(): GeneratorFn<void> {
-    const mapping = this.value.mapping.value;
-    if (mapping.path === '') {
-      return;
-    }
-    let featuredClasses: Class[] | undefined = undefined;
-    if (this.value.featuredElements.length > 0) {
-      const includes = this.value.featuredElements
-        .filter((el) => el.exclude === undefined || el.exclude === false)
-        .map((el) => el.element.value);
-      const excludedPaths = this.value.featuredElements
-        .filter((el) => el.exclude !== undefined && el.exclude === true)
-        .map((el) => el.element.value.path);
-      const elements = new Set<Class>();
-      includes.forEach((element) => {
-        this.collectFeaturedClasses(element, excludedPaths, elements);
-      });
-      featuredClasses = Array.from(elements);
-    }
-    const diagram = (yield flowResult(
-      onGeneratingDiagramFromMapping(
-        mapping,
-        this.state.editorStore,
-        featuredClasses,
-      ),
-    )) as Diagram | undefined;
-    if (diagram) {
-      const newDiagram = observe_DataProductDiagram(new DataProductDiagram());
-      newDiagram.title = diagram.name;
-      newDiagram.diagram = diagram;
-      modelAccessPointGroup_addDiagram(this.value, newDiagram);
-    }
-  }
-
-  addFeaturedElement(element: DataProductElement): void {
-    const elementPointer = observe_DataProductElementScope(
-      new DataProductElementScope(),
-    );
-    elementPointer.element =
-      PackageableElementExplicitReference.create(element);
-    modelAccessPointGroup_addElement(this.value, elementPointer);
-  }
-
-  removeFeaturedElement(element: DataProductElementScope): void {
-    modelAccessPointGroup_removeElement(this.value, element);
-  }
-
-  excludeFeaturedElement(
-    element: DataProductElementScope,
-    value: boolean,
-  ): void {
-    modelAccessPointGroup_setElementExclude(element, value);
-  }
-
-  isValidDataProductElement(
-    element: PackageableElement,
-  ): element is DataProductElement {
-    return (
-      element instanceof Package ||
-      element instanceof Class ||
-      element instanceof Enumeration ||
-      element instanceof Association
-    );
-  }
-
-  getFeaturedElementOptions(): { label: string; value: DataProductElement }[] {
-    const currentElements = this.value.featuredElements.map(
-      (elementPointer) => elementPointer.element.value,
-    );
-    return this.state.editorStore.graphManagerState.graph.allOwnElements
-      .filter((element) => this.isValidDataProductElement(element))
-      .filter((element) => !currentElements.includes(element))
-      .map((element) => ({
-        label: element.path,
-        value: element,
-      }));
   }
 }
 
@@ -1020,6 +828,7 @@ export class DataProductEditorState extends ElementEditorState {
       setDeployResponse: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
+      batchUpdateLambdaRelationColumns: flow,
       selectedGroupState: observable,
       setSelectedGroupState: action,
       swapAccessPointGroups: action,
@@ -1132,6 +941,59 @@ export class DataProductEditorState extends ElementEditorState {
       } finally {
         this.isConvertingTransformLambdaObjects = false;
       }
+    }
+  }
+
+  *batchUpdateLambdaRelationColumns(
+    accessPointStates: LakehouseAccessPointState[],
+  ): GeneratorFn<void> {
+    const entries = accessPointStates
+      .filter(
+        (apState) =>
+          apState.relationElementState !== undefined &&
+          !apState.lambdaState.isUpdatingRelationColumns &&
+          apState.lambdaState.lastComputedLambdaHash !==
+            apState.accessPoint.func.hashCode,
+      )
+      .map((apState) => ({
+        apState,
+        hash: apState.accessPoint.func.hashCode,
+      }));
+    if (entries.length === 0) {
+      return;
+    }
+    entries.forEach((entry) =>
+      entry.apState.lambdaState.setIsUpdatingRelationColumns(true),
+    );
+    try {
+      const lambdas = new Map<string, RawLambda>(
+        entries.map((entry) => [
+          entry.apState.uuid,
+          entry.apState.accessPoint.func,
+        ]),
+      );
+      const { results } =
+        (yield this.editorStore.graphManagerState.graphManager.getBatchLambdasRelationType(
+          lambdas,
+          this.editorStore.graphManagerState.graph,
+        )) as BatchLambdasRelationTypeResult;
+      entries.forEach((entry) => {
+        const relationType = results.get(entry.apState.uuid);
+        entry.apState.lambdaState.setLambdaRelationColumns(
+          relationType
+            ? relationType.columns.map((column) => column.name)
+            : undefined,
+        );
+      });
+    } catch {
+      entries.forEach((entry) =>
+        entry.apState.lambdaState.setLambdaRelationColumns(undefined),
+      );
+    } finally {
+      entries.forEach((entry) => {
+        entry.apState.lambdaState.lastComputedLambdaHash = entry.hash;
+        entry.apState.lambdaState.setIsUpdatingRelationColumns(false);
+      });
     }
   }
 
