@@ -230,8 +230,8 @@ export class ModelAccessPointGroup
   implements Hashable
 {
   mapping!: PackageableElementReference<Mapping>;
-  featuredElements: DataProductElementScope[] = [];
-  diagrams: DataProductDiagram[] = [];
+  featuredElements: DataProductElementScope[] | undefined;
+  diagrams: DataProductDiagram[] | undefined;
   secureViews: SecureView[] = [];
 
   override get hashCode(): string {
@@ -239,8 +239,8 @@ export class ModelAccessPointGroup
       super.hashCode,
       CORE_HASH_STRUCTURE.DATA_PRODUCT_MODEL_ACCESS_POINT_GROUP,
       this.mapping.valueForSerialization ?? '',
-      hashArray(this.featuredElements),
-      hashArray(this.diagrams),
+      hashArray(this.featuredElements ?? []),
+      hashArray(this.diagrams ?? []),
       hashArray(this.secureViews),
     ]);
   }
