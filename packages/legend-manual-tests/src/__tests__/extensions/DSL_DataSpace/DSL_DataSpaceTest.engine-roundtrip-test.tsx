@@ -358,7 +358,7 @@ describe(
           fireEvent.click(renderResult.getByTitle('See more options'));
         });
         await act(async () => {
-          fireEvent.click(renderResult.getByText('About Data Product'));
+          fireEvent.click(renderResult.getByText('About Data Space'));
         });
         const aboutDataSpaceModal = await waitFor(() =>
           renderResult.getByRole('dialog'),

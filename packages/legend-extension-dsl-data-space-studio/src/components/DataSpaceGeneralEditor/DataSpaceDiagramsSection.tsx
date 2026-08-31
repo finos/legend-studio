@@ -131,7 +131,7 @@ export const DataSpaceDiagramsSection = observer(() => {
   return (
     <ListEditor
       title="Diagrams"
-      prompt="Add diagrams to include in this Data Product. Set a title and description for each diagram."
+      prompt="Add diagrams to include in this Data Space. Set a title and description for each diagram."
       items={dataSpace.diagrams}
       keySelector={(element: DataSpaceDiagram) => element.diagram.value.path}
       ItemComponent={DiagramComponent}

@@ -89,7 +89,7 @@ export class DataSpacePreviewState extends EditorExtensionState {
   static retrieveState(editorStore: EditorStore): DataSpacePreviewState {
     return guaranteeNonNullable(
       DataSpacePreviewState.retrieveNullableState(editorStore),
-      `Can't find data product preview state: make sure it is added as an editor extension state`,
+      `Can't find data space preview state: make sure it is added as an editor extension state`,
     );
   }
 
