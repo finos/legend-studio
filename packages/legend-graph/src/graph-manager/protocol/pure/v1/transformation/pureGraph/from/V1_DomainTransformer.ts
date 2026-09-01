@@ -215,6 +215,7 @@ export const V1_transformTaggedValue = (
 ): V1_TaggedValue => {
   const taggedValue = new V1_TaggedValue();
   taggedValue.value = element.value;
+  taggedValue.multiLine = element.multiLine;
   taggedValue.tag = new V1_TagPtr();
   taggedValue.tag.profile =
     element.tag.ownerReference.valueForSerialization ?? '';

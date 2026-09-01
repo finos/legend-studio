@@ -29,6 +29,7 @@ import {
   TEST_DATA__FunctionRoundtrip,
   TEST_DATA__MeasureRoundtrip,
   TEST_DATA__ClassWithComplexConstraint,
+  TEST_DATA__ClassWithMultiLineTaggedValue,
   TEST_DATA__OverloadedFunctionsRoundtrip,
 } from './roundtripTestData/TEST_DATA__DomainRoundtrip.js';
 import {
@@ -139,6 +140,10 @@ describe(unitTest('Domain import resolution roundtrip'), () => {
   test.each([
     ['Class', TEST_DATA__ClassRoundtrip],
     ['Class with complex constraint', TEST_DATA__ClassWithComplexConstraint],
+    [
+      'Class with multi-line tagged value',
+      TEST_DATA__ClassWithMultiLineTaggedValue,
+    ],
     ['Enumeration', TEST_DATA__EnumerationRoundtrip],
     ['Association', TEST_DATA__AssociationRoundtrip],
     ['Function', TEST_DATA__FunctionRoundtrip],

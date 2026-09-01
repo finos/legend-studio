@@ -23,17 +23,26 @@ export class TaggedValue implements Hashable {
 
   tag: TagReference;
   value: string;
+  /**
+   * Whether the value was authored as a multi-line (`'''...'''`) block.
+   * See https://github.com/finos/legend-engine/pull/5008
+   */
+  multiLine = false;
 
   constructor(tag: TagReference, value: string) {
     this.tag = tag;
     this.value = value;
   }
 
+  /**
+   * NOTE: `V1_TaggedValue.hashCode` must be kept in sync.
+   */
   get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.TAGGED_VALUE,
       this.tag.pointerHashCode,
       this.value,
+      this.multiLine.toString(),
     ]);
   }
 }
