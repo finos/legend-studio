@@ -23,6 +23,7 @@ import {
   isPrimitiveType,
   ofDataType,
   _defaultPrimitiveTypeValue,
+  isCurrentMomentValue,
   type DataCubeOperationValue,
 } from '../DataCubeQueryEngine.js';
 import {
@@ -67,6 +68,12 @@ export class DataCubeQueryFilterOperation__NotEqual extends DataCubeQueryFilterO
   }
 
   isCompatibleWithValue(value: DataCubeOperationValue) {
+    // current-moment values (`today()`/`now()`) are date values resolved at
+    // execution time; the column they apply to is checked in
+    // `_finalizeConditionSnapshot()`
+    if (isCurrentMomentValue(value)) {
+      return true;
+    }
     return (
       value.value !== undefined &&
       isPrimitiveType(value.type) &&

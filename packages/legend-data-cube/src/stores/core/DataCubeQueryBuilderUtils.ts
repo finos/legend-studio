@@ -259,8 +259,11 @@ export function _primitiveValue(
     case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
       return _val(new V1_CStrictDate(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.DATETIME:
+    case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
       return _val(new V1_CDateTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.STRICTTIME:
+    case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
       return _val(new V1_CStrictTime(), guaranteeIsString(value));
     case PRIMITIVE_TYPE.LATESTDATE:
       return new V1_CLatestDate();
@@ -372,6 +375,10 @@ export function _value(value: DataCubeOperationValue): V1_ValueSpecification {
       }
       return _primitiveValue(value.type, value.value);
     }
+    case DataCubeOperationAdvancedValueType.TODAY:
+      return _function(_functionName(DataCubeFunction.TODAY), []);
+    case DataCubeOperationAdvancedValueType.NOW:
+      return _function(_functionName(DataCubeFunction.NOW), []);
     case DataCubeOperationAdvancedValueType.COLUMN:
       return _property(guaranteeIsString(value.value));
     case DataCubeOperationAdvancedValueType.LIST: {

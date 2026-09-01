@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import type { DataCubeOperationValue } from '../DataCubeQueryEngine.js';
+import {
+  getCurrentMomentValueType,
+  isCurrentMomentValue,
+  type DataCubeOperationValue,
+} from '../DataCubeQueryEngine.js';
 import type { DataCubeSnapshotFilterCondition } from '../DataCubeSnapshot.js';
 import type { DataCubeColumn } from '../model/DataCubeColumn.js';
 import { type V1_AppliedFunction } from '@finos/legend-graph';
@@ -49,6 +53,16 @@ export abstract class DataCubeQueryFilterOperation {
     if (
       !this.isCompatibleWithColumn(column) ||
       !this.isCompatibleWithValue(value)
+    ) {
+      return undefined;
+    }
+    // NOTE: `isCompatibleWithValue()` cannot tell whether a current-moment
+    // value (`today()`/`now()`) makes sense for the column it is compared
+    // against, since it does not have access to the column, so check here that
+    // the column actually carries a date.
+    if (
+      isCurrentMomentValue(value) &&
+      !getCurrentMomentValueType(column.type)
     ) {
       return undefined;
     }

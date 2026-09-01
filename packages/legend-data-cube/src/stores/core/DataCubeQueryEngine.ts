@@ -47,6 +47,10 @@ export enum DataCubeFunction {
   FROM = 'meta::pure::mapping::from',
   TO_ONE = 'meta::pure::functions::multiplicity::toOne',
 
+  // date
+  TODAY = 'meta::pure::functions::date::today',
+  NOW = 'meta::pure::functions::date::now',
+
   // sort
   ASCENDING = 'meta::pure::functions::relation::ascending',
   DESCENDING = 'meta::pure::functions::relation::descending',
@@ -157,6 +161,8 @@ export enum DataCubeOperationAdvancedValueType {
   COLUMN = 'COLUMN',
   LIST = 'LIST',
   VOID = 'VOID',
+  TODAY = 'TODAY',
+  NOW = 'NOW',
   // PARAMETER
 }
 
@@ -492,6 +498,65 @@ export function isPrimitiveType(type: string) {
     ] as string[]
   ).includes(type);
 }
+/**
+ * Current-moment values are filter values which resolve at execution time
+ * rather than being specified by the user: `today()` and `now()`.
+ */
+export type DataCubeCurrentMomentValueType =
+  | DataCubeOperationAdvancedValueType.TODAY
+  | DataCubeOperationAdvancedValueType.NOW;
+
+export function isCurrentMomentValue(
+  value: DataCubeOperationValue,
+): value is DataCubeOperationValue & { type: DataCubeCurrentMomentValueType } {
+  return (
+    value.type === DataCubeOperationAdvancedValueType.TODAY ||
+    value.type === DataCubeOperationAdvancedValueType.NOW
+  );
+}
+
+export function isDateType(type: string) {
+  return (
+    [
+      PRIMITIVE_TYPE.DATE,
+      PRIMITIVE_TYPE.STRICTDATE,
+      PRECISE_PRIMITIVE_TYPE.STRICTDATE,
+    ] as string[]
+  ).includes(type);
+}
+
+/**
+ * Unlike `isDateType()`, these types carry a time of day as well as a date,
+ * so their values must be specified (and displayed) down to the second.
+ */
+export function isDateTimeType(type: string) {
+  return (
+    [
+      PRIMITIVE_TYPE.DATETIME,
+      PRECISE_PRIMITIVE_TYPE.DATETIME,
+      PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
+    ] as string[]
+  ).includes(type);
+}
+
+/**
+ * Returns the current-moment value type applicable to a column: `today()`
+ * (StrictDate) for date columns, `now()` (DateTime) for date-time columns.
+ * Returns `undefined` for columns which carry no date (e.g. a time-of-day
+ * column), since a current-moment date value is meaningless there.
+ */
+export function getCurrentMomentValueType(
+  columnType: string,
+): DataCubeCurrentMomentValueType | undefined {
+  if (isDateType(columnType)) {
+    return DataCubeOperationAdvancedValueType.TODAY;
+  }
+  if (isDateTimeType(columnType)) {
+    return DataCubeOperationAdvancedValueType.NOW;
+  }
+  return undefined;
+}
+
 export function isPivotResultColumnName(columnName: string) {
   return columnName.includes(PIVOT_COLUMN_NAME_VALUE_SEPARATOR);
 }

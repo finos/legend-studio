@@ -79,7 +79,9 @@ export class DataCubeFilterEditorState extends DataCubeSnapshotController {
       {
         x: -50,
         y: 50,
-        width: 600,
+        // NOTE: wide enough to fit a condition on a date-time column, whose
+        // value is specified down to the second
+        width: 750,
         height: 400,
         minWidth: 300,
         minHeight: 200,
