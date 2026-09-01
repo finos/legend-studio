@@ -179,6 +179,11 @@
     height: 100%;
     width: 100%;
     min-width: 0;
+    // Symmetric horizontal gutter so the frame stays centered on the viewport
+    // while clearing the absolutely-positioned activity bar on the left
+    // (bar occupies 2rem-8.2rem, this padding pushes content to 8rem).
+    // Matches the header's `padding: 2rem 8rem` so header and body align.
+    padding: 0 8rem;
     overflow: auto;
   }
 
