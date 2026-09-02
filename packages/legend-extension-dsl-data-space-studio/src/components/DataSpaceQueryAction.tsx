@@ -44,7 +44,7 @@ export const queryDataSpace = async (
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
   const initialDefaultExecutionContext = guaranteeNonNullable(
     dataSpace.defaultExecutionContext,
-    `Can't query data product '${dataSpace.path}': no default execution context defined`,
+    `Can't query data space '${dataSpace.path}': no default execution context defined`,
   );
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
@@ -74,7 +74,7 @@ export const queryDataSpace = async (
             );
             const targetDefault = guaranteeNonNullable(
               queryBuilderState.dataSpace.defaultExecutionContext,
-              `Can't query data product '${queryBuilderState.dataSpace.path}': no default execution context defined`,
+              `Can't query data space '${queryBuilderState.dataSpace.path}': no default execution context defined`,
             );
             queryBuilderState.setExecutionContext(targetDefault);
             await queryBuilderState.propagateExecutionContextChange();

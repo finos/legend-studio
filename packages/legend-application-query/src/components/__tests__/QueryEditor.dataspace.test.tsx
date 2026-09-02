@@ -107,7 +107,7 @@ test(
       fireEvent.click(renderResult.getByTitle('See more options'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('About Data Product'));
+      fireEvent.click(renderResult.getByText('About Data Space'));
     });
     const aboutDataSpaceModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
@@ -124,7 +124,7 @@ test(
       clipboard: { writeText: mockWriteText },
     });
     const copyLinkButton = renderResult.getByTitle(
-      'copy data product query set up link to clipboard',
+      'copy data space query set up link to clipboard',
     );
     await act(async () => {
       fireEvent.click(copyLinkButton);
@@ -182,7 +182,7 @@ test(
       fireEvent.click(renderResult.getByTitle('See more options'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('About Data Product'));
+      fireEvent.click(renderResult.getByText('About Data Space'));
     });
     const aboutDataSpaceModal = await waitFor(() =>
       renderResult.getByRole('dialog'),
@@ -202,7 +202,7 @@ test(
       clipboard: { writeText: mockWriteText },
     });
     const copyLinkButton = renderResult.getByTitle(
-      'copy data product query set up link to clipboard',
+      'copy data space query set up link to clipboard',
     );
     await act(async () => {
       fireEvent.click(copyLinkButton);
@@ -298,7 +298,7 @@ test(
       fireEvent.click(renderResult.getByTitle('See more options'));
     });
     await act(async () => {
-      fireEvent.click(renderResult.getByText('About Data Product'));
+      fireEvent.click(renderResult.getByText('About Data Space'));
     });
     const aboutDataSpaceModal = await waitFor(() =>
       renderResult.getByRole('dialog'),

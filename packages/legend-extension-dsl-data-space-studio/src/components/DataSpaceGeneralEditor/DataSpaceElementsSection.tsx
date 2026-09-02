@@ -113,7 +113,7 @@ export const DataSpaceElementsSection = observer(() => {
   return (
     <ListEditor
       title="Elements"
-      prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Product entirely."
+      prompt="Add classes and associations to display under Models Documentation. Use the exclude checkbox to exclude certain elements from this Data Space entirely."
       items={dataSpace.elements}
       keySelector={(element: DataSpaceElementPointer) =>
         element.element.value.path

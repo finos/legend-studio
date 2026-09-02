@@ -156,7 +156,7 @@ export const DataSpaceHomeTab = observer(() => {
       <PanelFormTextField
         name="Title"
         value={dataSpace.title ?? ''}
-        prompt="Provide a title for this Data Product."
+        prompt="Provide a title for this Data Space."
         update={handleTitleChange}
         placeholder="Enter title"
       />
@@ -182,7 +182,7 @@ export const DataSpaceHomeTab = observer(() => {
                 );
               }}
               disabled={isSuggestingWithAI || isReadOnly}
-              title="Use AI to suggest a description for this data product"
+              title="Use AI to suggest a description for this data space"
             >
               <SparkleIcon />
               <span>
@@ -192,7 +192,7 @@ export const DataSpaceHomeTab = observer(() => {
           )}
         </div>
         <div className="panel__content__form__section__header__prompt">
-          Provide a description for this Data Product.
+          Provide a description for this Data Space.
         </div>
         <PanelLoadingIndicator isLoading={isSuggestingWithAI} />
         <textarea

@@ -151,7 +151,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               const execContext = new DataSpaceExecutionContext();
               execContext.name = guaranteeNonEmptyString(
                 contextProtocol.name,
-                `Data product execution context 'name' field is missing or empty`,
+                `Data space execution context 'name' field is missing or empty`,
               );
               execContext.title = contextProtocol.title;
               execContext.description = contextProtocol.description;
@@ -240,7 +240,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 return elementPointer;
               }
               throw new UnsupportedOperationError(
-                `Can't find data product element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
+                `Can't find data space element (only allow packages, classes, enumerations, and associations) '${pointer.path}'`,
               );
             });
           }
@@ -307,7 +307,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                         );
                     } catch {
                       throw new UnsupportedOperationError(
-                        `Can't analyze data product executable with element in path: ${executableProtocol.executable.path}`,
+                        `Can't analyze data space executable with element in path: ${executableProtocol.executable.path}`,
                         executableProtocol,
                       );
                     }
@@ -315,7 +315,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                   return executable;
                 } else {
                   throw new UnsupportedOperationError(
-                    `Can't build data product executable`,
+                    `Can't build data space executable`,
                     executableProtocol,
                   );
                 }
@@ -345,7 +345,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 elementProtocol.supportInfo.documentationUrl;
               supportEmail.address = guaranteeNonEmptyString(
                 elementProtocol.supportInfo.address,
-                `Data product support email 'address' field is missing or empty`,
+                `Data space support email 'address' field is missing or empty`,
               );
               element.supportInfo = supportEmail;
             } else if (
@@ -362,7 +362,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               element.supportInfo = combinedInfo;
             } else {
               throw new UnsupportedOperationError(
-                `Can't build data product support info`,
+                `Can't build data space support info`,
                 elementProtocol.supportInfo,
               );
             }
@@ -544,7 +544,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               return executableProtocol;
             } else {
               throw new UnsupportedOperationError(
-                `Can't transform data product executable`,
+                `Can't transform data space executable`,
                 executable,
               );
             }
@@ -579,7 +579,7 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               protocol.supportInfo = combinedInfo;
             } else {
               throw new UnsupportedOperationError(
-                `Can't transform data product support info`,
+                `Can't transform data space support info`,
                 metamodel.supportInfo,
               );
             }
@@ -605,13 +605,13 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
           );
           const defaultExecutionContext = guaranteeNonNullable(
             dataSpace.value.defaultExecutionContext,
-            `Can't include data product '${protocol.includedDataSpace}' in a mapping: 'defaultExecutionContext' is required`,
+            `Can't include data space '${protocol.includedDataSpace}' in a mapping: 'defaultExecutionContext' is required`,
           );
           const includedMapping = new MappingIncludeDataSpace(
             parentMapping,
             guaranteeNonNullable(
               defaultExecutionContext.mapping,
-              `Can't include data product '${protocol.includedDataSpace}' in a mapping: default execution context 'mapping' is required`,
+              `Can't include data space '${protocol.includedDataSpace}' in a mapping: default execution context 'mapping' is required`,
             ),
             dataSpace,
           );

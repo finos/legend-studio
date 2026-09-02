@@ -133,7 +133,7 @@ test('the data product query setup link can be copied to the clipboard', async (
   await openQueryBuilder(page);
 
   await page
-    .getByTitle('copy data product query set up link to clipboard')
+    .getByTitle('copy data space query set up link to clipboard')
     .click();
 
   // the copied link is an absolute address that reopens this exact setup:
