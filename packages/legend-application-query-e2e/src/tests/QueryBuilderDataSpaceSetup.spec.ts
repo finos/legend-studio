@@ -43,16 +43,16 @@ test.beforeEach(async ({ page }) => {
   await setupEngineMock(page);
 });
 
-test('the data product selector lists every data space from depot', async ({
+test('the data space selector lists every data space from depot', async ({
   page,
 }) => {
   await mockAdditionalDataSpaces(page, DATA_SPACE_COUNT);
   await openQueryBuilder(page);
 
-  const dataProductSelector = page.getByRole('combobox', {
-    name: 'Data Product',
+  const dataSpaceSelector = page.getByRole('combobox', {
+    name: 'Data Space',
   });
-  await dataProductSelector.click();
+  await dataSpaceSelector.click();
   const options = page.locator('.selector-input__option');
 
   // the dropdown is virtualized (`react-window`), so only the options in
@@ -68,7 +68,7 @@ test('the data product selector lists every data space from depot', async ({
   // searching reaches the entries virtualization keeps out of the DOM,
   // proving every data space depot returned is selectable
   const lastDataSpaceTitle = `${EXTRA_DATA_SPACE_TITLE_PREFIX} ${DATA_SPACE_COUNT - 1}`;
-  await dataProductSelector.fill(lastDataSpaceTitle);
+  await dataSpaceSelector.fill(lastDataSpaceTitle);
   await expect(options).toHaveCount(1);
   await expect(options.filter({ hasText: lastDataSpaceTitle })).toBeVisible();
 });
@@ -127,7 +127,7 @@ test('the runtime selector can be enabled and lists the compatible runtime', asy
   await expect(runtimeGroup).toContainText('H2Runtime');
 });
 
-test('the data product query setup link can be copied to the clipboard', async ({
+test('the data space query setup link can be copied to the clipboard', async ({
   page,
 }) => {
   await openQueryBuilder(page);

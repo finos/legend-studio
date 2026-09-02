@@ -39,15 +39,15 @@ test('existing queries can be searched and listed', async ({ page }) => {
   await expect(page.getByText('MockTestQuery')).toBeVisible();
 });
 
-test('query creator lists data products from depot', async ({ page }) => {
+test('query creator lists data spaces from depot', async ({ page }) => {
   await page.goto('setup');
   await page.getByText('Create query from data space').click();
 
-  const dataProductSelector = page.locator('.selector-input__control', {
-    hasText: 'Search for data product...',
+  const dataSpaceSelector = page.locator('.selector-input__control', {
+    hasText: 'Search for data space...',
   });
-  await expect(dataProductSelector).toBeVisible();
-  await dataProductSelector.click();
+  await expect(dataSpaceSelector).toBeVisible();
+  await dataSpaceSelector.click();
   await expect(
     page.locator('.selector-input__option', { hasText: 'Test DataSpace' }),
   ).toBeVisible();
