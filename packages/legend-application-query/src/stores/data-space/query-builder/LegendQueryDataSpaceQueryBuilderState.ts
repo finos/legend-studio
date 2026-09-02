@@ -40,11 +40,14 @@ import {
 } from '@finos/legend-server-depot';
 import {
   GraphDataWithOrigin,
+  INTERNAL_ELEMENT_PATH,
+  LakehouseRuntime,
   LegendSDLC,
   RuntimePointer,
   type Class,
   type GraphData,
   type GraphManagerState,
+  type PackageableElement,
   type Runtime,
 } from '@finos/legend-graph';
 import {
@@ -60,7 +63,7 @@ import {
   createViewSDLCProjectHandler,
 } from '../DataSpaceQueryBuilderHelper.js';
 import { type GeneratorFn } from '@finos/legend-shared';
-import { flowResult } from 'mobx';
+import { action, flowResult, makeObservable, observable, reaction } from 'mobx';
 import type {
   DepotEntityWithOrigin,
   ProjectGAVCoordinates,
@@ -68,15 +71,14 @@ import type {
 } from '@finos/legend-storage';
 import type { DataProductSelectorState } from '../DataProductSelectorState.js';
 
-/**
- * Legend Query DataSpace query builder state.
- */
 export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilderState {
   declare applicationStore: LegendQueryApplicationStore;
   depotServerClient: DepotServerClient;
   project: ProjectGAVCoordinates;
   readonly onDataProductChange: (val: DepotEntityWithOrigin) => void;
   productSelectorState: DataProductSelectorState;
+
+  injectedLakehouseRuntime: LakehouseRuntime | undefined;
 
   override TEMPORARY__setupPanelContentRenderer = (): React.ReactNode =>
     renderLegendQueryDataSpaceQueryBuilderSetupPanelContent(this);
@@ -129,6 +131,38 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
     this.depotServerClient = depotServerClient;
     this.productSelectorState = productSelectorState;
     this.onDataProductChange = onDataProductChange;
+    this.injectedLakehouseRuntime = this.resolveInjectedLakehouseRuntime();
+
+    makeObservable(this, {
+      injectedLakehouseRuntime: observable,
+      setInjectedLakehouseRuntime: action,
+    });
+
+    reaction(
+      () => this.executionContextState.runtimeValue,
+      () =>
+        this.setInjectedLakehouseRuntime(
+          this.resolveInjectedLakehouseRuntime(),
+        ),
+    );
+  }
+
+  setInjectedLakehouseRuntime(val: LakehouseRuntime | undefined): void {
+    this.injectedLakehouseRuntime = val;
+  }
+
+  private resolveInjectedLakehouseRuntime(): LakehouseRuntime | undefined {
+    const runtime = this.executionContextState.runtimeValue;
+    if (!(runtime instanceof RuntimePointer)) {
+      return undefined;
+    }
+    const packageableRuntime = runtime.packageableRuntime.value;
+    if (packageableRuntime.package?.path !== INTERNAL_ELEMENT_PATH) {
+      return undefined;
+    }
+    return packageableRuntime.runtimeValue instanceof LakehouseRuntime
+      ? packageableRuntime.runtimeValue
+      : undefined;
   }
 
   override get isAdvancedDataSpaceSearchEnabled(): boolean {
@@ -301,5 +335,15 @@ export class LegendQueryDataSpaceQueryBuilderState extends DataSpaceQueryBuilder
 
   override getGraphData(): GraphData {
     return new GraphDataWithOrigin(this.sdlc);
+  }
+
+  override get floatingExecutionElements(): PackageableElement[] | undefined {
+    if (!this.injectedLakehouseRuntime) {
+      return undefined;
+    }
+    const runtime = this.executionContextState.runtimeValue;
+    return runtime instanceof RuntimePointer
+      ? [runtime.packageableRuntime.value]
+      : undefined;
   }
 }

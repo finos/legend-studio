@@ -36,6 +36,7 @@ import {
   type Query,
   type RawLambda,
   GRAPH_MANAGER_EVENT,
+  INTERNAL_ELEMENT_PATH,
   IngestDefinition,
 } from '@finos/legend-graph';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
@@ -196,7 +197,10 @@ export class IngestQueryCreatorStore extends QueryEditorStore {
         versionId: this.versionId,
       },
     );
-    this.graphManagerState.graph.addElement(adhocRuntime, '_internal_');
+    this.graphManagerState.graph.addElement(
+      adhocRuntime,
+      INTERNAL_ELEMENT_PATH,
+    );
 
     const queryBuilderState = new IngestLegendQueryBuilderState(
       this.applicationStore,

@@ -1216,19 +1216,19 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             dataSpaceQueryBuilderState,
           );
           dataSpaceQueryBuilderState.changeMapping(mapping);
-          const defaultRuntime =
-            dataSpaceQueryBuilderState.executionContext.defaultRuntime;
-          if (defaultRuntime) {
-            dataSpaceQueryBuilderState.changeRuntime(
-              new RuntimePointer(defaultRuntime),
-            );
+          const { executionContext } = dataSpaceQueryBuilderState;
+          const runtime = executionContext.defaultRuntime
+            ? new RuntimePointer(executionContext.defaultRuntime)
+            : undefined;
+          if (runtime) {
+            dataSpaceQueryBuilderState.changeRuntime(runtime);
           } else {
             dataSpaceQueryBuilderState.applicationStore.notificationService.notifyWarning(
-              `Execution context '${dataSpaceQueryBuilderState.executionContext.name}' does not have a default runtime`,
+              `Execution context '${executionContext.name}' does not have a default runtime`,
             );
           }
           // if there is no chosen class or the chosen one is not compatible
-          // with the mapping then pick a compatible class if possible
+
           if (
             !dataSpaceQueryBuilderState.sourceClass ||
             !compatibleClasses.includes(dataSpaceQueryBuilderState.sourceClass)

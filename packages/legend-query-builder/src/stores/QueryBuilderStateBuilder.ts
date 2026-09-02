@@ -895,6 +895,19 @@ export class QueryBuilderValueSpecificationProcessor
         this.queryBuilderState,
       );
       return;
+    } else if (matchFunctionName(functionName, [SUPPORTED_FUNCTIONS.WITH])) {
+      const parameters = valueSpecification.parametersValues;
+      assertTrue(
+        parameters.length === 2,
+        'With function expects a body expression and a data product',
+      );
+      QueryBuilderValueSpecificationProcessor.processChild(
+        guaranteeNonNullable(parameters[0]),
+        valueSpecification,
+        this.parentLambda,
+        this.queryBuilderState,
+      );
+      return;
     } else if (
       matchFunctionName(
         functionName,

@@ -58,6 +58,8 @@ export {
   QueryBuilderClassSelector,
   buildRuntimeValueOption,
   getRuntimeOptionFormatter,
+  resolveLakehouseRuntime,
+  buildLakehouseRuntimeLabel,
 } from './components/QueryBuilderSideBar.js';
 export { ClassQueryBuilderState } from './stores/workflows/ClassQueryBuilderState.js';
 export { FunctionQueryBuilderState } from './stores/workflows/FunctionQueryBuilderState.js';
