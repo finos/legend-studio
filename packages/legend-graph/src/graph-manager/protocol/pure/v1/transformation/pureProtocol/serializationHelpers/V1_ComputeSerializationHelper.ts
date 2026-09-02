@@ -58,16 +58,20 @@ const V1_snowflakeComputeSpecificationModelSchema = createModelSchema(
   V1_SnowflakeComputeSpecification,
   {
     _type: usingConstantValueSchema(V1_ComputeSpecificationType.SNOWFLAKE),
-    autoResume: optional(primitive()),
     autoSuspend: optional(primitive()),
     comment: optional(primitive()),
     enableQueryAcceleration: optional(primitive()),
+    generation: optional(primitive()),
     maxClusterCount: optional(primitive()),
+    maxConcurrencyLevel: optional(primitive()),
+    maxQueryPerformanceLevel: optional(primitive()),
     minClusterCount: optional(primitive()),
     queryAccelerationMaxScaleFactor: optional(primitive()),
+    queryThroughputMultiplier: optional(primitive()),
     resourceConstraint: optional(primitive()),
-    resourceMonitor: optional(primitive()),
     scalingPolicy: optional(primitive()),
+    statementQueuedTimeoutInSeconds: optional(primitive()),
+    statementTimeoutInSeconds: optional(primitive()),
     warehouseSize: optional(primitive()),
     warehouseType: optional(primitive()),
   },
@@ -97,12 +101,12 @@ const V1_databricksComputeSpecificationModelSchema = createModelSchema(
 const V1_serializeComputeSpecification = (
   value: V1_ComputeSpecification,
 ): PlainObject<V1_ComputeSpecification> => {
-  if (value instanceof V1_SnowflakeComputeSpecification) {
+  if (value instanceof V1_UnknownComputeSpecification) {
+    return value.content;
+  } else if (value instanceof V1_SnowflakeComputeSpecification) {
     return serialize(V1_snowflakeComputeSpecificationModelSchema, value);
   } else if (value instanceof V1_DatabricksComputeSpecification) {
     return serialize(V1_databricksComputeSpecificationModelSchema, value);
-  } else if (value instanceof V1_UnknownComputeSpecification) {
-    return value.content;
   }
   throw new UnsupportedOperationError(
     `Can't serialize compute specification: no compatible serializer available`,

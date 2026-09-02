@@ -61,6 +61,7 @@ import {
   V1_AppDirOwner,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
+import { V1_transformAppDirNode } from './V1_AppDirNodeTransformerHelper.js';
 import { V1_transformRawLambda } from './V1_RawValueSpecificationTransformer.js';
 import type { V1_GraphTransformerContext } from './V1_GraphTransformerContext.js';
 import {
@@ -71,7 +72,6 @@ import { V1_PackageableElementPointer } from '../../../model/packageableElements
 import { V1_transformEmbeddedData } from './V1_DataElementTransformer.js';
 import { ConcreteFunctionDefinition } from '../../../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { generateFunctionPrettyName } from '../../../../../../../graph/helpers/PureLanguageHelper.js';
-import { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import { DataProductAccessPointTest } from '../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductAccessPointTest.js';
 import type { DataProductTestSuite } from '../../../../../../../graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 import { V1_AccessPointTest } from '../../../model/packageableElements/dataProduct/test/V1_AccessPointTest.js';
@@ -407,16 +407,10 @@ export const V1_transformDataProduct = (
   if (element.owner instanceof AppDirOwner) {
     const v1Owner = new V1_AppDirOwner();
     if (element.owner.production) {
-      const v1Node = new V1_AppDirNode();
-      v1Node.appDirId = element.owner.production.appDirId;
-      v1Node.level = element.owner.production.level;
-      v1Owner.production = v1Node;
+      v1Owner.production = V1_transformAppDirNode(element.owner.production);
     }
     if (element.owner.prodParallel) {
-      const v1Node = new V1_AppDirNode();
-      v1Node.appDirId = element.owner.prodParallel.appDirId;
-      v1Node.level = element.owner.prodParallel.level;
-      v1Owner.prodParallel = v1Node;
+      v1Owner.prodParallel = V1_transformAppDirNode(element.owner.prodParallel);
     }
     product.owner = v1Owner;
   } else if (element.owner !== undefined) {
