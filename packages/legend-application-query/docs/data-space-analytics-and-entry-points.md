@@ -245,6 +245,16 @@ abstract getPersistConfiguration(lambda, options?): QueryPersistConfiguration | 
 `initializeQueryBuilderState` decides _what kind of query builder_ the user
 gets. `getPersistConfiguration` decides _how a saved query is stamped_.
 
+Each creator store also tags its query builder `sourceInfo` with a
+`sourceType` (`LegendQuerySourceType` in
+[`LegendQuerySourceInfo.ts`](../src/__lib__/LegendQuerySourceInfo.ts)):
+`mapping`, `service`, `data-space`, `data-space.template`, `data-product`,
+`data-product.sample`, `ingest`, or `unselected` for the bare editor. These
+values are reported on `query-editor.initialize-query-creator.success` /
+`.failure`, along with whether the most recently visited data space or data
+product was reopened — so the entry points below map one-to-one onto the
+telemetry.
+
 ### 3.1 Mapping / Runtime (the "manual" flow)
 
 |               |                                                                                         |
@@ -283,7 +293,7 @@ Related setup flows that funnel into this: `/setup/clone-service-query`,
 `/setup/load-project-service-query`, `/setup/update-existing-service-query`,
 `/setup/productionize-query`.
 
-### 3.3 Data space (legacy data product)
+### 3.3 Data space
 
 |               |                                                                                                                                                                    |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -292,6 +302,19 @@ Related setup flows that funnel into this: `/setup/clone-service-query`,
 | Builder state | `LegendQueryDataSpaceQueryBuilderState`                                                                                                                            |
 | Graph         | **Minimal graph** via `buildGraphAndDataspaceAnalyticsResult`                                                                                                      |
 
+> **Naming caveat.** The store and queryable-element classes on this path are
+> named `DataProductQueryCreatorStore` / `QueryableLegacyDataProduct`, dating
+> from a period when data spaces were surfaced to users as "data products".
+> That framing was reverted in
+> [#5494](https://github.com/finos/legend-studio/pull/5494): the UI, command
+> palette, and info panels for this path all say **Data Space** again, and
+> "Data Product" now refers exclusively to the distinct element type in §3.4.
+> The class names were left alone, so **read `DataProduct` in an identifier on
+> this path as a historical artifact, not as a claim about which element type
+> is being queried.** The discriminant that actually matters is the queryable
+> element (`QueryableLegacyDataProduct` vs `QueryableDataProduct`) and the
+> resulting builder state.
+
 This is the flow section 2 describes. The store:
 
 1. Calls `buildGraphAndDataspaceAnalyticsResult(gav, executionContext, dataSpacePath)`.
@@ -299,11 +322,42 @@ This is the flow section 2 describes. The store:
 3. Resolves the execution context via `resolveExecutionContext(...)` — by name if
    given, otherwise the data space's default, otherwise the first.
 4. Validates `mappingProvider`-backed contexts actually resolve to a mapping
-   (a context can source its mapping from a data product access point group;
-   if that group is gone, this is a hard error rather than a silent empty editor).
-5. Constructs `LegendQueryDataSpaceQueryBuilderState`, hands it the
+   (a context can source its mapping from a Data Product access point group —
+   a real cross-element reference, not a naming artifact; if that group is gone,
+   this is a hard error rather than a silent empty editor).
+5. Attaches **fallback Lakehouse runtimes** (`attachDataSpaceFallbackRuntimes`)
+   — see below.
+6. Constructs `LegendQueryDataSpaceQueryBuilderState`, hands it the
    `mappingModelCoverageAnalysisResult` for the resolved mapping, and pins the
-   mapping + `RuntimePointer`.
+   mapping plus — when the context has one — a `RuntimePointer` to its default
+   runtime.
+
+**Execution contexts without a runtime.** `defaultRuntime` on a data space
+execution context is optional. When a context sources its mapping from a Data
+Product (`mappingProvider` is set) **and** declares no `defaultRuntime` **and**
+the analytics report no compatible runtimes, `attachDataSpaceFallbackRuntimes`
+fills the gap: it creates one shared `LakehouseRuntime` —
+`_internal_::LakehouseRuntime`, via `createOrGetDataSpaceLakehouseFallbackRuntime`
+— and assigns it as that context's `defaultRuntime`. Environment and warehouse
+come from `resolveLakehouseEnvAndWarehouse`: the user's persisted Lakehouse
+settings, else their entitlement environment from the contract server, with the
+warehouse defaulting to `LAKEHOUSE_CONSUMER_DEFAULT_WH`. Snapshot versions are
+resolved separately (`isSnapshot`).
+
+The builder state exposes the result as `injectedLakehouseRuntime`. When set:
+
+- the runtime selector is **locked** to that one runtime, labelled
+  `environment / warehouse`, and **Lakehouse Runtime Configuration** appears in
+  the setup panel's settings menu — the same modal data products use;
+- `floatingExecutionElements` returns the runtime, so it rides along with the
+  SDLC pointer as a `V1_PureModelContextCombination` (the engine has never seen
+  an `_internal_` element);
+- `buildExecutionContextExpression` emits `->with(dataProduct)->from(runtime)`
+  instead of `->from(mapping, runtime)`, because the mapping comes from the
+  Data Product, not from the project.
+
+Contexts that are _not_ Data Product-backed and have no runtime simply get no
+runtime pinned; nothing is injected.
 
 The store also records visits in user data
 (`LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces`) so the setup screen
@@ -355,14 +409,57 @@ exactly this: `retrieveExecutionContextFromTemplateQueryId(...)`.
 3. Resolve the data product from the graph and the execution state from `accessId`.
 4. For `MODEL` and `LAKEHOUSE`, synthesize an **adhoc Lakehouse runtime**
    (`createLakehousePackageableRuntime`) from the user's lakehouse environment +
-   consumer warehouse, and register it on the graph as an `_internal_` element.
+   consumer warehouse, and register it on the graph under `INTERNAL_ELEMENT_PATH`
+   (`'_internal_'`).
    These access paths have no modelled `PackageableRuntime` to point at.
 5. Call `withAdhocRuntime()` on the execution state and select that runtime, so
    the user can execute without picking one.
 
+The data product dropdown (`DataProductSelectorState`) lists data products from
+the Lakehouse contract server's lite API, restricted to the **production**
+environment (`getAllLiteDataProducts(PRODUCTION)`), and keeps only those with an
+SDLC deployment origin. It falls back to a depot classifier search only when no
+contract server client is configured. Data spaces in the same dropdown still
+come from depot.
+
 **Sample queries.** Route
 `/data-product/native/sample-query/:gav/:dataProductPath/:sampleQueryId` →
 `DataProductSampleQueryCreatorStore` (also a `BaseTemplateQueryCreatorStore`).
+
+**Which "About" panel you get.** Since
+[#5494](https://github.com/finos/legend-studio/pull/5494), the editor exposes
+two separate info actions in
+[`Core_LegendQueryApplicationPlugin.tsx`](../src/components/Core_LegendQueryApplicationPlugin.tsx),
+and each keys strictly off the **builder state type** — not the store type:
+
+| Action key          | Enabled when                                                 | Opens                          |
+| ------------------- | ------------------------------------------------------------ | ------------------------------ |
+| `about-dataspace`   | `queryBuilderState instanceof DataSpaceQueryBuilderState`    | `setShowDataspaceInfo(true)`   |
+| `about-dataproduct` | `queryBuilderState instanceof DataProductQueryBuilderState`  | `setShowDataProductInfo(true)` |
+| `about-ingest`      | `queryBuilderState instanceof IngestLegendQueryBuilderState` | `setShowIngestInfo(true)`      |
+
+This replaced a single `About Data Product` action whose predicate also tested
+the store type (`ExistingQueryEditorStore`, `DataSpaceTemplateQueryCreatorStore`,
+`DataProductQueryCreatorStore`). Because `DataProductQueryCreatorStore` backs
+both §3.3 and §3.4, that store-based test could not tell the two apart — which
+is precisely why the predicate now looks only at the builder state.
+
+**Export actions unavailable for data products and ingest.** The same builder
+state test gates the export menu. For `DataProductQueryBuilderState` and
+`IngestLegendQueryBuilderState`, four actions are disabled with the tooltip
+_"Not supported for Data Product or Ingest queries"_:
+
+| Menu label             | Key                              | Contributed by                             |
+| ---------------------- | -------------------------------- | ------------------------------------------ |
+| Curated Template Query | `promote-as-template-query`      | `Core_LegendQueryApplicationPlugin`        |
+| Legend DataCube        | `legend-datacube-query`          | `Core_LegendQueryApplicationPlugin`        |
+| Productionized Query   | `export-as-productionized-query` | `DSL_Service_LegendQueryApplicationPlugin` |
+| DEV Service            | `export-as-dev-service`          | `DSL_Service_LegendQueryApplicationPlugin` |
+
+Menu items supply the message through `getDisableMessage(queryBuilderState)`
+(added alongside the static `disableMessage`), so the same item can say
+_"Requires saved query"_ in one context and _"Not supported…"_ in another.
+File-format exports (CSV etc.) are unaffected.
 
 ### 3.5 Ingest definitions
 
@@ -472,9 +569,10 @@ values on the `meta::pure::profiles::query` profile:
 
 These are **search and classification** metadata — they are what
 `decorateSearchSpecification` filters on so a data space's query list shows only
-its own queries. The `dataSpace` vs `dataProduct` split is load-bearing: a query
-created against a new-style data product must carry `dataProduct`, or reopening
-it would mis-classify it as a data space.
+its own queries. The `dataSpace` vs `dataProduct` split is load-bearing and
+tracks the element type, not the historical naming: a query created against a
+Data Product must carry `dataProduct`, or reopening it would mis-classify it as
+a Data Space.
 
 ### 4.5 Reconstituting a saved query
 
@@ -500,13 +598,13 @@ which mapping to cover.
 **Phase 2 — `initQueryBuildStateFromQuery(queryInfo)`** dispatches on the
 execution context and rebuilds the matching entry point:
 
-| Saved context                           | Reconstruction                                                                                                                                                                                       |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `QueryDataSpaceExecutionContextInfo`    | `buildGraphAndDataspaceAnalyticsResult(...)` with the saved `executionKey` → `resolveExecutionContext` → `LegendQueryDataSpaceQueryBuilderState`, mapping + runtime pinned from the resolved context |
-| `QueryExplicitExecutionContextInfo`     | `ClassQueryBuilderState` over the full graph; mapping and runtime resolved directly by path                                                                                                          |
-| `QueryDataProduct*ExecutionContextInfo` | `fetchDataProductArtifact(...)` → `buildDataProductQueryBuilderState(...)` with the access type and id derived from the context subtype                                                              |
-| `QueryIngestExecutionContextInfo`       | Resolve the ingest from the graph built in phase 1, create the adhoc lakehouse runtime, `changeAccessorOwner` + `changeAccessor({ tableName: dataSet })`                                             |
-| anything else                           | `UnsupportedOperationError`                                                                                                                                                                          |
+| Saved context                           | Reconstruction                                                                                                                                                                                                                                                                                                               |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `QueryDataSpaceExecutionContextInfo`    | `buildGraphAndDataspaceAnalyticsResult(...)` with the saved `executionKey` → `attachDataSpaceFallbackRuntimes` (§3.3) → `resolveExecutionContext` → `LegendQueryDataSpaceQueryBuilderState`; mapping pinned from the resolved context, runtime pinned only if the context has one (possibly the injected Lakehouse fallback) |
+| `QueryExplicitExecutionContextInfo`     | `ClassQueryBuilderState` over the full graph; mapping and runtime resolved directly by path                                                                                                                                                                                                                                  |
+| `QueryDataProduct*ExecutionContextInfo` | `fetchDataProductArtifact(...)` → `buildDataProductQueryBuilderState(...)` with the access type and id derived from the context subtype                                                                                                                                                                                      |
+| `QueryIngestExecutionContextInfo`       | Resolve the ingest from the graph built in phase 1, create the adhoc lakehouse runtime, `changeAccessorOwner` + `changeAccessor({ tableName: dataSet })`                                                                                                                                                                     |
+| anything else                           | `UnsupportedOperationError`                                                                                                                                                                                                                                                                                                  |
 
 **Legacy resolution.** `resolveExecutionContext(dataSpace, executionKey, mapping, runtime)`
 handles queries saved before execution keys were reliable. If no key is present
@@ -527,17 +625,17 @@ gated behind a save prompt if the query has unsaved changes.
 
 ## 5. Summary
 
-| Entry point                 | Store                                   | Graph strategy                     | Persisted execution context                   |
-| --------------------------- | --------------------------------------- | ---------------------------------- | --------------------------------------------- |
-| Mapping + runtime           | `MappingQueryCreatorStore`              | Full                               | `QueryExplicitExecutionContext`               |
-| Service                     | `ServiceQueryCreatorStore`              | Full                               | `QueryExplicitExecutionContext`               |
-| Data space                  | `DataProductQueryCreatorStore` (legacy) | Minimal (analytics artifacts)      | `QueryDataSpaceExecutionContext`              |
-| Data space template         | `DataSpaceTemplateQueryCreatorStore`    | Minimal (resolved via template id) | `QueryDataSpaceExecutionContext`              |
-| Data product — native       | `DataProductQueryCreatorStore`          | Minimal (data product artifact)    | `QueryDataProductNativeExecutionContext`      |
-| Data product — model access | `DataProductQueryCreatorStore`          | Minimal + adhoc lakehouse runtime  | `QueryDataProductModelAccessExecutionContext` |
-| Data product — lakehouse    | `DataProductQueryCreatorStore`          | Minimal + adhoc lakehouse runtime  | `QueryDataProductLakehouseExecutionContext`   |
-| Ingest definition           | `IngestQueryCreatorStore`               | Targeted (one ingest entity)       | `QueryIngestExecutionContext`                 |
-| Existing query              | `ExistingQueryEditorStore`              | Derived from the saved context     | unchanged (round-trips)                       |
+| Entry point                 | Store                                                             | Graph strategy                     | Persisted execution context                   |
+| --------------------------- | ----------------------------------------------------------------- | ---------------------------------- | --------------------------------------------- |
+| Mapping + runtime           | `MappingQueryCreatorStore`                                        | Full                               | `QueryExplicitExecutionContext`               |
+| Service                     | `ServiceQueryCreatorStore`                                        | Full                               | `QueryExplicitExecutionContext`               |
+| Data space                  | `DataProductQueryCreatorStore` (via `QueryableLegacyDataProduct`) | Minimal (analytics artifacts)      | `QueryDataSpaceExecutionContext`              |
+| Data space template         | `DataSpaceTemplateQueryCreatorStore`                              | Minimal (resolved via template id) | `QueryDataSpaceExecutionContext`              |
+| Data product — native       | `DataProductQueryCreatorStore` (via `QueryableDataProduct`)       | Minimal (data product artifact)    | `QueryDataProductNativeExecutionContext`      |
+| Data product — model access | `DataProductQueryCreatorStore`                                    | Minimal + adhoc lakehouse runtime  | `QueryDataProductModelAccessExecutionContext` |
+| Data product — lakehouse    | `DataProductQueryCreatorStore`                                    | Minimal + adhoc lakehouse runtime  | `QueryDataProductLakehouseExecutionContext`   |
+| Ingest definition           | `IngestQueryCreatorStore`                                         | Targeted (one ingest entity)       | `QueryIngestExecutionContext`                 |
+| Existing query              | `ExistingQueryEditorStore`                                        | Derived from the saved context     | unchanged (round-trips)                       |
 
 The through-line: **the more curated the entry point, the less graph Legend
 Query has to build.** A raw mapping gives no signal, so everything is loaded. A
