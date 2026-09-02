@@ -283,7 +283,7 @@ Related setup flows that funnel into this: `/setup/clone-service-query`,
 `/setup/load-project-service-query`, `/setup/update-existing-service-query`,
 `/setup/productionize-query`.
 
-### 3.3 Data space (legacy data product)
+### 3.3 Data space
 
 |               |                                                                                                                                                                    |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -292,6 +292,19 @@ Related setup flows that funnel into this: `/setup/clone-service-query`,
 | Builder state | `LegendQueryDataSpaceQueryBuilderState`                                                                                                                            |
 | Graph         | **Minimal graph** via `buildGraphAndDataspaceAnalyticsResult`                                                                                                      |
 
+> **Naming caveat.** The store and queryable-element classes on this path are
+> named `DataProductQueryCreatorStore` / `QueryableLegacyDataProduct`, dating
+> from a period when data spaces were surfaced to users as "data products".
+> That framing was reverted in
+> [#5494](https://github.com/finos/legend-studio/pull/5494): the UI, command
+> palette, and info panels for this path all say **Data Space** again, and
+> "Data Product" now refers exclusively to the distinct element type in §3.4.
+> The class names were left alone, so **read `DataProduct` in an identifier on
+> this path as a historical artifact, not as a claim about which element type
+> is being queried.** The discriminant that actually matters is the queryable
+> element (`QueryableLegacyDataProduct` vs `QueryableDataProduct`) and the
+> resulting builder state.
+
 This is the flow section 2 describes. The store:
 
 1. Calls `buildGraphAndDataspaceAnalyticsResult(gav, executionContext, dataSpacePath)`.
@@ -299,8 +312,9 @@ This is the flow section 2 describes. The store:
 3. Resolves the execution context via `resolveExecutionContext(...)` — by name if
    given, otherwise the data space's default, otherwise the first.
 4. Validates `mappingProvider`-backed contexts actually resolve to a mapping
-   (a context can source its mapping from a data product access point group;
-   if that group is gone, this is a hard error rather than a silent empty editor).
+   (a context can source its mapping from a Data Product access point group —
+   a real cross-element reference, not a naming artifact; if that group is gone,
+   this is a hard error rather than a silent empty editor).
 5. Constructs `LegendQueryDataSpaceQueryBuilderState`, hands it the
    `mappingModelCoverageAnalysisResult` for the resolved mapping, and pins the
    mapping + `RuntimePointer`.
@@ -363,6 +377,23 @@ exactly this: `retrieveExecutionContextFromTemplateQueryId(...)`.
 **Sample queries.** Route
 `/data-product/native/sample-query/:gav/:dataProductPath/:sampleQueryId` →
 `DataProductSampleQueryCreatorStore` (also a `BaseTemplateQueryCreatorStore`).
+
+**Which "About" panel you get.** Since
+[#5494](https://github.com/finos/legend-studio/pull/5494), the editor exposes
+two separate info actions in
+[`Core_LegendQueryApplicationPlugin.tsx`](../src/components/Core_LegendQueryApplicationPlugin.tsx),
+and each keys strictly off the **builder state type** — not the store type:
+
+| Action key          | Enabled when                                                | Opens                          |
+| ------------------- | ----------------------------------------------------------- | ------------------------------ |
+| `about-dataspace`   | `queryBuilderState instanceof DataSpaceQueryBuilderState`   | `setShowDataspaceInfo(true)`   |
+| `about-dataproduct` | `queryBuilderState instanceof DataProductQueryBuilderState` | `setShowDataProductInfo(true)` |
+
+This replaced a single `About Data Product` action whose predicate also tested
+the store type (`ExistingQueryEditorStore`, `DataSpaceTemplateQueryCreatorStore`,
+`DataProductQueryCreatorStore`). Because `DataProductQueryCreatorStore` backs
+both §3.3 and §3.4, that store-based test could not tell the two apart — which
+is precisely why the predicate now looks only at the builder state.
 
 ### 3.5 Ingest definitions
 
@@ -472,9 +503,10 @@ values on the `meta::pure::profiles::query` profile:
 
 These are **search and classification** metadata — they are what
 `decorateSearchSpecification` filters on so a data space's query list shows only
-its own queries. The `dataSpace` vs `dataProduct` split is load-bearing: a query
-created against a new-style data product must carry `dataProduct`, or reopening
-it would mis-classify it as a data space.
+its own queries. The `dataSpace` vs `dataProduct` split is load-bearing and
+tracks the element type, not the historical naming: a query created against a
+Data Product must carry `dataProduct`, or reopening it would mis-classify it as
+a Data Space.
 
 ### 4.5 Reconstituting a saved query
 
@@ -527,17 +559,17 @@ gated behind a save prompt if the query has unsaved changes.
 
 ## 5. Summary
 
-| Entry point                 | Store                                   | Graph strategy                     | Persisted execution context                   |
-| --------------------------- | --------------------------------------- | ---------------------------------- | --------------------------------------------- |
-| Mapping + runtime           | `MappingQueryCreatorStore`              | Full                               | `QueryExplicitExecutionContext`               |
-| Service                     | `ServiceQueryCreatorStore`              | Full                               | `QueryExplicitExecutionContext`               |
-| Data space                  | `DataProductQueryCreatorStore` (legacy) | Minimal (analytics artifacts)      | `QueryDataSpaceExecutionContext`              |
-| Data space template         | `DataSpaceTemplateQueryCreatorStore`    | Minimal (resolved via template id) | `QueryDataSpaceExecutionContext`              |
-| Data product — native       | `DataProductQueryCreatorStore`          | Minimal (data product artifact)    | `QueryDataProductNativeExecutionContext`      |
-| Data product — model access | `DataProductQueryCreatorStore`          | Minimal + adhoc lakehouse runtime  | `QueryDataProductModelAccessExecutionContext` |
-| Data product — lakehouse    | `DataProductQueryCreatorStore`          | Minimal + adhoc lakehouse runtime  | `QueryDataProductLakehouseExecutionContext`   |
-| Ingest definition           | `IngestQueryCreatorStore`               | Targeted (one ingest entity)       | `QueryIngestExecutionContext`                 |
-| Existing query              | `ExistingQueryEditorStore`              | Derived from the saved context     | unchanged (round-trips)                       |
+| Entry point                 | Store                                                             | Graph strategy                     | Persisted execution context                   |
+| --------------------------- | ----------------------------------------------------------------- | ---------------------------------- | --------------------------------------------- |
+| Mapping + runtime           | `MappingQueryCreatorStore`                                        | Full                               | `QueryExplicitExecutionContext`               |
+| Service                     | `ServiceQueryCreatorStore`                                        | Full                               | `QueryExplicitExecutionContext`               |
+| Data space                  | `DataProductQueryCreatorStore` (via `QueryableLegacyDataProduct`) | Minimal (analytics artifacts)      | `QueryDataSpaceExecutionContext`              |
+| Data space template         | `DataSpaceTemplateQueryCreatorStore`                              | Minimal (resolved via template id) | `QueryDataSpaceExecutionContext`              |
+| Data product — native       | `DataProductQueryCreatorStore` (via `QueryableDataProduct`)       | Minimal (data product artifact)    | `QueryDataProductNativeExecutionContext`      |
+| Data product — model access | `DataProductQueryCreatorStore`                                    | Minimal + adhoc lakehouse runtime  | `QueryDataProductModelAccessExecutionContext` |
+| Data product — lakehouse    | `DataProductQueryCreatorStore`                                    | Minimal + adhoc lakehouse runtime  | `QueryDataProductLakehouseExecutionContext`   |
+| Ingest definition           | `IngestQueryCreatorStore`                                         | Targeted (one ingest entity)       | `QueryIngestExecutionContext`                 |
+| Existing query              | `ExistingQueryEditorStore`                                        | Derived from the saved context     | unchanged (round-trips)                       |
 
 The through-line: **the more curated the entry point, the less graph Legend
 Query has to build.** A raw mapping gives no signal, so everything is loaded. A
