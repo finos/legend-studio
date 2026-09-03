@@ -94,6 +94,10 @@ export const TEST_DATA__roundtrip = [
         _type: 'email',
         address: 'testEmail@test.org',
       },
+      operationalMetadata: {
+        coverageRegions: ['apac', 'namr'],
+        updateFrequency: 'daily',
+      },
       taggedValues: [
         {
           tag: {

@@ -85,6 +85,9 @@ import {
   type V1_SavedQueryExecutionBuilder,
   type V1_ElementPointerType,
   type V1_RawLambda,
+  type V1_DeliveryFrequency,
+  type V1_DataProductRegion,
+  V1_DataProductOperationalMetadata,
   V1_taggedValueModelSchema,
   PackageableElementExplicitReference,
   V1_PackageableElementPointer,
@@ -105,6 +108,9 @@ import {
   V1_buildEmbeddedData,
   V1_transformEmbeddedData,
   DataElementReference,
+  OperationalMetadata,
+  type DeliveryFrequency,
+  type Region,
   V1_DataElementReference,
   QueryDataSpaceExecutionContextInfo,
   generateFunctionPrettyName,
@@ -367,6 +373,16 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               );
             }
           }
+          if (elementProtocol.operationalMetadata) {
+            const operationalMetadata = new OperationalMetadata();
+            operationalMetadata.updateFrequency = elementProtocol
+              .operationalMetadata.updateFrequency as
+              | DeliveryFrequency
+              | undefined;
+            operationalMetadata.coverageRegions = elementProtocol
+              .operationalMetadata.coverageRegions as Region[] | undefined;
+            element.operationalMetadata = operationalMetadata;
+          }
         },
       }),
     ];
@@ -583,6 +599,14 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 metamodel.supportInfo,
               );
             }
+          }
+          if (metamodel.operationalMetadata) {
+            const operationalMetadata = new V1_DataProductOperationalMetadata();
+            operationalMetadata.updateFrequency = metamodel.operationalMetadata
+              .updateFrequency as V1_DeliveryFrequency | undefined;
+            operationalMetadata.coverageRegions = metamodel.operationalMetadata
+              .coverageRegions as V1_DataProductRegion[] | undefined;
+            protocol.operationalMetadata = operationalMetadata;
           }
           return protocol;
         }

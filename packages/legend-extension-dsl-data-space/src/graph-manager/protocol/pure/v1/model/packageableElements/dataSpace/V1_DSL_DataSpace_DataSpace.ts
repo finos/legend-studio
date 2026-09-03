@@ -22,6 +22,7 @@ import {
   type V1_PackageableElementVisitor,
   type V1_StereotypePtr,
   type V1_TaggedValue,
+  type V1_DataProductOperationalMetadata,
   V1_PackageableElement,
   type V1_DataElementReference,
 } from '@finos/legend-graph';
@@ -196,6 +197,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   executables?: V1_DataSpaceExecutable[] | undefined;
   diagrams?: V1_DataSpaceDiagram[] | undefined;
   supportInfo?: V1_DataSpaceSupportInfo | undefined;
+  operationalMetadata?: V1_DataProductOperationalMetadata | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -210,6 +212,7 @@ export class V1_DataSpace extends V1_PackageableElement implements Hashable {
       hashArray(this.executables ?? []),
       hashArray(this.diagrams ?? []),
       this.supportInfo ?? '',
+      this.operationalMetadata ?? '',
     ]);
   }
 

@@ -17,6 +17,7 @@
 import {
   observe_Abstract_PackageableElement,
   observe_DataElementReference,
+  type OperationalMetadata,
   observe_PackageableElementReference,
   observe_RawLambda,
   observe_StereotypeReference,
@@ -213,6 +214,18 @@ export const observe_DataSpaceSupportInfo = (
   return metamodel;
 };
 
+export const observe_DataSpaceOperationalMetadata = skipObserved(
+  (metamodel: OperationalMetadata): OperationalMetadata => {
+    makeObservable(metamodel, {
+      coverageRegions: observable,
+      updateFrequency: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
 export const observe_DataSpace = skipObserved(
   (metamodel: DataSpace): DataSpace => {
     observe_Abstract_PackageableElement(metamodel);
@@ -226,6 +239,7 @@ export const observe_DataSpace = skipObserved(
       executables: observable,
       diagrams: observable,
       supportInfo: observable,
+      operationalMetadata: observable,
       _elementHashCode: override,
     });
 
@@ -247,6 +261,9 @@ export const observe_DataSpace = skipObserved(
     }
     if (metamodel.supportInfo) {
       observe_DataSpaceSupportInfo(metamodel.supportInfo);
+    }
+    if (metamodel.operationalMetadata) {
+      observe_DataSpaceOperationalMetadata(metamodel.operationalMetadata);
     }
 
     return metamodel;

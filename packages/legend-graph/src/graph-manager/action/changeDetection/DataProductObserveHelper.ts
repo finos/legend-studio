@@ -32,10 +32,10 @@ import {
   LakehouseAccessPoint,
   UnknownDataProductIcon,
   type Expertise,
-  type DataProductOperationalMetadata,
   AppDirOwner,
   type SecureView,
 } from '../../../graph/metamodel/pure/dataProduct/DataProduct.js';
+import type { OperationalMetadata } from '../../../graph/metamodel/pure/dataProduct/OperationalMetadata.js';
 import type { AppDirNode } from '../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   type DataResolver,
@@ -133,9 +133,7 @@ export const observe_SupportInfo = skipObserved(
 );
 
 export const observe_OperationalMetadata = skipObserved(
-  (
-    metamodel: DataProductOperationalMetadata,
-  ): DataProductOperationalMetadata => {
+  (metamodel: OperationalMetadata): OperationalMetadata => {
     makeObservable(metamodel, {
       updateFrequency: observable,
       coverageRegions: observable,

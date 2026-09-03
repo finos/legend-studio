@@ -133,8 +133,8 @@ import {
   ExternalDataProductType,
   DataProductLink,
   observer_DataProductLink,
-  DataProduct_Region,
-  DataProduct_DeliveryFrequency,
+  Region,
+  DeliveryFrequency,
   AppDirOwner,
   AppDirNode,
   observe_AppDirOwner,
@@ -3192,11 +3192,12 @@ const OperationalTab = observer(
     const { dataProductEditorState, isReadOnly } = props;
     const product = dataProductEditorState.product;
     const CHOOSE_REGION = 'Add Coverage Region...';
+    type EnumOption<T extends string> = { label: string; value: T };
 
-    const getCoverageRegionOptions = () => {
+    const getCoverageRegionOptions = (): EnumOption<Region>[] => {
       const existingRegions =
         product.operationalMetadata?.coverageRegions ?? [];
-      return Object.values(DataProduct_Region)
+      return (Object.values(Region) as Region[])
         .filter((region) => !existingRegions.includes(region))
         .map((region) => ({
           label: region,
@@ -3204,9 +3205,7 @@ const OperationalTab = observer(
         }));
     };
 
-    const handleAddRegion = (
-      val: { label: string; value: DataProduct_Region } | null,
-    ): void => {
+    const handleAddRegion = (val: EnumOption<Region> | null): void => {
       dataProduct_setOperationalMetadataIfAbsent(product);
       if (product.operationalMetadata && val) {
         operationalMetadata_addCoverageRegion(
@@ -3216,7 +3215,7 @@ const OperationalTab = observer(
       }
     };
 
-    const handleRemoveRegion = (region: DataProduct_Region) => {
+    const handleRemoveRegion = (region: Region) => {
       if (product.operationalMetadata) {
         operationalMetadata_deleteCoverageRegion(
           product.operationalMetadata,
@@ -3226,7 +3225,7 @@ const OperationalTab = observer(
     };
 
     const handleUpdateFrequencyChange = (
-      val: { label: string; value: DataProduct_DeliveryFrequency } | null,
+      val: EnumOption<DeliveryFrequency> | null,
     ): void => {
       dataProduct_setOperationalMetadataIfAbsent(product);
       if (product.operationalMetadata && val) {
@@ -3281,7 +3280,7 @@ const OperationalTab = observer(
             ))}
           </div>
           <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput
+            <CustomSelectorInput<EnumOption<Region>>
               options={getCoverageRegionOptions()}
               onChange={handleAddRegion}
               placeholder={CHOOSE_REGION}
@@ -3301,13 +3300,13 @@ const OperationalTab = observer(
             Select the update frequency of this Data Product.
           </div>
           <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput
-              options={Object.values(DataProduct_DeliveryFrequency).map(
-                (region) => ({
-                  label: region,
-                  value: region,
-                }),
-              )}
+            <CustomSelectorInput<EnumOption<DeliveryFrequency>>
+              options={(
+                Object.values(DeliveryFrequency) as DeliveryFrequency[]
+              ).map((frequency) => ({
+                label: frequency,
+                value: frequency,
+              }))}
               onChange={handleUpdateFrequencyChange}
               value={
                 product.operationalMetadata?.updateFrequency
