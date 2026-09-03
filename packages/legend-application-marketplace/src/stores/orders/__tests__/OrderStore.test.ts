@@ -20,6 +20,8 @@ import { LegendUser } from '@finos/legend-shared';
 import {
   OrderSearchStatus,
   type TerminalProductOrder,
+  type OrderSearchRequest,
+  type OrderSearchResponse,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
 import { OrdersStore, type OrderSearchFormValues } from '../OrderStore.js';
@@ -49,11 +51,14 @@ const makeOrder = (orderId: string): TerminalProductOrder =>
 
 const buildMockBaseStore = (): {
   baseStore: LegendMarketplaceBaseStore;
-  searchOrders: jest.Mock;
+  searchOrders: jest.Mock<
+    (request: OrderSearchRequest) => Promise<OrderSearchResponse>
+  >;
   notifyError: jest.Mock;
   notifyWarning: jest.Mock;
 } => {
-  const searchOrders = jest.fn();
+  const searchOrders =
+    jest.fn<(request: OrderSearchRequest) => Promise<OrderSearchResponse>>();
   const notifyError = jest.fn();
   const notifyWarning = jest.fn();
 
@@ -79,7 +84,9 @@ const buildMockBaseStore = (): {
 
 describe('OrdersStore - advanced order search', () => {
   let baseStore: LegendMarketplaceBaseStore;
-  let searchOrders: jest.Mock;
+  let searchOrders: jest.Mock<
+    (request: OrderSearchRequest) => Promise<OrderSearchResponse>
+  >;
   let notifyError: jest.Mock;
   let notifyWarning: jest.Mock;
   let ordersStore: OrdersStore;
@@ -229,7 +236,9 @@ describe('OrdersStore - advanced order search', () => {
 
 describe('OrdersStore - advanced order search pagination', () => {
   let baseStore: LegendMarketplaceBaseStore;
-  let searchOrders: jest.Mock;
+  let searchOrders: jest.Mock<
+    (request: OrderSearchRequest) => Promise<OrderSearchResponse>
+  >;
   let ordersStore: OrdersStore;
   const filters: OrderSearchFormValues = {
     orderedBy: new LegendUser('adishar'),
