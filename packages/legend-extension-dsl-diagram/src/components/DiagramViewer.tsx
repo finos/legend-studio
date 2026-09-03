@@ -564,14 +564,6 @@ export const DiagramViewer = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
-            {title ?? 'Diagrams'}
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => onChangeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
             {collapseState && (
               <button
                 className="data-space__viewer__wiki__section__header__caret-btn"
@@ -590,6 +582,14 @@ export const DiagramViewer = observer(
                 />
               </button>
             )}
+            {title ?? 'Diagrams'}
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => onChangeZone(anchor, true)}
+            >
+              <AnchorLinkIcon />
+            </button>
           </div>
         </div>
         {!isCollapsed && (

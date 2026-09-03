@@ -56,14 +56,6 @@ export const DataSpaceDescription = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
-            Description
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
             <button
               className="data-space__viewer__wiki__section__header__caret-btn"
               tabIndex={-1}
@@ -79,6 +71,14 @@ export const DataSpaceDescription = observer(
                   },
                 )}
               />
+            </button>
+            Description
+            <button
+              className="data-space__viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
+            >
+              <AnchorLinkIcon />
             </button>
           </div>
         </div>

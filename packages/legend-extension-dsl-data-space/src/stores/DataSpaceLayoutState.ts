@@ -48,6 +48,7 @@ export class CollapseState {
     makeObservable<CollapseState, 'collapsedKeys'>(this, {
       collapsedKeys: observable,
       toggleSectionCollapse: action,
+      toggleAllSectionsCollapse: action,
     });
   }
 
@@ -61,6 +62,21 @@ export class CollapseState {
     } else {
       this.collapsedKeys.add(key);
     }
+  }
+
+  areAllSectionsCollapsed(keys: string[]): boolean {
+    return keys.length > 0 && keys.every((key) => this.collapsedKeys.has(key));
+  }
+
+  toggleAllSectionsCollapse(keys: string[]): void {
+    const shouldCollapse = !this.areAllSectionsCollapsed(keys);
+    keys.forEach((key) => {
+      if (shouldCollapse) {
+        this.collapsedKeys.add(key);
+      } else {
+        this.collapsedKeys.delete(key);
+      }
+    });
   }
 }
 

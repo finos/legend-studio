@@ -471,6 +471,14 @@ const DataSpaceExecutableAnalysisResultView = observer(
     const executableAnalysisResult = executableState.value;
     const quickStartRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForQuickStart(executableAnalysisResult);
+    const isCollapsed =
+      dataSpaceViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
+        anchor,
+      );
+    const toggleCollapse = (): void =>
+      dataSpaceViewerState.layoutState.sectionCollapseState.toggleSectionCollapse(
+        anchor,
+      );
 
     useEffect(() => {
       if (quickStartRef.current) {
@@ -502,6 +510,22 @@ const DataSpaceExecutableAnalysisResultView = observer(
     return (
       <div ref={quickStartRef} className="data-space__viewer__quickstart__item">
         <div className="data-space__viewer__quickstart__item__header">
+          <button
+            className="data-space__viewer__quickstart__item__header__caret-btn"
+            tabIndex={-1}
+            onClick={toggleCollapse}
+            title={isCollapsed ? 'Expand' : 'Collapse'}
+          >
+            <ExpandMoreIcon
+              className={clsx(
+                'data-space__viewer__quickstart__item__header__caret',
+                {
+                  'data-space__viewer__quickstart__item__header__caret--collapsed':
+                    isCollapsed,
+                },
+              )}
+            />
+          </button>
           <div className="data-space__viewer__quickstart__item__header__title">
             {executableAnalysisResult.title}
           </div>
@@ -516,21 +540,25 @@ const DataSpaceExecutableAnalysisResultView = observer(
             <AnchorLinkIcon />
           </button>
         </div>
-        {executableAnalysisResult.description !== undefined && (
-          <div className="data-space__viewer__quickstart__item__description">
-            <DataSpaceMarkdownTextViewer
-              value={executableAnalysisResult.description}
-            />
-          </div>
-        )}
-        {(executableState.resultState instanceof
-          DataSpaceExecutableTDSResultState ||
-          executableState.resultState instanceof
-            DataSpaceExecutableRelationResultState) && (
-          <DataSpaceExecutableResultView
-            executableState={executableState}
-            resultState={executableState.resultState}
-          />
+        {!isCollapsed && (
+          <>
+            {executableAnalysisResult.description !== undefined && (
+              <div className="data-space__viewer__quickstart__item__description">
+                <DataSpaceMarkdownTextViewer
+                  value={executableAnalysisResult.description}
+                />
+              </div>
+            )}
+            {(executableState.resultState instanceof
+              DataSpaceExecutableTDSResultState ||
+              executableState.resultState instanceof
+                DataSpaceExecutableRelationResultState) && (
+              <DataSpaceExecutableResultView
+                executableState={executableState}
+                resultState={executableState.resultState}
+              />
+            )}
+          </>
         )}
       </div>
     );
@@ -547,13 +575,16 @@ export const DataSpaceQuickStart = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
     );
+    const executableAnchors = dataSpaceViewerState.executableStates.map(
+      (executableState) => generateAnchorForQuickStart(executableState.value),
+    );
     const isCollapsed =
-      dataSpaceViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
-        anchor,
+      dataSpaceViewerState.layoutState.sectionCollapseState.areAllSectionsCollapsed(
+        executableAnchors,
       );
     const toggleCollapse = (): void =>
-      dataSpaceViewerState.layoutState.sectionCollapseState.toggleSectionCollapse(
-        anchor,
+      dataSpaceViewerState.layoutState.sectionCollapseState.toggleAllSectionsCollapse(
+        executableAnchors,
       );
 
     useEffect(() => {
@@ -578,6 +609,24 @@ export const DataSpaceQuickStart = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
+            {executableAnchors.length > 0 && (
+              <button
+                className="data-space__viewer__wiki__section__header__caret-btn"
+                tabIndex={-1}
+                onClick={toggleCollapse}
+                title={isCollapsed ? 'Expand All' : 'Collapse All'}
+              >
+                <ExpandMoreIcon
+                  className={clsx(
+                    'data-space__viewer__wiki__section__header__caret',
+                    {
+                      'data-space__viewer__wiki__section__header__caret--collapsed':
+                        isCollapsed,
+                    },
+                  )}
+                />
+              </button>
+            )}
             Quick Start
             <button
               className="data-space__viewer__wiki__section__header__anchor"
@@ -585,22 +634,6 @@ export const DataSpaceQuickStart = observer(
               onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
             >
               <AnchorLinkIcon />
-            </button>
-            <button
-              className="data-space__viewer__wiki__section__header__caret-btn"
-              tabIndex={-1}
-              onClick={toggleCollapse}
-              title={isCollapsed ? 'Expand' : 'Collapse'}
-            >
-              <ExpandMoreIcon
-                className={clsx(
-                  'data-space__viewer__wiki__section__header__caret',
-                  {
-                    'data-space__viewer__wiki__section__header__caret--collapsed':
-                      isCollapsed,
-                  },
-                )}
-              />
             </button>
           </div>
           {Boolean(documentationUrl) && (
@@ -614,25 +647,21 @@ export const DataSpaceQuickStart = observer(
             </button>
           )}
         </div>
-        {!isCollapsed && (
-          <div className="data-space__viewer__wiki__section__content">
-            {dataSpaceViewerState.executableStates.length !== 0 && (
-              <div className="data-space__viewer__quickstart">
-                {dataSpaceViewerState.executableStates.map(
-                  (executableState) => (
-                    <DataSpaceExecutableAnalysisResultView
-                      key={executableState.uuid}
-                      executableState={executableState}
-                    />
-                  ),
-                )}
-              </div>
-            )}
-            {analysisResult.executables.length === 0 && (
-              <DataSpaceWikiPlaceholder message="(not specified)" />
-            )}
-          </div>
-        )}
+        <div className="data-space__viewer__wiki__section__content">
+          {dataSpaceViewerState.executableStates.length !== 0 && (
+            <div className="data-space__viewer__quickstart">
+              {dataSpaceViewerState.executableStates.map((executableState) => (
+                <DataSpaceExecutableAnalysisResultView
+                  key={executableState.uuid}
+                  executableState={executableState}
+                />
+              ))}
+            </div>
+          )}
+          {analysisResult.executables.length === 0 && (
+            <DataSpaceWikiPlaceholder message="(not specified)" />
+          )}
+        </div>
       </div>
     );
   },
