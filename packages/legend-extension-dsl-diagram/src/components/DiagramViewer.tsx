@@ -24,6 +24,7 @@ import {
   CustomSelectorInput,
   DescriptionIcon,
   ControlledDropdownMenu,
+  ExpandMoreIcon,
   MenuContent,
   MenuContentDivider,
   MenuContentItem,
@@ -502,7 +503,6 @@ export const DiagramPlaceholder: React.FC<{ message: string }> = (props) => (
 
 export const DiagramViewer = observer(
   (props: {
-    applicationStore: GenericLegendApplicationStore;
     diagramViewerState: DiagramViewerState;
     title?: string | undefined;
     actions: {
@@ -516,7 +516,8 @@ export const DiagramViewer = observer(
       onUnsetWikiPageAnchor: (anchorKey: string) => void;
     };
   }) => {
-    const { diagramViewerState, applicationStore, title, actions } = props;
+    const { diagramViewerState, title, actions } = props;
+    const { applicationStore, collapseState } = diagramViewerState;
     const {
       onSyncZoneWithNavigation,
       onGenerateAnchorForActivity,
@@ -529,6 +530,9 @@ export const DiagramViewer = observer(
     const anchor = onGenerateAnchorForActivity(
       DIAGRAM_VIEWER_MODES.DIAGRAM_VIEWER,
     );
+    const isCollapsed = collapseState?.isSectionCollapsed(anchor) ?? false;
+    const toggleCollapse = (): void =>
+      collapseState?.toggleSectionCollapse(anchor);
 
     useCommands(diagramViewerState);
 
@@ -560,6 +564,24 @@ export const DiagramViewer = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
+            {collapseState && (
+              <button
+                className="data-space__viewer__wiki__section__header__caret-btn"
+                tabIndex={-1}
+                onClick={toggleCollapse}
+                title={isCollapsed ? 'Expand' : 'Collapse'}
+              >
+                <ExpandMoreIcon
+                  className={clsx(
+                    'data-space__viewer__wiki__section__header__caret',
+                    {
+                      'data-space__viewer__wiki__section__header__caret--collapsed':
+                        isCollapsed,
+                    },
+                  )}
+                />
+              </button>
+            )}
             {title ?? 'Diagrams'}
             <button
               className="data-space__viewer__wiki__section__header__anchor"
@@ -570,81 +592,85 @@ export const DiagramViewer = observer(
             </button>
           </div>
         </div>
-        <div className="data-space__viewer__wiki__section__content">
-          {diagrams.length > 0 && (
-            <div className="data-space__viewer__diagram-viewer">
-              <DiagramViewerHeader
-                applicationStore={applicationStore}
-                diagramViewerState={diagramViewerState}
-                actions={actions}
-              />
-              <div className="data-space__viewer__diagram-viewer__carousel">
-                <div className="data-space__viewer__diagram-viewer__carousel__frame">
-                  <div className="data-space__viewer__diagram-viewer__carousel__frame__display">
-                    {diagramViewerState.currentDiagram && (
-                      <DiagramCanvas
-                        diagramViewerState={diagramViewerState}
-                        diagram={diagramViewerState.currentDiagram.diagram}
-                        ref={diagramCanvasRef}
-                        actions={actions}
-                      />
-                    )}
-                  </div>
-                  <button
-                    className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--back"
-                    tabIndex={-1}
-                    title={`Previous - ${
-                      previousDiagram?.title
-                        ? previousDiagram.title
-                        : '(untitled)'
-                    } (⇦)`}
-                    disabled={!previousDiagram}
-                    onClick={showPreviousDiagram}
-                  >
-                    <ThinChevronLeftIcon />
-                  </button>
-                  <button
-                    className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--next"
-                    tabIndex={-1}
-                    title={`Next - ${
-                      nextDiagram?.title ? nextDiagram.title : '(untitled)'
-                    } (⇨)`}
-                    disabled={!nextDiagram}
-                    onClick={showNextDiagram}
-                  >
-                    <ThinChevronRightIcon />
-                  </button>
-                  <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators">
-                    <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators__notch">
-                      {diagrams.map((diagram) => (
-                        <button
-                          key={diagram.uuid}
-                          className={clsx(
-                            'data-space__viewer__diagram-viewer__carousel__frame__indicator',
-                            {
-                              'data-space__viewer__diagram-viewer__carousel__frame__indicator--active':
-                                diagramViewerState.currentDiagram === diagram,
-                            },
-                          )}
-                          title={`View Diagram - ${
-                            diagram.title ? diagram.title : '(untitled)'
-                          }`}
-                          onClick={() => {
-                            diagramViewerState.setCurrentDiagram(diagram);
-                            onSyncZoneWithNavigation(diagram);
-                          }}
-                        >
-                          <CircleIcon />
-                        </button>
-                      ))}
+        {!isCollapsed && (
+          <div className="data-space__viewer__wiki__section__content">
+            {diagrams.length > 0 && (
+              <div className="data-space__viewer__diagram-viewer">
+                <DiagramViewerHeader
+                  applicationStore={applicationStore}
+                  diagramViewerState={diagramViewerState}
+                  actions={actions}
+                />
+                <div className="data-space__viewer__diagram-viewer__carousel">
+                  <div className="data-space__viewer__diagram-viewer__carousel__frame">
+                    <div className="data-space__viewer__diagram-viewer__carousel__frame__display">
+                      {diagramViewerState.currentDiagram && (
+                        <DiagramCanvas
+                          diagramViewerState={diagramViewerState}
+                          diagram={diagramViewerState.currentDiagram.diagram}
+                          ref={diagramCanvasRef}
+                          actions={actions}
+                        />
+                      )}
+                    </div>
+                    <button
+                      className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--back"
+                      tabIndex={-1}
+                      title={`Previous - ${
+                        previousDiagram?.title
+                          ? previousDiagram.title
+                          : '(untitled)'
+                      } (⇦)`}
+                      disabled={!previousDiagram}
+                      onClick={showPreviousDiagram}
+                    >
+                      <ThinChevronLeftIcon />
+                    </button>
+                    <button
+                      className="data-space__viewer__diagram-viewer__carousel__frame__navigator data-space__viewer__diagram-viewer__carousel__frame__navigator--next"
+                      tabIndex={-1}
+                      title={`Next - ${
+                        nextDiagram?.title ? nextDiagram.title : '(untitled)'
+                      } (⇨)`}
+                      disabled={!nextDiagram}
+                      onClick={showNextDiagram}
+                    >
+                      <ThinChevronRightIcon />
+                    </button>
+                    <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators">
+                      <div className="data-space__viewer__diagram-viewer__carousel__frame__indicators__notch">
+                        {diagrams.map((diagram) => (
+                          <button
+                            key={diagram.uuid}
+                            className={clsx(
+                              'data-space__viewer__diagram-viewer__carousel__frame__indicator',
+                              {
+                                'data-space__viewer__diagram-viewer__carousel__frame__indicator--active':
+                                  diagramViewerState.currentDiagram === diagram,
+                              },
+                            )}
+                            title={`View Diagram - ${
+                              diagram.title ? diagram.title : '(untitled)'
+                            }`}
+                            onClick={() => {
+                              diagramViewerState.setCurrentDiagram(diagram);
+                              onSyncZoneWithNavigation(diagram);
+                            }}
+                          >
+                            <CircleIcon />
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-          {!diagrams.length && <DiagramPlaceholder message="(not specified)" />}
-        </div>
+            )}
+            {!diagrams.length && (
+              <DiagramPlaceholder message="(not specified)" />
+            )}
+          </div>
+        )}
       </div>
     );
   },

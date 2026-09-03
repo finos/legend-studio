@@ -31,7 +31,10 @@ import {
   EnumerationDocumentationEntry,
   ModelDocumentationEntry,
 } from './ModelDocumentationAnalysis.js';
-import type { CommandRegistrar } from '@finos/legend-application';
+import type {
+  CommandRegistrar,
+  GenericLegendApplicationStore,
+} from '@finos/legend-application';
 
 export enum ModelsDocumentationFilterTreeNodeCheckType {
   CHECKED,
@@ -331,6 +334,11 @@ export const buildPackageFilterTreeData = (
   };
 };
 
+export type ModelsDocumentationCollapseState = {
+  isSectionCollapsed(key: string): boolean;
+  toggleSectionCollapse(key: string): void;
+};
+
 export abstract class ViewerModelsDocumentationState
   implements CommandRegistrar
 {
@@ -338,9 +346,11 @@ export abstract class ViewerModelsDocumentationState
 
   private searchInput?: HTMLInputElement | undefined;
   private readonly searchEngine: FuzzySearchEngine<NormalizedDocumentationEntry>;
+  readonly applicationStore: GenericLegendApplicationStore;
   readonly searchConfigurationState: FuzzySearchAdvancedConfigState;
   readonly searchState = ActionState.create();
   readonly elementDocs: NormalizedDocumentationEntry[];
+  readonly collapseState?: ModelsDocumentationCollapseState | undefined;
   searchText: string;
   searchResults: NormalizedDocumentationEntry[] = [];
   showSearchConfigurationMenu = false;
@@ -349,7 +359,13 @@ export abstract class ViewerModelsDocumentationState
   abstract registerCommands(): void;
   abstract deregisterCommands(): void;
 
-  constructor(elementDocs: NormalizedDocumentationEntry[]) {
+  constructor(
+    applicationStore: GenericLegendApplicationStore,
+    elementDocs: NormalizedDocumentationEntry[],
+    options?: {
+      collapseState?: ModelsDocumentationCollapseState | undefined;
+    },
+  ) {
     makeObservable(this, {
       showHumanizedForm: observable,
       searchText: observable,
@@ -382,7 +398,9 @@ export abstract class ViewerModelsDocumentationState
     this.searchConfigurationState = new FuzzySearchAdvancedConfigState(
       (): void => this.search(),
     );
+    this.applicationStore = applicationStore;
     this.elementDocs = elementDocs;
+    this.collapseState = options?.collapseState;
     this.searchText = '';
     this.typeFilterTreeData = buildTypeFilterTreeData();
     this.updateTypeFilter();

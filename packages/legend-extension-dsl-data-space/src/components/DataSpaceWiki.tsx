@@ -59,7 +59,6 @@ export const DataSpaceWiki = observer(
       <div className="data-space__viewer__wiki">
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />
         <DiagramViewer
-          applicationStore={dataSpaceViewerState.applicationStore}
           diagramViewerState={dataSpaceViewerState.diagramViewerState}
           actions={{
             onQueryClass: dataSpaceViewerState.queryClass,
@@ -97,7 +96,6 @@ export const DataSpaceWiki = observer(
           modelsDocumentationState={
             dataSpaceViewerState.modelsDocumentationState
           }
-          applicationStore={dataSpaceViewerState.applicationStore}
         />
         <DataSpaceQuickStart dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDataAccess dataSpaceViewerState={dataSpaceViewerState} />

@@ -19,19 +19,22 @@
 .data-space__viewer {
   height: 100%;
   width: 100%;
+  max-width: 150rem;
+  margin: 0 auto;
   position: relative;
   font-family: Roboto, sans-serif;
   display: flex;
   flex-direction: row;
 
   &__header {
-    @include flexHCenter;
-
+    display: flex;
+    justify-content: flex-start;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 9rem;
+    padding-left: 8.2rem;
     z-index: 1;
     background: transparent;
     transition: all 0.5s ease;
@@ -174,10 +177,10 @@
 
   &__body {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     flex-direction: column;
     height: 100%;
-    width: 100%;
+    flex: 1;
     min-width: 0;
     overflow: auto;
   }
@@ -361,15 +364,18 @@
   flex-direction: column;
   width: 6.2rem;
   align-items: center;
-  position: absolute;
-  left: 2rem;
-  top: 11rem;
   z-index: 10;
   overflow-x: hidden;
   overflow-y: hidden;
   border-radius: 0.2rem;
   background: var(--color-bg-panel);
-  max-height: calc(100vh - 13rem);
+  max-height: 100vh;
+
+  .data-space__viewer > & {
+    flex: 0 0 6.2rem;
+    margin: 0 0 0 2rem;
+    position: static;
+  }
 
   ::-webkit-scrollbar {
     width: 0.3rem;
@@ -514,6 +520,7 @@
 
       &__label {
         @include ellipsisTextOverflow;
+        @include flexVCenter;
 
         font-size: 2.4rem;
         text-transform: uppercase;
@@ -542,6 +549,24 @@
 
       &__documentation {
         color: var(--color-blue-100);
+      }
+
+      &__caret-btn {
+        @include flexVCenter;
+
+        margin-right: 0.5rem;
+        cursor: pointer;
+      }
+
+      &__caret {
+        color: var(--color-blue-100);
+        font-size: 2rem;
+        transition: transform 0.2s ease;
+        transform: rotate(0deg);
+
+        &--collapsed {
+          transform: rotate(-90deg);
+        }
       }
     }
 
@@ -1013,6 +1038,24 @@
 
     height: 3rem;
     margin-bottom: 1rem;
+  }
+
+  &__item__header__caret-btn {
+    @include flexVCenter;
+
+    margin-right: 0.5rem;
+    cursor: pointer;
+  }
+
+  &__item__header__caret {
+    color: var(--color-text-muted);
+    font-size: 2rem;
+    transition: transform 0.2s ease;
+    transform: rotate(0deg);
+
+    &--collapsed {
+      transform: rotate(-90deg);
+    }
   }
 
   &__item__header__title {

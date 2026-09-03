@@ -22,12 +22,22 @@ import {
   type DiagramRenderer,
   DIAGRAM_INTERACTION_MODE,
 } from './DiagramRenderer.js';
-import type { CommandRegistrar } from '@finos/legend-application';
+import type {
+  CommandRegistrar,
+  GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import type { Class } from '@finos/legend-graph';
 
+export type DiagramViewerCollapseState = {
+  isSectionCollapsed(key: string): boolean;
+  toggleSectionCollapse(key: string): void;
+};
+
 export abstract class DiagramViewerState implements CommandRegistrar {
+  readonly applicationStore: GenericLegendApplicationStore;
   readonly diagrams: DiagramAnalysisResult[];
   readonly queryClass?: ((_class: Class) => void) | undefined;
+  readonly collapseState?: DiagramViewerCollapseState | undefined;
 
   _renderer?: DiagramRenderer | undefined;
   currentDiagram?: DiagramAnalysisResult | undefined;
@@ -39,8 +49,12 @@ export abstract class DiagramViewerState implements CommandRegistrar {
   abstract deregisterCommands(): void;
 
   constructor(
+    applicationStore: GenericLegendApplicationStore,
     diagrams: DiagramAnalysisResult[],
-    queryClass?: (_class: Class) => void,
+    options?: {
+      queryClass?: ((_class: Class) => void) | undefined;
+      collapseState?: DiagramViewerCollapseState;
+    },
   ) {
     makeObservable(this, {
       _renderer: observable,
@@ -58,8 +72,10 @@ export abstract class DiagramViewerState implements CommandRegistrar {
       setShowDescription: action,
       setExpandDescription: action,
     });
-    this.queryClass = queryClass;
+    this.applicationStore = applicationStore;
     this.diagrams = diagrams;
+    this.queryClass = options?.queryClass;
+    this.collapseState = options?.collapseState;
     this.currentDiagram = diagrams[0];
   }
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { AnchorLinkIcon } from '@finos/legend-art';
+import { AnchorLinkIcon, ExpandMoreIcon, clsx } from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { observer } from 'mobx-react-lite';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
@@ -33,6 +33,14 @@ export const DataSpaceDescription = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
     );
+    const isCollapsed =
+      dataSpaceViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
+        anchor,
+      );
+    const toggleCollapse = (): void =>
+      dataSpaceViewerState.layoutState.sectionCollapseState.toggleSectionCollapse(
+        anchor,
+      );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -48,6 +56,22 @@ export const DataSpaceDescription = observer(
       <div ref={sectionRef} className="data-space__viewer__wiki__section">
         <div className="data-space__viewer__wiki__section__header">
           <div className="data-space__viewer__wiki__section__header__label">
+            <button
+              className="data-space__viewer__wiki__section__header__caret-btn"
+              tabIndex={-1}
+              onClick={toggleCollapse}
+              title={isCollapsed ? 'Expand' : 'Collapse'}
+            >
+              <ExpandMoreIcon
+                className={clsx(
+                  'data-space__viewer__wiki__section__header__caret',
+                  {
+                    'data-space__viewer__wiki__section__header__caret--collapsed':
+                      isCollapsed,
+                  },
+                )}
+              />
+            </button>
             Description
             <button
               className="data-space__viewer__wiki__section__header__anchor"
@@ -58,20 +82,22 @@ export const DataSpaceDescription = observer(
             </button>
           </div>
         </div>
-        <div className="data-space__viewer__wiki__section__content">
-          {analysisResult.description !== undefined && (
-            <div className="data-space__viewer__description">
-              <div className="data-space__viewer__description__content">
-                <DataSpaceMarkdownTextViewer
-                  value={analysisResult.description}
-                />
+        {!isCollapsed && (
+          <div className="data-space__viewer__wiki__section__content">
+            {analysisResult.description !== undefined && (
+              <div className="data-space__viewer__description">
+                <div className="data-space__viewer__description__content">
+                  <DataSpaceMarkdownTextViewer
+                    value={analysisResult.description}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-          {analysisResult.description === undefined && (
-            <DataSpaceWikiPlaceholder message="(not specified)" />
-          )}
-        </div>
+            )}
+            {analysisResult.description === undefined && (
+              <DataSpaceWikiPlaceholder message="(not specified)" />
+            )}
+          </div>
+        )}
       </div>
     );
   },

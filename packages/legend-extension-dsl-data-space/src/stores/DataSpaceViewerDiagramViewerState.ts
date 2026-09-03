@@ -28,8 +28,12 @@ export class DataSpaceViewerDiagramViewerState
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     super(
+      dataSpaceViewerState.applicationStore,
       dataSpaceViewerState.dataSpaceAnalysisResult.diagrams,
-      dataSpaceViewerState.queryClass,
+      {
+        queryClass: dataSpaceViewerState.queryClass,
+        collapseState: dataSpaceViewerState.layoutState.sectionCollapseState,
+      },
     );
     this.dataSpaceViewerState = dataSpaceViewerState;
   }
