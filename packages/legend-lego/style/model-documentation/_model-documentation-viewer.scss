@@ -95,7 +95,7 @@
       &__caret-btn {
         @include flexVCenter;
 
-        margin-left: 0.5rem;
+        margin-right: 0.5rem;
         cursor: pointer;
       }
 
@@ -103,10 +103,10 @@
         color: var(--color-text-link);
         font-size: 2rem;
         transition: transform 0.2s ease;
-        transform: rotate(-180deg);
+        transform: rotate(0deg);
 
         &--collapsed {
-          transform: rotate(0deg);
+          transform: rotate(-90deg);
         }
       }
     }
