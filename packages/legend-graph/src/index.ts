@@ -835,6 +835,7 @@ export * from './graph/metamodel/pure/dataProduct/test/DataProductTestSuite.js';
 export * from './graph/metamodel/pure/data/DataResolver.js';
 export * from './graph-manager/action/changeDetection/DataProductObserveHelper.js';
 export * from './graph-manager/action/changeDetection/IngestObserveHelper.js';
+export * from './graph-manager/action/changeDetection/ComputeObserveHelper.js';
 
 // ------------------------------------- DSL Data --------------------------------------------
 

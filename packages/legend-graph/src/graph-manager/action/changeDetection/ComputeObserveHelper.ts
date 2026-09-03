@@ -51,16 +51,20 @@ const observe_SnowflakeComputeSpecification = skipObserved(
     makeObservable(metamodel, {
       warehouseType: observable,
       warehouseSize: observable,
+      generation: observable,
       resourceConstraint: observable,
       maxClusterCount: observable,
       minClusterCount: observable,
       scalingPolicy: observable,
       autoSuspend: observable,
-      autoResume: observable,
-      resourceMonitor: observable,
       comment: observable,
       enableQueryAcceleration: observable,
       queryAccelerationMaxScaleFactor: observable,
+      maxConcurrencyLevel: observable,
+      statementQueuedTimeoutInSeconds: observable,
+      statementTimeoutInSeconds: observable,
+      maxQueryPerformanceLevel: observable,
+      queryThroughputMultiplier: observable,
       hashCode: computed,
     });
     return metamodel;

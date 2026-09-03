@@ -24,7 +24,6 @@ import {
   SnowflakeComputeSpecification,
   UnknownComputeSpecification,
 } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
-import { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
 import {
   V1_AppDirComputeOwner,
   V1_Compute,
@@ -35,6 +34,7 @@ import {
   V1_UnknownComputeSpecification,
 } from '../../../model/packageableElements/compute/V1_Compute.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
+import { V1_transformAppDirNode } from './V1_AppDirNodeTransformerHelper.js';
 
 const V1_transformSnowflakeComputeSpecification = (
   spec: SnowflakeComputeSpecification,
@@ -42,16 +42,20 @@ const V1_transformSnowflakeComputeSpecification = (
   const v1Spec = new V1_SnowflakeComputeSpecification();
   v1Spec.warehouseType = spec.warehouseType;
   v1Spec.warehouseSize = spec.warehouseSize;
+  v1Spec.generation = spec.generation;
   v1Spec.resourceConstraint = spec.resourceConstraint;
   v1Spec.maxClusterCount = spec.maxClusterCount;
   v1Spec.minClusterCount = spec.minClusterCount;
   v1Spec.scalingPolicy = spec.scalingPolicy;
   v1Spec.autoSuspend = spec.autoSuspend;
-  v1Spec.autoResume = spec.autoResume;
-  v1Spec.resourceMonitor = spec.resourceMonitor;
   v1Spec.comment = spec.comment;
   v1Spec.enableQueryAcceleration = spec.enableQueryAcceleration;
   v1Spec.queryAccelerationMaxScaleFactor = spec.queryAccelerationMaxScaleFactor;
+  v1Spec.maxConcurrencyLevel = spec.maxConcurrencyLevel;
+  v1Spec.statementQueuedTimeoutInSeconds = spec.statementQueuedTimeoutInSeconds;
+  v1Spec.statementTimeoutInSeconds = spec.statementTimeoutInSeconds;
+  v1Spec.maxQueryPerformanceLevel = spec.maxQueryPerformanceLevel;
+  v1Spec.queryThroughputMultiplier = spec.queryThroughputMultiplier;
   return v1Spec;
 };
 
@@ -89,16 +93,10 @@ const V1_transformComputeOwner = (
 ): V1_AppDirComputeOwner => {
   const v1Owner = new V1_AppDirComputeOwner();
   if (owner.production) {
-    const v1Node = new V1_AppDirNode();
-    v1Node.appDirId = owner.production.appDirId;
-    v1Node.level = owner.production.level;
-    v1Owner.production = v1Node;
+    v1Owner.production = V1_transformAppDirNode(owner.production);
   }
   if (owner.prodParallel) {
-    const v1Node = new V1_AppDirNode();
-    v1Node.appDirId = owner.prodParallel.appDirId;
-    v1Node.level = owner.prodParallel.level;
-    v1Owner.prodParallel = v1Node;
+    v1Owner.prodParallel = V1_transformAppDirNode(owner.prodParallel);
   }
   return v1Owner;
 };

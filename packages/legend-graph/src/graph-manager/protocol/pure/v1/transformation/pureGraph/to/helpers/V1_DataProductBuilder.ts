@@ -47,7 +47,7 @@ import {
   AppDirOwner,
   SecureView,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
-import { AppDirNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import { V1_buildAppDirNode } from './V1_AppDirNodeBuilderHelper.js';
 import {
   type V1_AccessPoint,
   type V1_AccessPointGroup,
@@ -424,16 +424,10 @@ export const V1_buildDataProductOwner = (
   if (v1Owner instanceof V1_AppDirOwner) {
     const owner = new AppDirOwner();
     if (v1Owner.production) {
-      const production = new AppDirNode();
-      production.appDirId = v1Owner.production.appDirId;
-      production.level = v1Owner.production.level;
-      owner.production = production;
+      owner.production = V1_buildAppDirNode(v1Owner.production);
     }
     if (v1Owner.prodParallel) {
-      const prodParallel = new AppDirNode();
-      prodParallel.appDirId = v1Owner.prodParallel.appDirId;
-      prodParallel.level = v1Owner.prodParallel.level;
-      owner.prodParallel = prodParallel;
+      owner.prodParallel = V1_buildAppDirNode(v1Owner.prodParallel);
     }
     return owner;
   }
