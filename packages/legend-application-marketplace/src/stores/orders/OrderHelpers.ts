@@ -477,6 +477,9 @@ export const ORDER_SEARCH_DEFAULT_LIMIT = 100;
 export const ORDER_SEARCH_MIN_LAST_DAYS = 1;
 export const ORDER_SEARCH_MAX_LAST_DAYS = 365;
 
+/** Selectable page sizes for the advanced search results pager; `ORDER_SEARCH_DEFAULT_LIMIT` is the initial selection. */
+export const ORDER_SEARCH_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+
 /**
  * Resolves a human-readable label for a `LegendUser` selected in the advanced
  * search form (falls back to the raw kerberos id when no display name is

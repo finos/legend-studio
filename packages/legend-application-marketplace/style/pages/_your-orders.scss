@@ -173,6 +173,101 @@
     margin-top: 1.5rem;
   }
 
+  // ─── Expand / Collapse All controls ──────────────────────────────────────
+
+  &__expand-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+
+    &__group {
+      .MuiButton-root {
+        font-size: 1.4rem;
+        font-weight: 500;
+        text-transform: none;
+        color: var(--color-blue-100);
+        padding: 0.5rem 1.2rem;
+        border-color: var(--color-light-grey-300);
+        @include transition-smooth;
+
+        &:hover {
+          background-color: var(--color-light-grey-50);
+          border-color: var(--color-blue-100);
+        }
+      }
+    }
+  }
+
+  // ─── Advanced search pagination (Previous/Next, page-local total_count) ──
+
+  &__search-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--color-light-grey-200);
+    border-radius: 8px;
+    background-color: var(--color-light-grey-50);
+  }
+
+  &__search-pagination-size {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .MuiTypography-root {
+      font-size: 1.4rem;
+      color: var(--color-dark-grey-300);
+    }
+
+    .MuiInputBase-root {
+      font-size: 1.4rem;
+    }
+  }
+
+  &__search-pagination-info {
+    font-size: 1.4rem;
+    color: var(--color-dark-grey-300);
+
+    strong {
+      color: var(--color-blue-100);
+      font-weight: 600;
+    }
+  }
+
+  &__search-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__search-pagination-btn {
+    font-size: 1.4rem;
+    font-weight: 500;
+    text-transform: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    color: var(--color-blue-100);
+    border-color: var(--color-light-grey-300);
+    @include transition-smooth;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-light-grey-50);
+      border-color: var(--color-blue-100);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      color: var(--color-dark-grey-500);
+      border-color: var(--color-light-grey-300);
+    }
+  }
+
   &__loading {
     display: flex;
     flex-direction: column;

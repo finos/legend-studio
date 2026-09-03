@@ -668,3 +668,164 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
     expect(lastRequest?.ordered_for).toBe('bbrown');
   });
 });
+
+describe('LegendMarketplaceYourOrders - collapse/expand all', () => {
+  test('does not show Collapse All/Expand All controls when there is only one order', async () => {
+    await renderYourOrdersPage([makeBloombergOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    expect(screen.queryByRole('button', { name: 'Collapse all' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Expand all' })).toBeNull();
+  });
+
+  test('Collapse All collapses every order accordion, Expand All expands them again', async () => {
+    await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    const getSummaries = () => screen.getAllByRole('button', { name: /ORD-/i });
+    expect(
+      getSummaries().every(
+        (btn) => btn.getAttribute('aria-expanded') === 'true',
+      ),
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse all' }));
+
+    await waitFor(() =>
+      expect(
+        getSummaries().every(
+          (btn) => btn.getAttribute('aria-expanded') === 'false',
+        ),
+      ).toBe(true),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand all' }));
+
+    await waitFor(() =>
+      expect(
+        getSummaries().every(
+          (btn) => btn.getAttribute('aria-expanded') === 'true',
+        ),
+      ).toBe(true),
+    );
+  });
+
+  test('individual accordions can still be toggled independently after Collapse All', async () => {
+    await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse all' }));
+
+    const bloombergSummary = await waitFor(() =>
+      screen.getByRole('button', { name: /ORD-123/i }),
+    );
+    expect(bloombergSummary.getAttribute('aria-expanded')).toBe('false');
+
+    fireEvent.click(bloombergSummary);
+
+    await waitFor(() =>
+      expect(bloombergSummary.getAttribute('aria-expanded')).toBe('true'),
+    );
+    const reutersSummary = screen.getByRole('button', { name: /ORD-456/i });
+    expect(reutersSummary.getAttribute('aria-expanded')).toBe('false');
+  });
+});
+
+describe('LegendMarketplaceYourOrders - advanced search pagination', () => {
+  const renderWithSearchResults = async (
+    orders: TerminalProductOrder[],
+    limit = 100,
+  ) => {
+    const { MOCK__baseStore } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    const searchOrdersSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchOrders',
+    ).mockResolvedValue({
+      orders,
+      total_count: orders.length,
+      status_filter: 'ALL',
+      limit,
+      offset: 0,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+      target: { value: 'adishar' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    });
+    await waitFor(() =>
+      expect(screen.getByText('Ordered By: adishar')).toBeDefined(),
+    );
+
+    return { MOCK__baseStore, searchOrdersSpy };
+  };
+
+  test('Previous is disabled and Next is disabled when a single, partial page of results is returned', async () => {
+    await renderWithSearchResults([makeReutersOrder()]);
+
+    const previousButton = screen.getByRole('button', { name: 'Previous' });
+    const nextButton = screen.getByRole('button', { name: 'Next' });
+    expect(previousButton.hasAttribute('disabled')).toBe(true);
+    expect(nextButton.hasAttribute('disabled')).toBe(true);
+  });
+
+  test('Next is enabled when a full page of results is returned, and clicking it requests the next offset', async () => {
+    const fullPage = Array.from({ length: 100 }, (_, i) =>
+      makeReutersOrder({ order_id: `ORD-${i}` }),
+    );
+    const { searchOrdersSpy } = await renderWithSearchResults(fullPage, 100);
+
+    const nextButton = screen.getByRole('button', { name: 'Next' });
+    expect(nextButton.hasAttribute('disabled')).toBe(false);
+
+    searchOrdersSpy.mockResolvedValue({
+      orders: [makeReutersOrder({ order_id: 'ORD-page-2' })],
+      total_count: 1,
+      status_filter: 'ALL',
+      limit: 100,
+      offset: 100,
+    });
+
+    await act(async () => {
+      fireEvent.click(nextButton);
+    });
+
+    await waitFor(() =>
+      expect(searchOrdersSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ offset: 100, limit: 100 }),
+      ),
+    );
+  });
+
+  test('changing the page size re-searches from offset 0 with the new limit', async () => {
+    const { searchOrdersSpy } = await renderWithSearchResults([
+      makeReutersOrder(),
+    ]);
+    searchOrdersSpy.mockClear();
+
+    // The advanced search popover is closed at this point, so the page-size
+    // Select is the only combobox on the page.
+    const combobox = screen.getByRole('combobox');
+    await act(async () => {
+      fireEvent.mouseDown(combobox);
+    });
+    const option = await waitFor(() =>
+      screen.getByRole('option', { name: '25' }),
+    );
+    await act(async () => {
+      fireEvent.click(option);
+    });
+
+    await waitFor(() =>
+      expect(searchOrdersSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ offset: 0, limit: 25 }),
+      ),
+    );
+  });
+});

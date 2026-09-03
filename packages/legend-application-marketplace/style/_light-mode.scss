@@ -599,6 +599,66 @@
     &__advanced-search-notice {
       color: var(--color-hclight-red-50);
     }
+
+    &__expand-controls {
+      &__group {
+        .MuiButton-root {
+          color: var(--color-hclight-blue-60);
+          border-color: var(--color-hclight-grey-30);
+
+          &:hover {
+            background-color: var(--color-hclight-blue-10);
+            border-color: var(--color-hclight-blue-60);
+          }
+        }
+      }
+    }
+
+    &__search-pagination {
+      border-color: var(--color-hclight-grey-30);
+      background-color: var(--color-hclight-grey-10);
+    }
+
+    &__search-pagination-size {
+      .MuiTypography-root {
+        color: var(--color-hclight-grey-70);
+      }
+
+      .MuiInputBase-root {
+        color: var(--color-hclight-grey-90);
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-hclight-grey-30);
+      }
+
+      .MuiSelect-icon {
+        color: var(--color-hclight-grey-70);
+      }
+    }
+
+    &__search-pagination-info {
+      color: var(--color-hclight-grey-70);
+
+      strong {
+        color: var(--color-hclight-blue-60);
+      }
+    }
+
+    &__search-pagination-btn {
+      color: var(--color-hclight-blue-60);
+      border-color: var(--color-hclight-grey-30);
+
+      &:hover:not(:disabled) {
+        background-color: var(--color-hclight-blue-10);
+        border-color: var(--color-hclight-blue-60);
+      }
+
+      &:disabled {
+        color: var(--color-hclight-grey-40);
+        border-color: var(--color-hclight-grey-30);
+      }
+    }
   }
 
   .advanced-order-search-popover {

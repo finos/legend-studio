@@ -24,6 +24,7 @@ import {
   Chip,
   CircularProgress,
   Button,
+  ButtonGroup,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -32,6 +33,9 @@ import {
   TextField,
   InputAdornment,
   IconButton,
+  Select,
+  MenuItem,
+  type SelectChangeEvent,
 } from '@mui/material';
 import { flowResult } from 'mobx';
 import {
@@ -66,6 +70,7 @@ import {
   getCurrentStageTrackingUrl,
   getClosureInfo,
   getOrderSearchStatusLabel,
+  ORDER_SEARCH_PAGE_SIZE_OPTIONS,
 } from '../../stores/orders/OrderHelpers.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 import {
@@ -129,7 +134,9 @@ const filterOrdersBySearchTerm = (
 const OrderAccordion: React.FC<{
   order: TerminalProductOrder;
   isOpenOrder: boolean;
-}> = observer(({ order, isOpenOrder }) => {
+  isExpanded: boolean;
+  onToggleExpanded: (orderId: string) => void;
+}> = observer(({ order, isOpenOrder, isExpanded, onToggleExpanded }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const ordersStore = useLegendMarketplaceOrdersStore();
   const baseStore = useLegendMarketplaceBaseStore();
@@ -176,7 +183,8 @@ const OrderAccordion: React.FC<{
   return (
     <>
       <Accordion
-        defaultExpanded={true}
+        expanded={isExpanded}
+        onChange={() => onToggleExpanded(order.order_id)}
         sx={{ '&:before': { display: 'none' }, mb: 2 }}
       >
         <AccordionSummary
@@ -582,6 +590,11 @@ export const LegendMarketplaceYourOrders: React.FC =
         );
       }, [baseStore.applicationStore.telemetryService]);
       const [searchTerm, setSearchTerm] = useState('');
+      // Orders whose accordion is collapsed; absence from the set means
+      // expanded (so orders default to expanded without needing a sync effect).
+      const [collapsedOrderIds, setCollapsedOrderIds] = useState<Set<string>>(
+        new Set(),
+      );
       const [advancedSearchAnchorEl, setAdvancedSearchAnchorEl] =
         useState<HTMLElement | null>(null);
       // Bumped whenever the advanced search is cleared from the search bar's
@@ -651,6 +664,83 @@ export const LegendMarketplaceYourOrders: React.FC =
         () => filterOrdersBySearchTerm(currentOrders, searchTerm),
         [currentOrders, searchTerm],
       );
+
+      const handleToggleOrder = useCallback((orderId: string) => {
+        setCollapsedOrderIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(orderId)) {
+            next.delete(orderId);
+          } else {
+            next.add(orderId);
+          }
+          return next;
+        });
+      }, []);
+
+      const handleCollapseAllOrders = useCallback(() => {
+        LegendMarketplaceTelemetryHelper.logEvent_ToggleAllOrders(
+          baseStore.applicationStore.telemetryService,
+          false,
+        );
+        setCollapsedOrderIds(
+          new Set(filteredOrders.map((order) => order.order_id)),
+        );
+      }, [baseStore.applicationStore.telemetryService, filteredOrders]);
+
+      const handleExpandAllOrders = useCallback(() => {
+        LegendMarketplaceTelemetryHelper.logEvent_ToggleAllOrders(
+          baseStore.applicationStore.telemetryService,
+          true,
+        );
+        setCollapsedOrderIds(new Set());
+      }, [baseStore.applicationStore.telemetryService]);
+
+      const handleSearchPageSizeChange = useCallback(
+        (event: SelectChangeEvent<number>) => {
+          const pageSize = Number(event.target.value);
+          LegendMarketplaceTelemetryHelper.logEvent_ChangeAdvancedOrderSearchPageSize(
+            baseStore.applicationStore.telemetryService,
+            pageSize,
+          );
+          executeFlowSafely(() => ordersStore.setSearchPageSize(pageSize));
+        },
+        [
+          baseStore.applicationStore.telemetryService,
+          executeFlowSafely,
+          ordersStore,
+        ],
+      );
+
+      const handlePreviousSearchPage = useCallback(() => {
+        const offset = Math.max(
+          0,
+          ordersStore.searchOffset - ordersStore.searchPageSize,
+        );
+        LegendMarketplaceTelemetryHelper.logEvent_PaginateAdvancedOrderSearch(
+          baseStore.applicationStore.telemetryService,
+          offset,
+          ordersStore.searchPageSize,
+        );
+        executeFlowSafely(() => ordersStore.goToSearchOffset(offset));
+      }, [
+        baseStore.applicationStore.telemetryService,
+        executeFlowSafely,
+        ordersStore,
+      ]);
+
+      const handleNextSearchPage = useCallback(() => {
+        const offset = ordersStore.searchOffset + ordersStore.searchPageSize;
+        LegendMarketplaceTelemetryHelper.logEvent_PaginateAdvancedOrderSearch(
+          baseStore.applicationStore.telemetryService,
+          offset,
+          ordersStore.searchPageSize,
+        );
+        executeFlowSafely(() => ordersStore.goToSearchOffset(offset));
+      }, [
+        baseStore.applicationStore.telemetryService,
+        executeFlowSafely,
+        ordersStore,
+      ]);
 
       return (
         <LegendMarketplacePage className="legend-marketplace-your-orders">
@@ -850,25 +940,106 @@ export const LegendMarketplaceYourOrders: React.FC =
                 </Typography>
               </Box>
             ) : (
-              <Stack
-                spacing={2}
-                className="legend-marketplace-your-orders__orders-list"
-              >
-                {filteredOrders.map((order) => {
-                  const isOpenOrder =
-                    order.workflow_details?.workflow_status ===
-                      OrderStatus.IN_PROGRESS ||
-                    order.workflow_details?.workflow_status ===
-                      OrderStatus.OPEN;
-                  return (
-                    <OrderAccordion
-                      key={order.order_id}
-                      order={order}
-                      isOpenOrder={isOpenOrder}
-                    />
-                  );
-                })}
-              </Stack>
+              <>
+                {filteredOrders.length > 1 && (
+                  <Box className="legend-marketplace-your-orders__expand-controls">
+                    <ButtonGroup
+                      size="small"
+                      aria-label="Expand or collapse all orders"
+                      className="legend-marketplace-your-orders__expand-controls__group"
+                    >
+                      <Button
+                        onClick={handleCollapseAllOrders}
+                        aria-label="Collapse all"
+                      >
+                        Collapse All
+                      </Button>
+                      <Button
+                        onClick={handleExpandAllOrders}
+                        aria-label="Expand all"
+                      >
+                        Expand All
+                      </Button>
+                    </ButtonGroup>
+                  </Box>
+                )}
+                <Stack
+                  spacing={2}
+                  className="legend-marketplace-your-orders__orders-list"
+                >
+                  {filteredOrders.map((order) => {
+                    const isOpenOrder =
+                      order.workflow_details?.workflow_status ===
+                        OrderStatus.IN_PROGRESS ||
+                      order.workflow_details?.workflow_status ===
+                        OrderStatus.OPEN;
+                    return (
+                      <OrderAccordion
+                        key={order.order_id}
+                        order={order}
+                        isOpenOrder={isOpenOrder}
+                        isExpanded={!collapsedOrderIds.has(order.order_id)}
+                        onToggleExpanded={handleToggleOrder}
+                      />
+                    );
+                  })}
+                </Stack>
+                {isAdvancedSearchActive && appliedSearchFilters && (
+                  <Box className="legend-marketplace-your-orders__search-pagination">
+                    <Box className="legend-marketplace-your-orders__search-pagination-size">
+                      <Typography variant="body2">Orders per page:</Typography>
+                      <Select
+                        value={ordersStore.searchPageSize}
+                        onChange={handleSearchPageSizeChange}
+                        size="small"
+                        disabled={ordersStore.searchOrdersState.isInProgress}
+                      >
+                        {ORDER_SEARCH_PAGE_SIZE_OPTIONS.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </Box>
+                    <Typography
+                      variant="body2"
+                      className="legend-marketplace-your-orders__search-pagination-info"
+                    >
+                      Showing <strong>{ordersStore.searchOffset + 1}</strong> to{' '}
+                      <strong>
+                        {ordersStore.searchOffset +
+                          ordersStore.searchResults.length}
+                      </strong>
+                    </Typography>
+                    <Box className="legend-marketplace-your-orders__search-pagination-controls">
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        disabled={
+                          !ordersStore.hasPreviousSearchPage ||
+                          ordersStore.searchOrdersState.isInProgress
+                        }
+                        onClick={handlePreviousSearchPage}
+                        className="legend-marketplace-your-orders__search-pagination-btn"
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        disabled={
+                          !ordersStore.hasNextSearchPage ||
+                          ordersStore.searchOrdersState.isInProgress
+                        }
+                        onClick={handleNextSearchPage}
+                        className="legend-marketplace-your-orders__search-pagination-btn"
+                      >
+                        Next
+                      </Button>
+                    </Box>
+                  </Box>
+                )}
+              </>
             )}
           </Box>
         </LegendMarketplacePage>

@@ -1097,6 +1097,35 @@ const simpleTelemetryCases: SimpleTelemetryCase[] = [
       LegendMarketplaceTelemetryHelper.logEvent_AIAgentOpenInDataCube(service),
     expectedPayload: {},
   },
+  {
+    description: 'logEvent_PaginateAdvancedOrderSearch',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.PAGINATE_ADVANCED_ORDER_SEARCH,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_PaginateAdvancedOrderSearch(
+        service,
+        100,
+        25,
+      ),
+    expectedPayload: { offset: 100, pageSize: 25 },
+  },
+  {
+    description: 'logEvent_ChangeAdvancedOrderSearchPageSize',
+    expectedEvent:
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_ADVANCED_ORDER_SEARCH_PAGE_SIZE,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ChangeAdvancedOrderSearchPageSize(
+        service,
+        25,
+      ),
+    expectedPayload: { pageSize: 25 },
+  },
+  {
+    description: 'logEvent_ToggleAllOrders',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_ALL_ORDERS,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ToggleAllOrders(service, true),
+    expectedPayload: { isExpanded: true },
+  },
 ];
 
 describe('simple pass-through telemetry events', () => {

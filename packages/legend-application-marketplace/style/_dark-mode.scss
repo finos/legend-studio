@@ -317,6 +317,66 @@
     &__advanced-search-notice {
       color: var(--color-dark-red-50);
     }
+
+    &__expand-controls {
+      &__group {
+        .MuiButton-root {
+          color: var(--color-dark-theme-blue-primary);
+          border-color: var(--color-dark-theme-border);
+
+          &:hover {
+            background-color: rgb(115 153 198 / 15%);
+            border-color: var(--color-dark-theme-blue-primary);
+          }
+        }
+      }
+    }
+
+    &__search-pagination {
+      border-color: var(--color-dark-theme-border);
+      background-color: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__search-pagination-size {
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      .MuiInputBase-root {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .MuiSelect-icon {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__search-pagination-info {
+      color: var(--color-dark-theme-text-secondary);
+
+      strong {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__search-pagination-btn {
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-border);
+
+      &:hover:not(:disabled) {
+        background-color: rgb(115 153 198 / 15%);
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      &:disabled {
+        color: var(--color-dark-theme-text-muted);
+        border-color: var(--color-dark-theme-border);
+      }
+    }
   }
 
   .advanced-order-search-popover {

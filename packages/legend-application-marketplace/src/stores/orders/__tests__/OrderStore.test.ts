@@ -223,5 +223,105 @@ describe('OrdersStore - advanced order search', () => {
     expect(ordersStore.searchTotalCount).toBe(0);
     expect(ordersStore.appliedSearchFilters).toBeUndefined();
     expect(ordersStore.currentOrders).toBe(ordersStore.openOrders);
+    expect(ordersStore.searchOffset).toBe(0);
+  });
+});
+
+describe('OrdersStore - advanced order search pagination', () => {
+  let baseStore: LegendMarketplaceBaseStore;
+  let searchOrders: jest.Mock;
+  let ordersStore: OrdersStore;
+  const filters: OrderSearchFormValues = {
+    orderedBy: new LegendUser('adishar'),
+    orderedFor: undefined,
+    status: OrderSearchStatus.ALL,
+    lastDays: undefined,
+  };
+
+  beforeEach(() => {
+    ({ baseStore, searchOrders } = buildMockBaseStore());
+    ordersStore = new OrdersStore(baseStore);
+  });
+
+  test('hasPreviousSearchPage/hasNextSearchPage are false before any search', () => {
+    expect(ordersStore.hasPreviousSearchPage).toBe(false);
+    expect(ordersStore.hasNextSearchPage).toBe(false);
+  });
+
+  test('hasNextSearchPage is true when a full page is returned, false for a partial page', async () => {
+    searchOrders.mockResolvedValueOnce({
+      orders: Array.from({ length: 100 }, (_, i) => makeOrder(String(i))),
+      total_count: 100,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+    await flowResult(ordersStore.searchOrders(filters));
+    expect(ordersStore.hasNextSearchPage).toBe(true);
+    expect(ordersStore.hasPreviousSearchPage).toBe(false);
+
+    searchOrders.mockResolvedValueOnce({
+      orders: [makeOrder('a')],
+      total_count: 1,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 100,
+    });
+    await flowResult(ordersStore.goToSearchOffset(100));
+    expect(ordersStore.hasNextSearchPage).toBe(false);
+    expect(ordersStore.hasPreviousSearchPage).toBe(true);
+    expect(ordersStore.searchOffset).toBe(100);
+  });
+
+  test('goToSearchOffset re-issues the last search with the new offset', async () => {
+    searchOrders.mockResolvedValue({
+      orders: [makeOrder('1')],
+      total_count: 1,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+    await flowResult(ordersStore.searchOrders(filters));
+    searchOrders.mockClear();
+
+    await flowResult(ordersStore.goToSearchOffset(100));
+
+    expect(searchOrders).toHaveBeenCalledWith(
+      expect.objectContaining({ offset: 100, limit: 100 }),
+    );
+    expect(ordersStore.searchOffset).toBe(100);
+  });
+
+  test('goToSearchOffset is a no-op when no search has been submitted yet', async () => {
+    await flowResult(ordersStore.goToSearchOffset(100));
+    expect(searchOrders).not.toHaveBeenCalled();
+  });
+
+  test('setSearchPageSize updates the page size and re-searches from offset 0 when a search is active', async () => {
+    searchOrders.mockResolvedValue({
+      orders: [makeOrder('1')],
+      total_count: 1,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+    await flowResult(ordersStore.searchOrders(filters));
+    await flowResult(ordersStore.goToSearchOffset(100));
+    searchOrders.mockClear();
+
+    await flowResult(ordersStore.setSearchPageSize(25));
+
+    expect(ordersStore.searchPageSize).toBe(25);
+    expect(searchOrders).toHaveBeenCalledWith(
+      expect.objectContaining({ offset: 0, limit: 25 }),
+    );
+    expect(ordersStore.searchOffset).toBe(0);
+  });
+
+  test('setSearchPageSize updates the page size without searching when no search is active', async () => {
+    await flowResult(ordersStore.setSearchPageSize(25));
+
+    expect(ordersStore.searchPageSize).toBe(25);
+    expect(searchOrders).not.toHaveBeenCalled();
   });
 });
