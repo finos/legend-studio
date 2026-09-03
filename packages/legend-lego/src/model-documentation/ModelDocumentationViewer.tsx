@@ -22,6 +22,7 @@ import {
   ClockIcon,
   CogIcon,
   ControlledDropdownMenu,
+  ExpandMoreIcon,
   FilterIcon,
   InfoCircleIcon,
   MenuContent,
@@ -62,11 +63,7 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
 } from '../data-grid/DataGrid.js';
-import {
-  useApplicationStore,
-  useCommands,
-  type GenericLegendApplicationStore,
-} from '@finos/legend-application';
+import { useApplicationStore, useCommands } from '@finos/legend-application';
 import { observer } from 'mobx-react-lite';
 import {
   type ModelsDocumentationFilterTreeNodeData,
@@ -543,12 +540,10 @@ export const ElementDocumentationCellRenderer = (
 };
 
 export const ModelsDocumentationGridPanel = observer(
-  (props: {
-    modelsDocumentationState: ViewerModelsDocumentationState;
-    applicationStore: GenericLegendApplicationStore;
-  }) => {
-    const { modelsDocumentationState, applicationStore } = props;
+  (props: { modelsDocumentationState: ViewerModelsDocumentationState }) => {
+    const { modelsDocumentationState } = props;
     const documentationState = modelsDocumentationState;
+    const applicationStore = modelsDocumentationState.applicationStore;
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
 
@@ -1060,17 +1055,23 @@ const ProductWikiPlaceholder: React.FC<{ message: string }> = (props) => (
   </div>
 );
 
+const MODELS_DOCUMENTATION_COLLAPSE_KEY = 'models-documentation';
+
 export const ModelsDocumentation = observer(
   (props: {
     modelsDocumentationState: ViewerModelsDocumentationState;
-    applicationStore: GenericLegendApplicationStore;
     title?: string | undefined;
     queryModel?: (() => void) | undefined;
   }) => {
-    const { modelsDocumentationState, applicationStore, title, queryModel } =
-      props;
+    const { modelsDocumentationState, title, queryModel } = props;
+    const { collapseState } = modelsDocumentationState;
     const sectionRef = useRef<HTMLDivElement>(null);
     const elementDocs = modelsDocumentationState.elementDocs;
+    const isCollapsed =
+      collapseState?.isSectionCollapsed(MODELS_DOCUMENTATION_COLLAPSE_KEY) ??
+      false;
+    const toggleCollapse = (): void =>
+      collapseState?.toggleSectionCollapse(MODELS_DOCUMENTATION_COLLAPSE_KEY);
 
     useCommands(modelsDocumentationState);
 
@@ -1093,6 +1094,24 @@ export const ModelsDocumentation = observer(
             >
               <AnchorLinkIcon />
             </button>
+            {collapseState && (
+              <button
+                className="models-documentation__viewer__wiki__section__header__caret-btn"
+                tabIndex={-1}
+                onClick={toggleCollapse}
+                title={isCollapsed ? 'Expand' : 'Collapse'}
+              >
+                <ExpandMoreIcon
+                  className={clsx(
+                    'models-documentation__viewer__wiki__section__header__caret',
+                    {
+                      'models-documentation__viewer__wiki__section__header__caret--collapsed':
+                        isCollapsed,
+                    },
+                  )}
+                />
+              </button>
+            )}
           </div>
           {queryModel && (
             <button
@@ -1106,48 +1125,49 @@ export const ModelsDocumentation = observer(
             </button>
           )}
         </div>
-        <div className="models-documentation__viewer__wiki__section__content">
-          {elementDocs.length > 0 && (
-            <div className="models-documentation">
-              <div className="models-documentation__header">
-                <button
-                  className="models-documentation__filter__toggler"
-                  title="Toggle Filter Panel"
-                  tabIndex={-1}
-                  onClick={toggleFilterPanel}
-                >
-                  <div className="models-documentation__filter__toggler__arrow">
-                    {modelsDocumentationState.showFilterPanel ? (
-                      <CaretLeftIcon />
-                    ) : (
-                      <CaretRightIcon />
-                    )}
-                  </div>
-                  <div className="models-documentation__filter__toggler__icon">
-                    <FilterIcon />
-                  </div>
-                </button>
-                <ModelsDocumentationSearchBar
-                  modelsDocumentationState={modelsDocumentationState}
-                />
-              </div>
-              <div className="models-documentation__content">
-                {modelsDocumentationState.showFilterPanel && (
-                  <ModelsDocumentationFilterPanel
+        {!isCollapsed && (
+          <div className="models-documentation__viewer__wiki__section__content">
+            {elementDocs.length > 0 && (
+              <div className="models-documentation">
+                <div className="models-documentation__header">
+                  <button
+                    className="models-documentation__filter__toggler"
+                    title="Toggle Filter Panel"
+                    tabIndex={-1}
+                    onClick={toggleFilterPanel}
+                  >
+                    <div className="models-documentation__filter__toggler__arrow">
+                      {modelsDocumentationState.showFilterPanel ? (
+                        <CaretLeftIcon />
+                      ) : (
+                        <CaretRightIcon />
+                      )}
+                    </div>
+                    <div className="models-documentation__filter__toggler__icon">
+                      <FilterIcon />
+                    </div>
+                  </button>
+                  <ModelsDocumentationSearchBar
                     modelsDocumentationState={modelsDocumentationState}
                   />
-                )}
-                <ModelsDocumentationGridPanel
-                  modelsDocumentationState={modelsDocumentationState}
-                  applicationStore={applicationStore}
-                />
+                </div>
+                <div className="models-documentation__content">
+                  {modelsDocumentationState.showFilterPanel && (
+                    <ModelsDocumentationFilterPanel
+                      modelsDocumentationState={modelsDocumentationState}
+                    />
+                  )}
+                  <ModelsDocumentationGridPanel
+                    modelsDocumentationState={modelsDocumentationState}
+                  />
+                </div>
               </div>
-            </div>
-          )}
-          {elementDocs.length === 0 && (
-            <ProductWikiPlaceholder message="(not specified)" />
-          )}
-        </div>
+            )}
+            {elementDocs.length === 0 && (
+              <ProductWikiPlaceholder message="(not specified)" />
+            )}
+          </div>
+        )}
       </div>
     );
   },

@@ -21,6 +21,7 @@ import {
   CodeIcon,
   CopyIcon,
   DataAccessIcon,
+  ExpandMoreIcon,
   LegendLogo,
   MoreVerticalIcon,
   QuestionCircleIcon,
@@ -546,6 +547,14 @@ export const DataSpaceQuickStart = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
     );
+    const isCollapsed =
+      dataSpaceViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
+        anchor,
+      );
+    const toggleCollapse = (): void =>
+      dataSpaceViewerState.layoutState.sectionCollapseState.toggleSectionCollapse(
+        anchor,
+      );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -577,6 +586,22 @@ export const DataSpaceQuickStart = observer(
             >
               <AnchorLinkIcon />
             </button>
+            <button
+              className="data-space__viewer__wiki__section__header__caret-btn"
+              tabIndex={-1}
+              onClick={toggleCollapse}
+              title={isCollapsed ? 'Expand' : 'Collapse'}
+            >
+              <ExpandMoreIcon
+                className={clsx(
+                  'data-space__viewer__wiki__section__header__caret',
+                  {
+                    'data-space__viewer__wiki__section__header__caret--collapsed':
+                      isCollapsed,
+                  },
+                )}
+              />
+            </button>
           </div>
           {Boolean(documentationUrl) && (
             <button
@@ -589,21 +614,25 @@ export const DataSpaceQuickStart = observer(
             </button>
           )}
         </div>
-        <div className="data-space__viewer__wiki__section__content">
-          {dataSpaceViewerState.executableStates.length !== 0 && (
-            <div className="data-space__viewer__quickstart">
-              {dataSpaceViewerState.executableStates.map((executableState) => (
-                <DataSpaceExecutableAnalysisResultView
-                  key={executableState.uuid}
-                  executableState={executableState}
-                />
-              ))}
-            </div>
-          )}
-          {analysisResult.executables.length === 0 && (
-            <DataSpaceWikiPlaceholder message="(not specified)" />
-          )}
-        </div>
+        {!isCollapsed && (
+          <div className="data-space__viewer__wiki__section__content">
+            {dataSpaceViewerState.executableStates.length !== 0 && (
+              <div className="data-space__viewer__quickstart">
+                {dataSpaceViewerState.executableStates.map(
+                  (executableState) => (
+                    <DataSpaceExecutableAnalysisResultView
+                      key={executableState.uuid}
+                      executableState={executableState}
+                    />
+                  ),
+                )}
+              </div>
+            )}
+            {analysisResult.executables.length === 0 && (
+              <DataSpaceWikiPlaceholder message="(not specified)" />
+            )}
+          </div>
+        )}
       </div>
     );
   },

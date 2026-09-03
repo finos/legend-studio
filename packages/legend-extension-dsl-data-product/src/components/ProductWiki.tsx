@@ -281,7 +281,6 @@ export const ProductWiki = observer(
                   modelsDocumentationState={
                     productViewerState.modelsDocumentationState
                   }
-                  applicationStore={productViewerState.applicationStore}
                   queryModel={
                     productViewerState.openQuery &&
                     productViewerState.projectGAV &&
@@ -301,7 +300,6 @@ export const ProductWiki = observer(
               {productViewerState.modelAccessPointGroupDiagramViewerState && (
                 <DiagramViewer
                   title={'Model Access Point Group Diagrams'}
-                  applicationStore={productViewerState.applicationStore}
                   diagramViewerState={
                     productViewerState.modelAccessPointGroupDiagramViewerState
                   }
@@ -366,13 +364,11 @@ export const ProductWiki = observer(
                       modelsDocumentationState={
                         productViewerState.nativeModelAccessDocumentationState
                       }
-                      applicationStore={productViewerState.applicationStore}
                     />
                   )}
                   {productViewerState.nativeModelAccessDiagramViewerState && (
                     <DiagramViewer
                       title={'Native Model Access Diagrams'}
-                      applicationStore={productViewerState.applicationStore}
                       diagramViewerState={
                         productViewerState.nativeModelAccessDiagramViewerState
                       }

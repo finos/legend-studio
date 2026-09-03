@@ -38,6 +38,7 @@
 
       &__label {
         @include ellipsisTextOverflow;
+        @include flexVCenter;
 
         font-size: 2.4rem;
         text-transform: uppercase;
@@ -89,6 +90,24 @@
 
       &__documentation {
         color: var(--color-text-link);
+      }
+
+      &__caret-btn {
+        @include flexVCenter;
+
+        margin-left: 0.5rem;
+        cursor: pointer;
+      }
+
+      &__caret {
+        color: var(--color-text-link);
+        font-size: 2rem;
+        transition: transform 0.2s ease;
+        transform: rotate(-180deg);
+
+        &--collapsed {
+          transform: rotate(0deg);
+        }
       }
     }
 

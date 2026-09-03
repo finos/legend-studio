@@ -41,6 +41,29 @@ type DataSpacePageNavigationCommand = {
   anchor: string;
 };
 
+export class CollapseState {
+  private readonly collapsedKeys = new Set<string>();
+
+  constructor() {
+    makeObservable<CollapseState, 'collapsedKeys'>(this, {
+      collapsedKeys: observable,
+      toggleSectionCollapse: action,
+    });
+  }
+
+  isSectionCollapsed(key: string): boolean {
+    return this.collapsedKeys.has(key);
+  }
+
+  toggleSectionCollapse(key: string): void {
+    if (this.collapsedKeys.has(key)) {
+      this.collapsedKeys.delete(key);
+    } else {
+      this.collapsedKeys.add(key);
+    }
+  }
+}
+
 export class DataSpaceLayoutState {
   readonly dataSpaceViewerState: DataSpaceViewerState;
 
@@ -55,6 +78,8 @@ export class DataSpaceLayoutState {
   wikiPageNavigationCommand?: DataSpacePageNavigationCommand | undefined;
   private wikiPageVisibleAnchors: string[] = [];
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
+
+  readonly sectionCollapseState = new CollapseState();
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
     makeObservable<

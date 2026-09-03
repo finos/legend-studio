@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { CommandRegistrar } from '@finos/legend-application';
+import type {
+  CommandRegistrar,
+  GenericLegendApplicationStore,
+} from '@finos/legend-application';
 import {
   type GraphManagerState,
   type V1_ModelDocumentationEntry,
@@ -37,10 +40,12 @@ export class DataProductDocumentationState
   implements CommandRegistrar
 {
   constructor(
+    applicationStore: GenericLegendApplicationStore,
     elementDocs: V1_ModelDocumentationEntry[],
     graphManagerState: GraphManagerState,
   ) {
     super(
+      applicationStore,
       DataProductDocumentationState.fromElementDocs(
         elementDocs,
         graphManagerState,

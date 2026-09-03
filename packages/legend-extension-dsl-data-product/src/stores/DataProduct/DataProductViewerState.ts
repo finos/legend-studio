@@ -828,6 +828,7 @@ export class DataProductViewerState extends BaseViewerState<
       try {
         this.nativeModelAccessDocumentationState =
           new DataProductDocumentationState(
+            this.applicationStore,
             nativeModelAccess.elementDocs,
             this.graphManagerState,
           );
@@ -844,6 +845,7 @@ export class DataProductViewerState extends BaseViewerState<
 
       this.nativeModelAccessDiagramViewerState =
         new DataProductViewerDiagramViewerState(
+          this.applicationStore,
           this.getNativeModelAccessDiagrams(),
         );
     }
@@ -851,6 +853,7 @@ export class DataProductViewerState extends BaseViewerState<
     if (modelAccessPointGroupInfo) {
       try {
         this.modelsDocumentationState = new DataProductDocumentationState(
+          this.applicationStore,
           modelAccessPointGroupInfo.elementDocs,
           this.graphManagerState,
         );
@@ -868,6 +871,7 @@ export class DataProductViewerState extends BaseViewerState<
       try {
         this.modelAccessPointGroupDiagramViewerState =
           new DataProductViewerDiagramViewerState(
+            this.applicationStore,
             this.getModelAccessPointGroupDiagramsFromArtifact(
               modelAccessPointGroupInfo,
             ),
@@ -899,6 +903,7 @@ export class DataProductViewerState extends BaseViewerState<
       try {
         this.modelAccessPointGroupDiagramViewerState =
           new DataProductViewerDiagramViewerState(
+            this.applicationStore,
             this.getModelAccessPointDiagrams(),
           );
       } catch (error) {

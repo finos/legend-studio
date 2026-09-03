@@ -27,7 +27,13 @@ export class DataSpaceViewerModelsDocumentationState
   readonly dataSpaceViewerState: DataSpaceViewerState;
 
   constructor(dataSpaceViewerState: DataSpaceViewerState) {
-    super(dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs);
+    super(
+      dataSpaceViewerState.applicationStore,
+      dataSpaceViewerState.dataSpaceAnalysisResult.elementDocs,
+      {
+        collapseState: dataSpaceViewerState.layoutState.sectionCollapseState,
+      },
+    );
 
     this.dataSpaceViewerState = dataSpaceViewerState;
   }

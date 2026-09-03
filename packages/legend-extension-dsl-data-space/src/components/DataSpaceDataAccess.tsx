@@ -15,7 +15,12 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { AnchorLinkIcon, QuestionCircleIcon } from '@finos/legend-art';
+import {
+  AnchorLinkIcon,
+  ExpandMoreIcon,
+  QuestionCircleIcon,
+  clsx,
+} from '@finos/legend-art';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { useEffect, useRef } from 'react';
@@ -36,6 +41,14 @@ export const DataSpaceDataAccess = observer(
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
     );
+    const isCollapsed =
+      dataSpaceViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
+        anchor,
+      );
+    const toggleCollapse = (): void =>
+      dataSpaceViewerState.layoutState.sectionCollapseState.toggleSectionCollapse(
+        anchor,
+      );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -67,6 +80,22 @@ export const DataSpaceDataAccess = observer(
             >
               <AnchorLinkIcon />
             </button>
+            <button
+              className="data-space__viewer__wiki__section__header__caret-btn"
+              tabIndex={-1}
+              onClick={toggleCollapse}
+              title={isCollapsed ? 'Expand' : 'Collapse'}
+            >
+              <ExpandMoreIcon
+                className={clsx(
+                  'data-space__viewer__wiki__section__header__caret',
+                  {
+                    'data-space__viewer__wiki__section__header__caret--collapsed':
+                      isCollapsed,
+                  },
+                )}
+              />
+            </button>
           </div>
           {Boolean(documentationUrl) && (
             <button
@@ -79,17 +108,19 @@ export const DataSpaceDataAccess = observer(
             </button>
           )}
         </div>
-        <div className="data-space__viewer__wiki__section__content">
-          <div className="data-space__viewer__data-access">
-            {dataSpaceViewerState.currentDataAccessState ? (
-              <DataAccessOverview
-                dataAccessState={dataSpaceViewerState.currentDataAccessState}
-              />
-            ) : (
-              <DataSpaceWikiPlaceholder message="(not specified)" />
-            )}
+        {!isCollapsed && (
+          <div className="data-space__viewer__wiki__section__content">
+            <div className="data-space__viewer__data-access">
+              {dataSpaceViewerState.currentDataAccessState ? (
+                <DataAccessOverview
+                  dataAccessState={dataSpaceViewerState.currentDataAccessState}
+                />
+              ) : (
+                <DataSpaceWikiPlaceholder message="(not specified)" />
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   },

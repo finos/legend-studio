@@ -40,6 +40,7 @@ export class DataProductViewerModelsDocumentationState
 
   constructor(dataProductViewerState: DataProductViewerState) {
     super(
+      dataProductViewerState.applicationStore,
       DataProductViewerModelsDocumentationState.formElementDocs(
         dataProductViewerState,
       ),
