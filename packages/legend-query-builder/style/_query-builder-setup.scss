@@ -110,17 +110,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
-
-      &__tag {
-        font-size: 1rem;
-        font-weight: 700;
-        padding: 0 0.4rem;
-        border-radius: 0.2rem;
-        background: var(--color-bg-hover);
-        color: var(--color-text-secondary);
-        margin-left: 0.5rem;
-        white-space: nowrap;
-      }
     }
 
     &__item + &__item {

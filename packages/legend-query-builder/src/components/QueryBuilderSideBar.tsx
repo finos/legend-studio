@@ -30,6 +30,7 @@ import {
   type Mapping,
   type Runtime,
   type ValueSpecification,
+  LakehouseRuntime,
   LATEST_DATE,
   PrimitiveInstanceValue,
   VariableExpression,
@@ -175,29 +176,52 @@ export const QueryBuilderClassSelector = observer(
   },
 );
 
+export const buildLakehouseRuntimeLabel = (runtime: LakehouseRuntime): string =>
+  `${runtime.environment ?? '(no env)'} / ${runtime.warehouse ?? '(no warehouse)'}`;
+
+export const resolveLakehouseRuntime = (
+  runtime: Runtime | undefined,
+): LakehouseRuntime | undefined => {
+  if (runtime instanceof LakehouseRuntime) {
+    return runtime;
+  }
+  if (runtime instanceof RuntimePointer) {
+    return resolveLakehouseRuntime(
+      runtime.packageableRuntime.value.runtimeValue,
+    );
+  }
+  return undefined;
+};
+
 export const buildRuntimeValueOption = (
   runtimeValue: Runtime,
-): { label: string; value: Runtime } => ({
-  value: runtimeValue,
-  label:
-    runtimeValue instanceof RuntimePointer
-      ? runtimeValue.packageableRuntime.value.name
-      : 'custom',
-});
+): { label: string; value: Runtime } => {
+  const lakehouseRuntime = resolveLakehouseRuntime(runtimeValue);
+  return {
+    value: runtimeValue,
+    label: lakehouseRuntime
+      ? buildLakehouseRuntimeLabel(lakehouseRuntime)
+      : runtimeValue instanceof RuntimePointer
+        ? runtimeValue.packageableRuntime.value.name
+        : 'custom',
+  };
+};
 
 export const getRuntimeOptionFormatter = (props: {
   darkMode?: boolean;
 }): ((option: { value: Runtime }) => React.ReactNode) =>
   function RuntimeOptionLabel(option: { value: Runtime }): React.ReactNode {
+    const lakehouseRuntime = resolveLakehouseRuntime(option.value);
+    if (lakehouseRuntime) {
+      return buildLakehouseRuntimeLabel(lakehouseRuntime);
+    }
     if (option.value instanceof RuntimePointer) {
       const runtimePointer = option.value;
       return getPackageableElementOptionFormatter(props)(
         buildElementOption(runtimePointer.packageableRuntime.value),
       );
     }
-    return option.value instanceof RuntimePointer ? (
-      option.value.packageableRuntime.value.name
-    ) : (
+    return (
       <div className="query-builder__setup__runtime-option--custom">
         <CogIcon />
         <div className="query-builder__setup__runtime-option--custom__label">

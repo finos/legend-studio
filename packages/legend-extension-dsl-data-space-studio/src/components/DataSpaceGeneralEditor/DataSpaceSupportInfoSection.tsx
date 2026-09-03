@@ -146,7 +146,7 @@ export const DataSpaceSupportInfoSection = observer(() => {
         Support Information
       </div>
       <div className="panel__content__form__section__header__prompt">
-        Configure support information for this Data Product.
+        Configure support information for this Data Space.
       </div>
       {!(dataSpace.supportInfo instanceof DataSpaceSupportCombinedInfo) && (
         <CustomSelectorInput

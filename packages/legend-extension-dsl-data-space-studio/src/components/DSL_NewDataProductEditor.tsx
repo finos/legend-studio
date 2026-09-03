@@ -40,7 +40,7 @@ export const NewDataProductDriverEditor = observer(() => {
           spellCheck={false}
           value={dataProductDriver.title}
           onChange={handleTitleChange}
-          placeholder={`Choose a title for this Data Product to display to consumers`}
+          placeholder={`Choose a title for this Data Space to display to consumers`}
         />
       </div>
       <div className="panel__content__form__section__header__label">
@@ -52,7 +52,7 @@ export const NewDataProductDriverEditor = observer(() => {
           spellCheck={false}
           value={dataProductDriver.description}
           onChange={handleDescriptionChange}
-          placeholder={`Provide a meaningful description for this Data Product`}
+          placeholder={`Provide a meaningful description for this Data Space`}
         />
       </div>
     </>

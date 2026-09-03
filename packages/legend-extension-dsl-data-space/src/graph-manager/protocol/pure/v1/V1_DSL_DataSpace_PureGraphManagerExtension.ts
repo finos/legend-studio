@@ -195,7 +195,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             ec.mapping?.path === currentQuery.mapping &&
             ec.defaultRuntime?.path === currentQuery.runtime,
         )[0]?.name,
-        'can`t find a corresponding executatin key based on query`s mapping and runtime in data product',
+        'can`t find a corresponding executatin key based on query`s mapping and runtime in data space',
       );
     }
 
@@ -227,7 +227,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     } else {
       actionState?.setMessage('Fetching project entities and dependencies...');
       const entities = await entitiesRetriever();
-      actionState?.setMessage('Analyzing data product...');
+      actionState?.setMessage('Analyzing data space...');
       analysisResult = await engineClient.postWithTracing<
         PlainObject<V1_DataSpaceAnalysisResult>
       >(
@@ -350,7 +350,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
       analysisResult = result;
     } else {
       throw new GraphBuilderError(
-        'Fail to get a valid data product analytics json from metadata, start building full graph',
+        'Fail to get a valid data space analytics json from metadata, start building full graph',
       );
     }
     const plugins =
@@ -402,14 +402,14 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
     let cacheResult: PlainObject<V1_DataSpaceAnalysisResult> | undefined;
     try {
       actionState?.setMessage(
-        'Fetching data product analysis result from cache...',
+        'Fetching data space analysis result from cache...',
       );
       cacheResult = await cacheRetriever();
     } catch (error) {
       assertErrorThrown(error);
       this.graphManager.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
-        `Can't fetch data product analysis result cache: ${error.message}`,
+        `Can't fetch data space analysis result cache: ${error.message}`,
       );
     }
     return cacheResult;
@@ -421,13 +421,13 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
   ): Promise<PlainObject<StoredFileGeneration>[]> {
     let cacheResult: PlainObject<StoredFileGeneration>[] = [];
     try {
-      actionState?.setMessage('Fetching data product artifacts from cache...');
+      actionState?.setMessage('Fetching data space artifacts from cache...');
       cacheResult = await cacheRetriever();
     } catch (error) {
       assertErrorThrown(error);
       this.graphManager.logService.warn(
         LogEvent.create(GRAPH_MANAGER_EVENT.CACHE_MANAGER_FAILURE),
-        `Can't fetch data product artifacts cache: ${error.message}`,
+        `Can't fetch data space artifacts cache: ${error.message}`,
       );
     }
     return cacheResult;
@@ -593,7 +593,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
           analysisResult.supportInfo.documentationUrl;
         supportEmail.address = guaranteeNonEmptyString(
           analysisResult.supportInfo.address,
-          `Data product support email 'address' field is missing or empty`,
+          `Data space support email 'address' field is missing or empty`,
         );
         result.supportInfo = supportEmail;
       } else if (

@@ -101,6 +101,10 @@ import {
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 import {
   TEST_DATA__COMPUTE_SNOWFLAKE,
+  TEST_DATA__COMPUTE_SNOWFLAKE_SNOWPARK,
+  TEST_DATA__COMPUTE_SNOWFLAKE_PARTIAL,
+  TEST_DATA__COMPUTE_SNOWFLAKE_ADAPTIVE,
+  TEST_DATA__COMPUTE_NO_PRODUCTION_OWNER,
   TEST_DATA__COMPUTE_DATABRICKS,
   TEST_DATA__COMPUTE_UNKNOWN_SPEC,
 } from './roundtripTestData/TEST_DATA__ComputeRoundtrip.js';
@@ -345,6 +349,22 @@ describe(unitTest('DSL Data product'), () => {
 describe(unitTest('DSL Compute'), () => {
   test.each([
     ['Snowflake Compute', TEST_DATA__COMPUTE_SNOWFLAKE],
+    [
+      'Snowflake Compute (SNOWPARK_OPTIMIZED with resource constraint)',
+      TEST_DATA__COMPUTE_SNOWFLAKE_SNOWPARK,
+    ],
+    [
+      'Snowflake Compute with a partial spec (no field coerced on load)',
+      TEST_DATA__COMPUTE_SNOWFLAKE_PARTIAL,
+    ],
+    [
+      'Snowflake Compute (ADAPTIVE, with adaptive-only properties)',
+      TEST_DATA__COMPUTE_SNOWFLAKE_ADAPTIVE,
+    ],
+    [
+      'Compute whose owner has no production node',
+      TEST_DATA__COMPUTE_NO_PRODUCTION_OWNER,
+    ],
     ['Databricks Compute with tags', TEST_DATA__COMPUTE_DATABRICKS],
     [
       'Compute with unknown spec (forward-compat)',

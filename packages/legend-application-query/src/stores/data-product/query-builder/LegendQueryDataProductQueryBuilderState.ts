@@ -37,6 +37,7 @@ import type {
 } from '@finos/legend-storage';
 import {
   LegendSDLC,
+  INTERNAL_ELEMENT_PATH,
   type PackageableRuntime,
   type Class,
   type DataProduct,
@@ -144,7 +145,10 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
           versionId: origin.versionId,
         },
       );
-      this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+      this.graphManagerState.graph.addElement(
+        packageableRuntime,
+        INTERNAL_ELEMENT_PATH,
+      );
 
       if (!this.executionState.adhocRuntime) {
         this.executionState.withAdhocRuntime();
@@ -163,7 +167,10 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
           versionId: origin.versionId,
         },
       );
-      this.graphManagerState.graph.addElement(packageableRuntime, '_internal_');
+      this.graphManagerState.graph.addElement(
+        packageableRuntime,
+        INTERNAL_ELEMENT_PATH,
+      );
       this.executionState.changeSelectedRuntime(packageableRuntime);
     }
     await super.prepareAccessForExecution();

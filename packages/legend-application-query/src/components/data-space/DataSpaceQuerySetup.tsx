@@ -114,10 +114,10 @@ const DataProductQuerySetupSetupPanelContent = observer(
           <div className="query-builder__setup__config-group__item">
             <label
               className="btn--sm query-builder__setup__config-group__data-product"
-              title="data product"
+              title="data space"
               htmlFor="query-builder__setup__data-space-selector"
             >
-              Data Product
+              Data Space
             </label>
             <CustomSelectorInput
               inputId="query-builder__setup__data-space-selector"
@@ -130,7 +130,7 @@ const DataProductQuerySetupSetupPanelContent = observer(
               }
               onChange={onDataSpaceOptionChange}
               value={selectedDataSpaceOption}
-              placeholder="Search for data product..."
+              placeholder="Search for data space..."
               escapeClearsValue={true}
               darkMode={
                 !applicationStore.layoutService
@@ -142,7 +142,7 @@ const DataProductQuerySetupSetupPanelContent = observer(
               tabIndex={-1}
               className="query-builder__setup__data-space-searcher__btn btn--dark"
               onClick={openDataSpaceAdvancedSearch}
-              title="Open advanced search for data product..."
+              title="Open advanced search for data space..."
             >
               <SearchIcon />
             </button>

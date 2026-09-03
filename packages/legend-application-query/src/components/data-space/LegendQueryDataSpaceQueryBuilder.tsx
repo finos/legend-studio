@@ -18,6 +18,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import {
   AnchorLinkIcon,
   CheckIcon,
+  CogIcon,
   compareLabelFn,
   ControlledDropdownMenu,
   createFilter,
@@ -59,7 +60,8 @@ import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { DepotEntityWithOrigin } from '@finos/legend-storage';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { LakehouseRuntimeConfigModal } from '../shared/LakehouseRuntimeConfigModal.js';
 import type { DataProductWithLegacyOption } from '../../stores/data-space/DataProductSelectorState.js';
 import { formatDataProductOrSpaceOptionLabel } from '../shared/LegendQueryDataProductOptionLabel.js';
 import type { LegendQueryDataSpaceQueryBuilderState } from '../../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
@@ -133,7 +135,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
     // execution context
     const executionContextOptions = guaranteeNonNullable(
       queryBuilderState.dataSpace.executionContexts,
-      `Data product '${queryBuilderState.dataSpace.path}' does not have any execution contexts`,
+      `Data space '${queryBuilderState.dataSpace.path}' does not have any execution contexts`,
     )
       .map(buildExecutionContextOption)
       .sort(compareLabelFn);
@@ -209,6 +211,10 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       queryBuilderState,
     );
 
+    const injectedLakehouseRuntime = queryBuilderState.injectedLakehouseRuntime;
+    const [isLakehouseConfigModalOpen, setIsLakehouseConfigModalOpen] =
+      useState(false);
+
     useEffect(() => {
       flowResult(queryBuilderState.loadEntities()).catch(
         applicationStore.alertUnhandledError,
@@ -226,7 +232,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
         <PanelHeader title="properties">
           <PanelHeaderActions>
             <PanelHeaderActionItem
-              title="copy data product query set up link to clipboard"
+              title="copy data space query set up link to clipboard"
               onClick={copyDataSpaceLinkToClipboard}
               disabled={!queryBuilderState.isDataSpaceLinkable}
             >
@@ -253,6 +259,18 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
                       Show Runtime Selector
                     </MenuContentItemLabel>
                   </MenuContentItem>
+                  {injectedLakehouseRuntime && (
+                    <MenuContentItem
+                      onClick={(): void => setIsLakehouseConfigModalOpen(true)}
+                    >
+                      <MenuContentItemIcon>
+                        <CogIcon />
+                      </MenuContentItemIcon>
+                      <MenuContentItemLabel>
+                        Lakehouse Runtime Configuration
+                      </MenuContentItemLabel>
+                    </MenuContentItem>
+                  )}
                 </MenuContent>
               }
               menuProps={{
@@ -268,10 +286,10 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
           <div className="query-builder__setup__config-group__item">
             <label
               className="btn--sm query-builder__setup__config-group__data-product"
-              title="data product"
+              title="data space"
               htmlFor="query-builder__setup__data-space-selector"
             >
-              Data Product
+              Data Space
             </label>
             <CustomSelectorInput
               inputId="query-builder__setup__data-space-selector"
@@ -280,7 +298,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
               isLoading={queryBuilderState.loadEntitiesState.isInProgress}
               onChange={onOptionChange}
               value={selectedOption}
-              placeholder="Search for data product..."
+              placeholder="Search for data space..."
               escapeClearsValue={true}
               darkMode={
                 !applicationStore.layoutService
@@ -294,7 +312,7 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
                   tabIndex={-1}
                   className="query-builder__setup__data-space-searcher__btn btn--dark"
                   onClick={openDataSpaceAdvancedSearch}
-                  title="Open advanced search for data product..."
+                  title="Open advanced search for data space..."
                 >
                   <SearchIcon />
                 </button>
@@ -345,25 +363,52 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
               >
                 Runtime
               </label>
-              <CustomSelectorInput
-                inputId="query-builder__setup__runtime-selector"
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose a runtime..."
-                noMatchMessage="No compatible runtime found for specified execution context"
-                options={runtimeOptions}
-                onChange={changeRuntime}
-                value={selectedRuntimeOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                filterOption={runtimeFilterOption}
-                formatOptionLabel={getRuntimeOptionFormatter({
-                  darkMode:
+              {injectedLakehouseRuntime ? (
+                <div
+                  className="query-builder__setup__config-group__item__selector"
+                  title="Lakehouse runtime — configure via the settings menu"
+                >
+                  <CustomSelectorInput
+                    inputId="query-builder__setup__runtime-selector"
+                    className="panel__content__form__section__dropdown"
+                    options={
+                      selectedRuntimeOption ? [selectedRuntimeOption] : []
+                    }
+                    value={selectedRuntimeOption}
+                    onChange={() => {}}
+                    disabled={true}
+                    darkMode={
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled
+                    }
+                    formatOptionLabel={getRuntimeOptionFormatter({
+                      darkMode:
+                        !applicationStore.layoutService
+                          .TEMPORARY__isLightColorThemeEnabled,
+                    })}
+                  />
+                </div>
+              ) : (
+                <CustomSelectorInput
+                  inputId="query-builder__setup__runtime-selector"
+                  className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                  placeholder="Choose a runtime..."
+                  noMatchMessage="No compatible runtime found for specified execution context"
+                  options={runtimeOptions}
+                  onChange={changeRuntime}
+                  value={selectedRuntimeOption}
+                  darkMode={
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled,
-                })}
-              />
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  filterOption={runtimeFilterOption}
+                  formatOptionLabel={getRuntimeOptionFormatter({
+                    darkMode:
+                      !applicationStore.layoutService
+                        .TEMPORARY__isLightColorThemeEnabled,
+                  })}
+                />
+              )}
             </div>
           )}
           <div className="query-builder__setup__config-group__item">
@@ -375,6 +420,17 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
             />
           </div>
         </div>
+        {injectedLakehouseRuntime && (
+          <LakehouseRuntimeConfigModal
+            lakehouseRuntime={injectedLakehouseRuntime}
+            open={isLakehouseConfigModalOpen}
+            onClose={() => setIsLakehouseConfigModalOpen(false)}
+            darkMode={
+              !applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+          />
+        )}
       </div>
     );
   },

@@ -214,6 +214,8 @@ export const DATE_FORMAT = 'yyyy-MM-dd';
 // Generation Const
 export const DEFAULT_GENERATION_PACKAGE = 'generated';
 
+export const INTERNAL_ELEMENT_PATH = '_internal_';
+
 export enum MILESTONE_INGEST_COLUMNS {
   INGEST_LAKE_IN_ID = 'LAKE_IN_ID',
   INGEST_LAKE_OUT_ID = 'LAKE_OUT_ID',

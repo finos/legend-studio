@@ -92,32 +92,41 @@ export class V1_SnowflakeComputeSpecification
 {
   warehouseType: V1_SnowflakeWarehouseType | undefined;
   warehouseSize: V1_SnowflakeWarehouseSize | undefined;
+  generation: number | undefined;
   resourceConstraint: V1_SnowflakeResourceConstraint | undefined;
   maxClusterCount: number | undefined;
   minClusterCount: number | undefined;
   scalingPolicy: V1_SnowflakeScalingPolicy | undefined;
   autoSuspend: number | undefined;
-  autoResume: boolean | undefined;
-  resourceMonitor: string | undefined;
   comment: string | undefined;
   enableQueryAcceleration: boolean | undefined;
   queryAccelerationMaxScaleFactor: number | undefined;
+  maxConcurrencyLevel: number | undefined;
+  statementQueuedTimeoutInSeconds: number | undefined;
+  statementTimeoutInSeconds: number | undefined;
+  /** @see SnowflakeComputeSpecification.maxQueryPerformanceLevel */
+  maxQueryPerformanceLevel: V1_SnowflakeWarehouseSize | undefined;
+  queryThroughputMultiplier: number | undefined;
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SNOWFLAKE_COMPUTE_SPECIFICATION,
       this.warehouseType ?? '',
       this.warehouseSize ?? '',
+      this.generation?.toString() ?? '',
       this.resourceConstraint ?? '',
       this.maxClusterCount?.toString() ?? '',
       this.minClusterCount?.toString() ?? '',
       this.scalingPolicy ?? '',
       this.autoSuspend?.toString() ?? '',
-      this.autoResume?.toString() ?? '',
-      this.resourceMonitor ?? '',
       this.comment ?? '',
       this.enableQueryAcceleration?.toString() ?? '',
       this.queryAccelerationMaxScaleFactor?.toString() ?? '',
+      this.maxConcurrencyLevel?.toString() ?? '',
+      this.statementQueuedTimeoutInSeconds?.toString() ?? '',
+      this.statementTimeoutInSeconds?.toString() ?? '',
+      this.maxQueryPerformanceLevel ?? '',
+      this.queryThroughputMultiplier?.toString() ?? '',
     ]);
   }
 }

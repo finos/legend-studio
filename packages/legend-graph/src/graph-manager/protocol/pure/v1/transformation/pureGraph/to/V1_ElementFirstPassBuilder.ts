@@ -93,11 +93,11 @@ import type { V1_Compute } from '../../../model/packageableElements/compute/V1_C
 import { Compute } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
 import type { V1_IngestDefinition } from '../../../model/packageableElements/ingest/V1_IngestDefinition.js';
 import {
-  AppDirNode,
   IngestDefinition,
   type MatViewDataSet,
   type TEMPORARY_IngestContent,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
+import { V1_buildAppDirNode } from './helpers/V1_AppDirNodeBuilderHelper.js';
 import type { V1_MemSQLFunction } from '../../../model/packageableElements/function/V1_MemSQLFunction.js';
 import { MemSQLFunction } from '../../../../../../../graph/metamodel/pure/packageableElements/function/MemSQLFunction.js';
 import { RawLambda } from '../../../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
@@ -226,10 +226,7 @@ export class V1_ElementFirstPassBuilder
     const path = V1_buildFullPath(element.package, element.name);
     const appDir = element.appDirDeployment;
     if (appDir) {
-      const metamodelApp = new AppDirNode();
-      metamodelApp.appDirId = appDir.appDirId;
-      metamodelApp.level = appDir.level;
-      metamodel.appDirDeployment = metamodelApp;
+      metamodel.appDirDeployment = V1_buildAppDirNode(appDir);
     }
     const rawContent = element.content as unknown as TEMPORARY_IngestContent;
     const dataSets = rawContent.datasets ?? [];

@@ -73,7 +73,7 @@ export const DataSpaceEditor = observer(() => {
   return (
     <Panel className="dataSpace-editor">
       <PanelHeader
-        title="Data Product"
+        title="Data Space"
         titleContent={dataSpaceState.dataSpace.name}
         darkMode={true}
         isReadOnly={dataSpaceState.isReadOnly}
@@ -84,7 +84,7 @@ export const DataSpaceEditor = observer(() => {
             <button
               className="btn__dropdown-combo__label"
               onClick={previewDataSpace}
-              title="Preview Data Product"
+              title="Preview Data Space"
               tabIndex={-1}
               disabled={!validPreviewState()}
             >

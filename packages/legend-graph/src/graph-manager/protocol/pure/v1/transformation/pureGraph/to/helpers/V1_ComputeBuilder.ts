@@ -23,7 +23,6 @@ import {
   SnowflakeComputeSpecification,
   UnknownComputeSpecification,
 } from '../../../../../../../../graph/metamodel/pure/compute/Compute.js';
-import { AppDirNode } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import {
   type V1_AppDirComputeOwner,
   type V1_ComputeSpecification,
@@ -32,23 +31,30 @@ import {
   V1_SnowflakeComputeSpecification,
   V1_UnknownComputeSpecification,
 } from '../../../../model/packageableElements/compute/V1_Compute.js';
+import { V1_buildAppDirNode } from './V1_AppDirNodeBuilderHelper.js';
 
 const V1_buildSnowflakeComputeSpecification = (
   v1Spec: V1_SnowflakeComputeSpecification,
 ): SnowflakeComputeSpecification => {
   const spec = new SnowflakeComputeSpecification();
+  // Straight copies — an omitted field stays omitted. Coercing here would write
+  // properties the user never set and make untouched elements read as modified.
   spec.warehouseType = v1Spec.warehouseType;
   spec.warehouseSize = v1Spec.warehouseSize;
+  spec.generation = v1Spec.generation;
   spec.resourceConstraint = v1Spec.resourceConstraint;
   spec.maxClusterCount = v1Spec.maxClusterCount;
   spec.minClusterCount = v1Spec.minClusterCount;
   spec.scalingPolicy = v1Spec.scalingPolicy;
   spec.autoSuspend = v1Spec.autoSuspend;
-  spec.autoResume = v1Spec.autoResume;
-  spec.resourceMonitor = v1Spec.resourceMonitor;
   spec.comment = v1Spec.comment;
   spec.enableQueryAcceleration = v1Spec.enableQueryAcceleration;
   spec.queryAccelerationMaxScaleFactor = v1Spec.queryAccelerationMaxScaleFactor;
+  spec.maxConcurrencyLevel = v1Spec.maxConcurrencyLevel;
+  spec.statementQueuedTimeoutInSeconds = v1Spec.statementQueuedTimeoutInSeconds;
+  spec.statementTimeoutInSeconds = v1Spec.statementTimeoutInSeconds;
+  spec.maxQueryPerformanceLevel = v1Spec.maxQueryPerformanceLevel;
+  spec.queryThroughputMultiplier = v1Spec.queryThroughputMultiplier;
   return spec;
 };
 
@@ -86,16 +92,10 @@ export const V1_buildComputeOwner = (
 ): AppDirComputeOwner => {
   const owner = new AppDirComputeOwner();
   if (v1Owner.production) {
-    const production = new AppDirNode();
-    production.appDirId = v1Owner.production.appDirId;
-    production.level = v1Owner.production.level;
-    owner.production = production;
+    owner.production = V1_buildAppDirNode(v1Owner.production);
   }
   if (v1Owner.prodParallel) {
-    const prodParallel = new AppDirNode();
-    prodParallel.appDirId = v1Owner.prodParallel.appDirId;
-    prodParallel.level = v1Owner.prodParallel.level;
-    owner.prodParallel = prodParallel;
+    owner.prodParallel = V1_buildAppDirNode(v1Owner.prodParallel);
   }
   return owner;
 };

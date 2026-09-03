@@ -65,27 +65,22 @@ export class QueryBuilderDiffViewState {
   }
 
   *generateGrammarDiff(): GeneratorFn<void> {
+    const graphManager =
+      this.changeDetectionState.querybuilderState.graphManagerState
+        .graphManager;
+    const fallback =
+      '/* Failed to transform grammar text, see JSON diff instead */';
     try {
-      this.initialQueryGrammarText =
-        (yield this.changeDetectionState.querybuilderState.graphManagerState.graphManager.lambdaToPureCode(
-          this.initialQuery,
-          true,
-        )) as string;
+      const [initialGrammar, currentGrammar] = (yield Promise.all([
+        graphManager.lambdaToPureCode(this.initialQuery, true),
+        graphManager.lambdaToPureCode(this.currentQuery, true),
+      ])) as [string, string];
+      this.initialQueryGrammarText = initialGrammar;
+      this.currentQueryGrammarText = currentGrammar;
     } catch (error) {
       assertErrorThrown(error);
-      this.initialQueryGrammarText =
-        '/* Failed to transform grammar text, see JSON diff instead */';
-    }
-    try {
-      this.currentQueryGrammarText =
-        (yield this.changeDetectionState.querybuilderState.graphManagerState.graphManager.lambdaToPureCode(
-          this.currentQuery,
-          true,
-        )) as string;
-    } catch (error) {
-      assertErrorThrown(error);
-      this.currentQueryGrammarText =
-        '/* Failed to transform grammar text, see JSON diff instead */';
+      this.initialQueryGrammarText = fallback;
+      this.currentQueryGrammarText = fallback;
     }
   }
 }

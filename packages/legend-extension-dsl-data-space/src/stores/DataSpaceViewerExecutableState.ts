@@ -32,6 +32,7 @@ import {
 import type { DataSpaceViewerState } from './DataSpaceViewerState.js';
 import { action, flow, makeObservable, observable } from 'mobx';
 import {
+  extractAnnotatedElementDocumentation,
   RelationType,
   TDSExecutionResult,
   type ExecutionResultWithMetadata,
@@ -212,6 +213,7 @@ export class DataSpaceExecutableRelationResultState {
       id: uuid(),
       name: col.name,
       type: col.genericType.value.rawType.name,
+      documentation: extractAnnotatedElementDocumentation(col),
     }));
   }
 }

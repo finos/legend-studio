@@ -31,6 +31,10 @@ import {
 import type { AppDirNode } from '../packageableElements/ingest/IngestDefinition.js';
 
 export class AppDirComputeOwner implements Hashable {
+  /**
+   * Optional so an element can be saved while still being authored. The engine
+   * rejects a Compute without one.
+   */
   production: AppDirNode | undefined;
   prodParallel: AppDirNode | undefined;
 
@@ -81,8 +85,6 @@ export enum SnowflakeWarehouseSize {
 }
 
 export enum SnowflakeResourceConstraint {
-  STANDARD_GEN_1 = 'STANDARD_GEN_1',
-  STANDARD_GEN_2 = 'STANDARD_GEN_2',
   MEMORY_1X = 'MEMORY_1X',
   MEMORY_1X_x86 = 'MEMORY_1X_x86',
   MEMORY_16X = 'MEMORY_16X',
@@ -96,38 +98,54 @@ export enum SnowflakeScalingPolicy {
   ECONOMY = 'ECONOMY',
 }
 
+/**
+ * Every field is optional. Snowflake defaults anything the spec omits, so
+ * Studio writes only what the user set and nothing is coerced on load.
+ */
 export class SnowflakeComputeSpecification
   extends ComputeSpecification
   implements Hashable
 {
   warehouseType: SnowflakeWarehouseType | undefined;
   warehouseSize: SnowflakeWarehouseSize | undefined;
+  generation: number | undefined;
   resourceConstraint: SnowflakeResourceConstraint | undefined;
   maxClusterCount: number | undefined;
   minClusterCount: number | undefined;
   scalingPolicy: SnowflakeScalingPolicy | undefined;
   autoSuspend: number | undefined;
-  autoResume: boolean | undefined;
-  resourceMonitor: string | undefined;
   comment: string | undefined;
   enableQueryAcceleration: boolean | undefined;
   queryAccelerationMaxScaleFactor: number | undefined;
+  maxConcurrencyLevel: number | undefined;
+  statementQueuedTimeoutInSeconds: number | undefined;
+  statementTimeoutInSeconds: number | undefined;
+  /**
+   * ADAPTIVE-only. Reuses `SnowflakeWarehouseSize` to match `compute.pure`; the
+   * engine rejects the two sizes above `X4LARGE`.
+   */
+  maxQueryPerformanceLevel: SnowflakeWarehouseSize | undefined;
+  queryThroughputMultiplier: number | undefined;
 
   override get hashCode(): string {
     return hashArray([
       CORE_HASH_STRUCTURE.SNOWFLAKE_COMPUTE_SPECIFICATION,
       this.warehouseType ?? '',
       this.warehouseSize ?? '',
+      this.generation?.toString() ?? '',
       this.resourceConstraint ?? '',
       this.maxClusterCount?.toString() ?? '',
       this.minClusterCount?.toString() ?? '',
       this.scalingPolicy ?? '',
       this.autoSuspend?.toString() ?? '',
-      this.autoResume?.toString() ?? '',
-      this.resourceMonitor ?? '',
       this.comment ?? '',
       this.enableQueryAcceleration?.toString() ?? '',
       this.queryAccelerationMaxScaleFactor?.toString() ?? '',
+      this.maxConcurrencyLevel?.toString() ?? '',
+      this.statementQueuedTimeoutInSeconds?.toString() ?? '',
+      this.statementTimeoutInSeconds?.toString() ?? '',
+      this.maxQueryPerformanceLevel ?? '',
+      this.queryThroughputMultiplier?.toString() ?? '',
     ]);
   }
 }

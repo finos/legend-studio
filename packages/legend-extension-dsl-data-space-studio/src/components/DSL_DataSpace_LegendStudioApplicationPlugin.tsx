@@ -71,7 +71,7 @@ import type { DocumentationEntry } from '@finos/legend-shared';
 import { NewDataProductDriverEditor } from './DSL_NewDataProductEditor.js';
 import { NewDataProductDriver } from './DSL_DataProduct_ElementDriver.js';
 
-const DATA_SPACE_ELEMENT_TYPE = 'DATA PRODUCT';
+const DATA_SPACE_ELEMENT_TYPE = 'DATA SPACE';
 const DATA_SPACE_ELEMENT_PROJECT_EXPLORER_DND_TYPE =
   'PROJECT_EXPLORER_DATA_SPACE';
 

@@ -23,6 +23,8 @@ import {
   type QueryBuilderExtraFunctionAnalysisInfo,
   QUERY_BUILDER_LAMBDA_WRITER_MODE,
   type ExtraOptionsConfig,
+  QueryBuilderEmbeddedFromExecutionContextState,
+  type QueryBuilderExecutionContextState,
 } from '@finos/legend-query-builder';
 import {
   type Class,
@@ -69,6 +71,7 @@ import type {
 } from '@finos/legend-storage';
 import { buildDataSpaceExecutableAnalysisResultFromExecutable } from '../../graph-manager/action/analytics/DataSpaceAnalysisHelper.js';
 import { compareLabelFn } from '@finos/legend-art';
+import { resolveExecutionContextMapping } from '../../graph-manager/DSL_DataSpace_GraphManagerHelper.js';
 
 const matchesDataElement = (
   _class: Class,
@@ -365,6 +368,23 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   override buildQueryForPersistence(): RawLambda {
     return this.buildQueryLambdaWithoutExecutionContext();
+  }
+
+  override setExecutionContextState(
+    val: QueryBuilderExecutionContextState,
+  ): void {
+    if (
+      val instanceof QueryBuilderEmbeddedFromExecutionContextState &&
+      val.mapping === undefined
+    ) {
+      const resolvedMapping = resolveExecutionContextMapping(
+        this.executionContext,
+      );
+      if (resolvedMapping) {
+        val.setMapping(resolvedMapping);
+      }
+    }
+    super.setExecutionContextState(val);
   }
 
   override buildExecutionContextExpression(
