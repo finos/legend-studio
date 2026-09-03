@@ -15,6 +15,7 @@
  */
 
 @use 'mixins' as *;
+@use '../marketplace-mixins' as *;
 
 .legend-marketplace-vendor-data {
   width: 100%;
@@ -253,6 +254,7 @@
     padding: 20px;
     padding-bottom: 50px;
     margin-left: 25rem;
+    max-width: 2300px;
     flex: 1;
 
     &__category {
@@ -261,23 +263,28 @@
       gap: 1em;
       align-items: center;
       justify-content: flex-start;
-      margin-left: 5px;
       margin-top: 0%;
+    }
 
-      .see-all {
-        text-decoration: none;
-        color: var(--color-blue-50);
-        align-items: center;
-        margin-top: 1.1rem;
-      }
+    &__info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.4rem;
+      cursor: help;
+    }
+
+    &__view-more {
+      @include marketplacePillButton(0.2rem);
+
+      margin-left: auto;
     }
 
     &__card-group {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(35rem, 1fr));
       gap: 1rem;
       margin-top: 1rem;
-      justify-content: flex-start;
       width: 100%;
     }
   }

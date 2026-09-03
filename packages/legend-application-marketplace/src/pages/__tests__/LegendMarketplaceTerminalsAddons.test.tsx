@@ -262,7 +262,7 @@ describe('VendorDataMainContent - ALL display state', () => {
     expect(screen.getByText('Order Profile')).toBeDefined();
   });
 
-  test('shows "See All>" buttons in ALL state', () => {
+  test('shows "View more" buttons in ALL state', () => {
     runInAction(() => {
       vendorDataStore.providerDisplayState = VendorDataProviderType.ALL;
     });
@@ -271,8 +271,8 @@ describe('VendorDataMainContent - ALL display state', () => {
       <VendorDataMainContent marketPlaceVendorDataState={vendorDataStore} />,
     );
 
-    const seeAllButtons = screen.getAllByText(/See All/);
-    expect(seeAllButtons.length).toBeGreaterThanOrEqual(2);
+    const viewMoreButtons = screen.getAllByText(/View more/);
+    expect(viewMoreButtons.length).toBeGreaterThanOrEqual(2);
   });
 
   test('renders terminal cards in ALL state', () => {
@@ -318,7 +318,7 @@ describe('VendorDataMainContent - ALL display state', () => {
     expect(screen.getByText('BUNDLE 1')).toBeDefined();
   });
 
-  test('clicking "See All>" for terminal section switches to TERMINAL_LICENSE', async () => {
+  test('clicking "View more" for terminal section switches to TERMINAL_LICENSE', async () => {
     runInAction(() => {
       vendorDataStore.providerDisplayState = VendorDataProviderType.ALL;
     });
@@ -327,10 +327,10 @@ describe('VendorDataMainContent - ALL display state', () => {
       <VendorDataMainContent marketPlaceVendorDataState={vendorDataStore} />,
     );
 
-    // The first "See All>" is for Terminal License
-    const seeAllButtons = screen.getAllByText(/See All/);
+    // The first "View more" is for Terminal License
+    const viewMoreButtons = screen.getAllByText(/View more/);
     await act(async () => {
-      fireEvent.click(seeAllButtons[0] as HTMLElement);
+      fireEvent.click(viewMoreButtons[0] as HTMLElement);
     });
 
     expect(vendorDataStore.providerDisplayState).toBe(

@@ -88,8 +88,56 @@
 
     .MuiSvgIcon-root {
       font-size: 1.75rem;
-      color: var(--color-dark-grey-300);
+      color: var(--marketplace-text-secondary);
     }
+
+    &--advanced {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      min-height: 40px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--color-light-grey-300);
+      border-radius: 4px;
+      background-color: var(--color-light-grey-50);
+    }
+  }
+
+  &__search-icon,
+  &__tune-icon {
+    font-size: calc(1.75rem - 0.2px);
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__filter-chips {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  &__search-field-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+
+    svg {
+      color: var(--marketplace-text-secondary);
+    }
+  }
+
+  &__advanced-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  &__advanced-search-notice {
+    color: var(--color-red-300);
+    font-size: 1.4rem;
   }
 
   &__tabs {
@@ -650,5 +698,66 @@
         transform: translateY(-1px);
       }
     }
+  }
+}
+
+.advanced-order-search-popover {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    width: 320px;
+    background-color: var(--color-white);
+  }
+
+  &__title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--color-dark-grey-100);
+  }
+
+  &__field {
+    width: 100%;
+
+    .MuiOutlinedInput-root {
+      &:hover .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-blue-100);
+      }
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-blue-100);
+      }
+    }
+  }
+
+  &__status-menu {
+    .MuiMenuItem-root {
+      font-size: 1.5rem;
+
+      &:not(:first-of-type) {
+        font-size: calc(1.5rem - 0.5px);
+      }
+    }
+
+    .MuiListSubheader-root {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 2.4rem;
+      cursor: default;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  &__search-button,
+  &__clear-button {
+    text-transform: none;
+    font-weight: 500;
   }
 }

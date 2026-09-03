@@ -1035,6 +1035,34 @@ const simpleTelemetryCases: SimpleTelemetryCase[] = [
     expectedPayload: { orderId: 'order-1', timestamp: expect.any(Number) },
   },
   {
+    description: 'logEvent_AdvancedSearchOrders',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.ADVANCED_SEARCH_ORDERS,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_AdvancedSearchOrders(
+        service,
+        true,
+        false,
+        'PENDING APPROVAL',
+        true,
+      ),
+    expectedPayload: {
+      hasOrderedBy: true,
+      hasOrderedFor: false,
+      status: 'PENDING APPROVAL',
+      isLastDaysDefaulted: true,
+      timestamp: expect.any(Number),
+    },
+  },
+  {
+    description: 'logEvent_ClearAdvancedOrderSearch',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.CLEAR_ADVANCED_ORDER_SEARCH,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ClearAdvancedOrderSearch(
+        service,
+      ),
+    expectedPayload: { timestamp: expect.any(Number) },
+  },
+  {
     description: 'logEvent_ViewSubscriptionsPage',
     expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.VIEW_SUBSCRIPTIONS_PAGE,
     invoke: (service) =>

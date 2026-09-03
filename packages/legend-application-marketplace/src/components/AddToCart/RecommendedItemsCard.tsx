@@ -73,11 +73,14 @@ export const RecommendedItemsCard = observer(
     const inCart = legendMarketplaceBaseStore.cartStore.isItemInCart(
       recommendedItem.id,
     );
-    const isInCartOrAdded = inCart || isAdded;
 
     const isAssociationFlow = onSelect !== undefined;
     const isMarketplaceItem =
       recommendedItem.source === RecommendationSource.MARKETPLACE;
+    const isCartSourceItem =
+      recommendedItem.source === RecommendationSource.CART;
+    const isInCartOrAdded =
+      isAssociationFlow && isCartSourceItem ? isAdded : inCart || isAdded;
     const isCurrentlySelecting =
       isAssociationFlow &&
       Boolean(isSelecting) &&
@@ -138,11 +141,6 @@ export const RecommendedItemsCard = observer(
           variant="outlined"
           onClick={() => {
             setIsAddingToCart(true);
-            // Note: `onSelect` can close this modal (or chain into a new one)
-            // on success, unmounting this card before the promise below
-            // resolves. That's safe under React 18+ (no-op setState on an
-            // unmounted component, no warning), so no cleanup/cancellation
-            // guard is added here.
             // eslint-disable-next-line no-void
             void Promise.resolve(onSelect?.(recommendedItem))
               .then((wasAssociated) => {

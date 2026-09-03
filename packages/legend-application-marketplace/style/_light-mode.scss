@@ -571,6 +571,82 @@
     &__content {
       background: var(--color-hclight-grey-10);
     }
+
+    &__search-field {
+      .MuiInputLabel-root {
+        color: var(--color-hclight-grey-60);
+        background-color: var(--color-hclight-grey-10);
+
+        &.MuiInputLabel-shrink {
+          background-color: var(--color-hclight-grey-10);
+        }
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-hclight-grey-20);
+      }
+
+      .MuiInputBase-input {
+        color: var(--color-hclight-grey-90);
+      }
+    }
+
+    &__search-field--advanced {
+      background-color: var(--color-hclight-white);
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__advanced-search-notice {
+      color: var(--color-hclight-red-50);
+    }
+  }
+
+  .advanced-order-search-popover {
+    &__content {
+      background-color: var(--color-hclight-white);
+    }
+
+    &__title {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__field {
+      .MuiInputBase-root,
+      .MuiSelect-select {
+        color: var(--color-hclight-grey-90);
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-hclight-grey-60);
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-hclight-grey-20);
+      }
+
+      .MuiFormHelperText-root {
+        color: var(--color-hclight-grey-50);
+      }
+
+      .MuiSelect-icon {
+        color: var(--color-hclight-grey-50);
+      }
+    }
+
+    &__status-menu {
+      .MuiMenuItem-root {
+        font-size: 1.5rem !important;
+
+        &:not(:first-of-type) {
+          font-size: calc(1.5rem - 0.5px) !important;
+        }
+      }
+
+      .MuiListSubheader-root {
+        background: var(--color-hclight-grey-10);
+        color: var(--color-hclight-grey-70);
+      }
+    }
   }
 
   .orders-tabs {
@@ -728,14 +804,6 @@
 
       &__subtitle {
         color: var(--color-hclight-grey-60);
-      }
-    }
-
-    &-search-results {
-      &__category {
-        .see-all {
-          color: var(--color-hclight-blue-60);
-        }
       }
     }
   }

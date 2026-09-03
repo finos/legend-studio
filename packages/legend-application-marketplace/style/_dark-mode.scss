@@ -289,6 +289,82 @@
     &__empty-description {
       color: var(--color-dark-theme-text-secondary);
     }
+
+    &__search-field {
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-secondary);
+        background-color: var(--color-dark-theme-bg-primary);
+
+        &.MuiInputLabel-shrink {
+          background-color: var(--color-dark-theme-bg-primary);
+        }
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .MuiInputBase-input {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__search-field--advanced {
+      background-color: var(--color-dark-theme-bg-secondary);
+      border-color: var(--color-dark-theme-border);
+    }
+
+    &__advanced-search-notice {
+      color: var(--color-dark-red-50);
+    }
+  }
+
+  .advanced-order-search-popover {
+    &__content {
+      background-color: var(--color-dark-theme-bg-elevated);
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__field {
+      .MuiInputBase-root,
+      .MuiSelect-select {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .MuiFormHelperText-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      .MuiSelect-icon {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__status-menu {
+      .MuiMenuItem-root {
+        font-size: 1.5rem !important;
+
+        &:not(:first-of-type) {
+          font-size: calc(1.5rem - 0.5px) !important;
+        }
+      }
+
+      .MuiListSubheader-root {
+        background: var(--color-dark-theme-bg-tertiary);
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
   }
 
   .legend-marketplace-order-accordion {
@@ -609,12 +685,6 @@
 
     &-search-results {
       background: var(--color-dark-theme-bg-primary);
-
-      &__category {
-        .see-all {
-          color: var(--color-dark-theme-blue-primary);
-        }
-      }
     }
 
     &-owned-services {

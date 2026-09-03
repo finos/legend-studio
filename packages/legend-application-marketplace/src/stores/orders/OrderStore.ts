@@ -18,6 +18,7 @@ import { makeObservable, observable, action, flow, computed } from 'mobx';
 import {
   LogEvent,
   type GeneratorFn,
+  type LegendUser,
   assertErrorThrown,
   ActionState,
 } from '@finos/legend-shared';
@@ -26,13 +27,38 @@ import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceApp
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
   OrderStatusCategory,
+  type OrderSearchStatus,
   type TerminalProductOrder,
   type TerminalProductOrderResponse,
+  type OrderSearchRequest,
+  type OrderSearchResponse,
 } from '@finos/legend-server-marketplace';
+import {
+  getUserDisplayLabel,
+  ORDER_SEARCH_DEFAULT_LAST_DAYS,
+  ORDER_SEARCH_DEFAULT_LIMIT,
+} from './OrderHelpers.js';
 
 export enum OrderTab {
   OPEN = 'open',
   CLOSED = 'closed',
+}
+
+/** Input to `OrdersStore.searchOrders`, gathered from the advanced search form. */
+export interface OrderSearchFormValues {
+  orderedBy: LegendUser | undefined;
+  orderedFor: LegendUser | undefined;
+  status: OrderSearchStatus;
+  lastDays: number | undefined;
+}
+
+/** A snapshot of the last-applied advanced search filters, kept for rendering the filter summary bar. */
+export interface AppliedOrderSearchFilters {
+  orderedByLabel: string | undefined;
+  orderedForLabel: string | undefined;
+  status: OrderSearchStatus;
+  lastDays: number;
+  isLastDaysDefaulted: boolean;
 }
 
 export class OrdersStore {
@@ -47,6 +73,11 @@ export class OrdersStore {
   readonly cancelOrderState = ActionState.create();
   selectedTab: OrderTab = OrderTab.OPEN;
 
+  searchResults: TerminalProductOrder[] = [];
+  searchTotalCount = 0;
+  appliedSearchFilters: AppliedOrderSearchFilters | undefined = undefined;
+  readonly searchOrdersState = ActionState.create();
+
   constructor(baseStore: LegendMarketplaceBaseStore) {
     makeObservable(this, {
       openOrders: observable,
@@ -54,13 +85,19 @@ export class OrdersStore {
       totalOpen: observable,
       totalClosed: observable,
       selectedTab: observable,
+      searchResults: observable,
+      searchTotalCount: observable,
+      appliedSearchFilters: observable,
       setSelectedTab: action,
+      clearSearch: action,
       fetchOpenOrders: flow,
       fetchClosedOrders: flow,
       refreshCurrentOrders: flow,
       cancelOrder: flow,
+      searchOrders: flow,
       currentOrders: computed,
       currentFetchState: computed,
+      isAdvancedSearchActive: computed,
     });
     this.baseStore = baseStore;
   }
@@ -69,13 +106,23 @@ export class OrdersStore {
     this.selectedTab = tab;
   }
 
+  get isAdvancedSearchActive(): boolean {
+    return this.appliedSearchFilters !== undefined;
+  }
+
   get currentOrders(): TerminalProductOrder[] {
+    if (this.isAdvancedSearchActive) {
+      return this.searchResults;
+    }
     return this.selectedTab === OrderTab.OPEN
       ? this.openOrders
       : this.closedOrders;
   }
 
   get currentFetchState(): ActionState {
+    if (this.isAdvancedSearchActive) {
+      return this.searchOrdersState;
+    }
     return this.selectedTab === OrderTab.OPEN
       ? this.fetchOpenOrdersState
       : this.fetchClosedOrdersState;
@@ -194,5 +241,65 @@ export class OrdersStore {
       this.cancelOrderState.fail();
       return false;
     }
+  }
+
+  *searchOrders(filters: OrderSearchFormValues): GeneratorFn<void> {
+    const orderedById = filters.orderedBy?.id.trim();
+    const orderedForId = filters.orderedFor?.id.trim();
+
+    if (!orderedById && !orderedForId) {
+      this.baseStore.applicationStore.notificationService.notifyWarning(
+        'Enter a value for Ordered By and/or Ordered For to search.',
+      );
+      return;
+    }
+
+    const lastDays = filters.lastDays ?? ORDER_SEARCH_DEFAULT_LAST_DAYS;
+    const request: OrderSearchRequest = {
+      ...(orderedById ? { ordered_by: orderedById } : {}),
+      ...(orderedForId ? { ordered_for: orderedForId } : {}),
+      status: filters.status,
+      last_days: lastDays,
+      limit: ORDER_SEARCH_DEFAULT_LIMIT,
+      offset: 0,
+    };
+
+    this.searchOrdersState.inProgress();
+    try {
+      const response =
+        (yield this.baseStore.marketplaceServerClient.searchOrders(
+          request,
+        )) as OrderSearchResponse;
+
+      this.searchResults = response.orders;
+      this.searchTotalCount = response.total_count;
+      this.appliedSearchFilters = {
+        orderedByLabel: getUserDisplayLabel(filters.orderedBy),
+        orderedForLabel: getUserDisplayLabel(filters.orderedFor),
+        status: filters.status,
+        lastDays,
+        isLastDaysDefaulted: filters.lastDays === undefined,
+      };
+      this.searchOrdersState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.baseStore.applicationStore.logService.error(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.ADVANCED_SEARCH_ORDERS_FAILURE,
+        ),
+        `Failed to search orders: ${error.message}`,
+      );
+      this.baseStore.applicationStore.notificationService.notifyError(
+        `Failed to search orders: ${error.message}`,
+      );
+      this.searchOrdersState.fail();
+    }
+  }
+
+  clearSearch(): void {
+    this.searchResults = [];
+    this.searchTotalCount = 0;
+    this.appliedSearchFilters = undefined;
+    this.searchOrdersState.reset();
   }
 }

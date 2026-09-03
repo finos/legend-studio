@@ -16,9 +16,11 @@
 
 import {
   OrderStatus,
+  OrderSearchStatus,
   type TerminalProductOrder,
   type WorkflowDetails,
 } from '@finos/legend-server-marketplace';
+import { type LegendUser } from '@finos/legend-shared';
 
 export enum WorkflowStage {
   ORDER_PLACED = 'Order Placed',
@@ -37,10 +39,15 @@ export enum OrderType {
 
 export enum WorkflowCurrentStage {
   DIRECT_MANAGER = 'DIRECT MANAGER',
-  // NOTE: not confirmed against a live backend payload - inferred from the
-  // naming convention of the confirmed 'MARKET DATA FIRST APPROVER' code.
-  FULFILLMENT_APPROVER = 'MARKET DATA FULFILLMENT APPROVER',
+  // Confirmed against a live backend payload (2026-09-01): the stage is named
+  // "MANAGER", not "APPROVER" as previously assumed.
+  FULFILLMENT_APPROVER = 'MARKET DATA FULFILLMENT MANAGER',
   FIRST_APPROVER = 'MARKET DATA FIRST APPROVER',
+  // NOTE: not confirmed against a live backend payload - inferred from the
+  // naming convention of the other Market Data approval stages above. Given
+  // FULFILLMENT_APPROVER's guessed value above turned out to be wrong, this
+  // value should be verified against a real payload where `current_stage`
+  // reaches the Business Analyst stage before being relied upon.
   BUSINESS_ANALYST = 'Business Analyst',
   RPM = 'RPM',
 }
@@ -394,7 +401,7 @@ const CURRENT_STAGE_PROCESS_INSTANCE_ID_FIELD: Partial<
   [WorkflowCurrentStage.DIRECT_MANAGER]: 'piid_manager',
   [WorkflowCurrentStage.FIRST_APPROVER]: 'piid_fa_approval',
   [WorkflowCurrentStage.FULFILLMENT_APPROVER]: 'piid_ffa_approval',
-  [WorkflowCurrentStage.BUSINESS_ANALYST]: 'bbg_approval_process_id',
+  [WorkflowCurrentStage.BUSINESS_ANALYST]: 'piid_bbg_approval',
 };
 
 /**
@@ -460,4 +467,65 @@ export const formatTimestamp = (timestamp: string): string => {
     hour: '2-digit',
     minute: '2-digit',
   });
+};
+
+// ----------------------------------------- Advanced Order Search -----------------------------------------
+
+/** Bound applied by the UI (and mirrored to the backend) when "Show Last (Days)" is left blank. */
+export const ORDER_SEARCH_DEFAULT_LAST_DAYS = 365;
+export const ORDER_SEARCH_DEFAULT_LIMIT = 100;
+export const ORDER_SEARCH_MIN_LAST_DAYS = 1;
+export const ORDER_SEARCH_MAX_LAST_DAYS = 365;
+
+/**
+ * Resolves a human-readable label for a `LegendUser` selected in the advanced
+ * search form (falls back to the raw kerberos id when no display name is
+ * available), or `undefined` if no user was selected.
+ */
+export const getUserDisplayLabel = (
+  user: LegendUser | undefined,
+): string | undefined => {
+  if (!user) {
+    return undefined;
+  }
+  const id = user.id.trim();
+  if (!id) {
+    return undefined;
+  }
+  const displayName = user.displayName;
+  return displayName === undefined || displayName === '' ? id : displayName;
+};
+
+const ORDER_SEARCH_STATUS_LABEL: Record<OrderSearchStatus, string> = {
+  [OrderSearchStatus.ALL]: 'All',
+  [OrderSearchStatus.PENDING_APPROVAL]: 'Pending Approval',
+  [OrderSearchStatus.PENDING_FULFILLMENT]: 'Pending Fulfillment',
+  [OrderSearchStatus.COMPLETED]: 'Completed',
+  [OrderSearchStatus.CANCELLED]: 'Cancelled',
+  [OrderSearchStatus.REJECTED]: 'Rejected',
+};
+
+/** Human-readable label for an `OrderSearchStatus` value, for display in the advanced search form/summary. */
+export const getOrderSearchStatusLabel = (status: OrderSearchStatus): string =>
+  ORDER_SEARCH_STATUS_LABEL[status];
+
+/**
+ * Parses the raw "Show Last (Days)" text input into a valid integer within
+ * the API's supported `1-365` range, or `undefined` if the input is blank or
+ * out of range (in which case the backend's/UI's default applies instead).
+ */
+export const parseLastDaysInput = (rawValue: string): number | undefined => {
+  const trimmed = rawValue.trim();
+  if (trimmed === '') {
+    return undefined;
+  }
+  const parsed = Number.parseInt(trimmed, 10);
+  if (
+    Number.isNaN(parsed) ||
+    parsed < ORDER_SEARCH_MIN_LAST_DAYS ||
+    parsed > ORDER_SEARCH_MAX_LAST_DAYS
+  ) {
+    return undefined;
+  }
+  return parsed;
 };

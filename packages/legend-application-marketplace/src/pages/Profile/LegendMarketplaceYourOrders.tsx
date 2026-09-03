@@ -42,12 +42,14 @@ import {
   SearchIcon,
   CopyIcon,
   CloseIcon,
+  TuneIcon,
 } from '@finos/legend-art';
 import { LegendMarketplacePage } from '../LegendMarketplacePage.js';
 import { useLegendMarketplaceBaseStore } from '../../application/providers/LegendMarketplaceFrameworkProvider.js';
 import {
   type TerminalProductOrder,
   OrderStatus,
+  OrderSearchStatus,
 } from '@finos/legend-server-marketplace';
 import { assertErrorThrown, isNullable } from '@finos/legend-shared';
 import {
@@ -56,20 +58,29 @@ import {
 } from '../../application/providers/LegendMarketplaceYourOrdersStoreProvider.js';
 import { ProgressTracker } from '../../components/orders/ProgressTracker.js';
 import { CancelOrderDialog } from '../../components/orders/CancelOrderDialog.js';
+import { AdvancedOrderSearchPopover } from '../../components/orders/AdvancedOrderSearchPopover.js';
 import {
   formatOrderDate,
   canCancelOrder,
   formatTimestamp,
   getCurrentStageTrackingUrl,
   getClosureInfo,
+  getOrderSearchStatusLabel,
 } from '../../stores/orders/OrderHelpers.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
-import { OrderTab } from '../../stores/orders/OrderStore.js';
+import {
+  OrderTab,
+  type OrderSearchFormValues,
+} from '../../stores/orders/OrderStore.js';
 
 const getEmptyOrdersTitle = (
   hasSearchTerm: boolean,
   selectedTab: OrderTab,
+  isAdvancedSearchActive: boolean,
 ): string => {
+  if (isAdvancedSearchActive) {
+    return 'No orders match your search filters';
+  }
   if (hasSearchTerm) {
     return 'No orders match your search';
   }
@@ -79,7 +90,11 @@ const getEmptyOrdersTitle = (
 const getEmptyOrdersDescription = (
   hasSearchTerm: boolean,
   selectedTab: OrderTab,
+  isAdvancedSearchActive: boolean,
 ): string => {
+  if (isAdvancedSearchActive) {
+    return 'Try adjusting the filters in Advanced Search, or clear the search to see your orders.';
+  }
   if (hasSearchTerm) {
     return 'Try adjusting your search terms and try again.';
   }
@@ -567,6 +582,67 @@ export const LegendMarketplaceYourOrders: React.FC =
         );
       }, [baseStore.applicationStore.telemetryService]);
       const [searchTerm, setSearchTerm] = useState('');
+      const [advancedSearchAnchorEl, setAdvancedSearchAnchorEl] =
+        useState<HTMLElement | null>(null);
+      // Bumped whenever the advanced search is cleared from the search bar's
+      // clear (x) button so the popover (which owns its own uncontrolled
+      // orderedBy/orderedFor/status/lastDays state) remounts with fresh,
+      // blank fields instead of retaining stale values from the prior search.
+      const [advancedSearchResetKey, setAdvancedSearchResetKey] = useState(0);
+
+      const isAdvancedSearchActive = ordersStore.isAdvancedSearchActive;
+      const appliedSearchFilters = ordersStore.appliedSearchFilters;
+
+      const handleAdvancedSearchOpen = useCallback(
+        (event: React.MouseEvent<HTMLElement>) => {
+          setAdvancedSearchAnchorEl(event.currentTarget);
+        },
+        [],
+      );
+
+      const handleAdvancedSearchClose = useCallback(() => {
+        setAdvancedSearchAnchorEl(null);
+      }, []);
+
+      const handleAdvancedSearch = useCallback(
+        (filters: OrderSearchFormValues) => {
+          LegendMarketplaceTelemetryHelper.logEvent_AdvancedSearchOrders(
+            baseStore.applicationStore.telemetryService,
+            Boolean(filters.orderedBy?.id.trim()),
+            Boolean(filters.orderedFor?.id.trim()),
+            filters.status,
+            filters.lastDays === undefined,
+          );
+          executeFlowSafely(() => ordersStore.searchOrders(filters));
+          setSearchTerm('');
+          setAdvancedSearchAnchorEl(null);
+        },
+        [
+          baseStore.applicationStore.telemetryService,
+          executeFlowSafely,
+          ordersStore,
+        ],
+      );
+
+      const handleClearAdvancedSearch = useCallback(() => {
+        LegendMarketplaceTelemetryHelper.logEvent_ClearAdvancedOrderSearch(
+          baseStore.applicationStore.telemetryService,
+        );
+        ordersStore.clearSearch();
+        setSearchTerm('');
+        setAdvancedSearchResetKey((key) => key + 1);
+        if (ordersStore.currentFetchState.isInInitialState) {
+          if (ordersStore.selectedTab === OrderTab.OPEN) {
+            executeFlowSafely(() => ordersStore.fetchOpenOrders());
+          } else {
+            executeFlowSafely(() => ordersStore.fetchClosedOrders());
+          }
+        }
+      }, [
+        baseStore.applicationStore.telemetryService,
+        executeFlowSafely,
+        ordersStore,
+      ]);
 
       const currentOrders = ordersStore.currentOrders;
       const isLoading = ordersStore.currentFetchState.isInProgress;
@@ -581,46 +657,167 @@ export const LegendMarketplaceYourOrders: React.FC =
           <Box className="legend-marketplace-your-orders__content">
             <Box className="legend-marketplace-your-orders__header-section">
               <Typography variant="h1">Your Orders</Typography>
-              <TextField
-                variant="outlined"
-                size="small"
-                label="Search Your Orders"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="legend-marketplace-your-orders__search-field"
-                slotProps={{
-                  input: {
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon />
-                      </InputAdornment>
-                    ),
-                    endAdornment: searchTerm && (
-                      <InputAdornment position="end">
-                        <IconButton
-                          size="small"
-                          aria-label="Clear search"
-                          onClick={() => setSearchTerm('')}
-                        >
-                          <CloseIcon />
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-              />
+
+              {isAdvancedSearchActive && appliedSearchFilters ? (
+                <Box className="legend-marketplace-your-orders__search-field legend-marketplace-your-orders__search-field--advanced">
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    className="legend-marketplace-your-orders__filter-chips"
+                  >
+                    {appliedSearchFilters.orderedByLabel && (
+                      <Chip
+                        size="small"
+                        label={`Ordered By: ${appliedSearchFilters.orderedByLabel}`}
+                      />
+                    )}
+                    {appliedSearchFilters.orderedForLabel && (
+                      <Chip
+                        size="small"
+                        label={`Ordered For: ${appliedSearchFilters.orderedForLabel}`}
+                      />
+                    )}
+                    {appliedSearchFilters.status !== OrderSearchStatus.ALL && (
+                      <Chip
+                        size="small"
+                        label={`Status: ${getOrderSearchStatusLabel(appliedSearchFilters.status)}`}
+                      />
+                    )}
+                    {!appliedSearchFilters.isLastDaysDefaulted && (
+                      <Chip
+                        size="small"
+                        label={`Last ${appliedSearchFilters.lastDays} Days`}
+                      />
+                    )}
+                  </Stack>
+                  <Box className="legend-marketplace-your-orders__search-field-actions">
+                    <Tooltip title="Advanced Search" arrow={true}>
+                      <IconButton
+                        size="small"
+                        aria-label="Edit advanced search"
+                        onClick={handleAdvancedSearchOpen}
+                      >
+                        <TuneIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Clear search" arrow={true}>
+                      <IconButton
+                        size="small"
+                        aria-label="Clear advanced search"
+                        onClick={handleClearAdvancedSearch}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
+              ) : (
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  label="Search Orders"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="legend-marketplace-your-orders__search-field"
+                  slotProps={{
+                    input: {
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton size="small" aria-label="Search">
+                            <SearchIcon className="legend-marketplace-your-orders__search-icon" />
+                          </IconButton>
+                          {searchTerm && (
+                            <IconButton
+                              size="small"
+                              aria-label="Clear search"
+                              onClick={() => setSearchTerm('')}
+                            >
+                              <CloseIcon />
+                            </IconButton>
+                          )}
+                          <Tooltip title="Advanced Search" arrow={true}>
+                            <IconButton
+                              size="small"
+                              aria-label="Advanced Search"
+                              onClick={handleAdvancedSearchOpen}
+                            >
+                              <TuneIcon className="legend-marketplace-your-orders__tune-icon" />
+                            </IconButton>
+                          </Tooltip>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+              )}
             </Box>
 
-            <Box className="legend-marketplace-your-orders__tabs">
-              <Tabs
-                value={ordersStore.selectedTab}
-                onChange={handleTabChange}
-                aria-label="order status tabs"
-              >
-                <Tab label="In Progress" value={OrderTab.OPEN} />
-                <Tab label="Completed" value={OrderTab.CLOSED} />
-              </Tabs>
-            </Box>
+            {isAdvancedSearchActive && appliedSearchFilters && (
+              <Box className="legend-marketplace-your-orders__advanced-search-bar">
+                <TextField
+                  variant="outlined"
+                  size="small"
+                  label="Search within results"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="legend-marketplace-your-orders__search-field"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchTerm && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            size="small"
+                            aria-label="Clear search within results"
+                            onClick={() => setSearchTerm('')}
+                          >
+                            <CloseIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                />
+                {appliedSearchFilters.isLastDaysDefaulted && (
+                  <Typography
+                    variant="caption"
+                    className="legend-marketplace-your-orders__advanced-search-notice"
+                  >
+                    We are showing orders for the last{' '}
+                    {appliedSearchFilters.lastDays} days
+                  </Typography>
+                )}
+              </Box>
+            )}
+
+            <AdvancedOrderSearchPopover
+              key={advancedSearchResetKey}
+              open={Boolean(advancedSearchAnchorEl)}
+              anchorEl={advancedSearchAnchorEl}
+              onClose={handleAdvancedSearchClose}
+              onSearch={handleAdvancedSearch}
+              onClear={handleClearAdvancedSearch}
+              isSearching={ordersStore.searchOrdersState.isInProgress}
+              hasActiveSearch={isAdvancedSearchActive}
+              userSearchService={baseStore.userSearchService}
+            />
+
+            {!isAdvancedSearchActive && (
+              <Box className="legend-marketplace-your-orders__tabs">
+                <Tabs
+                  value={ordersStore.selectedTab}
+                  onChange={handleTabChange}
+                  aria-label="order status tabs"
+                >
+                  <Tab label="In Progress" value={OrderTab.OPEN} />
+                  <Tab label="Completed" value={OrderTab.CLOSED} />
+                </Tabs>
+              </Box>
+            )}
             {isLoading ? (
               <Box className="legend-marketplace-your-orders__loading">
                 <CircularProgress size={40} />
@@ -641,12 +838,14 @@ export const LegendMarketplaceYourOrders: React.FC =
                   {getEmptyOrdersTitle(
                     Boolean(searchTerm.trim()),
                     ordersStore.selectedTab,
+                    isAdvancedSearchActive,
                   )}
                 </Typography>
                 <Typography className="legend-marketplace-your-orders__empty-description">
                   {getEmptyOrdersDescription(
                     Boolean(searchTerm.trim()),
                     ordersStore.selectedTab,
+                    isAdvancedSearchActive,
                   )}
                 </Typography>
               </Box>

@@ -97,7 +97,7 @@ const mockOrderWithUrl: TerminalProductOrder = {
     ffa_approval_comment: null,
     ffa_approval_action: null,
     url_bbg_approval: null,
-    bbg_approval_process_id: null,
+    piid_bbg_approval: null,
     bbg_approval_actioned_by: null,
     bbg_approval_actioned_by_name: null,
     bbg_approval_actioned_timestamp: null,
@@ -165,7 +165,7 @@ const mockOrderWithoutUrl: TerminalProductOrder = {
     ffa_approval_comment: null,
     ffa_approval_action: null,
     url_bbg_approval: null,
-    bbg_approval_process_id: null,
+    piid_bbg_approval: null,
     bbg_approval_actioned_by: null,
     bbg_approval_actioned_by_name: null,
     bbg_approval_actioned_timestamp: null,
@@ -352,7 +352,7 @@ describe('LegendMarketplaceYourOrders - search', () => {
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
     expect(screen.getByText('Reuters Terminal')).toBeDefined();
 
-    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+    fireEvent.change(screen.getByLabelText('Search Orders'), {
       target: { value: 'ORD-123' },
     });
 
@@ -366,7 +366,7 @@ describe('LegendMarketplaceYourOrders - search', () => {
     await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+    fireEvent.change(screen.getByLabelText('Search Orders'), {
       target: { value: 'brown' },
     });
 
@@ -380,7 +380,7 @@ describe('LegendMarketplaceYourOrders - search', () => {
     await renderYourOrdersPage([makeBloombergOrder(), makeReutersOrder()]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+    fireEvent.change(screen.getByLabelText('Search Orders'), {
       target: { value: 'reuters terminal' },
     });
 
@@ -394,7 +394,7 @@ describe('LegendMarketplaceYourOrders - search', () => {
     await renderYourOrdersPage([makeBloombergOrder()]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+    fireEvent.change(screen.getByLabelText('Search Orders'), {
       target: { value: 'BLOOM' },
     });
 
@@ -407,7 +407,7 @@ describe('LegendMarketplaceYourOrders - search', () => {
     await renderYourOrdersPage([makeBloombergOrder()]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+    fireEvent.change(screen.getByLabelText('Search Orders'), {
       target: { value: 'nonexistent-order' },
     });
 
@@ -425,7 +425,7 @@ describe('LegendMarketplaceYourOrders - search', () => {
 
     expect(screen.queryByLabelText('Clear search')).toBeNull();
 
-    fireEvent.change(screen.getByLabelText('Search Your Orders'), {
+    fireEvent.change(screen.getByLabelText('Search Orders'), {
       target: { value: 'ORD-123' },
     });
 
@@ -512,5 +512,159 @@ describe('LegendMarketplaceYourOrders - copy order id', () => {
     });
 
     await waitFor(() => expect(alertSpy).toHaveBeenCalled());
+  });
+});
+
+describe('LegendMarketplaceYourOrders - advanced search', () => {
+  test('Search button stays disabled until Ordered By or Ordered For is provided', async () => {
+    await renderYourOrdersPage([makeBloombergOrder()]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+
+    const searchButton = await waitFor(() =>
+      screen.getByRole('button', { name: 'Search' }),
+    );
+    expect(searchButton.hasAttribute('disabled')).toBe(true);
+
+    fireEvent.change(screen.getByLabelText('Ordered By'), {
+      target: { value: 'adishar' },
+    });
+
+    expect(searchButton.hasAttribute('disabled')).toBe(false);
+  });
+
+  test('searching switches to advanced search mode with a filter summary and secondary search bar', async () => {
+    const { MOCK__baseStore } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchOrders',
+    ).mockResolvedValue({
+      orders: [makeReutersOrder()],
+      total_count: 1,
+      status_filter: 'ALL',
+      limit: 100,
+      offset: 0,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+      target: { value: 'adishar' },
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    });
+
+    await waitFor(() =>
+      expect(screen.getByText('Reuters Terminal')).toBeDefined(),
+    );
+    expect(screen.queryByText('Bloomberg Terminal')).toBeNull();
+    expect(screen.getByText('Ordered By: adishar')).toBeDefined();
+    expect(screen.getByLabelText('Search within results')).toBeDefined();
+    expect(
+      screen.getByText(/We are showing orders for the last 365 days/),
+    ).toBeDefined();
+    expect(screen.queryByLabelText('Search Orders')).toBeNull();
+  });
+
+  test('clearing the advanced search returns to the default orders view', async () => {
+    const { MOCK__baseStore } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchOrders',
+    ).mockResolvedValue({
+      orders: [makeReutersOrder()],
+      total_count: 1,
+      status_filter: 'ALL',
+      limit: 100,
+      offset: 0,
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+      target: { value: 'adishar' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    });
+    await waitFor(() =>
+      expect(screen.getByText('Reuters Terminal')).toBeDefined(),
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Clear advanced search' }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByLabelText('Search Orders')).toBeDefined(),
+    );
+    expect(screen.getByText('Bloomberg Terminal')).toBeDefined();
+  });
+
+  test('clearing the advanced search from the search bar resets the popover fields for the next search', async () => {
+    const { MOCK__baseStore } = await renderYourOrdersPage([
+      makeBloombergOrder(),
+    ]);
+    await waitFor(() => screen.getByText('Bloomberg Terminal'));
+
+    const searchOrdersSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'searchOrders',
+    ).mockResolvedValue({
+      orders: [makeReutersOrder()],
+      total_count: 1,
+      status_filter: 'ALL',
+      limit: 100,
+      offset: 0,
+    });
+
+    // First advanced search using "Ordered By" only.
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+      target: { value: 'adishar' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    });
+    await waitFor(() =>
+      expect(screen.getByText('Reuters Terminal')).toBeDefined(),
+    );
+
+    // Clear via the search bar's (x) button, not the popover's own Clear button.
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Clear advanced search' }),
+    );
+    await waitFor(() =>
+      expect(screen.getByLabelText('Search Orders')).toBeDefined(),
+    );
+
+    // Re-open advanced search and search using "Ordered For" only this time.
+    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    expect(
+      await waitFor(() => screen.getByLabelText('Ordered By')),
+    ).toHaveProperty('value', '');
+
+    fireEvent.change(screen.getByLabelText('Ordered For'), {
+      target: { value: 'bbrown' },
+    });
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Search' }));
+    });
+
+    await waitFor(() => expect(searchOrdersSpy).toHaveBeenCalledTimes(2));
+    const lastRequest = searchOrdersSpy.mock.calls[1]?.[0] as
+      | { ordered_by?: string; ordered_for?: string }
+      | undefined;
+    expect(lastRequest?.ordered_by).toBeUndefined();
+    expect(lastRequest?.ordered_for).toBe('bbrown');
   });
 });

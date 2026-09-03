@@ -310,6 +310,31 @@ describe('OrderProfileDetailModal', () => {
     expect(screen.getByText('Add-On X')).toBeDefined();
   });
 
+  test('indents every add-on under a terminal, not just the first', () => {
+    // Regression: only the first add-on following a terminal was getting the
+    // "sub-item" indentation class; subsequent add-ons for the same terminal
+    // rendered flush with the parent (no indentation).
+    const terminal = makeTerminal(1, 'Terminal A', 200, false, 'Model X');
+    const addOnOne = makeAddOn(2, 'Add-On One', 50, false, 'Model X');
+    const addOnTwo = makeAddOn(3, 'Add-On Two', 50, false, 'Model X');
+    const addOnThree = makeAddOn(4, 'Add-On Three', 50, false, 'Model X');
+    const profile = makeProfile([terminal, addOnOne, addOnTwo, addOnThree]);
+    render(
+      <OrderProfileDetailModal
+        profile={profile}
+        open={true}
+        onClose={jest.fn()}
+      />,
+    );
+
+    for (const name of ['Add-On One', 'Add-On Two', 'Add-On Three']) {
+      const row = screen.getByText(name).closest('tr');
+      expect(
+        row?.querySelector('.order-profile-modal__product-name-wrapper--sub'),
+      ).not.toBeNull();
+    }
+  });
+
   test('renders all rows when same add-on id appears under two different terminal models', () => {
     // Regression: composite key `${id}-${model}` in groupOrderProfileItems must
     // prevent deduplication of the same product id under distinct models.

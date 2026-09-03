@@ -49,6 +49,8 @@ import type {
 import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
   type TerminalProductOrderResponse,
+  type OrderSearchRequest,
+  type OrderSearchResponse,
   OrderStatusCategory,
 } from './models/TerminalProductOrder.js';
 import type { AutosuggestResponse } from './models/AutosuggestResult.js';
@@ -551,6 +553,14 @@ export class MarketplaceServerClient extends AbstractServerClient {
     process_instance_id: string;
   }): Promise<PlainObject<{ status_code: number; message: string }>> =>
     this.post(`${this.baseUrl}/v1/workflow/cancel/order`, cancelData);
+
+  private _searchOrders = (): string =>
+    `${this.baseUrl}/v1/workflow/search/orders`;
+
+  searchOrders = async (
+    searchRequest: OrderSearchRequest,
+  ): Promise<PlainObject<OrderSearchResponse>> =>
+    this.post(this._searchOrders(), searchRequest);
 
   // ------------------------------------------- Feedback -------------------------------------------
 
