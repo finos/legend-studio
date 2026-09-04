@@ -1,5 +1,22 @@
 # @finos/legend-application-query
 
+## 13.8.50
+
+### Patch Changes
+
+- [#5499](https://github.com/finos/legend-studio/pull/5499) [`b97a7c0`](https://github.com/finos/legend-studio/commit/b97a7c0d55a5811408b7d51711d621a3316bc16f) ([@jackp5150](https://github.com/jackp5150)) - Adds rendering support and info for using a fallback LakehouseRuntime if a runtime is not provided.
+
+- [#5494](https://github.com/finos/legend-studio/pull/5494) [`1fc7bd5`](https://github.com/finos/legend-studio/commit/1fc7bd5b7c3b598e6d6846debfd7a42bd8587a5c) ([@yash0024](https://github.com/yash0024)) - Rename user-facing "Data Product" strings to "Data Space" in the Data Space flows of Legend Query so the label matches the concept and no longer collides with the Lakehouse Data Product concept:
+
+  - Landing page action card label ("Create query from data space").
+  - Data Space query setup panel and the legacy Data Space query builder: header label, `title`/`placeholder` on the selector and copy-link button, "Open advanced search for data space..." tooltip, and the "does not have any execution contexts" error message.
+  - "About Data Space" info modal: title ("About Data Space"), "Open Data Space" button, and "Show Data Space Configuration" link.
+  - Query builder toolbar: the shared `about-dataspace` menu entry (whose label was ambiguous because it was enabled for both Data Space and Lakehouse Data Product query states) is split into two entries — `about-dataspace` labelled **"About Data Space"** (enabled for Data Space query states) and `about-dataproduct` labelled **"About Data Product"** (enabled for Lakehouse Data Product query states) — so the label always matches the current query context.
+
+  Tests updated to match the new labels.
+
+  The "Data Product" label on the mapping-provider row inside the info modal is intentionally unchanged — it genuinely refers to a Lakehouse Data Product element.
+
 ## 13.8.49
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @finos/legend-graph
 
+## 32.6.32
+
+### Patch Changes
+
+- [#5415](https://github.com/finos/legend-studio/pull/5415) [`da7767b`](https://github.com/finos/legend-studio/commit/da7767bfdd79297edc76de264a4660fa46ea58c7) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add secureViews support to ModelAccessPointGroup in DataProduct
+
+- [#5501](https://github.com/finos/legend-studio/pull/5501) [`667910b`](https://github.com/finos/legend-studio/commit/667910b8986c7acf4149b1da6dd929eecbce11b5) ([@ad-gs](https://github.com/ad-gs)) - Align the Snowflake `Compute` specification with the engine metamodel. Every property is optional and copied verbatim rather than coerced on load. Adds `generation`, `maxConcurrencyLevel`, `statementQueuedTimeoutInSeconds`, `statementTimeoutInSeconds` and the ADAPTIVE-only `maxQueryPerformanceLevel` / `queryThroughputMultiplier`; removes the retired `STANDARD_GEN_1` / `STANDARD_GEN_2` resource constraints, `autoResume` and `resourceMonitor`. `AppDirComputeOwner.production` becomes optional so a Compute can be saved before an AppDir ID is known. App-directory node conversion is shared with Data Product.
+
+- [#5505](https://github.com/finos/legend-studio/pull/5505) [`ab67d1b`](https://github.com/finos/legend-studio/commit/ab67d1b4ff5e197c6928c37b53fc6d599317fde3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add DataSpace operational metadata end-to-end support and align DataProduct/DataSpace operational metadata models around shared `OperationalMetadata` types across metamodel and V1 protocol transformations.
+
+- [#5499](https://github.com/finos/legend-studio/pull/5499) [`b97a7c0`](https://github.com/finos/legend-studio/commit/b97a7c0d55a5811408b7d51711d621a3316bc16f) ([@jackp5150](https://github.com/jackp5150)) - Adds rendering support and info for using a fallback LakehouseRuntime if a runtime is not provided.
+
 ## 32.6.31
 
 ### Patch Changes
