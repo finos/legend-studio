@@ -1,5 +1,16 @@
 # @finos/legend-server-marketplace
 
+## 0.2.8
+
+### Patch Changes
+
+- [#5507](https://github.com/finos/legend-studio/pull/5507) [`74fa8e9`](https://github.com/finos/legend-studio/commit/74fa8e9c0ea5c108101862e1ae7aa8bd5a3d4455) ([@eradityash](https://github.com/eradityash)) - Terminals and Add-Ons:
+
+  - Add advanced search for Terminals and Add-Ons orders.
+  - Fix Select button visibility in the terminal association modal
+  - Replace the "See All>" links on the Terminals & Add-Ons page with a "View more" pill button
+  - Fix the "Search within results" field on the Your Orders advanced search bar rendering with a search icon and floating label that were not readable/looked broken in dark mode
+
 ## 0.2.7
 
 ### Patch Changes

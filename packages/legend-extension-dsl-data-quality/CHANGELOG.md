@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.79
+
+### Patch Changes
+
+- [#5506](https://github.com/finos/legend-studio/pull/5506) [`635a4c7`](https://github.com/finos/legend-studio/commit/635a4c7c2e83feca23070999c30cd7d2cd8def2d) ([@sahil37](https://github.com/sahil37)) - feat: add persistence strategy to data quality relational comparison element
+
 ## 2.1.78
 
 ## 2.1.77

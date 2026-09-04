@@ -1,5 +1,15 @@
 # @finos/legend-data-cube
 
+## 0.3.119
+
+### Patch Changes
+
+- [#5442](https://github.com/finos/legend-studio/pull/5442) [`b60ed9f`](https://github.com/finos/legend-studio/commit/b60ed9f394c4daba89e45358d1f709e7b715108f) ([@gs-gunjan](https://github.com/gs-gunjan)) - Specify a date filter value in DataCube the way Legend Query does. A condition on a column which carries a date now picks how its value is specified: an absolute date, an absolute date and time, `today()` or `now()` - the last 2 being resolved when the query runs, and round-tripping through the snapshot.
+
+  An absolute value which carries a time of day is specified down to the second, through the same `datetime-local` control the query builder uses, rather than being truncated to a date.
+
+  This also fixes filtering on a column typed with a timestamp, which threw `Can't build primitive value instance for unsupported type` when the query was built.
+
 ## 0.3.118
 
 ## 0.3.117

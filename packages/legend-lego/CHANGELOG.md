@@ -1,5 +1,11 @@
 # @finos/legend-lego
 
+## 2.0.221
+
+### Patch Changes
+
+- [#5504](https://github.com/finos/legend-studio/pull/5504) [`18e2d85`](https://github.com/finos/legend-studio/commit/18e2d8516c5c5739250599495cc1ccb22c1aa240) ([@jackp5150](https://github.com/jackp5150)) - Adds a CollapseState to DataSpaceLayoutState which is accessible by each wiki section through the DataSpaceViewerState. This class manages the collapse state for each wiki section of the DataSpaceViewer.
+
 ## 2.0.220
 
 ## 2.0.219

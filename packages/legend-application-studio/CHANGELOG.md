@@ -1,5 +1,15 @@
 # @finos/legend-application-studio
 
+## 28.21.40
+
+### Patch Changes
+
+- [#5415](https://github.com/finos/legend-studio/pull/5415) [`da7767b`](https://github.com/finos/legend-studio/commit/da7767bfdd79297edc76de264a4660fa46ea58c7) ([@Vithesh-Reddy](https://github.com/Vithesh-Reddy)) - Add secureViews support to ModelAccessPointGroup in DataProduct
+
+- [#5501](https://github.com/finos/legend-studio/pull/5501) [`667910b`](https://github.com/finos/legend-studio/commit/667910b8986c7acf4149b1da6dd929eecbce11b5) ([@ad-gs](https://github.com/ad-gs)) - Add Compute graph-modifier setters: `appDirComputeOwner_*` for the owner, and one per modelled Snowflake specification property. Each accepts `undefined` so a property can be cleared through the same action that writes it. These land ahead of the form-mode editor that calls them.
+
+- [#5505](https://github.com/finos/legend-studio/pull/5505) [`ab67d1b`](https://github.com/finos/legend-studio/commit/ab67d1b4ff5e197c6928c37b53fc6d599317fde3) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add DataSpace operational metadata end-to-end support and align DataProduct/DataSpace operational metadata models around shared `OperationalMetadata` types across metamodel and V1 protocol transformations.
+
 ## 28.21.39
 
 ## 28.21.38

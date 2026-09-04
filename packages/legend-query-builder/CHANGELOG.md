@@ -1,5 +1,11 @@
 # @finos/legend-query-builder
 
+## 4.19.10
+
+### Patch Changes
+
+- [#5499](https://github.com/finos/legend-studio/pull/5499) [`b97a7c0`](https://github.com/finos/legend-studio/commit/b97a7c0d55a5811408b7d51711d621a3316bc16f) ([@jackp5150](https://github.com/jackp5150)) - Add render and functionality support for embedded ExecutionContextState and swapping between embedded and external states
+
 ## 4.19.9
 
 ### Patch Changes
