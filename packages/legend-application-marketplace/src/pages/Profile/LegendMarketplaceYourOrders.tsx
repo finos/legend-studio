@@ -70,6 +70,7 @@ import {
   getCurrentStageTrackingUrl,
   getClosureInfo,
   getOrderSearchStatusLabel,
+  isLastDaysSearchDefaulted,
   ORDER_SEARCH_PAGE_SIZE_OPTIONS,
 } from '../../stores/orders/OrderHelpers.js';
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
@@ -319,9 +320,9 @@ const OrderAccordion: React.FC<{
               <Box className="legend-marketplace-order-accordion__summary-actions">
                 <Tooltip
                   title={
-                    !trackingUrl
-                      ? 'Tracking link is not yet available for this order'
-                      : ''
+                    trackingUrl
+                      ? ''
+                      : 'Tracking link is not yet available for this order'
                   }
                   arrow={true}
                 >
@@ -351,9 +352,9 @@ const OrderAccordion: React.FC<{
                 </Tooltip>
                 <Tooltip
                   title={
-                    !isCancellable
-                      ? 'Order cancellation is not available once the order has reached the fulfillment stage'
-                      : ''
+                    isCancellable
+                      ? ''
+                      : 'Order cancellation is not available once the order has reached the fulfillment stage'
                   }
                   arrow={true}
                 >
@@ -624,7 +625,7 @@ export const LegendMarketplaceYourOrders: React.FC =
             Boolean(filters.orderedBy?.id.trim()),
             Boolean(filters.orderedFor?.id.trim()),
             filters.status,
-            filters.lastDays === undefined,
+            isLastDaysSearchDefaulted(filters.lastDays),
           );
           executeFlowSafely(() => ordersStore.searchOrders(filters));
           setSearchTerm('');
@@ -711,36 +712,167 @@ export const LegendMarketplaceYourOrders: React.FC =
         ],
       );
 
-      const handlePreviousSearchPage = useCallback(() => {
-        const offset = Math.max(
-          0,
-          ordersStore.searchOffset - ordersStore.searchPageSize,
-        );
-        LegendMarketplaceTelemetryHelper.logEvent_PaginateAdvancedOrderSearch(
+      const handlePaginateSearch = useCallback(
+        (direction: 'previous' | 'next') => {
+          const delta =
+            direction === 'previous'
+              ? -ordersStore.searchPageSize
+              : ordersStore.searchPageSize;
+          const offset = Math.max(0, ordersStore.searchOffset + delta);
+          LegendMarketplaceTelemetryHelper.logEvent_PaginateAdvancedOrderSearch(
+            baseStore.applicationStore.telemetryService,
+            offset,
+            ordersStore.searchPageSize,
+          );
+          executeFlowSafely(() => ordersStore.goToSearchOffset(offset));
+        },
+        [
           baseStore.applicationStore.telemetryService,
-          offset,
-          ordersStore.searchPageSize,
-        );
-        executeFlowSafely(() => ordersStore.goToSearchOffset(offset));
-      }, [
-        baseStore.applicationStore.telemetryService,
-        executeFlowSafely,
-        ordersStore,
-      ]);
+          executeFlowSafely,
+          ordersStore,
+        ],
+      );
 
-      const handleNextSearchPage = useCallback(() => {
-        const offset = ordersStore.searchOffset + ordersStore.searchPageSize;
-        LegendMarketplaceTelemetryHelper.logEvent_PaginateAdvancedOrderSearch(
-          baseStore.applicationStore.telemetryService,
-          offset,
-          ordersStore.searchPageSize,
+      let ordersSectionContent: React.ReactNode;
+      if (isLoading) {
+        ordersSectionContent = (
+          <Box className="legend-marketplace-your-orders__loading">
+            <CircularProgress size={40} />
+            <Typography className="legend-marketplace-your-orders__loading-text">
+              Loading your orders...
+            </Typography>
+          </Box>
         );
-        executeFlowSafely(() => ordersStore.goToSearchOffset(offset));
-      }, [
-        baseStore.applicationStore.telemetryService,
-        executeFlowSafely,
-        ordersStore,
-      ]);
+      } else if (filteredOrders.length === 0) {
+        ordersSectionContent = (
+          <Box className="legend-marketplace-your-orders__empty">
+            <ShoppingCartIcon
+              size={48}
+              className="legend-marketplace-your-orders__empty-icon"
+            />
+            <Typography
+              variant="h3"
+              className="legend-marketplace-your-orders__empty-title"
+            >
+              {getEmptyOrdersTitle(
+                Boolean(searchTerm.trim()),
+                ordersStore.selectedTab,
+                isAdvancedSearchActive,
+              )}
+            </Typography>
+            <Typography className="legend-marketplace-your-orders__empty-description">
+              {getEmptyOrdersDescription(
+                Boolean(searchTerm.trim()),
+                ordersStore.selectedTab,
+                isAdvancedSearchActive,
+              )}
+            </Typography>
+          </Box>
+        );
+      } else {
+        ordersSectionContent = (
+          <>
+            {filteredOrders.length > 1 && (
+              <Box className="legend-marketplace-your-orders__expand-controls">
+                <ButtonGroup
+                  size="small"
+                  aria-label="Expand or collapse all orders"
+                  className="legend-marketplace-your-orders__expand-controls__group"
+                >
+                  <Button
+                    onClick={handleCollapseAllOrders}
+                    aria-label="Collapse all"
+                  >
+                    Collapse All
+                  </Button>
+                  <Button
+                    onClick={handleExpandAllOrders}
+                    aria-label="Expand all"
+                  >
+                    Expand All
+                  </Button>
+                </ButtonGroup>
+              </Box>
+            )}
+            <Stack
+              spacing={2}
+              className="legend-marketplace-your-orders__orders-list"
+            >
+              {filteredOrders.map((order) => {
+                const isOpenOrder =
+                  order.workflow_details?.workflow_status ===
+                    OrderStatus.IN_PROGRESS ||
+                  order.workflow_details?.workflow_status === OrderStatus.OPEN;
+                return (
+                  <OrderAccordion
+                    key={order.order_id}
+                    order={order}
+                    isOpenOrder={isOpenOrder}
+                    isExpanded={!collapsedOrderIds.has(order.order_id)}
+                    onToggleExpanded={handleToggleOrder}
+                  />
+                );
+              })}
+            </Stack>
+            {isAdvancedSearchActive && appliedSearchFilters && (
+              <Box className="legend-marketplace-your-orders__search-pagination">
+                <Box className="legend-marketplace-your-orders__search-pagination-size">
+                  <Typography variant="body2">Orders per page:</Typography>
+                  <Select
+                    value={ordersStore.searchPageSize}
+                    onChange={handleSearchPageSizeChange}
+                    size="small"
+                    disabled={ordersStore.searchOrdersState.isInProgress}
+                  >
+                    {ORDER_SEARCH_PAGE_SIZE_OPTIONS.map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+                <Typography
+                  variant="body2"
+                  className="legend-marketplace-your-orders__search-pagination-info"
+                >
+                  Page <strong>{ordersStore.searchCurrentPage}</strong> of{' '}
+                  <strong>
+                    {ordersStore.hasNextSearchPage
+                      ? `${ordersStore.searchCurrentPage + 1}+`
+                      : ordersStore.searchCurrentPage}
+                  </strong>
+                </Typography>
+                <Box className="legend-marketplace-your-orders__search-pagination-controls">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={
+                      !ordersStore.hasPreviousSearchPage ||
+                      ordersStore.searchOrdersState.isInProgress
+                    }
+                    onClick={() => handlePaginateSearch('previous')}
+                    className="legend-marketplace-your-orders__search-pagination-btn"
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    disabled={
+                      !ordersStore.hasNextSearchPage ||
+                      ordersStore.searchOrdersState.isInProgress
+                    }
+                    onClick={() => handlePaginateSearch('next')}
+                    className="legend-marketplace-your-orders__search-pagination-btn"
+                  >
+                    Next
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </>
+        );
+      }
 
       return (
         <LegendMarketplacePage className="legend-marketplace-your-orders">
@@ -813,9 +945,7 @@ export const LegendMarketplaceYourOrders: React.FC =
                     input: {
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton size="small" aria-label="Search">
-                            <SearchIcon className="legend-marketplace-your-orders__search-icon" />
-                          </IconButton>
+                          <SearchIcon className="legend-marketplace-your-orders__search-icon" />
                           {searchTerm && (
                             <IconButton
                               size="small"
@@ -855,7 +985,7 @@ export const LegendMarketplaceYourOrders: React.FC =
                     input: {
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon />
+                          <SearchIcon className="legend-marketplace-your-orders__search-icon" />
                         </InputAdornment>
                       ),
                       endAdornment: searchTerm && (
@@ -908,139 +1038,7 @@ export const LegendMarketplaceYourOrders: React.FC =
                 </Tabs>
               </Box>
             )}
-            {isLoading ? (
-              <Box className="legend-marketplace-your-orders__loading">
-                <CircularProgress size={40} />
-                <Typography className="legend-marketplace-your-orders__loading-text">
-                  Loading your orders...
-                </Typography>
-              </Box>
-            ) : filteredOrders.length === 0 ? (
-              <Box className="legend-marketplace-your-orders__empty">
-                <ShoppingCartIcon
-                  size={48}
-                  className="legend-marketplace-your-orders__empty-icon"
-                />
-                <Typography
-                  variant="h3"
-                  className="legend-marketplace-your-orders__empty-title"
-                >
-                  {getEmptyOrdersTitle(
-                    Boolean(searchTerm.trim()),
-                    ordersStore.selectedTab,
-                    isAdvancedSearchActive,
-                  )}
-                </Typography>
-                <Typography className="legend-marketplace-your-orders__empty-description">
-                  {getEmptyOrdersDescription(
-                    Boolean(searchTerm.trim()),
-                    ordersStore.selectedTab,
-                    isAdvancedSearchActive,
-                  )}
-                </Typography>
-              </Box>
-            ) : (
-              <>
-                {filteredOrders.length > 1 && (
-                  <Box className="legend-marketplace-your-orders__expand-controls">
-                    <ButtonGroup
-                      size="small"
-                      aria-label="Expand or collapse all orders"
-                      className="legend-marketplace-your-orders__expand-controls__group"
-                    >
-                      <Button
-                        onClick={handleCollapseAllOrders}
-                        aria-label="Collapse all"
-                      >
-                        Collapse All
-                      </Button>
-                      <Button
-                        onClick={handleExpandAllOrders}
-                        aria-label="Expand all"
-                      >
-                        Expand All
-                      </Button>
-                    </ButtonGroup>
-                  </Box>
-                )}
-                <Stack
-                  spacing={2}
-                  className="legend-marketplace-your-orders__orders-list"
-                >
-                  {filteredOrders.map((order) => {
-                    const isOpenOrder =
-                      order.workflow_details?.workflow_status ===
-                        OrderStatus.IN_PROGRESS ||
-                      order.workflow_details?.workflow_status ===
-                        OrderStatus.OPEN;
-                    return (
-                      <OrderAccordion
-                        key={order.order_id}
-                        order={order}
-                        isOpenOrder={isOpenOrder}
-                        isExpanded={!collapsedOrderIds.has(order.order_id)}
-                        onToggleExpanded={handleToggleOrder}
-                      />
-                    );
-                  })}
-                </Stack>
-                {isAdvancedSearchActive && appliedSearchFilters && (
-                  <Box className="legend-marketplace-your-orders__search-pagination">
-                    <Box className="legend-marketplace-your-orders__search-pagination-size">
-                      <Typography variant="body2">Orders per page:</Typography>
-                      <Select
-                        value={ordersStore.searchPageSize}
-                        onChange={handleSearchPageSizeChange}
-                        size="small"
-                        disabled={ordersStore.searchOrdersState.isInProgress}
-                      >
-                        {ORDER_SEARCH_PAGE_SIZE_OPTIONS.map((option) => (
-                          <MenuItem key={option} value={option}>
-                            {option}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </Box>
-                    <Typography
-                      variant="body2"
-                      className="legend-marketplace-your-orders__search-pagination-info"
-                    >
-                      Showing <strong>{ordersStore.searchOffset + 1}</strong> to{' '}
-                      <strong>
-                        {ordersStore.searchOffset +
-                          ordersStore.searchResults.length}
-                      </strong>
-                    </Typography>
-                    <Box className="legend-marketplace-your-orders__search-pagination-controls">
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        disabled={
-                          !ordersStore.hasPreviousSearchPage ||
-                          ordersStore.searchOrdersState.isInProgress
-                        }
-                        onClick={handlePreviousSearchPage}
-                        className="legend-marketplace-your-orders__search-pagination-btn"
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        disabled={
-                          !ordersStore.hasNextSearchPage ||
-                          ordersStore.searchOrdersState.isInProgress
-                        }
-                        onClick={handleNextSearchPage}
-                        className="legend-marketplace-your-orders__search-pagination-btn"
-                      >
-                        Next
-                      </Button>
-                    </Box>
-                  </Box>
-                )}
-              </>
-            )}
+            {ordersSectionContent}
           </Box>
         </LegendMarketplacePage>
       );

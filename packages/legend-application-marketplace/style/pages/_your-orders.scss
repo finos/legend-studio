@@ -802,7 +802,7 @@
     flex-direction: column;
     gap: 1rem;
     padding: 1.5rem;
-    width: 320px;
+    width: 20rem;
     background-color: var(--color-white);
   }
 
@@ -829,10 +829,6 @@
   &__status-menu {
     .MuiMenuItem-root {
       font-size: 1.5rem;
-
-      &:not(:first-of-type) {
-        font-size: calc(1.5rem - 0.5px);
-      }
     }
 
     .MuiListSubheader-root {

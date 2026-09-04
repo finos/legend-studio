@@ -696,10 +696,6 @@
     &__status-menu {
       .MuiMenuItem-root {
         font-size: 1.5rem !important;
-
-        &:not(:first-of-type) {
-          font-size: calc(1.5rem - 0.5px) !important;
-        }
       }
 
       .MuiListSubheader-root {

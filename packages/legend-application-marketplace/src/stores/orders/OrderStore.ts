@@ -42,6 +42,7 @@ import {
 } from '@finos/legend-server-marketplace';
 import {
   getUserDisplayLabel,
+  isLastDaysSearchDefaulted,
   ORDER_SEARCH_DEFAULT_LAST_DAYS,
   ORDER_SEARCH_DEFAULT_LIMIT,
 } from './OrderHelpers.js';
@@ -87,6 +88,12 @@ export class OrdersStore {
   selectedTab: OrderTab = OrderTab.OPEN;
 
   searchResults: TerminalProductOrder[] = [];
+  // Mirrors `OrderSearchResponse.total_count` (see note above): only reflects
+  // the current page's count, not the true match total across all pages, so
+  // it's intentionally not surfaced as an "of N results" total in the UI
+  // (which instead derives its "Page X of N" text from `searchCurrentPage`/
+  // `hasNextSearchPage`). Kept for API-response parity and in case the
+  // backend semantics change.
   searchTotalCount = 0;
   appliedSearchFilters: AppliedOrderSearchFilters | undefined = undefined;
   readonly searchOrdersState = ActionState.create();
@@ -122,6 +129,7 @@ export class OrdersStore {
       isAdvancedSearchActive: computed,
       hasPreviousSearchPage: computed,
       hasNextSearchPage: computed,
+      searchCurrentPage: computed,
     });
     this.baseStore = baseStore;
   }
@@ -149,6 +157,11 @@ export class OrdersStore {
       this.searchResults.length > 0 &&
       this.searchResults.length === this.searchPageSize
     );
+  }
+
+  /** 1-based page number implied by the current offset/page-size, for the "Page X of N" pagination label. */
+  get searchCurrentPage(): number {
+    return Math.floor(this.searchOffset / this.searchPageSize) + 1;
   }
 
   get currentOrders(): TerminalProductOrder[] {
@@ -233,7 +246,10 @@ export class OrdersStore {
 
   *refreshCurrentOrders(): GeneratorFn<void> {
     // Refresh both open and closed orders since cancelled orders move from open to closed
-    yield Promise.all([this.fetchOpenOrders(), this.fetchClosedOrders()]);
+    yield Promise.all([
+      flowResult(this.fetchOpenOrders()),
+      flowResult(this.fetchClosedOrders()),
+    ]);
   }
 
   *cancelOrder(
@@ -321,7 +337,7 @@ export class OrdersStore {
         orderedForLabel: getUserDisplayLabel(filters.orderedFor),
         status: filters.status,
         lastDays,
-        isLastDaysDefaulted: filters.lastDays === undefined,
+        isLastDaysDefaulted: isLastDaysSearchDefaulted(filters.lastDays),
       };
       this.searchOrdersState.complete();
     } catch (error) {

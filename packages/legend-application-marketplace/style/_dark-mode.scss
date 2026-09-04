@@ -293,8 +293,13 @@
     &__search-field {
       .MuiInputLabel-root {
         color: var(--color-dark-theme-text-secondary);
-        background-color: var(--color-dark-theme-bg-primary);
 
+        // Only mask the notched outline border with the page background
+        // once the label has shrunk onto the border line; painting this
+        // background unconditionally (including the resting/un-shrunk
+        // state, where the label sits inside the field as a placeholder)
+        // produced a visible rectangle slightly darker than the
+        // surrounding page background behind the label text.
         &.MuiInputLabel-shrink {
           background-color: var(--color-dark-theme-bg-primary);
         }
@@ -414,10 +419,6 @@
     &__status-menu {
       .MuiMenuItem-root {
         font-size: 1.5rem !important;
-
-        &:not(:first-of-type) {
-          font-size: calc(1.5rem - 0.5px) !important;
-        }
       }
 
       .MuiListSubheader-root {

@@ -532,3 +532,14 @@ export const parseLastDaysInput = (rawValue: string): number | undefined => {
   }
   return parsed;
 };
+
+/**
+ * Whether a "Show Last (Days)" value submitted from the advanced search form
+ * falls back to `ORDER_SEARCH_DEFAULT_LAST_DAYS` (i.e. the field was left
+ * blank). Shared by `OrdersStore.searchOrders` (to compute the actual
+ * `last_days` sent to the backend) and the search-summary UI (to decide
+ * whether to render a "defaulted" notice), so the two can't drift apart.
+ */
+export const isLastDaysSearchDefaulted = (
+  lastDays: number | undefined,
+): boolean => lastDays === undefined;

@@ -29,6 +29,7 @@ import {
   type TerminalProductOrderResponse,
   type WorkflowDetails,
   OrderCategory,
+  OrderSearchStatus,
   OrderStatus,
   OrderStatusCategory,
 } from '@finos/legend-server-marketplace';
@@ -546,7 +547,7 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
     ).mockResolvedValue({
       orders: [makeReutersOrder()],
       total_count: 1,
-      status_filter: 'ALL',
+      status_filter: OrderSearchStatus.ALL,
       limit: 100,
       offset: 0,
     });
@@ -584,7 +585,7 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
     ).mockResolvedValue({
       orders: [makeReutersOrder()],
       total_count: 1,
-      status_filter: 'ALL',
+      status_filter: OrderSearchStatus.ALL,
       limit: 100,
       offset: 0,
     });
@@ -622,7 +623,7 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
     ).mockResolvedValue({
       orders: [makeReutersOrder()],
       total_count: 1,
-      status_filter: 'ALL',
+      status_filter: OrderSearchStatus.ALL,
       limit: 100,
       offset: 0,
     });
@@ -747,7 +748,7 @@ describe('LegendMarketplaceYourOrders - advanced search pagination', () => {
     ).mockResolvedValue({
       orders,
       total_count: orders.length,
-      status_filter: 'ALL',
+      status_filter: OrderSearchStatus.ALL,
       limit,
       offset: 0,
     });
@@ -787,7 +788,7 @@ describe('LegendMarketplaceYourOrders - advanced search pagination', () => {
     searchOrdersSpy.mockResolvedValue({
       orders: [makeReutersOrder({ order_id: 'ORD-page-2' })],
       total_count: 1,
-      status_filter: 'ALL',
+      status_filter: OrderSearchStatus.ALL,
       limit: 100,
       offset: 100,
     });

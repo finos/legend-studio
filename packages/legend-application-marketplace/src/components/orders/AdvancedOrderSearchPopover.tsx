@@ -34,6 +34,7 @@ import { OrderSearchStatus } from '@finos/legend-server-marketplace';
 import {
   getOrderSearchStatusLabel,
   parseLastDaysInput,
+  ORDER_SEARCH_DEFAULT_LAST_DAYS,
   ORDER_SEARCH_MAX_LAST_DAYS,
   ORDER_SEARCH_MIN_LAST_DAYS,
 } from '../../stores/orders/OrderHelpers.js';
@@ -96,7 +97,7 @@ export const AdvancedOrderSearchPopover = (
   const handleStatusChange = (
     event: SelectChangeEvent<OrderSearchStatus>,
   ): void => {
-    setStatus(event.target.value as OrderSearchStatus);
+    setStatus(event.target.value);
   };
 
   const handleSearch = (): void => {
@@ -201,7 +202,7 @@ export const AdvancedOrderSearchPopover = (
         <TextField
           className="advanced-order-search-popover__field"
           label="Show Last (Days)"
-          placeholder={`Default ${ORDER_SEARCH_MAX_LAST_DAYS}`}
+          placeholder={`Default ${ORDER_SEARCH_DEFAULT_LAST_DAYS}`}
           size="small"
           fullWidth={true}
           variant="outlined"
