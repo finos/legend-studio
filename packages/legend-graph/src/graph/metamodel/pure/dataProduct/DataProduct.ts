@@ -45,6 +45,7 @@ import { generateFunctionPrettyName } from '../../../helpers/PureLanguageHelper.
 import type { StereotypeReference } from '../packageableElements/domain/StereotypeReference.js';
 import type { AppDirNode } from '../packageableElements/ingest/IngestDefinition.js';
 import type { RelationType } from '../packageableElements/relation/RelationType.js';
+import type { OperationalMetadata } from './OperationalMetadata.js';
 
 export abstract class AccessPoint implements Hashable {
   id: string;
@@ -384,23 +385,6 @@ export class SupportInfo implements Hashable {
   }
 }
 
-export enum DataProduct_DeliveryFrequency {
-  DAILY = 'DAILY',
-  WEEKLY = 'WEEKLY',
-  MONTHLY = 'MONTHLY',
-  QUARTERLY = 'QUARTERLY',
-  YEARLY = 'YEARLY',
-  ON_DEMAND = 'ON_DEMAND',
-  INTRA_DAY = 'INTRADAY',
-}
-
-export enum DataProduct_Region {
-  APAC = 'APAC',
-  EMEA = 'EMEA',
-  LAMR = 'LAMR',
-  NAMR = 'NAMR',
-}
-
 export abstract class DataProductIcon implements Hashable {
   abstract get hashCode(): string;
 }
@@ -496,19 +480,6 @@ export class Expertise implements Hashable {
   }
 }
 
-export class DataProductOperationalMetadata implements Hashable {
-  coverageRegions: DataProduct_Region[] | undefined;
-  updateFrequency: DataProduct_DeliveryFrequency | undefined;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.DATA_PRODUCT_OPERATIONAL_METADATA,
-      hashArray(this.coverageRegions ?? []),
-      this.updateFrequency ?? '',
-    ]);
-  }
-}
-
 // ---------------------------------------- Owner -----------------------------------------
 
 export abstract class DataProductOwner implements Hashable {
@@ -537,7 +508,7 @@ export class DataProduct extends PackageableElement implements Testable {
   supportInfo: SupportInfo | undefined;
   type: DataProductType | undefined;
   sampleValues: EmbeddedData[] | undefined;
-  operationalMetadata: DataProductOperationalMetadata | undefined;
+  operationalMetadata: OperationalMetadata | undefined;
   owner: DataProductOwner | undefined;
   tests: DataProductTestSuite[] = [];
 

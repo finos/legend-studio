@@ -24,13 +24,10 @@ import {
   type DataProductElement,
   type DataProductIcon,
   AccessPointGroup,
-  type DataProduct_DeliveryFrequency,
-  type DataProduct_Region,
   DataProductElementScope,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   DataProductLink,
-  DataProductOperationalMetadata,
   Expertise,
   FunctionAccessPoint,
   LakehouseAccessPoint,
@@ -48,6 +45,11 @@ import {
   SecureView,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildAppDirNode } from './V1_AppDirNodeBuilderHelper.js';
+import {
+  type DeliveryFrequency,
+  OperationalMetadata,
+  type Region,
+} from '../../../../../../../../graph/metamodel/pure/dataProduct/OperationalMetadata.js';
 import {
   type V1_AccessPoint,
   type V1_AccessPointGroup,
@@ -174,14 +176,12 @@ export const V1_buildDataProductExpertise = (
 
 export const V1_buildDataProductOperationalMetadata = (
   operationalMetadata: V1_DataProductOperationalMetadata,
-): DataProductOperationalMetadata => {
-  const metamodelOperationalMetadata = new DataProductOperationalMetadata();
+): OperationalMetadata => {
+  const metamodelOperationalMetadata = new OperationalMetadata();
   metamodelOperationalMetadata.updateFrequency =
-    operationalMetadata.updateFrequency as
-      | DataProduct_DeliveryFrequency
-      | undefined;
+    operationalMetadata.updateFrequency as DeliveryFrequency | undefined;
   metamodelOperationalMetadata.coverageRegions =
-    operationalMetadata.coverageRegions as DataProduct_Region[] | undefined;
+    operationalMetadata.coverageRegions as Region[] | undefined;
   return metamodelOperationalMetadata;
 };
 

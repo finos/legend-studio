@@ -419,7 +419,7 @@ export class V1_DataProductOperationalMetadata implements Hashable {
 
   get hashCode(): string {
     return hashArray([
-      CORE_HASH_STRUCTURE.DATA_PRODUCT_OPERATIONAL_METADATA,
+      CORE_HASH_STRUCTURE.OPERATIONAL_METADATA,
       hashArray(this.coverageRegions ?? []),
       this.updateFrequency ?? '',
     ]);

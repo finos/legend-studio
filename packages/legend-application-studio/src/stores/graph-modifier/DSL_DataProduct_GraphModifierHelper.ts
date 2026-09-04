@@ -38,9 +38,9 @@ import {
   observe_Expertise,
   type Expertise,
   observe_OperationalMetadata,
-  DataProductOperationalMetadata,
-  type DataProduct_DeliveryFrequency,
-  type DataProduct_Region,
+  OperationalMetadata,
+  type DeliveryFrequency,
+  type Region,
   type DataProductOwner,
   type AppDirOwner,
   type AppDirNode,
@@ -332,7 +332,7 @@ export const dataProduct_setOperationalMetadataIfAbsent = action(
   (product: DataProduct) => {
     if (!product.operationalMetadata) {
       product.operationalMetadata = observe_OperationalMetadata(
-        new DataProductOperationalMetadata(),
+        new OperationalMetadata(),
       );
     }
   },
@@ -340,18 +340,15 @@ export const dataProduct_setOperationalMetadataIfAbsent = action(
 
 export const operationalMetadata_setUpdateFrequency = action(
   (
-    operationalMetadata: DataProductOperationalMetadata,
-    updateFrequency: DataProduct_DeliveryFrequency,
+    operationalMetadata: OperationalMetadata,
+    updateFrequency: DeliveryFrequency,
   ) => {
     operationalMetadata.updateFrequency = updateFrequency;
   },
 );
 
 export const operationalMetadata_addCoverageRegion = action(
-  (
-    operationalMetadata: DataProductOperationalMetadata,
-    region: DataProduct_Region,
-  ) => {
+  (operationalMetadata: OperationalMetadata, region: Region) => {
     if (!operationalMetadata.coverageRegions) {
       operationalMetadata.coverageRegions = [region];
     } else {
@@ -361,10 +358,7 @@ export const operationalMetadata_addCoverageRegion = action(
 );
 
 export const operationalMetadata_deleteCoverageRegion = action(
-  (
-    operationalMetadata: DataProductOperationalMetadata,
-    region: DataProduct_Region,
-  ) => {
+  (operationalMetadata: OperationalMetadata, region: Region) => {
     if (operationalMetadata.coverageRegions) {
       deleteEntry(operationalMetadata.coverageRegions, region);
     }

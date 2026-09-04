@@ -211,6 +211,7 @@ export {
   V1_DataProduct,
   V1_DataProductRegion,
   V1_DeliveryFrequency,
+  V1_DataProductOperationalMetadata,
   V1_DataProductDiagram,
   V1_ModelAccessPointGroup,
   V1_SecureView,
@@ -780,6 +781,11 @@ export * from './graph-manager/action/changeDetection/AvailabilityObserveHelper.
 
 // ------------------------------------- Data Product --------------------------------------------
 export {
+  DeliveryFrequency,
+  OperationalMetadata,
+  Region,
+} from './graph/metamodel/pure/dataProduct/OperationalMetadata.js';
+export {
   AccessPoint,
   AccessPointGroup,
   DataProduct,
@@ -787,8 +793,6 @@ export {
   DataProductIcon,
   DataProductLibraryIcon,
   DataProductLink,
-  DataProduct_DeliveryFrequency,
-  DataProduct_Region,
   Email,
   FunctionAccessPoint,
   LakehouseAccessPoint,
@@ -811,7 +815,6 @@ export {
   NativeModelAccess,
   NativeModelExecutionContext,
   DataProductAccessType,
-  DataProductOperationalMetadata,
   DataProductOwner,
   AppDirOwner,
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';

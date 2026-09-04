@@ -26,6 +26,7 @@ import {
   type Package,
   type RawLambda,
   type DataElementReference,
+  type OperationalMetadata,
   PackageableElement,
   ConcreteFunctionDefinition,
   generateFunctionPrettyName,
@@ -209,6 +210,7 @@ export class DataSpace extends PackageableElement implements Hashable {
   executables?: DataSpaceExecutable[] | undefined;
   diagrams?: DataSpaceDiagram[] | undefined;
   supportInfo?: DataSpaceSupportInfo | undefined;
+  operationalMetadata?: OperationalMetadata | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -225,6 +227,7 @@ export class DataSpace extends PackageableElement implements Hashable {
       hashArray(this.executables ?? []),
       hashArray(this.diagrams ?? []),
       this.supportInfo ?? '',
+      this.operationalMetadata ?? '',
     ]);
   }
 

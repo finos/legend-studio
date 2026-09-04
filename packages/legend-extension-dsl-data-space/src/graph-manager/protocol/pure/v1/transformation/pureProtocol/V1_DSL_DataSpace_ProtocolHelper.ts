@@ -32,12 +32,15 @@ import {
   V1_PackageableElementPointer,
   V1_rawLambdaModelSchema,
   V1_dataElementReferenceModelSchema,
+  V1_DataProductOperationalMetadata,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
+  optionalCustom,
+  optionalCustomList,
   optionalCustomListWithSchema,
   customListWithSchema,
   isString,
@@ -218,6 +221,20 @@ const V1_dataSpaceDiagramModelSchema = createModelSchema(V1_DataSpaceDiagram, {
   title: primitive(),
 });
 
+const V1_dataSpaceOperationalMetadataModelSchema = createModelSchema(
+  V1_DataProductOperationalMetadata,
+  {
+    coverageRegions: optionalCustomList(
+      (val) => (val as string).toLowerCase(),
+      (val) => (val as unknown as string).toUpperCase(),
+    ),
+    updateFrequency: optionalCustom(
+      (val) => (val as string).toLowerCase(),
+      (val) => (val as string).toUpperCase(),
+    ),
+  },
+);
+
 const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
   _type: usingConstantValueSchema(V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE),
   defaultExecutionContext: optional(primitive()),
@@ -237,6 +254,9 @@ const V1_dataSpaceModelSchema = createModelSchema(V1_DataSpace, {
     V1_packageableElementPointerModelSchema,
   ),
   name: primitive(),
+  operationalMetadata: optional(
+    usingModelSchema(V1_dataSpaceOperationalMetadataModelSchema),
+  ),
   package: primitive(),
   stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
     INTERNAL__forceReturnEmptyInTest: true,
