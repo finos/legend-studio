@@ -303,5 +303,11 @@ export function V1_transformDataQualityRelationComparisonConfiguration(
   protocol.columnsToCompare = metamodel.columnsToCompare;
   protocol.strategy = V1_transformReconStrategy(metamodel.strategy);
   protocol.expectedMatch = metamodel.expectedMatch;
+  protocol.persistenceStrategy = metamodel.persistenceStrategy
+    ? V1_transformDataQualityPersistenceStrategy(
+        metamodel.persistenceStrategy,
+        context,
+      )
+    : undefined;
   return protocol;
 }

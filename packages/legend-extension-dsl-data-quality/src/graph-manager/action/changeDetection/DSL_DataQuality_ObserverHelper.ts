@@ -253,6 +253,7 @@ export const observe_DataQualityRelationComparisonConfiguration =
   skipObservedWithContext(
     (
       metamodel: DataQualityRelationComparisonConfiguration,
+      context: ObserverContext,
     ): DataQualityRelationComparisonConfiguration => {
       observe_Abstract_PackageableElement(metamodel);
       makeObservable<
@@ -266,10 +267,17 @@ export const observe_DataQualityRelationComparisonConfiguration =
         columnsToCompare: observable,
         strategy: observable,
         expectedMatch: observable,
+        persistenceStrategy: observable,
       });
       observe_DataQualityRelationQueryLambda(metamodel.source);
       observe_DataQualityRelationQueryLambda(metamodel.target);
       observe_ReconStrategy(metamodel.strategy);
+      if (metamodel.persistenceStrategy) {
+        observe_DataQualityPersistenceStrategy(
+          metamodel.persistenceStrategy,
+          context,
+        );
+      }
       return metamodel;
     },
   );

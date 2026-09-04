@@ -315,6 +315,10 @@ const V1_dataQualityRelationComparisonModelSchema = (
       (val) => (val ? V1_deserializeReconStrategy(val) : SKIP),
     ),
     expectedMatch: optional(primitive()),
+    persistenceStrategy: optionalCustom(
+      (val) => V1_serializeDataQualityPersistenceStrategy(val, plugins),
+      (val) => V1_deserializeDataQualityPersistenceStrategy(val, plugins),
+    ),
   });
 
 export const V1_serializeDataQualityRelationComparison = (

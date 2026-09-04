@@ -243,6 +243,7 @@ export class DataQualityRelationComparisonConfiguration
   columnsToCompare: string[] = [];
   strategy!: ReconStrategy;
   expectedMatch?: number | undefined;
+  persistenceStrategy?: DataQualityPersistenceStrategy | undefined;
 
   protected override get _elementHashCode(): string {
     return hashArray([
@@ -253,6 +254,7 @@ export class DataQualityRelationComparisonConfiguration
       hashArray(this.columnsToCompare),
       this.expectedMatch ?? '',
       this.strategy,
+      this.persistenceStrategy ?? '',
     ]);
   }
 

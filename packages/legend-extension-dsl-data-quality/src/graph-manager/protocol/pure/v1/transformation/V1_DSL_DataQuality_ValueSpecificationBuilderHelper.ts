@@ -424,4 +424,10 @@ export function V1_buildDataQualityRelationComparisonConfiguration(
     );
   }
   element.expectedMatch = elementProtocol.expectedMatch;
+  element.persistenceStrategy = elementProtocol.persistenceStrategy
+    ? V1_buildDataQualityPersistenceStrategy(
+        elementProtocol.persistenceStrategy,
+        context,
+      )
+    : undefined;
 }
