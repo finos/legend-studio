@@ -228,6 +228,19 @@ export const dataQualityRelationValidationConfig_setPersistenceStrategy =
     },
   );
 
+export const dataQualityRelationComparisonConfig_setPersistenceStrategy =
+  action(
+    (
+      element: DataQualityRelationComparisonConfiguration,
+      val: DataQualityPersistenceStrategy | undefined,
+      observerContext: ObserverContext,
+    ): void => {
+      element.persistenceStrategy = val
+        ? observe_DataQualityPersistenceStrategy(val, observerContext)
+        : undefined;
+    },
+  );
+
 export const dataQualityRelationComparison_setSource = action(
   (
     element: DataQualityRelationComparisonConfiguration,

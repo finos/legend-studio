@@ -201,6 +201,7 @@ export class V1_DataQualityRelationComparisonConfiguration
   columnsToCompare: string[] = [];
   strategy!: V1_ReconStrategy;
   expectedMatch?: number | undefined;
+  persistenceStrategy?: V1_DataQualityPersistenceStrategy | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -211,6 +212,7 @@ export class V1_DataQualityRelationComparisonConfiguration
       hashArray(this.columnsToCompare),
       String(this.expectedMatch ?? ''),
       this.strategy,
+      this.persistenceStrategy ?? '',
     ]);
   }
 
