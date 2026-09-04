@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-import { makeObservable, observable, action, flow, computed } from 'mobx';
+import {
+  makeObservable,
+  observable,
+  action,
+  flow,
+  flowResult,
+  computed,
+} from 'mobx';
 import {
   LogEvent,
   type GeneratorFn,
+  type LegendUser,
   assertErrorThrown,
   ActionState,
 } from '@finos/legend-shared';
@@ -26,13 +34,45 @@ import { LEGEND_MARKETPLACE_APP_EVENT } from '../../__lib__/LegendMarketplaceApp
 import type { LegendMarketplaceBaseStore } from '../LegendMarketplaceBaseStore.js';
 import {
   OrderStatusCategory,
+  type OrderSearchStatus,
   type TerminalProductOrder,
   type TerminalProductOrderResponse,
+  type OrderSearchRequest,
+  type OrderSearchResponse,
 } from '@finos/legend-server-marketplace';
+import {
+  getUserDisplayLabel,
+  isLastDaysSearchDefaulted,
+  ORDER_SEARCH_DEFAULT_LAST_DAYS,
+  ORDER_SEARCH_DEFAULT_LIMIT,
+} from './OrderHelpers.js';
+
+// Note: `OrderSearchResponse.total_count` is only the count of orders returned
+// in the current page (see `order_search_api_guide.md`), not the total match
+// count across all pages, so pagination here is offset-based Previous/Next
+// rather than a numbered pager: a full page (`orders.length === searchPageSize`)
+// is treated as a signal that a next page *might* exist.
 
 export enum OrderTab {
   OPEN = 'open',
   CLOSED = 'closed',
+}
+
+/** Input to `OrdersStore.searchOrders`, gathered from the advanced search form. */
+export interface OrderSearchFormValues {
+  orderedBy: LegendUser | undefined;
+  orderedFor: LegendUser | undefined;
+  status: OrderSearchStatus;
+  lastDays: number | undefined;
+}
+
+/** A snapshot of the last-applied advanced search filters, kept for rendering the filter summary bar. */
+export interface AppliedOrderSearchFilters {
+  orderedByLabel: string | undefined;
+  orderedForLabel: string | undefined;
+  status: OrderSearchStatus;
+  lastDays: number;
+  isLastDaysDefaulted: boolean;
 }
 
 export class OrdersStore {
@@ -47,6 +87,22 @@ export class OrdersStore {
   readonly cancelOrderState = ActionState.create();
   selectedTab: OrderTab = OrderTab.OPEN;
 
+  searchResults: TerminalProductOrder[] = [];
+  // Mirrors `OrderSearchResponse.total_count` (see note above): only reflects
+  // the current page's count, not the true match total across all pages, so
+  // it's intentionally not surfaced as an "of N results" total in the UI
+  // (which instead derives its "Page X of N" text from `searchCurrentPage`/
+  // `hasNextSearchPage`). Kept for API-response parity and in case the
+  // backend semantics change.
+  searchTotalCount = 0;
+  appliedSearchFilters: AppliedOrderSearchFilters | undefined = undefined;
+  readonly searchOrdersState = ActionState.create();
+  searchOffset = 0;
+  searchPageSize: number = ORDER_SEARCH_DEFAULT_LIMIT;
+  // Raw form values from the last submitted search, kept so Previous/Next/page-size
+  // changes can re-issue the same search with a different offset/limit.
+  private lastSearchFormValues: OrderSearchFormValues | undefined = undefined;
+
   constructor(baseStore: LegendMarketplaceBaseStore) {
     makeObservable(this, {
       openOrders: observable,
@@ -54,13 +110,26 @@ export class OrdersStore {
       totalOpen: observable,
       totalClosed: observable,
       selectedTab: observable,
+      searchResults: observable,
+      searchTotalCount: observable,
+      appliedSearchFilters: observable,
+      searchOffset: observable,
+      searchPageSize: observable,
       setSelectedTab: action,
+      clearSearch: action,
       fetchOpenOrders: flow,
       fetchClosedOrders: flow,
       refreshCurrentOrders: flow,
       cancelOrder: flow,
+      searchOrders: flow,
+      goToSearchOffset: flow,
+      setSearchPageSize: flow,
       currentOrders: computed,
       currentFetchState: computed,
+      isAdvancedSearchActive: computed,
+      hasPreviousSearchPage: computed,
+      hasNextSearchPage: computed,
+      searchCurrentPage: computed,
     });
     this.baseStore = baseStore;
   }
@@ -69,13 +138,45 @@ export class OrdersStore {
     this.selectedTab = tab;
   }
 
+  get isAdvancedSearchActive(): boolean {
+    return this.appliedSearchFilters !== undefined;
+  }
+
+  get hasPreviousSearchPage(): boolean {
+    return this.searchOffset > 0;
+  }
+
+  /**
+   * Heuristic per the search API's documented pagination contract: a page
+   * returning fewer orders than the requested page size means there are no
+   * more results; a full page means there *might* be a next page (the next
+   * fetch may come back empty, which is an accepted/expected edge case).
+   */
+  get hasNextSearchPage(): boolean {
+    return (
+      this.searchResults.length > 0 &&
+      this.searchResults.length === this.searchPageSize
+    );
+  }
+
+  /** 1-based page number implied by the current offset/page-size, for the "Page X of N" pagination label. */
+  get searchCurrentPage(): number {
+    return Math.floor(this.searchOffset / this.searchPageSize) + 1;
+  }
+
   get currentOrders(): TerminalProductOrder[] {
+    if (this.isAdvancedSearchActive) {
+      return this.searchResults;
+    }
     return this.selectedTab === OrderTab.OPEN
       ? this.openOrders
       : this.closedOrders;
   }
 
   get currentFetchState(): ActionState {
+    if (this.isAdvancedSearchActive) {
+      return this.searchOrdersState;
+    }
     return this.selectedTab === OrderTab.OPEN
       ? this.fetchOpenOrdersState
       : this.fetchClosedOrdersState;
@@ -145,7 +246,10 @@ export class OrdersStore {
 
   *refreshCurrentOrders(): GeneratorFn<void> {
     // Refresh both open and closed orders since cancelled orders move from open to closed
-    yield Promise.all([this.fetchOpenOrders(), this.fetchClosedOrders()]);
+    yield Promise.all([
+      flowResult(this.fetchOpenOrders()),
+      flowResult(this.fetchClosedOrders()),
+    ]);
   }
 
   *cancelOrder(
@@ -194,5 +298,85 @@ export class OrdersStore {
       this.cancelOrderState.fail();
       return false;
     }
+  }
+
+  *searchOrders(filters: OrderSearchFormValues, offset = 0): GeneratorFn<void> {
+    const orderedById = filters.orderedBy?.id.trim();
+    const orderedForId = filters.orderedFor?.id.trim();
+
+    if (!orderedById && !orderedForId) {
+      this.baseStore.applicationStore.notificationService.notifyWarning(
+        'Enter a value for Ordered By and/or Ordered For to search.',
+      );
+      return;
+    }
+
+    const lastDays = filters.lastDays ?? ORDER_SEARCH_DEFAULT_LAST_DAYS;
+    const request: OrderSearchRequest = {
+      ...(orderedById ? { ordered_by: orderedById } : {}),
+      ...(orderedForId ? { ordered_for: orderedForId } : {}),
+      status: filters.status,
+      last_days: lastDays,
+      limit: this.searchPageSize,
+      offset,
+    };
+
+    this.lastSearchFormValues = filters;
+    this.searchOrdersState.inProgress();
+    try {
+      const response =
+        (yield this.baseStore.marketplaceServerClient.searchOrders(
+          request,
+        )) as OrderSearchResponse;
+
+      this.searchResults = response.orders;
+      this.searchTotalCount = response.total_count;
+      this.searchOffset = offset;
+      this.appliedSearchFilters = {
+        orderedByLabel: getUserDisplayLabel(filters.orderedBy),
+        orderedForLabel: getUserDisplayLabel(filters.orderedFor),
+        status: filters.status,
+        lastDays,
+        isLastDaysDefaulted: isLastDaysSearchDefaulted(filters.lastDays),
+      };
+      this.searchOrdersState.complete();
+    } catch (error) {
+      assertErrorThrown(error);
+      this.baseStore.applicationStore.logService.error(
+        LogEvent.create(
+          LEGEND_MARKETPLACE_APP_EVENT.ADVANCED_SEARCH_ORDERS_FAILURE,
+        ),
+        `Failed to search orders: ${error.message}`,
+      );
+      this.baseStore.applicationStore.notificationService.notifyError(
+        `Failed to search orders: ${error.message}`,
+      );
+      this.searchOrdersState.fail();
+    }
+  }
+
+  /** Re-issues the last submitted advanced search at a different offset (Previous/Next page navigation). */
+  *goToSearchOffset(offset: number): GeneratorFn<void> {
+    if (!this.lastSearchFormValues) {
+      return;
+    }
+    yield flowResult(this.searchOrders(this.lastSearchFormValues, offset));
+  }
+
+  /** Changes the advanced search page size and, if a search is active, re-fetches from the first page. */
+  *setSearchPageSize(pageSize: number): GeneratorFn<void> {
+    this.searchPageSize = pageSize;
+    if (this.lastSearchFormValues) {
+      yield flowResult(this.searchOrders(this.lastSearchFormValues, 0));
+    }
+  }
+
+  clearSearch(): void {
+    this.searchResults = [];
+    this.searchTotalCount = 0;
+    this.appliedSearchFilters = undefined;
+    this.searchOrdersState.reset();
+    this.searchOffset = 0;
+    this.lastSearchFormValues = undefined;
   }
 }

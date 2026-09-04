@@ -397,6 +397,42 @@ describe('RecommendedItemsCard - association flow', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
+  test('shows an enabled Select/Add-to-Cart button for a cart-sourced item, not a disabled "In Cart" badge', () => {
+    // Regression: cart-sourced items are, by definition, already present in
+    // cartStore.isItemInCart (that's why they render under "From Your Cart"
+    // during terminal association). The generic in-cart check must not
+    // treat that as "already handled", or the button always renders as a
+    // disabled "In Cart" badge and the item can never be selected.
+    const item = makeTerminalResult({
+      id: 9,
+      source: RecommendationSource.CART,
+    });
+    MOCK__baseStore.cartStore.items[99] = [makeCartItem(9)];
+    render(
+      <RecommendedItemsCard
+        recommendedItem={item}
+        onSelect={makeOnSelectMock()}
+      />,
+    );
+    expect(screen.queryByText('In Cart')).toBeNull();
+    const btn = screen.getByRole('button');
+    expect((btn as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  test('clicking the Select button for a cart-sourced item calls onSelect', async () => {
+    const item = makeTerminalResult({
+      id: 9,
+      source: RecommendationSource.CART,
+    });
+    MOCK__baseStore.cartStore.items[99] = [makeCartItem(9)];
+    const onSelect = makeOnSelectMock();
+    render(<RecommendedItemsCard recommendedItem={item} onSelect={onSelect} />);
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button'));
+    });
+    expect(onSelect).toHaveBeenCalledWith(item);
+  });
+
   test('shows "Add to Cart" button for marketplace item NOT in cart', () => {
     const item = makeTerminalResult({
       id: 7,

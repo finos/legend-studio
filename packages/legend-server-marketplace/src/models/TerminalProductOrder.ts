@@ -87,7 +87,7 @@ export interface WorkflowDetails {
   ffa_approval_comment: string | null;
   ffa_approval_action: string | null;
   url_bbg_approval: string | null;
-  bbg_approval_process_id: string | null;
+  piid_bbg_approval: string | null;
   bbg_approval_actioned_by: string | null;
   bbg_approval_actioned_by_name: string | null;
   bbg_approval_actioned_timestamp: string | null;
@@ -105,4 +105,35 @@ export interface TerminalProductOrderResponse {
   total_count: number;
   status_filter: OrderStatusCategory;
   kerberos: string;
+}
+
+/**
+ * Business-friendly order status enum accepted by `POST /workflow/search/orders`,
+ * distinct from `OrderStatusCategory` (the coarse OPEN/CLOSED bucket used by
+ * `GET /workflow/fetch/orders`).
+ */
+export enum OrderSearchStatus {
+  ALL = 'ALL',
+  PENDING_APPROVAL = 'PENDING APPROVAL',
+  PENDING_FULFILLMENT = 'PENDING FULFILLMENT',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  REJECTED = 'REJECTED',
+}
+
+export interface OrderSearchRequest {
+  ordered_by?: string;
+  ordered_for?: string;
+  status?: OrderSearchStatus;
+  last_days?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface OrderSearchResponse {
+  orders: TerminalProductOrder[];
+  total_count: number;
+  status_filter: OrderSearchStatus;
+  limit: number;
+  offset: number;
 }

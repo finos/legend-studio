@@ -69,7 +69,10 @@ export const OrderProfileDetailModal = observer(
     );
     // When a category filter hides a terminal but not its add-ons, demote
     // the orphaned add-ons to top-level rows (no sub-item indentation) so
-    // they don't render as children with no parent row above them.
+    // they don't render as children with no parent row above them. This
+    // tracks the model of the most recently seen visible terminal (rather
+    // than only comparing to the immediately preceding row) so that every
+    // add-on belonging to that terminal stays indented, not just the first.
     const filteredGroupedItems = useMemo(() => {
       const filtered =
         categoryFilter.size === 0
@@ -77,14 +80,15 @@ export const OrderProfileDetailModal = observer(
           : groupedItems.filter(({ item }) =>
               categoryFilter.has(item.category),
             );
-      return filtered.map((entry, index) => {
+      let visibleTerminalModel: string | null | undefined;
+      return filtered.map((entry) => {
         if (!entry.isSubItem) {
+          if (entry.item.isTerminal) {
+            visibleTerminalModel = entry.item.model;
+          }
           return entry;
         }
-        const previous = filtered[index - 1];
-        const hasVisibleParent =
-          previous?.item.isTerminal === true &&
-          previous.item.model === entry.item.model;
+        const hasVisibleParent = visibleTerminalModel === entry.item.model;
         return hasVisibleParent ? entry : { ...entry, isSubItem: false };
       });
     }, [groupedItems, categoryFilter]);

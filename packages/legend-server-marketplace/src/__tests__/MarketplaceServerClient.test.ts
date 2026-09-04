@@ -19,6 +19,7 @@ import { unitTest, createSpy } from '@finos/legend-shared/test';
 import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import { MarketplaceServerClient } from '../MarketplaceServerClient.js';
 import { SearchType } from '../models/SearchType.js';
+import { OrderSearchStatus } from '../models/TerminalProductOrder.js';
 
 describe('MarketplaceServerClient', () => {
   let client: MarketplaceServerClient;
@@ -205,6 +206,39 @@ describe('MarketplaceServerClient', () => {
           expect.anything(),
           expect.anything(),
           expect.anything(),
+        );
+      },
+    );
+  });
+
+  describe(unitTest('searchOrders'), () => {
+    let postSpy: jest.SpiedFunction<MarketplaceServerClient['post']>;
+
+    beforeEach(() => {
+      postSpy = createSpy(client, 'post');
+      postSpy.mockResolvedValue({});
+    });
+
+    test(
+      unitTest('posts the search request to the search/orders endpoint'),
+      async () => {
+        await client.searchOrders({
+          ordered_by: 'adishar',
+          status: OrderSearchStatus.PENDING_APPROVAL,
+          last_days: 30,
+          limit: 50,
+          offset: 0,
+        });
+
+        expect(postSpy).toHaveBeenCalledWith(
+          'http://test-marketplace-server/v1/workflow/search/orders',
+          {
+            ordered_by: 'adishar',
+            status: OrderSearchStatus.PENDING_APPROVAL,
+            last_days: 30,
+            limit: 50,
+            offset: 0,
+          },
         );
       },
     );

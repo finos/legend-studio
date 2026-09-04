@@ -1262,6 +1262,89 @@ export class LegendMarketplaceTelemetryHelper {
     );
   }
 
+  static logEvent_AdvancedSearchOrders(
+    telemetryService: TelemetryService,
+    hasOrderedBy: boolean,
+    hasOrderedFor: boolean,
+    status: string,
+    isLastDaysDefaulted: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ADVANCED_SEARCH_ORDERS,
+      {
+        hasOrderedBy,
+        hasOrderedFor,
+        status,
+        isLastDaysDefaulted,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ClearAdvancedOrderSearch(
+    telemetryService: TelemetryService,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLEAR_ADVANCED_ORDER_SEARCH,
+      {
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_PaginateAdvancedOrderSearch(
+    telemetryService: TelemetryService,
+    offset: number,
+    pageSize: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.PAGINATE_ADVANCED_ORDER_SEARCH,
+      {
+        offset,
+        pageSize,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ChangeAdvancedOrderSearchPageSize(
+    telemetryService: TelemetryService,
+    pageSize: number,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CHANGE_ADVANCED_ORDER_SEARCH_PAGE_SIZE,
+      {
+        pageSize,
+        timestamp: Date.now(),
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleAllOrders(
+    telemetryService: TelemetryService,
+    isExpanded: boolean,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_ALL_ORDERS, {
+      isExpanded,
+      timestamp: Date.now(),
+      ...session,
+    });
+  }
+
   static logEvent_ViewSubscriptionsPage(
     telemetryService: TelemetryService,
     isTargetUser: boolean,

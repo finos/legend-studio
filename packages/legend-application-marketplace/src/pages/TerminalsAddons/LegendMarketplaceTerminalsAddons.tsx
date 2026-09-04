@@ -45,6 +45,7 @@ import {
 } from '../../application/providers/LegendMarketplaceVendorDataProvider.js';
 import { useParams } from '@finos/legend-application/browser';
 import {
+  CaretRightIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   InfoCircleIcon,
@@ -98,7 +99,7 @@ export const RefinedVendorRadioSelector = observer(
 
 /**
  * Shared section wrapper that renders the header (title, count badge, tooltip,
- * "See All" button) plus any card content passed via the `renderCards` prop.
+ * "View more" button) plus any card content passed via the `renderCards` prop.
  * Use this as the base for both terminal/add-on and order-profile sections so
  * the header logic lives in exactly one place.
  */
@@ -136,12 +137,15 @@ const SearchResultsSection = observer(
           </div>
           {tooltip && (
             <Tooltip title={tooltip} placement={'right'} arrow={true}>
-              <InfoCircleIcon />
+              <span className="legend-marketplace-vendordata-main-search-results__info-icon">
+                <InfoCircleIcon />
+              </span>
             </Tooltip>
           )}
           {seeAll && (
             <button
-              className="see-all"
+              type="button"
+              className="legend-marketplace-vendordata-main-search-results__view-more"
               onClick={() => {
                 vendorDataState.setProviderDisplayState(sectionTitle);
                 flowResult(vendorDataState.populateProviders()).catch(
@@ -149,7 +153,7 @@ const SearchResultsSection = observer(
                 );
               }}
             >
-              <strong>See All&gt;</strong>
+              View more <CaretRightIcon />
             </button>
           )}
         </div>
@@ -366,7 +370,6 @@ export const VendorDataMainContent = observer(
                     totalCount={marketPlaceVendorDataState.totalTerminalItems}
                     seeAll={true}
                   />
-                  <hr />
                   <SearchResultsRenderer
                     vendorDataState={marketPlaceVendorDataState}
                     terminalResults={marketPlaceVendorDataState.addOnProviders}
@@ -375,7 +378,6 @@ export const VendorDataMainContent = observer(
                     seeAll={true}
                     tooltip={addOnsInfoMessage}
                   />
-                  <hr />
                   <OrderProfileSearchResultsRenderer
                     vendorDataState={marketPlaceVendorDataState}
                     traderProfiles={

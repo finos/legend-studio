@@ -18,9 +18,11 @@ import { describe, expect, test } from '@jest/globals';
 import {
   OrderCategory,
   OrderStatus,
+  OrderSearchStatus,
   type TerminalProductOrder,
   type WorkflowDetails,
 } from '@finos/legend-server-marketplace';
+import { LegendUser } from '@finos/legend-shared';
 import {
   WorkflowStage,
   WorkflowCurrentStage,
@@ -33,6 +35,9 @@ import {
   canCancelOrder,
   formatOrderDate,
   formatTimestamp,
+  getUserDisplayLabel,
+  getOrderSearchStatusLabel,
+  parseLastDaysInput,
 } from '../OrderHelpers.js';
 
 // ─── Test Fixtures ─────────────────────────────────────────────────────────────
@@ -65,7 +70,7 @@ const makeWorkflowDetails = (
   ffa_approval_comment: null,
   ffa_approval_action: null,
   url_bbg_approval: null,
-  bbg_approval_process_id: null,
+  piid_bbg_approval: null,
   bbg_approval_actioned_by: null,
   bbg_approval_actioned_by_name: null,
   bbg_approval_actioned_timestamp: null,
@@ -650,11 +655,7 @@ describe('getProcessInstanceId', () => {
       'piid_ffa_approval',
       'proc-ffa',
     ],
-    [
-      WorkflowCurrentStage.BUSINESS_ANALYST,
-      'bbg_approval_process_id',
-      'proc-bbg',
-    ],
+    [WorkflowCurrentStage.BUSINESS_ANALYST, 'piid_bbg_approval', 'proc-bbg'],
   ])(
     'resolves the process instance id for current_stage=%s from %s',
     (currentStage, field, piid) => {
@@ -755,5 +756,74 @@ describe('formatTimestamp', () => {
         minute: '2-digit',
       }),
     );
+  });
+});
+
+// ─── Advanced Order Search helpers ───────────────────────────────────────────────
+
+describe('getUserDisplayLabel', () => {
+  test('returns undefined when no user is given', () => {
+    expect(getUserDisplayLabel(undefined)).toBeUndefined();
+  });
+
+  test('returns undefined when the user has a blank id', () => {
+    expect(getUserDisplayLabel(new LegendUser('  '))).toBeUndefined();
+  });
+
+  test('falls back to the kerberos id when there is no display name', () => {
+    expect(getUserDisplayLabel(new LegendUser('adishar'))).toBe('adishar');
+  });
+
+  test('falls back to the kerberos id when the display name is blank', () => {
+    expect(getUserDisplayLabel(new LegendUser('adishar', ''))).toBe('adishar');
+  });
+
+  test('prefers the display name when available', () => {
+    expect(getUserDisplayLabel(new LegendUser('adishar', 'A. Dishar'))).toBe(
+      'A. Dishar',
+    );
+  });
+});
+
+describe('getOrderSearchStatusLabel', () => {
+  test('returns a human-readable label for each status', () => {
+    expect(getOrderSearchStatusLabel(OrderSearchStatus.ALL)).toBe('All');
+    expect(getOrderSearchStatusLabel(OrderSearchStatus.PENDING_APPROVAL)).toBe(
+      'Pending Approval',
+    );
+    expect(
+      getOrderSearchStatusLabel(OrderSearchStatus.PENDING_FULFILLMENT),
+    ).toBe('Pending Fulfillment');
+    expect(getOrderSearchStatusLabel(OrderSearchStatus.CANCELLED)).toBe(
+      'Cancelled',
+    );
+    expect(getOrderSearchStatusLabel(OrderSearchStatus.COMPLETED)).toBe(
+      'Completed',
+    );
+    expect(getOrderSearchStatusLabel(OrderSearchStatus.REJECTED)).toBe(
+      'Rejected',
+    );
+  });
+});
+
+describe('parseLastDaysInput', () => {
+  test('returns undefined for a blank input', () => {
+    expect(parseLastDaysInput('')).toBeUndefined();
+    expect(parseLastDaysInput('   ')).toBeUndefined();
+  });
+
+  test('returns undefined for a non-numeric input', () => {
+    expect(parseLastDaysInput('abc')).toBeUndefined();
+  });
+
+  test('returns undefined when out of the 1-365 range', () => {
+    expect(parseLastDaysInput('0')).toBeUndefined();
+    expect(parseLastDaysInput('366')).toBeUndefined();
+  });
+
+  test('returns the parsed integer when within range', () => {
+    expect(parseLastDaysInput('30')).toBe(30);
+    expect(parseLastDaysInput('365')).toBe(365);
+    expect(parseLastDaysInput('1')).toBe(1);
   });
 });

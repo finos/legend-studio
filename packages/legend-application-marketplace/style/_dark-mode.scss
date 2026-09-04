@@ -289,6 +289,143 @@
     &__empty-description {
       color: var(--color-dark-theme-text-secondary);
     }
+
+    &__search-field {
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-secondary);
+
+        // Only mask the notched outline border with the page background
+        // once the label has shrunk onto the border line; painting this
+        // background unconditionally (including the resting/un-shrunk
+        // state, where the label sits inside the field as a placeholder)
+        // produced a visible rectangle slightly darker than the
+        // surrounding page background behind the label text.
+        &.MuiInputLabel-shrink {
+          background-color: var(--color-dark-theme-bg-primary);
+        }
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .MuiInputBase-input {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__search-field--advanced {
+      background-color: var(--color-dark-theme-bg-secondary);
+      border-color: var(--color-dark-theme-border);
+    }
+
+    &__advanced-search-notice {
+      color: var(--color-dark-red-50);
+    }
+
+    &__expand-controls {
+      &__group {
+        .MuiButton-root {
+          color: var(--color-dark-theme-blue-primary);
+          border-color: var(--color-dark-theme-border);
+
+          &:hover {
+            background-color: rgb(115 153 198 / 15%);
+            border-color: var(--color-dark-theme-blue-primary);
+          }
+        }
+      }
+    }
+
+    &__search-pagination {
+      border-color: var(--color-dark-theme-border);
+      background-color: var(--color-dark-theme-bg-secondary);
+    }
+
+    &__search-pagination-size {
+      .MuiTypography-root {
+        color: var(--color-dark-theme-text-secondary);
+      }
+
+      .MuiInputBase-root {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .MuiSelect-icon {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__search-pagination-info {
+      color: var(--color-dark-theme-text-secondary);
+
+      strong {
+        color: var(--color-dark-theme-blue-primary);
+      }
+    }
+
+    &__search-pagination-btn {
+      color: var(--color-dark-theme-blue-primary);
+      border-color: var(--color-dark-theme-border);
+
+      &:hover:not(:disabled) {
+        background-color: rgb(115 153 198 / 15%);
+        border-color: var(--color-dark-theme-blue-primary);
+      }
+
+      &:disabled {
+        color: var(--color-dark-theme-text-muted);
+        border-color: var(--color-dark-theme-border);
+      }
+    }
+  }
+
+  .advanced-order-search-popover {
+    &__content {
+      background-color: var(--color-dark-theme-bg-elevated);
+    }
+
+    &__title {
+      color: var(--color-dark-theme-text-primary);
+    }
+
+    &__field {
+      .MuiInputBase-root,
+      .MuiSelect-select {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      .MuiInputLabel-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-dark-theme-border);
+      }
+
+      .MuiFormHelperText-root {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      .MuiSelect-icon {
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
+
+    &__status-menu {
+      .MuiMenuItem-root {
+        font-size: 1.5rem !important;
+      }
+
+      .MuiListSubheader-root {
+        background: var(--color-dark-theme-bg-tertiary);
+        color: var(--color-dark-theme-text-secondary);
+      }
+    }
   }
 
   .legend-marketplace-order-accordion {
@@ -609,12 +746,6 @@
 
     &-search-results {
       background: var(--color-dark-theme-bg-primary);
-
-      &__category {
-        .see-all {
-          color: var(--color-dark-theme-blue-primary);
-        }
-      }
     }
 
     &-owned-services {

@@ -88,8 +88,56 @@
 
     .MuiSvgIcon-root {
       font-size: 1.75rem;
-      color: var(--color-dark-grey-300);
+      color: var(--marketplace-text-secondary);
     }
+
+    &--advanced {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      min-height: 40px;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--color-light-grey-300);
+      border-radius: 4px;
+      background-color: var(--color-light-grey-50);
+    }
+  }
+
+  &__search-icon,
+  &__tune-icon {
+    font-size: calc(1.75rem - 0.2px);
+    color: var(--marketplace-text-secondary);
+  }
+
+  &__filter-chips {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+
+  &__search-field-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-shrink: 0;
+
+    svg {
+      color: var(--marketplace-text-secondary);
+    }
+  }
+
+  &__advanced-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  &__advanced-search-notice {
+    color: var(--color-red-300);
+    font-size: 1.4rem;
   }
 
   &__tabs {
@@ -123,6 +171,101 @@
 
   &__orders-list {
     margin-top: 1.5rem;
+  }
+
+  // ─── Expand / Collapse All controls ──────────────────────────────────────
+
+  &__expand-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+
+    &__group {
+      .MuiButton-root {
+        font-size: 1.4rem;
+        font-weight: 500;
+        text-transform: none;
+        color: var(--color-blue-100);
+        padding: 0.5rem 1.2rem;
+        border-color: var(--color-light-grey-300);
+        @include transition-smooth;
+
+        &:hover {
+          background-color: var(--color-light-grey-50);
+          border-color: var(--color-blue-100);
+        }
+      }
+    }
+  }
+
+  // ─── Advanced search pagination (Previous/Next, page-local total_count) ──
+
+  &__search-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 1rem 1.5rem;
+    border: 1px solid var(--color-light-grey-200);
+    border-radius: 8px;
+    background-color: var(--color-light-grey-50);
+  }
+
+  &__search-pagination-size {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    .MuiTypography-root {
+      font-size: 1.4rem;
+      color: var(--color-dark-grey-300);
+    }
+
+    .MuiInputBase-root {
+      font-size: 1.4rem;
+    }
+  }
+
+  &__search-pagination-info {
+    font-size: 1.4rem;
+    color: var(--color-dark-grey-300);
+
+    strong {
+      color: var(--color-blue-100);
+      font-weight: 600;
+    }
+  }
+
+  &__search-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__search-pagination-btn {
+    font-size: 1.4rem;
+    font-weight: 500;
+    text-transform: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 6px;
+    color: var(--color-blue-100);
+    border-color: var(--color-light-grey-300);
+    @include transition-smooth;
+
+    &:hover:not(:disabled) {
+      background-color: var(--color-light-grey-50);
+      border-color: var(--color-blue-100);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      color: var(--color-dark-grey-500);
+      border-color: var(--color-light-grey-300);
+    }
   }
 
   &__loading {
@@ -650,5 +793,62 @@
         transform: translateY(-1px);
       }
     }
+  }
+}
+
+.advanced-order-search-popover {
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    width: 20rem;
+    background-color: var(--color-white);
+  }
+
+  &__title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--color-dark-grey-100);
+  }
+
+  &__field {
+    width: 100%;
+
+    .MuiOutlinedInput-root {
+      &:hover .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-blue-100);
+      }
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: var(--color-blue-100);
+      }
+    }
+  }
+
+  &__status-menu {
+    .MuiMenuItem-root {
+      font-size: 1.5rem;
+    }
+
+    .MuiListSubheader-root {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 2.4rem;
+      cursor: default;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  &__search-button,
+  &__clear-button {
+    text-transform: none;
+    font-weight: 500;
   }
 }
