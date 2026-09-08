@@ -22,7 +22,7 @@ import {
 } from '../CardImageUtils.js';
 
 const LEGEND_MCP_SERVICE_URL_FRAGMENT = '/api/mcp/services/server/';
-const LEGEND_AI_MCP_SERVER_NAME = 'legend-ai-mcp';
+export const LEGEND_AI_MCP_SERVER_NAME = 'legend-ai-mcp';
 const MCP_GENERATED_DESCRIPTION_PREFIX =
   'MCP server to provide access to registered services';
 const MCP_VENDOR_SEPARATOR_PATTERN = /\s[-–]|[-–]\s/u;
