@@ -33,10 +33,14 @@ import {
   type DataSpaceExecutionContext,
   type DataSpaceMappingProvider,
   type DataSpaceSupportInfo,
+  type DataSpaceEmail,
+  type DataSpaceExpertise,
+  type DataSpaceLink,
   DataSpaceExecutableTemplate,
   DataSpacePackageableElementExecutable,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
+  DataSpaceSupportFullInfo,
 } from '../../../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 export const observe_DataSpaceMappingProvider = skipObserved(
@@ -203,6 +207,75 @@ const observe_DataSpaceSupportCombinedInfo = skipObserved(
   },
 );
 
+const observe_DataSpaceLink = skipObserved(
+  (metamodel: DataSpaceLink): DataSpaceLink => {
+    makeObservable(metamodel, {
+      label: observable,
+      url: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+const observe_DataSpaceEmail = skipObserved(
+  (metamodel: DataSpaceEmail): DataSpaceEmail => {
+    makeObservable(metamodel, {
+      title: observable,
+      address: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+const observe_DataSpaceExpertise = skipObserved(
+  (metamodel: DataSpaceExpertise): DataSpaceExpertise => {
+    makeObservable(metamodel, {
+      description: observable,
+      expertIds: observable,
+      hashCode: computed,
+    });
+
+    return metamodel;
+  },
+);
+
+const observe_DataSpaceSupportFullInfo = skipObserved(
+  (metamodel: DataSpaceSupportFullInfo): DataSpaceSupportFullInfo => {
+    observe_Abstract_DataSpaceSupportInfo(metamodel);
+
+    makeObservable(metamodel, {
+      documentation: observable,
+      website: observable,
+      faqUrl: observable,
+      supportUrl: observable,
+      emails: observable,
+      expertise: observable,
+      hashCode: computed,
+    });
+
+    if (metamodel.documentation) {
+      observe_DataSpaceLink(metamodel.documentation);
+    }
+    if (metamodel.website) {
+      observe_DataSpaceLink(metamodel.website);
+    }
+    if (metamodel.faqUrl) {
+      observe_DataSpaceLink(metamodel.faqUrl);
+    }
+    if (metamodel.supportUrl) {
+      observe_DataSpaceLink(metamodel.supportUrl);
+    }
+    metamodel.emails?.forEach(observe_DataSpaceEmail);
+    metamodel.expertise?.forEach(observe_DataSpaceExpertise);
+
+    return metamodel;
+  },
+);
+
 export const observe_DataSpaceSupportInfo = (
   metamodel: DataSpaceSupportInfo,
 ): DataSpaceSupportInfo => {
@@ -210,6 +283,8 @@ export const observe_DataSpaceSupportInfo = (
     return observe_DataSpaceSupportEmail(metamodel);
   } else if (metamodel instanceof DataSpaceSupportCombinedInfo) {
     return observe_DataSpaceSupportCombinedInfo(metamodel);
+  } else if (metamodel instanceof DataSpaceSupportFullInfo) {
+    return observe_DataSpaceSupportFullInfo(metamodel);
   }
   return metamodel;
 };

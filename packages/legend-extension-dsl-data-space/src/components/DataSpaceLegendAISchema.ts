@@ -55,6 +55,7 @@ import {
 import {
   DataSpaceSupportEmail,
   DataSpaceSupportCombinedInfo,
+  DataSpaceSupportFullInfo,
 } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 
 const MAX_QUERY_SCAN_LENGTH = 5_000;
@@ -392,6 +393,10 @@ export function extractMetadataFromDataSpaceAnalysis(
     supportInfoText = result.supportInfo.address;
   } else if (result.supportInfo instanceof DataSpaceSupportCombinedInfo) {
     supportInfoText = (result.supportInfo.emails ?? []).join(', ');
+  } else if (result.supportInfo instanceof DataSpaceSupportFullInfo) {
+    supportInfoText = (result.supportInfo.emails ?? [])
+      .map((email) => email.address)
+      .join(', ');
   }
 
   const metadata: LegendAIProductMetadata = {

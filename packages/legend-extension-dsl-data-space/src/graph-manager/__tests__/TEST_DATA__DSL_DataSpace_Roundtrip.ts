@@ -111,6 +111,66 @@ export const TEST_DATA__roundtrip = [
     classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
   },
   {
+    path: 'test::model::TestDataSpaceWithFullSupportInfo',
+    content: {
+      _type: 'dataSpace',
+      defaultExecutionContext: 'INT',
+      executionContexts: [
+        {
+          defaultRuntime: {
+            path: 'test::model::TestRuntime',
+            type: 'RUNTIME',
+          },
+          mapping: {
+            path: 'test::model::TestMapping',
+            type: 'MAPPING',
+          },
+          name: 'INT',
+        },
+      ],
+      name: 'TestDataSpaceWithFullSupportInfo',
+      package: 'test::model',
+      supportInfo: {
+        _type: 'full',
+        documentation: {
+          label: 'Docs',
+          url: 'https://example.org/docs',
+        },
+        documentationUrl: 'https://example.org/docs',
+        emails: [
+          {
+            address: 'steward@test.org',
+            title: 'Data Steward',
+          },
+          {
+            address: 'oncall@test.org',
+            title: 'On-call',
+          },
+        ],
+        expertise: [
+          {
+            description: 'Fixed Income SMEs',
+            expertIds: ['jdoe', 'asmith'],
+          },
+          {
+            description: 'Risk Analytics',
+          },
+        ],
+        faqUrl: {
+          url: 'https://example.org/faq',
+        },
+        supportUrl: {
+          label: 'Support',
+          url: 'https://example.org/support',
+        },
+        website: {
+          url: 'https://example.org',
+        },
+      },
+    },
+    classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+  },
+  {
     path: 'test::model::TestMappingWithDataSpaceIncludes',
     content: {
       _type: 'mapping',

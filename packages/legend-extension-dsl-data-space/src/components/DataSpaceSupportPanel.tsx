@@ -25,8 +25,10 @@ import {
   SupportIcon,
 } from '@finos/legend-art';
 import {
+  type DataSpaceLink,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
+  DataSpaceSupportFullInfo,
 } from '../graph/metamodel/pure/model/packageableElements/dataSpace/DSL_DataSpace_DataSpace.js';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 
@@ -160,6 +162,122 @@ const DataSpaceSupportCombinedInfoViewer = observer(
   },
 );
 
+const DataSpaceSupportLinkEntry = observer(
+  (props: {
+    label: string;
+    link: DataSpaceLink | undefined;
+    iconClassName?: string | undefined;
+    icon: React.ReactNode;
+  }) => {
+    const { label, link, iconClassName, icon } = props;
+
+    return (
+      <div className="data-space__viewer__support__entry" title={label}>
+        <div
+          className={`data-space__viewer__support__entry__icon${
+            iconClassName ? ` ${iconClassName}` : ''
+          }`}
+        >
+          {icon}
+        </div>
+        {link ? (
+          <a
+            href={link.url}
+            className="data-space__viewer__support__entry__content"
+          >
+            {link.label ?? link.url}
+          </a>
+        ) : (
+          <div className="data-space__viewer__support__entry__content">
+            (not specified)
+          </div>
+        )}
+      </div>
+    );
+  },
+);
+
+const DataSpaceSupportFullInfoViewer = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    supportInfo: DataSpaceSupportFullInfo;
+  }) => {
+    const { supportInfo } = props;
+
+    return (
+      <>
+        <div className="data-space__viewer__support__section">
+          <DataSpaceSupportLinkEntry
+            label="Website"
+            link={supportInfo.website}
+            iconClassName="data-space__viewer__support__entry__icon--website"
+            icon={<HomeIcon />}
+          />
+          <DataSpaceSupportLinkEntry
+            label="Documentation"
+            link={supportInfo.documentation}
+            icon={<DocumentationIcon />}
+          />
+          <DataSpaceSupportLinkEntry
+            label="Support"
+            link={supportInfo.supportUrl}
+            iconClassName="data-space__viewer__support__entry__icon--support"
+            icon={<SupportIcon />}
+          />
+          <DataSpaceSupportLinkEntry
+            label="FAQ"
+            link={supportInfo.faqUrl}
+            iconClassName="data-space__viewer__support__entry__icon--faq"
+            icon={<QuestionAnswerIcon />}
+          />
+        </div>
+        {Boolean(supportInfo.emails?.length) && (
+          <div className="data-space__viewer__support__section">
+            {supportInfo.emails?.map((email) => (
+              <div
+                key={email.address}
+                className="data-space__viewer__support__entry"
+                title={email.title}
+              >
+                <div className="data-space__viewer__support__entry__icon">
+                  <EnvelopeIcon />
+                </div>
+                <a
+                  href={`mailto:${email.address}`}
+                  className="data-space__viewer__support__entry__content"
+                >
+                  {email.title} - {email.address}
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
+        {Boolean(supportInfo.expertise?.length) && (
+          <div className="data-space__viewer__support__section">
+            {supportInfo.expertise?.map((expertise, idx) => (
+              <div
+                // eslint-disable-next-line react/no-array-index-key
+                key={idx}
+                className="data-space__viewer__support__entry"
+                title="Expertise"
+              >
+                <div className="data-space__viewer__support__entry__icon">
+                  <SparkleIcon />
+                </div>
+                <div className="data-space__viewer__support__entry__content">
+                  {expertise.description ?? '(not specified)'}
+                  {Boolean(expertise.expertIds?.length) &&
+                    ` (${expertise.expertIds?.join(', ')})`}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </>
+    );
+  },
+);
+
 const DataSpaceSupport = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
@@ -178,6 +296,13 @@ const DataSpaceSupport = observer(
     } else if (supportInfo instanceof DataSpaceSupportCombinedInfo) {
       return (
         <DataSpaceSupportCombinedInfoViewer
+          dataSpaceViewerState={dataSpaceViewerState}
+          supportInfo={supportInfo}
+        />
+      );
+    } else if (supportInfo instanceof DataSpaceSupportFullInfo) {
+      return (
+        <DataSpaceSupportFullInfoViewer
           dataSpaceViewerState={dataSpaceViewerState}
           supportInfo={supportInfo}
         />

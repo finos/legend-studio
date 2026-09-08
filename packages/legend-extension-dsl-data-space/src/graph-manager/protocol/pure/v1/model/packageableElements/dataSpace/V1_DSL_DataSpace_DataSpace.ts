@@ -186,6 +186,70 @@ export class V1_DataSpaceSupportCombinedInfo
   }
 }
 
+export class V1_DataSpaceLink implements Hashable {
+  label?: string | undefined;
+  url!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_LINK,
+      this.label ?? '',
+      this.url,
+    ]);
+  }
+}
+
+export class V1_DataSpaceEmail implements Hashable {
+  title!: string;
+  address!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EMAIL,
+      this.title,
+      this.address,
+    ]);
+  }
+}
+
+export class V1_DataSpaceExpertise implements Hashable {
+  description?: string | undefined;
+  expertIds?: string[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXPERTISE,
+      this.description ?? '',
+      hashArray(this.expertIds ?? []),
+    ]);
+  }
+}
+
+export class V1_DataSpaceSupportFullInfo
+  extends V1_DataSpaceSupportInfo
+  implements Hashable
+{
+  documentation?: V1_DataSpaceLink | undefined;
+  website?: V1_DataSpaceLink | undefined;
+  faqUrl?: V1_DataSpaceLink | undefined;
+  supportUrl?: V1_DataSpaceLink | undefined;
+  emails?: V1_DataSpaceEmail[] | undefined;
+  expertise?: V1_DataSpaceExpertise[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_FULL_INFO,
+      this.documentationUrl ?? '',
+      this.documentation ?? '',
+      this.website ?? '',
+      this.faqUrl ?? '',
+      this.supportUrl ?? '',
+      hashArray(this.emails ?? []),
+      hashArray(this.expertise ?? []),
+    ]);
+  }
+}
+
 export class V1_DataSpace extends V1_PackageableElement implements Hashable {
   stereotypes: V1_StereotypePtr[] = [];
   taggedValues: V1_TaggedValue[] = [];

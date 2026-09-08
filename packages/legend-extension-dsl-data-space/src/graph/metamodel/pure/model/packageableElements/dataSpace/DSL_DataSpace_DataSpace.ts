@@ -201,6 +201,70 @@ export class DataSpaceSupportCombinedInfo
   }
 }
 
+export class DataSpaceLink implements Hashable {
+  label?: string | undefined;
+  url!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_LINK,
+      this.label ?? '',
+      this.url,
+    ]);
+  }
+}
+
+export class DataSpaceEmail implements Hashable {
+  title!: string;
+  address!: string;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EMAIL,
+      this.title,
+      this.address,
+    ]);
+  }
+}
+
+export class DataSpaceExpertise implements Hashable {
+  description?: string | undefined;
+  expertIds?: string[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_EXPERTISE,
+      this.description ?? '',
+      hashArray(this.expertIds ?? []),
+    ]);
+  }
+}
+
+export class DataSpaceSupportFullInfo
+  extends DataSpaceSupportInfo
+  implements Hashable
+{
+  documentation?: DataSpaceLink | undefined;
+  website?: DataSpaceLink | undefined;
+  faqUrl?: DataSpaceLink | undefined;
+  supportUrl?: DataSpaceLink | undefined;
+  emails?: DataSpaceEmail[] | undefined;
+  expertise?: DataSpaceExpertise[] | undefined;
+
+  get hashCode(): string {
+    return hashArray([
+      DATA_SPACE_HASH_STRUCTURE.DATA_SPACE_SUPPORT_FULL_INFO,
+      this.documentationUrl ?? '',
+      this.documentation ?? '',
+      this.website ?? '',
+      this.faqUrl ?? '',
+      this.supportUrl ?? '',
+      hashArray(this.emails ?? []),
+      hashArray(this.expertise ?? []),
+    ]);
+  }
+}
+
 export class DataSpace extends PackageableElement implements Hashable {
   title?: string | undefined;
   description?: string | undefined;
