@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.8.51
+
+### Patch Changes
+
+- [#5514](https://github.com/finos/legend-studio/pull/5514) [`de43280`](https://github.com/finos/legend-studio/commit/de432802e5e6076116ea9764af031bd4035299c4) ([@TharunRajeev](https://github.com/TharunRajeev)) - Each app's base store no longer needs to register `AbstractServerClient.setDefaultAuthenticationTokenProvider()` itself — `ApplicationStore` now does it once in its own constructor (see the `@finos/legend-application` changeset), so when `enableTokenClient` is on, every server client any app builds authenticates via OAuth Bearer token with no per-app or per-client wiring.
+
+  DataCube also folds its separate `AuthStore` token cache into `ApplicationStore.getAccessToken()`.
+
 ## 13.8.50
 
 ### Patch Changes

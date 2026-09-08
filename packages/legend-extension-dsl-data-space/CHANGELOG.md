@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.254
+
+### Patch Changes
+
+- [#5513](https://github.com/finos/legend-studio/pull/5513) [`e2d0ffd`](https://github.com/finos/legend-studio/commit/e2d0ffde973b783edad99847ccbcc5b43cac910e) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add support for the `DataSpaceSupportFullInfo` support info type (`_type: 'full'`) on data spaces, including its `DataSpaceLink`, `DataSpaceEmail`, and `DataSpaceExpertise` sub-models.
+
 ## 10.4.253
 
 ### Patch Changes

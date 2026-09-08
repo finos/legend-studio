@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.122
+
+### Patch Changes
+
+- [#5514](https://github.com/finos/legend-studio/pull/5514) [`de43280`](https://github.com/finos/legend-studio/commit/de432802e5e6076116ea9764af031bd4035299c4) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `enableTokenClient` to the shared `LegendApplicationConfig`/`ApplicationStore`, plus `resolveRequestToken()` which returns the OAuth access token only when the flag is on. `ApplicationStore`'s constructor also registers `resolveRequestToken` as the process-wide `AbstractServerClient.setDefaultAuthenticationTokenProvider()` itself, so every app gets both the flag and the wiring without its own copy of either.
+
 ## 16.0.121
 
 ## 16.0.120
