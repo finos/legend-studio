@@ -34,6 +34,7 @@ import {
   isLegendMcpServer,
   OTHER_VENDOR,
   matchesCatalogSearch,
+  LEGEND_AI_MCP_SERVER_NAME,
   LEGEND_MARKETPLACE_AI_AGENT,
 } from './IntelligenceCatalogUtils.js';
 
@@ -43,6 +44,19 @@ export enum IntelligenceCatalogType {
   MCPS = 'MCPs',
   SKILLS = 'Skills',
 }
+
+export const UNAVAILABLE_CATALOG_TYPES: readonly IntelligenceCatalogType[] = [
+  IntelligenceCatalogType.AGENTS,
+  IntelligenceCatalogType.SKILLS,
+];
+
+/**
+ * A catalog type the platform does not offer yet is neither selectable nor listed, so
+ * everything that belongs to it stays hidden until it is taken off this list.
+ */
+export const isCatalogTypeAvailable = (
+  catalogType: IntelligenceCatalogType,
+): boolean => !UNAVAILABLE_CATALOG_TYPES.includes(catalogType);
 
 const MCP_REGISTRY_FETCH_PAGE_SIZE = 100;
 const MCP_REGISTRY_MAX_PAGES = 20;
@@ -102,8 +116,19 @@ export class IntelligenceCatalogStore {
     });
   }
 
+  /**
+   * The Legend AI orchestrator only serves the agent, so it is catalogued exactly when
+   * the agents themselves are.
+   */
   get legendMcpServers(): McpServer[] {
-    return this.mcpServers.filter(isLegendMcpServer);
+    const areAgentsAvailable = isCatalogTypeAvailable(
+      IntelligenceCatalogType.AGENTS,
+    );
+    return this.mcpServers.filter(
+      (server) =>
+        isLegendMcpServer(server) &&
+        (areAgentsAvailable || server.name !== LEGEND_AI_MCP_SERVER_NAME),
+    );
   }
 
   get vendorByServerName(): Map<string, string> {

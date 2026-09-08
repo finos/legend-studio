@@ -35,6 +35,8 @@ import { IntelligenceFiltersPanel } from '../../components/IntelligenceFiltersPa
 import { PaginationControls } from '../../components/Pagination/PaginationControls.js';
 import {
   IntelligenceCatalogType,
+  isCatalogTypeAvailable,
+  UNAVAILABLE_CATALOG_TYPES,
   type IntelligenceCatalogStore,
 } from '../../stores/intelligence/IntelligenceCatalogStore.js';
 import type { McpServer } from '@finos/legend-server-marketplace';
@@ -55,10 +57,14 @@ const CATALOG_TYPE_OPTIONS = [
   IntelligenceCatalogType.SKILLS,
 ] as const;
 
-const UNAVAILABLE_CATALOG_TYPES = [IntelligenceCatalogType.SKILLS] as const;
-
 const UNAVAILABLE_CATALOG_TYPE_TITLE =
   'Coming soon — hold tight, this one is still in training';
+
+const CATALOG_SEARCH_PLACEHOLDER = isCatalogTypeAvailable(
+  IntelligenceCatalogType.AGENTS,
+)
+  ? 'Search agents and MCP servers...'
+  : 'Search MCP servers...';
 
 const CatalogSection = (props: {
   title: string;
@@ -271,7 +277,8 @@ const IntelligenceCatalogResults = observer(
     const catalogType = intelligenceCatalogStore.catalogType;
     const isPreview = catalogType === IntelligenceCatalogType.ALL;
     const showAgents =
-      isPreview || catalogType === IntelligenceCatalogType.AGENTS;
+      isCatalogTypeAvailable(IntelligenceCatalogType.AGENTS) &&
+      (isPreview || catalogType === IntelligenceCatalogType.AGENTS);
     const showMcpServers =
       isPreview || catalogType === IntelligenceCatalogType.MCPS;
     const mcpServers = isPreview
@@ -428,7 +435,7 @@ const IntelligenceCatalogView = observer(
           <LegendMarketplaceSearchBar
             stateSearchQuery={intelligenceCatalogStore.searchQuery}
             onSearch={handleSearch}
-            placeholder="Search agents and MCP servers..."
+            placeholder={CATALOG_SEARCH_PLACEHOLDER}
             className="marketplace-agents__search-bar"
             enableAutosuggest={false}
           />
