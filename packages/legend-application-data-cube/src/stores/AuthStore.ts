@@ -17,17 +17,15 @@
 import { makeAutoObservable } from 'mobx';
 import type { UserManagerSettings } from 'oidc-client-ts';
 
+/**
+ * Holds the raw oidc-client-ts `UserManagerSettings` for `SecondaryOAuthClient`.
+ * The access token itself lives solely on `ApplicationStore`
+ * (`applicationStore.getAccessToken()`) — this store does not duplicate it.
+ */
 class AuthStore {
-  accessToken: string | undefined = undefined;
   userManagerSettings: UserManagerSettings | undefined = undefined;
   constructor() {
     makeAutoObservable(this);
-  }
-  setAccessToken(token?: string) {
-    this.accessToken = token;
-  }
-  getAccessToken(): string | undefined {
-    return this.accessToken;
   }
   setUserManagerSettings(settings?: UserManagerSettings) {
     this.userManagerSettings = settings;

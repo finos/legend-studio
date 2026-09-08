@@ -74,6 +74,16 @@ export interface ServerClientConfig {
    * to the caller.
    */
   autoReAuthenticate?: (() => Promise<boolean>) | undefined;
+  /**
+   * Called fresh on every outgoing request to decide the current
+   * authentication token, if any. When it resolves to a token, an
+   * `Authorization: Bearer <token>` header is attached and the request's
+   * `credentials` mode is forced to `omit` (favoring the token over the
+   * session cookie). When absent, or when it resolves to `undefined`, the
+   * request falls back to the current cookie-based session behavior
+   * unchanged.
+   */
+  getAuthenticationToken?: (() => string | undefined) | undefined;
 }
 
 /**
@@ -81,6 +91,28 @@ export interface ServerClientConfig {
  * such as request payload compression, etc.
  */
 export abstract class AbstractServerClient {
+  /**
+   * Fallback used when a client instance's own `getAuthenticationToken` is
+   * not set. Intended to be set once per app (e.g. from `ApplicationStore`,
+   * which every client construction site already has access to) so
+   * individual server clients don't each need to be constructed with their
+   * own `getAuthenticationToken` callback.
+   *
+   * NOTE: this is shared, process-wide state — the last app to call this
+   * wins. That's fine in a browser SPA (one app per page), but be mindful
+   * in tests that construct multiple `ApplicationStore`s in the same
+   * process/module scope.
+   */
+  private static defaultAuthenticationTokenProvider?:
+    | (() => string | undefined)
+    | undefined;
+
+  static setDefaultAuthenticationTokenProvider(
+    provider: (() => string | undefined) | undefined,
+  ): void {
+    AbstractServerClient.defaultAuthenticationTokenProvider = provider;
+  }
+
   private networkClient: NetworkClient;
   private _tracerService?: TracerService;
   enableCompression: boolean;
@@ -92,6 +124,13 @@ export abstract class AbstractServerClient {
   baseHeaders?: RequestHeaders | undefined;
   autoReAuthenticateUrl?: string | undefined;
   autoReAuthenticate?: (() => Promise<boolean>) | undefined;
+  /**
+   * Per-instance override. When unset, `request()` falls back to
+   * `AbstractServerClient.defaultAuthenticationTokenProvider`.
+   */
+  private readonly getAuthenticationToken?:
+    | (() => string | undefined)
+    | undefined;
 
   constructor(config: ServerClientConfig) {
     makeObservable(this, {
@@ -99,9 +138,15 @@ export abstract class AbstractServerClient {
       setBaseUrl: action,
     });
 
+    this.getAuthenticationToken = config.getAuthenticationToken;
     this.networkClient = new NetworkClient({
       baseUrl: config.baseUrl,
       options: config.networkClientOptions,
+      getAuthenticationToken: () =>
+        (
+          this.getAuthenticationToken ??
+          AbstractServerClient.defaultAuthenticationTokenProvider
+        )?.(),
     });
 
     this.baseUrl = config.baseUrl;
@@ -139,6 +184,18 @@ export abstract class AbstractServerClient {
 
   setTracerService(val: TracerService): void {
     this._tracerService = val;
+  }
+
+  /**
+   * Builds an `Authorization: Bearer <token>` header, omitting it entirely
+   * when `token` is undefined instead of interpolating a literal
+   * "Bearer undefined". Subclasses should use this instead of hand-rolling
+   * their own token-header builders.
+   */
+  protected buildAuthorizationHeader(
+    token: string | undefined,
+  ): RequestHeaders {
+    return token !== undefined ? { Authorization: `Bearer ${token}` } : {};
   }
 
   private get tracerService(): TracerService {
@@ -341,12 +398,19 @@ export abstract class AbstractServerClient {
       parameters ?? {},
     );
     headers = createRequestHeaders(method, headers);
+    const mergedHeaders = {
+      ...(this.baseHeaders ?? {}),
+      ...headers,
+    };
+    // NOTE: the `Authorization` header (when a `getAuthenticationToken`
+    // resolves a token) is attached by `NetworkClient.request()`, not here —
+    // that's the layer that actually issues the `fetch` call.
     // tracing
     const trace = this.tracerService.createTrace(
       traceData,
       method.toString(),
       requestUrl,
-      headers,
+      mergedHeaders,
     );
     return this.networkClient
       .request<T>(
@@ -354,7 +418,7 @@ export abstract class AbstractServerClient {
         url,
         data,
         options,
-        this.baseHeaders ? { ...this.baseHeaders, ...headers } : headers,
+        mergedHeaders,
         parameters,
         {
           ...(requestProcessConfig ?? {}),

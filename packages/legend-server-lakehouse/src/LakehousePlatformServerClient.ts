@@ -20,18 +20,14 @@ import { V1_AppDirLevel } from '@finos/legend-graph';
 
 export class LakehousePlatformServerClient extends AbstractServerClient {
   constructor(url: string) {
-    super({
-      baseUrl: url,
-    });
+    super({ baseUrl: url });
   }
 
   private _discovery = (): string => `${this.baseUrl}/ingest/discovery`;
 
   private _env = (): string => `${this._discovery()}/environments`;
 
-  private _token = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
+  private _token = (token?: string) => this.buildAuthorizationHeader(token);
 
   getIngestEnvironmentSummaries(
     token?: string | undefined,

@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  type PlainObject,
+  type ServerClientConfig,
+} from '@finos/legend-shared';
 import type { RegistryMetadataResponse } from './models/Registry.js';
 
-export interface RegistryServerClientConfig {
+export interface RegistryServerClientConfig extends ServerClientConfig {
   baseUrl: string;
 }
 
 export class RegistryServerClient extends AbstractServerClient {
   constructor(config: RegistryServerClientConfig) {
     super({
+      ...config,
       baseUrl: `${config.baseUrl}/api`,
     });
   }

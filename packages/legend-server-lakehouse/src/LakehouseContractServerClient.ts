@@ -44,24 +44,18 @@ import type {
   V1_UserPendingContractsRecord,
   V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  type PlainObject,
+  type ServerClientConfig,
+} from '@finos/legend-shared';
 import type { LakehouseConsumerGrantResponse } from './models/ConsumerGrants.js';
 
-export interface LakehouseContractServerClientConfig {
-  baseUrl: string;
-}
+export type LakehouseContractServerClientConfig = ServerClientConfig;
 
 export class LakehouseContractServerClient extends AbstractServerClient {
-  constructor(config: LakehouseContractServerClientConfig) {
-    super({
-      baseUrl: config.baseUrl,
-    });
-  }
-
   // auth
-  private _token = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
+  private _token = (token?: string) => this.buildAuthorizationHeader(token);
 
   // ------------------------------------------- Data Contracts -------------------------------------------
 

@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  type PlainObject,
+  type ServerClientConfig,
+} from '@finos/legend-shared';
 import type {
   V1_DataRequestsWithWorkflowResponse,
   V1_PermitProcessInstanceDetail,
@@ -24,7 +28,7 @@ import type {
 
 // -------------------------------- Config --------------------------------
 
-export interface PermitWorkflowServerClientConfig {
+export interface PermitWorkflowServerClientConfig extends ServerClientConfig {
   authBaseUrl: string;
   workflowBaseUrl: string;
 }
@@ -36,14 +40,16 @@ export class PermitWorkflowServerClient extends AbstractServerClient {
   private readonly workflowBaseUrl: string;
 
   constructor(config: PermitWorkflowServerClientConfig) {
-    super({ baseUrl: config.workflowBaseUrl });
+    super({
+      ...config,
+      baseUrl: config.workflowBaseUrl,
+    });
     this.authBaseUrl = config.authBaseUrl;
     this.workflowBaseUrl = config.workflowBaseUrl;
   }
 
-  private readonly _authToken = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
+  private readonly _authToken = (token?: string) =>
+    this.buildAuthorizationHeader(token);
 
   // -------------------------------- Data Requests (auth server) --------------------------------
 

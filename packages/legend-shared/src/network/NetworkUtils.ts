@@ -333,6 +333,16 @@ export const createRequestHeaders = (
 export interface NetworkClientConfig {
   options?: PlainObject | undefined;
   baseUrl?: string | undefined;
+  /**
+   * Called fresh on every outgoing request to decide the current
+   * authentication token, if any. When it resolves to a token, an
+   * `Authorization: Bearer <token>` header is attached and the request's
+   * `credentials` mode is forced to `omit` (favoring the token over the
+   * session cookie). When absent, or when it resolves to `undefined`, the
+   * request falls back to the current cookie-based session behavior
+   * unchanged.
+   */
+  getAuthenticationToken?: (() => string | undefined) | undefined;
 }
 
 /**
@@ -342,6 +352,9 @@ export interface NetworkClientConfig {
 export class NetworkClient {
   private options = {};
   baseUrl?: string | undefined;
+  private readonly getAuthenticationToken?:
+    | (() => string | undefined)
+    | undefined;
 
   constructor(config?: NetworkClientConfig) {
     makeObservable(this, {
@@ -354,6 +367,7 @@ export class NetworkClient {
       ...DEFAULT_CLIENT_REQUEST_OPTIONS,
       ...(config?.options ?? {}),
     };
+    this.getAuthenticationToken = config?.getAuthenticationToken;
   }
 
   setBaseUrl(val: string | undefined): void {
@@ -455,6 +469,14 @@ export class NetworkClient {
     responseProcessConfig?: ResponseProcessConfig | undefined,
   ): Promise<T> {
     const requestUrl = makeUrl(this.baseUrl, url, parameters ?? {});
+    // resolved fresh on every request so the caller can switch auth mode at runtime
+    const authenticationToken = this.getAuthenticationToken?.();
+    if (authenticationToken) {
+      headers = mergeRequestHeaders(headers, {
+        Authorization: `Bearer ${authenticationToken}`,
+      });
+      options = { ...options, credentials: 'omit' };
+    }
     if (
       (isString(data) || isObject(data)) &&
       requestProcessConfig?.enableCompression
