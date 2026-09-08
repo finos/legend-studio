@@ -23,8 +23,12 @@ import {
   V1_DataSpaceExecutionContext,
   V1_DataSpaceMappingProvider,
   V1_DataSpacePackageableElementExecutable,
+  V1_DataSpaceEmail,
+  V1_DataSpaceExpertise,
+  V1_DataSpaceLink,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
+  V1_DataSpaceSupportFullInfo,
   V1_DataSpaceTemplateExecutable,
 } from './v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
 import {
@@ -53,8 +57,12 @@ import {
   DataSpace,
   DataSpaceExecutionContext,
   DataSpaceMappingProvider,
+  DataSpaceEmail,
+  DataSpaceExpertise,
+  DataSpaceLink,
   DataSpaceSupportCombinedInfo,
   DataSpaceSupportEmail,
+  DataSpaceSupportFullInfo,
   DataSpaceDiagram,
   DataSpaceElementPointer,
   DataSpaceExecutableTemplate,
@@ -125,6 +133,111 @@ export const DATA_SPACE_ELEMENT_CLASSIFIER_PATH =
   'meta::pure::metamodel::dataSpace::DataSpace';
 
 export const DATA_SPACE_ELEMENT_POINTER = 'DATASPACE';
+
+const V1_buildDataSpaceLink = (protocol: V1_DataSpaceLink): DataSpaceLink => {
+  const link = new DataSpaceLink();
+  link.label = protocol.label;
+  link.url = guaranteeNonEmptyString(
+    protocol.url,
+    `Data product support link 'url' field is missing or empty`,
+  );
+  return link;
+};
+
+const V1_buildDataSpaceEmail = (
+  protocol: V1_DataSpaceEmail,
+): DataSpaceEmail => {
+  const email = new DataSpaceEmail();
+  email.title = guaranteeNonEmptyString(
+    protocol.title,
+    `Data product support email 'title' field is missing or empty`,
+  );
+  email.address = guaranteeNonEmptyString(
+    protocol.address,
+    `Data product support email 'address' field is missing or empty`,
+  );
+  return email;
+};
+
+const V1_buildDataSpaceExpertise = (
+  protocol: V1_DataSpaceExpertise,
+): DataSpaceExpertise => {
+  const expertise = new DataSpaceExpertise();
+  expertise.description = protocol.description;
+  expertise.expertIds = protocol.expertIds;
+  return expertise;
+};
+
+export const V1_buildDataSpaceSupportFullInfo = (
+  protocol: V1_DataSpaceSupportFullInfo,
+): DataSpaceSupportFullInfo => {
+  const fullInfo = new DataSpaceSupportFullInfo();
+  fullInfo.documentationUrl = protocol.documentationUrl;
+  fullInfo.documentation = protocol.documentation
+    ? V1_buildDataSpaceLink(protocol.documentation)
+    : undefined;
+  fullInfo.website = protocol.website
+    ? V1_buildDataSpaceLink(protocol.website)
+    : undefined;
+  fullInfo.faqUrl = protocol.faqUrl
+    ? V1_buildDataSpaceLink(protocol.faqUrl)
+    : undefined;
+  fullInfo.supportUrl = protocol.supportUrl
+    ? V1_buildDataSpaceLink(protocol.supportUrl)
+    : undefined;
+  fullInfo.emails = protocol.emails?.map(V1_buildDataSpaceEmail);
+  fullInfo.expertise = protocol.expertise?.map(V1_buildDataSpaceExpertise);
+  return fullInfo;
+};
+
+const V1_transformDataSpaceLink = (
+  metamodel: DataSpaceLink,
+): V1_DataSpaceLink => {
+  const link = new V1_DataSpaceLink();
+  link.label = metamodel.label;
+  link.url = metamodel.url;
+  return link;
+};
+
+const V1_transformDataSpaceEmail = (
+  metamodel: DataSpaceEmail,
+): V1_DataSpaceEmail => {
+  const email = new V1_DataSpaceEmail();
+  email.title = metamodel.title;
+  email.address = metamodel.address;
+  return email;
+};
+
+const V1_transformDataSpaceExpertise = (
+  metamodel: DataSpaceExpertise,
+): V1_DataSpaceExpertise => {
+  const expertise = new V1_DataSpaceExpertise();
+  expertise.description = metamodel.description;
+  expertise.expertIds = metamodel.expertIds;
+  return expertise;
+};
+
+export const V1_transformDataSpaceSupportFullInfo = (
+  metamodel: DataSpaceSupportFullInfo,
+): V1_DataSpaceSupportFullInfo => {
+  const fullInfo = new V1_DataSpaceSupportFullInfo();
+  fullInfo.documentationUrl = metamodel.documentationUrl;
+  fullInfo.documentation = metamodel.documentation
+    ? V1_transformDataSpaceLink(metamodel.documentation)
+    : undefined;
+  fullInfo.website = metamodel.website
+    ? V1_transformDataSpaceLink(metamodel.website)
+    : undefined;
+  fullInfo.faqUrl = metamodel.faqUrl
+    ? V1_transformDataSpaceLink(metamodel.faqUrl)
+    : undefined;
+  fullInfo.supportUrl = metamodel.supportUrl
+    ? V1_transformDataSpaceLink(metamodel.supportUrl)
+    : undefined;
+  fullInfo.emails = metamodel.emails?.map(V1_transformDataSpaceEmail);
+  fullInfo.expertise = metamodel.expertise?.map(V1_transformDataSpaceExpertise);
+  return fullInfo;
+};
 
 export class DSL_DataSpace_PureProtocolProcessorPlugin
   extends PureProtocolProcessorPlugin
@@ -366,6 +479,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               combinedInfo.faqUrl = elementProtocol.supportInfo.faqUrl;
               combinedInfo.supportUrl = elementProtocol.supportInfo.supportUrl;
               element.supportInfo = combinedInfo;
+            } else if (
+              elementProtocol.supportInfo instanceof V1_DataSpaceSupportFullInfo
+            ) {
+              element.supportInfo = V1_buildDataSpaceSupportFullInfo(
+                elementProtocol.supportInfo,
+              );
             } else {
               throw new UnsupportedOperationError(
                 `Can't build data space support info`,
@@ -593,6 +712,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               combinedInfo.faqUrl = metamodel.supportInfo.faqUrl;
               combinedInfo.supportUrl = metamodel.supportInfo.supportUrl;
               protocol.supportInfo = combinedInfo;
+            } else if (
+              metamodel.supportInfo instanceof DataSpaceSupportFullInfo
+            ) {
+              protocol.supportInfo = V1_transformDataSpaceSupportFullInfo(
+                metamodel.supportInfo,
+              );
             } else {
               throw new UnsupportedOperationError(
                 `Can't transform data space support info`,

@@ -1,0 +1,58 @@
+###Mapping
+Mapping model::DummyMapping
+(
+)
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###DataSpace
+DataSpace model::dataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::DummyMapping;
+      defaultRuntime: model::DummyRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'Untitled';
+  description: 'some description';
+  supportInfo: {
+    documentation: { label: 'Docs'; url: 'https://example.org/docs'; };
+    website: { url: 'https://example.org'; };
+    faqUrl: { label: 'FAQ'; url: 'https://example.org/faq'; };
+    supportUrl: { url: 'https://example.org/support'; };
+    emails:
+    [
+      {
+        title: 'Data Steward';
+        address: 'steward@test.org';
+      },
+      {
+        title: 'On-call';
+        address: 'oncall@test.org';
+      }
+    ];
+    expertise:
+    [
+      {
+        description: 'Fixed Income SMEs';
+        expertIds: ['jdoe', 'asmith'];
+      },
+      {
+        description: 'Risk Analytics';
+      }
+    ];
+  };
+}

@@ -54,6 +54,10 @@ import {
   V1_DataSpaceMappingProvider,
   V1_DataSpaceSupportEmail,
   V1_DataSpaceSupportCombinedInfo,
+  V1_DataSpaceSupportFullInfo,
+  V1_DataSpaceLink,
+  V1_DataSpaceEmail,
+  V1_DataSpaceExpertise,
   V1_DataSpaceDiagram,
   V1_DataSpaceElementPointer,
   V1_DataSpaceTemplateExecutable,
@@ -64,6 +68,7 @@ import { V1_MappingIncludeDataSpace } from '../../model/packageableElements/mapp
 export const V1_DATA_SPACE_ELEMENT_PROTOCOL_TYPE = 'dataSpace';
 const V1_DATA_SPACE_SUPPORT_EMAIL_TYPE = 'email';
 const V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE = 'combined';
+const V1_DATA_SPACE_SUPPORT_FULL_INFO_TYPE = 'full';
 const V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE =
   'dataSpacePackageableElementExecutable';
 const V1_DATA_SPACE_TEMPLATE_EXECUTABLE = 'dataSpaceTemplateExecutable';
@@ -116,6 +121,38 @@ const V1_dataSpaceSupportCombinedInfoModelSchema = createModelSchema(
   },
 );
 
+const V1_dataSpaceLinkModelSchema = createModelSchema(V1_DataSpaceLink, {
+  label: optional(primitive()),
+  url: primitive(),
+});
+
+const V1_dataSpaceEmailModelSchema = createModelSchema(V1_DataSpaceEmail, {
+  address: primitive(),
+  title: primitive(),
+});
+
+const V1_dataSpaceExpertiseModelSchema = createModelSchema(
+  V1_DataSpaceExpertise,
+  {
+    description: optional(primitive()),
+    expertIds: optional(list(primitive())),
+  },
+);
+
+const V1_dataSpaceSupportFullInfoModelSchema = createModelSchema(
+  V1_DataSpaceSupportFullInfo,
+  {
+    _type: usingConstantValueSchema(V1_DATA_SPACE_SUPPORT_FULL_INFO_TYPE),
+    documentation: optional(usingModelSchema(V1_dataSpaceLinkModelSchema)),
+    documentationUrl: optional(primitive()),
+    emails: optionalCustomListWithSchema(V1_dataSpaceEmailModelSchema),
+    expertise: optionalCustomListWithSchema(V1_dataSpaceExpertiseModelSchema),
+    faqUrl: optional(usingModelSchema(V1_dataSpaceLinkModelSchema)),
+    supportUrl: optional(usingModelSchema(V1_dataSpaceLinkModelSchema)),
+    website: optional(usingModelSchema(V1_dataSpaceLinkModelSchema)),
+  },
+);
+
 const V1_serializeSupportInfo = (
   protocol: V1_DataSpaceSupportInfo | undefined,
 ): PlainObject<V1_DataSpaceSupportInfo> | typeof SKIP => {
@@ -126,6 +163,8 @@ const V1_serializeSupportInfo = (
     return serialize(V1_dataSpaceSupportEmailModelSchema, protocol);
   } else if (protocol instanceof V1_DataSpaceSupportCombinedInfo) {
     return serialize(V1_dataSpaceSupportCombinedInfoModelSchema, protocol);
+  } else if (protocol instanceof V1_DataSpaceSupportFullInfo) {
+    return serialize(V1_dataSpaceSupportFullInfoModelSchema, protocol);
   }
   throw new UnsupportedOperationError(`Can't serialize support info`, protocol);
 };
@@ -141,6 +180,8 @@ export const V1_deserializeSupportInfo = (
       return deserialize(V1_dataSpaceSupportEmailModelSchema, json);
     case V1_DATA_SPACE_SUPPORT_COMBINED_INFO_TYPE:
       return deserialize(V1_dataSpaceSupportCombinedInfoModelSchema, json);
+    case V1_DATA_SPACE_SUPPORT_FULL_INFO_TYPE:
+      return deserialize(V1_dataSpaceSupportFullInfoModelSchema, json);
     default: {
       throw new UnsupportedOperationError(
         `Can't deserialize support info of type '${json._type}'`,

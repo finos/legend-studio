@@ -17,7 +17,14 @@
       "name": "DataSpaceInfo",
       "package": "meta::pure::metamodel::dataSpace::profiles",
       "stereotypes": ["Verified", "InDevelopment", "External"],
-      "tags": ["deprecationNotice", "relatedDataSpaces", "topics"]
+      "tags": [
+        "deprecationNotice",
+        "relatedDataSpaces",
+        "topics",
+        "vendorLicenseStatus",
+        "vendorRelationshipOwner",
+        "vendorProviderName"
+      ]
     }
   ]
 }

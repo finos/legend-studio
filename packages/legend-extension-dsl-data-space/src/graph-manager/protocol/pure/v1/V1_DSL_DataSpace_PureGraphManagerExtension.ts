@@ -83,8 +83,10 @@ import {
   V1_DataSpaceMappingProvider,
   V1_DataSpaceSupportCombinedInfo,
   V1_DataSpaceSupportEmail,
+  V1_DataSpaceSupportFullInfo,
   V1_DataSpaceTemplateExecutable,
 } from '../../../../graph-manager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
+import { V1_buildDataSpaceSupportFullInfo } from '../DSL_DataSpace_PureProtocolProcessorPlugin.js';
 import {
   DataSpaceAnalysisResult,
   DataSpaceExecutableAnalysisResult,
@@ -607,6 +609,12 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         combinedInfo.supportUrl = analysisResult.supportInfo.supportUrl;
         combinedInfo.emails = analysisResult.supportInfo.emails;
         result.supportInfo = combinedInfo;
+      } else if (
+        analysisResult.supportInfo instanceof V1_DataSpaceSupportFullInfo
+      ) {
+        result.supportInfo = V1_buildDataSpaceSupportFullInfo(
+          analysisResult.supportInfo,
+        );
       }
       // NOTE: we will relax the check and not throw here for unknown support info type
     }
