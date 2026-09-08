@@ -24,6 +24,7 @@ import {
   IllegalStateError,
   type Writable,
   isNonNullable,
+  AbstractServerClient,
 } from '@finos/legend-shared';
 import { APPLICATION_EVENT } from '../__lib__/LegendApplicationEvent.js';
 import type { LegendApplicationConfig } from '../application/LegendApplicationConfig.js';
@@ -74,6 +75,16 @@ export class ApplicationStore<
 > {
   readonly uuid = uuid();
   accessToken: string | undefined = undefined;
+  /**
+   * Flag-driven switch for server clients to authenticate via an OAuth
+   * Bearer token (`getAccessToken()`) instead of the default session cookie.
+   * Driven entirely by `LegendApplicationConfig.enableTokenClient` — config
+   * is the source of truth, read directly from the shared base config class
+   * in the constructor below, uniformly across every app. Not a
+   * user-facing runtime toggle; `setEnableTokenClient()` exists mainly for
+   * tests.
+   */
+  enableTokenClient: boolean;
 
   /**
    * This is a mechanism to have the store holds references to extension states
@@ -120,6 +131,12 @@ export class ApplicationStore<
   constructor(config: T, pluginManager: V) {
     this.config = config;
     this.pluginManager = pluginManager;
+    this.enableTokenClient = config.enableTokenClient;
+    // registered once here rather than duplicated in every app's base store -
+    // see AbstractServerClient.setDefaultAuthenticationTokenProvider
+    AbstractServerClient.setDefaultAuthenticationTokenProvider(
+      this.resolveRequestToken,
+    );
 
     this.timeService = new TimeService();
     // NOTE: set the logger first so other loading could use the configured logger
@@ -238,6 +255,18 @@ export class ApplicationStore<
   getAccessToken(): string | undefined {
     return this.accessToken;
   }
+
+  setEnableTokenClient(value: boolean): void {
+    this.enableTokenClient = value;
+  }
+
+  /**
+   * Returns the token to use for the current request, or `undefined` when
+   * `enableTokenClient` is off (i.e. the caller should fall back to
+   * cookie-based session auth).
+   */
+  resolveRequestToken = (): string | undefined =>
+    this.enableTokenClient ? this.getAccessToken() : undefined;
 
   private _syncAccessTokenCookie(maxAge?: number): void {
     const domainAttr = this.config.legendCookieDomain

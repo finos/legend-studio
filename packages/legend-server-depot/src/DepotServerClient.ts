@@ -21,6 +21,7 @@ import {
 } from '@finos/legend-storage';
 import {
   type PlainObject,
+  type ServerClientConfig,
   AbstractServerClient,
   HttpHeader,
   ContentType,
@@ -42,13 +43,14 @@ import type { StoreProjectData } from './models/StoreProjectData.js';
 import { resolveVersion } from './DepotVersionAliases.js';
 import type { DependencyResolutionResponse } from './models/DependencyResolution.js';
 
-export interface DepotServerClientConfig {
+export interface DepotServerClientConfig extends ServerClientConfig {
   serverUrl: string;
 }
 
 export class DepotServerClient extends AbstractServerClient {
   constructor(config: DepotServerClientConfig) {
     super({
+      ...config,
       baseUrl: config.serverUrl,
     });
   }

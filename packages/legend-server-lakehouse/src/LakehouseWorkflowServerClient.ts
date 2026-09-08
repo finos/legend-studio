@@ -15,19 +15,15 @@
  */
 
 import type { V1_RawWorkflowTask } from '@finos/legend-graph';
-import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
+import {
+  AbstractServerClient,
+  type PlainObject,
+  type ServerClientConfig,
+} from '@finos/legend-shared';
 
-export interface LakehouseWorkflowServerClientConfig {
-  baseUrl: string;
-}
+export type LakehouseWorkflowServerClientConfig = ServerClientConfig;
 
 export class LakehouseWorkflowServerClient extends AbstractServerClient {
-  constructor(config: LakehouseWorkflowServerClientConfig) {
-    super({
-      baseUrl: config.baseUrl,
-    });
-  }
-
   // ------------------------------------------- Tasks -------------------------------------------
 
   private _tasks = (): string => `${this.baseUrl}/tasks`;

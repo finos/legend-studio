@@ -17,17 +17,7 @@
 import type { V1_TerminalProvisionPayload } from '@finos/legend-graph';
 import { AbstractServerClient, type PlainObject } from '@finos/legend-shared';
 
-export interface TerminalAccessServerClientConfig {
-  baseUrl: string;
-}
-
 export class TerminalAccessServerClient extends AbstractServerClient {
-  constructor(config: TerminalAccessServerClientConfig) {
-    super({
-      baseUrl: config.baseUrl,
-    });
-  }
-
   // ------------------------------------------- Terminals -------------------------------------------
 
   private _terminal = (): string => `${this.baseUrl}`;

@@ -90,6 +90,14 @@ export interface LegendApplicationConfigurationData {
   // See https://github.com/finos/legend-studio/issues/407
   // settingOverrides
   extensions?: ExtensionsConfigurationData;
+  /**
+   * Flag-driven switch for server clients to authenticate via an OAuth
+   * Bearer token instead of the default session cookie. See
+   * `ApplicationStore.resolveRequestToken`.
+   *
+   * Default to `false`.
+   */
+  enableTokenClient?: boolean;
 }
 
 export abstract class LegendApplicationConfig {
@@ -98,6 +106,7 @@ export abstract class LegendApplicationConfig {
   readonly env: string;
   readonly applicationStorageKey: string;
   readonly legendCookieDomain?: string | undefined;
+  readonly enableTokenClient: boolean;
 
   // documentation
   readonly documentationUrl?: string | undefined;
@@ -127,6 +136,7 @@ export abstract class LegendApplicationConfig {
       input.configData.application?.storageKey ??
       this.getDefaultApplicationStorageKey();
     this.legendCookieDomain = input.configData.legendCookieDomain;
+    this.enableTokenClient = Boolean(input.configData.enableTokenClient);
 
     // Documentation
     this.documentationUrl = input.configData.documentation?.url;

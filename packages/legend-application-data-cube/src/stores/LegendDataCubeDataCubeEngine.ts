@@ -1922,7 +1922,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
       await this._lakehouseIngestServerClient.getIngestDefinitionGrammar(
         rawSource.ingestDefinitionUrn,
         rawSource.ingestServerUrl,
-        authStore.getAccessToken(),
+        this._application.getAccessToken(),
       );
 
     const ingestPMCDPlainObject = await this.parseCompatibleModel(
@@ -1958,7 +1958,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const env =
       await this._lakehouseContractServerClient.getUserEntitlementEnvs(
         this._application.identityService.currentUser,
-        authStore.getAccessToken(),
+        this._application.getAccessToken(),
       );
     const userEnv = guaranteeNonNullable(
       env.users.map((e) => e.lakehouseEnvironment).at(0),
@@ -2022,7 +2022,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         ? V1_entitlementsDataProductDetailsResponseToDataProductDetails(
             await this._lakehouseContractServerClient.getDataProduct(
               extractEntityNameFromPath(rawSource.paths[0]),
-              authStore.getAccessToken(),
+              this._application.getAccessToken(),
             ),
           )
         : [];

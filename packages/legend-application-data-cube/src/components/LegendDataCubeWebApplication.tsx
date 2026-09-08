@@ -52,13 +52,9 @@ const LegendDataCubeWebApplicationRouter = observer(() => {
   const auth = useAuth();
 
   useEffect(() => {
-    if (auth.user?.access_token) {
-      authStore.setAccessToken(auth.user.access_token);
-      authStore.setUserManagerSettings(auth.settings);
-    } else {
-      authStore.setAccessToken(undefined);
-      authStore.setUserManagerSettings(undefined);
-    }
+    authStore.setUserManagerSettings(
+      auth.user?.access_token ? auth.settings : undefined,
+    );
   }, [auth]);
 
   return (

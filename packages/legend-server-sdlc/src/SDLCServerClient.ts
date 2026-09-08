@@ -33,6 +33,7 @@ import {
   type Parameters,
   type RequestProcessConfig,
   type ResponseProcessConfig,
+  type ServerClientConfig,
   AbstractServerClient,
   ContentType,
   type HttpMethod,
@@ -104,10 +105,9 @@ export interface ProjectReviewSeachOptions {
   limit?: number | undefined;
 }
 
-export interface SDLCServerClientConfig {
+export interface SDLCServerClientConfig extends ServerClientConfig {
   env: string;
   serverUrl: string;
-  baseHeaders?: RequestHeaders | undefined;
   client?: string | undefined;
   /**
    * Programmatic re-authentication hook invoked when the SDLC server returns
@@ -129,6 +129,7 @@ export class SDLCServerClient extends AbstractServerClient {
       baseUrl: config.serverUrl,
       baseHeaders: config.baseHeaders,
       autoReAuthenticate: config.autoReAuthenticate,
+      getAuthenticationToken: config.getAuthenticationToken,
     });
     this.env = config.env;
     this.client = config.client;

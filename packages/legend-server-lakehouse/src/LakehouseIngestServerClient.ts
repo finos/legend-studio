@@ -47,18 +47,16 @@ export class LakehouseIngestServerClient extends AbstractServerClient {
     }
   }
 
-  protected _token = (token?: string) => ({
-    Authorization: `Bearer ${token}`,
-  });
+  protected _token = (token?: string) => this.buildAuthorizationHeader(token);
 
   protected _tokenWithTextPlain = (token?: string) => ({
     [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN,
-    Authorization: `Bearer ${token}`,
+    ...this.buildAuthorizationHeader(token),
   });
 
   protected _tokenWithAcceptTextPlain = (token?: string) => ({
     [HttpHeader.ACCEPT]: ContentType.TEXT_PLAIN,
-    Authorization: `Bearer ${token}`,
+    ...this.buildAuthorizationHeader(token),
   });
 
   protected _dataProduct = (serverUrl?: string | undefined): string =>

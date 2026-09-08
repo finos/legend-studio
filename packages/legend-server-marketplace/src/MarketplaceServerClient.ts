@@ -16,6 +16,7 @@
 
 import {
   type PlainObject,
+  type ServerClientConfig,
   AbstractServerClient,
   isNonEmptyString,
 } from '@finos/legend-shared';
@@ -85,7 +86,7 @@ export interface TrendingDataProductEntry {
   licenseTo?: string;
 }
 
-export interface MarketplaceServerClientConfig {
+export interface MarketplaceServerClientConfig extends ServerClientConfig {
   serverUrl: string;
   subscriptionUrl: string;
 }
@@ -94,6 +95,7 @@ export class MarketplaceServerClient extends AbstractServerClient {
   subscriptionUrl: string;
   constructor(config: MarketplaceServerClientConfig) {
     super({
+      ...config,
       baseUrl: config.serverUrl,
       networkClientOptions: {
         // NOTE: with the way we setup this server, we allow any (*) origin for CORS
