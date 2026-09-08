@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.0.115
+
 ## 0.0.114
 
 ### Patch Changes

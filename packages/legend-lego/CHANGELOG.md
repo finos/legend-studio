@@ -1,5 +1,7 @@
 # @finos/legend-lego
 
+## 2.0.222
+
 ## 2.0.221
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.28
+
+### Patch Changes
+
+- [#5514](https://github.com/finos/legend-studio/pull/5514) [`de43280`](https://github.com/finos/legend-studio/commit/de432802e5e6076116ea9764af031bd4035299c4) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add a `getAuthenticationToken` hook (plus a static `setDefaultAuthenticationTokenProvider()` fallback on `AbstractServerClient`) so a request can carry `Authorization: Bearer <token>` instead of the default session cookie. The hook is resolved and the header attached directly in `NetworkClient.request()`, so it also works for callers that construct `NetworkClient` directly, not just `AbstractServerClient` subclasses. No behavior change when absent. Also adds `buildAuthorizationHeader()` to avoid emitting a literal `Bearer undefined` header.
+
 ## 11.0.27
 
 ### Patch Changes
