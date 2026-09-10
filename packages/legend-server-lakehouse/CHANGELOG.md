@@ -1,5 +1,7 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.83
+
 ## 0.3.82
 
 ### Patch Changes
