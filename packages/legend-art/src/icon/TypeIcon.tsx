@@ -34,6 +34,7 @@ import {
   PiFunctionBoldIcon,
   DatabaseImportIcon,
   SinglestoreIcon,
+  CpuIcon,
 } from './Icon.js';
 
 export const PURE_PrimitiveTypeIcon: React.FC = () => (
@@ -193,5 +194,11 @@ export const PURE_IngestIcon: React.FC = () => (
 export const PURE_MemSQLFunctionIcon: React.FC = () => (
   <div className="icon color--mem-sql-function">
     <SinglestoreIcon />
+  </div>
+);
+
+export const PURE_ComputeIcon: React.FC = () => (
+  <div className="icon color--compute">
+    <CpuIcon />
   </div>
 );

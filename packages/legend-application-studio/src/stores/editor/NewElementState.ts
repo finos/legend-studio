@@ -90,6 +90,10 @@ import {
   ModelAccessPointGroup,
   stub_Mapping,
   InternalDataProductType,
+  AppDirOwner,
+  Compute,
+  SnowflakeComputeSpecification,
+  SnowflakeWarehouseType,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
 import {
@@ -564,6 +568,21 @@ export class NewLakehouseDataProductDriver extends NewElementDriver<DataProduct>
   }
 }
 
+export class NewComputeDriver extends NewElementDriver<Compute> {
+  override get isValid(): boolean {
+    return true;
+  }
+
+  override createElement(name: string): Compute {
+    const compute = new Compute(name);
+    compute.owner = new AppDirOwner();
+    const specification = new SnowflakeComputeSpecification();
+    specification.warehouseType = SnowflakeWarehouseType.STANDARD;
+    compute.specification = specification;
+    return compute;
+  }
+}
+
 export class NewServiceDriver extends NewElementDriver<Service> {
   mappingOption?: PackageableElementOption<Mapping> | undefined;
   runtimeOption: RuntimeOption;
@@ -853,6 +872,9 @@ export class NewElementState {
         case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
           driver = new NewLakehouseDataProductDriver(this.editorStore);
           break;
+        case PACKAGEABLE_ELEMENT_TYPE._COMPUTE:
+          driver = new NewComputeDriver(this.editorStore);
+          break;
         default: {
           const extraNewElementDriverCreators = this.editorStore.pluginManager
             .getApplicationPlugins()
@@ -1090,6 +1112,10 @@ export class NewElementState {
         element = this.getNewElementDriver(
           NewLakehouseDataProductDriver,
         ).createElement(name);
+        break;
+      case PACKAGEABLE_ELEMENT_TYPE._COMPUTE:
+        element =
+          this.getNewElementDriver(NewComputeDriver).createElement(name);
         break;
       default: {
         const extraNewElementFromStateCreators = this.editorStore.pluginManager

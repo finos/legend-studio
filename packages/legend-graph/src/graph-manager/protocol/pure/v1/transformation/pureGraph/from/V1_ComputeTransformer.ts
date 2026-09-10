@@ -16,7 +16,6 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
-  type AppDirComputeOwner,
   type Compute,
   type ComputeSpecification,
   type DatabricksTag,
@@ -24,8 +23,8 @@ import {
   SnowflakeComputeSpecification,
   UnknownComputeSpecification,
 } from '../../../../../../../graph/metamodel/pure/compute/Compute.js';
+import type { AppDirOwner } from '../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
-  V1_AppDirComputeOwner,
   V1_Compute,
   type V1_ComputeSpecification,
   V1_DatabricksComputeSpecification,
@@ -33,6 +32,7 @@ import {
   V1_SnowflakeComputeSpecification,
   V1_UnknownComputeSpecification,
 } from '../../../model/packageableElements/compute/V1_Compute.js';
+import { V1_AppDirOwner } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformAppDirNode } from './V1_AppDirNodeTransformerHelper.js';
 
@@ -88,10 +88,8 @@ const V1_transformUnknownComputeSpecification = (
   return v1Spec;
 };
 
-const V1_transformComputeOwner = (
-  owner: AppDirComputeOwner,
-): V1_AppDirComputeOwner => {
-  const v1Owner = new V1_AppDirComputeOwner();
+const V1_transformComputeOwner = (owner: AppDirOwner): V1_AppDirOwner => {
+  const v1Owner = new V1_AppDirOwner();
   if (owner.production) {
     v1Owner.production = V1_transformAppDirNode(owner.production);
   }

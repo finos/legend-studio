@@ -98,6 +98,8 @@ import { IngestDefinitionEditorState } from '../../../stores/editor/editor-state
 import { IngestDefinitionEditor } from './ingest-editor/IngestDefinitionEditor.js';
 import { AvailabilityEditorState } from '../../../stores/editor/editor-state/element-editor-state/availability/AvailabilityEditorState.js';
 import { AvailabilityEditor } from './availability/AvailabilityEditor.js';
+import { ComputeEditorState } from '../../../stores/editor/editor-state/element-editor-state/compute/ComputeEditorState.js';
+import { ComputeEditor } from './compute-editor/ComputeEditor.js';
 import {
   MemSQLFunctionActivatorEditor,
   MemSQLFunctionActivatorEdtiorState,
@@ -295,6 +297,8 @@ export const EditorGroup = observer(() => {
             return <DataProductEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof AvailabilityEditorState) {
             return <AvailabilityEditor key={currentTabState.uuid} />;
+          } else if (currentTabState instanceof ComputeEditorState) {
+            return <ComputeEditor key={currentTabState.uuid} />;
           } else if (currentTabState instanceof PackageableRuntimeEditorState) {
             return <PackageableRuntimeEditor key={currentTabState.uuid} />;
           } else if (

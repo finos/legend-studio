@@ -16,7 +16,6 @@
 
 import { computed, makeObservable, observable, override } from 'mobx';
 import {
-  type AppDirComputeOwner,
   type Compute,
   type DatabricksTag,
   DatabricksComputeSpecification,
@@ -27,24 +26,7 @@ import {
   observe_Abstract_PackageableElement,
   skipObserved,
 } from './CoreObserverHelper.js';
-import { observe_AppDirNode } from './DataProductObserveHelper.js';
-
-const observe_AppDirComputeOwner = skipObserved(
-  (metamodel: AppDirComputeOwner): AppDirComputeOwner => {
-    makeObservable(metamodel, {
-      production: observable,
-      prodParallel: observable,
-      hashCode: computed,
-    });
-    if (metamodel.production) {
-      observe_AppDirNode(metamodel.production);
-    }
-    if (metamodel.prodParallel) {
-      observe_AppDirNode(metamodel.prodParallel);
-    }
-    return metamodel;
-  },
-);
+import { observe_AppDirOwner } from './DataProductObserveHelper.js';
 
 const observe_SnowflakeComputeSpecification = skipObserved(
   (metamodel: SnowflakeComputeSpecification): SnowflakeComputeSpecification => {
@@ -110,7 +92,7 @@ export const observe_Compute = skipObserved((metamodel: Compute): Compute => {
     _elementHashCode: override,
   });
 
-  observe_AppDirComputeOwner(metamodel.owner);
+  observe_AppDirOwner(metamodel.owner);
   if (metamodel.specification instanceof SnowflakeComputeSpecification) {
     observe_SnowflakeComputeSpecification(metamodel.specification);
   } else if (

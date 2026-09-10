@@ -28,24 +28,7 @@ import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
 } from '../../../Core_HashUtils.js';
-import type { AppDirNode } from '../packageableElements/ingest/IngestDefinition.js';
-
-export class AppDirComputeOwner implements Hashable {
-  /**
-   * Optional so an element can be saved while still being authored. The engine
-   * rejects a Compute without one.
-   */
-  production: AppDirNode | undefined;
-  prodParallel: AppDirNode | undefined;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.COMPUTE_APP_DIR_OWNER,
-      this.production?.hashCode ?? '',
-      this.prodParallel?.hashCode ?? '',
-    ]);
-  }
-}
+import type { AppDirOwner } from '../dataProduct/DataProduct.js';
 
 export abstract class ComputeSpecification implements Hashable {
   abstract get hashCode(): string;
@@ -210,7 +193,7 @@ export class DatabricksComputeSpecification
 }
 
 export class Compute extends PackageableElement {
-  owner!: AppDirComputeOwner;
+  owner!: AppDirOwner;
   specification!: ComputeSpecification;
 
   override accept_PackageableElementVisitor<T>(

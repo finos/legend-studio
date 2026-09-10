@@ -36,6 +36,7 @@ import {
   SnowflakeApp,
   SnowflakeM2MUdf,
   HostedService,
+  Compute,
   DataProduct,
   IngestDefinition,
   MemSQLFunction,
@@ -75,6 +76,7 @@ import { ArtifactGenerationViewerState } from './editor-state/ArtifactGeneration
 import { DataProductEditorState } from './editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 import { IngestDefinitionEditorState } from './editor-state/element-editor-state/ingest/IngestDefinitionEditorState.js';
 import { AvailabilityEditorState } from './editor-state/element-editor-state/availability/AvailabilityEditorState.js';
+import { ComputeEditorState } from './editor-state/element-editor-state/compute/ComputeEditorState.js';
 import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
 
 export class EditorTabManagerState extends TabManagerState {
@@ -190,6 +192,8 @@ export class EditorTabManagerState extends TabManagerState {
       return new DataProductEditorState(this.editorStore, element, config);
     } else if (element instanceof Availability) {
       return new AvailabilityEditorState(this.editorStore, element);
+    } else if (element instanceof Compute) {
+      return new ComputeEditorState(this.editorStore, element);
     } else if (element instanceof GenerationSpecification) {
       return new GenerationSpecificationEditorState(this.editorStore, element);
     } else if (element instanceof FileGenerationSpecification) {

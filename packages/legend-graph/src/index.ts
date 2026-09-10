@@ -231,7 +231,6 @@ export {
 export {
   V1_COMPUTE_ELEMENT_PROTOCOL_TYPE,
   V1_Compute,
-  V1_AppDirComputeOwner,
   V1_ComputeSpecification,
   V1_ComputeSpecificationType,
   V1_UnknownComputeSpecification,
@@ -817,7 +816,6 @@ export {
 } from './graph/metamodel/pure/dataProduct/DataProduct.js';
 export {
   Compute,
-  AppDirComputeOwner,
   ComputeSpecification,
   UnknownComputeSpecification,
   SnowflakeComputeSpecification,
