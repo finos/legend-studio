@@ -302,6 +302,20 @@ export const LegendMarketplaceIconToolbar = observer(() => {
       setAnchorEl(null);
     };
 
+    const handleDocumentationClick = (): void => {
+      const documentationUrl = applicationStore.config.options.documentationUrl;
+      if (documentationUrl) {
+        applicationStore.navigationService.navigator.visitAddress(
+          documentationUrl,
+        );
+        applicationStore.telemetryService.logEvent(
+          LEGEND_MARKETPLACE_APP_EVENT.CLICK_DOCUMENTATION,
+          {},
+        );
+      }
+      setAnchorEl(null);
+    };
+
     return (
       <>
         <IconButton
@@ -347,6 +361,11 @@ export const LegendMarketplaceIconToolbar = observer(() => {
           >
             About
           </MenuItem>
+          {applicationStore.config.options.documentationUrl && (
+            <MenuItem onClick={handleDocumentationClick}>
+              Documentation
+            </MenuItem>
+          )}
           {adjacentEnvState && adjacentUrl && (
             <MenuItem
               component="a"

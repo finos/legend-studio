@@ -29,6 +29,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   SCHEDULE_DEMO = 'marketplace.schedule.demo',
   CLICK_SUBSCRIBE_TO_NEWSLETTER = 'marketplace.click.subscribe.to.newsletter',
   CLICK_BROWSE_HISTORICAL_NEWSLETTERS = 'marketplace.click.browse.historical.newsletters',
+  CLICK_DOCUMENTATION = 'marketplace.click.documentation',
   PRODUCER_SEARCH_TOGGLE = 'marketplace.producer.search.toggle',
   FIELD_SEARCH_TOGGLE = 'marketplace.field.search.toggle',
   LAKEHOUSE_ACCESS_SEARCH_TOGGLE = 'marketplace.lakehouse-access.search.toggle',
