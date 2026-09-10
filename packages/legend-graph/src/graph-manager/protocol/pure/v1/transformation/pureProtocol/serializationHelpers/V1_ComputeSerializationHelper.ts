@@ -25,17 +25,14 @@ import {
 } from 'serializr';
 import {
   customListWithSchema,
-  optionalCustomUsingModelSchema,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
-  V1_AppDirComputeOwner,
   V1_Compute,
   V1_COMPUTE_ELEMENT_PROTOCOL_TYPE,
-  V1_COMPUTE_OWNER_APP_DIR_TYPE,
   V1_ComputeSpecificationType,
   V1_DatabricksComputeSpecification,
   V1_DatabricksTag,
@@ -43,16 +40,7 @@ import {
   V1_UnknownComputeSpecification,
   type V1_ComputeSpecification,
 } from '../../../model/packageableElements/compute/V1_Compute.js';
-import { V1_AppDirNodeModelSchema } from './lakehouse/V1_CoreEntitlementsSerializationHelper.js';
-
-const V1_appDirComputeOwnerModelSchema = createModelSchema(
-  V1_AppDirComputeOwner,
-  {
-    _type: usingConstantValueSchema(V1_COMPUTE_OWNER_APP_DIR_TYPE),
-    prodParallel: optionalCustomUsingModelSchema(V1_AppDirNodeModelSchema),
-    production: optionalCustomUsingModelSchema(V1_AppDirNodeModelSchema),
-  },
-);
+import { V1_AppDirOwnerModelSchema } from './V1_DataProductSerializationHelper.js';
 
 const V1_snowflakeComputeSpecificationModelSchema = createModelSchema(
   V1_SnowflakeComputeSpecification,
@@ -136,7 +124,7 @@ export const V1_computeModelSchema: ModelSchema<V1_Compute> = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_COMPUTE_ELEMENT_PROTOCOL_TYPE),
     name: primitive(),
-    owner: usingModelSchema(V1_appDirComputeOwnerModelSchema),
+    owner: usingModelSchema(V1_AppDirOwnerModelSchema),
     package: primitive(),
     specification: custom(
       V1_serializeComputeSpecification,

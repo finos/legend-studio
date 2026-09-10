@@ -16,15 +16,22 @@
 
 import { test, expect } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
+import { guaranteeType } from '@finos/legend-shared';
 import { TEST__getTestEditorStore } from '../__test-utils__/EditorStoreTestUtils.js';
 import { flowResult } from 'mobx';
 import { type EntityDiff, EntityChangeType } from '@finos/legend-server-sdlc';
-import { Class, getClassProperty } from '@finos/legend-graph';
+import {
+  Class,
+  getClassProperty,
+  SnowflakeComputeSpecification,
+  SnowflakeWarehouseSize,
+} from '@finos/legend-graph';
 import { property_setName } from '../../graph-modifier/DomainGraphModifierHelper.js';
 import {
   graph_addElement,
   graph_deleteElement,
 } from '../../graph-modifier/GraphModifierHelper.js';
+import { snowflakeSpec_setWarehouseSize } from '../../graph-modifier/DSL_Compute_GraphModifierHelper.js';
 
 const entities = [
   {
@@ -130,3 +137,106 @@ test(unitTest('Change detection works properly'), async () => {
   expect(change.entityChangeType).toEqual(EntityChangeType.DELETE);
   expect(change.oldPath).toEqual(_class.path);
 });
+
+const computeEntities = [
+  {
+    path: 'compute::SnowflakeWh',
+    content: {
+      _type: 'compute',
+      name: 'SnowflakeWh',
+      package: 'compute',
+      owner: {
+        _type: 'appDir',
+        production: { appDirId: 12345, level: 'DEPLOYMENT' },
+      },
+      specification: {
+        _type: 'snowflakeComputeSpecification',
+        autoSuspend: 60,
+        enableQueryAcceleration: false,
+        generation: 2,
+        maxClusterCount: 10,
+        minClusterCount: 1,
+        queryAccelerationMaxScaleFactor: 2,
+        scalingPolicy: 'STANDARD',
+        warehouseSize: 'SMALL',
+        warehouseType: 'STANDARD',
+      },
+    },
+    classifierPath:
+      'meta::external::compute::specification::metamodel::Compute',
+  },
+  {
+    path: 'compute::PartialWh',
+    content: {
+      _type: 'compute',
+      name: 'PartialWh',
+      package: 'compute',
+      owner: {
+        _type: 'appDir',
+        production: { appDirId: 12345, level: 'DEPLOYMENT' },
+      },
+      // Deliberately partial
+      specification: {
+        _type: 'snowflakeComputeSpecification',
+        autoResume: true,
+        warehouseSize: 'SMALL',
+        warehouseType: 'STANDARD',
+      },
+    },
+    classifierPath:
+      'meta::external::compute::specification::metamodel::Compute',
+  },
+];
+
+test(
+  unitTest('Change detection detects edits to a Compute element'),
+  async () => {
+    const editorStore = TEST__getTestEditorStore();
+
+    await editorStore.graphManagerState.graphManager.initialize({
+      env: 'test',
+      tabSize: 2,
+      clientConfig: {},
+    });
+    await editorStore.graphManagerState.initializeSystem();
+    await editorStore.graphManagerState.graphManager.buildGraph(
+      editorStore.graphManagerState.graph,
+      computeEntities,
+      editorStore.graphManagerState.graphBuildState,
+    );
+
+    editorStore.changeDetectionState.workspaceLocalLatestRevisionState.setEntityHashesIndex(
+      await editorStore.graphManagerState.graphManager.buildHashesIndex(
+        computeEntities,
+      ),
+    );
+
+    await flowResult(
+      editorStore.changeDetectionState.computeLocalChanges(true),
+    );
+    expect(
+      editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
+        .length,
+    ).toEqual(0);
+
+    const compute = editorStore.graphManagerState.graph.getCompute(
+      'compute::SnowflakeWh',
+    );
+    snowflakeSpec_setWarehouseSize(
+      guaranteeType(compute.specification, SnowflakeComputeSpecification),
+      SnowflakeWarehouseSize.LARGE,
+    );
+
+    await flowResult(
+      editorStore.changeDetectionState.computeLocalChanges(true),
+    );
+    expect(
+      editorStore.changeDetectionState.workspaceLocalLatestRevisionState.changes
+        .length,
+    ).toEqual(1);
+    const change = editorStore.changeDetectionState
+      .workspaceLocalLatestRevisionState.changes[0] as EntityDiff;
+    expect(change.entityChangeType).toEqual(EntityChangeType.MODIFY);
+    expect(change.oldPath).toEqual(compute.path);
+  },
+);

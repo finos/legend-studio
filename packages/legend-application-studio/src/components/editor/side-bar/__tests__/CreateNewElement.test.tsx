@@ -24,8 +24,14 @@ import {
   act,
   findByText,
 } from '@testing-library/react';
-import { toTitleCase } from '@finos/legend-shared';
+import { guaranteeType, toTitleCase } from '@finos/legend-shared';
 import { integrationTest } from '@finos/legend-shared/test';
+import {
+  AppDirOwner,
+  Compute,
+  SnowflakeComputeSpecification,
+  SnowflakeWarehouseType,
+} from '@finos/legend-graph';
 import {
   TEST__provideMockedEditorStore,
   TEST__setUpEditorWithDefaultSDLCData,
@@ -206,4 +212,43 @@ test(integrationTest('Create a service'), async () => {
   await waitFor(() => renderResult.getByTitle('Run Query'));
   await waitFor(() => renderResult.getByText('model::MyMapping'));
   await waitFor(() => renderResult.getByText(CUSTOM_LABEL));
+});
+
+test(integrationTest('Create a Compute'), async () => {
+  MockedMonacoEditorInstance.getValue.mockReturnValue('');
+  const ROOT_PACKAGE_NAME = 'model';
+  await addRootPackage(ROOT_PACKAGE_NAME, renderResult);
+  const packageExplorer = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.EXPLORER_TREES,
+  );
+  fireEvent.contextMenu(getByText(packageExplorer, ROOT_PACKAGE_NAME));
+  const contextMenu = await waitFor(() => renderResult.getByRole('menu'));
+  fireEvent.click(getByText(contextMenu, 'Compute'));
+  const modal = renderResult.getByTestId(
+    LEGEND_STUDIO_TEST_ID.NEW_ELEMENT_MODAL,
+  );
+  const nameInput = getByPlaceholderText(modal, 'Enter a name', {
+    exact: false,
+  });
+  fireEvent.change(nameInput, { target: { value: 'MyCompute' } });
+  // creation asks for nothing but a name; the rest is filled in from the editor
+  expect(getByText<HTMLButtonElement>(modal, 'Create').disabled).toBe(false);
+  await act(async () => {
+    fireEvent.click(getByText(modal, 'Create'));
+  });
+  getByText(packageExplorer, 'MyCompute');
+  const compute = await waitFor(() =>
+    MOCK__editorStore.graphManagerState.graph.getCompute('model::MyCompute'),
+  );
+  expect(compute).toBeInstanceOf(Compute);
+  expect(compute.owner).toBeInstanceOf(AppDirOwner);
+  expect(compute.owner.production).toBeUndefined();
+  expect(compute.owner.prodParallel).toBeUndefined();
+  const specification = guaranteeType(
+    compute.specification,
+    SnowflakeComputeSpecification,
+  );
+  expect(specification.warehouseType).toBe(SnowflakeWarehouseType.STANDARD);
+  expect(specification.warehouseSize).toBeUndefined();
+  expect(specification.minClusterCount).toBeUndefined();
 });

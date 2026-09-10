@@ -68,6 +68,7 @@ export * from './stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin
 export * from './stores/extensions/DSL_DataSpace_LegendStudioApplicationPlugin_Extension.js';
 export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extension.js';
 export { DataProductEditorState } from './stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
+export { ComputeEditorState } from './stores/editor/editor-state/element-editor-state/compute/ComputeEditorState.js';
 export { LEGEND_STUDIO_DOCUMENTATION_KEY } from './__lib__/LegendStudioDocumentation.js';
 export { LegendStudioTelemetryHelper } from './__lib__/LegendStudioTelemetryHelper.js';
 

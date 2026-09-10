@@ -16,21 +16,21 @@
 
 import { UnsupportedOperationError } from '@finos/legend-shared';
 import {
-  AppDirComputeOwner,
   type ComputeSpecification,
   DatabricksComputeSpecification,
   DatabricksTag,
   SnowflakeComputeSpecification,
   UnknownComputeSpecification,
 } from '../../../../../../../../graph/metamodel/pure/compute/Compute.js';
+import { AppDirOwner } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import {
-  type V1_AppDirComputeOwner,
   type V1_ComputeSpecification,
   type V1_DatabricksTag,
   V1_DatabricksComputeSpecification,
   V1_SnowflakeComputeSpecification,
   V1_UnknownComputeSpecification,
 } from '../../../../model/packageableElements/compute/V1_Compute.js';
+import type { V1_AppDirOwner } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_buildAppDirNode } from './V1_AppDirNodeBuilderHelper.js';
 
 const V1_buildSnowflakeComputeSpecification = (
@@ -87,10 +87,8 @@ const V1_buildUnknownComputeSpecification = (
   return spec;
 };
 
-export const V1_buildComputeOwner = (
-  v1Owner: V1_AppDirComputeOwner,
-): AppDirComputeOwner => {
-  const owner = new AppDirComputeOwner();
+export const V1_buildComputeOwner = (v1Owner: V1_AppDirOwner): AppDirOwner => {
+  const owner = new AppDirOwner();
   if (v1Owner.production) {
     owner.production = V1_buildAppDirNode(v1Owner.production);
   }

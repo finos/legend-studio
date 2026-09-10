@@ -41,6 +41,7 @@
   --color-data: var(--color-light-blue-50);
   --color-snowflake-app: var(--color-blue-40);
   --color-mem-sql-function: var(--color-purple-700);
+  --color-compute: var(--color-blue-40);
 }
 
 .color {
@@ -138,6 +139,10 @@
 
   &--mem-sql-function {
     color: var(--color-mem-sql-function);
+  }
+
+  &--compute {
+    color: var(--color-compute);
   }
 }
 

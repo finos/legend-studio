@@ -48,6 +48,7 @@ import {
   LinkIcon,
   PURE_DataProductIcon,
   PURE_IngestIcon,
+  PURE_ComputeIcon,
 } from '@finos/legend-art';
 import { PACKAGEABLE_ELEMENT_TYPE } from '../stores/editor/utils/ModelClassifierUtils.js';
 
@@ -96,6 +97,8 @@ export const getElementTypeIcon = (
       return <PURE_ConnectionIcon />;
     case PACKAGEABLE_ELEMENT_TYPE._DATA_PRODUCT:
       return <PURE_DataProductIcon />;
+    case PACKAGEABLE_ELEMENT_TYPE._COMPUTE:
+      return <PURE_ComputeIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.TEMPORARY__LOCAL_CONNECTION:
       return <LinkIcon />;
     case PACKAGEABLE_ELEMENT_TYPE.RUNTIME:

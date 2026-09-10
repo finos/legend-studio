@@ -49,6 +49,7 @@ import {
   TbMathFunction,
   TbReceipt,
   TbReport,
+  TbCpu,
   TbShieldCheck,
   TbSql,
   TbStopwatch,
@@ -72,6 +73,7 @@ export const Snowflake_BrandIcon = TbBrandSnowflake;
 export const Databricks_BrandIcon = TbBrandDatabricks;
 export const DatabaseImportIcon = TbDatabaseImport;
 export const FileUnknownIcon = TbFileUnknown;
+export const CpuIcon = TbCpu;
 export const Database = TbDatabase;
 
 //======================================================= TI =======================================================

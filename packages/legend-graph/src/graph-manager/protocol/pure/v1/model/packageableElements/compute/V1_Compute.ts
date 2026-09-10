@@ -27,7 +27,7 @@ import {
   CORE_HASH_STRUCTURE,
   hashObjectWithoutSourceInformation,
 } from '../../../../../../../graph/Core_HashUtils.js';
-import type { V1_AppDirNode } from '../../../lakehouse/entitlements/V1_CoreEntitlements.js';
+import type { V1_AppDirOwner } from '../dataProduct/V1_DataProduct.js';
 import {
   SnowflakeWarehouseType as V1_SnowflakeWarehouseType,
   SnowflakeWarehouseSize as V1_SnowflakeWarehouseSize,
@@ -47,21 +47,6 @@ export {
 };
 
 export const V1_COMPUTE_ELEMENT_PROTOCOL_TYPE = 'compute';
-
-export const V1_COMPUTE_OWNER_APP_DIR_TYPE = 'appDir';
-
-export class V1_AppDirComputeOwner implements Hashable {
-  production: V1_AppDirNode | undefined;
-  prodParallel: V1_AppDirNode | undefined;
-
-  get hashCode(): string {
-    return hashArray([
-      CORE_HASH_STRUCTURE.COMPUTE_APP_DIR_OWNER,
-      this.production?.hashCode ?? '',
-      this.prodParallel?.hashCode ?? '',
-    ]);
-  }
-}
 
 export enum V1_ComputeSpecificationType {
   SNOWFLAKE = 'snowflakeComputeSpecification',
@@ -171,7 +156,7 @@ export class V1_DatabricksComputeSpecification
 }
 
 export class V1_Compute extends V1_PackageableElement implements Hashable {
-  owner!: V1_AppDirComputeOwner;
+  owner!: V1_AppDirOwner;
   specification!: V1_ComputeSpecification;
 
   override get hashCode(): string {

@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import type { AppDirComputeOwner, AppDirNode } from '@finos/legend-graph';
-import { action } from 'mobx';
+// Compute's owner is the same `AppDirOwner` DataProduct uses
+export {
+  appDirNode_setAppDirId,
+  appDirOwner_setProdParallel,
+  appDirOwner_setProduction,
+} from './DSL_DataProduct_GraphModifierHelper.js';
 
-export const appDirComputeOwner_setProduction = action(
-  (owner: AppDirComputeOwner, node: AppDirNode | undefined) => {
-    owner.production = node;
-  },
-);
-
-export const appDirComputeOwner_setProdParallel = action(
-  (owner: AppDirComputeOwner, node: AppDirNode | undefined) => {
-    owner.prodParallel = node;
-  },
-);
+export * from './DSL_Compute_Snowflake_GraphModifierHelper.js';

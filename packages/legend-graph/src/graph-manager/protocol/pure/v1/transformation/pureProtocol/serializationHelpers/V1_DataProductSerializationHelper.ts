@@ -523,7 +523,8 @@ export const V1_serializeDataProductType = (
 
 // ---------------------------------------- Owner -----------------------------------------
 
-const V1_AppDirOwnerModelSchema = createModelSchema(V1_AppDirOwner, {
+// also used by Compute, whose owner is the same class
+export const V1_AppDirOwnerModelSchema = createModelSchema(V1_AppDirOwner, {
   _type: usingConstantValueSchema(V1_DataProductOwnerType.APP_DIR),
   prodParallel: optionalCustomUsingModelSchema(V1_AppDirNodeModelSchema),
   production: optionalCustomUsingModelSchema(V1_AppDirNodeModelSchema),

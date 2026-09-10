@@ -1,0 +1,146 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@use 'mixins' as *;
+
+.compute-editor {
+  height: 100%;
+  width: 100%;
+  background: var(--color-bg-app);
+
+  // the editor renders `PanelHeader` / `PanelContent` directly, with no `.panel`
+  // wrapper of its own — only the `panel__*` descendants below have a target
+  .panel {
+    &__header {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+      color: var(--color-text-secondary);
+      font-weight: bold;
+      background: var(--color-bg-app);
+      border-bottom: 0.1rem solid var(--color-border-default);
+    }
+
+    &__header__title__label {
+      background: var(--color-bg-tag);
+    }
+
+    &__header__action {
+      color: var(--color-text-muted);
+
+      :hover {
+        color: var(--color-text-secondary);
+      }
+    }
+
+    &__header__action[disabled] svg {
+      color: var(--color-text-disabled) !important;
+    }
+
+    &__content {
+      background: var(--color-bg-app);
+    }
+  }
+
+  &__content {
+    overflow-y: auto;
+    padding: 1rem;
+
+    .selector-input,
+    .selector-input--dark {
+      max-width: 45rem;
+    }
+
+    .panel__content__form {
+      padding: 2rem;
+
+      &__section + .panel__content__form__section {
+        margin-top: 2rem;
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  &__field-row {
+    display: flex;
+    gap: 1.5rem;
+    max-width: 45rem;
+    margin-left: 1rem;
+    margin-bottom: 2rem;
+
+    > * {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .panel__content__form__section {
+      padding: 0;
+
+      + .panel__content__form__section {
+        margin-top: 0;
+        margin-bottom: 0;
+      }
+    }
+
+    .panel__content__form__section__header__prompt:empty {
+      display: none;
+    }
+
+    .input--small,
+    .selector-input,
+    .selector-input--dark {
+      max-width: none;
+    }
+  }
+
+  // the warehouse type sits above the sections because it decides which of them
+  // apply at all — set apart so it doesn't read as one setting among many.
+  // No divider of its own: the first section header below already draws one,
+  // and a second rule just leaves a stray line floating in the gap.
+  &__lead-field {
+    .panel__content__form__section__header__label {
+      color: var(--color-text-secondary);
+      font-weight: 500;
+    }
+  }
+
+  &__section-header {
+    @include flexVCenter;
+
+    padding: 0.8rem 1rem 0.4rem;
+    margin-top: 1rem;
+    border-top: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    cursor: default;
+
+    &:first-child {
+      margin-top: 0;
+      border-top: none;
+    }
+  }
+
+  &__unknown-message {
+    margin: 1rem;
+    padding: 1rem;
+    border: 0.1rem solid var(--color-border-default);
+    color: var(--color-text-muted);
+    font-size: 1.2rem;
+    line-height: 1.6rem;
+  }
+}
