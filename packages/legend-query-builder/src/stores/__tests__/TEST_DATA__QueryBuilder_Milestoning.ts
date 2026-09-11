@@ -326,6 +326,344 @@ export const TEST_DATA__simpleProjectionWithBusinessTemporalSourceAndBiTemporalT
     ],
   };
 
+export const TEST_DATA__simpleProjectionWithMilestonedRootAndRowScopedNestedBusinessDate =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAll',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person',
+              },
+              {
+                _type: 'var',
+                name: 'businessDate',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'processingDate',
+                          },
+                          {
+                            _type: 'property',
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                            property: 'date',
+                          },
+                        ],
+                        property: 'biTemporal',
+                      },
+                    ],
+                    property: 'firmID',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+          },
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'string',
+                value: 'Bi Temporal/Firmid',
+              },
+            ],
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+        },
+        name: 'businessDate',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+      },
+      {
+        _type: 'var',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+        },
+        name: 'processingDate',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+      },
+    ],
+  };
+
+export const TEST_DATA__simpleFilterWithMilestonedRootAndRowScopedNestedBusinessDate =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'filter',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAll',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person',
+              },
+              {
+                _type: 'var',
+                name: 'businessDate',
+              },
+            ],
+          },
+          {
+            _type: 'lambda',
+            body: [
+              {
+                _type: 'func',
+                function: 'equal',
+                parameters: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'processingDate',
+                          },
+                          {
+                            _type: 'property',
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                            property: 'date',
+                          },
+                        ],
+                        property: 'biTemporal',
+                      },
+                    ],
+                    property: 'firmID',
+                  },
+                  {
+                    _type: 'integer',
+                    value: 0,
+                  },
+                ],
+              },
+            ],
+            parameters: [
+              {
+                _type: 'var',
+                name: 'x',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+        },
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'businessDate',
+      },
+      {
+        _type: 'var',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+        },
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+        name: 'processingDate',
+      },
+    ],
+  };
+
+export const TEST_DATA__simpleProjectionWithMilestonedRootAndDistinctNestedBusinessDate =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'project',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'getAll',
+            parameters: [
+              {
+                _type: 'packageableElementPtr',
+                fullPath: 'my::Person',
+              },
+              {
+                _type: 'var',
+                name: 'businessDate',
+              },
+            ],
+          },
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'property',
+                    parameters: [
+                      {
+                        _type: 'property',
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                          {
+                            _type: 'var',
+                            name: 'asOfDate',
+                          },
+                        ],
+                        property: 'businessTemporal',
+                      },
+                    ],
+                    property: 'firmID',
+                  },
+                ],
+                parameters: [
+                  {
+                    _type: 'var',
+                    name: 'x',
+                  },
+                ],
+              },
+            ],
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+          },
+          {
+            _type: 'collection',
+            values: [
+              {
+                _type: 'string',
+                value: 'Business Temporal/Firmid',
+              },
+            ],
+            multiplicity: {
+              lowerBound: 1,
+              upperBound: 1,
+            },
+          },
+        ],
+      },
+    ],
+    parameters: [
+      {
+        _type: 'var',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+        },
+        name: 'businessDate',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+      },
+      {
+        _type: 'var',
+        genericType: {
+          rawType: {
+            _type: 'packageableType',
+            fullPath: 'Date',
+          },
+        },
+        name: 'asOfDate',
+        multiplicity: {
+          lowerBound: 1,
+          upperBound: 1,
+        },
+      },
+    ],
+  };
+
 export const TEST_DATA__simpleProjectionWithBiTemporalSourceAndBiTemporalTarget =
   {
     _type: 'lambda',

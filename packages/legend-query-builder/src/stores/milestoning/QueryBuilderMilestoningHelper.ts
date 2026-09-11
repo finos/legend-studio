@@ -26,6 +26,7 @@ import {
   PrimitiveInstanceValue,
   PRIMITIVE_TYPE,
   type PureModel,
+  SimpleFunctionExpression,
   VariableExpression,
 } from '@finos/legend-graph';
 import {
@@ -289,6 +290,52 @@ export const generateMilestonedPropertyParameterValue = (
       derivedPropertyExpressionState,
     );
 };
+const isResolvableInQueryScope = (
+  value: ValueSpecification | undefined,
+  queryBuilderState: QueryBuilderState,
+): boolean => {
+  if (value instanceof PrimitiveInstanceValue) {
+    return true;
+  } else if (value instanceof VariableExpression) {
+    return (
+      queryBuilderState.parametersState.parameterStates.some(
+        (parameterState) => parameterState.variableName === value.name,
+      ) ||
+      queryBuilderState.constantState.constants.some(
+        (constant) => constant.variable.name === value.name,
+      )
+    );
+  } else if (value instanceof SimpleFunctionExpression) {
+    return value.parametersValues.every((parameterValue) =>
+      isResolvableInQueryScope(parameterValue, queryBuilderState),
+    );
+  }
+  return false;
+};
+
+const seedQueryBusinessDate = (
+  value: ValueSpecification | undefined,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  if (
+    queryBuilderState.milestoningState.businessDate === undefined &&
+    isResolvableInQueryScope(value, queryBuilderState)
+  ) {
+    queryBuilderState.milestoningState.setBusinessDate(value);
+  }
+};
+
+const seedQueryProcessingDate = (
+  value: ValueSpecification | undefined,
+  queryBuilderState: QueryBuilderState,
+): void => {
+  if (
+    queryBuilderState.milestoningState.processingDate === undefined &&
+    isResolvableInQueryScope(value, queryBuilderState)
+  ) {
+    queryBuilderState.milestoningState.setProcessingDate(value);
+  }
+};
 
 export const validateMilestoningPropertyExpressionChain = (
   sourceStereotype: MILESTONING_STEREOTYPE | undefined,
@@ -317,11 +364,13 @@ export const validateMilestoningPropertyExpressionChain = (
           `Property of milestoning sterotype '${MILESTONING_STEREOTYPE.BITEMPORAL}' should not have more than two parameters`,
         );
       }
-      queryBuilderState.milestoningState.setProcessingDate(
+      seedQueryProcessingDate(
         propertyExpression.parametersValues[1],
+        queryBuilderState,
       );
-      queryBuilderState.milestoningState.setBusinessDate(
+      seedQueryBusinessDate(
         propertyExpression.parametersValues[2],
+        queryBuilderState,
       );
     } else if (propertyExpression.parametersValues.length !== 2) {
       throw new UnsupportedOperationError(
@@ -329,14 +378,16 @@ export const validateMilestoningPropertyExpressionChain = (
       );
     }
     if (targetStereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-      queryBuilderState.milestoningState.setBusinessDate(
+      seedQueryBusinessDate(
         propertyExpression.parametersValues[1],
+        queryBuilderState,
       );
     } else if (
       targetStereotype === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL
     ) {
-      queryBuilderState.milestoningState.setProcessingDate(
+      seedQueryProcessingDate(
         propertyExpression.parametersValues[1],
+        queryBuilderState,
       );
     }
   }
@@ -346,23 +397,27 @@ export const validateMilestoningPropertyExpressionChain = (
       propertyExpression.parametersValues.length === 3 &&
       targetStereotype === MILESTONING_STEREOTYPE.BITEMPORAL
     ) {
-      queryBuilderState.milestoningState.setProcessingDate(
+      seedQueryProcessingDate(
         propertyExpression.parametersValues[1],
+        queryBuilderState,
       );
-      queryBuilderState.milestoningState.setBusinessDate(
+      seedQueryBusinessDate(
         propertyExpression.parametersValues[2],
+        queryBuilderState,
       );
     }
     if (propertyExpression.parametersValues.length === 2) {
       if (targetStereotype === MILESTONING_STEREOTYPE.BUSINESS_TEMPORAL) {
-        queryBuilderState.milestoningState.setBusinessDate(
+        seedQueryBusinessDate(
           propertyExpression.parametersValues[1],
+          queryBuilderState,
         );
       } else if (
         targetStereotype === MILESTONING_STEREOTYPE.PROCESSING_TEMPORAL
       ) {
-        queryBuilderState.milestoningState.setProcessingDate(
+        seedQueryProcessingDate(
           propertyExpression.parametersValues[1],
+          queryBuilderState,
         );
       }
     }
