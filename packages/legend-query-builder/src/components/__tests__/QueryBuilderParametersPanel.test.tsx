@@ -870,3 +870,54 @@ test(
     expect(getByText(executeDialog, 'var_1')).toStrictEqual(parameterValue);
   },
 );
+test(
+  integrationTest(
+    'Query builder optional date parameter shows No Value by default',
+  ),
+  async () => {
+    const { renderResult, queryBuilderState } = await TEST__setUpQueryBuilder(
+      TEST_DATA__ComplexRelationalModel,
+      stub_RawLambda(),
+      'model::relational::tests::simpleRelationalMapping',
+      'model::MyRuntime',
+      TEST_DATA__ModelCoverageAnalysisResult_ComplexRelational,
+    );
+
+    // StrictDate with [0..1] multiplicity (optional)
+    const paramLambda = TEST_DATA__simpeDateParameters(
+      PRIMITIVE_TYPE.STRICTDATE,
+    );
+    const firstParam = guaranteeNonNullable(
+      (
+        paramLambda.parameters as {
+          multiplicity: { lowerBound: number; upperBound: number };
+        }[]
+      )[0],
+    );
+    firstParam.multiplicity = { lowerBound: 0, upperBound: 1 };
+
+    await act(async () => {
+      queryBuilderState.initializeWithQuery(
+        create_RawLambda(paramLambda.parameters, paramLambda.body),
+      );
+    });
+
+    await waitFor(() =>
+      renderResult.getByTestId(QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS),
+    );
+    const parameterPanel = renderResult.getByTestId(
+      QUERY_BUILDER_TEST_ID.QUERY_BUILDER_PARAMETERS,
+    );
+    expect(getByText(parameterPanel, 'var_1')).not.toBeNull();
+
+    // Open the execute dialog
+    fireEvent.click(renderResult.getByText('Run Query'));
+    const executeDialog = await waitFor(() => renderResult.getByRole('dialog'));
+    expect(getByText(executeDialog, 'Set Parameter Values'));
+    expect(getByText(executeDialog, 'var_1')).not.toBeNull();
+    expect(getByText(executeDialog, 'StrictDate')).not.toBeNull();
+
+    // The key assertion: optional date should show 'No Value', not 'Today'
+    expect(getByText(executeDialog, 'No Value')).not.toBeNull();
+  },
+);
