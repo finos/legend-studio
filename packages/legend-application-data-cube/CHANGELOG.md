@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.108
+
+### Patch Changes
+
+- [#5525](https://github.com/finos/legend-studio/pull/5525) [`bd8848b`](https://github.com/finos/legend-studio/commit/bd8848b11cbafc853f068f5ca8509ec4660a6c21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix Lakehouse DataCube consumer data product loading so switching from Production to Production (parallel) immediately refetches the data product list.
+
 ## 0.7.107
 
 ## 0.7.106
