@@ -23,6 +23,10 @@ import { generateDataProductSampleQueryRoute } from '../../__lib__/LegendQueryNa
 import { DataProductSelectorState } from '../data-space/DataProductSelectorState.js';
 import { createQueryDataProductTaggedValue } from '../../components/data-product/QueryDataProductUtil.js';
 import { BaseTemplateQueryCreatorStore } from '../BaseTemplateQueryCreatorStore.js';
+import {
+  type LegendQueryDataProductSampleSourceInfo,
+  LegendQuerySourceType,
+} from '../../__lib__/LegendQuerySourceInfo.js';
 
 export class DataProductSampleQueryCreatorStore extends BaseTemplateQueryCreatorStore {
   readonly dataProductPath: string;
@@ -77,6 +81,17 @@ export class DataProductSampleQueryCreatorStore extends BaseTemplateQueryCreator
     return [createQueryDataProductTaggedValue(this.dataProductPath)];
   }
 
+  override getSourceInfo(): LegendQueryDataProductSampleSourceInfo {
+    return {
+      sourceType: LegendQuerySourceType.DATA_PRODUCT_SAMPLE,
+      groupId: this.groupId,
+      artifactId: this.artifactId,
+      versionId: this.versionId,
+      dataProduct: this.dataProductPath,
+      sampleQueryId: this.templateQueryId,
+    };
+  }
+
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const artifact = await this.fetchDataProductArtifact(
       this.groupId,
@@ -122,6 +137,7 @@ export class DataProductSampleQueryCreatorStore extends BaseTemplateQueryCreator
         this.applicationStore,
         this.lakehouseState?.contractServerClient,
       ),
+      this.getSourceInfo(),
     );
 
     const query = await this.graphManagerState.graphManager.pureCodeToLambda(
