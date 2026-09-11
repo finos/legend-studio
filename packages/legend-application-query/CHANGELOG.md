@@ -1,5 +1,13 @@
 # @finos/legend-application-query
 
+## 13.8.53
+
+### Patch Changes
+
+- [#5525](https://github.com/finos/legend-studio/pull/5525) [`bd8848b`](https://github.com/finos/legend-studio/commit/bd8848b11cbafc853f068f5ca8509ec4660a6c21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable unsupported export actions for Data Product and Ingest queries, and allow export actions to provide context-specific disabled messages in the query results menu.
+
+- [#5525](https://github.com/finos/legend-studio/pull/5525) [`bd8848b`](https://github.com/finos/legend-studio/commit/bd8848b11cbafc853f068f5ca8509ec4660a6c21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Switch Legend Query data product loading to the Lakehouse lite API and fetch only production data products.
+
 ## 13.8.52
 
 ## 13.8.51
