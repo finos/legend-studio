@@ -15,7 +15,9 @@
  */
 
 import type { TelemetryService } from '@finos/legend-application';
+import type { TimingsRecord } from '@finos/legend-shared';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
+import type { LegendQuerySourceInfo } from './LegendQuerySourceInfo.js';
 import {
   type GraphManagerOperationReport,
   GRAPH_MANAGER_EVENT,
@@ -46,6 +48,26 @@ type IntializeQueryState_TelemetryData = Query_TelemetryData &
     dependenciesCount: number;
   };
 
+export type InitializeQueryCreator_TelemetryData = {
+  source: LegendQuerySourceInfo | undefined;
+  /**
+   * Whether the most recently visited source was reopened, rather than the
+   * source being specified by the route
+   */
+  restoredFromRecent: boolean;
+  timings: TimingsRecord;
+};
+
+export type InitializeQueryCreatorFailure_TelemetryData =
+  InitializeQueryCreator_TelemetryData & {
+    errorMessage: string;
+    errorName: string;
+    /**
+     * The response status, when the failure is a network error
+     */
+    httpStatus?: number | undefined;
+  };
+
 export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
     service: TelemetryService,
@@ -60,6 +82,26 @@ export class LegendQueryTelemetryHelper {
   ): void {
     service.logEvent(
       LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_STATE__SUCCESS,
+      data,
+    );
+  }
+
+  static logEvent_InitializeQueryCreatorSucceeded(
+    service: TelemetryService,
+    data: InitializeQueryCreator_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
+      data,
+    );
+  }
+
+  static logEvent_InitializeQueryCreatorFailed(
+    service: TelemetryService,
+    data: InitializeQueryCreatorFailure_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
       data,
     );
   }

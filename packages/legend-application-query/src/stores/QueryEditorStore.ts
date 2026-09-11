@@ -39,6 +39,7 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
   filterByType,
+  NetworkClientError,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -141,6 +142,14 @@ import {
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import {
+  type LegendQueryDataProductSampleSourceInfo,
+  type LegendQueryDataProductSourceInfo,
+  type LegendQueryMappingSourceInfo,
+  type LegendQueryServiceSourceInfo,
+  type LegendQuerySourceInfo,
+  LegendQuerySourceType,
+} from '../__lib__/LegendQuerySourceInfo.js';
 import { type ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-data-space/application';
 import {
   type DataSpace,
@@ -608,9 +617,9 @@ export abstract class QueryEditorStore {
       return;
     }
 
+    const stopWatch = new StopWatch();
     try {
       this.initState.inProgress();
-      const stopWatch = new StopWatch();
 
       // TODO: when we genericize the way to initialize an application page
       this.applicationStore.assistantService.setIsHidden(true);
@@ -638,6 +647,7 @@ export abstract class QueryEditorStore {
       )) as QueryBuilderState;
       this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
+      this.logInitializeMetrics(stopWatch);
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
@@ -645,6 +655,9 @@ export abstract class QueryEditorStore {
         error,
       );
       this.applicationStore.notificationService.notifyError(error);
+      // NOTE: log before handling the failure, which may reset the editor
+      // state that the telemetry source is derived from
+      this.logInitializeFailureMetrics(stopWatch, error);
       this.onInitializeFailure();
       this.initState.fail();
     }
@@ -652,6 +665,58 @@ export abstract class QueryEditorStore {
 
   onInitializeFailure(): void {
     // Do Nothing
+  }
+
+  /**
+   * Where the query was started from, used as the source info of the query
+   * builder state. Since this is derived from the editor state (e.g. the
+   * route) rather than the query builder state, it is also available when
+   * the editor fails to initialize.
+   */
+  getSourceInfo(): LegendQuerySourceInfo | undefined {
+    return undefined;
+  }
+
+  /**
+   * Where the query was started from, reported when the query creator is
+   * initialized
+   */
+  getInitializeTelemetrySource(): {
+    source: LegendQuerySourceInfo | undefined;
+    restoredFromRecent: boolean;
+  } {
+    return {
+      source: this.getSourceInfo(),
+      restoredFromRecent: false,
+    };
+  }
+
+  logInitializeMetrics(stopWatch: StopWatch): void {
+    LegendQueryTelemetryHelper.logEvent_InitializeQueryCreatorSucceeded(
+      this.applicationStore.telemetryService,
+      {
+        ...this.getInitializeTelemetrySource(),
+        timings:
+          this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
+      },
+    );
+  }
+
+  logInitializeFailureMetrics(stopWatch: StopWatch, error: Error): void {
+    LegendQueryTelemetryHelper.logEvent_InitializeQueryCreatorFailed(
+      this.applicationStore.telemetryService,
+      {
+        ...this.getInitializeTelemetrySource(),
+        errorMessage: error.message,
+        errorName: error.name,
+        httpStatus:
+          error instanceof NetworkClientError
+            ? error.response.status
+            : undefined,
+        timings:
+          this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
+      },
+    );
   }
 
   *searchExistingQueryName(searchText: string): GeneratorFn<void> {
@@ -1282,6 +1347,10 @@ export abstract class QueryEditorStore {
       | ((val: ResolvedDataSpaceEntityWithOrigin) => void)
       | undefined,
     productSelectorState?: DataProductSelectorState | undefined,
+    sourceInfo?:
+      | LegendQueryDataProductSourceInfo
+      | LegendQueryDataProductSampleSourceInfo
+      | undefined,
   ): Promise<LegendQueryDataProductQueryBuilderState> {
     // 3. Build minimal graph and get analysis result
     const dataProductAnalysisResult =
@@ -1325,12 +1394,6 @@ export abstract class QueryEditorStore {
     }
     // 6. Create query builder state
     const projectInfo = { groupId, artifactId, versionId };
-    const sourceInfo = {
-      groupId,
-      artifactId,
-      versionId,
-      dataProduct: dataProductPath,
-    };
     const queryBuilderState = new LegendQueryDataProductQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -1352,7 +1415,12 @@ export abstract class QueryEditorStore {
       onLegacyDataSpaceChange,
       undefined,
       this.applicationStore.config.options.queryBuilderConfig,
-      sourceInfo,
+      sourceInfo ?? {
+        groupId,
+        artifactId,
+        versionId,
+        dataProduct: dataProductPath,
+      },
     );
 
     if (
@@ -1449,13 +1517,19 @@ export class MappingQueryCreatorStore extends QueryEditorStore {
     };
   }
 
-  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
-    const projectInfo = this.getProjectInfo();
-    const sourceInfo = {
-      groupId: projectInfo.groupId,
-      artifactId: projectInfo.artifactId,
-      versionId: projectInfo.versionId,
+  override getSourceInfo(): LegendQueryMappingSourceInfo {
+    return {
+      sourceType: LegendQuerySourceType.MAPPING,
+      groupId: this.groupId,
+      artifactId: this.artifactId,
+      versionId: this.versionId,
+      mapping: this.mappingPath,
+      runtime: this.runtimePath,
     };
+  }
+
+  async initializeQueryBuilderState(): Promise<QueryBuilderState> {
+    const sourceInfo = this.getSourceInfo();
     const queryBuilderState = new MappingQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -1574,6 +1648,16 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
     };
   }
 
+  override getSourceInfo(): LegendQueryServiceSourceInfo {
+    return {
+      sourceType: LegendQuerySourceType.SERVICE,
+      groupId: this.groupId,
+      artifactId: this.artifactId,
+      versionId: this.versionId,
+      service: this.servicePath,
+    };
+  }
+
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const service = this.graphManagerState.graph.getService(this.servicePath);
     assertType(
@@ -1582,13 +1666,7 @@ export class ServiceQueryCreatorStore extends QueryEditorStore {
       `Can't process service execution: only Pure execution is supported`,
     );
 
-    const projectInfo = this.getProjectInfo();
-    const sourceInfo = {
-      groupId: projectInfo.groupId,
-      artifactId: projectInfo.artifactId,
-      versionId: projectInfo.versionId,
-      service: service.path,
-    };
+    const sourceInfo = this.getSourceInfo();
     const queryBuilderState = new ServiceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,
@@ -2011,6 +2089,15 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         },
       },
     );
+  }
+
+  override logInitializeMetrics(): void {
+    // Do nothing: an existing query is not a query creator, viewing it is
+    // reported when the query builder state is initialized
+  }
+
+  override logInitializeFailureMetrics(): void {
+    // Do nothing: an existing query is not a query creator
   }
 
   setLightQuery(val: LightQuery): void {
