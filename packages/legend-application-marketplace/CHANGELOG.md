@@ -1,5 +1,18 @@
 # @finos/legend-application-marketplace
 
+## 0.4.6
+
+### Patch Changes
+
+- [#5517](https://github.com/finos/legend-studio/pull/5517) [`168dc68`](https://github.com/finos/legend-studio/commit/168dc681897eaf3d42682ddf8f37b28e38c8cca3) ([@eradityash](https://github.com/eradityash)) - Terminals and Add-Ons:
+
+  - Add advanced search for Terminals and Add-Ons orders.
+  - Fix Select button visibility in the terminal association modal
+  - Replace the "See All>" links on the Terminals & Add-Ons page with a "View more" pill button
+  - Fix the "Search within results" field on the Your Orders advanced search bar rendering with a search icon and floating label that were not readable/looked broken in dark mode
+
+- [#5517](https://github.com/finos/legend-studio/pull/5517) [`168dc68`](https://github.com/finos/legend-studio/commit/168dc681897eaf3d42682ddf8f37b28e38c8cca3) ([@eradityash](https://github.com/eradityash)) - Add EngHub URL support and event logging in Marketplace toolbar
+
 ## 0.4.5
 
 ### Patch Changes

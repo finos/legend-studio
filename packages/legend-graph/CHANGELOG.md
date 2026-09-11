@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.6.34
+
+### Patch Changes
+
+- [#5521](https://github.com/finos/legend-studio/pull/5521) [`1038e65`](https://github.com/finos/legend-studio/commit/1038e65772fa54bb68878a95cdc853e683d2cdf2) ([@ad-gs](https://github.com/ad-gs)) - Share `AppDirOwner` between `Compute` and `DataProduct` instead of mirroring it. The serialized form is unchanged.
+
 ## 32.6.33
 
 ## 32.6.32

@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.123
+
+### Patch Changes
+
+- [#5521](https://github.com/finos/legend-studio/pull/5521) [`1038e65`](https://github.com/finos/legend-studio/commit/1038e65772fa54bb68878a95cdc853e683d2cdf2) ([@ad-gs](https://github.com/ad-gs)) - Add a form-mode editor for the `Compute` packageable element (Snowflake specifications), along with the create-new-element flow and the Compute element icon. The form offers only the properties the selected warehouse type permits; non-Snowflake specifications fall back to text mode.
+
 ## 16.0.122
 
 ### Patch Changes
