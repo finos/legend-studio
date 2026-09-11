@@ -213,6 +213,7 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
       new DataProductSelectorState(
         this.depotServerClient,
         this.applicationStore,
+        this.lakehouseState?.contractServerClient,
       ),
       () => {
         this.applicationStore.notificationService.notifyWarning(

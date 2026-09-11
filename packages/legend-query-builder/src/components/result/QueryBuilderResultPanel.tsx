@@ -514,23 +514,27 @@ export const QueryBuilderResultPanel = observer(
             plugin as QueryBuilder_LegendApplicationPlugin_Extension
           ).getExtraQueryBuilderExportMenuActionConfigurations?.() ?? [],
       )
-      .map((item) => (
-        <MenuContentItem
-          key={item.key}
-          title={
-            !item.disableFunc?.(queryBuilderState)
-              ? item.title
-              : (item.disableMessage ?? 'Unsupported')
-          }
-          disabled={item.disableFunc?.(queryBuilderState) ?? false}
-          onClick={() => {
-            item.onClick(queryBuilderState);
-          }}
-        >
-          {item.icon && <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>}
-          <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
-        </MenuContentItem>
-      ));
+      .map((item) => {
+        const isDisabled = item.disableFunc?.(queryBuilderState) ?? false;
+        const disableMessage =
+          item.getDisableMessage?.(queryBuilderState) ?? item.disableMessage;
+
+        return (
+          <MenuContentItem
+            key={item.key}
+            title={!isDisabled ? item.title : (disableMessage ?? 'Unsupported')}
+            disabled={isDisabled}
+            onClick={() => {
+              item.onClick(queryBuilderState);
+            }}
+          >
+            {item.icon && (
+              <MenuContentItemIcon>{item.icon}</MenuContentItemIcon>
+            )}
+            <MenuContentItemLabel>{item.label}</MenuContentItemLabel>
+          </MenuContentItem>
+        );
+      });
 
     const isLoading =
       resultState.isRunningQuery || resultState.isGeneratingPlan;

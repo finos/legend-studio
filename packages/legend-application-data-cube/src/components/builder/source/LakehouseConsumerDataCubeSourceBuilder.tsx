@@ -114,6 +114,9 @@ export const LakehouseConsumerDataCubeSourceBuilder: React.FC<{
             }) => {
               sourceBuilder.setEnvMode(newVal.value);
               sourceBuilder.resetDataProduct();
+              flowResult(sourceBuilder.loadDataProducts(accessToken)).catch(
+                store.application.alertUnhandledError,
+              );
             }}
             value={{
               label:

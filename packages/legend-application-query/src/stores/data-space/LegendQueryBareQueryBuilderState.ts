@@ -89,7 +89,11 @@ export class LegendQueryBareQueryBuilderState extends BaseQueryBuilderState {
     this.changeHandlers = changeHandlers;
     this.productSelectorState =
       productSelectorState ??
-      new DataProductSelectorState(depotServerClient, applicationStore);
+      new DataProductSelectorState(
+        depotServerClient,
+        applicationStore,
+        editorStore.lakehouseState?.contractServerClient,
+      );
   }
 
   override get sideBarClassName(): string | undefined {

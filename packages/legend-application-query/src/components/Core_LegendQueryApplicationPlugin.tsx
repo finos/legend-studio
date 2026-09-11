@@ -141,6 +141,19 @@ import { LegendQueryDataProductQueryBuilderState } from '../stores/data-product/
 import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
 import { renderDataProductSampleQueryPanelContent } from './data-product/DataProductSampleQueryPanel.js';
 
+const isDataProductOrIngestQuery = (
+  queryBuilderState: QueryBuilderState,
+): boolean =>
+  queryBuilderState instanceof DataProductQueryBuilderState ||
+  queryBuilderState instanceof IngestLegendQueryBuilderState;
+
+const getUnsupportedExportActionMessage = (
+  queryBuilderState: QueryBuilderState,
+): string =>
+  isDataProductOrIngestQuery(queryBuilderState)
+    ? 'Not supported for Data Product or Ingest queries'
+    : 'Requires saved query';
+
 export const QUERY_DATACUBE_USAGE_TITLE = 'Legend DataCube';
 const QUERY_DATACUBE_SOURCE_TYPE = 'legendQuery';
 
@@ -387,6 +400,9 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
         title: 'Promote Curated Template query...',
         label: 'Curated Template Query',
         disableFunc: (queryBuilderState): boolean => {
+          if (isDataProductOrIngestQuery(queryBuilderState)) {
+            return true;
+          }
           if (
             queryBuilderState.workflowState.actionConfig instanceof
             QueryBuilderActionConfig_QueryApplication
@@ -463,13 +479,16 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           }
         },
         icon: <ArrowCircleUpIcon />,
-        disableMessage: 'Requires saved query',
+        getDisableMessage: getUnsupportedExportActionMessage,
       },
       {
         key: 'legend-datacube-query',
         title: 'Launch Legend DataCube...',
         label: 'Legend DataCube',
         disableFunc: (queryBuilderState): boolean => {
+          if (isDataProductOrIngestQuery(queryBuilderState)) {
+            return true;
+          }
           if (
             queryBuilderState.workflowState.actionConfig instanceof
             QueryBuilderActionConfig_QueryApplication
@@ -515,7 +534,7 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           }
         },
         icon: <CubeIcon />,
-        disableMessage: 'Requires saved query',
+        getDisableMessage: getUnsupportedExportActionMessage,
       },
     ];
   }

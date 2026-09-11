@@ -189,6 +189,7 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
   *loadDataProducts(access_token?: string): GeneratorFn<void> {
     try {
       this.dataProductLoadingState.inProgress();
+      const requestedEnvMode = this.envMode;
       const dataProducts =
         (yield this._contractServerClient.getAllLiteDataProducts(
           this.envMode,
@@ -197,7 +198,9 @@ export class LakehouseConsumerDataCubeSourceBuilderState extends LegendDataCubeS
         )) as PlainObject<V1_EntitlementsDataProductLiteResponse>;
       const dataProductLiteDetails =
         V1_entitlementsDataProductLiteResponseToDataProductLite(dataProducts);
-      this.setDataProducts(dataProductLiteDetails);
+      if (requestedEnvMode === this.envMode) {
+        this.setDataProducts(dataProductLiteDetails);
+      }
       this.dataProductLoadingState.complete();
     } catch (error) {
       assertErrorThrown(error);

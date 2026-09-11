@@ -204,6 +204,7 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
     this.productSelectorState = new DataProductSelectorState(
       depotServerClient,
       applicationStore,
+      this.lakehouseState?.contractServerClient,
     );
   }
 

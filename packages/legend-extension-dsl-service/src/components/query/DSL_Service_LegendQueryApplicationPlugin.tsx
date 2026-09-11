@@ -26,7 +26,54 @@ import { StoreProjectData } from '@finos/legend-server-depot';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { buildUrl } from '@finos/legend-shared';
 import { ServiceRegisterModal } from './ServiceRegisterModal.js';
-import type { QueryBuilderMenuActionConfiguration } from '@finos/legend-query-builder';
+import {
+  type QueryBuilderMenuActionConfiguration,
+  type QueryBuilderState,
+} from '@finos/legend-query-builder';
+import {
+  QueryDataProductLakehouseExecutionContextInfo,
+  QueryDataProductModelAccessExecutionContextInfo,
+  QueryDataProductNativeExecutionContextInfo,
+  QueryIngestExecutionContextInfo,
+} from '@finos/legend-graph';
+
+const getExistingQueryEditorStore = (
+  queryBuilderState: QueryBuilderState,
+): ExistingQueryEditorStore | undefined => {
+  if (
+    queryBuilderState.workflowState.actionConfig instanceof
+    QueryBuilderActionConfig_QueryApplication
+  ) {
+    const editorStore =
+      queryBuilderState.workflowState.actionConfig.editorStore;
+    if (editorStore instanceof ExistingQueryEditorStore) {
+      return editorStore;
+    }
+  }
+  return undefined;
+};
+
+const isDataProductOrIngestQuery = (
+  queryBuilderState: QueryBuilderState,
+): boolean => {
+  const editorStore = getExistingQueryEditorStore(queryBuilderState);
+  const executionContext = editorStore?.queryInfo?.executionContext;
+
+  return (
+    executionContext instanceof QueryDataProductNativeExecutionContextInfo ||
+    executionContext instanceof
+      QueryDataProductModelAccessExecutionContextInfo ||
+    executionContext instanceof QueryDataProductLakehouseExecutionContextInfo ||
+    executionContext instanceof QueryIngestExecutionContextInfo
+  );
+};
+
+const getUnsupportedExportActionMessage = (
+  queryBuilderState: QueryBuilderState,
+): string =>
+  isDataProductOrIngestQuery(queryBuilderState)
+    ? 'Not supported for Data Product or Ingest queries'
+    : 'Requires saved query';
 
 export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplicationPlugin {
   constructor() {
@@ -40,15 +87,11 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
         title: 'Productionize query...',
         label: 'Productionized Query',
         disableFunc: (queryBuilderState): boolean => {
-          if (
-            queryBuilderState.workflowState.actionConfig instanceof
-            QueryBuilderActionConfig_QueryApplication
-          ) {
-            const editorStore =
-              queryBuilderState.workflowState.actionConfig.editorStore;
-            return !(editorStore instanceof ExistingQueryEditorStore);
+          const editorStore = getExistingQueryEditorStore(queryBuilderState);
+          if (isDataProductOrIngestQuery(queryBuilderState)) {
+            return true;
           }
-          return true;
+          return !editorStore;
         },
         onClick: (queryBuilderState): void => {
           if (
@@ -100,12 +143,15 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
           }
         },
         icon: <ArrowCircleUpIcon />,
-        disableMessage: 'Requires saved query',
+        getDisableMessage: getUnsupportedExportActionMessage,
       },
       {
         key: 'export-as-dev-service',
         title: 'Register query as service',
         label: 'DEV Service',
+        disableFunc: (queryBuilderState): boolean =>
+          !getExistingQueryEditorStore(queryBuilderState) ||
+          isDataProductOrIngestQuery(queryBuilderState),
         onClick: (queryBuilderState): void => {
           if (
             queryBuilderState.workflowState.actionConfig instanceof
@@ -117,6 +163,7 @@ export class DSL_Service_LegendQueryApplicationPlugin extends LegendQueryApplica
           }
         },
         icon: <RocketIcon />,
+        getDisableMessage: getUnsupportedExportActionMessage,
         renderExtraComponent: (
           queryBuilderState,
         ): React.ReactNode | undefined => {

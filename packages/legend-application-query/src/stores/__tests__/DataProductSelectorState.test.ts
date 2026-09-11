@@ -25,7 +25,12 @@ import { ResolvedDataSpaceEntityWithOrigin } from '@finos/legend-extension-dsl-d
 import { DepotEntityWithOrigin } from '@finos/legend-storage';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '@finos/legend-extension-dsl-data-space/graph';
 import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
+import {
+  V1_DataProductOriginType,
+  V1_EntitlementsLakehouseEnvironmentType,
+} from '@finos/legend-graph';
 
 // ---------------------------------------------------------------------------
 // Mock helpers
@@ -47,8 +52,18 @@ const buildMockDepotServerClient = (overrides?: {
       (jest.fn() as AnyMockFn).mockResolvedValue([]),
   }) as unknown as DepotServerClient;
 
+const buildMockLakehouseContractServerClient = (overrides?: {
+  getAllLiteDataProducts?: AnyMockFn;
+}): LakehouseContractServerClient =>
+  ({
+    getAllLiteDataProducts:
+      overrides?.getAllLiteDataProducts ??
+      (jest.fn() as AnyMockFn).mockResolvedValue({ dataProducts: [] }),
+  }) as unknown as LakehouseContractServerClient;
+
 const buildMockApplicationStore = (overrides?: {
   NonProductionFeatureFlag?: boolean;
+  accessToken?: string | undefined;
 }): LegendQueryApplicationStore =>
   ({
     config: {
@@ -62,6 +77,9 @@ const buildMockApplicationStore = (overrides?: {
     logService: {
       error: jest.fn(),
     },
+    getAccessToken: jest
+      .fn<() => string | undefined>()
+      .mockReturnValue(overrides?.accessToken ?? 'test-access-token'),
   }) as unknown as LegendQueryApplicationStore;
 
 // ---------------------------------------------------------------------------
@@ -89,20 +107,6 @@ const TEST_DATA__storedDataSpaceEntity = (
         : {}),
     },
   },
-});
-
-const TEST_DATA__storedSummaryDataProductEntity = (
-  groupId: string,
-  artifactId: string,
-  versionId: string,
-  path: string,
-  classifierPath: string,
-) => ({
-  groupId,
-  artifactId,
-  versionId,
-  path,
-  classifierPath,
 });
 
 // ---------------------------------------------------------------------------
@@ -227,24 +231,39 @@ describe(unitTest('DataProductSelectorState'), () => {
       ];
 
       const mockDataProducts = [
-        TEST_DATA__storedSummaryDataProductEntity(
-          'org.finos',
-          'product-x',
-          '1.0.0',
-          'model::ProductX',
-          'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
-        ),
+        {
+          id: 'product-x',
+          deploymentId: 101,
+          title: 'Product X',
+          fullPath: 'model::ProductX',
+          origin: {
+            type: V1_DataProductOriginType.SDLC_DEPLOYMENT,
+            group: 'org.finos',
+            artifact: 'product-x',
+            version: '1.0.0',
+          },
+          lakehouseEnvironment: {
+            producerEnvironmentName: 'PROD',
+            type: V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+          },
+        },
       ];
 
       depotClient = buildMockDepotServerClient({
         getEntitiesByClassifier: (jest.fn() as AnyMockFn).mockResolvedValue(
           mockDataSpaces,
         ),
-        getEntitiesSummaryByClassifier: (
-          jest.fn() as AnyMockFn
-        ).mockResolvedValue(mockDataProducts),
       });
-      selectorState = new DataProductSelectorState(depotClient, appStore);
+      const lakehouseClient = buildMockLakehouseContractServerClient({
+        getAllLiteDataProducts: (jest.fn() as AnyMockFn).mockResolvedValue({
+          dataProducts: mockDataProducts,
+        }),
+      });
+      selectorState = new DataProductSelectorState(
+        depotClient,
+        appStore,
+        lakehouseClient,
+      );
 
       await flowResult(selectorState.loadProducts());
 
@@ -268,11 +287,23 @@ describe(unitTest('DataProductSelectorState'), () => {
           >
         )[0]?.path,
       ).toBe('model::ProductX');
+      expect(
+        (
+          selectorState.dataProducts as NonNullable<
+            typeof selectorState.dataProducts
+          >
+        )[0]?.name,
+      ).toBe('Product X');
 
       // State flags
       expect(selectorState.loadProductsState.hasSucceeded).toBe(true);
       expect(selectorState.isCompletelyLoaded).toBe(true);
       expect(selectorState.isFetchingProducts).toBe(false);
+      expect(lakehouseClient.getAllLiteDataProducts).toHaveBeenCalledWith(
+        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION,
+        undefined,
+        'test-access-token',
+      );
     },
   );
 
@@ -294,16 +325,22 @@ describe(unitTest('DataProductSelectorState'), () => {
         getEntitiesByClassifier: (jest.fn() as AnyMockFn).mockResolvedValue(
           mockDataSpaces,
         ),
-        getEntitiesSummaryByClassifier: jest.fn() as AnyMockFn,
       });
-      selectorState = new DataProductSelectorState(depotClient, appStore);
+      const lakehouseClient = buildMockLakehouseContractServerClient({
+        getAllLiteDataProducts: jest.fn() as AnyMockFn,
+      });
+      selectorState = new DataProductSelectorState(
+        depotClient,
+        appStore,
+        lakehouseClient,
+      );
       selectorState.disableDataProducts = true;
 
       await flowResult(selectorState.loadProducts());
 
       expect(selectorState.legacyDataProducts).toHaveLength(1);
       expect(selectorState.dataProducts).toHaveLength(0);
-      expect(depotClient.getEntitiesSummaryByClassifier).not.toHaveBeenCalled();
+      expect(lakehouseClient.getAllLiteDataProducts).not.toHaveBeenCalled();
       expect(selectorState.loadProductsState.hasSucceeded).toBe(true);
     },
   );

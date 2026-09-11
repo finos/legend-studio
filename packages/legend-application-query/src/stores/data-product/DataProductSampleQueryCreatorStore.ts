@@ -120,6 +120,7 @@ export class DataProductSampleQueryCreatorStore extends BaseTemplateQueryCreator
       new DataProductSelectorState(
         this.depotServerClient,
         this.applicationStore,
+        this.lakehouseState?.contractServerClient,
       ),
     );
 

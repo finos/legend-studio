@@ -1348,6 +1348,7 @@ export abstract class QueryEditorStore {
         new DataProductSelectorState(
           this.depotServerClient,
           this.applicationStore,
+          this.lakehouseState?.contractServerClient,
         ),
       onLegacyDataSpaceChange,
       undefined,
@@ -2264,6 +2265,7 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             new DataProductSelectorState(
               this.depotServerClient,
               this.applicationStore,
+              this.lakehouseState?.contractServerClient,
             ),
             () => {
               this.applicationStore.notificationService.notifyWarning(
