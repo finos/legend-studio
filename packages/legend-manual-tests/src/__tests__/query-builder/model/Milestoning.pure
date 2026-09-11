@@ -1,0 +1,13 @@
+###Pure
+Class <<meta::pure::profiles::temporal.businesstemporal>> my::Person
+{
+  name: String[1];
+  firmID: Integer[1];
+  date: DateTime[1];
+  biTemporal: my::Person1[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> my::Person1
+{
+  firmID: Integer[1];
+}

@@ -152,12 +152,15 @@ import { DEFAULT_LIMIT } from '../QueryBuilderResultState.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelational from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelational.json' with { type: 'json' };
 import TEST_MilestoningModel from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_Milestoning.json' with { type: 'json' };
 import {
+  TEST_DATA__simpleFilterWithMilestonedRootAndRowScopedNestedBusinessDate,
   TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass,
   TEST_DATA__simpleGetAllVersionsInRangeWithProcessingTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithBiTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithBusinessTemporalClass,
   TEST_DATA__simpleGetAllVersionsWithProcessingTemporalClass,
   TEST_DATA__simpleProjectionWithBusinessMilestonedColumn,
+  TEST_DATA__simpleProjectionWithMilestonedRootAndDistinctNestedBusinessDate,
+  TEST_DATA__simpleProjectionWithMilestonedRootAndRowScopedNestedBusinessDate,
 } from './TEST_DATA__QueryBuilder_Milestoning.js';
 import TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates from '../../stores/__tests__/TEST_DATA__QueryBuilder_Model_SimpleRelationalWithDates.json' with { type: 'json' };
 import { QueryBuilderAdvancedWorkflowState } from '../query-workflow/QueryBuilderWorkFlowState.js';
@@ -809,6 +812,24 @@ const cases: RoundtripTestCase[] = [
     'Simple getAllVersionsInRange() with business temporal class',
     milestoningCtx,
     TEST_DATA__simpleGetAllVersionsInRangeWithBusinessTemporalClass,
+    undefined,
+  ],
+  [
+    'Milestoned projection with a row-scoped date on a nested bitemporal property keeps the getAll() date',
+    milestoningCtx,
+    TEST_DATA__simpleProjectionWithMilestonedRootAndRowScopedNestedBusinessDate,
+    undefined,
+  ],
+  [
+    'Milestoned filter with a row-scoped date on a nested bitemporal property keeps the getAll() date',
+    milestoningCtx,
+    TEST_DATA__simpleFilterWithMilestonedRootAndRowScopedNestedBusinessDate,
+    undefined,
+  ],
+  [
+    'Milestoned projection with a distinct query parameter on a nested business temporal property keeps the getAll() date',
+    milestoningCtx,
+    TEST_DATA__simpleProjectionWithMilestonedRootAndDistinctNestedBusinessDate,
     undefined,
   ],
   // slice()

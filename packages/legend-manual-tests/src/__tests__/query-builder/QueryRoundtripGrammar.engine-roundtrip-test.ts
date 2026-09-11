@@ -234,6 +234,14 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Contact Name':x|$x.CONTACT_NAME, Region:x|$x.REGION])->filter(row|$row.'Contact Name'->isEmpty() || !$row.Region->isEmpty())",
   },
+
+  {
+    testName:
+      '[Milestoning] Row-scoped date on nested bitemporal property does not overwrite root getAll businessDate',
+    model: 'Milestoning',
+    queryGrammar:
+      "businessDate: Date[1], processingDate: Date[1]|my::Person.all($businessDate)->project([x|$x.biTemporal($processingDate, $x.date).firmID], ['Bi Temporal/Firm ID'])",
+  },
 ];
 
 const globalGraphManagerStates = new Map<string, GraphManagerState>();
