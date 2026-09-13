@@ -17,7 +17,12 @@
 import { describe, test, expect, jest } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
 import type { TelemetryService } from '@finos/legend-application';
-import { LegendQueryTelemetryHelper } from '../LegendQueryTelemetryHelper.js';
+import {
+  type InitializeQueryCreator_TelemetryData,
+  type InitializeQueryCreatorFailure_TelemetryData,
+  LegendQueryTelemetryHelper,
+} from '../LegendQueryTelemetryHelper.js';
+import { LegendQuerySourceType } from '../LegendQuerySourceInfo.js';
 import { LEGEND_QUERY_APP_EVENT } from '../LegendQueryEvent.js';
 
 type LoggedCall = { event: string; data: unknown };
@@ -102,3 +107,67 @@ describe(
     );
   },
 );
+
+describe(unitTest('LegendQueryTelemetryHelper - query creator'), () => {
+  test(
+    unitTest(
+      'logEvent_InitializeQueryCreatorSucceeded forwards source, restoredFromRecent and timings',
+    ),
+    () => {
+      const { service, calls } = buildTelemetryStub();
+      const data: InitializeQueryCreator_TelemetryData = {
+        source: {
+          sourceType: LegendQuerySourceType.INGEST,
+          groupId: 'org.example',
+          artifactId: 'sample-artifact',
+          versionId: '1.0.0',
+          ingestDefinitionPath: 'ingest::MyIngest',
+          dataSet: 'TRADES',
+        },
+        restoredFromRecent: false,
+        timings: { total: 1190 },
+      };
+      LegendQueryTelemetryHelper.logEvent_InitializeQueryCreatorSucceeded(
+        service,
+        data,
+      );
+      expect(calls).toHaveLength(1);
+      expect(calls[0]?.event).toBe(
+        LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
+      );
+      expect(calls[0]?.data).toEqual(data);
+    },
+  );
+
+  test(
+    unitTest(
+      'logEvent_InitializeQueryCreatorFailed forwards the source and the error',
+    ),
+    () => {
+      const { service, calls } = buildTelemetryStub();
+      const data: InitializeQueryCreatorFailure_TelemetryData = {
+        source: {
+          sourceType: LegendQuerySourceType.DATA_SPACE_TEMPLATE,
+          groupId: 'org.example',
+          artifactId: 'sample-artifact',
+          versionId: '1.0.0',
+          dataSpace: 'model::MyDataSpace',
+          templateQueryId: 'missing-template',
+        },
+        restoredFromRecent: false,
+        errorMessage: `Can't find template query with id 'missing-template'`,
+        errorName: 'Illegal State Error',
+        timings: { total: 640 },
+      };
+      LegendQueryTelemetryHelper.logEvent_InitializeQueryCreatorFailed(
+        service,
+        data,
+      );
+      expect(calls).toHaveLength(1);
+      expect(calls[0]?.event).toBe(
+        LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
+      );
+      expect(calls[0]?.data).toEqual(data);
+    },
+  );
+});

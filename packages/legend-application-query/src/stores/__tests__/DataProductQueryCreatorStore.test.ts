@@ -35,6 +35,7 @@ import {
   createSimpleVisitedDataspace,
 } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LegendQueryBareQueryBuilderState } from '../data-space/LegendQueryBareQueryBuilderState.js';
+import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 
 // ---------------------------------------------------------------------------
 // Mock UserDataService backed by a plain object
@@ -695,6 +696,168 @@ describe(unitTest('DataProductQueryCreatorStore'), () => {
           LegendQueryBareQueryBuilderState,
         );
         expect(store.initState.hasSucceeded).toBe(true);
+      },
+    );
+  });
+
+  // -----------------------------------------------------------------------
+  // restoreMostRecentlyVisited
+  // -----------------------------------------------------------------------
+
+  describe('restoreMostRecentlyVisited', () => {
+    test(
+      unitTest('reopens the most recently visited data space and flags it'),
+      () => {
+        LegendQueryUserDataHelper.addVisitedDatspace(
+          userDataService,
+          createSimpleVisitedDataspace(
+            'org.finos',
+            'my-artifact',
+            '1.0.0',
+            'model::MyDS',
+            'default',
+          ),
+        );
+
+        store.restoreMostRecentlyVisited();
+
+        expect(store.queryableElement).toBeInstanceOf(
+          QueryableLegacyDataProduct,
+        );
+        expect(store.queryableElement?.path).toBe('model::MyDS');
+        expect(store.isRestoredFromRecent).toBe(true);
+      },
+    );
+
+    test(
+      unitTest('does nothing when there is no visited data product or space'),
+      () => {
+        store.restoreMostRecentlyVisited();
+
+        expect(store.queryableElement).toBeUndefined();
+        expect(store.isRestoredFromRecent).toBe(false);
+      },
+    );
+  });
+
+  // -----------------------------------------------------------------------
+  // getInitializeTelemetrySource
+  // -----------------------------------------------------------------------
+
+  describe('getInitializeTelemetrySource', () => {
+    test(
+      unitTest(
+        'reports an unselected source when no data product or data space is selected',
+      ),
+      () => {
+        expect(store.getInitializeTelemetrySource()).toEqual({
+          source: { sourceType: LegendQuerySourceType.UNSELECTED },
+          restoredFromRecent: false,
+        });
+      },
+    );
+
+    test(unitTest('reports the selected data space'), () => {
+      store.setQueryableElement(
+        new QueryableLegacyDataProduct(
+          'org.finos',
+          'my-artifact',
+          '1.0.0',
+          'model::MyDS',
+          'default',
+        ),
+      );
+      store.isRestoredFromRecent = true;
+
+      expect(store.getInitializeTelemetrySource()).toEqual({
+        source: {
+          sourceType: LegendQuerySourceType.DATA_SPACE,
+          groupId: 'org.finos',
+          artifactId: 'my-artifact',
+          versionId: '1.0.0',
+          dataSpace: 'model::MyDS',
+          executionContext: 'default',
+        },
+        restoredFromRecent: true,
+      });
+    });
+
+    test(unitTest('reports the selected data product'), () => {
+      store.setQueryableElement(
+        new QueryableDataProduct(
+          'org.finos',
+          'my-product',
+          '1.0.0',
+          'model::MyDP',
+          'MODEL',
+          'ap1',
+        ),
+      );
+
+      expect(store.getInitializeTelemetrySource()).toEqual({
+        source: {
+          sourceType: LegendQuerySourceType.DATA_PRODUCT,
+          groupId: 'org.finos',
+          artifactId: 'my-product',
+          versionId: '1.0.0',
+          dataProduct: 'model::MyDP',
+          // the access type is normalized to lower case
+          accessType: 'model',
+          accessId: 'ap1',
+        },
+        restoredFromRecent: false,
+      });
+    });
+
+    test(
+      unitTest(
+        'omits the access point and execution context when they are not known',
+      ),
+      () => {
+        // e.g. reopening entries visited before these were recorded
+        store.setQueryableElement(
+          new QueryableDataProduct(
+            'org.finos',
+            'my-product',
+            '1.0.0',
+            'model::MyDP',
+            '',
+            '',
+          ),
+        );
+        // compare the serialized payload, as sent to telemetry
+        expect(
+          JSON.parse(
+            JSON.stringify(store.getInitializeTelemetrySource().source),
+          ),
+        ).toEqual({
+          sourceType: LegendQuerySourceType.DATA_PRODUCT,
+          groupId: 'org.finos',
+          artifactId: 'my-product',
+          versionId: '1.0.0',
+          dataProduct: 'model::MyDP',
+        });
+
+        store.setQueryableElement(
+          new QueryableLegacyDataProduct(
+            'org.finos',
+            'my-artifact',
+            '1.0.0',
+            'model::MyDS',
+            '',
+          ),
+        );
+        expect(
+          JSON.parse(
+            JSON.stringify(store.getInitializeTelemetrySource().source),
+          ),
+        ).toEqual({
+          sourceType: LegendQuerySourceType.DATA_SPACE,
+          groupId: 'org.finos',
+          artifactId: 'my-artifact',
+          versionId: '1.0.0',
+          dataSpace: 'model::MyDS',
+        });
       },
     );
   });

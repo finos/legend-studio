@@ -41,6 +41,10 @@ import {
 import { LegendQueryDataSpaceQueryBuilderState } from './query-builder/LegendQueryDataSpaceQueryBuilderState.js';
 import { DataProductSelectorState } from './DataProductSelectorState.js';
 import { BaseTemplateQueryCreatorStore } from '../BaseTemplateQueryCreatorStore.js';
+import {
+  type LegendQueryDataSpaceTemplateSourceInfo,
+  LegendQuerySourceType,
+} from '../../__lib__/LegendQuerySourceInfo.js';
 
 export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreatorStore {
   readonly dataSpacePath: string;
@@ -93,6 +97,17 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
     | { profile: string; tag: string; value: string }[]
     | undefined {
     return undefined;
+  }
+
+  override getSourceInfo(): LegendQueryDataSpaceTemplateSourceInfo {
+    return {
+      sourceType: LegendQuerySourceType.DATA_SPACE_TEMPLATE,
+      groupId: this.groupId,
+      artifactId: this.artifactId,
+      versionId: this.versionId,
+      dataSpace: this.dataSpacePath,
+      templateQueryId: this.templateQueryId,
+    };
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
@@ -184,12 +199,7 @@ export class DataSpaceTemplateQueryCreatorStore extends BaseTemplateQueryCreator
       isSnapshotVersion(this.versionId) ||
         this.versionId === SNAPSHOT_VERSION_ALIAS,
     );
-    const sourceInfo = {
-      groupId: this.groupId,
-      artifactId: this.artifactId,
-      versionId: this.versionId,
-      dataSpace: dataSpace.path,
-    };
+    const sourceInfo = this.getSourceInfo();
     const queryBuilderState = new LegendQueryDataSpaceQueryBuilderState(
       this.applicationStore,
       this.graphManagerState,

@@ -46,6 +46,10 @@ import {
   QueryBuilderActionConfig_QueryApplication,
 } from '../QueryEditorStore.js';
 import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
+import {
+  type LegendQueryIngestSourceInfo,
+  LegendQuerySourceType,
+} from '../../__lib__/LegendQuerySourceInfo.js';
 import { IngestLegendQueryBuilderState } from './IngestLegendQueryBuilderState.js';
 import {
   fetchIngestEntitiesByClassifier,
@@ -172,6 +176,17 @@ export class IngestQueryCreatorStore extends QueryEditorStore {
     });
   }
 
+  override getSourceInfo(): LegendQueryIngestSourceInfo {
+    return {
+      sourceType: LegendQuerySourceType.INGEST,
+      groupId: this.groupId,
+      artifactId: this.artifactId,
+      versionId: this.versionId,
+      ingestDefinitionPath: this.ingestDefinitionPath,
+      dataSet: this.dataSet,
+    };
+  }
+
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
     const ingestDefinition = guaranteeType(
       this.graphManagerState.graph.getElement(this.ingestDefinitionPath),
@@ -179,11 +194,7 @@ export class IngestQueryCreatorStore extends QueryEditorStore {
       `Can't find ingest definition '${this.ingestDefinitionPath}'`,
     );
 
-    const sourceInfo = {
-      groupId: this.groupId,
-      artifactId: this.artifactId,
-      versionId: this.versionId,
-    };
+    const sourceInfo = this.getSourceInfo();
 
     // Build an adhoc lakehouse runtime using the user's lakehouse env +
     // consumer warehouse — same machinery used by the data product flow for

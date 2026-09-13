@@ -16,7 +16,7 @@
 
 import { stub_RawLambda } from '@finos/legend-graph';
 import { guaranteeType } from '@finos/legend-shared';
-import { integrationTest } from '@finos/legend-shared/test';
+import { createSpy, integrationTest } from '@finos/legend-shared/test';
 import { test, expect, jest } from '@jest/globals';
 import TEST_DATA__DSL_DataSpace_AnalyticsResult from './TEST_DATA__DSL_DataSpace_AnalyticsResult.json' with { type: 'json' };
 import TEST_DATA__DSL_DataSpace_Entities from './TEST_DATA__DSL_DataSpace_Entities.json' with { type: 'json' };
@@ -44,6 +44,8 @@ import {
   QUERY_BUILDER_TEST_ID,
   QueryBuilder_GraphManagerPreset,
 } from '@finos/legend-query-builder';
+import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
+import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 
 test(
   integrationTest('Load Existing Data Product Query in Query Editor'),
@@ -228,6 +230,85 @@ test(
     expect(getByText(executeDialog, 'String')).toBeDefined();
     // verify preset parameter value from URL params is shown in the input
     expect(getByDisplayValue(executeDialog, 'value')).toBeDefined();
+  },
+);
+
+test(
+  integrationTest(
+    'Template data product query creator logs where the query was started from',
+  ),
+  async () => {
+    const mockedQueryEditorStore =
+      TEST__provideMockedDataSpaceTemplateQueryCreatorStore({
+        extraPlugins: [new DSL_DataSpace_LegendApplicationPlugin()],
+        extraPresets: [
+          new DSL_DataSpace_GraphManagerPreset(),
+          new QueryBuilder_GraphManagerPreset(),
+        ],
+      });
+    const logEventSpy = createSpy(
+      mockedQueryEditorStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+    await TEST__setUpDataSpaceTemplateQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__DSL_DataSpace_AnalyticsResult,
+      'domain::COVIDDatapace',
+      'dummyContext',
+      stub_RawLambda(),
+      TEST_DATA__DSL_DataSpace_Entities,
+    );
+
+    await waitFor(() =>
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
+        {
+          source: {
+            sourceType: LegendQuerySourceType.DATA_SPACE_TEMPLATE,
+            groupId: 'test-group',
+            artifactId: 'test-artifact',
+            versionId: 'test-version',
+            dataSpace: 'domain::COVIDDatapace',
+            templateQueryId: 'templateQuery',
+          },
+          restoredFromRecent: false,
+          timings: expect.objectContaining({ total: expect.any(Number) }),
+        },
+      ),
+    );
+  },
+);
+
+test(
+  integrationTest(
+    'Existing data product query does not log query creator initialization',
+  ),
+  async () => {
+    const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
+      extraPlugins: [new DSL_DataSpace_LegendApplicationPlugin()],
+      extraPresets: [new DSL_DataSpace_GraphManagerPreset()],
+    });
+    mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
+    const logEventSpy = createSpy(
+      mockedQueryEditorStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+    await TEST__setUpDataSpaceExistingQueryEditor(
+      mockedQueryEditorStore,
+      TEST_DATA__DSL_DataSpace_AnalyticsResult,
+      'domain::COVIDDatapace',
+      'dummyContext',
+      stub_RawLambda(),
+      TEST_DATA__DSL_DataSpace_Entities,
+    );
+
+    await waitFor(() =>
+      expect(mockedQueryEditorStore.initState.hasSucceeded).toBe(true),
+    );
+    expect(logEventSpy).not.toHaveBeenCalledWith(
+      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
+      expect.anything(),
+    );
   },
 );
 

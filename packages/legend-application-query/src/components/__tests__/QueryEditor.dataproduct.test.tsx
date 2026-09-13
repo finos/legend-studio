@@ -15,7 +15,11 @@
  */
 
 import { describe, test, expect, jest } from '@jest/globals';
-import { integrationTest, unitTest } from '@finos/legend-shared/test';
+import {
+  type createMock,
+  integrationTest,
+  unitTest,
+} from '@finos/legend-shared/test';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl,
   generateDataProductNativeRoute,
@@ -57,6 +61,7 @@ import {
   parseGAVCoordinates,
 } from '@finos/legend-storage';
 import { matchPath } from '@finos/legend-application/browser';
+import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 
 const TEST_DATA__DataProductEntities = [
   {
@@ -894,6 +899,57 @@ describe('Sample Query - Native Execution Context', () => {
       expect(mockWriteText).toHaveBeenCalledWith(
         expect.stringContaining('test::MyDataProduct'),
       );
+    },
+  );
+
+  test(
+    integrationTest(
+      'Sample Data Product Query tags its source info with the sample query',
+    ),
+    async () => {
+      const mockedQueryEditorStore =
+        TEST__provideMockedDataProductSampleQueryCreatorStore();
+
+      const sampleQueryInfo = new V1_TemplateExecutableInfo();
+      sampleQueryInfo.id = 'sampleQuery';
+      sampleQueryInfo.executionContextKey = 'defaultCtx';
+      sampleQueryInfo.query = 'test::myFunction__String_1_';
+      const sampleQuery = new V1_SampleQuery();
+      sampleQuery.title = 'Test Sample Query';
+      sampleQuery.info = sampleQueryInfo;
+      const nativeAccess = new V1_NativeModelAccessInfo();
+      nativeAccess.sampleQueries = [sampleQuery];
+      const dataProductInfo = new V1_DataProductInfo();
+      dataProductInfo.path = 'test::MyDataProduct';
+      const mockArtifact = new V1_DataProductArtifact();
+      mockArtifact.nativeModelAccess = nativeAccess;
+      mockArtifact.dataProduct = dataProductInfo;
+
+      await TEST__setUpDataProductSampleQueryEditor(
+        mockedQueryEditorStore,
+        'test::MyDataProduct',
+        'defaultCtx',
+        stub_RawLambda(),
+        TEST_DATA__DataProductAndNativeDataProductEntities,
+        mockArtifact,
+      );
+
+      // the shared data product builder is mocked, so check the source info
+      // the sample query creator passes to it
+      const buildCalls = (
+        mockedQueryEditorStore.buildDataProductQueryBuilderState as ReturnType<
+          typeof createMock
+        >
+      ).mock.calls;
+      expect(buildCalls).toHaveLength(1);
+      expect(buildCalls[0]?.[10]).toEqual({
+        sourceType: LegendQuerySourceType.DATA_PRODUCT_SAMPLE,
+        groupId: 'test-group',
+        artifactId: 'test-artifact',
+        versionId: 'test-version',
+        dataProduct: 'test::MyDataProduct',
+        sampleQueryId: 'sampleQuery',
+      });
     },
   );
 });

@@ -23,6 +23,8 @@ export enum LEGEND_QUERY_APP_EVENT {
   UPDATE_QUERY__SUCCESS = 'query-editor.update-query.success',
   RENAME_QUERY__SUCCESS = 'query-editor.rename.query.success',
   INITIALIZE_QUERY_STATE__SUCCESS = 'query-editor.initialize-query-state.success',
+  INITIALIZE_QUERY_CREATOR__SUCCESS = 'query-editor.initialize-query-creator.success',
+  INITIALIZE_QUERY_CREATOR__FAILURE = 'query-editor.initialize-query-creator.failure',
   LEGENDAI_QUERY_AGENT_CHAT__OPENED = 'query-editor.legendai-query-agent-chat.opened',
   LEGENDAI_QUERY_AGENT_CHAT__QUERY_LOADED = 'query-editor.legendai-query-agent-chat.query-loaded',
   LEGENDAI_QUERY_SUGGEST__LAUNCH = 'query-editor.legendai-query-suggest.launch',

@@ -82,6 +82,13 @@ import {
 } from '../../__lib__/LegendQueryUserDataSpaceHelper.js';
 import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 import {
+  type LegendQueryDataProductSourceInfo,
+  type LegendQueryDataSpaceSourceInfo,
+  type LegendQuerySourceInfo,
+  type LegendQueryUnselectedSourceInfo,
+  LegendQuerySourceType,
+} from '../../__lib__/LegendQuerySourceInfo.js';
+import {
   action,
   computed,
   flow,
@@ -177,9 +184,37 @@ const enum VisitedEntityType {
   DATAPRODUCT = 'DATAPRODUCT',
 }
 
+const getDataProductSourceInfo = (
+  element: QueryableDataProduct,
+): LegendQueryDataProductSourceInfo => ({
+  sourceType: LegendQuerySourceType.DATA_PRODUCT,
+  groupId: element.groupId,
+  artifactId: element.artifactId,
+  versionId: element.versionId,
+  dataProduct: element.dataProductPath,
+  // NOTE: these can be empty when reopening a data product visited before
+  // they were recorded
+  accessType: element.dataProductType || undefined,
+  accessId: element.id || undefined,
+});
+
+const getDataSpaceSourceInfo = (
+  element: QueryableLegacyDataProduct,
+): LegendQueryDataSpaceSourceInfo => ({
+  sourceType: LegendQuerySourceType.DATA_SPACE,
+  groupId: element.groupId,
+  artifactId: element.artifactId,
+  versionId: element.versionId,
+  dataSpace: element.dataSpacePath,
+  // NOTE: this can be empty when reopening a data space visited before it
+  // was recorded
+  executionContext: element.executionContext || undefined,
+});
+
 export class DataProductQueryCreatorStore extends QueryEditorStore {
   queryableElement: LegendQueryableElement | undefined;
   productSelectorState: DataProductSelectorState;
+  isRestoredFromRecent = false;
   declare queryBuilderState:
     | DataSpaceQueryBuilderState
     | LegendQueryDataProductQueryBuilderState
@@ -260,35 +295,45 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
     return undefined;
   }
 
+  /**
+   * Reopens the most recently visited data product or data space, used when
+   * the route does not specify one
+   */
+  restoreMostRecentlyVisited(): void {
+    const mostRecent = this.getMostRecentlyVisited();
+    if (!mostRecent) {
+      return;
+    }
+    if (mostRecent.type === VisitedEntityType.DATAPRODUCT) {
+      const visited = mostRecent.visited as VisitedDataProduct;
+      this.setQueryableElement(
+        new QueryableDataProduct(
+          visited.groupId,
+          visited.artifactId,
+          visited.versionId ?? LATEST_VERSION_ALIAS,
+          visited.path,
+          visited.dataProductAccessType ?? '',
+          visited.accessId ?? '',
+        ),
+      );
+    } else {
+      const visited = mostRecent.visited as VisitedLegacyDataProduct;
+      this.setQueryableElement(
+        new QueryableLegacyDataProduct(
+          visited.groupId,
+          visited.artifactId,
+          visited.versionId ?? LATEST_VERSION_ALIAS,
+          visited.path,
+          visited.execContext ?? '',
+        ),
+      );
+    }
+    this.isRestoredFromRecent = true;
+  }
+
   override *initialize(): GeneratorFn<void> {
     if (!this.queryableElement) {
-      const mostRecent = this.getMostRecentlyVisited();
-      if (mostRecent) {
-        if (mostRecent.type === VisitedEntityType.DATAPRODUCT) {
-          const visited = mostRecent.visited as VisitedDataProduct;
-          this.setQueryableElement(
-            new QueryableDataProduct(
-              visited.groupId,
-              visited.artifactId,
-              visited.versionId ?? LATEST_VERSION_ALIAS,
-              visited.path,
-              visited.dataProductAccessType ?? '',
-              visited.accessId ?? '',
-            ),
-          );
-        } else {
-          const visited = mostRecent.visited as VisitedLegacyDataProduct;
-          this.setQueryableElement(
-            new QueryableLegacyDataProduct(
-              visited.groupId,
-              visited.artifactId,
-              visited.versionId ?? LATEST_VERSION_ALIAS,
-              visited.path,
-              visited.execContext ?? '',
-            ),
-          );
-        }
-      }
+      this.restoreMostRecentlyVisited();
     }
     // Kick off product loading so dropdown data is available for all flows
     if (!this.productSelectorState.isCompletelyLoaded) {
@@ -297,6 +342,29 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
       );
     }
     yield flowResult(super.initialize());
+  }
+
+  override getSourceInfo():
+    | LegendQueryDataProductSourceInfo
+    | LegendQueryDataSpaceSourceInfo
+    | LegendQueryUnselectedSourceInfo {
+    if (this.queryableElement instanceof QueryableDataProduct) {
+      return getDataProductSourceInfo(this.queryableElement);
+    } else if (this.queryableElement instanceof QueryableLegacyDataProduct) {
+      return getDataSpaceSourceInfo(this.queryableElement);
+    }
+    // no data product or data space selected yet
+    return { sourceType: LegendQuerySourceType.UNSELECTED };
+  }
+
+  override getInitializeTelemetrySource(): {
+    source: LegendQuerySourceInfo | undefined;
+    restoredFromRecent: boolean;
+  } {
+    return {
+      source: this.getSourceInfo(),
+      restoredFromRecent: this.isRestoredFromRecent,
+    };
   }
 
   async initializeQueryBuilderState(): Promise<QueryBuilderState> {
@@ -413,6 +481,7 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
         );
       },
       this.productSelectorState,
+      getDataProductSourceInfo(queryableDataProduct),
     );
 
     // add to visited data products
@@ -462,12 +531,7 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
       isSnapshotVersion(queryableDataSpace.versionId) ||
         queryableDataSpace.versionId === SNAPSHOT_VERSION_ALIAS,
     );
-    const sourceInfo = {
-      groupId: queryableDataSpace.groupId,
-      artifactId: queryableDataSpace.artifactId,
-      versionId: queryableDataSpace.versionId,
-      dataSpace: dataSpace.path,
-    };
+    const sourceInfo = getDataSpaceSourceInfo(queryableDataSpace);
     const visitedDataSpaces =
       LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
         this.applicationStore.userDataService,
