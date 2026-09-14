@@ -43,7 +43,6 @@ const buildTags = (mcpServer: McpServer): CatalogCardTag[] => [
   ...(mcpServer.category?.slice(0, MAX_CARD_CATEGORY_CHIPS) ?? []).map(
     (category) => ({ label: category }),
   ),
-  { label: `v${mcpServer.version}` },
 ];
 
 export const LegendMarketplaceMcpServerCard = (props: {

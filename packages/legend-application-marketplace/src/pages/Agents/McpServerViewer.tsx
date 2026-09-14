@@ -257,11 +257,6 @@ const McpServerViewerHeader = observer(
               className="marketplace-mcp-server-viewer__tag marketplace-mcp-server-viewer__tag--live"
             />
           )}
-          <Chip
-            size="small"
-            label={`v${mcpServer.version}`}
-            className="marketplace-mcp-server-viewer__tag marketplace-mcp-server-viewer__tag--version"
-          />
           {mcpServer.requireApproval && (
             <Chip
               size="small"
@@ -473,7 +468,10 @@ const McpServerToolAccordion = (props: {
               }
             }}
           >
-            <AccordionSummary expandIcon={<ChevronDownIcon />}>
+            <AccordionSummary
+              expandIcon={<ChevronDownIcon />}
+              className="marketplace-mcp-server-viewer__tool-grounding-summary"
+            >
               LLM grounding rules
             </AccordionSummary>
             <AccordionDetails>
