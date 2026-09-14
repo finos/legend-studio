@@ -240,7 +240,7 @@ const TEST_CASES: QueryTestCase[] = [
       '[Milestoning] Row-scoped date on nested bitemporal property does not overwrite root getAll businessDate',
     model: 'Milestoning',
     queryGrammar:
-      "businessDate: Date[1], processingDate: Date[1]|my::Person.all($businessDate)->project([x|$x.biTemporal($processingDate, $x.date).firmID], ['Bi Temporal/Firm ID'])",
+      "{businessDate: Date[1], processingDate: Date[1]|my::Person.all($businessDate)->project([x|$x.biTemporal($processingDate, $x.date).firmID], ['Bi Temporal/Firm ID'])}",
   },
 ];
 
