@@ -36,8 +36,6 @@
   --mcp-viewer-approval-text: #a5610d;
   --mcp-viewer-category-bg: #deebff;
   --mcp-viewer-category-text: #1c4f7c;
-  --mcp-viewer-version-bg: #ece8fb;
-  --mcp-viewer-version-text: #54419b;
   --mcp-viewer-vendor-bg: rgb(128 128 128 / 14%);
   --mcp-viewer-vendor-text: var(--marketplace-text-secondary);
 
@@ -97,39 +95,26 @@
   }
 
   &__tag {
-    --mcp-viewer-tag-bg: var(--mcp-viewer-chip-bg);
-    --mcp-viewer-tag-text: var(--mcp-viewer-chip-text);
+    --mcp-viewer-pill-bg: var(--mcp-viewer-chip-bg);
+    --mcp-viewer-pill-text: var(--mcp-viewer-chip-text);
 
-    // MUI sets a palette colour on .MuiChip-root at the same specificity, so the
-    // pill palette is bound to the compound selector to stay on top of it.
-    &.MuiChip-root {
-      font-size: 1.2rem;
-      font-weight: 600;
-      border-radius: 999px;
-      background: var(--mcp-viewer-tag-bg);
-      color: var(--mcp-viewer-tag-text);
-    }
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 999px;
 
     &--live {
-      --mcp-viewer-tag-bg: var(--mcp-viewer-live-bg);
-      --mcp-viewer-tag-text: var(--mcp-viewer-live-text);
+      --mcp-viewer-pill-bg: var(--mcp-viewer-live-bg);
+      --mcp-viewer-pill-text: var(--mcp-viewer-live-text);
     }
 
     &--approval {
-      --mcp-viewer-tag-bg: var(--mcp-viewer-approval-bg);
-      --mcp-viewer-tag-text: var(--mcp-viewer-approval-text);
+      --mcp-viewer-pill-bg: var(--mcp-viewer-approval-bg);
+      --mcp-viewer-pill-text: var(--mcp-viewer-approval-text);
     }
 
     &--category {
-      --mcp-viewer-tag-bg: var(--mcp-viewer-category-bg);
-      --mcp-viewer-tag-text: var(--mcp-viewer-category-text);
-    }
-
-    &--version {
-      --mcp-viewer-tag-bg: var(--mcp-viewer-version-bg);
-      --mcp-viewer-tag-text: var(--mcp-viewer-version-text);
-
-      font-family: monospace;
+      --mcp-viewer-pill-bg: var(--mcp-viewer-category-bg);
+      --mcp-viewer-pill-text: var(--mcp-viewer-category-text);
     }
   }
 
@@ -214,6 +199,13 @@
     flex-direction: column;
     gap: 0.8rem;
     padding: 1.6rem 2rem;
+    // flex items default to their intrinsic width, which lets an unbreakable tool
+    // name or a wide documentation table push the card past the page grid
+    min-width: 0;
+
+    > * {
+      min-width: 0;
+    }
 
     &--scrollable {
       max-height: 34rem;
@@ -292,6 +284,7 @@
     padding: 0.2rem 0.5rem;
     border-radius: 0.3rem;
     background: var(--mcp-viewer-chip-bg);
+    color: var(--marketplace-text-primary);
     overflow-wrap: anywhere;
   }
 
@@ -311,9 +304,10 @@
   }
 
   &__chip {
+    --mcp-viewer-pill-bg: var(--mcp-viewer-chip-bg);
+    --mcp-viewer-pill-text: var(--marketplace-text-primary);
+
     font-size: 1.2rem;
-    background: var(--mcp-viewer-chip-bg);
-    color: var(--marketplace-text-primary);
   }
 
   &__link {
@@ -375,6 +369,18 @@
   }
 
   &__tool-summary {
+    gap: 1.2rem;
+
+    // the summary row is a flex container that refuses to shrink by default, so the
+    // heading and the pattern pill are allowed to shrink and wrap onto their own lines
+    .MuiAccordionSummary-content {
+      @include flexVCenter;
+
+      flex-wrap: wrap;
+      gap: 0.8rem 1.2rem;
+      min-width: 0;
+    }
+
     .MuiAccordionSummary-expandIconWrapper {
       color: var(--marketplace-text-primary);
 
@@ -389,6 +395,7 @@
     @include flexVCenter;
 
     gap: 0.4rem;
+    min-width: 0;
   }
 
   &__tool-title {
@@ -399,21 +406,46 @@
     padding: 0.2rem 0.6rem;
     border-radius: 0.3rem;
     background: var(--mcp-viewer-chip-bg);
+    // registry tool names are long unbroken identifiers with no natural break point
+    overflow-wrap: anywhere;
     user-select: text;
   }
 
   &__tool-pattern {
+    --mcp-viewer-pill-bg: var(--mcp-viewer-chip-bg);
+    --mcp-viewer-pill-text: var(--marketplace-text-secondary);
+
     font-family: monospace;
     font-size: 1.2rem;
-    margin-left: 1.2rem;
-    background: var(--mcp-viewer-chip-bg);
-    color: var(--marketplace-text-secondary);
+    height: auto;
+
+    .MuiChip-label {
+      white-space: normal;
+      overflow-wrap: anywhere;
+      padding-top: 0.3rem;
+      padding-bottom: 0.3rem;
+    }
   }
 
   &__tool-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
     font-size: 1.4rem;
     line-height: 1.7;
     color: var(--marketplace-text-primary);
+    min-width: 0;
+  }
+
+  &__tool-grounding-summary {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--marketplace-text-primary);
+
+    .MuiAccordionSummary-expandIconWrapper svg {
+      font-size: 2rem;
+      stroke-width: 1;
+    }
   }
 
   &__empty {
@@ -422,5 +454,108 @@
 
   &__retry {
     @include marketplaceInlineLinkButton;
+  }
+
+  // `.markdown-content` is themed globally against the legend-art semantic tokens,
+  // whose defaults are the dark palette, so tool documentation renders near-white text
+  // on this page; the block below re-binds it to the marketplace theme tokens.
+  &__tool-details .markdown-content {
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    color: var(--marketplace-text-primary);
+
+    a {
+      color: var(--marketplace-link-color);
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    strong {
+      color: var(--marketplace-text-primary);
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin: 1.6rem 0 1.2rem;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+    }
+
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-size: 1.5rem;
+      margin: 1.6rem 0 0.8rem;
+    }
+
+    h1,
+    h2 {
+      border-bottom-color: var(--mcp-viewer-border);
+    }
+
+    hr {
+      background: var(--mcp-viewer-border);
+    }
+
+    mark {
+      background: var(--mcp-viewer-chip-bg);
+      color: var(--marketplace-text-primary);
+    }
+
+    blockquote {
+      color: var(--marketplace-text-secondary);
+      border-left-color: var(--mcp-viewer-border);
+    }
+
+    code {
+      font-size: 1.3rem;
+      background: var(--mcp-viewer-chip-bg);
+      color: var(--marketplace-text-primary);
+    }
+
+    pre {
+      padding: 1.6rem;
+      font-size: 1.3rem;
+      background: var(--mcp-viewer-surface);
+      border: 0.1rem solid var(--mcp-viewer-border);
+      color: var(--marketplace-text-primary);
+    }
+
+    pre code {
+      font-size: 1.3rem;
+      color: inherit;
+    }
+
+    table {
+      font-size: 1.3rem;
+      background: var(--mcp-viewer-surface);
+    }
+
+    table th,
+    table td {
+      border-color: var(--mcp-viewer-border);
+    }
+
+    img {
+      background: transparent;
+    }
+  }
+
+  // MUI paints `.MuiChip-root` from its own palette, and the dark theme repaints every
+  // chip globally at the same specificity, so the viewer pills restate their palette
+  // through the page root to stay on top of both.
+  .marketplace-mcp-server-viewer__tag.MuiChip-root,
+  .marketplace-mcp-server-viewer__chip.MuiChip-root,
+  .marketplace-mcp-server-viewer__tool-pattern.MuiChip-root {
+    background: var(--mcp-viewer-pill-bg);
+    color: var(--mcp-viewer-pill-text);
   }
 }
