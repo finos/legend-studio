@@ -29,6 +29,7 @@ import {
   resolveUsableDataProductClasses,
   LakehouseRuntime,
   type LambdaFunction,
+  attachRuntimeFromQuery,
   attachWithFromQuery,
   type MappingModelCoverageAnalysisResult,
   PackageableElementExplicitReference,
@@ -858,6 +859,21 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         relationMetadata,
       );
       this.changeSourceElement(accessor);
+      this.executionContextState.setMapping(undefined);
+      if (
+        this.executionState instanceof LakehouseDataProductExecutionState &&
+        this.executionState.selectedRuntime
+      ) {
+        this.executionContextState.setRuntimeValue(
+          new RuntimePointer(
+            PackageableElementExplicitReference.create(
+              this.executionState.selectedRuntime,
+            ),
+          ),
+        );
+      } else {
+        this.executionContextState.setRuntimeValue(undefined);
+      }
     }
   }
 
@@ -894,6 +910,14 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       const runtime = this.executionState.selectedRuntime;
       if (runtime) {
         return attachWithFromQuery(lambdaFunction, this.dataProduct, runtime);
+      }
+      return lambdaFunction;
+    } else if (
+      this.executionState instanceof LakehouseDataProductExecutionState
+    ) {
+      const runtime = this.executionState.selectedRuntime;
+      if (runtime) {
+        return attachRuntimeFromQuery(lambdaFunction, runtime);
       }
       return lambdaFunction;
     }
