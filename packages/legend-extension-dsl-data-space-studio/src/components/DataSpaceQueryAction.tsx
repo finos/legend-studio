@@ -21,7 +21,7 @@ import {
   useEditorStore,
 } from '@finos/legend-application-studio';
 import { flowResult } from 'mobx';
-import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
+import { guaranteeType } from '@finos/legend-shared';
 import {
   DataSpace,
   resolveExecutionContextMapping,
@@ -42,10 +42,23 @@ export const queryDataSpace = async (
   editorStore: EditorStore,
 ): Promise<void> => {
   const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
-  const initialDefaultExecutionContext = guaranteeNonNullable(
-    dataSpace.defaultExecutionContext,
-    `Can't query data space '${dataSpace.path}': no default execution context defined`,
+  const initialExecutionContext =
+    dataSpace.defaultExecutionContext ?? dataSpace.executionContexts?.[0];
+  if (!initialExecutionContext) {
+    editorStore.applicationStore.notificationService.notifyWarning(
+      `Can't query data space '${dataSpace.path}': no execution context defined`,
+    );
+    return;
+  }
+  const initialMapping = resolveExecutionContextMapping(
+    initialExecutionContext,
   );
+  if (!initialMapping) {
+    editorStore.applicationStore.notificationService.notifyWarning(
+      `Can't query execution context '${initialExecutionContext.name}' of data space '${dataSpace.path}': no resolvable mapping configured`,
+    );
+    return;
+  }
   await flowResult(
     embeddedQueryBuilderState.setEmbeddedQueryBuilderConfiguration({
       setupQueryBuilderState: async () => {
@@ -62,7 +75,7 @@ export const queryDataSpace = async (
           QueryBuilderAdvancedWorkflowState.INSTANCE,
           QueryBuilderActionConfig.INSTANCE,
           dataSpace,
-          initialDefaultExecutionContext,
+          initialExecutionContext,
           false,
           undefined,
           async (dataSpaceInfo: ResolvedDataSpaceEntityWithOrigin) => {
@@ -72,10 +85,15 @@ export const queryDataSpace = async (
               ),
               DataSpace,
             );
-            const targetDefault = guaranteeNonNullable(
-              queryBuilderState.dataSpace.defaultExecutionContext,
-              `Can't query data space '${queryBuilderState.dataSpace.path}': no default execution context defined`,
-            );
+            const targetDefault =
+              queryBuilderState.dataSpace.defaultExecutionContext ??
+              queryBuilderState.dataSpace.executionContexts?.[0];
+            if (!targetDefault) {
+              editorStore.applicationStore.notificationService.notifyWarning(
+                `Can't query data space '${queryBuilderState.dataSpace.path}': no execution context defined`,
+              );
+              return;
+            }
             queryBuilderState.setExecutionContext(targetDefault);
             await queryBuilderState.propagateExecutionContextChange();
           },
@@ -86,15 +104,14 @@ export const queryDataSpace = async (
           editorStore.applicationStore.config.options.queryBuilderConfig,
           sourceInfo,
         );
-        queryBuilderState.setExecutionContext(initialDefaultExecutionContext);
-        const mapping = guaranteeNonNullable(
-          resolveExecutionContextMapping(queryBuilderState.executionContext),
-          `Can't query execution context '${queryBuilderState.executionContext.name}': no resolvable mapping configured`,
+        queryBuilderState.setExecutionContext(initialExecutionContext);
+        queryBuilderState.setShowRuntimeSelector(
+          initialExecutionContext.defaultRuntime === undefined,
         );
-        queryBuilderState.changeMapping(mapping);
+        queryBuilderState.changeMapping(initialMapping);
         const mappingModelCoverageAnalysisResult =
           queryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
-            mapping.path,
+            initialMapping.path,
           );
         if (mappingModelCoverageAnalysisResult) {
           queryBuilderState.explorerState.mappingModelCoverageAnalysisResult =
@@ -107,7 +124,7 @@ export const queryDataSpace = async (
         }
         const compatibleClasses = resolveUsableDataSpaceClasses(
           queryBuilderState.dataSpace,
-          mapping,
+          initialMapping,
           queryBuilderState.graphManagerState,
         );
         if (

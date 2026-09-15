@@ -94,6 +94,10 @@ export const editDataSpaceExecutableTemplateInQueryBuilder = async (
           sourceInfo,
         );
         queryBuilderState.setExecutionContext(executionContext);
+        queryBuilderState.setRestrictToCurrentDataSpace(true);
+        queryBuilderState.setShowRuntimeSelector(
+          executionContext.defaultRuntime === undefined,
+        );
         queryBuilderState.changeMapping(mapping);
         const mappingModelCoverageAnalysisResult =
           queryBuilderState.dataSpaceAnalysisResult?.mappingToMappingCoverageResult?.get(
