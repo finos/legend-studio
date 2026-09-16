@@ -47,6 +47,7 @@ import {
   type PackageableElementOption,
 } from '@finos/legend-lego/graph-editor';
 import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../stores/QueryBuilder_LegendApplicationPlugin_Extension.js';
+import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
 
 export const getParameterValue = (
   parameter: ValueSpecification | undefined,
@@ -130,6 +131,15 @@ export const QueryBuilderClassSelector = observer(
         return;
       }
       queryBuilderState.changeSourceElement(val.value);
+      QueryBuilderTelemetryHelper.logEvent_ExecutionContextChanged(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            subtype: 'class',
+          },
+        },
+      );
       onClassChange?.(val.value);
     };
 
@@ -256,6 +266,15 @@ const BasicQueryBuilderSetup = observer(
         return;
       }
       queryBuilderState.changeMapping(val.value);
+      QueryBuilderTelemetryHelper.logEvent_ExecutionContextChanged(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            subtype: 'mapping',
+          },
+        },
+      );
     };
     const mappingFilterOption = createFilter({
       ignoreCase: true,
@@ -287,6 +306,15 @@ const BasicQueryBuilderSetup = observer(
         return;
       }
       queryBuilderState.changeRuntime(val.value);
+      QueryBuilderTelemetryHelper.logEvent_ExecutionContextChanged(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            subtype: 'runtime',
+          },
+        },
+      );
     };
     const runtimeFilterOption = createFilter({
       ignoreCase: true,

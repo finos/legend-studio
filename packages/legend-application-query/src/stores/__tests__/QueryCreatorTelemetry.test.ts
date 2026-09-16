@@ -16,7 +16,11 @@
 
 import { describe, test, expect } from '@jest/globals';
 import { createSpy, unitTest } from '@finos/legend-shared/test';
-import { NetworkClientError } from '@finos/legend-shared';
+import {
+  DEFAULT_TELEMETRY_MESSAGE_LENGTH_LIMIT,
+  NetworkClientError,
+} from '@finos/legend-shared';
+import { QUERY_BUILDER_EVENT } from '@finos/legend-query-builder';
 import { flowResult } from 'mobx';
 import {
   ApplicationStore,
@@ -114,7 +118,7 @@ describe(unitTest('Query creator initialization telemetry'), () => {
       expect(logEventSpy).toHaveBeenCalledWith(
         LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
         {
-          source: MAPPING_SOURCE_INFO,
+          ...MAPPING_SOURCE_INFO,
           restoredFromRecent: false,
           errorMessage: 'Engine is down',
           errorName: 'Error',
@@ -122,8 +126,10 @@ describe(unitTest('Query creator initialization telemetry'), () => {
           timings: expect.objectContaining({ total: expect.any(Number) }),
         },
       );
+      // a failed load never builds a query builder, so there is no `opened`
+      // event to pair with — the failure event is the only record of the attempt
       expect(logEventSpy).not.toHaveBeenCalledWith(
-        LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
+        QUERY_BUILDER_EVENT.OPENED,
         expect.anything(),
       );
     },
@@ -156,11 +162,63 @@ describe(unitTest('Query creator initialization telemetry'), () => {
       expect(logEventSpy).toHaveBeenCalledWith(
         LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
         expect.objectContaining({
-          source: MAPPING_SOURCE_INFO,
+          ...MAPPING_SOURCE_INFO,
           errorName: 'Network Client Error',
           httpStatus: 403,
         }),
       );
+    },
+  );
+
+  test(
+    unitTest('caps an oversized creator failure message and flags it'),
+    async () => {
+      const store = buildMappingQueryCreatorStore();
+      createSpy(
+        store.graphManagerState.graphManager,
+        'initialize',
+      ).mockRejectedValue(
+        new Error('z'.repeat(DEFAULT_TELEMETRY_MESSAGE_LENGTH_LIMIT + 500)),
+      );
+      const logEventSpy = createSpy(
+        store.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      await flowResult(store.initialize());
+
+      const payload = logEventSpy.mock.calls.find(
+        (call) =>
+          call[0] === LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
+      )?.[1] as Record<string, unknown> | undefined;
+      expect((payload?.errorMessage as string).length).toBe(
+        DEFAULT_TELEMETRY_MESSAGE_LENGTH_LIMIT,
+      );
+      expect(payload?.errorMessageTruncated).toBe(true);
+    },
+  );
+
+  test(
+    unitTest('leaves a normal-length creator failure message unflagged'),
+    async () => {
+      const store = buildMappingQueryCreatorStore();
+      createSpy(
+        store.graphManagerState.graphManager,
+        'initialize',
+      ).mockRejectedValue(new Error('Engine is down'));
+      const logEventSpy = createSpy(
+        store.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      await flowResult(store.initialize());
+
+      const payload = logEventSpy.mock.calls.find(
+        (call) =>
+          call[0] === LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
+      )?.[1] as Record<string, unknown> | undefined;
+      expect(payload?.errorMessage).toBe('Engine is down');
+      expect(payload?.errorMessageTruncated).toBeUndefined();
     },
   );
 
@@ -202,14 +260,12 @@ describe(unitTest('Query creator initialization telemetry'), () => {
       expect(logEventSpy).toHaveBeenCalledWith(
         LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__FAILURE,
         expect.objectContaining({
-          source: {
-            sourceType: LegendQuerySourceType.DATA_SPACE,
-            groupId: 'org.finos',
-            artifactId: 'my-artifact',
-            versionId: '1.0.0',
-            dataSpace: 'model::MyDS',
-            executionContext: 'default',
-          },
+          sourceType: LegendQuerySourceType.DATA_SPACE,
+          groupId: 'org.finos',
+          artifactId: 'my-artifact',
+          versionId: '1.0.0',
+          dataSpace: 'model::MyDS',
+          executionContext: 'default',
           restoredFromRecent: true,
           errorMessage: 'Data space no longer exists',
         }),

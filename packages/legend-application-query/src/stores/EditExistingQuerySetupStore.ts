@@ -22,10 +22,10 @@ import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { quantifyList } from '@finos/legend-shared';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
+import { buildQueryLoaderLifecycleTelemetryHandlers } from '../__lib__/LegendQueryLifecycleTelemetry.js';
 import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { QuerySearchSpecification, type LightQuery } from '@finos/legend-graph';
 import { generateExistingQueryEditorRoute } from '../__lib__/LegendQueryNavigation.js';
-import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
   readonly queryLoaderState: QueryLoaderState;
@@ -74,25 +74,13 @@ export class EditExistingQuerySetupStore extends BaseQuerySetupStore {
                 'recently viewed queries',
               )}`
             : `No recently viewed queries`,
-        onQueryDeleted: (queryId): void =>
-          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
-            this.applicationStore.userDataService,
-            queryId,
-          ),
-        onQueryRenamed: (query): void => {
-          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
-            applicationStore.telemetryService,
-            {
-              query: {
-                id: query.id,
-                name: query.name,
-                groupId: query.groupId,
-                artifactId: query.artifactId,
-                versionId: query.versionId,
-              },
-            },
-          );
-        },
+        ...buildQueryLoaderLifecycleTelemetryHandlers(this.applicationStore, {
+          onQueryDeleted: (queryId): void =>
+            LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+              this.applicationStore.userDataService,
+              queryId,
+            ),
+        }),
         handleFetchDefaultQueriesFailure: (): void =>
           LegendQueryUserDataHelper.removeRecentlyViewedQueries(
             this.applicationStore.userDataService,

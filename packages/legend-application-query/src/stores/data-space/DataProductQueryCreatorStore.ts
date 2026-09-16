@@ -71,6 +71,7 @@ import {
 import { createQueryDataProductTaggedValue } from '../../components/data-product/QueryDataProductUtil.js';
 import { DataProductSelectorState } from './DataProductSelectorState.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
+import type { InitializeTelemetrySource } from '../../__lib__/LegendQueryTelemetryHelper.js';
 import {
   type VisitedLegacyDataProduct,
   type VisitedDataProduct,
@@ -84,7 +85,6 @@ import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 import {
   type LegendQueryDataProductSourceInfo,
   type LegendQueryDataSpaceSourceInfo,
-  type LegendQuerySourceInfo,
   type LegendQueryUnselectedSourceInfo,
   LegendQuerySourceType,
 } from '../../__lib__/LegendQuerySourceInfo.js';
@@ -357,12 +357,9 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
     return { sourceType: LegendQuerySourceType.UNSELECTED };
   }
 
-  override getInitializeTelemetrySource(): {
-    source: LegendQuerySourceInfo | undefined;
-    restoredFromRecent: boolean;
-  } {
+  override getInitializeTelemetrySource(): InitializeTelemetrySource {
     return {
-      source: this.getSourceInfo(),
+      ...this.getSourceInfo(),
       restoredFromRecent: this.isRestoredFromRecent,
     };
   }
@@ -666,6 +663,10 @@ export class DataProductQueryCreatorStore extends QueryEditorStore {
         )) as LegendQueryDataProductQueryBuilderState;
       this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
+      this.queryBuilderState.logOpened(
+        this.getOpenedFrom(),
+        this.getInitializeTelemetrySource(),
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notify(

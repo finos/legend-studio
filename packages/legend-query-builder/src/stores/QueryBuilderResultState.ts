@@ -24,6 +24,8 @@ import {
   ActionState,
   StopWatch,
   getContentTypeFileExtension,
+  buildTelemetryErrorFields,
+  type TimingsRecord,
 } from '@finos/legend-shared';
 import type { QueryBuilderState } from './QueryBuilderState.js';
 import {
@@ -49,7 +51,10 @@ import {
   getExecutionQueryFromRawLambda,
 } from './shared/LambdaParameterState.js';
 import type { LambdaFunctionBuilderOption } from './QueryBuilderValueSpecificationBuilderHelper.js';
-import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
+import {
+  QueryBuilderTelemetryHelper,
+  type QueryExecutionFailure_TelemetryData,
+} from '../__lib__/QueryBuilderTelemetryHelper.js';
 import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
 import { ExecutionPlanState } from './execution-plan/ExecutionPlanState.js';
 import type { DataGridColumnState } from '@finos/legend-lego/data-grid';
@@ -392,6 +397,27 @@ export class QueryBuilderResultState {
     return query;
   }
 
+  /**
+   * Builds the shared payload for query execution / plan / export failure
+   * telemetry, so all four failure callsites emit the same set of dimensions.
+   */
+  buildFailureTelemetryData(
+    error: Error,
+    extra?: {
+      executionDurationMs?: number | undefined;
+      executionTraceId?: string | undefined;
+      timings?: TimingsRecord | undefined;
+    },
+  ): QueryExecutionFailure_TelemetryData {
+    return {
+      ...buildTelemetryErrorFields(error),
+      queryInfo: this.queryBuilderState.safeGetQueryInfo(),
+      ...extra,
+      ...this.queryBuilderState.safeGetTelemetryContext(),
+      ...this.queryBuilderState.safeGetExtraTelemetryMetadata(),
+    };
+  }
+
   *exportData(format: string): GeneratorFn<void> {
     try {
       this.exportState.inProgress();
@@ -450,7 +476,7 @@ export class QueryBuilderResultState {
           const reportWithState = Object.assign(
             {},
             report,
-            this.queryBuilderState.getStateInfo(),
+            this.queryBuilderState.safeGetTelemetryContext(),
           );
           QueryBuilderTelemetryHelper.logEvent_ExportQueryDataSucceeded(
             this.queryBuilderState.applicationStore.telemetryService,
@@ -464,6 +490,13 @@ export class QueryBuilderResultState {
             LogEvent.create(GRAPH_MANAGER_EVENT.EXECUTION_FAILURE),
             error,
           );
+          QueryBuilderTelemetryHelper.logEvent_ExportQueryDataFailed(
+            this.queryBuilderState.applicationStore.telemetryService,
+            this.buildFailureTelemetryData(error),
+          );
+          // without this the action state is left IN_PROGRESS forever when a
+          // download fails, unlike the `.then` branch which passes it
+          this.exportState.fail();
         });
     } catch (error) {
       this.exportState.fail();
@@ -475,12 +508,26 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore.notificationService.notifyError(
         error,
       );
-      this.exportState.complete();
+      QueryBuilderTelemetryHelper.logEvent_ExportQueryDataFailed(
+        this.queryBuilderState.applicationStore.telemetryService,
+        this.buildFailureTelemetryData(error),
+      );
+      // NOTE: no `complete()` here — it defaults to `hasSucceeded = true`, so
+      // calling it after `fail()` above flipped the state back to SUCCEEDED and
+      // masked the failure in the UI
     }
   }
 
   *runQuery(): GeneratorFn<void> {
     let promise;
+    // hoisted so the catch below can report the phase timings collected up to
+    // the point of failure — the absence of an engine server-call lap is itself
+    // the signal that the query never made it out of the client
+    // NOTE: `reportGraphAnalytics` widens the report with `dependenciesCount`;
+    // declaring the narrower `GraphManagerOperationReport` here would drop it
+    // from the success payload's type
+    let report: ReturnType<typeof reportGraphAnalytics> | undefined;
+    const stopWatch = new StopWatch();
     try {
       this.setIsRunningQuery(true);
       const currentHashCode = this.queryBuilderState.hashCode;
@@ -502,13 +549,18 @@ export class QueryBuilderResultState {
         this.queryBuilderState.graphManagerState,
       );
 
+      stopWatch.record(QUERY_BUILDER_EVENT.RUN_QUERY__PREPARE);
+
       QueryBuilderTelemetryHelper.logEvent_QueryRunLaunched(
         this.queryBuilderState.applicationStore.telemetryService,
-        this.queryBuilderState.getExtraTelemetryMetadata(),
+        {
+          ...this.queryBuilderState.safeGetTelemetryContext(),
+          queryInfo: this.queryBuilderState.safeGetQueryInfo(),
+          ...this.queryBuilderState.safeGetExtraTelemetryMetadata(),
+        },
       );
 
-      const stopWatch = new StopWatch();
-      const report = reportGraphAnalytics(
+      report = reportGraphAnalytics(
         this.queryBuilderState.graphManagerState.graph,
       );
       const contextstate = this.queryBuilderState.executionContextState;
@@ -527,16 +579,25 @@ export class QueryBuilderResultState {
           floatingExecutionElements:
             this.queryBuilderState.floatingExecutionElements,
         },
+        // passing the report is what surfaces the graph manager's own engine
+        // laps (`V1_ENGINE_OPERATION_INPUT__SUCCESS` / `..._SERVER_CALL__SUCCESS`)
+        // in `report.timings` — without it they are computed and discarded
+        report,
       );
 
       this.setQueryRunPromise(promise);
       const result = (yield promise) as ExecutionResultWithMetadata;
       if (this.queryRunPromise === promise) {
+        // close the engine lap without naming it: the graph manager has already
+        // recorded that span in `report.timings`, so recording it again here
+        // would double-count it
+        stopWatch.record();
         this.processExecutionResult(result.executionResult);
         if (result.executionTraceId) {
           this.setExecutionTraceId(result.executionTraceId);
         }
         this.latestRunHashCode = currentHashCode;
+        stopWatch.record(QUERY_BUILDER_EVENT.RUN_QUERY__PROCESS_RESULT);
         this.setExecutionDuration(stopWatch.elapsed);
 
         report.timings =
@@ -544,12 +605,16 @@ export class QueryBuilderResultState {
             stopWatch,
             report.timings,
           );
-        const reportWithState = Object.assign(
-          {},
-          report,
-          this.queryBuilderState.getStateInfo(),
-          this.queryBuilderState.getExtraTelemetryMetadata(),
-        );
+        // NOTE: spread rather than `Object.assign` — with four sources the
+        // latter falls through to the `(...sources: any[]) => any` overload,
+        // which silently drops type checking on the whole payload
+        const reportWithState = {
+          ...report,
+          ...this.queryBuilderState.safeGetTelemetryContext(),
+          ...this.queryBuilderState.safeGetExtraTelemetryMetadata(),
+          queryInfo: this.queryBuilderState.safeGetQueryInfo(),
+          executionDurationMs: stopWatch.elapsed,
+        };
         QueryBuilderTelemetryHelper.logEvent_QueryRunSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,
           reportWithState,
@@ -571,11 +636,18 @@ export class QueryBuilderResultState {
         }
         QueryBuilderTelemetryHelper.logEvent_QueryRunFailed(
           this.queryBuilderState.applicationStore.telemetryService,
-          {
-            errorMessage:
-              error instanceof Error ? error.message : String(error),
-            ...this.queryBuilderState.getExtraTelemetryMetadata(),
-          },
+          this.buildFailureTelemetryData(error, {
+            executionDurationMs: stopWatch.elapsed,
+            executionTraceId:
+              error instanceof ExecutionError
+                ? error.executionTraceId
+                : undefined,
+            timings:
+              this.queryBuilderState.applicationStore.timeService.finalizeTimingsRecord(
+                stopWatch,
+                report?.timings,
+              ),
+          }),
         );
       }
     } finally {
@@ -594,7 +666,11 @@ export class QueryBuilderResultState {
       );
       QueryBuilderTelemetryHelper.logEvent_QueryRunCancelled(
         this.queryBuilderState.applicationStore.telemetryService,
-        this.queryBuilderState.getExtraTelemetryMetadata(),
+        {
+          ...this.queryBuilderState.safeGetTelemetryContext(),
+          queryInfo: this.queryBuilderState.safeGetQueryInfo(),
+          ...this.queryBuilderState.safeGetExtraTelemetryMetadata(),
+        },
       );
     } catch (error) {
       // Don't notify users about success or failure
@@ -689,7 +765,7 @@ export class QueryBuilderResultState {
       const reportWithState = Object.assign(
         {},
         report,
-        this.queryBuilderState.getStateInfo(),
+        this.queryBuilderState.safeGetTelemetryContext(),
       );
       if (debug) {
         QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugSucceeded(
@@ -711,6 +787,18 @@ export class QueryBuilderResultState {
       this.queryBuilderState.applicationStore.notificationService.notifyError(
         error,
       );
+      const failurePayload = this.buildFailureTelemetryData(error);
+      if (debug) {
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanDebugFailed(
+          this.queryBuilderState.applicationStore.telemetryService,
+          failurePayload,
+        );
+      } else {
+        QueryBuilderTelemetryHelper.logEvent_ExecutionPlanGenerationFailed(
+          this.queryBuilderState.applicationStore.telemetryService,
+          failurePayload,
+        );
+      }
     } finally {
       this.isGeneratingPlan = false;
     }

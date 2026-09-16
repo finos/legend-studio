@@ -979,7 +979,7 @@ export class QueryBuilderExplorerState {
         const reportWithState = Object.assign(
           {},
           report,
-          this.queryBuilderState.getStateInfo(),
+          this.queryBuilderState.safeGetTelemetryContext(),
         );
         QueryBuilderTelemetryHelper.logEvent_QueryMappingModelCoverageAnalysisSucceeded(
           this.queryBuilderState.applicationStore.telemetryService,

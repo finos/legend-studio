@@ -70,6 +70,7 @@ import {
 } from '../QueryBuilderPropertyExpressionEditor.js';
 import { QueryResultModifierModal } from './QueryBuilderResultModifierPanel.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { flowResult } from 'mobx';
 import { useApplicationStore } from '@finos/legend-application';
 import {
@@ -167,8 +168,20 @@ const QueryBuilderProjectionColumnContextMenu = observer(
     }
   >(function QueryBuilderProjectionColumnContextMenu(props, ref) {
     const { projectionColumnState } = props;
-    const removeColumn = (): void =>
-      projectionColumnState.tdsState.removeColumn(projectionColumnState);
+    const removeColumn = (): void => {
+      const tdsState = projectionColumnState.tdsState;
+      tdsState.removeColumn(projectionColumnState);
+      QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+        tdsState.queryBuilderState.applicationStore.telemetryService,
+        {
+          ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+            columnCount: tdsState.projectionColumns.length,
+          },
+        },
+      );
+    };
     const convertToDerivation = (): void => {
       if (
         projectionColumnState instanceof QueryBuilderSimpleProjectionColumnState
@@ -418,8 +431,19 @@ const QueryBuilderProjectionColumnEditor = observer(
     const isCalendarEnabled = tdsState.queryBuilderState.isCalendarEnabled;
     const isRemovalDisabled = tdsState.isColumnInUse(projectionColumnState);
 
-    const removeColumn = (): void =>
+    const removeColumn = (): void => {
       tdsState.removeColumn(projectionColumnState);
+      QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+        applicationStore.telemetryService,
+        {
+          ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+            columnCount: tdsState.projectionColumns.length,
+          },
+        },
+      );
+    };
 
     // name
     const setColumnName = (columnName: string): void =>
@@ -435,11 +459,22 @@ const QueryBuilderProjectionColumnEditor = observer(
       op.isCompatibleWithColumn(projectionColumnState),
     );
     const changeOperator =
-      (val: QueryBuilderAggregateOperator | undefined) => (): void =>
+      (val: QueryBuilderAggregateOperator | undefined) => (): void => {
         tdsState.aggregationState.changeColumnAggregateOperator(
           val,
           projectionColumnState,
         );
+        QueryBuilderTelemetryHelper.logEvent_AggregationChanged(
+          applicationStore.telemetryService,
+          {
+            ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+            change: {
+              action: 'operator-change',
+              operatorName: val?.getLabel(projectionColumnState),
+            },
+          },
+        );
+      };
 
     // calendar
     const aggregateCalendarFunctionDateColumns =
@@ -570,12 +605,23 @@ const QueryBuilderProjectionColumnEditor = observer(
               ? tdsState.projectionColumns.length - 1
               : currentRearrangeDropGapIndex,
           );
+          QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+            applicationStore.telemetryService,
+            {
+              ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+              change: {
+                action: 'move',
+                columnCount: tdsState.projectionColumns.length,
+              },
+            },
+          );
         }
         setCurrentRearrangeDraggedColumnIndex(undefined);
         setCurrentRearrangeDropGapIndex(undefined);
       },
       [
         tdsState,
+        applicationStore.telemetryService,
         currentRearrangeDropGapIndex,
         currentRearrangeDraggedColumnIndex,
         setCurrentRearrangeDraggedColumnIndex,
@@ -669,8 +715,7 @@ const QueryBuilderProjectionColumnEditor = observer(
            * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
            */
           projectionColumnBeingDragged:
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            (monitor.getItem() as QueryBuilderProjectionColumnDragSource | null)
+            monitor.getItem<QueryBuilderProjectionColumnDragSource | null>()
               ?.columnState,
         }),
       }),
@@ -1304,12 +1349,38 @@ export const QueryBuilderTDSPanel = observer(
     // Toolbar
     const openResultSetModifierEditor = (): void =>
       tdsState.resultSetModifierState.setShowModal(true);
-    const addNewBlankDerivation = (): void => tdsState.addNewBlankDerivation();
+    const addNewBlankDerivation = (): void => {
+      tdsState.addNewBlankDerivation();
+      QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+        applicationStore.telemetryService,
+        {
+          ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'add-derivation',
+            sourceType: 'derivation',
+            columnCount: tdsState.projectionColumns.length,
+          },
+        },
+      );
+    };
 
     const clearAllProjectionColumns = (): void => {
       tdsState.checkBeforeClearingColumns(() => {
+        // capture before the clear so we report how many columns were removed,
+        // rather than the post-clear count which is always 0
+        const clearedColumnCount = tdsState.projectionColumns.length;
         tdsState.removeAllColumns();
         tdsState.resultSetModifierState.reset();
+        QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+          applicationStore.telemetryService,
+          {
+            ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+            change: {
+              action: 'clear',
+              columnCount: clearedColumnCount,
+            },
+          },
+        );
       });
     };
 
@@ -1338,6 +1409,17 @@ export const QueryBuilderTDSPanel = observer(
               `${DEFAULT_LAMBDA_VARIABLE_NAME}${LAMBDA_PIPE}${functionPrettyName} `,
             );
             tdsState.addColumn(derivationProjectionColumn);
+            QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+              applicationStore.telemetryService,
+              {
+                ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+                change: {
+                  action: 'add',
+                  sourceType: 'function',
+                  columnCount: tdsState.projectionColumns.length,
+                },
+              },
+            );
             break;
           }
           case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.ENUM_PROPERTY:
@@ -1352,6 +1434,17 @@ export const QueryBuilderTDSPanel = observer(
                 tdsState.queryBuilderState.explorerState.humanizePropertyName,
               ),
             );
+            QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+              applicationStore.telemetryService,
+              {
+                ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+                change: {
+                  action: 'add',
+                  sourceType: 'explorer-property',
+                  columnCount: tdsState.projectionColumns.length,
+                },
+              },
+            );
             break;
           case QUERY_BUILDER_EXPLORER_TREE_DND_TYPE.RELATION_COLUMN: {
             const dragNode = (
@@ -1365,6 +1458,17 @@ export const QueryBuilderTDSPanel = observer(
                 dragNode.column,
                 true,
               ),
+            );
+            QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+              applicationStore.telemetryService,
+              {
+                ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+                change: {
+                  action: 'add',
+                  sourceType: 'explorer-relation',
+                  columnCount: tdsState.projectionColumns.length,
+                },
+              },
             );
             break;
           }
@@ -1394,13 +1498,24 @@ export const QueryBuilderTDSPanel = observer(
                   tdsState.queryBuilderState.explorerState.humanizePropertyName,
                 ),
               );
+              QueryBuilderTelemetryHelper.logEvent_ProjectionChanged(
+                applicationStore.telemetryService,
+                {
+                  ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+                  change: {
+                    action: 'add',
+                    sourceType: 'filter-condition',
+                    columnCount: tdsState.projectionColumns.length,
+                  },
+                },
+              );
             }
             break;
           default:
             break;
         }
       },
-      [tdsState],
+      [tdsState, applicationStore.telemetryService],
     );
 
     const [{ isDragOver }, panelDropConnector] = useDrop<

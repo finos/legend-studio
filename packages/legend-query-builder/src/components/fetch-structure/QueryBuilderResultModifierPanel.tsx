@@ -37,6 +37,7 @@ import {
   PanelFormListItems,
 } from '@finos/legend-art';
 import { SortColumnState } from '../../stores/fetch-structure/tds/QueryResultSetModifierState.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import {
   addUniqueEntry,
   clone,
@@ -646,6 +647,12 @@ export const QueryResultModifierModal = observer(
     };
 
     const applyChanges = (): void => {
+      const previousWatermarkValue = watermarkState.value;
+      const previousBusinessDate = milestoningState.businessDate;
+      const previousProcessingDate = milestoningState.processingDate;
+      const wasAllVersionsEnabled = milestoningState.isAllVersionsEnabled;
+      const wasAllVersionsInRangeEnabled =
+        milestoningState.isAllVersionsInRangeEnabled;
       resultSetModifierState.setSortColumns(sortColumns);
       resultSetModifierState.setDistinct(distinct);
       resultSetModifierState.setLimit(limitResults);
@@ -655,7 +662,30 @@ export const QueryResultModifierModal = observer(
         resultSetModifierState.setSlice(undefined);
       }
       resultSetModifierState.setShowModal(false);
+      QueryBuilderTelemetryHelper.logEvent_ResultModifierChanged(
+        applicationStore.telemetryService,
+        {
+          ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            limitSet: resultSetModifierState.limit !== undefined,
+            distinctOn: resultSetModifierState.distinct,
+            sortColumnCount: resultSetModifierState.sortColumns.length,
+            sliceSet: resultSetModifierState.slice !== undefined,
+          },
+        },
+      );
       watermarkState.setValue(watermarkValue);
+      if (watermarkValue !== previousWatermarkValue) {
+        QueryBuilderTelemetryHelper.logEvent_WatermarkChanged(
+          applicationStore.telemetryService,
+          {
+            ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+            change: {
+              enabled: watermarkValue !== undefined,
+            },
+          },
+        );
+      }
       milestoningState.queryBuilderState.parametersState.setParameters(
         parameterStates,
       );
@@ -671,11 +701,33 @@ export const QueryResultModifierModal = observer(
           startDateValue,
         );
         milestoningState.updateMilestoningParameterValue(endDate, endDateValue);
+        if (!wasAllVersionsInRangeEnabled) {
+          QueryBuilderTelemetryHelper.logEvent_MilestoningChanged(
+            applicationStore.telemetryService,
+            {
+              ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+              change: {
+                subtype: 'all-versions-in-range',
+              },
+            },
+          );
+        }
       } else if (isAllVersionsEnabled) {
         milestoningState.clearGetAllParameters();
         milestoningState.queryBuilderState.setGetAllFunction(
           QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS,
         );
+        if (!wasAllVersionsEnabled) {
+          QueryBuilderTelemetryHelper.logEvent_MilestoningChanged(
+            applicationStore.telemetryService,
+            {
+              ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+              change: {
+                subtype: 'all-versions',
+              },
+            },
+          );
+        }
       } else if (
         tdsState.queryBuilderState.milestoningState.isMilestonedQuery
       ) {
@@ -693,6 +745,28 @@ export const QueryResultModifierModal = observer(
           businessDate,
           businessDateValue,
         );
+        if (businessDate !== previousBusinessDate) {
+          QueryBuilderTelemetryHelper.logEvent_MilestoningChanged(
+            applicationStore.telemetryService,
+            {
+              ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+              change: {
+                subtype: 'business-date',
+              },
+            },
+          );
+        }
+        if (processingDate !== previousProcessingDate) {
+          QueryBuilderTelemetryHelper.logEvent_MilestoningChanged(
+            applicationStore.telemetryService,
+            {
+              ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+              change: {
+                subtype: 'processing-date',
+              },
+            },
+          );
+        }
       }
       milestoningState.updateQueryBuilderState();
     };

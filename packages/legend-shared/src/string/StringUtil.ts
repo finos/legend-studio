@@ -27,3 +27,34 @@ export const removeSuffix = (str: string, suffix: string): string => {
   }
   return str; // Return the original string if no suffix is found
 };
+
+/**
+ * Default cap for error messages forwarded to telemetry. Generous enough to
+ * keep real diagnostic content, small enough to keep an event well under the
+ * per-event size limits telemetry pipelines typically enforce.
+ */
+export const DEFAULT_TELEMETRY_MESSAGE_LENGTH_LIMIT = 2000;
+
+/**
+ * Caps a free-text message destined for a telemetry payload.
+ *
+ * Backend error messages are unbounded — they can embed generated SQL, stack
+ * traces, or compilation output. Left uncapped they risk pushing an event past
+ * the pipeline's size limit, and oversized events are usually dropped whole:
+ * the biggest, most interesting failures are then the ones that silently
+ * disappear from the dashboard.
+ *
+ * The `truncated` flag is returned rather than inferred so callers can report
+ * it alongside the text. A silently clipped message makes substring searches
+ * produce false negatives with no way for an analyst to tell.
+ *
+ * NOTE: this is a size control, not a privacy control — if a message embeds
+ * sensitive values in its first characters, truncation will not remove them.
+ */
+export const truncateMessageForTelemetry = (
+  message: string,
+  limit = DEFAULT_TELEMETRY_MESSAGE_LENGTH_LIMIT,
+): { message: string; truncated: boolean } =>
+  message.length <= limit
+    ? { message, truncated: false }
+    : { message: message.slice(0, limit), truncated: true };

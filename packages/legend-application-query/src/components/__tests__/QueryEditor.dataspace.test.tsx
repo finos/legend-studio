@@ -42,9 +42,10 @@ import {
 } from '@finos/legend-extension-dsl-data-space/application';
 import {
   QUERY_BUILDER_TEST_ID,
+  QUERY_BUILDER_EVENT,
+  QUERY_BUILDER_OPENED_FROM,
   QueryBuilder_GraphManagerPreset,
 } from '@finos/legend-query-builder';
-import { LEGEND_QUERY_APP_EVENT } from '../../__lib__/LegendQueryEvent.js';
 import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 
 test(
@@ -261,19 +262,18 @@ test(
 
     await waitFor(() =>
       expect(logEventSpy).toHaveBeenCalledWith(
-        LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
-        {
-          source: {
-            sourceType: LegendQuerySourceType.DATA_SPACE_TEMPLATE,
-            groupId: 'test-group',
-            artifactId: 'test-artifact',
-            versionId: 'test-version',
-            dataSpace: 'domain::COVIDDatapace',
-            templateQueryId: 'templateQuery',
-          },
+        QUERY_BUILDER_EVENT.OPENED,
+        expect.objectContaining({
+          openedFrom: QUERY_BUILDER_OPENED_FROM.QUERY_CREATOR,
+          sourceType: LegendQuerySourceType.DATA_SPACE_TEMPLATE,
+          groupId: 'test-group',
+          artifactId: 'test-artifact',
+          versionId: 'test-version',
+          dataSpace: 'domain::COVIDDatapace',
+          templateQueryId: 'templateQuery',
           restoredFromRecent: false,
           timings: expect.objectContaining({ total: expect.any(Number) }),
-        },
+        }),
       ),
     );
   },
@@ -281,7 +281,7 @@ test(
 
 test(
   integrationTest(
-    'Existing data product query does not log query creator initialization',
+    'Existing data product query logs opened with the saved-query surface',
   ),
   async () => {
     const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore({
@@ -305,9 +305,13 @@ test(
     await waitFor(() =>
       expect(mockedQueryEditorStore.initState.hasSucceeded).toBe(true),
     );
-    expect(logEventSpy).not.toHaveBeenCalledWith(
-      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
-      expect.anything(),
+    // a saved query reports the same canonical event as a creator, distinguished
+    // by `openedFrom` rather than by which event fired
+    expect(logEventSpy).toHaveBeenCalledWith(
+      QUERY_BUILDER_EVENT.OPENED,
+      expect.objectContaining({
+        openedFrom: QUERY_BUILDER_OPENED_FROM.QUERY_SAVED,
+      }),
     );
   },
 );

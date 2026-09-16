@@ -15,16 +15,15 @@
  */
 
 import type { TelemetryService } from '@finos/legend-application';
-import type { TimingsRecord } from '@finos/legend-shared';
+import type { TelemetryErrorFields, TimingsRecord } from '@finos/legend-shared';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
-import type { LegendQuerySourceInfo } from './LegendQuerySourceInfo.js';
 import {
   type GraphManagerOperationReport,
   GRAPH_MANAGER_EVENT,
   type GraphInitializationReport,
 } from '@finos/legend-graph';
 
-type Query_TelemetryData = {
+export type Query_TelemetryData = {
   query: {
     name: string;
     id: string;
@@ -48,25 +47,78 @@ type IntializeQueryState_TelemetryData = Query_TelemetryData &
     dependenciesCount: number;
   };
 
-export type InitializeQueryCreator_TelemetryData = {
-  source: LegendQuerySourceInfo | undefined;
+/**
+ * Where the query creator was started from, returned by each creator store's
+ * `getInitializeTelemetrySource()`.
+ *
+ * The entry point the query creator was started from ({@link
+ * LegendQuerySourceInfo}) is spread FLAT into this payload, matching how
+ * `sourceInfo` is reported on every other query telemetry event.
+ *
+ * The index signature is what allows those flat keys — they vary by entry point
+ * and `LegendQuerySourceInfo` is a union, so they cannot be enumerated here.
+ * The union stays strictly typed where it is built, in each creator store's
+ * `getSourceInfo()` override.
+ */
+export type InitializeTelemetrySource = Record<PropertyKey, unknown> & {
   /**
    * Whether the most recently visited source was reopened, rather than the
    * source being specified by the route
    */
   restoredFromRecent: boolean;
+};
+
+/**
+ * Base payload for the query creator failure event.
+ *
+ * There is no success counterpart: a successful load is reported by
+ * `query-builder.opened` from `legend-query-builder`, which fires for every
+ * route rather than creators only. This one survives because when a load fails
+ * there is no query builder to emit from, so it is the only record that an
+ * attempt happened.
+ */
+export type InitializeQueryCreator_TelemetryData = InitializeTelemetrySource & {
   timings: TimingsRecord;
 };
 
 export type InitializeQueryCreatorFailure_TelemetryData =
-  InitializeQueryCreator_TelemetryData & {
-    errorMessage: string;
-    errorName: string;
-    /**
-     * The response status, when the failure is a network error
-     */
-    httpStatus?: number | undefined;
+  InitializeQueryCreator_TelemetryData & TelemetryErrorFields;
+
+/**
+ * The query a lifecycle event acted on. `id` is always known for update, rename
+ * and delete — they act on a query that already exists. Identity beyond the id
+ * is partial: a delete resolves the entry from the loaded list, which may not
+ * contain it.
+ */
+export type PartialQuery_TelemetryData = {
+  query: {
+    id: string;
+    name?: string | undefined;
+    versionId?: string | undefined;
+    groupId?: string | undefined;
+    artifactId?: string | undefined;
   };
+};
+
+/**
+ * Payload for a failed *create*.
+ *
+ * Deliberately has no `query` block: the server assigns the id, and a failed
+ * create never got that far, so no query exists to identify. The name the user
+ * chose is the only identity there is. Keeping this a separate type from
+ * {@link QueryLifecycleFailure_TelemetryData} means the three events that *do*
+ * always have an id cannot accidentally omit it.
+ */
+export type QueryCreateFailure_TelemetryData = {
+  queryName: string;
+} & TelemetryErrorFields;
+
+/**
+ * Payload for a failed update, rename or delete — actions on a query that
+ * already exists, so `query.id` is always present.
+ */
+export type QueryLifecycleFailure_TelemetryData = PartialQuery_TelemetryData &
+  TelemetryErrorFields;
 
 export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
@@ -82,16 +134,6 @@ export class LegendQueryTelemetryHelper {
   ): void {
     service.logEvent(
       LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_STATE__SUCCESS,
-      data,
-    );
-  }
-
-  static logEvent_InitializeQueryCreatorSucceeded(
-    service: TelemetryService,
-    data: InitializeQueryCreator_TelemetryData,
-  ): void {
-    service.logEvent(
-      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_CREATOR__SUCCESS,
       data,
     );
   }
@@ -149,6 +191,41 @@ export class LegendQueryTelemetryHelper {
     data: Query_TelemetryData,
   ): void {
     service.logEvent(LEGEND_QUERY_APP_EVENT.RENAME_QUERY__SUCCESS, data);
+  }
+
+  static logEvent_DeleteQuerySucceeded(
+    service: TelemetryService,
+    data: PartialQuery_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.DELETE_QUERY__SUCCESS, data);
+  }
+
+  static logEvent_CreateQueryFailed(
+    service: TelemetryService,
+    data: QueryCreateFailure_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.CREATE_QUERY__FAILURE, data);
+  }
+
+  static logEvent_UpdateQueryFailed(
+    service: TelemetryService,
+    data: QueryLifecycleFailure_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.UPDATE_QUERY__FAILURE, data);
+  }
+
+  static logEvent_RenameQueryFailed(
+    service: TelemetryService,
+    data: QueryLifecycleFailure_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.RENAME_QUERY__FAILURE, data);
+  }
+
+  static logEvent_DeleteQueryFailed(
+    service: TelemetryService,
+    data: QueryLifecycleFailure_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.DELETE_QUERY__FAILURE, data);
   }
 
   static logEvent_QueryAISuggestLaunched(service: TelemetryService): void {

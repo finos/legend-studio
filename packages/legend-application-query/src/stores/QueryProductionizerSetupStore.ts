@@ -25,8 +25,8 @@ import type { LegendQueryApplicationStore } from './LegendQueryBaseStore.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl } from '../__lib__/LegendQueryNavigation.js';
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
+import { buildQueryLoaderLifecycleTelemetryHandlers } from '../__lib__/LegendQueryLifecycleTelemetry.js';
 import { quantifyList } from '@finos/legend-shared';
-import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 
 export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
   readonly queryLoaderState: QueryLoaderState;
@@ -61,25 +61,13 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
                 'recently viewed queries',
               )}`
             : `No recently viewed queries`,
-        onQueryDeleted: (queryId): void =>
-          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
-            this.applicationStore.userDataService,
-            queryId,
-          ),
-        onQueryRenamed: (query): void => {
-          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
-            applicationStore.telemetryService,
-            {
-              query: {
-                id: query.id,
-                name: query.name,
-                groupId: query.groupId,
-                artifactId: query.artifactId,
-                versionId: query.versionId,
-              },
-            },
-          );
-        },
+        ...buildQueryLoaderLifecycleTelemetryHandlers(this.applicationStore, {
+          onQueryDeleted: (queryId): void =>
+            LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+              this.applicationStore.userDataService,
+              queryId,
+            ),
+        }),
         handleFetchDefaultQueriesFailure: (): void =>
           LegendQueryUserDataHelper.removeRecentlyViewedQueries(
             this.applicationStore.userDataService,

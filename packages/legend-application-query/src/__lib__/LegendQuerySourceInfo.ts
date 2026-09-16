@@ -40,6 +40,15 @@ interface LegendQueryProjectSourceInfo extends LegendSourceInfo {
   groupId: string;
   artifactId: string;
   versionId: string;
+  /**
+   * Set when a *saved* query was opened (the `/existing/:queryId` route) rather
+   * than a new one created from a creator route. The `sourceType` still
+   * describes what the query targets — a saved data space query reports
+   * `data-space`, same as a freshly created one — so a dashboard can slice by
+   * target without caring how the query was opened, and use the presence of
+   * this field to separate saved from new when it does care.
+   */
+  queryId?: string | undefined;
 }
 
 /**
