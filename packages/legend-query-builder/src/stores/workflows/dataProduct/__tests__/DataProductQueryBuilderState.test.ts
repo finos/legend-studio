@@ -528,3 +528,49 @@ describe(
     );
   },
 );
+
+describe(
+  unitTest('DataProductQueryBuilderState - dataProductAccessInfo'),
+  () => {
+    test(
+      unitTest(
+        'resolves the access point group of the selected lakehouse access point',
+      ),
+      async () => {
+        const { state, ap1 } = await buildLakehouseDataProductState();
+
+        state.initWithDataProduct(
+          state.dataProduct,
+          resolveDataProductAccessor(
+            state.dataProduct,
+            ap1,
+            state.graphManagerState.graph,
+            undefined,
+          ),
+          ap1,
+        );
+
+        const info = state.dataProductAccessInfo;
+        expect(info.dataProductLabel).toBe('LakehouseDP');
+        expect(info.dataProductId).toBe('LakehouseDP');
+        // access is granted on the group, not the individual access point
+        expect(info.accessPointGroupId).toBe('lhGroup1');
+        expect(info.accessPointGroupLabel).toBe('lhGroup1');
+        expect(info.environment).toBe('Production');
+        expect(info.warehouse).toBe('WH_1');
+        expect(info.supportEmails).toEqual([]);
+      },
+    );
+
+    test(
+      unitTest('tolerates an artifact without deployment information'),
+      async () => {
+        const { state } = await buildLakehouseDataProductState();
+
+        // the fixture passes a constructed (not deserialized) artifact, whose
+        // `dataProduct` is unset despite being declared as definitely assigned
+        expect(state.dataProductAccessInfo.deploymentId).toBeUndefined();
+      },
+    );
+  },
+);

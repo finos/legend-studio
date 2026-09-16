@@ -71,6 +71,7 @@ import {
 import { QueryBuilderParametersPanel } from './QueryBuilderParametersPanel.js';
 import { QueryBuilderFunctionsExplorerPanel } from './explorer/QueryBuilderFunctionsExplorerPanel.js';
 import { QueryBuilderTDSState } from '../stores/fetch-structure/tds/QueryBuilderTDSState.js';
+import { DataProductQueryBuilderState } from '../stores/workflows/dataProduct/DataProductQueryBuilderState.js';
 import { QueryBuilderDiffViewPanelDiaglog } from './QueryBuilderDiffPanel.js';
 import { guaranteeType, returnUndefOnError } from '@finos/legend-shared';
 import { QueryBuilderGraphFetchTreeState } from '../stores/fetch-structure/graph-fetch/QueryBuilderGraphFetchTreeState.js';
@@ -778,29 +779,36 @@ export const QueryBuilder = observer(
                         </MenuContentItemLabel>
                       </MenuContentItem>
                       <MenuContentDivider />
-                      <MenuContentItem
-                        onClick={openCheckEntitlmentsEditor}
-                        disabled={
-                          (queryBuilderState.isQuerySupported &&
-                            queryBuilderState.fetchStructureState
-                              .implementation instanceof QueryBuilderTDSState &&
-                            queryBuilderState.fetchStructureState.implementation
-                              .projectionColumns.length === 0) ||
-                          !queryBuilderState.canBuildQuery
-                        }
-                        title={
-                          !queryBuilderState.canBuildQuery
-                            ? 'Please fix query errors to check entitlements'
-                            : ''
-                        }
-                      >
-                        <MenuContentItemIcon>
-                          <DataAccessIcon />
-                        </MenuContentItemIcon>
-                        <MenuContentItemLabel>
-                          Check Entitlements
-                        </MenuContentItemLabel>
-                      </MenuContentItem>
+                      {!(
+                        queryBuilderState instanceof
+                        DataProductQueryBuilderState
+                      ) && (
+                        <MenuContentItem
+                          onClick={openCheckEntitlmentsEditor}
+                          disabled={
+                            (queryBuilderState.isQuerySupported &&
+                              queryBuilderState.fetchStructureState
+                                .implementation instanceof
+                                QueryBuilderTDSState &&
+                              queryBuilderState.fetchStructureState
+                                .implementation.projectionColumns.length ===
+                                0) ||
+                            !queryBuilderState.canBuildQuery
+                          }
+                          title={
+                            !queryBuilderState.canBuildQuery
+                              ? 'Please fix query errors to check entitlements'
+                              : ''
+                          }
+                        >
+                          <MenuContentItemIcon>
+                            <DataAccessIcon />
+                          </MenuContentItemIcon>
+                          <MenuContentItemLabel>
+                            Check Entitlements
+                          </MenuContentItemLabel>
+                        </MenuContentItem>
+                      )}
                       <MenuContentItem
                         onClick={editPure}
                         disabled={!queryBuilderState.canBuildQuery}

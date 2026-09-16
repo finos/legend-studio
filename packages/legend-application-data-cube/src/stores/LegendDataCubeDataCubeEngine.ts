@@ -96,6 +96,7 @@ import {
   V1_AdHocDeploymentDataProductOrigin,
   V1_PureModelContextCombination,
   type V1_PureModelContext,
+  isExecutionAccessError,
 } from '@finos/legend-graph';
 import {
   _elementPtr,
@@ -1208,13 +1209,13 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                       source.deploymentId,
                     )
                   : undefined;
-            if (this._isPermissionDeniedError(error)) {
+            if (isExecutionAccessError(error)) {
               error.message.concat(
                 `\n\nPlease check your access for data product: ${link ?? '[Link Unavailable]'}`,
               );
             }
           } else if (source instanceof LakehouseProducerDataCubeSource) {
-            if (this._isPermissionDeniedError(error)) {
+            if (isExecutionAccessError(error)) {
               const accessUrl = this.getDocumentationEntry(
                 LEGEND_DATA_CUBE_DOCUMENTATION_KEY.SNOWFLAKE_PRODUCER_UNAUTHORIZED_ACCESS,
               )?.url;
@@ -1223,7 +1224,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
           } else if (
             source instanceof LakehouseProducerIcebergCachedDataCubeSource
           ) {
-            if (this._isPermissionDeniedError(error)) {
+            if (isExecutionAccessError(error)) {
               const accessUrl = this.getDocumentationEntry(
                 LEGEND_DATA_CUBE_DOCUMENTATION_KEY.SNOWFLAKE_PRODUCER_UNAUTHORIZED_ACCESS,
               )?.url;
@@ -2144,19 +2145,5 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
 
   override sendTelemetry(event: string, data: PlainObject) {
     this._application.telemetryService.logEvent(event, data);
-  }
-
-  private _isPermissionDeniedError(error: Error) {
-    const PERMISSION_ERRORS = [
-      'permission denied',
-      'invalid user id or password',
-      'Incorrect username or password',
-      'not authorized',
-      'insufficient privileges',
-      'this session does not have a current database',
-    ];
-    return Boolean(
-      PERMISSION_ERRORS.find((e) => error.message.toLowerCase().includes(e)),
-    );
   }
 }

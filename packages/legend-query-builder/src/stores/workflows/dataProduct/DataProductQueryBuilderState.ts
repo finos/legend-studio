@@ -19,6 +19,7 @@ import {
   type Class,
   DataProduct,
   type V1_DataProductArtifact,
+  type V1_DataProductInfo,
   ModelAccessPointGroup,
   NativeModelExecutionContext,
   CORE_PURE_PATH,
@@ -77,6 +78,7 @@ import {
 } from '@finos/legend-storage';
 import { compareLabelFn } from '@finos/legend-art';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
+import type { DataProductAccessInfo } from '../../data-access/DataProductAccessInfo.js';
 
 export const resolveDataProductAccessor = (
   dataProduct: DataProduct,
@@ -418,6 +420,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
       modelAccessPointGroupOptions: computed,
       activeMapping: computed,
       activeFeaturedElements: computed,
+      dataProductAccessInfo: computed,
       loadEntities: flow,
       entities: observable,
     });
@@ -883,6 +886,47 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
 
   get activeFeaturedElements(): DataProductElementScope[] | undefined {
     return this.executionState.featuredElements;
+  }
+
+  get dataProductAccessInfo(): DataProductAccessInfo {
+    const execValue = this.executionState.exectionValue;
+    // for lakehouse access points, access is granted on the group the access point
+    // belongs to, so resolve it from the access point
+    const accessPointGroup =
+      execValue instanceof ModelAccessPointGroup
+        ? execValue
+        : execValue instanceof LakehouseAccessPoint
+          ? findLakehouseAccessPointGroup(this.dataProduct, execValue.id)?.group
+          : undefined;
+    const selectedRuntime =
+      this.executionState instanceof
+        ModelAccessPointDataProductExecutionState ||
+      this.executionState instanceof LakehouseDataProductExecutionState
+        ? this.executionState.selectedRuntime
+        : undefined;
+    const lakehouseRuntime =
+      selectedRuntime?.runtimeValue instanceof LakehouseRuntime
+        ? selectedRuntime.runtimeValue
+        : undefined;
+    // NOTE: `dataProduct` is declared with definite assignment, but is genuinely unset
+    // on an artifact which was constructed rather than deserialized
+    const artifactInfo: V1_DataProductInfo | undefined =
+      this.dataProductArtifact?.dataProduct;
+
+    return {
+      dataProductLabel: this.dataProduct.title ?? this.dataProduct.name,
+      dataProductId: this.dataProduct.name,
+      accessPointGroupId: accessPointGroup?.id,
+      accessPointGroupLabel: accessPointGroup
+        ? (accessPointGroup.title ?? accessPointGroup.id)
+        : undefined,
+      deploymentId: artifactInfo?.deploymentId,
+      environment: lakehouseRuntime?.environment,
+      warehouse: lakehouseRuntime?.warehouse,
+      supportEmails: (this.dataProduct.supportInfo?.emails ?? []).map(
+        (email) => email.address,
+      ),
+    };
   }
 
   override buildExecutionContextExpression(

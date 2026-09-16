@@ -16,9 +16,16 @@
 
 import { LegendApplicationPlugin } from '@finos/legend-application';
 import type {
+  DataProductAccessRequestLinkBuilder,
   QueryBuilder_LegendApplicationPlugin_Extension,
   QueryBuilderState,
 } from '@finos/legend-query-builder';
+import {
+  isSnapshotVersion,
+  SNAPSHOT_VERSION_ALIAS,
+} from '@finos/legend-server-depot';
+import { LegendQueryDataProductQueryBuilderState } from './data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl } from '../__lib__/LegendQueryNavigation.js';
 import type { LegendQueryPluginManager } from '../application/LegendQueryPluginManager.js';
 import type {
   ExistingQueryEditorStore,
@@ -136,4 +143,35 @@ export class LegendQueryApplicationPlugin
     request: QueryTitleDescriptionAISuggestionRequest,
     legendAIUrl: string,
   ) => Promise<QueryTitleDescriptionSuggestion>;
+
+  getDataProductAccessRequestLinkBuilders(): DataProductAccessRequestLinkBuilder[] {
+    return [
+      (info, queryBuilderState): string | undefined => {
+        if (
+          !(
+            queryBuilderState instanceof LegendQueryDataProductQueryBuilderState
+          ) ||
+          info.deploymentId === undefined
+        ) {
+          return undefined;
+        }
+        const versionId = queryBuilderState.project.versionId;
+        const marketplaceUrl =
+          isSnapshotVersion(versionId) || versionId === SNAPSHOT_VERSION_ALIAS
+            ? queryBuilderState.applicationStore.config
+                .marketplaceProductionParallelUrl
+            : queryBuilderState.applicationStore.config
+                .marketplaceApplicationUrl;
+        if (marketplaceUrl === undefined) {
+          return undefined;
+        }
+        return EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl(
+          marketplaceUrl,
+          info.dataProductId,
+          info.deploymentId,
+          info.accessPointGroupId,
+        );
+      },
+    ];
+  }
 }

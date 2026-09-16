@@ -22,4 +22,5 @@ export enum QUERY_BUILDER_DOCUMENTATION_KEY {
   TUTORIAL_QUERY_BUILDER = 'tutorial.query.builder',
   FREQUENTLY_ASKED_QUESTIONS = 'frequently.asked.questions',
   SUPPORT_TICKETS_LINK = 'support.tickets.link',
+  SNOWFLAKE_ACTIVE_WAREHOUSE_ISSUE_FAQ = 'snowflake.active-warehouse-issue.faq',
 }

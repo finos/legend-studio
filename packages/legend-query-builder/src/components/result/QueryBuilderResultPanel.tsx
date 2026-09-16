@@ -56,6 +56,7 @@ import {
   TDSExecutionResult,
   RawExecutionResult,
   ExecutionError,
+  isExecutionAccessError,
 } from '@finos/legend-graph';
 import {
   ActionAlertActionType,
@@ -81,12 +82,10 @@ import type { QueryBuilder_LegendApplicationPlugin_Extension } from '../../store
 import type { QueryBuilderResultState } from '../../stores/QueryBuilderResultState.js';
 import { QueryBuilderBaseInfoTooltip } from '../shared/QueryBuilderPropertyInfoTooltip.js';
 import { LineageViewer } from '../lineage/LineageViewer.js';
-
-const PERMISSION_ERRORS = [
-  'permission denied',
-  'invalid user id or password',
-  'Incorrect username or password',
-];
+import {
+  buildDataProductEmptyResultPanel,
+  buildDataProductExecutionErrorPanel,
+} from './QueryBuilderDataProductErrorPanel.js';
 
 export const QueryBuilderExecutionErrorPanel = observer(
   (props: {
@@ -99,13 +98,12 @@ export const QueryBuilderExecutionErrorPanel = observer(
       executionError instanceof Error ? executionError.message : executionError;
     const errorStackTrace =
       executionError instanceof ExecutionError ? executionError.stack : '';
-    const isPermissionDeniedError = Boolean(
-      PERMISSION_ERRORS.find((e) =>
-        queryBuilderState.applicationStore.notificationService
-          .getErrorMessage(executionError)
-          ?.toLowerCase()
-          .includes(e),
-      ),
+    const classifiableErrorMessage =
+      queryBuilderState.applicationStore.notificationService.getErrorMessage(
+        executionError,
+      );
+    const canCheckEntitlements = isExecutionAccessError(
+      classifiableErrorMessage,
     );
     const openCheckEntitlmentsEditor = (): void => {
       queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
@@ -124,9 +122,19 @@ export const QueryBuilderExecutionErrorPanel = observer(
       }
     };
 
+    // data products get their own views: the raw error names neither the data product
+    // access is missing on, nor where to go about it
+    const dataProductErrorPanel = buildDataProductExecutionErrorPanel(
+      resultState,
+      executionError,
+    );
+    if (dataProductErrorPanel) {
+      return <>{dataProductErrorPanel}</>;
+    }
+
     return (
       <>
-        {isPermissionDeniedError && (
+        {canCheckEntitlements && (
           <div className="query-builder__result__permission-error">
             <div className="query-builder__result__permission-error__header">
               Entitlement / Authorization error - Please
@@ -150,7 +158,7 @@ export const QueryBuilderExecutionErrorPanel = observer(
         <div
           className={clsx('query-builder__result__execution-error', {
             'query-builder__result__execution-error--max':
-              !isPermissionDeniedError,
+              !canCheckEntitlements,
           })}
         >
           <div className="query-builder__result__execution-error__header">
@@ -211,6 +219,11 @@ export const QueryBuilderEmptyExecutionResultPanel = observer(
         true,
       );
     };
+    const dataProductEmptyResultPanel =
+      buildDataProductEmptyResultPanel(queryBuilderState);
+    if (dataProductEmptyResultPanel) {
+      return <>{dataProductEmptyResultPanel}</>;
+    }
 
     return (
       <div className="query-builder__result__empty-result-warning">
