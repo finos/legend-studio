@@ -45,6 +45,7 @@ import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceLegendAIIntegration } from './DataSpaceLegendAIIntegration.js';
 import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
 import { guaranteeNonNullable } from '@finos/legend-shared';
+import { DataSpaceQualityEmote } from './DataSpaceQualityEmote.js';
 
 const DataSpaceHeader = observer(
   (props: {
@@ -91,128 +92,133 @@ const DataSpaceHeader = observer(
               </div>
             )}
           </div>
-          <div className="data-space__viewer__header__actions">
-            {dataSpaceViewerState.currentExecutionContext && (
+          <div className="data-space__viewer__header__actions-group">
+            <DataSpaceQualityEmote
+              qualityState={dataSpaceViewerState.qualityState}
+            />
+            <div className="data-space__viewer__header__actions">
+              {dataSpaceViewerState.currentExecutionContext && (
+                <ControlledDropdownMenu
+                  className="data-space__viewer__header__execution-context-selector"
+                  menuProps={{
+                    anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
+                    transformOrigin: { vertical: 'top', horizontal: 'center' },
+                    elevation: 7,
+                  }}
+                  title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
+                  content={
+                    <MenuContent>
+                      {Array.from(
+                        dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+                      ).map((context) => (
+                        <MenuContentItem
+                          key={context.name}
+                          className={clsx(
+                            'data-space__viewer__header__execution-context-selector__option',
+                            {
+                              'data-space__viewer__header__execution-context-selector__option--active':
+                                context ===
+                                dataSpaceViewerState.currentExecutionContext,
+                            },
+                          )}
+                          onClick={() =>
+                            dataSpaceViewerState.setCurrentExecutionContext(
+                              context,
+                            )
+                          }
+                        >
+                          {context.name}
+                        </MenuContentItem>
+                      ))}
+                    </MenuContent>
+                  }
+                >
+                  <div className="data-space__viewer__header__execution-context-selector__trigger">
+                    <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
+                      <PlayIcon />
+                    </div>
+                    <div className="data-space__viewer__header__execution-context-selector__trigger__label">
+                      {dataSpaceViewerState.currentExecutionContext.name}
+                    </div>
+                    <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
+                      <CaretDownIcon />
+                    </div>
+                  </div>
+                </ControlledDropdownMenu>
+              )}
               <ControlledDropdownMenu
-                className="data-space__viewer__header__execution-context-selector"
+                className="data-space__viewer__header__actions-selector"
                 menuProps={{
-                  anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-                  transformOrigin: { vertical: 'top', horizontal: 'center' },
+                  anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+                  transformOrigin: { vertical: 'top', horizontal: 'right' },
                   elevation: 7,
                 }}
-                title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
+                title="More Actions..."
                 content={
                   <MenuContent>
-                    {Array.from(
-                      dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-                    ).map((context) => (
-                      <MenuContentItem
-                        key={context.name}
-                        className={clsx(
-                          'data-space__viewer__header__execution-context-selector__option',
-                          {
-                            'data-space__viewer__header__execution-context-selector__option--active':
-                              context ===
-                              dataSpaceViewerState.currentExecutionContext,
-                          },
-                        )}
-                        onClick={() =>
-                          dataSpaceViewerState.setCurrentExecutionContext(
-                            context,
-                          )
+                    {dataSpaceViewerState.currentExecutionContext && (
+                      <>
+                        <MenuContentItem
+                          onClick={() =>
+                            dataSpaceViewerState.queryDataSpace(
+                              guaranteeNonNullable(
+                                dataSpaceViewerState.currentExecutionContext,
+                              ).name,
+                            )
+                          }
+                        >
+                          Query Data Space
+                        </MenuContentItem>
+                        <MenuContentDivider />
+                      </>
+                    )}
+                    <MenuContentItem
+                      onClick={() =>
+                        dataSpaceViewerState.viewProject(analysisResult.path)
+                      }
+                    >
+                      View Project
+                    </MenuContentItem>
+                    <MenuContentItem
+                      onClick={() => {
+                        dataSpaceViewerState
+                          .viewSDLCProject(analysisResult.path)
+                          .catch(applicationStore.alertUnhandledError);
+                      }}
+                    >
+                      View SDLC Project
+                    </MenuContentItem>
+                    <MenuContentDivider />
+                    <MenuContentItem
+                      onClick={() => {
+                        const documentationUrl =
+                          analysisResult.supportInfo?.documentationUrl;
+                        if (documentationUrl) {
+                          applicationStore.navigationService.navigator.visitAddress(
+                            documentationUrl,
+                          );
                         }
-                      >
-                        {context.name}
-                      </MenuContentItem>
-                    ))}
+                      }}
+                    >
+                      Read Documentation
+                    </MenuContentItem>
+                    <MenuContentItem
+                      onClick={() =>
+                        dataSpaceViewerState.changeZone(
+                          generateAnchorForActivity(
+                            DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
+                          ),
+                        )
+                      }
+                    >
+                      Get Help
+                    </MenuContentItem>
                   </MenuContent>
                 }
               >
-                <div className="data-space__viewer__header__execution-context-selector__trigger">
-                  <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
-                    <PlayIcon />
-                  </div>
-                  <div className="data-space__viewer__header__execution-context-selector__trigger__label">
-                    {dataSpaceViewerState.currentExecutionContext.name}
-                  </div>
-                  <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
-                    <CaretDownIcon />
-                  </div>
-                </div>
+                <MoreVerticalIcon />
               </ControlledDropdownMenu>
-            )}
-            <ControlledDropdownMenu
-              className="data-space__viewer__header__actions-selector"
-              menuProps={{
-                anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
-                transformOrigin: { vertical: 'top', horizontal: 'right' },
-                elevation: 7,
-              }}
-              title="More Actions..."
-              content={
-                <MenuContent>
-                  {dataSpaceViewerState.currentExecutionContext && (
-                    <>
-                      <MenuContentItem
-                        onClick={() =>
-                          dataSpaceViewerState.queryDataSpace(
-                            guaranteeNonNullable(
-                              dataSpaceViewerState.currentExecutionContext,
-                            ).name,
-                          )
-                        }
-                      >
-                        Query Data Space
-                      </MenuContentItem>
-                      <MenuContentDivider />
-                    </>
-                  )}
-                  <MenuContentItem
-                    onClick={() =>
-                      dataSpaceViewerState.viewProject(analysisResult.path)
-                    }
-                  >
-                    View Project
-                  </MenuContentItem>
-                  <MenuContentItem
-                    onClick={() => {
-                      dataSpaceViewerState
-                        .viewSDLCProject(analysisResult.path)
-                        .catch(applicationStore.alertUnhandledError);
-                    }}
-                  >
-                    View SDLC Project
-                  </MenuContentItem>
-                  <MenuContentDivider />
-                  <MenuContentItem
-                    onClick={() => {
-                      const documentationUrl =
-                        analysisResult.supportInfo?.documentationUrl;
-                      if (documentationUrl) {
-                        applicationStore.navigationService.navigator.visitAddress(
-                          documentationUrl,
-                        );
-                      }
-                    }}
-                  >
-                    Read Documentation
-                  </MenuContentItem>
-                  <MenuContentItem
-                    onClick={() =>
-                      dataSpaceViewerState.changeZone(
-                        generateAnchorForActivity(
-                          DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
-                        ),
-                      )
-                    }
-                  >
-                    Get Help
-                  </MenuContentItem>
-                </MenuContent>
-              }
-            >
-              <MoreVerticalIcon />
-            </ControlledDropdownMenu>
+            </div>
           </div>
         </div>
       </div>

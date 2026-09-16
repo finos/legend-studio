@@ -89,6 +89,12 @@
       }
     }
 
+    &__actions-group {
+      @include flexVCenter;
+
+      gap: 0.8rem;
+    }
+
     &__actions {
       @include flexVCenter;
 
@@ -97,6 +103,40 @@
       border: 0.1rem solid var(--color-border-default);
       border-radius: 0.2rem;
       padding-left: 0.5rem;
+    }
+
+    &__quality-emote {
+      @include flexVCenter;
+
+      position: relative;
+      gap: 0.5rem;
+      padding: 0 1.2rem;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--color-blue-100);
+      white-space: nowrap;
+
+      &__icon {
+        font-size: 2rem;
+        line-height: 1;
+      }
+
+      &__ai-ready-stamp {
+        position: absolute;
+        top: -0.7rem;
+        left: -0.5rem;
+        padding: 0.1rem 0.6rem;
+        background: var(--color-ai-accent-purple);
+        color: var(--color-white);
+        font-size: 1rem;
+        font-weight: 700;
+        letter-spacing: 0.03rem;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-radius: 1rem;
+        box-shadow: 0 0.1rem 0.3rem var(--color-dark-shade-280);
+        transform: rotate(-6deg);
+      }
     }
 
     &__execution-context-selector {

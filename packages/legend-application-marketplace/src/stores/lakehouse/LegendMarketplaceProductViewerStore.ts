@@ -23,6 +23,7 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateRegistryGovernanceUrl,
 } from '@finos/legend-application';
 import {
+  LATEST_VERSION_ALIAS,
   resolveVersion,
   retrieveProjectEntitiesWithDependencies,
   StoreProjectData,
@@ -82,8 +83,11 @@ import {
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   DataSpaceViewerState,
+  DATA_SPACE_QUALITY_LEVEL,
+  type DataSpaceQualityResult,
   EXTERNAL_APPLICATION_NAVIGATION__generateServiceQueryCreatorUrl,
 } from '@finos/legend-extension-dsl-data-space/application';
+import { DataSpaceQualityResponse } from '@finos/legend-server-marketplace';
 import {
   type DataSpaceAnalysisResult,
   DSL_DataSpace_getGraphManagerExtension,
@@ -770,7 +774,11 @@ export class LegendMarketplaceProductViewerStore {
   ): GeneratorFn<void> {
     try {
       this.loadingProductState.inProgress();
-      const { groupId, artifactId, versionId } = parseGAVCoordinates(gav);
+      const {
+        groupId,
+        artifactId,
+        versionId: rawVersionId,
+      } = parseGAVCoordinates(gav);
       try {
         // create graph manager
         const graphManagerState = new GraphManagerState(
@@ -812,6 +820,16 @@ export class LegendMarketplaceProductViewerStore {
             ),
           )) as PlainObject<StoreProjectData>,
         );
+
+        const versionId =
+          rawVersionId === LATEST_VERSION_ALIAS
+            ? VersionedProjectData.serialization.fromJson(
+                (yield this.marketplaceBaseStore.depotServerClient.getLatestVersion(
+                  groupId,
+                  artifactId,
+                )) as PlainObject<VersionedProjectData>,
+              ).versionId
+            : rawVersionId;
 
         // set origin
         graphManagerState.graph.setOrigin(
@@ -1023,6 +1041,33 @@ export class LegendMarketplaceProductViewerStore {
               },
               tokenProvider: () => tokenProvider?.(),
             },
+            fetchDataSpaceQuality:
+              async (): Promise<DataSpaceQualityResult> => {
+                const rawResult =
+                  await this.marketplaceBaseStore.marketplaceServerClient.dataSpaceDocQuality(
+                    this.marketplaceBaseStore.envState.lakehouseEnvironment,
+                    groupId,
+                    artifactId,
+                    versionId,
+                    analysisResult.path,
+                    analysisResult.title ?? analysisResult.name,
+                  );
+                const result =
+                  DataSpaceQualityResponse.serialization.fromJson(rawResult);
+                if (
+                  !Object.values(DATA_SPACE_QUALITY_LEVEL).includes(
+                    result.qualityLevel as DATA_SPACE_QUALITY_LEVEL,
+                  )
+                ) {
+                  throw new Error(
+                    `Unrecognized data space quality level: ${result.qualityLevel}`,
+                  );
+                }
+                return {
+                  qualityLevel: result.qualityLevel as DATA_SPACE_QUALITY_LEVEL,
+                  qualityBreakdown: result.qualityBreakdown,
+                };
+              },
           },
         );
         dataSpaceViewerState.legendAIConfig =
@@ -1048,7 +1093,7 @@ export class LegendMarketplaceProductViewerStore {
           this.marketplaceBaseStore.applicationStore.telemetryService,
           groupId,
           artifactId,
-          versionId,
+          rawVersionId,
           path,
           message,
         );
