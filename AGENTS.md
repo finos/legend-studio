@@ -119,6 +119,8 @@ Architecture/typing references: [docs/technical/monorepo.md](docs/technical/mono
   - **Builders** convert V1 protocol → metamodel on the way in; **transformers** convert metamodel → V1 protocol on the way out.
   - Studio, query builder, DataCube, and all UI / editor / state code consume metamodel only. Importing a `V1_*` symbol from outside `v1/` is a review red flag.
 - **Copyright headers**: Every source file (`.ts`, `.tsx`, `.js`, `.mjs`, `.cjs`, `.scss`, `.css`) must start with the Apache 2.0 header. CI enforces this via `yarn check:copyright`. Run `yarn fix:copyright` to insert headers automatically.
+  - A **new** file's header carries the **current year** — `Copyright (c) <current year>-present, Goldman Sachs` — matching [scripts/copyright/COPYRIGHT_HEADER.template.txt](scripts/copyright/COPYRIGHT_HEADER.template.txt). Existing files keep whatever year they were created with; do not bulk-update them.
+  - Do **not** copy the header from a neighbouring file — most of the repo predates the current year, so copying silently backdates the new file. Neither check catches it: `check:copyright` is deliberately year-agnostic, and `fix:copyright` only inserts headers where one is missing, so it will not correct a wrong year.
 - **Formatting**: Prettier (via `yarn fix:format`). Stylelint for SCSS/CSS.
 - **Pre-commit hooks**: Husky + lint-staged auto-formats staged files. Do **not** bypass with `--no-verify`.
 - **Commit messages**: [Conventional Commits](https://www.conventionalcommits.org/) — `feat: …`, `fix: …`, `docs: …`, `chore: …`, `refactor: …`. PR titles follow the same convention; the squash-merge commit becomes the changelog entry.
@@ -158,7 +160,7 @@ When reviewing a PR or diff in this repo, walk this checklist top-to-bottom. The
 
 ### Source hygiene
 
-- [ ] Every new `.ts`, `.tsx`, `.js`, `.mjs`, `.cjs`, `.scss`, `.css` file starts with the Apache 2.0 copyright header.
+- [ ] Every new `.ts`, `.tsx`, `.js`, `.mjs`, `.cjs`, `.scss`, `.css` file starts with the Apache 2.0 copyright header, dated with the **current year** (`<current year>-present`) rather than copied from an older file. CI does not check the year.
 - [ ] No generated output committed under `build/`, `lib/`, or `dist/`.
 - [ ] No stray `console.log`, `debugger`, `.only` / `.skip` left in tests.
 - [ ] No hardcoded URLs, tokens, credentials, or absolute local paths.

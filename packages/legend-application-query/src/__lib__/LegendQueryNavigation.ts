@@ -443,6 +443,20 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateNewDataCubeUrl = (
 };
 
 /**
+ * Mirrors `generateAnchorForSection` from `@finos/legend-extension-dsl-data-product`,
+ * which this package does not depend on. The data product viewer registers one anchor
+ * per access point group, and reads the zone from the URL hash on load.
+ *
+ * @external_application_navigation This depends on Legend Marketplace routing and is hardcoded so it's potentially brittle
+ */
+const EXTERNAL_APPLICATION_NAVIGATION__generateAccessPointGroupAnchor = (
+  accessPointGroupId: string,
+): string =>
+  encodeURIComponent(
+    `apg-${accessPointGroupId}`.trim().toLowerCase().replace(/\s+/gu, '-'),
+  );
+
+/**
  * @external_application_navigation This depends on Legend Marketplace routing and is hardcoded so it's potentially brittle
  */
 export const EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl =
@@ -450,5 +464,10 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl 
     marketplaceApplicationUrl: string,
     dataProductId: string,
     deploymentId: string,
+    accessPointGroupId?: string | undefined,
   ): string =>
-    `${marketplaceApplicationUrl}/dataProduct/deployed/${dataProductId}/${deploymentId}`;
+    `${marketplaceApplicationUrl}/dataProduct/deployed/${dataProductId}/${deploymentId}${
+      accessPointGroupId
+        ? `#${EXTERNAL_APPLICATION_NAVIGATION__generateAccessPointGroupAnchor(accessPointGroupId)}`
+        : ''
+    }`;

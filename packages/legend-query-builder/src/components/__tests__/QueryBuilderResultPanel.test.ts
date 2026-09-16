@@ -30,6 +30,7 @@ import {
   act,
   fireEvent,
   getAllByText,
+  getByRole,
   getByText,
   getByTitle,
   queryByText,
@@ -465,6 +466,137 @@ test(
       ),
     );
     expect(queryByText(resultPanel, 'Query returned no data')).not.toBeNull();
+  },
+);
+
+describe(
+  integrationTest('Query builder execution error entitlements banner'),
+  () => {
+    test.each([
+      ['permission denied', 'Execution error: permission denied for table X'],
+      [
+        'invalid user id or password',
+        'ORA-01017: invalid user id or password; logon denied',
+      ],
+      [
+        'incorrect username or password',
+        'Incorrect username or password was specified.',
+      ],
+      ['upper-cased permission error', 'PERMISSION DENIED'],
+      [
+        'snowflake insufficient privileges',
+        "SQL access control error: Insufficient privileges to operate on table 'PERSON'",
+      ],
+      [
+        'snowflake object not authorized',
+        "SQL compilation error: Object 'DB.SCHEMA.PERSON' does not exist or not authorized.",
+      ],
+      [
+        'snowflake missing current database',
+        'SQL compilation error: This session does not have a current database. Call "USE DATABASE", or use a qualified name.',
+      ],
+    ])(
+      'Query builder shows check entitlements for error: %s',
+      async (testName: string, errorMessage: string) => {
+        const { renderResult, queryBuilderState } =
+          await testQueryBuilderStateSetup();
+
+        await act(async () => {
+          queryBuilderState.resultState.setExecutionError(
+            new Error(errorMessage),
+          );
+        });
+        const resultPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+          ),
+        );
+        expect(
+          queryByText(
+            resultPanel,
+            'Entitlement / Authorization error - Please',
+          ),
+        ).not.toBeNull();
+        expect(
+          getByRole(resultPanel, 'button', {
+            name: 'Click Here to Check Entitlements',
+          }),
+        ).toHaveProperty('disabled', false);
+      },
+    );
+
+    test(
+      integrationTest(
+        'Query builder does not show check entitlements for non-permission error',
+      ),
+      async () => {
+        const { renderResult, queryBuilderState } =
+          await testQueryBuilderStateSetup();
+
+        await act(async () => {
+          queryBuilderState.resultState.setExecutionError(
+            new Error('Execution error: syntax error at or near "form"'),
+          );
+        });
+        const resultPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+          ),
+        );
+        expect(
+          queryByText(
+            resultPanel,
+            'Entitlement / Authorization error - Please',
+          ),
+        ).toBeNull();
+        expect(
+          queryByText(resultPanel, 'Click Here to Check Entitlements'),
+        ).toBeNull();
+      },
+    );
+
+    test.each([
+      [
+        'no active warehouse',
+        "No active warehouse selected in the current session. Select an active warehouse with the 'use warehouse' command.",
+      ],
+      [
+        'missing OPERATE privilege on a suspended warehouse',
+        'Cannot perform this operation. The warehouse must be started first, and the role does not have OPERATE privilege to resume it.',
+      ],
+    ])(
+      // outside of data products the entitlements report also covers warehouse access,
+      // so it is offered here too
+      'Query builder shows check entitlements for warehouse error: %s',
+      async (testName: string, errorMessage: string) => {
+        const { renderResult, queryBuilderState } =
+          await testQueryBuilderStateSetup();
+
+        await act(async () => {
+          queryBuilderState.resultState.setExecutionError(
+            new Error(errorMessage),
+          );
+        });
+        const resultPanel = await waitFor(() =>
+          renderResult.getByTestId(
+            QUERY_BUILDER_TEST_ID.QUERY_BUILDER_RESULT_PANEL,
+          ),
+        );
+        expect(
+          queryByText(
+            resultPanel,
+            'Entitlement / Authorization error - Please',
+          ),
+        ).not.toBeNull();
+        expect(
+          getByRole(resultPanel, 'button', {
+            name: 'Click Here to Check Entitlements',
+          }),
+        ).toHaveProperty('disabled', false);
+        // the error itself is still reported
+        expect(queryByText(resultPanel, errorMessage)).not.toBeNull();
+      },
+    );
   },
 );
 

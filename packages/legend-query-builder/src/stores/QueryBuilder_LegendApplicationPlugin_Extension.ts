@@ -21,6 +21,7 @@ import type {
   DataAccessState,
   DatasetAccessInfo,
 } from './data-access/DataAccessState.js';
+import type { DataProductAccessInfo } from './data-access/DataProductAccessInfo.js';
 
 export type CuratedTemplateQuery = {
   id: string;
@@ -66,6 +67,16 @@ export type QueryExportUsageConfiguration = {
 export type WarehouseEntitlementRender = {
   renderer: (dataAccessState: DataAccessState) => React.ReactNode;
 };
+
+/**
+ * Builds the address where access to a data product can be requested (e.g. its
+ * Marketplace page). Returns `undefined` when the host application cannot produce
+ * one, in which case no request-access action is offered.
+ */
+export type DataProductAccessRequestLinkBuilder = (
+  info: DataProductAccessInfo,
+  queryBuilderState: QueryBuilderState,
+) => string | undefined;
 
 export type QueryAgentChatRenderer = (
   queryBuilderState: QueryBuilderState,
@@ -142,6 +153,12 @@ export interface QueryBuilder_LegendApplicationPlugin_Extension
    * Get the list of dataset entitlement access report action configurations.
    */
   getExtraDatasetEntitlementAccessNotGrantedReportActionConfigurations?(): DatasetEntitlementAccessReportActionConfiguration[];
+
+  /**
+   * Get the list of builders for the address where access to a data product can be
+   * requested. The first one to produce an address wins.
+   */
+  getDataProductAccessRequestLinkBuilders?(): DataProductAccessRequestLinkBuilder[];
 
   /**
    * Get the list of query usage configurations

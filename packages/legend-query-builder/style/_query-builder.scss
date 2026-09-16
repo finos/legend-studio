@@ -2035,6 +2035,107 @@
     }
   }
 
+  &__data-product-access {
+    height: 100%;
+    overflow: auto;
+    padding: 3rem;
+
+    &__header {
+      @include flexVCenter;
+
+      margin-bottom: 2rem;
+
+      &__icon {
+        @include flexCenter;
+
+        font-size: 1.8rem;
+        margin-right: 1.5rem;
+
+        &--error {
+          color: var(--color-status-error);
+        }
+
+        &--warn {
+          color: var(--color-status-warn);
+        }
+      }
+
+      &__label {
+        color: var(--color-text-primary);
+        font-weight: bold;
+        font-size: 2rem;
+      }
+    }
+
+    &__action {
+      margin-bottom: 2.5rem;
+      padding: 0 1.5rem;
+      height: 3.4rem;
+      font-size: 1.4rem;
+    }
+
+    &__info {
+      margin-bottom: 2.5rem;
+
+      &__entry {
+        @include flexVCenter;
+
+        line-height: 2.4rem;
+
+        &__label {
+          width: 18rem;
+          color: var(--color-text-muted);
+          font-size: 1.4rem;
+        }
+
+        &__value {
+          color: var(--color-text-secondary);
+          font-size: 1.4rem;
+
+          &--linkable {
+            color: var(--color-text-link);
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+
+    &__details {
+      border-top: 0.1rem solid var(--color-border-default);
+      padding-top: 1.5rem;
+
+      &__header {
+        color: var(--color-text-muted);
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+      }
+
+      &__message {
+        font-family: 'Roboto Mono', monospace;
+        color: var(--color-text-secondary);
+        font-size: 1.2rem;
+        line-height: 1.8rem;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+      }
+
+      &__trace {
+        color: var(--color-text-muted);
+        font-size: 1.2rem;
+        margin-top: 1rem;
+      }
+
+      &__toggle {
+        @include flexVCenter;
+
+        gap: 0.5rem;
+        color: var(--color-text-link);
+        font-size: 1.2rem;
+        margin-top: 1rem;
+      }
+    }
+  }
+
   &__execution-error {
     background: rgb(245 88 75 / 60%);
     border: 0.3rem solid var(--color-red-200);

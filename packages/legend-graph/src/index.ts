@@ -569,6 +569,7 @@ export * from './graph-manager/action/generation/ArtifactGenerationExtensionResu
 export * from './graph-manager/action/generation/IngestionDefinitionArtifact.js';
 
 export * from './graph-manager/action/execution/ExecutionResultHelper.js';
+export * from './graph-manager/action/execution/ExecutionErrorHelper.js';
 export * from './graph-manager/PureGraphManagerPlugin.js';
 export * from './graph-manager/action/query/Query.js';
 export * from './graph-manager/action/query/QuerySearchSpecification.js';
