@@ -50,6 +50,7 @@ import { LambdaParameterValuesEditor } from './shared/LambdaParameterValuesEdito
 import { VariableViewer } from './shared/QueryBuilderVariableSelector.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
+import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
 import { useCallback, useState } from 'react';
 import {
   buildElementOption,
@@ -166,6 +167,16 @@ const VariableExpressionEditor = observer(
           defaultMilestoningValue,
         );
       }
+      QueryBuilderTelemetryHelper.logEvent_ParameterChanged(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: isCreating ? 'add' : 'edit',
+            parameterCount: queryParametersState.parameterStates.length,
+          },
+        },
+      );
 
       handleCancel();
     };
@@ -390,8 +401,20 @@ export const QueryBuilderParametersPanel = observer(
                     actions={{
                       editVariable: () =>
                         queryParameterState.setSelectedParameter(pState),
-                      deleteVariable: () =>
-                        queryParameterState.removeParameter(pState),
+                      deleteVariable: () => {
+                        queryParameterState.removeParameter(pState);
+                        QueryBuilderTelemetryHelper.logEvent_ParameterChanged(
+                          queryBuilderState.applicationStore.telemetryService,
+                          {
+                            ...queryBuilderState.safeGetTelemetryContext(),
+                            change: {
+                              action: 'remove',
+                              parameterCount:
+                                queryParameterState.parameterStates.length,
+                            },
+                          },
+                        );
+                      },
                     }}
                   />
                 ))}

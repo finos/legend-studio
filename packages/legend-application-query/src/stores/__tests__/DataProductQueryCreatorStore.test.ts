@@ -751,7 +751,7 @@ describe(unitTest('DataProductQueryCreatorStore'), () => {
       ),
       () => {
         expect(store.getInitializeTelemetrySource()).toEqual({
-          source: { sourceType: LegendQuerySourceType.UNSELECTED },
+          sourceType: LegendQuerySourceType.UNSELECTED,
           restoredFromRecent: false,
         });
       },
@@ -770,14 +770,12 @@ describe(unitTest('DataProductQueryCreatorStore'), () => {
       store.isRestoredFromRecent = true;
 
       expect(store.getInitializeTelemetrySource()).toEqual({
-        source: {
-          sourceType: LegendQuerySourceType.DATA_SPACE,
-          groupId: 'org.finos',
-          artifactId: 'my-artifact',
-          versionId: '1.0.0',
-          dataSpace: 'model::MyDS',
-          executionContext: 'default',
-        },
+        sourceType: LegendQuerySourceType.DATA_SPACE,
+        groupId: 'org.finos',
+        artifactId: 'my-artifact',
+        versionId: '1.0.0',
+        dataSpace: 'model::MyDS',
+        executionContext: 'default',
         restoredFromRecent: true,
       });
     });
@@ -795,16 +793,14 @@ describe(unitTest('DataProductQueryCreatorStore'), () => {
       );
 
       expect(store.getInitializeTelemetrySource()).toEqual({
-        source: {
-          sourceType: LegendQuerySourceType.DATA_PRODUCT,
-          groupId: 'org.finos',
-          artifactId: 'my-product',
-          versionId: '1.0.0',
-          dataProduct: 'model::MyDP',
-          // the access type is normalized to lower case
-          accessType: 'model',
-          accessId: 'ap1',
-        },
+        sourceType: LegendQuerySourceType.DATA_PRODUCT,
+        groupId: 'org.finos',
+        artifactId: 'my-product',
+        versionId: '1.0.0',
+        dataProduct: 'model::MyDP',
+        // the access type is normalized to lower case
+        accessType: 'model',
+        accessId: 'ap1',
         restoredFromRecent: false,
       });
     });
@@ -827,15 +823,14 @@ describe(unitTest('DataProductQueryCreatorStore'), () => {
         );
         // compare the serialized payload, as sent to telemetry
         expect(
-          JSON.parse(
-            JSON.stringify(store.getInitializeTelemetrySource().source),
-          ),
+          JSON.parse(JSON.stringify(store.getInitializeTelemetrySource())),
         ).toEqual({
           sourceType: LegendQuerySourceType.DATA_PRODUCT,
           groupId: 'org.finos',
           artifactId: 'my-product',
           versionId: '1.0.0',
           dataProduct: 'model::MyDP',
+          restoredFromRecent: false,
         });
 
         store.setQueryableElement(
@@ -848,15 +843,14 @@ describe(unitTest('DataProductQueryCreatorStore'), () => {
           ),
         );
         expect(
-          JSON.parse(
-            JSON.stringify(store.getInitializeTelemetrySource().source),
-          ),
+          JSON.parse(JSON.stringify(store.getInitializeTelemetrySource())),
         ).toEqual({
           sourceType: LegendQuerySourceType.DATA_SPACE,
           groupId: 'org.finos',
           artifactId: 'my-artifact',
           versionId: '1.0.0',
           dataSpace: 'model::MyDS',
+          restoredFromRecent: false,
         });
       },
     );

@@ -58,6 +58,7 @@ import {
 import { BasicValueSpecificationEditor } from './shared/BasicValueSpecificationEditor.js';
 import { QUERY_BUILDER_TEST_ID } from '../__lib__/QueryBuilderTesting.js';
 import { QUERY_BUILDER_DOCUMENTATION_KEY } from '../__lib__/QueryBuilderDocumentation.js';
+import { QueryBuilderTelemetryHelper } from '../__lib__/QueryBuilderTelemetryHelper.js';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { variableExpression_setName } from '../stores/shared/ValueSpecificationModifierHelper.js';
 import { LambdaEditor } from './shared/LambdaEditor.js';
@@ -175,6 +176,16 @@ const QueryBuilderSimpleConstantExpressionEditor = observer(
       if (isCreating) {
         variableState.addConstant(constantState);
       }
+      QueryBuilderTelemetryHelper.logEvent_ConstantChanged(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: isCreating ? 'add' : 'edit',
+            constantCount: variableState.constants.length,
+          },
+        },
+      );
       handleCancel();
     };
 
@@ -547,8 +558,19 @@ export const QueryBuilderConstantExpressionPanel = observer(
                   actions={{
                     editVariable: () =>
                       constantState.setSelectedConstant(constState),
-                    deleteVariable: () =>
-                      constantState.removeConstant(constState),
+                    deleteVariable: () => {
+                      constantState.removeConstant(constState);
+                      QueryBuilderTelemetryHelper.logEvent_ConstantChanged(
+                        queryBuilderState.applicationStore.telemetryService,
+                        {
+                          ...queryBuilderState.safeGetTelemetryContext(),
+                          change: {
+                            action: 'remove',
+                            constantCount: constantState.constants.length,
+                          },
+                        },
+                      );
+                    },
                   }}
                   extraContextMenuActions={getExtraContextMenu(constState)}
                   isReadOnly={isReadOnly}

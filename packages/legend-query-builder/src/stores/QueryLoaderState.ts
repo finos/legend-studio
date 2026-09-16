@@ -68,6 +68,40 @@ export interface QueryRevisionDiffInput {
   content: string | undefined;
 }
 
+/**
+ * Callbacks the query loader invokes across the saved-query lifecycle. Hosts
+ * implement these to report the actions to telemetry and to keep their own
+ * state (a recently-viewed list, say) in sync.
+ *
+ * Declared as one interface so the loader's fields, its constructor options and
+ * a host's handler bundle all derive from a single contract rather than
+ * repeating four signatures three times.
+ */
+export interface QueryLoaderLifecycleHandlers {
+  onQueryRenamed?: ((query: LightQuery) => void) | undefined;
+  /**
+   * The deleted query is passed alongside its id where it could be resolved
+   * from the loaded list, so hosts can report more than a bare id.
+   */
+  onQueryDeleted?:
+    | ((queryId: string, deletedQuery?: LightQuery | undefined) => void)
+    | undefined;
+  onQueryRenameFailed?: ((queryId: string, error: Error) => void) | undefined;
+  onQueryDeleteFailed?: ((queryId: string, error: Error) => void) | undefined;
+}
+
+/**
+ * The same handlers with every one provided — what a host's complete bundle
+ * looks like. Derived from {@link QueryLoaderLifecycleHandlers} so the two
+ * cannot drift; `Required` alone would not do, since it strips optionality but
+ * leaves the explicit `| undefined` in each property's type.
+ */
+export type CompleteQueryLoaderLifecycleHandlers = {
+  [K in keyof QueryLoaderLifecycleHandlers]-?: NonNullable<
+    QueryLoaderLifecycleHandlers[K]
+  >;
+};
+
 export class QueryLoaderState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManager: AbstractPureGraphManager;
@@ -94,8 +128,10 @@ export class QueryLoaderState {
     | undefined;
 
   readonly isReadOnly?: boolean | undefined;
-  readonly onQueryRenamed?: ((query: LightQuery) => void) | undefined;
-  readonly onQueryDeleted?: ((query: string) => void) | undefined;
+  readonly onQueryRenamed?: QueryLoaderLifecycleHandlers['onQueryRenamed'];
+  readonly onQueryDeleted?: QueryLoaderLifecycleHandlers['onQueryDeleted'];
+  readonly onQueryRenameFailed?: QueryLoaderLifecycleHandlers['onQueryRenameFailed'];
+  readonly onQueryDeleteFailed?: QueryLoaderLifecycleHandlers['onQueryDeleteFailed'];
   readonly handleFetchDefaultQueriesFailure?: (() => void) | undefined;
 
   queryBuilderState?: QueryBuilderState | undefined;
@@ -144,10 +180,8 @@ export class QueryLoaderState {
         | ((queries: LightQuery[]) => string)
         | undefined;
       isReadOnly?: boolean | undefined;
-      onQueryRenamed?: ((query: LightQuery) => void) | undefined;
-      onQueryDeleted?: ((query: string) => void) | undefined;
       handleFetchDefaultQueriesFailure?: (() => void) | undefined;
-    },
+    } & QueryLoaderLifecycleHandlers,
   ) {
     makeObservable(this, {
       isQueryLoaderDialogOpen: observable,
@@ -201,6 +235,8 @@ export class QueryLoaderState {
     this.isReadOnly = options.isReadOnly;
     this.onQueryRenamed = options.onQueryRenamed;
     this.onQueryDeleted = options.onQueryDeleted;
+    this.onQueryRenameFailed = options.onQueryRenameFailed;
+    this.onQueryDeleteFailed = options.onQueryDeleteFailed;
     this.handleFetchDefaultQueriesFailure =
       options.handleFetchDefaultQueriesFailure;
   }
@@ -429,6 +465,7 @@ export class QueryLoaderState {
       this.searchQueries(this.searchText); // trigger a search to refresh the query list
     } catch (error) {
       assertErrorThrown(error);
+      this.onQueryRenameFailed?.(queryId, error);
       this.applicationStore.notificationService.notifyError(error);
       this.renameQueryState.fail();
     }
@@ -463,9 +500,12 @@ export class QueryLoaderState {
 
   *deleteQuery(queryId: string): GeneratorFn<void> {
     this.deleteQueryState.inProgress();
+    // resolve before the delete: afterwards the list is refreshed and the entry
+    // is gone, so this is the only point where more than the id is available
+    const deletedQuery = this.queries.find((query) => query.id === queryId);
     try {
       yield this.graphManager.deleteQuery(queryId);
-      this.onQueryDeleted?.(queryId);
+      this.onQueryDeleted?.(queryId, deletedQuery);
       this.applicationStore.notificationService.notifySuccess(
         'Deleted query successfully',
       );
@@ -473,6 +513,7 @@ export class QueryLoaderState {
       this.searchQueries(this.searchText); // trigger a search to refresh the query list
     } catch (error) {
       assertErrorThrown(error);
+      this.onQueryDeleteFailed?.(queryId, error);
       this.applicationStore.notificationService.notifyError(error);
       this.deleteQueryState.fail();
     }

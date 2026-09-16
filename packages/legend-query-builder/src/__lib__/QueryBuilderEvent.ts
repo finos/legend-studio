@@ -24,10 +24,24 @@ export enum QUERY_BUILDER_EVENT {
   RUN_QUERY__SUCCESS = 'query-builder.run-query.success',
   RUN_QUERY__FAILURE = 'query-builder.run-query.failure',
   RUN_QUERY__CANCELLED = 'query-builder.run-query.cancelled',
+
+  /**
+   * Timing keys, not events in their own right — these name the `StopWatch`
+   * laps that end up in `report.timings` on the run-query events. The engine
+   * call itself is lapped inside the graph manager as
+   * `GRAPH_MANAGER_EVENT.V1_ENGINE_OPERATION_*`, so it is deliberately not
+   * duplicated here.
+   */
+  RUN_QUERY__PREPARE = 'query-builder.run-query.prepare',
+  RUN_QUERY__PROCESS_RESULT = 'query-builder.run-query.process-result',
+
   GENERATE_EXECUTION_PLAN__SUCCESS = 'query-builder.generate-plan.success',
+  GENERATE_EXECUTION_PLAN__FAILURE = 'query-builder.generate-plan.failure',
   DEBUG_EXECUTION_PLAN__SUCCESS = 'query-builder.debug-plan.success',
+  DEBUG_EXECUTION_PLAN__FAILURE = 'query-builder.debug-plan.failure',
   BUILD_EXECUTION_PLAN__SUCCESS = 'query-builder.build-plan.success',
   EXPORT_QUERY_DATA__SUCCESS = 'query-builder.export-query-data.success',
+  EXPORT_QUERY_DATA__FAILURE = 'query-builder.export-query-data.failure',
   EMBEDDED_DATA_CUBE__SUCCESS = 'query-builder.embedded-data-cube.success',
 
   MAPPING_MODEL_COVERAGE_ANALYSYS__LAUNCH = 'query-builder.mapping-model-coverage-analysis.launch',
@@ -44,7 +58,45 @@ export enum QUERY_BUILDER_EVENT {
   PANEL_FETCH_STRUCTURE_TOGGLE = 'query-builder.panel-fetch-structure.toggle',
   PANEL_GRAPH_FETCH_RENDER = 'query-builder.panel-graph-fetch.render',
 
+  EXECUTION_CONTEXT__CHANGE = 'query-builder.execution-context.change',
+  PROJECTION__CHANGE = 'query-builder.projection.change',
+  AGGREGATION__CHANGE = 'query-builder.aggregation.change',
+  WINDOW__CHANGE = 'query-builder.window.change',
+  GRAPH_FETCH__CHANGE = 'query-builder.graph-fetch.change',
+  PARAMETER__CHANGE = 'query-builder.parameter.change',
+  CONSTANT__CHANGE = 'query-builder.constant.change',
+  RESULT_MODIFIER__CHANGE = 'query-builder.result-modifier.change',
+  WATERMARK__CHANGE = 'query-builder.watermark.change',
+  MILESTONING__CHANGE = 'query-builder.milestoning.change',
+  FILTER__CHANGE = 'query-builder.filter.change',
+  POST_FILTER__CHANGE = 'query-builder.post-filter.change',
+
   CHANGE_HISTORY_ERROR = 'query-builder.change-history.error',
+
+  /**
+   * The canonical "a query builder exists and is loaded" signal, emitted by the
+   * host application from every entry point. Prefer this over the host's own
+   * route-specific load events when counting opens — those each cover only part
+   * of the population.
+   */
+  OPENED = 'query-builder.opened',
+}
+
+/**
+ * Which surface opened the query builder, reported as `openedFrom` on
+ * {@link QUERY_BUILDER_EVENT.OPENED}.
+ *
+ * This names the *surface* only. What is being queried is already carried by the
+ * source info on the same payload (`sourceType` and its target field), and
+ * `queryId` already marks a saved query — so there is deliberately no
+ * `query.creator.data-space`-style cross product here.
+ */
+export enum QUERY_BUILDER_OPENED_FROM {
+  QUERY_CREATOR = 'query.creator',
+  QUERY_SAVED = 'query.saved',
+  // NOTE: `studio.*` values to be added when Legend Studio's entry points are
+  // wired up; until then Studio emits no `opened` event at all, which shows up
+  // as an absence rather than as mislabelled rows
 }
 
 export enum QUERY_BUILDER_FILTER_EVENT {

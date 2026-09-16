@@ -54,6 +54,12 @@ import {
   FilterPropertyExpressionSourceState,
 } from '../filter/QueryBuilderFilterState.js';
 
+export type QueryBuilderMilestoningKind =
+  | 'get-all'
+  | 'all-versions'
+  | 'all-versions-in-range'
+  | 'none';
+
 export class QueryBuilderMilestoningState implements Hashable {
   readonly milestoningImplementations: QueryBuilderMilestoningImplementation[] =
     [];
@@ -92,6 +98,7 @@ export class QueryBuilderMilestoningState implements Hashable {
       isAllVersionsEnabled: computed,
       isAllVersionsInRangeEnabled: computed,
       isMilestonedQuery: computed,
+      milestoningKind: computed,
       hashCode: computed,
     });
 
@@ -238,6 +245,19 @@ export class QueryBuilderMilestoningState implements Hashable {
       this.queryBuilderState.getAllFunction ===
       QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS.GET_ALL_VERSIONS_IN_RANGE
     );
+  }
+
+  /**
+   * Shape-only summary of the milestoning configuration, for telemetry.
+   */
+  get milestoningKind(): QueryBuilderMilestoningKind {
+    return this.isAllVersionsInRangeEnabled
+      ? 'all-versions-in-range'
+      : this.isAllVersionsEnabled
+        ? 'all-versions'
+        : this.isMilestonedQuery
+          ? 'get-all'
+          : 'none';
   }
 
   get isInvalidAllVersionsInRange(): boolean {

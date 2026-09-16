@@ -38,6 +38,7 @@ import {
 import { DepotServerClient } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../QueryEditorStore.js';
+import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../__test-utils__/LegendQueryApplicationTestUtils.js';
@@ -351,6 +352,18 @@ describe(
         );
         // createLakehousePackageableRuntime should NOT be called for native access
         expect(lakehouseRuntimeCalled).toBe(false);
+        // the fallback source info must carry the `sourceType` discriminator —
+        // without it, telemetry from this path cannot be sliced alongside the
+        // creator-route events
+        expect(result.sourceInfo).toEqual({
+          sourceType: LegendQuerySourceType.DATA_PRODUCT,
+          groupId: 'test.group',
+          artifactId: 'test-artifact',
+          versionId: '0.0.0',
+          dataProduct: dataProductPath,
+          accessType: DataProductAccessType.NATIVE,
+          accessId: 'ctx1',
+        });
       },
     );
   },

@@ -639,19 +639,34 @@ const buildFilterTree = (
 
 const QueryBuilderFilterGroupConditionEditor = observer(
   (props: {
+    queryBuilderState: QueryBuilderState;
     node: QueryBuilderFilterTreeGroupNodeData;
     isDragOver: boolean;
     isDroppable: boolean;
   }) => {
-    const { node, isDragOver, isDroppable } = props;
+    const { queryBuilderState, node, isDragOver, isDroppable } = props;
+    const applicationStore = useApplicationStore();
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
       event.stopPropagation(); // prevent triggering selecting the node
-      node.setGroupOperation(
+      const nextOperation =
         node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND
           ? QUERY_BUILDER_GROUP_OPERATION.OR
-          : QUERY_BUILDER_GROUP_OPERATION.AND,
+          : QUERY_BUILDER_GROUP_OPERATION.AND;
+      node.setGroupOperation(nextOperation);
+      QueryBuilderTelemetryHelper.logEvent_FilterChanged(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'group-operation-change',
+            groupOperation:
+              nextOperation === QUERY_BUILDER_GROUP_OPERATION.AND
+                ? 'and'
+                : 'or',
+          },
+        },
       );
     };
 
@@ -1281,7 +1296,18 @@ const QueryBuilderFilterConditionContextMenu = observer(
   >(function QueryBuilderFilterConditionContextMenu(props, ref) {
     const { queryBuilderState, node } = props;
     const filterState = queryBuilderState.filterState;
-    const removeNode = (): void => filterState.removeNodeAndPruneBranch(node);
+    const removeNode = (): void => {
+      filterState.removeNodeAndPruneBranch(node);
+      QueryBuilderTelemetryHelper.logEvent_FilterChanged(
+        queryBuilderState.applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+          },
+        },
+      );
+    };
     const createCondition = (): void => {
       filterState.addNodeFromNode(
         new QueryBuilderFilterTreeBlankConditionNodeData(undefined),
@@ -1591,6 +1617,7 @@ const QueryBuilderFilterTreeNodeContainer = observer(
           >
             {node instanceof QueryBuilderFilterTreeGroupNodeData && (
               <QueryBuilderFilterGroupConditionEditor
+                queryBuilderState={queryBuilderState}
                 node={node}
                 isDroppable={isDroppable}
                 isDragOver={isDragOver}

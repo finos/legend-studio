@@ -409,6 +409,17 @@ export const QueryBuilderGraphFetchExternalConfig = observer(
       } else {
         removeNodeRecursively(serializationTreeData, node);
         serializationState.setGraphFetchTree({ ...serializationTreeData });
+        QueryBuilderTelemetryHelper.logEvent_GraphFetchChanged(
+          graphFetchState.queryBuilderState.applicationStore.telemetryService,
+          {
+            ...graphFetchState.queryBuilderState.safeGetTelemetryContext(),
+            change: {
+              action: 'remove',
+              nodeCount: serializationTreeData.nodes.size,
+              serializationType: serializationState.getLabel(),
+            },
+          },
+        );
       }
     };
 
@@ -533,10 +544,31 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
         updateTreeData({ ...serializationState.treeData });
       }
       updateTreeData({ ...treeData });
+      QueryBuilderTelemetryHelper.logEvent_GraphFetchChanged(
+        graphFetchState.queryBuilderState.applicationStore.telemetryService,
+        {
+          ...graphFetchState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+            nodeCount: treeData.nodes.size,
+          },
+        },
+      );
     };
 
-    const toggleChecked = (): void =>
+    const toggleChecked = (): void => {
       graphFetchState.setChecked(!graphFetchState.isChecked);
+      QueryBuilderTelemetryHelper.logEvent_GraphFetchChanged(
+        graphFetchState.queryBuilderState.applicationStore.telemetryService,
+        {
+          ...graphFetchState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'check-toggle',
+            nodeCount: treeData.nodes.size,
+          },
+        },
+      );
+    };
 
     const openConfigModal = (): void => {
       if (serializationState instanceof GraphFetchPureSerializationState) {
@@ -594,6 +626,18 @@ export const QueryBuilderGraphFetchTreeExplorer = observer(
                             );
                             break;
                         }
+                        QueryBuilderTelemetryHelper.logEvent_GraphFetchChanged(
+                          graphFetchState.queryBuilderState.applicationStore
+                            .telemetryService,
+                          {
+                            ...graphFetchState.queryBuilderState.safeGetTelemetryContext(),
+                            change: {
+                              action: 'serialization-change',
+                              nodeCount: treeData.nodes.size,
+                              serializationType: implementationType,
+                            },
+                          },
+                        );
                       },
                     ),
                 },
@@ -769,6 +813,17 @@ const QueryBuilderGraphFetchTreePanel = observer(
             refreshTreeData: true,
           });
         }
+        QueryBuilderTelemetryHelper.logEvent_GraphFetchChanged(
+          graphFetchTreeState.queryBuilderState.applicationStore
+            .telemetryService,
+          {
+            ...graphFetchTreeState.queryBuilderState.safeGetTelemetryContext(),
+            change: {
+              action: 'add',
+              nodeCount: graphFetchTreeState.treeData?.nodes.size ?? 0,
+            },
+          },
+        );
       },
       [graphFetchTreeState, serializationState],
     );

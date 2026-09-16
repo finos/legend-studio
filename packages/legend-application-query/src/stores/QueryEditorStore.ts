@@ -39,7 +39,7 @@ import {
   returnUndefOnError,
   UnsupportedOperationError,
   filterByType,
-  NetworkClientError,
+  buildTelemetryErrorFields,
 } from '@finos/legend-shared';
 import {
   type LightQuery,
@@ -139,12 +139,24 @@ import {
   ModelAccessPointDataProductExecutionState,
   LakehouseDataProductExecutionState,
   resolveDataProductAccessor,
+  QUERY_BUILDER_OPENED_FROM,
 } from '@finos/legend-query-builder';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
-import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
+import {
+  buildQueryCreateFailureData,
+  buildQueryIdentity,
+  buildQueryLifecycleFailureData,
+  buildQueryLoaderLifecycleTelemetryHandlers,
+} from '../__lib__/LegendQueryLifecycleTelemetry.js';
+import {
+  LegendQueryTelemetryHelper,
+  type InitializeTelemetrySource,
+} from '../__lib__/LegendQueryTelemetryHelper.js';
 import {
   type LegendQueryDataProductSampleSourceInfo,
   type LegendQueryDataProductSourceInfo,
+  type LegendQueryDataSpaceSourceInfo,
+  type LegendQueryIngestSourceInfo,
   type LegendQueryMappingSourceInfo,
   type LegendQueryServiceSourceInfo,
   type LegendQuerySourceInfo,
@@ -285,13 +297,7 @@ export class QueryCreatorState {
       LegendQueryTelemetryHelper.logEvent_CreateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
-          query: {
-            id: query.id,
-            name: query.name,
-            groupId: query.groupId,
-            artifactId: query.artifactId,
-            versionId: query.versionId,
-          },
+          ...buildQueryIdentity(query),
           ...queryBuilderState.getExtraTelemetryMetadata(),
         },
       );
@@ -309,6 +315,10 @@ export class QueryCreatorState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendQueryTelemetryHelper.logEvent_CreateQueryFailed(
+        this.editorStore.applicationStore.telemetryService,
+        buildQueryCreateFailureData(this.queryName, error),
+      );
     } finally {
       this.createQueryState.reset();
     }
@@ -439,25 +449,13 @@ export abstract class QueryEditorStore {
                 'recently viewed queries',
               )}`
             : `No recently viewed queries`,
-        onQueryDeleted: (queryId): void =>
-          LegendQueryUserDataHelper.removeRecentlyViewedQuery(
-            this.applicationStore.userDataService,
-            queryId,
-          ),
-        onQueryRenamed: (query): void => {
-          LegendQueryTelemetryHelper.logEvent_RenameQuerySucceeded(
-            applicationStore.telemetryService,
-            {
-              query: {
-                id: query.id,
-                name: query.name,
-                groupId: query.groupId,
-                artifactId: query.artifactId,
-                versionId: query.versionId,
-              },
-            },
-          );
-        },
+        ...buildQueryLoaderLifecycleTelemetryHandlers(this.applicationStore, {
+          onQueryDeleted: (queryId): void =>
+            LegendQueryUserDataHelper.removeRecentlyViewedQuery(
+              this.applicationStore.userDataService,
+              queryId,
+            ),
+        }),
         handleFetchDefaultQueriesFailure: (): void =>
           LegendQueryUserDataHelper.removeRecentlyViewedQueries(
             this.applicationStore.userDataService,
@@ -647,7 +645,15 @@ export abstract class QueryEditorStore {
       )) as QueryBuilderState;
       this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
-      this.logInitializeMetrics(stopWatch);
+      // the canonical "a query builder is loaded" signal, emitted for every
+      // route — creator and saved alike. Reported here rather than from each
+      // route's own load event so that counting opens does not require a union
+      // of differently shaped, half-covering events.
+      this.queryBuilderState.logOpened(this.getOpenedFrom(), {
+        ...this.getInitializeTelemetrySource(),
+        timings:
+          this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
+      });
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
@@ -678,28 +684,28 @@ export abstract class QueryEditorStore {
   }
 
   /**
+   * Which surface opened the query builder, reported as `openedFrom` on
+   * `query-builder.opened`. Creator routes inherit this; only
+   * `ExistingQueryEditorStore` overrides it.
+   *
+   * Note this names the surface only — what is being queried is already carried
+   * by `getSourceInfo()` on the same payload.
+   */
+  getOpenedFrom(): QUERY_BUILDER_OPENED_FROM {
+    return QUERY_BUILDER_OPENED_FROM.QUERY_CREATOR;
+  }
+
+  /**
    * Where the query was started from, reported when the query creator is
    * initialized
    */
-  getInitializeTelemetrySource(): {
-    source: LegendQuerySourceInfo | undefined;
-    restoredFromRecent: boolean;
-  } {
+  getInitializeTelemetrySource(): InitializeTelemetrySource {
     return {
-      source: this.getSourceInfo(),
+      // spread flat, matching how `sourceInfo` is reported on every other query
+      // telemetry event — see `QueryBuilderTelemetryContext`
+      ...this.getSourceInfo(),
       restoredFromRecent: false,
     };
-  }
-
-  logInitializeMetrics(stopWatch: StopWatch): void {
-    LegendQueryTelemetryHelper.logEvent_InitializeQueryCreatorSucceeded(
-      this.applicationStore.telemetryService,
-      {
-        ...this.getInitializeTelemetrySource(),
-        timings:
-          this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
-      },
-    );
   }
 
   logInitializeFailureMetrics(stopWatch: StopWatch, error: Error): void {
@@ -707,12 +713,7 @@ export abstract class QueryEditorStore {
       this.applicationStore.telemetryService,
       {
         ...this.getInitializeTelemetrySource(),
-        errorMessage: error.message,
-        errorName: error.name,
-        httpStatus:
-          error instanceof NetworkClientError
-            ? error.response.status
-            : undefined,
+        ...buildTelemetryErrorFields(error),
         timings:
           this.applicationStore.timeService.finalizeTimingsRecord(stopWatch),
       },
@@ -1417,10 +1418,13 @@ export abstract class QueryEditorStore {
       undefined,
       this.applicationStore.config.options.queryBuilderConfig,
       sourceInfo ?? {
+        sourceType: LegendQuerySourceType.DATA_PRODUCT,
         groupId,
         artifactId,
         versionId,
         dataProduct: dataProductPath,
+        accessType: dataProductAccessType,
+        accessId,
       },
     );
 
@@ -1878,13 +1882,7 @@ export class ExistingQueryUpdateState {
       LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
-          query: {
-            id: query.id,
-            name: query.name,
-            groupId: query.groupId,
-            artifactId: query.artifactId,
-            versionId: query.versionId,
-          },
+          ...buildQueryIdentity(query),
           ...queryBuilderState.getExtraTelemetryMetadata(),
         },
       );
@@ -1898,6 +1896,10 @@ export class ExistingQueryUpdateState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendQueryTelemetryHelper.logEvent_UpdateQueryFailed(
+        this.editorStore.applicationStore.telemetryService,
+        buildQueryLifecycleFailureData(this.editorStore.id, error),
+      );
     } finally {
       this.updateQueryState.complete();
     }
@@ -1927,13 +1929,7 @@ export class ExistingQueryUpdateState {
       LegendQueryTelemetryHelper.logEvent_UpdateQuerySucceeded(
         this.editorStore.applicationStore.telemetryService,
         {
-          query: {
-            id: updatedQuery.id,
-            name: updatedQuery.name,
-            groupId: updatedQuery.groupId,
-            artifactId: updatedQuery.artifactId,
-            versionId: updatedQuery.versionId,
-          },
+          ...buildQueryIdentity(updatedQuery),
           ...extraTelemetryMetadata,
         },
       );
@@ -1944,6 +1940,10 @@ export class ExistingQueryUpdateState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendQueryTelemetryHelper.logEvent_UpdateQueryFailed(
+        this.editorStore.applicationStore.telemetryService,
+        buildQueryLifecycleFailureData(queryId, error),
+      );
     } finally {
       this.updateQueryState.complete();
     }
@@ -2081,20 +2081,13 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.applicationStore.telemetryService,
       {
         graph: graphBuilderReportData,
-        query: {
-          id: currentQuery.id,
-          name: currentQuery.name,
-          groupId: currentQuery.groupId,
-          artifactId: currentQuery.artifactId,
-          versionId: currentQuery.versionId,
-        },
+        ...buildQueryIdentity(currentQuery),
       },
     );
   }
 
-  override logInitializeMetrics(): void {
-    // Do nothing: an existing query is not a query creator, viewing it is
-    // reported when the query builder state is initialized
+  override getOpenedFrom(): QUERY_BUILDER_OPENED_FROM {
+    return QUERY_BUILDER_OPENED_FROM.QUERY_SAVED;
   }
 
   override logInitializeFailureMetrics(): void {
@@ -2250,12 +2243,14 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         runtime,
       );
       if (matchingExecutionContext) {
-        const sourceInfo = {
+        const sourceInfo: LegendQueryDataSpaceSourceInfo = {
+          sourceType: LegendQuerySourceType.DATA_SPACE,
           groupId: queryInfo.groupId,
           artifactId: queryInfo.artifactId,
           versionId: queryInfo.versionId,
           queryId: queryInfo.id,
           dataSpace: dataSpace.path,
+          executionContext: exec.executionKey,
         };
         const visitedDataSpaces =
           LegendQueryUserDataHelper.getRecentlyVisitedDataSpaces(
@@ -2407,11 +2402,14 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       }
     } else if (exec instanceof QueryExplicitExecutionContextInfo) {
       const projectInfo = this.getProjectInfo();
-      const sourceInfo = {
+      const sourceInfo: LegendQueryMappingSourceInfo = {
+        sourceType: LegendQuerySourceType.MAPPING,
         groupId: projectInfo.groupId,
         artifactId: projectInfo.artifactId,
         versionId: projectInfo.versionId,
         queryId: queryInfo.id,
+        mapping: exec.mapping,
+        runtime: exec.runtime,
       };
       const classQueryBuilderState = new ClassQueryBuilderState(
         this.applicationStore,
@@ -2476,6 +2474,18 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
             'Switching data products is not supported from the existing query editor. Please open a new query instead.',
           );
         },
+        undefined,
+        undefined,
+        {
+          sourceType: LegendQuerySourceType.DATA_PRODUCT,
+          groupId: queryInfo.groupId,
+          artifactId: queryInfo.artifactId,
+          versionId: queryInfo.versionId,
+          queryId: queryInfo.id,
+          dataProduct: exec.dataProductPath,
+          accessType,
+          accessId: executionContextId,
+        },
       );
       return queryBuilderState;
     } else if (exec instanceof QueryIngestExecutionContextInfo) {
@@ -2534,11 +2544,14 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         projectInfo,
         this.applicationStore.config.options.queryBuilderConfig,
         {
+          sourceType: LegendQuerySourceType.INGEST,
           groupId: projectInfo.groupId,
           artifactId: projectInfo.artifactId,
           versionId: projectInfo.versionId,
           queryId: queryInfo.id,
-        },
+          ingestDefinitionPath: exec.ingestDefinitionPath,
+          dataSet: exec.dataSet,
+        } satisfies LegendQueryIngestSourceInfo,
       );
       await ingestQueryBuilderState.changeAccessorOwner(ingestDefinition);
       await ingestQueryBuilderState.changeAccessor({
@@ -2626,26 +2639,14 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       this.applicationStore.telemetryService,
       {
         ...initailizeQueryStateReport,
-        query: {
-          id: query.id,
-          name: query.name,
-          groupId: query.groupId,
-          artifactId: query.artifactId,
-          versionId: query.versionId,
-        },
+        ...buildQueryIdentity(query),
       },
     );
     LegendQueryTelemetryHelper.logEvent_ViewQuerySucceeded(
       this.applicationStore.telemetryService,
       {
         ...report,
-        query: {
-          id: query.id,
-          name: query.name,
-          groupId: query.groupId,
-          artifactId: query.artifactId,
-          versionId: query.versionId,
-        },
+        ...buildQueryIdentity(query),
       },
     );
     return queryBuilderState;

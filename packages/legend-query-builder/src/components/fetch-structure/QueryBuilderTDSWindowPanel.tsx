@@ -79,6 +79,7 @@ import { QUERY_BUILDER_PROJECTION_COLUMN_DND_TYPE } from '../../stores/fetch-str
 import type { QueryBuilderTDSColumnState } from '../../stores/fetch-structure/tds/QueryBuilderTDSColumnState.js';
 import type { QueryBuilderTDSState } from '../../stores/fetch-structure/tds/QueryBuilderTDSState.js';
 import { QUERY_BUILDER_TEST_ID } from '../../__lib__/QueryBuilderTesting.js';
+import { QueryBuilderTelemetryHelper } from '../../__lib__/QueryBuilderTelemetryHelper.js';
 import { QueryBuilderPanelIssueCountBadge } from '../shared/QueryBuilderPanelIssueCountBadge.js';
 import { COLUMN_SORT_TYPE } from '../../graph/QueryBuilderMetaModelConst.js';
 import { CAN_DROP_MAIN_GROUP_DND_TYPES } from './QueryBuilderPostFilterPanel.js';
@@ -138,10 +139,23 @@ const QueryBuilderWindowColumnContextMenu = observer(
     }
   >(function QueryBuilderWindowGroupByColumnContextMenu(props, ref) {
     const { columnState } = props;
+    const applicationStore = useApplicationStore();
     const editColumn = (): void =>
       columnState.windowState.setEditColumn(columnState);
-    const removeColumn = (): void =>
-      columnState.windowState.removeColumn(columnState);
+    const removeColumn = (): void => {
+      const windowState = columnState.windowState;
+      windowState.removeColumn(columnState);
+      QueryBuilderTelemetryHelper.logEvent_WindowChanged(
+        applicationStore.telemetryService,
+        {
+          ...windowState.tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+            columnCount: windowState.windowColumns.length,
+          },
+        },
+      );
+    };
 
     return (
       <MenuContent ref={ref}>
@@ -370,11 +384,22 @@ const QueryBuilderWindowColumnModalEditor = observer(
     };
 
     const handleApply = (): void => {
+      const isEdit = windowState.windowColumns.includes(windowColumnState);
       windowColumnState.setColumnName(selectedColumnName);
       windowColumnState.setOperatorState(selectedOperatorState);
       windowColumnState.setWindows(selectedWindowColumns);
       windowColumnState.setSortBy(selectedSortBy);
       windowState.addWindowColumn(windowColumnState);
+      QueryBuilderTelemetryHelper.logEvent_WindowChanged(
+        applicationStore.telemetryService,
+        {
+          ...windowState.tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: isEdit ? 'edit' : 'add',
+            columnCount: windowState.windowColumns.length,
+          },
+        },
+      );
       handleCancel();
     };
 
@@ -781,6 +806,7 @@ const QueryBuilderWindowColumnEditor = observer(
     const { windowColumnState } = props;
     const windowState = windowColumnState.windowState;
     const tdsState = windowState.tdsState;
+    const applicationStore = useApplicationStore();
     const operators = windowState.operators;
     const supportedOperators = tdsState.queryBuilderState.useRelation
       ? operators.filter((op) => op.relationFunc !== undefined)
@@ -852,6 +878,16 @@ const QueryBuilderWindowColumnEditor = observer(
       windowState.tdsState.isColumnInUse(windowColumnState);
     const removeColumn = (): void => {
       windowColumnState.windowState.removeColumn(windowColumnState);
+      QueryBuilderTelemetryHelper.logEvent_WindowChanged(
+        applicationStore.telemetryService,
+        {
+          ...windowColumnState.windowState.tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+            columnCount: windowColumnState.windowState.windowColumns.length,
+          },
+        },
+      );
     };
     const editoColumn = (): void => {
       windowState.setEditColumn(windowColumnState);
@@ -914,8 +950,7 @@ const QueryBuilderWindowColumnEditor = observer(
              * @workaround typings - https://github.com/react-dnd/react-dnd/pull/3484
              */
             olapColumnBeingDragged:
-              // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-              (monitor.getItem() as QueryBuilderWindowColumnDragSource | null)
+              monitor.getItem<QueryBuilderWindowColumnDragSource | null>()
                 ?.columnState,
           }),
         }),
@@ -1264,6 +1299,16 @@ export const QueryBuilderTDSWindowPanel = observer(
             tdsWindowState.tdsState,
           );
           tdsWindowState.addWindowColumn(newWindowState);
+          QueryBuilderTelemetryHelper.logEvent_WindowChanged(
+            applicationStore.telemetryService,
+            {
+              ...tdsWindowState.tdsState.queryBuilderState.safeGetTelemetryContext(),
+              change: {
+                action: 'add',
+                columnCount: tdsWindowState.windowColumns.length,
+              },
+            },
+          );
         } catch (error) {
           assertErrorThrown(error);
           applicationStore.notificationService.notifyError(error.message);

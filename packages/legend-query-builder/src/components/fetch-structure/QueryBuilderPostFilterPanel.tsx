@@ -144,8 +144,19 @@ const QueryBuilderPostFilterConditionContextMenu = observer(
   >(function QueryBuilderPostFilterConditionContextMenu(props, ref) {
     const { tdsState, node } = props;
     const postFilterState = tdsState.postFilterState;
-    const removeNode = (): void =>
+    const applicationStore = useApplicationStore();
+    const removeNode = (): void => {
       postFilterState.removeNodeAndPruneBranch(node);
+      QueryBuilderTelemetryHelper.logEvent_PostFilterChanged(
+        applicationStore.telemetryService,
+        {
+          ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'remove',
+          },
+        },
+      );
+    };
     const createCondition = (): void => {
       postFilterState.addNodeFromNode(
         new QueryBuilderPostFilterTreeBlankConditionNodeData(undefined),
@@ -184,19 +195,34 @@ const QueryBuilderPostFilterConditionContextMenu = observer(
 
 const QueryBuilderPostFilterGroupConditionEditor = observer(
   (props: {
+    tdsState: QueryBuilderTDSState;
     node: QueryBuilderPostFilterTreeGroupNodeData;
     isDragOver: boolean;
     isDroppable: boolean;
   }) => {
-    const { node, isDragOver, isDroppable } = props;
+    const { tdsState, node, isDragOver, isDroppable } = props;
+    const applicationStore = useApplicationStore();
     const switchOperation: React.MouseEventHandler<HTMLDivElement> = (
       event,
     ): void => {
       event.stopPropagation(); // prevent triggering selecting the node
-      node.setGroupOperation(
+      const nextOperation =
         node.groupOperation === QUERY_BUILDER_GROUP_OPERATION.AND
           ? QUERY_BUILDER_GROUP_OPERATION.OR
-          : QUERY_BUILDER_GROUP_OPERATION.AND,
+          : QUERY_BUILDER_GROUP_OPERATION.AND;
+      node.setGroupOperation(nextOperation);
+      QueryBuilderTelemetryHelper.logEvent_PostFilterChanged(
+        applicationStore.telemetryService,
+        {
+          ...tdsState.queryBuilderState.safeGetTelemetryContext(),
+          change: {
+            action: 'group-operation-change',
+            groupOperation:
+              nextOperation === QUERY_BUILDER_GROUP_OPERATION.AND
+                ? 'and'
+                : 'or',
+          },
+        },
       );
     };
 
@@ -771,6 +797,7 @@ const QueryBuilderPostFilterTreeNodeContainer = observer(
           >
             {node instanceof QueryBuilderPostFilterTreeGroupNodeData && (
               <QueryBuilderPostFilterGroupConditionEditor
+                tdsState={tdsState}
                 node={node}
                 isDroppable={isDroppable}
                 isDragOver={isDragOver}

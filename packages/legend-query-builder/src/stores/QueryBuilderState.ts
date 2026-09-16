@@ -84,9 +84,10 @@ import {
   buildLambdaFunction,
   buildExecutionContextState,
 } from './QueryBuilderValueSpecificationBuilder.js';
-import type {
-  CommandRegistrar,
-  GenericLegendApplicationStore,
+import {
+  type CommandRegistrar,
+  type GenericLegendApplicationStore,
+  APPLICATION_EVENT,
 } from '@finos/legend-application';
 import { QueryFunctionsExplorerState } from './explorer/QueryFunctionsExplorerState.js';
 import {
@@ -96,13 +97,17 @@ import {
 import type { QueryBuilderFilterOperator } from './filter/QueryBuilderFilterOperator.js';
 import { getQueryBuilderCoreFilterOperators } from './filter/QueryBuilderFilterOperatorLoader.js';
 import { QueryBuilderChangeDetectionState } from './QueryBuilderChangeDetectionState.js';
-import { QueryBuilderMilestoningState } from './milestoning/QueryBuilderMilestoningState.js';
+import {
+  QueryBuilderMilestoningState,
+  type QueryBuilderMilestoningKind,
+} from './milestoning/QueryBuilderMilestoningState.js';
 import { QUERY_BUILDER_STATE_HASH_STRUCTURE } from './QueryBuilderStateHashUtils.js';
 import { QUERY_BUILDER_COMMAND_KEY } from './QueryBuilderCommand.js';
 import { QueryBuilderWatermarkState } from './watermark/QueryBuilderWatermarkState.js';
 import { QueryBuilderConstantsState } from './QueryBuilderConstantsState.js';
 import { QueryBuilderCheckEntitlementsState } from './entitlements/QueryBuilderCheckEntitlementsState.js';
 import { QueryBuilderTDSState } from './fetch-structure/tds/QueryBuilderTDSState.js';
+import { QueryBuilderRelationColumnProjectionColumnState } from './fetch-structure/tds/projection/QueryBuilderProjectionColumnState.js';
 import {
   QUERY_BUILDER_PURE_PATH,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
@@ -114,7 +119,10 @@ import {
   type QueryBuilderExecutionContextState,
 } from './QueryBuilderExecutionContextState.js';
 import type { QueryBuilderConfig } from '../graph-manager/QueryBuilderConfig.js';
-import { QUERY_BUILDER_EVENT } from '../__lib__/QueryBuilderEvent.js';
+import {
+  QUERY_BUILDER_EVENT,
+  type QUERY_BUILDER_OPENED_FROM,
+} from '../__lib__/QueryBuilderEvent.js';
 import { QUERY_BUILDER_SETTING_KEY } from '../__lib__/QueryBuilderSetting.js';
 import { QueryBuilderChangeHistoryState } from './QueryBuilderChangeHistoryState.js';
 import { type QueryBuilderWorkflowState } from './query-workflow/QueryBuilderWorkFlowState.js';
@@ -127,11 +135,79 @@ import type {
   DepotEntityWithOrigin,
   QueryableSourceInfo,
 } from '@finos/legend-storage';
+import type { FETCH_STRUCTURE_IMPLEMENTATION } from './fetch-structure/QueryBuilderFetchStructureImplementationState.js';
 
-export type QueryableClassMappingRuntimeInfo = QueryableSourceInfo & {
-  class: string;
-  mapping: string;
-  runtime: string;
+/**
+ * The execution context the query builder has resolved to, as reported in
+ * telemetry under the `state` key. See
+ * {@link QueryBuilderState.getExecutionContextInfo}.
+ */
+export type QueryBuilderExecutionContextInfo = {
+  class?: string | undefined;
+  mapping?: string | undefined;
+  runtime?: string | undefined;
+  /**
+   * `true` when the query runs against an inline (engineered) runtime rather
+   * than a `RuntimePointer`. Those have no element path to report, so `runtime`
+   * is absent — this flag keeps that population visible instead of leaving it
+   * indistinguishable from "no runtime selected yet".
+   */
+  isInlineRuntime?: boolean | undefined;
+};
+
+/**
+ * The shared envelope carried by every query builder telemetry event.
+ *
+ * The entry point the builder was opened with (`sourceInfo` — the route) is
+ * spread *flat* at the top level, while the execution context it resolved to is
+ * nested under `state`. Keeping them separate is what lets a dashboard tell
+ * "arrived on mapping X" apart from "currently querying mapping X"; merging the
+ * two into one flat object would collapse that distinction.
+ */
+export type QueryBuilderTelemetryContext = QueryableSourceInfo &
+  /**
+   * `QueryableSourceInfo` is a marker interface with no declared members — the
+   * concrete keys (`sourceType`, `groupId`, `dataSpace`, `dataProduct`, …) vary
+   * by entry point and are only known to the application layer. The index
+   * signature is what lets those keys sit flat at the top level; it does mean
+   * top-level excess-property checking is off. The fields that matter are kept
+   * inside the strictly-typed `state` and `change` sub-objects for exactly this
+   * reason.
+   */
+  Record<PropertyKey, unknown> & {
+    state?: QueryBuilderExecutionContextInfo | undefined;
+  };
+
+/**
+ * Summary of the current query builder authoring state, used to enrich
+ * telemetry (e.g. query-execution events) with lightweight, non-PII shape
+ * information such as which fetch structure is in use and how many columns
+ * / filters / parameters have been configured.
+ */
+export type QueryBuilderQueryInfo = {
+  fetchStructureType: FETCH_STRUCTURE_IMPLEMENTATION | string;
+  /**
+   * `true` when the TDS query is authored against the typed relation function
+   * family (`->project`/`->groupBy`/etc. over relation columns). `false` for
+   * classic property-driven TDS. `undefined` when the fetch structure is not
+   * TDS or when there are no columns to determine yet.
+   */
+  isTypedFetchStructure?: boolean | undefined;
+  parameterCount: number;
+  constantCount: number;
+  hasFilter: boolean;
+  filterNodeCount: number;
+  watermarkEnabled: boolean;
+  milestoningKind: QueryBuilderMilestoningKind;
+  // TDS-specific fields (present when fetchStructureType is TABULAR_DATA_STRUCTURE)
+  projectionColumnCount?: number | undefined;
+  windowColumnCount?: number | undefined;
+  aggregationColumnCount?: number | undefined;
+  postFilterNodeCount?: number | undefined;
+  hasLimit?: boolean | undefined;
+  hasDistinct?: boolean | undefined;
+  sortColumnCount?: number | undefined;
+  hasSlice?: boolean | undefined;
 };
 
 export type QueryBuilderExtraFunctionAnalysisInfo = {
@@ -525,28 +601,162 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   }
 
   /**
-   * Gets information about the current queryBuilderState.
-   * This information can be used as a part of analytics
+   * Gets the execution context the query builder has currently *resolved to*:
+   * the class being queried and the mapping/runtime it will execute against.
+   *
+   * This is deliberately distinct from `sourceInfo`, which records what the
+   * builder was *opened with* (the route). For a mapping-sourced query both are
+   * populated and initially identical, so a divergence means the user switched;
+   * for a data space / data product / service query only this side carries a
+   * mapping and runtime, because the entry point resolves to one.
+   *
+   * Degrades gracefully — whichever of class / mapping / runtime are known get
+   * reported, so events that fire while the user is still setting up (picking a
+   * class before a mapping, say) are not blank. Returns `undefined` only when
+   * none of the three has resolved.
    */
-  getStateInfo(): QueryableClassMappingRuntimeInfo | undefined {
-    if (this.sourceInfo) {
-      const classPath = this.sourceClass?.path;
-      const mappingPath = this.executionContextState.mapping?.path;
-      const runtimePath =
-        this.executionContextState.runtimeValue instanceof RuntimePointer
-          ? this.executionContextState.runtimeValue.packageableRuntime.value
-              .path
-          : undefined;
-      if (classPath && mappingPath && runtimePath) {
-        const contextInfo = {
-          class: classPath,
-          mapping: mappingPath,
-          runtime: runtimePath,
-        };
-        return Object.assign({}, this.sourceInfo, contextInfo);
-      }
+  getExecutionContextInfo(): QueryBuilderExecutionContextInfo | undefined {
+    const classPath = this.sourceClass?.path;
+    const mappingPath = this.executionContextState.mapping?.path;
+    const runtimeValue = this.executionContextState.runtimeValue;
+    const runtimePath =
+      runtimeValue instanceof RuntimePointer
+        ? runtimeValue.packageableRuntime.value.path
+        : undefined;
+    const isInlineRuntime =
+      runtimeValue !== undefined && !(runtimeValue instanceof RuntimePointer);
+    if (!classPath && !mappingPath && !runtimePath && !isInlineRuntime) {
+      return undefined;
     }
-    return undefined;
+    return {
+      class: classPath,
+      mapping: mappingPath,
+      runtime: runtimePath,
+      isInlineRuntime: isInlineRuntime ? true : undefined,
+    };
+  }
+
+  /**
+   * Gets a lightweight snapshot of the current query builder authoring state
+   * (fetch structure kind, filter/parameter/constant counts, milestoning /
+   * watermark configuration, etc.) for telemetry payloads. Kept intentionally
+   * shape-only — no user values, no identifiers.
+   */
+  getQueryInfo(): QueryBuilderQueryInfo {
+    const base: QueryBuilderQueryInfo = {
+      fetchStructureType: this.fetchStructureState.implementation.type,
+      parameterCount: this.parametersState.parameterStates.length,
+      constantCount: this.constantState.constants.length,
+      hasFilter: !this.filterState.isEmpty,
+      filterNodeCount: this.filterState.nodes.size,
+      watermarkEnabled: this.watermarkState.value !== undefined,
+      milestoningKind: this.milestoningState.milestoningKind,
+    };
+    if (
+      this.fetchStructureState.implementation instanceof QueryBuilderTDSState
+    ) {
+      const tdsState = this.fetchStructureState.implementation;
+      const modifier = tdsState.resultSetModifierState;
+      base.isTypedFetchStructure =
+        tdsState.projectionColumns.length > 0 &&
+        tdsState.projectionColumns.every(
+          (col) =>
+            col instanceof QueryBuilderRelationColumnProjectionColumnState,
+        );
+      base.projectionColumnCount = tdsState.projectionColumns.length;
+      base.windowColumnCount = tdsState.windowState.windowColumns.length;
+      base.aggregationColumnCount = tdsState.aggregationState.columns.length;
+      base.postFilterNodeCount = tdsState.postFilterState.nodes.size;
+      base.hasLimit = modifier.limit !== undefined;
+      base.hasDistinct = modifier.distinct;
+      base.sortColumnCount = modifier.sortColumns.length;
+      base.hasSlice = modifier.slice !== undefined;
+    }
+    return base;
+  }
+
+  /**
+   * Telemetry must never crash a user-visible action, so every `safeGet*`
+   * wrapper below swallows errors from its snapshot builder (state might be
+   * mid-construction, or a downstream computed getter might throw in edge
+   * cases) and logs them instead of throwing.
+   */
+  private safeGetTelemetry<T>(getter: () => T, fallback: T, label: string): T {
+    try {
+      return getter();
+    } catch (error) {
+      this.applicationStore.logService.warn(
+        LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
+        label,
+        error,
+      );
+      return fallback;
+    }
+  }
+
+  /**
+   * Builds the shared telemetry envelope every query builder event carries: the
+   * entry point the builder was opened with, spread flat, plus the execution
+   * context it resolved to, nested under `state`. Spread this into a payload
+   * rather than assembling the two halves by hand at each callsite.
+   */
+  safeGetTelemetryContext(): QueryBuilderTelemetryContext {
+    return this.safeGetTelemetry<QueryBuilderTelemetryContext>(
+      () => ({ ...this.sourceInfo, state: this.getExecutionContextInfo() }),
+      {},
+      'Failed to build query builder telemetry context',
+    );
+  }
+
+  /**
+   * Reports that a query builder was opened, from whichever surface opened it.
+   * This is the canonical "a query builder exists" signal — hosts should prefer
+   * it over their own route-specific load events, which each cover only part of
+   * the population.
+   *
+   * Deliberately called by the host once the builder is *loaded*, rather than
+   * emitted from the constructor. The constructor runs before subclass field
+   * initializers, so the execution context would be unresolved and the `safeGet*`
+   * wrappers would silently report an empty envelope; it would also fire for
+   * derived states such as {@link INTERNAL__toBasicQueryBuilderState}, which are
+   * built on every data preview and are not user-facing opens.
+   *
+   * `extra` carries host-specific supplementary fields (load timings, and for
+   * Legend Query creators `restoredFromRecent`). It is untyped to keep this
+   * package host-agnostic.
+   */
+  logOpened(
+    openedFrom: QUERY_BUILDER_OPENED_FROM,
+    extra?: Record<string, unknown> | undefined,
+  ): void {
+    QueryBuilderTelemetryHelper.logEvent_QueryBuilderOpened(
+      this.applicationStore.telemetryService,
+      {
+        openedFrom,
+        ...this.safeGetTelemetryContext(),
+        ...extra,
+      },
+    );
+  }
+
+  /**
+   * Prefer this over the raw `getQueryInfo()` method on the hot path of
+   * execution telemetry.
+   */
+  safeGetQueryInfo(): QueryBuilderQueryInfo | undefined {
+    return this.safeGetTelemetry(
+      () => this.getQueryInfo(),
+      undefined,
+      'Failed to build query builder telemetry query info',
+    );
+  }
+
+  safeGetExtraTelemetryMetadata(): Record<string, unknown> {
+    return this.safeGetTelemetry(
+      () => this.getExtraTelemetryMetadata(),
+      {},
+      'Failed to build query builder extra telemetry metadata',
+    );
   }
 
   setIsAgentChatOpened(val: boolean): void {
