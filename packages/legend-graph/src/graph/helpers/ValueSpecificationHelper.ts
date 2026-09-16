@@ -135,6 +135,26 @@ export const attachFromQuery = (
   return lambdaFunc;
 };
 
+export const attachRuntimeFromQuery = (
+  lambdaFunc: LambdaFunction,
+  runtime: PackageableRuntime,
+): LambdaFunction => {
+  const currentExpression = guaranteeNonNullable(
+    lambdaFunc.expressionSequence[0],
+    `Can't build ->from(runtime) expression: preceding expression is not defined`,
+  );
+  const fromFunc = new SimpleFunctionExpression(
+    extractElementNameFromPath(SUPPORTED_FUNCTIONS.FROM),
+  );
+  const runtimeInstance = new InstanceValue(Multiplicity.ONE, undefined);
+  runtimeInstance.values = [
+    PackageableElementExplicitReference.create(runtime),
+  ];
+  fromFunc.parametersValues = [currentExpression, runtimeInstance];
+  lambdaFunc.expressionSequence[0] = fromFunc;
+  return lambdaFunc;
+};
+
 export const attachWithFromQuery = (
   lambdaFunc: LambdaFunction,
   dataProduct: DataProduct,
