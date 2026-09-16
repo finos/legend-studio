@@ -118,9 +118,11 @@ export {
   externalFormatData_setContentType,
 } from './stores/graph-modifier/DSL_Data_GraphModifierHelper.js';
 export { ExternalFormatDataEditor } from './components/editor/editor-group/data-editor/DataElementEditor.js';
+export { RelationElementSampleValuesEditor } from './components/editor/editor-group/data-editor/RelationElementSampleValuesEditor.js';
 export {
   ExternalFormatDataState,
   EmbeddedDataState,
+  RelationElementState,
 } from './stores/editor/editor-state/element-editor-state/data/EmbeddedDataState.js';
 export type { EmbeddedDataTypeOption } from './stores/editor/editor-state/element-editor-state/data/DataEditorState.js';
 

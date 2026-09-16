@@ -66,6 +66,22 @@ test(integrationTest('TEST_DATA_Dataspace-Executables'), async () => {
   expect(element instanceof DataSpace).toEqual(true);
   const dataspace = guaranteeType(element, DataSpace);
   expect(dataspace.executables).toHaveLength(3);
+  const executableWithSampleValues = guaranteeNonNullable(
+    dataspace.executables?.find((exec) => exec.id === 'my_id_1'),
+    'Executable with sample values is missing',
+  );
+  const sampleValues = guaranteeNonNullable(
+    executableWithSampleValues.sampleValues,
+    'Executable sample values are missing',
+  );
+  expect(sampleValues.columns).toEqual([
+    'Category Id',
+    'Category Name',
+    'Order Count',
+  ]);
+  expect(sampleValues.rows.map((row) => row.values)).toEqual([
+    ['1', 'Cars', '20'],
+  ]);
   const defaultMapping = guaranteeNonNullable(
     guaranteeNonNullable(
       dataspace.defaultExecutionContext,

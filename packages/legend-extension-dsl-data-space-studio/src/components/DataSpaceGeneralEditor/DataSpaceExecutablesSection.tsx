@@ -29,7 +29,10 @@ import {
   dataSpace_setExecutableExecutionContextKey,
   dataSpace_setExecutableTitle,
 } from '../../stores/studio/DSL_DataSpace_GraphModifierHelper.js';
-import { useEditorStore } from '@finos/legend-application-studio';
+import {
+  RelationElementSampleValuesEditor,
+  useEditorStore,
+} from '@finos/legend-application-studio';
 import { DataSpaceEditorState } from '../../stores/DataSpaceEditorState.js';
 import {
   BlankPanelPlaceholder,
@@ -322,6 +325,40 @@ const ExecutableTemplateQueryEditor = observer(
   },
 );
 
+const ExecutableSampleValuesEditor = observer(
+  (props: {
+    dataSpaceState: DataSpaceEditorState;
+    executable: DataSpaceExecutable;
+    isReadOnly: boolean;
+  }) => {
+    const { dataSpaceState, executable, isReadOnly } = props;
+    const sampleValuesState =
+      dataSpaceState.executableSampleValuesStates.getState(executable);
+
+    return (
+      <div className="dataSpace-editor__configuration__section">
+        <div className="dataSpace-editor__configuration__section__header">
+          <div className="dataSpace-editor__configuration__section__title">
+            Sample Values
+          </div>
+        </div>
+        <div className="dataSpace-editor__configuration__row">
+          <RelationElementSampleValuesEditor
+            title={`${executable.title} Sample Values`}
+            relationElementState={sampleValuesState.relationElementState}
+            isReadOnly={isReadOnly}
+            isBusy={sampleValuesState.isInitializingSampleValues}
+            hideColumnDefinitions={true}
+            deleteConfirmMessage={`Are you sure you want to delete sample values for executable '${executable.title}'?`}
+            onAdd={() => sampleValuesState.addSampleValues()}
+            onDelete={() => sampleValuesState.removeSampleValues()}
+          />
+        </div>
+      </div>
+    );
+  },
+);
+
 const ExecutableConfigurationEditor = observer(
   (props: {
     dataSpaceState: DataSpaceEditorState;
@@ -441,6 +478,11 @@ const ExecutableConfigurationEditor = observer(
             isReadOnly={isReadOnly}
           />
         )}
+        <ExecutableSampleValuesEditor
+          dataSpaceState={dataSpaceState}
+          executable={executable}
+          isReadOnly={isReadOnly}
+        />
       </div>
     );
   },

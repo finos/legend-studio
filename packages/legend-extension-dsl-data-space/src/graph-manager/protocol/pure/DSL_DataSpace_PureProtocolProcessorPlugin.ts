@@ -123,6 +123,10 @@ import {
   QueryDataSpaceExecutionContextInfo,
   generateFunctionPrettyName,
   ConcreteFunctionDefinition,
+  V1_RelationElement,
+  V1_RelationRowTestData,
+  RelationElement,
+  RelationRowTestData,
 } from '@finos/legend-graph';
 import { V1_resolveDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { V1_MappingIncludeDataSpace } from './v1/model/packageableElements/mapping/V1_DSL_DataSpace_MappingIncludeDataSpace.js';
@@ -237,6 +241,34 @@ export const V1_transformDataSpaceSupportFullInfo = (
   fullInfo.emails = metamodel.emails?.map(V1_transformDataSpaceEmail);
   fullInfo.expertise = metamodel.expertise?.map(V1_transformDataSpaceExpertise);
   return fullInfo;
+};
+
+const V1_buildDataSpaceExecutableSampleValues = (
+  protocol: V1_RelationElement,
+): RelationElement => {
+  const sampleValues = new RelationElement();
+  sampleValues.columns = protocol.columns;
+  sampleValues.paths = protocol.paths;
+  sampleValues.rows = protocol.rows.map((row) => {
+    const rowData = new RelationRowTestData();
+    rowData.values = row.values;
+    return rowData;
+  });
+  return sampleValues;
+};
+
+const V1_transformDataSpaceExecutableSampleValues = (
+  metamodel: RelationElement,
+): V1_RelationElement => {
+  const sampleValues = new V1_RelationElement();
+  sampleValues.columns = metamodel.columns;
+  sampleValues.paths = metamodel.paths;
+  sampleValues.rows = metamodel.rows.map((row) => {
+    const rowData = new V1_RelationRowTestData();
+    rowData.values = row.values;
+    return rowData;
+  });
+  return sampleValues;
 };
 
 export class DSL_DataSpace_PureProtocolProcessorPlugin
@@ -384,6 +416,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                     executable.executionContextKey =
                       executableProtocol.executionContextKey;
                   }
+                  if (executableProtocol.sampleValues) {
+                    executable.sampleValues =
+                      V1_buildDataSpaceExecutableSampleValues(
+                        executableProtocol.sampleValues,
+                      );
+                  }
                   return executable;
                 } else if (
                   executableProtocol instanceof
@@ -399,6 +437,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                   if (executableProtocol.executionContextKey) {
                     executable.executionContextKey =
                       executableProtocol.executionContextKey;
+                  }
+                  if (executableProtocol.sampleValues) {
+                    executable.sampleValues =
+                      V1_buildDataSpaceExecutableSampleValues(
+                        executableProtocol.sampleValues,
+                      );
                   }
                   try {
                     executable.executable = context.resolveElement(
@@ -641,6 +685,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
                 executable.query.accept_RawValueSpecificationVisitor(
                   new V1_RawValueSpecificationTransformer(context),
                 ) as V1_RawLambda;
+              if (executable.sampleValues) {
+                executableProtocol.sampleValues =
+                  V1_transformDataSpaceExecutableSampleValues(
+                    executable.sampleValues,
+                  );
+              }
               return executableProtocol;
             } else if (
               executable instanceof DataSpacePackageableElementExecutable
@@ -655,6 +705,12 @@ export class DSL_DataSpace_PureProtocolProcessorPlugin
               if (executable.executionContextKey) {
                 executableProtocol.executionContextKey =
                   executable.executionContextKey;
+              }
+              if (executable.sampleValues) {
+                executableProtocol.sampleValues =
+                  V1_transformDataSpaceExecutableSampleValues(
+                    executable.sampleValues,
+                  );
               }
               if (
                 executable.executable.value instanceof

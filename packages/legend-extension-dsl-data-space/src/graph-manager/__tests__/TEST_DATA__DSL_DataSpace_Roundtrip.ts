@@ -82,6 +82,34 @@ export const TEST_DATA__roundtrip = [
           name: 'INT',
         },
       ],
+      executables: [
+        {
+          _type: 'dataSpaceTemplateExecutable',
+          description: 'some executable description',
+          executionContextKey: 'INT',
+          id: '1',
+          query: {
+            _type: 'lambda',
+            body: [
+              {
+                _type: 'string',
+                value: 'test',
+              },
+            ],
+            parameters: [],
+          },
+          sampleValues: {
+            columns: ['Id', 'Name'],
+            paths: [],
+            rows: [
+              {
+                values: ['1', 'Alice'],
+              },
+            ],
+          },
+          title: 'Template 1',
+        },
+      ],
       name: 'TestDataSpace',
       package: 'test::model',
       stereotypes: [

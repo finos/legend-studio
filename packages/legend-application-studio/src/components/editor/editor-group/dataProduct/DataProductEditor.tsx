@@ -198,7 +198,7 @@ import {
 } from '@finos/legend-extension-dsl-data-product';
 import type { LegendStudioApplicationStore } from '../../../../stores/LegendStudioBaseStore.js';
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import { RelationElementEditor } from '../data-editor/RelationElementsDataEditor.js';
+import { RelationElementSampleValuesEditor } from '../data-editor/RelationElementSampleValuesEditor.js';
 import type {
   AccessPointMeta,
   DataProductDocResponse,
@@ -492,216 +492,6 @@ const AccessPointGenerationViewer = observer(
   },
 );
 
-const SampleValuesEditorModal = observer(
-  (props: {
-    accessPointState: LakehouseAccessPointState;
-    isReadOnly: boolean;
-  }) => {
-    const { accessPointState, isReadOnly } = props;
-    const editorStore = accessPointState.state.state.editorStore;
-    const dataElementPath =
-      accessPointState.relationElementExistsinDataElementReference();
-    const closeModal = (): void => {
-      accessPointState.setShowSampleValuesModal(false);
-    };
-
-    const handleDeleteSampleValues = (): void => {
-      editorStore.applicationStore.alertService.setActionAlertInfo({
-        message: `Are you sure you want to delete sample values for Access Point ${accessPointState.accessPoint.id}?`,
-        type: ActionAlertType.CAUTION,
-        actions: [
-          {
-            label: 'Confirm',
-            type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-            handler: (): void => {
-              accessPointState.deleteRelationElement();
-              closeModal();
-            },
-          },
-          {
-            label: 'Cancel',
-            type: ActionAlertActionType.PROCEED,
-            default: true,
-          },
-        ],
-      });
-    };
-
-    const handleNavigateToDataElement = (): void => {
-      if (dataElementPath) {
-        const dataElement =
-          editorStore.graphManagerState.graph.getNullableElement(
-            dataElementPath,
-          );
-        if (dataElement) {
-          editorStore.graphEditorMode.openElement(dataElement);
-          closeModal();
-        }
-      }
-    };
-
-    return (
-      <Dialog
-        open={accessPointState.showSampleValuesModal}
-        onClose={closeModal}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-      >
-        <Modal
-          className="editor-modal"
-          darkMode={
-            !editorStore.applicationStore.layoutService
-              .TEMPORARY__isLightColorThemeEnabled
-          }
-        >
-          <ModalHeader
-            title={`${accessPointState.accessPoint.title ?? accessPointState.accessPoint.id} Sample Values`}
-          />
-          <ModalBody>
-            <div
-              style={{
-                padding: 0,
-                height: '100%',
-                flex: 1,
-                overflowY: 'auto',
-                overflowX: 'hidden',
-              }}
-            >
-              {dataElementPath !== undefined ? (
-                <div
-                  style={{
-                    padding: '1.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '1rem',
-                  }}
-                >
-                  <span
-                    style={{
-                      color: 'var(--color-light-grey-200)',
-                      whiteSpace: 'nowrap',
-                      fontSize: '1.3rem',
-                      fontWeight: 600,
-                    }}
-                  >
-                    Sample Values already in Data Element
-                  </span>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: '0.5rem 1rem',
-                      background: 'var(--color-dark-grey-100)',
-                      border: '1px solid var(--color-dark-grey-300)',
-                      borderRadius: '0.2rem',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: '1.3rem',
-                        fontWeight: 600,
-                        color: 'var(--color-light-grey-200)',
-                      }}
-                    >
-                      {dataElementPath}
-                    </span>
-                    <button
-                      className="btn--sm btn--dark"
-                      onClick={handleNavigateToDataElement}
-                      tabIndex={-1}
-                      title="Navigate to data element"
-                      style={{
-                        padding: '0.3rem 0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <LongArrowRightIcon />
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div
-                    style={{
-                      color: 'var(--color-orange-200)',
-                      fontWeight: 'bold',
-                      fontSize: '14px',
-                      padding: '0.5rem',
-                      marginBottom: '1rem',
-                      textAlign: 'center',
-                      backgroundColor: 'var(--color-orange-50)',
-                      border: '2px solid var(--color-orange-200)',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    DO NOT ADD SENSITIVE DATA
-                  </div>
-                  {accessPointState.relationElementState && (
-                    <Tooltip
-                      title={
-                        accessPointState.getRelationElementMismatchMessage() ??
-                        ''
-                      }
-                      arrow={true}
-                      placement="top"
-                      disableHoverListener={
-                        !accessPointState.hasRelationElementMismatch
-                      }
-                    >
-                      <div
-                        style={{
-                          border: accessPointState.hasRelationElementMismatch
-                            ? '2px solid var(--color-red-300)'
-                            : 'none',
-                          borderRadius: '4px',
-                          padding: accessPointState.hasRelationElementMismatch
-                            ? '0.5rem'
-                            : '0',
-                        }}
-                      >
-                        <RelationElementEditor
-                          relationElementState={
-                            accessPointState.relationElementState
-                          }
-                          isReadOnly={isReadOnly}
-                          hideColumnDefinitions={true}
-                        />
-                      </div>
-                    </Tooltip>
-                  )}
-                </>
-              )}
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            {dataElementPath === undefined && (
-              <ModalFooterButton
-                title="Delete sample values"
-                onClick={handleDeleteSampleValues}
-                text="Delete"
-                type="secondary"
-                disabled={isReadOnly}
-              />
-            )}
-            <ModalFooterButton
-              title="Close sample values editor"
-              onClick={closeModal}
-              text="Close"
-              type="secondary"
-            />
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
 export const LakehouseDataProductAccessPointEditor = observer(
   (props: {
     accessPointState: LakehouseAccessPointState;
@@ -971,58 +761,39 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     <div>Reproducible</div>
                   </Tooltip>
                 </div>
-                {accessPointState.relationElementExistsinDataElementReference() !==
-                undefined ? (
-                  <button
-                    className="access-point-editor__sample-values-btn"
-                    onClick={() =>
-                      accessPointState.setShowSampleValuesModal(true)
-                    }
-                    disabled={props.isReadOnly}
-                    title="Edit sample values"
-                    style={{
-                      cursor: props.isReadOnly ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <PencilEditIcon />
-                    <span>Sample Values</span>
-                  </button>
-                ) : accessPointState.relationElementState !== undefined ? (
-                  <button
-                    className="access-point-editor__sample-values-btn"
-                    onClick={() =>
-                      accessPointState.setShowSampleValuesModal(true)
-                    }
-                    disabled={props.isReadOnly}
-                    title="Edit sample values"
-                    style={{
-                      border: accessPointState.hasRelationElementMismatch
-                        ? '2px solid var(--color-red-300)'
-                        : '1px solid var(--color-blue-200)',
-                      cursor: props.isReadOnly ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <PencilEditIcon />
-                    <span>Sample Values</span>
-                  </button>
-                ) : (
-                  <button
-                    className="access-point-editor__sample-values-btn"
-                    onClick={() => {
-                      flowResult(
-                        accessPointState.createAndaddRelationElement(),
-                      ).catch(editorStore.applicationStore.alertUnhandledError);
-                    }}
-                    disabled={props.isReadOnly}
-                    title="Add sample values"
-                    style={{
-                      cursor: props.isReadOnly ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    <PlusIcon />
-                    <span>Sample Values</span>
-                  </button>
-                )}
+                <RelationElementSampleValuesEditor
+                  title={`${accessPointState.accessPoint.title ?? accessPointState.accessPoint.id} Sample Values`}
+                  relationElementState={accessPointState.relationElementState}
+                  isReadOnly={props.isReadOnly}
+                  hideColumnDefinitions={true}
+                  hasMismatch={accessPointState.hasRelationElementMismatch}
+                  mismatchMessage={accessPointState.getRelationElementMismatchMessage()}
+                  readOnlySource={(() => {
+                    const dataElementPath =
+                      accessPointState.relationElementExistsinDataElementReference();
+                    return dataElementPath !== undefined
+                      ? {
+                          label: dataElementPath,
+                          onNavigate: () => {
+                            const dataElement =
+                              editorStore.graphManagerState.graph.getNullableElement(
+                                dataElementPath,
+                              );
+                            if (dataElement) {
+                              editorStore.graphEditorMode.openElement(
+                                dataElement,
+                              );
+                            }
+                          },
+                        }
+                      : undefined;
+                  })()}
+                  deleteConfirmMessage={`Are you sure you want to delete sample values for Access Point ${accessPointState.accessPoint.id}?`}
+                  onAdd={() =>
+                    flowResult(accessPointState.createAndaddRelationElement())
+                  }
+                  onDelete={() => accessPointState.deleteRelationElement()}
+                />
                 {editorStore.applicationStore.config.options
                   .dataProductConfig && (
                   <AccessPointClassification
@@ -1275,12 +1046,6 @@ export const LakehouseDataProductAccessPointEditor = observer(
             <AccessPointGenerationViewer
               accessPointState={accessPointState}
               generationOutput={accessPointState.artifactGenerationContent}
-            />
-          )}
-          {accessPointState.showSampleValuesModal && (
-            <SampleValuesEditorModal
-              accessPointState={accessPointState}
-              isReadOnly={props.isReadOnly}
             />
           )}
         </div>

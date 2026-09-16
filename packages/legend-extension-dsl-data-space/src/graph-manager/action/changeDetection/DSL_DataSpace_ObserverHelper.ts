@@ -20,6 +20,7 @@ import {
   type OperationalMetadata,
   observe_PackageableElementReference,
   observe_RawLambda,
+  observe_RelationElement,
   observe_StereotypeReference,
   observe_TaggedValue,
   skipObserved,
@@ -109,7 +110,12 @@ const observe_Abstract_DataSpaceExecutable = (
     executionContextKey: observable,
     title: observable,
     description: observable,
+    sampleValues: observable,
   });
+
+  if (metamodel.sampleValues) {
+    observe_RelationElement(metamodel.sampleValues);
+  }
 };
 
 const observe_DataSpacePackageableElementExecutable = skipObserved(

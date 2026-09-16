@@ -25,6 +25,7 @@ import {
   type V1_DataProductOperationalMetadata,
   V1_PackageableElement,
   type V1_DataElementReference,
+  type V1_RelationElement,
 } from '@finos/legend-graph';
 
 export class V1_DataSpaceMappingProvider implements Hashable {
@@ -81,6 +82,7 @@ export abstract class V1_DataSpaceExecutable implements Hashable {
   executionContextKey?: string | undefined;
   title!: string;
   description?: string | undefined;
+  sampleValues?: V1_RelationElement | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -89,6 +91,7 @@ export abstract class V1_DataSpaceExecutable implements Hashable {
       this.title,
       this.description ?? '',
       this.executionContextKey ?? '',
+      this.sampleValues ?? '',
     ]);
   }
 }
@@ -106,6 +109,7 @@ export class V1_DataSpacePackageableElementExecutable
       this.title,
       this.description ?? '',
       this.executionContextKey ?? '',
+      this.sampleValues ?? '',
       this.executable.path,
     ]);
   }
@@ -125,6 +129,7 @@ export class V1_DataSpaceTemplateExecutable
       this.description ?? '',
       this.query,
       this.executionContextKey ?? '',
+      this.sampleValues ?? '',
     ]);
   }
 }

@@ -307,7 +307,6 @@ export class LakehouseAccessPointState extends AccessPointState {
   generatingArtifactState = ActionState.create();
   relationElementState: RelationElementState | undefined;
   showSampleValuesEditor = true;
-  showSampleValuesModal = false;
 
   // Add lineage state and isGeneratingLineage
   lineageState: LineageState;
@@ -324,8 +323,6 @@ export class LakehouseAccessPointState extends AccessPointState {
       relationElementState: observable,
       showSampleValuesEditor: observable,
       setShowSampleValuesEditor: action,
-      showSampleValuesModal: observable,
-      setShowSampleValuesModal: action,
       addRelationElement: action,
       deleteRelationElement: action,
       createAndaddRelationElement: flow,
@@ -384,10 +381,6 @@ export class LakehouseAccessPointState extends AccessPointState {
 
   setShowSampleValuesEditor(value: boolean): void {
     this.showSampleValuesEditor = value;
-  }
-
-  setShowSampleValuesModal(value: boolean): void {
-    this.showSampleValuesModal = value;
   }
 
   getRelationElementState(): RelationElementState | undefined {
@@ -457,10 +450,11 @@ export class LakehouseAccessPointState extends AccessPointState {
     }
 
     newElement.rows = [];
-    this.addRelationElement(observe_RelationElement(newElement), true);
+    this.addRelationElement(observe_RelationElement(newElement));
+    this.relationElementState?.addRow();
   }
 
-  addRelationElement(newElement: RelationElement, openModal: boolean): void {
+  addRelationElement(newElement: RelationElement): void {
     const product = this.state.state.product;
 
     let relationElementsData = product.sampleValues?.find(
@@ -480,10 +474,6 @@ export class LakehouseAccessPointState extends AccessPointState {
     addUniqueEntry(relationElementsData.relationElements, newElement);
 
     this.relationElementState = new RelationElementState(newElement);
-
-    if (openModal) {
-      this.setShowSampleValuesModal(true);
-    }
   }
 
   deleteRelationElement(): void {
