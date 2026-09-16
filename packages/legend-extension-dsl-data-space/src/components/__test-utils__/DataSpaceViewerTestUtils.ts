@@ -40,6 +40,7 @@ import {
   DSL_DataSpace_getGraphManagerExtension,
 } from '../../graph-manager/index.js';
 import { DataSpaceViewerState } from '../../stores/DataSpaceViewerState.js';
+import type { DataSpaceQualityResult } from '../../stores/DataSpaceQualityState.js';
 
 class TEST__LegendApplicationPluginManager
   extends LegendApplicationPluginManager<LegendApplicationPlugin>
@@ -113,6 +114,7 @@ export type TEST__DataSpaceViewerActionOverrides = {
         dataProductPath: string,
       ) => void)
     | undefined;
+  fetchDataSpaceQuality?: (() => Promise<DataSpaceQualityResult>) | undefined;
 };
 
 /**
@@ -182,6 +184,7 @@ export const TEST__getDataSpaceViewerState = async (
       queryClass: () => undefined,
       openServiceQuery: () => undefined,
       viewDataProduct: overrides?.viewDataProduct,
+      fetchDataSpaceQuality: overrides?.fetchDataSpaceQuality,
     },
   );
   return { viewerState, applicationStore };

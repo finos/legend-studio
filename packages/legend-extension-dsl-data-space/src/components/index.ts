@@ -23,6 +23,11 @@ export { DataSpaceViewer } from './DataSpaceViewer.js';
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 export {
+  DATA_SPACE_QUALITY_LEVEL,
+  type DataSpaceQualityBreakdown,
+  type DataSpaceQualityResult,
+} from '../stores/DataSpaceQualityState.js';
+export {
   DataSpaceQueryBuilderState,
   resolveUsableDataSpaceClasses,
 } from '../stores/query-builder/DataSpaceQueryBuilderState.js';

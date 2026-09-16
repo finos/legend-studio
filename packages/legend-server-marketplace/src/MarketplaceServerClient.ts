@@ -67,6 +67,7 @@ import type {
 } from './models/DatasetSearchResult.js';
 import type { EntitySearchResponse } from './models/EntitySearchResult.js';
 import { SearchType } from './models/SearchType.js';
+import type { DataSpaceQualityResponse } from './models/DataSpaceQuality.js';
 
 export interface TrendingDataProductEntry {
   dataProductId?: string;
@@ -174,6 +175,8 @@ export class MarketplaceServerClient extends AbstractServerClient {
       show_all: showAll,
     };
   }
+
+  private _docQuality = (): string => `${this.baseUrl}/v1/doc-quality`;
 
   dataProductSearch = async (
     query: string,
@@ -313,6 +316,39 @@ export class MarketplaceServerClient extends AbstractServerClient {
         search_type: options?.searchType ?? SearchType.HYBRID,
         page_size: options?.pageSize ?? 20,
         page_number: options?.pageNumber ?? 1,
+      },
+    );
+
+  /**
+   * Fetches the documentation-quality tier + breakdown for a legacy dataspace from Marketplace backend,
+   * used to render the "AI Readiness Badge" on the dataspace page.
+   *
+   * The metrics this is scored on (description/executables/model-documentation coverage,
+   * etc.) come from columns on the S2 product-metadata table that the search
+   * product pipeline populates — that pipeline refreshes on a 15-minute cadence,
+   * so a dataspace's badge can lag up to ~15 minutes behind a metadata change.
+   *
+   * Marketplace backend does no pre-computation: on each call it SELECTs the relevant columns for
+   * this dataspace out of S2 and computes the tier/breakdown on the fly.
+   */
+  dataSpaceDocQuality = async (
+    lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
+    groupId: string,
+    artifactId: string,
+    versionId: string,
+    path: string,
+    title: string | undefined,
+  ): Promise<PlainObject<DataSpaceQualityResponse>> =>
+    this.get<PlainObject<DataSpaceQualityResponse>>(
+      `${this._docQuality()}/dataspace/${lakehouseEnv}`,
+      undefined,
+      undefined,
+      {
+        group_id: groupId,
+        artifact_id: artifactId,
+        version_id: versionId,
+        path,
+        title,
       },
     );
 

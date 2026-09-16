@@ -15,12 +15,16 @@
  */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { ApplicationStoreProvider } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared/test';
 import type { PlainObject } from '@finos/legend-shared';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
 import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../../stores/DataSpaceViewerNavigation.js';
+import {
+  DATA_SPACE_QUALITY_LEVEL,
+  type DataSpaceQualityResult,
+} from '../../stores/DataSpaceQualityState.js';
 import { TEST__getDataSpaceViewerState } from '../__test-utils__/DataSpaceViewerTestUtils.js';
 import type { V1_DataSpaceAnalysisResult } from '../../graph-manager/index.js';
 import TEST_DATA__mappingProviderNoRuntime from './TEST_DATA__DataSpaceViewer__MappingProviderNoRuntime.json' with { type: 'json' };
@@ -116,5 +120,37 @@ describe(integrationTest('DataSpaceViewer'), () => {
     expect(screen.getByText('Sample Relation Executable')).toBeDefined();
     // Executable header should surface "Relation" as its type label
     expect(screen.getByText('Relation')).toBeDefined();
+  });
+
+  test('renders the quality badge and AI-Ready stamp when fetchDataSpaceQuality is wired up', async () => {
+    const qualityResult: DataSpaceQualityResult = {
+      qualityLevel: DATA_SPACE_QUALITY_LEVEL.DIAMOND,
+      qualityBreakdown: {
+        isDescriptionDocumented: true,
+        isExecutablesPresent: true,
+        isModelsDocumentationPresent: true,
+        isEveryServiceDocumented: true,
+        attributeCoverage: 1,
+        documentedAttributeCount: 10,
+        totalAttributeCount: 10,
+      },
+    };
+    await renderDataSpaceViewer(
+      TEST_DATA__mappingProviderNoRuntime as PlainObject<V1_DataSpaceAnalysisResult>,
+      { fetchDataSpaceQuality: async () => qualityResult },
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/AI Readiness Badge:/)).toBeDefined();
+    });
+    expect(screen.getByText('AI-Ready')).toBeDefined();
+  });
+
+  test('renders no quality badge when fetchDataSpaceQuality is not wired up', async () => {
+    await renderDataSpaceViewer(
+      TEST_DATA__mappingProviderNoRuntime as PlainObject<V1_DataSpaceAnalysisResult>,
+    );
+
+    expect(screen.queryByText(/AI Readiness Badge:/)).toBeNull();
   });
 });

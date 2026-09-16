@@ -55,6 +55,10 @@ import {
   type DataSpaceMappingProviderAccessConfig,
   DataSpaceMappingProviderAccessState,
 } from './DataSpaceMappingProviderAccessState.js';
+import {
+  DataSpaceQualityState,
+  type DataSpaceQualityResult,
+} from './DataSpaceQualityState.js';
 
 export class DataSpaceViewerState {
   readonly applicationStore: GenericLegendApplicationStore;
@@ -88,10 +92,14 @@ export class DataSpaceViewerState {
   readonly mappingProviderAccessConfig?:
     | DataSpaceMappingProviderAccessConfig
     | undefined;
+  readonly fetchDataSpaceQuality?:
+    | (() => Promise<DataSpaceQualityResult>)
+    | undefined;
 
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
   readonly quickStartState: DataSpaceQuickStartState;
+  readonly qualityState: DataSpaceQualityState;
   legendAIConfig: LegendAIConfig;
   executableStates: DataSpaceViewerExecutableState[] = [];
 
@@ -139,6 +147,9 @@ export class DataSpaceViewerState {
       mappingProviderAccessConfig?:
         | DataSpaceMappingProviderAccessConfig
         | undefined;
+      fetchDataSpaceQuality?:
+        | (() => Promise<DataSpaceQualityResult>)
+        | undefined;
     },
   ) {
     makeObservable(this, {
@@ -178,6 +189,7 @@ export class DataSpaceViewerState {
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
     this.viewDataProduct = actions.viewDataProduct;
     this.mappingProviderAccessConfig = actions.mappingProviderAccessConfig;
+    this.fetchDataSpaceQuality = actions.fetchDataSpaceQuality;
 
     this.currentExecutionContext =
       dataSpaceAnalysisResult.defaultExecutionContext ??
@@ -202,6 +214,7 @@ export class DataSpaceViewerState {
     );
     this.diagramViewerState = new DataSpaceViewerDiagramViewerState(this);
     this.quickStartState = new DataSpaceQuickStartState(this);
+    this.qualityState = new DataSpaceQualityState(this);
     this.legendAIConfig = DEFAULT_LEGEND_AI_CONFIG;
     this.initMappingProviderAccessState();
   }
