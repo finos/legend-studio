@@ -33,6 +33,7 @@ import {
   V1_rawLambdaModelSchema,
   V1_dataElementReferenceModelSchema,
   V1_DataProductOperationalMetadata,
+  V1_relationElementModelSchema,
 } from '@finos/legend-graph';
 import {
   type PlainObject,
@@ -205,10 +206,11 @@ const V1_dataSpacePackageableElementExecutableModelSchema = createModelSchema(
       V1_DATA_SPACE_PACKAGEABLE_ELEMENT_EXECUTABLE,
     ),
     description: optional(primitive()),
+    executable: usingModelSchema(V1_packageableElementPointerModelSchema),
     executionContextKey: optional(primitive()),
     id: optional(primitive()),
+    sampleValues: optional(usingModelSchema(V1_relationElementModelSchema)),
     title: primitive(),
-    executable: usingModelSchema(V1_packageableElementPointerModelSchema),
   },
 );
 
@@ -217,10 +219,11 @@ const V1_dataSpaceTemplateExecutableModelSchema = createModelSchema(
   {
     _type: usingConstantValueSchema(V1_DATA_SPACE_TEMPLATE_EXECUTABLE),
     description: optional(primitive()),
-    title: primitive(),
+    executionContextKey: optional(primitive()),
     id: primitive(),
     query: usingModelSchema(V1_rawLambdaModelSchema),
-    executionContextKey: optional(primitive()),
+    sampleValues: optional(usingModelSchema(V1_relationElementModelSchema)),
+    title: primitive(),
   },
 );
 

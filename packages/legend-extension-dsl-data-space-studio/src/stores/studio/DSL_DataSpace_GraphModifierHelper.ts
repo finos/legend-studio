@@ -32,12 +32,14 @@ import {
   observe_DataSpaceMappingProvider,
   observe_DataSpaceSupportInfo,
 } from '@finos/legend-extension-dsl-data-space/graph';
-import type {
-  PackageableElement,
-  PackageableElementReference,
-  Mapping,
-  PackageableRuntime,
-  DataElementReference,
+import {
+  type PackageableElement,
+  type PackageableElementReference,
+  type Mapping,
+  type PackageableRuntime,
+  type DataElementReference,
+  type RelationElement,
+  observe_RelationElement,
 } from '@finos/legend-graph';
 import { addUniqueEntry } from '@finos/legend-shared';
 
@@ -215,6 +217,18 @@ export const dataSpace_setExecutableExecutionContextKey = action(
     executionContextKey: string | undefined,
   ): void => {
     executable.executionContextKey = executionContextKey;
+  },
+);
+
+export const dataSpace_setExecutableSampleValues = action(
+  (
+    executable: DataSpaceExecutable,
+    sampleValues: RelationElement | undefined,
+  ): void => {
+    executable.sampleValues =
+      sampleValues !== undefined
+        ? observe_RelationElement(sampleValues)
+        : undefined;
   },
 );
 

@@ -37,6 +37,7 @@ import {
 import { guaranteeType } from '@finos/legend-shared';
 import { DataSpaceExecutionContextState } from './DataSpaceExecutionContextState.js';
 import { DataSpaceExecutableTemplateStateCache } from './DataSpaceExecutableTemplateState.js';
+import { DataSpaceExecutableSampleValuesStateCache } from './DataSpaceExecutableSampleValuesState.js';
 
 export enum DATA_SPACE_TAB {
   HOME = 'Home',
@@ -47,6 +48,7 @@ export enum DATA_SPACE_TAB {
 export class DataSpaceEditorState extends ElementEditorState {
   executionContextState: DataSpaceExecutionContextState;
   readonly executableTemplateStates: DataSpaceExecutableTemplateStateCache;
+  readonly executableSampleValuesStates: DataSpaceExecutableSampleValuesStateCache;
   selectedTab = DATA_SPACE_TAB.HOME;
 
   constructor(editorStore: EditorStore, element: PackageableElement) {
@@ -68,6 +70,8 @@ export class DataSpaceEditorState extends ElementEditorState {
     this.executableTemplateStates = new DataSpaceExecutableTemplateStateCache(
       editorStore,
     );
+    this.executableSampleValuesStates =
+      new DataSpaceExecutableSampleValuesStateCache(editorStore);
   }
 
   setSelectedTab(tab: DATA_SPACE_TAB): void {

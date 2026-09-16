@@ -273,6 +273,11 @@ DataSpace showcase::northwind::dataspace::NorthwindDataSpaceWithExecutables
       title: 'this is title (function pointer) - Top Categories';
       description: 'this is description (function pointer) - TopCategories';
       executable: showcase::northwind::model::Order_QueryFunction():TabularDataSet[1];
+      sampleValues: Relation
+        #{
+          Category Id, Category Name, Order Count
+          1          , Cars         , 20;
+        }#;
     },
     {
       id: my_id;

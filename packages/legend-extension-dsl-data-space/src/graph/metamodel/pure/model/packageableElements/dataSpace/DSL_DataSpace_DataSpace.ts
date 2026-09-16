@@ -27,6 +27,7 @@ import {
   type RawLambda,
   type DataElementReference,
   type OperationalMetadata,
+  type RelationElement,
   PackageableElement,
   ConcreteFunctionDefinition,
   generateFunctionPrettyName,
@@ -90,6 +91,7 @@ export abstract class DataSpaceExecutable implements Hashable {
   executionContextKey?: string | undefined;
   title!: string;
   description?: string | undefined;
+  sampleValues?: RelationElement | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -98,6 +100,7 @@ export abstract class DataSpaceExecutable implements Hashable {
       this.title,
       this.description ?? '',
       this.executionContextKey ?? '',
+      this.sampleValues ?? '',
     ]);
   }
 }
@@ -115,6 +118,7 @@ export class DataSpacePackageableElementExecutable
       this.title,
       this.description ?? '',
       this.executionContextKey ?? '',
+      this.sampleValues ?? '',
       this.executable.value instanceof ConcreteFunctionDefinition
         ? generateFunctionPrettyName(this.executable.value, {
             fullPath: true,
@@ -140,6 +144,7 @@ export class DataSpaceExecutableTemplate
       this.description ?? '',
       this.query,
       this.executionContextKey ?? '',
+      this.sampleValues ?? '',
     ]);
   }
 }
