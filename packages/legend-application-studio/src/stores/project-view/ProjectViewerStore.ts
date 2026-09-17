@@ -368,6 +368,8 @@ export class ProjectViewerStore {
               this.editorStore.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
             payloadDebugger,
+            useCookieAuthOnly:
+              this.editorStore.applicationStore.config.engineUseCookieAuthOnly,
           },
         },
         {

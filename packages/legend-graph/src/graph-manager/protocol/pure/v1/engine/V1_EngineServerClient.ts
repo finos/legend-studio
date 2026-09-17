@@ -199,6 +199,19 @@ export async function getCurrentUserIDFromEngineServer(
   return new NetworkClient().get(`${engineServerUrl}/server/v1/currentUser`);
 }
 
+export interface V1_EngineServerClientConfig extends ServerClientConfig {
+  /**
+   * When `true`, Engine is authenticated exclusively via the
+   * `legend-access-token` cookie, never via an `Authorization: Bearer`
+   * header. Engine's own pac4j credentials extractor checks that cookie
+   * first and only falls back to the header when the cookie is absent, and
+   * attaching the header forces a CORS preflight Engine's filter chain does
+   * not support. Defaults to `false` (the header-based behavior every other
+   * client uses).
+   */
+  useCookieAuthOnly?: boolean;
+}
+
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;
   zipkinUrl?: string | undefined;
@@ -214,8 +227,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
   private queryBaseUrl?: string | undefined;
   private baseUrlForServiceRegistration?: string | undefined;
 
-  constructor(config: ServerClientConfig) {
-    super(config);
+  constructor(config: V1_EngineServerClientConfig) {
+    super(
+      config.useCookieAuthOnly
+        ? { ...config, getAuthenticationToken: () => undefined }
+        : config,
+    );
     this.queryBaseUrl = config.queryBaseUrl;
   }
 

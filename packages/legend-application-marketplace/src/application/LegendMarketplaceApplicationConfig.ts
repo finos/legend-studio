@@ -128,6 +128,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     url: string;
     queryUrl?: string;
     zipkinUrl?: string;
+    useCookieAuthOnly?: boolean;
   };
   lakehouse?: {
     url: string;
@@ -197,6 +198,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceUserProfileImageUrl?: string | undefined;
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
+  readonly engineUseCookieAuthOnly: boolean;
   readonly registryUrl: string | undefined;
   readonly zipkinUrl: string | undefined;
   readonly legendServicesUrl: string | undefined;
@@ -294,6 +296,9 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
         input.configData.engine.url,
         `Can't configure application: 'engine.url' field is missing or empty`,
       ),
+    );
+    this.engineUseCookieAuthOnly = Boolean(
+      input.configData.engine.useCookieAuthOnly,
     );
     if (input.configData.engine.queryUrl) {
       this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(

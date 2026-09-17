@@ -433,6 +433,8 @@ export class WorkspaceSetupStore {
           tabSize: DEFAULT_TAB_SIZE,
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
+            useCookieAuthOnly:
+              this.applicationStore.config.engineUseCookieAuthOnly,
           },
         },
         {

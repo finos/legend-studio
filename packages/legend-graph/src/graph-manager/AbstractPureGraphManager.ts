@@ -147,7 +147,14 @@ import type { IngestDefinition } from '../graph/metamodel/pure/packageableElemen
 export interface TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
-  clientConfig: ServerClientConfig;
+  clientConfig: ServerClientConfig & {
+    /**
+     * See `V1_EngineServerClientConfig.useCookieAuthOnly` — kept here as a
+     * plain optional field (rather than importing the V1-specific type) to
+     * avoid this abstract layer depending on a V1 implementation detail.
+     */
+    useCookieAuthOnly?: boolean;
+  };
   /**
    * Theses are workarounds we need to manually supply the configuration data
    * for roundtrip grammar test, as the network call to engine is blocked in test

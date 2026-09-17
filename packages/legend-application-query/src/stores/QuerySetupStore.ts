@@ -81,6 +81,8 @@ export abstract class BaseQuerySetupStore {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
+            useCookieAuthOnly:
+              this.applicationStore.config.engineUseCookieAuthOnly,
           },
         },
         {
