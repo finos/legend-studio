@@ -146,6 +146,18 @@ const OrderAccordion: React.FC<{
   const trackingUrl = getCurrentStageTrackingUrl(order);
   const closureInfo = getClosureInfo(order);
 
+  // Advanced search results can include orders belonging to other users
+  // (searched via Ordered By/For), so cancellation must be blocked in that
+  // mode to prevent accidentally cancelling someone else's order.
+  const isCancelDisabled = !isCancellable || ordersStore.isAdvancedSearchActive;
+  let cancelDisabledReason = '';
+  if (ordersStore.isAdvancedSearchActive) {
+    cancelDisabledReason = 'You are not authorised to perform this action';
+  } else if (!isCancellable) {
+    cancelDisabledReason =
+      'Order cancellation is not available once the order has reached the fulfillment stage';
+  }
+
   const handleCancelClick = (): void => {
     setCancelDialogOpen(true);
   };
@@ -350,20 +362,13 @@ const OrderAccordion: React.FC<{
                     </Button>
                   </span>
                 </Tooltip>
-                <Tooltip
-                  title={
-                    isCancellable
-                      ? ''
-                      : 'Order cancellation is not available once the order has reached the fulfillment stage'
-                  }
-                  arrow={true}
-                >
+                <Tooltip title={cancelDisabledReason} arrow={true}>
                   <span>
                     <Button
                       variant="outlined"
                       size="small"
                       startIcon={<TimesCircleIcon />}
-                      disabled={!isCancellable}
+                      disabled={isCancelDisabled}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleCancelClick();
@@ -887,6 +892,12 @@ export const LegendMarketplaceYourOrders: React.FC =
                     spacing={1}
                     className="legend-marketplace-your-orders__filter-chips"
                   >
+                    {appliedSearchFilters.orderId && (
+                      <Chip
+                        size="small"
+                        label={`Order ID: ${appliedSearchFilters.orderId}`}
+                      />
+                    )}
                     {appliedSearchFilters.orderedByLabel && (
                       <Chip
                         size="small"
@@ -1002,15 +1013,16 @@ export const LegendMarketplaceYourOrders: React.FC =
                     },
                   }}
                 />
-                {appliedSearchFilters.isLastDaysDefaulted && (
-                  <Typography
-                    variant="caption"
-                    className="legend-marketplace-your-orders__advanced-search-notice"
-                  >
-                    We are showing orders for the last{' '}
-                    {appliedSearchFilters.lastDays} days
-                  </Typography>
-                )}
+                {appliedSearchFilters.isLastDaysDefaulted &&
+                  !appliedSearchFilters.orderId && (
+                    <Typography
+                      variant="caption"
+                      className="legend-marketplace-your-orders__advanced-search-notice"
+                    >
+                      We are showing orders for the last{' '}
+                      {appliedSearchFilters.lastDays} days
+                    </Typography>
+                  )}
               </Box>
             )}
 

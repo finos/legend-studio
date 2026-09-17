@@ -171,11 +171,12 @@
   cursor: pointer;
   box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   background-color: var(--color-black);
-  width: 100%;
+  width: var(--card-w, 35rem);
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
-  height: auto;
-  min-height: 300px;
+  height: var(--card-h, 35rem);
+  overflow: hidden;
   border: 2px solid transparent;
   transition:
     transform 0.2s ease,
@@ -189,29 +190,29 @@
   }
 
   &__action {
-    height: 100%;
-    flex: 1;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
   }
 
   &__image {
     width: 100%;
-    height: 55%;
-    position: absolute;
-    aspect-ratio: auto;
-    top: 0;
-    left: 0;
+    flex: 0 0 50%;
+    height: 50%;
+    object-fit: cover;
+    display: block;
+    background-color: var(--color-dark-grey-100);
   }
 
   &__content {
-    position: absolute;
-    bottom: 0;
-    height: 45%;
-    background-color: rgb(11 11 11 / 70%);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    word-wrap: break-word;
+    flex: 0 0 50%;
+    height: 50%;
     width: 100%;
-    padding: 0.5rem 1.2rem;
+    overflow: hidden;
+    word-wrap: break-word;
+    padding: 0.4rem 1.2rem;
   }
 
   &__provider {
@@ -220,11 +221,16 @@
       'Trebuchet MS',
       sans-serif;
     color: var(--color-white);
-    margin-bottom: 1rem;
+    margin-bottom: 0.4rem;
     word-wrap: break-word;
     opacity: 0.95;
     text-transform: uppercase;
     letter-spacing: 0.05rem;
+    display: -webkit-box;
+    min-height: 3.6rem;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__title {
@@ -232,20 +238,30 @@
       2.75rem / 2.75rem 'GS Sans Condensed',
       'Trebuchet MS',
       sans-serif;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
     word-wrap: break-word;
     color: var(--color-white);
     opacity: 0.95;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: -webkit-box;
+    min-height: 5.5rem;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__action-buttons {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 0.6rem 1rem;
     margin-top: auto;
-    margin-bottom: 0.5rem;
-    gap: 1rem;
+    gap: 0.6rem;
+    // NEVER wrap: the Add to Cart button and price pill must always render
+    // as a single row and never stack on top of one another. When the row
+    // would otherwise be too narrow, `&__add-to-cart-button` shrinks (see
+    // below) instead of wrapping.
     flex-wrap: nowrap;
   }
 
@@ -257,7 +273,10 @@
     padding: 0.6rem 1.2rem;
     border-radius: 2.5rem;
     border: 1px solid rgb(255 255 255 / 20%);
-    flex-shrink: 0;
+    // Never shrinks (price/financial data must always render in full) —
+    // `&__add-to-cart-button` is the one that gives up space when the row
+    // is tight, not this.
+    flex: 0 0 auto;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
@@ -271,7 +290,14 @@
     cursor: pointer;
     border-radius: 25px;
     transition: background-color 0.3s ease;
-    flex-shrink: 0;
+    // Allowed to shrink (never grow) below its natural content width so it
+    // gives up space to the fixed-size price pill instead of wrapping to a
+    // second line — `min-width: 0` is required for a flex item to shrink
+    // past its content's intrinsic width, and `overflow: hidden` clips the
+    // now-narrower label instead of letting it force the row wider.
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
     white-space: nowrap;
 
     .MuiButton-endIcon,

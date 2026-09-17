@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-import { type JSX, useState } from 'react';
+import { type JSX, type SyntheticEvent, useState } from 'react';
 import {
   Box,
   Button,
+  Divider,
   FormControl,
   InputLabel,
   ListSubheader,
   MenuItem,
   Popover,
   Select,
+  Tab,
+  Tabs,
   TextField,
   Typography,
   type SelectChangeEvent,
@@ -50,6 +53,11 @@ const CLOSED_STATUS_OPTIONS = [
   OrderSearchStatus.COMPLETED,
   OrderSearchStatus.REJECTED,
 ];
+
+enum SearchMode {
+  ORDER_ID = 'ORDER_ID',
+  OTHER_FILTERS = 'OTHER_FILTERS',
+}
 
 interface AdvancedOrderSearchPopoverProps {
   open: boolean;
@@ -81,18 +89,33 @@ export const AdvancedOrderSearchPopover = (
     userSearchService,
   } = props;
 
+  const [orderId, setOrderId] = useState('');
   const [orderedBy, setOrderedBy] = useState<LegendUser>(new LegendUser());
   const [orderedFor, setOrderedFor] = useState<LegendUser>(new LegendUser());
   const [status, setStatus] = useState<OrderSearchStatus>(
     OrderSearchStatus.ALL,
   );
   const [lastDaysInput, setLastDaysInput] = useState('');
+  const [searchMode, setSearchMode] = useState<SearchMode>(SearchMode.ORDER_ID);
 
-  const canSearch =
-    Boolean(orderedBy.id.trim()) || Boolean(orderedFor.id.trim());
+  // The two tabs are mutually exclusive search modes: only the fields on the
+  // active tab are used when searching, regardless of what was previously
+  // entered on the other tab.
+  const isOrderIdMode = searchMode === SearchMode.ORDER_ID;
+
+  const canSearch = isOrderIdMode
+    ? Boolean(orderId.trim())
+    : Boolean(orderedBy.id.trim()) || Boolean(orderedFor.id.trim());
   const lastDays = parseLastDaysInput(lastDaysInput);
   const isLastDaysInvalid =
     lastDaysInput.trim() !== '' && lastDays === undefined;
+
+  const handleSearchModeChange = (
+    _event: SyntheticEvent,
+    value: SearchMode,
+  ): void => {
+    setSearchMode(value);
+  };
 
   const handleStatusChange = (
     event: SelectChangeEvent<OrderSearchStatus>,
@@ -104,7 +127,18 @@ export const AdvancedOrderSearchPopover = (
     if (!canSearch || isSearching) {
       return;
     }
+    if (isOrderIdMode) {
+      onSearch({
+        orderId: orderId.trim(),
+        orderedBy: undefined,
+        orderedFor: undefined,
+        status: OrderSearchStatus.ALL,
+        lastDays: undefined,
+      });
+      return;
+    }
     onSearch({
+      orderId: undefined,
       orderedBy,
       orderedFor,
       status,
@@ -113,10 +147,12 @@ export const AdvancedOrderSearchPopover = (
   };
 
   const handleClear = (): void => {
+    setOrderId('');
     setOrderedBy(new LegendUser());
     setOrderedFor(new LegendUser());
     setStatus(OrderSearchStatus.ALL);
     setLastDaysInput('');
+    setSearchMode(SearchMode.ORDER_ID);
     if (hasActiveSearch) {
       onClear();
     }
@@ -140,94 +176,137 @@ export const AdvancedOrderSearchPopover = (
           Advanced Search
         </Typography>
 
-        <UserSearchInput
-          className="advanced-order-search-popover__field"
-          label="Ordered By"
-          placeholder="Search kerberos or name"
-          userValue={orderedBy}
-          setUserValue={setOrderedBy}
-          userSearchService={userSearchService}
-          variant="outlined"
-          size="small"
-          fullWidth={true}
-        />
-
-        <UserSearchInput
-          className="advanced-order-search-popover__field"
-          label="Ordered For"
-          placeholder="Search kerberos or name"
-          userValue={orderedFor}
-          setUserValue={setOrderedFor}
-          userSearchService={userSearchService}
-          variant="outlined"
-          size="small"
-          fullWidth={true}
-        />
-
-        <FormControl
-          className="advanced-order-search-popover__field"
-          size="small"
-          fullWidth={true}
+        <Tabs
+          value={searchMode}
+          onChange={handleSearchModeChange}
+          variant="fullWidth"
+          className="advanced-order-search-popover__tabs"
+          aria-label="search mode"
         >
-          <InputLabel id="advanced-order-search-status-label">
-            Status
-          </InputLabel>
-          <Select
-            labelId="advanced-order-search-status-label"
-            label="Status"
+          <Tab label="Order ID" value={SearchMode.ORDER_ID} />
+          <Tab label="Other Filters" value={SearchMode.OTHER_FILTERS} />
+        </Tabs>
+
+        {isOrderIdMode ? (
+          <TextField
+            className="advanced-order-search-popover__field"
+            label="Order ID"
+            placeholder="e.g. LM-12345"
             size="small"
             fullWidth={true}
-            value={status}
-            onChange={handleStatusChange}
-            MenuProps={{
-              className: 'advanced-order-search-popover__status-menu',
-            }}
-          >
-            <MenuItem value={OrderSearchStatus.ALL}>All</MenuItem>
-            <ListSubheader>Open</ListSubheader>
-            {OPEN_STATUS_OPTIONS.map((option) => (
-              <MenuItem key={option} value={option}>
-                {getOrderSearchStatusLabel(option)}
-              </MenuItem>
-            ))}
-            <ListSubheader>Closed</ListSubheader>
-            {CLOSED_STATUS_OPTIONS.map((option) => (
-              <MenuItem key={option} value={option}>
-                {getOrderSearchStatusLabel(option)}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            variant="outlined"
+            value={orderId}
+            onChange={(event) => setOrderId(event.target.value)}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+        ) : (
+          <>
+            <Typography
+              variant="caption"
+              className="advanced-order-search-popover__required-hint"
+            >
+              Required: Fill at least one
+            </Typography>
 
-        <TextField
-          className="advanced-order-search-popover__field"
-          label="Show Last (Days)"
-          placeholder={`Default ${ORDER_SEARCH_DEFAULT_LAST_DAYS}`}
-          size="small"
-          fullWidth={true}
-          variant="outlined"
-          value={lastDaysInput}
-          onChange={(event) => {
-            const nextValue = event.target.value;
-            if (/^\d*$/.test(nextValue)) {
-              setLastDaysInput(nextValue);
-            }
-          }}
-          error={isLastDaysInvalid}
-          helperText={
-            isLastDaysInvalid
-              ? `Enter a value between ${ORDER_SEARCH_MIN_LAST_DAYS} and ${ORDER_SEARCH_MAX_LAST_DAYS}`
-              : ' '
-          }
-          slotProps={{
-            htmlInput: { inputMode: 'numeric' },
-          }}
-        />
+            <Box className="advanced-order-search-popover__filter-group">
+              <UserSearchInput
+                className="advanced-order-search-popover__field"
+                label="Ordered For"
+                placeholder="Search kerberos or name"
+                userValue={orderedFor}
+                setUserValue={setOrderedFor}
+                userSearchService={userSearchService}
+                variant="outlined"
+                size="small"
+                fullWidth={true}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+
+              <UserSearchInput
+                className="advanced-order-search-popover__field"
+                label="Ordered By"
+                placeholder="Search kerberos or name"
+                userValue={orderedBy}
+                setUserValue={setOrderedBy}
+                userSearchService={userSearchService}
+                variant="outlined"
+                size="small"
+                fullWidth={true}
+                slotProps={{ inputLabel: { shrink: true } }}
+              />
+            </Box>
+
+            <Divider
+              aria-hidden={true}
+              className="advanced-order-search-popover__section-divider"
+            />
+
+            <FormControl
+              className="advanced-order-search-popover__field"
+              size="small"
+              fullWidth={true}
+            >
+              <InputLabel id="advanced-order-search-status-label">
+                Status (Optional)
+              </InputLabel>
+              <Select
+                labelId="advanced-order-search-status-label"
+                label="Status (Optional)"
+                size="small"
+                fullWidth={true}
+                value={status}
+                onChange={handleStatusChange}
+                MenuProps={{
+                  className: 'advanced-order-search-popover__status-menu',
+                }}
+              >
+                <MenuItem value={OrderSearchStatus.ALL}>All</MenuItem>
+                <ListSubheader>Open</ListSubheader>
+                {OPEN_STATUS_OPTIONS.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {getOrderSearchStatusLabel(option)}
+                  </MenuItem>
+                ))}
+                <ListSubheader>Closed</ListSubheader>
+                {CLOSED_STATUS_OPTIONS.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {getOrderSearchStatusLabel(option)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <TextField
+              className="advanced-order-search-popover__field"
+              label="Show Last (Optional)"
+              placeholder="(Days)"
+              size="small"
+              fullWidth={true}
+              variant="outlined"
+              value={lastDaysInput}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                if (/^\d*$/.test(nextValue)) {
+                  setLastDaysInput(nextValue);
+                }
+              }}
+              error={isLastDaysInvalid}
+              helperText={
+                isLastDaysInvalid
+                  ? `Enter a value between ${ORDER_SEARCH_MIN_LAST_DAYS} and ${ORDER_SEARCH_MAX_LAST_DAYS}`
+                  : `Default ${ORDER_SEARCH_DEFAULT_LAST_DAYS}`
+              }
+              slotProps={{
+                htmlInput: { inputMode: 'numeric' },
+              }}
+            />
+          </>
+        )}
 
         <Box className="advanced-order-search-popover__actions">
           <Button
             variant="outlined"
-            size="small"
+            size="medium"
             onClick={handleClear}
             className="advanced-order-search-popover__clear-button"
           >
@@ -235,7 +314,7 @@ export const AdvancedOrderSearchPopover = (
           </Button>
           <Button
             variant="contained"
-            size="small"
+            size="medium"
             onClick={handleSearch}
             disabled={!canSearch || isSearching}
             className="advanced-order-search-popover__search-button"

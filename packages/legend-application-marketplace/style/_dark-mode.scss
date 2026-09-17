@@ -401,6 +401,10 @@
 
       .MuiInputLabel-root {
         color: var(--color-dark-theme-text-muted);
+
+        &.MuiInputLabel-shrink {
+          background-color: var(--color-dark-theme-bg-elevated);
+        }
       }
 
       .MuiOutlinedInput-notchedOutline {
@@ -414,6 +418,32 @@
       .MuiSelect-icon {
         color: var(--color-dark-theme-text-secondary);
       }
+    }
+
+    &__section-divider {
+      border-color: var(--color-dark-theme-border);
+    }
+
+    &__tabs {
+      .MuiTab-root {
+        color: var(--color-dark-theme-text-muted);
+
+        &.Mui-selected {
+          color: var(--color-dark-theme-text-primary);
+        }
+      }
+
+      .MuiTabs-indicator {
+        background-color: var(--color-dark-theme-text-primary);
+      }
+    }
+
+    &__required-hint {
+      color: var(--color-dark-theme-text-muted);
+    }
+
+    &__filter-group {
+      background-color: var(--color-dark-theme-bg-tertiary);
     }
 
     &__status-menu {
@@ -2834,12 +2864,33 @@
     }
   }
 
+  .legend-marketplace-subscriptions-kpi-bar {
+    &__card {
+      background: var(--color-dark-theme-bg-secondary);
+      border-color: var(--color-dark-theme-border);
+    }
+
+    &__label {
+      color: var(--color-dark-theme-text-secondary);
+    }
+
+    &__pill {
+      background: var(--color-dark-theme-bg-tertiary);
+      color: var(--color-dark-theme-text-secondary);
+    }
+  }
+
   .legend-marketplace-subscriptions-content {
     background: var(--color-dark-theme-bg-primary);
     color: var(--color-dark-theme-text-primary);
 
     &__search-section {
       background: var(--color-dark-theme-bg-primary);
+      border-bottom-color: var(--color-dark-theme-border);
+    }
+
+    &__subtitle {
+      color: var(--color-dark-theme-text-secondary);
     }
 
     &__user-search {
@@ -2847,8 +2898,42 @@
       color: var(--color-dark-theme-text-primary);
     }
 
+    &__grid-controls {
+      border-bottom-color: var(--color-dark-theme-border);
+    }
+
+    &__expand-collapse-btn {
+      color: var(--color-dark-theme-text-secondary) !important;
+
+      &:hover {
+        background-color: var(--color-dark-theme-bg-tertiary) !important;
+        color: var(--color-dark-theme-text-primary) !important;
+      }
+    }
+
     &__subscription-grid {
       background: var(--color-dark-theme-bg-primary);
+
+      &.ag-theme-balham {
+        --ag-background-color: var(--color-dark-theme-bg-secondary);
+        --ag-foreground-color: var(--color-dark-theme-text-primary);
+        --ag-header-background-color: var(--color-dark-theme-bg-elevated);
+        --ag-border-color: var(--color-dark-theme-border);
+        --ag-row-hover-color: var(--color-dark-theme-bg-tertiary);
+        --ag-odd-row-background-color: var(--color-dark-theme-bg-primary);
+      }
+
+      .ag-row.legend-marketplace-subscriptions-content__row--group-vendor {
+        background-color: var(--color-dark-theme-bg-elevated) !important;
+      }
+
+      .ag-row.legend-marketplace-subscriptions-content__row--group-permission {
+        background-color: var(--color-dark-theme-bg-tertiary) !important;
+      }
+
+      .legend-marketplace-subscriptions-content__cost-value {
+        color: var(--color-dark-theme-text-primary);
+      }
     }
   }
 

@@ -16,10 +16,10 @@
 
 @use 'mixins' as *;
 
-/**
- * The pill navigation control shared by the catalog "View more" link and the MCP
- * viewer's back button; $icon-shift points the arrow in the direction of travel.
- */
+/// Pill-shaped, outlined text+icon button (e.g. "See all", "Browse Add-Ons"
+/// style CTAs) that fills solid on hover and shifts its icon by
+/// `$icon-shift`. Also styles a `:disabled` state (dimmed, hover effects
+/// suppressed) for callers that gate the action on async/loading state.
 @mixin marketplacePillButton($icon-shift) {
   @include flexVCenter;
 
@@ -47,6 +47,20 @@
 
     svg {
       transform: translateX($icon-shift);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+
+    &:hover {
+      background: none;
+      color: var(--legend-marketplace-light-blue);
+
+      svg {
+        transform: none;
+      }
     }
   }
 }

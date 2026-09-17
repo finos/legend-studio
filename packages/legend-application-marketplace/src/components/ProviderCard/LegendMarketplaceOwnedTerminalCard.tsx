@@ -132,6 +132,7 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
               <Typography
                 variant="subtitle2"
                 className="legend-marketplace-terminal-card__provider legend-marketplace-order-profile-card__summary"
+                title={terminalResult.providerName}
               >
                 {terminalResult.providerName}
               </Typography>
@@ -139,6 +140,7 @@ export const LegendMarketplaceOwnedTerminalCard = observer(
                 <Typography
                   variant="h6"
                   className="legend-marketplace-terminal-card__title"
+                  title={terminalResult.productName.toUpperCase()}
                 >
                   {terminalResult.productName.toUpperCase()}
                 </Typography>

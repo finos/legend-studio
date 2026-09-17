@@ -122,6 +122,7 @@ export enum OrderSearchStatus {
 }
 
 export interface OrderSearchRequest {
+  order_id?: string;
   ordered_by?: string;
   ordered_for?: string;
   status?: OrderSearchStatus;

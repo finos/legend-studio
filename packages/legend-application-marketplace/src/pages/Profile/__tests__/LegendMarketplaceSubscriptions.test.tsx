@@ -269,9 +269,10 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
     });
     expect(cancelButton.hasAttribute('disabled')).toBe(false);
 
-    // AG Grid re-renders the cell (and its checkbox DOM node) whenever the
-    // grid's `columnDefs` are recreated on each observer re-render, so the
-    // checkbox must be re-queried rather than reusing the earlier reference.
+    // The checked state is now driven declaratively by `rowData.isSelected`
+    // (see `groupedSubscriptions`), so toggling a checkbox produces a new
+    // `rowData` array and AG Grid re-renders the cell (and its checkbox DOM
+    // node) accordingly — re-query rather than reusing the earlier reference.
     const secondCheckbox = getCheckbox();
     if (!secondCheckbox) {
       throw new Error('Expected a subscription checkbox to be rendered');
@@ -288,7 +289,13 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
       MOCK__baseStore.marketplaceServerClient,
       'getSubscriptions',
     ).mockResolvedValue({
-      subscription_feeds: [makeSubscriptionFeed({ id: 'sub-1', permId: 999 })],
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ItemName: 'Permission ID',
+        }),
+      ],
       TotalMonthlyCost: 1200,
     });
 
@@ -322,6 +329,14 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
       fireEvent.click(cancelButton);
     });
 
+    const confirmButton = await waitFor(() =>
+      screen.getByRole('button', { name: 'Confirm Cancellation' }),
+    );
+
+    await act(async () => {
+      fireEvent.click(confirmButton);
+    });
+
     expect(cancelSubscriptionsSpy).toHaveBeenCalledWith({
       ordered_by: MOCK__baseStore.applicationStore.identityService.currentUser,
       kerberos: MOCK__baseStore.applicationStore.identityService.currentUser,
@@ -330,7 +345,7 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
           {
             providerName: 'Bloomberg',
             productName: 'Level 1',
-            category: 'Market Data',
+            category: 'Permission ID',
             price: 100,
             servicepriceId: 55,
             model: 'B-PIPE',
@@ -353,5 +368,164 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
     expect(
       screen.getByRole('button', { name: 'Cancel Subscription' }),
     ).toBeDefined();
+  });
+
+  test('cancelling a Permission ID row only includes addons that are currently visible/selected, not ones hidden by an active search', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 999,
+          ServiceName: 'Real-Time News Add-On',
+          ItemName: 'Add-On',
+        }),
+      ],
+      TotalMonthlyCost: 1200,
+    });
+
+    const cancelSubscriptionsSpy = createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'cancelSubscriptions',
+    ).mockResolvedValue({ message: 'Done' });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+    await waitFor(() => {
+      expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+    });
+
+    // Search narrows the grid down to just the Permission ID row, hiding the
+    // add-on row entirely.
+    const searchInput = screen.getByRole('textbox', {
+      name: 'Search subscriptions',
+    });
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: 'Level 1' } });
+    });
+    // Debounced filtering (300ms) narrows the grid down to the matching row.
+    await waitFor(
+      () => {
+        expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+      },
+      { timeout: 2000 },
+    );
+
+    const checkbox = screen.getAllByRole('checkbox')[0];
+    if (!checkbox) {
+      throw new Error('Expected a subscription checkbox to be rendered');
+    }
+    await act(async () => {
+      fireEvent.click(checkbox);
+    });
+
+    await act(async () => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Cancel Subscription' }),
+      );
+    });
+
+    await act(async () => {
+      fireEvent.click(
+        await waitFor(() =>
+          screen.getByRole('button', { name: 'Confirm Cancellation' }),
+        ),
+      );
+    });
+
+    // Only the visible/selected Permission ID row is cancelled — the hidden
+    // add-on (never shown, never checked) must not be silently included.
+    expect(cancelSubscriptionsSpy).toHaveBeenCalledWith({
+      ordered_by: MOCK__baseStore.applicationStore.identityService.currentUser,
+      kerberos: MOCK__baseStore.applicationStore.identityService.currentUser,
+      order_items: {
+        999: [
+          {
+            providerName: 'Bloomberg',
+            productName: 'Level 1',
+            category: 'Permission ID',
+            price: 100,
+            servicepriceId: 55,
+            model: 'B-PIPE',
+          },
+        ],
+      },
+    });
+  });
+});
+
+describe('LegendMarketplaceSubscriptions - search filtering', () => {
+  test('typing a search term filters the grid, and the clear button immediately resets the search text and filtered rows', async () => {
+    createSpy(
+      MOCK__baseStore.marketplaceServerClient,
+      'getSubscriptions',
+    ).mockResolvedValue({
+      subscription_feeds: [
+        makeSubscriptionFeed({
+          id: 'sub-1',
+          permId: 999,
+          CarrierVendor: 'Bloomberg',
+          ServiceName: 'Level 1',
+          ItemName: 'Permission ID',
+        }),
+        makeSubscriptionFeed({
+          id: 'sub-2',
+          permId: 888,
+          CarrierVendor: 'Reuters',
+          ServiceName: 'Level 2',
+          ItemName: 'Permission ID',
+        }),
+      ],
+      TotalMonthlyCost: 2400,
+    });
+
+    await renderPage();
+    await waitFor(() =>
+      expect(document.querySelector('.ag-theme-balham')).not.toBeNull(),
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('checkbox')).toHaveLength(2);
+    });
+
+    const searchInput = screen.getByRole('textbox', {
+      name: 'Search subscriptions',
+    });
+
+    await act(async () => {
+      fireEvent.change(searchInput, { target: { value: 'Bloomberg' } });
+    });
+
+    // Debounced filtering (300ms) narrows the grid down to the matching row.
+    await waitFor(
+      () => {
+        expect(screen.getAllByRole('checkbox')).toHaveLength(1);
+      },
+      { timeout: 2000 },
+    );
+
+    const clearButton = screen.getByRole('button', {
+      name: 'Clear search subscriptions text',
+    });
+
+    await act(async () => {
+      fireEvent.click(clearButton);
+    });
+
+    // The clear button cancels any pending debounce and resets both the raw
+    // and active search text synchronously, so both rows reappear immediately
+    // without waiting out the debounce interval.
+    expect((searchInput as HTMLInputElement).value).toBe('');
+    expect(screen.getAllByRole('checkbox')).toHaveLength(2);
   });
 });

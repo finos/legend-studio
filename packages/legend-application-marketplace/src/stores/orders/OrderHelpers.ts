@@ -43,12 +43,11 @@ export enum WorkflowCurrentStage {
   // "MANAGER", not "APPROVER" as previously assumed.
   FULFILLMENT_APPROVER = 'MARKET DATA FULFILLMENT MANAGER',
   FIRST_APPROVER = 'MARKET DATA FIRST APPROVER',
-  // NOTE: not confirmed against a live backend payload - inferred from the
-  // naming convention of the other Market Data approval stages above. Given
-  // FULFILLMENT_APPROVER's guessed value above turned out to be wrong, this
-  // value should be verified against a real payload where `current_stage`
-  // reaches the Business Analyst stage before being relied upon.
-  BUSINESS_ANALYST = 'Business Analyst',
+  // Confirmed against a live backend payload: the stage is uppercase
+  // "BUSINESS ANALYST", not the previously-guessed title-cased
+  // 'Business Analyst' (which caused the Track Order button/link to never
+  // resolve since `current_stage` never matched).
+  BUSINESS_ANALYST = 'BUSINESS ANALYST',
   RPM = 'RPM',
 }
 
@@ -404,6 +403,24 @@ const CURRENT_STAGE_PROCESS_INSTANCE_ID_FIELD: Partial<
   [WorkflowCurrentStage.BUSINESS_ANALYST]: 'piid_bbg_approval',
 };
 
+// Normalizes a raw `current_stage` string from the backend before matching it
+// against `WorkflowCurrentStage`. This is the same bug class as the
+// FULFILLMENT_APPROVER/BUSINESS_ANALYST mismatches documented above: a
+// trivial casing or whitespace difference from the backend (e.g. `' rpm '`
+// instead of `'RPM'`) would otherwise silently fail to match any known
+// stage, breaking tracking URLs, process instance IDs, and cancellability.
+const normalizeCurrentStage = (
+  rawStage: string | null | undefined,
+): WorkflowCurrentStage | undefined => {
+  if (!rawStage) {
+    return undefined;
+  }
+  const normalized = rawStage.trim().toUpperCase();
+  return (Object.values(WorkflowCurrentStage) as string[]).includes(normalized)
+    ? (normalized as WorkflowCurrentStage)
+    : undefined;
+};
+
 /**
  * Returns the tracking URL for the order's *current* workflow stage (e.g. the
  * Privilege Manager's URL while pending manager approval, the Business
@@ -415,9 +432,7 @@ export const getCurrentStageTrackingUrl = (
   order: TerminalProductOrder,
 ): string | null => {
   const details = order.workflow_details;
-  const currentStage = details?.current_stage as
-    | WorkflowCurrentStage
-    | undefined;
+  const currentStage = normalizeCurrentStage(details?.current_stage);
   if (!details || !currentStage) {
     return null;
   }
@@ -429,9 +444,7 @@ export const getProcessInstanceId = (
   order: TerminalProductOrder,
 ): string | null => {
   const details = order.workflow_details;
-  const currentStage = details?.current_stage as
-    | WorkflowCurrentStage
-    | undefined;
+  const currentStage = normalizeCurrentStage(details?.current_stage);
   if (!details || !currentStage) {
     return null;
   }
@@ -444,7 +457,9 @@ export const getProcessInstanceId = (
  * (fulfillment), it can no longer be cancelled.
  */
 export const canCancelOrder = (order: TerminalProductOrder): boolean => {
-  const currentStage = order.workflow_details?.current_stage;
+  const currentStage = normalizeCurrentStage(
+    order.workflow_details?.current_stage,
+  );
   return !!currentStage && currentStage !== WorkflowCurrentStage.RPM;
 };
 

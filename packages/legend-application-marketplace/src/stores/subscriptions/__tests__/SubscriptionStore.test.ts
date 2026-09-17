@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { LegendUser } from '@finos/legend-shared';
+import { Subscription } from '@finos/legend-server-marketplace';
 import { SubscriptionStore } from '../SubscriptionStore.js';
 import { TEST__provideMockLegendMarketplaceBaseStore } from '../../../components/__test-utils__/LegendMarketplaceStoreTestUtils.js';
 import type { LegendMarketplaceBaseStore } from '../../LegendMarketplaceBaseStore.js';
@@ -28,6 +29,21 @@ const setupStore = async (): Promise<{
   const subscriptionStore = new SubscriptionStore(baseStore);
   return { subscriptionStore, baseStore };
 };
+
+const makeSubscription = (id: string): Subscription =>
+  Object.assign(new Subscription(), {
+    carrierVendor: 'Bloomberg',
+    model: 'B-PIPE',
+    sourceVendor: 'Bloomberg',
+    itemName: 'Permission ID',
+    serviceName: 'Level 1',
+    annualAmount: 1200,
+    taxValue: 0,
+    costCode: '',
+    price: 100,
+    permId: 999,
+    id,
+  });
 
 describe('SubscriptionStore - selectedUser', () => {
   test('defaults selectedUser.id to the current user', async () => {
@@ -56,5 +72,27 @@ describe('SubscriptionStore - selectedUser', () => {
     expect(subscriptionStore.selectedUser.id).toBe(
       baseStore.applicationStore.identityService.currentUser,
     );
+  });
+
+  test('setSelectedUser clears any previously selected subscriptions', async () => {
+    const { subscriptionStore } = await setupStore();
+    subscriptionStore.addSelectedSubscriptions(makeSubscription('sub-1'));
+    expect(subscriptionStore.selectedSubscriptions).toHaveLength(1);
+
+    const user = new LegendUser();
+    user.id = 'test-user-123';
+    subscriptionStore.setSelectedUser(user);
+
+    expect(subscriptionStore.selectedSubscriptions).toHaveLength(0);
+  });
+
+  test('resetSelectedUser clears any previously selected subscriptions', async () => {
+    const { subscriptionStore } = await setupStore();
+    subscriptionStore.addSelectedSubscriptions(makeSubscription('sub-1'));
+    expect(subscriptionStore.selectedSubscriptions).toHaveLength(1);
+
+    subscriptionStore.resetSelectedUser();
+
+    expect(subscriptionStore.selectedSubscriptions).toHaveLength(0);
   });
 });

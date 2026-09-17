@@ -678,6 +678,10 @@
 
       .MuiInputLabel-root {
         color: var(--color-hclight-grey-60);
+
+        &.MuiInputLabel-shrink {
+          background-color: var(--color-hclight-white);
+        }
       }
 
       .MuiOutlinedInput-notchedOutline {
@@ -691,6 +695,32 @@
       .MuiSelect-icon {
         color: var(--color-hclight-grey-50);
       }
+    }
+
+    &__section-divider {
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__tabs {
+      .MuiTab-root {
+        color: var(--color-hclight-grey-60);
+
+        &.Mui-selected {
+          color: var(--color-hclight-grey-90);
+        }
+      }
+
+      .MuiTabs-indicator {
+        background-color: var(--color-hclight-grey-90);
+      }
+    }
+
+    &__required-hint {
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__filter-group {
+      background-color: var(--color-hclight-grey-10);
     }
 
     &__status-menu {
@@ -2030,8 +2060,68 @@
     ); // Light grey to match vendor-data page
   }
 
+  .legend-marketplace-subscriptions-kpi-bar {
+    &__card {
+      background: var(--color-hclight-grey-10);
+      border-color: var(--color-hclight-grey-20);
+    }
+
+    &__label {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__pill {
+      background: var(--color-hclight-blue-10);
+      color: var(--color-hclight-grey-70);
+    }
+  }
+
   .legend-marketplace-subscriptions-content {
     background: var(--color-hclight-white);
+
+    &__search-section {
+      border-bottom-color: var(--color-hclight-grey-20);
+    }
+
+    &__subtitle {
+      color: var(--color-hclight-grey-70);
+    }
+
+    &__grid-controls {
+      border-bottom-color: var(--color-hclight-grey-20);
+    }
+
+    &__expand-collapse-btn {
+      color: var(--color-hclight-grey-70) !important;
+
+      &:hover {
+        background-color: var(--color-hclight-grey-10) !important;
+        color: var(--color-hclight-grey-90) !important;
+      }
+    }
+
+    &__subscription-grid {
+      &.ag-theme-balham {
+        --ag-border-color: var(--color-hclight-grey-20);
+        --ag-background-color: var(--color-hclight-white);
+        --ag-foreground-color: var(--color-hclight-grey-90);
+        --ag-header-background-color: var(--color-hclight-grey-10);
+        --ag-row-hover-color: var(--color-hclight-grey-5);
+        --ag-odd-row-background-color: var(--color-hclight-grey-5);
+      }
+
+      .ag-row.legend-marketplace-subscriptions-content__row--group-vendor {
+        background-color: var(--color-hclight-grey-20) !important;
+      }
+
+      .ag-row.legend-marketplace-subscriptions-content__row--group-permission {
+        background-color: var(--color-hclight-grey-10) !important;
+      }
+
+      .legend-marketplace-subscriptions-content__cost-value {
+        color: var(--color-hclight-grey-90);
+      }
+    }
   }
 
   .marketplace-lakehouse-text__emphasis {

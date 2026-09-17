@@ -195,6 +195,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
               <Typography
                 variant="subtitle2"
                 className="legend-marketplace-terminal-card__provider legend-marketplace-order-profile-card__summary"
+                title={formatProfileSummaryLine(terminalCount, addOnCount)}
               >
                 {formatProfileSummaryLine(terminalCount, addOnCount)}
               </Typography>
@@ -202,6 +203,7 @@ export const LegendMarketplaceOrderProfileCard = observer(
                 <Typography
                   variant="h6"
                   className="legend-marketplace-terminal-card__title"
+                  title={traderProfile.productName.toUpperCase()}
                 >
                   {traderProfile.productName.toUpperCase()}
                 </Typography>
