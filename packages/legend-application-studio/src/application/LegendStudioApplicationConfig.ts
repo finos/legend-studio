@@ -213,6 +213,7 @@ export interface LegendStudioApplicationConfigurationData
   engine: {
     url: string;
     queryUrl?: string;
+    useCookieAuthOnly?: boolean;
   };
   query?: { url: string };
   showcase?: { url: string };
@@ -225,6 +226,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly engineUseCookieAuthOnly: boolean;
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
   readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
@@ -256,6 +258,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
         input.configData.engine.queryUrl,
       );
     }
+    this.engineUseCookieAuthOnly = Boolean(
+      input.configData.engine.useCookieAuthOnly,
+    );
 
     // depot
     assertNonNullable(

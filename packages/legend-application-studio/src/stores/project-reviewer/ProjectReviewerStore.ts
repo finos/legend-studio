@@ -223,6 +223,8 @@ export class ProjectReviewerStore {
             queryBaseUrl:
               this.editorStore.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
+            useCookieAuthOnly:
+              this.editorStore.applicationStore.config.engineUseCookieAuthOnly,
           },
         },
         {

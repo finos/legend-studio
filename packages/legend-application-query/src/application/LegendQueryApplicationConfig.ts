@@ -142,7 +142,7 @@ export interface LegendQueryApplicationConfigurationData
   depot: {
     url: string;
   };
-  engine: { url: string; queryUrl?: string };
+  engine: { url: string; queryUrl?: string; useCookieAuthOnly?: boolean };
   studio: {
     url: string;
     instances: LegendStudioApplicationInstanceConfigurationData[];
@@ -171,6 +171,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly engineUseCookieAuthOnly: boolean;
   readonly depotServerUrl: string;
   readonly studioApplicationUrl: string;
   readonly taxonomyApplicationUrl?: string;
@@ -204,6 +205,9 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
           input.configData.engine.queryUrl,
         )
       : undefined;
+    this.engineUseCookieAuthOnly = Boolean(
+      input.configData.engine.useCookieAuthOnly,
+    );
 
     // depot
     assertNonNullable(

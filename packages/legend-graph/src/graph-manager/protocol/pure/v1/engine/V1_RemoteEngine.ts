@@ -18,7 +18,6 @@ import {
   type LogService,
   type PlainObject,
   type Parameters,
-  type ServerClientConfig,
   LogEvent,
   parseLosslessJSON,
   assertErrorThrown,
@@ -39,6 +38,7 @@ import {
 import { TEMPORARY__AbstractEngineConfig } from '../../../../action/TEMPORARY__AbstractEngineConfig.js';
 import {
   V1_EngineServerClient,
+  type V1_EngineServerClientConfig,
   type V1_GrammarParserBatchInputEntry,
 } from './V1_EngineServerClient.js';
 import { V1_PureModelContextData } from '../model/context/V1_PureModelContextData.js';
@@ -230,7 +230,7 @@ class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
 interface V1_RemoteEngineSetupConfig extends TEMPORARY__EngineSetupConfig {
   env: string;
   tabSize: number;
-  clientConfig: ServerClientConfig;
+  clientConfig: V1_EngineServerClientConfig;
 }
 
 /**
@@ -244,7 +244,10 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   readonly logService: LogService;
   readonly config: V1_RemoteEngineConfig;
 
-  constructor(clientConfig: ServerClientConfig, logService: LogService) {
+  constructor(
+    clientConfig: V1_EngineServerClientConfig,
+    logService: LogService,
+  ) {
     this.engineServerClient = new V1_EngineServerClient(clientConfig);
     this.config = new V1_RemoteEngineConfig(this);
     this.config.setBaseUrl(this.engineServerClient.baseUrl);

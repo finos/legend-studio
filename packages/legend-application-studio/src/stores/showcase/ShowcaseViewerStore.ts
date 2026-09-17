@@ -113,6 +113,8 @@ export class ShowcaseViewerStore {
               this.editorStore.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
             payloadDebugger,
+            useCookieAuthOnly:
+              this.editorStore.applicationStore.config.engineUseCookieAuthOnly,
           },
         },
         {

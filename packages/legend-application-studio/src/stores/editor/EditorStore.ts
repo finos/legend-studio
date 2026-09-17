@@ -875,6 +875,8 @@ export class EditorStore implements CommandRegistrar {
               this.applicationStore.config.engineQueryServerUrl,
             enableCompression: true,
             payloadDebugger,
+            useCookieAuthOnly:
+              this.applicationStore.config.engineUseCookieAuthOnly,
           },
         },
         {

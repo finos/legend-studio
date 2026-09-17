@@ -221,6 +221,7 @@ export class LegendMarketplaceBaseStore {
     this.remoteEngine = new V1_RemoteEngine(
       {
         baseUrl: this.applicationStore.config.engineServerUrl,
+        useCookieAuthOnly: this.applicationStore.config.engineUseCookieAuthOnly,
       },
       applicationStore.logService,
     );
