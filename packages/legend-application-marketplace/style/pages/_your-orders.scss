@@ -802,7 +802,7 @@
     flex-direction: column;
     gap: 1rem;
     padding: 1.5rem;
-    width: 20rem;
+    width: 32rem;
     background-color: var(--color-white);
   }
 
@@ -815,6 +815,24 @@
   &__field {
     width: 100%;
 
+    .MuiInputLabel-root {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--color-black);
+
+      // Once shrunk onto the notched outline border, mask the border
+      // segment behind the label with the popover's own surface color;
+      // otherwise the border line shows through/overlaps the label text.
+      &.MuiInputLabel-shrink {
+        background-color: var(--color-white);
+      }
+    }
+
+    .MuiInputBase-input,
+    .MuiSelect-select {
+      font-size: 1.4rem;
+    }
+
     .MuiOutlinedInput-root {
       &:hover .MuiOutlinedInput-notchedOutline {
         border-color: var(--color-blue-100);
@@ -824,6 +842,37 @@
         border-color: var(--color-blue-100);
       }
     }
+  }
+
+  &__section-divider {
+    border-color: var(--color-light-grey-200);
+  }
+
+  &__tabs {
+    min-height: 3.6rem;
+    margin-bottom: 0.5rem;
+
+    .MuiTab-root {
+      min-height: 3.6rem;
+      font-size: 1.4rem;
+      font-weight: 500;
+      text-transform: none;
+    }
+  }
+
+  &__required-hint {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--color-dark-grey-300);
+  }
+
+  &__filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.4rem;
+    background-color: var(--color-light-grey-50);
   }
 
   &__status-menu {
@@ -850,5 +899,7 @@
   &__clear-button {
     text-transform: none;
     font-weight: 500;
+    font-size: 1.4rem;
+    padding: 0.6rem 1.75rem;
   }
 }

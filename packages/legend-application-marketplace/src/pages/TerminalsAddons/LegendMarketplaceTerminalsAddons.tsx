@@ -123,6 +123,10 @@ const SearchResultsSection = observer(
       renderCards,
     } = props;
     const showCount = vendorDataState.searchTerm.trim().length > 0;
+    // A 200 response with an empty section (no results) means there is
+    // nothing more to page into, so "View more" should be disabled rather
+    // than navigating to an empty tab.
+    const hasNoResults = (totalCount ?? itemCount) === 0;
 
     return (
       <div>
@@ -145,6 +149,7 @@ const SearchResultsSection = observer(
           {seeAll && (
             <button
               type="button"
+              disabled={hasNoResults}
               className="legend-marketplace-vendordata-main-search-results__view-more"
               onClick={() => {
                 vendorDataState.setProviderDisplayState(sectionTitle);
@@ -307,7 +312,7 @@ const OwnedServicesSection = observer(
         <Collapse in={isExpanded}>
           <div
             id="terminal-subscriptions-grid"
-            className="legend-marketplace-vendordata-main-search-results__card-group"
+            className="legend-marketplace-vendordata-main-search-results__card-group legend-marketplace-vendordata-main-owned-services__card-group"
           >
             {vendorDataState.ownedPermissions.map((permission) => (
               <LegendMarketplaceOwnedTerminalCard
@@ -472,6 +477,14 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
           marketPlaceVendorDataStore.selectedUser.id !== currentUserId,
         );
         marketPlaceVendorDataStore.setSearchTerm(query ?? '');
+        // A search should surface matches across all provider types, so
+        // always land on the ALL tab rather than staying on whichever tab
+        // happened to be selected before the search was made.
+        if ((query ?? '').trim().length > 0) {
+          marketPlaceVendorDataStore.setProviderDisplayState(
+            VendorDataProviderType.ALL,
+          );
+        }
         flowResult(marketPlaceVendorDataStore.populateProviders()).catch(
           marketPlaceVendorDataStore.applicationStore.alertUnhandledError,
         );
@@ -483,6 +496,12 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
       (query: string) => {
         if (query === '') {
           marketPlaceVendorDataStore.setSearchTerm('');
+          // Clearing the search (e.g. via the search bar's "x" button) should
+          // bring the user back to the ALL tab, matching the state they'd be
+          // in before ever searching.
+          marketPlaceVendorDataStore.setProviderDisplayState(
+            VendorDataProviderType.ALL,
+          );
           flowResult(marketPlaceVendorDataStore.populateProviders()).catch(
             marketPlaceVendorDataStore.applicationStore.alertUnhandledError,
           );
@@ -507,6 +526,7 @@ export const LegendMarketplaceVendorData = withLegendMarketplaceVendorDataStore(
               onSearch={handleSearch}
               onChange={handleSearchChange}
               enableAutosuggest={false}
+              placeholder="Search Catalog"
             />
           </div>
         </div>

@@ -58,8 +58,15 @@ export enum OrderTab {
   CLOSED = 'closed',
 }
 
-/** Input to `OrdersStore.searchOrders`, gathered from the advanced search form. */
+/**
+ * Input to `OrdersStore.searchOrders`, gathered from the advanced search form.
+ *
+ * `orderId` is mutually exclusive with the other fields (enforced in the UI
+ * via separate search-mode tabs): when supplied, it is sent as the `order_id`
+ * filter on its own, without `orderedBy`/`orderedFor`/`status`/`lastDays`.
+ */
 export interface OrderSearchFormValues {
+  orderId: string | undefined;
   orderedBy: LegendUser | undefined;
   orderedFor: LegendUser | undefined;
   status: OrderSearchStatus;
@@ -68,6 +75,7 @@ export interface OrderSearchFormValues {
 
 /** A snapshot of the last-applied advanced search filters, kept for rendering the filter summary bar. */
 export interface AppliedOrderSearchFilters {
+  orderId: string | undefined;
   orderedByLabel: string | undefined;
   orderedForLabel: string | undefined;
   status: OrderSearchStatus;
@@ -301,25 +309,45 @@ export class OrdersStore {
   }
 
   *searchOrders(filters: OrderSearchFormValues, offset = 0): GeneratorFn<void> {
+    const orderId = filters.orderId?.trim();
     const orderedById = filters.orderedBy?.id.trim();
     const orderedForId = filters.orderedFor?.id.trim();
 
-    if (!orderedById && !orderedForId) {
+    if (!orderId && !orderedById && !orderedForId) {
       this.baseStore.applicationStore.notificationService.notifyWarning(
         'Enter a value for Ordered By and/or Ordered For to search.',
       );
       return;
     }
 
-    const lastDays = filters.lastDays ?? ORDER_SEARCH_DEFAULT_LAST_DAYS;
-    const request: OrderSearchRequest = {
-      ...(orderedById ? { ordered_by: orderedById } : {}),
-      ...(orderedForId ? { ordered_for: orderedForId } : {}),
-      status: filters.status,
-      last_days: lastDays,
-      limit: this.searchPageSize,
-      offset,
-    };
+    // An Order ID search targets one specific order, so the rolling
+    // `last_days` window (which restricts results by `created_at`) is
+    // intentionally omitted from the request here - applying it would
+    // otherwise hide an older order that still matches by ID.
+    const lastDays = orderId
+      ? undefined
+      : (filters.lastDays ?? ORDER_SEARCH_DEFAULT_LAST_DAYS);
+    // `orderId` is mutually exclusive with `orderedBy`/`orderedFor`/`lastDays`
+    // (see the doc comment on `OrderSearchFormValues.orderId`). That's
+    // enforced today by the UI's separate search-mode tabs, but the request
+    // is still built defensively here rather than trusting the caller, so a
+    // future caller that passes `orderId` alongside the others can't
+    // silently combine them into one ambiguous request.
+    const request: OrderSearchRequest = orderId
+      ? {
+          order_id: orderId,
+          status: filters.status,
+          limit: this.searchPageSize,
+          offset,
+        }
+      : {
+          ...(orderedById ? { ordered_by: orderedById } : {}),
+          ...(orderedForId ? { ordered_for: orderedForId } : {}),
+          status: filters.status,
+          ...(lastDays === undefined ? {} : { last_days: lastDays }),
+          limit: this.searchPageSize,
+          offset,
+        };
 
     this.lastSearchFormValues = filters;
     this.searchOrdersState.inProgress();
@@ -333,11 +361,14 @@ export class OrdersStore {
       this.searchTotalCount = response.total_count;
       this.searchOffset = offset;
       this.appliedSearchFilters = {
+        orderId,
         orderedByLabel: getUserDisplayLabel(filters.orderedBy),
         orderedForLabel: getUserDisplayLabel(filters.orderedFor),
         status: filters.status,
-        lastDays,
-        isLastDaysDefaulted: isLastDaysSearchDefaulted(filters.lastDays),
+        lastDays: lastDays ?? ORDER_SEARCH_DEFAULT_LAST_DAYS,
+        isLastDaysDefaulted: orderId
+          ? true
+          : isLastDaysSearchDefaulted(filters.lastDays),
       };
       this.searchOrdersState.complete();
     } catch (error) {

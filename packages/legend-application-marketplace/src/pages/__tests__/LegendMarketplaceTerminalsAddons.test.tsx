@@ -321,6 +321,10 @@ describe('VendorDataMainContent - ALL display state', () => {
   test('clicking "View more" for terminal section switches to TERMINAL_LICENSE', async () => {
     runInAction(() => {
       vendorDataStore.providerDisplayState = VendorDataProviderType.ALL;
+      vendorDataStore.terminalProviders = [
+        makeTerminalResult({ id: 1, productName: 'Terminal One' }),
+      ];
+      vendorDataStore.totalTerminalItems = 1;
     });
 
     render(

@@ -67,7 +67,13 @@ export class SubscriptionStore {
       (sub) => sub.id === subscription?.id,
     );
     if (!exists && subscription) {
-      this.selectedSubscriptions.push(subscription);
+      // Reassign (rather than push) so consumers relying on reference
+      // equality (e.g. React `useMemo`/`useCallback` deps) reliably observe
+      // every selection change, matching `removeSelectedSubscription` below.
+      this.selectedSubscriptions = [
+        ...this.selectedSubscriptions,
+        subscription,
+      ];
     }
   }
 
@@ -83,12 +89,16 @@ export class SubscriptionStore {
 
   setSelectedUser(user: LegendUser): void {
     this.selectedUser = user;
+    // Selections are scoped to the previously viewed user's subscriptions,
+    // so switching users must not carry them over to the new user's grid.
+    this.clearSelectedSubscriptions();
   }
 
   resetSelectedUser(): void {
     this.selectedUser = new LegendUser();
     this.selectedUser.id =
       this.baseStore.applicationStore.identityService.currentUser;
+    this.clearSelectedSubscriptions();
   }
 
   *refresh(): GeneratorFn<void> {

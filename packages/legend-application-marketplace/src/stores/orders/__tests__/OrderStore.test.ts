@@ -107,6 +107,7 @@ describe('OrdersStore - advanced order search', () => {
 
   test('rejects the search and shows a warning when neither Ordered By nor Ordered For is set', async () => {
     const filters: OrderSearchFormValues = {
+      orderId: undefined,
       orderedBy: undefined,
       orderedFor: undefined,
       status: OrderSearchStatus.ALL,
@@ -130,6 +131,7 @@ describe('OrdersStore - advanced order search', () => {
     });
 
     const filters: OrderSearchFormValues = {
+      orderId: undefined,
       orderedBy: new LegendUser('adishar', 'A. Dishar'),
       orderedFor: undefined,
       status: OrderSearchStatus.PENDING_APPROVAL,
@@ -151,6 +153,7 @@ describe('OrdersStore - advanced order search', () => {
     expect(ordersStore.currentOrders).toBe(ordersStore.searchResults);
     expect(ordersStore.currentFetchState).toBe(ordersStore.searchOrdersState);
     expect(ordersStore.appliedSearchFilters).toEqual({
+      orderId: undefined,
       orderedByLabel: 'A. Dishar',
       orderedForLabel: undefined,
       status: OrderSearchStatus.PENDING_APPROVAL,
@@ -170,6 +173,7 @@ describe('OrdersStore - advanced order search', () => {
 
     await flowResult(
       ordersStore.searchOrders({
+        orderId: undefined,
         orderedBy: undefined,
         orderedFor: new LegendUser('bsmith'),
         status: OrderSearchStatus.ALL,
@@ -193,6 +197,7 @@ describe('OrdersStore - advanced order search', () => {
 
     await flowResult(
       ordersStore.searchOrders({
+        orderId: undefined,
         orderedBy: new LegendUser('adishar'),
         orderedFor: undefined,
         status: OrderSearchStatus.ALL,
@@ -215,6 +220,7 @@ describe('OrdersStore - advanced order search', () => {
     });
     await flowResult(
       ordersStore.searchOrders({
+        orderId: undefined,
         orderedBy: new LegendUser('adishar'),
         orderedFor: undefined,
         status: OrderSearchStatus.ALL,
@@ -234,6 +240,123 @@ describe('OrdersStore - advanced order search', () => {
   });
 });
 
+describe('OrdersStore - order ID search', () => {
+  let baseStore: LegendMarketplaceBaseStore;
+  let searchOrders: jest.Mock<
+    (request: OrderSearchRequest) => Promise<OrderSearchResponse>
+  >;
+  let ordersStore: OrdersStore;
+
+  beforeEach(() => {
+    ({ baseStore, searchOrders } = buildMockBaseStore());
+    ordersStore = new OrdersStore(baseStore);
+  });
+
+  test('sends an order_id search request to the search API and omits last_days', async () => {
+    searchOrders.mockResolvedValue({
+      orders: [makeOrder('LM-200')],
+      total_count: 1,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+
+    await flowResult(
+      ordersStore.searchOrders({
+        orderId: 'LM-200',
+        orderedBy: undefined,
+        orderedFor: undefined,
+        status: OrderSearchStatus.ALL,
+        lastDays: undefined,
+      }),
+    );
+
+    expect(searchOrders).toHaveBeenCalledWith({
+      order_id: 'LM-200',
+      status: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+    expect(ordersStore.isAdvancedSearchActive).toBe(true);
+    expect(ordersStore.searchResults.map((order) => order.order_id)).toEqual([
+      'LM-200',
+    ]);
+    expect(ordersStore.appliedSearchFilters).toEqual({
+      orderId: 'LM-200',
+      orderedByLabel: undefined,
+      orderedForLabel: undefined,
+      status: OrderSearchStatus.ALL,
+      lastDays: 365,
+      isLastDaysDefaulted: true,
+    });
+  });
+
+  test('paginates Order ID search results the same way as other filters', async () => {
+    searchOrders.mockResolvedValueOnce({
+      orders: Array.from({ length: 100 }, (_, i) => makeOrder(String(i))),
+      total_count: 100,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+
+    await flowResult(
+      ordersStore.searchOrders({
+        orderId: 'LM-1',
+        orderedBy: undefined,
+        orderedFor: undefined,
+        status: OrderSearchStatus.ALL,
+        lastDays: undefined,
+      }),
+    );
+
+    expect(ordersStore.hasNextSearchPage).toBe(true);
+    expect(ordersStore.hasPreviousSearchPage).toBe(false);
+
+    searchOrders.mockResolvedValueOnce({
+      orders: [makeOrder('a')],
+      total_count: 1,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 100,
+    });
+    await flowResult(ordersStore.goToSearchOffset(100));
+
+    expect(searchOrders).toHaveBeenLastCalledWith(
+      expect.objectContaining({ order_id: 'LM-1', offset: 100, limit: 100 }),
+    );
+    expect(ordersStore.hasNextSearchPage).toBe(false);
+    expect(ordersStore.hasPreviousSearchPage).toBe(true);
+  });
+
+  test('sends order_id only, ignoring orderedBy/orderedFor/lastDays, when all are supplied together', async () => {
+    searchOrders.mockResolvedValue({
+      orders: [makeOrder('LM-300')],
+      total_count: 1,
+      status_filter: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+
+    await flowResult(
+      ordersStore.searchOrders({
+        orderId: 'LM-300',
+        orderedBy: new LegendUser('adishar'),
+        orderedFor: new LegendUser('bsmith'),
+        status: OrderSearchStatus.ALL,
+        lastDays: 30,
+      }),
+    );
+
+    expect(searchOrders).toHaveBeenCalledWith({
+      order_id: 'LM-300',
+      status: OrderSearchStatus.ALL,
+      limit: 100,
+      offset: 0,
+    });
+  });
+});
+
 describe('OrdersStore - advanced order search pagination', () => {
   let baseStore: LegendMarketplaceBaseStore;
   let searchOrders: jest.Mock<
@@ -241,6 +364,7 @@ describe('OrdersStore - advanced order search pagination', () => {
   >;
   let ordersStore: OrdersStore;
   const filters: OrderSearchFormValues = {
+    orderId: undefined,
     orderedBy: new LegendUser('adishar'),
     orderedFor: undefined,
     status: OrderSearchStatus.ALL,

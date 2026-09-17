@@ -17,6 +17,40 @@
 @use 'mixins' as *;
 @use '../marketplace-mixins' as *;
 
+// Shared sizing constants for the Terminal License/Add-Ons/Order-Profile/
+// Owned-Services card grids. The container's max-width is derived from these
+// (rather than the app-wide "xxxl" page-width convention) so the grid can
+// grow up to $vendor-data-card-max-columns per row on wide screens WITHOUT
+// ever shrinking a card below $vendor-data-card-min-width.
+$vendor-data-card-min-width: 35rem;
+$vendor-data-card-gap: 1rem;
+$vendor-data-card-max-columns: 6;
+// Card height equals card width so the card renders as a square (per design
+// feedback matching the Agents/MCP catalog cards' compact look) — kept as
+// its own variable (rather than reusing the width one inline) so a future
+// non-square design only needs to change this one line. This is a HARD
+// height (not `min-height`): like the Agents/MCP catalog card
+// (`.legend-marketplace-card--large { height: 32rem; }`), a fixed `height` +
+// `overflow: hidden` on `.legend-marketplace-terminal-card`
+// (style/components/_legend-marketplace-card.scss) guarantees the card is
+// exactly this tall regardless of natural content size — a `min-height`
+// floor has NO effect once content is even slightly taller than the target,
+// which is why an earlier attempt to reach a square card via `min-height` +
+// trimmed padding didn't visibly change anything.
+$vendor-data-card-min-height: $vendor-data-card-min-width;
+// Horizontal padding of `.legend-marketplace-vendordata-main-search-results`.
+// The card grid is a nested child of that padded container, so its available
+// content width is (container max-width - left padding - right padding). This
+// must be added back on top of the pure card-columns width below, otherwise
+// the padding eats into the 6th column's space and it wraps to a new row.
+$vendor-data-container-horizontal-padding: 2rem;
+$vendor-data-card-group-content-max-width: (
+    $vendor-data-card-min-width * $vendor-data-card-max-columns
+  ) +
+  ($vendor-data-card-gap * ($vendor-data-card-max-columns - 1));
+$vendor-data-card-group-max-width: $vendor-data-card-group-content-max-width +
+  (2 * $vendor-data-container-horizontal-padding);
+
 .legend-marketplace-vendor-data {
   width: 100%;
   height: auto;
@@ -251,11 +285,30 @@
     display: flex;
     flex-direction: column;
     gap: 1em;
-    padding: 20px;
+    padding: $vendor-data-container-horizontal-padding;
     padding-bottom: 50px;
-    margin-left: 25rem;
-    max-width: 2300px;
+    width: 100%;
+    max-width: $vendor-data-card-group-max-width;
+    margin: 0 auto;
     flex: 1;
+
+    // Single source of truth for card dimensions, consumed by
+    // `.legend-marketplace-terminal-card` (style/components/_legend-marketplace-card.scss)
+    // and by the fixed-track `&__card-group` grid below. Cards NEVER stretch to
+    // fill leftover row space: a section with 1, 2, or 6 entries all render
+    // cards at this exact width/height, left-aligned, with empty space
+    // (not enlarged cards) filling the remainder of an under-populated row.
+    --card-w: #{$vendor-data-card-min-width};
+    --card-h: #{$vendor-data-card-min-height};
+    --card-gap: #{$vendor-data-card-gap};
+
+    // Intentional exception (< 640px): let the card become full-width rather
+    // than fixed-width, since a fixed 35rem card would overflow a phone-sized
+    // viewport. `auto-fill` with a 100% track naturally collapses to a single
+    // column at this size.
+    @media (width <= 640px) {
+      --card-w: 100%;
+    }
 
     &__category {
       display: flex;
@@ -282,8 +335,15 @@
 
     &__card-group {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(35rem, 1fr));
-      gap: 1rem;
+      // `auto-fill` (not `auto-fit`) with an explicit `var(--card-w)` track
+      // (not `minmax(x, 1fr)`) is what prevents stretching: `1fr` tracks
+      // absorb leftover row space, and `auto-fit` additionally collapses
+      // empty tracks and hands their space to `1fr` survivors too. Neither
+      // happens here, so a lone card in a row simply leaves empty space to
+      // its right instead of growing to fill it.
+      grid-template-columns: repeat(auto-fill, var(--card-w));
+      justify-content: start;
+      gap: var(--card-gap);
       margin-top: 1rem;
       width: 100%;
     }
@@ -292,7 +352,6 @@
 
 .legend-marketplace-vendordata-main-owned-services {
   padding: 0;
-  margin-left: 5px;
 
   &__header {
     display: flex;
@@ -332,6 +391,12 @@
       height: 18px;
     }
   }
+
+  // No override needed: the shared `&__card-group` grid (in
+  // `.legend-marketplace-vendordata-main-search-results`, whose custom
+  // properties this element inherits since it's nested inside it) already
+  // uses fixed-width, non-stretching tracks, so this section's small card
+  // count renders at the same natural card size as every other section.
 }
 
 .legend-marketplace-pagination-container {

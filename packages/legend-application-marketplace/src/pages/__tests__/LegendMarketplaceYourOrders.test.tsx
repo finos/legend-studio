@@ -516,12 +516,20 @@ describe('LegendMarketplaceYourOrders - copy order id', () => {
   });
 });
 
+const openAdvancedSearchOtherFilters = async (): Promise<void> => {
+  fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+  fireEvent.click(
+    await waitFor(() => screen.getByRole('tab', { name: 'Other Filters' })),
+  );
+  await waitFor(() => screen.getByLabelText('Ordered By'));
+};
+
 describe('LegendMarketplaceYourOrders - advanced search', () => {
   test('Search button stays disabled until Ordered By or Ordered For is provided', async () => {
     await renderYourOrdersPage([makeBloombergOrder()]);
     await waitFor(() => screen.getByText('Bloomberg Terminal'));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    await openAdvancedSearchOtherFilters();
 
     const searchButton = await waitFor(() =>
       screen.getByRole('button', { name: 'Search' }),
@@ -552,8 +560,8 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
       offset: 0,
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
-    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+    await openAdvancedSearchOtherFilters();
+    fireEvent.change(screen.getByLabelText('Ordered By'), {
       target: { value: 'adishar' },
     });
 
@@ -590,8 +598,8 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
       offset: 0,
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
-    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+    await openAdvancedSearchOtherFilters();
+    fireEvent.change(screen.getByLabelText('Ordered By'), {
       target: { value: 'adishar' },
     });
     await act(async () => {
@@ -629,8 +637,8 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
     });
 
     // First advanced search using "Ordered By" only.
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
-    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+    await openAdvancedSearchOtherFilters();
+    fireEvent.change(screen.getByLabelText('Ordered By'), {
       target: { value: 'adishar' },
     });
     await act(async () => {
@@ -649,7 +657,7 @@ describe('LegendMarketplaceYourOrders - advanced search', () => {
     );
 
     // Re-open advanced search and search using "Ordered For" only this time.
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
+    await openAdvancedSearchOtherFilters();
     expect(
       await waitFor(() => screen.getByLabelText('Ordered By')),
     ).toHaveProperty('value', '');
@@ -753,8 +761,8 @@ describe('LegendMarketplaceYourOrders - advanced search pagination', () => {
       offset: 0,
     });
 
-    fireEvent.click(screen.getByRole('button', { name: 'Advanced Search' }));
-    fireEvent.change(await waitFor(() => screen.getByLabelText('Ordered By')), {
+    await openAdvancedSearchOtherFilters();
+    fireEvent.change(screen.getByLabelText('Ordered By'), {
       target: { value: 'adishar' },
     });
     await act(async () => {

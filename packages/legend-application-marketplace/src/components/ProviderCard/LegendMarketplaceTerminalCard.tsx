@@ -174,12 +174,14 @@ export const LegendMarketplaceTerminalCard = observer(
             <Typography
               variant="subtitle2"
               className="legend-marketplace-terminal-card__provider"
+              title={terminalResult.providerName}
             >
               {terminalResult.providerName}
             </Typography>
             <Typography
               variant="h6"
               className="legend-marketplace-terminal-card__title"
+              title={terminalResult.productName}
             >
               {terminalResult.productName}
             </Typography>
