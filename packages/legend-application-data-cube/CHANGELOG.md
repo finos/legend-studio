@@ -1,5 +1,17 @@
 # @finos/legend-application-data-cube
 
+## 0.7.108
+
+### Patch Changes
+
+- [#5530](https://github.com/finos/legend-studio/pull/5530) [`d4f147b`](https://github.com/finos/legend-studio/commit/d4f147b75d854215a8d220d086004321c66ad385) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show a dedicated access view when a query against a data product fails with an entitlement error, naming the data product and access point group and linking out to Marketplace to request access, instead of the generic "Check Entitlements" flow which cannot report on data product entitlements. Warehouse errors are classified separately: for data products they show the warehouse the query ran against and link to the `snowflake.active-warehouse-issue.faq` documentation entry when one is registered, otherwise the default error view is used.
+
+- [#5534](https://github.com/finos/legend-studio/pull/5534) [`b027ff7`](https://github.com/finos/legend-studio/commit/b027ff701a8dbc8a4b897c55ca86e88c394759a1) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add an optional `useCookieAuthOnly` flag to `V1_EngineServerClientConfig` (exposed via each application's `engine.useCookieAuthOnly` config field). Some Engine deployments authenticate via a session cookie and their filter chain does not support the CORS preflight triggered by an `Authorization: Bearer` header. When set to `true`, the Engine client omits the Authorization header entirely and relies solely on the session cookie. Defaults to `false`, which preserves the existing Bearer-header behavior for all deployments that don't set this flag.
+
+- [#5530](https://github.com/finos/legend-studio/pull/5530) [`d4f147b`](https://github.com/finos/legend-studio/commit/d4f147b75d854215a8d220d086004321c66ad385) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Share the detection of entitlement/authorization execution errors between Legend Query and Legend DataCube via `isExecutionPermissionDeniedError`, fix the check that prevented capitalized error patterns from ever matching, and recognize more Snowflake privilege and warehouse access errors.
+
+- [#5525](https://github.com/finos/legend-studio/pull/5525) [`bd8848b`](https://github.com/finos/legend-studio/commit/bd8848b11cbafc853f068f5ca8509ec4660a6c21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix Lakehouse DataCube consumer data product loading so switching from Production to Production (parallel) immediately refetches the data product list.
+
 ## 0.7.107
 
 ## 0.7.106

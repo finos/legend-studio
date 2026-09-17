@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-space-studio
 
+## 0.1.352
+
+### Patch Changes
+
+- [#5532](https://github.com/finos/legend-studio/pull/5532) [`44f05e6`](https://github.com/finos/legend-studio/commit/44f05e62bcb456cd36efe4b7e7599444707155a4) ([@yash0024](https://github.com/yash0024)) - Support editing sample values for data space executables in form mode
+
 ## 0.1.351
 
 ## 0.1.350

@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.256
+
+### Patch Changes
+
+- [#5531](https://github.com/finos/legend-studio/pull/5531) [`36ce0a5`](https://github.com/finos/legend-studio/commit/36ce0a505791b5a244d17dafa53dadd034d12114) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add an "AI Readiness Badge" documentation-quality indicator (Bronze/Silver/Gold/Platinum/Diamond) to the legacy dataspace viewer header, with Platinum/Diamond tiers also showing an AI-Ready stamp. Quality is scored server-side via the vendor-data-marketplace `doc-quality/dataspace` endpoint.
+
+- [#5532](https://github.com/finos/legend-studio/pull/5532) [`44f05e6`](https://github.com/finos/legend-studio/commit/44f05e62bcb456cd36efe4b7e7599444707155a4) ([@yash0024](https://github.com/yash0024)) - Add sampleValues to data space executables
+
 ## 10.4.255
 
 ## 10.4.254

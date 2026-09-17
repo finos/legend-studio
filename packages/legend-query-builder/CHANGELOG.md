@@ -1,5 +1,111 @@
 # @finos/legend-query-builder
 
+## 4.19.13
+
+### Patch Changes
+
+- [#5530](https://github.com/finos/legend-studio/pull/5530) [`d4f147b`](https://github.com/finos/legend-studio/commit/d4f147b75d854215a8d220d086004321c66ad385) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show a dedicated access view when a query against a data product fails with an entitlement error, naming the data product and access point group and linking out to Marketplace to request access, instead of the generic "Check Entitlements" flow which cannot report on data product entitlements. Warehouse errors are classified separately: for data products they show the warehouse the query ran against and link to the `snowflake.active-warehouse-issue.faq` documentation entry when one is registered, otherwise the default error view is used.
+
+- [#5529](https://github.com/finos/legend-studio/pull/5529) [`89b38b3`](https://github.com/finos/legend-studio/commit/89b38b30164220434f38ec57dd3e200ec9cb24cf) ([@yash0024](https://github.com/yash0024)) - Unset mapping and set selected runtime for DataProduct Access Point query
+
+- [#5530](https://github.com/finos/legend-studio/pull/5530) [`d4f147b`](https://github.com/finos/legend-studio/commit/d4f147b75d854215a8d220d086004321c66ad385) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Share the detection of entitlement/authorization execution errors between Legend Query and Legend DataCube via `isExecutionPermissionDeniedError`, fix the check that prevented capitalized error patterns from ever matching, and recognize more Snowflake privilege and warehouse access errors.
+
+- [#5525](https://github.com/finos/legend-studio/pull/5525) [`bd8848b`](https://github.com/finos/legend-studio/commit/bd8848b11cbafc853f068f5ca8509ec4660a6c21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable unsupported export actions for Data Product and Ingest queries, and allow export actions to provide context-specific disabled messages in the query results menu.
+
+- [#5533](https://github.com/finos/legend-studio/pull/5533) [`54c0783`](https://github.com/finos/legend-studio/commit/54c07832f0f2bed27454dd94c6c2940fcbba1942) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add authoring telemetry for the query builder — twelve `*.change` events covering everything a user can do to a query.
+
+  All of them carry the shared envelope described in the query-execution changeset (source info flat, resolved execution context under `state`), plus a **`change`** object holding what the user actually did. `change` is nested rather than flattened because it would otherwise collide: `change.sourceType` on a projection event (`explorer-property`) is unrelated to the top-level `sourceType` from the source info (`data-product`).
+
+  New events:
+
+  - `query-builder.execution-context.change` — fires when the user changes the source class, mapping, or runtime from the query builder sidebar. `change` carries a `subtype` discriminator (`class` / `mapping` / `runtime`).
+  - `query-builder.projection.change` — fires when the user adds, removes, moves, or clears TDS projection columns (including derivations). `change` carries an `action` (`add` / `remove` / `move` / `clear` / `add-derivation`), a `sourceType` for adds (`explorer-property` / `explorer-relation` / `function` / `filter-condition` / `derivation`), and a `columnCount` (the resulting column count, except for `clear` where it is the number of columns removed).
+  - `query-builder.aggregation.change` — fires when the user changes the aggregation operator for a projection column via its context menu. `change` carries `action: 'operator-change'` and the selected `operatorName`.
+  - `query-builder.window.change` — fires when the user adds, edits, or removes an OLAP/window column (via the editor modal, per-column controls, drag-and-drop add, or context menu). `change` carries an `action` (`add` / `edit` / `remove`) and the resulting `columnCount`. DnD reorders are intentionally not emitted to avoid per-hover noise.
+  - `query-builder.graph-fetch.change` — fires when the user modifies the graph-fetch tree (drag-drop add into the main tree, per-node remove in the main and external-format trees, the "Check graph fetch" toggle, and the "Proceed" confirmation of a serialization type switch). `change` carries an `action` (`add` / `remove` / `check-toggle` / `serialization-change`), the resulting `nodeCount`, and an optional `serializationType` (`PURE` / `EXTERNAL_FORMAT`).
+  - `query-builder.parameter.change` — fires when the user adds, edits, or removes a query parameter. `change` carries an `action` (`add` / `edit` / `remove`) and the resulting `parameterCount`.
+  - `query-builder.constant.change` — fires when the user adds, edits, or removes a query constant. `change` carries an `action` (`add` / `edit` / `remove`) and the resulting `constantCount`.
+  - `query-builder.result-modifier.change` — fires when the user applies changes from the result modifier modal. `change` carries `limitSet`, `distinctOn`, `sortColumnCount` and `sliceSet`.
+  - `query-builder.watermark.change` — fires from the result modifier apply handler when the watermark value actually changed. `change` carries an `enabled` boolean.
+  - `query-builder.milestoning.change` — fires from the result modifier apply handler when the milestoning configuration actually changed. `change` carries a `subtype` discriminator (`business-date` / `processing-date` / `all-versions` / `all-versions-in-range`).
+  - `query-builder.filter.change` — fires when the user removes a filter node via the context menu, or toggles a group node's operation (AND↔OR). `change` carries an `action` (`remove` / `group-operation-change`) and an optional `groupOperation` (`and` / `or`) for group-operation changes. DnD reparenting/reordering of condition nodes is intentionally not emitted to avoid per-hover noise.
+  - `query-builder.post-filter.change` — same shape as `query-builder.filter.change`, but for the post-filter tree.
+
+  Events are emitted from UI callsites only (sidebar, TDS panel, TDS window panel, graph-fetch panel, parameters panel, constants panel, result modifier modal, filter panel, post-filter panel), so query load / deserialization does not produce telemetry noise.
+
+- [#5533](https://github.com/finos/legend-studio/pull/5533) [`54c0783`](https://github.com/finos/legend-studio/commit/54c07832f0f2bed27454dd94c6c2940fcbba1942) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `query-builder.opened` — the canonical "a query builder is loaded" event — plus `QUERY_BUILDER_OPENED_FROM` and `QueryBuilderState.logOpened(openedFrom, extra?)`.
+
+  Until now each host reported query builder loads through its own route-specific event, so counting opens meant a `UNION` of differently shaped events that each covered only part of the population. This event is emitted by the host once the builder is loaded, carries the shared telemetry envelope (source info spread flat, resolved execution context under `state`), and adds `openedFrom` naming the surface that opened it.
+
+  `openedFrom` names the surface only — what is being queried is already carried by `sourceType` and its target field, and `queryId` already marks a saved query, so there is deliberately no `query.creator.data-space`-style cross product. It is carried on this event alone: `TelemetryServicePlugin.setup()` already stamps every payload with `appName` and `appSessionId`, so repeating the surface on high-frequency events like `run-query.*` would duplicate data that is already reachable.
+
+  `logOpened()` is called by the host rather than emitted from the constructor, so `state` reflects a resolved execution context rather than a half-built one, and derived states such as `INTERNAL__toBasicQueryBuilderState()` — built on every data preview — do not emit spurious opens.
+
+  Only Legend Query emits this today; Legend Studio's entry points are not yet wired up, so `studio.*` values do not exist yet and Studio-originated query builders report no open event.
+
+- [#5533](https://github.com/finos/legend-studio/pull/5533) [`54c0783`](https://github.com/finos/legend-studio/commit/54c07832f0f2bed27454dd94c6c2940fcbba1942) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enrich query-execution telemetry with timing and authoring-state shape.
+
+  - The `query-builder.run-query.success` and `query-builder.run-query.failure` payloads now include an `executionDurationMs` field (wall-clock milliseconds from the start of `runQuery` to the resolution/failure of the promise).
+  - `report.timings` on `run-query.success` is now broken into named phases instead of reporting only a `total`:
+    - `query-builder.run-query.prepare` — building the execution lambda and parameter values
+    - `graph-manager.v1.engine-operation.graph.collect-input.success` — serializing the engine request
+    - `graph-manager.v1.engine-operation.server-call.success` — **the engine execution itself**
+    - `query-builder.run-query.process-result` — materializing the result into the grid
+      The two engine laps were already being measured inside `V1_PureGraphManager` and discarded, because `QueryBuilderResultState` never passed the optional `report` argument to `graphManager.runQuery`; it now does.
+  - `run-query.failure` carries the same `timings`, collected up to the point of failure. Which laps are _missing_ is the signal: no `...server-call.success` means the query never reached the engine, so the failure is pre-flight rather than in-flight.
+  - Because the `StopWatch` now starts at the top of `runQuery` rather than just before the engine call, `timings.total` and the execution duration shown in the results panel both widened to include the prepare phase. The old figure is recoverable as `total - prepare`.
+  - `run-query.launch` and `run-query.cancelled` now carry the shared context envelope, so launches and cancellations can be sliced by entry point and execution context (and a launch -> success funnel is computable per data product). Previously they carried neither.
+  - All four `run-query.*` events (`launch` / `success` / `failure` / `cancelled`) now include a `queryInfo` payload summarizing the current authoring state:
+    - `fetchStructureType` (`TABULAR_DATA_STRUCTURE` / `GRAPH_FETCH`)
+    - `isTypedFetchStructure` (TDS only): `true` when all projection columns are relation-based (typed relation function family), `false` for classic property-driven TDS
+    - `parameterCount`, `constantCount`
+    - `hasFilter`, `filterNodeCount`
+    - `watermarkEnabled`
+    - `milestoningKind` (`get-all` / `all-versions` / `all-versions-in-range` / `none`)
+    - When `fetchStructureType` is TDS: `projectionColumnCount`, `windowColumnCount`, `aggregationColumnCount`, `postFilterNodeCount`, `hasLimit`, `hasDistinct`, `sortColumnCount`, `hasSlice`
+
+  `queryInfo` is exposed on `QueryBuilderState` as `getQueryInfo(): QueryBuilderQueryInfo` and only carries shape/counts — no user values, no element identifiers.
+
+  **Payload shape (breaking for the execution events).** Class/mapping/runtime context moves out of the flat top level and into a nested `state` key. The entry point (`sourceInfo` — `sourceType`, project GAV, `dataSpace` / `dataProduct` / `service` / …) stays spread flat where it is. Previously `getStateInfo()` merged the two, which made "arrived on mapping X" indistinguishable from "currently querying mapping X" and returned nothing at all unless class, mapping _and_ runtime had all resolved — discarding the source info along with them. Affects `run-query.success`, `export-query-data.success`, `generate-plan.success`, `debug-plan.success`, `embedded-data-cube.success` and `mapping-model-coverage-analysis.success`.
+
+  Dashboards slicing by `groupId` / `artifactId` / `versionId` / `dataProduct` / `dataSpace` are unaffected. Dashboards reading `class` / `mapping` / `runtime` must move to `state.class` / `state.mapping` / `state.runtime`.
+
+  `QueryBuilderState` gains `getExecutionContextInfo()` and `safeGetTelemetryContext()` for this; `getStateInfo()` is deprecated for telemetry use but retained.
+
+  `state` also reports `isInlineRuntime: true` for queries running against an inline (engineered) runtime. Those have no element path, so `runtime` is absent — previously that population was indistinguishable from "no runtime selected yet", and in fact emitted no context at all.
+
+  **`run-query.failure` additionally carries `executionTraceId`** when the error is an `ExecutionError` that has one — the single most useful field for following a failed execution into backend traces. The four failure payloads (`run-query`, `generate-plan`, `debug-plan`, `export-query-data`) are now built by one `QueryBuilderResultState.buildFailureTelemetryData()` helper so they share a set of dimensions with each other and with the creator-failure events (`errorMessage`, `errorName`, `httpStatus`).
+
+  Two unrelated bugs fixed in the export path while instrumenting it: a failed download left `exportState` stuck `IN_PROGRESS` because the `.catch` branch never called `fail()`, and a synchronous export failure ended up marked SUCCEEDED because the outer catch called `complete()` after `fail()` (`complete()` defaults to `hasSucceeded = true`).
+
+  `errorMessage` on all four failure events is now capped at 2000 characters, with `errorMessageTruncated: true` present on the payload when it was clipped. The full message continues to go to the log service.
+
+- [#5533](https://github.com/finos/legend-studio/pull/5533) [`54c0783`](https://github.com/finos/legend-studio/commit/54c07832f0f2bed27454dd94c6c2940fcbba1942) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Close the gaps in saved-query lifecycle telemetry: report deletes, and report failures for every action.
+
+  Previously create, update and rename each reported only a success, and **delete reported nothing at all** — despite the `onQueryDeleted` hook already existing and being wired at three call sites to prune the recently-viewed list. Every failure path logged to the log service and stopped, so save-failure rate — arguably the most important number for a save action — was not measurable.
+
+  New events:
+
+  - `query-editor.delete-query.success`
+  - `query-editor.create-query.failure`
+  - `query-editor.update-query.failure`
+  - `query-editor.rename-query.failure`
+  - `query-editor.delete-query.failure`
+
+  Failure payloads carry the same `query` identity as their success counterpart plus `errorMessage` (capped at 2000 characters, with `errorMessageTruncated: true` when clipped), `errorName` and, for network errors, `httpStatus` — matching the query-execution and creator failure events so failure rates are computed on consistent dimensions.
+
+  `create-query.failure` has a **different payload** from the other three: it carries `queryName` and no `query` block at all. The server assigns the id and a failed create never got that far, so there is no query to identify — reporting the chosen name keeps "never persisted" distinguishable from a real value, instead of a placeholder id that would group as one in a warehouse. Update, rename and delete act on a query that already exists, so their `query.id` is required; the split is what stops those three from accidentally omitting it.
+
+  `QueryLoaderState` gains `onQueryRenameFailed` and `onQueryDeleteFailed` hooks mirroring the existing success callbacks, and resolves the deleted query from the loaded list before deleting so `onQueryDeleted` can pass more than a bare id — afterwards the list is refreshed and the entry is gone.
+
+  The emit itself now lives in one shared `buildQueryLoaderLifecycleTelemetryHandlers()` helper rather than being repeated at each host that builds a query loader; the rename emit had been triplicated across `QueryEditorStore`, `EditExistingQuerySetupStore` and `QueryProductionizerSetupStore`.
+
+  These events deliberately carry **no source info**. They fire from the query picker, where a user may rename or delete one query while editing another, so attaching the loaded query builder's source info would silently attribute the row to the wrong query. Create and update, which act on the query currently loaded, are unaffected by this and keep their existing extra telemetry metadata.
+
+  Note `query-editor.rename.query.success` keeps its existing (inconsistently dotted) name — it is already released. The new failure counterpart uses the regular `rename-query.failure` form.
+
+- [#5526](https://github.com/finos/legend-studio/pull/5526) [`c5b2f2c`](https://github.com/finos/legend-studio/commit/c5b2f2c780780f7eec7c6c860004c40dde2a94e8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Prevent milestoning value overwriting and accept only values that are able to be derived from the outer-most scope of the query
+
 ## 4.19.12
 
 ## 4.19.11

@@ -1,5 +1,27 @@
 # @finos/legend-application-marketplace
 
+## 0.4.7
+
+### Patch Changes
+
+- [#5531](https://github.com/finos/legend-studio/pull/5531) [`36ce0a5`](https://github.com/finos/legend-studio/commit/36ce0a505791b5a244d17dafa53dadd034d12114) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add an "AI Readiness Badge" documentation-quality indicator (Bronze/Silver/Gold/Platinum/Diamond) to the legacy dataspace viewer header, with Platinum/Diamond tiers also showing an AI-Ready stamp. Quality is scored server-side via the vendor-data-marketplace `doc-quality/dataspace` endpoint.
+
+- [#5534](https://github.com/finos/legend-studio/pull/5534) [`b027ff7`](https://github.com/finos/legend-studio/commit/b027ff701a8dbc8a4b897c55ca86e88c394759a1) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add an optional `useCookieAuthOnly` flag to `V1_EngineServerClientConfig` (exposed via each application's `engine.useCookieAuthOnly` config field). Some Engine deployments authenticate via a session cookie and their filter chain does not support the CORS preflight triggered by an `Authorization: Bearer` header. When set to `true`, the Engine client omits the Authorization header entirely and relies solely on the session cookie. Defaults to `false`, which preserves the existing Bearer-header behavior for all deployments that don't set this flag.
+
+- [#5535](https://github.com/finos/legend-studio/pull/5535) [`828d071`](https://github.com/finos/legend-studio/commit/828d071147922a7d97a9c70c2580c77765203b96) ([@eradityash](https://github.com/eradityash)) - Marketplace Subscriptions - Grouped Grid and UX Enhancements
+
+  - Subscriptions KPI bar
+  - Search and filter usability
+  - Grouped grid and totals
+  - Cancellation workflow improvements
+  - Styling updates
+
+- [#5528](https://github.com/finos/legend-studio/pull/5528) [`b8090ab`](https://github.com/finos/legend-studio/commit/b8090ab14010368edfa5bac83b8e4466df0e7006) ([@bojja-gs](https://github.com/bojja-gs)) - Fix the MCP server detail page's tool section, which overflowed its card and was unreadable in light mode:
+
+  - Registry tool names are long unbroken identifiers and the MUI accordion summary row neither shrinks nor wraps, so the tool list spilled outside the page grid on laptop widths. The summary content now wraps, the tool name breaks, and the service pattern pill wraps with it.
+  - Tool documentation is rendered by `MarkdownTextViewer`, whose global `.markdown-content` styles resolve against the legend-art semantic tokens whose defaults are the dark palette — leaving near-white body text on the light page. It is re-bound to the marketplace theme tokens so both themes read correctly.
+  - The version chip is dropped from both the detail header and the MCP catalog card, and every viewer pill now routes through one palette hook, since the dark theme repaints `.MuiChip-root` globally at a specificity that discarded the viewer's own colours.
+
 ## 0.4.6
 
 ### Patch Changes
