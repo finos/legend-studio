@@ -851,7 +851,13 @@ export class LegendMarketplaceProductViewerStore {
               new GraphDataWithOrigin(
                 new LegendSDLC(groupId, artifactId, versionId),
               ),
-            queryDataSpace: (executionContextKey: string) => {
+            queryDataSpace: (executionContextKey: string | undefined) => {
+              if (executionContextKey === undefined) {
+                this.marketplaceBaseStore.applicationStore.notificationService.notifyError(
+                  'No execution context present on dataspace',
+                );
+                return;
+              }
               LegendMarketplaceTelemetryHelper.logEvent_ClickQueryDataProduct(
                 this.marketplaceBaseStore.applicationStore.telemetryService,
                 groupId,

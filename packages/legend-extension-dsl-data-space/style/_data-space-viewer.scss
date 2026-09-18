@@ -113,6 +113,7 @@
           height: 2.8rem;
           width: 2.8rem;
           border-right: 0.1rem solid var(--color-border-default);
+          cursor: pointer;
 
           svg {
             color: var(--color-text-muted);
@@ -127,6 +128,18 @@
           line-height: 3.8rem;
           padding: 0 1rem;
           color: var(--color-text-secondary);
+        }
+
+        &__switcher {
+          @include flexVCenter;
+
+          height: 100%;
+          padding: 0;
+          background: transparent;
+          border: none;
+          color: inherit;
+          font: inherit;
+          cursor: pointer;
         }
 
         &__dropdown-icon {
@@ -1708,6 +1721,44 @@
         background: var(--qai-bg-elevated, #2a2d35);
         color: var(--qai-text-primary, #e0e1e6);
       }
+    }
+  }
+}
+
+.data-space__viewer__header__execution-context-selector__menu {
+  padding-top: 0;
+  padding-bottom: 0;
+  background: var(--color-bg-panel-header);
+  border: 0.1rem solid var(--color-light-grey-400);
+  border-top: none;
+
+  .menu {
+    padding: 0;
+    background: transparent;
+    border: none;
+
+    &__item {
+      height: 3.6rem;
+      padding: 0 1.5rem;
+    }
+  }
+}
+
+.data-space__viewer__header__actions-selector__menu {
+  padding-top: 0;
+  padding-bottom: 0;
+  background: var(--color-bg-panel-header);
+  border: 0.1rem solid var(--color-light-grey-400);
+  border-top: none;
+
+  .menu {
+    padding: 0;
+    background: transparent;
+    border: none;
+
+    &__item {
+      height: 3.6rem;
+      padding: 0 1.5rem;
     }
   }
 }
