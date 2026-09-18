@@ -60,6 +60,7 @@ import { action, computed, flow, makeObservable, observable } from 'mobx';
 import { BaseViewerState } from '../BaseViewerState.js';
 import { DataProductLayoutState } from '../BaseLayoutState.js';
 import { DATA_PRODUCT_VIEWER_SECTION } from '../ProductViewerNavigation.js';
+import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 import {
   type GeneratorFn,
   type PlainObject,
@@ -225,28 +226,16 @@ export class DataProductViewerState extends BaseViewerState<
       batchRelationTypePromise: observable,
       setDataProductDataAccessState: action,
       init: flow,
-      isAllApgsCollapsed: computed,
-      toggleAllApgGroupCollapse: action,
       apgSearchText: observable,
       setApgSearchText: action,
       filteredApgStates: computed,
       totalAccessPoints: computed,
     });
 
-    const shouldAutoCollapseAPGs =
-      this.product.accessPointGroups.length > 1 &&
-      this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
-    const shouldAutoCollapseAPs =
-      this.totalAccessPoints > APG_AUTO_COLLAPSE_THRESHOLD;
     this.apgStates = this.product.accessPointGroups.map(
-      (e) =>
-        new DataProductAPGState(
-          e,
-          this,
-          shouldAutoCollapseAPGs,
-          shouldAutoCollapseAPs,
-        ),
+      (e) => new DataProductAPGState(e, this),
     );
+    this.autoCollapseSectionsIfNeeded();
     this.engineServerClient = engineServerClient;
     this.depotServerClient = depotServerClient;
     this.graphManagerState = graphManagerState;
@@ -273,10 +262,31 @@ export class DataProductViewerState extends BaseViewerState<
     this.dataProductDataAccessState = val;
   }
 
+  private autoCollapseSectionsIfNeeded(): void {
+    if (this.totalAccessPoints <= APG_AUTO_COLLAPSE_THRESHOLD) {
+      return;
+    }
+    const collapseApgHeaders = this.product.accessPointGroups.length > 1;
+    const anchorsToCollapse = this.apgStates.flatMap((s) => {
+      const apAnchors = s.accessPointStates.map((ap) => ap.anchor);
+      return collapseApgHeaders ? [s.anchor, ...apAnchors] : apAnchors;
+    });
+    this.layoutState.sectionCollapseState.setSectionsCollapsed(
+      anchorsToCollapse,
+      true,
+    );
+  }
+
   protected getValidSections(): string[] {
     return Object.values(DATA_PRODUCT_VIEWER_SECTION).map((section) =>
       section.toString(),
     );
+  }
+
+  override get documentationUrl(): string | undefined {
+    return this.applicationStore.documentationService.getDocEntry(
+      DSL_DATA_PRODUCT_DOCUMENTATION_KEY.DATA_ACCESS,
+    )?.url;
   }
 
   getModelAccessPointGroup(): V1_ModelAccessPointGroup | undefined {
@@ -297,20 +307,6 @@ export class DataProductViewerState extends BaseViewerState<
         (taggedValue) => taggedValue.tag.profile === vendorProfile,
       ),
     );
-  }
-
-  get isAllApgsCollapsed(): boolean {
-    return (
-      this.filteredApgStates.length > 0 &&
-      this.filteredApgStates.every((groupState) => groupState.isCollapsed)
-    );
-  }
-
-  toggleAllApgGroupCollapse(): void {
-    const shouldCollapse = !this.isAllApgsCollapsed;
-    this.filteredApgStates.forEach((groupState) => {
-      groupState.setIsCollapsed(shouldCollapse);
-    });
   }
 
   setApgSearchText(text: string): void {
@@ -847,6 +843,7 @@ export class DataProductViewerState extends BaseViewerState<
         new DataProductViewerDiagramViewerState(
           this.applicationStore,
           this.getNativeModelAccessDiagrams(),
+          this.layoutState.sectionCollapseState,
         );
     }
 
@@ -875,6 +872,7 @@ export class DataProductViewerState extends BaseViewerState<
             this.getModelAccessPointGroupDiagramsFromArtifact(
               modelAccessPointGroupInfo,
             ),
+            this.layoutState.sectionCollapseState,
           );
       } catch (error) {
         assertErrorThrown(error);
@@ -905,6 +903,7 @@ export class DataProductViewerState extends BaseViewerState<
           new DataProductViewerDiagramViewerState(
             this.applicationStore,
             this.getModelAccessPointDiagrams(),
+            this.layoutState.sectionCollapseState,
           );
       } catch (error) {
         assertErrorThrown(error);

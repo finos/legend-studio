@@ -2393,28 +2393,6 @@
       color: var(--color-hclight-grey-40);
     }
 
-    &__wiki__section__header {
-      color: var(--color-hclight-blue-60);
-      border-bottom-color: var(--color-hclight-blue-60);
-    }
-
-    &__wiki__section__header__anchor {
-      color: var(--color-hclight-blue-60);
-      border-bottom-color: var(--color-hclight-blue-60);
-    }
-
-    &__wiki__section__header__anchor svg {
-      color: var(--color-hclight-grey-30);
-    }
-
-    &__wiki__section__header__anchor:hover svg {
-      color: var(--color-hclight-grey-60);
-    }
-
-    &__wiki__section__header__documentation {
-      color: var(--color-hclight-blue-60);
-    }
-
     &__markdown-text-viewer.markdown-content {
       background: var(--color-hclight-white);
       color: var(--color-hclight-grey-90);
@@ -2865,6 +2843,29 @@
 
     &__quickstart__tds__code-action__action:hover svg {
       color: var(--color-hclight-grey-80);
+    }
+  }
+
+  .viewer__wiki__section__header {
+    color: var(--color-hclight-blue-60);
+    border-bottom-color: var(--color-hclight-blue-60);
+
+    &__subtitle {
+      color: var(--color-hclight-blue-60);
+    }
+
+    &__anchor {
+      svg {
+        color: var(--color-hclight-grey-30);
+      }
+
+      &:hover svg {
+        color: var(--color-hclight-grey-60);
+      }
+    }
+
+    &__documentation {
+      color: var(--color-hclight-blue-60);
     }
   }
 

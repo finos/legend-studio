@@ -15,14 +15,8 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import {
-  AnchorLinkIcon,
-  ExpandMoreIcon,
-  QuestionCircleIcon,
-  clsx,
-} from '@finos/legend-art';
+import { CollapsibleWikiSection } from '@finos/legend-extension-dsl-data-product';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
-import { useApplicationStore } from '@finos/legend-application';
 import { useEffect, useRef } from 'react';
 import {
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
@@ -34,21 +28,10 @@ import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
 export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
     const { dataSpaceViewerState } = props;
-    const applicationStore = useApplicationStore();
-    const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
-    const documentationUrl = analysisResult.supportInfo?.documentationUrl;
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForActivity(
       DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
     );
-    const isCollapsed =
-      dataSpaceViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
-        anchor,
-      );
-    const toggleCollapse = (): void =>
-      dataSpaceViewerState.layoutState.sectionCollapseState.toggleSectionCollapse(
-        anchor,
-      );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -60,56 +43,14 @@ export const DataSpaceDataAccess = observer(
       return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
-    const seeDocumentation = (): void => {
-      if (documentationUrl) {
-        applicationStore.navigationService.navigator.visitAddress(
-          documentationUrl,
-        );
-      }
-    };
-
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
-            <button
-              className="data-space__viewer__wiki__section__header__caret-btn"
-              tabIndex={-1}
-              onClick={toggleCollapse}
-              title={isCollapsed ? 'Expand' : 'Collapse'}
-            >
-              <ExpandMoreIcon
-                className={clsx(
-                  'data-space__viewer__wiki__section__header__caret',
-                  {
-                    'data-space__viewer__wiki__section__header__caret--collapsed':
-                      isCollapsed,
-                  },
-                )}
-              />
-            </button>
-            Data Access
-            <button
-              className="data-space__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => dataSpaceViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-          {Boolean(documentationUrl) && (
-            <button
-              className="data-space__viewer__wiki__section__header__documentation"
-              tabIndex={-1}
-              onClick={seeDocumentation}
-              title="See Documentation"
-            >
-              <QuestionCircleIcon />
-            </button>
-          )}
-        </div>
-        {!isCollapsed && (
-          <div className="data-space__viewer__wiki__section__content">
+      <div ref={sectionRef} className="viewer__wiki__section">
+        <CollapsibleWikiSection
+          viewerState={dataSpaceViewerState}
+          section={DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS}
+          showDocumentation={true}
+        >
+          <div className="viewer__wiki__section__content">
             <div className="data-space__viewer__data-access">
               {dataSpaceViewerState.currentDataAccessState ? (
                 <DataAccessOverview
@@ -120,7 +61,7 @@ export const DataSpaceDataAccess = observer(
               )}
             </div>
           </div>
-        )}
+        </CollapsibleWikiSection>
       </div>
     );
   },

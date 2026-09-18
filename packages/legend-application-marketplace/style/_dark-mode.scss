@@ -3187,17 +3187,6 @@
     }
 
     &__wiki {
-      &__section {
-        &__header {
-          color: var(--color-dark-theme-blue-primary);
-          border-bottom-color: var(--color-dark-theme-blue-primary);
-
-          &__subtitle {
-            color: var(--color-dark-theme-blue-primary);
-          }
-        }
-      }
-
       &__expert-contact {
         &__info {
           &__id {
@@ -3874,29 +3863,31 @@
   }
 
   .data-space__viewer__wiki {
-    &__section {
-      &__header {
-        border-bottom-color: var(--color-dark-theme-blue-primary);
-        color: var(--color-dark-theme-blue-primary);
+    &__placeholder {
+      color: var(--color-dark-theme-text-muted);
+    }
+  }
 
-        &__anchor {
-          svg {
-            color: var(--color-dark-theme-text-muted);
-          }
+  .viewer__wiki__section__header {
+    color: var(--color-dark-theme-blue-primary);
+    border-bottom-color: var(--color-dark-theme-blue-primary);
 
-          &:hover svg {
-            color: var(--color-dark-theme-text-secondary);
-          }
-        }
+    &__subtitle {
+      color: var(--color-dark-theme-blue-primary);
+    }
 
-        &__documentation {
-          color: var(--color-dark-theme-blue-primary);
-        }
+    &__anchor {
+      svg {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &:hover svg {
+        color: var(--color-dark-theme-text-secondary);
       }
     }
 
-    &__placeholder {
-      color: var(--color-dark-theme-text-muted);
+    &__documentation {
+      color: var(--color-dark-theme-blue-primary);
     }
   }
 

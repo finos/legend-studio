@@ -16,7 +16,7 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { AnchorLinkIcon } from '@finos/legend-art';
+import { CollapsibleWikiSection } from '../ProductViewer.js';
 import { Alert, Link } from '@mui/material';
 import type { V1_DataProductArtifact } from '@finos/legend-graph';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
@@ -101,75 +101,70 @@ export const DataProductProducerInfo = observer(
 
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
-        <div className="data-product__viewer__wiki__section__header">
-          <div className="data-product__viewer__wiki__section__header__label">
-            Producer Info
-            {isOwner && (
-              <span
-                className="data-product__viewer__producer-info__owner-badge"
-                title="You are an owner of this data product"
-              >
-                Owner
-              </span>
-            )}
-            <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => {
-                dataProductViewerState.changeZone(anchor, true);
-                dataProductViewerState.copyLinkToClipboard(anchor);
-              }}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        <div className="data-product__viewer__wiki__section__content">
-          <div className="data-product__viewer__producer-info">
-            {!isOwner && (
-              <Alert
-                severity="info"
-                className="data-product__viewer__producer-info__non-owner-notice"
-              >
-                Producer-side actions on ingest definitions are only available
-                to data product owners.
-                {producerQueryingEntitlementsDocUrl && (
-                  <>
-                    {' '}
-                    <Link
-                      href={producerQueryingEntitlementsDocUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Learn more
-                    </Link>
-                  </>
-                )}
-              </Alert>
-            )}
-            <DataProductProducerEnvironmentInfo
-              dataProductViewerState={dataProductViewerState}
-              dataAccessState={dataProductDataAccessState}
-              artifact={dataProductArtifact}
-            />
-            {dataProductViewerState.apgStates.map((apgState) => (
-              <div
-                key={apgState.apg.id}
-                className="data-product__viewer__producer-info__group"
-              >
-                <div className="data-product__viewer__producer-info__group__header">
-                  {apgState.apg.title ?? apgState.apg.id}
+        <CollapsibleWikiSection
+          viewerState={dataProductViewerState}
+          section={DATA_PRODUCT_VIEWER_SECTION.PRODUCER_INFO}
+          overrideTitleFragment={
+            <>
+              Producer Info
+              {isOwner && (
+                <span
+                  className="data-product__viewer__producer-info__owner-badge"
+                  title="You are an owner of this data product"
+                >
+                  Owner
+                </span>
+              )}
+            </>
+          }
+        >
+          <div className="data-product__viewer__wiki__section__content">
+            <div className="data-product__viewer__producer-info">
+              {!isOwner && (
+                <Alert
+                  severity="info"
+                  className="data-product__viewer__producer-info__non-owner-notice"
+                >
+                  Producer-side actions on ingest definitions are only available
+                  to data product owners.
+                  {producerQueryingEntitlementsDocUrl && (
+                    <>
+                      {' '}
+                      <Link
+                        href={producerQueryingEntitlementsDocUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Learn more
+                      </Link>
+                    </>
+                  )}
+                </Alert>
+              )}
+              <DataProductProducerEnvironmentInfo
+                dataProductViewerState={dataProductViewerState}
+                dataAccessState={dataProductDataAccessState}
+                artifact={dataProductArtifact}
+              />
+              {dataProductViewerState.apgStates.map((apgState) => (
+                <div
+                  key={apgState.apg.id}
+                  className="data-product__viewer__producer-info__group"
+                >
+                  <div className="data-product__viewer__producer-info__group__header">
+                    {apgState.apg.title ?? apgState.apg.id}
+                  </div>
+                  <ApgIngestionDataSetsScreen
+                    apgState={apgState}
+                    artifact={dataProductArtifact}
+                    dataAccessState={dataProductDataAccessState}
+                    isOwner={isOwner}
+                  />
                 </div>
-                <ApgIngestionDataSetsScreen
-                  apgState={apgState}
-                  artifact={dataProductArtifact}
-                  dataAccessState={dataProductDataAccessState}
-                  isOwner={isOwner}
-                />
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        </CollapsibleWikiSection>
       </div>
     );
   },

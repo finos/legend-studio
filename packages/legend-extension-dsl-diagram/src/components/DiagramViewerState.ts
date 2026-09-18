@@ -29,8 +29,8 @@ import type {
 import type { Class } from '@finos/legend-graph';
 
 export type DiagramViewerCollapseState = {
-  isSectionCollapsed(key: string): boolean;
-  toggleSectionCollapse(key: string): void;
+  isSectionCollapsed(anchors: string | string[]): boolean;
+  toggleSectionCollapse(anchors: string | string[]): void;
 };
 
 export abstract class DiagramViewerState implements CommandRegistrar {
@@ -51,9 +51,9 @@ export abstract class DiagramViewerState implements CommandRegistrar {
   constructor(
     applicationStore: GenericLegendApplicationStore,
     diagrams: DiagramAnalysisResult[],
+    collapseState?: DiagramViewerCollapseState | undefined,
     options?: {
       queryClass?: ((_class: Class) => void) | undefined;
-      collapseState?: DiagramViewerCollapseState;
     },
   ) {
     makeObservable(this, {
@@ -75,7 +75,7 @@ export abstract class DiagramViewerState implements CommandRegistrar {
     this.applicationStore = applicationStore;
     this.diagrams = diagrams;
     this.queryClass = options?.queryClass;
-    this.collapseState = options?.collapseState;
+    this.collapseState = collapseState;
     this.currentDiagram = diagrams[0];
   }
 

@@ -21,7 +21,6 @@ import {
   CubesLoadingIndicatorIcon,
   InfoCircleOutlineIcon,
   MarkdownTextViewer,
-  QuestionCircleIcon,
   CustomSelectorInput,
   DataCubeIcon,
   SQLIcon,
@@ -127,7 +126,6 @@ import {
   type IngestDeploymentServerConfigOption,
 } from '@finos/legend-server-lakehouse';
 import { SQLPlaygroundEditorResultPanel } from '@finos/legend-query-builder';
-import { DSL_DATA_PRODUCT_DOCUMENTATION_KEY } from '../../__lib__/DSL_DataProduct_Documentation.js';
 import { EmbeddedLegendSQLPlaygroundPanelState } from '../../stores/DataProduct/EmbeddedLegendSQLPlaygroundPanelState.js';
 import {
   DATAPRODUCT_TYPE,
@@ -141,6 +139,10 @@ import {
   buildIngestDefinitionUrnFromDataset,
 } from '../../utils/DataProductIngestUtils.js';
 import { UserAvatarGroupWithPopover } from './UserAvatarGroupWithPopover.js';
+import {
+  CollapsibleChevron,
+  CollapsibleWikiSection,
+} from '../ProductViewer.js';
 
 const WORK_IN_PROGRESS = 'Work in progress';
 const NOT_SUPPORTED = 'Not Supported';
@@ -1926,7 +1928,7 @@ export const DataProductAccessPointGroupViewer = observer(
     const [isMissingIngestsCollapsed, setIsMissingIngestsCollapsed] =
       useState(false);
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection(`apg-${apgState.apg.id}`);
+    const anchor = apgState.anchor;
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -1992,20 +1994,10 @@ export const DataProductAccessPointGroupViewer = observer(
             <div className="data-product__viewer__access-group__item__header__type">
               LAKEHOUSE
             </div>
-            <button
-              onClick={() => apgState.setIsCollapsed(!apgState.isCollapsed)}
-              title={apgState.isCollapsed ? 'Expand' : 'Collapse'}
-            >
-              <ExpandMoreIcon
-                className={clsx(
-                  'data-product__viewer__access-group__item__header__caret',
-                  {
-                    'data-product__viewer__access-group__item__header__caret--collapsed':
-                      apgState.isCollapsed,
-                  },
-                )}
-              />
-            </button>
+            <CollapsibleChevron
+              viewerState={apgState.dataProductViewerState}
+              anchor={apgState.anchor}
+            />
             <button
               className="data-product__viewer__access-group__item__header__anchor"
               tabIndex={-1}
@@ -2122,10 +2114,6 @@ export const DataProducteDataAccess = observer(
   }) => {
     const { dataProductViewerState, dataProductDataAccessState } = props;
 
-    const documentationUrl =
-      dataProductViewerState.applicationStore.documentationService.getDocEntry(
-        DSL_DATA_PRODUCT_DOCUMENTATION_KEY.DATA_ACCESS,
-      )?.url;
     const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(
       DATA_PRODUCT_VIEWER_SECTION.DATA_ACCESS,
@@ -2141,103 +2129,58 @@ export const DataProducteDataAccess = observer(
         dataProductViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataProductViewerState, anchor]);
 
-    const seeDocumentation = (): void => {
-      if (documentationUrl) {
-        dataProductViewerState.applicationStore.navigationService.navigator.visitAddress(
-          documentationUrl,
-        );
-      }
-    };
-
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
-        <div className="data-product__viewer__wiki__section__header">
-          <div className="data-product__viewer__wiki__section__header__label">
-            Data Access
-            <button
-              onClick={() => dataProductViewerState.toggleAllApgGroupCollapse()}
-              title={
-                dataProductViewerState.isAllApgsCollapsed
-                  ? 'Expand All'
-                  : 'Collapse All'
-              }
-            >
-              <ExpandMoreIcon
-                className={clsx(
-                  'data-product__viewer__access-group__item__header__caret',
-                  {
-                    'data-product__viewer__access-group__item__header__caret--collapsed':
-                      dataProductViewerState.isAllApgsCollapsed,
+        <CollapsibleWikiSection
+          viewerState={dataProductViewerState}
+          section={DATA_PRODUCT_VIEWER_SECTION.DATA_ACCESS}
+          showDocumentation={true}
+        >
+          {dataProductViewerState.totalAccessPoints >
+            APG_AUTO_COLLAPSE_THRESHOLD && (
+            <div className="data-product__viewer__data-access__search">
+              <TextField
+                label="Filter"
+                size="small"
+                placeholder="Filter access point groups/access points..."
+                value={dataProductViewerState.apgSearchText}
+                onChange={(e) =>
+                  dataProductViewerState.setApgSearchText(e.target.value)
+                }
+                fullWidth={true}
+                slotProps={{
+                  input: {
+                    endAdornment: dataProductViewerState.apgSearchText ? (
+                      <InputAdornment position="end">
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            dataProductViewerState.setApgSearchText('')
+                          }
+                          title="Clear filter"
+                          edge="end"
+                        >
+                          <TimesIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ) : null,
                   },
-                )}
+                }}
               />
-            </button>
-            <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => {
-                dataProductViewerState.changeZone(anchor, true);
-                dataProductViewerState.copyLinkToClipboard(anchor);
-              }}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-          {Boolean(documentationUrl) && (
-            <button
-              className="data-product__viewer__wiki__section__header__documentation"
-              tabIndex={-1}
-              onClick={seeDocumentation}
-              title="See Documentation"
-            >
-              <QuestionCircleIcon />
-            </button>
+            </div>
           )}
-        </div>
-        {dataProductViewerState.totalAccessPoints >
-          APG_AUTO_COLLAPSE_THRESHOLD && (
-          <div className="data-product__viewer__data-access__search">
-            <TextField
-              label="Filter"
-              size="small"
-              placeholder="Filter access point groups/access points..."
-              value={dataProductViewerState.apgSearchText}
-              onChange={(e) =>
-                dataProductViewerState.setApgSearchText(e.target.value)
-              }
-              fullWidth={true}
-              slotProps={{
-                input: {
-                  endAdornment: dataProductViewerState.apgSearchText ? (
-                    <InputAdornment position="end">
-                      <IconButton
-                        size="small"
-                        onClick={() =>
-                          dataProductViewerState.setApgSearchText('')
-                        }
-                        title="Clear filter"
-                        edge="end"
-                      >
-                        <TimesIcon />
-                      </IconButton>
-                    </InputAdornment>
-                  ) : null,
-                },
-              }}
-            />
+          <div className="data-product__viewer__wiki__section__content">
+            <div className="data-product__viewer__data-access">
+              {dataProductViewerState.filteredApgStates.map((groupState) => (
+                <DataProductAccessPointGroupViewer
+                  key={groupState.id}
+                  apgState={groupState}
+                  dataAccessState={dataProductDataAccessState}
+                />
+              ))}
+            </div>
           </div>
-        )}
-        <div className="data-product__viewer__wiki__section__content">
-          <div className="data-product__viewer__data-access">
-            {dataProductViewerState.filteredApgStates.map((groupState) => (
-              <DataProductAccessPointGroupViewer
-                key={groupState.id}
-                apgState={groupState}
-                dataAccessState={dataProductDataAccessState}
-              />
-            ))}
-          </div>
-        </div>
+        </CollapsibleWikiSection>
       </div>
     );
   },

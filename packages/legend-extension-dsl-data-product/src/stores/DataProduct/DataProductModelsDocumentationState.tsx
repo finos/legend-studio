@@ -44,6 +44,9 @@ export class DataProductViewerModelsDocumentationState
       DataProductViewerModelsDocumentationState.formElementDocs(
         dataProductViewerState,
       ),
+      {
+        collapseState: dataProductViewerState.layoutState.sectionCollapseState,
+      },
     );
     this.dataProductViewerState = dataProductViewerState;
   }

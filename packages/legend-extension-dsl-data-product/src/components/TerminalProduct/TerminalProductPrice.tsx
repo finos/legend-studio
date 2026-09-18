@@ -46,7 +46,7 @@ export const TerminalProductPrice = observer(
 
     return (
       <button
-        className="data-space__viewer__wiki__section__pricing"
+        className="viewer__wiki__section__pricing"
         onClick={handlePricingToggle}
       >
         ${getDisplayPrice()} {isAnnual ? 'ANNUALLY' : 'MONTHLY'} PER LICENSE

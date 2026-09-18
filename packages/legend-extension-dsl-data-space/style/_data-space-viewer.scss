@@ -547,69 +547,6 @@
   &__section {
     flex-direction: column;
 
-    &__header {
-      @include flexVCenter;
-
-      justify-content: space-between;
-      height: 3rem;
-      border-bottom: 0.2rem solid var(--color-blue-100);
-      margin-bottom: 2rem;
-      margin-top: 4rem;
-      user-select: none;
-      color: var(--color-blue-100);
-
-      &__label {
-        @include ellipsisTextOverflow;
-        @include flexVCenter;
-
-        font-size: 2.4rem;
-        text-transform: uppercase;
-        font-weight: 500;
-      }
-
-      &__anchor {
-        @include flexVCenter;
-
-        display: none;
-        margin-left: 0.5rem;
-        cursor: pointer;
-
-        svg {
-          color: var(--color-text-muted);
-        }
-
-        &:hover svg {
-          color: var(--color-text-muted);
-        }
-      }
-
-      &:hover &__anchor {
-        display: inline-flex;
-      }
-
-      &__documentation {
-        color: var(--color-blue-100);
-      }
-
-      &__caret-btn {
-        @include flexVCenter;
-
-        margin-right: 0.5rem;
-        cursor: pointer;
-      }
-
-      &__caret {
-        color: var(--color-blue-100);
-        font-size: 2rem;
-        transition: transform 0.2s ease;
-        transform: rotate(0deg);
-
-        &--collapsed {
-          transform: rotate(-90deg);
-        }
-      }
-    }
-
     &__content {
       margin-bottom: 3rem;
     }
@@ -1078,24 +1015,6 @@
 
     height: 3rem;
     margin-bottom: 1rem;
-  }
-
-  &__item__header__caret-btn {
-    @include flexVCenter;
-
-    margin-right: 0.5rem;
-    cursor: pointer;
-  }
-
-  &__item__header__caret {
-    color: var(--color-text-muted);
-    font-size: 2rem;
-    transition: transform 0.2s ease;
-    transform: rotate(0deg);
-
-    &--collapsed {
-      transform: rotate(-90deg);
-    }
   }
 
   &__item__header__title {

@@ -30,9 +30,9 @@ export class DataSpaceViewerDiagramViewerState
     super(
       dataSpaceViewerState.applicationStore,
       dataSpaceViewerState.dataSpaceAnalysisResult.diagrams,
+      dataSpaceViewerState.layoutState.sectionCollapseState,
       {
         queryClass: dataSpaceViewerState.queryClass,
-        collapseState: dataSpaceViewerState.layoutState.sectionCollapseState,
       },
     );
     this.dataSpaceViewerState = dataSpaceViewerState;
