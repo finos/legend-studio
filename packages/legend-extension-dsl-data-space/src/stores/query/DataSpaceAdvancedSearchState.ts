@@ -211,14 +211,21 @@ export class DataSpaceAdvancedSearchState {
             new GraphDataWithOrigin(
               new LegendSDLC(groupId, artifactId, versionId),
             ),
-          queryDataSpace: (executionContextKey: string) =>
+          queryDataSpace: (executionContextKey: string | undefined) => {
+            if (executionContextKey === undefined) {
+              this.applicationStore.notificationService.notifyError(
+                'No execution context present on dataspace',
+              );
+              return;
+            }
             generateDataSpaceQueryCreatorRoute(
               groupId,
               artifactId,
               versionId,
               analysisResult.path,
               executionContextKey,
-            ),
+            );
+          },
           viewProject: (path: string | undefined) =>
             this.viewProject(groupId, artifactId, versionId, path),
           viewSDLCProject: (path: string | undefined) =>
