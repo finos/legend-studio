@@ -1,5 +1,19 @@
 # @finos/legend-server-marketplace
 
+## 0.2.11
+
+### Patch Changes
+
+- [#5531](https://github.com/finos/legend-studio/pull/5531) [`36ce0a5`](https://github.com/finos/legend-studio/commit/36ce0a505791b5a244d17dafa53dadd034d12114) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add an "AI Readiness Badge" documentation-quality indicator (Bronze/Silver/Gold/Platinum/Diamond) to the legacy dataspace viewer header, with Platinum/Diamond tiers also showing an AI-Ready stamp. Quality is scored server-side via the vendor-data-marketplace `doc-quality/dataspace` endpoint.
+
+- [#5535](https://github.com/finos/legend-studio/pull/5535) [`828d071`](https://github.com/finos/legend-studio/commit/828d071147922a7d97a9c70c2580c77765203b96) ([@eradityash](https://github.com/eradityash)) - Marketplace Subscriptions - Grouped Grid and UX Enhancements
+
+  - Subscriptions KPI bar
+  - Search and filter usability
+  - Grouped grid and totals
+  - Cancellation workflow improvements
+  - Styling updates
+
 ## 0.2.10
 
 ### Patch Changes

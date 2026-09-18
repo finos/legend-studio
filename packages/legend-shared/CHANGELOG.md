@@ -1,5 +1,17 @@
 # @finos/legend-shared
 
+## 11.0.29
+
+### Patch Changes
+
+- [#5531](https://github.com/finos/legend-studio/pull/5531) [`36ce0a5`](https://github.com/finos/legend-studio/commit/36ce0a505791b5a244d17dafa53dadd034d12114) ([@nguyenqchi](https://github.com/nguyenqchi)) - Add an "AI Readiness Badge" documentation-quality indicator (Bronze/Silver/Gold/Platinum/Diamond) to the legacy dataspace viewer header, with Platinum/Diamond tiers also showing an AI-Ready stamp. Quality is scored server-side via the vendor-data-marketplace `doc-quality/dataspace` endpoint.
+
+- [#5533](https://github.com/finos/legend-studio/pull/5533) [`54c0783`](https://github.com/finos/legend-studio/commit/54c07832f0f2bed27454dd94c6c2940fcbba1942) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add `truncateMessageForTelemetry(message, limit?)` and `DEFAULT_TELEMETRY_MESSAGE_LENGTH_LIMIT` (2000) to `StringUtil`.
+
+  Caps a free-text message destined for a telemetry payload and reports whether it was clipped. Backend error messages are unbounded — they can embed generated SQL, stack traces or compilation output — and telemetry pipelines typically drop oversized events whole, so the biggest and most interesting failures are exactly the ones that silently disappear from a dashboard. The `truncated` flag is returned rather than inferred so callers can report it alongside the text; a silently clipped message makes substring searches produce false negatives with no way for an analyst to tell.
+
+  This is a size control, not a privacy control — it does not remove sensitive values that appear in a message's first characters.
+
 ## 11.0.28
 
 ### Patch Changes

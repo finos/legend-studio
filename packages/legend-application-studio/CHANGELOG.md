@@ -1,5 +1,13 @@
 # @finos/legend-application-studio
 
+## 28.21.43
+
+### Patch Changes
+
+- [#5534](https://github.com/finos/legend-studio/pull/5534) [`b027ff7`](https://github.com/finos/legend-studio/commit/b027ff701a8dbc8a4b897c55ca86e88c394759a1) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add an optional `useCookieAuthOnly` flag to `V1_EngineServerClientConfig` (exposed via each application's `engine.useCookieAuthOnly` config field). Some Engine deployments authenticate via a session cookie and their filter chain does not support the CORS preflight triggered by an `Authorization: Bearer` header. When set to `true`, the Engine client omits the Authorization header entirely and relies solely on the session cookie. Defaults to `false`, which preserves the existing Bearer-header behavior for all deployments that don't set this flag.
+
+- [#5532](https://github.com/finos/legend-studio/pull/5532) [`44f05e6`](https://github.com/finos/legend-studio/commit/44f05e62bcb456cd36efe4b7e7599444707155a4) ([@yash0024](https://github.com/yash0024)) - Extract a shared sample values editor for data product access points and data space executables
+
 ## 28.21.42
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-service
 
+## 1.0.512
+
+### Patch Changes
+
+- [#5525](https://github.com/finos/legend-studio/pull/5525) [`bd8848b`](https://github.com/finos/legend-studio/commit/bd8848b11cbafc853f068f5ca8509ec4660a6c21) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Disable unsupported export actions for Data Product and Ingest queries, and allow export actions to provide context-specific disabled messages in the query results menu.
+
 ## 1.0.511
 
 ## 1.0.510

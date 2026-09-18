@@ -1,5 +1,7 @@
 # @finos/legend-application
 
+## 16.0.124
+
 ## 16.0.123
 
 ### Patch Changes

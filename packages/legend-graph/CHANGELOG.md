@@ -1,5 +1,19 @@
 # @finos/legend-graph
 
+## 32.7.0
+
+### Minor Changes
+
+- [#5534](https://github.com/finos/legend-studio/pull/5534) [`b027ff7`](https://github.com/finos/legend-studio/commit/b027ff701a8dbc8a4b897c55ca86e88c394759a1) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add an optional `useCookieAuthOnly` flag to `V1_EngineServerClientConfig` (exposed via each application's `engine.useCookieAuthOnly` config field). Some Engine deployments authenticate via a session cookie and their filter chain does not support the CORS preflight triggered by an `Authorization: Bearer` header. When set to `true`, the Engine client omits the Authorization header entirely and relies solely on the session cookie. Defaults to `false`, which preserves the existing Bearer-header behavior for all deployments that don't set this flag.
+
+### Patch Changes
+
+- [#5530](https://github.com/finos/legend-studio/pull/5530) [`d4f147b`](https://github.com/finos/legend-studio/commit/d4f147b75d854215a8d220d086004321c66ad385) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Show a dedicated access view when a query against a data product fails with an entitlement error, naming the data product and access point group and linking out to Marketplace to request access, instead of the generic "Check Entitlements" flow which cannot report on data product entitlements. Warehouse errors are classified separately: for data products they show the warehouse the query ran against and link to the `snowflake.active-warehouse-issue.faq` documentation entry when one is registered, otherwise the default error view is used.
+
+- [#5529](https://github.com/finos/legend-studio/pull/5529) [`89b38b3`](https://github.com/finos/legend-studio/commit/89b38b30164220434f38ec57dd3e200ec9cb24cf) ([@yash0024](https://github.com/yash0024)) - Unset mapping and set selected runtime for DataProduct Access Point query
+
+- [#5530](https://github.com/finos/legend-studio/pull/5530) [`d4f147b`](https://github.com/finos/legend-studio/commit/d4f147b75d854215a8d220d086004321c66ad385) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Share the detection of entitlement/authorization execution errors between Legend Query and Legend DataCube via `isExecutionPermissionDeniedError`, fix the check that prevented capitalized error patterns from ever matching, and recognize more Snowflake privilege and warehouse access errors.
+
 ## 32.6.34
 
 ### Patch Changes
