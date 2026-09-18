@@ -132,6 +132,12 @@ import {
   GraphEditGrammarModeState,
 } from '../../../stores/editor/GraphEditGrammarModeState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  TEXT_MODE_ACTION,
+  TEXT_MODE_ACTION_STATUS,
+  TEXT_MODE_TOGGLE_SOURCE,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import { FileSystem_FileViewer } from './ArtifactGenerationViewer.js';
 import type { FileSystem_File } from '../../../stores/editor/utils/FileSystemTreeUtils.js';
 
@@ -141,7 +147,9 @@ export const GrammarTextEditorHeaderTabContextMenu = observer(
       const editorStore = useEditorStore();
       const applicationStore = useApplicationStore();
       const leaveTextMode = applicationStore.guardUnhandledError(() =>
-        flowResult(editorStore.toggleTextMode()),
+        flowResult(
+          editorStore.toggleTextMode(TEXT_MODE_TOGGLE_SOURCE.CONTEXT_MENU),
+        ),
       );
 
       return (
@@ -766,6 +774,14 @@ const goToElement = (
       LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__LAUNCH,
     ),
   );
+  LegendStudioTelemetryHelper.logEvent_TextModeAction(
+    grammarModeState.editorStore.applicationStore.telemetryService,
+    grammarModeState.editorStore.editorMode.getSourceInfo(),
+    {
+      action: TEXT_MODE_ACTION.GO_TO_DEFINITION,
+      status: TEXT_MODE_ACTION_STATUS.LAUNCH,
+    },
+  );
   const elementPath = resolveElementPathFromCurrentPosition(
     _editor,
     grammarModeState,
@@ -882,6 +898,7 @@ export const GrammarTextEditor = observer(() => {
       });
       _editor.onDidChangeModelContent(() => {
         grammarTextEditorState.setGraphGrammarText(getCodeEditorValue(_editor));
+        grammarModeState.notifyGrammarTextEdited();
         clearMarkers();
         // NOTE: we can technically can reset the current element label regex string here
         // but if we do that on first load, the cursor will not jump to the current element

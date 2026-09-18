@@ -394,10 +394,10 @@ test(
     await waitFor(() => {
       expect(logEventSpy).toHaveBeenCalledWith(
         LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__FAILURE,
-        {
+        expect.objectContaining({
           servicePath: 'model::RelationalService',
           errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE,
-        },
+        }),
       );
     });
   },

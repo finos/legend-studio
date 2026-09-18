@@ -1345,6 +1345,7 @@ const AccessPointGroupEditor = observer(
       LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestLaunched(
         editorStore.applicationStore.telemetryService,
         productEditorState.product.path,
+        editorStore.editorMode.getSourceInfo(),
       );
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
@@ -1367,6 +1368,7 @@ const AccessPointGroupEditor = observer(
           editorStore.applicationStore.telemetryService,
           productEditorState.product.path,
           error.message,
+          editorStore.editorMode.getSourceInfo(),
         );
         if (
           error instanceof NetworkClientError &&
@@ -1395,6 +1397,7 @@ const AccessPointGroupEditor = observer(
       LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestApplied(
         editorStore.applicationStore.telemetryService,
         productEditorState.product.path,
+        editorStore.editorMode.getSourceInfo(),
       );
       // Find matching group in the response
       const gIdx =
@@ -1437,6 +1440,7 @@ const AccessPointGroupEditor = observer(
       LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestDiscarded(
         editorStore.applicationStore.telemetryService,
         productEditorState.product.path,
+        editorStore.editorMode.getSourceInfo(),
       );
       setAISuggestion(undefined);
     };

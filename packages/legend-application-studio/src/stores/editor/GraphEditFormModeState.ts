@@ -416,6 +416,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
     );
     LegendStudioTelemetryHelper.logEvent_GraphCompilationLaunched(
       this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
     );
 
     const currentGraphHash = this.getCurrentGraphHash();
@@ -472,6 +473,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
       LegendStudioTelemetryHelper.logEvent_GraphCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
+        this.editorStore.editorMode.getSourceInfo(),
       );
 
       this.editorStore.graphState.setMostRecentCompilationOutcome(

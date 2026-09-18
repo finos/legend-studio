@@ -64,6 +64,10 @@ export class GraphEditLazyGrammarModeState extends GraphEditGrammarModeState {
     return 'Strict Text Mode (BETA)';
   }
 
+  protected override get isStrictTextMode(): boolean {
+    return true;
+  }
+
   override *onLeave(): GeneratorFn<void> {
     this.editorStore.applicationStore.alertService.setBlockingAlert(undefined);
     this.editorStore.applicationStore.alertService.setActionAlertInfo({

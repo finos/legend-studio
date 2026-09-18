@@ -433,6 +433,7 @@ export class ProjectViewerStore {
       LegendStudioTelemetryHelper.logEvent_GraphInitializationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         graphBuilderReportData,
+        this.editorStore.editorMode.getSourceInfo(),
       );
 
       this.editorStore.applicationStore.logService.info(

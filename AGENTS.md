@@ -105,7 +105,7 @@ The flat [packages/](packages) directory is large. Quick legend for picking the 
 - `legend-extension-dsl-*` / `legend-extension-store-*` — pluggable DSL / store extensions. See [docs/technical/extension-authoring.md](docs/technical/extension-authoring.md) and [docs/technical/instructions-add-plugin.md](docs/technical/instructions-add-plugin.md).
 - `legend-server-*` — typed clients for backend services (SDLC, Depot, Lakehouse, Marketplace, Showcase).
 - `legend-graph` — PURE metamodel + protocol layer (core).
-- `legend-query-builder`, `legend-data-cube`, `legend-code-editor`, `legend-lego`, `legend-art` — shared UI / feature libraries. For query/query-builder telemetry payload shapes and how to add an event, see [docs/technical/query-telemetry.md](docs/technical/query-telemetry.md).
+- `legend-query-builder`, `legend-data-cube`, `legend-code-editor`, `legend-lego`, `legend-art` — shared UI / feature libraries. For query/query-builder telemetry payload shapes and how to add an event, see [docs/technical/query-telemetry.md](docs/technical/query-telemetry.md). For Legend Studio telemetry payloads (source-info envelope, text-mode session events, SDLC push/pull, LegendAI suggest, deploy, etc.) and how to add one, see [docs/technical/studio-telemetry.md](docs/technical/studio-telemetry.md).
 - `legend-shared`, `legend-storage`, `legend-dev-utils` — cross-cutting utilities.
 - `babel-preset`, `eslint-plugin`, `stylelint-config` — internal tooling configs.
 

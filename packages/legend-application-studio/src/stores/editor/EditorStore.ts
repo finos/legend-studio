@@ -93,6 +93,12 @@ import {
   DEFAULT_TAB_SIZE,
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  TEXT_MODE_ENTER_TRIGGER,
+  TEXT_MODE_TOGGLE_DIRECTION,
+  TEXT_MODE_TOGGLE_SOURCE,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { LegendStudioUserDataHelper } from '../../__lib__/LegendStudioUserDataHelper.js';
 import type { EditorMode } from './EditorMode.js';
 import { StandardEditorMode } from './StandardEditorMode.js';
@@ -491,9 +497,9 @@ export class EditorStore implements CommandRegistrar {
             this.conflictResolutionState.hasResolvedAllConflicts),
       ),
       action: () => {
-        flowResult(this.toggleTextMode()).catch(
-          this.applicationStore.alertUnhandledError,
-        );
+        flowResult(
+          this.toggleTextMode(TEXT_MODE_TOGGLE_SOURCE.KEYBOARD_SHORTCUT),
+        ).catch(this.applicationStore.alertUnhandledError);
       },
     });
     this.applicationStore.commandService.registerCommand({
@@ -1021,6 +1027,7 @@ export class EditorStore implements CommandRegistrar {
       yield flowResult(
         this.graphEditorMode.initialize({
           useStoredEntities: true,
+          trigger: TEXT_MODE_ENTER_TRIGGER.INITIAL_LAZY,
         }),
       );
     } catch (error) {
@@ -1217,7 +1224,9 @@ export class EditorStore implements CommandRegistrar {
     this.activePanelMode = val;
   }
 
-  *toggleTextMode(): GeneratorFn<void> {
+  *toggleTextMode(
+    source: TEXT_MODE_TOGGLE_SOURCE = TEXT_MODE_TOGGLE_SOURCE.BUTTON,
+  ): GeneratorFn<void> {
     if (this.graphState.checkIfApplicationUpdateOperationIsRunning()) {
       return;
     }
@@ -1226,12 +1235,22 @@ export class EditorStore implements CommandRegistrar {
       return;
     }
     if (this.graphEditorMode instanceof GraphEditFormModeState) {
+      LegendStudioTelemetryHelper.logEvent_TextModeToggleShortcutInvoked(
+        this.applicationStore.telemetryService,
+        this.editorMode.getSourceInfo(),
+        { source, direction: TEXT_MODE_TOGGLE_DIRECTION.TO_TEXT },
+      );
       this.applicationStore.alertService.setBlockingAlert({
         message: 'Switching to text mode...',
         showLoading: true,
       });
       yield flowResult(this.switchModes(GRAPH_EDITOR_MODE.GRAMMAR_TEXT));
     } else if (this.graphEditorMode instanceof GraphEditGrammarModeState) {
+      LegendStudioTelemetryHelper.logEvent_TextModeToggleShortcutInvoked(
+        this.applicationStore.telemetryService,
+        this.editorMode.getSourceInfo(),
+        { source, direction: TEXT_MODE_TOGGLE_DIRECTION.TO_FORM },
+      );
       yield flowResult(this.switchModes(GRAPH_EDITOR_MODE.FORM));
     } else {
       throw new UnsupportedOperationError(

@@ -56,6 +56,7 @@ export abstract class GraphEditorMode {
     isCompilationFailure?: boolean;
     isGraphBuildFailure?: boolean;
     useStoredEntities?: boolean;
+    trigger?: string;
   }): GeneratorFn<void>;
   abstract addElement(
     element: PackageableElement,

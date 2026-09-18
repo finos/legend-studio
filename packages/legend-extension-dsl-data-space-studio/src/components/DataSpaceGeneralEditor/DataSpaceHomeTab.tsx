@@ -85,6 +85,7 @@ export const DataSpaceHomeTab = observer(() => {
     LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestLaunched(
       editorStore.applicationStore.telemetryService,
       dataSpace.path,
+      editorStore.editorMode.getSourceInfo(),
     );
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
@@ -104,6 +105,7 @@ export const DataSpaceHomeTab = observer(() => {
         editorStore.applicationStore.telemetryService,
         dataSpace.path,
         error.message,
+        editorStore.editorMode.getSourceInfo(),
       );
       if (
         error instanceof NetworkClientError &&
@@ -130,6 +132,7 @@ export const DataSpaceHomeTab = observer(() => {
     LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestApplied(
       editorStore.applicationStore.telemetryService,
       dataSpace.path,
+      editorStore.editorMode.getSourceInfo(),
     );
     dataSpace_setDescription(dataSpace, aiDocSuggestion);
     setAIDocSuggestion(undefined);
@@ -138,6 +141,7 @@ export const DataSpaceHomeTab = observer(() => {
     LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestDiscarded(
       editorStore.applicationStore.telemetryService,
       dataSpace.path,
+      editorStore.editorMode.getSourceInfo(),
     );
     setAIDocSuggestion(undefined);
   };

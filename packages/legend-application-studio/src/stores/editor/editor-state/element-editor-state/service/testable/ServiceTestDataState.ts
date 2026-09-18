@@ -426,6 +426,7 @@ export class ConnectionTestDataState {
       // move this out
       LegendStudioTelemetryHelper.logEvent_TestDataGenerationLaunched(
         this.testDataState.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
       );
       const report = reportGraphAnalytics(
         this.editorStore.graphManagerState.graph,
@@ -457,6 +458,7 @@ export class ConnectionTestDataState {
       LegendStudioTelemetryHelper.logEvent_TestDataGenerationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
+        this.editorStore.editorMode.getSourceInfo(),
       );
       service_setConnectionTestDataEmbeddedData(
         this.connectionData,
@@ -541,6 +543,7 @@ export class ConnectionTestDataState {
       // move this out
       LegendStudioTelemetryHelper.logEvent_TestDataGenerationLaunched(
         this.testDataState.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
       );
       const report = reportGraphAnalytics(
         this.editorStore.graphManagerState.graph,
@@ -593,6 +596,7 @@ export class ConnectionTestDataState {
       LegendStudioTelemetryHelper.logEvent_TestDataGenerationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
+        this.editorStore.editorMode.getSourceInfo(),
       );
       service_setConnectionTestDataEmbeddedData(
         this.connectionData,

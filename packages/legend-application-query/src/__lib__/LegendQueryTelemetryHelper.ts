@@ -120,6 +120,21 @@ export type QueryCreateFailure_TelemetryData = {
 export type QueryLifecycleFailure_TelemetryData = PartialQuery_TelemetryData &
   TelemetryErrorFields;
 
+/**
+ * Payload for a failure during the existing-query load flow (graph build,
+ * query state init, viewer load).
+ *
+ * The query being loaded is identified by its route id — the full identity
+ * (`name`, `groupId`, ...) is only known once the query resolves, which by
+ * definition may not have happened when these failures fire. `queryId` is
+ * therefore the only guaranteed field; anything else that happens to be
+ * resolved is merged in via {@link PartialQuery_TelemetryData}.
+ */
+export type QueryLoadFailure_TelemetryData = {
+  queryId: string;
+} & Partial<PartialQuery_TelemetryData> &
+  TelemetryErrorFields;
+
 export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
     service: TelemetryService,
@@ -226,6 +241,40 @@ export class LegendQueryTelemetryHelper {
     data: QueryLifecycleFailure_TelemetryData,
   ): void {
     service.logEvent(LEGEND_QUERY_APP_EVENT.DELETE_QUERY__FAILURE, data);
+  }
+
+  static logEvent_ViewQueryFailed(
+    service: TelemetryService,
+    data: QueryLoadFailure_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_QUERY__FAILURE, data);
+  }
+
+  static logEvent_InitializeQueryStateFailed(
+    service: TelemetryService,
+    data: QueryLoadFailure_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.INITIALIZE_QUERY_STATE__FAILURE,
+      data,
+    );
+  }
+
+  static logEvent_GraphInitializationFailed(
+    service: TelemetryService,
+    data: TelemetryErrorFields & Partial<PartialQuery_TelemetryData>,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.GRAPH_INITIALIZATION__FAILURE,
+      data,
+    );
+  }
+
+  static logEvent_ProductionizeQueryLaunched(
+    service: TelemetryService,
+    data: PartialQuery_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.PRODUCTIONIZE_QUERY__LAUNCH, data);
   }
 
   static logEvent_QueryAISuggestLaunched(service: TelemetryService): void {

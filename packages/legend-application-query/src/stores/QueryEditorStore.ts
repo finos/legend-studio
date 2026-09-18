@@ -641,10 +641,22 @@ export abstract class QueryEditorStore {
       );
 
       yield this.setUpEditorState();
-      yield flowResult(this.buildGraph());
-      this.queryBuilderState = (yield this.initializeQueryBuilderState(
-        stopWatch,
-      )) as QueryBuilderState;
+      try {
+        yield flowResult(this.buildGraph());
+      } catch (error) {
+        assertErrorThrown(error);
+        this.logBuildGraphFailure(error);
+        throw error;
+      }
+      try {
+        this.queryBuilderState = (yield this.initializeQueryBuilderState(
+          stopWatch,
+        )) as QueryBuilderState;
+      } catch (error) {
+        assertErrorThrown(error);
+        this.logInitializeQueryBuilderStateFailure(error);
+        throw error;
+      }
       this.queryLoaderState.initialize(this.queryBuilderState);
       this.initState.pass();
       // the canonical "a query builder is loaded" signal, emitted for every
@@ -753,6 +765,33 @@ export abstract class QueryEditorStore {
       this.applicationStore.telemetryService,
       graphBuilderReportData,
     );
+  }
+
+  /**
+   * Failure counterpart of {@link logBuildGraphMetrics}. Fires when the graph
+   * build stage of `initialize()` throws. Base emits with only the error
+   * dimensions — {@link ExistingQueryEditorStore} overrides to attach the
+   * loaded query's identity, mirroring how its success override attaches
+   * identity too.
+   */
+  logBuildGraphFailure(error: Error): void {
+    LegendQueryTelemetryHelper.logEvent_GraphInitializationFailed(
+      this.applicationStore.telemetryService,
+      buildTelemetryErrorFields(error),
+    );
+  }
+
+  /**
+   * Failure hook for the query builder state initialization stage of
+   * `initialize()`. Default is a no-op: creator routes already report a
+   * failure here through `INITIALIZE_QUERY_CREATOR__FAILURE`, so emitting a
+   * second event would double-count. {@link ExistingQueryEditorStore}
+   * overrides this to emit `VIEW_QUERY__FAILURE`, the counterpart of the
+   * `VIEW_QUERY__SUCCESS` its `initializeQueryBuilderState` fires on the
+   * happy path.
+   */
+  logInitializeQueryBuilderStateFailure(_error: Error): void {
+    // no-op by default; overrides on saved-query stores emit failure telemetry
   }
 
   *buildFullGraph(): GeneratorFn<void> {
@@ -2088,6 +2127,32 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
     );
   }
 
+  override logBuildGraphFailure(error: Error): void {
+    // attach whatever identity is already known — `_lightQuery` is only
+    // populated once the query resolves, which may not have happened yet, so
+    // the route id is the only guaranteed field
+    const currentQuery = this._lightQuery;
+    LegendQueryTelemetryHelper.logEvent_GraphInitializationFailed(
+      this.applicationStore.telemetryService,
+      {
+        ...buildTelemetryErrorFields(error),
+        ...(currentQuery ? buildQueryIdentity(currentQuery) : {}),
+      },
+    );
+  }
+
+  override logInitializeQueryBuilderStateFailure(error: Error): void {
+    const currentQuery = this._lightQuery;
+    LegendQueryTelemetryHelper.logEvent_ViewQueryFailed(
+      this.applicationStore.telemetryService,
+      {
+        queryId: this.queryId,
+        ...(currentQuery ? buildQueryIdentity(currentQuery) : {}),
+        ...buildTelemetryErrorFields(error),
+      },
+    );
+  }
+
   override getOpenedFrom(): QUERY_BUILDER_OPENED_FROM {
     return QUERY_BUILDER_OPENED_FROM.QUERY_SAVED;
   }
@@ -2620,11 +2685,27 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       }
     }
 
-    queryBuilderState.initializeWithQuery(
-      existingQueryLambda,
-      defaultParameters,
-      query.gridConfig,
-    );
+    try {
+      queryBuilderState.initializeWithQuery(
+        existingQueryLambda,
+        defaultParameters,
+        query.gridConfig,
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      // pair with `INITIALIZE_QUERY_STATE__SUCCESS` below — this is the tight
+      // boundary that success wraps, so failure is reported here rather than
+      // in the outer catch (which owns `VIEW_QUERY__FAILURE`)
+      LegendQueryTelemetryHelper.logEvent_InitializeQueryStateFailed(
+        this.applicationStore.telemetryService,
+        {
+          queryId: this.queryId,
+          ...buildQueryIdentity(query),
+          ...buildTelemetryErrorFields(error),
+        },
+      );
+      throw error;
+    }
     initailizeQueryStateReport.timings =
       this.applicationStore.timeService.finalizeTimingsRecord(
         initailizeQueryStateStopWatch,

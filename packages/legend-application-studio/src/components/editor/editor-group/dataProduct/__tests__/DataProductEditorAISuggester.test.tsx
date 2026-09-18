@@ -430,10 +430,10 @@ test(
     await waitFor(() => {
       expect(logEventSpy).toHaveBeenCalledWith(
         LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__FAILURE,
-        {
+        expect.objectContaining({
           dataProductPath: 'model::sampleDataProduct',
           errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE,
-        },
+        }),
       );
     });
   },

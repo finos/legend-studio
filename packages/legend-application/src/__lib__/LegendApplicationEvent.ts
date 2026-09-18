@@ -55,6 +55,9 @@ export enum APPLICATION_EVENT {
 
   APPLICATION_CONTEXT__ACCESS = 'application.context.access',
 
+  EXTENSION_PAGE__ACCESS = 'application.extension-page.access',
+  ROUTE_NOT_FOUND = 'application.route.not-found',
+
   APPLICATION_USAGE__INTERRUPT = 'application.usage.interrupt',
   NAVIGATION_BLOCKED = 'application.usage.navigation-blocked',
 

@@ -274,6 +274,7 @@ const ServiceGeneralEditor = observer(() => {
     LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestLaunched(
       applicationStore.telemetryService,
       service.path,
+      editorStore.editorMode.getSourceInfo(),
     );
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
@@ -290,6 +291,7 @@ const ServiceGeneralEditor = observer(() => {
         applicationStore.telemetryService,
         service.path,
         error.message,
+        editorStore.editorMode.getSourceInfo(),
       );
       if (
         error instanceof NetworkClientError &&
@@ -315,6 +317,7 @@ const ServiceGeneralEditor = observer(() => {
     LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestApplied(
       applicationStore.telemetryService,
       service.path,
+      editorStore.editorMode.getSourceInfo(),
     );
     service_setDocumentation(service, aiDocSuggestion);
     setAIDocSuggestion(undefined);
@@ -323,6 +326,7 @@ const ServiceGeneralEditor = observer(() => {
     LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestDiscarded(
       applicationStore.telemetryService,
       service.path,
+      editorStore.editorMode.getSourceInfo(),
     );
     setAIDocSuggestion(undefined);
   };

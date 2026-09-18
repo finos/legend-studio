@@ -26,6 +26,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl } 
 import { BaseQuerySetupStore } from './QuerySetupStore.js';
 import { LegendQueryUserDataHelper } from '../__lib__/LegendQueryUserDataHelper.js';
 import { buildQueryLoaderLifecycleTelemetryHandlers } from '../__lib__/LegendQueryLifecycleTelemetry.js';
+import { LegendQueryTelemetryHelper } from '../__lib__/LegendQueryTelemetryHelper.js';
 import { quantifyList } from '@finos/legend-shared';
 
 export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
@@ -96,6 +97,21 @@ export class QueryProductionizerSetupStore extends BaseQuerySetupStore {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
+      // emitted at the actual handoff to studio — the setup landing action
+      // that lands us on this route is upstream and may be abandoned before
+      // the user picks a query, so emitting here counts real launches only
+      LegendQueryTelemetryHelper.logEvent_ProductionizeQueryLaunched(
+        this.applicationStore.telemetryService,
+        {
+          query: {
+            id: selectedQuery.id,
+            name: selectedQuery.name,
+            groupId: selectedQuery.groupId,
+            artifactId: selectedQuery.artifactId,
+            versionId: selectedQuery.versionId,
+          },
+        },
+      );
       this.applicationStore.navigationService.navigator.goToAddress(
         EXTERNAL_APPLICATION_NAVIGATION__generateStudioProductionizeQueryUrl(
           matchingSDLCEntry.url,

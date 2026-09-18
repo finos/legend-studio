@@ -58,11 +58,10 @@ export class ShowcaseViewerEditorMode extends EditorMode {
 
   getSourceInfo(): ShowcaseViewerQuerySDLC | undefined {
     return returnUndefOnError(
-      () =>
-        ({
-          sourceType: LegendStudioSourceType.SHOWCASE,
-          showcasePath: this.showcaseViewerStore.showcase.path,
-        }) as ShowcaseViewerQuerySDLC,
+      (): ShowcaseViewerQuerySDLC => ({
+        sourceType: LegendStudioSourceType.SHOWCASE,
+        showcasePath: this.showcaseViewerStore.showcase.path,
+      }),
     );
   }
 }
