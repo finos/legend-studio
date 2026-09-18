@@ -1,5 +1,13 @@
 # @finos/legend-application-marketplace
 
+## 0.4.8
+
+### Patch Changes
+
+- [#5542](https://github.com/finos/legend-studio/pull/5542) [`8d8cf1e`](https://github.com/finos/legend-studio/commit/8d8cf1edc623669a797b6d11fab5bb84e3cd2b74) ([@jackp5150](https://github.com/jackp5150)) - Adds a new single collapse class 'CollapseState' to provide apis to wiki sections to toggle collapsing. Added a component to bundle all collapsing functionality into the chevron icon.
+
+  Deduplicate dataspace functions by having DataSpaceViewerState extend BaseViewerState.
+
 ## 0.4.7
 
 ### Patch Changes
