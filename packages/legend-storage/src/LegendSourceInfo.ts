@@ -26,13 +26,26 @@ export enum LegendSourceType {
 }
 
 export type LegendGAVSourceInfo = LegendSourceInfo & {
-  type: LegendSourceType.PROJECT_GAV;
+  sourceType: LegendSourceType.PROJECT_GAV;
   groupId: string;
   artifactId: string;
   versionId: string;
 };
 
 export type LegendProjectIdSourceInfo = LegendSourceInfo & {
-  type: LegendSourceType.PROJECT_PROJECTID;
+  sourceType: LegendSourceType.PROJECT_PROJECTID;
   projectId: string;
+  /**
+   * Optional Maven-style coordinates the SDLC project publishes to (from
+   * the project configuration). Populated when the graph has finished
+   * initializing so that project-id viewer telemetry can be joined with
+   * GAV-viewer telemetry.
+   */
+  groupId?: string | undefined;
+  artifactId?: string | undefined;
+  /**
+   * Pinned version or revision the viewer is showing. Undefined when the
+   * viewer is on project HEAD.
+   */
+  versionId?: string | undefined;
 };

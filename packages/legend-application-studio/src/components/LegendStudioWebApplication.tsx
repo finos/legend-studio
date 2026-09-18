@@ -40,6 +40,8 @@ import {
 import {
   useApplicationStore,
   LegendTokenSync,
+  ExtensionPageBoundary,
+  LegendApplicationTelemetryHelper,
 } from '@finos/legend-application';
 import {
   BrowserEnvironmentProvider,
@@ -63,6 +65,13 @@ const NotFoundPage = observer(() => {
 
   const currentPath =
     applicationStore.navigationService.navigator.getCurrentLocation();
+
+  useEffect(() => {
+    LegendApplicationTelemetryHelper.logEvent_RouteNotFound(
+      applicationStore.telemetryService,
+      { path: currentPath },
+    );
+  }, [applicationStore, currentPath]);
 
   const documentation = applicationStore.documentationService.getDocEntry(
     LEGEND_STUDIO_DOCUMENTATION_KEY.NOT_FOUND_HELP,
@@ -280,9 +289,16 @@ export const LegendStudioWebApplicationRouter = observer(() => {
                     .map(generateExtensionUrlPattern)
                     .map((path) => (
                       <Route
-                        key={entry.key}
+                        key={`${entry.key}:${path}`}
                         path={path}
-                        element={entry.renderer()}
+                        element={
+                          <ExtensionPageBoundary
+                            entryKey={entry.key}
+                            pattern={path}
+                          >
+                            {entry.renderer()}
+                          </ExtensionPageBoundary>
+                        }
                       />
                     )),
                 )}

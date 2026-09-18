@@ -25,6 +25,7 @@ import {
   type GraphManagerOperationReport,
   GRAPH_MANAGER_EVENT,
   EngineError,
+  ParserError,
   GraphBuilderError,
   reportGraphAnalytics,
   INTERNAL__UnknownElement,
@@ -50,7 +51,14 @@ import { TextLocalChangesState } from './sidebar-state/LocalChangesState.js';
 import { GraphCompilationOutcome, type Problem } from './EditorGraphState.js';
 import { GRAPH_EDITOR_MODE, PANEL_MODE } from './EditorConfig.js';
 import { graph_dispose } from '../graph-modifier/GraphModifierHelper.js';
-import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LegendStudioTelemetryHelper,
+  TEXT_MODE_ACTION,
+  TEXT_MODE_ACTION_STATUS,
+  TEXT_MODE_COMPILATION_ERROR_KIND,
+  TEXT_MODE_ENTER_TRIGGER,
+  TEXT_MODE_LEAVE_OUTCOME,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
@@ -63,6 +71,12 @@ export enum GRAMMAR_MODE_EDITOR_ACTION {
 export class GraphEditGrammarModeState extends GraphEditorMode {
   grammarTextEditorState: GrammarTextEditorState;
   generatedFile: FileSystem_File | undefined;
+
+  // Text-mode session telemetry state (not observable; used for analytics only)
+  private textModeEnteredAt: number | undefined;
+  private textModeEditCount = 0;
+  private textModeCompilationCount = 0;
+  private textModeHasEmittedFirstEdit = false;
 
   constructor(editorStore: EditorStore) {
     super(editorStore);
@@ -80,6 +94,81 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     return 'Text Mode';
   }
 
+  /**
+   * Whether this is the strict-text (lazy) variant. Overridden by
+   * `GraphEditLazyGrammarModeState` to return true.
+   */
+  protected get isStrictTextMode(): boolean {
+    return false;
+  }
+
+  private getCurrentElementPath(): string | undefined {
+    const currentTab = this.editorStore.tabManagerState.currentTab;
+    return currentTab instanceof ElementEditorState
+      ? currentTab.element.path
+      : undefined;
+  }
+
+  private startTextModeTelemetrySession(
+    trigger: TEXT_MODE_ENTER_TRIGGER,
+  ): void {
+    this.textModeEnteredAt = Date.now();
+    this.textModeEditCount = 0;
+    this.textModeCompilationCount = 0;
+    this.textModeHasEmittedFirstEdit = false;
+    LegendStudioTelemetryHelper.logEvent_TextModeEntered(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      {
+        trigger,
+        strict: this.isStrictTextMode,
+        elementPath: this.getCurrentElementPath(),
+      },
+    );
+    if (this.isStrictTextMode) {
+      LegendStudioTelemetryHelper.logEvent_TextModeStrictLaunch(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+      );
+    }
+  }
+
+  private emitTextModeLeaveTelemetry(outcome: TEXT_MODE_LEAVE_OUTCOME): void {
+    if (this.textModeEnteredAt === undefined) {
+      return;
+    }
+    LegendStudioTelemetryHelper.logEvent_TextModeLeft(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      {
+        outcome,
+        durationMs: Date.now() - this.textModeEnteredAt,
+        editCount: this.textModeEditCount,
+        compilationCount: this.textModeCompilationCount,
+      },
+    );
+    this.textModeEnteredAt = undefined;
+  }
+
+  /**
+   * Notify a user-driven edit in the grammar text buffer. Fires
+   * `text-mode.first-edit` once per session.
+   */
+  notifyGrammarTextEdited(): void {
+    if (this.textModeEnteredAt === undefined) {
+      return;
+    }
+    this.textModeEditCount += 1;
+    if (!this.textModeHasEmittedFirstEdit) {
+      this.textModeHasEmittedFirstEdit = true;
+      LegendStudioTelemetryHelper.logEvent_TextModeFirstEdit(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        Date.now() - this.textModeEnteredAt,
+      );
+    }
+  }
+
   setGeneratedFile(val: FileSystem_File | undefined): void {
     this.generatedFile = val;
   }
@@ -88,6 +177,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     isCompilationFailure?: boolean;
     isGraphBuildFailure?: boolean;
     useStoredEntities?: boolean;
+    trigger?: TEXT_MODE_ENTER_TRIGGER;
   }): GeneratorFn<void> {
     this.editorStore.localChangesState = new TextLocalChangesState(
       this.editorStore,
@@ -152,6 +242,16 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
         });
       }
     }
+
+    // emit text-mode session-start telemetry
+    const trigger: TEXT_MODE_ENTER_TRIGGER =
+      isFallback?.trigger ??
+      (isFallback?.isGraphBuildFailure
+        ? TEXT_MODE_ENTER_TRIGGER.FALLBACK_GRAPH_BUILD_FAILURE
+        : isFallback?.isCompilationFailure
+          ? TEXT_MODE_ENTER_TRIGGER.FALLBACK_FORM_COMPILATION_FAILURE
+          : TEXT_MODE_ENTER_TRIGGER.MANUAL_TOGGLE);
+    this.startTextModeTelemetrySession(trigger);
   }
 
   *goToElement(elementPath: string): GeneratorFn<void> {
@@ -181,6 +281,14 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
           LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__SUCCESS,
         ),
       );
+      LegendStudioTelemetryHelper.logEvent_TextModeAction(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          action: TEXT_MODE_ACTION.GO_TO_DEFINITION,
+          status: TEXT_MODE_ACTION_STATUS.SUCCESS,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
@@ -191,6 +299,15 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
           LEGEND_STUDIO_APP_EVENT.TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__ERROR,
         ),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_TextModeAction(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          action: TEXT_MODE_ACTION.GO_TO_DEFINITION,
+          status: TEXT_MODE_ACTION_STATUS.ERROR,
+          errorMessage: error.message,
+        },
       );
     }
   }
@@ -372,7 +489,9 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
     );
     LegendStudioTelemetryHelper.logEvent_TextCompilationLaunched(
       this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
     );
+    this.textModeCompilationCount += 1;
 
     const currentGraphHash = this.getCurrentGraphHash();
 
@@ -443,6 +562,7 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       LegendStudioTelemetryHelper.logEvent_TextCompilationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         report,
+        this.editorStore.editorMode.getSourceInfo(),
       );
     } catch (error) {
       assertErrorThrown(error);
@@ -471,6 +591,19 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
       }
       this.editorStore.graphState.setMostRecentCompilationOutcome(
         GraphCompilationOutcome.FAILED,
+      );
+      LegendStudioTelemetryHelper.logEvent_TextModeCompilationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          errorKind:
+            error instanceof ParserError
+              ? TEXT_MODE_COMPILATION_ERROR_KIND.PARSER
+              : error instanceof EngineError
+                ? TEXT_MODE_COMPILATION_ERROR_KIND.COMPILER
+                : TEXT_MODE_COMPILATION_ERROR_KIND.OTHER,
+          errorMessage: error.message,
+        },
       );
     } finally {
       this.editorStore.graphState.isRunningGlobalCompile = false;
@@ -533,6 +666,11 @@ export class GraphEditGrammarModeState extends GraphEditorMode {
         message: 'Leaving text mode and rebuilding graph...',
         showLoading: true,
       });
+      this.emitTextModeLeaveTelemetry(
+        TEXT_MODE_LEAVE_OUTCOME.COMPILED_AND_LEFT,
+      );
+    } else {
+      this.emitTextModeLeaveTelemetry(TEXT_MODE_LEAVE_OUTCOME.DISCARDED);
     }
   }
 

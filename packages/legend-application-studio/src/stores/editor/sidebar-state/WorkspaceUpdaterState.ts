@@ -41,6 +41,7 @@ import {
   RevisionAlias,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import { LegendStudioTelemetryHelper } from '../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export class WorkspaceUpdaterState {
   readonly editorStore: EditorStore;
@@ -273,6 +274,10 @@ export class WorkspaceUpdaterState {
         prompt: 'Please do not close the application',
         showLoading: true,
       });
+      LegendStudioTelemetryHelper.logEvent_WorkspaceUpdateLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+      );
       const workspaceUpdateReport =
         (yield this.editorStore.sdlcServerClient.updateWorkspace(
           this.sdlcState.activeProject.projectId,
@@ -282,6 +287,14 @@ export class WorkspaceUpdaterState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.UPDATE_WORKSPACE__SUCCESS),
         Date.now() - startTime,
         'ms',
+      );
+      LegendStudioTelemetryHelper.logEvent_WorkspaceUpdateSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          status: workspaceUpdateReport.status,
+          durationMs: Date.now() - startTime,
+        },
       );
       this.sdlcState.isWorkspaceOutdated = false;
       switch (workspaceUpdateReport.status) {
@@ -301,6 +314,11 @@ export class WorkspaceUpdaterState {
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_WorkspaceUpdateFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        error.message,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {

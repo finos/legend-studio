@@ -25,16 +25,27 @@ import {
   generateEditorRoute,
   generateViewProjectByGAVRoute,
 } from '../../__lib__/LegendStudioNavigation.js';
-import { EditorMode, type LegendStudioSourceType } from './EditorMode.js';
+import { EditorMode, LegendStudioSourceType } from './EditorMode.js';
 import type { LegendSourceInfo } from '@finos/legend-storage';
 
 export interface WorkspaceProjectQuerySDLC extends LegendSourceInfo {
   sourceType: LegendStudioSourceType.PROJECT_WORKSPACE;
   projectId: string;
   workspaceId: string;
-  WorkspaceType: string;
-  userId?: string;
-  source?: string;
+  workspaceType: string;
+  /** Set only for USER workspaces (owner id); undefined for GROUP. */
+  userId?: string | undefined;
+  /**
+   * Optional SDLC-side hint about where the workspace originated
+   * (e.g. `legend-query` productionization). Free-form string until SDLC
+   * formalizes a `SourceType` enum.
+   */
+  source?: string | undefined;
+  /**
+   * Patch release the workspace is targeting, when the workspace lives on a
+   * patch branch. Undefined for regular workspaces on main.
+   */
+  patchReleaseVersionId?: string | undefined;
 }
 
 export class StandardEditorMode extends EditorMode {
@@ -76,18 +87,21 @@ export class StandardEditorMode extends EditorMode {
     );
   }
 
-  getSourceInfo(): LegendSourceInfo | undefined {
+  getSourceInfo(): WorkspaceProjectQuerySDLC | undefined {
     if (this.isInitialized) {
       const workspace = guaranteeNonNullable(
         this.editorStore.sdlcState.currentWorkspace,
       );
       return {
+        sourceType: LegendStudioSourceType.PROJECT_WORKSPACE,
         projectId: this.editorStore.sdlcState.activeProject.projectId,
         workspaceId: workspace.workspaceId,
-        WorkspaceType: workspace.workspaceType,
+        workspaceType: workspace.workspaceType,
         userId: workspace.userId,
         source: workspace.source,
-      } as WorkspaceProjectQuerySDLC;
+        patchReleaseVersionId:
+          this.editorStore.sdlcState.activePatch?.patchReleaseVersionId.id,
+      };
     } else {
       return undefined;
     }

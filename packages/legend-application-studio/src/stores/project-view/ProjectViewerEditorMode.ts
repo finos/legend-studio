@@ -32,7 +32,6 @@ import {
   LegendSourceType,
   type LegendGAVSourceInfo,
   type LegendProjectIdSourceInfo,
-  type LegendSourceInfo,
 } from '@finos/legend-storage';
 
 export class ProjectViewerEditorMode extends EditorMode {
@@ -100,20 +99,34 @@ export class ProjectViewerEditorMode extends EditorMode {
     return !this.viewerStore.projectGAVCoordinates;
   }
 
-  getSourceInfo(): LegendSourceInfo | undefined {
+  getSourceInfo(): LegendGAVSourceInfo | LegendProjectIdSourceInfo | undefined {
     if (this.viewerStore.editorStore.sdlcState.currentProject) {
+      // GAV coordinates are populated from the project configuration once the
+      // graph is initialized; forward them when available so project-id
+      // viewers can still be joined with GAV-viewer traffic.
+      const projectConfiguration =
+        this.viewerStore.editorStore.projectConfigurationEditorState
+          .projectConfiguration;
+      // Prefer the pinned version id when the viewer is on a specific
+      // version; fall back to the revision id when viewing a revision;
+      // otherwise the viewer is on HEAD and versionId is left undefined.
+      const versionId =
+        this.viewerStore.version?.id.id ?? this.viewerStore.revision?.id;
       return {
         sourceType: LegendSourceType.PROJECT_PROJECTID,
         projectId:
           this.viewerStore.editorStore.sdlcState.currentProject.projectId,
-      } as LegendProjectIdSourceInfo;
+        groupId: projectConfiguration?.groupId,
+        artifactId: projectConfiguration?.artifactId,
+        versionId,
+      };
     } else if (this.viewerStore.projectGAVCoordinates) {
       return {
         sourceType: LegendSourceType.PROJECT_GAV,
         groupId: this.viewerStore.projectGAVCoordinates.groupId,
         artifactId: this.viewerStore.projectGAVCoordinates.artifactId,
         versionId: this.viewerStore.projectGAVCoordinates.versionId,
-      } as LegendGAVSourceInfo;
+      };
     } else {
       return undefined;
     }

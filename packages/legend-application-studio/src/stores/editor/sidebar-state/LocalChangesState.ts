@@ -57,6 +57,12 @@ import {
   EntityChangeType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  GRAPH_EDITOR_MODE_LABEL,
+  LegendStudioTelemetryHelper,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
+import { GraphEditGrammarModeState } from '../GraphEditGrammarModeState.js';
+import { GraphEditLazyGrammarModeState } from '../../lazy-text-editor/LazyTextEditorStore.js';
 import { WorkspaceSyncState } from './WorkspaceSyncState.js';
 import { ACTIVITY_MODE } from '../EditorConfig.js';
 import { EntityChangeConflictEditorState } from '../editor-state/entity-diff-editor-state/EntityChangeConflictEditorState.js';
@@ -318,6 +324,17 @@ export abstract class LocalChangesState {
 
   abstract computeLocalEntityChanges(): EntityChange[];
 
+  private getGraphEditorModeLabel(): GRAPH_EDITOR_MODE_LABEL {
+    const graphEditorMode = this.editorStore.graphEditorMode;
+    if (graphEditorMode instanceof GraphEditLazyGrammarModeState) {
+      return GRAPH_EDITOR_MODE_LABEL.STRICT_TEXT;
+    }
+    if (graphEditorMode instanceof GraphEditGrammarModeState) {
+      return GRAPH_EDITOR_MODE_LABEL.TEXT;
+    }
+    return GRAPH_EDITOR_MODE_LABEL.FORM;
+  }
+
   *pushLocalChanges(pushMessage?: string): GeneratorFn<void> {
     if (
       this.pushChangesState.isInProgress ||
@@ -331,10 +348,21 @@ export abstract class LocalChangesState {
     this.pushChangesState.inProgress();
     const startTime = Date.now();
     const localChanges = this.computeLocalEntityChanges();
+    const mode = this.getGraphEditorModeLabel();
     if (!localChanges.length) {
+      LegendStudioTelemetryHelper.logEvent_PushLocalChangesEmpty(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { mode },
+      );
       this.pushChangesState.complete();
       return;
     }
+    LegendStudioTelemetryHelper.logEvent_PushLocalChangesLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      { mode, changeCount: localChanges.length },
+    );
     yield flowResult(
       this.sdlcState.fetchRemoteWorkspaceRevision(
         this.sdlcState.activeProject.projectId,
@@ -422,6 +450,16 @@ export abstract class LocalChangesState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__SUCCESS),
         syncFinishedTime - startTime,
         'ms',
+      );
+      LegendStudioTelemetryHelper.logEvent_PushLocalChangesSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          mode,
+          changeCount: localChanges.length,
+          durationMs: syncFinishedTime - startTime,
+          revisionId: latestRevision.id,
+        },
       );
 
       // ======= (RE)START CHANGE DETECTION =======
@@ -514,6 +552,15 @@ export abstract class LocalChangesState {
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_PushLocalChangesFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          mode,
+          changeCount: localChanges.length,
+          errorMessage: error.message,
+        },
       );
       if (
         error instanceof NetworkClientError &&

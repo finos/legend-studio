@@ -33,6 +33,20 @@ export type VirtualAssistantSearchResultAccessed_TelemetryData = {
   action: string;
 };
 
+export type ExtensionPageAccessed_TelemetryData = {
+  /** `ApplicationPageEntry.key` — stable identifier for the page */
+  key: string;
+  /** Full matched route pattern (after `generateExtensionUrlPattern`) */
+  pattern: string;
+  /** The actual URL path visited (relative to the app base) */
+  path: string;
+};
+
+export type RouteNotFound_TelemetryData = {
+  /** The URL path that failed to match any route (relative to the app base) */
+  path: string;
+};
+
 export class LegendApplicationTelemetryHelper {
   static logEvent_ApplicationInitializationSucceeded(
     service: TelemetryService,
@@ -79,5 +93,19 @@ export class LegendApplicationTelemetryHelper {
 
   static logEvent_ApplicationUsageInterrupted(service: TelemetryService): void {
     service.logEvent(APPLICATION_EVENT.APPLICATION_USAGE__INTERRUPT, {});
+  }
+
+  static logEvent_ExtensionPageAccessed(
+    service: TelemetryService,
+    data: ExtensionPageAccessed_TelemetryData,
+  ): void {
+    service.logEvent(APPLICATION_EVENT.EXTENSION_PAGE__ACCESS, data);
+  }
+
+  static logEvent_RouteNotFound(
+    service: TelemetryService,
+    data: RouteNotFound_TelemetryData,
+  ): void {
+    service.logEvent(APPLICATION_EVENT.ROUTE_NOT_FOUND, data);
   }
 }

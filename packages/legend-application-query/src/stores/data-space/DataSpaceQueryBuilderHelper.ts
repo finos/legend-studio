@@ -22,6 +22,7 @@ import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl } fro
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import { parseProjectIdentifier } from '@finos/legend-storage';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl } from '@finos/legend-application';
+import { LegendQueryTelemetryHelper } from '../../__lib__/LegendQueryTelemetryHelper.js';
 
 export const createViewProjectHandler =
   (applicationStore: LegendQueryApplicationStore) =>
@@ -30,7 +31,10 @@ export const createViewProjectHandler =
     artifactId: string,
     versionId: string,
     entityPath: string | undefined,
-  ): void =>
+  ): void => {
+    LegendQueryTelemetryHelper.logEvent_QueryViewProjectLaunched(
+      applicationStore.telemetryService,
+    );
     applicationStore.navigationService.navigator.visitAddress(
       EXTERNAL_APPLICATION_NAVIGATION__generateStudioProjectViewUrl(
         applicationStore.config.studioApplicationUrl,
@@ -40,6 +44,7 @@ export const createViewProjectHandler =
         entityPath,
       ),
     );
+  };
 
 export const createViewSDLCProjectHandler =
   (

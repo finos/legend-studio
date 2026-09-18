@@ -51,8 +51,24 @@ export enum LEGEND_STUDIO_APP_EVENT {
   SHOWCASE_MANAGER_SEARCH__INITIATED = 'showcase.manager.search.initiated',
   SHOWCASE_VIEWER_LAUNCH = 'showcase.viewer.launch',
 
+  UPDATE_WORKSPACE__LAUNCH = 'sdlc.workspace-update.launch',
   UPDATE_WORKSPACE__SUCCESS = 'sdlc.workspace-update.success',
+  UPDATE_WORKSPACE__FAILURE = 'sdlc.workspace-update.failure',
+  PUSH_LOCAL_CHANGES__LAUNCH = 'sdlc.local-changes-push.launch',
   PUSH_LOCAL_CHANGES__SUCCESS = 'sdlc.local-changes-push.success',
+  PUSH_LOCAL_CHANGES__FAILURE = 'sdlc.local-changes-push.failure',
+
+  // text mode session
+  TEXT_MODE__ENTER = 'editor.text-mode.enter',
+  TEXT_MODE__LEAVE = 'editor.text-mode.leave',
+  TEXT_MODE__FIRST_EDIT = 'editor.text-mode.first-edit',
+  TEXT_MODE_COMPILATION__FAILURE = 'editor.text-mode.compilation.failure',
+  TEXT_MODE__STRICT_LAUNCH = 'editor.text-mode.strict.launch',
+  TEXT_MODE__TOGGLE_SHORTCUT_INVOKED = 'editor.text-mode.toggle-shortcut.invoked',
+  TEXT_MODE__ACTION = 'editor.text-mode.action',
+
+  // save-side friction
+  PUSH_LOCAL_CHANGES__EMPTY = 'sdlc.local-changes-push.empty',
 
   // Depot
   // TODO: consider to split this generic errors into more specific events
