@@ -71,7 +71,7 @@ export class DataSpaceViewerState extends BaseViewerState<
   readonly artifactId: string;
   readonly versionId: string;
   readonly retrieveGraphData: () => GraphData;
-  readonly queryDataSpace: (executionContextKey: string) => void;
+  readonly queryDataSpace: (executionContextKey: string | undefined) => void;
   readonly viewProject: (path: string | undefined) => void;
   readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
   readonly queryClass: (_class: Class) => void;
@@ -125,7 +125,7 @@ export class DataSpaceViewerState extends BaseViewerState<
     dataSpaceAnalysisResult: DataSpaceAnalysisResult,
     actions: {
       retrieveGraphData: () => GraphData;
-      queryDataSpace: (executionContextKey: string) => void;
+      queryDataSpace: (executionContextKey: string | undefined) => void;
       viewProject: (path: string | undefined) => void;
       viewSDLCProject: (path: string | undefined) => Promise<void>;
       queryClass: (_class: Class) => void;

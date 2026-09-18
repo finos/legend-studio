@@ -56,6 +56,11 @@ const DataSpaceHeader = observer(
     const applicationStore = useApplicationStore();
     const headerRef = useRef<HTMLDivElement>(null);
     const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+    const hasMultipleExecutionContexts =
+      analysisResult.executionContextsIndex.size > 1;
+    const runQueryContext =
+      analysisResult.defaultExecutionContext ??
+      Array.from(analysisResult.executionContextsIndex.values())[0];
 
     useEffect(() => {
       if (headerRef.current) {
@@ -97,61 +102,94 @@ const DataSpaceHeader = observer(
               qualityState={dataSpaceViewerState.qualityState}
             />
             <div className="data-space__viewer__header__actions">
-              {dataSpaceViewerState.currentExecutionContext && (
-                <ControlledDropdownMenu
-                  className="data-space__viewer__header__execution-context-selector"
-                  menuProps={{
-                    anchorOrigin: { vertical: 'bottom', horizontal: 'center' },
-                    transformOrigin: { vertical: 'top', horizontal: 'center' },
-                    elevation: 7,
-                  }}
-                  title={`Current Execution Context: ${dataSpaceViewerState.currentExecutionContext.name}\nClick to switch`}
-                  content={
-                    <MenuContent>
-                      {Array.from(
-                        dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
-                      ).map((context) => (
-                        <MenuContentItem
-                          key={context.name}
-                          className={clsx(
-                            'data-space__viewer__header__execution-context-selector__option',
-                            {
-                              'data-space__viewer__header__execution-context-selector__option--active':
-                                context ===
-                                dataSpaceViewerState.currentExecutionContext,
-                            },
-                          )}
-                          onClick={() =>
-                            dataSpaceViewerState.setCurrentExecutionContext(
-                              context,
-                            )
-                          }
-                        >
-                          {context.name}
-                        </MenuContentItem>
-                      ))}
-                    </MenuContent>
-                  }
-                >
+              {runQueryContext && (
+                <div className="data-space__viewer__header__execution-context-selector">
                   <div className="data-space__viewer__header__execution-context-selector__trigger">
-                    <div className="data-space__viewer__header__execution-context-selector__trigger__icon">
+                    <div
+                      className="data-space__viewer__header__execution-context-selector__trigger__icon"
+                      title="Run Query"
+                      onClick={() =>
+                        dataSpaceViewerState.queryDataSpace(
+                          runQueryContext.name,
+                        )
+                      }
+                    >
                       <PlayIcon />
                     </div>
-                    <div className="data-space__viewer__header__execution-context-selector__trigger__label">
-                      {dataSpaceViewerState.currentExecutionContext.name}
-                    </div>
-                    <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
-                      <CaretDownIcon />
-                    </div>
+                    {hasMultipleExecutionContexts ? (
+                      <ControlledDropdownMenu
+                        className="data-space__viewer__header__execution-context-selector__trigger__switcher"
+                        menuProps={{
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'center',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'center',
+                          },
+                          elevation: 0,
+                          MenuListProps: {
+                            className:
+                              'data-space__viewer__header__execution-context-selector__menu',
+                          },
+                        }}
+                        title={`Run Query in another execution context\nDefault: ${runQueryContext.name}`}
+                        content={
+                          <MenuContent>
+                            {Array.from(
+                              dataSpaceViewerState.dataSpaceAnalysisResult.executionContextsIndex.values(),
+                            ).map((context) => (
+                              <MenuContentItem
+                                key={context.name}
+                                className={clsx(
+                                  'data-space__viewer__header__execution-context-selector__option',
+                                  {
+                                    'data-space__viewer__header__execution-context-selector__option--active':
+                                      context ===
+                                      dataSpaceViewerState.currentExecutionContext,
+                                  },
+                                )}
+                                onClick={() => {
+                                  dataSpaceViewerState.setCurrentExecutionContext(
+                                    context,
+                                  );
+                                  dataSpaceViewerState.queryDataSpace(
+                                    context.name,
+                                  );
+                                }}
+                              >
+                                {context.name}
+                              </MenuContentItem>
+                            ))}
+                          </MenuContent>
+                        }
+                      >
+                        <div className="data-space__viewer__header__execution-context-selector__trigger__label">
+                          Run Query
+                        </div>
+                        <div className="data-space__viewer__header__execution-context-selector__trigger__dropdown-icon">
+                          <CaretDownIcon />
+                        </div>
+                      </ControlledDropdownMenu>
+                    ) : (
+                      <div className="data-space__viewer__header__execution-context-selector__trigger__label">
+                        Run Query
+                      </div>
+                    )}
                   </div>
-                </ControlledDropdownMenu>
+                </div>
               )}
               <ControlledDropdownMenu
                 className="data-space__viewer__header__actions-selector"
                 menuProps={{
                   anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
                   transformOrigin: { vertical: 'top', horizontal: 'right' },
-                  elevation: 7,
+                  elevation: 0,
+                  MenuListProps: {
+                    className:
+                      'data-space__viewer__header__actions-selector__menu',
+                  },
                 }}
                 title="More Actions..."
                 content={
