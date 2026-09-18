@@ -16,6 +16,7 @@
 
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
 import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
+import { toTitleCase } from '@finos/legend-shared';
 
 export enum TERMINAL_PRODUCT_VIEWER_SECTION {
   DESCRIPTION = 'description',
@@ -25,13 +26,15 @@ export enum TERMINAL_PRODUCT_VIEWER_SECTION {
 export enum DATA_PRODUCT_DEFAULT_SECTION {
   DATA_ACCESS = 'data-access',
   DESCRIPTION = 'description',
-  SUPPORT_INFO = 'support-info',
-  PRODUCER_INFO = 'producer-info',
+  SUPPORT_INFO = 'support',
+  PRODUCER_INFO = 'producer',
 }
 
 export enum DATA_PRODUCT_MODELAPG_SECTION {
   DIAGRAM_VIEWER = 'diagram-viewer',
   MODELS_DOCUMENTATION = 'models-documentation',
+  SAMPLE_QUERIES = 'sample-queries',
+  NATIVE_MODEL_ACCESS_DATA_ACCESS = 'native-model-access-data-access',
 }
 
 export enum DATA_PRODUCT_VDP_SECTION {
@@ -54,6 +57,17 @@ const generateAnchorChunk = (text: string): string =>
 
 export const generateAnchorForSection = (activity: string): string =>
   generateAnchorChunk(activity);
+
+export const sectionToTitle = (sectionSlug: string): string =>
+  toTitleCase(sectionSlug.replace(/-/gu, ' '));
+
+export const generateAnchorForAccessPointGroup = (apgId: string): string =>
+  generateAnchorForSection(`apg-${apgId}`);
+
+export const generateAnchorForAccessPoint = (
+  apgId: string,
+  apId: string,
+): string => `${generateAnchorForAccessPointGroup(apgId)}__ap-${apId}`;
 
 export const generateAnchorsFromSections = (
   sections: readonly string[],

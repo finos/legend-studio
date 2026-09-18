@@ -54,6 +54,10 @@ export abstract class BaseViewerState<
 
   protected abstract getValidSections(): string[];
 
+  get documentationUrl(): string | undefined {
+    return undefined;
+  }
+
   syncZoneWithNavigation(zone: NavigationZone): void {
     this.layoutState.setCurrentNavigationZone(zone);
     this.onZoneChange?.(zone);

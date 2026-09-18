@@ -561,30 +561,26 @@ export const DiagramViewer = observer(
     };
 
     return (
-      <div ref={sectionRef} className="data-space__viewer__wiki__section">
-        <div className="data-space__viewer__wiki__section__header">
-          <div className="data-space__viewer__wiki__section__header__label">
+      <div ref={sectionRef} className="viewer__wiki__section">
+        <div className="viewer__wiki__section__header">
+          <div className="viewer__wiki__section__header__label">
+            {title ?? 'Diagrams'}
             {collapseState && (
               <button
-                className="data-space__viewer__wiki__section__header__caret-btn"
+                className="wiki-section-header__caret-btn"
                 tabIndex={-1}
                 onClick={toggleCollapse}
                 title={isCollapsed ? 'Expand' : 'Collapse'}
               >
                 <ExpandMoreIcon
-                  className={clsx(
-                    'data-space__viewer__wiki__section__header__caret',
-                    {
-                      'data-space__viewer__wiki__section__header__caret--collapsed':
-                        isCollapsed,
-                    },
-                  )}
+                  className={clsx('wiki-section-header__caret', {
+                    'wiki-section-header__caret--collapsed': isCollapsed,
+                  })}
                 />
               </button>
             )}
-            {title ?? 'Diagrams'}
             <button
-              className="data-space__viewer__wiki__section__header__anchor"
+              className="viewer__wiki__section__header__anchor"
               tabIndex={-1}
               onClick={() => onChangeZone(anchor, true)}
             >
@@ -593,7 +589,7 @@ export const DiagramViewer = observer(
           </div>
         </div>
         {!isCollapsed && (
-          <div className="data-space__viewer__wiki__section__content">
+          <div className="viewer__wiki__section__content">
             {diagrams.length > 0 && (
               <div className="data-space__viewer__diagram-viewer">
                 <DiagramViewerHeader

@@ -38,11 +38,12 @@ import {
   guaranteeNonNullable,
   LogEvent,
 } from '@finos/legend-shared';
-import { makeAutoObservable, observable, action, computed } from 'mobx';
+import { makeAutoObservable, observable, computed } from 'mobx';
 import type { DataProductAPGState } from './DataProductAPGState.js';
 import { createExecuteInput } from '../../utils/QueryExecutionUtils.js';
 import { RegistryMetadataResponse } from '@finos/legend-server-marketplace';
 import { APPLICATION_EVENT } from '@finos/legend-application';
+import { generateAnchorForAccessPoint } from '../ProductViewerNavigation.js';
 
 const getUnsupportedLakehouseTargetEnvs = (): LakehouseTargetEnv[] =>
   Object.values(LakehouseTargetEnv).filter(
@@ -67,19 +68,13 @@ export class DataProductAccessPointState {
   readonly fetchingRegistryMetadataState = ActionState.create();
 
   registryMetadata: RegistryMetadataResponse | undefined;
-  isCollapsed = false;
 
-  constructor(
-    apgState: DataProductAPGState,
-    accessPoint: V1_AccessPoint,
-    initialCollapsed = false,
-  ) {
+  constructor(apgState: DataProductAPGState, accessPoint: V1_AccessPoint) {
     makeAutoObservable(this, {
       relationType: observable,
       grammar: observable,
       relationElement: observable,
-      isCollapsed: observable,
-      setIsCollapsed: action,
+      isCollapsed: computed,
       entitlementsDataProductDetails: computed,
       unsupportedLakehouseComputeTarget: computed,
       isParameterized: computed,
@@ -87,7 +82,26 @@ export class DataProductAccessPointState {
 
     this.apgState = apgState;
     this.accessPoint = accessPoint;
-    this.isCollapsed = initialCollapsed;
+  }
+
+  get anchor(): string {
+    return generateAnchorForAccessPoint(
+      this.apgState.apg.id,
+      this.accessPoint.id,
+    );
+  }
+
+  get isCollapsed(): boolean {
+    return this.apgState.dataProductViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
+      this.anchor,
+    );
+  }
+
+  setIsCollapsed(val: boolean): void {
+    this.apgState.dataProductViewerState.layoutState.sectionCollapseState.setSectionsCollapsed(
+      this.anchor,
+      val,
+    );
   }
 
   get entitlementsDataProductDetails():
@@ -113,10 +127,6 @@ export class DataProductAccessPointState {
       Array.isArray(this.accessPoint.func.parameters) &&
       this.accessPoint.func.parameters.length > 0
     );
-  }
-
-  setIsCollapsed(val: boolean): void {
-    this.isCollapsed = val;
   }
 
   async fetchRegistryMetadata(): Promise<void> {

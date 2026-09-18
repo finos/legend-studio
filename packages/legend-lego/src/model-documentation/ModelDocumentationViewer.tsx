@@ -1087,6 +1087,7 @@ export const ModelsDocumentation = observer(
       >
         <div className="models-documentation__viewer__wiki__section__header">
           <div className="models-documentation__viewer__wiki__section__header__label">
+            {title ?? 'Models Documentation'}
             {collapseState && (
               <button
                 className="models-documentation__viewer__wiki__section__header__caret-btn"
@@ -1105,7 +1106,6 @@ export const ModelsDocumentation = observer(
                 />
               </button>
             )}
-            {title ?? 'Models Documentation'}
             <button
               className="models-documentation__viewer__wiki__section__header__anchor"
               tabIndex={-1}

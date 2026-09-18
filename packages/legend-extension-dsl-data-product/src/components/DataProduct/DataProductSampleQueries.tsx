@@ -17,7 +17,6 @@
 import { observer } from 'mobx-react-lite';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import {
-  AnchorLinkIcon,
   BlankPanelContent,
   CodeIcon,
   DataAccessIcon,
@@ -26,8 +25,12 @@ import {
   clsx,
   MarkdownTextViewer,
 } from '@finos/legend-art';
+import { CollapsibleWikiSection } from '../ProductViewer.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
-import { generateAnchorForSection } from '../../stores/ProductViewerNavigation.js';
+import {
+  generateAnchorForSection,
+  DATA_PRODUCT_MODELAPG_SECTION,
+} from '../../stores/ProductViewerNavigation.js';
 import {
   V1_SampleQuery,
   V1_ExecutableTDSResult,
@@ -682,7 +685,9 @@ export const DataProductSampleQueries = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
     const { dataProductViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection('SAMPLE_QUERIES');
+    const anchor = generateAnchorForSection(
+      DATA_PRODUCT_MODELAPG_SECTION.SAMPLE_QUERIES,
+    );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -707,29 +712,22 @@ export const DataProductSampleQueries = observer(
 
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
-        <div className="data-product__viewer__wiki__section__header">
-          <div className="data-product__viewer__wiki__section__header__label">
-            Sample Queries
-            <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => dataProductViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
+        <CollapsibleWikiSection
+          viewerState={dataProductViewerState}
+          section={DATA_PRODUCT_MODELAPG_SECTION.SAMPLE_QUERIES}
+        >
+          <div className="data-product__viewer__wiki__section__content">
+            <div className="data-product__viewer__sample-queries">
+              {sampleQueries.map((sampleQuery) => (
+                <SampleQueryItem
+                  key={sampleQuery.info.id}
+                  sampleQuery={sampleQuery}
+                  dataProductViewerState={dataProductViewerState}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="data-product__viewer__wiki__section__content">
-          <div className="data-product__viewer__sample-queries">
-            {sampleQueries.map((sampleQuery) => (
-              <SampleQueryItem
-                key={sampleQuery.info.id}
-                sampleQuery={sampleQuery}
-                dataProductViewerState={dataProductViewerState}
-              />
-            ))}
-          </div>
-        </div>
+        </CollapsibleWikiSection>
       </div>
     );
   },

@@ -16,16 +16,18 @@
 
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
-import { AnchorLinkIcon, MarkdownTextViewer } from '@finos/legend-art';
+import { MarkdownTextViewer } from '@finos/legend-art';
 import {
   type SupportedProducts,
   type SupportedLayoutStates,
   isTerminalProductViewerState,
   isDataProductViewerState,
+  CollapsibleWikiSection,
 } from './ProductViewer.js';
 import type { BaseViewerState } from '../stores/BaseViewerState.js';
 import {
   DATA_PRODUCT_VIEWER_SECTION,
+  DATA_PRODUCT_VDP_SECTION,
   TERMINAL_PRODUCT_VIEWER_SECTION,
   generateAnchorForDiagram,
   generateAnchorForSection,
@@ -174,36 +176,39 @@ export const ProductVendorInfo = observer(
         productViewerState.dataProductConfig?.vendorTaggedValue.profile,
     );
 
+    const sectionRef = useRef<HTMLDivElement>(null);
     const anchor = generateAnchorForSection(
-      DATA_PRODUCT_VIEWER_SECTION.VENDOR_DATA,
+      DATA_PRODUCT_VDP_SECTION.VENDOR_DATA,
     );
+    useEffect(() => {
+      if (sectionRef.current) {
+        productViewerState.layoutState.setWikiPageAnchor(
+          anchor,
+          sectionRef.current,
+        );
+      }
+      return () => productViewerState.layoutState.unsetWikiPageAnchor(anchor);
+    }, [productViewerState, anchor]);
 
     return (
-      <div>
-        <div className="data-product__viewer__wiki__section__header">
-          <div className="data-product__viewer__wiki__section__header__label">
-            Vendor Data
-            <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => productViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        {vendorDataTags.map((taggedValue) => (
-          <div key={taggedValue.tag.value}>
-            <div className="data-product__viewer__access-point__info">
-              <div className="data-product__viewer__access-point__name">
-                <strong>{prettyCONSTName(taggedValue.tag.value)}</strong>
-              </div>
-              <div className="data-product__viewer__access-point__description">
-                {taggedValue.value}
+      <div ref={sectionRef}>
+        <CollapsibleWikiSection
+          viewerState={productViewerState}
+          section={DATA_PRODUCT_VDP_SECTION.VENDOR_DATA}
+        >
+          {vendorDataTags.map((taggedValue) => (
+            <div key={taggedValue.tag.value}>
+              <div className="data-product__viewer__access-point__info">
+                <div className="data-product__viewer__access-point__name">
+                  <strong>{prettyCONSTName(taggedValue.tag.value)}</strong>
+                </div>
+                <div className="data-product__viewer__access-point__description">
+                  {taggedValue.value}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </CollapsibleWikiSection>
       </div>
     );
   },

@@ -15,8 +15,23 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { CaretUpIcon, clsx, OpenIcon } from '@finos/legend-art';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import {
+  AnchorLinkIcon,
+  CaretUpIcon,
+  clsx,
+  ExpandMoreIcon,
+  OpenIcon,
+  QuestionCircleIcon,
+} from '@finos/legend-art';
 import { LegendAIChatToggle } from '@finos/legend-lego/legend-ai';
 import { Button } from '@mui/material';
 import { isSnapshotVersion } from '@finos/legend-server-depot';
@@ -31,8 +46,13 @@ import {
 import type {
   TerminalProductLayoutState,
   DataProductLayoutState,
+  BaseLayoutState,
 } from '../stores/BaseLayoutState.js';
 import type { BaseViewerState } from '../stores/BaseViewerState.js';
+import {
+  sectionToTitle,
+  generateAnchorForSection,
+} from '../stores/ProductViewerNavigation.js';
 import { DataProductViewerState } from '../stores/DataProduct/DataProductViewerState.js';
 import { DSL_DATAPRODUCT_EVENT } from '../__lib__/DSL_DataProduct_Event.js';
 import { ProductWiki } from './ProductWiki.js';
@@ -58,6 +78,111 @@ export type SupportedProducts = V1_Terminal | V1_DataProduct;
 export type SupportedLayoutStates =
   | TerminalProductLayoutState
   | DataProductLayoutState;
+
+const CollapsibleParentAnchorContext = createContext<string | undefined>(
+  undefined,
+);
+
+export const CollapsibleChevron = observer(
+  (props: {
+    viewerState: BaseViewerState<unknown, BaseLayoutState>;
+    anchor: string;
+  }) => {
+    const { viewerState, anchor } = props;
+    const parentAnchor = useContext(CollapsibleParentAnchorContext);
+    const sectionCollapseState = viewerState.layoutState.sectionCollapseState;
+
+    useEffect(() => {
+      if (parentAnchor === undefined || parentAnchor === anchor) {
+        return undefined;
+      }
+      sectionCollapseState.registerChild(parentAnchor, anchor);
+      return () => sectionCollapseState.unregisterChild(parentAnchor, anchor);
+    }, [sectionCollapseState, parentAnchor, anchor]);
+
+    const collapsibleSection =
+      sectionCollapseState.registerChildrenAnchors(anchor);
+    return (
+      <button
+        className="wiki-section-header__caret-btn"
+        tabIndex={-1}
+        onClick={(): void => collapsibleSection.toggle()}
+        title={collapsibleSection.currentActionTooltip}
+      >
+        <ExpandMoreIcon
+          className={clsx('wiki-section-header__caret', {
+            'wiki-section-header__caret--collapsed':
+              collapsibleSection.isCollapsed,
+          })}
+        />
+      </button>
+    );
+  },
+);
+
+export const CollapsibleWikiSection = observer(
+  (props: {
+    viewerState: BaseViewerState<unknown, BaseLayoutState>;
+    section: string;
+    overrideTitleFragment?: ReactNode;
+    showDocumentation?: boolean;
+    children?: ReactNode;
+  }) => {
+    const {
+      viewerState,
+      section,
+      overrideTitleFragment,
+      showDocumentation = false,
+      children,
+    } = props;
+    const anchor = generateAnchorForSection(section);
+    const resolvedTitle = overrideTitleFragment ?? sectionToTitle(section);
+
+    const sectionCollapseState = viewerState.layoutState.sectionCollapseState;
+    const collapsibleSection =
+      sectionCollapseState.registerChildrenAnchors(anchor);
+
+    const documentationUrl = viewerState.documentationUrl;
+    const seeDocumentation = (): void => {
+      if (documentationUrl) {
+        viewerState.applicationStore.navigationService.navigator.visitAddress(
+          documentationUrl,
+        );
+      }
+    };
+    return (
+      <CollapsibleParentAnchorContext.Provider value={anchor}>
+        <div className="viewer__wiki__section__header">
+          <div className="viewer__wiki__section__header__label">
+            {resolvedTitle}
+            <CollapsibleChevron viewerState={viewerState} anchor={anchor} />
+            <button
+              className="viewer__wiki__section__header__anchor"
+              tabIndex={-1}
+              onClick={() => {
+                viewerState.changeZone(anchor, true);
+                viewerState.copyLinkToClipboard(anchor);
+              }}
+            >
+              <AnchorLinkIcon />
+            </button>
+          </div>
+          {showDocumentation && Boolean(documentationUrl) && (
+            <button
+              className="viewer__wiki__section__header__documentation"
+              tabIndex={-1}
+              onClick={seeDocumentation}
+              title="See Documentation"
+            >
+              <QuestionCircleIcon />
+            </button>
+          )}
+        </div>
+        {collapsibleSection.shouldRenderContent && children}
+      </CollapsibleParentAnchorContext.Provider>
+    );
+  },
+);
 
 export const TerminalNavigationSections = observer(
   (props: {

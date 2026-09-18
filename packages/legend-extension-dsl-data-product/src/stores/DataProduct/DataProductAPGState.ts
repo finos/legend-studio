@@ -69,6 +69,11 @@ import {
 import { DataProductAccessPointState } from './DataProductAccessPointState.js';
 import { PermitDataAccessRequestState } from './DataAccess/PermitDataAccessRequestState.js';
 import type { DataAccessRequestState } from './DataAccess/DataAccessRequestState.js';
+import {
+  DATA_PRODUCT_VIEWER_SECTION,
+  generateAnchorForAccessPointGroup,
+  generateAnchorForSection,
+} from '../ProductViewerNavigation.js';
 
 export enum AccessPointGroupAccess {
   // can be used to indicate fetching or resyncing of group access
@@ -124,8 +129,6 @@ export class DataProductAPGState {
   readonly accessPointStates: DataProductAccessPointState[];
   readonly id = uuid();
 
-  isCollapsed: boolean;
-
   subscriptions: V1_DataSubscription[] = [];
 
   apgContracts: V1_LiteDataContract[] = [];
@@ -163,8 +166,6 @@ export class DataProductAPGState {
   constructor(
     group: V1_AccessPointGroup,
     dataProductViewerState: DataProductViewerState,
-    initialCollapsed = false,
-    initialAccessPointsCollapsed = false,
   ) {
     makeAutoObservable(this, {
       handleContractClick: action,
@@ -180,8 +181,7 @@ export class DataProductAPGState {
       setAssociatedUserContract: action,
       fetchAndSetAssociatedSystemAccountContracts: flow,
       subscriptions: observable,
-      isCollapsed: observable,
-      setIsCollapsed: action,
+      isCollapsed: computed,
       fetchingSubscriptionsState: observable,
       creatingSubscriptionState: observable,
       createSubscription: flow,
@@ -204,15 +204,30 @@ export class DataProductAPGState {
     this.apg = group;
     this.dataProductViewerState = dataProductViewerState;
     this.applicationStore = dataProductViewerState.applicationStore;
-    this.accessPointStates = this.apg.accessPoints.map(
-      (ap) =>
-        new DataProductAccessPointState(this, ap, initialAccessPointsCollapsed),
+    this.dataProductViewerState.layoutState.sectionCollapseState.registerChild(
+      generateAnchorForSection(DATA_PRODUCT_VIEWER_SECTION.DATA_ACCESS),
+      this.anchor,
     );
-    this.isCollapsed = initialCollapsed;
+    this.accessPointStates = this.apg.accessPoints.map(
+      (ap) => new DataProductAccessPointState(this, ap),
+    );
+  }
+
+  get anchor(): string {
+    return generateAnchorForAccessPointGroup(this.apg.id);
+  }
+
+  get isCollapsed(): boolean {
+    return this.dataProductViewerState.layoutState.sectionCollapseState.isSectionCollapsed(
+      this.anchor,
+    );
   }
 
   setIsCollapsed(isCollapsed: boolean): void {
-    this.isCollapsed = isCollapsed;
+    this.dataProductViewerState.layoutState.sectionCollapseState.setSectionsCollapsed(
+      this.anchor,
+      isCollapsed,
+    );
   }
 
   get access(): AccessPointGroupAccess {

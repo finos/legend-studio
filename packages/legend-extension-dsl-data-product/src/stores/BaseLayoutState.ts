@@ -28,6 +28,98 @@ import type { DataProductViewerState } from './DataProduct/DataProductViewerStat
 
 export type WikiPageNavigationCommand = { anchor: string };
 
+export type CollapsibleAnchors = string | string[];
+
+export class CollapsibleSection {
+  private readonly collapseState: CollapseState;
+  private readonly anchors: CollapsibleAnchors;
+
+  constructor(collapseState: CollapseState, anchors: CollapsibleAnchors) {
+    this.collapseState = collapseState;
+    this.anchors = anchors;
+  }
+
+  get isCollapsed(): boolean {
+    return this.collapseState.isSectionCollapsed(this.anchors);
+  }
+
+  get shouldRenderContent(): boolean {
+    return Array.isArray(this.anchors) || !this.isCollapsed;
+  }
+
+  get currentActionTooltip(): string {
+    const verb = this.isCollapsed ? 'Expand' : 'Collapse';
+    return Array.isArray(this.anchors) ? `${verb} All` : verb;
+  }
+
+  toggle(): void {
+    this.collapseState.toggleSectionCollapse(this.anchors);
+  }
+}
+
+export class CollapseState {
+  private readonly collapsedAnchors = new Set<string>();
+  private readonly childAnchorsByParent = new Map<string, Set<string>>();
+
+  constructor() {
+    makeObservable<CollapseState, 'collapsedAnchors' | 'childAnchorsByParent'>(
+      this,
+      {
+        collapsedAnchors: observable,
+        childAnchorsByParent: observable,
+        toggleSectionCollapse: action,
+        setSectionsCollapsed: action,
+        registerChild: action,
+        unregisterChild: action,
+      },
+    );
+  }
+
+  isSectionCollapsed(anchors: CollapsibleAnchors): boolean {
+    return Array.isArray(anchors)
+      ? anchors.every((a) => this.collapsedAnchors.has(a))
+      : this.collapsedAnchors.has(anchors);
+  }
+
+  toggleSectionCollapse(anchors: CollapsibleAnchors): void {
+    this.setSectionsCollapsed(anchors, !this.isSectionCollapsed(anchors));
+  }
+
+  setSectionsCollapsed(anchors: CollapsibleAnchors, collapsed: boolean): void {
+    const anchorList = Array.isArray(anchors) ? anchors : [anchors];
+    anchorList.forEach((anchor) => {
+      if (collapsed) {
+        this.collapsedAnchors.add(anchor);
+      } else {
+        this.collapsedAnchors.delete(anchor);
+      }
+    });
+  }
+
+  registerChild(parentAnchor: string | undefined, childAnchor: string): void {
+    if (parentAnchor === undefined || parentAnchor === childAnchor) {
+      return;
+    }
+    const existing = this.childAnchorsByParent.get(parentAnchor);
+    if (existing) {
+      existing.add(childAnchor);
+    } else {
+      this.childAnchorsByParent.set(parentAnchor, new Set([childAnchor]));
+    }
+  }
+
+  unregisterChild(parentAnchor: string, childAnchor: string): void {
+    this.childAnchorsByParent.get(parentAnchor)?.delete(childAnchor);
+  }
+
+  registerChildrenAnchors(parentAnchor: string): CollapsibleSection {
+    const children = this.childAnchorsByParent.get(parentAnchor);
+    const anchors =
+      children && children.size > 0 ? Array.from(children) : parentAnchor;
+    return new CollapsibleSection(this, anchors);
+  }
+}
+
 export abstract class BaseLayoutState {
   currentNavigationZone = '';
   isExpandedModeEnabled = false;
@@ -35,11 +127,13 @@ export abstract class BaseLayoutState {
   header?: HTMLElement | undefined;
   isTopScrollerVisible = false;
 
-  private wikiPageAnchorIndex = new Map<string, HTMLElement>();
+  protected wikiPageAnchorIndex = new Map<string, HTMLElement>();
   wikiPageNavigationCommand?: WikiPageNavigationCommand | undefined;
-  private wikiPageVisibleAnchors: string[] = [];
+  protected wikiPageVisibleAnchors: string[] = [];
   private renderedGrids = 0;
   private wikiPageScrollIntersectionObserver?: IntersectionObserver | undefined;
+
+  readonly sectionCollapseState = new CollapseState();
 
   constructor() {
     makeObservable<
@@ -142,6 +236,7 @@ export abstract class BaseLayoutState {
           ) {
             return;
           }
+          this.onWikiPageVisibleAnchorsSettled();
         },
         {
           root: this.frame,
@@ -161,7 +256,7 @@ export abstract class BaseLayoutState {
     this.wikiPageVisibleAnchors = [];
   }
 
-  private updatePageVisibleAnchors(
+  protected updatePageVisibleAnchors(
     changedAnchor: string,
     isIntersecting: boolean,
   ): void {
@@ -178,6 +273,10 @@ export abstract class BaseLayoutState {
         (anchor) => changedAnchor !== anchor,
       );
     }
+  }
+
+  protected onWikiPageVisibleAnchorsSettled(): void {
+    // Small no-op that is overriden in dataspaces for scroll tracking.
   }
 
   enableExpandedMode(val: boolean): void {
