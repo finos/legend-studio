@@ -3816,43 +3816,6 @@ describe('DataProductViewer', () => {
     });
   });
 
-  describe('toggleAllApgGroupCollapse', () => {
-    test('Collapses all and expands all filtered APGs', async () => {
-      await setupLakehouseDataProductTest(
-        mockMultiGroupLargeSDLCDataProduct,
-        mockEntitlementsMultiGroupLargeSDLCDataProduct,
-        [],
-        [],
-      );
-
-      // Starts all collapsed (APs are not visible)
-      expect(screen.queryAllByText('Access Point 1').length).toBe(0);
-
-      // Click Expand All
-      const toggleAllBtn = await screen.findByRole('button', {
-        name: 'Expand All',
-      });
-      act(() => {
-        fireEvent.click(toggleAllBtn);
-      });
-
-      // Now all should be expanded
-      const ap1s = await screen.findAllByText('Access Point 1');
-      expect(ap1s.length).toBe(2); // One in each group
-
-      // Click Collapse All
-      const toggleAllBtnCollapse = await screen.findByRole('button', {
-        name: 'Collapse All',
-      });
-      act(() => {
-        fireEvent.click(toggleAllBtnCollapse);
-      });
-
-      // Now all should be collapsed again
-      expect(screen.queryAllByText('Access Point 1').length).toBe(0);
-    });
-  });
-
   describe('fetchSampleData logic', () => {
     test('uses engine result when both engine and artifact promises resolve successfully', async () => {
       const { dataProductViewerState } = await setupLakehouseDataProductTest(

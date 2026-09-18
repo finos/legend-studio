@@ -15,7 +15,6 @@
  */
 
 import {
-  AnchorLinkIcon,
   DocumentIcon,
   EnvelopeOutlineIcon,
   ExternalLinkIcon,
@@ -26,6 +25,7 @@ import {
   WorldOutlineIcon,
 } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
+import { CollapsibleWikiSection } from '../ProductViewer.js';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Avatar, Box, Grid, Link, Stack } from '@mui/material';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
@@ -170,176 +170,167 @@ export const DataProductSupportInfo = observer(
 
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
-        <div className="data-product__viewer__wiki__section__header">
-          <div className="data-product__viewer__wiki__section__header__label">
-            Support
-            <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => {
-                dataProductViewerState.changeZone(anchor, true);
-                dataProductViewerState.copyLinkToClipboard(anchor);
-              }}
-            >
-              <AnchorLinkIcon />
-            </button>
-          </div>
-        </div>
-        <div className="data-product__viewer__wiki__section__content">
-          {doesSupportInfoExist ? (
-            <Grid
-              container={true}
-              spacing={3}
-              columns={2}
-              className="data-product__viewer__support-info_container"
-            >
-              {supportInfo?.emails && supportInfo.emails.length > 0 && (
-                <Grid
-                  size={1}
-                  className="data-product__viewer__support-info__section"
-                >
-                  <Box className="data-product__viewer__support-info__section__icon">
-                    {getIconFromUrlandSupportType(
-                      SUPPORT_TYPE.EMAILS,
-                      undefined,
-                    )}
-                  </Box>
-                  {supportInfo.emails.map((email, index) => (
-                    <Fragment key={email.hashCode}>
-                      <Link
-                        key={email.address}
-                        className="data-product__viewer__support-info__link"
-                        href={`mailto:${email.address}`}
-                      >
-                        {email.title}
-                        <ExternalLinkIcon />
-                      </Link>
-                      {index < supportInfo.emails.length - 1 ? ', ' : null}
-                    </Fragment>
-                  ))}
-                </Grid>
-              )}
-              {supportInfo?.documentation !== undefined && (
-                <Grid
-                  size={1}
-                  className="data-product__viewer__support-info__section"
-                >
-                  <Box className="data-product__viewer__support-info__section__icon">
-                    {getIconFromUrlandSupportType(
-                      SUPPORT_TYPE.DOCUMENTATION,
-                      supportInfo.documentation.url,
-                    )}
-                  </Box>
-                  <Link
-                    className="data-product__viewer__support-info__link"
-                    href={supportInfo.documentation.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+        <CollapsibleWikiSection
+          viewerState={dataProductViewerState}
+          section={DATA_PRODUCT_VIEWER_SECTION.SUPPORT_INFO}
+        >
+          <div className="data-product__viewer__wiki__section__content">
+            {doesSupportInfoExist ? (
+              <Grid
+                container={true}
+                spacing={3}
+                columns={2}
+                className="data-product__viewer__support-info_container"
+              >
+                {supportInfo?.emails && supportInfo.emails.length > 0 && (
+                  <Grid
+                    size={1}
+                    className="data-product__viewer__support-info__section"
                   >
-                    {supportInfo.documentation.label ??
-                      supportInfo.documentation.url}
-                    <ExternalLinkIcon />
-                  </Link>
-                </Grid>
-              )}
-              {supportInfo?.supportUrl !== undefined && (
-                <Grid
-                  size={1}
-                  className="data-product__viewer__support-info__section"
-                >
-                  <Box className="data-product__viewer__support-info__section__icon">
-                    {getIconFromUrlandSupportType(
-                      SUPPORT_TYPE.SUPPORT,
-                      supportInfo.supportUrl.url,
-                    )}
-                  </Box>
-                  <Link
-                    className="data-product__viewer__support-info__link"
-                    href={supportInfo.supportUrl.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    <Box className="data-product__viewer__support-info__section__icon">
+                      {getIconFromUrlandSupportType(
+                        SUPPORT_TYPE.EMAILS,
+                        undefined,
+                      )}
+                    </Box>
+                    {supportInfo.emails.map((email, index) => (
+                      <Fragment key={email.hashCode}>
+                        <Link
+                          key={email.address}
+                          className="data-product__viewer__support-info__link"
+                          href={`mailto:${email.address}`}
+                        >
+                          {email.title}
+                          <ExternalLinkIcon />
+                        </Link>
+                        {index < supportInfo.emails.length - 1 ? ', ' : null}
+                      </Fragment>
+                    ))}
+                  </Grid>
+                )}
+                {supportInfo?.documentation !== undefined && (
+                  <Grid
+                    size={1}
+                    className="data-product__viewer__support-info__section"
                   >
-                    {supportInfo.supportUrl.label ?? supportInfo.supportUrl.url}
-                    <ExternalLinkIcon />
-                  </Link>
-                </Grid>
-              )}
-              {supportInfo?.website !== undefined && (
-                <Grid
-                  size={1}
-                  className="data-product__viewer__support-info__section"
-                >
-                  <Box className="data-product__viewer__support-info__section__icon">
-                    {getIconFromUrlandSupportType(
-                      SUPPORT_TYPE.WEBSITE,
-                      supportInfo.website.url,
-                    )}
-                  </Box>
-                  <Link
-                    className="data-product__viewer__support-info__link"
-                    href={supportInfo.website.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {supportInfo.website.label ?? supportInfo.website.url}
-                    <ExternalLinkIcon />
-                  </Link>
-                </Grid>
-              )}
-              {supportInfo?.faqUrl !== undefined && (
-                <Grid
-                  size={1}
-                  className="data-product__viewer__support-info__section"
-                >
-                  <Box className="data-product__viewer__support-info__section__icon">
-                    {getIconFromUrlandSupportType(
-                      SUPPORT_TYPE.FAQ,
-                      supportInfo.faqUrl.url,
-                    )}
-                  </Box>
-                  <Link
-                    className="data-product__viewer__support-info__link"
-                    href={supportInfo.faqUrl.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {supportInfo.faqUrl.label ?? supportInfo.faqUrl.url}
-                    <ExternalLinkIcon />
-                  </Link>
-                </Grid>
-              )}
-              {expertise !== undefined && expertise.length > 0 && (
-                <Grid
-                  size={2}
-                  className="data-product__viewer__support-info__expertise"
-                >
-                  <div className="data-product__viewer__wiki__section__header__subtitle">
-                    Expertise
-                  </div>
-                  {expertise.map((exp) => (
-                    <div
-                      className="data-product__viewer__wiki__expertise"
-                      key={exp.uuid}
+                    <Box className="data-product__viewer__support-info__section__icon">
+                      {getIconFromUrlandSupportType(
+                        SUPPORT_TYPE.DOCUMENTATION,
+                        supportInfo.documentation.url,
+                      )}
+                    </Box>
+                    <Link
+                      className="data-product__viewer__support-info__link"
+                      href={supportInfo.documentation.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      {exp.description}
-                      <Stack direction="row" spacing={2}>
-                        {exp.expertIds?.map((expertId) => (
-                          <ExpertDisplay
-                            dataproductViewerState={dataProductViewerState}
-                            expertId={expertId}
-                            key={expertId}
-                          />
-                        ))}
-                      </Stack>
+                      {supportInfo.documentation.label ??
+                        supportInfo.documentation.url}
+                      <ExternalLinkIcon />
+                    </Link>
+                  </Grid>
+                )}
+                {supportInfo?.supportUrl !== undefined && (
+                  <Grid
+                    size={1}
+                    className="data-product__viewer__support-info__section"
+                  >
+                    <Box className="data-product__viewer__support-info__section__icon">
+                      {getIconFromUrlandSupportType(
+                        SUPPORT_TYPE.SUPPORT,
+                        supportInfo.supportUrl.url,
+                      )}
+                    </Box>
+                    <Link
+                      className="data-product__viewer__support-info__link"
+                      href={supportInfo.supportUrl.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {supportInfo.supportUrl.label ??
+                        supportInfo.supportUrl.url}
+                      <ExternalLinkIcon />
+                    </Link>
+                  </Grid>
+                )}
+                {supportInfo?.website !== undefined && (
+                  <Grid
+                    size={1}
+                    className="data-product__viewer__support-info__section"
+                  >
+                    <Box className="data-product__viewer__support-info__section__icon">
+                      {getIconFromUrlandSupportType(
+                        SUPPORT_TYPE.WEBSITE,
+                        supportInfo.website.url,
+                      )}
+                    </Box>
+                    <Link
+                      className="data-product__viewer__support-info__link"
+                      href={supportInfo.website.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {supportInfo.website.label ?? supportInfo.website.url}
+                      <ExternalLinkIcon />
+                    </Link>
+                  </Grid>
+                )}
+                {supportInfo?.faqUrl !== undefined && (
+                  <Grid
+                    size={1}
+                    className="data-product__viewer__support-info__section"
+                  >
+                    <Box className="data-product__viewer__support-info__section__icon">
+                      {getIconFromUrlandSupportType(
+                        SUPPORT_TYPE.FAQ,
+                        supportInfo.faqUrl.url,
+                      )}
+                    </Box>
+                    <Link
+                      className="data-product__viewer__support-info__link"
+                      href={supportInfo.faqUrl.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {supportInfo.faqUrl.label ?? supportInfo.faqUrl.url}
+                      <ExternalLinkIcon />
+                    </Link>
+                  </Grid>
+                )}
+                {expertise !== undefined && expertise.length > 0 && (
+                  <Grid
+                    size={2}
+                    className="data-product__viewer__support-info__expertise"
+                  >
+                    <div className="viewer__wiki__section__header__subtitle">
+                      Expertise
                     </div>
-                  ))}
-                </Grid>
-              )}
-            </Grid>
-          ) : (
-            <ProductWikiPlaceholder message="(support information not specified)" />
-          )}
-        </div>
+                    {expertise.map((exp) => (
+                      <div
+                        className="data-product__viewer__wiki__expertise"
+                        key={exp.uuid}
+                      >
+                        {exp.description}
+                        <Stack direction="row" spacing={2}>
+                          {exp.expertIds?.map((expertId) => (
+                            <ExpertDisplay
+                              dataproductViewerState={dataProductViewerState}
+                              expertId={expertId}
+                              key={expertId}
+                            />
+                          ))}
+                        </Stack>
+                      </div>
+                    ))}
+                  </Grid>
+                )}
+              </Grid>
+            ) : (
+              <ProductWikiPlaceholder message="(support information not specified)" />
+            )}
+          </div>
+        </CollapsibleWikiSection>
       </div>
     );
   },

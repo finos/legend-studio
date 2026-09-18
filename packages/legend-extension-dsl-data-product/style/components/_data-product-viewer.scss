@@ -679,6 +679,58 @@
   }
 }
 
+.viewer__wiki__section__header {
+  @include flexVCenter;
+
+  justify-content: space-between;
+  height: 3rem;
+  border-bottom: 0.2rem solid var(--color-blue-100);
+  margin-bottom: 2rem;
+  margin-top: 4rem;
+  user-select: none;
+  color: var(--color-blue-100);
+
+  &__label {
+    @include ellipsisTextOverflow;
+    @include flexVCenter;
+
+    font-size: 2.4rem;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  &__subtitle {
+    @extend .viewer__wiki__section__header__label;
+
+    font-size: 1.8rem;
+    color: var(--color-hclight-blue-60);
+  }
+
+  &__anchor {
+    @include flexVCenter;
+
+    display: none;
+    margin-left: 0.5rem;
+    cursor: pointer;
+
+    svg {
+      color: var(--color-text-muted);
+    }
+
+    &:hover svg {
+      color: var(--color-text-muted);
+    }
+  }
+
+  &:hover &__anchor {
+    display: inline-flex;
+  }
+
+  &__documentation {
+    color: var(--color-blue-100);
+  }
+}
+
 .data-product__viewer__wiki {
   display: flex;
   flex-direction: column;
@@ -687,58 +739,6 @@
 
   &__section {
     flex-direction: column;
-
-    &__header {
-      @include flexVCenter;
-
-      justify-content: space-between;
-      height: 3rem;
-      border-bottom: 0.2rem solid var(--color-blue-100);
-      margin-bottom: 2rem;
-      margin-top: 4rem;
-      user-select: none;
-      color: var(--color-blue-100);
-
-      &__label {
-        @include ellipsisTextOverflow;
-        @include flexVCenter;
-
-        font-size: 2.4rem;
-        text-transform: uppercase;
-        font-weight: 500;
-      }
-
-      &__subtitle {
-        @extend .data-product__viewer__wiki__section__header__label;
-
-        font-size: 1.8rem;
-        color: var(--color-hclight-blue-60);
-      }
-
-      &__anchor {
-        @include flexVCenter;
-
-        display: none;
-        margin-left: 0.5rem;
-        cursor: pointer;
-
-        svg {
-          color: var(--color-text-muted);
-        }
-
-        &:hover svg {
-          color: var(--color-text-muted);
-        }
-      }
-
-      &:hover &__anchor {
-        display: inline-flex;
-      }
-
-      &__documentation {
-        color: var(--color-blue-100);
-      }
-    }
 
     &__content {
       margin-bottom: 3rem;
@@ -2127,17 +2127,6 @@
 
     &__collapsible-content {
       animation: slideDown 0.2s ease-out;
-    }
-
-    &__caret {
-      margin-left: 0.5rem;
-      font-size: 2rem;
-      transition: transform 0.2s ease;
-      transform: rotate(-180deg);
-
-      &--collapsed {
-        transform: rotate(0deg);
-      }
     }
   }
 
@@ -3570,5 +3559,29 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+.wiki-section-header {
+  &__caret-btn {
+    @include flexVCenter;
+
+    margin-right: 0.5rem;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+  }
+
+  &__caret {
+    color: var(--color-blue-100);
+    font-size: 2rem;
+    transition: transform 0.2s ease;
+    transform: rotate(0deg);
+
+    &--collapsed {
+      transform: rotate(-90deg);
+    }
   }
 }

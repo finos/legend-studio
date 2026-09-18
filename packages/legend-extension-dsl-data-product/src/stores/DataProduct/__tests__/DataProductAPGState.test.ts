@@ -184,6 +184,11 @@ const createState = (): DataProductAPGState => {
       pluginManager: { getPureProtocolProcessorPlugins: () => [] },
     },
     dataProductDataAccessState: undefined,
+    layoutState: {
+      sectionCollapseState: {
+        registerChild: jest.fn(),
+      },
+    },
   } as unknown as DataProductViewerState;
   return new DataProductAPGState(apg, mockViewerState);
 };

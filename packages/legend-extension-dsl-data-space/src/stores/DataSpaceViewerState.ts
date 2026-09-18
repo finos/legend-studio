@@ -55,13 +55,14 @@ import {
   type DataSpaceMappingProviderAccessConfig,
   DataSpaceMappingProviderAccessState,
 } from './DataSpaceMappingProviderAccessState.js';
+import { BaseViewerState } from '@finos/legend-extension-dsl-data-product';
 
-export class DataSpaceViewerState {
-  readonly applicationStore: GenericLegendApplicationStore;
+export class DataSpaceViewerState extends BaseViewerState<
+  DataSpaceAnalysisResult,
+  DataSpaceLayoutState
+> {
   readonly graphManagerState: GraphManagerState;
-  readonly layoutState: DataSpaceLayoutState;
 
-  readonly dataSpaceAnalysisResult: DataSpaceAnalysisResult;
   readonly groupId: string;
   readonly artifactId: string;
   readonly versionId: string;
@@ -69,9 +70,6 @@ export class DataSpaceViewerState {
   readonly queryDataSpace: (executionContextKey: string) => void;
   readonly viewProject: (path: string | undefined) => void;
   readonly viewSDLCProject: (path: string | undefined) => Promise<void>;
-  readonly onZoneChange?:
-    | ((zone: NavigationZone | undefined) => void)
-    | undefined;
   readonly queryClass: (_class: Class) => void;
   readonly openServiceQuery: (servicePath: string) => void;
   readonly onQuickStartTabChange?:
@@ -141,6 +139,16 @@ export class DataSpaceViewerState {
         | undefined;
     },
   ) {
+    super(
+      dataSpaceAnalysisResult,
+      applicationStore,
+      new DataSpaceLayoutState(),
+      {
+        onZoneChange: actions.onZoneChange,
+      },
+    );
+    this.layoutState.setViewerState(this);
+
     makeObservable(this, {
       currentActivity: observable,
       currentExecutionContext: observable,
@@ -157,11 +165,8 @@ export class DataSpaceViewerState {
       refreshCurrentMappingProviderAccessState: action,
     });
 
-    this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
-    this.layoutState = new DataSpaceLayoutState(this);
 
-    this.dataSpaceAnalysisResult = dataSpaceAnalysisResult;
     this.executableStates = this.dataSpaceAnalysisResult.executables.map(
       (exec) => new DataSpaceViewerExecutableState(this, exec),
     );
@@ -172,7 +177,6 @@ export class DataSpaceViewerState {
     this.queryDataSpace = actions.queryDataSpace;
     this.viewProject = actions.viewProject;
     this.viewSDLCProject = actions.viewSDLCProject;
-    this.onZoneChange = actions.onZoneChange;
     this.queryClass = actions.queryClass;
     this.openServiceQuery = actions.openServiceQuery;
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
@@ -206,6 +210,16 @@ export class DataSpaceViewerState {
     this.initMappingProviderAccessState();
   }
 
+  get dataSpaceAnalysisResult(): DataSpaceAnalysisResult {
+    return this.product;
+  }
+
+  protected getValidSections(): string[] {
+    return DATA_SPACE_WIKI_PAGE_SECTIONS.map((activity) =>
+      generateAnchorForActivity(activity),
+    );
+  }
+
   get isVerified(): boolean {
     return Boolean(
       this.dataSpaceAnalysisResult.stereotypes.find(
@@ -214,6 +228,10 @@ export class DataSpaceViewerState {
           stereotype.value === PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
       ),
     );
+  }
+
+  override get documentationUrl(): string | undefined {
+    return this.dataSpaceAnalysisResult.supportInfo?.documentationUrl;
   }
 
   get currentMappingProviderAccessState():
@@ -305,12 +323,7 @@ export class DataSpaceViewerState {
     this.currentRuntime = val;
   }
 
-  syncZoneWithNavigation(zone: NavigationZone): void {
-    this.layoutState.setCurrentNavigationZone(zone);
-    this.onZoneChange?.(zone);
-  }
-
-  changeZone(zone: NavigationZone, force = false): void {
+  override changeZone(zone: NavigationZone, force = false): void {
     if (force) {
       this.layoutState.setCurrentNavigationZone('');
     }

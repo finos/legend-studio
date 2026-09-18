@@ -16,16 +16,21 @@
 
 import { observer } from 'mobx-react-lite';
 import { useRef, useEffect } from 'react';
-import { AnchorLinkIcon } from '@finos/legend-art';
+import { CollapsibleWikiSection } from '../ProductViewer.js';
 import type { DataProductViewerState } from '../../stores/DataProduct/DataProductViewerState.js';
-import { generateAnchorForSection } from '../../stores/ProductViewerNavigation.js';
+import {
+  DATA_PRODUCT_MODELAPG_SECTION,
+  generateAnchorForSection,
+} from '../../stores/ProductViewerNavigation.js';
 import { DataAccessOverview } from '@finos/legend-query-builder';
 
 export const DataProductNativeModelAccessDataAccess = observer(
   (props: { dataProductViewerState: DataProductViewerState }) => {
     const { dataProductViewerState } = props;
     const sectionRef = useRef<HTMLDivElement>(null);
-    const anchor = generateAnchorForSection('NATIVE_MODEL_ACCESS_DATA_ACCESS');
+    const anchor = generateAnchorForSection(
+      DATA_PRODUCT_MODELAPG_SECTION.NATIVE_MODEL_ACCESS_DATA_ACCESS,
+    );
 
     useEffect(() => {
       if (sectionRef.current) {
@@ -47,23 +52,18 @@ export const DataProductNativeModelAccessDataAccess = observer(
 
     return (
       <div ref={sectionRef} className="data-product__viewer__wiki__section">
-        <div className="data-product__viewer__wiki__section__header">
-          <div className="data-product__viewer__wiki__section__header__label">
-            Native Model Access Data Access
-            <button
-              className="data-product__viewer__wiki__section__header__anchor"
-              tabIndex={-1}
-              onClick={() => dataProductViewerState.changeZone(anchor, true)}
-            >
-              <AnchorLinkIcon />
-            </button>
+        <CollapsibleWikiSection
+          viewerState={dataProductViewerState}
+          section={
+            DATA_PRODUCT_MODELAPG_SECTION.NATIVE_MODEL_ACCESS_DATA_ACCESS
+          }
+        >
+          <div className="data-product__viewer__wiki__section__content">
+            <div className="data-product__viewer__data-access">
+              <DataAccessOverview dataAccessState={dataAccessState} />
+            </div>
           </div>
-        </div>
-        <div className="data-product__viewer__wiki__section__content">
-          <div className="data-product__viewer__data-access">
-            <DataAccessOverview dataAccessState={dataAccessState} />
-          </div>
-        </div>
+        </CollapsibleWikiSection>
       </div>
     );
   },
