@@ -1,0 +1,60 @@
+{
+  "name": "AccessorsOnlyDataProduct",
+  "package": "test::acc",
+  "path": "test::acc::AccessorsOnlyDataProduct",
+  "title": "Accessors Only Data Product",
+  "description": "Fixture for a DataSpace with no execution contexts at all, whose executables reach Lakehouse Data Products directly through executableAccessorInfo.",
+  "taggedValues": [],
+  "stereotypes": [],
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "elements": [],
+  "elementDocs": [],
+  "executionContexts": [],
+  "defaultExecutionContext": "",
+  "diagrams": [],
+  "executables": [
+    {
+      "title": "Data Product Accessor",
+      "description": "Reaches two access point groups of the same Data Product",
+      "executableAccessorInfo": [
+        {
+          "_type": "lakehouseDataProductExecutableAccessorInfo",
+          "dataProductPath": "test::acc::MyProduct",
+          "accessPointGroupId": "group",
+          "accessPointId": "ap"
+        },
+        {
+          "_type": "lakehouseDataProductExecutableAccessorInfo",
+          "dataProductPath": "test::acc::MyProduct",
+          "accessPointGroupId": "otherGroup",
+          "accessPointId": "otherAp"
+        }
+      ],
+      "info": {
+        "_type": "templateExecutableInfo",
+        "id": "1",
+        "query": "|#P{test::acc::MyProduct.ap}#->select(~[name])"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      }
+    }
+  ],
+  "dataSpaceReferencesMetadataInfo": [
+    {
+      "_type": "dataproductReferenceMetadata",
+      "dataproductPath": "test::acc::MyProduct",
+      "production": "111",
+      "prodParallel": "222"
+    }
+  ]
+}

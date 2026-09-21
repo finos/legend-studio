@@ -29,7 +29,10 @@ import { action, computed, flowResult, makeObservable, observable } from 'mobx';
 import {
   type DataSpaceAnalysisResult,
   type DataSpaceExecutionContextAnalysisResult,
+  DataproductReferenceMetadata,
+  LakehouseDataProductExecutableAccessorInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
   PURE_DATA_SPACE_INFO_PROFILE_PATH,
   PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
@@ -53,8 +56,8 @@ import { DataSpaceQuickStartState } from './DataSpaceQuickStartState.js';
 import { DataSpaceViewerExecutableState } from './DataSpaceViewerExecutableState.js';
 import {
   type DataSpaceMappingProviderAccessConfig,
-  DataSpaceMappingProviderAccessState,
-} from './DataSpaceMappingProviderAccessState.js';
+  DataSpaceDataProductAccessState,
+} from './DataSpaceDataProductAccessState.js';
 import {
   DataSpaceQualityState,
   type DataSpaceQualityResult,
@@ -80,12 +83,7 @@ export class DataSpaceViewerState extends BaseViewerState<
     | ((tabKey: string, executableTitle: string) => void)
     | undefined;
   readonly viewDataProduct?:
-    | ((
-        groupId: string,
-        artifactId: string,
-        versionId: string,
-        dataProductPath: string,
-      ) => void)
+    | ((dataProductPath: string, deploymentId: number) => void)
     | undefined;
   readonly mappingProviderAccessConfig?:
     | DataSpaceMappingProviderAccessConfig
@@ -106,15 +104,15 @@ export class DataSpaceViewerState extends BaseViewerState<
   currentExecutionContext?: DataSpaceExecutionContextAnalysisResult | undefined;
   currentRuntime?: PackageableRuntime | undefined;
   /**
-   * Cache of mapping-provider access states keyed by the mapping provider
-   * (Data Product) element path. Multiple execution contexts often point at
-   * the same underlying Data Product, so caching avoids re-hitting
-   * depot + Lakehouse every time the user switches execution context.
+   * Cache of Data Product access states keyed by the Data Product element
+   * path. Feeds both:
+   *   - execution-context "mappingProvider" Request Access button
+   *   - executable-per-APG Request Access buttons (all APGs of a given DP
+   *     share the same access state instance)
+   * Avoids re-hitting Lakehouse when the user switches execution context or
+   * scrolls through executables that reference the same DP.
    */
-  mappingProviderAccessStates = new Map<
-    string,
-    DataSpaceMappingProviderAccessState
-  >();
+  dataProductAccessStates = new Map<string, DataSpaceDataProductAccessState>();
 
   constructor(
     applicationStore: GenericLegendApplicationStore,
@@ -135,12 +133,7 @@ export class DataSpaceViewerState extends BaseViewerState<
         | ((tabKey: string, executableTitle: string) => void)
         | undefined;
       viewDataProduct?:
-        | ((
-            groupId: string,
-            artifactId: string,
-            versionId: string,
-            dataProductPath: string,
-          ) => void)
+        | ((dataProductPath: string, deploymentId: number) => void)
         | undefined;
       mappingProviderAccessConfig?:
         | DataSpaceMappingProviderAccessConfig
@@ -165,15 +158,17 @@ export class DataSpaceViewerState extends BaseViewerState<
       currentExecutionContext: observable,
       currentRuntime: observable,
       currentDataAccessState: observable,
-      mappingProviderAccessStates: observable.shallow,
+      dataProductAccessStates: observable.shallow,
       currentMappingProviderAccessState: computed,
       executableStates: observable,
       legendAIConfig: observable,
       isVerified: computed,
+      isDataAccessAvailable: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
       refreshCurrentMappingProviderAccessState: action,
+      refreshDataProductAccessState: action,
     });
 
     this.graphManagerState = graphManagerState;
@@ -221,6 +216,7 @@ export class DataSpaceViewerState extends BaseViewerState<
     this.qualityState = new DataSpaceQualityState(this);
     this.legendAIConfig = DEFAULT_LEGEND_AI_CONFIG;
     this.initMappingProviderAccessState();
+    this.initExecutableAccessStates();
   }
 
   get dataSpaceAnalysisResult(): DataSpaceAnalysisResult {
@@ -247,15 +243,153 @@ export class DataSpaceViewerState extends BaseViewerState<
     return this.dataSpaceAnalysisResult.supportInfo?.documentationUrl;
   }
 
+  get isDataAccessAvailable(): boolean {
+    return this.currentExecutionContext !== undefined;
+  }
+
   get currentMappingProviderAccessState():
-    | DataSpaceMappingProviderAccessState
+    | DataSpaceDataProductAccessState
     | undefined {
     const mappingProvider =
       this.currentExecutionContext?.mappingProvider?.element;
     if (!mappingProvider) {
       return undefined;
     }
-    return this.mappingProviderAccessStates.get(mappingProvider);
+    return this.dataProductAccessStates.get(mappingProvider);
+  }
+
+  /**
+   * Look up the Lakehouse deployment id for a Data Product path from the
+   * DataSpace analytics' `dataSpaceReferencesMetadataInfo`. Picks the
+   * prod-parallel DID for SNAPSHOT versions of the DataSpace, and the
+   * production DID otherwise. Returns undefined if the analytics didn't
+   * ship a DID for this DP (the DP might not be an entitled Lakehouse DP).
+   */
+  resolveDeploymentIdForDataProduct(
+    dataProductPath: string,
+  ): number | undefined {
+    const useProdParallel = isSnapshotVersion(this.versionId);
+    for (const metadata of this.dataSpaceAnalysisResult
+      .dataSpaceReferencesMetadataInfo) {
+      if (
+        metadata instanceof DataproductReferenceMetadata &&
+        metadata.dataproductPath === dataProductPath
+      ) {
+        const raw = useProdParallel
+          ? metadata.prodParallel
+          : metadata.production;
+        if (raw === undefined || raw === '') {
+          return undefined;
+        }
+        const num = Number(raw);
+        return Number.isFinite(num) ? num : undefined;
+      }
+    }
+    return undefined;
+  }
+
+  private buildDataProductAccessState(
+    dataProductPath: string,
+  ): DataSpaceDataProductAccessState | undefined {
+    if (!this.mappingProviderAccessConfig) {
+      return undefined;
+    }
+    if (this.dataProductAccessStates.has(dataProductPath)) {
+      return this.dataProductAccessStates.get(dataProductPath);
+    }
+    const deploymentId =
+      this.resolveDeploymentIdForDataProduct(dataProductPath);
+    if (deploymentId === undefined) {
+      return undefined;
+    }
+    const state = new DataSpaceDataProductAccessState(
+      this.applicationStore,
+      this.graphManagerState,
+      {
+        groupId: this.groupId,
+        artifactId: this.artifactId,
+        versionId: this.versionId,
+      },
+      dataProductPath,
+      deploymentId,
+      this.mappingProviderAccessConfig,
+    );
+    this.dataProductAccessStates.set(dataProductPath, state);
+    // eslint-disable-next-line no-void
+    void flowResult(state.initialize()).catch(() => undefined);
+    return state;
+  }
+
+  /**
+   * Ensures a `DataSpaceDataProductAccessState` exists (and has been
+   * initialized) for the current execution context's mapping provider. Reuses
+   * the cached entry keyed by the mapping provider (Data Product) path when
+   * possible so switching execution contexts does not re-hit Lakehouse.
+   */
+  private initMappingProviderAccessState(): void {
+    const mappingProvider =
+      this.currentExecutionContext?.mappingProvider?.element;
+    if (!mappingProvider) {
+      return;
+    }
+    this.buildDataProductAccessState(mappingProvider);
+  }
+
+  /**
+   * Pre-warms access states for every unique Data Product path referenced by
+   * any executable's `executableAccessorInfo`. All APGs of a given DP share
+   * a single access state instance (the underlying viewer state exposes all
+   * APG states of the DP once initialized).
+   */
+  private initExecutableAccessStates(): void {
+    const seen = new Set<string>();
+    for (const exec of this.dataSpaceAnalysisResult.executables) {
+      for (const accessor of exec.executableAccessorInfo) {
+        if (accessor instanceof LakehouseDataProductExecutableAccessorInfo) {
+          if (seen.has(accessor.dataProductPath)) {
+            continue;
+          }
+          seen.add(accessor.dataProductPath);
+          this.buildDataProductAccessState(accessor.dataProductPath);
+        }
+      }
+    }
+  }
+
+  /**
+   * Looks up the initialized access state for a Data Product path (may still
+   * be initializing). Used by executable renderers to grab the state for a
+   * specific `(dpPath, apgId)` accessor.
+   */
+  getDataProductAccessState(
+    dataProductPath: string,
+  ): DataSpaceDataProductAccessState | undefined {
+    return this.dataProductAccessStates.get(dataProductPath);
+  }
+
+  /**
+   * Evicts the cached access state for the current execution context's mapping
+   * provider and rebuilds it, re-running the full resolve + init flow
+   * (Lakehouse data-product details, contracts / entitlements / ingest
+   * fetches, and per-APG user access status).
+   */
+  refreshCurrentMappingProviderAccessState(): void {
+    const mappingProvider =
+      this.currentExecutionContext?.mappingProvider?.element;
+    if (!mappingProvider) {
+      return;
+    }
+    this.dataProductAccessStates.delete(mappingProvider);
+    this.buildDataProductAccessState(mappingProvider);
+  }
+
+  /**
+   * Evicts and rebuilds the access state for a specific Data Product. Used by
+   * per-executable refresh actions.
+   */
+  refreshDataProductAccessState(dataProductPath: string): void {
+    this.dataProductAccessStates.delete(dataProductPath);
+    this.buildDataProductAccessState(dataProductPath);
   }
 
   setCurrentActivity(val: DATA_SPACE_VIEWER_ACTIVITY_MODE): void {
@@ -282,53 +416,6 @@ export class DataSpaceViewerState extends BaseViewerState<
     } else {
       this.currentDataAccessState = undefined;
     }
-    this.initMappingProviderAccessState();
-  }
-
-  /**
-   * Ensures a `DataSpaceMappingProviderAccessState` exists (and has been
-   * initialized) for the current execution context's mapping provider. Reuses
-   * the cached entry keyed by the mapping provider (Data Product) path when
-   * possible so switching execution contexts does not re-hit depot / Lakehouse.
-   */
-  private initMappingProviderAccessState(): void {
-    const mappingProvider =
-      this.currentExecutionContext?.mappingProvider?.element;
-    if (!mappingProvider || !this.mappingProviderAccessConfig) {
-      return;
-    }
-    if (this.mappingProviderAccessStates.has(mappingProvider)) {
-      return;
-    }
-    const state = new DataSpaceMappingProviderAccessState(
-      this.applicationStore,
-      this.graphManagerState,
-      {
-        groupId: this.groupId,
-        artifactId: this.artifactId,
-        versionId: this.versionId,
-      },
-      mappingProvider,
-      this.mappingProviderAccessConfig,
-    );
-    this.mappingProviderAccessStates.set(mappingProvider, state);
-    // eslint-disable-next-line no-void
-    void flowResult(state.initialize()).catch(() => undefined);
-  }
-
-  /**
-   * Evicts the cached access state for the current execution context's mapping
-   * provider and rebuilds it, re-running the full resolve + init flow (depot
-   * artifact fetch, Lakehouse data-product details, contracts / entitlements
-   * / ingest fetches, and per-APG user access status).
-   */
-  refreshCurrentMappingProviderAccessState(): void {
-    const mappingProvider =
-      this.currentExecutionContext?.mappingProvider?.element;
-    if (!mappingProvider) {
-      return;
-    }
-    this.mappingProviderAccessStates.delete(mappingProvider);
     this.initMappingProviderAccessState();
   }
 

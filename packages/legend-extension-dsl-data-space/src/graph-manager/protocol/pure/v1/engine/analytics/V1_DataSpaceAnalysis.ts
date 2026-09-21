@@ -510,6 +510,44 @@ const V1_deserializeDataSpaceExecutableResult = (
   }
 };
 
+export abstract class V1_DataSpaceExecutableAccessorInfo {}
+
+const V1_DATA_SPACE_LAKEHOUSE_DATA_PRODUCT_EXECUTABLE_ACCESSOR_INFO_TYPE =
+  'lakehouseDataProductExecutableAccessorInfo';
+
+export class V1_LakehouseDataProductExecutableAccessorInfo extends V1_DataSpaceExecutableAccessorInfo {
+  dataProductPath!: string;
+  accessPointGroupId!: string;
+  accessPointId!: string;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_LakehouseDataProductExecutableAccessorInfo, {
+      _type: usingConstantValueSchema(
+        V1_DATA_SPACE_LAKEHOUSE_DATA_PRODUCT_EXECUTABLE_ACCESSOR_INFO_TYPE,
+      ),
+      accessPointGroupId: primitive(),
+      accessPointId: primitive(),
+      dataProductPath: primitive(),
+    }),
+  );
+}
+
+const V1_deserializeDataSpaceExecutableAccessorInfo = (
+  json: PlainObject<V1_DataSpaceExecutableAccessorInfo>,
+): V1_DataSpaceExecutableAccessorInfo => {
+  switch (json._type) {
+    case V1_DATA_SPACE_LAKEHOUSE_DATA_PRODUCT_EXECUTABLE_ACCESSOR_INFO_TYPE:
+      return deserialize(
+        V1_LakehouseDataProductExecutableAccessorInfo.serialization.schema,
+        json,
+      );
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize data space executable accessor info of type '${json._type}'`,
+      );
+  }
+};
+
 export class V1_DataSpaceExecutableAnalysisResult {
   title!: string;
   description?: string | undefined;
@@ -517,6 +555,7 @@ export class V1_DataSpaceExecutableAnalysisResult {
   info?: V1_DataSpaceExecutableInfo | undefined;
   result?: V1_DataSpaceExecutableResult | undefined;
   executableReturnType?: V1_GenericType | undefined;
+  executableAccessorInfo: V1_DataSpaceExecutableAccessorInfo[] = [];
 }
 
 const V1_dataSpaceExecutableAnalysisResultModelSchema = (
@@ -525,6 +564,9 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
   createModelSchema(V1_DataSpaceExecutableAnalysisResult, {
     executable: optional(primitive()),
     description: optional(primitive()),
+    executableAccessorInfo: list(
+      custom(() => SKIP, V1_deserializeDataSpaceExecutableAccessorInfo),
+    ),
     info: optionalCustom(
       () => SKIP,
       (val: PlainObject<V1_DataSpaceExecutableInfo>) =>
@@ -537,6 +579,44 @@ const V1_dataSpaceExecutableAnalysisResultModelSchema = (
       (val) => V1_deserializeGenericType(val),
     ),
   });
+
+export abstract class V1_DataSpaceReferencesMetadata {}
+
+const V1_DATA_SPACE_DATAPRODUCT_REFERENCE_METADATA_TYPE =
+  'dataproductReferenceMetadata';
+
+export class V1_DataproductReferenceMetadata extends V1_DataSpaceReferencesMetadata {
+  dataproductPath!: string;
+  production?: string | undefined;
+  prodParallel?: string | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(V1_DataproductReferenceMetadata, {
+      _type: usingConstantValueSchema(
+        V1_DATA_SPACE_DATAPRODUCT_REFERENCE_METADATA_TYPE,
+      ),
+      dataproductPath: primitive(),
+      prodParallel: optional(primitive()),
+      production: optional(primitive()),
+    }),
+  );
+}
+
+const V1_deserializeDataSpaceReferencesMetadata = (
+  json: PlainObject<V1_DataSpaceReferencesMetadata>,
+): V1_DataSpaceReferencesMetadata => {
+  switch (json._type) {
+    case V1_DATA_SPACE_DATAPRODUCT_REFERENCE_METADATA_TYPE:
+      return deserialize(
+        V1_DataproductReferenceMetadata.serialization.schema,
+        json,
+      );
+    default:
+      throw new UnsupportedOperationError(
+        `Can't deserialize data space references metadata of type '${json._type}'`,
+      );
+  }
+};
 
 export class V1_DataSpaceAnalysisResult {
   name!: string;
@@ -566,6 +646,8 @@ export class V1_DataSpaceAnalysisResult {
     string,
     V1_MappingModelCoverageAnalysisResult
   >;
+
+  dataSpaceReferencesMetadataInfo: V1_DataSpaceReferencesMetadata[] = [];
 }
 
 export const V1_dataSpaceAnalysisResultModelSchema = (
@@ -624,6 +706,9 @@ export const V1_dataSpaceAnalysisResultModelSchema = (
             _val,
           ),
         ),
+    ),
+    dataSpaceReferencesMetadataInfo: list(
+      custom(() => SKIP, V1_deserializeDataSpaceReferencesMetadata),
     ),
   });
 

@@ -2821,6 +2821,42 @@
       border-color: var(--color-hclight-grey-30);
     }
 
+    &__quickstart__tds__apg-access {
+      border-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__apg-access__header {
+      color: var(--color-hclight-grey-40);
+      background: var(--color-hclight-grey-10);
+      border-bottom-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__apg-access__group
+      + &__quickstart__tds__apg-access__group {
+      border-top-color: var(--color-hclight-grey-30);
+    }
+
+    &__quickstart__tds__apg-access__group__caret {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__quickstart__tds__apg-access__group__label {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__quickstart__tds__apg-access__group__count {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__quickstart__tds__apg-access__row + &__quickstart__tds__apg-access__row {
+      border-top-color: var(--color-hclight-grey-15);
+    }
+
+    &__quickstart__tds__apg-access__row__apg {
+      color: var(--color-hclight-grey-90);
+    }
+
     &__quickstart__tds__query-text__action svg {
       color: var(--color-hclight-grey-60);
     }

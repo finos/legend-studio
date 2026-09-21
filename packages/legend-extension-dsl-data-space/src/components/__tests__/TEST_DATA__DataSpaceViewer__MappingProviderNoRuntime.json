@@ -27,5 +27,13 @@
   ],
   "defaultExecutionContext": "default",
   "diagrams": [],
-  "executables": []
+  "executables": [],
+  "dataSpaceReferencesMetadataInfo": [
+    {
+      "_type": "dataproductReferenceMetadata",
+      "dataproductPath": "test::product::UpstreamDataProduct",
+      "production": "3",
+      "prodParallel": "4"
+    }
+  ]
 }

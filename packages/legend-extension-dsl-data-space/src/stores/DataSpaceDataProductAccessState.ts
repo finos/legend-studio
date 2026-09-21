@@ -39,7 +39,14 @@ import {
   guaranteeType,
   LogEvent,
 } from '@finos/legend-shared';
-import { action, flow, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   type DataProductConfig,
   type DataProductDataAccess_LegendApplicationPlugin_Extension,
@@ -47,7 +54,7 @@ import {
   type DataProductAPGState,
   DataProductDataAccessState,
   DataProductViewerState,
-  resolveEntitlementsDataProductFromSDLC,
+  resolveEntitlementsDataProductByDID,
 } from '@finos/legend-extension-dsl-data-product';
 
 export type DataSpaceMappingProviderAccessConfig = {
@@ -65,18 +72,23 @@ export type DataSpaceMappingProviderAccessConfig = {
 };
 
 /**
- * Backing state for the DataSpace viewer's "Request Access" flow on
- * mappingProvider execution contexts. Lazily resolves the referenced Lakehouse
- * DataProduct from the depot artifact generation for the DataSpace's own GAV,
- * then materializes the same viewer + data-access state stack that the LH
- * DataProduct viewer uses so that the access-request button and its dialogs
- * can be rendered as-is.
+ * Backing state for the DataSpace viewer's "Request Access" flow against a
+ * single referenced Lakehouse Data Product. Serves both the mappingProvider
+ * execution context entry and the per-executable accessor panels.
+ *
+ * The Lakehouse deployment id is supplied by the caller (it comes from the
+ * DataSpace analytics' `dataSpaceReferencesMetadataInfo`), so this state
+ * resolves the Data Product straight from Lakehouse without a depot
+ * artifact-generation lookup. It then materializes the same viewer +
+ * data-access state stack that the Lakehouse DataProduct viewer uses, so the
+ * access-request button and its dialogs can be rendered as-is.
  */
-export class DataSpaceMappingProviderAccessState {
+export class DataSpaceDataProductAccessState {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly graphManagerState: GraphManagerState;
   readonly gav: ProjectGAVCoordinates;
-  readonly mappingProviderPath: string;
+  readonly dataProductPath: string;
+  readonly deploymentId: number;
   readonly config: DataSpaceMappingProviderAccessConfig;
 
   readonly initializingState = ActionState.create();
@@ -90,7 +102,8 @@ export class DataSpaceMappingProviderAccessState {
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
     gav: ProjectGAVCoordinates,
-    mappingProviderPath: string,
+    dataProductPath: string,
+    deploymentId: number,
     config: DataSpaceMappingProviderAccessConfig,
   ) {
     makeObservable(this, {
@@ -102,13 +115,22 @@ export class DataSpaceMappingProviderAccessState {
       setDataAccessState: action,
       setModelAPGState: action,
       setErrorMessage: action,
+      isDataProductUnresolved: computed,
       initialize: flow,
     });
     this.applicationStore = applicationStore;
     this.graphManagerState = graphManagerState;
     this.gav = gav;
-    this.mappingProviderPath = mappingProviderPath;
+    this.dataProductPath = dataProductPath;
+    this.deploymentId = deploymentId;
     this.config = config;
+  }
+
+  get isDataProductUnresolved(): boolean {
+    return (
+      this.errorMessage !== undefined &&
+      this.dataProductViewerState === undefined
+    );
   }
 
   setDataProductViewerState(val: DataProductViewerState | undefined): void {
@@ -141,14 +163,14 @@ export class DataSpaceMappingProviderAccessState {
         V1_PureGraphManager,
         'GraphManager must be a V1_PureGraphManager',
       );
-      const resolved = (yield resolveEntitlementsDataProductFromSDLC(
-        this.gav,
-        this.mappingProviderPath,
+      const resolved = (yield resolveEntitlementsDataProductByDID(
+        this.dataProductPath,
+        this.deploymentId,
         this.config.depotServerClient,
         this.config.lakehouseContractServerClient,
         graphManager,
         this.config.tokenProvider,
-      )) as Awaited<ReturnType<typeof resolveEntitlementsDataProductFromSDLC>>;
+      )) as Awaited<ReturnType<typeof resolveEntitlementsDataProductByDID>>;
       const dataProductViewerState = new DataProductViewerState(
         resolved.dataProduct,
         this.applicationStore,
@@ -177,7 +199,7 @@ export class DataSpaceMappingProviderAccessState {
       const modelAPG = dataProductViewerState.getModelAccessPointGroup();
       if (!modelAPG) {
         this.setErrorMessage(
-          `Data Product '${this.mappingProviderPath}' has no model access point group.`,
+          `Data Product '${this.dataProductPath}' has no model access point group.`,
         );
       } else {
         const modelAPGState = dataProductViewerState.apgStates.find(
@@ -190,7 +212,7 @@ export class DataSpaceMappingProviderAccessState {
       assertErrorThrown(error);
       this.applicationStore.logService.warn(
         LogEvent.create(APPLICATION_EVENT.GENERIC_FAILURE),
-        `Failed to initialize DataSpace mapping provider access for '${this.mappingProviderPath}' (${this.gav.groupId}:${this.gav.artifactId}:${this.gav.versionId}): ${error.message}`,
+        `Failed to initialize DataSpace Data Product access for '${this.dataProductPath}' (${this.gav.groupId}:${this.gav.artifactId}:${this.gav.versionId}): ${error.message}`,
       );
       this.setErrorMessage(error.message);
     } finally {

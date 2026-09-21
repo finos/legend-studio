@@ -22,19 +22,9 @@ import {
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
 } from '@finos/legend-graph';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
-import {
-  type DepotServerClient,
-  resolveVersion,
-  StoreProjectData,
-} from '@finos/legend-server-depot';
-import type {
-  ProjectGAVCoordinates,
-  StoredFileGeneration,
-} from '@finos/legend-storage';
-import { type PlainObject, guaranteeNonNullable } from '@finos/legend-shared';
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import { getDataProductFromDetails } from './DataProductIngestUtils.js';
-
-const ARTIFACT_GENERATION_DATA_PRODUCT_KEY = 'dataProduct';
 
 export type ResolvedSDLCDataProduct = {
   details: V1_EntitlementsDataProductDetails;
@@ -43,52 +33,23 @@ export type ResolvedSDLCDataProduct = {
 };
 
 /**
- * Resolve the entitlements details and V1_DataProduct for a DataProduct
- * identified by its SDLC GAV + path.
- *
- * The deployment id is read from the depot's data-product artifact generation
- * output (which is what the marketplace uses to route the legacy SDLC data
- * product URL to the newer id+DID route). Assumes the DataProduct is deployed
- * from the given GAV.
+ * Resolve the entitlements details + V1_DataProduct for a DataProduct given a
+ * Lakehouse deployment id that was obtained out-of-band (e.g. from a DataSpace
+ * analytics response's `dataSpaceReferencesMetadataInfo`).
  *
  * Throws an Error with a human-readable message when the resolution fails at
- * any step (no generation artifact, no deploymentId, no matching Lakehouse
- * data product, etc.). Callers are expected to catch and surface the message.
+ * any step (no matching Lakehouse data product, more than one match, etc.).
+ * Callers are expected to catch and surface the message.
  */
-export async function resolveEntitlementsDataProductFromSDLC(
-  gav: ProjectGAVCoordinates,
+export async function resolveEntitlementsDataProductByDID(
   path: string,
+  deploymentId: number,
   depotServerClient: DepotServerClient,
   lakehouseContractServerClient: LakehouseContractServerClient,
   graphManager: V1_PureGraphManager,
   tokenProvider?: (() => string | undefined) | undefined,
 ): Promise<ResolvedSDLCDataProduct> {
-  const storeProject = new StoreProjectData();
-  storeProject.groupId = gav.groupId;
-  storeProject.artifactId = gav.artifactId;
-  const files = (await depotServerClient.getGenerationFilesByType(
-    storeProject,
-    resolveVersion(gav.versionId),
-    ARTIFACT_GENERATION_DATA_PRODUCT_KEY,
-  )) as unknown as StoredFileGeneration[];
-  const fileGen = files.find((e) => e.path === path)?.file.content;
-  if (!fileGen) {
-    throw new Error(
-      `No 'dataProduct' artifact generation was found for '${path}' at ${gav.groupId}:${gav.artifactId}:${gav.versionId}. The Data Product may not have been deployed from this project.`,
-    );
-  }
-  const content: PlainObject = JSON.parse(fileGen) as PlainObject;
-  const dataProductInfo = content.dataProduct as
-    | { deploymentId?: string }
-    | undefined;
-  if (!dataProductInfo?.deploymentId) {
-    throw new Error(
-      `Data Product '${path}' has no 'deploymentId' in its artifact generation. It may not yet be deployed to Lakehouse.`,
-    );
-  }
-  const deploymentId = Number(dataProductInfo.deploymentId);
   const dataProductId = extractElementNameFromPath(path).toUpperCase();
-
   const rawResponse =
     await lakehouseContractServerClient.getDataProductByIdAndDID(
       dataProductId,
