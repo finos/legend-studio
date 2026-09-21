@@ -114,6 +114,14 @@ export interface SDLCServerClientConfig extends ServerClientConfig {
    * a `401`. See `AbstractServerClient.autoReAuthenticate` for the contract.
    */
   autoReAuthenticate?: (() => Promise<boolean>) | undefined;
+  /**
+   * When `true`, SDLC is authenticated exclusively via the session cookie,
+   * never via an `Authorization: Bearer` header. Some SDLC deployments
+   * authenticate via a session cookie and their filter chain does not
+   * support the CORS preflight triggered by an `Authorization` header.
+   * Defaults to `false` (the header-based behavior every other client uses).
+   */
+  useCookieAuthOnly?: boolean;
 }
 
 export class SDLCServerClient extends AbstractServerClient {
@@ -125,12 +133,17 @@ export class SDLCServerClient extends AbstractServerClient {
   private client?: string | undefined;
 
   constructor(config: SDLCServerClientConfig) {
-    super({
+    const baseConfig: ServerClientConfig = {
       baseUrl: config.serverUrl,
       baseHeaders: config.baseHeaders,
       autoReAuthenticate: config.autoReAuthenticate,
       getAuthenticationToken: config.getAuthenticationToken,
-    });
+    };
+    super(
+      config.useCookieAuthOnly
+        ? { ...baseConfig, getAuthenticationToken: () => undefined }
+        : baseConfig,
+    );
     this.env = config.env;
     this.client = config.client;
   }
