@@ -208,6 +208,13 @@ export interface LegendStudioApplicationConfigurationData
      * the SDLC server's OAuth client allow-list.
      */
     enablePopupReAuth?: boolean;
+    /**
+     * When `true`, the SDLC server is authenticated exclusively via the
+     * session cookie, never via an `Authorization: Bearer` header.
+     *
+     * See `SDLCServerClientConfig.useCookieAuthOnly`.
+     */
+    useCookieAuthOnly?: boolean;
   };
   depot: { url: string };
   engine: {
@@ -232,6 +239,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
   readonly sdlcServerBaseHeaders?: RequestHeaders | undefined;
   readonly sdlcServerClient?: string | undefined;
   readonly sdlcEnablePopupReAuth: boolean;
+  readonly sdlcUseCookieAuthOnly: boolean;
   readonly queryApplicationUrl?: string | undefined;
   readonly showcaseServerUrl?: string | undefined;
   readonly pctReportUrl?: string | undefined;
@@ -289,6 +297,9 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
     this.sdlcServerClient = input.configData.sdlc.client;
     this.sdlcEnablePopupReAuth = Boolean(
       input.configData.sdlc.enablePopupReAuth,
+    );
+    this.sdlcUseCookieAuthOnly = Boolean(
+      input.configData.sdlc.useCookieAuthOnly,
     );
 
     // query

@@ -159,6 +159,7 @@ export class LegendStudioBaseStore {
       serverUrl: this.applicationStore.config.sdlcServerUrl,
       baseHeaders: this.applicationStore.config.sdlcServerBaseHeaders,
       client: this.applicationStore.config.sdlcServerClient,
+      useCookieAuthOnly: this.applicationStore.config.sdlcUseCookieAuthOnly,
       // On a mid-session 401, auto-launch the popup re-auth flow. The
       // handler enforces a one-attempt-per-episode guard to prevent endless
       // retry loops; when it gives up, the StatusBar manual button remains
