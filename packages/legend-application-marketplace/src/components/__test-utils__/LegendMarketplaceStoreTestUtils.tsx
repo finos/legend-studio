@@ -73,10 +73,10 @@ export const TEST__provideMockLegendMarketplaceBaseStore =
     const applicationStore =
       customization?.applicationStore ??
       new ApplicationStore(
-        TEST__getTestLegendMarketplaceApplicationConfig(
-          customization?.dataProductEnv,
-          customization?.adjacentEnvUrl,
-        ),
+        TEST__getTestLegendMarketplaceApplicationConfig({
+          dataProductEnv: customization?.dataProductEnv,
+          adjacentEnvUrl: customization?.adjacentEnvUrl,
+        }),
         pluginManager,
       );
     const mockBaseStore =

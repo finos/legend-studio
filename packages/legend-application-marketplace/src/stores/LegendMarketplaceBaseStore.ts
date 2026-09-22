@@ -42,7 +42,6 @@ import {
 } from '@finos/legend-server-marketplace';
 import {
   type V1_EngineServerClient,
-  getCurrentUserIDFromEngineServer,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   GraphManagerState,
   V1_PureGraphManager,
@@ -222,6 +221,7 @@ export class LegendMarketplaceBaseStore {
       {
         baseUrl: this.applicationStore.config.engineServerUrl,
         useCookieAuthOnly: this.applicationStore.config.engineUseCookieAuthOnly,
+        clientName: this.applicationStore.config.engineClientName,
       },
       applicationStore.logService,
     );
@@ -543,9 +543,7 @@ export class LegendMarketplaceBaseStore {
     if (this.applicationStore.identityService.isAnonymous) {
       try {
         this.applicationStore.identityService.setCurrentUser(
-          (yield getCurrentUserIDFromEngineServer(
-            this.applicationStore.config.engineServerUrl,
-          )) as string,
+          (yield this.engineServerClient.getCurrentUserId()) as string,
         );
       } catch (error) {
         assertErrorThrown(error);
