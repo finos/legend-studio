@@ -147,9 +147,6 @@ export interface LegendQueryApplicationConfigurationData
     url: string;
     instances: LegendStudioApplicationInstanceConfigurationData[];
   };
-  taxonomy?: {
-    url: string;
-  };
   dataCube?: {
     url: string;
   };
@@ -174,7 +171,6 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly engineUseCookieAuthOnly: boolean;
   readonly depotServerUrl: string;
   readonly studioApplicationUrl: string;
-  readonly taxonomyApplicationUrl?: string;
   readonly dataCubeApplicationUrl?: string;
   readonly marketplaceApplicationUrl?: string;
   readonly marketplaceProductionParallelUrl?: string;
@@ -236,13 +232,6 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
       input.configData.studio.instances,
       `Can't configure application: 'studio.instances' field is missing`,
     );
-
-    // taxonomy
-    if (input.configData.taxonomy?.url) {
-      this.taxonomyApplicationUrl = LegendApplicationConfig.resolveAbsoluteUrl(
-        input.configData.taxonomy.url,
-      );
-    }
 
     // datacube
     if (input.configData.dataCube?.url) {

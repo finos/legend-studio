@@ -34,8 +34,8 @@ import {
   DataSpaceSupportEmail,
 } from '@finos/legend-extension-dsl-data-space/graph';
 import {
+  EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataspaceViewUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
-  EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl,
 } from '../../__lib__/LegendQueryNavigation.js';
 import { flowResult } from 'mobx';
 import { assertErrorThrown, guaranteeType } from '@finos/legend-shared';
@@ -134,14 +134,14 @@ export const QueryEditorDataspaceInfoModal = observer(
     const storePath =
       connection?.store?.value.path ?? dataSpaceMedata?.storePath;
 
-    const openInTaxonomy = (): void => {
+    const openInMarketplace = (): void => {
       if (
         projectInfo &&
-        editorStore.applicationStore.config.taxonomyApplicationUrl
+        editorStore.applicationStore.config.marketplaceApplicationUrl
       ) {
         editorStore.applicationStore.navigationService.navigator.visitAddress(
-          EXTERNAL_APPLICATION_NAVIGATION__generateTaxonomyDataspaceViewUrl(
-            editorStore.applicationStore.config.taxonomyApplicationUrl,
+          EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataspaceViewUrl(
+            editorStore.applicationStore.config.marketplaceApplicationUrl,
             projectInfo.groupId,
             projectInfo.artifactId,
             projectInfo.versionId,
@@ -176,11 +176,11 @@ export const QueryEditorDataspaceInfoModal = observer(
               title="Close"
               disabled={
                 !(
-                  editorStore.applicationStore.config.taxonomyApplicationUrl &&
-                  projectInfo
+                  editorStore.applicationStore.config
+                    .marketplaceApplicationUrl && projectInfo
                 )
               }
-              onClick={openInTaxonomy}
+              onClick={openInMarketplace}
             >
               Open Data Space
             </button>
