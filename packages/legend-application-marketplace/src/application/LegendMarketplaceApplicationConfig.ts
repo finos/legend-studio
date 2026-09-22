@@ -129,6 +129,7 @@ export interface LegendMarketplaceApplicationConfigurationData
     queryUrl?: string;
     zipkinUrl?: string;
     useCookieAuthOnly?: boolean;
+    clientName?: string;
   };
   lakehouse?: {
     url: string;
@@ -199,6 +200,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
   readonly marketplaceOidcConfig?: LegendMarketplaceOidcConfig | undefined;
   readonly engineServerUrl: string;
   readonly engineUseCookieAuthOnly: boolean;
+  readonly engineClientName: string | undefined;
   readonly registryUrl: string | undefined;
   readonly zipkinUrl: string | undefined;
   readonly legendServicesUrl: string | undefined;
@@ -300,6 +302,7 @@ export class LegendMarketplaceApplicationConfig extends LegendApplicationConfig 
     this.engineUseCookieAuthOnly = Boolean(
       input.configData.engine.useCookieAuthOnly,
     );
+    this.engineClientName = input.configData.engine.clientName;
     if (input.configData.engine.queryUrl) {
       this.engineQueryServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
         input.configData.engine.queryUrl,

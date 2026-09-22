@@ -210,12 +210,18 @@ export interface V1_EngineServerClientConfig extends ServerClientConfig {
    * client uses).
    */
   useCookieAuthOnly?: boolean;
+  /**
+   * Names the server-side authentication mechanism for the requests that read a user's
+   * own details, and is omitted when not configured.
+   */
+  clientName?: string | undefined;
 }
 
 export class V1_EngineServerClient extends AbstractServerClient {
   currentUserId?: string | undefined;
   zipkinUrl?: string | undefined;
   private env?: string | undefined;
+  private readonly clientName?: string | undefined;
 
   // NOTE: this is an attempt to follow engine's effort to be split into multiple pieces
   // for better operational performance overall.
@@ -234,6 +240,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
         : config,
     );
     this.queryBaseUrl = config.queryBaseUrl;
+    this.clientName = config.clientName;
   }
 
   setBaseUrlForServiceRegistration(val: string | undefined): void {
@@ -261,6 +268,14 @@ export class V1_EngineServerClient extends AbstractServerClient {
     },
   });
 
+  /**
+   * Names the authentication mechanism when one is configured, so that a request does not
+   * fall back to the server default, which is not available to every user.
+   */
+  private authenticationMechanismParameters(): Parameters | undefined {
+    return this.clientName ? { client_name: this.clientName } : undefined;
+  }
+
   _pure = (): string => `${this.baseUrl}/pure/v1`;
 
   _sdlc = (): string => `${this.baseUrl}/sdlc/v1`;
@@ -269,7 +284,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
 
   _server = (): string => `${this.baseUrl}/server/v1`;
   getCurrentUserId = (): Promise<string> =>
-    this.get(`${this._server()}/currentUser`);
+    this.get(
+      `${this._server()}/currentUser`,
+      {},
+      undefined,
+      this.authenticationMechanismParameters(),
+    );
 
   // ------------------------------------------- Terminal -------------------------------------------
 
@@ -280,7 +300,12 @@ export class V1_EngineServerClient extends AbstractServerClient {
   };
 
   getTerminalById = (id: string): Promise<TDSExecutionResult> => {
-    return this.get(`${this._marketplace()}/${id}`);
+    return this.get(
+      `${this._marketplace()}/${id}`,
+      {},
+      undefined,
+      this.authenticationMechanismParameters(),
+    );
   };
 
   // ------------------------------------------- Server -------------------------------------------

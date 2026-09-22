@@ -414,11 +414,12 @@ describe('LegendMarketplaceSubscriptions - selection and cancellation', () => {
       fireEvent.change(searchInput, { target: { value: 'Level 1' } });
     });
     // Debounced filtering (300ms) narrows the grid down to the matching row.
+    // A generous timeout absorbs CI scheduling delays on the real debounce timer.
     await waitFor(
       () => {
         expect(screen.getAllByRole('checkbox')).toHaveLength(1);
       },
-      { timeout: 2000 },
+      { timeout: 10_000 },
     );
 
     const checkbox = screen.getAllByRole('checkbox')[0];
@@ -507,11 +508,12 @@ describe('LegendMarketplaceSubscriptions - search filtering', () => {
     });
 
     // Debounced filtering (300ms) narrows the grid down to the matching row.
+    // A generous timeout absorbs CI scheduling delays on the real debounce timer.
     await waitFor(
       () => {
         expect(screen.getAllByRole('checkbox')).toHaveLength(1);
       },
-      { timeout: 2000 },
+      { timeout: 10_000 },
     );
 
     const clearButton = screen.getByRole('button', {

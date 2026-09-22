@@ -109,18 +109,32 @@ const TEST_DATA__appConfig: LegendMarketplaceApplicationConfigurationData = {
   },
 };
 
-export const TEST__getTestLegendMarketplaceApplicationConfig = (
-  dataProductEnv?: string | undefined,
-  adjacentEnvUrl?: string | undefined,
-): LegendMarketplaceApplicationConfig => {
+export const TEST__getTestLegendMarketplaceApplicationConfig = (overrides?: {
+  dataProductEnv?: string | undefined;
+  adjacentEnvUrl?: string | undefined;
+  engineClientName?: string | undefined;
+  engineUseCookieAuthOnly?: boolean | undefined;
+}): LegendMarketplaceApplicationConfig => {
   const config = new LegendMarketplaceApplicationConfig({
     configData: {
       ...TEST_DATA__appConfig,
+      engine: {
+        ...TEST_DATA__appConfig.engine,
+        ...(overrides?.engineClientName !== undefined
+          ? { clientName: overrides.engineClientName }
+          : {}),
+        ...(overrides?.engineUseCookieAuthOnly !== undefined
+          ? { useCookieAuthOnly: overrides.engineUseCookieAuthOnly }
+          : {}),
+      },
       marketplace: {
         ...TEST_DATA__appConfig.marketplace,
         dataProductEnv:
-          dataProductEnv ?? TEST_DATA__appConfig.marketplace.dataProductEnv,
-        ...(adjacentEnvUrl !== undefined ? { adjacentEnvUrl } : {}),
+          overrides?.dataProductEnv ??
+          TEST_DATA__appConfig.marketplace.dataProductEnv,
+        ...(overrides?.adjacentEnvUrl !== undefined
+          ? { adjacentEnvUrl: overrides.adjacentEnvUrl }
+          : {}),
       },
     },
     versionData: TEST__getApplicationVersionData(),
