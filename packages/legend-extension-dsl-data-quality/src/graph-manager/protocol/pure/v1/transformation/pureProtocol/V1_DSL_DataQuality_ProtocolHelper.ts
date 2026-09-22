@@ -310,6 +310,7 @@ const V1_dataQualityRelationComparisonModelSchema = (
     target: usingModelSchema(V1_rawLambdaModelSchemaParameters),
     keys: list(primitive()),
     columnsToCompare: list(primitive()),
+    additionalColumnsToPersist: list(primitive()),
     strategy: optionalCustom(
       (val) => (val ? V1_serializeReconStrategy(val) : SKIP),
       (val) => (val ? V1_deserializeReconStrategy(val) : SKIP),

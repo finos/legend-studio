@@ -265,6 +265,7 @@ export const observe_DataQualityRelationComparisonConfiguration =
         target: observable,
         keys: observable,
         columnsToCompare: observable,
+        additionalColumnsToPersist: observable,
         strategy: observable,
         expectedMatch: observable,
         persistenceStrategy: observable,

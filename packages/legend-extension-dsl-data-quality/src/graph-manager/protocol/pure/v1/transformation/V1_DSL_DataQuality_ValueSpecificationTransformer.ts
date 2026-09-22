@@ -301,6 +301,7 @@ export function V1_transformDataQualityRelationComparisonConfiguration(
   );
   protocol.keys = metamodel.keys;
   protocol.columnsToCompare = metamodel.columnsToCompare;
+  protocol.additionalColumnsToPersist = metamodel.additionalColumnsToPersist;
   protocol.strategy = V1_transformReconStrategy(metamodel.strategy);
   protocol.expectedMatch = metamodel.expectedMatch;
   protocol.persistenceStrategy = metamodel.persistenceStrategy

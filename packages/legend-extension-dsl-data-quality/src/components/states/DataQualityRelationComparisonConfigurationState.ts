@@ -331,6 +331,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
     makeObservable(this, {
       setKeys: action,
       setColumnsToCompare: action,
+      setAdditionalColumnsToPersist: action,
       setStrategy: action,
       setSourceHashColumn: action,
       setTargetHashColumn: action,
@@ -351,6 +352,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
       sourceColumnOptions: computed,
       targetColumnOptions: computed,
       combinedColumnOptions: computed,
+      unionColumnOptions: computed,
       // Execution observables
       currentExecutionType: observable,
       lastExecutionType: observable,
@@ -378,6 +380,10 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
 
   setColumnsToCompare(columns: string[]): void {
     this.element.columnsToCompare = columns;
+  }
+
+  setAdditionalColumnsToPersist(columns: string[]): void {
+    this.element.additionalColumnsToPersist = columns;
   }
 
   setStrategy(strategy: ReconStrategy): void {
@@ -417,6 +423,21 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
     return this.sourceColumnOptions.filter((srcOpt) =>
       this.targetColumnOptions.some((tgtOpt) => tgtOpt.value === srcOpt.value),
     );
+  }
+
+  get unionColumnOptions(): { value: string; label: string }[] {
+    const seen = new Set<string>();
+    const result: { value: string; label: string }[] = [];
+    for (const opt of [
+      ...this.sourceColumnOptions,
+      ...this.targetColumnOptions,
+    ]) {
+      if (!seen.has(opt.value)) {
+        seen.add(opt.value);
+        result.push(opt);
+      }
+    }
+    return result;
   }
 
   get hasColumnFetchError(): boolean {
@@ -616,6 +637,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
           target: targetExecutionLambda,
           keys: this.element.keys,
           colsForHash: this.element.columnsToCompare,
+          additionalColumnsToPersist: this.element.additionalColumnsToPersist,
           limit: this.limit,
           aggregatedHash: md5Strategy.aggregatedHash,
           sourceHashCol: md5Strategy.sourceHashColumn,
@@ -700,6 +722,7 @@ export class DataQualityRelationComparisonConfigurationState extends ElementEdit
         target: this.buildTargetLambda(),
         keys: this.element.keys,
         colsForHash: this.element.columnsToCompare,
+        additionalColumnsToPersist: this.element.additionalColumnsToPersist,
         limit: this.limit,
         aggregatedHash: md5Strategy.aggregatedHash,
         sourceHashCol: md5Strategy.sourceHashColumn,

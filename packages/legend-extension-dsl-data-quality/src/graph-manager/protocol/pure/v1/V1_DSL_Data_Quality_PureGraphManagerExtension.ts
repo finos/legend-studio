@@ -133,6 +133,7 @@ export class V1_DQReconciliationInput {
   target!: V1_RawLambda;
   keys: string[] = [];
   colsForHash: string[] = [];
+  additionalColumnsToPersist: string[] = [];
   defectLimit: number | undefined;
   queryLimit: number | undefined;
   aggregatedHash: boolean | undefined;
@@ -152,6 +153,7 @@ export class V1_DQReconciliationInput {
       target: usingModelSchema(V1_rawLambdaModelSchema),
       keys: list(primitive()),
       colsForHash: list(primitive()),
+      additionalColumnsToPersist: list(primitive()),
       defectLimit: optional(primitive()),
       queryLimit: optional(primitive()),
       aggregatedHash: optional(primitive()),
@@ -645,6 +647,7 @@ export class V1_DSL_Data_Quality_PureGraphManagerExtension extends DSL_DataQuali
     input.target = this.rawLambdaToV1(options.target);
     input.keys = options.keys;
     input.colsForHash = options.colsForHash;
+    input.additionalColumnsToPersist = options.additionalColumnsToPersist ?? [];
     input.aggregatedHash = options.aggregatedHash;
     input.sourceHashCol = options.sourceHashCol;
     input.targetHashCol = options.targetHashCol;
