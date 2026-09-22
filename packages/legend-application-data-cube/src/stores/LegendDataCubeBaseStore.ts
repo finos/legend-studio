@@ -151,6 +151,7 @@ export class LegendDataCubeBaseStore {
       {
         baseUrl: this.getEngineServerBaseUrlSettingValue(),
         queryBaseUrl: this.application.config.engineQueryServerUrl,
+        queryClientName: this.application.config.engineQueryClientName,
         enableCompression: this.getEngineEnableCompressionSettingValue(),
         useCookieAuthOnly: this.application.config.engineUseCookieAuthOnly,
       },
@@ -234,6 +235,7 @@ export class LegendDataCubeBaseStore {
           clientConfig: {
             baseUrl: this.getEngineServerBaseUrlSettingValue(),
             queryBaseUrl: this.application.config.engineQueryServerUrl,
+            queryClientName: this.application.config.engineQueryClientName,
             enableCompression: this.getEngineEnableCompressionSettingValue(),
           },
         },

@@ -80,6 +80,7 @@ export abstract class BaseQuerySetupStore {
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+            queryClientName: this.applicationStore.config.engineQueryClientName,
             enableCompression: true,
             useCookieAuthOnly:
               this.applicationStore.config.engineUseCookieAuthOnly,

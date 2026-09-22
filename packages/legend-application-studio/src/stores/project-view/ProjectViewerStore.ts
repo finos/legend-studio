@@ -366,6 +366,8 @@ export class ProjectViewerStore {
             baseUrl: this.editorStore.applicationStore.config.engineServerUrl,
             queryBaseUrl:
               this.editorStore.applicationStore.config.engineQueryServerUrl,
+            queryClientName:
+              this.editorStore.applicationStore.config.engineQueryClientName,
             enableCompression: true,
             payloadDebugger,
             useCookieAuthOnly:
