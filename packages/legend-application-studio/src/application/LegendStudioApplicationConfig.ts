@@ -221,6 +221,7 @@ export interface LegendStudioApplicationConfigurationData
     url: string;
     queryUrl?: string;
     useCookieAuthOnly?: boolean;
+    queryClientName?: string;
   };
   query?: { url: string };
   showcase?: { url: string };
@@ -233,6 +234,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
 
   readonly engineServerUrl: string;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly engineQueryClientName?: string | undefined;
   readonly engineUseCookieAuthOnly: boolean;
   readonly depotServerUrl: string;
   readonly sdlcServerUrl: string;
@@ -266,6 +268,7 @@ export class LegendStudioApplicationConfig extends LegendApplicationConfig {
         input.configData.engine.queryUrl,
       );
     }
+    this.engineQueryClientName = input.configData.engine.queryClientName;
     this.engineUseCookieAuthOnly = Boolean(
       input.configData.engine.useCookieAuthOnly,
     );

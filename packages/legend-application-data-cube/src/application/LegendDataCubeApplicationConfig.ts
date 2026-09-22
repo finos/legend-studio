@@ -30,7 +30,12 @@ export interface LegendDataCubeApplicationConfigurationData
   depot: {
     url: string;
   };
-  engine: { url: string; queryUrl: string; useCookieAuthOnly?: boolean };
+  engine: {
+    url: string;
+    queryUrl: string;
+    useCookieAuthOnly?: boolean;
+    queryClientName?: string;
+  };
   query?: {
     url: string;
   };
@@ -59,6 +64,7 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
   readonly lakehouseContractUrl: string;
   readonly legendLakehouseUrl?: string | undefined;
   readonly engineQueryServerUrl?: string | undefined;
+  readonly engineQueryClientName?: string | undefined;
   readonly queryApplicationUrl?: string | undefined;
   readonly studioApplicationUrl?: string | undefined;
   readonly dataCubeOidcConfig?: LegendDataCubeOidcConfig | undefined;
@@ -87,6 +93,7 @@ export class LegendDataCubeApplicationConfig extends LegendApplicationConfig {
     this.engineUseCookieAuthOnly = Boolean(
       input.configData.engine.useCookieAuthOnly,
     );
+    this.engineQueryClientName = input.configData.engine.queryClientName;
 
     // depot
     assertNonNullable(

@@ -303,6 +303,7 @@ export class QueryProductionizerStore {
           clientConfig: {
             baseUrl: this.applicationStore.config.engineServerUrl,
             queryBaseUrl: this.applicationStore.config.engineQueryServerUrl,
+            queryClientName: this.applicationStore.config.engineQueryClientName,
             enableCompression: true,
           },
         },
