@@ -266,18 +266,36 @@ export const QueryBuilder = observer(
       );
     };
     const toggleShowParameterPanel = (): void => {
-      queryBuilderState.setShowParametersPanel(
-        !queryBuilderState.showParametersPanel,
+      const nextEnabled = !queryBuilderState.showParametersPanel;
+      queryBuilderState.setShowParametersPanel(nextEnabled);
+      QueryBuilderTelemetryHelper.logEvent_TogglePanelParameter(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          enabled: nextEnabled,
+        },
       );
     };
     const toggleConstantPanel = (): void => {
-      queryBuilderState.constantState.setShowConstantPanel(
-        !queryBuilderState.constantState.showConstantPanel,
+      const nextEnabled = !queryBuilderState.constantState.showConstantPanel;
+      queryBuilderState.constantState.setShowConstantPanel(nextEnabled);
+      QueryBuilderTelemetryHelper.logEvent_TogglePanelConstant(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          enabled: nextEnabled,
+        },
       );
     };
     const toggleShowFilterPanel = (): void => {
-      queryBuilderState.filterState.setShowPanel(
-        !queryBuilderState.filterState.showPanel,
+      const nextEnabled = !queryBuilderState.filterState.showPanel;
+      queryBuilderState.filterState.setShowPanel(nextEnabled);
+      QueryBuilderTelemetryHelper.logEvent_TogglePanelFilter(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          enabled: nextEnabled,
+        },
       );
     };
     const toggleShowPostFilterPanel = (): void => {
@@ -290,6 +308,13 @@ export const QueryBuilder = observer(
         queryBuilderState.applicationStore.settingService.persistValue(
           QUERY_BUILDER_SETTING_KEY.SHOW_POST_FILTER_PANEL,
           tdsState.showPostFilterPanel,
+        );
+        QueryBuilderTelemetryHelper.logEvent_TogglePanelPostFilter(
+          applicationStore.telemetryService,
+          {
+            ...queryBuilderState.safeGetTelemetryContext(),
+            enabled: tdsState.showPostFilterPanel,
+          },
         );
       }
     };
@@ -312,6 +337,13 @@ export const QueryBuilder = observer(
                 ) {
                   queryBuilderState.fetchStructureState.implementation.aggregationState.disableCalendar();
                 }
+                QueryBuilderTelemetryHelper.logEvent_ToggleCalendar(
+                  applicationStore.telemetryService,
+                  {
+                    ...queryBuilderState.safeGetTelemetryContext(),
+                    enabled: false,
+                  },
+                );
               },
             },
             {
@@ -331,7 +363,16 @@ export const QueryBuilder = observer(
             {
               label: 'Proceed',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void => queryBuilderState.setIsCalendarEnabled(true),
+              handler: (): void => {
+                queryBuilderState.setIsCalendarEnabled(true);
+                QueryBuilderTelemetryHelper.logEvent_ToggleCalendar(
+                  applicationStore.telemetryService,
+                  {
+                    ...queryBuilderState.safeGetTelemetryContext(),
+                    enabled: true,
+                  },
+                );
+              },
             },
             {
               label: 'Cancel',
@@ -348,6 +389,13 @@ export const QueryBuilder = observer(
         queryBuilderState.setLambdaWriteMode(
           QUERY_BUILDER_LAMBDA_WRITER_MODE.STANDARD,
         );
+        QueryBuilderTelemetryHelper.logEvent_ToggleTypedTDS(
+          applicationStore.telemetryService,
+          {
+            ...queryBuilderState.safeGetTelemetryContext(),
+            enabled: false,
+          },
+        );
       } else {
         queryBuilderState.applicationStore.alertService.setActionAlertInfo({
           message:
@@ -358,10 +406,18 @@ export const QueryBuilder = observer(
             {
               label: 'Proceed',
               type: ActionAlertActionType.PROCEED_WITH_CAUTION,
-              handler: (): void =>
+              handler: (): void => {
                 queryBuilderState.setLambdaWriteMode(
                   QUERY_BUILDER_LAMBDA_WRITER_MODE.TYPED_FETCH_STRUCTURE,
-                ),
+                );
+                QueryBuilderTelemetryHelper.logEvent_ToggleTypedTDS(
+                  applicationStore.telemetryService,
+                  {
+                    ...queryBuilderState.safeGetTelemetryContext(),
+                    enabled: true,
+                  },
+                );
+              },
             },
             {
               label: 'Cancel',
@@ -374,16 +430,32 @@ export const QueryBuilder = observer(
     };
 
     const editPure = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_EditPureLaunched(
+        applicationStore.telemetryService,
+        queryBuilderState.safeGetTelemetryContext(),
+      );
       openLambdaEditor(QueryBuilderTextEditorMode.TEXT);
     };
     const showPure = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_ShowPureLaunched(
+        applicationStore.telemetryService,
+        queryBuilderState.safeGetTelemetryContext(),
+      );
       openPure();
     };
     const showProtocol = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_ShowProtocolLaunched(
+        applicationStore.telemetryService,
+        queryBuilderState.safeGetTelemetryContext(),
+      );
       openLambdaEditor(QueryBuilderTextEditorMode.JSON);
     };
 
     const openCheckEntitlmentsEditor = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_CheckEntitlementsLaunched(
+        applicationStore.telemetryService,
+        queryBuilderState.safeGetTelemetryContext(),
+      );
       queryBuilderState.checkEntitlementsState.setShowCheckEntitlementsViewer(
         true,
       );
@@ -400,7 +472,15 @@ export const QueryBuilder = observer(
           queryBuilderState.fetchStructureState.implementation,
           QueryBuilderTDSState,
         );
-        tdsState.setShowWindowFuncPanel(!tdsState.showWindowFuncPanel);
+        const nextEnabled = !tdsState.showWindowFuncPanel;
+        tdsState.setShowWindowFuncPanel(nextEnabled);
+        QueryBuilderTelemetryHelper.logEvent_TogglePanelWindow(
+          applicationStore.telemetryService,
+          {
+            ...queryBuilderState.safeGetTelemetryContext(),
+            enabled: nextEnabled,
+          },
+        );
       }
     };
     const showPostFetchStructurePanel =
@@ -447,6 +527,10 @@ export const QueryBuilder = observer(
       );
     const openQueryTutorial = (): void => {
       if (queryDocEntry?.url) {
+        QueryBuilderTelemetryHelper.logEvent_OpenDocumentationLaunched(
+          applicationStore.telemetryService,
+          queryBuilderState.safeGetTelemetryContext(),
+        );
         applicationStore.navigationService.navigator.visitAddress(
           queryDocEntry.url,
         );
@@ -454,6 +538,10 @@ export const QueryBuilder = observer(
     };
     const openFrequentlyAskedQuestions = (): void => {
       if (frequentlyAskedQuestionEntry?.url) {
+        QueryBuilderTelemetryHelper.logEvent_OpenFAQLaunched(
+          applicationStore.telemetryService,
+          queryBuilderState.safeGetTelemetryContext(),
+        );
         applicationStore.navigationService.navigator.visitAddress(
           frequentlyAskedQuestionEntry.url,
         );
@@ -461,14 +549,28 @@ export const QueryBuilder = observer(
     };
     const openSupportTickets = (): void => {
       if (supportTicketsEntry?.url) {
+        QueryBuilderTelemetryHelper.logEvent_OpenSupportTicketsLaunched(
+          applicationStore.telemetryService,
+          queryBuilderState.safeGetTelemetryContext(),
+        );
         applicationStore.navigationService.navigator.visitAddress(
           supportTicketsEntry.url,
         );
       }
     };
 
-    const toggleAssistant = (): void =>
+    const toggleAssistant = (): void => {
       applicationStore.assistantService.toggleAssistant();
+      // Read the post-toggle state directly rather than pre-computing it —
+      // avoids drifting if `toggleAssistant()` ever becomes non-symmetric.
+      QueryBuilderTelemetryHelper.logEvent_ToggleVirtualAssistant(
+        applicationStore.telemetryService,
+        {
+          ...queryBuilderState.safeGetTelemetryContext(),
+          enabled: !applicationStore.assistantService.isHidden,
+        },
+      );
+    };
 
     const extraHelpMenuContentItems = applicationStore.pluginManager
       .getApplicationPlugins()
@@ -491,11 +593,20 @@ export const QueryBuilder = observer(
         </MenuContentItem>
       ));
 
-    const compileQuery = applicationStore.guardUnhandledError(() =>
-      flowResult(queryBuilderState.compileQuery()),
-    );
-    const showDiff = (): void =>
+    const compileQuery = applicationStore.guardUnhandledError(() => {
+      QueryBuilderTelemetryHelper.logEvent_CompileQueryLaunched(
+        applicationStore.telemetryService,
+        queryBuilderState.safeGetTelemetryContext(),
+      );
+      return flowResult(queryBuilderState.compileQuery());
+    });
+    const showDiff = (): void => {
+      QueryBuilderTelemetryHelper.logEvent_ShowQueryDiffLaunched(
+        applicationStore.telemetryService,
+        queryBuilderState.safeGetTelemetryContext(),
+      );
       queryBuilderState.changeDetectionState.showDiffViewPanel();
+    };
 
     useEffect(() => {
       // this condition is for passing all exisitng tests because when we initialize a queryBuilderState for a test,

@@ -38,6 +38,7 @@ import type {
 } from '../../stores/data-space/DataProductSelectorState.js';
 import { flowResult } from 'mobx';
 import { DepotEntityWithOrigin } from '@finos/legend-storage';
+import { LegendQueryTelemetryHelper } from '../../__lib__/LegendQueryTelemetryHelper.js';
 
 // Custom format function to handle both DataSpace and DataProduct options
 const formatDataSpaceOrProductOptionLabel = (
@@ -90,8 +91,32 @@ const DataProductQuerySetupSetupPanelContent = observer(
       queryBuilderState.queryAgentChatState?.abort();
       const value = option?.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
+        LegendQueryTelemetryHelper.logEvent_ChangeDataSpace(
+          applicationStore.telemetryService,
+          {
+            sourceInfo: queryBuilderState.sourceInfo,
+            to: {
+              groupId: value.origin?.groupId,
+              artifactId: value.origin?.artifactId,
+              versionId: value.origin?.versionId,
+              path: value.path,
+            },
+          },
+        );
         queryBuilderState.changeHandlers.onDataSpaceChange(value);
       } else if (value instanceof DepotEntityWithOrigin) {
+        LegendQueryTelemetryHelper.logEvent_ChangeDataProduct(
+          applicationStore.telemetryService,
+          {
+            sourceInfo: queryBuilderState.sourceInfo,
+            to: {
+              groupId: value.origin?.groupId,
+              artifactId: value.origin?.artifactId,
+              versionId: value.origin?.versionId,
+              path: value.path,
+            },
+          },
+        );
         queryBuilderState.changeHandlers.onDataProductChange(value);
       }
     };

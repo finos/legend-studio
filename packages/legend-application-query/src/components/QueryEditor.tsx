@@ -99,6 +99,7 @@ import {
   HttpStatus,
   isValidUrl,
   NetworkClientError,
+  StopWatch,
 } from '@finos/legend-shared';
 import { DSL_DATA_SPACE_LEGEND_QUERY_DOCUMENTATION_KEY } from '../__lib__/DSL_DataSpace_LegendQueryDocumentation.js';
 import { LegendQueryInfo } from './LegendQueryAppInfo.js';
@@ -188,22 +189,33 @@ const CreateQueryDialog = observer(() => {
     if (!aiSuggester || !editorStore.queryBuilderState || !legendAIUrl) {
       return;
     }
+    const sourceInfo = editorStore.getSourceInfo();
     LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestLaunched(
       applicationStore.telemetryService,
+      { sourceInfo },
     );
     setIsSuggestingWithAI(true);
     setAISuggestion(undefined);
+    const stopWatch = new StopWatch();
     try {
       const request = await buildAISuggestionRequest(
         editorStore.queryBuilderState,
       );
       const suggestion = await aiSuggester(request, legendAIUrl);
       setAISuggestion(suggestion);
+      LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestSucceeded(
+        applicationStore.telemetryService,
+        { sourceInfo, durationMs: stopWatch.elapsed },
+      );
     } catch (error) {
       assertErrorThrown(error);
       LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestFailure(
         applicationStore.telemetryService,
-        error.message,
+        {
+          sourceInfo,
+          durationMs: stopWatch.elapsed,
+          errorMessage: error.message,
+        },
       );
       if (
         error instanceof NetworkClientError &&
@@ -228,6 +240,7 @@ const CreateQueryDialog = observer(() => {
     }
     LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestApplied(
       applicationStore.telemetryService,
+      { sourceInfo: editorStore.getSourceInfo() },
     );
     createQueryState.setQueryName(aiSuggestion.title);
     createQueryState.setQueryDescription(aiSuggestion.description);
@@ -236,6 +249,7 @@ const CreateQueryDialog = observer(() => {
   const discardAISuggestion = (): void => {
     LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestDiscarded(
       applicationStore.telemetryService,
+      { sourceInfo: editorStore.getSourceInfo() },
     );
     setAISuggestion(undefined);
   };
@@ -510,8 +524,14 @@ const RenameQueryDialog = observer(
       ) {
         return;
       }
+      const sourceInfo = existingEditorStore.getSourceInfo();
+      LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestLaunched(
+        applicationStore.telemetryService,
+        { sourceInfo },
+      );
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
+      const stopWatch = new StopWatch();
       try {
         const request = await buildAISuggestionRequest(
           existingEditorStore.queryBuilderState,
@@ -519,11 +539,19 @@ const RenameQueryDialog = observer(
         );
         const suggestion = await aiSuggester(request, legendAIUrl);
         setAISuggestion(suggestion);
+        LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestSucceeded(
+          applicationStore.telemetryService,
+          { sourceInfo, durationMs: stopWatch.elapsed },
+        );
       } catch (error) {
         assertErrorThrown(error);
         LegendQueryAgentChatTelemetryHelper.logEvent_QueryAISuggestFailure(
           applicationStore.telemetryService,
-          error.message,
+          {
+            sourceInfo,
+            durationMs: stopWatch.elapsed,
+            errorMessage: error.message,
+          },
         );
         if (
           error instanceof NetworkClientError &&

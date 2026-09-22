@@ -45,6 +45,11 @@ export enum LEGEND_STUDIO_USER_DATA_KEY {
   // sandbox-tag project search on every mount. Revalidated against SDLC in
   // the background; invalidated automatically on 404 or after the TTL.
   WORKSPACE_SETUP_SANDBOX_INFO = 'studio-editor.workspace-setup.sandboxInfo',
+  // Per-browser cache of the user's showcase feedback votes (thumbs up /
+  // thumbs down). Purely a UX state store so the viewer can highlight the
+  // vote the user already cast; the source of truth for aggregate analysis
+  // is the `showcase.viewer.feedback.submit` telemetry event.
+  SHOWCASE_FEEDBACK_VOTES = 'studio-editor.showcase.feedback.votes',
 }
 
 // --- Workspace setup recents -------------------------------------------------
@@ -170,6 +175,86 @@ export class CachedSandboxInfo {
     }),
   );
 }
+
+// --- Showcase feedback votes -------------------------------------------------
+
+const SHOWCASE_FEEDBACK_VOTES_VERSION = 1;
+// Cap the store so it can't grow without bound as users vote across many
+// showcases. Older votes fall off first — this is purely a UX cache so
+// losing very old entries just means the button state won't be pre-filled;
+// the telemetry event is still the source of truth.
+const MAX_SHOWCASE_FEEDBACK_VOTES = 200;
+
+export class ShowcaseFeedbackVote {
+  showcasePath!: string;
+  vote!: 'up' | 'down';
+  votedAt!: number;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ShowcaseFeedbackVote, {
+      showcasePath: primitive(),
+      // Stored as a plain string; validated on read.
+      vote: primitive(),
+      votedAt: primitive(),
+    }),
+  );
+}
+
+export class ShowcaseFeedbackVotes {
+  version: number = SHOWCASE_FEEDBACK_VOTES_VERSION;
+  votes: ShowcaseFeedbackVote[] = [];
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(ShowcaseFeedbackVotes, {
+      version: primitive(),
+      votes: list(usingModelSchema(ShowcaseFeedbackVote.serialization.schema)),
+    }),
+  );
+}
+
+const isValidShowcaseVote = (v: unknown): v is 'up' | 'down' =>
+  v === 'up' || v === 'down';
+
+const emptyShowcaseFeedbackVotes = (): ShowcaseFeedbackVotes =>
+  new ShowcaseFeedbackVotes();
+
+const readShowcaseFeedbackVotes = (
+  service: UserDataService,
+): ShowcaseFeedbackVotes => {
+  const raw = returnUndefOnError(() =>
+    service.getObjectValue(LEGEND_STUDIO_USER_DATA_KEY.SHOWCASE_FEEDBACK_VOTES),
+  );
+  if (!raw) {
+    return emptyShowcaseFeedbackVotes();
+  }
+  const parsed = returnUndefOnError(() =>
+    ShowcaseFeedbackVotes.serialization.fromJson(
+      raw as PlainObject<ShowcaseFeedbackVotes>,
+    ),
+  );
+  if (!parsed) {
+    return emptyShowcaseFeedbackVotes();
+  }
+  // Reset the store on any future schema-version bump; old entries were
+  // written under a different shape and can't be trusted.
+  if (parsed.version !== SHOWCASE_FEEDBACK_VOTES_VERSION) {
+    return emptyShowcaseFeedbackVotes();
+  }
+  parsed.votes = parsed.votes
+    .filter((v) => isValidShowcaseVote(v.vote))
+    .slice(0, MAX_SHOWCASE_FEEDBACK_VOTES);
+  return parsed;
+};
+
+const writeShowcaseFeedbackVotes = (
+  service: UserDataService,
+  store: ShowcaseFeedbackVotes,
+): void => {
+  service.persistValue(
+    LEGEND_STUDIO_USER_DATA_KEY.SHOWCASE_FEEDBACK_VOTES,
+    ShowcaseFeedbackVotes.serialization.toJson(store),
+  );
+};
 
 export class LegendStudioUserDataHelper {
   static globalTestRunner_getShowDependencyPanel(
@@ -377,5 +462,35 @@ export class LegendStudioUserDataHelper {
       LEGEND_STUDIO_USER_DATA_KEY.WORKSPACE_SETUP_SANDBOX_INFO,
       undefined,
     );
+  }
+
+  // --- Showcase feedback votes -------------------------------------------
+
+  static showcaseFeedback_getVote(
+    service: UserDataService,
+    showcasePath: string,
+  ): ShowcaseFeedbackVote | undefined {
+    return readShowcaseFeedbackVotes(service).votes.find(
+      (v) => v.showcasePath === showcasePath,
+    );
+  }
+
+  static showcaseFeedback_recordVote(
+    service: UserDataService,
+    entry: {
+      showcasePath: string;
+      vote: 'up' | 'down';
+    },
+  ): void {
+    const store = readShowcaseFeedbackVotes(service);
+    const next = new ShowcaseFeedbackVote();
+    next.showcasePath = entry.showcasePath;
+    next.vote = entry.vote;
+    next.votedAt = Date.now();
+    store.votes = [
+      next,
+      ...store.votes.filter((v) => v.showcasePath !== entry.showcasePath),
+    ].slice(0, MAX_SHOWCASE_FEEDBACK_VOTES);
+    writeShowcaseFeedbackVotes(service, store);
   }
 }

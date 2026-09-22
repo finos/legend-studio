@@ -26,6 +26,7 @@ import {
   type GeneratorFn,
   LogEvent,
   assertErrorThrown,
+  buildTelemetryErrorFields,
   guaranteeNonNullable,
   guaranteeType,
   filterByType,
@@ -186,6 +187,14 @@ export type QueryBuilderTelemetryContext = QueryableSourceInfo &
  */
 export type QueryBuilderQueryInfo = {
   fetchStructureType: FETCH_STRUCTURE_IMPLEMENTATION | string;
+  /**
+   * `false` when the query lambda could not be built into the form-mode
+   * builder and the user landed on the raw-lambda / unsupported-query editor
+   * instead. Reported on every event that carries `queryInfo` so dashboards can
+   * separate supported-mode activity from unsupported-mode fallback without
+   * relying on the (fire-and-forget) `unsupported-query.launch` event alone.
+   */
+  isQuerySupported: boolean;
   /**
    * `true` when the TDS query is authored against the typed relation function
    * family (`->project`/`->groupBy`/etc. over relation columns). `false` for
@@ -645,6 +654,7 @@ export abstract class QueryBuilderState implements CommandRegistrar {
   getQueryInfo(): QueryBuilderQueryInfo {
     const base: QueryBuilderQueryInfo = {
       fetchStructureType: this.fetchStructureState.implementation.type,
+      isQuerySupported: !this.unsupportedQueryState.rawLambda,
       parameterCount: this.parametersState.parameterStates.length,
       constantCount: this.constantState.constants.length,
       hasFilter: !this.filterState.isEmpty,
@@ -1184,6 +1194,17 @@ export abstract class QueryBuilderState implements CommandRegistrar {
       this.applicationStore.logService.error(
         LogEvent.create(QUERY_BUILDER_EVENT.UNSUPPORTED_QUERY_LAUNCH),
         error,
+      );
+      // Also route to the telemetry service so unsupported-lambda fallback is
+      // countable per entry point / GAV, not just visible in developer logs.
+      // The full untruncated stack is already in `logService.error` above; this
+      // event carries the shared envelope + capped error dimensions.
+      QueryBuilderTelemetryHelper.logEvent_UnsupportedQueryLaunched(
+        this.applicationStore.telemetryService,
+        {
+          ...this.safeGetTelemetryContext(),
+          ...buildTelemetryErrorFields(error),
+        },
       );
       this.resetQueryResult({ preserveResult: options?.preserveResult });
       this.resetQueryContent();

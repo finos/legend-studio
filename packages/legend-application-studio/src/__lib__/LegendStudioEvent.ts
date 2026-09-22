@@ -45,11 +45,17 @@ export enum LEGEND_STUDIO_APP_EVENT {
   SDLC_MANAGER_FAILURE = 'sdlc.manager.failure',
 
   SHOWCASE_MANAGER_FAILURE = 'showcase.manager.failure',
+  SHOWCASE_MANAGER_INIT__FAILURE = 'showcase.manager.init.failure',
+  SHOWCASE_MANAGER_OPEN__FAILURE = 'showcase.manager.open.failure',
+  SHOWCASE_MANAGER_SEARCH__FAILURE = 'showcase.manager.search.failure',
   // showcase manager
   SHOWCASE_MANAGER_LAUNCH = 'showcase.manager.launch',
   SHOWCASE_MANAGER_SHOWCASE_PROJECT_LAUNCH = 'showcase.manager.showcase.project.launch',
   SHOWCASE_MANAGER_SEARCH__INITIATED = 'showcase.manager.search.initiated',
+  SHOWCASE_MANAGER_SEARCH__COMPLETED = 'showcase.manager.search.completed',
   SHOWCASE_VIEWER_LAUNCH = 'showcase.viewer.launch',
+  SHOWCASE_VIEWER_CLOSE = 'showcase.viewer.close',
+  SHOWCASE_VIEWER_FEEDBACK__SUBMIT = 'showcase.viewer.feedback.submit',
 
   UPDATE_WORKSPACE__LAUNCH = 'sdlc.workspace-update.launch',
   UPDATE_WORKSPACE__SUCCESS = 'sdlc.workspace-update.success',
@@ -96,13 +102,7 @@ export enum LEGEND_STUDIO_APP_EVENT {
   TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__ERROR = 'editor.text-mode.action.keyboard.shortcut.go-to-element.error',
   TEXT_MODE_ACTION_KEYBOARD_SHORTCUT_GO_TO_DEFINITION__SUCCESS = 'editor.text-mode.action.keyboard.shortcut.go-to-element.success',
 
-  // Ingestion
-  INGESTION_DEPLOY_SUCCESS_URN = 'editor.ingestion.deployment.success.urn',
-  INGESTION_DEPLOY_FAILURE = 'editor.ingestion.deployment.failure',
-
   // data product
-  DATA_PRODUCT_DEPLOY_SUCCESS = 'editor.data-product.deployment.success',
-  DATA_PRODUCT_DEPLOY_FAILURE = 'editor.data-product.deployment.failure',
   DATA_PRODUCT_LEGENDAI_SUGGEST__LAUNCH = 'editor.data-product.legendai-suggest.launch',
   DATA_PRODUCT_LEGENDAI_SUGGEST__APPLY = 'editor.data-product.legendai-suggest.apply',
   DATA_PRODUCT_LEGENDAI_SUGGEST__DISCARD = 'editor.data-product.legendai-suggest.discard',

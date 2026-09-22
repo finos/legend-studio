@@ -18,6 +18,7 @@ import {
   type GeneratorFn,
   ActionState,
   LogEvent,
+  StopWatch,
   assertErrorThrown,
   guaranteeNonNullable,
   isNonNullable,
@@ -40,7 +41,11 @@ import {
 import type { TreeData, TreeNodeData } from '@finos/legend-art';
 import { DIRECTORY_PATH_DELIMITER } from '@finos/legend-graph';
 import { SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY } from '../components/extensions/Core_LegendStudioApplicationPlugin.js';
-import { LegendStudioTelemetryHelper } from '../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LegendStudioTelemetryHelper,
+  SHOWCASE_LAUNCH_ENTRY_POINT,
+  SHOWCASE_MANAGER_ENTRY_POINT,
+} from '../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum SHOWCASE_MANAGER_VIEW {
   EXPLORER = 'EXPLORER',
@@ -164,6 +169,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
   allShowcases: ShowcaseMetadata[] | undefined;
   currentShowcase?: Showcase | undefined;
   showcaseLineToScroll?: number | undefined;
+  private currentShowcaseOpenedAt?: number | undefined;
 
   currentView = SHOWCASE_MANAGER_VIEW.EXPLORER;
   explorerTreeData?: TreeData<ShowcasesExplorerTreeNodeData> | undefined;
@@ -266,6 +272,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
   *openShowcase(
     metadata: ShowcaseMetadata,
     showcaseLineToScroll?: number | undefined,
+    entryPoint: SHOWCASE_LAUNCH_ENTRY_POINT = SHOWCASE_LAUNCH_ENTRY_POINT.EXPLORER,
   ): GeneratorFn<void> {
     this.fetchShowcaseState.inProgress();
 
@@ -274,10 +281,15 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
         metadata.path,
       )) as Showcase;
       this.currentShowcase = showcase;
+      this.currentShowcaseOpenedAt = Date.now();
       LegendStudioTelemetryHelper.logEvent_ShowcaseManagerShowcaseProjectLaunch(
         this.applicationStore.telemetryService,
         {
           showcasePath: showcase.path,
+          title: showcase.title,
+          isDevelopment: metadata.development,
+          entryPoint,
+          lineNumber: showcaseLineToScroll,
         },
       );
       this.showcaseLineToScroll = showcaseLineToScroll;
@@ -285,18 +297,28 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_OPEN__FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerOpenFailure(
+        this.applicationStore.telemetryService,
+        {
+          errorMessage: error.message,
+          showcasePath: metadata.path,
+        },
       );
       this.fetchShowcaseState.fail();
     }
   }
 
-  logOpenManager(): void {
+  logOpenManager(
+    entryPoint: SHOWCASE_MANAGER_ENTRY_POINT = SHOWCASE_MANAGER_ENTRY_POINT.ACTIVITY_BAR,
+  ): void {
     if (this.allShowcases) {
       const report = {
         showcasesTotalCount: this.allShowcases.length,
         showcasesDevelopmentCount: this.nonDevShowcases.length,
+        entryPoint,
       };
       LegendStudioTelemetryHelper.logEvent_ShowcaseManagerLaunch(
         this.applicationStore.telemetryService,
@@ -306,7 +328,17 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
   }
 
   closeShowcase(): void {
+    if (this.currentShowcase && this.currentShowcaseOpenedAt !== undefined) {
+      LegendStudioTelemetryHelper.logEvent_ShowcaseViewerClose(
+        this.applicationStore.telemetryService,
+        {
+          showcasePath: this.currentShowcase.path,
+          dwellMs: Date.now() - this.currentShowcaseOpenedAt,
+        },
+      );
+    }
     this.currentShowcase = undefined;
+    this.currentShowcaseOpenedAt = undefined;
     this.showcaseLineToScroll = undefined;
   }
 
@@ -352,8 +384,12 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
+        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_INIT__FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerInitFailure(
+        this.applicationStore.telemetryService,
+        { errorMessage: error.message },
       );
       this.initState.fail();
     }
@@ -368,14 +404,16 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
     }
     this.textSearchState.inProgress();
 
+    const searchText = this.searchText;
     LegendStudioTelemetryHelper.logEvent_ShowcaseSearchInitiated(
       this.applicationStore.telemetryService,
-      { searchText: this.searchText },
+      { searchText },
     );
+    const stopWatch = new StopWatch();
 
     try {
       const result = (yield this.client.search(
-        this.searchText,
+        searchText,
       )) as ShowcaseTextSearchResult;
       this.textSearchResults = result.textMatches
         .map((match) => {
@@ -398,11 +436,31 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
           ),
         )
         .filter(isNonNullable);
+      const showcaseMatchCount = this.showcaseSearchResults.length;
+      const textMatchCount = this.textSearchResults.length;
+      const resultCount = showcaseMatchCount + textMatchCount;
+      LegendStudioTelemetryHelper.logEvent_ShowcaseSearchCompleted(
+        this.applicationStore.telemetryService,
+        {
+          searchText,
+          resultCount,
+          showcaseMatchCount,
+          textMatchCount,
+          durationMs: stopWatch.elapsed,
+          hadResults: resultCount > 0,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_FAILURE),
+        LogEvent.create(
+          LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_SEARCH__FAILURE,
+        ),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerSearchFailure(
+        this.applicationStore.telemetryService,
+        { errorMessage: error.message, searchText },
       );
     } finally {
       this.textSearchState.complete();
@@ -412,6 +470,7 @@ export class ShowcaseManagerState extends ApplicationExtensionState {
 
 export const openShowcaseManager = (
   applicationStore: LegendStudioApplicationStore,
+  entryPoint: SHOWCASE_MANAGER_ENTRY_POINT,
 ): void => {
   const showcaseManagerState =
     ShowcaseManagerState.retrieveNullableState(applicationStore);
@@ -422,6 +481,6 @@ export const openShowcaseManager = (
     applicationStore.assistantService.setSelectedTab(
       SHOWCASE_MANAGER_VIRTUAL_ASSISTANT_TAB_KEY,
     );
-    showcaseManagerState.logOpenManager();
+    showcaseManagerState.logOpenManager(entryPoint);
   }
 };

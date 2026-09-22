@@ -88,6 +88,17 @@ export type QueryBuilderOpened_TelemetryData = QueryBuilderTelemetryContext & {
   openedFrom: QUERY_BUILDER_OPENED_FROM;
 } & Record<string, unknown>;
 
+/**
+ * Payload for {@link QUERY_BUILDER_EVENT.UNSUPPORTED_QUERY_LAUNCH}, fired when
+ * the query lambda could not be built into the form-mode builder and the user
+ * fell through to the raw-lambda / unsupported-query editor. Carries the
+ * shared envelope + capped error dimensions so unsupported-lambda fallback is
+ * countable per entry point / GAV. The untruncated stack still goes to
+ * `logService.error` alongside, so the full error remains debuggable.
+ */
+export type UnsupportedQueryLaunched_TelemetryData =
+  QueryBuilderTelemetryContext & TelemetryErrorFields;
+
 type QueryMappingModelCoverageAnalysis_TelemetryData =
   QueryBuilderTelemetryContext &
     GraphManagerOperationReport & {
@@ -206,12 +217,36 @@ type FilterChange_TelemetryData = QueryBuilderTelemetryContext & {
   };
 };
 
+/**
+ * Payload for Advanced/Help menu `*.launch` actions — a menu item the user
+ * clicked, carrying just the shared telemetry envelope (source info + `state`)
+ * with no `change` block, because these are one-shot invocations rather than
+ * authoring events.
+ */
+type MenuAction_TelemetryData = QueryBuilderTelemetryContext;
+
+/**
+ * Payload for Advanced/Help menu `*.toggle` actions. `enabled` reports the
+ * post-toggle state so a single event stream covers both opens and closes;
+ * split `WHERE enabled = true` for opens.
+ */
+type MenuToggle_TelemetryData = QueryBuilderTelemetryContext & {
+  enabled: boolean;
+};
+
 export class QueryBuilderTelemetryHelper {
   static logEvent_QueryBuilderOpened(
     service: TelemetryService,
     data: QueryBuilderOpened_TelemetryData,
   ): void {
     service.logEvent(QUERY_BUILDER_EVENT.OPENED, data);
+  }
+
+  static logEvent_UnsupportedQueryLaunched(
+    service: TelemetryService,
+    data: UnsupportedQueryLaunched_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.UNSUPPORTED_QUERY_LAUNCH, data);
   }
 
   static logEvent_QueryRunLaunched(
@@ -572,5 +607,128 @@ export class QueryBuilderTelemetryHelper {
     data: FilterChange_TelemetryData,
   ): void {
     service.logEvent(QUERY_BUILDER_EVENT.POST_FILTER__CHANGE, data);
+  }
+
+  // ── Advanced menu ────────────────────────────────────────────────────────
+
+  static logEvent_TogglePanelParameter(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_PARAMETER__TOGGLE, data);
+  }
+
+  static logEvent_TogglePanelConstant(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_CONSTANT__TOGGLE, data);
+  }
+
+  static logEvent_TogglePanelFilter(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_FILTER__TOGGLE, data);
+  }
+
+  static logEvent_TogglePanelWindow(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_WINDOW__TOGGLE, data);
+  }
+
+  static logEvent_TogglePanelPostFilter(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.PANEL_POST_FILTER__TOGGLE, data);
+  }
+
+  static logEvent_ToggleCalendar(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.CALENDAR__TOGGLE, data);
+  }
+
+  static logEvent_ToggleTypedTDS(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.TYPED_TDS__TOGGLE, data);
+  }
+
+  static logEvent_CheckEntitlementsLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.CHECK_ENTITLEMENTS__LAUNCH, data);
+  }
+
+  static logEvent_EditPureLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.EDIT_PURE__LAUNCH, data);
+  }
+
+  static logEvent_ShowPureLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.SHOW_PURE__LAUNCH, data);
+  }
+
+  static logEvent_ShowProtocolLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.SHOW_PROTOCOL__LAUNCH, data);
+  }
+
+  static logEvent_CompileQueryLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.COMPILE_QUERY__LAUNCH, data);
+  }
+
+  static logEvent_ShowQueryDiffLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.SHOW_QUERY_DIFF__LAUNCH, data);
+  }
+
+  // ── Help menu (core items) ───────────────────────────────────────────────
+
+  static logEvent_OpenDocumentationLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.OPEN_DOCUMENTATION__LAUNCH, data);
+  }
+
+  static logEvent_OpenFAQLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.OPEN_FAQ__LAUNCH, data);
+  }
+
+  static logEvent_OpenSupportTicketsLaunched(
+    service: TelemetryService,
+    data: MenuAction_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.OPEN_SUPPORT_TICKETS__LAUNCH, data);
+  }
+
+  static logEvent_ToggleVirtualAssistant(
+    service: TelemetryService,
+    data: MenuToggle_TelemetryData,
+  ): void {
+    service.logEvent(QUERY_BUILDER_EVENT.VIRTUAL_ASSISTANT__TOGGLE, data);
   }
 }

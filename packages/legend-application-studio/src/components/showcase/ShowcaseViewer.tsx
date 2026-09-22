@@ -62,6 +62,8 @@ import { LEGEND_STUDIO_TEST_ID } from '../../__lib__/LegendStudioTesting.js';
 import { Explorer } from '../editor/side-bar/Explorer.js';
 import { PanelGroup } from '../editor/panel-group/PanelGroup.js';
 import { QueryDataCubeViewer } from '@finos/legend-query-builder';
+import { ShowcaseFeedback } from './ShowcaseFeedback.js';
+import { SHOWCASE_FEEDBACK_SURFACE } from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 const ShowcaseViewerStatusBar = observer(() => {
   const editorStore = useEditorStore();
@@ -108,6 +110,14 @@ const ShowcaseViewerStatusBar = observer(() => {
               </button>
             </div>
           </div>
+        )}
+        {showcase && (
+          <ShowcaseFeedback
+            className="showcase-feedback--status-bar"
+            showcasePath={showcaseStore.showcase.path}
+            title={showcase.title}
+            surface={SHOWCASE_FEEDBACK_SURFACE.DEEP_LINK_VIEWER}
+          />
         )}
       </div>
       <div className="editor__status-bar__right">

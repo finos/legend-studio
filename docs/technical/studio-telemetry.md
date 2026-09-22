@@ -97,37 +97,43 @@ Three parallel event families — one per element type. Payload is uniform per f
 
 Adoption per family = `apply / launch`; abandonment = `discard / launch`; error rate = `failure / launch`.
 
-### Lakehouse deploy
-
-Deployments to the Lakehouse ingest and data product surfaces.
-
-| Event                                     | Payload                                                 |
-| ----------------------------------------- | ------------------------------------------------------- |
-| `editor.ingestion.deployment.success.urn` | `sourceInfo?` · `ingestUrn` · `ingestDefinitionPath`    |
-| `editor.ingestion.deployment.failure`     | `sourceInfo?` · `ingestDefinitionPath` · `errorMessage` |
-| `editor.data-product.deployment.success`  | `sourceInfo?` · `dataProductPath`                       |
-| `editor.data-product.deployment.failure`  | `sourceInfo?` · `dataProductPath` · `errorMessage`      |
-
 ### Push to dev metadata
 
 "Push to dev metadata" propagates a workspace's artifacts to the metadata service.
 
-| Event                                      | Payload                                                            |
-| ------------------------------------------ | ------------------------------------------------------------------ |
-| `editor.metadata.push-to-metadata.launch`  | `sourceInfo?` · `groupId` · `artifactId` · `versionId?`            |
-| `editor.metadata.push-to-metadata.success` | `sourceInfo?` · `groupId` · `artifactId` · `versionId?` · `status` |
-| `editor.metadata.push-to-metadata.failure` | `sourceInfo?` · `errorMessage`                                     |
+| Event                                      | Payload                                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `editor.metadata.push-to-metadata.launch`  | `sourceInfo?` · `groupId` · `artifactId` · `versionId?` · `ingestCount` · `dataProductCount`            |
+| `editor.metadata.push-to-metadata.success` | `sourceInfo?` · `groupId` · `artifactId` · `versionId?` · `status` · `ingestCount` · `dataProductCount` |
+| `editor.metadata.push-to-metadata.failure` | `sourceInfo?` · `errorMessage`                                                                          |
+
+`ingestCount` and `dataProductCount` count the current project's own lakehouse elements only (`graph.ownIngests` / `graph.ownDataProducts`); elements coming from project dependencies are excluded.
 
 ### Showcase manager
 
 Not editor-scoped, so no `sourceInfo`.
 
-| Event                                      | Payload                                             |
-| ------------------------------------------ | --------------------------------------------------- |
-| `showcase.manager.launch`                  | `showcasesTotalCount` · `showcasesDevelopmentCount` |
-| `showcase.manager.showcase.project.launch` | `showcasePath`                                      |
-| `showcase.manager.search.initiated`        | `searchText`                                        |
-| `showcase.viewer.launch`                   | `showcasePath`                                      |
+| Event                                      | Payload                                                                                              |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `showcase.manager.launch`                  | `showcasesTotalCount` · `showcasesDevelopmentCount` · `entryPoint`                                   |
+| `showcase.manager.showcase.project.launch` | `showcasePath` · `title?` · `isDevelopment?` · `entryPoint?` · `lineNumber?`                         |
+| `showcase.manager.search.initiated`        | `searchText`                                                                                         |
+| `showcase.manager.search.completed`        | `searchText` · `resultCount` · `showcaseMatchCount` · `textMatchCount` · `durationMs` · `hadResults` |
+| `showcase.viewer.launch`                   | `showcasePath` · `title?` · `entryPoint?` (fires only on the deep-link `/showcase/:path` route)      |
+| `showcase.viewer.close`                    | `showcasePath` · `dwellMs`                                                                           |
+| `showcase.viewer.feedback.submit`          | `showcasePath` · `title?` · `vote` · `previousVote?` · `surface`                                     |
+| `showcase.manager.init.failure`            | `errorMessage`                                                                                       |
+| `showcase.manager.open.failure`            | `errorMessage` · `showcasePath`                                                                      |
+| `showcase.manager.search.failure`          | `errorMessage` · `searchText`                                                                        |
+
+`entryPoint` values:
+
+- **Manager launch** (`SHOWCASE_MANAGER_ENTRY_POINT`): `activity-bar`, `workspace-setup`.
+- **Showcase project launch** (`SHOWCASE_LAUNCH_ENTRY_POINT`): `explorer`, `search-showcase-match`, `search-code-match`, `deep-link`. The manager UI populates the first three; the deep-link viewer route populates the last (via `showcase.viewer.launch`, which is the only place `deep-link` appears).
+- **Showcase feedback vote** (`SHOWCASE_FEEDBACK_VOTE`): `up`, `down`. `previousVote` is set on `showcase.viewer.feedback.submit` when the user changes an existing vote (retracting a vote does not emit an event).
+- **Showcase feedback surface** (`SHOWCASE_FEEDBACK_SURFACE`): `deep-link-viewer` (status-bar widget on the `/showcase/:path` route), `assistant-panel` (footer widget inside the Studio-editor assistant showcases tab). The user's most recent vote per showcase is also cached in `UserDataService` under `studio-editor.showcase.feedback.votes` so the widget can pre-highlight it; there is no backend endpoint today.
+
+Note: `showcase.manager.failure` still exists as a legacy generic bucket but is no longer emitted — it has been split into the three specific `*.failure` events above.
 
 ### Virtual assistant
 
@@ -155,7 +161,6 @@ Studio still funnels several categories of failure through generic buckets. When
 | `engine.manager.failure`                           | Any engine client call        |
 | `sdlc.manager.failure`                             | Any SDLC client call          |
 | `depot.manager.failure`                            | Any depot client call         |
-| `showcase.manager.failure`                         | Showcase client               |
 | `change-detection.failure`                         | Change detection              |
 
 ### Change detection

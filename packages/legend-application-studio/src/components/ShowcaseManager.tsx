@@ -42,6 +42,11 @@ import {
   type ShowcaseTextSearchMatchResult,
   type ShowcasesExplorerTreeNodeData,
 } from '../stores/ShowcaseManagerState.js';
+import {
+  SHOWCASE_LAUNCH_ENTRY_POINT,
+  SHOWCASE_FEEDBACK_SURFACE,
+} from '../__lib__/LegendStudioTelemetryHelper.js';
+import { ShowcaseFeedback } from './showcase/ShowcaseFeedback.js';
 import { debounce, isNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import type { Showcase } from '@finos/legend-server-showcase';
@@ -86,9 +91,13 @@ const ShowcasesExplorerTreeNodeContainer = observer(
       if (!node.metadata) {
         toggleExpandNode(node);
       } else {
-        flowResult(showcaseManagerState.openShowcase(node.metadata)).catch(
-          applicationStore.alertUnhandledError,
-        );
+        flowResult(
+          showcaseManagerState.openShowcase(
+            node.metadata,
+            undefined,
+            SHOWCASE_LAUNCH_ENTRY_POINT.EXPLORER,
+          ),
+        ).catch(applicationStore.alertUnhandledError);
       }
     };
 
@@ -254,7 +263,11 @@ const ShowcaseManagerCodeSearchResult = observer(
           }\n\nClick to open showcase`}
           onClick={() => {
             flowResult(
-              showcaseManagerState.openShowcase(result.showcase),
+              showcaseManagerState.openShowcase(
+                result.showcase,
+                undefined,
+                SHOWCASE_LAUNCH_ENTRY_POINT.SEARCH_SHOWCASE_MATCH,
+              ),
             ).catch(applicationStore.alertUnhandledError);
           }}
         >
@@ -275,6 +288,7 @@ const ShowcaseManagerCodeSearchResult = observer(
                   showcaseManagerState.openShowcase(
                     result.showcase,
                     entry.line,
+                    SHOWCASE_LAUNCH_ENTRY_POINT.SEARCH_CODE_MATCH,
                   ),
                 ).catch(applicationStore.alertUnhandledError);
               }}
@@ -635,6 +649,12 @@ const ShowcaseViewer = observer(
               lineToScroll={showcaseManagerState.showcaseLineToScroll}
             />
           </div>
+          <ShowcaseFeedback
+            className="showcase-manager__viewer__feedback"
+            showcasePath={showcase.path}
+            title={showcase.title}
+            surface={SHOWCASE_FEEDBACK_SURFACE.ASSISTANT_PANEL}
+          />
         </div>
       </div>
     );

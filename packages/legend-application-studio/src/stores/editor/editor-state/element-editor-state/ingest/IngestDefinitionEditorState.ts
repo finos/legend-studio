@@ -28,35 +28,17 @@ import type { EditorStore } from '../../../EditorStore.js';
 import {
   ActionState,
   assertErrorThrown,
-  assertTrue,
-  guaranteeNonNullable,
   guaranteeType,
   LogEvent,
-  removePrefix,
   type GeneratorFn,
 } from '@finos/legend-shared';
-import {
-  action,
-  computed,
-  flow,
-  flowResult,
-  makeObservable,
-  observable,
-} from 'mobx';
-import type {
-  IngestDefinitionDeploymentResponse,
-  IngestDefinitionValidationResponse,
-  LakehouseIngestionManager,
-  ValidateAndDeploymentResponse,
-} from '@finos/legend-server-lakehouse';
+import { action, flow, makeObservable, observable } from 'mobx';
 import {
   EditorInitialConfiguration,
   IngestElementEditorInitialConfiguration,
 } from '../ElementEditorInitialConfiguration.js';
-import type { AuthContextProps } from 'react-oidc-context';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
 import { LineageState } from '@finos/legend-query-builder';
-import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { IngestTestableState } from './IngestTestableState.js';
 
 export enum INGEST_DEFINITION_TAB {
@@ -88,8 +70,6 @@ export const generateUrlToDeployOnOpen = (
   );
 };
 
-const PARSER_SECTION = `###Lakehouse`;
-
 type CachedIngestArtifact = {
   hashCode: string;
   artifact: IngestionDefinitionArtifact;
@@ -97,8 +77,6 @@ type CachedIngestArtifact = {
 
 export class IngestDefinitionEditorState extends ElementEditorState {
   selectedTab = INGEST_DEFINITION_TAB.DEFINITION;
-  validateAndDeployResponse: ValidateAndDeploymentResponse | undefined;
-  deploymentState = ActionState.create();
   lineageGenerationState = ActionState.create();
   artifactGenerationState = ActionState.create();
   ingestionArtifact: IngestionDefinitionArtifact | undefined;
@@ -116,19 +94,13 @@ export class IngestDefinitionEditorState extends ElementEditorState {
 
     makeObservable(this, {
       selectedTab: observable,
-      deploymentState: observable,
       deployOnOpen: observable,
       setDeployOnOpen: observable,
       cachedArtfact: observable,
-      validateAndDeployResponse: observable,
       ingestionArtifact: observable,
-      deploymentResponse: computed,
       setSelectedTab: action,
-      setValidateAndDeployResponse: action,
       setIngestCachedArtifact: action,
       setIngestionArtifact: action,
-      init_with_deploy: flow,
-      deploy: flow,
       generateLineage: flow,
       generateArtifact: flow,
     });
@@ -148,26 +120,6 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     this.selectedTab = val;
   }
 
-  get deploymentResponse():
-    | IngestDefinitionDeploymentResponse
-    | IngestDefinitionValidationResponse
-    | undefined {
-    return (
-      this.validateAndDeployResponse?.deploymentResponse ??
-      this.validateAndDeployResponse?.validationResponse
-    );
-  }
-
-  get ingestionManager(): LakehouseIngestionManager | undefined {
-    return this.editorStore.ingestionManager;
-  }
-
-  setValidateAndDeployResponse(
-    val: ValidateAndDeploymentResponse | undefined,
-  ): void {
-    this.validateAndDeployResponse = val;
-  }
-
   setDeployOnOpen(value: boolean): void {
     this.deployOnOpen = value;
   }
@@ -178,76 +130,6 @@ export class IngestDefinitionEditorState extends ElementEditorState {
 
   setIngestCachedArtifact(val: CachedIngestArtifact | undefined): void {
     this.cachedArtfact = val;
-  }
-
-  *init_with_deploy(auth: AuthContextProps): GeneratorFn<void> {
-    this.setDeployOnOpen(false);
-    if (!auth.isAuthenticated) {
-      auth
-        .signinRedirect({
-          state: generateUrlToDeployOnOpen(this),
-        })
-        .catch(this.editorStore.applicationStore.alertUnhandledError);
-      return;
-    }
-    const token = auth.user?.access_token;
-    yield flowResult(this.generateElementGrammar()).catch(
-      this.editorStore.applicationStore.alertUnhandledError,
-    );
-    flowResult(this.deploy(token)).catch(
-      this.editorStore.applicationStore.alertUnhandledError,
-    );
-  }
-
-  *deploy(token: string | undefined): GeneratorFn<void> {
-    try {
-      assertTrue(
-        this.validForDeployment,
-        'Ingest definition is not valid for deployment',
-      );
-      this.deploymentState.inProgress();
-      const response = (yield guaranteeNonNullable(
-        this.ingestionManager,
-      ).deploy(
-        // remove parser prefix for now since api already expects it to be under lakehouse parser
-        guaranteeNonNullable(removePrefix(this.textContent, PARSER_SECTION)),
-        guaranteeNonNullable(this.ingest.appDirDeployment),
-        (val: string) =>
-          this.editorStore.applicationStore.alertService.setBlockingAlert({
-            message: val,
-            showLoading: true,
-          }),
-        token,
-      )) as unknown as ValidateAndDeploymentResponse;
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
-      if (response.deploymentResponse) {
-        LegendStudioTelemetryHelper.logEvent_LakehouseDeployIngest(
-          this.editorStore.applicationStore.telemetryService,
-          this.editorStore.editorMode.getSourceInfo(),
-          response.deploymentResponse.ingestDefinitionUrn,
-          this.ingest.path,
-        );
-      }
-      this.setValidateAndDeployResponse(response);
-    } catch (error) {
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
-      assertErrorThrown(error);
-      LegendStudioTelemetryHelper.logEvent_LakehouseDeployIngestFailure(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        this.ingest.path,
-        error.message,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(
-        `Ingest definition failed to deploy: ${error.message}`,
-      );
-    } finally {
-      this.deploymentState.complete();
-    }
   }
 
   getMatviewFuncNames(): string[] {
@@ -358,25 +240,8 @@ export class IngestDefinitionEditorState extends ElementEditorState {
     return new IngestDefinitionEditorState(editorStore, newElement);
   }
 
-  get validForDeployment(): boolean {
-    return Boolean(
-      this.ingest.appDirDeployment && this.textContent && this.ingestionManager,
-    );
-  }
-
   get validForLineageViewer(): boolean {
     return Boolean(this.ingest.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS?.length);
-  }
-
-  get validationMessage(): string {
-    if (!this.ingest.appDirDeployment) {
-      return 'No app dir deployment found';
-    } else if (!this.textContent) {
-      return 'No ingest definition found';
-    } else if (!this.ingestionManager) {
-      return 'No ingestion manager found';
-    }
-    return 'Deploy';
   }
 
   get ingest(): IngestDefinition {
