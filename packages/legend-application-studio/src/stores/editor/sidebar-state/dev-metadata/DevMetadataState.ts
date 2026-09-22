@@ -156,12 +156,18 @@ export class DevMetadataState {
         'Project Name required to push to dev mode',
       );
       this.pushState.inProgress();
+      const graph = this.editorStore.graphManagerState.graph;
+      const lakehouseElementCounts = {
+        ingestCount: graph.ownIngests.length,
+        dataProductCount: graph.ownDataProducts.length,
+      };
       LegendStudioTelemetryHelper.logEvent_DevMetadataPushLaunched(
         this.editorStore.applicationStore.telemetryService,
         this.editorStore.editorMode.getSourceInfo(),
         currentProjectConfiguration.groupId,
         currentProjectConfiguration.artifactId,
         undefined,
+        lakehouseElementCounts,
       );
       const result =
         (yield this.editorStore.graphManagerState.graphManager.pushToDevMetadata(
@@ -179,6 +185,7 @@ export class DevMetadataState {
         currentProjectConfiguration.artifactId,
         undefined,
         result.finalStatus,
+        lakehouseElementCounts,
       );
       this.pushState.complete();
     } catch (error) {

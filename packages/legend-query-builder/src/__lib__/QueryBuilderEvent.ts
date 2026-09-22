@@ -47,7 +47,7 @@ export enum QUERY_BUILDER_EVENT {
   MAPPING_MODEL_COVERAGE_ANALYSYS__LAUNCH = 'query-builder.mapping-model-coverage-analysis.launch',
   MAPPING_MODEL_COVERAGE_ANALYSYS__SUCCESS = 'query-builder.mapping-model-coverage-analysis.success',
 
-  UNSUPPORTED_QUERY_LAUNCH = 'query-builder.unsupported-query.lanuch',
+  UNSUPPORTED_QUERY_LAUNCH = 'query-builder.unsupported-query.launch',
 
   SHOW_UNMAPPED_PROPERTIES__LAUNCH = 'query-builder.show-unmapped-properties.launch',
   PROPERTY_EXPLORER_OPTIONS__LAUNCH = 'query-builder.property-explorer-options.launch',
@@ -57,6 +57,33 @@ export enum QUERY_BUILDER_EVENT {
 
   PANEL_FETCH_STRUCTURE_TOGGLE = 'query-builder.panel-fetch-structure.toggle',
   PANEL_GRAPH_FETCH_RENDER = 'query-builder.panel-graph-fetch.render',
+
+  // Advanced-menu actions. Each carries the shared telemetry envelope (source
+  // info flat at the top level, execution context under `state`). `*.toggle`
+  // events include the post-toggle `enabled` state so dashboards can slice
+  // opens vs closes; `*.launch` events fire once per invocation.
+  PANEL_PARAMETER__TOGGLE = 'query-builder.panel-parameter.toggle',
+  PANEL_CONSTANT__TOGGLE = 'query-builder.panel-constant.toggle',
+  PANEL_FILTER__TOGGLE = 'query-builder.panel-filter.toggle',
+  PANEL_WINDOW__TOGGLE = 'query-builder.panel-window.toggle',
+  PANEL_POST_FILTER__TOGGLE = 'query-builder.panel-post-filter.toggle',
+  CALENDAR__TOGGLE = 'query-builder.calendar.toggle',
+  TYPED_TDS__TOGGLE = 'query-builder.typed-tds.toggle',
+  CHECK_ENTITLEMENTS__LAUNCH = 'query-builder.check-entitlements.launch',
+  EDIT_PURE__LAUNCH = 'query-builder.edit-pure.launch',
+  SHOW_PURE__LAUNCH = 'query-builder.show-pure.launch',
+  SHOW_PROTOCOL__LAUNCH = 'query-builder.show-protocol.launch',
+  COMPILE_QUERY__LAUNCH = 'query-builder.compile-query.launch',
+  SHOW_QUERY_DIFF__LAUNCH = 'query-builder.show-query-diff.launch',
+
+  // Help-menu actions (core items rendered by the query builder itself). The
+  // application-level Help items injected via
+  // `getExtraQueryBuilderHelpMenuActionConfigurations` are reported by the
+  // host application under its own event namespace.
+  OPEN_DOCUMENTATION__LAUNCH = 'query-builder.open-documentation.launch',
+  OPEN_FAQ__LAUNCH = 'query-builder.open-faq.launch',
+  OPEN_SUPPORT_TICKETS__LAUNCH = 'query-builder.open-support-tickets.launch',
+  VIRTUAL_ASSISTANT__TOGGLE = 'query-builder.virtual-assistant.toggle',
 
   EXECUTION_CONTEXT__CHANGE = 'query-builder.execution-context.change',
   PROJECTION__CHANGE = 'query-builder.projection.change',

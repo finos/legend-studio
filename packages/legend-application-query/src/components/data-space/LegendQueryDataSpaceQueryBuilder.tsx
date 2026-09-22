@@ -65,6 +65,7 @@ import { LakehouseRuntimeConfigModal } from '../shared/LakehouseRuntimeConfigMod
 import type { DataProductWithLegacyOption } from '../../stores/data-space/DataProductSelectorState.js';
 import { formatDataProductOrSpaceOptionLabel } from '../shared/LegendQueryDataProductOptionLabel.js';
 import type { LegendQueryDataSpaceQueryBuilderState } from '../../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
+import { LegendQueryTelemetryHelper } from '../../__lib__/LegendQueryTelemetryHelper.js';
 
 const resolveExecutionContextRuntimes = (
   queryBuilderState: LegendQueryDataSpaceQueryBuilderState,
@@ -117,11 +118,35 @@ const LegendQueryDataSpaceQueryBuilderSetupPanelContent = observer(
       const value = option.value;
       if (value instanceof ResolvedDataSpaceEntityWithOrigin) {
         queryBuilderState.queryAgentChatState?.abort();
+        LegendQueryTelemetryHelper.logEvent_ChangeDataSpace(
+          applicationStore.telemetryService,
+          {
+            sourceInfo: queryBuilderState.sourceInfo,
+            to: {
+              groupId: value.origin?.groupId,
+              artifactId: value.origin?.artifactId,
+              versionId: value.origin?.versionId,
+              path: value.path,
+            },
+          },
+        );
         queryBuilderState
           .onDataSpaceChange(value)
           .catch(queryBuilderState.applicationStore.alertUnhandledError);
       } else if (value instanceof DepotEntityWithOrigin) {
         queryBuilderState.queryAgentChatState?.abort();
+        LegendQueryTelemetryHelper.logEvent_ChangeDataProduct(
+          applicationStore.telemetryService,
+          {
+            sourceInfo: queryBuilderState.sourceInfo,
+            to: {
+              groupId: value.origin?.groupId,
+              artifactId: value.origin?.artifactId,
+              versionId: value.origin?.versionId,
+              path: value.path,
+            },
+          },
+        );
         queryBuilderState.onDataProductChange(value);
       }
     };

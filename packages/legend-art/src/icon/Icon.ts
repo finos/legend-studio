@@ -475,6 +475,8 @@ import {
   FaTag,
   FaTags,
   FaTerminal,
+  FaRegThumbsDown,
+  FaRegThumbsUp,
   FaTimes,
   FaTimesCircle,
   FaToggleOff,
@@ -621,6 +623,8 @@ export const StickArrowCircleRightIcon = FaArrowCircleRight;
 export const TagIcon = FaTag;
 export const TagsIcon = FaTags;
 export const TerminalIcon = FaTerminal;
+export const ThumbsUpIcon = FaRegThumbsUp;
+export const ThumbsDownIcon = FaRegThumbsDown;
 export const TimesCircleIcon = FaTimesCircle;
 export const TimesIcon = FaTimes;
 export const ToggleIcon = FaToggleOn;

@@ -53,7 +53,6 @@ import {
   ModalFooter,
   ModalFooterButton,
   ModalHeader,
-  ModalTitle,
   PanelContent,
   PanelDnDEntry,
   PanelEntryDragHandle,
@@ -1054,56 +1053,6 @@ export const LakehouseDataProductAccessPointEditor = observer(
   },
 );
 
-const DataProductDeploymentResponseModal = observer(
-  (props: { state: DataProductEditorState }) => {
-    const { state } = props;
-    const applicationStore = state.editorStore.applicationStore;
-    const closeModal = (): void => state.setDeployResponse(undefined);
-    return (
-      <Dialog
-        open={Boolean(state.deployResponse)}
-        classes={{
-          root: 'editor-modal__root-container',
-          container: 'editor-modal__container',
-          paper: 'editor-modal__content',
-        }}
-        onClose={closeModal}
-      >
-        <Modal
-          darkMode={
-            !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled
-          }
-          className="editor-modal"
-        >
-          <ModalHeader>
-            <ModalTitle title="Data Product Deployment Response" />
-          </ModalHeader>
-          <ModalBody>
-            <PanelContent>
-              <CodeEditor
-                inputValue={JSON.stringify(
-                  state.deployResponse?.content ?? {},
-                  null,
-                  2,
-                )}
-                isReadOnly={true}
-                language={CODE_EDITOR_LANGUAGE.JSON}
-              />
-            </PanelContent>
-          </ModalBody>
-          <ModalFooter>
-            <ModalFooterButton
-              onClick={closeModal}
-              text="Close"
-              type="secondary"
-            />
-          </ModalFooter>
-        </Modal>
-      </Dialog>
-    );
-  },
-);
-
 const AccessPointGroupPublicToggle = observer(
   (props: { groupState: AccessPointGroupState }) => {
     const { groupState } = props;
@@ -1967,9 +1916,6 @@ const AccessPointGroupTab = observer(
             />
           )}
         </PanelContent>
-        {dataProductEditorState.deployResponse && (
-          <DataProductDeploymentResponseModal state={dataProductEditorState} />
-        )}
       </div>
     );
   },

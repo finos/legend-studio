@@ -39,7 +39,10 @@ import {
 } from '@finos/legend-graph';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
 import { payloadDebugger } from '../editor/panel-group/DevToolPanelState.js';
-import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LegendStudioTelemetryHelper,
+  SHOWCASE_LAUNCH_ENTRY_POINT,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GRAPH_EDITOR_MODE } from '../editor/EditorConfig.js';
 import type { Entity } from '@finos/legend-storage';
 
@@ -96,10 +99,12 @@ export class ShowcaseViewerStore {
       this._showcase = (yield this.client.getShowcase(
         showcasePath,
       )) as Showcase;
-      LegendStudioTelemetryHelper.logEvent_ShowcaseManagerShowcaseProjectLaunch(
+      LegendStudioTelemetryHelper.logEvent_ShowcaseViewerLaunch(
         this.editorStore.applicationStore.telemetryService,
         {
           showcasePath: showcasePath,
+          title: this._showcase.title,
+          entryPoint: SHOWCASE_LAUNCH_ENTRY_POINT.DEEP_LINK,
         },
       );
       // initialize graph manager

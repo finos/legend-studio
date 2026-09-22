@@ -40,6 +40,7 @@ type Overrides = {
   filterIsEmpty?: boolean;
   watermarkValue?: unknown;
   implementation?: unknown;
+  unsupportedRawLambda?: unknown;
 };
 
 const buildStub = (overrides: Overrides = {}): unknown => ({
@@ -64,6 +65,7 @@ const buildStub = (overrides: Overrides = {}): unknown => ({
     ),
   },
   watermarkState: { value: overrides.watermarkValue },
+  unsupportedQueryState: { rawLambda: overrides.unsupportedRawLambda },
 });
 
 /**
@@ -134,6 +136,7 @@ describe(unitTest('QueryBuilderState.getQueryInfo'), () => {
       );
       expect(info).toEqual({
         fetchStructureType: 'GRAPH_FETCH',
+        isQuerySupported: true,
         parameterCount: 2,
         constantCount: 1,
         hasFilter: true,
@@ -263,6 +266,21 @@ describe(unitTest('QueryBuilderState.getQueryInfo'), () => {
             implementation: buildTDSImplementation({ projectionColumns: [] }),
           }),
         ).isTypedFetchStructure,
+      ).toBe(false);
+    },
+  );
+
+  test(
+    unitTest(
+      'isQuerySupported reflects the presence of an unsupported raw lambda',
+    ),
+    () => {
+      expect(getQueryInfo(buildStub()).isQuerySupported).toBe(true);
+      // When the query lambda could not be built into the form-mode builder,
+      // the raw lambda is stashed on `unsupportedQueryState` and the fallback
+      // editor is shown — this is what flips the flag.
+      expect(
+        getQueryInfo(buildStub({ unsupportedRawLambda: {} })).isQuerySupported,
       ).toBe(false);
     },
   );

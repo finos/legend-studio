@@ -50,19 +50,67 @@ type ShowcaseSearchInitiated_TelemetryData = {
   searchText: string;
 };
 
+export type ShowcaseSearchCompleted_TelemetryData = {
+  searchText: string;
+  resultCount: number;
+  showcaseMatchCount: number;
+  textMatchCount: number;
+  durationMs: number;
+  hadResults: boolean;
+};
+
+export enum SHOWCASE_MANAGER_ENTRY_POINT {
+  ACTIVITY_BAR = 'activity-bar',
+  WORKSPACE_SETUP = 'workspace-setup',
+}
+
+export enum SHOWCASE_LAUNCH_ENTRY_POINT {
+  EXPLORER = 'explorer',
+  SEARCH_SHOWCASE_MATCH = 'search-showcase-match',
+  SEARCH_CODE_MATCH = 'search-code-match',
+  DEEP_LINK = 'deep-link',
+}
+
 export type ShowcaseMetadata_TelemetryData = {
   showcasesTotalCount: number;
   showcasesDevelopmentCount: number;
+  entryPoint: SHOWCASE_MANAGER_ENTRY_POINT;
 };
 
 export type ShowcaseProject_TelemetryData = {
   showcasePath: string;
+  title?: string | undefined;
+  isDevelopment?: boolean | undefined;
+  entryPoint?: SHOWCASE_LAUNCH_ENTRY_POINT | undefined;
+  lineNumber?: number | undefined;
 };
 
-export type IngestDefinitionDeployment_TelemetryData = {
-  sourceInfo: LegendSourceInfo | undefined;
-  ingestUrn: string;
-  ingestDefinitionPath: string;
+export type ShowcaseViewerClose_TelemetryData = {
+  showcasePath: string;
+  dwellMs: number;
+};
+
+export enum SHOWCASE_FEEDBACK_VOTE {
+  UP = 'up',
+  DOWN = 'down',
+}
+
+export enum SHOWCASE_FEEDBACK_SURFACE {
+  DEEP_LINK_VIEWER = 'deep-link-viewer',
+  ASSISTANT_PANEL = 'assistant-panel',
+}
+
+export type ShowcaseFeedback_TelemetryData = {
+  showcasePath: string;
+  title?: string | undefined;
+  vote: SHOWCASE_FEEDBACK_VOTE;
+  surface: SHOWCASE_FEEDBACK_SURFACE;
+};
+
+export type ShowcaseFailure_TelemetryData = {
+  errorMessage: string;
+  showcasePath?: string | undefined;
+  searchText?: string | undefined;
 };
 
 export enum TEXT_MODE_ENTER_TRIGGER {
@@ -211,6 +259,63 @@ export class LegendStudioTelemetryHelper {
   ): void {
     service.logEvent(
       LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_SEARCH__INITIATED,
+      data,
+    );
+  }
+
+  static logEvent_ShowcaseSearchCompleted(
+    service: TelemetryService,
+    data: ShowcaseSearchCompleted_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_SEARCH__COMPLETED,
+      data,
+    );
+  }
+
+  static logEvent_ShowcaseViewerClose(
+    service: TelemetryService,
+    data: ShowcaseViewerClose_TelemetryData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SHOWCASE_VIEWER_CLOSE, data);
+  }
+
+  static logEvent_ShowcaseFeedbackSubmit(
+    service: TelemetryService,
+    data: ShowcaseFeedback_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_VIEWER_FEEDBACK__SUBMIT,
+      data,
+    );
+  }
+
+  static logEvent_ShowcaseManagerInitFailure(
+    service: TelemetryService,
+    data: ShowcaseFailure_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_INIT__FAILURE,
+      data,
+    );
+  }
+
+  static logEvent_ShowcaseManagerOpenFailure(
+    service: TelemetryService,
+    data: ShowcaseFailure_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_OPEN__FAILURE,
+      data,
+    );
+  }
+
+  static logEvent_ShowcaseManagerSearchFailure(
+    service: TelemetryService,
+    data: ShowcaseFailure_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SHOWCASE_MANAGER_SEARCH__FAILURE,
       data,
     );
   }
@@ -398,73 +503,6 @@ export class LegendStudioTelemetryHelper {
     );
   }
 
-  // Lakehouse
-  static logEvent_LakehouseDeployIngest(
-    service: TelemetryService,
-    sourceInfo: LegendSourceInfo | undefined,
-    ingestUrn: string,
-    ingestDefinitionPath: string,
-  ): void {
-    const eventData: IngestDefinitionDeployment_TelemetryData = {
-      sourceInfo,
-      ingestUrn,
-      ingestDefinitionPath,
-    };
-    service.logEvent(
-      LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_SUCCESS_URN,
-      eventData,
-    );
-  }
-
-  static logEvent_LakehouseDeployIngestFailure(
-    service: TelemetryService,
-    sourceInfo: LegendSourceInfo | undefined,
-    ingestDefinitionPath: string,
-    errorMessage: string,
-  ): void {
-    const eventData = {
-      sourceInfo,
-      ingestDefinitionPath,
-      errorMessage,
-    };
-    service.logEvent(
-      LEGEND_STUDIO_APP_EVENT.INGESTION_DEPLOY_FAILURE,
-      eventData,
-    );
-  }
-
-  static logEvent_LakehouseDeployDataProduct(
-    service: TelemetryService,
-    sourceInfo: LegendSourceInfo | undefined,
-    dataProductPath: string,
-  ): void {
-    const eventData = {
-      sourceInfo,
-      dataProductPath,
-    };
-    service.logEvent(
-      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_DEPLOY_SUCCESS,
-      eventData,
-    );
-  }
-
-  static logEvent_LakehouseDeployDataProductFailure(
-    service: TelemetryService,
-    sourceInfo: LegendSourceInfo | undefined,
-    dataProductPath: string,
-    errorMessage: string,
-  ): void {
-    const eventData = {
-      sourceInfo,
-      dataProductPath,
-      errorMessage,
-    };
-    service.logEvent(
-      LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_DEPLOY_FAILURE,
-      eventData,
-    );
-  }
-
   // Push to Dev Metadata
   static logEvent_DevMetadataPushLaunched(
     service: TelemetryService,
@@ -472,6 +510,10 @@ export class LegendStudioTelemetryHelper {
     groupId: string,
     artifactId: string,
     versionId: string | undefined,
+    lakehouseElementCounts: {
+      ingestCount: number;
+      dataProductCount: number;
+    },
   ): void {
     service.logEvent(
       LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA__LAUNCH,
@@ -480,6 +522,7 @@ export class LegendStudioTelemetryHelper {
         groupId,
         artifactId,
         versionId,
+        ...lakehouseElementCounts,
       },
     );
   }
@@ -491,6 +534,10 @@ export class LegendStudioTelemetryHelper {
     artifactId: string,
     versionId: string | undefined,
     status: string,
+    lakehouseElementCounts: {
+      ingestCount: number;
+      dataProductCount: number;
+    },
   ): void {
     service.logEvent(
       LEGEND_STUDIO_APP_EVENT.METADATA_PUSH_TO_METADATA__SUCCESS,
@@ -500,6 +547,7 @@ export class LegendStudioTelemetryHelper {
         artifactId,
         versionId,
         status,
+        ...lakehouseElementCounts,
       },
     );
   }

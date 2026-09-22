@@ -36,6 +36,7 @@ export { QUERY_BUILDER_COMPONENT_ELEMENT_ID } from './components/QueryBuilderCom
 export {
   type QueryBuilderExtraFunctionAnalysisInfo,
   type EntityWithOriginOption,
+  type QueryBuilderTelemetryContext,
   QueryBuilderState,
   ExtraOptionsConfig,
   BaseQueryBuilderState,

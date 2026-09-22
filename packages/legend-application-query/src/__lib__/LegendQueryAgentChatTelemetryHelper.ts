@@ -16,6 +16,36 @@
 
 import type { TelemetryService } from '@finos/legend-application';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
+import type { LegendQuerySourceInfo } from './LegendQuerySourceInfo.js';
+
+/**
+ * The entry point the suggestion was triggered from ({@link LegendQuerySourceInfo})
+ * is spread FLAT into the payload, matching how `sourceInfo` is reported on
+ * every other query telemetry event.
+ */
+export type QueryAISuggest_TelemetryData = {
+  sourceInfo?: LegendQuerySourceInfo | undefined;
+};
+
+export type QueryAISuggestSuccess_TelemetryData =
+  QueryAISuggest_TelemetryData & {
+    /** Wall-clock duration of the suggester call, in milliseconds. */
+    durationMs: number;
+  };
+
+export type QueryAISuggestFailure_TelemetryData =
+  QueryAISuggest_TelemetryData & {
+    /** Wall-clock duration until the suggester call failed, in milliseconds. */
+    durationMs: number;
+    errorMessage: string;
+  };
+
+const flattenSourceInfo = (
+  data: QueryAISuggest_TelemetryData,
+): Record<string, unknown> => {
+  const { sourceInfo, ...rest } = data;
+  return { ...rest, ...(sourceInfo ?? {}) };
+};
 
 /**
  * Telemetry surface for Legend AI agent-chat and AI-suggest flows. These
@@ -41,27 +71,53 @@ export class LegendQueryAgentChatTelemetryHelper {
     );
   }
 
-  static logEvent_QueryAISuggestLaunched(service: TelemetryService): void {
-    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__LAUNCH, {});
+  static logEvent_QueryAISuggestLaunched(
+    service: TelemetryService,
+    data: QueryAISuggest_TelemetryData = {},
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__LAUNCH,
+      flattenSourceInfo(data),
+    );
   }
 
-  static logEvent_QueryAISuggestApplied(service: TelemetryService): void {
-    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__APPLY, {});
+  static logEvent_QueryAISuggestSucceeded(
+    service: TelemetryService,
+    data: QueryAISuggestSuccess_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__SUCCESS,
+      flattenSourceInfo(data),
+    );
   }
 
-  static logEvent_QueryAISuggestDiscarded(service: TelemetryService): void {
+  static logEvent_QueryAISuggestApplied(
+    service: TelemetryService,
+    data: QueryAISuggest_TelemetryData = {},
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__APPLY,
+      flattenSourceInfo(data),
+    );
+  }
+
+  static logEvent_QueryAISuggestDiscarded(
+    service: TelemetryService,
+    data: QueryAISuggest_TelemetryData = {},
+  ): void {
     service.logEvent(
       LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__DISCARD,
-      {},
+      flattenSourceInfo(data),
     );
   }
 
   static logEvent_QueryAISuggestFailure(
     service: TelemetryService,
-    errorMessage: string,
+    data: QueryAISuggestFailure_TelemetryData,
   ): void {
-    service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__FAILURE, {
-      errorMessage,
-    });
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__FAILURE,
+      flattenSourceInfo(data),
+    );
   }
 }

@@ -572,11 +572,16 @@ test(
       fireEvent.click(suggestBtn);
     });
 
-    // Failure telemetry should be logged with the error message
+    // Failure telemetry should be logged with the error message, wall-clock
+    // duration, and (flat) source info of the query the suggestion was made
+    // against.
     await waitFor(() => {
       expect(logEventSpy).toHaveBeenCalledWith(
         LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__FAILURE,
-        { errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE },
+        expect.objectContaining({
+          errorMessage: MOCK_AI_SUGGESTER_ERROR_MESSAGE,
+          durationMs: expect.any(Number),
+        }),
       );
     });
   },

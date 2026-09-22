@@ -17,6 +17,8 @@
 import type { TelemetryService } from '@finos/legend-application';
 import type { TelemetryErrorFields, TimingsRecord } from '@finos/legend-shared';
 import { LEGEND_QUERY_APP_EVENT } from './LegendQueryEvent.js';
+import type { QueryableSourceInfo } from '@finos/legend-storage';
+import type { QueryBuilderTelemetryContext } from '@finos/legend-query-builder';
 import {
   type GraphManagerOperationReport,
   GRAPH_MANAGER_EVENT,
@@ -135,6 +137,41 @@ export type QueryLoadFailure_TelemetryData = {
 } & Partial<PartialQuery_TelemetryData> &
   TelemetryErrorFields;
 
+/**
+ * Payload for an in-session data-space or data-product switch made from the
+ * query-builder setup panel.
+ *
+ * `sourceInfo` (the query builder's source info at the moment the switch is
+ * made — i.e. what the user is switching *from*) is spread FLAT into the
+ * payload, matching how every other query telemetry event reports
+ * `sourceInfo`. It is typed as {@link QueryableSourceInfo} rather than
+ * `LegendQuerySourceInfo` because it comes off the query builder state
+ * (which types it generically) even though at runtime it is always a
+ * `LegendQuerySourceInfo` produced by an editor store's `getSourceInfo()`.
+ *
+ * `to` is the GAV + element path of the target selection: the group,
+ * artifact and version the data space / data product lives in, and its
+ * element path. A missing GAV (rare, but the `origin` field on
+ * `DepotEntityWithOrigin` is optional) is reported as `undefined` rather than
+ * omitted, so dashboards can distinguish "no origin" from "field absent".
+ */
+export type ChangeDataSpaceOrProduct_TelemetryData = {
+  sourceInfo?: QueryableSourceInfo | undefined;
+  to: {
+    groupId: string | undefined;
+    artifactId: string | undefined;
+    versionId: string | undefined;
+    path: string;
+  };
+};
+
+const flattenChangeDataSpaceOrProductSourceInfo = (
+  data: ChangeDataSpaceOrProduct_TelemetryData,
+): Record<string, unknown> => {
+  const { sourceInfo, ...rest } = data;
+  return { ...rest, ...(sourceInfo ?? {}) };
+};
+
 export class LegendQueryTelemetryHelper {
   static logEvent_ViewQuerySucceeded(
     service: TelemetryService,
@@ -192,6 +229,57 @@ export class LegendQueryTelemetryHelper {
     service: TelemetryService,
   ): void {
     service.logEvent(LEGEND_QUERY_APP_EVENT.VIEW_SDLC_PROJECT__LAUNCH, {});
+  }
+
+  // ── Query builder Help-menu items injected by Legend Query ───────────────
+  //
+  // Each takes the shared query builder telemetry envelope (source info flat +
+  // `state` nested), pulled from `queryBuilderState.safeGetTelemetryContext()`
+  // at the callsite.
+
+  static logEvent_AboutQueryInfoLaunched(
+    service: TelemetryService,
+    data: QueryBuilderTelemetryContext,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.ABOUT_QUERY_INFO__LAUNCH, data);
+  }
+
+  static logEvent_QueryVersionHistoryLaunched(
+    service: TelemetryService,
+    data: QueryBuilderTelemetryContext,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.QUERY_VERSION_HISTORY__LAUNCH,
+      data,
+    );
+  }
+
+  static logEvent_AboutLegendQueryLaunched(
+    service: TelemetryService,
+    data: QueryBuilderTelemetryContext,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.ABOUT_LEGEND_QUERY__LAUNCH, data);
+  }
+
+  static logEvent_AboutDataSpaceLaunched(
+    service: TelemetryService,
+    data: QueryBuilderTelemetryContext,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.ABOUT_DATA_SPACE__LAUNCH, data);
+  }
+
+  static logEvent_AboutDataProductLaunched(
+    service: TelemetryService,
+    data: QueryBuilderTelemetryContext,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.ABOUT_DATA_PRODUCT__LAUNCH, data);
+  }
+
+  static logEvent_AboutIngestLaunched(
+    service: TelemetryService,
+    data: QueryBuilderTelemetryContext,
+  ): void {
+    service.logEvent(LEGEND_QUERY_APP_EVENT.ABOUT_INGEST__LAUNCH, data);
   }
 
   static logEvent_GraphInitializationSucceeded(
@@ -299,5 +387,25 @@ export class LegendQueryTelemetryHelper {
     service.logEvent(LEGEND_QUERY_APP_EVENT.LEGENDAI_QUERY_SUGGEST__FAILURE, {
       errorMessage,
     });
+  }
+
+  static logEvent_ChangeDataSpace(
+    service: TelemetryService,
+    data: ChangeDataSpaceOrProduct_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.CHANGE_DATA_SPACE,
+      flattenChangeDataSpaceOrProductSourceInfo(data),
+    );
+  }
+
+  static logEvent_ChangeDataProduct(
+    service: TelemetryService,
+    data: ChangeDataSpaceOrProduct_TelemetryData,
+  ): void {
+    service.logEvent(
+      LEGEND_QUERY_APP_EVENT.CHANGE_DATA_PRODUCT,
+      flattenChangeDataSpaceOrProductSourceInfo(data),
+    );
   }
 }

@@ -37,12 +37,26 @@ export enum LEGEND_QUERY_APP_EVENT {
   LEGENDAI_QUERY_AGENT_CHAT__OPENED = 'query-editor.legendai-query-agent-chat.opened',
   LEGENDAI_QUERY_AGENT_CHAT__QUERY_LOADED = 'query-editor.legendai-query-agent-chat.query-loaded',
   LEGENDAI_QUERY_SUGGEST__LAUNCH = 'query-editor.legendai-query-suggest.launch',
+  LEGENDAI_QUERY_SUGGEST__SUCCESS = 'query-editor.legendai-query-suggest.success',
   LEGENDAI_QUERY_SUGGEST__APPLY = 'query-editor.legendai-query-suggest.apply',
   LEGENDAI_QUERY_SUGGEST__DISCARD = 'query-editor.legendai-query-suggest.discard',
   LEGENDAI_QUERY_SUGGEST__FAILURE = 'query-editor.legendai-query-suggest.failure',
 
+  CHANGE_DATA_SPACE = 'query-editor.change-data-space',
+  CHANGE_DATA_PRODUCT = 'query-editor.change-data-product',
+
   VIEW_PROJECT__LAUNCH = 'query-editor.view-project.launch',
   VIEW_SDLC_PROJECT__LAUNCH = 'query-editor.view-sdlc-project.launch',
+
+  // Help-menu items injected by Legend Query into the query builder header.
+  // Each carries the shared query builder telemetry envelope (source info flat
+  // + `state` nested), matching every other query telemetry event.
+  ABOUT_QUERY_INFO__LAUNCH = 'query-editor.about-query-info.launch',
+  QUERY_VERSION_HISTORY__LAUNCH = 'query-editor.query-version-history.launch',
+  ABOUT_LEGEND_QUERY__LAUNCH = 'query-editor.about-legend-query.launch',
+  ABOUT_DATA_SPACE__LAUNCH = 'query-editor.about-data-space.launch',
+  ABOUT_DATA_PRODUCT__LAUNCH = 'query-editor.about-data-product.launch',
+  ABOUT_INGEST__LAUNCH = 'query-editor.about-ingest.launch',
 
   LOCAL_STORAGE_PERSIST_ERROR = 'LOCAL_STORAGE_PERSIST_ERROR',
   HOSTED_DATA_CUBE__LAUNCH = 'query-editor.hosted-data-cube.launch',

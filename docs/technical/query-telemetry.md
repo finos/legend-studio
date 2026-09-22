@@ -143,7 +143,9 @@ Note `rename.query.success` has a dot where the others have a hyphen. That name 
 | `query-builder.embedded-data-cube.success`              | envelope · execution report                                                                                                   |
 | `query-builder.mapping-model-coverage-analysis.success` | envelope · execution report                                                                                                   |
 
-`queryInfo` is a shape-only summary of the query — counts and booleans, no user values and no element identifiers: `fetchStructureType`, `isTypedFetchStructure`, `parameterCount`, `constantCount`, `hasFilter`, `filterNodeCount`, `watermarkEnabled`, `milestoningKind`, and for TDS `projectionColumnCount`, `windowColumnCount`, `aggregationColumnCount`, `postFilterNodeCount`, `hasLimit`, `hasDistinct`, `sortColumnCount`, `hasSlice`.
+`queryInfo` is a shape-only summary of the query — counts and booleans, no user values and no element identifiers: `fetchStructureType`, `isQuerySupported`, `isTypedFetchStructure`, `parameterCount`, `constantCount`, `hasFilter`, `filterNodeCount`, `watermarkEnabled`, `milestoningKind`, and for TDS `projectionColumnCount`, `windowColumnCount`, `aggregationColumnCount`, `postFilterNodeCount`, `hasLimit`, `hasDistinct`, `sortColumnCount`, `hasSlice`.
+
+`isQuerySupported` is `false` when the query lambda could not be built into the form-mode builder and the user landed on the raw-lambda / unsupported-query editor instead — filter on it to separate supported-mode activity from unsupported-lambda fallback on any event carrying `queryInfo`.
 
 `timings` breaks the run into phases:
 
@@ -156,6 +158,16 @@ Note `rename.query.success` has a dot where the others have a hyphen. That name 
 | `total`                                                         | client-side wall clock                   |
 
 On a failure, the laps that are _missing_ are the signal: no `server-call.success` means the query never reached the engine.
+
+### Unsupported query fallback (`@finos/legend-query-builder`)
+
+| Event                                    | Payload                                                                            |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| `query-builder.unsupported-query.launch` | envelope · `errorMessage` · `errorMessageTruncated?` · `errorName` · `httpStatus?` |
+
+Fired when the query lambda could not be built into the form-mode builder and the user fell through to the raw-lambda / unsupported-query editor. Countable per entry point / GAV via the envelope. The full untruncated stack is still written to the log service alongside — this event is a count, not a debugging record.
+
+Also observable on any downstream event carrying `queryInfo` via `isQuerySupported: false` — that's the way to attribute _executions_ from the unsupported editor, since this event only fires at the fallback point.
 
 ### Query authoring (`@finos/legend-query-builder`)
 

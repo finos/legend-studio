@@ -566,6 +566,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             if (editorStore instanceof ExistingQueryEditorStore) {
+              LegendQueryTelemetryHelper.logEvent_AboutQueryInfoLaunched(
+                editorStore.applicationStore.telemetryService,
+                queryBuilderState.safeGetTelemetryContext(),
+              );
               editorStore.updateState.setShowQueryInfo(true);
             }
           }
@@ -596,6 +600,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             if (editorStore instanceof ExistingQueryEditorStore) {
+              LegendQueryTelemetryHelper.logEvent_QueryVersionHistoryLaunched(
+                editorStore.applicationStore.telemetryService,
+                queryBuilderState.safeGetTelemetryContext(),
+              );
               editorStore.showQueryVersionHistory();
             }
           }
@@ -654,6 +662,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
           ) {
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
+            LegendQueryTelemetryHelper.logEvent_AboutLegendQueryLaunched(
+              editorStore.applicationStore.telemetryService,
+              queryBuilderState.safeGetTelemetryContext(),
+            );
             editorStore.setShowAppInfo(true);
           }
         },
@@ -682,6 +694,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             if (queryBuilderState instanceof DataSpaceQueryBuilderState) {
+              LegendQueryTelemetryHelper.logEvent_AboutDataSpaceLaunched(
+                editorStore.applicationStore.telemetryService,
+                queryBuilderState.safeGetTelemetryContext(),
+              );
               editorStore.setShowDataspaceInfo(true);
             }
           }
@@ -711,6 +727,10 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             const editorStore =
               queryBuilderState.workflowState.actionConfig.editorStore;
             if (queryBuilderState instanceof DataProductQueryBuilderState) {
+              LegendQueryTelemetryHelper.logEvent_AboutDataProductLaunched(
+                editorStore.applicationStore.telemetryService,
+                queryBuilderState.safeGetTelemetryContext(),
+              );
               editorStore.setShowDataProductInfo(true);
             }
           }
@@ -729,9 +749,13 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
               QueryBuilderActionConfig_QueryApplication &&
             queryBuilderState instanceof IngestLegendQueryBuilderState
           ) {
-            queryBuilderState.workflowState.actionConfig.editorStore.setShowIngestInfo(
-              true,
+            const editorStore =
+              queryBuilderState.workflowState.actionConfig.editorStore;
+            LegendQueryTelemetryHelper.logEvent_AboutIngestLaunched(
+              editorStore.applicationStore.telemetryService,
+              queryBuilderState.safeGetTelemetryContext(),
             );
+            editorStore.setShowIngestInfo(true);
           }
         },
         icon: <InfoCircleIcon />,

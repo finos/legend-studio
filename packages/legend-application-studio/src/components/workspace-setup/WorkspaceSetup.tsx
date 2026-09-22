@@ -80,6 +80,7 @@ import {
 import { Project } from '@finos/legend-server-sdlc';
 import { WorkspaceSetupStore } from '../../stores/workspace-setup/WorkspaceSetupStore.js';
 import { openShowcaseManager } from '../../stores/ShowcaseManagerState.js';
+import { SHOWCASE_MANAGER_ENTRY_POINT } from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 const WorkspaceSetupStoreContext = createContext<
   WorkspaceSetupStore | undefined
@@ -151,7 +152,11 @@ export const ShowcaseCard: React.FC<{ hideDocumentation?: boolean }> = (
               <OpenIcon />
             </div>
           ),
-          action: () => openShowcaseManager(applicationStore),
+          action: () =>
+            openShowcaseManager(
+              applicationStore,
+              SHOWCASE_MANAGER_ENTRY_POINT.WORKSPACE_SETUP,
+            ),
         },
       ]}
       isStable={true}

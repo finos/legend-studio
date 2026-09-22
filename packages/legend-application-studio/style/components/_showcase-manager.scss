@@ -427,8 +427,79 @@
     }
 
     &__code {
-      height: calc(100% - 6rem);
+      height: calc(100% - 9rem);
       width: 100%;
+    }
+
+    &__feedback {
+      height: 3rem;
+      margin-top: 0.5rem;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.showcase-feedback {
+  @include flexVCenter;
+
+  gap: 0.5rem;
+  user-select: none;
+
+  &__prompt {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin-right: 0.25rem;
+  }
+
+  &__btn {
+    @include flexCenter;
+
+    height: 2.2rem;
+    width: 2.2rem;
+    padding: 0;
+    border: 0.1rem solid transparent;
+    border-radius: 0.2rem;
+    background: transparent;
+    color: var(--color-text-muted);
+    cursor: pointer;
+
+    svg {
+      font-size: 1.4rem;
+    }
+
+    &:hover {
+      color: var(--color-text-primary);
+      background: var(--color-dark-shade-100);
+    }
+
+    &--active {
+      color: var(--color-blue-150);
+      border-color: var(--color-blue-200);
+      background: var(--color-dark-shade-100);
+
+      &:hover {
+        color: var(--color-blue-100);
+      }
+    }
+  }
+
+  // In the deep-link viewer, the widget sits inside `editor__status-bar__left`
+  // next to the showcase title. Trim it down to match the status-bar strip.
+  &--status-bar {
+    height: 100%;
+    padding: 0 1rem;
+
+    .showcase-feedback__prompt {
+      font-size: 1rem;
+    }
+
+    .showcase-feedback__btn {
+      height: 1.8rem;
+      width: 1.8rem;
+
+      svg {
+        font-size: 1.2rem;
+      }
     }
   }
 }

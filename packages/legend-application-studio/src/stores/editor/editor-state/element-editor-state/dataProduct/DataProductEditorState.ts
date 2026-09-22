@@ -15,10 +15,8 @@
  */
 
 import {
-  type AppDirNode,
   type ArtifactGenerationExtensionResult,
   type BatchLambdasRelationTypeResult,
-  type IngestDefinition,
   type Mapping,
   type PackageableElement,
   type RawLambda,
@@ -31,7 +29,6 @@ import {
   type V1_RawLineageModel,
   AccessPoint,
   AccessPointGroup,
-  AppDirOwner,
   CodeCompletionResult,
   DataElement,
   DataElementReference,
@@ -70,10 +67,8 @@ import {
   ActionState,
   addUniqueEntry,
   assertErrorThrown,
-  assertTrue,
   deleteEntry,
   filterByType,
-  guaranteeNonNullable,
   guaranteeType,
   LogEvent,
   returnUndefOnError,
@@ -98,11 +93,6 @@ import {
   EditorInitialConfiguration,
 } from '../ElementEditorInitialConfiguration.js';
 import { EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig } from '../../../../../__lib__/LegendStudioNavigation.js';
-import type {
-  AdhocDataProductDeployResponse,
-  LakehouseIngestionManager,
-} from '@finos/legend-server-lakehouse';
-import { LegendStudioTelemetryHelper } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum DATA_PRODUCT_TAB {
   HOME = 'Home',
@@ -785,11 +775,9 @@ export const generateUrlToDeployOnOpen = (
 };
 
 export class DataProductEditorState extends ElementEditorState {
-  deploymentState = ActionState.create();
   accessPointGroupStates: AccessPointGroupState[] = [];
   isConvertingTransformLambdaObjects = false;
   deployOnOpen = false;
-  deployResponse: AdhocDataProductDeployResponse | undefined;
   selectedGroupState: AccessPointGroupState | undefined;
   selectedTab: DATA_PRODUCT_TAB;
   modelledDataProduct = false;
@@ -811,11 +799,8 @@ export class DataProductEditorState extends ElementEditorState {
       setSelectedTab: action,
       addGroupState: action,
       deleteGroupState: action,
-      deploy: flow,
       deployOnOpen: observable,
-      deployResponse: observable,
       setDeployOnOpen: action,
-      setDeployResponse: action,
       addAccessPoint: action,
       convertAccessPointsFuncObjects: flow,
       batchUpdateLambdaRelationColumns: flow,
@@ -850,12 +835,6 @@ export class DataProductEditorState extends ElementEditorState {
 
   setDeployOnOpen(value: boolean): void {
     this.deployOnOpen = value;
-  }
-
-  setDeployResponse(
-    response: AdhocDataProductDeployResponse | undefined,
-  ): void {
-    this.deployResponse = response;
   }
 
   setSelectedTab(value: DATA_PRODUCT_TAB): void {
@@ -1065,57 +1044,6 @@ export class DataProductEditorState extends ElementEditorState {
     }
   }
 
-  *deploy(token: string | undefined): GeneratorFn<void> {
-    try {
-      assertTrue(
-        this.validForDeployment,
-        'Data product definition is not valid for deployment',
-      );
-      this.deploymentState.inProgress();
-      // The grammar we provide will be for the current data product + all ingests (used for compilation)
-      const grammar =
-        (yield this.editorStore.graphManagerState.graphManager.elementsToPureCode(
-          [...this.editorStore.graphManagerState.graph.ingests, this.product],
-        )) as unknown as string;
-
-      const response = (yield guaranteeNonNullable(
-        this.ingestionManager,
-      ).deployDataProduct(
-        grammar,
-        guaranteeNonNullable(this.appDirDeployment),
-        (val: string) =>
-          this.editorStore.applicationStore.alertService.setBlockingAlert({
-            message: val,
-            showLoading: true,
-          }),
-        token,
-      )) as unknown as AdhocDataProductDeployResponse;
-      LegendStudioTelemetryHelper.logEvent_LakehouseDeployDataProduct(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        this.product.path,
-      );
-
-      this.setDeployResponse(response);
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.notificationService.notifyError(
-        `Ingest definition failed to deploy: ${error.message}`,
-      );
-      LegendStudioTelemetryHelper.logEvent_LakehouseDeployDataProductFailure(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        this.product.path,
-        error.message,
-      );
-    } finally {
-      this.deploymentState.complete();
-      this.editorStore.applicationStore.alertService.setBlockingAlert(
-        undefined,
-      );
-    }
-  }
-
   clearSupportInfo(): void {
     const supportInfo = this.product.supportInfo;
     runInAction(() => {
@@ -1150,42 +1078,8 @@ export class DataProductEditorState extends ElementEditorState {
     );
   }
 
-  get validForDeployment(): boolean {
-    return Boolean(this.appDirDeployment && this.ingestionManager);
-  }
-
   get accessPoints(): AccessPoint[] {
     return this.product.accessPointGroups.map((e) => e.accessPoints).flat();
-  }
-
-  get ingestionManager(): LakehouseIngestionManager | undefined {
-    return this.editorStore.ingestionManager;
-  }
-
-  get deployValidationMessage(): string {
-    if (!this.appDirDeployment) {
-      return 'No app dir deployment found';
-    } else if (!this.ingestionManager) {
-      return 'No ingestion manager found';
-    }
-    return 'Deploy';
-  }
-
-  // Use explicit owner from the data product if available, otherwise fall back to the associated ingest's app dir deployment
-  get appDirDeployment(): AppDirNode | undefined {
-    const owner = this.product.owner;
-    if (owner instanceof AppDirOwner) {
-      return owner.production;
-    }
-    return this.associatedIngest?.appDirDeployment;
-  }
-
-  // We need to get the associated Ingest to get the app dir deployment
-  // We could do a more in depth check on the access point lambdas to check which ingest it uses but for now
-  // we will assume all ingests have the same DID
-  // we get the last one, to prioritize the ones in the current project followed by dependency ones
-  get associatedIngest(): IngestDefinition | undefined {
-    return this.editorStore.graphManagerState.graph.ingests.slice(-1)[0];
   }
 
   override reprocess(

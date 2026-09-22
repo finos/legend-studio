@@ -81,6 +81,7 @@ import {
   ShowcaseManagerState,
   openShowcaseManager,
 } from '../../stores/ShowcaseManagerState.js';
+import { SHOWCASE_MANAGER_ENTRY_POINT } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { toggleShowcasePanel } from './ShowcaseSideBar.js';
 import { useAuth, type AuthContextProps } from 'react-oidc-context';
 
@@ -223,7 +224,10 @@ export const ActivityBarMenu: React.FC<{
                   onClick={() =>
                     openShowcasePanel
                       ? openShowcasePanel()
-                      : openShowcaseManager(applicationStore)
+                      : openShowcaseManager(
+                          applicationStore,
+                          SHOWCASE_MANAGER_ENTRY_POINT.ACTIVITY_BAR,
+                        )
                   }
                 >
                   See Showcases
