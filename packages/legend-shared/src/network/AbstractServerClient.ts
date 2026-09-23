@@ -32,6 +32,12 @@ import type { TraceData, TracerService } from './TracerService.js';
 export interface ServerClientConfig {
   baseUrl?: string;
   queryBaseUrl?: string | undefined;
+  /**
+   * When set, this value is attached as a `client_name` query parameter on
+   * every request made against `queryBaseUrl` (not `baseUrl`). Used to select
+   * a specific pac4j client on the query-server, e.g. `onegsauthaws`.
+   */
+  queryClientName?: string | undefined;
   networkClientOptions?: PlainObject;
   enableCompression?: boolean;
   /**

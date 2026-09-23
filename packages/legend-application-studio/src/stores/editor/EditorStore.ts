@@ -879,6 +879,7 @@ export class EditorStore implements CommandRegistrar {
             queryBaseUrl:
               this.editorConfig?.engineQueryServerUrl ??
               this.applicationStore.config.engineQueryServerUrl,
+            queryClientName: this.applicationStore.config.engineQueryClientName,
             enableCompression: true,
             payloadDebugger,
             useCookieAuthOnly:

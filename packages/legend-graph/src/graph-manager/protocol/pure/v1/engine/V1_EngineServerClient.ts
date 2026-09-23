@@ -19,8 +19,12 @@ import {
   AbstractServerClient,
   type PlainObject,
   type Parameters,
+  type RequestHeaders,
+  type RequestProcessConfig,
+  type ResponseProcessConfig,
   type ServerClientConfig,
   type TraceData,
+  type HttpMethod,
   HttpHeader,
   NetworkClient,
 } from '@finos/legend-shared';
@@ -231,6 +235,7 @@ export class V1_EngineServerClient extends AbstractServerClient {
   // user, right now we assume to make some call on the query servers, for example, but
   // getting the user from the main engine server, which seems problematic.
   private queryBaseUrl?: string | undefined;
+  private queryClientName?: string | undefined;
   private baseUrlForServiceRegistration?: string | undefined;
 
   constructor(config: V1_EngineServerClientConfig) {
@@ -241,6 +246,37 @@ export class V1_EngineServerClient extends AbstractServerClient {
     );
     this.queryBaseUrl = config.queryBaseUrl;
     this.clientName = config.clientName;
+    this.queryClientName = config.queryClientName;
+  }
+
+  override async request<T>(
+    method: HttpMethod,
+    url: string,
+    data: unknown,
+    options: RequestInit,
+    headers?: RequestHeaders | undefined,
+    parameters?: Parameters | undefined,
+    requestProcessConfig?: RequestProcessConfig | undefined,
+    responseProcessConfig?: ResponseProcessConfig | undefined,
+    traceData?: TraceData | undefined,
+  ): Promise<T> {
+    const params =
+      this.queryClientName &&
+      this.queryBaseUrl &&
+      url.startsWith(this.queryBaseUrl)
+        ? { ...parameters, client_name: this.queryClientName }
+        : parameters;
+    return super.request(
+      method,
+      url,
+      data,
+      options,
+      headers,
+      params,
+      requestProcessConfig,
+      responseProcessConfig,
+      traceData,
+    );
   }
 
   setBaseUrlForServiceRegistration(val: string | undefined): void {
