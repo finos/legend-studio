@@ -107,12 +107,7 @@ export const TEST_DATA_SPACE_VERSION_ID = '0.0.0';
 
 export type TEST__DataSpaceViewerActionOverrides = {
   viewDataProduct?:
-    | ((
-        groupId: string,
-        artifactId: string,
-        versionId: string,
-        dataProductPath: string,
-      ) => void)
+    | ((dataProductPath: string, deploymentId: number) => void)
     | undefined;
   fetchDataSpaceQuality?: (() => Promise<DataSpaceQualityResult>) | undefined;
 };

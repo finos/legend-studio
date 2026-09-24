@@ -103,6 +103,8 @@ import {
   DataSpaceFunctionPointerExecutableInfo,
   DataSpaceExecutionContextRuntimeMetadata,
   DataSpaceMappingProviderAnalysisResult,
+  DataproductReferenceMetadata,
+  LakehouseDataProductExecutableAccessorInfo,
 } from '../../../action/analytics/DataSpaceAnalysis.js';
 import { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 import { DSL_DataSpace_PureGraphManagerExtension } from '../DSL_DataSpace_PureGraphManagerExtension.js';
@@ -117,6 +119,8 @@ import {
   V1_DataSpaceMultiExecutionServiceExecutableInfo,
   V1_DataSpaceTemplateExecutableInfo,
   V1_DataSpaceFunctionPointerExecutableInfo,
+  V1_DataproductReferenceMetadata,
+  V1_LakehouseDataProductExecutableAccessorInfo,
 } from './engine/analytics/V1_DataSpaceAnalysis.js';
 import { getDiagram } from '@finos/legend-extension-dsl-diagram/graph';
 import { resolveVersion } from '@finos/legend-server-depot';
@@ -1249,9 +1253,42 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
             );
           }
         }
+        executable.executableAccessorInfo =
+          executableProtocol.executableAccessorInfo
+            .map((accessorInfoProtocol) => {
+              if (
+                accessorInfoProtocol instanceof
+                V1_LakehouseDataProductExecutableAccessorInfo
+              ) {
+                const accessorInfo =
+                  new LakehouseDataProductExecutableAccessorInfo();
+                accessorInfo.dataProductPath =
+                  accessorInfoProtocol.dataProductPath;
+                accessorInfo.accessPointGroupId =
+                  accessorInfoProtocol.accessPointGroupId;
+                accessorInfo.accessPointId = accessorInfoProtocol.accessPointId;
+                return accessorInfo;
+              }
+              return undefined;
+            })
+            .filter(isNonNullable);
         return executable;
       },
     );
+
+    result.dataSpaceReferencesMetadataInfo =
+      analysisResult.dataSpaceReferencesMetadataInfo
+        .map((metadataProtocol) => {
+          if (metadataProtocol instanceof V1_DataproductReferenceMetadata) {
+            const metadata = new DataproductReferenceMetadata();
+            metadata.dataproductPath = metadataProtocol.dataproductPath;
+            metadata.production = metadataProtocol.production;
+            metadata.prodParallel = metadataProtocol.prodParallel;
+            return metadata;
+          }
+          return undefined;
+        })
+        .filter(isNonNullable);
 
     result.mappingToMappingCoverageResult = mappingToMappingCoverageResult;
 

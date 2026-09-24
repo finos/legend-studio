@@ -1,0 +1,99 @@
+{
+  "name": "MixedContextsDataProduct",
+  "package": "test::mix",
+  "path": "test::mix::MixedContextsDataProduct",
+  "title": "Mixed Contexts Data Product",
+  "description": "Fixture for a DataSpace with both a mappingProvider-backed execution context and a plain mapping execution context, plus an executable that reaches a second Data Product through executableAccessorInfo.",
+  "taggedValues": [],
+  "stereotypes": [],
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "elements": [],
+  "elementDocs": [],
+  "executionContexts": [
+    {
+      "name": "lakehouse",
+      "mapping": "test::mix::ResolvedLakehouseMapping",
+      "mappingProvider": {
+        "element": "test::mix::DataProduct1",
+        "keys": ["modelAPG"]
+      },
+      "compatibleRuntimes": [],
+      "datasets": [],
+      "runtimeMetadata": {}
+    },
+    {
+      "name": "relational",
+      "mapping": "test::mix::RelationalMapping",
+      "compatibleRuntimes": [],
+      "datasets": [],
+      "runtimeMetadata": {}
+    }
+  ],
+  "defaultExecutionContext": "lakehouse",
+  "diagrams": [],
+  "executables": [
+    {
+      "title": "Context Backed Executable",
+      "description": "Served through the mappingProvider execution context, so it carries no accessors",
+      "info": {
+        "_type": "templateExecutableInfo",
+        "executionContextKey": "lakehouse",
+        "id": "1",
+        "query": "|test::mix::MyClass.all()->project(~[name: x|$x.name])"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Accessor Backed Executable",
+      "description": "Reaches a second Data Product directly through an accessor",
+      "executableAccessorInfo": [
+        {
+          "_type": "lakehouseDataProductExecutableAccessorInfo",
+          "dataProductPath": "test::mix::DataProduct2",
+          "accessPointGroupId": "group",
+          "accessPointId": "ap2"
+        }
+      ],
+      "info": {
+        "_type": "templateExecutableInfo",
+        "executionContextKey": "relational",
+        "id": "2",
+        "query": "|#P{test::mix::DataProduct2.ap2}#->select(~[name])"
+      },
+      "result": {
+        "_type": "tds",
+        "columns": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      }
+    }
+  ],
+  "dataSpaceReferencesMetadataInfo": [
+    {
+      "_type": "dataproductReferenceMetadata",
+      "dataproductPath": "test::mix::DataProduct1",
+      "production": "11",
+      "prodParallel": "12"
+    },
+    {
+      "_type": "dataproductReferenceMetadata",
+      "dataproductPath": "test::mix::DataProduct2",
+      "production": "21",
+      "prodParallel": "22"
+    }
+  ]
+}

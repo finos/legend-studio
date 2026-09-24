@@ -47,6 +47,7 @@ import {
   type TDSRowDataType,
   type V1_EntitlementsDataProductDetailsResponse,
   type V1_Terminal,
+  extractElementNameFromPath,
   getRowDataFromExecutionResult,
   GraphDataWithOrigin,
   GraphManagerState,
@@ -65,7 +66,6 @@ import {
   type Entity,
   type ProjectGAVCoordinates,
   type StoredFileGeneration,
-  generateGAVCoordinates,
   parseGAVCoordinates,
   parseProjectIdentifier,
 } from '@finos/legend-storage';
@@ -77,7 +77,6 @@ import {
   EXTERNAL_APPLICATION_NAVIGATION__generateDataSpaceQueryEditorUrl,
   EXTERNAL_APPLICATION_NAVIGATION__generateStudioSDLCProjectViewUrl,
   generateLakehouseDataProductPath,
-  generateSdlcDataProductPath,
   generateContractPagePath,
   generatePermitDataAccessRequestPagePath,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
@@ -991,16 +990,14 @@ export class LegendMarketplaceProductViewerStore {
               );
             },
             viewDataProduct: (
-              _groupId: string,
-              _artifactId: string,
-              _versionId: string,
               dataProductPath: string,
+              deploymentId: number,
             ): void => {
               this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
                 this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
-                  generateSdlcDataProductPath(
-                    generateGAVCoordinates(_groupId, _artifactId, _versionId),
-                    dataProductPath,
+                  generateLakehouseDataProductPath(
+                    extractElementNameFromPath(dataProductPath).toUpperCase(),
+                    deploymentId,
                   ),
                 ),
               );

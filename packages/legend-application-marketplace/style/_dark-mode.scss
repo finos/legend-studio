@@ -4082,6 +4082,41 @@
       border-color: var(--color-dark-theme-border);
     }
 
+    &__tds__apg-access {
+      border-color: var(--color-dark-theme-border);
+
+      &__header {
+        color: var(--color-dark-theme-text-muted);
+        background: var(--color-dark-theme-bg-elevated);
+        border-bottom-color: var(--color-dark-theme-border);
+      }
+
+      &__group + &__group {
+        border-top-color: var(--color-dark-theme-border);
+      }
+
+      &__group__caret {
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__group__label {
+        color: var(--color-dark-theme-text-primary);
+      }
+
+      &__group__count {
+        background: var(--color-dark-theme-bg-elevated);
+        color: var(--color-dark-theme-text-muted);
+      }
+
+      &__row + &__row {
+        border-top-color: var(--color-dark-theme-border);
+      }
+
+      &__row__apg {
+        color: var(--color-dark-theme-text-primary);
+      }
+    }
+
     &__tds__query-text {
       &__action {
         svg {

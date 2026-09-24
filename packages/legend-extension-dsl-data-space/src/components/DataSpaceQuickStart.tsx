@@ -25,17 +25,25 @@ import {
   LegendLogo,
   MoreVerticalIcon,
   QuestionCircleIcon,
+  RefreshIcon,
   StatisticsIcon,
   clsx,
 } from '@finos/legend-art';
+import { IconButton } from '@mui/material';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import { useApplicationStore } from '@finos/legend-application';
+import { extractElementNameFromPath } from '@finos/legend-graph';
 import {
+  type DataSpaceExecutableAnalysisResult,
+  type DataSpaceExecutionContextAnalysisResult,
   DataSpaceExecutableTDSResult,
   DataSpaceServiceExecutableInfo,
   DataSpaceMultiExecutionServiceExecutableInfo,
+  LakehouseDataProductExecutableAccessorInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
+import { DataProductAPGAccessRequestControl } from '@finos/legend-extension-dsl-data-product';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
+import { DataSpaceOpenDataProductButton } from './DataSpaceExecutionContextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useEffect, useRef, useState } from 'react';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
@@ -118,6 +126,219 @@ const TDSColumnTypeCellRenderer = (
   );
 };
 
+const DATA_PRODUCT_GROUP_AUTO_COLLAPSE_THRESHOLD = 3;
+
+type DataSpaceDataProductAccessGroup = {
+  dataProductPath: string;
+  accessPointGroupIds: string[];
+};
+
+/**
+ * Resolves the `(dataProductPath, accessPointGroupId)` pairs an executable
+ * needs access to: either the Lakehouse Data Products its accessors reference,
+ * or — for an executable served by a mappingProvider execution context — the
+ * Data Product and access point groups that context resolves through.
+ */
+const resolveDataProductAccessGroups = (
+  executableAnalysisResult: DataSpaceExecutableAnalysisResult,
+  executionContext: DataSpaceExecutionContextAnalysisResult | undefined,
+): DataSpaceDataProductAccessGroup[] => {
+  const groupsByDataProduct = new Map<string, string[]>();
+  const addGroup = (
+    dataProductPath: string,
+    accessPointGroupId: string,
+  ): void => {
+    const accessPointGroupIds = groupsByDataProduct.get(dataProductPath) ?? [];
+    if (!accessPointGroupIds.includes(accessPointGroupId)) {
+      accessPointGroupIds.push(accessPointGroupId);
+    }
+    groupsByDataProduct.set(dataProductPath, accessPointGroupIds);
+  };
+  for (const accessor of executableAnalysisResult.executableAccessorInfo) {
+    if (accessor instanceof LakehouseDataProductExecutableAccessorInfo) {
+      addGroup(accessor.dataProductPath, accessor.accessPointGroupId);
+    }
+  }
+  if (groupsByDataProduct.size === 0) {
+    const mappingProvider = executionContext?.mappingProvider;
+    mappingProvider?.keys.forEach((key) =>
+      addGroup(mappingProvider.element, key),
+    );
+  }
+  return Array.from(groupsByDataProduct.entries()).map(
+    ([dataProductPath, accessPointGroupIds]) => ({
+      dataProductPath,
+      accessPointGroupIds,
+    }),
+  );
+};
+
+/**
+ * Renders the "Request Access" button + status for each
+ * `(dataProductPath, accessPointGroupId)` pair, grouped by Data Product path.
+ * Access states are shared across executables + APGs of the same DP via
+ * `DataSpaceViewerState.dataProductAccessStates`.
+ */
+const DataSpaceDataProductAccessPanel = observer(
+  (props: {
+    viewerState: DataSpaceViewerState;
+    groups: DataSpaceDataProductAccessGroup[];
+  }) => {
+    const { viewerState, groups } = props;
+    const tokenProvider =
+      viewerState.mappingProviderAccessConfig?.tokenProvider ??
+      ((): undefined => undefined);
+    const [collapsedDataProducts, setCollapsedDataProducts] = useState<
+      Set<string>
+    >(
+      () =>
+        new Set(
+          groups.length >= DATA_PRODUCT_GROUP_AUTO_COLLAPSE_THRESHOLD
+            ? groups.map((group) => group.dataProductPath)
+            : [],
+        ),
+    );
+    if (groups.length === 0) {
+      return null;
+    }
+    const toggleGroupCollapse = (dataProductPath: string): void => {
+      setCollapsedDataProducts((prev) => {
+        const next = new Set(prev);
+        if (next.has(dataProductPath)) {
+          next.delete(dataProductPath);
+        } else {
+          next.add(dataProductPath);
+        }
+        return next;
+      });
+    };
+    return (
+      <div className="data-space__viewer__quickstart__tds__apg-access">
+        <div className="data-space__viewer__quickstart__tds__apg-access__header">
+          Data Product Access
+        </div>
+        {groups.map((group) => {
+          const isGroupCollapsed = collapsedDataProducts.has(
+            group.dataProductPath,
+          );
+          const accessState = viewerState.getDataProductAccessState(
+            group.dataProductPath,
+          );
+          return (
+            <div
+              key={group.dataProductPath}
+              className="data-space__viewer__quickstart__tds__apg-access__group"
+            >
+              <div className="data-space__viewer__quickstart__tds__apg-access__group__header-row">
+                <button
+                  className="data-space__viewer__quickstart__tds__apg-access__group__caret-btn"
+                  tabIndex={-1}
+                  onClick={() => toggleGroupCollapse(group.dataProductPath)}
+                  title={isGroupCollapsed ? 'Expand' : 'Collapse'}
+                >
+                  <ExpandMoreIcon
+                    className={clsx(
+                      'data-space__viewer__quickstart__tds__apg-access__group__caret',
+                      {
+                        'data-space__viewer__quickstart__tds__apg-access__group__caret--collapsed':
+                          isGroupCollapsed,
+                      },
+                    )}
+                  />
+                </button>
+                <div className="data-space__viewer__quickstart__tds__apg-access__group__header">
+                  <span
+                    className="data-space__viewer__quickstart__tds__apg-access__group__label"
+                    title={group.dataProductPath}
+                  >
+                    {extractElementNameFromPath(group.dataProductPath)}
+                  </span>
+                  <span className="data-space__viewer__quickstart__tds__apg-access__group__count">
+                    {group.accessPointGroupIds.length}
+                  </span>
+                </div>
+                <div className="data-space__viewer__quickstart__tds__apg-access__group__actions">
+                  <DataSpaceOpenDataProductButton
+                    dataSpaceViewerState={viewerState}
+                    dataProductPath={group.dataProductPath}
+                  />
+                  {accessState && (
+                    <IconButton
+                      className="data-space__viewer__quickstart__tds__apg-access__group__refresh-btn"
+                      size="small"
+                      color="primary"
+                      title="Refresh Data Product access"
+                      disabled={accessState.initializingState.isInProgress}
+                      onClick={(): void =>
+                        viewerState.refreshDataProductAccessState(
+                          group.dataProductPath,
+                        )
+                      }
+                    >
+                      <RefreshIcon />
+                    </IconButton>
+                  )}
+                </div>
+              </div>
+              {!isGroupCollapsed && (
+                <div className="data-space__viewer__quickstart__tds__apg-access__group__rows">
+                  {group.accessPointGroupIds.map((accessPointGroupId) => {
+                    const apgState =
+                      accessState?.dataProductViewerState?.apgStates.find(
+                        (state) => state.apg.id === accessPointGroupId,
+                      );
+                    return (
+                      <div
+                        key={accessPointGroupId}
+                        className="data-space__viewer__quickstart__tds__apg-access__row"
+                      >
+                        <span
+                          className="data-space__viewer__quickstart__tds__apg-access__row__apg"
+                          title={accessPointGroupId}
+                        >
+                          {accessPointGroupId}
+                        </span>
+                        <div className="data-space__viewer__quickstart__tds__apg-access__row__actions">
+                          {apgState && accessState?.dataAccessState ? (
+                            <DataProductAPGAccessRequestControl
+                              apgState={apgState}
+                              dataAccessState={accessState.dataAccessState}
+                              tokenProvider={tokenProvider}
+                            />
+                          ) : accessState?.errorMessage ? (
+                            <span title={accessState.errorMessage}>
+                              Unavailable
+                            </span>
+                          ) : accessState?.initializingState.isInProgress ? (
+                            <span>Loading...</span>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  },
+);
+
+const resolveExecutionContextForExecutable = (
+  dataSpaceViewerState: DataSpaceViewerState,
+  executableAnalysisResult: DataSpaceExecutableAnalysisResult,
+): DataSpaceExecutionContextAnalysisResult | undefined => {
+  const analysisResult = dataSpaceViewerState.dataSpaceAnalysisResult;
+  const executionContextKey =
+    executableAnalysisResult.info?.executionContextKey;
+  return executionContextKey
+    ? (analysisResult.executionContextsIndex.get(executionContextKey) ??
+        analysisResult.defaultExecutionContext)
+    : analysisResult.defaultExecutionContext;
+};
+
 const DataSpaceExecutableResultView = observer(
   (props: {
     executableState: DataSpaceViewerExecutableState;
@@ -137,6 +358,13 @@ const DataSpaceExecutableResultView = observer(
       dataSpaceViewerState.quickStartState.dataAccessStateIndex.get(
         executableAnalysisResult,
       );
+    const dataProductAccessGroups = resolveDataProductAccessGroups(
+      executableAnalysisResult,
+      resolveExecutionContextForExecutable(
+        dataSpaceViewerState,
+        executableAnalysisResult,
+      ),
+    );
     const isTDSResult =
       resultState instanceof DataSpaceExecutableTDSResultState;
 
@@ -397,19 +625,26 @@ const DataSpaceExecutableResultView = observer(
               </div>
             </div>
           )}
-          {selectedTab === EXECUTABLE_ACTION_TAB.DATA_ACCESS &&
-            (dataAccessState ? (
-              <DataAccessOverview
-                dataAccessState={dataAccessState}
-                compact={true}
+          {selectedTab === EXECUTABLE_ACTION_TAB.DATA_ACCESS && (
+            <>
+              <DataSpaceDataProductAccessPanel
+                viewerState={dataSpaceViewerState}
+                groups={dataProductAccessGroups}
               />
-            ) : (
-              <div className="data-space__viewer__quickstart__tds__placeholder-panel">
-                <BlankPanelContent>
-                  No data access information available
-                </BlankPanelContent>
-              </div>
-            ))}
+              {dataAccessState ? (
+                <DataAccessOverview
+                  dataAccessState={dataAccessState}
+                  compact={true}
+                />
+              ) : dataProductAccessGroups.length === 0 ? (
+                <div className="data-space__viewer__quickstart__tds__placeholder-panel">
+                  <BlankPanelContent>
+                    No data access information available
+                  </BlankPanelContent>
+                </div>
+              ) : null}
+            </>
+          )}
           {selectedTab === EXECUTABLE_ACTION_TAB.USAGE_STATS && (
             <div className="data-space__viewer__quickstart__tds__placeholder-panel">
               <BlankPanelContent>

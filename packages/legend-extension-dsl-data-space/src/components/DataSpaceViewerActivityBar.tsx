@@ -126,13 +126,17 @@ export const DataSpaceViewerActivityBar = observer(
           <LaunchIcon className="data-space__viewer__activity-bar__icon--launch" />
         ),
       },
-      {
-        mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
-        title: 'Data Access',
-        icon: (
-          <DataAccessIcon className="data-space__viewer__activity-bar__icon--access" />
-        ),
-      },
+      ...(dataSpaceViewerState.isDataAccessAvailable
+        ? [
+            {
+              mode: DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
+              title: 'Data Access',
+              icon: (
+                <DataAccessIcon className="data-space__viewer__activity-bar__icon--access" />
+              ),
+            },
+          ]
+        : []),
     ];
 
     const activities: ActivityBarItemConfig[] = [
