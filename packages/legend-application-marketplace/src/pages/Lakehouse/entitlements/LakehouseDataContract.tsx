@@ -50,6 +50,11 @@ import {
   LakehouseResiliencyDisclaimer,
 } from '@finos/legend-extension-dsl-data-product';
 import { showTaskActionAlert } from './showTaskActionAlert.js';
+import {
+  CONTRACT_ACTION,
+  LegendMarketplaceTelemetryHelper,
+  SINGLE_TASK_SOURCE,
+} from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const LakehouseDataContractTask =
   withLegendMarketplaceProductViewerStore(
@@ -223,51 +228,107 @@ export const LakehouseDataContractTask =
       };
 
       const handleApprove = async (justification: string | undefined) => {
-        const response =
-          await marketplaceBaseStore.lakehouseContractServerClient.approveTask(
-            currentTaskId,
-            tokenRef.current,
-            justification,
+        const contractContext = {
+          dataProduct: contractViewerState?.resourceId,
+          accessPointGroup: contractViewerState?.accessPointGroup,
+          deploymentId: contractViewerState?.deploymentId,
+        };
+        try {
+          const response =
+            await marketplaceBaseStore.lakehouseContractServerClient.approveTask(
+              currentTaskId,
+              tokenRef.current,
+              justification,
+            );
+          const change = deserialize(
+            V1_TaskStatusChangeResponseModelSchema,
+            response,
           );
-        const change = deserialize(
-          V1_TaskStatusChangeResponseModelSchema,
-          response,
-        );
 
-        if (change.errorMessage) {
-          throw new Error(`Unable to approve task: ${change.errorMessage}`);
+          if (change.errorMessage) {
+            throw new Error(`Unable to approve task: ${change.errorMessage}`);
+          }
+
+          marketplaceBaseStore.pendingTasksCache.invalidate();
+          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+            'Task has been approved',
+          );
+
+          await handleRefresh();
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            currentTaskId,
+            SINGLE_TASK_SOURCE.CONTRACT,
+            CONTRACT_ACTION.APPROVED,
+            currentUser,
+            undefined,
+            contractContext,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            currentTaskId,
+            SINGLE_TASK_SOURCE.CONTRACT,
+            CONTRACT_ACTION.APPROVED,
+            currentUser,
+            error.message,
+            contractContext,
+          );
+          throw error;
         }
-
-        marketplaceBaseStore.pendingTasksCache.invalidate();
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Task has been approved',
-        );
-
-        await handleRefresh();
       };
 
       const handleDeny = async (justification: string) => {
-        const response =
-          await marketplaceBaseStore.lakehouseContractServerClient.denyTask(
-            currentTaskId,
-            tokenRef.current,
-            justification,
+        const contractContext = {
+          dataProduct: contractViewerState?.resourceId,
+          accessPointGroup: contractViewerState?.accessPointGroup,
+          deploymentId: contractViewerState?.deploymentId,
+        };
+        try {
+          const response =
+            await marketplaceBaseStore.lakehouseContractServerClient.denyTask(
+              currentTaskId,
+              tokenRef.current,
+              justification,
+            );
+          const change = deserialize(
+            V1_TaskStatusChangeResponseModelSchema,
+            response,
           );
-        const change = deserialize(
-          V1_TaskStatusChangeResponseModelSchema,
-          response,
-        );
 
-        if (change.errorMessage) {
-          throw new Error(`Unable to deny task: ${change.errorMessage}`);
+          if (change.errorMessage) {
+            throw new Error(`Unable to deny task: ${change.errorMessage}`);
+          }
+
+          marketplaceBaseStore.pendingTasksCache.invalidate();
+          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+            'Task has been denied',
+          );
+
+          await handleRefresh();
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            currentTaskId,
+            SINGLE_TASK_SOURCE.CONTRACT,
+            CONTRACT_ACTION.DENIED,
+            currentUser,
+            undefined,
+            contractContext,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            currentTaskId,
+            SINGLE_TASK_SOURCE.CONTRACT,
+            CONTRACT_ACTION.DENIED,
+            currentUser,
+            error.message,
+            contractContext,
+          );
+          throw error;
         }
-
-        marketplaceBaseStore.pendingTasksCache.invalidate();
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Task has been denied',
-        );
-
-        await handleRefresh();
       };
 
       const handleApproveClick = () => {

@@ -68,6 +68,10 @@ import { DataContractViewerState } from '../../stores/DataProduct/DataAccess/Dat
 import { PermitDataAccessRequestState } from '../../stores/DataProduct/DataAccess/PermitDataAccessRequestState.js';
 import { DataAccessRequestViewer } from '../DataProduct/DataContract/DataAccessRequestViewer.js';
 import {
+  DATA_PRODUCT_EVENT,
+  TELEMETRY_EVENT_STATUS,
+} from '../../__lib__/DataProductTelemetryHelper.js';
+import {
   getMockClosedTasksResponse,
   getMockCompletedTasksResponse,
   getMockDeniedDataOwnerTasksResponse,
@@ -393,7 +397,7 @@ describe('DataAccessRequestViewer', () => {
         expect(screen.queryByText('test-consumer-user-id')).toBeNull();
       });
 
-      test('Refresh button re-initializes data access request viewer', async () => {
+      test('Refresh button re-initializes data access request viewer and logs telemetry', async () => {
         const { MOCK__contractViewerState } = await setupDataContractViewerTest(
           mockContracts.pendingPrivilegeManager,
           getMockPendingManagerApprovalTasksResponse(),
@@ -405,12 +409,55 @@ describe('DataAccessRequestViewer', () => {
         });
 
         const initSpy = jest.spyOn(MOCK__contractViewerState, 'init');
+        const logEventSpy = createSpy(
+          MOCK__contractViewerState.applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
 
         expect(initSpy).toHaveBeenCalledTimes(0);
 
         fireEvent.click(refreshButton);
 
         await waitFor(() => expect(initSpy).toHaveBeenCalledTimes(1));
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.REFRESH_DATA_ACCESS_REQUEST,
+          expect.objectContaining({
+            dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+            accessPointGroup: 'GROUP1',
+          }),
+        );
+      });
+
+      test('Copy Request ID button copies the request id and logs telemetry', async () => {
+        const { MOCK__contractViewerState } = await setupDataContractViewerTest(
+          mockContracts.pendingPrivilegeManager,
+          getMockPendingManagerApprovalTasksResponse(),
+        );
+
+        const copySpy = createSpy(
+          MOCK__contractViewerState.applicationStore.clipboardService,
+          'copyTextToClipboard',
+        ).mockResolvedValue(undefined);
+        const logEventSpy = createSpy(
+          MOCK__contractViewerState.applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
+
+        await screen.findByText('Request ID: contract-pending-pm-id');
+        const copyRequestIdButton = screen.getByTitle('Copy Request ID');
+        await act(async () => {
+          fireEvent.click(copyRequestIdButton);
+        });
+
+        expect(copySpy).toHaveBeenCalledWith('contract-pending-pm-id');
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.COPY_DATA_ACCESS_REQUEST_FIELD,
+          expect.objectContaining({
+            field: 'Request ID',
+            dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+            accessPointGroup: 'GROUP1',
+          }),
+        );
       });
 
       test('Renders subscription details if provided', async () => {
@@ -661,6 +708,10 @@ describe('DataAccessRequestViewer', () => {
           MOCK__contractViewerState.lakehouseContractServerClient,
           'escalateUserOnContract',
         ).mockImplementation(async () => Promise.resolve({}));
+        const logEventSpy = createSpy(
+          MOCK__contractViewerState.applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
 
         expect(escalateSpy).toHaveBeenCalledTimes(0);
 
@@ -715,6 +766,16 @@ describe('DataAccessRequestViewer', () => {
         screen.getByText('test-privilege-manager-user-id');
         screen.getByText('test-privilege-manager-user-id-2');
         screen.getByText('test-privilege-manager-user-id-3');
+
+        // Verify escalate telemetry logged
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.ESCALATE_DATA_ACCESS_REQUEST,
+          expect.objectContaining({
+            dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+            accessPointGroup: 'GROUP1',
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+          }),
+        );
       });
     });
 
@@ -729,6 +790,10 @@ describe('DataAccessRequestViewer', () => {
           MOCK__contractViewerState.lakehouseContractServerClient,
           'invalidateContract',
         ).mockImplementation(async () => Promise.resolve({}));
+        const logEventSpy = createSpy(
+          MOCK__contractViewerState.applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
 
         expect(invalidateSpy).toHaveBeenCalledTimes(0);
 
@@ -777,7 +842,22 @@ describe('DataAccessRequestViewer', () => {
             .firstElementChild,
         );
         expect(closedContractButton.hasAttribute('disabled')).toBe(true);
+
+        // Verify invalidate telemetry logged
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.INVALIDATE_DATA_ACCESS_REQUEST,
+          expect.objectContaining({
+            dataProduct: 'MOCK_SDLC_DATAPRODUCT',
+            accessPointGroup: 'GROUP1',
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+          }),
+        );
       });
+
+      // Note: like `escalateRequest` above, `DataContractViewerState.invalidateRequest`
+      // catches its own errors internally and never rethrows, so there is no
+      // reachable failure-telemetry path to test here for this state type; see
+      // `PermitDataAccessRequestState` below, which does rethrow.
     });
   });
 
@@ -971,7 +1051,7 @@ describe('DataAccessRequestViewer', () => {
     });
 
     describe('copy-to-clipboard functionality', () => {
-      test('clicking copy button copies internal link and shows notification', async () => {
+      test('clicking copy button copies internal link, shows notification, and logs telemetry', async () => {
         const { MOCK__applicationStore } = await setupPermitViewerTest([
           createPermitMockPmTask(),
         ]);
@@ -980,6 +1060,10 @@ describe('DataAccessRequestViewer', () => {
           MOCK__applicationStore.clipboardService,
           'copyTextToClipboard',
         ).mockResolvedValue(undefined);
+        const logEventSpy = createSpy(
+          MOCK__applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
 
         // Click the "Copy Task Link" button
         const copyTaskLinkButton = screen.getByTitle('Copy Task Link');
@@ -991,9 +1075,13 @@ describe('DataAccessRequestViewer', () => {
         expect(copySpy).toHaveBeenCalledWith(
           'http://test-task-page/permit-req-1',
         );
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.COPY_DATA_ACCESS_REQUEST_FIELD,
+          expect.objectContaining({ field: 'Task Link' }),
+        );
       });
 
-      test('clicking copy eTask button copies external link', async () => {
+      test('clicking copy eTask button copies external link and logs telemetry', async () => {
         const { MOCK__applicationStore } = await setupPermitViewerTest([
           createPermitMockPmTask(),
         ]);
@@ -1002,6 +1090,10 @@ describe('DataAccessRequestViewer', () => {
           MOCK__applicationStore.clipboardService,
           'copyTextToClipboard',
         ).mockResolvedValue(undefined);
+        const logEventSpy = createSpy(
+          MOCK__applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
 
         // Click the "Copy eTask Link" button
         const copyETaskLinkButton = screen.getByTitle('Copy eTask Link');
@@ -1011,6 +1103,10 @@ describe('DataAccessRequestViewer', () => {
 
         expect(copySpy).toHaveBeenCalledTimes(1);
         expect(copySpy).toHaveBeenCalledWith('http://external-task/pm-task-1');
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.COPY_DATA_ACCESS_REQUEST_FIELD,
+          expect.objectContaining({ field: 'eTask Link' }),
+        );
       });
     });
 
@@ -1032,15 +1128,18 @@ describe('DataAccessRequestViewer', () => {
         expect(justificationField).toBeDefined();
       });
 
-      test('passes justification to cancelWorkflow when closing permit request', async () => {
-        const { permitClient } = await setupPermitViewerTest([
-          createPermitMockPmTask(),
-        ]);
+      test('passes justification to cancelWorkflow when closing permit request and logs telemetry', async () => {
+        const { permitClient, MOCK__applicationStore } =
+          await setupPermitViewerTest([createPermitMockPmTask()]);
 
         const cancelSpy = createSpy(
           permitClient,
           'cancelWorkflow',
         ).mockResolvedValue({});
+        const logEventSpy = createSpy(
+          MOCK__applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
 
         // Find and click close request button
         const closeRequestButton = guaranteeNonNullable(
@@ -1073,6 +1172,59 @@ describe('DataAccessRequestViewer', () => {
           'mock-access-token',
           'No longer needed',
         );
+
+        expect(logEventSpy).toHaveBeenCalledWith(
+          DATA_PRODUCT_EVENT.INVALIDATE_DATA_ACCESS_REQUEST,
+          expect.objectContaining({
+            dataProduct: 'TestProduct',
+            accessPointGroup: 'TestAPG',
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+          }),
+        );
+      });
+
+      test('logs failure telemetry when cancelWorkflow fails', async () => {
+        const { permitClient, MOCK__applicationStore } =
+          await setupPermitViewerTest([createPermitMockPmTask()]);
+
+        createSpy(permitClient, 'cancelWorkflow').mockRejectedValue(
+          new Error('cancel workflow service unavailable'),
+        );
+        const logEventSpy = createSpy(
+          MOCK__applicationStore.telemetryService,
+          'logEvent',
+        ).mockReturnValue(undefined);
+
+        const closeRequestButton = guaranteeNonNullable(
+          (await screen.findByTitle('Close Request')).firstElementChild,
+        );
+        fireEvent.click(closeRequestButton);
+
+        const justificationField = await screen.findByPlaceholderText(
+          'Justification for closing this request',
+        );
+        fireEvent.change(justificationField, {
+          target: { value: 'No longer needed' },
+        });
+
+        const confirmButton = await screen.findByRole('button', {
+          name: 'Close Request',
+        });
+        await act(async () => {
+          fireEvent.click(confirmButton);
+        });
+
+        await waitFor(() => {
+          expect(logEventSpy).toHaveBeenCalledWith(
+            DATA_PRODUCT_EVENT.INVALIDATE_DATA_ACCESS_REQUEST,
+            expect.objectContaining({
+              dataProduct: 'TestProduct',
+              accessPointGroup: 'TestAPG',
+              status: TELEMETRY_EVENT_STATUS.FAILURE,
+              error: 'cancel workflow service unavailable',
+            }),
+          );
+        });
       });
     });
   });

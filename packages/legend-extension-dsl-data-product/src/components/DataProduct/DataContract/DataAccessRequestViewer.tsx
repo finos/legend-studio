@@ -97,20 +97,30 @@ import {
   type TimelineStep,
 } from '../../../stores/DataProduct/DataAccess/DataAccessRequestState.js';
 import { PermitDataAccessRequestState } from '../../../stores/DataProduct/DataAccess/PermitDataAccessRequestState.js';
+import { DataProductTelemetryHelper } from '../../../__lib__/DataProductTelemetryHelper.js';
 
 const copyToClipboard = (
   applicationStore: GenericLegendApplicationStore,
   text: string,
+  field: string,
+  dataProduct?: string | undefined,
+  accessPointGroup?: string | undefined,
 ): void => {
   applicationStore.clipboardService
     .copyTextToClipboard(text)
-    .then(() =>
+    .then(() => {
       applicationStore.notificationService.notifySuccess(
         'Copied to Clipboard',
         undefined,
         2500,
-      ),
-    )
+      );
+      DataProductTelemetryHelper.logEvent_CopyDataAccessRequestField(
+        applicationStore.telemetryService,
+        field,
+        dataProduct,
+        accessPointGroup,
+      );
+    })
     .catch(applicationStore.alertUnhandledError);
 };
 
@@ -192,7 +202,7 @@ const TaskApprovalView = (props: {
 
 const TimelineStepLinks = (props: {
   step: TimelineStep;
-  onCopyToClipboard: (text: string) => void;
+  onCopyToClipboard: (text: string, field: string) => void;
   onEscalate: () => void;
   isEscalating: boolean;
 }): React.ReactNode => {
@@ -213,7 +223,7 @@ const TimelineStepLinks = (props: {
               {label.title}
             </Link>
             <IconButton
-              onClick={() => onCopyToClipboard(label.link ?? '')}
+              onClick={() => onCopyToClipboard(label.link ?? '', 'Task Link')}
               size="medium"
               title="Copy Task Link"
               className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__copy-btn"
@@ -232,7 +242,9 @@ const TimelineStepLinks = (props: {
               action via eTask
             </Link>
             <IconButton
-              onClick={() => onCopyToClipboard(label.externalLink ?? '')}
+              onClick={() =>
+                onCopyToClipboard(label.externalLink ?? '', 'eTask Link')
+              }
               size="medium"
               title="Copy eTask Link"
               className="marketplace-lakehouse-entitlements__data-access-request-viewer__step-links__copy-btn"
@@ -255,7 +267,7 @@ const TimelineStepLinks = (props: {
             {label.title}
           </Link>
           <IconButton
-            onClick={() => onCopyToClipboard(label.link ?? '')}
+            onClick={() => onCopyToClipboard(label.link ?? '', 'Task Link')}
             className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
             title="Copy Task Link"
           >
@@ -279,7 +291,9 @@ const TimelineStepLinks = (props: {
             {label.title}
           </Link>
           <IconButton
-            onClick={() => onCopyToClipboard(label.externalLink ?? '')}
+            onClick={() =>
+              onCopyToClipboard(label.externalLink ?? '', 'eTask Link')
+            }
             className="marketplace-lakehouse-entitlements__data-access-request-viewer__icon-group"
             title="Copy eTask Link"
           >
@@ -371,11 +385,23 @@ const RequestEscalationModal = (props: {
       viewerState.applicationStore.notificationService.notifySuccess(
         'Successfully escalated access request',
       );
+      DataProductTelemetryHelper.logEvent_EscalateDataAccessRequest(
+        viewerState.applicationStore.telemetryService,
+        viewerState.resourceId,
+        viewerState.accessPointGroup,
+        undefined,
+      );
       onClose();
     } catch (error) {
       assertErrorThrown(error);
       viewerState.applicationStore.notificationService.notifyError(
         `Error escalating request: ${error.message}`,
+      );
+      DataProductTelemetryHelper.logEvent_EscalateDataAccessRequest(
+        viewerState.applicationStore.telemetryService,
+        viewerState.resourceId,
+        viewerState.accessPointGroup,
+        error.message,
       );
     }
   };
@@ -546,7 +572,9 @@ const ErrorLayerCard = (props: {
             <Tooltip title="Copy">
               <IconButton
                 size="small"
-                onClick={() => copyToClipboard(applicationStore, item)}
+                onClick={() =>
+                  copyToClipboard(applicationStore, item, 'Missing Ingest Item')
+                }
                 className="marketplace-lakehouse-entitlements__data-access-request-viewer__missing-ingests__item__copy-btn"
               >
                 <CopyIcon />
@@ -675,8 +703,14 @@ export const DataAccessRequestContent = observer(
     const accessPointGroup = viewerState.accessPointGroup;
     const timelineSteps = viewerState.getTimelineSteps(selectedTargetUser);
 
-    const onCopyToClipboard = (text: string): void =>
-      copyToClipboard(viewerState.applicationStore, text);
+    const onCopyToClipboard = (text: string, field: string): void =>
+      copyToClipboard(
+        viewerState.applicationStore,
+        text,
+        field,
+        dataProduct,
+        accessPointGroup,
+      );
 
     const checkBeforeClosingRequest = (): void => {
       const isPermitFlow = viewerState instanceof PermitDataAccessRequestState;
@@ -711,10 +745,22 @@ export const DataAccessRequestContent = observer(
                     ),
                   );
                   await refresh();
+                  DataProductTelemetryHelper.logEvent_InvalidateDataAccessRequest(
+                    viewerState.applicationStore.telemetryService,
+                    dataProduct,
+                    accessPointGroup,
+                    undefined,
+                  );
                 } catch (error) {
                   assertErrorThrown(error);
                   viewerState.applicationStore.notificationService.notifyError(
                     `Error closing request: ${error.message}`,
+                  );
+                  DataProductTelemetryHelper.logEvent_InvalidateDataAccessRequest(
+                    viewerState.applicationStore.telemetryService,
+                    dataProduct,
+                    accessPointGroup,
+                    error.message,
                   );
                 }
               };
@@ -918,6 +964,11 @@ export const DataAccessRequestContent = observer(
                   variant="outlined"
                   startIcon={<RefreshIcon />}
                   onClick={() => {
+                    DataProductTelemetryHelper.logEvent_RefreshDataAccessRequest(
+                      viewerState.applicationStore.telemetryService,
+                      dataProduct,
+                      accessPointGroup,
+                    );
                     // eslint-disable-next-line no-void
                     void refresh();
                   }}
@@ -947,7 +998,9 @@ export const DataAccessRequestContent = observer(
             <Box>
               Request ID: {viewerState.guid}
               <IconButton
-                onClick={() => onCopyToClipboard(viewerState.guid)}
+                onClick={() =>
+                  onCopyToClipboard(viewerState.guid, 'Request ID')
+                }
                 title="Copy Request ID"
               >
                 <CopyIcon />

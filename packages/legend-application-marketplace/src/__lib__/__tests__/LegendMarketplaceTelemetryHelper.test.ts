@@ -35,6 +35,7 @@ import {
   ICON_TOOLBAR_TYPE,
   LEGEND_MARKETPLACE_PAGE,
   LegendMarketplaceTelemetryHelper,
+  SINGLE_TASK_SOURCE,
   TERMINAL_SEARCH_LOCATION,
 } from '../LegendMarketplaceTelemetryHelper.js';
 
@@ -214,6 +215,82 @@ describe('logEvent_ActionDataContracts', () => {
         requester: undefined,
       }),
     ]);
+  });
+});
+
+describe('logEvent_ActionSingleTask', () => {
+  test('logs success status for a single-task approval', () => {
+    const { service, calls } = buildTelemetryStub();
+
+    LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+      service,
+      'task-1',
+      SINGLE_TASK_SOURCE.CONTRACT,
+      CONTRACT_ACTION.APPROVED,
+      'action-taker',
+      undefined,
+    );
+
+    expect(getLoggedCall(calls).event).toBe(
+      LEGEND_MARKETPLACE_APP_EVENT.ACTION_SINGLE_TASK,
+    );
+    const payload = getLoggedCall(calls).data;
+    expect(payload).toMatchObject({
+      taskId: 'task-1',
+      source: SINGLE_TASK_SOURCE.CONTRACT,
+      action: CONTRACT_ACTION.APPROVED,
+      actionTakenBy: 'action-taker',
+      status: TELEMETRY_EVENT_STATUS.SUCCESS,
+    });
+    expect(payload.error).toBeUndefined();
+  });
+
+  test('logs failure status with error message for a single-task denial', () => {
+    const { service, calls } = buildTelemetryStub();
+
+    LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+      service,
+      'task-2',
+      SINGLE_TASK_SOURCE.WORKFLOW,
+      CONTRACT_ACTION.DENIED,
+      'action-taker',
+      'server error',
+    );
+
+    const payload = getLoggedCall(calls).data;
+    expect(payload).toMatchObject({
+      taskId: 'task-2',
+      source: SINGLE_TASK_SOURCE.WORKFLOW,
+      action: CONTRACT_ACTION.DENIED,
+      status: TELEMETRY_EVENT_STATUS.FAILURE,
+      error: 'server error',
+    });
+  });
+
+  test('includes contract context (dataProduct, accessPointGroup, deploymentId) when provided', () => {
+    const { service, calls } = buildTelemetryStub();
+
+    LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+      service,
+      'task-3',
+      SINGLE_TASK_SOURCE.PERMIT,
+      CONTRACT_ACTION.APPROVED,
+      'action-taker',
+      undefined,
+      {
+        dataProduct: 'my-data-product',
+        accessPointGroup: 'my-apg',
+        deploymentId: 42,
+      },
+    );
+
+    const payload = getLoggedCall(calls).data;
+    expect(payload).toMatchObject({
+      taskId: 'task-3',
+      dataProduct: 'my-data-product',
+      accessPointGroup: 'my-apg',
+      deploymentId: 42,
+    });
   });
 });
 
@@ -1125,6 +1202,38 @@ const simpleTelemetryCases: SimpleTelemetryCase[] = [
     invoke: (service) =>
       LegendMarketplaceTelemetryHelper.logEvent_ToggleAllOrders(service, true),
     expectedPayload: { isExpanded: true },
+  },
+  {
+    description: 'logEvent_ClickEntitlementsTab',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.CLICK_ENTITLEMENTS_TAB,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ClickEntitlementsTab(
+        service,
+        'My Approvals',
+      ),
+    expectedPayload: { tabTitle: 'My Approvals' },
+  },
+  {
+    description: 'logEvent_ToggleShowRequestsForOthers (enabled)',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_SHOW_REQUESTS_FOR_OTHERS,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ToggleShowRequestsForOthers(
+        service,
+        true,
+        'Pending Requests',
+      ),
+    expectedPayload: { toggleAction: 'enabled', dashboard: 'Pending Requests' },
+  },
+  {
+    description: 'logEvent_ToggleShowRequestsForOthers (disabled)',
+    expectedEvent: LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_SHOW_REQUESTS_FOR_OTHERS,
+    invoke: (service) =>
+      LegendMarketplaceTelemetryHelper.logEvent_ToggleShowRequestsForOthers(
+        service,
+        false,
+        'Closed Requests',
+      ),
+    expectedPayload: { toggleAction: 'disabled', dashboard: 'Closed Requests' },
   },
 ];
 

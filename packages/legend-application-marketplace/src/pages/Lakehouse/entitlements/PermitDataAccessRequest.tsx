@@ -45,6 +45,11 @@ import {
   V1_PermitTaskAction,
 } from '@finos/legend-graph';
 import { showTaskActionAlert } from './showTaskActionAlert.js';
+import {
+  CONTRACT_ACTION,
+  LegendMarketplaceTelemetryHelper,
+  SINGLE_TASK_SOURCE,
+} from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const PermitDataAccessRequestTask =
   withLegendMarketplaceProductViewerStore(
@@ -140,20 +145,52 @@ export const PermitDataAccessRequestTask =
         if (!actionableTask || !permitState) {
           return;
         }
-        await flowResult(
-          permitState.performTaskAction(
+        const contractAction =
+          action === V1_PermitTaskAction.APPROVE
+            ? CONTRACT_ACTION.APPROVED
+            : CONTRACT_ACTION.DENIED;
+        const contractContext = {
+          dataProduct: permitState.resourceId,
+          accessPointGroup: permitState.accessPointGroup,
+          deploymentId: permitState.deploymentId,
+        };
+        try {
+          await flowResult(
+            permitState.performTaskAction(
+              actionableTask.taskId,
+              action,
+              justification ?? '',
+              tokenRef.current,
+            ),
+          );
+          const label =
+            action === V1_PermitTaskAction.APPROVE ? 'approved' : 'denied';
+          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+            `Request has been ${label}`,
+          );
+          await handleRefresh();
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
             actionableTask.taskId,
-            action,
-            justification ?? '',
-            tokenRef.current,
-          ),
-        );
-        const label =
-          action === V1_PermitTaskAction.APPROVE ? 'approved' : 'denied';
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          `Request has been ${label}`,
-        );
-        await handleRefresh();
+            SINGLE_TASK_SOURCE.PERMIT,
+            contractAction,
+            currentUser,
+            undefined,
+            contractContext,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            actionableTask.taskId,
+            SINGLE_TASK_SOURCE.PERMIT,
+            contractAction,
+            currentUser,
+            error.message,
+            contractContext,
+          );
+          throw error;
+        }
       };
 
       const handleApproveClick = (): void => {

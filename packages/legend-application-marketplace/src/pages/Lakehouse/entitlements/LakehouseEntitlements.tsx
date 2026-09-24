@@ -29,6 +29,8 @@ import { EntitlementsPendingContractsDashboard } from './EntitlementsPendingCont
 import { EntitlementsPendingTasksDashboard } from './EntitlementsPendingTasksDashboard.js';
 import { useSearchParams } from '@finos/legend-application/browser';
 import { LEGEND_MARKETPLACE_ENTITLEMENTS_QUERY_PARAM_TOKEN } from '../../../__lib__/LegendMarketplaceNavigation.js';
+import { LegendMarketplaceTelemetryHelper } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
+import { useLegendMarketplaceBaseStore } from '../../../application/providers/LegendMarketplaceFrameworkProvider.js';
 
 const enum EntitlementsTabs {
   PENDING_TASKS = 'pendingTasks',
@@ -36,11 +38,18 @@ const enum EntitlementsTabs {
   CLOSED_CONTRACTS = 'closedContracts',
 }
 
+const ENTITLEMENTS_TAB_LABELS: Record<EntitlementsTabs, string> = {
+  [EntitlementsTabs.PENDING_TASKS]: 'My Approvals',
+  [EntitlementsTabs.PENDING_CONTRACTS]: 'My Pending Requests',
+  [EntitlementsTabs.CLOSED_CONTRACTS]: 'My Closed Requests',
+};
+
 export const LakehouseEntitlements = withLakehouseEntitlementsStore(
   observer(() => {
     // State and props
 
     const entitlementsStore = useLakehouseEntitlementsStore();
+    const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const auth = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const [selectedTab, setSelectedTab] = useState(
@@ -80,6 +89,10 @@ export const LakehouseEntitlements = withLakehouseEntitlementsStore(
         );
         return params;
       });
+      LegendMarketplaceTelemetryHelper.logEvent_ClickEntitlementsTab(
+        marketplaceBaseStore.applicationStore.telemetryService,
+        ENTITLEMENTS_TAB_LABELS[newValue],
+      );
     };
 
     return (

@@ -41,6 +41,12 @@ import {
   mockContracts,
   mockDataProductDetailsResponse,
 } from '@finos/legend-extension-dsl-data-product/test-utils';
+import { TELEMETRY_EVENT_STATUS } from '@finos/legend-extension-dsl-data-product';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../../__lib__/LegendMarketplaceAppEvent.js';
+import {
+  CONTRACT_ACTION,
+  SINGLE_TASK_SOURCE,
+} from '../../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -430,6 +436,156 @@ describe('Lakehouse Data Contract', () => {
 
       expect(approveButton.disabled).toBe(true);
       expect(denyButton.disabled).toBe(true);
+    });
+  });
+
+  describe('Telemetry', () => {
+    test('logs a successful single-task approval action', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-pm-id',
+        'pm-task-pending-id',
+        mockContracts.pendingPrivilegeManager,
+        getMockPendingManagerApprovalTasksResponse(),
+        'test-privilege-manager-user-id',
+      );
+
+      const logEventSpy = createSpy(
+        marketplaceBaseStore.applicationStore.telemetryService,
+        'logEvent',
+      ).mockReturnValue(undefined);
+
+      const pmApproveButton = await screen.findByRole('button', {
+        name: 'Approve Task',
+      });
+      fireEvent.click(pmApproveButton);
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(
+          marketplaceBaseStore,
+          'Approve',
+          'Approved for testing',
+        );
+      });
+
+      await waitFor(() => {
+        expect(logEventSpy).toHaveBeenCalledWith(
+          LEGEND_MARKETPLACE_APP_EVENT.ACTION_SINGLE_TASK,
+          expect.objectContaining({
+            taskId: 'pm-task-pending-id',
+            source: SINGLE_TASK_SOURCE.CONTRACT,
+            action: CONTRACT_ACTION.APPROVED,
+            actionTakenBy: 'test-privilege-manager-user-id',
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+          }),
+        );
+      });
+    });
+
+    test('logs a successful single-task denial action', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-do-id',
+        'do-task-pending-id',
+        mockContracts.pendingDataOwner,
+        getMockPendingDataOwnerApprovalTasksResponse(),
+        'test-data-owner-user-id',
+      );
+
+      const logEventSpy = createSpy(
+        marketplaceBaseStore.applicationStore.telemetryService,
+        'logEvent',
+      ).mockReturnValue(undefined);
+
+      const doDenyButton = await screen.findByRole('button', {
+        name: 'Deny Task',
+      });
+      fireEvent.click(doDenyButton);
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(
+          marketplaceBaseStore,
+          'Deny',
+          'Denied for testing',
+        );
+      });
+
+      await waitFor(() => {
+        expect(logEventSpy).toHaveBeenCalledWith(
+          LEGEND_MARKETPLACE_APP_EVENT.ACTION_SINGLE_TASK,
+          expect.objectContaining({
+            taskId: 'do-task-pending-id',
+            source: SINGLE_TASK_SOURCE.CONTRACT,
+            action: CONTRACT_ACTION.DENIED,
+            actionTakenBy: 'test-data-owner-user-id',
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+          }),
+        );
+      });
+    });
+
+    test('logs a failed single-task approval action with the error message', async () => {
+      const { marketplaceBaseStore } = await setupLakehouseDataContractTest(
+        'contract-pending-pm-id',
+        'pm-task-pending-id',
+        mockContracts.pendingPrivilegeManager,
+        getMockPendingManagerApprovalTasksResponse(),
+        'test-privilege-manager-user-id',
+      );
+
+      createSpy(
+        marketplaceBaseStore.lakehouseContractServerClient,
+        'approveTask',
+      ).mockResolvedValue({
+        errorMessage: 'approval rejected by server',
+      });
+
+      const logEventSpy = createSpy(
+        marketplaceBaseStore.applicationStore.telemetryService,
+        'logEvent',
+      ).mockReturnValue(undefined);
+
+      const pmApproveButton = await screen.findByRole('button', {
+        name: 'Approve Task',
+      });
+      fireEvent.click(pmApproveButton);
+
+      await waitFor(() => {
+        expect(
+          marketplaceBaseStore.applicationStore.alertService.actionAlertInfo,
+        ).toBeDefined();
+      });
+
+      act(() => {
+        confirmTaskActionAlert(
+          marketplaceBaseStore,
+          'Approve',
+          'Approved for testing',
+        );
+      });
+
+      await waitFor(() => {
+        expect(logEventSpy).toHaveBeenCalledWith(
+          LEGEND_MARKETPLACE_APP_EVENT.ACTION_SINGLE_TASK,
+          expect.objectContaining({
+            taskId: 'pm-task-pending-id',
+            source: SINGLE_TASK_SOURCE.CONTRACT,
+            action: CONTRACT_ACTION.APPROVED,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
+            error: 'Unable to approve task: approval rejected by server',
+          }),
+        );
+      });
     });
   });
 

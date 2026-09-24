@@ -114,15 +114,28 @@ export const DataProductAPGAccessRequestControl = observer(
       const dataProductPath =
         dataAccessState.dataProductViewerState.product.path;
       const accessPointGroup = apgState.apg.id;
+      const projectGAV = dataAccessState.dataProductViewerState.projectGAV;
       DataProductTelemetryHelper.logEvent_requestContract(
         dataAccessState.applicationStore.telemetryService,
         dataProductPath,
         accessPointGroup,
+        projectGAV
+          ? {
+              groupId: projectGAV.groupId,
+              artifactId: projectGAV.artifactId,
+              versionId: projectGAV.versionId,
+            }
+          : undefined,
       );
       apgState.handleContractClick(dataAccessState);
     };
 
     const handleSubscriptionsClick = (): void => {
+      DataProductTelemetryHelper.logEvent_OpenSubscriptionsModal(
+        dataAccessState.applicationStore.telemetryService,
+        dataAccessState.dataProductViewerState.product.path,
+        apgState.apg.id,
+      );
       setShowSubscriptionsModal(true);
     };
 

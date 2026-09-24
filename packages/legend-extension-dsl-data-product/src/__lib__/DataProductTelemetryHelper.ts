@@ -20,6 +20,13 @@ import type { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-grap
 export enum DATA_PRODUCT_EVENT {
   REQUEST_DATA_CONTRACT = 'marketplace.request.data.contract',
   OPEN_INTEGRATED_PRODUCT = 'marketplace.open.integrated.product',
+  ESCALATE_DATA_ACCESS_REQUEST = 'marketplace.escalate.data-access-request',
+  INVALIDATE_DATA_ACCESS_REQUEST = 'marketplace.invalidate.data-access-request',
+  REFRESH_DATA_ACCESS_REQUEST = 'marketplace.refresh.data-access-request',
+  COPY_DATA_ACCESS_REQUEST_FIELD = 'marketplace.copy.data-access-request-field',
+  OPEN_SUBSCRIPTIONS_MODAL = 'marketplace.open.subscriptions-modal',
+  OPEN_CREATE_SUBSCRIPTION_DIALOG = 'marketplace.open.create-subscription-dialog',
+  CHANGE_CONTRACT_CONSUMER_TYPE = 'marketplace.change.contract-consumer-type',
 }
 
 export enum PRODUCT_INTEGRATION_TYPE {
@@ -105,6 +112,13 @@ export class DataProductTelemetryHelper {
     telemetryService: TelemetryService,
     dataProduct: string,
     accessPointGroup: string,
+    origin?:
+      | {
+          groupId?: string | undefined;
+          artifactId?: string | undefined;
+          versionId?: string | undefined;
+        }
+      | undefined,
   ): void {
     this.updateEventId();
     const session = this.getOrCreateUserSession();
@@ -112,6 +126,7 @@ export class DataProductTelemetryHelper {
       status: TELEMETRY_EVENT_STATUS.SUCCESS,
       dataProduct: dataProduct,
       accessPointGroup: accessPointGroup,
+      ...origin,
       ...session,
     });
   }
@@ -139,6 +154,147 @@ export class DataProductTelemetryHelper {
     telemetryService.logEvent(
       DATA_PRODUCT_EVENT.OPEN_INTEGRATED_PRODUCT,
       telemetryData,
+    );
+  }
+
+  static logEvent_EscalateDataAccessRequest(
+    telemetryService: TelemetryService,
+    dataProduct: string,
+    accessPointGroup: string | undefined,
+    error: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    const telemetryData =
+      error === undefined
+        ? {
+            dataProduct,
+            accessPointGroup,
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+            ...session,
+          }
+        : {
+            dataProduct,
+            accessPointGroup,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
+            error,
+            ...session,
+          };
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.ESCALATE_DATA_ACCESS_REQUEST,
+      telemetryData,
+    );
+  }
+
+  static logEvent_InvalidateDataAccessRequest(
+    telemetryService: TelemetryService,
+    dataProduct: string,
+    accessPointGroup: string | undefined,
+    error: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    const telemetryData =
+      error === undefined
+        ? {
+            dataProduct,
+            accessPointGroup,
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+            ...session,
+          }
+        : {
+            dataProduct,
+            accessPointGroup,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
+            error,
+            ...session,
+          };
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.INVALIDATE_DATA_ACCESS_REQUEST,
+      telemetryData,
+    );
+  }
+
+  static logEvent_RefreshDataAccessRequest(
+    telemetryService: TelemetryService,
+    dataProduct: string,
+    accessPointGroup: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(DATA_PRODUCT_EVENT.REFRESH_DATA_ACCESS_REQUEST, {
+      dataProduct,
+      accessPointGroup,
+      ...session,
+    });
+  }
+
+  static logEvent_CopyDataAccessRequestField(
+    telemetryService: TelemetryService,
+    field: string,
+    dataProduct: string | undefined,
+    accessPointGroup: string | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.COPY_DATA_ACCESS_REQUEST_FIELD,
+      {
+        field,
+        dataProduct,
+        accessPointGroup,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_OpenSubscriptionsModal(
+    telemetryService: TelemetryService,
+    dataProduct: string,
+    accessPointGroup: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(DATA_PRODUCT_EVENT.OPEN_SUBSCRIPTIONS_MODAL, {
+      dataProduct,
+      accessPointGroup,
+      ...session,
+    });
+  }
+
+  static logEvent_OpenCreateSubscriptionDialog(
+    telemetryService: TelemetryService,
+    dataProduct: string,
+    accessPointGroup: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.OPEN_CREATE_SUBSCRIPTION_DIALOG,
+      {
+        dataProduct,
+        accessPointGroup,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ChangeContractConsumerType(
+    telemetryService: TelemetryService,
+    consumerType: string,
+    dataProduct: string,
+    accessPointGroup: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      DATA_PRODUCT_EVENT.CHANGE_CONTRACT_CONSUMER_TYPE,
+      {
+        consumerType,
+        dataProduct,
+        accessPointGroup,
+        ...session,
+      },
     );
   }
 }

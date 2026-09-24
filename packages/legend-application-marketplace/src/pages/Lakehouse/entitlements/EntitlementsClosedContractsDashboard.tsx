@@ -58,6 +58,7 @@ import {
   useSelectedViewerState,
   useGetDataProductUrl,
 } from '../../../utils/EntitlementsUtils.js';
+import { LegendMarketplaceTelemetryHelper } from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const EntitlementsClosedContractsDashboard = observer(
   (props: { dashboardState: EntitlementsDashboardState }): React.ReactNode => {
@@ -212,7 +213,14 @@ export const EntitlementsClosedContractsDashboard = observer(
               ) : (
                 <Switch
                   checked={showForOthers}
-                  onChange={(event) => setShowForOthers(event.target.checked)}
+                  onChange={(event) => {
+                    setShowForOthers(event.target.checked);
+                    LegendMarketplaceTelemetryHelper.logEvent_ToggleShowRequestsForOthers(
+                      marketplaceBaseStore.applicationStore.telemetryService,
+                      event.target.checked,
+                      'Closed Requests',
+                    );
+                  }}
                 />
               )
             }
