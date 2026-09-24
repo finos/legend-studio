@@ -76,6 +76,7 @@ import {
 import type { DataProductAPGState } from '../../../stores/DataProduct/DataProductAPGState.js';
 import type { DataProductDataAccessState } from '../../../stores/DataProduct/DataProductDataAccessState.js';
 import type { DataProductDataAccess_LegendApplicationPlugin_Extension } from '../../../stores/DataProductDataAccess_LegendApplicationPlugin_Extension.js';
+import { DataProductTelemetryHelper } from '../../../__lib__/DataProductTelemetryHelper.js';
 
 const LakehouseSubscriptionsCreateDialogContractRenderer = observer(
   (props: {
@@ -714,7 +715,14 @@ export const DataProductSubscriptionViewer = observer(
                     }
                   >
                     <Button
-                      onClick={() => setShowCreateDialog(true)}
+                      onClick={() => {
+                        DataProductTelemetryHelper.logEvent_OpenCreateSubscriptionDialog(
+                          apgState.applicationStore.telemetryService,
+                          apgState.dataProductViewerState.product.path,
+                          apgState.apg.id,
+                        );
+                        setShowCreateDialog(true);
+                      }}
                       variant="contained"
                       disabled={!apgState.canCreateSubscription}
                       loading={

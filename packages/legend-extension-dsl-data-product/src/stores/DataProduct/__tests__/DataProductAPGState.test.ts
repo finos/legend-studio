@@ -35,6 +35,10 @@ import {
   DataProductAPGState,
 } from '../DataProductAPGState.js';
 import type { DataProductViewerState } from '../DataProductViewerState.js';
+import {
+  DSL_DATAPRODUCT_EVENT,
+  DSL_DATAPRODUCT_EVENT_STATUS,
+} from '../../../__lib__/DSL_DataProduct_Event.js';
 
 // This test suite guards against a regression where a consumer with multiple
 // contracts for the same access point group (e.g. an approved contract of
@@ -169,13 +173,19 @@ const createMockLakehouseClient = (): jest.Mocked<
     >
   >;
 
-const createState = (): DataProductAPGState => {
+const createState = (
+  projectGAV?:
+    | { groupId: string; artifactId: string; versionId: string }
+    | undefined,
+): DataProductAPGState => {
   const appStore = createTestApplicationStore();
   const apg = new V1_AccessPointGroup();
   apg.id = TEST_APG_ID;
   const mockViewerState = {
     applicationStore: appStore,
     dataProductConfig: undefined,
+    product: { path: TEST_DATA_PRODUCT_NAME },
+    projectGAV,
     entitlementsDataProductDetails: {
       dataProduct: { name: TEST_DATA_PRODUCT_NAME },
       deploymentId: TEST_DEPLOYMENT_ID,
@@ -304,6 +314,89 @@ describe('DataProductAPGState', () => {
       expect(state.access).toBe(AccessPointGroupAccess.APPROVED);
       expect(state.access).not.toBe(
         AccessPointGroupAccess.PENDING_MANAGER_APPROVAL,
+      );
+    });
+  });
+
+  describe('logCreatingSubscription', () => {
+    const TEST_REQUEST = {
+      contractId: 'contract-1',
+      target: {
+        _type: 'snowflake',
+        snowflakeAccountId: 'ACCOUNT_1',
+        snowflakeRegion: 'US_EAST',
+        snowflakeNetwork: 'PUBLIC',
+      },
+    } as unknown as PlainObject<never>;
+
+    test('includes dataProduct and accessPointGroup, but no SDLC coordinates, for an adhoc data product', () => {
+      const state = createState();
+      const logEventSpy = jest.spyOn(
+        state.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      state.logCreatingSubscription(TEST_REQUEST, undefined);
+
+      expect(logEventSpy).toHaveBeenCalledWith(
+        DSL_DATAPRODUCT_EVENT.CREATE_SUBSCRIPTION,
+        expect.objectContaining({
+          ...TEST_REQUEST,
+          dataProduct: TEST_DATA_PRODUCT_NAME,
+          accessPointGroup: TEST_APG_ID,
+          status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
+        }),
+      );
+      const loggedData = logEventSpy.mock.calls[0]?.[1] as Record<
+        string,
+        unknown
+      >;
+      expect(loggedData.groupId).toBeUndefined();
+      expect(loggedData.artifactId).toBeUndefined();
+      expect(loggedData.versionId).toBeUndefined();
+    });
+
+    test('includes SDLC groupId/artifactId/versionId for an SDLC-backed data product', () => {
+      const state = createState({
+        groupId: 'com.example',
+        artifactId: 'my-artifact',
+        versionId: '1.0.0',
+      });
+      const logEventSpy = jest.spyOn(
+        state.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      state.logCreatingSubscription(TEST_REQUEST, undefined);
+
+      expect(logEventSpy).toHaveBeenCalledWith(
+        DSL_DATAPRODUCT_EVENT.CREATE_SUBSCRIPTION,
+        expect.objectContaining({
+          dataProduct: TEST_DATA_PRODUCT_NAME,
+          accessPointGroup: TEST_APG_ID,
+          groupId: 'com.example',
+          artifactId: 'my-artifact',
+          versionId: '1.0.0',
+          status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
+        }),
+      );
+    });
+
+    test('logs failure status with the error message', () => {
+      const state = createState();
+      const logEventSpy = jest.spyOn(
+        state.applicationStore.telemetryService,
+        'logEvent',
+      );
+
+      state.logCreatingSubscription(TEST_REQUEST, 'creation failed');
+
+      expect(logEventSpy).toHaveBeenCalledWith(
+        DSL_DATAPRODUCT_EVENT.CREATE_SUBSCRIPTION,
+        expect.objectContaining({
+          status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
+          error: 'creation failed',
+        }),
       );
     });
   });

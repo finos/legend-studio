@@ -933,11 +933,28 @@ export class DataProductAPGState {
     request: PlainObject<V1_DataSubscriptionResponse>,
     error: string | undefined,
   ): void {
+    const projectGAV = this.dataProductViewerState.projectGAV;
+    const context = {
+      dataProduct: this.dataProductViewerState.product.path,
+      accessPointGroup: this.apg.id,
+      ...(projectGAV
+        ? {
+            groupId: projectGAV.groupId,
+            artifactId: projectGAV.artifactId,
+            versionId: projectGAV.versionId,
+          }
+        : {}),
+    };
     const data =
       error === undefined
-        ? { ...request, status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS }
+        ? {
+            ...request,
+            ...context,
+            status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
+          }
         : {
             ...request,
+            ...context,
             status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
             error: error,
           };

@@ -573,6 +573,21 @@ export class DataProductDataAccessState {
     yield flowResult(this.fetchMissingIngests(tokenProvider));
   }
 
+  /**
+   * SDLC project coordinates for the data product this contract/request is
+   * against, when available (`undefined` for adhoc data products).
+   */
+  private get originTelemetryContext(): Record<string, unknown> {
+    const projectGAV = this.dataProductViewerState.projectGAV;
+    return projectGAV
+      ? {
+          groupId: projectGAV.groupId,
+          artifactId: projectGAV.artifactId,
+          versionId: projectGAV.versionId,
+        }
+      : {};
+  }
+
   logCreatingContract(
     request: PlainObject<V1_CreateContractPayload>,
     consumerType: string,
@@ -582,11 +597,13 @@ export class DataProductDataAccessState {
       error === undefined
         ? {
             ...request,
+            ...this.originTelemetryContext,
             consumerType: consumerType,
             status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
           }
         : {
             ...request,
+            ...this.originTelemetryContext,
             consumerType: consumerType,
             status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
             error: error,
@@ -758,6 +775,7 @@ export class DataProductDataAccessState {
           DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
           {
             ...request,
+            ...this.originTelemetryContext,
             consumerType,
             status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
             requestType: 'workflow',
@@ -772,6 +790,7 @@ export class DataProductDataAccessState {
           DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
           {
             ...request,
+            ...this.originTelemetryContext,
             consumerType,
             status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
             error: error.message,

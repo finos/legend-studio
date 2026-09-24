@@ -45,6 +45,7 @@ import {
   AccessPointGroupAccess,
   type DataProductAPGState,
 } from '../../../stores/DataProduct/DataProductAPGState.js';
+import { DataProductTelemetryHelper } from '../../../__lib__/DataProductTelemetryHelper.js';
 
 export const EntitlementsDataContractCreator = observer(
   (props: {
@@ -179,6 +180,12 @@ export const EntitlementsDataContractCreator = observer(
                       onClick={(): void => {
                         if (config.type !== selectedConsumerType) {
                           setSelectedConsumerType(config.type);
+                          DataProductTelemetryHelper.logEvent_ChangeContractConsumerType(
+                            viewerState.applicationStore.telemetryService,
+                            config.type,
+                            viewerState.product.path,
+                            accessPointGroup.id,
+                          );
                         }
                       }}
                     >

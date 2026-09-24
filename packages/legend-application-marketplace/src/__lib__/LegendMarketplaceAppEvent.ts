@@ -116,4 +116,7 @@ export enum LEGEND_MARKETPLACE_APP_EVENT {
   AI_AGENT_ENTITY_DISAMBIGUATION_FAILURE = 'marketplace.ai-agent.entity.disambiguation.failure',
   AI_AGENT_FIELD_SEARCH_PARSE_FAILURE = 'marketplace.ai-agent.field-search.parse.failure',
   AI_AGENT_OPEN_DATACUBE_FAILURE = 'marketplace.ai-agent.open-datacube.failure',
+  CLICK_ENTITLEMENTS_TAB = 'marketplace.click.entitlements.tab',
+  TOGGLE_SHOW_REQUESTS_FOR_OTHERS = 'marketplace.toggle.show-requests-for-others',
+  ACTION_SINGLE_TASK = 'marketplace.action.single-task',
 }

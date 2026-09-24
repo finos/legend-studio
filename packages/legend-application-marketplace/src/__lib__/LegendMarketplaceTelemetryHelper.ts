@@ -50,6 +50,12 @@ export enum CONTRACT_ACTION {
   DENIED = 'denied',
 }
 
+export enum SINGLE_TASK_SOURCE {
+  CONTRACT = 'contract',
+  PERMIT = 'permit',
+  WORKFLOW = 'workflow',
+}
+
 export enum ICON_TOOLBAR_TYPE {
   USER = 'User Icon',
   HELP = 'Help Icon',
@@ -1390,6 +1396,82 @@ export class LegendMarketplaceTelemetryHelper {
     telemetryService.logEvent(
       LEGEND_MARKETPLACE_APP_EVENT.CLICK_AI_AGENT_OPEN_IN_DATACUBE,
       { ...session },
+    );
+  }
+
+  static logEvent_ClickEntitlementsTab(
+    telemetryService: TelemetryService,
+    tabTitle: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.CLICK_ENTITLEMENTS_TAB,
+      {
+        tabTitle,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ToggleShowRequestsForOthers(
+    telemetryService: TelemetryService,
+    isEnabled: boolean,
+    dashboard: string,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_SHOW_REQUESTS_FOR_OTHERS,
+      {
+        toggleAction: isEnabled ? 'enabled' : 'disabled',
+        dashboard,
+        ...session,
+      },
+    );
+  }
+
+  static logEvent_ActionSingleTask(
+    telemetryService: TelemetryService,
+    taskId: string,
+    source: SINGLE_TASK_SOURCE,
+    action: CONTRACT_ACTION,
+    actionTakenBy: string,
+    error: string | undefined,
+    contractContext?:
+      | {
+          dataProduct?: string | undefined;
+          accessPointGroup?: string | undefined;
+          deploymentId?: number | undefined;
+        }
+      | undefined,
+  ): void {
+    this.updateEventId();
+    const session = this.getOrCreateUserSession();
+    const data =
+      error === undefined
+        ? {
+            taskId,
+            source,
+            action,
+            actionTakenBy,
+            ...contractContext,
+            status: TELEMETRY_EVENT_STATUS.SUCCESS,
+            ...session,
+          }
+        : {
+            taskId,
+            source,
+            action,
+            actionTakenBy,
+            ...contractContext,
+            status: TELEMETRY_EVENT_STATUS.FAILURE,
+            error,
+            ...session,
+          };
+    telemetryService.logEvent(
+      LEGEND_MARKETPLACE_APP_EVENT.ACTION_SINGLE_TASK,
+      data,
     );
   }
 }

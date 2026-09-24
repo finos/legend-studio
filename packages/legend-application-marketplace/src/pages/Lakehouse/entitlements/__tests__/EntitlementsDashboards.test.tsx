@@ -15,7 +15,7 @@
  */
 
 import { describe, test, expect, jest } from '@jest/globals';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
@@ -29,6 +29,7 @@ import {
   mockPendingTasksRawResponse,
   mockContractsForUserRawResponse,
 } from './TEST_DATA_EntitlementsDashboards.js';
+import { LEGEND_MARKETPLACE_APP_EVENT } from '../../../../__lib__/LegendMarketplaceAppEvent.js';
 
 jest.mock('react-oidc-context', () => {
   const { MOCK__reactOIDCContext } = jest.requireActual<{
@@ -94,6 +95,8 @@ const setupEntitlementsRenderTest = async (
     mockedStore,
     `/lakehouse/entitlements?selectedTab=${selectedTab}`,
   );
+
+  return mockedStore;
 };
 
 describe('LakehouseEntitlements - Environment Filtering', () => {
@@ -186,6 +189,94 @@ describe('LakehouseEntitlements - Environment Filtering', () => {
 
       expect(screen.queryByText('Prod closed contract 1')).toBeNull();
       expect(screen.queryByText('Prod closed contract 2')).toBeNull();
+    });
+  });
+});
+
+describe('LakehouseEntitlements - Telemetry', () => {
+  test('logs a tab click when switching to the My Pending Requests tab', async () => {
+    const mockedStore = await setupEntitlementsRenderTest(
+      'prod',
+      'pendingTasks',
+    );
+
+    const logEventSpy = createSpy(
+      mockedStore.applicationStore.telemetryService,
+      'logEvent',
+    ).mockReturnValue(undefined);
+
+    const pendingRequestsTab = await screen.findByRole('tab', {
+      name: 'MY PENDING REQUESTS',
+    });
+    fireEvent.click(pendingRequestsTab);
+
+    await waitFor(() => {
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.CLICK_ENTITLEMENTS_TAB,
+        expect.objectContaining({ tabTitle: 'My Pending Requests' }),
+      );
+    });
+  });
+
+  test('logs toggling "show my requests for others" on the pending requests dashboard', async () => {
+    const mockedStore = await setupEntitlementsRenderTest(
+      'prod',
+      'pendingContracts',
+    );
+
+    await waitFor(() => {
+      screen.getByText('Prod pending contract 1');
+    });
+
+    const logEventSpy = createSpy(
+      mockedStore.applicationStore.telemetryService,
+      'logEvent',
+    ).mockReturnValue(undefined);
+
+    const toggle = await screen.findByRole('switch', {
+      name: 'Show my requests for others',
+    });
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_SHOW_REQUESTS_FOR_OTHERS,
+        expect.objectContaining({
+          toggleAction: 'enabled',
+          dashboard: 'Pending Requests',
+        }),
+      );
+    });
+  });
+
+  test('logs toggling "show my requests for others" on the closed requests dashboard', async () => {
+    const mockedStore = await setupEntitlementsRenderTest(
+      'prod',
+      'closedContracts',
+    );
+
+    await waitFor(() => {
+      screen.getByText('Prod closed contract 1');
+    });
+
+    const logEventSpy = createSpy(
+      mockedStore.applicationStore.telemetryService,
+      'logEvent',
+    ).mockReturnValue(undefined);
+
+    const toggle = await screen.findByRole('switch', {
+      name: 'Show my requests for others',
+    });
+    fireEvent.click(toggle);
+
+    await waitFor(() => {
+      expect(logEventSpy).toHaveBeenCalledWith(
+        LEGEND_MARKETPLACE_APP_EVENT.TOGGLE_SHOW_REQUESTS_FOR_OTHERS,
+        expect.objectContaining({
+          toggleAction: 'enabled',
+          dashboard: 'Closed Requests',
+        }),
+      );
     });
   });
 });

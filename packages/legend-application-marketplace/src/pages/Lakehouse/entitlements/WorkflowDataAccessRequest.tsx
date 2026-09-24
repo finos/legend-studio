@@ -45,6 +45,11 @@ import {
 } from '@finos/legend-extension-dsl-data-product';
 import { flowResult } from 'mobx';
 import { showTaskActionAlert } from './showTaskActionAlert.js';
+import {
+  CONTRACT_ACTION,
+  LegendMarketplaceTelemetryHelper,
+  SINGLE_TASK_SOURCE,
+} from '../../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 export const WorkflowDataAccessRequestTask =
   withLegendMarketplaceProductViewerStore(
@@ -151,34 +156,90 @@ export const WorkflowDataAccessRequestTask =
         if (!actionableTask || !currentUser) {
           return;
         }
-        await marketplaceBaseStore.lakehouseWorkflowServerClient.approveTask(
-          actionableTask.taskId,
-          currentUser,
-          justification ?? '',
-        );
+        const contractContext = {
+          dataProduct: workflowState?.resourceId,
+          accessPointGroup: workflowState?.accessPointGroup,
+          deploymentId: workflowState?.deploymentId,
+        };
+        try {
+          await marketplaceBaseStore.lakehouseWorkflowServerClient.approveTask(
+            actionableTask.taskId,
+            currentUser,
+            justification ?? '',
+          );
 
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Request has been approved',
-        );
+          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+            'Request has been approved',
+          );
 
-        await handleRefresh();
+          await handleRefresh();
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            actionableTask.taskId,
+            SINGLE_TASK_SOURCE.WORKFLOW,
+            CONTRACT_ACTION.APPROVED,
+            currentUser,
+            undefined,
+            contractContext,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            actionableTask.taskId,
+            SINGLE_TASK_SOURCE.WORKFLOW,
+            CONTRACT_ACTION.APPROVED,
+            currentUser,
+            error.message,
+            contractContext,
+          );
+          throw error;
+        }
       };
 
       const handleDeny = async (justification: string | undefined) => {
         if (!actionableTask || !currentUser) {
           return;
         }
-        await marketplaceBaseStore.lakehouseWorkflowServerClient.rejectTask(
-          actionableTask.taskId,
-          currentUser,
-          justification ?? '',
-        );
+        const contractContext = {
+          dataProduct: workflowState?.resourceId,
+          accessPointGroup: workflowState?.accessPointGroup,
+          deploymentId: workflowState?.deploymentId,
+        };
+        try {
+          await marketplaceBaseStore.lakehouseWorkflowServerClient.rejectTask(
+            actionableTask.taskId,
+            currentUser,
+            justification ?? '',
+          );
 
-        marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
-          'Request has been denied',
-        );
+          marketplaceBaseStore.applicationStore.notificationService.notifySuccess(
+            'Request has been denied',
+          );
 
-        await handleRefresh();
+          await handleRefresh();
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            actionableTask.taskId,
+            SINGLE_TASK_SOURCE.WORKFLOW,
+            CONTRACT_ACTION.DENIED,
+            currentUser,
+            undefined,
+            contractContext,
+          );
+        } catch (error) {
+          assertErrorThrown(error);
+          LegendMarketplaceTelemetryHelper.logEvent_ActionSingleTask(
+            marketplaceBaseStore.applicationStore.telemetryService,
+            actionableTask.taskId,
+            SINGLE_TASK_SOURCE.WORKFLOW,
+            CONTRACT_ACTION.DENIED,
+            currentUser,
+            error.message,
+            contractContext,
+          );
+          throw error;
+        }
       };
 
       const handleApproveClick = () => {
