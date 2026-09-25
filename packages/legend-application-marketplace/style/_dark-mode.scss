@@ -27,6 +27,17 @@
   --marketplace-info-text: var(--color-dark-theme-text-primary);
   --marketplace-addon-chip-bg: rgb(7 125 85 / 20%);
 
+  // Neutral background/text pair for the KPI "Categories" chips on the
+  // Subscriptions page - deliberately de-colored (no per-item-type hue) so
+  // the KPI bar doesn't compete with the grid's colored Item Type chips.
+  // Note: unlike the light-mode chip (one step *darker* than its card),
+  // this uses the "elevated surface" shade, which is *lighter* than the
+  // KPI card background (--color-dark-theme-bg-secondary, #1a1a1a) - going
+  // darker on an already near-black background would converge toward black
+  // and the chip boundary would stop being visible.
+  --marketplace-category-chip-bg: var(--color-dark-theme-bg-elevated);
+  --marketplace-category-chip-text: var(--color-dark-theme-text-secondary);
+
   // Dropdown specific colors for dark mode
   --marketplace-dropdown-bg: var(--color-dark-theme-dropdown-bg);
   --marketplace-dropdown-hover-bg: var(--color-dark-theme-dropdown-hover-bg);
@@ -294,12 +305,6 @@
       .MuiInputLabel-root {
         color: var(--color-dark-theme-text-secondary);
 
-        // Only mask the notched outline border with the page background
-        // once the label has shrunk onto the border line; painting this
-        // background unconditionally (including the resting/un-shrunk
-        // state, where the label sits inside the field as a placeholder)
-        // produced a visible rectangle slightly darker than the
-        // surrounding page background behind the label text.
         &.MuiInputLabel-shrink {
           background-color: var(--color-dark-theme-bg-primary);
         }
@@ -2871,11 +2876,6 @@
     }
 
     &__label {
-      color: var(--color-dark-theme-text-secondary);
-    }
-
-    &__pill {
-      background: var(--color-dark-theme-bg-tertiary);
       color: var(--color-dark-theme-text-secondary);
     }
   }

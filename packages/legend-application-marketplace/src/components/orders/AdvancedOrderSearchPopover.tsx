@@ -18,6 +18,7 @@ import { type JSX, type SyntheticEvent, useState } from 'react';
 import {
   Box,
   Button,
+  CircularProgress,
   Divider,
   FormControl,
   InputLabel,
@@ -183,8 +184,16 @@ export const AdvancedOrderSearchPopover = (
           className="advanced-order-search-popover__tabs"
           aria-label="search mode"
         >
-          <Tab label="Order ID" value={SearchMode.ORDER_ID} />
-          <Tab label="Other Filters" value={SearchMode.OTHER_FILTERS} />
+          <Tab
+            label="Order ID"
+            value={SearchMode.ORDER_ID}
+            disabled={isSearching}
+          />
+          <Tab
+            label="Other Filters"
+            value={SearchMode.OTHER_FILTERS}
+            disabled={isSearching}
+          />
         </Tabs>
 
         {isOrderIdMode ? (
@@ -198,6 +207,7 @@ export const AdvancedOrderSearchPopover = (
             value={orderId}
             onChange={(event) => setOrderId(event.target.value)}
             slotProps={{ inputLabel: { shrink: true } }}
+            disabled={isSearching}
           />
         ) : (
           <>
@@ -206,34 +216,61 @@ export const AdvancedOrderSearchPopover = (
               className="advanced-order-search-popover__required-hint"
             >
               Required: Fill at least one
+              <Box
+                component="span"
+                className="advanced-order-search-popover__required-asterisk"
+                aria-hidden={true}
+              >
+                *
+              </Box>
             </Typography>
 
             <Box className="advanced-order-search-popover__filter-group">
-              <UserSearchInput
-                className="advanced-order-search-popover__field"
-                label="Ordered For"
-                placeholder="Search kerberos or name"
-                userValue={orderedFor}
-                setUserValue={setOrderedFor}
-                userSearchService={userSearchService}
-                variant="outlined"
-                size="small"
-                fullWidth={true}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
+              <Box className="advanced-order-search-popover__field-wrapper">
+                <Typography
+                  component="label"
+                  variant="caption"
+                  htmlFor="advanced-order-search-ordered-for"
+                  className="advanced-order-search-popover__field-label"
+                >
+                  Ordered For
+                </Typography>
+                <UserSearchInput
+                  id="advanced-order-search-ordered-for"
+                  className="advanced-order-search-popover__field"
+                  placeholder="Search kerberos or name"
+                  userValue={orderedFor}
+                  setUserValue={setOrderedFor}
+                  userSearchService={userSearchService}
+                  variant="outlined"
+                  size="small"
+                  fullWidth={true}
+                  disabled={isSearching}
+                />
+              </Box>
 
-              <UserSearchInput
-                className="advanced-order-search-popover__field"
-                label="Ordered By"
-                placeholder="Search kerberos or name"
-                userValue={orderedBy}
-                setUserValue={setOrderedBy}
-                userSearchService={userSearchService}
-                variant="outlined"
-                size="small"
-                fullWidth={true}
-                slotProps={{ inputLabel: { shrink: true } }}
-              />
+              <Box className="advanced-order-search-popover__field-wrapper">
+                <Typography
+                  component="label"
+                  variant="caption"
+                  htmlFor="advanced-order-search-ordered-by"
+                  className="advanced-order-search-popover__field-label"
+                >
+                  Ordered By
+                </Typography>
+                <UserSearchInput
+                  id="advanced-order-search-ordered-by"
+                  className="advanced-order-search-popover__field"
+                  placeholder="Search kerberos or name"
+                  userValue={orderedBy}
+                  setUserValue={setOrderedBy}
+                  userSearchService={userSearchService}
+                  variant="outlined"
+                  size="small"
+                  fullWidth={true}
+                  disabled={isSearching}
+                />
+              </Box>
             </Box>
 
             <Divider
@@ -245,6 +282,7 @@ export const AdvancedOrderSearchPopover = (
               className="advanced-order-search-popover__field"
               size="small"
               fullWidth={true}
+              disabled={isSearching}
             >
               <InputLabel id="advanced-order-search-status-label">
                 Status (Optional)
@@ -299,6 +337,7 @@ export const AdvancedOrderSearchPopover = (
               slotProps={{
                 htmlInput: { inputMode: 'numeric' },
               }}
+              disabled={isSearching}
             />
           </>
         )}
@@ -308,6 +347,7 @@ export const AdvancedOrderSearchPopover = (
             variant="outlined"
             size="medium"
             onClick={handleClear}
+            disabled={isSearching}
             className="advanced-order-search-popover__clear-button"
           >
             Clear
@@ -317,9 +357,14 @@ export const AdvancedOrderSearchPopover = (
             size="medium"
             onClick={handleSearch}
             disabled={!canSearch || isSearching}
+            startIcon={
+              isSearching ? (
+                <CircularProgress size={16} color="inherit" />
+              ) : undefined
+            }
             className="advanced-order-search-popover__search-button"
           >
-            Search
+            {isSearching ? 'Searching...' : 'Search'}
           </Button>
         </Box>
       </Box>

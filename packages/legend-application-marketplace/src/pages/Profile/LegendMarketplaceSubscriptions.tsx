@@ -71,12 +71,6 @@ import {
 import { LegendMarketplaceTelemetryHelper } from '../../__lib__/LegendMarketplaceTelemetryHelper.js';
 
 const SEARCH_DEBOUNCE_MS = 300;
-// A sentinel that cannot collide with a real carrier vendor or item type name.
-// Unlike this app's other 'All' enum members (e.g. `VendorDataProviderType.ALL`),
-// which enumerate a small, closed set of values we control, these filter options
-// are built from live, arbitrary backend data (see `carrierVendorOptions`/
-// `itemTypeOptions` below) — so a vendor or item type literally named "All"
-// would otherwise silently be treated as "no filter".
 const ALL_FILTER_OPTION = '__ALL_FILTER_OPTION__';
 const formatFilterOptionLabel = (option: string): string =>
   option === ALL_FILTER_OPTION ? 'All' : option;
@@ -221,12 +215,12 @@ const SubscriptionKpiBar = (props: {
         </Typography>
         <div className="legend-marketplace-subscriptions-kpi-bar__pills">
           {Array.from(countByType.entries()).map(([type, count]) => (
-            <span
+            <Chip
               key={type}
+              size="small"
+              label={`${type}: ${count}`}
               className="legend-marketplace-subscriptions-kpi-bar__pill"
-            >
-              {type}: {count}
-            </span>
+            />
           ))}
         </div>
       </div>
@@ -264,11 +258,6 @@ export const LegendMarketplaceSubscriptions =
 
       const initialUser =
         marketplaceStore.applicationStore.identityService.currentUser;
-
-      // Shared error-handling wrapper for MobX flows (mirrors
-      // `LegendMarketplaceYourOrders.tsx`'s `executeFlowSafely`) so failures
-      // are surfaced consistently instead of each call site repeating its own
-      // `flowResult(...).catch(...)`.
       const executeFlowSafely = useCallback(
         (flowFn: () => GeneratorFn<void>) => {
           flowResult(flowFn()).catch((error: unknown) => {
@@ -317,10 +306,6 @@ export const LegendMarketplaceSubscriptions =
         setActiveSearchText('');
       }, [debouncedSetActiveSearch]);
 
-      // Search text and dropdown filters are scoped to whichever user's
-      // subscriptions are being viewed, so switching the target user must
-      // reset them rather than carrying them over (and potentially filtering
-      // the new user's grid down to zero rows).
       const resetSearchAndFilters = useCallback((): void => {
         setRawSearchText('');
         debouncedSetActiveSearch.cancel();
@@ -366,12 +351,6 @@ export const LegendMarketplaceSubscriptions =
       }, []);
 
       const handleConfirmCancellation = useCallback((): void => {
-        // Built solely from `selectedSubscriptions`: checking a Permission ID
-        // row already adds its currently visible/filtered addons to this list
-        // (see `handleSubscriptionCheckboxChange`), so re-deriving addons
-        // here from the full, unfiltered `subscriptionFeeds` would silently
-        // include rows the user never saw (and never selected) in the
-        // confirmation dialog whenever an active search/filter hid them.
         const orderItems: Record<number, ProductSubscription[]> = {};
         subscriptionStore.selectedSubscriptions.forEach((s) => {
           const item: ProductSubscription = {
@@ -525,9 +504,6 @@ export const LegendMarketplaceSubscriptions =
         itemTypeFilter,
       ]);
 
-      // Recomputed only when the underlying (unfiltered) feed changes, not on
-      // every search/filter keystroke, since it derives purely from
-      // `subscriptionFeeds`.
       const permissionGroupLabelByVendorAndPermId = useMemo(() => {
         const labelsByKey = new Map<string, string>();
 
@@ -548,8 +524,6 @@ export const LegendMarketplaceSubscriptions =
         return labelsByKey;
       }, [subscriptionStore.subscriptionFeeds]);
 
-      // O(1) membership lookup for the per-row "selected" state, instead of a
-      // linear scan of `selectedSubscriptions` per rendered row/cell.
       const selectedSubscriptionIds = useMemo(
         () => new Set(subscriptionStore.selectedSubscriptions.map((s) => s.id)),
         [subscriptionStore.selectedSubscriptions],
@@ -654,9 +628,6 @@ export const LegendMarketplaceSubscriptions =
             return;
           }
 
-          // Toggling a Permission ID row also toggles its associated addons,
-          // scoped to whatever is currently visible/filtered so it matches
-          // what the user actually sees in the grid.
           const associatedAddons =
             subscription.itemName === PERMISSION_ID_LABEL
               ? filteredSubscriptions.filter(
@@ -685,8 +656,6 @@ export const LegendMarketplaceSubscriptions =
         useMemo(
           () => [
             {
-              // Hidden — used only to define the row group; the group header row
-              // renders the carrier vendor name with an expand/collapse toggle.
               headerName: 'Carrier Vendor',
               field: 'carrierVendor',
               rowGroup: true,
@@ -694,7 +663,6 @@ export const LegendMarketplaceSubscriptions =
               suppressHeaderMenuButton: true,
             },
             {
-              // Hidden — second grouping level to show subtotals for each Permission ID.
               headerName: 'Permission ID Group',
               field: 'permissionGroupKey',
               rowGroup: true,
@@ -709,8 +677,6 @@ export const LegendMarketplaceSubscriptions =
               suppressHeaderMenuButton: true,
               flex: 1,
               tooltipField: 'model',
-              // Visual indentation mirrors the OwnedTerminalDetailModal pattern:
-              // add-ons are shown with a coloured accent bar and left-padding.
               cellRenderer: (
                 params: DataGridCellRendererParams<SubscriptionGridRow>,
               ) => {
@@ -1118,13 +1084,7 @@ export const LegendMarketplaceSubscriptions =
                     columnDefs={columnDefs}
                     autoGroupColumnDef={autoGroupColumnDef}
                     rowHeight={48}
-                    // Row ids let AG Grid apply data updates immutably (matching by
-                    // id) instead of rebuilding the row model on every rowData
-                    // change, which would otherwise reset every group's
-                    // expand/collapse state back to `groupDefaultExpanded` (e.g.
-                    // whenever a selection checkbox is toggled).
                     getRowId={(params) => params.data.id}
-                    // Group rows by carrier vendor (L1) and permission ID (L2).
                     groupDisplayType="singleColumn"
                     groupDefaultExpanded={-1}
                     rowGroupPanelShow="never"
