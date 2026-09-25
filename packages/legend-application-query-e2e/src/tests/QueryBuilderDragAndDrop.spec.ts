@@ -119,9 +119,13 @@ test('build and run a query with projection columns, filter, and post-filter', a
   await page.keyboard.press('Enter');
   await expect(postFilterCondition.getByText('200')).toBeVisible();
 
-  // 5. re-run with filter and post-filter in place
+  // 5. re-run with filter and post-filter in place: only the `Confirmed`
+  // rows with more than 200 cases remain (the engine mock evaluates the
+  // query against its data, see `MockExecution.ts`)
   await resultPanel.getByText('Run Query', { exact: true }).click();
-  await expect(gridRows).toHaveCount(TEST_DATA__EXECUTION_RESULT_ROW_COUNT);
+  await expect(gridRows).toHaveCount(4);
+  await expect(resultPanel.getByText('Death')).toHaveCount(0);
+  await expect(resultPanel.getByText('640', { exact: true })).toBeVisible();
 
   // 6. clean up in reverse: post-filter first (a projection column used by
   // the post-filter cannot be removed), then filter, then each column
