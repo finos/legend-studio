@@ -92,9 +92,11 @@ const getMilestoneRequirement = (
       if (!breakdown.isModelsDocumentationPresent) {
         missing.push('add Models Documentation');
       }
-      return missing.length > 0
-        ? `Still needed: ${missing.join(', ')}.`
-        : 'Write a description (2+ sentences), and make sure Executables and Models Documentation are present.';
+      if (missing.length > 0) {
+        const joined = missing.join(', ');
+        return `${joined.charAt(0).toUpperCase()}${joined.slice(1)}.`;
+      }
+      return 'Write a description (2+ sentences), and make sure Executables and Models Documentation are present.';
     }
     case DATA_SPACE_QUALITY_LEVEL.GOLD:
       return breakdown.isEveryServiceDocumented
@@ -148,7 +150,7 @@ const QualityRoadmap = observer(
               {statusIcon} {levelConfig.emoji} {levelConfig.label}
               {isAiReadyMilestone ? ' (AI-Ready)' : ''}
               {!isAchieved
-                ? ` — ${getMilestoneRequirement(level, breakdown)}`
+                ? `: ${getMilestoneRequirement(level, breakdown)}`
                 : ''}
             </div>
           );
