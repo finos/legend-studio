@@ -72,14 +72,26 @@
     margin-top: 0.25rem;
   }
 
+  // Base look matches the Item Type column chips (rounded pill, same font
+  // size). Deliberately de-colored (one flat neutral shade for every item
+  // type, rather than a per-category hue) so the KPI bar doesn't compete
+  // with the many-colored grid content; the background is just a shade off
+  // the card background so the chip boundary still reads clearly.
   &__pill {
-    padding: 0.2rem 0.75rem;
-    background: #e0e7ef;
-    border-radius: 9999px;
-    font-size: 1.2rem;
+    border-radius: 999px !important;
+    font-size: 1.3rem !important;
     font-weight: 500;
-    color: #374151;
+    background: var(--marketplace-category-chip-bg) !important;
+    color: var(--marketplace-category-chip-text) !important;
   }
+}
+
+// Applied directly to the `UserSearchInput` (Autocomplete) root when searching
+// for another user's subscriptions. Without an explicit width, the box sizes
+// to its shrink-to-fit flex content (roughly the placeholder text width),
+// which is too narrow to read the selected user's display name once chosen.
+.legend-marketplace-subscriptions__user-input {
+  width: 28rem;
 }
 
 .legend-marketplace-subscriptions-content {

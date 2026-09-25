@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   Box,
@@ -634,7 +640,6 @@ export const LegendMarketplaceYourOrders: React.FC =
           );
           executeFlowSafely(() => ordersStore.searchOrders(filters));
           setSearchTerm('');
-          setAdvancedSearchAnchorEl(null);
         },
         [
           baseStore.applicationStore.telemetryService,
@@ -642,6 +647,22 @@ export const LegendMarketplaceYourOrders: React.FC =
           ordersStore,
         ],
       );
+
+      // The popover stays open (showing its own loading state) while a search
+      // is in flight so the user gets feedback that results are being
+      // processed; it is only dismissed once the search settles.
+      const wasSearchingRef = useRef(false);
+      useEffect(() => {
+        const isSearchInProgress = ordersStore.searchOrdersState.isInProgress;
+        if (
+          wasSearchingRef.current &&
+          !isSearchInProgress &&
+          advancedSearchAnchorEl
+        ) {
+          setAdvancedSearchAnchorEl(null);
+        }
+        wasSearchingRef.current = isSearchInProgress;
+      }, [ordersStore.searchOrdersState.isInProgress, advancedSearchAnchorEl]);
 
       const handleClearAdvancedSearch = useCallback(() => {
         LegendMarketplaceTelemetryHelper.logEvent_ClearAdvancedOrderSearch(
@@ -894,31 +915,31 @@ export const LegendMarketplaceYourOrders: React.FC =
                   >
                     {appliedSearchFilters.orderId && (
                       <Chip
-                        size="small"
+                        className="legend-marketplace-your-orders__filter-chip"
                         label={`Order ID: ${appliedSearchFilters.orderId}`}
                       />
                     )}
                     {appliedSearchFilters.orderedByLabel && (
                       <Chip
-                        size="small"
+                        className="legend-marketplace-your-orders__filter-chip"
                         label={`Ordered By: ${appliedSearchFilters.orderedByLabel}`}
                       />
                     )}
                     {appliedSearchFilters.orderedForLabel && (
                       <Chip
-                        size="small"
+                        className="legend-marketplace-your-orders__filter-chip"
                         label={`Ordered For: ${appliedSearchFilters.orderedForLabel}`}
                       />
                     )}
                     {appliedSearchFilters.status !== OrderSearchStatus.ALL && (
                       <Chip
-                        size="small"
+                        className="legend-marketplace-your-orders__filter-chip"
                         label={`Status: ${getOrderSearchStatusLabel(appliedSearchFilters.status)}`}
                       />
                     )}
                     {!appliedSearchFilters.isLastDaysDefaulted && (
                       <Chip
-                        size="small"
+                        className="legend-marketplace-your-orders__filter-chip"
                         label={`Last ${appliedSearchFilters.lastDays} Days`}
                       />
                     )}

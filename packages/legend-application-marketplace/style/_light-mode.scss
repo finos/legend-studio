@@ -102,6 +102,15 @@
   --marketplace-info-text: var(--color-legacylight-dark-grey-200);
   --marketplace-addon-chip-bg: #e0f7f0;
 
+  // Neutral background/text pair for the KPI "Categories" chips on the
+  // Subscriptions page - deliberately de-colored (no per-item-type hue) so
+  // the KPI bar doesn't compete with the grid's colored Item Type chips.
+  // The background is one step darker than the KPI card background
+  // (--color-hclight-grey-10, #f2f5f7) so the chip boundary reads clearly
+  // against the card without a jarring color change.
+  --marketplace-category-chip-bg: var(--color-hclight-grey-20);
+  --marketplace-category-chip-text: var(--color-hclight-grey-70);
+
   ::-webkit-scrollbar-thumb {
     background: var(--color-hclight-grey-30);
     border: 0.2rem solid transparent;
@@ -2067,11 +2076,6 @@
     }
 
     &__label {
-      color: var(--color-hclight-grey-70);
-    }
-
-    &__pill {
-      background: var(--color-hclight-blue-10);
       color: var(--color-hclight-grey-70);
     }
   }
