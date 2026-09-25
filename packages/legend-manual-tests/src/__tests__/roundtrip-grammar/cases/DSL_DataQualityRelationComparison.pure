@@ -1,0 +1,63 @@
+###Relational
+Database store::db
+(
+  Table personTable
+  (
+    ID VARCHAR(200),
+    FIRSTNAME VARCHAR(200),
+    LASTNAME VARCHAR(200),
+    AGE VARCHAR(200),
+    ADDRESSID VARCHAR(200),
+    FIRMID VARCHAR(200)
+  )
+)
+
+
+###Runtime
+Runtime model::DummyRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###Pure
+Class model::Person
+{
+  ID: String[1];
+  FIRSTNAME: String[1];
+  LASTNAME: String[1];
+  AGE: String[1];
+  ADDRESSID: String[1];
+  FIRMID: String[1];
+}
+
+
+###Mapping
+Mapping model::DummyMapping
+(
+  *model::Person: Relational
+  {
+    ~mainTable [store::db]personTable
+    ID: [store::db]personTable.ID,
+    FIRSTNAME: [store::db]personTable.FIRSTNAME,
+    LASTNAME: [store::db]personTable.LASTNAME,
+    AGE: [store::db]personTable.AGE,
+    ADDRESSID: [store::db]personTable.ADDRESSID,
+    FIRMID: [store::db]personTable.FIRMID
+  }
+)
+
+
+###DataQualityValidation
+DataQualityRelationComparison model::relationComparison
+{
+   source: |#>{store::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, AGE, ADDRESSID])->from(model::DummyRuntime);
+   target: |#>{store::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, AGE, FIRMID])->from(model::DummyRuntime);
+   keys: [ID];
+   columnsToCompare: [LASTNAME];
+   additionalColumnsToPersist: [AGE, ADDRESSID, FIRMID];
+   strategy: MD5Hash;
+}

@@ -412,6 +412,8 @@ export function V1_buildDataQualityRelationComparisonConfiguration(
   );
   element.keys = elementProtocol.keys;
   element.columnsToCompare = elementProtocol.columnsToCompare;
+  element.additionalColumnsToPersist =
+    elementProtocol.additionalColumnsToPersist;
   if (elementProtocol.strategy instanceof V1_MD5HashStrategy) {
     const strategy = new MD5HashStrategy();
     strategy.sourceHashColumn = elementProtocol.strategy.sourceHashColumn;

@@ -58,6 +58,7 @@ export interface DQReconciliationInputOptions {
   target: RawLambda;
   keys: string[];
   colsForHash: string[];
+  additionalColumnsToPersist?: string[] | undefined;
   limit?: number | undefined;
   aggregatedHash?: boolean | undefined;
   sourceHashCol?: string | undefined;
@@ -241,6 +242,7 @@ export class DataQualityRelationComparisonConfiguration
   target!: DataQualityRelationQueryLambda;
   keys: string[] = [];
   columnsToCompare: string[] = [];
+  additionalColumnsToPersist: string[] = [];
   strategy!: ReconStrategy;
   expectedMatch?: number | undefined;
   persistenceStrategy?: DataQualityPersistenceStrategy | undefined;
@@ -252,6 +254,7 @@ export class DataQualityRelationComparisonConfiguration
       this.target,
       hashArray(this.keys),
       hashArray(this.columnsToCompare),
+      hashArray(this.additionalColumnsToPersist),
       this.expectedMatch ?? '',
       this.strategy,
       this.persistenceStrategy ?? '',

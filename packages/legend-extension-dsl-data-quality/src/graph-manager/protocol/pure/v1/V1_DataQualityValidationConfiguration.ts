@@ -199,6 +199,7 @@ export class V1_DataQualityRelationComparisonConfiguration
   target!: V1_DataQualityRelationQueryLambda;
   keys: string[] = [];
   columnsToCompare: string[] = [];
+  additionalColumnsToPersist: string[] = [];
   strategy!: V1_ReconStrategy;
   expectedMatch?: number | undefined;
   persistenceStrategy?: V1_DataQualityPersistenceStrategy | undefined;
@@ -210,6 +211,7 @@ export class V1_DataQualityRelationComparisonConfiguration
       this.target,
       hashArray(this.keys),
       hashArray(this.columnsToCompare),
+      hashArray(this.additionalColumnsToPersist),
       String(this.expectedMatch ?? ''),
       this.strategy,
       this.persistenceStrategy ?? '',

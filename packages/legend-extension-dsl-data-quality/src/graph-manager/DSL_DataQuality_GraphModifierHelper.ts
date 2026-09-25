@@ -277,6 +277,16 @@ export const dataQualityRelationComparison_setColumnsToCompare = action(
   },
 );
 
+export const dataQualityRelationComparison_setAdditionalColumnsToPersist =
+  action(
+    (
+      element: DataQualityRelationComparisonConfiguration,
+      val: string[],
+    ): void => {
+      element.additionalColumnsToPersist = val;
+    },
+  );
+
 export const dataQualityRelationComparison_setStrategy = action(
   (
     element: DataQualityRelationComparisonConfiguration,

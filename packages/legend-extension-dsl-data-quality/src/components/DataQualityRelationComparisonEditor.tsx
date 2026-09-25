@@ -256,6 +256,7 @@ export const DataQualityRelationComparisonEditor = observer(() => {
   const sourceColumnOptions = state.sourceColumnOptions;
   const targetColumnOptions = state.targetColumnOptions;
   const combinedColumnOptions = state.combinedColumnOptions;
+  const unionColumnOptions = state.unionColumnOptions;
 
   const isRunning = state.isRunning || state.isGeneratingPlan;
   const executionResult = state.executionResult;
@@ -469,10 +470,11 @@ export const DataQualityRelationComparisonEditor = observer(() => {
     );
   }, [combinedColumnOptions, comparison.columnsToCompare]);
 
-  // Keys are implicitly included in the comparison, so hide them from the
-  // "Columns to Compare" dropdown options. However, to avoid breaking existing
-  // flows where the same field was put in both lists, keep any column that is
-  // currently selected as a "column to compare" visible even if it is also a key.
+  const selectedAdditionalColumnsToPersistOptions = useMemo(() => {
+    const selectedColumns = new Set(comparison.additionalColumnsToPersist);
+    return unionColumnOptions.filter(({ value }) => selectedColumns.has(value));
+  }, [unionColumnOptions, comparison.additionalColumnsToPersist]);
+
   const columnsToCompareOptions = useMemo(() => {
     const keySet = new Set(comparison.keys);
     const selectedColumns = new Set(comparison.columnsToCompare);
@@ -480,6 +482,29 @@ export const DataQualityRelationComparisonEditor = observer(() => {
       ({ value }) => !keySet.has(value) || selectedColumns.has(value),
     );
   }, [combinedColumnOptions, comparison.keys, comparison.columnsToCompare]);
+
+  const additionalColumnsToPersistOptions = useMemo(() => {
+    const keySet = new Set(comparison.keys);
+    const compareSet = new Set(comparison.columnsToCompare);
+    const hashSet = new Set(
+      [md5Strategy.sourceHashColumn, md5Strategy.targetHashColumn].filter(
+        (v): v is string => Boolean(v),
+      ),
+    );
+    const selectedColumns = new Set(comparison.additionalColumnsToPersist);
+    return unionColumnOptions.filter(
+      ({ value }) =>
+        (!keySet.has(value) && !compareSet.has(value) && !hashSet.has(value)) ||
+        selectedColumns.has(value),
+    );
+  }, [
+    unionColumnOptions,
+    comparison.keys,
+    comparison.columnsToCompare,
+    comparison.additionalColumnsToPersist,
+    md5Strategy.sourceHashColumn,
+    md5Strategy.targetHashColumn,
+  ]);
 
   return (
     <div className="data-quality-relation-comparison-editor">
@@ -712,6 +737,28 @@ export const DataQualityRelationComparisonEditor = observer(() => {
                 }
                 options={columnsToCompareOptions}
                 placeholder="Select columns to compare..."
+                disabled={columnsDisabled}
+                darkMode={darkMode}
+              />
+            </PanelFormSection>
+
+            <PanelFormSection>
+              <div className="panel__content__form__section__header__label">
+                Additional Columns
+              </div>
+              <div className="panel__content__form__section__header__prompt">
+                Extra columns included in the reconciliation query, in addition
+                to the &quot;Keys&quot; and &quot;Columns to Compare&quot;
+              </div>
+              <DataQualityMultiCustomSelector
+                value={selectedAdditionalColumnsToPersistOptions}
+                onChange={(values) =>
+                  state.setAdditionalColumnsToPersist(
+                    values.map((option) => option.value),
+                  )
+                }
+                options={additionalColumnsToPersistOptions}
+                placeholder="Select additional columns to persist..."
                 disabled={columnsDisabled}
                 darkMode={darkMode}
               />
