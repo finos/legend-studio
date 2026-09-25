@@ -96,6 +96,9 @@ export interface V1_ExecuteInput {
   model?: unknown;
 }
 
+/** Name the `let` bindings of a query's constants carry in the protocol. */
+const LET_FUNCTION = 'letFunction';
+
 const fail = (message: string): never => {
   throw new Error(`[query protocol] ${message}`);
 };
@@ -170,6 +173,44 @@ export const getLambdaBody = (
 ): V1_ValueSpecification => at(asLambda(node).body, 0);
 
 /**
+ * The `letFunction` expressions a query's constants are bound by, in order.
+ *
+ * The query builder prepends one `let` per constant to the lambda body, so
+ * these sit ahead of the query expression itself.
+ */
+const getLetExpressions = (lambda: V1_Lambda): V1_AppliedFunction[] =>
+  lambda.body.filter(
+    (node): node is V1_AppliedFunction =>
+      node._type === 'func' &&
+      (node as V1_AppliedFunction).function === LET_FUNCTION,
+  );
+
+/**
+ * The name and value of each constant bound ahead of the query, in order.
+ *
+ * A constant is emitted as `let <name> = <value>;`, so the binding's name is
+ * a string literal rather than a variable reference — the query itself then
+ * refers to it by variable (see {@link getVariableName}).
+ */
+export const getConstantBindings = (
+  lambda: V1_Lambda,
+): { name: string; value: string | number | boolean }[] =>
+  getLetExpressions(lambda).map((letExpression) => ({
+    name: getValue(at(letExpression.parameters, 0)) as string,
+    value: getValue(at(letExpression.parameters, 1)),
+  }));
+
+/**
+ * The expression forming the query itself.
+ *
+ * This is the last expression of the lambda body: a query with constants
+ * binds each of them with a leading `let`, so the query is not necessarily
+ * the first expression (see {@link getConstantBindings}).
+ */
+export const getQueryExpression = (lambda: V1_Lambda): V1_ValueSpecification =>
+  at(lambda.body, lambda.body.length - 1);
+
+/**
  * The names of the chained functions of a query, outermost first.
  *
  * A query builder query nests each operation inside the first parameter of
@@ -178,7 +219,7 @@ export const getLambdaBody = (
  */
 export const getFunctionChain = (lambda: V1_Lambda): string[] => {
   const chain: string[] = [];
-  let current: V1_ValueSpecification | undefined = at(lambda.body, 0);
+  let current: V1_ValueSpecification | undefined = getQueryExpression(lambda);
   while (current?._type === 'func') {
     const func = current as V1_AppliedFunction;
     chain.push(func.function);
@@ -195,7 +236,7 @@ export const getChainedFunction = (
   lambda: V1_Lambda,
   depth: number,
 ): V1_AppliedFunction => {
-  let current: V1_ValueSpecification | undefined = at(lambda.body, 0);
+  let current: V1_ValueSpecification | undefined = getQueryExpression(lambda);
   for (let i = 0; i < depth; i++) {
     current = asFunction(current).parameters[0];
   }

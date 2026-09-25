@@ -21,8 +21,16 @@ import {
   TEST_DATA__CurrentUser,
   TEST_DATA__ExecutionResult,
   TEST_DATA__LightQueries,
+  TEST_DATA__MappingModelCoverage,
   TEST_DATA__SubtypeInfo,
 } from './TEST_DATA__EngineResponses.js';
+import {
+  executeQuery,
+  toCSV,
+  UnsupportedQueryError,
+  type TDSExecutionResult,
+} from './MockExecution.js';
+import type { V1_ExecuteInput } from './QueryProtocol.js';
 
 /**
  * The app's engine URL is rerouted (via `config.json` interception) to this
@@ -70,6 +78,43 @@ const getRequestBody = (request: Request): string => {
 };
 
 /**
+ * Answer an execution like the engine would, evaluating the query against
+ * the mock data (see `MockExecution.ts`). Queries using Pure the mock can't
+ * evaluate — aggregations, window columns, graph fetch... — get the canned
+ * {@link TEST_DATA__ExecutionResult} instead, whatever they ask for.
+ */
+const evaluateQuery = (input: V1_ExecuteInput): TDSExecutionResult => {
+  try {
+    return executeQuery(input);
+  } catch (error) {
+    if (error instanceof UnsupportedQueryError) {
+      return TEST_DATA__ExecutionResult as TDSExecutionResult;
+    }
+    throw error;
+  }
+};
+
+/**
+ * A saved query as held by the mock query store: the `V1_Query` JSON the app
+ * sent, plus the fields the engine itself stamps on it.
+ */
+export interface StoredQuery extends Record<string, unknown> {
+  id: string;
+  name: string;
+  owner?: string | undefined;
+  createdAt?: number | undefined;
+  lastUpdatedAt?: number | undefined;
+  /** Set on earlier revisions only, as served by the history endpoint. */
+  version?: string | undefined;
+}
+
+interface QuerySearchSpecification {
+  searchTermSpecification?: { searchTerm: string; exactMatchName?: boolean };
+  showCurrentUserQueriesOnly?: boolean;
+  limit?: number;
+}
+
+/**
  * Payloads the app sent to the engine during a test, recorded so specs can
  * assert on what the query builder actually produced (see
  * `QueryBuilderProtocol.spec.ts`). The object is mutated in place, so a spec
@@ -80,6 +125,10 @@ export interface CapturedEngineRequests {
   executeInputs: Record<string, unknown>[];
   /** Lambda protocol JSON posted to `jsonToGrammar/lambda`, in order. */
   lambdas: Record<string, unknown>[];
+  /** `V1_Query` bodies sent to update (overwrite) a saved query, in order. */
+  updatedQueries: StoredQuery[];
+  /** Ids of the saved queries deleted, in order. */
+  deletedQueryIds: string[];
   /**
    * Engine endpoints forced to fail, keyed by path (e.g.
    * `pure/v1/execution/execute`). Populate this to drive the app's error
@@ -93,35 +142,85 @@ export interface CapturedEngineRequests {
  * responses, so tests are deterministic and require no engine backend.
  * Returns the payloads the app sent, for specs that assert on them.
  *
- * The mock is stateful per test page to support the save/load round-trip:
- * - created queries are stored in-memory and served back by id
+ * The mock is stateful per test page to support the saved-query lifecycle:
+ * - created queries are stored in-memory and served back by id, and are
+ *   found by query search alongside the fixture's own queries
+ * - updating a query archives its previous content as a numbered revision,
+ *   served by the history endpoint (so history and revert can be exercised)
+ * - deleted queries are gone: loading one fails like the engine would
  * - lambda protocol JSON sent to `jsonToGrammar/lambda` (on save) is stored
  *   against a generated placeholder "grammar" string, and served back as
  *   JSON when `grammarToJson/lambda` is later called with that placeholder
  *   (on load) — so the app's own serialization round-trips without the mock
  *   needing a real Pure grammar parser.
+ *
+ * Pass `coreOptions` to override the app's core options (`extensions.core`
+ * in `config.json`), e.g. to turn on features behind
+ * `NonProductionFeatureFlag`.
  */
 export const setupEngineMock = async (
   page: Page,
+  { coreOptions }: { coreOptions?: Record<string, unknown> } = {},
 ): Promise<CapturedEngineRequests> => {
   const captured: CapturedEngineRequests = {
     executeInputs: [],
     lambdas: [],
+    updatedQueries: [],
+    deletedQueryIds: [],
     failures: new Map(),
   };
 
   // reroute the app's engine URL to the dead mock port
   await page.route(/\/query\/config\.json$/, async (route) => {
     const response = await route.fetch();
-    const config = (await response.json()) as { engine: { url: string } };
+    const config = (await response.json()) as {
+      engine: { url: string };
+      extensions?: { core?: Record<string, unknown> };
+    };
     config.engine.url = `http://localhost:${MOCK_ENGINE_PORT}/api`;
+    if (coreOptions) {
+      config.extensions = {
+        ...config.extensions,
+        core: { ...config.extensions?.core, ...coreOptions },
+      };
+    }
     await route.fulfill({ json: config });
   });
 
-  // per-page state for the save/load round-trip
-  const savedQueries = new Map<string, { id: string }>();
+  // per-page state for the saved-query lifecycle
+  const savedQueries = new Map<string, StoredQuery>();
+  // earlier revisions of each saved query, oldest first
+  const queryRevisions = new Map<string, StoredQuery[]>();
   const savedLambdas = new Map<string, string>();
   let lambdaCounter = 0;
+
+  // like the engine: match the search term against query names (exactly, if
+  // asked) or ids, and optionally restrict to the current user's queries
+  const searchQueries = (spec: QuerySearchSpecification): StoredQuery[] => {
+    const term = spec.searchTermSpecification?.searchTerm.toLowerCase();
+    const exact = Boolean(spec.searchTermSpecification?.exactMatchName);
+    const matches = [
+      ...(TEST_DATA__LightQueries as StoredQuery[]),
+      ...savedQueries.values(),
+    ].filter(
+      (query) =>
+        (!term ||
+          (exact
+            ? query.name.toLowerCase() === term
+            : query.name.toLowerCase().includes(term) ||
+              query.id.toLowerCase().includes(term))) &&
+        (!spec.showCurrentUserQueriesOnly ||
+          query.owner === TEST_DATA__CurrentUser),
+    );
+    return spec.limit === undefined ? matches : matches.slice(0, spec.limit);
+  };
+
+  const queryNotFound = (route: Route, queryId: string): Promise<void> =>
+    route.fulfill({
+      status: 404,
+      headers: { ...CORS_HEADERS },
+      json: { message: `Can't find query with ID '${queryId}'` },
+    });
 
   const engineApiUrlPattern = new RegExp(
     `:${MOCK_ENGINE_PORT}/api/(?<endpoint>.*)$`,
@@ -161,14 +260,45 @@ export const setupEngineMock = async (
         await fulfillJson(route, TEST_DATA__SubtypeInfo);
         return;
       case 'pure/v1/query/search':
-        await fulfillJson(route, TEST_DATA__LightQueries);
-        return;
-      case 'pure/v1/execution/execute':
-        captured.executeInputs.push(
-          JSON.parse(getRequestBody(request)) as Record<string, unknown>,
+        await fulfillJson(
+          route,
+          searchQueries(
+            JSON.parse(getRequestBody(request)) as QuerySearchSpecification,
+          ),
         );
-        await fulfillJson(route, TEST_DATA__ExecutionResult);
         return;
+      // which properties a mapping maps, for queries built on a mapping
+      case 'pure/v1/analytics/mapping/modelCoverage': {
+        const { mapping } = JSON.parse(getRequestBody(request)) as {
+          mapping: string;
+        };
+        if (mapping === 'test::CovidDataMapping') {
+          await fulfillJson(route, TEST_DATA__MappingModelCoverage);
+          return;
+        }
+        break;
+      }
+      case 'pure/v1/execution/execute': {
+        const input = JSON.parse(getRequestBody(request)) as V1_ExecuteInput;
+        captured.executeInputs.push(
+          input as unknown as Record<string, unknown>,
+        );
+        const result = evaluateQuery(input);
+        // exports ask for a serialized result, e.g. CSV, to download
+        const format = new URL(request.url()).searchParams.get(
+          'serializationFormat',
+        );
+        if (format && format !== 'PURE_TDSOBJECT') {
+          await route.fulfill({
+            body: toCSV(result),
+            contentType: 'text/csv',
+            headers: { ...CORS_HEADERS },
+          });
+          return;
+        }
+        await fulfillJson(route, result);
+        return;
+      }
       // lambda protocol JSON -> Pure grammar text (called when saving)
       case 'pure/v1/grammar/jsonToGrammar/lambda': {
         const lambdaJson = getRequestBody(request);
@@ -198,26 +328,69 @@ export const setupEngineMock = async (
       await fulfillJson(route, []);
       return;
     }
-    // query CRUD (save/load round-trip)
+    // query CRUD: the engine stamps ownership and timestamps on the query
     if (path === 'pure/v1/query' && request.method() === 'POST') {
-      const query = JSON.parse(request.postData() ?? '{}') as { id: string };
+      const now = Date.now();
+      const query: StoredQuery = {
+        ...(JSON.parse(request.postData() ?? '{}') as StoredQuery),
+        owner: TEST_DATA__CurrentUser,
+        createdAt: now,
+        lastUpdatedAt: now,
+      };
       savedQueries.set(query.id, query);
       await fulfillJson(route, query);
       return;
     }
-    if (path.startsWith('pure/v1/query/')) {
-      const queryId = path.substring('pure/v1/query/'.length);
+    // earlier revisions, or just the one asked for by `?version=`
+    const historyMatch = /^pure\/v1\/query\/(?<id>[^/]+)\/history$/.exec(path);
+    if (historyMatch?.groups?.id && request.method() === 'GET') {
+      const queryId = decodeURIComponent(historyMatch.groups.id);
+      const version = new URL(request.url()).searchParams.get('version');
+      const revisions = queryRevisions.get(queryId) ?? [];
+      await fulfillJson(
+        route,
+        version === null
+          ? revisions
+          : revisions.filter((revision) => revision.version === version),
+      );
+      return;
+    }
+    const queryMatch = /^pure\/v1\/query\/(?<id>[^/]+)$/.exec(path);
+    if (
+      queryMatch?.groups?.id &&
+      ['GET', 'PUT', 'DELETE'].includes(request.method())
+    ) {
+      const queryId = decodeURIComponent(queryMatch.groups.id);
       const query = savedQueries.get(queryId);
-      if (request.method() === 'GET' && query) {
+      if (!query) {
+        await queryNotFound(route, queryId);
+        return;
+      }
+      if (request.method() === 'GET') {
         await fulfillJson(route, query);
         return;
       }
       if (request.method() === 'PUT') {
-        const updated = JSON.parse(request.postData() ?? '{}') as {
-          id: string;
+        const update = JSON.parse(request.postData() ?? '{}') as StoredQuery;
+        captured.updatedQueries.push(update);
+        const revisions = queryRevisions.get(queryId) ?? [];
+        revisions.push({ ...query, version: String(revisions.length + 1) });
+        queryRevisions.set(queryId, revisions);
+        const updated: StoredQuery = {
+          ...update,
+          owner: query.owner,
+          createdAt: query.createdAt,
+          lastUpdatedAt: Date.now(),
         };
         savedQueries.set(queryId, updated);
         await fulfillJson(route, updated);
+        return;
+      }
+      if (request.method() === 'DELETE') {
+        captured.deletedQueryIds.push(queryId);
+        savedQueries.delete(queryId);
+        queryRevisions.delete(queryId);
+        await fulfillJson(route, query);
         return;
       }
     }
