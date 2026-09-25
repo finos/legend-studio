@@ -29,6 +29,11 @@ export class V1_RawPrimitiveInstanceValue
   readonly multiplicity = V1_Multiplicity.ONE;
   type!: string;
   value?: string | number | boolean | undefined;
+  /**
+   * Only meaningful when `type` is `String`: whether the literal was authored as a multi-line (`'''...'''`) block.
+   * See https://github.com/finos/legend-engine/pull/4998
+   */
+  multiLine = false;
 
   get hashCode(): string {
     return hashArray([

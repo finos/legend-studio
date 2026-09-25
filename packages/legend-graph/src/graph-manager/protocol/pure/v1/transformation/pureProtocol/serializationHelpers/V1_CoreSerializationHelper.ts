@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import { primitive, createModelSchema, optional, deserialize } from 'serializr';
+import {
+  primitive,
+  createModelSchema,
+  custom,
+  optional,
+  deserialize,
+} from 'serializr';
 import {
   SerializationFactory,
+  isPlainObject,
   isString,
   optionalCustomUsingModelSchema,
   usingModelSchema,
@@ -92,5 +99,23 @@ export const V1_tagPtrModelSchema = createModelSchema(V1_TagPtr, {
 
 export const V1_taggedValueModelSchema = createModelSchema(V1_TaggedValue, {
   tag: usingModelSchema(V1_tagPtrModelSchema),
-  value: primitive(),
+  /**
+   * @backwardCompatibility
+   * This used to always be a plain JSON string, it is now an object when the value was authored as a
+   * multi-line (`'''...'''`) block.
+   * See https://github.com/finos/legend-engine/pull/5008
+   */
+  value: custom(
+    (value: string, _key, taggedValue: V1_TaggedValue) =>
+      taggedValue.multiLine
+        ? { _type: 'string', multiLine: true, value }
+        : value,
+    (val, context) => {
+      if (isPlainObject(val)) {
+        (context.target as V1_TaggedValue).multiLine = val.multiLine === true;
+        return val.value ?? '';
+      }
+      return val;
+    },
+  ),
 });

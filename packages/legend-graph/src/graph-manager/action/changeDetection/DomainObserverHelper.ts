@@ -170,6 +170,7 @@ export const observe_TaggedValue = skipObserved(
   (metamodel: TaggedValue): TaggedValue => {
     makeObservable(metamodel, {
       value: observable,
+      multiLine: observable,
       hashCode: computed,
     });
 

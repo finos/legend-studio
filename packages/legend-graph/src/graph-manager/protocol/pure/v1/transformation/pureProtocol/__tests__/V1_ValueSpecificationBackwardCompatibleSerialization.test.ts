@@ -45,6 +45,63 @@ const cases: TestCase[] = [
     },
   ],
   [
+    'Legacy format of multi-line CString',
+    {
+      _type: 'string',
+      multiLine: true,
+      multiplicity: {
+        lowerBound: 1,
+        upperBound: 1,
+      },
+      values: ['line one\nline two'],
+    },
+    {
+      _type: 'string',
+      multiLine: true,
+      value: 'line one\nline two',
+    },
+  ],
+  [
+    'Multi-line CString',
+    {
+      _type: 'string',
+      multiLine: true,
+      value: 'line one\nline two',
+    },
+    {
+      _type: 'string',
+      multiLine: true,
+      value: 'line one\nline two',
+    },
+  ],
+  [
+    'Single-line CString does not emit the multi-line flag',
+    {
+      _type: 'string',
+      multiLine: false,
+      value: 'hallo',
+    },
+    {
+      _type: 'string',
+      value: 'hallo',
+    },
+  ],
+  [
+    'Empty CString with multiplicity of one is converted to an empty string',
+    {
+      _type: 'string',
+      multiplicity: {
+        lowerBound: 0,
+        upperBound: 1,
+      },
+      values: [],
+    },
+    {
+      _type: 'string',
+      value: '',
+    },
+  ],
+  [
     'Legacy format of CBoolean',
     {
       _type: 'boolean',
