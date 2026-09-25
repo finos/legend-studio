@@ -1,5 +1,59 @@
 # @finos/legend-application-studio
 
+## 28.21.44
+
+### Patch Changes
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enrich Legend Studio `LegendSourceInfo` payloads so downstream telemetry can join workspace-edit, project-view, and GAV-view traffic:
+
+  - `WorkspaceProjectQuerySDLC` (from `StandardEditorMode.getSourceInfo`) now includes `patchReleaseVersionId` when the workspace is on a patch branch, letting dashboards separate patch-workspace activity from mainline-workspace activity.
+  - `LegendProjectIdSourceInfo` (from `ProjectViewerEditorMode.getSourceInfo`, project-id branch) now optionally carries `groupId` / `artifactId` (from the project configuration) and `versionId` (from the pinned version or revision the viewer is showing). This means project-id-URL viewer traffic can be correlated with GAV-URL viewer traffic on the same project, and revision / version viewing can be sliced without inferring from the URL.
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Emit `application.extension-page.access` telemetry when a route contributed by an application plugin (via `getExtraApplicationPageEntries`) is mounted, and `application.route.not-found` when the fallback 404 page is shown in Legend Studio. Extension pages are wrapped in a shared `ExtensionPageBoundary` from `@finos/legend-application` so every host app gets consistent visibility into which plugin-registered pages are visited (by `key` and `pattern`) without each extension having to opt in to telemetry itself.
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix bugs in `LegendSourceInfo` discriminators and Legend Studio source info emission:
+
+  - `LegendGAVSourceInfo` and `LegendProjectIdSourceInfo` declared a `type` field for the source-type discriminator, but the base `LegendSourceInfo` uses `sourceType` and runtime call sites populate `sourceType`. The typed `type` field was dead. Both are now correctly declared as `sourceType`, matching the wire payload dashboards receive.
+  - `StandardEditorMode.getSourceInfo()` (`WorkspaceProjectQuerySDLC`) used the field name `WorkspaceType` (capitalized) and never populated the `sourceType` discriminator at runtime. The field is now `workspaceType` (matching every other SDLC consumer), and `sourceType: LegendStudioSourceType.PROJECT_WORKSPACE` is set on the returned payload so telemetry consumers can reliably discriminate workspace-edit events from project-view / GAV-view / showcase events.
+
+- [#5548](https://github.com/finos/legend-studio/pull/5548) [`059df5f`](https://github.com/finos/legend-studio/commit/059df5f3ef46a2290c3ab58c5bc2a58af1ed145b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Remove the unused Lakehouse deploy paths from the ingest-definition and data-product editors.
+
+  - `IngestDefinitionEditorState.deploy` / `init_with_deploy` and `DataProductEditorState.deploy` are removed, along with their supporting state (`deploymentState`, `validateAndDeployResponse` / `setValidateAndDeployResponse`, `deploymentResponse` computed, `ingestionManager` getter, `validForDeployment`, `validationMessage` / `deployValidationMessage`, `appDirDeployment`, `associatedIngest`, `deployResponse` / `setDeployResponse`) and the `DataProductDeploymentResponseModal` UI in `DataProductEditor`.
+  - Removes the four telemetry events these paths emitted: `editor.ingestion.deployment.success.urn`, `editor.ingestion.deployment.failure`, `editor.data-product.deployment.success`, `editor.data-product.deployment.failure` (and their `logEvent_LakehouseDeployIngest` / `logEvent_LakehouseDeployIngestFailure` / `logEvent_LakehouseDeployDataProduct` / `logEvent_LakehouseDeployDataProductFailure` helpers on `LegendStudioTelemetryHelper`).
+  - `deployOnOpen` state, the `generateUrlToDeployOnOpen` URL helper, and the `EditorInitialConfiguration` deploy-on-open flag are intentionally kept so the editor-config surface is untouched; they no longer trigger anything today.
+
+- [#5543](https://github.com/finos/legend-studio/pull/5543) [`6c16fed`](https://github.com/finos/legend-studio/commit/6c16fedfed805de4b103e1852c697839b0b9eb2c) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add an optional `useCookieAuthOnly` flag to `SDLCServerClientConfig` (exposed via Studio's `sdlc.useCookieAuthOnly` config field), mirroring the existing `engine.useCookieAuthOnly` flag. Some SDLC deployments authenticate via a session cookie and their filter chain does not support the CORS preflight triggered by an `Authorization: Bearer` header. When set to `true`, the SDLC client omits the Authorization header entirely and relies solely on the session cookie. Defaults to `false`, which preserves the existing Bearer-header behavior for all deployments that don't set this flag.
+
+- [#5548](https://github.com/finos/legend-studio/pull/5548) [`059df5f`](https://github.com/finos/legend-studio/commit/059df5f3ef46a2290c3ab58c5bc2a58af1ed145b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Expand Showcase manager telemetry so the funnel is measurable end-to-end.
+
+  - `showcase.manager.launch` and `showcase.manager.showcase.project.launch` now carry an `entryPoint` (activity bar vs. workspace-setup card for the manager; explorer / search-showcase-match / search-code-match / deep-link for the project launch). The launch event also now includes `title`, `isDevelopment`, and (for search-code-match) the `lineNumber` the user landed on.
+  - New `showcase.viewer.close` event with `showcasePath` and `dwellMs` — pairs with `showcase.manager.showcase.project.launch` / `showcase.viewer.launch` so we can measure per-showcase engagement.
+  - New `showcase.manager.search.completed` event with `resultCount`, `showcaseMatchCount`, `textMatchCount`, `durationMs`, and `hadResults` — enables zero-result-rate and search-latency dashboards.
+  - `showcase.viewer.launch` is now actually fired (from the deep-link `/showcase/:path` route in `ShowcaseViewerStore`); previously the viewer store was misfiring the manager launch event, making the two paths indistinguishable.
+  - Split the single `showcase.manager.failure` generic bucket into three specific events — `showcase.manager.init.failure`, `showcase.manager.open.failure` (carries `showcasePath`), and `showcase.manager.search.failure` (carries `searchText`).
+
+- [#5548](https://github.com/finos/legend-studio/pull/5548) [`059df5f`](https://github.com/finos/legend-studio/commit/059df5f3ef46a2290c3ab58c5bc2a58af1ed145b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a "Was this helpful?" thumbs-up / thumbs-down feedback widget to the Legend Studio showcase viewer.
+
+  The widget renders in two places: the deep-link viewer's status bar (`/showcase/:path`) and the assistant panel's in-panel showcase viewer. Each vote emits a `showcase.viewer.feedback.submit` telemetry event carrying `showcasePath`, `title?`, `vote` (`up` / `down`), and the `surface` the vote came from (`deep-link-viewer` or `assistant-panel`). After voting, the widget briefly shows a "Thanks for the feedback!" acknowledgement and then unmounts. The user's vote is cached in `UserDataService` (localStorage, capped at 200 entries) so the widget is suppressed on subsequent visits to the same showcase — telemetry remains the source of truth for aggregate analysis and there is no backend write today.
+
+  Also exposes `ThumbsUpIcon` / `ThumbsDownIcon` from `@finos/legend-art`.
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Thread `LegendSourceInfo` (workspace / project-viewer / GAV-viewer / showcase) into the remaining Legend Studio telemetry events so downstream analytics can slice every editor-context event by where it happened.
+
+  All helper methods gain a trailing optional `sourceInfo?: LegendSourceInfo` parameter (non-breaking), and every editor-context call site now passes `editorStore.editorMode.getSourceInfo()`:
+
+  - `editor.compilation.compile-graph.launch` / `editor.form-mode.compilation.success`
+  - `editor.compilation.compile-text.launch` / `editor.text-mode.compilation.success`
+  - `editor.test.test-data-generation.launch` / `editor.test.test-data-generation.success` (both direct + seed-data variants)
+  - `graph-manager.initialize-graph.success` — from the workspace editor, the project viewer, and the showcase viewer
+  - `editor.service-editor.legendai-suggest.launch` / `.apply` / `.discard` / `.failure`
+  - `editor.dataspace.legendai-suggest.launch` / `.apply` / `.discard` / `.failure`
+  - `editor.data-product.legendai-suggest.launch` / `.apply` / `.discard` / `.failure`
+
+  Virtual assistant and showcase manager events intentionally do not attach `sourceInfo` because they can fire outside any editor context (workspace setup page, home, viewer routes, etc.). Lakehouse deploy and dev-metadata push already carried `sourceInfo` and are unchanged.
+
+- [#5549](https://github.com/finos/legend-studio/pull/5549) [`d8c44ce`](https://github.com/finos/legend-studio/commit/d8c44cea8c3089330cc58db7a42730add381740d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `queryClientName` to `ServerClientConfig`/`V1_EngineServerClient`: when set, it's attached as a `client_name` query parameter on requests made against `queryBaseUrl` (not `baseUrl`), letting a deployment select a specific pac4j client on the query-server (e.g. `onegsauthaws`) without affecting main engine calls. Wired through each app's config (`engine.queryClientName`, resolved to `engineQueryClientName`) and every call site that builds `clientConfig` for `graphManager.initialize()`/`V1_RemoteEngine` across Query, DataCube, and Studio (including its `legend-extension-dsl-data-space-studio` and `legend-extension-dsl-service` call sites). Not added to Marketplace — it never calls a query-server endpoint today, so `queryBaseUrl` there is already unused.
+
 ## 28.21.43
 
 ### Patch Changes

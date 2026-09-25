@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.7.1
+
+### Patch Changes
+
+- [#5546](https://github.com/finos/legend-studio/pull/5546) [`5c7dd26`](https://github.com/finos/legend-studio/commit/5c7dd26cdd2093a857262f999eb97e7621c15758) ([@bojja-gs](https://github.com/bojja-gs)) - Allow the engine client to name the server-side authentication mechanism, through an optional `clientName` on its config that is sent as the `client_name` parameter on the two requests that read a user's own details: the current user lookup and the terminal lookup. Compilation, execution and every other engine request are unchanged, and the name is omitted when nothing is configured. The marketplace reads it from `engine.clientName` and resolves the signed-in user through its shared engine client rather than the standalone `getCurrentUserIDFromEngineServer` helper, so the name reaches that lookup; the lookup consequently authenticates the same way as the rest of the marketplace's engine traffic instead of always falling back to the session cookie. Studio and Query keep the standalone helper. Without a named mechanism the server applies its own default, which is not available to every user.
+
+- [#5549](https://github.com/finos/legend-studio/pull/5549) [`d8c44ce`](https://github.com/finos/legend-studio/commit/d8c44cea8c3089330cc58db7a42730add381740d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `queryClientName` to `ServerClientConfig`/`V1_EngineServerClient`: when set, it's attached as a `client_name` query parameter on requests made against `queryBaseUrl` (not `baseUrl`), letting a deployment select a specific pac4j client on the query-server (e.g. `onegsauthaws`) without affecting main engine calls. Wired through each app's config (`engine.queryClientName`, resolved to `engineQueryClientName`) and every call site that builds `clientConfig` for `graphManager.initialize()`/`V1_RemoteEngine` across Query, DataCube, and Studio (including its `legend-extension-dsl-data-space-studio` and `legend-extension-dsl-service` call sites). Not added to Marketplace — it never calls a query-server endpoint today, so `queryBaseUrl` there is already unused.
+
 ## 32.7.0
 
 ### Minor Changes

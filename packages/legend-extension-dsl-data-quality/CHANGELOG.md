@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-quality
 
+## 2.1.83
+
+### Patch Changes
+
+- [#5544](https://github.com/finos/legend-studio/pull/5544) [`9d74066`](https://github.com/finos/legend-studio/commit/9d74066d8df963ee0b40f6e5f6661fb7b77533d1) ([@dramala](https://github.com/dramala)) - Support the new `additionalColumnsToPersist` field on `DataQualityRelationComparison`: columns are persisted in the reconciliation output with `_SOURCE`/`_TARGET` suffixes and are excluded from the hash, keys, and join. Adds a matching multi-select in the Relation Comparison editor.
+
 ## 2.1.82
 
 ## 2.1.81

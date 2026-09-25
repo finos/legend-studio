@@ -1,5 +1,11 @@
 # @finos/legend-shared
 
+## 11.0.30
+
+### Patch Changes
+
+- [#5549](https://github.com/finos/legend-studio/pull/5549) [`d8c44ce`](https://github.com/finos/legend-studio/commit/d8c44cea8c3089330cc58db7a42730add381740d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `queryClientName` to `ServerClientConfig`/`V1_EngineServerClient`: when set, it's attached as a `client_name` query parameter on requests made against `queryBaseUrl` (not `baseUrl`), letting a deployment select a specific pac4j client on the query-server (e.g. `onegsauthaws`) without affecting main engine calls. Wired through each app's config (`engine.queryClientName`, resolved to `engineQueryClientName`) and every call site that builds `clientConfig` for `graphManager.initialize()`/`V1_RemoteEngine` across Query, DataCube, and Studio (including its `legend-extension-dsl-data-space-studio` and `legend-extension-dsl-service` call sites). Not added to Marketplace — it never calls a query-server endpoint today, so `queryBaseUrl` there is already unused.
+
 ## 11.0.29
 
 ### Patch Changes

@@ -1,5 +1,28 @@
 # @finos/legend-application-marketplace
 
+## 0.5.0
+
+### Minor Changes
+
+- [#5551](https://github.com/finos/legend-studio/pull/5551) [`00766a5`](https://github.com/finos/legend-studio/commit/00766a5ef9815b7b43176d259939fde64671b749) ([@bojja-gs](https://github.com/bojja-gs)) - Expand telemetry coverage across the Lakehouse Entitlements flow.
+
+  - New `marketplace.click.entitlements.tab` event when switching between the My Approvals / My Pending Requests / My Closed Requests tabs.
+  - New `marketplace.toggle.show-requests-for-others` event when toggling the "Show my requests for others" switch on the pending and closed requests dashboards (includes which dashboard).
+  - New `marketplace.action.single-task` event for the single-task approve/deny buttons on the contract task, permit, and workflow data-access-request pages (previously only the bulk approve/deny action on the My Approvals dashboard was tracked).
+  - New shared `marketplace.escalate.data-access-request`, `marketplace.invalidate.data-access-request` (close/delete request), `marketplace.refresh.data-access-request`, and `marketplace.copy.data-access-request-field` events on `DataAccessRequestViewer`, covering the Escalate, Close/Invalidate, Refresh, and Copy (task link, eTask link, request ID, missing-ingest item) buttons. These are shared by the Marketplace entitlements dashboards and the Lakehouse Admin contracts dashboard.
+
+### Patch Changes
+
+- [#5541](https://github.com/finos/legend-studio/pull/5541) [`c1442dc`](https://github.com/finos/legend-studio/commit/c1442dcacbc3f15c2aeac1563097a929fd810aa3) ([@jackp5150](https://github.com/jackp5150)) - When there is one execution context, the dropdown text defaults to Run Query. When there are multiple, the dropdown is still present.
+  The play button now keys to launch Legend Query under the chosen execution context.
+  The View Project dropdown directs to the SDLC Legend Studio project.
+
+- [#5546](https://github.com/finos/legend-studio/pull/5546) [`5c7dd26`](https://github.com/finos/legend-studio/commit/5c7dd26cdd2093a857262f999eb97e7621c15758) ([@bojja-gs](https://github.com/bojja-gs)) - Allow the engine client to name the server-side authentication mechanism, through an optional `clientName` on its config that is sent as the `client_name` parameter on the two requests that read a user's own details: the current user lookup and the terminal lookup. Compilation, execution and every other engine request are unchanged, and the name is omitted when nothing is configured. The marketplace reads it from `engine.clientName` and resolves the signed-in user through its shared engine client rather than the standalone `getCurrentUserIDFromEngineServer` helper, so the name reaches that lookup; the lookup consequently authenticates the same way as the rest of the marketplace's engine traffic instead of always falling back to the session cookie. Studio and Query keep the standalone helper. Without a named mechanism the server applies its own default, which is not available to every user.
+
+- [#5542](https://github.com/finos/legend-studio/pull/5542) [`8d8cf1e`](https://github.com/finos/legend-studio/commit/8d8cf1edc623669a797b6d11fab5bb84e3cd2b74) ([@jackp5150](https://github.com/jackp5150)) - Adds a new single collapse class 'CollapseState' to provide apis to wiki sections to toggle collapsing. Added a component to bundle all collapsing functionality into the chevron icon.
+
+  Deduplicate dataspace functions by having DataSpaceViewerState extend BaseViewerState.
+
 ## 0.4.7
 
 ### Patch Changes

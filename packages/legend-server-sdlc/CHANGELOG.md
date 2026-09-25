@@ -1,5 +1,11 @@
 # @finos/legend-server-sdlc
 
+## 5.5.0
+
+### Minor Changes
+
+- [#5543](https://github.com/finos/legend-studio/pull/5543) [`6c16fed`](https://github.com/finos/legend-studio/commit/6c16fedfed805de4b103e1852c697839b0b9eb2c) ([@gs-gunjan](https://github.com/gs-gunjan)) - Add an optional `useCookieAuthOnly` flag to `SDLCServerClientConfig` (exposed via Studio's `sdlc.useCookieAuthOnly` config field), mirroring the existing `engine.useCookieAuthOnly` flag. Some SDLC deployments authenticate via a session cookie and their filter chain does not support the CORS preflight triggered by an `Authorization: Bearer` header. When set to `true`, the SDLC client omits the Authorization header entirely and relies solely on the session cookie. Defaults to `false`, which preserves the existing Bearer-header behavior for all deployments that don't set this flag.
+
 ## 5.4.9
 
 ## 5.4.8
