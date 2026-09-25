@@ -15,7 +15,7 @@
  */
 
 import { describe, test, expect, jest } from '@jest/globals';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   TEST__provideMockLegendMarketplaceBaseStore,
   TEST__setUpMarketplaceLakehouse,
@@ -137,6 +137,64 @@ describe('LakehouseEntitlements - Environment Filtering', () => {
       expect(screen.queryByText('Prod PM task 2')).toBeNull();
       expect(screen.queryByText('Prod DO task 1')).toBeNull();
       expect(screen.queryByText('Prod DO task 2')).toBeNull();
+    });
+
+    test('search box narrows visible tasks across all grids', async () => {
+      await setupEntitlementsRenderTest('prod', 'pendingTasks');
+
+      await waitFor(() => {
+        screen.getByText('Prod PM task 1');
+        screen.getByText('Prod PM task 2');
+        screen.getByText('Prod DO task 1');
+        screen.getByText('Prod DO task 2');
+      });
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search all approvals...',
+      );
+      fireEvent.change(searchInput, { target: { value: 'Prod PM task 1' } });
+
+      await waitFor(() => {
+        screen.getByText('Prod PM task 1');
+        expect(screen.queryByText('Prod PM task 2')).toBeNull();
+        expect(screen.queryByText('Prod DO task 1')).toBeNull();
+        expect(screen.queryByText('Prod DO task 2')).toBeNull();
+      });
+    });
+
+    test('select-all only selects tasks visible after filtering, not hidden ones', async () => {
+      await setupEntitlementsRenderTest('prod', 'pendingTasks');
+
+      await waitFor(() => {
+        screen.getByText('Prod PM task 1');
+        screen.getByText('Prod PM task 2');
+      });
+
+      const searchInput = screen.getByPlaceholderText(
+        'Search all approvals...',
+      );
+      fireEvent.change(searchInput, { target: { value: 'Prod PM task 1' } });
+
+      await waitFor(() => {
+        screen.getByText('Prod PM task 1');
+        expect(screen.queryByText('Prod PM task 2')).toBeNull();
+      });
+
+      const pmContainer = screen
+        .getByText('Privilege Manager Approvals')
+        .closest(
+          '.marketplace-lakehouse-entitlements__pending-tasks__grid-container',
+        );
+      const headerCheckbox = within(pmContainer as HTMLElement).getAllByRole(
+        'checkbox',
+      )[0];
+
+      fireEvent.click(headerCheckbox as HTMLElement);
+
+      // Only the single visible (filtered-in) task should be selected, even
+      // though a second Privilege Manager task exists but is hidden by the
+      // active search filter.
+      await screen.findByRole('button', { name: 'Approve 1 tasks' });
     });
   });
 
