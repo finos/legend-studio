@@ -54,12 +54,21 @@
 
     &__action-btns {
       display: flex;
-      justify-content: end;
+      justify-content: space-between;
+      align-items: center;
       margin: 1rem;
 
-      button {
-        margin-left: 1rem;
+      &__buttons {
+        display: flex;
+
+        button {
+          margin-left: 1rem;
+        }
       }
+    }
+
+    &__search {
+      width: 20rem;
     }
 
     &__grids {

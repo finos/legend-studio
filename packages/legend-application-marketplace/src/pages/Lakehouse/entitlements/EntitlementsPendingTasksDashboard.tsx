@@ -22,6 +22,7 @@ import {
 } from '@finos/legend-graph';
 import {
   DataGrid,
+  type DataGridApi,
   type DataGridCellClickedEvent,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
@@ -38,10 +39,12 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  TextField,
   Tooltip,
 } from '@mui/material';
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -196,6 +199,40 @@ export const EntitlementsPendingTasksDashboard = observer(
       [dataOwnerTasks, privilegeManagerTasks, pendingTasks],
     );
     const loading = dashboardState.fetchingPendingTasksState.isInProgress;
+
+    const [searchText, setSearchText] = useState('');
+
+    const visiblePrivilegeManagerTaskIdsRef = useRef<Set<string>>(new Set());
+    const visibleDataOwnerTaskIdsRef = useRef<Set<string>>(new Set());
+    const visibleOtherTaskIdsRef = useRef<Set<string>>(new Set());
+
+    const computeVisibleTaskIds = (
+      api: DataGridApi<V1_PendingTaskRecord>,
+    ): Set<string> => {
+      const ids = new Set<string>();
+      api.forEachNodeAfterFilter((node) => {
+        if (node.data) {
+          ids.add(node.data.taskId);
+        }
+      });
+      return ids;
+    };
+
+    useEffect(() => {
+      visiblePrivilegeManagerTaskIdsRef.current = new Set(
+        privilegeManagerTasks.map((task) => task.taskId),
+      );
+    }, [privilegeManagerTasks]);
+    useEffect(() => {
+      visibleDataOwnerTaskIdsRef.current = new Set(
+        dataOwnerTasks.map((task) => task.taskId),
+      );
+    }, [dataOwnerTasks]);
+    useEffect(() => {
+      visibleOtherTaskIdsRef.current = new Set(
+        otherTasks.map((task) => task.taskId),
+      );
+    }, [otherTasks]);
 
     const marketplaceBaseStore = useLegendMarketplaceBaseStore();
     const [isBulkActionLoading, setIsBulkActionLoading] = useState(false);
@@ -396,26 +433,40 @@ export const EntitlementsPendingTasksDashboard = observer(
       (_props: {
         params: DataGridCustomHeaderProps<V1_PendingTaskRecord>;
         taskSet: V1_PendingTaskRecord[];
+        visibleTaskIdsRef: { current: Set<string> };
       }) => {
-        const { taskSet } = _props;
+        const { taskSet, visibleTaskIdsRef } = _props;
+        const visibleTasksAtRender = taskSet.filter((task) =>
+          visibleTaskIdsRef.current.has(task.taskId),
+        );
         const checked =
-          taskSet.length > 0 &&
-          taskSet.every((task) => selectedTaskIdsSet.has(task.taskId));
+          visibleTasksAtRender.length > 0 &&
+          visibleTasksAtRender.every((task) =>
+            selectedTaskIdsSet.has(task.taskId),
+          );
         const indeterminate =
-          taskSet.length > 0 &&
+          visibleTasksAtRender.length > 0 &&
           !checked &&
-          taskSet.some((task) => selectedTaskIdsSet.has(task.taskId));
+          visibleTasksAtRender.some((task) =>
+            selectedTaskIdsSet.has(task.taskId),
+          );
 
         const handleChange = (_e: ChangeEvent<HTMLInputElement>) => {
-          if (!checked || indeterminate) {
-            const newSet = new Set<string>(selectedTaskIdsSet);
-            taskSet.forEach((task) => newSet.add(task.taskId));
-            dashboardState.setSelectedTaskIds(newSet);
+          const visibleTasksNow = taskSet.filter((task) =>
+            visibleTaskIdsRef.current.has(task.taskId),
+          );
+          const isCheckedNow =
+            visibleTasksNow.length > 0 &&
+            visibleTasksNow.every((task) =>
+              selectedTaskIdsSet.has(task.taskId),
+            );
+          const newSet = new Set<string>(selectedTaskIdsSet);
+          if (!isCheckedNow) {
+            visibleTasksNow.forEach((task) => newSet.add(task.taskId));
           } else {
-            const newSet = new Set<string>(selectedTaskIdsSet);
-            taskSet.forEach((task) => newSet.delete(task.taskId));
-            dashboardState.setSelectedTaskIds(newSet);
+            visibleTasksNow.forEach((task) => newSet.delete(task.taskId));
           }
+          dashboardState.setSelectedTaskIds(newSet);
         };
 
         return (
@@ -424,7 +475,7 @@ export const EntitlementsPendingTasksDashboard = observer(
             checked={checked}
             indeterminate={indeterminate}
             onChange={handleChange}
-            disabled={taskSet.length === 0}
+            disabled={visibleTasksAtRender.length === 0}
             sx={{ padding: 0 }}
           />
         );
@@ -467,6 +518,8 @@ export const EntitlementsPendingTasksDashboard = observer(
           colId: 'consumerType',
           headerName: 'Consumer Type',
           flex: 1,
+          filter: 'agTextColumnFilter',
+          floatingFilter: true,
           valueGetter: (params) => {
             const contractId = params.data?.accessRequestId;
             const consumer = pendingTaskContracts.find(
@@ -521,6 +574,8 @@ export const EntitlementsPendingTasksDashboard = observer(
           colId: 'targetUser',
           headerName: 'Target User',
           flex: 1,
+          filter: 'agTextColumnFilter',
+          floatingFilter: true,
           valueGetter: (params) => {
             if (params.data?.consumer) {
               return params.data.consumer;
@@ -587,6 +642,8 @@ export const EntitlementsPendingTasksDashboard = observer(
           colId: 'requester',
           headerName: 'Requester',
           flex: 1,
+          filter: 'agTextColumnFilter',
+          floatingFilter: true,
           valueGetter: (params) => {
             const contractId = params.data?.accessRequestId;
             const requester = pendingTaskContracts.find(
@@ -621,8 +678,11 @@ export const EntitlementsPendingTasksDashboard = observer(
           minWidth: 50,
           sortable: true,
           resizable: true,
+          colId: 'targetDataProduct',
           headerName: 'Target Data Product',
           flex: 1,
+          filter: 'agTextColumnFilter',
+          floatingFilter: true,
           valueGetter: (params) => {
             const contractId = params.data?.accessRequestId;
             const contract = pendingTaskContracts.find(
@@ -635,8 +695,11 @@ export const EntitlementsPendingTasksDashboard = observer(
           minWidth: 50,
           sortable: true,
           resizable: true,
+          colId: 'targetAccessPointGroup',
           headerName: 'Target Access Point Group',
           flex: 1,
+          filter: 'agTextColumnFilter',
+          floatingFilter: true,
           valueGetter: (params) => {
             const contractId = params.data?.accessRequestId;
             const contract = pendingTaskContracts.find(
@@ -653,8 +716,11 @@ export const EntitlementsPendingTasksDashboard = observer(
           minWidth: 50,
           sortable: true,
           resizable: true,
+          colId: 'businessJustification',
           headerName: 'Business Justification',
           flex: 2,
+          filter: 'agTextColumnFilter',
+          floatingFilter: true,
           valueGetter: (params) => {
             const contractId = params.data?.accessRequestId;
             const businessJustification = pendingTaskContracts.find(
@@ -696,6 +762,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               <CustomSelectionHeaderRenderer
                 params={params}
                 taskSet={privilegeManagerTasks}
+                visibleTaskIdsRef={visiblePrivilegeManagerTaskIdsRef}
               />
             ),
             pinned: 'left',
@@ -724,6 +791,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               <CustomSelectionHeaderRenderer
                 params={params}
                 taskSet={dataOwnerTasks}
+                visibleTaskIdsRef={visibleDataOwnerTaskIdsRef}
               />
             ),
             pinned: 'left',
@@ -752,6 +820,7 @@ export const EntitlementsPendingTasksDashboard = observer(
               <CustomSelectionHeaderRenderer
                 params={params}
                 taskSet={otherTasks}
+                visibleTaskIdsRef={visibleOtherTaskIdsRef}
               />
             ),
             pinned: 'left',
@@ -770,26 +839,38 @@ export const EntitlementsPendingTasksDashboard = observer(
       <>
         <Box className="marketplace-lakehouse-entitlements__pending-tasks">
           <Box className="marketplace-lakehouse-entitlements__pending-tasks__action-btns">
-            <Button
-              variant="contained"
-              color="success"
-              disabled={
-                !selectedTaskIdsSet.size || loading || isBulkActionLoading
-              }
-              onClick={() => handleBulkActionClick(TaskApprovalAction.APPROVE)}
-            >
-              Approve {selectedTaskIdsSet.size} tasks
-            </Button>
-            <Button
-              variant="contained"
-              color="error"
-              disabled={
-                !selectedTaskIdsSet.size || loading || isBulkActionLoading
-              }
-              onClick={() => handleBulkActionClick(TaskApprovalAction.DENY)}
-            >
-              Deny {selectedTaskIdsSet.size} tasks
-            </Button>
+            <TextField
+              className="marketplace-lakehouse-entitlements__pending-tasks__search"
+              size="small"
+              variant="outlined"
+              placeholder="Search all approvals..."
+              value={searchText}
+              onChange={(event) => setSearchText(event.target.value)}
+            />
+            <Box className="marketplace-lakehouse-entitlements__pending-tasks__action-btns__buttons">
+              <Button
+                variant="contained"
+                color="success"
+                disabled={
+                  !selectedTaskIdsSet.size || loading || isBulkActionLoading
+                }
+                onClick={() =>
+                  handleBulkActionClick(TaskApprovalAction.APPROVE)
+                }
+              >
+                Approve {selectedTaskIdsSet.size} tasks
+              </Button>
+              <Button
+                variant="contained"
+                color="error"
+                disabled={
+                  !selectedTaskIdsSet.size || loading || isBulkActionLoading
+                }
+                onClick={() => handleBulkActionClick(TaskApprovalAction.DENY)}
+              >
+                Deny {selectedTaskIdsSet.size} tasks
+              </Button>
+            </Box>
           </Box>
           <Box className="marketplace-lakehouse-entitlements__pending-tasks__grids">
             <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid-container">
@@ -811,8 +892,13 @@ export const EntitlementsPendingTasksDashboard = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                 <DataGrid
                   rowData={privilegeManagerTasks}
+                  quickFilterText={searchText}
                   onRowDataUpdated={(params) => {
                     params.api.refreshCells({ force: true });
+                  }}
+                  onModelUpdated={(params) => {
+                    visiblePrivilegeManagerTaskIdsRef.current =
+                      computeVisibleTaskIds(params.api);
                   }}
                   suppressFieldDotNotation={true}
                   suppressContextMenu={false}
@@ -846,8 +932,14 @@ export const EntitlementsPendingTasksDashboard = observer(
               <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                 <DataGrid
                   rowData={dataOwnerTasks}
+                  quickFilterText={searchText}
                   onRowDataUpdated={(params) => {
                     params.api.refreshCells({ force: true });
+                  }}
+                  onModelUpdated={(params) => {
+                    visibleDataOwnerTaskIdsRef.current = computeVisibleTaskIds(
+                      params.api,
+                    );
                   }}
                   suppressFieldDotNotation={true}
                   suppressContextMenu={false}
@@ -870,8 +962,14 @@ export const EntitlementsPendingTasksDashboard = observer(
                 <Box className="marketplace-lakehouse-entitlements__pending-tasks__grid ag-theme-balham">
                   <DataGrid
                     rowData={otherTasks}
+                    quickFilterText={searchText}
                     onRowDataUpdated={(params) => {
                       params.api.refreshCells({ force: true });
+                    }}
+                    onModelUpdated={(params) => {
+                      visibleOtherTaskIdsRef.current = computeVisibleTaskIds(
+                        params.api,
+                      );
                     }}
                     suppressFieldDotNotation={true}
                     suppressContextMenu={false}
