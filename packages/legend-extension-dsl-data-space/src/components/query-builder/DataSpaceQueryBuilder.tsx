@@ -38,8 +38,6 @@ import {
   resolveUsableDataSpaceClasses,
 } from '../../stores/query-builder/DataSpaceQueryBuilderState.js';
 import {
-  buildRuntimeValueOption,
-  getRuntimeOptionFormatter,
   QueryBuilderClassSelector,
   type EntityWithOriginOption,
 } from '@finos/legend-query-builder';
@@ -99,7 +97,9 @@ const resolveExecutionContextRuntimes = (
     const executionContext = Array.from(
       queryBuilderState.dataSpaceAnalysisResult.executionContextsIndex.values(),
     ).find((e) => e.mapping.path === currentMapping.path);
-    return guaranteeNonNullable(executionContext).compatibleRuntimes;
+    if (executionContext) {
+      return executionContext.compatibleRuntimes;
+    }
   }
   return getMappingCompatibleRuntimes(
     currentMapping,
@@ -212,19 +212,27 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
     };
 
     // runtime
+    const buildRuntimePointerOption = (
+      runtime: PackageableRuntime,
+    ): { label: string; value: Runtime } => ({
+      label: runtime.name,
+      value: new RuntimePointer(
+        PackageableElementExplicitReference.create(runtime),
+      ),
+    });
     const runtimeOptions = resolveExecutionContextRuntimes(queryBuilderState)
-      .map(
-        (rt) =>
-          new RuntimePointer(PackageableElementExplicitReference.create(rt)),
-      )
-      .map(buildRuntimeValueOption)
+      .map(buildRuntimePointerOption)
       .sort(compareLabelFn);
-    const selectedRuntimeOption = queryBuilderState.executionContextState
-      .runtimeValue
-      ? buildRuntimeValueOption(
-          queryBuilderState.executionContextState.runtimeValue,
-        )
-      : null;
+    const selectedRuntimeOption =
+      queryBuilderState.executionContextState.runtimeValue instanceof
+      RuntimePointer
+        ? {
+            label:
+              queryBuilderState.executionContextState.runtimeValue
+                .packageableRuntime.value.name,
+            value: queryBuilderState.executionContextState.runtimeValue,
+          }
+        : null;
     const changeRuntime = (option: { value: Runtime }): void => {
       if (
         option.value === queryBuilderState.executionContextState.runtimeValue
@@ -282,22 +290,24 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               title="Show Settings..."
               content={
                 <MenuContent>
-                  <MenuContentItem
-                    onClick={(): void =>
-                      queryBuilderState.setShowRuntimeSelector(
-                        !queryBuilderState.showRuntimeSelector,
-                      )
-                    }
-                  >
-                    <MenuContentItemIcon>
-                      {queryBuilderState.showRuntimeSelector ? (
-                        <CheckIcon />
-                      ) : null}
-                    </MenuContentItemIcon>
-                    <MenuContentItemLabel>
-                      Show Runtime Selector
-                    </MenuContentItemLabel>
-                  </MenuContentItem>
+                  {!queryBuilderState.executionContext.defaultRuntime && (
+                    <MenuContentItem
+                      onClick={(): void =>
+                        queryBuilderState.setShowRuntimeSelector(
+                          !queryBuilderState.showRuntimeSelector,
+                        )
+                      }
+                    >
+                      <MenuContentItemIcon>
+                        {queryBuilderState.showRuntimeSelector ? (
+                          <CheckIcon />
+                        ) : null}
+                      </MenuContentItemIcon>
+                      <MenuContentItemLabel>
+                        Show Runtime Selector
+                      </MenuContentItemLabel>
+                    </MenuContentItem>
+                  )}
                 </MenuContent>
               }
               menuProps={{
@@ -310,48 +320,52 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
           </PanelHeaderActions>
         </PanelHeader>
         <div className="query-builder__setup__config-group__content">
-          <div className="query-builder__setup__config-group__item">
-            <label
-              className="btn--sm query-builder__setup__config-group__data-product"
-              title="data space"
-              htmlFor="query-builder__setup__data-space-selector"
-            >
-              Data Space
-            </label>
-            <CustomSelectorInput
-              inputId="query-builder__setup__data-space-selector"
-              className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-              options={allOptions}
-              isLoading={queryBuilderState.loadEntitiesState.isInProgress}
-              onChange={onDataSpaceOptionChange}
-              value={selectedDataSpaceOption}
-              placeholder="Search for data space..."
-              escapeClearsValue={true}
-              darkMode={
-                !applicationStore.layoutService
-                  .TEMPORARY__isLightColorThemeEnabled
-              }
-              formatOptionLabel={formatDataSpaceOptionLabel}
-            />
-            {queryBuilderState.isAdvancedDataSpaceSearchEnabled && (
-              <>
-                <button
-                  tabIndex={-1}
-                  className="query-builder__setup__data-space-searcher__btn btn--dark"
-                  onClick={openDataSpaceAdvancedSearch}
-                  title="Open advanced search for data space..."
-                >
-                  <SearchIcon />
-                </button>
-                {queryBuilderState.advancedSearchState && (
-                  <DataSpaceAdvancedSearchModal
-                    searchState={queryBuilderState.advancedSearchState}
-                    onClose={() => queryBuilderState.hideAdvancedSearchPanel()}
-                  />
-                )}
-              </>
-            )}
-          </div>
+          {!queryBuilderState.restrictToCurrentDataSpace && (
+            <div className="query-builder__setup__config-group__item">
+              <label
+                className="btn--sm query-builder__setup__config-group__data-product"
+                title="data space"
+                htmlFor="query-builder__setup__data-space-selector"
+              >
+                Data Space
+              </label>
+              <CustomSelectorInput
+                inputId="query-builder__setup__data-space-selector"
+                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                options={allOptions}
+                isLoading={queryBuilderState.loadEntitiesState.isInProgress}
+                onChange={onDataSpaceOptionChange}
+                value={selectedDataSpaceOption}
+                placeholder="Search for data space..."
+                escapeClearsValue={true}
+                darkMode={
+                  !applicationStore.layoutService
+                    .TEMPORARY__isLightColorThemeEnabled
+                }
+                formatOptionLabel={formatDataSpaceOptionLabel}
+              />
+              {queryBuilderState.isAdvancedDataSpaceSearchEnabled && (
+                <>
+                  <button
+                    tabIndex={-1}
+                    className="query-builder__setup__data-space-searcher__btn btn--dark"
+                    onClick={openDataSpaceAdvancedSearch}
+                    title="Open advanced search for data space..."
+                  >
+                    <SearchIcon />
+                  </button>
+                  {queryBuilderState.advancedSearchState && (
+                    <DataSpaceAdvancedSearchModal
+                      searchState={queryBuilderState.advancedSearchState}
+                      onClose={() =>
+                        queryBuilderState.hideAdvancedSearchPanel()
+                      }
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
           {Boolean(showExecutionContextOptions) && (
             <div className="query-builder__setup__config-group__item">
               <label
@@ -381,36 +395,38 @@ const DataSpaceQueryBuilderSetupPanelContent = observer(
               />
             </div>
           )}
-          {queryBuilderState.showRuntimeSelector && (
-            <div className="query-builder__setup__config-group__item">
-              <label
-                className="btn--sm query-builder__setup__config-group__item__label"
-                title="runtime"
-                htmlFor="query-builder__setup__runtime-selector"
-              >
-                Runtime
-              </label>
-              <CustomSelectorInput
-                inputId="query-builder__setup__runtime-selector"
-                className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
-                placeholder="Choose a runtime..."
-                noMatchMessage="No compatible runtime found for specified execution context"
-                options={runtimeOptions}
-                onChange={changeRuntime}
-                value={selectedRuntimeOption}
-                darkMode={
-                  !applicationStore.layoutService
-                    .TEMPORARY__isLightColorThemeEnabled
-                }
-                filterOption={runtimeFilterOption}
-                formatOptionLabel={getRuntimeOptionFormatter({
-                  darkMode:
+          {queryBuilderState.showRuntimeSelector &&
+            !queryBuilderState.executionContext.defaultRuntime && (
+              <div className="query-builder__setup__config-group__item">
+                <label
+                  className="btn--sm query-builder__setup__config-group__item__label"
+                  title="runtime"
+                  htmlFor="query-builder__setup__runtime-selector"
+                >
+                  Runtime
+                </label>
+                <CustomSelectorInput
+                  inputId="query-builder__setup__runtime-selector"
+                  className="panel__content__form__section__dropdown query-builder__setup__config-group__item__selector"
+                  placeholder={
+                    runtimeOptions.length === 0
+                      ? 'No compatible runtimes available'
+                      : 'Choose a runtime...'
+                  }
+                  noMatchMessage="No compatible runtime found for specified execution context"
+                  options={runtimeOptions}
+                  disabled={runtimeOptions.length < 1}
+                  onChange={changeRuntime}
+                  value={selectedRuntimeOption}
+                  hasError={runtimeOptions.length === 0}
+                  darkMode={
                     !applicationStore.layoutService
-                      .TEMPORARY__isLightColorThemeEnabled,
-                })}
-              />
-            </div>
-          )}
+                      .TEMPORARY__isLightColorThemeEnabled
+                  }
+                  filterOption={runtimeFilterOption}
+                />
+              </div>
+            )}
           <div className="query-builder__setup__config-group__item">
             <QueryBuilderClassSelector
               queryBuilderState={queryBuilderState}

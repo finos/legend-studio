@@ -37,8 +37,10 @@ import {
   type RawLambda,
   DataProduct,
   RuntimePointer,
+  PackageableElementExplicitReference,
   attachWithFromQuery,
   getMappingCompatibleClasses,
+  getMappingCompatibleRuntimes,
   Package,
   QueryDataSpaceExecutionContext,
   elementBelongsToPackage,
@@ -170,6 +172,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   dataSpace: DataSpace;
   executionContext!: DataSpaceExecutionContext;
   showRuntimeSelector = false;
+  restrictToCurrentDataSpace = false;
   isTemplateQueryDialogOpen = false;
   isLightGraphEnabled!: boolean;
   displayedTemplateQueries: DataSpaceExecutableAnalysisResult[] | undefined;
@@ -208,6 +211,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
     makeObservable(this, {
       executionContext: observable,
       showRuntimeSelector: observable,
+      restrictToCurrentDataSpace: observable,
       isTemplateQueryDialogOpen: observable,
       isLightGraphEnabled: observable,
       displayedTemplateQueries: observable,
@@ -216,6 +220,7 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
       selectedDataSpaceOption: computed,
       setExecutionContext: action,
       setShowRuntimeSelector: action,
+      setRestrictToCurrentDataSpace: action,
       setTemplateQueryDialogOpen: action,
       setIsLightGraphEnabled: action,
       intialize: flow,
@@ -313,9 +318,13 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   *loadEntities(): GeneratorFn<void> {
     this.loadEntitiesState.inProgress();
-    this.entities = this.graphManagerState.graph.allOwnElements
-      .filter(filterByType(this.getElementType()))
-      .map((element) => this.transformElement(element));
+    if (this.restrictToCurrentDataSpace) {
+      this.entities = [this.transformElement(this.dataSpace)];
+    } else {
+      this.entities = this.graphManagerState.graph.allOwnElements
+        .filter(filterByType(this.getElementType()))
+        .map((element) => this.transformElement(element));
+    }
     this.loadEntitiesState.complete();
   }
 
@@ -373,15 +382,38 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
   override setExecutionContextState(
     val: QueryBuilderExecutionContextState,
   ): void {
-    if (
-      val instanceof QueryBuilderEmbeddedFromExecutionContextState &&
-      val.mapping === undefined
-    ) {
-      const resolvedMapping = resolveExecutionContextMapping(
-        this.executionContext,
-      );
-      if (resolvedMapping) {
-        val.setMapping(resolvedMapping);
+    if (val instanceof QueryBuilderEmbeddedFromExecutionContextState) {
+      if (val.mapping === undefined) {
+        const resolvedMapping = resolveExecutionContextMapping(
+          this.executionContext,
+        );
+        if (resolvedMapping) {
+          val.setMapping(resolvedMapping);
+        }
+      }
+      if (val.runtimeValue === undefined) {
+        if (this.executionContext.defaultRuntime) {
+          val.setRuntimeValue(
+            new RuntimePointer(this.executionContext.defaultRuntime),
+          );
+        } else {
+          const mapping =
+            val.mapping ??
+            resolveExecutionContextMapping(this.executionContext);
+          const fallbackRuntime = mapping
+            ? getMappingCompatibleRuntimes(
+                mapping,
+                this.graphManagerState.usableRuntimes,
+              )[0]
+            : this.graphManagerState.usableRuntimes[0];
+          if (fallbackRuntime) {
+            val.setRuntimeValue(
+              new RuntimePointer(
+                PackageableElementExplicitReference.create(fallbackRuntime),
+              ),
+            );
+          }
+        }
       }
     }
     super.setExecutionContextState(val);
@@ -404,6 +436,10 @@ export class DataSpaceQueryBuilderState extends QueryBuilderState {
 
   setShowRuntimeSelector(val: boolean): void {
     this.showRuntimeSelector = val;
+  }
+
+  setRestrictToCurrentDataSpace(val: boolean): void {
+    this.restrictToCurrentDataSpace = val;
   }
 
   setIsLightGraphEnabled(val: boolean): void {
