@@ -24,6 +24,7 @@ import {
 } from '../stores/DataSpaceViewerNavigation.js';
 import { DataAccessOverview } from '@finos/legend-query-builder';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
+import { DataSpaceMappingProviderEntry } from './DataSpaceExecutionContextViewer.js';
 
 export const DataSpaceDataAccess = observer(
   (props: { dataSpaceViewerState: DataSpaceViewerState }) => {
@@ -43,6 +44,10 @@ export const DataSpaceDataAccess = observer(
       return () => dataSpaceViewerState.layoutState.unsetWikiPageAnchor(anchor);
     }, [dataSpaceViewerState, anchor]);
 
+    if (!dataSpaceViewerState.isDataAccessAvailable) {
+      return null;
+    }
+
     return (
       <div ref={sectionRef} className="viewer__wiki__section">
         <CollapsibleWikiSection
@@ -52,7 +57,19 @@ export const DataSpaceDataAccess = observer(
         >
           <div className="viewer__wiki__section__content">
             <div className="data-space__viewer__data-access">
-              {dataSpaceViewerState.currentDataAccessState ? (
+              {dataSpaceViewerState.currentExecutionContext?.mappingProvider ? (
+                <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
+                  <DataSpaceMappingProviderEntry
+                    dataSpaceViewerState={dataSpaceViewerState}
+                    currentExecutionContext={
+                      dataSpaceViewerState.currentExecutionContext
+                    }
+                    mappingProviderAccessState={
+                      dataSpaceViewerState.currentMappingProviderAccessState
+                    }
+                  />
+                </div>
+              ) : dataSpaceViewerState.currentDataAccessState ? (
                 <DataAccessOverview
                   dataAccessState={dataSpaceViewerState.currentDataAccessState}
                 />

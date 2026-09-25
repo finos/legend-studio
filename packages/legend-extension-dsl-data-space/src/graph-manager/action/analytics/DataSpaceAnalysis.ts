@@ -126,6 +126,14 @@ export class DataSpaceExecutableTDSResult extends DataSpaceExecutableResult {
   columns: DataSpaceExecutableTDSResultColumn[] = [];
 }
 
+export abstract class DataSpaceExecutableAccessorInfo {}
+
+export class LakehouseDataProductExecutableAccessorInfo extends DataSpaceExecutableAccessorInfo {
+  dataProductPath!: string;
+  accessPointGroupId!: string;
+  accessPointId!: string;
+}
+
 export class DataSpaceExecutableAnalysisResult {
   readonly uuid = uuid();
   title!: string;
@@ -134,6 +142,15 @@ export class DataSpaceExecutableAnalysisResult {
   info?: DataSpaceExecutableInfo | undefined;
   result?: DataSpaceExecutableResult | undefined;
   executableReturnType?: GenericType | undefined;
+  executableAccessorInfo: DataSpaceExecutableAccessorInfo[] = [];
+}
+
+export abstract class DataSpaceReferencesMetadata {}
+
+export class DataproductReferenceMetadata extends DataSpaceReferencesMetadata {
+  dataproductPath!: string;
+  production?: string | undefined;
+  prodParallel?: string | undefined;
 }
 
 export class DataSpaceAnalysisResult {
@@ -170,6 +187,8 @@ export class DataSpaceAnalysisResult {
 
   functionInfos?: Map<string, FunctionAnalysisInfo>;
   dependencyFunctionInfos?: Map<string, FunctionAnalysisInfo>;
+
+  dataSpaceReferencesMetadataInfo: DataSpaceReferencesMetadata[] = [];
 
   __INTERNAL__useRelationTDS = false;
 

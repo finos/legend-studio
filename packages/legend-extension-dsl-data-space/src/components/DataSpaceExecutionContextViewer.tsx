@@ -21,21 +21,16 @@ import {
   PURE_MappingIcon,
   PURE_RuntimeIcon,
   PlayIcon,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for later re-enable of Refresh mapping-provider access button
   RefreshIcon,
 } from '@finos/legend-art';
-import {
-  Button,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for later re-enable of Refresh mapping-provider access button
-  IconButton,
-} from '@mui/material';
+import { Button, IconButton } from '@mui/material';
 import {
   extractElementNameFromPath,
   type PackageableRuntime,
 } from '@finos/legend-graph';
 import { type DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 import type { DataSpaceExecutionContextAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
-import type { DataSpaceMappingProviderAccessState } from '../stores/DataSpaceMappingProviderAccessState.js';
+import type { DataSpaceDataProductAccessState } from '../stores/DataSpaceDataProductAccessState.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataProductAPGAccessRequestControl } from '@finos/legend-extension-dsl-data-product';
 
@@ -59,11 +54,9 @@ const buildRuntimeOption = (value: PackageableRuntime): RuntimeOption => ({
   value: value,
 });
 
-// Kept for later re-enable of the mapping-provider Request Access flow.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DataSpaceMappingProviderAccessControl = observer(
   (props: {
-    mappingProviderAccessState: DataSpaceMappingProviderAccessState;
+    mappingProviderAccessState: DataSpaceDataProductAccessState;
     tokenProvider: () => string | undefined;
   }) => {
     const { mappingProviderAccessState, tokenProvider } = props;
@@ -99,33 +92,58 @@ const DataSpaceMappingProviderAccessControl = observer(
   },
 );
 
-const DataSpaceMappingProviderEntry = observer(
+export const DataSpaceOpenDataProductButton = observer(
+  (props: {
+    dataSpaceViewerState: DataSpaceViewerState;
+    dataProductPath: string;
+  }) => {
+    const { dataSpaceViewerState, dataProductPath } = props;
+    const deploymentId =
+      dataSpaceViewerState.resolveDeploymentIdForDataProduct(dataProductPath);
+    const isUnresolved = Boolean(
+      dataSpaceViewerState.getDataProductAccessState(dataProductPath)
+        ?.isDataProductUnresolved,
+    );
+    const onOpenDataProduct = (): void => {
+      if (dataSpaceViewerState.viewDataProduct && deploymentId !== undefined) {
+        dataSpaceViewerState.viewDataProduct(dataProductPath, deploymentId);
+      }
+    };
+    return (
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={onOpenDataProduct}
+        sx={{
+          display:
+            !dataSpaceViewerState.viewDataProduct ||
+            deploymentId === undefined ||
+            isUnresolved
+              ? 'none'
+              : undefined,
+        }}
+      >
+        Open DataProduct
+      </Button>
+    );
+  },
+);
+
+export const DataSpaceMappingProviderEntry = observer(
   (props: {
     dataSpaceViewerState: DataSpaceViewerState;
     currentExecutionContext: DataSpaceExecutionContextAnalysisResult;
-    mappingProviderAccessState: DataSpaceMappingProviderAccessState | undefined;
+    mappingProviderAccessState: DataSpaceDataProductAccessState | undefined;
   }) => {
     const {
       dataSpaceViewerState,
       currentExecutionContext,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- kept for later re-enable of Request Access
       mappingProviderAccessState,
     } = props;
     const mappingProvider = currentExecutionContext.mappingProvider;
     if (!mappingProvider) {
       return null;
     }
-    const onOpenDataProduct = (): void => {
-      if (dataSpaceViewerState.viewDataProduct) {
-        dataSpaceViewerState.viewDataProduct(
-          dataSpaceViewerState.groupId,
-          dataSpaceViewerState.artifactId,
-          dataSpaceViewerState.versionId,
-          mappingProvider.element,
-        );
-      }
-    };
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const tokenProvider =
       dataSpaceViewerState.mappingProviderAccessConfig?.tokenProvider ??
       ((): undefined => undefined);
@@ -140,27 +158,32 @@ const DataSpaceMappingProviderEntry = observer(
             {mappingProvider.keys[0] ? `.${mappingProvider.keys[0]}` : ''}
           </span>
           <div className="data-space__viewer__execution-context__mapping-provider__actions">
-            {/*
-              Request Access control is temporarily hidden
-              {mappingProviderAccessState && (
-                <DataSpaceMappingProviderAccessControl
-                  mappingProviderAccessState={mappingProviderAccessState}
-                  tokenProvider={tokenProvider}
-                />
-              )}
-            */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={onOpenDataProduct}
-              sx={{
-                display: !dataSpaceViewerState.viewDataProduct
-                  ? 'none'
-                  : undefined,
-              }}
-            >
-              Open DataProduct
-            </Button>
+            {mappingProviderAccessState && (
+              <DataSpaceMappingProviderAccessControl
+                mappingProviderAccessState={mappingProviderAccessState}
+                tokenProvider={tokenProvider}
+              />
+            )}
+            <DataSpaceOpenDataProductButton
+              dataSpaceViewerState={dataSpaceViewerState}
+              dataProductPath={mappingProvider.element}
+            />
+            {mappingProviderAccessState && (
+              <IconButton
+                className="data-space__viewer__execution-context__refresh-btn"
+                size="small"
+                color="primary"
+                title="Refresh Data Product access"
+                disabled={
+                  mappingProviderAccessState.initializingState.isInProgress
+                }
+                onClick={(): void =>
+                  dataSpaceViewerState.refreshCurrentMappingProviderAccessState()
+                }
+              >
+                <RefreshIcon />
+              </IconButton>
+            )}
           </div>
         </div>
       </>
@@ -295,30 +318,6 @@ export const DataSpaceExecutionContextViewer = observer(
                   }
                   formatOptionLabel={formatExecutionContextOptionLabel}
                 />
-                {/*
-                  Refresh mapping-provider access button is temporarily hidden.
-                  The underlying `refreshCurrentMappingProviderAccessState`
-                  action and `mappingProviderAccessState` wiring are
-                  intentionally preserved so this can be re-enabled without
-                  re-plumbing.
-
-                  {mappingProviderAccessState && (
-                    <IconButton
-                      className="data-space__viewer__execution-context__refresh-btn"
-                      size="small"
-                      color="primary"
-                      title="Refresh Data Product access"
-                      disabled={
-                        mappingProviderAccessState.initializingState.isInProgress
-                      }
-                      onClick={(): void =>
-                        dataSpaceViewerState.refreshCurrentMappingProviderAccessState()
-                      }
-                    >
-                      <RefreshIcon />
-                    </IconButton>
-                  )}
-                */}
               </div>
             </div>
             <div className="data-space__viewer__execution-context__entry data-space__viewer__execution-context__mapping">
