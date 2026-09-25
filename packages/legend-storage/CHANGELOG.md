@@ -1,5 +1,19 @@
 # @finos/legend-storage
 
+## 3.0.152
+
+### Patch Changes
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enrich Legend Studio `LegendSourceInfo` payloads so downstream telemetry can join workspace-edit, project-view, and GAV-view traffic:
+
+  - `WorkspaceProjectQuerySDLC` (from `StandardEditorMode.getSourceInfo`) now includes `patchReleaseVersionId` when the workspace is on a patch branch, letting dashboards separate patch-workspace activity from mainline-workspace activity.
+  - `LegendProjectIdSourceInfo` (from `ProjectViewerEditorMode.getSourceInfo`, project-id branch) now optionally carries `groupId` / `artifactId` (from the project configuration) and `versionId` (from the pinned version or revision the viewer is showing). This means project-id-URL viewer traffic can be correlated with GAV-URL viewer traffic on the same project, and revision / version viewing can be sliced without inferring from the URL.
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix bugs in `LegendSourceInfo` discriminators and Legend Studio source info emission:
+
+  - `LegendGAVSourceInfo` and `LegendProjectIdSourceInfo` declared a `type` field for the source-type discriminator, but the base `LegendSourceInfo` uses `sourceType` and runtime call sites populate `sourceType`. The typed `type` field was dead. Both are now correctly declared as `sourceType`, matching the wire payload dashboards receive.
+  - `StandardEditorMode.getSourceInfo()` (`WorkspaceProjectQuerySDLC`) used the field name `WorkspaceType` (capitalized) and never populated the `sourceType` discriminator at runtime. The field is now `workspaceType` (matching every other SDLC consumer), and `sourceType: LegendStudioSourceType.PROJECT_WORKSPACE` is set on the returned payload so telemetry consumers can reliably discriminate workspace-edit events from project-view / GAV-view / showcase events.
+
 ## 3.0.151
 
 ## 3.0.150

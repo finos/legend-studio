@@ -1,5 +1,60 @@
 # @finos/legend-application-query
 
+## 13.8.54
+
+### Patch Changes
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Emit `application.extension-page.access` telemetry when a route contributed by an application plugin (via `getExtraApplicationPageEntries`) is mounted, and `application.route.not-found` when the fallback 404 page is shown in Legend Studio. Extension pages are wrapped in a shared `ExtensionPageBoundary` from `@finos/legend-application` so every host app gets consistent visibility into which plugin-registered pages are visited (by `key` and `pattern`) without each extension having to opt in to telemetry itself.
+
+- [#5548](https://github.com/finos/legend-studio/pull/5548) [`059df5f`](https://github.com/finos/legend-studio/commit/059df5f3ef46a2290c3ab58c5bc2a58af1ed145b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Enrich Legend AI title/description suggest telemetry in Legend Query with fetch latency, entry-point source info, and a new success event:
+
+  - Add `query-editor.legendai-query-suggest.success`, emitted when a suggestion is returned to the user. Its payload carries `durationMs` (wall-clock duration of the suggester call) plus the query's `sourceInfo` spread flat, so success rate and fetch latency can be sliced by dataspace / mapping / service / data product entry point.
+  - Extend `query-editor.legendai-query-suggest.launch`, `.apply`, and `.discard` with the same flat `sourceInfo` fields, matching how `sourceInfo` is reported on every other query telemetry event.
+  - Extend `query-editor.legendai-query-suggest.failure` with `durationMs` and flat `sourceInfo`, so failed calls can be measured for latency and grouped by entry point (and HTTP-status buckets can still be inferred from `errorMessage`).
+  - Wire the existing rename-query dialog through `launch` / `success` (previously it only emitted `failure`), so rename-side suggest usage is visible.
+
+- [#5548](https://github.com/finos/legend-studio/pull/5548) [`059df5f`](https://github.com/finos/legend-studio/commit/059df5f3ef46a2290c3ab58c5bc2a58af1ed145b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Cover the previously uninstrumented Advanced and Help menu clicks in the query builder header with telemetry. Every new event carries the shared query telemetry envelope — source info spread flat at the top level plus the resolved execution context under `state` — so dashboards can slice these actions by entry point (data space / data product / mapping / service / …) alongside every other query event.
+
+  New `@finos/legend-query-builder` events:
+
+  - Advanced: `query-builder.panel-parameter.toggle`, `query-builder.panel-constant.toggle`, `query-builder.panel-filter.toggle`, `query-builder.panel-window.toggle`, `query-builder.panel-post-filter.toggle`, `query-builder.calendar.toggle`, `query-builder.typed-tds.toggle`, `query-builder.check-entitlements.launch`, `query-builder.edit-pure.launch`, `query-builder.show-pure.launch`, `query-builder.show-protocol.launch`, `query-builder.compile-query.launch`, `query-builder.show-query-diff.launch`.
+  - Help: `query-builder.open-documentation.launch`, `query-builder.open-faq.launch`, `query-builder.open-support-tickets.launch`, `query-builder.virtual-assistant.toggle`.
+
+  New `@finos/legend-application-query` events (Help items injected by Legend Query): `query-editor.about-query-info.launch`, `query-editor.query-version-history.launch`, `query-editor.about-legend-query.launch`, `query-editor.about-data-space.launch`, `query-editor.about-data-product.launch`, `query-editor.about-ingest.launch`.
+
+  `*.toggle` payloads include an `enabled` field carrying the post-toggle state so a single event stream covers both opens and closes. Confirmation-gated toggles (Enable Calendar, Enable Typed TDS) fire on confirm rather than on click.
+
+  `QueryBuilderTelemetryContext` is now exported from `@finos/legend-query-builder` so host applications can type their own menu-action payloads against the same envelope.
+
+- [#5548](https://github.com/finos/legend-studio/pull/5548) [`059df5f`](https://github.com/finos/legend-studio/commit/059df5f3ef46a2290c3ab58c5bc2a58af1ed145b) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Capture in-session data-space / data-product switches from the query-builder setup panel as telemetry:
+
+  - `query-editor.change-data-space`, emitted when the setup-panel dropdown selects a different data space.
+  - `query-editor.change-data-product`, emitted when the setup-panel dropdown selects a different data product.
+
+  Both payloads spread the query builder's current `sourceInfo` FLAT (the state being switched _from_, matching how every other query telemetry event reports `sourceInfo`) and add a `to` block carrying the target's `groupId` / `artifactId` / `versionId` / element `path`. Data-space navigation via the advanced-search modal is still observed indirectly through the route reload it triggers (`query-builder.opened`).
+
+- [#5545](https://github.com/finos/legend-studio/pull/5545) [`802afd8`](https://github.com/finos/legend-studio/commit/802afd88ccdb961b2e294ce45a37280e46c6af07) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Deprecate the `taxonomy` config and the outbound link to Legend Taxonomy from the "About Data Space" modal. The "Open Data Space" button now navigates to Legend Marketplace's legacy data product view (`/dataProduct/legacy/{GAV}/{dataspacePath}`) using the existing `marketplace.url` config, and is enabled when `marketplaceApplicationUrl` is configured.
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Close the remaining gaps in existing-query load and productionize telemetry.
+
+  The `VIEW_QUERY__SUCCESS` and `INITIALIZE_QUERY_STATE__SUCCESS` events had no failure counterparts, so a failed existing-query load emitted nothing — load failure rate was not measurable. The `GRAPH_INITIALIZATION__SUCCESS` event similarly had no failure counterpart. The `PRODUCTIONIZE_QUERY__LAUNCH` event had no home, so the handoff from query to studio was silent. The `VIEW_PROJECT__LAUNCH` helper had landed but was never wired to a call site.
+
+  New events:
+
+  - `query-editor.view-query.failure`
+  - `query-editor.initialize-query-state.failure`
+  - `query-editor.graph-initialization.failure`
+  - `query-editor.productionize-query.launch`
+
+  Wiring:
+
+  - `VIEW_QUERY__FAILURE` and `GRAPH_INITIALIZATION__FAILURE` fire from `ExistingQueryEditorStore` when the corresponding stage of `initialize()` throws, mirroring the identity that the success emits already attach.
+  - `INITIALIZE_QUERY_STATE__FAILURE` fires from the tight boundary around `queryBuilderState.initializeWithQuery`, matching where its success counterpart fires.
+  - `PRODUCTIONIZE_QUERY__LAUNCH` fires from `QueryProductionizerSetupStore.loadQueryProductionizer` at the actual navigation to studio — the upstream setup landing action can be abandoned before a query is picked, so this counts real launches only.
+  - `VIEW_PROJECT__LAUNCH` fires from `createViewProjectHandler`, alongside its already-wired SDLC counterpart.
+
+- [#5549](https://github.com/finos/legend-studio/pull/5549) [`d8c44ce`](https://github.com/finos/legend-studio/commit/d8c44cea8c3089330cc58db7a42730add381740d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add `queryClientName` to `ServerClientConfig`/`V1_EngineServerClient`: when set, it's attached as a `client_name` query parameter on requests made against `queryBaseUrl` (not `baseUrl`), letting a deployment select a specific pac4j client on the query-server (e.g. `onegsauthaws`) without affecting main engine calls. Wired through each app's config (`engine.queryClientName`, resolved to `engineQueryClientName`) and every call site that builds `clientConfig` for `graphManager.initialize()`/`V1_RemoteEngine` across Query, DataCube, and Studio (including its `legend-extension-dsl-data-space-studio` and `legend-extension-dsl-service` call sites). Not added to Marketplace — it never calls a query-server endpoint today, so `queryBaseUrl` there is already unused.
+
 ## 13.8.53
 
 ### Patch Changes

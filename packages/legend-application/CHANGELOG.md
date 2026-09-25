@@ -1,5 +1,11 @@
 # @finos/legend-application
 
+## 16.0.125
+
+### Patch Changes
+
+- [#5536](https://github.com/finos/legend-studio/pull/5536) [`c85dbf4`](https://github.com/finos/legend-studio/commit/c85dbf4e7a78ceb5f56055d26d3bf15c4580e5ef) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Emit `application.extension-page.access` telemetry when a route contributed by an application plugin (via `getExtraApplicationPageEntries`) is mounted, and `application.route.not-found` when the fallback 404 page is shown in Legend Studio. Extension pages are wrapped in a shared `ExtensionPageBoundary` from `@finos/legend-application` so every host app gets consistent visibility into which plugin-registered pages are visited (by `key` and `pattern`) without each extension having to opt in to telemetry itself.
+
 ## 16.0.124
 
 ## 16.0.123

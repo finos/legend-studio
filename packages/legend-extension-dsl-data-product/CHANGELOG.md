@@ -1,5 +1,22 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.1.0
+
+### Minor Changes
+
+- [#5551](https://github.com/finos/legend-studio/pull/5551) [`00766a5`](https://github.com/finos/legend-studio/commit/00766a5ef9815b7b43176d259939fde64671b749) ([@bojja-gs](https://github.com/bojja-gs)) - Expand telemetry coverage across the Lakehouse Entitlements flow.
+
+  - New `marketplace.click.entitlements.tab` event when switching between the My Approvals / My Pending Requests / My Closed Requests tabs.
+  - New `marketplace.toggle.show-requests-for-others` event when toggling the "Show my requests for others" switch on the pending and closed requests dashboards (includes which dashboard).
+  - New `marketplace.action.single-task` event for the single-task approve/deny buttons on the contract task, permit, and workflow data-access-request pages (previously only the bulk approve/deny action on the My Approvals dashboard was tracked).
+  - New shared `marketplace.escalate.data-access-request`, `marketplace.invalidate.data-access-request` (close/delete request), `marketplace.refresh.data-access-request`, and `marketplace.copy.data-access-request-field` events on `DataAccessRequestViewer`, covering the Escalate, Close/Invalidate, Refresh, and Copy (task link, eTask link, request ID, missing-ingest item) buttons. These are shared by the Marketplace entitlements dashboards and the Lakehouse Admin contracts dashboard.
+
+### Patch Changes
+
+- [#5542](https://github.com/finos/legend-studio/pull/5542) [`8d8cf1e`](https://github.com/finos/legend-studio/commit/8d8cf1edc623669a797b6d11fab5bb84e3cd2b74) ([@jackp5150](https://github.com/jackp5150)) - Adds a new single collapse class 'CollapseState' to provide apis to wiki sections to toggle collapsing. Added a component to bundle all collapsing functionality into the chevron icon.
+
+  Deduplicate dataspace functions by having DataSpaceViewerState extend BaseViewerState.
+
 ## 0.0.117
 
 ## 0.0.116
