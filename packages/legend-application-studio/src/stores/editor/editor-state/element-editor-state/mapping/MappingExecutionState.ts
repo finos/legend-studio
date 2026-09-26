@@ -501,6 +501,7 @@ export class MappingExecutionState extends MappingEditorTabState {
   planGenerationDebugText?: string | undefined;
   executionRunPromise: Promise<ExecutionResultWithMetadata> | undefined =
     undefined;
+  selectedResultTab = 'JSON';
 
   constructor(
     editorStore: EditorStore,
@@ -519,6 +520,8 @@ export class MappingExecutionState extends MappingEditorTabState {
       isGeneratingPlan: observable,
       planGenerationDebugText: observable,
       executionRunPromise: observable,
+      selectedResultTab: observable,
+      setSelectedResultTab: action,
       setExecutionRunPromise: action,
       setQueryState: action,
       setInputDataState: action,
@@ -579,6 +582,10 @@ export class MappingExecutionState extends MappingEditorTabState {
     this.showServicePathModal = val;
   }
 
+  setSelectedResultTab(val: string): void {
+    this.selectedResultTab = val;
+  }
+
   setPlanGenerationDebugText(val: string | undefined): void {
     this.planGenerationDebugText = val;
   }
@@ -594,6 +601,7 @@ export class MappingExecutionState extends MappingEditorTabState {
       undefined,
     );
     this.setExecutionResultText(undefined);
+    this.setSelectedResultTab('JSON');
   }
 
   setInputDataStateBasedOnSource(
