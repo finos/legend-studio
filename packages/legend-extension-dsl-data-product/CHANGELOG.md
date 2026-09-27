@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.1.1
+
+### Patch Changes
+
+- [#5553](https://github.com/finos/legend-studio/pull/5553) [`4139dc2`](https://github.com/finos/legend-studio/commit/4139dc24f2c2d539240791cc5a8a3cc4999307ee) ([@yash0024](https://github.com/yash0024)) - Add `resolveEntitlementsDataProductByDID`, which resolves a Data Product from a Lakehouse deployment id supplied by the caller instead of looking one up from the depot artifact generation. Removes the now-unused `resolveEntitlementsDataProductFromSDLC`.
+
 ## 0.1.0
 
 ### Minor Changes

@@ -1,5 +1,19 @@
 # @finos/legend-application-marketplace
 
+## 0.5.1
+
+### Patch Changes
+
+- [#5558](https://github.com/finos/legend-studio/pull/5558) [`9225ffc`](https://github.com/finos/legend-studio/commit/9225ffcd2ff8bc5f7cdb7fcf2030a966bc9de24c) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add a quick-search box and per-column text filters (Consumer Type, Target User, Requester, Target Data Product, Target Access Point Group, Business Justification) to the Lakehouse entitlements "My Approvals" dashboard, so Privilege Managers and Data Owners can narrow a large pending-tasks queue down to specific requests instead of paging through everything.
+
+  The "select all" header checkbox now only selects the rows currently passing a grid's active filters, not the full underlying task list, so filtering down to specific requests can never silently bulk-approve or bulk-deny hidden ones.
+
+- [#5556](https://github.com/finos/legend-studio/pull/5556) [`903885c`](https://github.com/finos/legend-studio/commit/903885cf9eecc765ac57e447e66c508f6ede39d8) ([@eradityash](https://github.com/eradityash)) - - Subscriptions page KPI bar update and user search modifications
+
+  - Advanced Order Search Enhancements
+
+- [#5553](https://github.com/finos/legend-studio/pull/5553) [`4139dc2`](https://github.com/finos/legend-studio/commit/4139dc24f2c2d539240791cc5a8a3cc4999307ee) ([@yash0024](https://github.com/yash0024)) - Add light and dark theme styling for the Data Space viewer's new Data Product access panels and mapping-provider redirect message.
+
 ## 0.5.0
 
 ### Minor Changes

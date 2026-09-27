@@ -1,5 +1,17 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.258
+
+### Patch Changes
+
+- [#5553](https://github.com/finos/legend-studio/pull/5553) [`4139dc2`](https://github.com/finos/legend-studio/commit/4139dc24f2c2d539240791cc5a8a3cc4999307ee) ([@yash0024](https://github.com/yash0024)) - Add support for the new `dataSpaceReferencesMetadataInfo` and `executableAccessorInfo` fields returned by the Data Space analytics endpoint. The viewer now uses them to show per-executable "Request Access" controls for the Lakehouse Data Products an executable reaches, and hides the Data Access section entirely for Data Spaces with no execution contexts.
+
+- [#5557](https://github.com/finos/legend-studio/pull/5557) [`fc499ee`](https://github.com/finos/legend-studio/commit/fc499ee0a055455285585e23363d8d667f52653b) ([@nguyenqchi](https://github.com/nguyenqchi)) - Fix data space quality badge tooltip copy: capitalize the first letter of the "missing requirements" sentence, and use `:` instead of `—` as the separator between a tier label and its remaining requirements.
+
+- [#5552](https://github.com/finos/legend-studio/pull/5552) [`2377869`](https://github.com/finos/legend-studio/commit/237786998868ba875603b418f4c73ed60869b059) ([@yash0024](https://github.com/yash0024)) - DataSpace query-builder support for execution contexts backed by a `mappingProvider` and/or with no `defaultRuntime`:
+
+  - Show runtime selector for exec contexts that don't have a defaultRuntime, do not show for one with defaultRuntime (doesn't impact query -- Runtime selector depends on 'Show Runtime Selector' button)
+
 ## 10.4.257
 
 ### Patch Changes
