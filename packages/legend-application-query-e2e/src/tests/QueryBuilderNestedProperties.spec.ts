@@ -21,6 +21,15 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  expectColumnValues,
+  getExplorer,
+  getFilterPanel,
+  getProjectionPanel,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
+import {
   asCollection,
   asFunction,
   asProperty,
@@ -30,19 +39,9 @@ import {
   getLambdaBody,
   getValue,
   getVariableName,
-  type V1_ExecuteInput,
-  type V1_Lambda,
 } from '../support/QueryProtocol.js';
 
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
-
 let captured: CapturedEngineRequests;
-
-const getExplorer = (page: Page) =>
-  page.getByTestId('query__builder__explorer');
 
 /** Expand `COVIDData.demographics` in the explorer, revealing its properties. */
 const expandDemographics = async (page: Page): Promise<void> => {
@@ -50,29 +49,6 @@ const expandDemographics = async (page: Page): Promise<void> => {
   await expect(
     getExplorer(page).getByText('State', { exact: true }),
   ).toBeVisible();
-};
-
-/**
- * Run the query and return the lambda the app sent to the engine.
- *
- * NOTE: string value editors fetch typeahead suggestions through the execute
- * endpoint too, so take the execution the run itself triggered.
- */
-const runAndCaptureLambda = async (page: Page): Promise<V1_Lambda> => {
-  const executionsBefore = captured.executeInputs.length;
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(executionsBefore);
-  return (
-    at(
-      captured.executeInputs,
-      captured.executeInputs.length - 1,
-    ) as unknown as V1_ExecuteInput
-  ).function;
 };
 
 /**
@@ -96,10 +72,7 @@ const getPropertyPath = (
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
   await mockEnrichedModel(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    getExplorer(page).getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('a class-typed property expands to show its own properties', async ({
@@ -126,12 +99,15 @@ test('a nested property projects along its navigation path', async ({
   await expandDemographics(page);
   await getExplorer(page)
     .getByText('State', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
+    .dragTo(getProjectionPanel(page));
   await expect(
     page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN'),
   ).toHaveCount(1);
 
-  const projection = getChainedFunction(await runAndCaptureLambda(page), 1);
+  const projection = getChainedFunction(
+    (await runQuery(page, captured)).function,
+    1,
+  );
   expect(projection.function).toBe('project');
 
   // the column reads `x | $x.demographics.state`, navigating the association
@@ -144,24 +120,34 @@ test('a nested property projects along its navigation path', async ({
   expect(getCollectionValues(at(projection.parameters, 2))).toEqual([
     'Demographics/State',
   ]);
+  // each row holds its instance's state
+  await expectColumnValues(page, 'Demographics/State', [
+    'NY',
+    'NJ',
+    'CA',
+    'NY',
+    'TX',
+    'NJ',
+    'CA',
+    'NY',
+  ]);
 });
 
 test('a nested property can be filtered on', async ({ page }) => {
-  const explorer = getExplorer(page);
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
+  const filterPanel = getFilterPanel(page);
 
-  await explorer
-    .getByText('Cases', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
+  await project(page, ['Cases']);
   await expandDemographics(page);
-  await explorer.getByText('State', { exact: true }).dragTo(filterPanel);
+  await getExplorer(page)
+    .getByText('State', { exact: true })
+    .dragTo(filterPanel);
 
   // a new condition opens its (typeahead) value editor straight away
   await filterPanel.getByRole('combobox').fill('NY');
   await page.keyboard.press('Enter');
   await expect(filterPanel.getByText('"NY"')).toBeVisible();
 
-  const lambda = await runAndCaptureLambda(page);
+  const lambda = (await runQuery(page, captured)).function;
   // filter: `x | $x.demographics.state == 'NY'`
   const condition = asFunction(
     getLambdaBody(at(getChainedFunction(lambda, 2).parameters, 1)),
@@ -172,4 +158,9 @@ test('a nested property can be filtered on', async ({ page }) => {
     path: ['demographics', 'state'],
   });
   expect(getValue(at(condition.parameters, 1))).toBe('NY');
+  // the cases of the instances in NY
+  await expectColumnValues(page, 'Cases', ['250', '420', '640']);
+  // whatever suggestions typing the value looked up (through the execute
+  // endpoint too), the run is the only query executed
+  expect(captured.executeInputs).toHaveLength(1);
 });

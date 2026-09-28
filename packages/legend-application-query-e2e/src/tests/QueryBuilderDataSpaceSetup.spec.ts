@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { setupEngineMock } from '../support/EngineMock.js';
 import {
   EXTRA_DATA_SPACE_TITLE_PREFIX,
@@ -22,22 +22,9 @@ import {
   mockSecondExecutionContext,
   SECOND_EXECUTION_CONTEXT_NAME,
 } from '../support/DepotMock.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
+import { openDataSpaceQuery } from '../support/QueryBuilderHelpers.js';
 
 const DATA_SPACE_COUNT = 10;
-
-const openQueryBuilder = async (page: Page): Promise<void> => {
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
-};
 
 test.beforeEach(async ({ page }) => {
   await setupEngineMock(page);
@@ -47,7 +34,7 @@ test('the data space selector lists every data space from depot', async ({
   page,
 }) => {
   await mockAdditionalDataSpaces(page, DATA_SPACE_COUNT);
-  await openQueryBuilder(page);
+  await openDataSpaceQuery(page);
 
   const dataSpaceSelector = page.getByRole('combobox', {
     name: 'Data Space',
@@ -76,7 +63,7 @@ test('the data space selector lists every data space from depot', async ({
 test('a data space with one execution context shows no context selector', async ({
   page,
 }) => {
-  await openQueryBuilder(page);
+  await openDataSpaceQuery(page);
 
   // the selector is only worth showing when there is a choice to make
   await expect(page.getByRole('combobox', { name: 'Context' })).toHaveCount(0);
@@ -84,7 +71,7 @@ test('a data space with one execution context shows no context selector', async 
 
 test('execution contexts can be listed and switched', async ({ page }) => {
   await mockSecondExecutionContext(page);
-  await openQueryBuilder(page);
+  await openDataSpaceQuery(page);
 
   const contextSelector = page.getByRole('combobox', { name: 'Context' });
   await expect(contextSelector).toBeVisible();
@@ -111,7 +98,7 @@ test('execution contexts can be listed and switched', async ({ page }) => {
 test('the runtime selector can be enabled and lists the compatible runtime', async ({
   page,
 }) => {
-  await openQueryBuilder(page);
+  await openDataSpaceQuery(page);
 
   // the runtime selector is hidden until switched on from the settings menu
   await expect(page.getByRole('combobox', { name: 'Runtime' })).toHaveCount(0);
@@ -130,7 +117,7 @@ test('the runtime selector can be enabled and lists the compatible runtime', asy
 test('the data space query setup link can be copied to the clipboard', async ({
   page,
 }) => {
-  await openQueryBuilder(page);
+  await openDataSpaceQuery(page);
 
   await page
     .getByTitle('copy data space query set up link to clipboard')

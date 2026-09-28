@@ -298,48 +298,7 @@ export const TEST_DATA__COVIDDataPropertyTypes: Record<string, string> = {
   'demographics.state': 'String',
 };
 
-/**
- * A TDS execution result for a query projecting all properties of
- * `test::COVIDData` (the class from the mock depot project), as returned by
- * the engine execute endpoint.
- *
- * The engine mock evaluates the queries it understands against
- * {@link TEST_DATA__COVIDData}; this canned result answers any other query.
- */
-export const TEST_DATA__ExecutionResult = {
-  builder: {
-    _type: 'tdsBuilder',
-    columns: [
-      { name: 'Cases', type: 'Float', relationalType: 'DOUBLE' },
-      { name: 'Case Type', type: 'String', relationalType: 'VARCHAR(200)' },
-      { name: 'Date', type: 'StrictDate', relationalType: 'DATE' },
-      { name: 'Fips', type: 'String', relationalType: 'VARCHAR(200)' },
-      { name: 'Id', type: 'Integer', relationalType: 'INTEGER' },
-      { name: 'Last Reported Flag', type: 'Boolean', relationalType: 'BIT' },
-    ],
-  },
-  activities: [
-    {
-      _type: 'relational',
-      sql: 'select "root".CASES as "Cases", "root".CASE_TYPE as "Case Type", "root".DATE as "Date", "root".FIPS as "Fips", "root".ID as "Id", "root".LAST_REPORTED_FLAG as "Last Reported Flag" from COVID_DATA as "root"',
-    },
-  ],
-  result: {
-    columns: ['Cases', 'Case Type', 'Date', 'Fips', 'Id', 'Last Reported Flag'],
-    rows: TEST_DATA__COVIDData.map((instance) => ({
-      values: [
-        instance.cases,
-        instance.caseType,
-        instance.date,
-        instance.fips,
-        instance.id,
-        instance.lastReportedFlag,
-      ],
-    })),
-  },
-};
-
-/** Row count of {@link TEST_DATA__ExecutionResult}. */
+/** Row count of {@link TEST_DATA__COVIDData}: every row a query can return. */
 export const TEST_DATA__EXECUTION_RESULT_ROW_COUNT =
   TEST_DATA__COVIDData.length;
 

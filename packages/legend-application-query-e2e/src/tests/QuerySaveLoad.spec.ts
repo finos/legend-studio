@@ -16,36 +16,24 @@
 
 import { test, expect } from '@playwright/test';
 import { setupEngineMock } from '../support/EngineMock.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
+import {
+  getProjectionColumns,
+  openDataSpaceQuery,
+  project,
+} from '../support/QueryBuilderHelpers.js';
 
 const QUERY_NAME = 'My E2E Query';
 
 test.beforeEach(async ({ page }) => {
   await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('save a new query and load it back', async ({ page }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  const projectionColumns = page.getByTestId(
-    'QUERY_BUILDER_TDS_PROJECTION_COLUMN',
-  );
+  const projectionColumns = getProjectionColumns(page);
 
   // build a simple one-column query
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
-  await expect(
-    projectionColumns.getByText('Cases', { exact: true }),
-  ).toBeVisible();
+  await project(page, ['Cases']);
 
   // save it: the header `Save` button opens the create dialog for a new query
   await page.getByRole('button', { name: 'Save', exact: true }).click();

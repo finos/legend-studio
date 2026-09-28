@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
-import { test, expect, type Locator, type Page } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import {
   setupEngineMock,
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
+import {
+  expectColumnValues,
+  getProjectionColumns,
+  openDataSpaceQuery,
+  openQueryOptions,
+  project,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
 import {
   asCollection,
   asFunction,
@@ -26,55 +34,19 @@ import {
   getChainedFunction,
   getFunctionChain,
   getValue,
-  type V1_ExecuteInput,
-  type V1_Lambda,
 } from '../support/QueryProtocol.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 let captured: CapturedEngineRequests;
 
 /** Project two columns so result modifiers have something to act on. */
 const buildProjection = async (page: Page): Promise<void> => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(projectionPanel);
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
-  await expect(
-    page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN'),
-  ).toHaveCount(2);
-};
-
-const openQueryOptions = async (page: Page): Promise<Locator> => {
-  await page.getByTitle('Configure Query Options...').click();
-  const modal = page.getByRole('dialog');
-  await expect(modal.getByText('Query Options')).toBeVisible();
-  return modal;
-};
-
-/** Run the query and return the lambda the app sent to the engine. */
-const runAndCaptureLambda = async (page: Page): Promise<V1_Lambda> => {
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect.poll(() => captured.executeInputs.length).toBeGreaterThan(0);
-  return (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput).function;
+  await project(page, ['Case Type', 'Cases']);
+  await expect(getProjectionColumns(page)).toHaveCount(2);
 };
 
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('a sort column reaches the lambda and its direction can be flipped', async ({
@@ -88,7 +60,7 @@ test('a sort column reaches the lambda and its direction can be flipped', async 
   await expect(modal.getByText('asc')).toBeVisible();
   await modal.getByRole('button', { name: 'Apply' }).click();
 
-  const lambda = await runAndCaptureLambda(page);
+  const lambda = (await runQuery(page, captured)).function;
   expect(getFunctionChain(lambda)).toEqual([
     'take',
     'sort',
@@ -100,6 +72,16 @@ test('a sort column reaches the lambda and its direction can be flipped', async 
   );
   const ascending = asFunction(at(sortSpecs.values, 0), 'asc');
   expect(getValue(at(ascending.parameters, 0))).toBe('Case Type');
+  await expectColumnValues(page, 'Case Type', [
+    'Active',
+    'Active',
+    'Confirmed',
+    'Confirmed',
+    'Confirmed',
+    'Confirmed',
+    'Death',
+    'Death',
+  ]);
 
   // flipping the direction in the UI changes the sort function
   const reopened = await openQueryOptions(page);
@@ -107,8 +89,7 @@ test('a sort column reaches the lambda and its direction can be flipped', async 
   await expect(reopened.getByText('desc')).toBeVisible();
   await reopened.getByRole('button', { name: 'Apply' }).click();
 
-  captured.executeInputs.length = 0;
-  const resorted = await runAndCaptureLambda(page);
+  const resorted = (await runQuery(page, captured)).function;
   const descending = asFunction(
     at(
       asCollection(at(getChainedFunction(resorted, 1).parameters, 1)).values,
@@ -132,7 +113,7 @@ test('eliminating duplicate rows adds distinct to the lambda', async ({
     .click();
   await modal.getByRole('button', { name: 'Apply' }).click();
 
-  const lambda = await runAndCaptureLambda(page);
+  const lambda = (await runQuery(page, captured)).function;
   expect(getFunctionChain(lambda)).toEqual([
     'take',
     'distinct',
@@ -154,7 +135,7 @@ test('a row limit and slice reach the lambda', async ({ page }) => {
   await textboxes.nth(2).fill('5');
   await modal.getByRole('button', { name: 'Apply' }).click();
 
-  const lambda = await runAndCaptureLambda(page);
+  const lambda = (await runQuery(page, captured)).function;
   expect(getFunctionChain(lambda)).toEqual([
     'slice',
     'take',
@@ -170,4 +151,7 @@ test('a row limit and slice reach the lambda', async ({ page }) => {
   // the app fetches one extra row beyond the limit so it can tell the user
   // the results were truncated
   expect(getValue(at(getChainedFunction(lambda, 1).parameters, 1))).toBe(51);
+
+  // rows 1 to 4, counting from 0
+  await expectColumnValues(page, 'Cases', ['301', '180', '420', '95']);
 });

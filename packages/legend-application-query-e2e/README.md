@@ -39,19 +39,32 @@ On failure, screenshots land in `build/test-results/`; in CI, traces are recorde
 ## Adding new tests
 
 1. Create a spec in [`src/tests/`](./src/tests/) named `<Feature>.spec.ts`.
-2. Install the engine mocks in a `beforeEach`:
+2. Install the engine mocks in a `beforeEach`, and drive the app with the shared helpers in [`QueryBuilderHelpers.ts`](./src/support/QueryBuilderHelpers.ts) — panel locators, building a query (`project`, `addFilterCondition`, `chooseConditionOperator`, `setConditionValue`...), running it (`runQuery`), reading the grid (`expectColumnValues`) and saving (`saveNewQuery`):
 
    ```ts
    import { test, expect } from '@playwright/test';
-   import { setupEngineMock } from '../support/EngineMock.js';
+   import {
+     setupEngineMock,
+     type CapturedEngineRequests,
+   } from '../support/EngineMock.js';
+   import {
+     expectColumnValues,
+     openDataSpaceQuery,
+     project,
+     runQuery,
+   } from '../support/QueryBuilderHelpers.js';
+
+   let captured: CapturedEngineRequests;
 
    test.beforeEach(async ({ page }) => {
-     await setupEngineMock(page);
+     captured = await setupEngineMock(page);
+     await openDataSpaceQuery(page); // or `page.goto(...)`, relative to baseURL http://localhost:9001/query/
    });
 
    test('my new flow', async ({ page }) => {
-     await page.goto('setup'); // relative to baseURL http://localhost:9001/query/
-     // ...
+     await project(page, ['Cases']);
+     const executeInput = await runQuery(page, captured); // what the click executed
+     await expectColumnValues(page, 'Cases', ['250' /* ... */]);
    });
    ```
 
@@ -61,9 +74,13 @@ On failure, screenshots land in `build/test-results/`; in CI, traces are recorde
 
 ### Asserting the generated query (lambda)
 
-UI assertions prove panels render, not that the query the app _builds_ is correct. To check semantics, assert on the lambda the app sends to the engine: `setupEngineMock()` returns a `CapturedEngineRequests` handle recording every `executeInputs` (from `Run Query`) and `lambdas` (from saving) payload, and [`QueryProtocol.ts`](./src/support/QueryProtocol.ts) provides typed helpers to navigate the Pure V1 protocol — `getFunctionChain()` for the operation order, plus `asFunction`/`asProperty`/`getValue`/`getCollectionValues` for the details. See `QueryBuilderProtocol.spec.ts`.
+UI assertions prove panels render, not that the query the app _builds_ is correct. To check semantics, assert on the lambda the app sends to the engine: `setupEngineMock()` returns a `CapturedEngineRequests` handle recording every `executeInputs` (from `Run Query`, or exporting), `lambdas` (from saving), `compiledLambdas` and `planInputs` payload, and [`QueryProtocol.ts`](./src/support/QueryProtocol.ts) provides typed helpers to navigate the Pure V1 protocol — `getFunctionChain()` for the operation order, plus `asFunction`/`asProperty`/`getValue`/`getCollectionValues` for the details. See `QueryBuilderProtocol.spec.ts`.
+
+Take the execution to assert on from `runQuery()` (or `getLatestExecution()`) rather than indexing `executeInputs` yourself. Value editors look up typeahead suggestions through the execute endpoint too; the mock recognizes those lookups by their shape and records them apart, in `typeaheadInputs`, so `executeInputs` holds only what the user executed — but a test is still clearer about _which_ run it means by taking the one its click triggered.
 
 Prefer this over scraping the `Show Protocol` viewer: the captured payload is exactly what a real engine would receive, and it needs no DOM parsing. Assert on meaningful fragments (function chain, properties, values) rather than snapshotting the whole JSON, which would break on every unrelated protocol change.
+
+And assert on the result too: the mock evaluates queries against its data (see [`MockExecution.ts`](./src/support/MockExecution.ts)) — projections, filters, post-filters, aggregations (`groupBy`), window columns (`olapGroupBy`), graph fetch, sort, distinct, slice, parameters and constants — so the grid shows what the query actually selects.
 
 ### Testing error paths
 
@@ -79,6 +96,14 @@ captured.failures.delete('pure/v1/execution/execute'); // next call succeeds
 ```
 
 See `QueryBuilderErrorHandling.spec.ts`. Assert on the user-visible message text rather than notification CSS classes — engine errors surface through more than one component.
+
+To test what the app does _while_ a call is in flight — e.g. stopping a running query — hold the endpoint's responses back with `holdEngineEndpoint()`, which returns the function releasing them (see `QueryBuilderExecutionTools.spec.ts`):
+
+```ts
+const release = holdEngineEndpoint(captured, 'pure/v1/execution/execute');
+// ... click `Run Query`, then `Stop` ...
+release(); // the engine answers after all
+```
 
 ### Enriching depot data
 
@@ -100,7 +125,8 @@ selector only renders when a data space has more than one context.
 ### When your flow needs backend data that isn't mocked yet
 
 - **Result grid**: the app renders ag-grid's _community_ grid unless `TEMPORARY__enableGridEnterpriseMode` is set, and this suite runs against a dev build with no ag-grid license. Enterprise-only interactions — multi-cell range selection (needed for `Filter By` to build an `in` list) and `Copy Row Value` (needs row selection) — therefore cannot be covered here; `Filter By`/`Filter Out` fall back to the single right-clicked cell.
-- **Save/load round-trip**: the engine mock is stateful per test — created queries (`POST /pure/v1/query`) are stored in-memory and served back by id, and the lambda JSON sent to `jsonToGrammar/lambda` on save is echoed back by `grammarToJson/lambda` on load, so the app's own serialization round-trips without the mock needing a Pure grammar parser (see `QuerySaveLoad.spec.ts`).
+- **Save/load round-trip**: the engine mock is stateful per test — created queries (`POST /pure/v1/query`) are stored in-memory and served back by id, and the lambda JSON sent to `jsonToGrammar/lambda` on save is echoed back by `grammarToJson/lambda` on load, so the app's own serialization round-trips without the mock needing a Pure grammar parser (see `QuerySaveLoad.spec.ts`). A query's saved parameter values round-trip through `.../valueSpecification/batch` the same way, except that literals (`'Death'`, `250`, `%2021-04-05`, lists of them) are rendered and parsed as real grammar — which is also how the `p:` parameter overrides of a query's URL reach the app (see `QueryBuilderParameters.spec.ts`).
+- **Queries the mock can't evaluate**: [`MockExecution.ts`](./src/support/MockExecution.ts) supports the subset of Pure the suite exercises. A query using anything else is answered with a `501` naming what's missing (`Unsupported query in e2e engine mock: ...`) — there is deliberately no canned fallback result, which would let a test pass whatever the app sent. Add the function to `evaluateFunction()` to support it.
 - **Engine endpoints**: unmocked engine calls fail loudly with a `501` response whose message names the endpoint (`Unmocked engine endpoint called in e2e test: ...`) — check the Playwright trace or browser console to find it. To add one: add a `case` for the endpoint in [`EngineMock.ts`](./src/support/EngineMock.ts), and put its response payload in [`TEST_DATA__EngineResponses.ts`](./src/support/TEST_DATA__EngineResponses.ts) (captured from a live engine when possible).
 - **Depot data**: extend the mock depot server in [`fixtures/legend-mock-server`](../../fixtures/legend-mock-server) (`src/depot.ts` / `src/depot-data.ts`) when a flow needs additional depot routes or entities.
 

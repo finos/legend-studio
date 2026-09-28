@@ -20,6 +20,20 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  addFilterCondition,
+  chooseAdvancedMenuItem,
+  chooseAggregateOperator,
+  chooseConditionOperator,
+  expectColumnValues,
+  getFilterPanel,
+  getPostFilterPanel,
+  getProjectionColumns,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+  setConditionValue,
+} from '../support/QueryBuilderHelpers.js';
+import {
   asCollection,
   asFunction,
   asProperty,
@@ -31,84 +45,41 @@ import {
   getFunctionChain,
   getLambdaBody,
   getValue,
-  type V1_ExecuteInput,
 } from '../support/QueryProtocol.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 /**
  * Build `Case Type`/`Cases` projection, filtered to `Case Type == 'Confirmed'`
  * with a `Cases > 200` post-filter — the query all assertions below describe.
  */
 const buildQuery = async (page: Page): Promise<void> => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
-
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(projectionPanel);
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
+  await project(page, ['Case Type', 'Cases']);
 
   // filter: `Case Type` is 'Confirmed'
-  await explorer.getByText('Case Type', { exact: true }).dragTo(filterPanel);
-  await page
-    .getByTestId('query-builder-filter-tree__condition-node__value')
-    .click();
-  await filterPanel.locator('.value-spec-editor input').fill('Confirmed');
-  await page.keyboard.press('Enter');
+  await addFilterCondition(page, 'Case Type');
+  await setConditionValue(page, getFilterPanel(page), 'Confirmed');
 
   // post-filter: `Cases` > 200
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Show Post-Filter').click();
-  const postFilterPanel = page.getByTestId(
-    'query__builder__post__filter-panel',
-  );
-  await page
-    .getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN')
+  await chooseAdvancedMenuItem(page, 'Show Post-Filter');
+  const postFilterPanel = getPostFilterPanel(page);
+  await getProjectionColumns(page)
     .filter({ hasText: 'Cases' })
     .getByText('Cases', { exact: true })
     .dragTo(postFilterPanel);
-  await postFilterPanel.getByTitle('Choose Operator...').click();
-  await page
-    .locator(
-      '.query-builder-post-filter-tree__condition-node__operator__dropdown__option',
-      { hasText: /^>$/ },
-    )
-    .click();
-  await postFilterPanel
-    .locator('.value-spec-editor__editable__display--content')
-    .click();
-  await postFilterPanel.locator('.value-spec-editor input').fill('200');
-  await page.keyboard.press('Enter');
+  await chooseConditionOperator(page, postFilterPanel, '>');
+  await setConditionValue(page, postFilterPanel, '200');
 };
 
 let captured: CapturedEngineRequests;
 
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('the query protocol viewer shows the built query', async ({ page }) => {
   await buildQuery(page);
 
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Show Protocol').click();
+  await chooseAdvancedMenuItem(page, 'Show Protocol');
 
   // the protocol viewer renders the lambda as JSON
   const protocolViewer = page.getByRole('dialog');
@@ -125,18 +96,7 @@ test('the generated lambda matches the query built in the UI', async ({
 
   // running the query sends the built lambda to the engine — assert on that
   // payload, which is exactly what a real engine would receive
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect(
-    page.locator('.ag-center-cols-container .ag-row'),
-  ).not.toHaveCount(0);
-
-  const executeInput = at(
-    captured.executeInputs,
-    0,
-  ) as unknown as V1_ExecuteInput;
+  const executeInput = await runQuery(page, captured);
   const lambda = executeInput.function;
 
   // the query builder nests each operation inside the next, so the chain
@@ -185,40 +145,23 @@ test('the generated lambda matches the query built in the UI', async ({
   expect(postFilterColumn.property).toBe('getFloat');
   expect(getValue(at(postFilterColumn.parameters, 1))).toBe('Cases');
   expect(getValue(at(postFilterCondition.parameters, 1))).toBe(200);
+
+  // and the rows are those the query selects: confirmed, above 200
+  await expectColumnValues(page, 'Cases', ['250', '301', '512', '640']);
 });
 
 test('an aggregation produces a groupBy lambda with the right aggregate', async ({
   page,
 }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-
   // group by `Case Type`, aggregating `Cases` with `sum`
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(projectionPanel);
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
-  const casesColumn = page
-    .getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN')
-    .filter({ hasText: 'Cases' });
-  await casesColumn.getByTitle('Choose Aggregate Operator...').click();
-  await page
-    .locator(
-      '.query-builder__projection__column__aggregate__operator__dropdown__option',
-      { hasText: /^sum$/ },
-    )
-    .click();
+  await project(page, ['Case Type', 'Cases']);
+  await chooseAggregateOperator(
+    page,
+    getProjectionColumns(page).filter({ hasText: 'Cases' }),
+    'sum',
+  );
 
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect(
-    page.locator('.ag-center-cols-container .ag-row'),
-  ).not.toHaveCount(0);
-
-  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
-    .function;
+  const lambda = (await runQuery(page, captured)).function;
 
   // aggregating replaces `project` with `groupBy`
   expect(getFunctionChain(lambda)).toEqual(['take', 'groupBy', 'getAll']);
@@ -242,22 +185,17 @@ test('an aggregation produces a groupBy lambda with the right aggregate', async 
     asProperty(getLambdaBody(at(aggregation.parameters, 0))).property,
   ).toBe('cases');
   asFunction(getLambdaBody(at(aggregation.parameters, 1)), 'sum');
+
+  // one row per case type, with its total cases
+  await expectColumnValues(page, 'Case Type', ['Confirmed', 'Active', 'Death']);
+  await expectColumnValues(page, 'Cases (sum)', ['1,703', '275', '497']);
 });
 
 test('a window function produces an olapGroupBy lambda', async ({ page }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
+  // the default window function sums the first projected column
+  await project(page, ['Cases', 'Case Type']);
 
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(projectionPanel);
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
-
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Show Window Function(s)').click();
+  await chooseAdvancedMenuItem(page, 'Show Window Function(s)');
   const windowPanel = page.getByTestId('query__builder__window');
   await windowPanel
     .getByRole('button', { name: 'Create Window Function Column' })
@@ -270,16 +208,7 @@ test('a window function produces an olapGroupBy lambda', async ({ page }) => {
     windowPanel.locator('.query-builder__olap__column__operation'),
   ).toHaveCount(1);
 
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect(
-    page.locator('.ag-center-cols-container .ag-row'),
-  ).not.toHaveCount(0);
-
-  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
-    .function;
+  const lambda = (await runQuery(page, captured)).function;
 
   // the window function wraps the projection in an `olapGroupBy`
   expect(getFunctionChain(lambda)).toEqual([
@@ -294,7 +223,14 @@ test('a window function produces an olapGroupBy lambda', async ({ page }) => {
   expect(asCollection(at(olapGroupBy.parameters, 1)).values).toHaveLength(0);
   // ...applies `sum` over the first column, and names the output after it
   const windowOperator = asFunction(at(olapGroupBy.parameters, 2), 'func');
-  expect(getValue(at(windowOperator.parameters, 0))).toBe('Case Type');
+  expect(getValue(at(windowOperator.parameters, 0))).toBe('Cases');
   asFunction(getLambdaBody(at(windowOperator.parameters, 1)), 'sum');
-  expect(getValue(at(olapGroupBy.parameters, 3))).toBe('sum of Case Type');
+  expect(getValue(at(olapGroupBy.parameters, 3))).toBe('sum of Cases');
+
+  // unpartitioned, every row carries the total over all rows
+  await expectColumnValues(
+    page,
+    'sum of Cases',
+    Array<string>(8).fill('2,475'),
+  );
 });

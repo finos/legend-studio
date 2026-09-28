@@ -19,11 +19,15 @@ import {
   setupEngineMock,
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
+import {
+  getProjectionColumns,
+  getQueryTitle,
+  openDataSpaceQuery,
+  project,
+  saveNewQuery,
+  submitCreateQueryDialog,
+  waitForQueryBuilder,
+} from '../support/QueryBuilderHelpers.js';
 
 // the fixture query the engine mock always knows about, owned by the current
 // user (see `TEST_DATA__LightQueries`)
@@ -31,54 +35,24 @@ const FIXTURE_QUERY_NAME = 'MockTestQuery';
 
 let captured: CapturedEngineRequests;
 
-const getProjectionColumns = (page: Page): Locator =>
-  page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN');
-
-/** The saved query's name, as shown in the editor header. */
-const getQueryTitle = (page: Page): Locator =>
-  page.getByTitle('Double-click to rename query');
-
-const addProjectionColumn = async (
-  page: Page,
-  property: string,
-): Promise<void> => {
-  await page
-    .getByTestId('query__builder__explorer')
-    .getByText(property, { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
-  await expect(
-    getProjectionColumns(page).getByText(property, { exact: true }),
-  ).toBeVisible();
-};
+const addProjectionColumn = (page: Page, property: string): Promise<void> =>
+  project(page, [property]);
 
 /**
- * Fill in and submit the `Create New Query` dialog, then wait for the app to
- * land on the persisted query's edit route. Returns the new query's id.
+ * Save the query being built as a new query named `name` — through the
+ * `Save` button, or the `Create New Query` dialog already open — and wait for
+ * the editor to reopen on it, ready for further changes. Returns its id.
  */
-const submitCreateQueryDialog = async (
+const createQuery = async (
   page: Page,
   name: string,
+  { fromOpenDialog = false }: { fromOpenDialog?: boolean } = {},
 ): Promise<string> => {
-  const previousUrl = page.url();
-  await expect(page.getByText('Create New Query')).toBeVisible();
-  await page.getByTitle('New Query Name').fill(name);
-  await page.getByRole('button', { name: 'Create Query' }).click();
-
-  // on success the app reloads into the new query's edit route
-  await expect(page).not.toHaveURL(previousUrl);
-  await expect(page).toHaveURL(/\/edit\/[^/?]+/);
+  const queryId = fromOpenDialog
+    ? await submitCreateQueryDialog(page, name)
+    : await saveNewQuery(page, name);
   await expect(getQueryTitle(page)).toHaveText(name, { timeout: 30_000 });
-  const queryId = new URL(page.url()).pathname.split('/edit/')[1];
-  if (!queryId) {
-    throw new Error(`No query id in the edit route: ${page.url()}`);
-  }
-  return decodeURIComponent(queryId);
-};
-
-/** Save the query being built as a new query named `name`. */
-const createQuery = async (page: Page, name: string): Promise<string> => {
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  return submitCreateQueryDialog(page, name);
+  return queryId;
 };
 
 /** Overwrite the open (already saved) query with the current changes. */
@@ -106,12 +80,7 @@ const openQueryHistory = async (page: Page): Promise<Locator> => {
 
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('saving an existing query overwrites it in place', async ({ page }) => {
@@ -142,7 +111,9 @@ test('save as creates a new query and leaves the original untouched', async ({
   await addProjectionColumn(page, 'Case Type');
   await page.getByTitle('query__editor__save-dropdown').click();
   await page.getByRole('button', { name: 'Save As New Query' }).click();
-  const copyId = await submitCreateQueryDialog(page, 'Lifecycle Copied Query');
+  const copyId = await createQuery(page, 'Lifecycle Copied Query', {
+    fromOpenDialog: true,
+  });
 
   expect(copyId).not.toEqual(originalId);
   expect(captured.updatedQueries).toHaveLength(0);
@@ -335,11 +306,7 @@ test('leaving a query with unsaved changes asks for confirmation', async ({
   await newQueryButton.click();
   await unsavedChangesAlert.getByRole('button', { name: 'Proceed' }).click();
   await expect(page).not.toHaveURL(/\/edit\//);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await waitForQueryBuilder(page);
   await expect(getProjectionColumns(page)).toHaveCount(0);
   expect(captured.updatedQueries).toHaveLength(0);
 });

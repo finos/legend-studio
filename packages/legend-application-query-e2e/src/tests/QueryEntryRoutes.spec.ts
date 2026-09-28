@@ -25,55 +25,30 @@ import {
   setupEngineMock,
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
-import { at, type V1_ExecuteInput } from '../support/QueryProtocol.js';
+import {
+  getGridRows,
+  getProjectionColumns,
+  getQueryTitle,
+  project,
+  runQuery,
+  saveNewQuery,
+  TEST_DATA_SPACE_QUERY_URL,
+  TEST_PROJECT_GAV as PROJECT_GAV,
+  waitForQueryBuilder,
+} from '../support/QueryBuilderHelpers.js';
 
 /**
  * Every other spec deep-links into the query builder for a data space; these
  * cover the other ways into it.
  */
 
-const PROJECT_GAV = `org.finos.legend.test:legend-query-test:${TEST_PROJECT_VERSION}`;
 const MAPPING_PATH = 'test::CovidDataMapping';
 const RUNTIME_PATH = 'test::H2Runtime';
 
-const TEST_DATA_SPACE_QUERY_URL = `extensions/dataspace/${PROJECT_GAV}/test::DataSpace/dummyContext`;
 const MAPPING_QUERY_URL = `create/manual/${PROJECT_GAV}/${MAPPING_PATH}/${RUNTIME_PATH}`;
 const SERVICE_QUERY_URL = `create-from-service/${PROJECT_GAV}/${COVID_CASES_SERVICE_PATH}`;
 
 let captured: CapturedEngineRequests;
-
-const getExplorer = (page: Page): Locator =>
-  page.getByTestId('query__builder__explorer');
-
-const getProjectionColumns = (page: Page): Locator =>
-  page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN');
-
-const getGridRows = (page: Page): Locator =>
-  page
-    .getByTestId('query__builder__result__panel')
-    .locator('.ag-center-cols-container .ag-row');
-
-/** Wait for the builder to load, i.e. its explorer to list the class. */
-const waitForQueryBuilder = async (page: Page): Promise<void> => {
-  await expect(
-    getExplorer(page).getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
-};
-
-/** Run the query; return what the app sent to execute it. */
-const runQuery = async (page: Page): Promise<V1_ExecuteInput> => {
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(0);
-  return at(
-    captured.executeInputs,
-    captured.executeInputs.length - 1,
-  ) as unknown as V1_ExecuteInput;
-};
 
 /** The setup wizard's field titled `title`, e.g. `Project`. */
 const getWizardField = (page: Page, title: string): Locator =>
@@ -103,10 +78,8 @@ test('a query can be built directly on a mapping and runtime', async ({
   await page.goto(MAPPING_QUERY_URL);
   await waitForQueryBuilder(page);
 
-  await getExplorer(page)
-    .getByText('Cases', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
-  const executeInput = await runQuery(page);
+  await project(page, ['Cases']);
+  const executeInput = await runQuery(page, captured);
   await expect(getGridRows(page)).toHaveCount(8);
 
   // the query runs against the chosen mapping and runtime
@@ -168,7 +141,7 @@ test("a service's query opens in the builder, ready to run", async ({
   await expect(filterPanel.getByText('"Confirmed"')).toBeVisible();
 
   // and runs as-is, with the service's mapping and runtime
-  const executeInput = await runQuery(page);
+  const executeInput = await runQuery(page, captured);
   expect(executeInput.mapping).toBe(MAPPING_PATH);
   expect(executeInput.runtime).toMatchObject({ runtime: RUNTIME_PATH });
   await expect(getGridRows(page)).toHaveCount(4);
@@ -178,14 +151,8 @@ test('a saved query can be opened from the query setup', async ({ page }) => {
   // save a query to open
   await page.goto(TEST_DATA_SPACE_QUERY_URL);
   await waitForQueryBuilder(page);
-  await getExplorer(page)
-    .getByText('Case Type', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await page.getByTitle('New Query Name').fill('Entry Route Saved Query');
-  await page.getByRole('button', { name: 'Create Query' }).click();
-  await expect(page).toHaveURL(/\/edit\//);
-  const queryId = new URL(page.url()).pathname.split('/edit/')[1];
+  await project(page, ['Case Type']);
+  const queryId = await saveNewQuery(page, 'Entry Route Saved Query');
 
   await page.goto('setup');
   await page.getByText('Open an existing query').click();
@@ -199,9 +166,8 @@ test('a saved query can be opened from the query setup', async ({ page }) => {
     .click();
 
   await expect(page).toHaveURL(new RegExp(`/edit/${queryId}$`));
-  await expect(page.getByTitle('Double-click to rename query')).toHaveText(
-    'Entry Route Saved Query',
-    { timeout: 30_000 },
-  );
+  await expect(getQueryTitle(page)).toHaveText('Entry Route Saved Query', {
+    timeout: 30_000,
+  });
   await expect(getProjectionColumns(page)).toHaveText(['Case Type']);
 });

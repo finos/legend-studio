@@ -25,6 +25,14 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  addFilterCondition,
+  expectColumnValues,
+  getFilterPanel,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
+import {
   asFunction,
   asProperty,
   at,
@@ -32,34 +40,20 @@ import {
   getLambdaBody,
   getValue,
   type V1_AppliedFunction,
-  type V1_ExecuteInput,
 } from '../support/QueryProtocol.js';
 
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
-
 let captured: CapturedEngineRequests;
-
-const getFilterPanel = (page: Page) =>
-  page.getByTestId('query__builder__filter__panel');
 
 /**
  * Project `Cases` (so the query is runnable) and add a filter condition on
  * `property`, whose value editor then depends on the property's type.
  */
-const addFilterCondition = async (
+const projectAndFilterOn = async (
   page: Page,
   property: string,
 ): Promise<void> => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  await explorer
-    .getByText('Cases', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
-  await explorer
-    .getByText(property, { exact: true })
-    .dragTo(getFilterPanel(page));
+  await project(page, ['Cases']);
+  await addFilterCondition(page, property);
   await expect(
     getFilterPanel(page).getByTestId(
       'query__builder__filter__tree__condition__node-content',
@@ -74,15 +68,7 @@ const addFilterCondition = async (
 const runAndCaptureFilterCondition = async (
   page: Page,
 ): Promise<V1_AppliedFunction> => {
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(0);
-  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
-    .function;
+  const lambda = (await runQuery(page, captured)).function;
   return asFunction(
     getLambdaBody(at(getChainedFunction(lambda, 2).parameters, 1)),
   );
@@ -99,18 +85,13 @@ const openDatePicker = async (page: Page): Promise<void> => {
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
   await mockEnrichedModel(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('an enum filter offers exactly the enumeration values', async ({
   page,
 }) => {
-  await addFilterCondition(page, 'Report Status');
+  await projectAndFilterOn(page, 'Report Status');
 
   await getFilterPanel(page)
     .locator('.value-spec-editor__enum-selector')
@@ -123,7 +104,7 @@ test('an enum filter offers exactly the enumeration values', async ({
 test('a chosen enum value reaches the lambda as an enum reference', async ({
   page,
 }) => {
-  await addFilterCondition(page, 'Report Status');
+  await projectAndFilterOn(page, 'Report Status');
   await getFilterPanel(page)
     .locator('.value-spec-editor__enum-selector')
     .click();
@@ -141,10 +122,12 @@ test('a chosen enum value reaches the lambda as an enum reference', async ({
     fullPath: REPORT_STATUS_ENUMERATION_PATH,
     value: 'Final',
   });
+  // the rows reported as final
+  await expectColumnValues(page, 'Cases', ['250', '301', '512', '77']);
 });
 
 test('a date filter can compare against an absolute date', async ({ page }) => {
-  await addFilterCondition(page, 'Date');
+  await projectAndFilterOn(page, 'Date');
   await openDatePicker(page);
   await page.getByRole('radio', { name: 'Absolute Date' }).check();
   await page.locator('input[type="date"]').fill('2021-04-05');
@@ -159,10 +142,12 @@ test('a date filter can compare against an absolute date', async ({ page }) => {
   const dateValue = at(condition.parameters, 1);
   expect(dateValue._type).toBe('strictDate');
   expect(getValue(dateValue)).toBe('2021-04-05');
+  // the one row reported that day
+  await expectColumnValues(page, 'Cases', ['95']);
 });
 
 test('a date filter can compare against a relative date', async ({ page }) => {
-  await addFilterCondition(page, 'Date');
+  await projectAndFilterOn(page, 'Date');
   await openDatePicker(page);
   await page.getByRole('radio', { name: 'Today' }).check();
   await page.keyboard.press('Escape');

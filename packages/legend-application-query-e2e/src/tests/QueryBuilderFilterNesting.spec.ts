@@ -20,45 +20,27 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  addFilterCondition,
+  getFilterPanel,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+  setConditionValue,
+} from '../support/QueryBuilderHelpers.js';
+import {
   asFunction,
   asProperty,
   at,
   getChainedFunction,
   getLambdaBody,
   getValue,
-  type V1_ExecuteInput,
   type V1_Lambda,
 } from '../support/QueryProtocol.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 let captured: CapturedEngineRequests;
 
 const groupNodes = (page: Page) =>
-  page
-    .getByTestId('query__builder__filter__panel')
-    .locator('.query-builder-filter-tree__group-node');
-
-/**
- * Set the value of the nth filter condition. Values render as a read-only
- * display until clicked, which swaps in the editor input.
- */
-const setConditionValue = async (
-  page: Page,
-  index: number,
-  value: string,
-): Promise<void> => {
-  const panel = page.getByTestId('query__builder__filter__panel');
-  await panel
-    .locator('.value-spec-editor__editable__display--content')
-    .nth(index)
-    .click();
-  await panel.locator('.value-spec-editor input').fill(value);
-  await page.keyboard.press('Enter');
-};
+  getFilterPanel(page).locator('.query-builder-filter-tree__group-node');
 
 /**
  * Build `Fips` and `Case Type` conditions, then nest the first one inside
@@ -66,14 +48,9 @@ const setConditionValue = async (
  * the left operand is itself a group.
  */
 const buildNestedFilter = async (page: Page): Promise<void> => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
-
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
-  await explorer.getByText('Case Type', { exact: true }).dragTo(filterPanel);
-  await explorer.getByText('Fips', { exact: true }).dragTo(filterPanel);
+  await project(page, ['Case Type']);
+  await addFilterCondition(page, 'Case Type');
+  await addFilterCondition(page, 'Fips');
 
   // dropping two properties onto the panel groups them under a single `and`
   await expect(groupNodes(page)).toHaveCount(1);
@@ -85,16 +62,10 @@ const buildNestedFilter = async (page: Page): Promise<void> => {
   await page.getByText('Form a New Logical Group', { exact: true }).click();
 };
 
-/** Run the query and return the lambda the app sent to the engine. */
-const runAndCaptureLambda = async (page: Page): Promise<V1_Lambda> => {
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(0);
-  return (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput).function;
+/** Set both conditions' values: `Fips` to `AAA`, `Case Type` to `BBB`. */
+const setConditionValues = async (page: Page): Promise<void> => {
+  await setConditionValue(page, getFilterPanel(page), 'AAA', 0);
+  await setConditionValue(page, getFilterPanel(page), 'BBB', 1);
 };
 
 /** The condition lambda passed to the query's `filter()`. */
@@ -103,12 +74,7 @@ const getFilterCondition = (lambda: V1_Lambda) =>
 
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('a condition can be formed into a nested logical group', async ({
@@ -126,10 +92,11 @@ test('a nested group is preserved in the generated lambda', async ({
   page,
 }) => {
   await buildNestedFilter(page);
-  await setConditionValue(page, 0, 'AAA');
-  await setConditionValue(page, 1, 'BBB');
+  await setConditionValues(page);
 
-  const condition = getFilterCondition(await runAndCaptureLambda(page));
+  const condition = getFilterCondition(
+    (await runQuery(page, captured)).function,
+  );
 
   // the outer `and` combines the nested group with the ungrouped condition
   expect(condition.function).toBe('and');
@@ -149,15 +116,16 @@ test('switching the outer group to OR changes the generated lambda', async ({
   page,
 }) => {
   await buildNestedFilter(page);
-  await setConditionValue(page, 0, 'AAA');
-  await setConditionValue(page, 1, 'BBB');
+  await setConditionValues(page);
 
   // flip only the outer group, leaving the nested one as `and`
   await groupNodes(page).nth(0).click();
   await expect(groupNodes(page).nth(0)).toHaveText('or');
   await expect(groupNodes(page).nth(1)).toHaveText('and');
 
-  const condition = getFilterCondition(await runAndCaptureLambda(page));
+  const condition = getFilterCondition(
+    (await runQuery(page, captured)).function,
+  );
   expect(condition.function).toBe('or');
   asFunction(at(condition.parameters, 0), 'and');
 });
