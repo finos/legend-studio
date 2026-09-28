@@ -158,7 +158,7 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
 {
   store: store::db;
   type: H2;
-  timezone: +3000;
+  timezone: +1000;
   quoteIdentifiers: true;
   specification: Static
   {
@@ -173,7 +173,7 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
 {
   store: store::db;
   type: H2;
-  timezone: +3000;
+  timezone: -0500;
   quoteIdentifiers: false;
   specification: Static
   {
@@ -188,7 +188,7 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQueryTimeOu
 {
   store: store::db;
   type: H2;
-  timezone: +3000;
+  timezone: 'America/New_York';
   specification: Static
   {
     name: 'myDb';
