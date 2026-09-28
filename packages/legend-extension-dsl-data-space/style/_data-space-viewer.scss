@@ -61,6 +61,7 @@
     &__title {
       @include flexCenter;
 
+      position: relative;
       height: 5rem;
       border-radius: 0.5rem;
       padding: 0 3rem;
@@ -562,6 +563,75 @@
 
     &__content {
       margin-bottom: 3rem;
+    }
+  }
+
+  &__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1rem;
+    margin-bottom: 1.6rem;
+  }
+
+  &__badge {
+    @include flexVCenter;
+
+    gap: 0.65rem;
+    height: 2.55rem;
+    padding: 0 1.1rem;
+    border-radius: 1.275rem;
+    font-size: 1.25rem;
+    font-weight: 500;
+    user-select: none;
+
+    svg {
+      font-size: 1.475rem;
+    }
+
+    &__label {
+      line-height: 1;
+    }
+
+    &--verified {
+      background: #2e7d32;
+      color: var(--color-light-grey-0);
+    }
+
+    &--in-development {
+      background: #c85a02;
+      color: var(--color-light-grey-0);
+    }
+
+    &--external {
+      background: var(--color-dark-shade-200);
+      color: var(--color-text-inverted);
+    }
+  }
+
+  &__related-data-spaces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+
+    &__item {
+      @include flexVCenter;
+
+      height: 2.4rem;
+      padding: 0 1rem;
+      border: none;
+      border-radius: 1.2rem;
+      background: var(--color-bg-tag);
+      color: var(--color-text-muted);
+      font-family: inherit;
+      font-size: 1.2rem;
+      line-height: 1;
+      user-select: none;
+      cursor: pointer;
+
+      &:hover {
+        background: var(--color-dark-shade-100);
+      }
     }
   }
 

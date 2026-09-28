@@ -20,7 +20,6 @@ import {
   CaretUpIcon,
   ControlledDropdownMenu,
   MenuContent,
-  MenuContentDivider,
   MenuContentItem,
   MoreVerticalIcon,
   PlayIcon,
@@ -36,15 +35,11 @@ import { DataSpaceWiki } from './DataSpaceWiki.js';
 import { DataSpaceViewerActivityBar } from './DataSpaceViewerActivityBar.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DATA_SPACE_WIKI_PAGE_SECTIONS } from '../stores/DataSpaceLayoutState.js';
-import {
-  DATA_SPACE_VIEWER_ACTIVITY_MODE,
-  generateAnchorForActivity,
-} from '../stores/DataSpaceViewerNavigation.js';
+import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../stores/DataSpaceViewerNavigation.js';
 import { DataSpacePlaceholderPanel } from './DataSpacePlaceholder.js';
 import { useApplicationStore } from '@finos/legend-application';
 import { DataSpaceLegendAIIntegration } from './DataSpaceLegendAIIntegration.js';
 import { DSL_DATASPACE_EVENT } from '../__lib__/DSL_DataSpace_Event.js';
-import { guaranteeNonNullable } from '@finos/legend-shared';
 import { DataSpaceQualityEmote } from './DataSpaceQualityEmote.js';
 
 const DataSpaceHeader = observer(
@@ -194,29 +189,6 @@ const DataSpaceHeader = observer(
                 title="More Actions..."
                 content={
                   <MenuContent>
-                    {dataSpaceViewerState.currentExecutionContext && (
-                      <>
-                        <MenuContentItem
-                          onClick={() =>
-                            dataSpaceViewerState.queryDataSpace(
-                              guaranteeNonNullable(
-                                dataSpaceViewerState.currentExecutionContext,
-                              ).name,
-                            )
-                          }
-                        >
-                          Query Data Space
-                        </MenuContentItem>
-                        <MenuContentDivider />
-                      </>
-                    )}
-                    <MenuContentItem
-                      onClick={() =>
-                        dataSpaceViewerState.viewProject(analysisResult.path)
-                      }
-                    >
-                      View Project
-                    </MenuContentItem>
                     <MenuContentItem
                       onClick={() => {
                         dataSpaceViewerState
@@ -224,32 +196,7 @@ const DataSpaceHeader = observer(
                           .catch(applicationStore.alertUnhandledError);
                       }}
                     >
-                      View SDLC Project
-                    </MenuContentItem>
-                    <MenuContentDivider />
-                    <MenuContentItem
-                      onClick={() => {
-                        const documentationUrl =
-                          analysisResult.supportInfo?.documentationUrl;
-                        if (documentationUrl) {
-                          applicationStore.navigationService.navigator.visitAddress(
-                            documentationUrl,
-                          );
-                        }
-                      }}
-                    >
-                      Read Documentation
-                    </MenuContentItem>
-                    <MenuContentItem
-                      onClick={() =>
-                        dataSpaceViewerState.changeZone(
-                          generateAnchorForActivity(
-                            DATA_SPACE_VIEWER_ACTIVITY_MODE.SUPPORT,
-                          ),
-                        )
-                      }
-                    >
-                      Get Help
+                      View Project
                     </MenuContentItem>
                   </MenuContent>
                 }
