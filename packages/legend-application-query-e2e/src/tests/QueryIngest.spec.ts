@@ -19,7 +19,6 @@ import {
   COVID_INGEST_PATH,
   HOSPITAL_INGEST_PATH,
   mockIngestDefinitions,
-  TEST_PROJECT_VERSION,
 } from '../support/DepotMock.js';
 import {
   setupEngineMock,
@@ -29,6 +28,16 @@ import {
   mockLakehouseUserEnvironment,
   TEST_LAKEHOUSE_ENVIRONMENT,
 } from '../support/LakehouseMock.js';
+import {
+  ALL_CASES,
+  expectColumnValues,
+  getExplorer,
+  getQueryTitle,
+  getProjectionColumns,
+  runQuery,
+  saveNewQuery,
+  TEST_PROJECT_GAV,
+} from '../support/QueryBuilderHelpers.js';
 import {
   at,
   getChainedFunction,
@@ -42,21 +51,11 @@ import {
  * environment. Its route names the ingest definition and the data set.
  */
 
-const PROJECT_GAV = `org.finos.legend.test:legend-query-test:${TEST_PROJECT_VERSION}`;
 const ingestUrl = (ingestPath: string, dataSet: string): string =>
-  `ingest/${PROJECT_GAV}/${ingestPath}/${dataSet}`;
+  `ingest/${TEST_PROJECT_GAV}/${ingestPath}/${dataSet}`;
 const COVID_CASES_URL = ingestUrl(COVID_INGEST_PATH, 'CovidCases');
 
-// `Cases` of the mock data
-const ALL_CASES = ['250', '301', '180', '420', '95', '512', '77', '640'];
-
 let captured: CapturedEngineRequests;
-
-const getExplorer = (page: Page): Locator =>
-  page.getByTestId('query__builder__explorer');
-
-const getResultPanel = (page: Page): Locator =>
-  page.getByTestId('query__builder__result__panel');
 
 /** The setup panel's selector labelled `label`, e.g. `Data Set`. */
 const getSelector = (page: Page, label: string): Locator =>
@@ -90,38 +89,8 @@ const project = async (page: Page, column: string): Promise<void> => {
   await getExplorer(page)
     .getByText(column, { exact: true })
     .dragTo(page.getByTestId('query__builder__tds__projection'));
-  await expect(
-    page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN'),
-  ).toContainText([column]);
+  await expect(getProjectionColumns(page)).toContainText([column]);
 };
-
-/** Run the query; return what the app sent to execute it. */
-const runQuery = async (page: Page): Promise<V1_ExecuteInput> => {
-  const executionsBefore = captured.executeInputs.length;
-  await getResultPanel(page).getByText('Run Query', { exact: true }).click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(executionsBefore);
-  await expect(getResultPanel(page).getByText(/\d+ row\(s\)/)).toBeVisible();
-  return at(
-    captured.executeInputs,
-    captured.executeInputs.length - 1,
-  ) as unknown as V1_ExecuteInput;
-};
-
-/** The values of a result column, top to bottom as displayed. */
-const getColumnValues = (page: Page, column: string): Promise<string[]> =>
-  getResultPanel(page)
-    .locator(`.ag-center-cols-container .ag-cell[col-id="${column}"]`)
-    .evaluateAll((cells) =>
-      cells
-        .map((cell) => ({
-          index: Number(cell.closest('.ag-row')?.getAttribute('row-index')),
-          text: cell.textContent?.trim() ?? '',
-        }))
-        .sort((a, b) => a.index - b.index)
-        .map((cell) => cell.text),
-    );
 
 /** The ingest data set the query reads, e.g. `#I{test::CovidIngest.CovidCases}#`. */
 const getQueriedDataSet = (executeInput: V1_ExecuteInput): unknown =>
@@ -148,8 +117,8 @@ test("the ingest route opens on the data set, and queries it on a Lakehouse runt
   await expect(getSelected(page, 'Data Set')).toContainText('CovidCases');
 
   await project(page, 'Cases');
-  const executeInput = await runQuery(page);
-  expect(await getColumnValues(page, 'Cases')).toEqual(ALL_CASES);
+  const executeInput = await runQuery(page, captured);
+  await expectColumnValues(page, 'Cases', ALL_CASES);
 
   // `#I{test::CovidIngest.CovidCases}#->project(...)`, run on a Lakehouse
   // runtime
@@ -181,8 +150,8 @@ test('another data set of the ingest definition can be queried', async ({
   ).toHaveCount(0);
 
   await project(page, 'State');
-  const executeInput = await runQuery(page);
-  expect(await getColumnValues(page, 'State')).toEqual([
+  const executeInput = await runQuery(page, captured);
+  await expectColumnValues(page, 'State', [
     'NY',
     'NJ',
     'CA',
@@ -223,8 +192,8 @@ test('another ingest definition of the project can be queried', async ({
   ]);
 
   await project(page, 'Patients');
-  const executeInput = await runQuery(page);
-  expect(await getColumnValues(page, 'Patients')).toEqual(['12', '30', '7']);
+  const executeInput = await runQuery(page, captured);
+  await expectColumnValues(page, 'Patients', ['12', '30', '7']);
   expect(getQueriedDataSet(executeInput)).toMatchObject({
     value: { path: [HOSPITAL_INGEST_PATH, 'Admissions'] },
   });
@@ -259,28 +228,20 @@ test('a saved ingest query reopens on its ingest definition and data set', async
   await waitForColumns(page, ['Hospital']);
   await project(page, 'Hospital');
 
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await page.getByTitle('New Query Name').fill('Hospital Admissions');
-  await page.getByRole('button', { name: 'Create Query' }).click();
-  await expect(page).toHaveURL(/\/edit\//);
+  await saveNewQuery(page, 'Hospital Admissions');
 
   await page.reload();
-  await expect(page.getByTitle('Double-click to rename query')).toHaveText(
-    'Hospital Admissions',
-    { timeout: 30_000 },
-  );
+  await expect(getQueryTitle(page)).toHaveText('Hospital Admissions', {
+    timeout: 30_000,
+  });
   await expect(getSelected(page, 'Ingest')).toContainText(HOSPITAL_INGEST_PATH);
   await expect(getSelected(page, 'Data Set')).toContainText('Admissions');
   await expect(
     page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN'),
   ).toHaveText(['Hospital']);
 
-  await runQuery(page);
-  expect(await getColumnValues(page, 'Hospital')).toEqual([
-    'Mercy',
-    'St. Mary',
-    'General',
-  ]);
+  await runQuery(page, captured);
+  await expectColumnValues(page, 'Hospital', ['Mercy', 'St. Mary', 'General']);
 });
 
 test("an ingest route naming an ingest definition that doesn't exist fails to open", async ({
@@ -289,7 +250,7 @@ test("an ingest route naming an ingest definition that doesn't exist fails to op
   await page.goto(ingestUrl('test::MissingIngest', 'CovidCases'));
   await expect(
     page.getByText(
-      `Can't find ingest definition 'test::MissingIngest' in project ${PROJECT_GAV}`,
+      `Can't find ingest definition 'test::MissingIngest' in project ${TEST_PROJECT_GAV}`,
     ),
   ).toBeVisible({ timeout: 30_000 });
 });

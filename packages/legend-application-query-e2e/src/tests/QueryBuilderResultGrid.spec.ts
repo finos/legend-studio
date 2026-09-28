@@ -15,13 +15,19 @@
  */
 
 import { test, expect, type Page } from '@playwright/test';
-import { setupEngineMock } from '../support/EngineMock.js';
+import {
+  setupEngineMock,
+  type CapturedEngineRequests,
+} from '../support/EngineMock.js';
+import {
+  getFilterPanel,
+  getGridRows,
+  getResultPanel,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
 import { TEST_DATA__EXECUTION_RESULT_ROW_COUNT } from '../support/TEST_DATA__EngineResponses.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 const COLUMNS = [
   'Cases',
@@ -32,35 +38,25 @@ const COLUMNS = [
   'Last Reported Flag',
 ];
 
+let captured: CapturedEngineRequests;
+
 /** Project every column and execute, leaving the result grid populated. */
 const buildAndRunQuery = async (page: Page): Promise<void> => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  for (const column of COLUMNS) {
-    await explorer.getByText(column, { exact: true }).dragTo(projectionPanel);
-  }
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect(page.locator('.ag-center-cols-container .ag-row')).toHaveCount(
+  await project(page, COLUMNS);
+  await runQuery(page, captured);
+  await expect(getGridRows(page)).toHaveCount(
     TEST_DATA__EXECUTION_RESULT_ROW_COUNT,
   );
 };
 
 test.beforeEach(async ({ page }) => {
-  await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  captured = await setupEngineMock(page);
+  await openDataSpaceQuery(page);
 });
 
 test('result grid renders all mocked rows and columns', async ({ page }) => {
   await buildAndRunQuery(page);
-  const resultPanel = page.getByTestId('query__builder__result__panel');
+  const resultPanel = getResultPanel(page);
 
   // every projected column has a header
   for (const column of COLUMNS) {
@@ -78,7 +74,6 @@ test('a cell value can be filtered by from the result grid', async ({
   page,
 }) => {
   await buildAndRunQuery(page);
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
 
   // right-click a `Case Type` cell holding 'Death' to open the grid menu
   await page
@@ -92,14 +87,13 @@ test('a cell value can be filtered by from the result grid', async ({
     'query__builder__filter__tree__condition__node-content',
   );
   await expect(condition.getByText('Case Type')).toBeVisible();
-  await expect(filterPanel.getByText('Death')).toBeVisible();
+  await expect(getFilterPanel(page).getByText('Death')).toBeVisible();
 });
 
 test('a cell value can be filtered out from the result grid', async ({
   page,
 }) => {
   await buildAndRunQuery(page);
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
 
   await page
     .locator('.ag-cell', { hasText: /^Death$/ })
@@ -108,8 +102,8 @@ test('a cell value can be filtered out from the result grid', async ({
   await page.getByText('Filter Out', { exact: true }).click();
 
   // `Filter Out` builds the negated form of the condition
-  await expect(filterPanel.getByText('is not')).toBeVisible();
-  await expect(filterPanel.getByText('Death')).toBeVisible();
+  await expect(getFilterPanel(page).getByText('is not')).toBeVisible();
+  await expect(getFilterPanel(page).getByText('Death')).toBeVisible();
 });
 
 // NOTE: multi-cell range selection (which would let `Filter By` build an

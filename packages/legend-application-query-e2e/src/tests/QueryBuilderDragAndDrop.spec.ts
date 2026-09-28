@@ -15,13 +15,25 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { setupEngineMock } from '../support/EngineMock.js';
+import {
+  setupEngineMock,
+  type CapturedEngineRequests,
+} from '../support/EngineMock.js';
+import {
+  addFilterCondition,
+  chooseAdvancedMenuItem,
+  chooseConditionOperator,
+  getFilterPanel,
+  getGridRows,
+  getPostFilterPanel,
+  getProjectionColumns,
+  getResultPanel,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+  setConditionValue,
+} from '../support/QueryBuilderHelpers.js';
 import { TEST_DATA__EXECUTION_RESULT_ROW_COUNT } from '../support/TEST_DATA__EngineResponses.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 const COLUMNS = [
   'Cases',
@@ -32,68 +44,45 @@ const COLUMNS = [
   'Last Reported Flag',
 ];
 
+let captured: CapturedEngineRequests;
+
 test.beforeEach(async ({ page }) => {
-  await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  // the graph is built in the browser from the mock depot project, wait for
-  // the explorer tree to render before interacting
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  captured = await setupEngineMock(page);
+  await openDataSpaceQuery(page);
 });
 
 test('build and run a query with projection columns, filter, and post-filter', async ({
   page,
 }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
-  const resultPanel = page.getByTestId('query__builder__result__panel');
-  const projectionColumns = page.getByTestId(
-    'QUERY_BUILDER_TDS_PROJECTION_COLUMN',
-  );
+  const filterPanel = getFilterPanel(page);
+  const resultPanel = getResultPanel(page);
+  const projectionColumns = getProjectionColumns(page);
 
   // 1. drag every property from the explorer into the projection panel
-  for (const column of COLUMNS) {
-    await explorer.getByText(column, { exact: true }).dragTo(projectionPanel);
-    await expect(
-      projectionColumns.getByText(column, { exact: true }),
-    ).toBeVisible();
-  }
+  await project(page, COLUMNS);
   await expect(projectionColumns).toHaveCount(COLUMNS.length);
 
-  // 2. run the query and check the result grid (the engine execute endpoint
-  // is mocked, see `TEST_DATA__ExecutionResult`)
-  await resultPanel.getByText('Run Query', { exact: true }).click();
-  const gridRows = resultPanel.locator('.ag-center-cols-container .ag-row');
-  await expect(gridRows).toHaveCount(TEST_DATA__EXECUTION_RESULT_ROW_COUNT);
+  // 2. run the query and check the result grid (the engine mock evaluates
+  // the query against its data, see `MockExecution.ts`)
+  await runQuery(page, captured);
+  await expect(getGridRows(page)).toHaveCount(
+    TEST_DATA__EXECUTION_RESULT_ROW_COUNT,
+  );
   await expect(resultPanel.getByText('2021-04-01')).toBeVisible();
   await expect(resultPanel.getByText('2021-04-02')).toBeVisible();
 
   // 3. filter: `Case Type` is 'Confirmed'
-  await explorer.getByText('Case Type', { exact: true }).dragTo(filterPanel);
+  await addFilterCondition(page, 'Case Type');
   const filterCondition = page.getByTestId(
     'query__builder__filter__tree__condition__node-content',
   );
   await expect(filterCondition.getByText('Case Type')).toBeVisible();
-  await page
-    .getByTestId('query-builder-filter-tree__condition-node__value')
-    .click();
-  await filterPanel.locator('.value-spec-editor input').fill('Confirmed');
-  await page.keyboard.press('Enter');
+  await setConditionValue(page, filterPanel, 'Confirmed');
   await expect(filterCondition.getByText('Confirmed')).toBeVisible();
 
   // 4. post-filter: `Cases` > 200
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Show Post-Filter').click();
-  const postFilterPanel = page.getByTestId(
-    'query__builder__post__filter-panel',
-  );
+  await chooseAdvancedMenuItem(page, 'Show Post-Filter');
+  const postFilterPanel = getPostFilterPanel(page);
   await expect(postFilterPanel).toBeVisible();
 
   await projectionColumns
@@ -105,25 +94,14 @@ test('build and run a query with projection columns, filter, and post-filter', a
   await expect(postFilterCondition.getByText('Cases')).toBeVisible();
 
   // switch the operator from the default `is` to `>`
-  await postFilterPanel.getByTitle('Choose Operator...').click();
-  await page
-    .locator(
-      '.query-builder-post-filter-tree__condition-node__operator__dropdown__option',
-      { hasText: /^>$/ },
-    )
-    .click();
-  await postFilterPanel
-    .locator('.value-spec-editor__editable__display--content')
-    .click();
-  await postFilterPanel.locator('.value-spec-editor input').fill('200');
-  await page.keyboard.press('Enter');
+  await chooseConditionOperator(page, postFilterPanel, '>');
+  await setConditionValue(page, postFilterPanel, '200');
   await expect(postFilterCondition.getByText('200')).toBeVisible();
 
   // 5. re-run with filter and post-filter in place: only the `Confirmed`
-  // rows with more than 200 cases remain (the engine mock evaluates the
-  // query against its data, see `MockExecution.ts`)
-  await resultPanel.getByText('Run Query', { exact: true }).click();
-  await expect(gridRows).toHaveCount(4);
+  // rows with more than 200 cases remain
+  await runQuery(page, captured);
+  await expect(getGridRows(page)).toHaveCount(4);
   await expect(resultPanel.getByText('Death')).toHaveCount(0);
   await expect(resultPanel.getByText('640', { exact: true })).toBeVisible();
 

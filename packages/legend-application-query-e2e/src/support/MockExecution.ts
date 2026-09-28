@@ -24,14 +24,17 @@ import {
 import {
   asCollection,
   asFunction,
+  asGraphFetchTree,
   asLambda,
   at,
   getElementPath,
+  getLambdaBody,
   getValue,
   type V1_AppliedFunction,
   type V1_AppliedProperty,
   type V1_ExecuteInput,
   type V1_Lambda,
+  type V1_PropertyGraphFetchTree,
   type V1_ValueSpecification,
   type V1_Variable,
 } from './QueryProtocol.js';
@@ -43,10 +46,11 @@ import {
  *
  * Only the subset of Pure the e2e tests exercise is supported — projections
  * of `test::COVIDData` (including nested properties) with filters,
- * post-filters, sort, distinct, take and slice, plus constants and
- * parameters. Anything else (aggregations, window columns, graph fetch...)
- * throws {@link UnsupportedQueryError}, and the engine mock falls back to its
- * canned result.
+ * post-filters, sort, distinct, take and slice; aggregations (`groupBy`);
+ * window columns (`olapGroupBy`); graph fetch; plus constants and parameters.
+ * Anything else throws {@link UnsupportedQueryError}, which the engine mock
+ * answers with an error naming what's missing — never with made-up rows, so a
+ * test can't pass against a result its query didn't produce.
  */
 
 const ROOT_CLASS_PATH = 'test::COVIDData';
@@ -65,8 +69,26 @@ interface TDS {
   rows: Row[];
 }
 
-/** What an expression evaluates to: class instances, a TDS, or a value. */
-type Evaluated = Instance[] | TDS | Value | Value[] | Instance;
+/**
+ * Instances serialized along a graph fetch tree, e.g. by
+ * `->graphFetch(#{...}#)->serialize(#{...}#)`: the result of a graph fetch
+ * query, returned as JSON rather than a TDS.
+ */
+class SerializedInstances {
+  constructor(readonly values: Instance[]) {}
+}
+
+/**
+ * What an expression evaluates to: class instances, a TDS, a value, or
+ * serialized instances.
+ */
+type Evaluated =
+  | Instance[]
+  | TDS
+  | Value
+  | Value[]
+  | Instance
+  | SerializedInstances;
 
 type Environment = Map<string, Evaluated>;
 
@@ -84,6 +106,7 @@ const isTDS = (value: Evaluated): value is TDS =>
   typeof value === 'object' &&
   value !== null &&
   !Array.isArray(value) &&
+  !(value instanceof SerializedInstances) &&
   'columns' in value &&
   'rows' in value;
 
@@ -164,6 +187,110 @@ const asVariable = (node: V1_ValueSpecification | undefined): V1_Variable =>
   node?._type === 'var'
     ? (node as V1_Variable)
     : unsupported(`expected a variable, got '${node?._type ?? 'nothing'}'`);
+
+/**
+ * Order two values like the engine's SQL `ORDER BY`: empty values first,
+ * then numbers numerically and strings and ISO dates lexically.
+ */
+const sortOrder = (left: Value, right: Value): number =>
+  left === right
+    ? 0
+    : left === null
+      ? -1
+      : right === null
+        ? 1
+        : (compare(left, right) ?? 0);
+
+// ------------------------------- aggregation -------------------------------
+
+/** The non-empty values of a collection: SQL aggregates ignore NULLs. */
+const presentValues = (value: Evaluated): Value[] =>
+  asValues(value).filter((item) => item !== null);
+
+const asNumbers = (value: Evaluated): number[] =>
+  presentValues(value).map((item) =>
+    typeof item === 'number'
+      ? item
+      : unsupported(`expected numbers to aggregate, got '${typeof item}'`),
+  );
+
+const sum = (values: number[]): number =>
+  values.reduce((total, value) => total + value, 0);
+
+const average = (values: number[]): number | null =>
+  values.length ? sum(values) / values.length : null;
+
+const standardDeviation = (values: number[], sample: boolean): Value => {
+  const mean = average(values);
+  const degreesOfFreedom = values.length - (sample ? 1 : 0);
+  return mean === null || degreesOfFreedom <= 0
+    ? null
+    : Math.sqrt(
+        sum(values.map((value) => (value - mean) ** 2)) / degreesOfFreedom,
+      );
+};
+
+/**
+ * The `fraction` (0..1) percentile of `values`: interpolated between the
+ * closest ranks when `continuous` (SQL's `PERCENTILE_CONT`), otherwise the
+ * first value at or past it (`PERCENTILE_DISC`).
+ */
+const percentile = (
+  values: number[],
+  fraction: number,
+  ascending: boolean,
+  continuous: boolean,
+): Value => {
+  if (!values.length) {
+    return null;
+  }
+  const sorted = values.toSorted((a, b) => (ascending ? a - b : b - a));
+  if (!continuous) {
+    return at(sorted, Math.max(Math.ceil(fraction * sorted.length) - 1, 0));
+  }
+  const position = fraction * (sorted.length - 1);
+  const lower = Math.floor(position);
+  const lowerValue = at(sorted, lower);
+  return (
+    lowerValue +
+    (at(sorted, Math.ceil(position)) - lowerValue) * (position - lower)
+  );
+};
+
+/** The smallest or largest of values: numbers, strings or dates. */
+const extreme = (value: Evaluated, pick: 'min' | 'max'): Value =>
+  presentValues(value).reduce<Value>((best, item) => {
+    if (best === null) {
+      return item;
+    }
+    const order = sortOrder(item, best);
+    return (pick === 'min' ? order < 0 : order > 0) ? item : best;
+  }, null);
+
+/**
+ * The type of an aggregated value, for the aggregate functions whose result
+ * type doesn't follow the aggregated values' — `count` of strings is still an
+ * `Integer`, `average` of integers a `Float`.
+ */
+const AGGREGATE_RESULT_TYPES: Record<string, string> = {
+  count: 'Integer',
+  average: 'Float',
+  mean: 'Float',
+  wavg: 'Float',
+  percentile: 'Float',
+  stdDevPopulation: 'Float',
+  stdDevSample: 'Float',
+  joinStrings: 'String',
+  rank: 'Integer',
+  denseRank: 'Integer',
+  rowNumber: 'Integer',
+  percentRank: 'Float',
+  averageRank: 'Float',
+};
+
+/** The function applied by a reducer lambda, e.g. `sum` for `x|$x->sum()`. */
+const getReducerName = (reducer: V1_ValueSpecification | undefined): string =>
+  getFunctionName(asFunction(getLambdaBody(reducer)));
 
 /**
  * The Pure type of each property of a source's instances, keyed by dotted
@@ -256,6 +383,268 @@ const evaluateLambda = (
 
 const isTrue = (value: Evaluated): boolean => value === true;
 
+/** Evaluate a reducer lambda, e.g. `x|$x->sum()`, over collected values. */
+const reduce = (
+  reducer: V1_ValueSpecification | undefined,
+  values: Evaluated[],
+  environment: Environment,
+): Value =>
+  asValue(evaluateLambda(reducer, values as Value[] | Instance[], environment));
+
+/**
+ * `groupBy(<instances>, [<key lambdas>], [agg(<mapper>, <reducer>), ...],
+ * [<column names>])`: one row per distinct key, in the order keys are first
+ * seen, holding the key columns then each aggregation over the group.
+ */
+const evaluateGroupBy = (
+  func: V1_AppliedFunction,
+  instances: Instance[],
+  environment: Environment,
+): TDS => {
+  const keyLambdas = asCollection(at(func.parameters, 1)).values;
+  const aggregations = asCollection(at(func.parameters, 2)).values.map(
+    (value) => {
+      const aggregation = asFunction(value);
+      if (getFunctionName(aggregation) !== 'agg') {
+        unsupported(`unsupported aggregation '${aggregation.function}'`);
+      }
+      return {
+        mapper: at(aggregation.parameters, 0),
+        reducer: at(aggregation.parameters, 1),
+      };
+    },
+  );
+  const names = asCollection(at(func.parameters, 3)).values.map(
+    (value) => getValue(value) as string,
+  );
+  const types = SOURCE_PROPERTY_TYPES.get(instances) ?? {};
+
+  const groups = new Map<string, { key: Value[]; members: Instance[] }>();
+  for (const instance of instances) {
+    const key = keyLambdas.map((lambda) =>
+      asValue(evaluateLambda(lambda, instance, environment)),
+    );
+    const id = JSON.stringify(key);
+    const group = groups.get(id) ?? { key, members: [] };
+    group.members.push(instance);
+    groups.set(id, group);
+  }
+  // with no key, everything aggregates into a single row
+  if (!keyLambdas.length && !groups.size) {
+    groups.set('[]', { key: [], members: [] });
+  }
+
+  const aggregationNames = names.slice(keyLambdas.length);
+  return {
+    columns: [
+      ...keyLambdas.map((lambda, idx) => {
+        const path = getPropertyPath(asLambda(lambda)).join('.');
+        return {
+          name: at(names, idx),
+          type: types[path] ?? unsupported(`unknown property '${path}'`),
+        };
+      }),
+      ...aggregations.map(({ mapper, reducer }, idx) => {
+        const mapped = getLambdaBody(mapper);
+        return {
+          name: at(aggregationNames, idx),
+          type:
+            AGGREGATE_RESULT_TYPES[getReducerName(reducer)] ??
+            (mapped._type === 'property'
+              ? types[getPropertyPath(asLambda(mapper)).join('.')]
+              : undefined) ??
+            'Float',
+        };
+      }),
+    ],
+    rows: [...groups.values()].map((group) => {
+      const row: Row = {};
+      group.key.forEach((value, idx) => {
+        row[at(names, idx)] = value;
+      });
+      aggregations.forEach(({ mapper, reducer }, idx) => {
+        row[at(aggregationNames, idx)] = reduce(
+          reducer,
+          group.members.map((member) =>
+            evaluateLambda(mapper, member, environment),
+          ),
+          environment,
+        );
+      });
+      return row;
+    }),
+  };
+};
+
+/**
+ * `olapGroupBy(<tds>, [<partition columns>], [<sort>], <operation>, <name>)`:
+ * adds a window column, computed over each row's partition like SQL's
+ * `OVER (PARTITION BY ... ORDER BY ...)`. The operation is either an
+ * aggregation of a column, `func('<column>', y|$y->sum())` — over the whole
+ * partition, or with a sort, cumulatively up to the row and its peers — or a
+ * ranking, `y|$y->rank()`.
+ */
+const evaluateOLAPGroupBy = (
+  func: V1_AppliedFunction,
+  source: TDS,
+  environment: Environment,
+): TDS => {
+  const hasSort = func.parameters.length === 5;
+  const partitionColumns = asCollection(at(func.parameters, 1)).values.map(
+    (value) => getValue(value) as string,
+  );
+  const sortFunction = hasSort ? asFunction(at(func.parameters, 2)) : undefined;
+  const sortColumn = sortFunction
+    ? (getValue(at(sortFunction.parameters, 0)) as string)
+    : undefined;
+  const descending = sortFunction
+    ? getFunctionName(sortFunction) === 'desc'
+    : false;
+  const operation = at(func.parameters, hasSort ? 3 : 2);
+  const name = getValue(at(func.parameters, hasSort ? 4 : 3)) as string;
+
+  // `func('<column>', <reducer>)` aggregates a column, a bare lambda ranks
+  const aggregation =
+    operation._type === 'func' ? asFunction(operation, 'func') : undefined;
+  const aggregatedColumn = aggregation
+    ? (getValue(at(aggregation.parameters, 0)) as string)
+    : undefined;
+  const reducer = aggregation ? at(aggregation.parameters, 1) : operation;
+  const operatorName = getReducerName(reducer);
+
+  // compare rows by the sort column; without one, every row is a peer
+  const orderOf = (left: Row, right: Row): number => {
+    if (!sortColumn) {
+      return 0;
+    }
+    const order = sortOrder(
+      left[sortColumn] ?? null,
+      right[sortColumn] ?? null,
+    );
+    return descending ? -order : order;
+  };
+
+  const partitions = new Map<string, number[]>();
+  source.rows.forEach((row, idx) => {
+    const key = JSON.stringify(
+      partitionColumns.map((column) => row[column] ?? null),
+    );
+    partitions.set(key, [...(partitions.get(key) ?? []), idx]);
+  });
+
+  const values = new Map<number, Value>();
+  for (const members of partitions.values()) {
+    // a stable sort: peers keep their original order
+    const ordered = members.toSorted((a, b) =>
+      orderOf(at(source.rows, a), at(source.rows, b)),
+    );
+    const orderedRows = ordered.map((idx) => at(source.rows, idx));
+    ordered.forEach((rowIdx, position) => {
+      const row = at(orderedRows, position);
+      const peersBefore = orderedRows.filter(
+        (other) => orderOf(other, row) < 0,
+      ).length;
+      const peers = orderedRows.filter(
+        (other) => orderOf(other, row) === 0,
+      ).length;
+      if (aggregatedColumn) {
+        // with a sort, the frame runs up to the row and its peers
+        const frame = sortColumn
+          ? orderedRows.slice(0, peersBefore + peers)
+          : orderedRows;
+        values.set(
+          rowIdx,
+          reduce(
+            reducer,
+            frame.map((other) => other[aggregatedColumn] ?? null),
+            environment,
+          ),
+        );
+        return;
+      }
+      const rank = peersBefore + 1;
+      const denseRank =
+        new Set(
+          orderedRows
+            .filter((other) => orderOf(other, row) < 0)
+            .map((other) =>
+              JSON.stringify(sortColumn ? other[sortColumn] : null),
+            ),
+        ).size + 1;
+      const ranks: Record<string, Value> = {
+        rowNumber: position + 1,
+        rank,
+        denseRank,
+        // the average of the positions the row's peers occupy
+        averageRank: peersBefore + (peers + 1) / 2,
+        percentRank:
+          orderedRows.length > 1 ? (rank - 1) / (orderedRows.length - 1) : 0,
+      };
+      values.set(
+        rowIdx,
+        operatorName in ranks
+          ? (ranks[operatorName] as Value)
+          : unsupported(`unsupported window operation '${operatorName}'`),
+      );
+    });
+  }
+
+  const sourceType = aggregatedColumn
+    ? source.columns.find((column) => column.name === aggregatedColumn)?.type
+    : undefined;
+  return {
+    columns: [
+      ...source.columns,
+      {
+        name,
+        type: AGGREGATE_RESULT_TYPES[operatorName] ?? sourceType ?? 'Float',
+      },
+    ],
+    rows: source.rows.map((row, idx) => ({
+      ...row,
+      [name]: values.get(idx) ?? null,
+    })),
+  };
+};
+
+/** Serialize an instance along a graph fetch (sub-)tree. */
+const serializeInstance = (
+  instance: Instance,
+  subTrees: V1_PropertyGraphFetchTree[],
+): Instance =>
+  Object.fromEntries(
+    subTrees.map((subTree) => {
+      const value = instance[subTree.property];
+      if (!subTree.subTrees.length || typeof value !== 'object' || !value) {
+        return [subTree.property, value ?? null];
+      }
+      return [
+        subTree.property,
+        Array.isArray(value)
+          ? value.map((item) =>
+              serializeInstance(item as Instance, subTree.subTrees),
+            )
+          : serializeInstance(value as Instance, subTree.subTrees),
+      ];
+    }),
+  );
+
+/** Keep rows `[start, end)` of a TDS or a collection of instances. */
+const sliceSource = (
+  source: Evaluated,
+  start: number,
+  end?: number,
+): Evaluated => {
+  if (isTDS(source)) {
+    return { ...source, rows: source.rows.slice(start, end) };
+  }
+  const instances = asInstances(source);
+  return withPropertyTypes(
+    instances.slice(start, end),
+    SOURCE_PROPERTY_TYPES.get(instances),
+  );
+};
+
 const evaluateFunction = (
   func: V1_AppliedFunction,
   environment: Environment,
@@ -316,25 +705,36 @@ const evaluateFunction = (
     }
     // `limit` is the relation form, e.g. of a query reloaded from its text
     case 'take':
-    case 'limit': {
-      const source = asTDS(parameter(0));
-      return {
-        ...source,
-        rows: source.rows.slice(0, asValue(parameter(1)) as number),
-      };
-    }
-    case 'slice': {
-      const source = asTDS(parameter(0));
-      return {
-        ...source,
-        rows: source.rows.slice(
-          asValue(parameter(1)) as number,
-          asValue(parameter(2)) as number,
+    case 'limit':
+      return sliceSource(parameter(0), 0, asValue(parameter(1)) as number);
+    case 'slice':
+      return sliceSource(
+        parameter(0),
+        asValue(parameter(1)) as number,
+        asValue(parameter(2)) as number,
+      );
+    case 'groupBy':
+      return evaluateGroupBy(func, asInstances(parameter(0)), environment);
+    case 'olapGroupBy':
+      return evaluateOLAPGroupBy(func, asTDS(parameter(0)), environment);
+    // what a graph fetch fetches only shapes what `serialize()` returns
+    case 'graphFetch':
+      return parameter(0);
+    case 'serialize':
+      return new SerializedInstances(
+        asInstances(parameter(0)).map((instance) =>
+          serializeInstance(
+            instance,
+            asGraphFetchTree(at(func.parameters, 1)).subTrees,
+          ),
         ),
-      };
-    }
+      );
     case 'distinct': {
-      const source = asTDS(parameter(0));
+      const source = parameter(0);
+      // the collection form, e.g. counting distinct values: `$x->distinct()`
+      if (!isTDS(source)) {
+        return [...new Set(asValues(source))];
+      }
       const seen = new Set<string>();
       return {
         ...source,
@@ -359,19 +759,10 @@ const evaluateFunction = (
         ...source,
         rows: source.rows.toSorted((a, b) => {
           for (const key of keys) {
-            // empty values sort first, as in the engine's SQL
-            const [left, right] = [
+            const order = sortOrder(
               a[key.column] ?? null,
               b[key.column] ?? null,
-            ];
-            const order =
-              left === right
-                ? 0
-                : left === null
-                  ? -1
-                  : right === null
-                    ? 1
-                    : (compare(left, right) ?? 0);
+            );
             if (order !== 0) {
               return key.descending ? -order : order;
             }
@@ -436,6 +827,58 @@ const evaluateFunction = (
     }
     case 'today':
       return today();
+
+    // aggregations, over the values collected for a group or window
+    case 'count': {
+      const source = parameter(0);
+      return Array.isArray(source)
+        ? source.filter((item) => item !== null).length
+        : source === null
+          ? 0
+          : 1;
+    }
+    case 'sum':
+      return sum(asNumbers(parameter(0)));
+    case 'average':
+    case 'mean':
+      return average(asNumbers(parameter(0)));
+    case 'min':
+    case 'max':
+      return extreme(parameter(0), getFunctionName(func) as 'min' | 'max');
+    case 'stdDevPopulation':
+    case 'stdDevSample':
+      return standardDeviation(
+        asNumbers(parameter(0)),
+        getFunctionName(func) === 'stdDevSample',
+      );
+    case 'uniqueValueOnly': {
+      const values = [...new Set(presentValues(parameter(0)))];
+      return values.length === 1 ? at(values, 0) : null;
+    }
+    case 'joinStrings':
+      return presentValues(parameter(0))
+        .map(String)
+        .join(func.parameters.length > 1 ? String(asValue(parameter(1))) : '');
+    case 'percentile':
+      return percentile(
+        asNumbers(parameter(0)),
+        asValue(parameter(1)) as number,
+        func.parameters.length > 2 ? isTrue(parameter(2)) : true,
+        func.parameters.length > 3 ? isTrue(parameter(3)) : true,
+      );
+    // a weighted average maps each row to its value and weight first
+    case 'wavgRowMapper':
+      return { value: asValue(parameter(0)), weight: asValue(parameter(1)) };
+    case 'wavg': {
+      const rows = asInstances(parameter(0)).filter(
+        (row) =>
+          typeof row.value === 'number' && typeof row.weight === 'number',
+      ) as { value: number; weight: number }[];
+      const totalWeight = sum(rows.map((row) => row.weight));
+      return totalWeight
+        ? sum(rows.map((row) => row.value * row.weight)) / totalWeight
+        : null;
+    }
     default:
       return unsupported(`unsupported function '${func.function}'`);
   }
@@ -527,13 +970,25 @@ export interface TDSExecutionResult {
   result: { columns: string[]; rows: { values: Value[] }[] };
 }
 
+/** An engine JSON execution result, e.g. of a graph fetch query. */
+export interface JSONExecutionResult {
+  builder: { _type: 'json' };
+  values: Instance[];
+}
+
+export type MockExecutionResult = TDSExecutionResult | JSONExecutionResult;
+
+export const isTDSExecutionResult = (
+  result: MockExecutionResult,
+): result is TDSExecutionResult => result.builder._type === 'tdsBuilder';
+
 /**
  * Evaluate the query posted to the execute endpoint.
  *
  * @throws {UnsupportedQueryError} if the query uses Pure this mock can't
  * evaluate
  */
-export const executeQuery = (input: V1_ExecuteInput): TDSExecutionResult => {
+export const executeQuery = (input: V1_ExecuteInput): MockExecutionResult => {
   const environment: Environment = new Map();
   (
     (
@@ -548,6 +1003,9 @@ export const executeQuery = (input: V1_ExecuteInput): TDSExecutionResult => {
   let result: Evaluated = null;
   for (const expression of input.function.body) {
     result = evaluate(expression, environment);
+  }
+  if (result instanceof SerializedInstances) {
+    return { builder: { _type: 'json' }, values: result.values };
   }
   const tds = asTDS(result);
   return {

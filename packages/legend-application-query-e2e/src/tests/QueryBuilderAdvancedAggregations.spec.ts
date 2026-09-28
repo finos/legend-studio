@@ -20,6 +20,16 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  chooseAggregateOperator,
+  expectColumnValues,
+  getColumnValues,
+  getExplorer,
+  getProjectionColumns,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
+import {
   asCollection,
   asFunction,
   asProperty,
@@ -29,54 +39,15 @@ import {
   getFunctionChain,
   getLambdaBody,
   getValue,
-  type V1_ExecuteInput,
   type V1_Lambda,
 } from '../support/QueryProtocol.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 let captured: CapturedEngineRequests;
 
 /** Project `Case Type` (grouped by) and `Cases` (aggregated). */
 const buildProjection = async (page: Page): Promise<Locator> => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(projectionPanel);
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
-  return page
-    .getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN')
-    .filter({ hasText: 'Cases' });
-};
-
-const chooseAggregateOperator = async (
-  page: Page,
-  column: Locator,
-  operator: string,
-): Promise<void> => {
-  await column.getByTitle('Choose Aggregate Operator...').click();
-  await page
-    .locator(
-      '.query-builder__projection__column__aggregate__operator__dropdown__option',
-      { hasText: new RegExp(`^${operator}$`) },
-    )
-    .click();
-};
-
-/** Run the query and return the lambda the app sent to the engine. */
-const runAndCaptureLambda = async (page: Page): Promise<V1_Lambda> => {
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(0);
-  return (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput).function;
+  await project(page, ['Case Type', 'Cases']);
+  return getProjectionColumns(page).filter({ hasText: 'Cases' });
 };
 
 /** The single `agg(...)` of a `groupBy` query. */
@@ -86,14 +57,25 @@ const getAggregation = (lambda: V1_Lambda) =>
     'agg',
   );
 
+/**
+ * The numeric values of a result column, top to bottom — for aggregates
+ * whose exact decimal rendering isn't what's under test.
+ */
+const getColumnNumbers = async (
+  page: Page,
+  column: string,
+): Promise<number[]> => {
+  await expect
+    .poll(async () => (await getColumnValues(page, column)).length)
+    .toBeGreaterThan(0);
+  return (await getColumnValues(page, column)).map((value) =>
+    Number(value.replaceAll(',', '')),
+  );
+};
+
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('a weighted average needs a weight column and reaches the lambda', async ({
@@ -109,13 +91,12 @@ test('a weighted average needs a weight column and reaches the lambda', async ({
 
   // weight by a different column than the aggregated one, so the assertions
   // below can tell the value slot apart from the weight slot
-  await page
-    .getByTestId('query__builder__explorer')
+  await getExplorer(page)
     .getByText('Id', { exact: true })
     .dragTo(weightDropZone);
   await expect(casesColumn.getByText('Drop weight value')).toBeHidden();
 
-  const lambda = await runAndCaptureLambda(page);
+  const lambda = (await runQuery(page, captured)).function;
   expect(getFunctionChain(lambda)).toEqual(['take', 'groupBy', 'getAll']);
   expect(
     getCollectionValues(at(getChainedFunction(lambda, 1).parameters, 3)),
@@ -129,6 +110,14 @@ test('a weighted average needs a weight column and reaches the lambda', async ({
   expect(asProperty(at(mapper.parameters, 0)).property).toBe('cases');
   expect(asProperty(at(mapper.parameters, 1)).property).toBe('id');
   asFunction(getLambdaBody(at(aggregation.parameters, 1)), 'wavg');
+
+  // one row per case type, each averaging its cases weighted by id: e.g.
+  // `Active` is (180 * 3 + 95 * 5) / (3 + 5)
+  await expectColumnValues(page, 'Case Type', ['Confirmed', 'Active', 'Death']);
+  const averages = (await getColumnNumbers(page, 'Cases (wavg)')).map((value) =>
+    value.toFixed(3),
+  );
+  expect(averages).toEqual(['532.000', '126.875', '201.727']);
 });
 
 test('a percentile aggregation takes an argument and reaches the lambda', async ({
@@ -151,7 +140,7 @@ test('a percentile aggregation takes an argument and reaches the lambda', async 
   await page.keyboard.press('Escape');
   await expect(percentilePanel).toBeHidden();
 
-  const lambda = await runAndCaptureLambda(page);
+  const lambda = (await runQuery(page, captured)).function;
   expect(getFunctionChain(lambda)).toEqual(['take', 'groupBy', 'getAll']);
 
   const aggregation = getAggregation(lambda);
@@ -162,4 +151,34 @@ test('a percentile aggregation takes an argument and reaches the lambda', async 
   expect(reducer.function).toContain('percentile');
   // the UI takes a percentage, the protocol carries the fraction
   expect(getValue(at(reducer.parameters, 1))).toBe(0.9);
+
+  // the 90th percentile of each case type's cases, interpolated: e.g.
+  // `Active` (95, 180) is 95 + 0.9 * (180 - 95)
+  await expectColumnValues(page, 'Case Type', ['Confirmed', 'Active', 'Death']);
+  const percentiles = (await getColumnNumbers(page, 'Cases (percentile)')).map(
+    (value) => value.toFixed(1),
+  );
+  expect(percentiles).toEqual(['601.6', '171.5', '385.7']);
+});
+
+test('grouping sums each group and counts its members', async ({ page }) => {
+  await project(page, ['Case Type', 'Cases', 'Id']);
+  const columns = getProjectionColumns(page);
+  await chooseAggregateOperator(
+    page,
+    columns.filter({ hasText: 'Cases' }),
+    'sum',
+  );
+  await chooseAggregateOperator(
+    page,
+    columns.filter({ has: page.getByText('Id', { exact: true }) }),
+    'count',
+  );
+
+  const lambda = (await runQuery(page, captured)).function;
+  expect(getFunctionChain(lambda)).toEqual(['take', 'groupBy', 'getAll']);
+
+  await expectColumnValues(page, 'Case Type', ['Confirmed', 'Active', 'Death']);
+  await expectColumnValues(page, 'Cases (sum)', ['1,703', '275', '497']);
+  await expectColumnValues(page, 'Id (count)', ['4', '2', '2']);
 });

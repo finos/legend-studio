@@ -19,18 +19,25 @@ import type { Page, Request, Route } from '@playwright/test';
 import {
   TEST_DATA__ClassifierPathMap,
   TEST_DATA__CurrentUser,
-  TEST_DATA__ExecutionResult,
   TEST_DATA__LightQueries,
   TEST_DATA__MappingModelCoverage,
   TEST_DATA__SubtypeInfo,
 } from './TEST_DATA__EngineResponses.js';
 import {
   executeQuery,
+  isTDSExecutionResult,
   toCSV,
   UnsupportedQueryError,
   type TDSExecutionResult,
 } from './MockExecution.js';
-import type { V1_ExecuteInput } from './QueryProtocol.js';
+import {
+  asLambda,
+  getQueryExpression,
+  getValue,
+  type V1_AppliedFunction,
+  type V1_ExecuteInput,
+  type V1_ValueSpecification,
+} from './QueryProtocol.js';
 
 /**
  * The app's engine URL is rerouted (via `config.json` interception) to this
@@ -77,21 +84,242 @@ const getRequestBody = (request: Request): string => {
   }
 };
 
+/** The query builder's row limit on typeahead suggestions. */
+const TYPEAHEAD_SEARCH_LIMIT = 10;
+
+const isFunctionNamed = (
+  node: V1_ValueSpecification | undefined,
+  name: string,
+): node is V1_AppliedFunction =>
+  node?._type === 'func' &&
+  ((node as V1_AppliedFunction).function === name ||
+    (node as V1_AppliedFunction).function.endsWith(`::${name}`));
+
 /**
- * Answer an execution like the engine would, evaluating the query against
- * the mock data (see `MockExecution.ts`). Queries using Pure the mock can't
- * evaluate — aggregations, window columns, graph fetch... — get the canned
- * {@link TEST_DATA__ExecutionResult} instead, whatever they ask for.
+ * Whether an execution is a value editor's typeahead lookup rather than a
+ * query run: the app looks up suggestions for a filter value through the
+ * execute endpoint too, with no flag to tell them apart but their shape —
+ * `...->filter(row|$row.getString('<column>')->startsWith('<typed>'))
+ * ->distinct()->take(10)`.
  */
-const evaluateQuery = (input: V1_ExecuteInput): TDSExecutionResult => {
+const isTypeaheadLookup = (input: V1_ExecuteInput): boolean => {
+  const take = getQueryExpression(input.function);
+  if (!isFunctionNamed(take, 'take')) {
+    return false;
+  }
+  const [distinct, limit] = take.parameters;
+  if (
+    limit?._type !== 'integer' ||
+    getValue(limit) !== TYPEAHEAD_SEARCH_LIMIT ||
+    !isFunctionNamed(distinct, 'distinct')
+  ) {
+    return false;
+  }
+  const [filter] = distinct.parameters;
+  const condition = isFunctionNamed(filter, 'filter')
+    ? filter.parameters[1]
+    : undefined;
+  return (
+    condition?._type === 'lambda' &&
+    isFunctionNamed(asLambda(condition).body[0], 'startsWith')
+  );
+};
+
+/**
+ * A minimal but well-formed relational execution plan for a query, as the
+ * engine's plan generation returns it: a TDS instantiation over the single
+ * SQL query the mock "runs" (see `MockExecution.ts`), against the test
+ * project's database.
+ */
+const buildExecutionPlan = (result: TDSExecutionResult): object => ({
+  _type: 'simple',
+  authDependent: false,
+  rootExecutionNode: {
+    _type: 'relationalTdsInstantiation',
+    authDependent: false,
+    executionNodes: [
+      {
+        _type: 'sql',
+        authDependent: false,
+        connection: {
+          _type: 'RelationalDatabaseConnection',
+          authenticationStrategy: { _type: 'h2Default' },
+          datasourceSpecification: {
+            _type: 'h2Local',
+            testDataSetupSqls: [],
+          },
+          element: 'test::CovidDataStore',
+          postProcessorWithParameter: [],
+          postProcessors: [],
+          type: 'H2',
+        },
+        executionNodes: [],
+        resultColumns: result.builder.columns.map((column) => ({
+          label: `"${column.name}"`,
+          dataType: column.relationalType,
+        })),
+        resultType: {
+          _type: 'dataType',
+          dataType: 'meta::pure::metamodel::type::Any',
+        },
+        sqlQuery: result.activities[0]?.sql ?? '',
+      },
+    ],
+    resultSizeRange: { lowerBound: 0 },
+    resultType: {
+      _type: 'tds',
+      tdsColumns: result.builder.columns.map((column) => ({
+        name: column.name,
+        type: column.type,
+        relationalType: column.relationalType,
+      })),
+    },
+  },
+  serializer: { name: 'pure', version: 'vX_X_X' },
+  templateFunctions: [],
+});
+
+type ValueSpecificationJSON = Record<string, unknown> & { _type: string };
+
+/**
+ * Render a value specification as Pure grammar, like the engine does — for
+ * literals and lists of them, e.g. `'Death'`, `250`, `%2021-04-05` or
+ * `['Active', 'Death']`. Returns `undefined` for anything else.
+ *
+ * Rendering (and parsing, see {@link parseValueSpecification}) literals for
+ * real means a parameter value saved with a query reads like the `p:` URL
+ * overrides a user types, so both go through the same path on load.
+ */
+const renderValueSpecification = (
+  json: ValueSpecificationJSON,
+): string | undefined => {
+  switch (json._type) {
+    case 'string':
+      return `'${String(json.value).replace(/['\\]/g, '\\$&')}'`;
+    case 'integer':
+    case 'float':
+    case 'decimal':
+    case 'boolean':
+      return String(json.value);
+    case 'strictDate':
+    case 'dateTime':
+      return `%${String(json.value)}`;
+    case 'collection': {
+      const values = (json.values as ValueSpecificationJSON[]).map(
+        renderValueSpecification,
+      );
+      return values.every((value) => value !== undefined)
+        ? `[${values.join(', ')}]`
+        : undefined;
+    }
+    default:
+      return undefined;
+  }
+};
+
+/** Split a list's grammar on the commas between its elements. */
+const splitListElements = (text: string): string[] => {
+  const elements: string[] = [];
+  let current = '';
+  let quoted = false;
+  for (let idx = 0; idx < text.length; idx++) {
+    const char = text.charAt(idx);
+    if (char === '\\' && quoted) {
+      current += char + text.charAt((idx += 1));
+    } else if (char === "'") {
+      quoted = !quoted;
+      current += char;
+    } else if (char === ',' && !quoted) {
+      elements.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  return current.trim() ? [...elements, current] : elements;
+};
+
+/**
+ * Parse the Pure grammar of a literal, or a list of them, into its value
+ * specification — the inverse of {@link renderValueSpecification}.
+ */
+const parseValueSpecification = (
+  text: string,
+): ValueSpecificationJSON | undefined => {
+  const grammar = text.trim();
+  const string = /^'(?<content>(?:[^'\\]|\\.)*)'$/s.exec(grammar);
+  if (string) {
+    return {
+      _type: 'string',
+      value: (string.groups?.content ?? '').replace(
+        /\\(?<escaped>.)/g,
+        '$<escaped>',
+      ),
+    };
+  }
+  const date = /^%(?<date>\d{4}-\d{2}-\d{2})(?<time>T.+)?$/.exec(grammar);
+  if (date?.groups?.date) {
+    return {
+      _type: date.groups.time ? 'dateTime' : 'strictDate',
+      value: `${date.groups.date}${date.groups.time ?? ''}`,
+    };
+  }
+  if (grammar === 'true' || grammar === 'false') {
+    return { _type: 'boolean', value: grammar === 'true' };
+  }
+  if (/^-?\d+$/.test(grammar)) {
+    return { _type: 'integer', value: Number(grammar) };
+  }
+  if (/^-?\d*\.\d+$/.test(grammar)) {
+    return { _type: 'float', value: Number(grammar) };
+  }
+  const list = /^\[(?<elements>.*)\]$/s.exec(grammar);
+  if (list) {
+    const values = splitListElements(list.groups?.elements ?? '').map(
+      parseValueSpecification,
+    );
+    return values.every((value) => value !== undefined)
+      ? {
+          _type: 'collection',
+          multiplicity: {
+            lowerBound: values.length,
+            upperBound: values.length,
+          },
+          values,
+        }
+      : undefined;
+  }
+  return undefined;
+};
+
+/**
+ * Evaluate a query against the mock data (see `MockExecution.ts`), or
+ * answer like the engine would if the mock can't: with an error naming what
+ * it can't evaluate. There is deliberately no canned fallback result — rows
+ * the query didn't produce would let a test pass whatever the app sent.
+ */
+const answerQuery = async (
+  route: Route,
+  input: V1_ExecuteInput,
+  answer: (result: ReturnType<typeof executeQuery>) => Promise<void>,
+): Promise<void> => {
+  let result: ReturnType<typeof executeQuery>;
   try {
-    return executeQuery(input);
+    result = executeQuery(input);
   } catch (error) {
     if (error instanceof UnsupportedQueryError) {
-      return TEST_DATA__ExecutionResult as TDSExecutionResult;
+      await route.fulfill({
+        status: 501,
+        headers: { ...CORS_HEADERS },
+        json: {
+          message: `Unsupported query in e2e engine mock: ${error.message} — extend MockExecution.ts`,
+        },
+      });
+      return;
     }
     throw error;
   }
+  await answer(result);
 };
 
 /**
@@ -121,10 +349,23 @@ interface QuerySearchSpecification {
  * reads it after driving the UI.
  */
 export interface CapturedEngineRequests {
-  /** `V1_ExecuteInput` bodies posted to the execute endpoint, in order. */
+  /**
+   * `V1_ExecuteInput` bodies of the queries executed — run, or exported — in
+   * order. Typeahead lookups also go through the execute endpoint but are
+   * recorded apart, in {@link typeaheadInputs}, so this holds only what the
+   * user asked to execute.
+   */
   executeInputs: Record<string, unknown>[];
+  /** `V1_ExecuteInput` bodies of value editors' typeahead lookups, in order. */
+  typeaheadInputs: Record<string, unknown>[];
+  /** `V1_ExecuteInput` bodies posted to generate (or debug) a plan, in order. */
+  planInputs: Record<string, unknown>[];
   /** Lambda protocol JSON posted to `jsonToGrammar/lambda`, in order. */
   lambdas: Record<string, unknown>[];
+  /** Lambdas sent to compile (`lambdaReturnType`), in order. */
+  compiledLambdas: Record<string, unknown>[];
+  /** Users whose running executions the app asked to cancel, in order. */
+  cancelledExecutionUsers: string[];
   /** `V1_Query` bodies sent to update (overwrite) a saved query, in order. */
   updatedQueries: StoredQuery[];
   /** Ids of the saved queries deleted, in order. */
@@ -135,7 +376,35 @@ export interface CapturedEngineRequests {
    * handling — see `QueryBuilderErrorHandling.spec.ts`.
    */
   failures: Map<string, { status: number; message: string }>;
+  /**
+   * Engine endpoints whose responses are held back until the promise
+   * settles, keyed by path. Use {@link holdEngineEndpoint} to populate it, to
+   * exercise what the app does while a call is in flight.
+   */
+  holds: Map<string, Promise<void>>;
 }
+
+/**
+ * Hold back the engine's responses on `path` (e.g.
+ * `pure/v1/execution/execute`) until the returned function is called — to
+ * test what the app shows while a call is slow, or lets the user do about it.
+ */
+export const holdEngineEndpoint = (
+  captured: CapturedEngineRequests,
+  path: string,
+): (() => void) => {
+  let release: () => void = () => undefined;
+  captured.holds.set(
+    path,
+    new Promise<void>((resolve) => {
+      release = resolve;
+    }),
+  );
+  return () => {
+    captured.holds.delete(path);
+    release();
+  };
+};
 
 /**
  * Intercept Legend Engine calls at the browser level and serve mock
@@ -153,6 +422,15 @@ export interface CapturedEngineRequests {
  *   JSON when `grammarToJson/lambda` is later called with that placeholder
  *   (on load) — so the app's own serialization round-trips without the mock
  *   needing a real Pure grammar parser.
+ * - a query's parameter values round-trip the same way, except literals,
+ *   which are rendered and parsed as real grammar (e.g. `'Death'`), as the
+ *   `p:` parameter overrides of a query's URL are.
+ *
+ * Queries are evaluated against the mock data (see `MockExecution.ts`):
+ * one the mock can't evaluate fails loudly rather than answering with rows
+ * it didn't select. Compiling, plan generation and cancelling executions are
+ * answered too; `failures` and `holds` (see {@link CapturedEngineRequests})
+ * make any endpoint fail, or hang, on demand.
  *
  * Pass `coreOptions` to override the app's core options (`extensions.core`
  * in `config.json`), e.g. to turn on features behind
@@ -164,10 +442,15 @@ export const setupEngineMock = async (
 ): Promise<CapturedEngineRequests> => {
   const captured: CapturedEngineRequests = {
     executeInputs: [],
+    typeaheadInputs: [],
+    planInputs: [],
     lambdas: [],
+    compiledLambdas: [],
+    cancelledExecutionUsers: [],
     updatedQueries: [],
     deletedQueryIds: [],
     failures: new Map(),
+    holds: new Map(),
   };
 
   // reroute the app's engine URL to the dead mock port
@@ -191,6 +474,7 @@ export const setupEngineMock = async (
   const savedQueries = new Map<string, StoredQuery>();
   // earlier revisions of each saved query, oldest first
   const queryRevisions = new Map<string, StoredQuery[]>();
+  // the JSON behind each placeholder "grammar" string handed out
   const savedLambdas = new Map<string, string>();
   let lambdaCounter = 0;
 
@@ -225,12 +509,16 @@ export const setupEngineMock = async (
   const engineApiUrlPattern = new RegExp(
     `:${MOCK_ENGINE_PORT}/api/(?<endpoint>.*)$`,
   );
-  await page.route(engineApiUrlPattern, async (route) => {
+  const getEndpoint = (request: Request): string =>
+    engineApiUrlPattern.exec(request.url())?.groups?.endpoint ?? '';
+  // strip query parameters (e.g. `?renderStyle=PRETTY`)
+  const getPath = (request: Request): string =>
+    getEndpoint(request).split('?')[0] ?? '';
+
+  const respond = async (route: Route): Promise<void> => {
     const request = route.request();
-    const endpoint =
-      engineApiUrlPattern.exec(request.url())?.groups?.endpoint ?? '';
-    // strip query parameters (e.g. `?renderStyle=PRETTY`)
-    const path = endpoint.split('?')[0] ?? '';
+    const endpoint = getEndpoint(request);
+    const path = getPath(request);
 
     // CORS preflight
     if (request.method() === 'OPTIONS') {
@@ -280,25 +568,78 @@ export const setupEngineMock = async (
       }
       case 'pure/v1/execution/execute': {
         const input = JSON.parse(getRequestBody(request)) as V1_ExecuteInput;
-        captured.executeInputs.push(
-          input as unknown as Record<string, unknown>,
-        );
-        const result = evaluateQuery(input);
-        // exports ask for a serialized result, e.g. CSV, to download
-        const format = new URL(request.url()).searchParams.get(
-          'serializationFormat',
-        );
-        if (format && format !== 'PURE_TDSOBJECT') {
-          await route.fulfill({
-            body: toCSV(result),
-            contentType: 'text/csv',
-            headers: { ...CORS_HEADERS },
-          });
-          return;
-        }
-        await fulfillJson(route, result);
+        (isTypeaheadLookup(input)
+          ? captured.typeaheadInputs
+          : captured.executeInputs
+        ).push(input as unknown as Record<string, unknown>);
+        await answerQuery(route, input, async (result) => {
+          // exports ask for a serialized result, e.g. CSV, to download
+          const format = new URL(request.url()).searchParams.get(
+            'serializationFormat',
+          );
+          if (
+            format &&
+            format !== 'PURE_TDSOBJECT' &&
+            isTDSExecutionResult(result)
+          ) {
+            await route.fulfill({
+              body: toCSV(result),
+              contentType: 'text/csv',
+              headers: { ...CORS_HEADERS },
+            });
+            return;
+          }
+          await fulfillJson(route, result);
+        });
         return;
       }
+      // the plan the engine would execute a query with (and, when debugging,
+      // how it came to it) — here, over the query the mock would "run"
+      case 'pure/v1/execution/generatePlan':
+      case 'pure/v1/execution/generatePlan/debug': {
+        const input = JSON.parse(getRequestBody(request)) as V1_ExecuteInput;
+        captured.planInputs.push(input as unknown as Record<string, unknown>);
+        await answerQuery(route, input, async (result) => {
+          if (!isTDSExecutionResult(result)) {
+            throw new Error(
+              '[engine mock] plans are only generated for TDS queries',
+            );
+          }
+          const plan = buildExecutionPlan(result);
+          await fulfillJson(
+            route,
+            path.endsWith('/debug')
+              ? {
+                  plan,
+                  debug: [
+                    '-- plan generated by the e2e engine mock',
+                    `-- routing ${input.mapping}`,
+                  ],
+                }
+              : plan,
+          );
+        });
+        return;
+      }
+      // compiling a query: a lambda compiles to its return type, a failure
+      // is a `400` carrying the compilation error (drive it via `failures`)
+      case 'pure/v1/compilation/lambdaReturnType': {
+        const { lambda } = JSON.parse(getRequestBody(request)) as {
+          lambda: Record<string, unknown>;
+        };
+        captured.compiledLambdas.push(lambda);
+        await fulfillJson(route, {
+          returnType: 'meta::pure::tds::TabularDataSet',
+        });
+        return;
+      }
+      // stopping a running query cancels the user's executions
+      case 'server/v1/executionManager/cancelUserExecution':
+        captured.cancelledExecutionUsers.push(
+          new URL(request.url()).searchParams.get('userID') ?? '',
+        );
+        await fulfillText(route, 'cancelled');
+        return;
       // lambda protocol JSON -> Pure grammar text (called when saving)
       case 'pure/v1/grammar/jsonToGrammar/lambda': {
         const lambdaJson = getRequestBody(request);
@@ -308,6 +649,56 @@ export const setupEngineMock = async (
         const placeholder = `e2e_mock_lambda_${(lambdaCounter += 1)}`;
         savedLambdas.set(placeholder, lambdaJson);
         await fulfillText(route, placeholder);
+        return;
+      }
+      // value specifications -> Pure grammar, keyed by name (called when
+      // saving a query's parameter values): literals render as real grammar,
+      // anything else as a placeholder served back on load
+      case 'pure/v1/grammar/jsonToGrammar/valueSpecification/batch': {
+        const input = JSON.parse(getRequestBody(request)) as Record<
+          string,
+          ValueSpecificationJSON
+        >;
+        await fulfillJson(
+          route,
+          Object.fromEntries(
+            Object.entries(input).map(([name, json]) => {
+              const grammar = renderValueSpecification(json);
+              if (grammar !== undefined) {
+                return [name, grammar];
+              }
+              const placeholder = `e2e_mock_value_${(lambdaCounter += 1)}`;
+              savedLambdas.set(placeholder, JSON.stringify(json));
+              return [name, placeholder];
+            }),
+          ),
+        );
+        return;
+      }
+      // Pure grammar -> value specifications, keyed by name (called when
+      // loading a query's saved, or URL-given, parameter values)
+      case 'pure/v1/grammar/grammarToJson/valueSpecification/batch': {
+        const input = JSON.parse(getRequestBody(request)) as Record<
+          string,
+          { value: string }
+        >;
+        const result: Record<string, unknown> = {};
+        const errors: Record<string, unknown> = {};
+        Object.entries(input).forEach(([name, { value }]) => {
+          const saved = savedLambdas.get(value);
+          const json =
+            saved === undefined
+              ? parseValueSpecification(value)
+              : (JSON.parse(saved) as unknown);
+          if (json === undefined) {
+            errors[name] = {
+              message: `[engine mock] can't parse '${value}': only literals are supported`,
+            };
+          } else {
+            result[name] = json;
+          }
+        });
+        await fulfillJson(route, { result, errors });
         return;
       }
       // Pure grammar text -> lambda protocol JSON (called when loading)
@@ -405,6 +796,22 @@ export const setupEngineMock = async (
         message: `Unmocked engine endpoint called in e2e test: ${request.method()} /api/${endpoint} — add a handler in EngineMock.ts`,
       },
     });
+  };
+
+  await page.route(engineApiUrlPattern, async (route) => {
+    // endpoints a test holds back, to see what the app does meanwhile
+    const hold =
+      route.request().method() === 'OPTIONS'
+        ? undefined
+        : captured.holds.get(getPath(route.request()));
+    if (hold) {
+      await hold;
+      // the app may have given up on the call meanwhile, e.g. when the user
+      // stopped a query, leaving the response nowhere to go
+      await respond(route).catch(() => undefined);
+      return;
+    }
+    await respond(route);
   });
 
   return captured;

@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Locator, type Page } from '@playwright/test';
 import {
   setupEngineMock,
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
+import {
+  chooseAdvancedMenuItem,
+  getExplorer,
+  getResultPanel,
+  openDataSpaceQuery,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
 import {
   asGraphFetchTree,
   at,
@@ -26,38 +33,40 @@ import {
   getElementPath,
   getFunctionChain,
   getGraphFetchProperties,
-  type V1_ExecuteInput,
 } from '../support/QueryProtocol.js';
 
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
-
 let captured: CapturedEngineRequests;
+
+const getGraphFetchPanel = (page: Page): Locator =>
+  page.getByTestId('query__builder__graph__fetch').first();
 
 /**
  * Switch the fetch structure from the default tabular mode to graph fetch.
  * The `Tabular Data Structure` menu entry is a toggle: it carries a check
  * while tabular mode is active, and selecting it switches to graph fetch.
  */
-const switchToGraphFetch = async (page: Page): Promise<Page> => {
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Tabular Data Structure').click();
-  return page;
+const switchToGraphFetch = (page: Page): Promise<void> =>
+  chooseAdvancedMenuItem(page, 'Tabular Data Structure');
+
+/**
+ * Drag the explorer's `label` into the graph fetch tree, which lists it by
+ * its property name.
+ */
+const fetchProperty = async (
+  page: Page,
+  label: string,
+  property: string,
+): Promise<void> => {
+  await getExplorer(page)
+    .getByText(label, { exact: true })
+    .dragTo(getGraphFetchPanel(page));
+  // each node reads `<property> <type>`, e.g. `cases Float`
+  await expect(getGraphFetchPanel(page).getByText(property)).toBeVisible();
 };
 
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('the fetch structure can be switched to graph fetch', async ({ page }) => {
@@ -69,8 +78,7 @@ test('the fetch structure can be switched to graph fetch', async ({ page }) => {
   await switchToGraphFetch(page);
 
   // graph fetch replaces it with the graph fetch tree panel
-  const graphFetchPanel = page.getByTestId('query__builder__graph__fetch');
-  await expect(graphFetchPanel.first()).toBeVisible();
+  await expect(getGraphFetchPanel(page)).toBeVisible();
   await expect(
     page.getByTestId('query__builder__tds__projection'),
   ).toBeHidden();
@@ -78,39 +86,21 @@ test('the fetch structure can be switched to graph fetch', async ({ page }) => {
 
 test('a property can be added to the graph fetch tree', async ({ page }) => {
   await switchToGraphFetch(page);
-  const graphFetchPanel = page.getByTestId('query__builder__graph__fetch');
-
-  await page
-    .getByTestId('query__builder__explorer')
-    .getByText('Cases', { exact: true })
-    .dragTo(graphFetchPanel.first());
+  await fetchProperty(page, 'Cases', 'cases');
 
   // the tree lists the fetched property under the queried class
   await expect(
-    graphFetchPanel.first().getByText('Graph Fetch Tree'),
+    getGraphFetchPanel(page).getByText('Graph Fetch Tree'),
   ).toBeVisible();
-  await expect(graphFetchPanel.first().getByText('cases')).toBeVisible();
 });
 
 test('graph fetch generates a serialize/graphFetch lambda', async ({
   page,
 }) => {
   await switchToGraphFetch(page);
-  const graphFetchPanel = page.getByTestId('query__builder__graph__fetch');
-  await page
-    .getByTestId('query__builder__explorer')
-    .getByText('Cases', { exact: true })
-    .dragTo(graphFetchPanel.first());
-  await expect(graphFetchPanel.first().getByText('cases')).toBeVisible();
+  await fetchProperty(page, 'Cases', 'cases');
 
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect.poll(() => captured.executeInputs.length).toBeGreaterThan(0);
-
-  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
-    .function;
+  const lambda = (await runQuery(page, captured)).function;
 
   // graph fetch queries serialize a fetched object graph rather than
   // projecting columns into a tabular structure
@@ -136,4 +126,21 @@ test('graph fetch generates a serialize/graphFetch lambda', async ({
     expect(tree.class).toBe('test::COVIDData');
     expect(getGraphFetchProperties(tree)).toEqual(['cases']);
   }
+});
+
+test('graph fetch results are the fetched properties of each instance, as JSON', async ({
+  page,
+}) => {
+  await switchToGraphFetch(page);
+  await fetchProperty(page, 'Cases', 'cases');
+  await fetchProperty(page, 'Case Type', 'caseType');
+  await runQuery(page, captured);
+
+  // the result is JSON, not a grid: one object per instance, holding just
+  // the fetched properties
+  const result = getResultPanel(page);
+  await expect(result.locator('.ag-center-cols-container')).toHaveCount(0);
+  await expect(result).toContainText('"cases": 250');
+  await expect(result).toContainText('"caseType": "Confirmed"');
+  await expect(result).not.toContainText('"fips"');
 });

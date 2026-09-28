@@ -16,31 +16,28 @@
 
 import { test, expect } from '@playwright/test';
 import { setupEngineMock } from '../support/EngineMock.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
+import {
+  addFilterCondition,
+  chooseAdvancedMenuItem,
+  chooseAggregateOperator,
+  getFilterPanel,
+  getProjectionColumns,
+  openDataSpaceQuery,
+  openQueryOptions,
+  project,
+} from '../support/QueryBuilderHelpers.js';
 
 test.beforeEach(async ({ page }) => {
   await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('filter conditions can be grouped and the group operator switched', async ({
   page,
 }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
-
   // dropping two properties into the filter panel nests them under a group
-  await explorer.getByText('Case Type', { exact: true }).dragTo(filterPanel);
-  await explorer.getByText('Fips', { exact: true }).dragTo(filterPanel);
+  await addFilterCondition(page, 'Case Type');
+  await addFilterCondition(page, 'Fips');
 
   const conditions = page.getByTestId(
     'query__builder__filter__tree__condition__node-content',
@@ -48,7 +45,7 @@ test('filter conditions can be grouped and the group operator switched', async (
   await expect(conditions).toHaveCount(2);
 
   // the group node defaults to `and`, and clicking it toggles to `or`
-  const groupNode = filterPanel.locator(
+  const groupNode = getFilterPanel(page).locator(
     '.query-builder-filter-tree__group-node__label',
   );
   await expect(groupNode).toHaveText('and');
@@ -61,29 +58,14 @@ test('filter conditions can be grouped and the group operator switched', async (
 test('an aggregate operator can be applied to a projection column', async ({
   page,
 }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  const projectionColumns = page.getByTestId(
-    'QUERY_BUILDER_TDS_PROJECTION_COLUMN',
-  );
-
   // project two columns: one to group by, one to aggregate
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(projectionPanel);
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
-  await expect(projectionColumns).toHaveCount(2);
+  await project(page, ['Case Type', 'Cases']);
+  await expect(getProjectionColumns(page)).toHaveCount(2);
 
   // apply `sum` to the `Cases` column (`Case Type` does not contain the
   // substring `Cases`, so this filter is unambiguous)
-  const casesColumn = projectionColumns.filter({ hasText: 'Cases' });
-  await casesColumn.getByTitle('Choose Aggregate Operator...').click();
-  await page
-    .locator(
-      '.query-builder__projection__column__aggregate__operator__dropdown__option',
-      { hasText: /^sum$/ },
-    )
-    .click();
+  const casesColumn = getProjectionColumns(page).filter({ hasText: 'Cases' });
+  await chooseAggregateOperator(page, casesColumn, 'sum');
 
   // the operator badge is shown and the column is renamed to reflect it
   await expect(
@@ -95,18 +77,11 @@ test('an aggregate operator can be applied to a projection column', async ({
 });
 
 test('a window function column can be created', async ({ page }) => {
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-  const explorer = page.getByTestId('query__builder__explorer');
-
   // a window function operates on projection columns, so project one first
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
+  await project(page, ['Cases']);
 
   // enable the window function panel from the advanced menu
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Show Window Function(s)').click();
+  await chooseAdvancedMenuItem(page, 'Show Window Function(s)');
   const windowPanel = page.getByTestId('query__builder__window');
   await expect(windowPanel).toBeVisible();
 
@@ -127,10 +102,7 @@ test('a window function column can be created', async ({ page }) => {
 });
 
 test('query options can be configured', async ({ page }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const projectionPanel = page.getByTestId('query__builder__tds__projection');
-
-  await explorer.getByText('Cases', { exact: true }).dragTo(projectionPanel);
+  await project(page, ['Cases']);
 
   // the toolbar prompt starts in its unset state
   const optionsPrompt = page.getByTestId(
@@ -138,12 +110,8 @@ test('query options can be configured', async ({ page }) => {
   );
   await expect(optionsPrompt.getByText('Set Query Options')).toBeVisible();
 
-  // open the query options modal from the projection panel toolbar
-  await page.getByTitle('Configure Query Options...').click();
-  const optionsModal = page.getByRole('dialog');
-  await expect(optionsModal.getByText('Query Options')).toBeVisible();
-
   // set a row limit and apply
+  const optionsModal = await openQueryOptions(page);
   await optionsModal
     .getByRole('textbox', { name: 'Limit Results' })
     .fill('100');

@@ -20,6 +20,15 @@ import {
   type CapturedEngineRequests,
 } from '../support/EngineMock.js';
 import {
+  addFilterCondition,
+  chooseAdvancedMenuItem,
+  expectColumnValues,
+  getFilterPanel,
+  openDataSpaceQuery,
+  project,
+  runQuery,
+} from '../support/QueryBuilderHelpers.js';
+import {
   asFunction,
   asProperty,
   at,
@@ -27,13 +36,7 @@ import {
   getConstantBindings,
   getLambdaBody,
   getVariableName,
-  type V1_ExecuteInput,
 } from '../support/QueryProtocol.js';
-
-// Deep-link straight into the query builder for the mock data space served
-// by the mock depot server (see `@finos/legend-fixture-mock-server`)
-const TEST_DATA_SPACE_QUERY_URL =
-  'extensions/dataspace/org.finos.legend.test:legend-query-test:0.0.1/test::DataSpace/dummyContext';
 
 const CONSTANT_NAME = 'confirmedCaseType';
 const CONSTANT_VALUE = 'Confirmed';
@@ -42,11 +45,7 @@ let captured: CapturedEngineRequests;
 
 /** Open the constants panel and create a single `String` constant. */
 const addStringConstant = async (page: Page): Promise<void> => {
-  await page
-    .getByTestId('query__builder__actions')
-    .getByRole('button', { name: 'Advanced' })
-    .click();
-  await page.getByText('Show Constant(s)').click();
+  await chooseAdvancedMenuItem(page, 'Show Constant(s)');
 
   const constantsPanel = page.getByTestId('query-builder__constants');
   await expect(constantsPanel).toBeVisible();
@@ -64,12 +63,7 @@ const addStringConstant = async (page: Page): Promise<void> => {
 
 test.beforeEach(async ({ page }) => {
   captured = await setupEngineMock(page);
-  await page.goto(TEST_DATA_SPACE_QUERY_URL);
-  await expect(
-    page
-      .getByTestId('query__builder__explorer')
-      .getByText('Cases', { exact: true }),
-  ).toBeVisible({ timeout: 30_000 });
+  await openDataSpaceQuery(page);
 });
 
 test('a constant can be created and is listed with its value', async ({
@@ -85,34 +79,20 @@ test('a constant can be created and is listed with its value', async ({
 test('a constant can be used as a filter value and reaches the lambda', async ({
   page,
 }) => {
-  const explorer = page.getByTestId('query__builder__explorer');
-  const filterPanel = page.getByTestId('query__builder__filter__panel');
-
-  await explorer
-    .getByText('Case Type', { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
+  await project(page, ['Case Type']);
   await addStringConstant(page);
 
   // drag the constant onto the filter condition's value
-  await explorer.getByText('Case Type', { exact: true }).dragTo(filterPanel);
+  await addFilterCondition(page, 'Case Type');
   await page
     .getByTestId('query-builder__constants')
     .getByText(CONSTANT_NAME)
     .dragTo(
       page.getByTestId('query-builder-filter-tree__condition-node__value'),
     );
-  await expect(filterPanel.getByText(CONSTANT_NAME)).toBeVisible();
+  await expect(getFilterPanel(page).getByText(CONSTANT_NAME)).toBeVisible();
 
-  await page
-    .getByTestId('query__builder__result__panel')
-    .getByText('Run Query', { exact: true })
-    .click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(0);
-
-  const lambda = (at(captured.executeInputs, 0) as unknown as V1_ExecuteInput)
-    .function;
+  const lambda = (await runQuery(page, captured)).function;
 
   // the constant is bound ahead of the query itself
   expect(getConstantBindings(lambda)).toEqual([
@@ -126,4 +106,11 @@ test('a constant can be used as a filter value and reaches the lambda', async ({
   );
   expect(asProperty(at(condition.parameters, 0)).property).toBe('caseType');
   expect(getVariableName(at(condition.parameters, 1))).toBe(CONSTANT_NAME);
+
+  // the query runs with the constant's value
+  await expectColumnValues(
+    page,
+    'Case Type',
+    Array<string>(4).fill('Confirmed'),
+  );
 });

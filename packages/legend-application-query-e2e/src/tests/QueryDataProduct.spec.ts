@@ -25,7 +25,6 @@ import {
   COVID_MORTALITY_ACCESS_POINT_GROUP_ID,
   COVID_REPORTING_ACCESS_POINT_GROUP_ID,
   mockModelAccessDataProduct,
-  TEST_PROJECT_VERSION,
 } from '../support/DepotMock.js';
 import {
   setupEngineMock,
@@ -38,6 +37,16 @@ import {
   SECOND_PAGE_DATA_PRODUCT_TITLE,
   TEST_LAKEHOUSE_ENVIRONMENT,
 } from '../support/LakehouseMock.js';
+import {
+  ALL_CASES,
+  expectColumnValues,
+  getExplorer,
+  getQueryTitle,
+  project,
+  runQuery,
+  saveNewQuery,
+  TEST_PROJECT_GAV,
+} from '../support/QueryBuilderHelpers.js';
 import {
   at,
   getChainedFunction,
@@ -53,22 +62,14 @@ import {
  * listed for picking by the Lakehouse contract server.
  */
 
-const PROJECT_GAV = `org.finos.legend.test:legend-query-test:${TEST_PROJECT_VERSION}`;
-const MODEL_ACCESS_URL = `data-product/model/${PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_ACCESS_POINT_GROUP_ID}`;
-const LAKEHOUSE_ACCESS_URL = `data-product/lakehouse/${PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_LAKEHOUSE_ACCESS_POINT_ID}`;
+const MODEL_ACCESS_URL = `data-product/model/${TEST_PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_ACCESS_POINT_GROUP_ID}`;
+const LAKEHOUSE_ACCESS_URL = `data-product/lakehouse/${TEST_PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_LAKEHOUSE_ACCESS_POINT_ID}`;
 
-// `Cases` of the mock data, and of its confirmed cases only
-const ALL_CASES = ['250', '301', '180', '420', '95', '512', '77', '640'];
+// `Cases` of the mock data's confirmed cases, and of its deaths
 const CONFIRMED_CASES = ['250', '301', '512', '640'];
 const DEATH_CASES = ['420', '77'];
 
 let captured: CapturedEngineRequests;
-
-const getExplorer = (page: Page): Locator =>
-  page.getByTestId('query__builder__explorer');
-
-const getResultPanel = (page: Page): Locator =>
-  page.getByTestId('query__builder__result__panel');
 
 /** The data product picker, showing the data product being queried. */
 const getDataProductSelector = (page: Page): Locator =>
@@ -107,43 +108,6 @@ const waitForAccessPoint = async (page: Page, id: string): Promise<void> => {
     timeout: 30_000,
   });
 };
-
-const project = async (page: Page, column: string): Promise<void> => {
-  await getExplorer(page)
-    .getByText(column, { exact: true })
-    .dragTo(page.getByTestId('query__builder__tds__projection'));
-  await expect(
-    page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN'),
-  ).toHaveCount(1);
-};
-
-/** Run the query; return what the app sent to execute it. */
-const runQuery = async (page: Page): Promise<V1_ExecuteInput> => {
-  const executionsBefore = captured.executeInputs.length;
-  await getResultPanel(page).getByText('Run Query', { exact: true }).click();
-  await expect
-    .poll(() => captured.executeInputs.length, { timeout: 30_000 })
-    .toBeGreaterThan(executionsBefore);
-  await expect(getResultPanel(page).getByText(/\d+ row\(s\)/)).toBeVisible();
-  return at(
-    captured.executeInputs,
-    captured.executeInputs.length - 1,
-  ) as unknown as V1_ExecuteInput;
-};
-
-/** The values of a result column, top to bottom as displayed. */
-const getColumnValues = (page: Page, column: string): Promise<string[]> =>
-  getResultPanel(page)
-    .locator(`.ag-center-cols-container .ag-cell[col-id="${column}"]`)
-    .evaluateAll((cells) =>
-      cells
-        .map((cell) => ({
-          index: Number(cell.closest('.ag-row')?.getAttribute('row-index')),
-          text: cell.textContent?.trim() ?? '',
-        }))
-        .sort((a, b) => a.index - b.index)
-        .map((cell) => cell.text),
-    );
 
 /** The Lakehouse runtime the query runs on, from the model sent with it. */
 const getLakehouseRuntime = (executeInput: V1_ExecuteInput): unknown =>
@@ -194,10 +158,10 @@ test.describe('with a Lakehouse environment', () => {
     page,
   }) => {
     await page.goto(MODEL_ACCESS_URL);
-    await project(page, 'Cases');
-    const executeInput = await runQuery(page);
+    await project(page, ['Cases']);
+    const executeInput = await runQuery(page, captured);
 
-    expect(await getColumnValues(page, 'Cases')).toEqual(ALL_CASES);
+    await expectColumnValues(page, 'Cases', ALL_CASES);
 
     // `...->with(test::CovidDataProduct)->from(<Lakehouse runtime>)`
     const lambda = executeInput.function;
@@ -220,25 +184,21 @@ test.describe('with a Lakehouse environment', () => {
     page,
   }) => {
     await page.goto(MODEL_ACCESS_URL);
-    await project(page, 'Cases');
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await page.getByTitle('New Query Name').fill('Data Product Query');
-    await page.getByRole('button', { name: 'Create Query' }).click();
-    await expect(page).toHaveURL(/\/edit\//);
+    await project(page, ['Cases']);
+    await saveNewQuery(page, 'Data Product Query');
 
     await page.reload();
-    await expect(page.getByTitle('Double-click to rename query')).toHaveText(
-      'Data Product Query',
-      { timeout: 30_000 },
-    );
+    await expect(getQueryTitle(page)).toHaveText('Data Product Query', {
+      timeout: 30_000,
+    });
     await expect(getDataProductSelector(page)).toContainText(
       COVID_DATA_PRODUCT_TITLE,
     );
     await expect(
       page.getByTestId('QUERY_BUILDER_TDS_PROJECTION_COLUMN'),
     ).toHaveText(['Cases']);
-    await runQuery(page);
-    expect(await getColumnValues(page, 'Cases')).toEqual(ALL_CASES);
+    await runQuery(page, captured);
+    await expectColumnValues(page, 'Cases', ALL_CASES);
   });
 
   test('a Lakehouse access point lists its columns and queries them', async ({
@@ -257,9 +217,9 @@ test.describe('with a Lakehouse environment', () => {
       ).toBeVisible();
     }
 
-    await project(page, 'Cases');
-    const executeInput = await runQuery(page);
-    expect(await getColumnValues(page, 'Cases')).toEqual(CONFIRMED_CASES);
+    await project(page, ['Cases']);
+    const executeInput = await runQuery(page, captured);
+    await expectColumnValues(page, 'Cases', CONFIRMED_CASES);
 
     // `#>{test::CovidDataProduct.confirmed_cases}#->project(...)`, run on a
     // Lakehouse runtime
@@ -278,7 +238,7 @@ test.describe('with a Lakehouse environment', () => {
 
   test('a Lakehouse access point query can be filtered', async ({ page }) => {
     await page.goto(LAKEHOUSE_ACCESS_URL);
-    await project(page, 'Cases');
+    await project(page, ['Cases']);
     const filterPanel = page.getByTestId('query__builder__filter__panel');
     await getExplorer(page)
       .getByText('Cases', { exact: true })
@@ -298,8 +258,8 @@ test.describe('with a Lakehouse environment', () => {
     await filterPanel.locator('.value-spec-editor input').fill('300');
     await page.keyboard.press('Enter');
 
-    await runQuery(page);
-    expect(await getColumnValues(page, 'Cases')).toEqual(['301', '512', '640']);
+    await runQuery(page, captured);
+    await expectColumnValues(page, 'Cases', ['301', '512', '640']);
   });
 
   test('the data product dropdown lists the data products deployed from projects, from every page of the listing', async ({
@@ -342,9 +302,9 @@ test.describe('with a Lakehouse environment', () => {
       COVID_ACCESS_POINT_GROUP_ID,
     );
 
-    await project(page, 'Cases');
-    const executeInput = await runQuery(page);
-    expect(await getColumnValues(page, 'Cases')).toEqual(ALL_CASES);
+    await project(page, ['Cases']);
+    const executeInput = await runQuery(page, captured);
+    await expectColumnValues(page, 'Cases', ALL_CASES);
     expect(
       getElementPath(
         at(getChainedFunction(executeInput.function, 1).parameters, 1),
@@ -375,19 +335,15 @@ test.describe('with a Lakehouse environment', () => {
     );
 
     await waitForModel(page);
-    await project(page, 'Cases');
-    await runQuery(page);
-    expect(await getColumnValues(page, 'Cases')).toEqual(ALL_CASES);
+    await project(page, ['Cases']);
+    await runQuery(page, captured);
+    await expectColumnValues(page, 'Cases', ALL_CASES);
 
-    await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await page.getByTitle('New Query Name').fill('Reporting Query');
-    await page.getByRole('button', { name: 'Create Query' }).click();
-    await expect(page).toHaveURL(/\/edit\//);
+    await saveNewQuery(page, 'Reporting Query');
     await page.reload();
-    await expect(page.getByTitle('Double-click to rename query')).toHaveText(
-      'Reporting Query',
-      { timeout: 30_000 },
-    );
+    await expect(getQueryTitle(page)).toHaveText('Reporting Query', {
+      timeout: 30_000,
+    });
     await expect(getAccessSelected(page)).toContainText(
       COVID_REPORTING_ACCESS_POINT_GROUP_ID,
     );
@@ -412,9 +368,9 @@ test.describe('with a Lakehouse environment', () => {
       .click();
     await waitForAccessPoint(page, COVID_DEATHS_ACCESS_POINT_ID);
 
-    await project(page, 'Cases');
-    const executeInput = await runQuery(page);
-    expect(await getColumnValues(page, 'Cases')).toEqual(DEATH_CASES);
+    await project(page, ['Cases']);
+    const executeInput = await runQuery(page, captured);
+    await expectColumnValues(page, 'Cases', DEATH_CASES);
     expect(
       at(getChainedFunction(executeInput.function, 2).parameters, 0),
     ).toMatchObject({
@@ -442,7 +398,7 @@ test.describe('with a Lakehouse environment', () => {
     const link = await page.evaluate(() => navigator.clipboard.readText());
     expect(link).toMatch(
       new RegExp(
-        `/query/data-product/lakehouse/${PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_DEATHS_ACCESS_POINT_ID}$`,
+        `/query/data-product/lakehouse/${TEST_PROJECT_GAV}/${COVID_DATA_PRODUCT_PATH}/${COVID_DEATHS_ACCESS_POINT_ID}$`,
       ),
     );
 
