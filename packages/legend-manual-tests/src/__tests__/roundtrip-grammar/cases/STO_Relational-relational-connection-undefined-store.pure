@@ -149,7 +149,7 @@ RelationalDatabaseConnection connection::relational::MiddleTierUsernamePasswordC
 RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers
 {
   type: H2;
-  timezone: +3000;
+  timezone: 'US/Arizona';
   quoteIdentifiers: true;
   specification: Static
   {
@@ -163,7 +163,7 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
 RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdentifiers1
 {
   type: H2;
-  timezone: +3000;
+  timezone: 'Pacific/Guam';
   quoteIdentifiers: false;
   specification: Static
   {
@@ -177,7 +177,7 @@ RelationalDatabaseConnection connection::relational::H2ConnectionWithQuoteIdenti
 RelationalDatabaseConnection connection::relational::H2ConnectionWithQueryTimeOut
 {
   type: H2;
-  timezone: +3000;
+  timezone: +0530;
   specification: Static
   {
     name: 'myDb';
