@@ -37,6 +37,10 @@ import {
 import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import type { EditorStore } from '../../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
+import {
+  GENERATION_MODE,
+  LegendStudioTelemetryHelper,
+} from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { GENERATION_FILE_ROOT_NAME } from '../../utils/FileSystemTreeUtils.js';
 import {
   configurationProperty_addConfigurationProperty,
@@ -99,6 +103,22 @@ export class XTGenerationState extends GeneratedFileStructureState {
 
   *generate(): GeneratorFn<void> {
     this.generatingAction.inProgress();
+    const startedAt = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const generationType = this.elementXTSchemaGenerationState.description.name;
+    const elementPath =
+      this.configSpecification.modelUnit.packageableElementIncludes[0]?.value
+        .path;
+    const telemetryBase = {
+      mode: GENERATION_MODE.ELEMENT_SCHEMA,
+      elementPath,
+      generationType,
+    };
+    LegendStudioTelemetryHelper.logEvent_GenerationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      telemetryBase,
+    );
     try {
       const modelUnit = this.configSpecification.modelUnit;
       const properties = [...this.configSpecification.configurationProperties];
@@ -122,6 +142,11 @@ export class XTGenerationState extends GeneratedFileStructureState {
         )
         .flat();
       this.processGenerationResult(output);
+      LegendStudioTelemetryHelper.logEvent_GenerationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...telemetryBase, durationMs: Date.now() - startedAt },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.fileSystemState.selectedNode = undefined;
@@ -129,6 +154,11 @@ export class XTGenerationState extends GeneratedFileStructureState {
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...telemetryBase, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {

@@ -53,6 +53,7 @@ import {
   TestableTestEditorState,
   TestableTestSuiteEditorState,
 } from '../testable/TestableEditorState.js';
+import { TESTABLE_KIND } from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import type { EditorStore } from '../../../EditorStore.js';
 import type { IngestDefinitionEditorState } from './IngestDefinitionEditorState.js';
 import { RelationElementState } from '../data/EmbeddedDataState.js';
@@ -107,6 +108,14 @@ export class IngestTestState extends TestableTestEditorState {
   override test: IngestMatViewTest;
   readonly uuid = uuid();
   testDataRelationState: RelationElementState | undefined;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.INGEST;
+  }
+
+  override get testablePath(): string {
+    return this.suiteState.testableState.ingest.path;
+  }
 
   constructor(suiteState: IngestTestSuiteState, test: IngestMatViewTest) {
     super(
@@ -341,6 +350,14 @@ export class IngestTestSuiteState extends TestableTestSuiteEditorState {
   declare selectTestState: IngestTestState | undefined;
   testDataState: IngestTestDataState;
   readonly uuid = uuid();
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.INGEST;
+  }
+
+  override get testablePath(): string {
+    return this.testableState.ingest.path;
+  }
 
   constructor(
     editorStore: EditorStore,

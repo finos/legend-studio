@@ -43,6 +43,10 @@ import {
   ProjectType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  PROJECT_CONFIG_UPDATE_ACTION,
+} from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { SNAPSHOT_ALIAS, StoreProjectData } from '@finos/legend-server-depot';
 import { ProjectDependencyEditorState } from './ProjectDependencyEditorState.js';
 
@@ -231,7 +235,15 @@ export class ProjectConfigurationEditorState extends EditorState {
 
   *updateProjectConfiguration(
     updateConfigurationCommand: UpdateProjectConfigurationCommand,
+    updateAction: PROJECT_CONFIG_UPDATE_ACTION,
   ): GeneratorFn<void> {
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    LegendStudioTelemetryHelper.logEvent_ProjectConfigUpdateLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      { action: updateAction },
+    );
     try {
       this.updatingConfigurationState.inProgress();
 
@@ -262,11 +274,21 @@ export class ProjectConfigurationEditorState extends EditorState {
       this.editorStore.tabManagerState.openTab(
         this.editorStore.projectConfigurationEditorState,
       );
+      LegendStudioTelemetryHelper.logEvent_ProjectConfigUpdateSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { action: updateAction, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ProjectConfigUpdateFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { action: updateAction, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
@@ -292,7 +314,12 @@ export class ProjectConfigurationEditorState extends EditorState {
           latestStructure,
           `update project configuration from ${this.editorStore.applicationStore.config.appName}: update to latest project structure`,
         );
-        yield flowResult(this.updateProjectConfiguration(updateCommand));
+        yield flowResult(
+          this.updateProjectConfiguration(
+            updateCommand,
+            PROJECT_CONFIG_UPDATE_ACTION.UPDATE_TO_LATEST_STRUCTURE,
+          ),
+        );
       } catch (error) {
         assertErrorThrown(error);
         this.editorStore.applicationStore.logService.error(
@@ -320,7 +347,12 @@ export class ProjectConfigurationEditorState extends EditorState {
         }: changed project type to ${prettyCONSTName(newProjectType)}`,
       );
       updateCommand.projectType = newProjectType;
-      yield flowResult(this.updateProjectConfiguration(updateCommand));
+      yield flowResult(
+        this.updateProjectConfiguration(
+          updateCommand,
+          PROJECT_CONFIG_UPDATE_ACTION.CHANGE_PROJECT_TYPE,
+        ),
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -380,7 +412,10 @@ export class ProjectConfigurationEditorState extends EditorState {
             ),
         );
       yield flowResult(
-        this.updateProjectConfiguration(updateProjectConfigurationCommand),
+        this.updateProjectConfiguration(
+          updateProjectConfigurationCommand,
+          PROJECT_CONFIG_UPDATE_ACTION.UPDATE_CONFIGS,
+        ),
       );
     } catch (error) {
       assertErrorThrown(error);

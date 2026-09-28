@@ -35,6 +35,10 @@ import {
   ServiceRegistrationState,
 } from '../editor-state/element-editor-state/service/ServiceRegistrationState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  SERVICE_REGISTRATION_TRIGGER,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import { type ServiceRegistrationEnvironmentConfig } from '../../../application/LegendStudioApplicationConfig.js';
 
 export enum REGISTRATION_RESULT {
@@ -179,6 +183,19 @@ export class GlobalBulkServiceRegistrationState {
       .filter((bulkRegState) => bulkRegState.isSelected)
       .map((serviceState) => serviceState.service);
 
+    const startedAt = Date.now();
+    const telemetryBase = {
+      trigger: SERVICE_REGISTRATION_TRIGGER.BULK,
+      executionMode: this.serviceConfigState.serviceExecutionMode,
+      serviceCount: selectedServices.length,
+      activatePostRegistration: this.activatePostRegistration,
+    };
+    LegendStudioTelemetryHelper.logEvent_ServiceRegistrationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
+
     try {
       this.validateBulkServiceForRegistration(
         this.editorStore,
@@ -229,11 +246,21 @@ export class GlobalBulkServiceRegistrationState {
       }
       this.handleResults(registrationResults);
       this.isServiceRegistering.complete();
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, durationMs: Date.now() - startedAt },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {

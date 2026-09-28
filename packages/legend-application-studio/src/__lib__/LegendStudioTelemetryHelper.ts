@@ -15,9 +15,22 @@
  */
 
 import {
+  Availability,
+  DataProduct,
+  FunctionActivator,
   GRAPH_MANAGER_EVENT,
+  IngestDefinition,
+  Mapping,
+  MultiExecutionServiceTestResult,
+  PackageableElement,
+  Service,
+  TestError,
+  TestExecuted,
+  TestExecutionStatus,
   type GraphInitializationReport,
   type GraphManagerOperationReport,
+  type TestResult,
+  type Testable,
 } from '@finos/legend-graph';
 import {
   APPLICATION_EVENT,
@@ -158,6 +171,437 @@ export enum GRAPH_EDITOR_MODE_LABEL {
   STRICT_TEXT = 'strict-text',
 }
 
+export enum FORM_MODE_COMPILATION_ERROR_KIND {
+  COMPILATION = 'compilation',
+  ENGINE = 'engine',
+}
+
+export enum GRAPH_INITIALIZATION_ERROR_KIND {
+  DEPENDENCY = 'dependency',
+  DESERIALIZATION = 'deserialization',
+  NETWORK = 'network',
+  OTHER = 'other',
+}
+
+export enum SERVICE_REGISTRATION_TRIGGER {
+  SINGLE = 'single',
+  BULK = 'bulk',
+  SERVICE_QUERY_EDITOR = 'service-query-editor',
+}
+
+export type ServiceRegistrationCommonData = {
+  trigger: SERVICE_REGISTRATION_TRIGGER;
+  executionMode: string | undefined;
+  serviceCount: number;
+  activatePostRegistration: boolean;
+};
+
+export type ServiceRegistrationCheckCommonData = {
+  servicePath: string;
+  envCount: number;
+};
+
+/**
+ * Discriminates the entry-point of `editor.generation.*` events.
+ * - `global`: sidebar "Generate" action, spans the whole project's generation spec
+ *   (models + artifacts).
+ * - `element-schema`: per-element external-format schema regeneration from an
+ *   element editor's "Generate" button.
+ */
+export enum GENERATION_MODE {
+  GLOBAL = 'global',
+  ELEMENT_SCHEMA = 'element-schema',
+}
+
+export type GenerationCommonData = {
+  mode: GENERATION_MODE;
+  elementPath?: string | undefined;
+  generationType?: string | undefined;
+  /**
+   * Only meaningful for `global` runs — reflects whether artifact generation
+   * was enabled at the time the run was launched.
+   */
+  enableArtifactGeneration?: boolean | undefined;
+};
+
+/**
+ * High-level bucket for a Studio tab so dashboards can slice tab activity
+ * across element editors vs. sidecar tabs (diff viewers, artifact viewers,
+ * model importer, etc.) without depending on the element metamodel.
+ */
+export enum EDITOR_TAB_KIND {
+  ELEMENT = 'element',
+  ENTITY_DIFF = 'entity-diff',
+  ARTIFACT_GENERATION = 'artifact-generation',
+  MODEL_IMPORTER = 'model-importer',
+  PROJECT_CONFIGURATION = 'project-configuration',
+  END_TO_END_WORKFLOW = 'end-to-end-workflow',
+  OTHER = 'other',
+}
+
+/**
+ * Sub-bucket for `EDITOR_TAB_KIND.ELEMENT` tabs — carried as the raw
+ * `PACKAGEABLE_ELEMENT_TYPE` string (e.g. `'CLASS'`, `'MAPPING'`,
+ * `'SERVICE'`, `'BETA_DATA_PRODUCT'`) resolved by
+ * `EditorGraphState.getPackageableElementType`. That classifier is
+ * plugin-aware, so extension-provided element kinds (DataSpace, Diagram,
+ * DataQuality, ...) come through with their extension-declared labels
+ * rather than falling into a generic `other` bucket.
+ */
+export type EditorElementKind = string;
+
+export enum EDITOR_TAB_OPEN_TRIGGER {
+  /** Default when the caller did not surface intent. */
+  PROGRAMMATIC = 'programmatic',
+  /** Tab was recreated after graph rebuild via cachedTabs recovery. */
+  RESTORE = 'restore',
+}
+
+export enum EDITOR_TAB_CLOSE_TRIGGER {
+  /** User clicked the "x" on the tab, or middle-clicked the tab strip. */
+  USER_CLOSE = 'user-close',
+  /** User invoked "Close Others" from the tab context menu. */
+  CLOSE_OTHERS = 'close-others',
+  /** User invoked "Close All" from the tab context menu. */
+  CLOSE_ALL = 'close-all',
+  /** Tabs were flushed as part of a graph rebuild (cacheAndClose). */
+  NAVIGATE_AWAY = 'navigate-away',
+  /** Programmatic close from a store method. */
+  PROGRAMMATIC = 'programmatic',
+}
+
+export type EditorTabCommonData = {
+  tabKind: EDITOR_TAB_KIND;
+  elementKind?: EditorElementKind | undefined;
+  elementPath?: string | undefined;
+};
+
+export enum WORKFLOW_MANAGER_SCOPE {
+  WORKSPACE = 'workspace',
+  PROJECT = 'project',
+  PROJECT_VERSION = 'project-version',
+}
+
+export enum WORKFLOW_MANAGER_JOB_ACTION {
+  RETRY = 'retry',
+  CANCEL = 'cancel',
+  RUN_MANUAL = 'run-manual',
+}
+
+export type WorkflowManagerStatusBreakdown = Record<string, number>;
+
+/**
+ * SDLC review actions. `create` only fires from the author side;
+ * `approve` / `reopen` fire only from the reviewer side; `commit` and
+ * `close` fire from both.
+ */
+export enum SDLC_REVIEW_ACTION {
+  CREATE = 'create',
+  COMMIT = 'commit',
+  CLOSE = 'close',
+  REOPEN = 'reopen',
+  APPROVE = 'approve',
+}
+
+/**
+ * Which side of the review the event fires from — the workspace author
+ * committing/closing their own review, or a reviewer approving / committing
+ * / reopening / closing someone else's review.
+ */
+export enum SDLC_REVIEW_ROLE {
+  AUTHOR = 'author',
+  REVIEWER = 'reviewer',
+}
+
+type SdlcReviewIdentityData = {
+  action: SDLC_REVIEW_ACTION;
+  role: SDLC_REVIEW_ROLE;
+  projectId: string;
+  patchReleaseVersionId?: string | undefined;
+};
+
+export type SdlcReviewActionLaunchData = SdlcReviewIdentityData & {
+  // Undefined on `create` launches (no id yet); populated for the other
+  // actions.
+  reviewId?: string | undefined;
+};
+
+export type SdlcReviewActionSuccessData = SdlcReviewIdentityData & {
+  reviewId: string;
+  durationMs: number;
+};
+
+export type SdlcReviewActionFailureData = SdlcReviewIdentityData & {
+  // Undefined on `create` failures (the server may have failed before
+  // assigning an id); populated for the other actions.
+  reviewId?: string | undefined;
+  errorMessage: string;
+};
+
+/**
+ * Workspace setup screen actions — user-triggered writes from the setup /
+ * project picker route. Structured replacement for the
+ * WORKSPACE_SETUP_FAILURE bucket plus previously-unlogged create-project
+ * and import-project flows.
+ */
+export enum SETUP_ACTION {
+  CREATE_SANDBOX_PROJECT = 'create-sandbox-project',
+  CREATE_PROJECT = 'create-project',
+  IMPORT_PROJECT = 'import-project',
+  CREATE_WORKSPACE = 'create-workspace',
+}
+
+type SetupActionIdentityData = {
+  action: SETUP_ACTION;
+  // Populated for `create-workspace` (the caller passes the target project
+  // and workspace up front) and for `*` success events once the id is
+  // known; undefined otherwise.
+  projectId?: string | undefined;
+  // Only meaningful for `create-workspace` — USER / GROUP. Serialized as
+  // string so the enum value doesn't need to be re-exported here.
+  workspaceType?: string | undefined;
+  // Only meaningful for `create-workspace` — true when the workspace
+  // targets a patch branch rather than main.
+  hasPatchReleaseVersion?: boolean | undefined;
+};
+
+export type SetupActionLaunchData = SetupActionIdentityData;
+
+export type SetupActionSuccessData = SetupActionIdentityData & {
+  durationMs: number;
+};
+
+export type SetupActionFailureData = SetupActionIdentityData & {
+  errorMessage: string;
+};
+
+/**
+ * Project configuration editor actions — user-triggered writes from the
+ * project configuration editor. Structured replacement for the
+ * SDLC_MANAGER_FAILURE bucket around config updates.
+ *
+ * The three actions map to the three top-level editor buttons; they all
+ * funnel through the same `updateProjectConfiguration` SDLC call, and the
+ * `action` field records which entry point the user came from.
+ */
+export enum PROJECT_CONFIG_UPDATE_ACTION {
+  // "Update" button on the config editor: dependency add/remove, platform
+  // configurations, run-dependency-tests toggle.
+  UPDATE_CONFIGS = 'update-configs',
+  // "Upgrade to latest project structure" button.
+  UPDATE_TO_LATEST_STRUCTURE = 'update-to-latest-structure',
+  // "Change project type" (managed / embedded) toggle.
+  CHANGE_PROJECT_TYPE = 'change-project-type',
+}
+
+type ProjectConfigUpdateIdentityData = {
+  action: PROJECT_CONFIG_UPDATE_ACTION;
+};
+
+export type ProjectConfigUpdateLaunchData = ProjectConfigUpdateIdentityData;
+
+export type ProjectConfigUpdateSuccessData = ProjectConfigUpdateIdentityData & {
+  durationMs: number;
+};
+
+export type ProjectConfigUpdateFailureData = ProjectConfigUpdateIdentityData & {
+  errorMessage: string;
+};
+
+/**
+ * Project overview sidebar SDLC writes — user-triggered actions from the
+ * project overview panel. Structured replacement for the
+ * SDLC_MANAGER_FAILURE bucket around ProjectOverviewState.
+ */
+export enum PROJECT_OVERVIEW_ACTION {
+  // Delete another workspace from the overview list.
+  DELETE_WORKSPACE = 'delete-workspace',
+  // Edit project name / description / tags.
+  UPDATE_PROJECT = 'update-project',
+  // Cut a new release version (major / minor / patch semver).
+  CREATE_VERSION = 'create-version',
+  // Close out a patch branch and release it as a version.
+  RELEASE_PATCH = 'release-patch',
+  // Open a new patch branch (also creates the initial workspace on it).
+  CREATE_PATCH = 'create-patch',
+}
+
+type ProjectOverviewActionIdentityData = {
+  action: PROJECT_OVERVIEW_ACTION;
+  projectId: string;
+  // Only meaningful for `release-patch` (the patch being released) and for
+  // `create-patch` (the source version the patch branches from).
+  patchReleaseVersionId?: string | undefined;
+  // Only meaningful for `create-patch` (the workspace being created on the
+  // new patch branch) — USER / GROUP. Serialized as string so the enum
+  // value doesn't need to be re-exported here.
+  workspaceType?: string | undefined;
+};
+
+export type ProjectOverviewActionLaunchData = ProjectOverviewActionIdentityData;
+
+export type ProjectOverviewActionSuccessData =
+  ProjectOverviewActionIdentityData & { durationMs: number };
+
+export type ProjectOverviewActionFailureData =
+  ProjectOverviewActionIdentityData & { errorMessage: string };
+
+/**
+ * Ad-hoc workspace creation from the editor bootstrap — fires when the
+ * user deep-links to a workspace that doesn't exist and accepts the
+ * "Create workspace" recovery prompt. Distinct from the setup screen's
+ * `SETUP_ACTION.CREATE_WORKSPACE` because it runs from a different
+ * surface (in-editor recovery, not the setup route) with its own
+ * error-handling and legacy log bucket (`WORKSPACE_SETUP_FAILURE`).
+ *
+ * No editor mode is active yet at this point, so `sourceInfo` is
+ * omitted — the payload carries `projectId`, `workspaceId`,
+ * `workspaceType`, and `hasPatchReleaseVersion` explicitly.
+ */
+type SdlcWorkspaceCreateIdentityData = {
+  projectId: string;
+  workspaceId: string;
+  workspaceType: string;
+  hasPatchReleaseVersion: boolean;
+};
+
+export type SdlcWorkspaceCreateLaunchData = SdlcWorkspaceCreateIdentityData;
+
+export type SdlcWorkspaceCreateSuccessData = SdlcWorkspaceCreateIdentityData & {
+  durationMs: number;
+};
+
+export type SdlcWorkspaceCreateFailureData = SdlcWorkspaceCreateIdentityData & {
+  errorMessage: string;
+};
+
+export enum SERVICE_TEST_SUITE_RUN_MODE {
+  RUN_SUITE = 'run-suite',
+  RUN_FAILING = 'run-failing',
+}
+
+export type ServiceTestSuiteRunCommonData = {
+  servicePath: string;
+  suiteId: string;
+  mode: SERVICE_TEST_SUITE_RUN_MODE;
+  testCount: number;
+};
+
+/**
+ * Categorises the element behind a `Testable` for the unified TESTABLE_RUN
+ * telemetry so downstream analytics can slice per element kind without
+ * relying on the element path.
+ */
+export enum TESTABLE_KIND {
+  MAPPING = 'mapping',
+  DATA_PRODUCT = 'data-product',
+  INGEST = 'ingest',
+  FUNCTION_ACTIVATOR = 'function-activator',
+  AVAILABILITY = 'availability',
+  SERVICE = 'service',
+  OTHER = 'other',
+}
+
+/**
+ * Which kind of run was invoked from the testable editors. This mirrors the
+ * distinct UI actions surfaced to the user (run suite, run failing tests,
+ * run entire testable, run all failing suites).
+ */
+export enum TESTABLE_RUN_MODE {
+  RUN_SUITE = 'run-suite',
+  RUN_FAILING = 'run-failing',
+  RUN_TESTABLE = 'run-testable',
+  RUN_ALL_FAILING = 'run-all-failing',
+  RUN_TEST = 'run-test',
+}
+
+export type TestableRunCommonData = {
+  testableKind: TESTABLE_KIND;
+  testablePath: string;
+  suiteId: string | undefined;
+  mode: TESTABLE_RUN_MODE;
+  testCount: number;
+};
+
+/**
+ * Resolves the {@link TESTABLE_KIND} label for a testable element instance.
+ * Falls back to `OTHER` so telemetry never blocks on an unknown subtype.
+ */
+export const getTestableKind = (testable: Testable): TESTABLE_KIND => {
+  if (testable instanceof Service) {
+    return TESTABLE_KIND.SERVICE;
+  }
+  if (testable instanceof Mapping) {
+    return TESTABLE_KIND.MAPPING;
+  }
+  if (testable instanceof DataProduct) {
+    return TESTABLE_KIND.DATA_PRODUCT;
+  }
+  if (testable instanceof IngestDefinition) {
+    return TESTABLE_KIND.INGEST;
+  }
+  if (testable instanceof FunctionActivator) {
+    return TESTABLE_KIND.FUNCTION_ACTIVATOR;
+  }
+  if (testable instanceof Availability) {
+    return TESTABLE_KIND.AVAILABILITY;
+  }
+  return TESTABLE_KIND.OTHER;
+};
+
+/**
+ * Reads `.path` from a testable, which all real packageable-element testables
+ * expose. Returns an empty string if unavailable to keep telemetry non-fatal.
+ */
+export const getTestablePath = (testable: Testable): string =>
+  testable instanceof PackageableElement ? testable.path : '';
+
+/**
+ * Bucketises test results into passed/failed/errored counts for the unified
+ * TESTABLE_RUN__SUCCESS payload. Handles {@link MultiExecutionServiceTestResult}
+ * by tallying each key-indexed sub-result so service multi-execution runs count
+ * every execution rather than the wrapper.
+ */
+export const summarizeTestResults = (
+  results: TestResult[],
+): { passedCount: number; failedCount: number; erroredCount: number } => {
+  let passedCount = 0;
+  let failedCount = 0;
+  let erroredCount = 0;
+  const tally = (result: TestResult): void => {
+    if (result instanceof TestError) {
+      erroredCount += 1;
+    } else if (result instanceof TestExecuted) {
+      if (result.testExecutionStatus === TestExecutionStatus.PASS) {
+        passedCount += 1;
+      } else {
+        failedCount += 1;
+      }
+    }
+  };
+  for (const result of results) {
+    if (result instanceof MultiExecutionServiceTestResult) {
+      result.keyIndexedTestResults.forEach(tally);
+    } else {
+      tally(result);
+    }
+  }
+  return { passedCount, failedCount, erroredCount };
+};
+
+/**
+ * Scope of a global test runner invocation from the sidebar.
+ */
+export enum GLOBAL_TEST_RUN_SCOPE {
+  ALL = 'all',
+  DEPENDENCIES = 'dependencies',
+}
+
+export type GlobalTestRunCommonData = {
+  scope: GLOBAL_TEST_RUN_SCOPE;
+  testableCount: number;
+};
+
 export class LegendStudioTelemetryHelper {
   static logEvent_GraphCompilationLaunched(
     service: TelemetryService,
@@ -227,6 +671,188 @@ export class LegendStudioTelemetryHelper {
     service.logEvent(GRAPH_MANAGER_EVENT.INITIALIZE_GRAPH__SUCCESS, {
       ...data,
       sourceInfo,
+    });
+  }
+
+  static logEvent_GraphInitializationLaunched(
+    service: TelemetryService,
+    sourceInfo?: LegendSourceInfo | undefined,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.INITIALIZE_GRAPH__LAUNCH, {
+      sourceInfo,
+    });
+  }
+
+  static logEvent_GraphInitializationFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      errorKind: GRAPH_INITIALIZATION_ERROR_KIND;
+      errorMessage: string;
+      fallbackToTextMode: boolean;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.INITIALIZE_GRAPH__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_GraphCompilationFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      errorKind: FORM_MODE_COMPILATION_ERROR_KIND;
+      errorMessage: string;
+      fallbackToTextMode: boolean;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.FORM_MODE_COMPILATION__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_TestDataGenerationFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    errorMessage: string,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.TEST_DATA_GENERATION__FAILURE, {
+      sourceInfo,
+      errorMessage,
+    });
+  }
+
+  // Service registration
+  static logEvent_ServiceRegistrationLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceRegistrationCommonData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ServiceRegistrationSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceRegistrationCommonData & { durationMs: number },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ServiceRegistrationFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceRegistrationCommonData & { errorMessage: string },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Service registration precheck (per-env "is this service already deployed?")
+  static logEvent_ServiceRegistrationCheckLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceRegistrationCheckCommonData,
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_LAUNCH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_ServiceRegistrationCheckSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceRegistrationCheckCommonData & {
+      durationMs: number;
+      registeredEnvCount: number;
+      errorCount: number;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_SUCCESS,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_ServiceRegistrationCheckFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { servicePath: string; env: string; errorMessage: string },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
+      { sourceInfo, ...data },
+    );
+  }
+
+  // Model / artifact / element-schema generation
+  static logEvent_GenerationLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: GenerationCommonData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.GENERATION_LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_GenerationSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: GenerationCommonData & { durationMs: number },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.GENERATION_SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_GenerationFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: GenerationCommonData & { errorMessage: string },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Editor tab lifecycle
+  static logEvent_EditorTabOpened(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: EditorTabCommonData & { trigger: EDITOR_TAB_OPEN_TRIGGER },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.EDITOR_TAB__OPEN, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_EditorTabClosed(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: EditorTabCommonData & {
+      dwellMs: number;
+      trigger: EDITOR_TAB_CLOSE_TRIGGER;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.EDITOR_TAB__CLOSE, {
+      sourceInfo,
+      ...data,
     });
   }
 
@@ -745,6 +1371,565 @@ export class LegendStudioTelemetryHelper {
   ): void {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.PUSH_LOCAL_CHANGES__EMPTY, {
       sourceInfo,
+      ...data,
+    });
+  }
+
+  // Workflow manager
+  static logEvent_WorkflowManagerPanelOpened(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_PANEL__OPEN, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_WorkflowManagerPanelClosed(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE; dwellMs: number },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_PANEL__CLOSE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_WorkflowManagerFetchWorkflowsLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_FETCH_WORKFLOWS__LAUNCH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerFetchWorkflowsSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      durationMs: number;
+      workflowCount: number;
+      statusBreakdown: WorkflowManagerStatusBreakdown;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_FETCH_WORKFLOWS__SUCCESS,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerFetchWorkflowsFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE; errorMessage: string },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_FETCH_WORKFLOWS__FAILURE,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerWorkflowExpand(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE; workflowStatus: string },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_WORKFLOW__EXPAND,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerWorkflowRefresh(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE; workflowStatus: string },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_WORKFLOW__REFRESH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerFetchJobsLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_FETCH_JOBS__LAUNCH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerFetchJobsSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      durationMs: number;
+      jobCount: number;
+      statusBreakdown: WorkflowManagerStatusBreakdown;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_FETCH_JOBS__SUCCESS,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerFetchJobsFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE; errorMessage: string },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_FETCH_JOBS__FAILURE,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerJobActionLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      action: WORKFLOW_MANAGER_JOB_ACTION;
+      jobName: string;
+      jobStatus: string;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_ACTION__LAUNCH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerJobActionSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      action: WORKFLOW_MANAGER_JOB_ACTION;
+      jobName: string;
+      durationMs: number;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_ACTION__SUCCESS,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerJobActionFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      action: WORKFLOW_MANAGER_JOB_ACTION;
+      jobName: string;
+      errorMessage: string;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_ACTION__FAILURE,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerJobLogsOpened(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      jobName: string;
+      jobStatus: string;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_LOGS__OPEN, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_WorkflowManagerJobLogsClosed(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      jobName: string;
+      dwellMs: number;
+      refreshCount: number;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_LOGS__CLOSE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_WorkflowManagerJobLogsRefresh(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: { scope: WORKFLOW_MANAGER_SCOPE; jobName: string },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_LOGS__REFRESH,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerJobLogsFetchSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      jobName: string;
+      durationMs: number;
+      logSizeBytes: number;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_LOGS_FETCH__SUCCESS,
+      { sourceInfo, ...data },
+    );
+  }
+
+  static logEvent_WorkflowManagerJobLogsFetchFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: {
+      scope: WORKFLOW_MANAGER_SCOPE;
+      jobName: string;
+      errorMessage: string;
+    },
+  ): void {
+    service.logEvent(
+      LEGEND_STUDIO_APP_EVENT.WORKFLOW_MANAGER_JOB_LOGS_FETCH__FAILURE,
+      { sourceInfo, ...data },
+    );
+  }
+
+  // Service test suite run
+  static logEvent_ServiceTestSuiteRunLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceTestSuiteRunCommonData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_SUITE_RUN__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ServiceTestSuiteRunSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceTestSuiteRunCommonData & {
+      durationMs: number;
+      passedCount: number;
+      failedCount: number;
+      erroredCount: number;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_SUITE_RUN__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ServiceTestSuiteRunFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ServiceTestSuiteRunCommonData & { errorMessage: string },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_TEST_SUITE_RUN__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Unified testable run (mapping / data product / ingest / function activator / availability)
+  static logEvent_TestableRunLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: TestableRunCommonData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.TESTABLE_RUN__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_TestableRunSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: TestableRunCommonData & {
+      durationMs: number;
+      passedCount: number;
+      failedCount: number;
+      erroredCount: number;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.TESTABLE_RUN__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_TestableRunFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: TestableRunCommonData & { errorMessage: string },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.TESTABLE_RUN__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Global test runner (sidebar) — cross-testable runs
+  static logEvent_GlobalTestRunLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: GlobalTestRunCommonData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.GLOBAL_TEST_RUN__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_GlobalTestRunSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: GlobalTestRunCommonData & {
+      durationMs: number;
+      passedCount: number;
+      failedCount: number;
+      erroredCount: number;
+    },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.GLOBAL_TEST_RUN__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_GlobalTestRunFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: GlobalTestRunCommonData & { errorMessage: string },
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.GLOBAL_TEST_RUN__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // SDLC review lifecycle
+  //
+  // Structured replacement for the SDLC_MANAGER_FAILURE bucket around review
+  // actions (create / commit / close / reopen / approve). Fires from both the
+  // author side (WorkspaceReviewState — carries sourceInfo from the workspace
+  // editor) and the reviewer side (ProjectReviewerStore — no editor mode, so
+  // sourceInfo is undefined; projectId / patchReleaseVersionId? / reviewId
+  // are carried explicitly on the payload).
+  //
+  // Non-lifecycle SDLC calls in the same files (fetches, refresh, workspace
+  // recreation after commit) stay on the generic SDLC_MANAGER_FAILURE bucket.
+  static logEvent_SdlcReviewActionLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: SdlcReviewActionLaunchData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_REVIEW_ACTION__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_SdlcReviewActionSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: SdlcReviewActionSuccessData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_REVIEW_ACTION__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_SdlcReviewActionFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: SdlcReviewActionFailureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_REVIEW_ACTION__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Workspace setup screen actions
+  //
+  // Structured replacement for the WORKSPACE_SETUP_FAILURE bucket plus the
+  // create-project / import-project flows that previously emitted no
+  // telemetry at all. Fires from the setup / project picker route, before
+  // any editor mode is active — so `sourceInfo` is always undefined.
+  static logEvent_SetupActionLaunched(
+    service: TelemetryService,
+    data: SetupActionLaunchData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SETUP_ACTION__LAUNCH, {
+      sourceInfo: undefined,
+      ...data,
+    });
+  }
+
+  static logEvent_SetupActionSucceeded(
+    service: TelemetryService,
+    data: SetupActionSuccessData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SETUP_ACTION__SUCCESS, {
+      sourceInfo: undefined,
+      ...data,
+    });
+  }
+
+  static logEvent_SetupActionFailure(
+    service: TelemetryService,
+    data: SetupActionFailureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SETUP_ACTION__FAILURE, {
+      sourceInfo: undefined,
+      ...data,
+    });
+  }
+
+  // Project configuration update lifecycle
+  //
+  // Structured replacement for the SDLC_MANAGER_FAILURE bucket around the
+  // project configuration editor's writes (dependency add/remove, platform
+  // configuration, structure version bump, project type toggle). All three
+  // top-level flows funnel through `updateProjectConfiguration`, which is
+  // the single point where these events are emitted; the `action` field
+  // records which entry point the user came from.
+  static logEvent_ProjectConfigUpdateLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ProjectConfigUpdateLaunchData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.PROJECT_CONFIG_UPDATE__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ProjectConfigUpdateSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ProjectConfigUpdateSuccessData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.PROJECT_CONFIG_UPDATE__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ProjectConfigUpdateFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ProjectConfigUpdateFailureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.PROJECT_CONFIG_UPDATE__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Project overview sidebar SDLC writes
+  //
+  // Structured replacement for the SDLC_MANAGER_FAILURE bucket around
+  // ProjectOverviewState's user-triggered writes (delete workspace, update
+  // project metadata, create version, release patch, create patch). Fires
+  // from inside the workspace editor so `sourceInfo` is populated; the
+  // payload also carries `projectId` explicitly so events remain sliceable
+  // without unpacking `sourceInfo`.
+  static logEvent_ProjectOverviewActionLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ProjectOverviewActionLaunchData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.PROJECT_OVERVIEW_ACTION__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ProjectOverviewActionSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ProjectOverviewActionSuccessData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.PROJECT_OVERVIEW_ACTION__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_ProjectOverviewActionFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: ProjectOverviewActionFailureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.PROJECT_OVERVIEW_ACTION__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  // Ad-hoc workspace creation from the editor bootstrap
+  //
+  // Fires when a user deep-links to a workspace that doesn't exist and
+  // picks "Create workspace" from the recovery prompt in EditorStore.
+  // Distinct bucket from SETUP_ACTION.CREATE_WORKSPACE because the
+  // callsite, error-handling, and legacy log bucket
+  // (WORKSPACE_SETUP_FAILURE) are different. `sourceInfo` is omitted —
+  // no editor mode is active yet.
+  static logEvent_SdlcWorkspaceCreateLaunched(
+    service: TelemetryService,
+    data: SdlcWorkspaceCreateLaunchData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_WORKSPACE_CREATE__LAUNCH, {
+      sourceInfo: undefined,
+      ...data,
+    });
+  }
+
+  static logEvent_SdlcWorkspaceCreateSucceeded(
+    service: TelemetryService,
+    data: SdlcWorkspaceCreateSuccessData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_WORKSPACE_CREATE__SUCCESS, {
+      sourceInfo: undefined,
+      ...data,
+    });
+  }
+
+  static logEvent_SdlcWorkspaceCreateFailure(
+    service: TelemetryService,
+    data: SdlcWorkspaceCreateFailureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.SDLC_WORKSPACE_CREATE__FAILURE, {
+      sourceInfo: undefined,
       ...data,
     });
   }

@@ -87,6 +87,12 @@ import {
   isRelationalMappingTestSuite,
 } from './MappingTestingHelper.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  TESTABLE_RUN_MODE,
+  TESTABLE_KIND,
+  summarizeTestResults,
+} from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export class StoreTestDataState {
   readonly editorStore: EditorStore;
@@ -218,6 +224,14 @@ export class MappingTestState extends TestableTestEditorState {
   override test: MappingTest;
   dataState: MappingTestDataState;
 
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.MAPPING;
+  }
+
+  override get testablePath(): string {
+    return this.mappingTestableState.mapping.path;
+  }
+
   constructor(
     editorStore: EditorStore,
     parentSuiteState: MappingTestSuiteState,
@@ -347,6 +361,14 @@ export class MappingTestSuiteState extends TestableTestSuiteEditorState {
   override selectTestState: MappingTestState | undefined;
   showCreateModal = false;
   queryState: MappingTestSuiteQueryState;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.MAPPING;
+  }
+
+  override get testablePath(): string {
+    return this.mappingTestableState.mapping.path;
+  }
 
   constructor(
     editorStore: EditorStore,
@@ -563,6 +585,14 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
   declare selectedTestSuite: MappingTestSuiteState | undefined;
   declare runningSuite: MappingTestSuite | undefined;
 
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.MAPPING;
+  }
+
+  override get testablePath(): string {
+    return this.mapping.path;
+  }
+
   constructor(mappingEditorState: MappingEditorState) {
     super(mappingEditorState, mappingEditorState.mapping);
     makeObservable(this, {
@@ -644,6 +674,19 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
   }
 
   override *runSuite(suite: MappingTestSuite): GeneratorFn<void> {
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: suite.id,
+      mode: TESTABLE_RUN_MODE.RUN_SUITE,
+      testCount: suite.tests.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.runningSuite = suite;
       this.clearTestResultsForSuite(suite);
@@ -682,10 +725,24 @@ export class MappingTestableState extends TestablePackageableElementEditorState 
           )) as TestResult[];
       }
       this.handleNewResults(testResults);
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTestableSuitesState.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     } finally {
       this.selectedTestSuite?.testStates.forEach((t) =>
         t.runningTestAction.complete(),

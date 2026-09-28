@@ -33,6 +33,10 @@ import {
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../__lib__/LegendStudioEvent.js';
 import {
+  LegendStudioTelemetryHelper,
+  SERVICE_REGISTRATION_TRIGGER,
+} from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
+import {
   type Service,
   type PureExecution,
   type ServiceRegistrationSuccess,
@@ -288,7 +292,16 @@ export class ServiceRegistrationState extends ServiceConfigState {
 
   *checkServiceRegistration(): GeneratorFn<void> {
     this.deploymentCheckState.inProgress();
+    const startedAt = Date.now();
+    const servicePath = this.service.path;
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      { servicePath, envCount: this.registrationOptions.length },
+    );
     const envs: string[] = [];
+    let errorCount = 0;
     const servicePattern = this.service.pattern.startsWith('/')
       ? this.service.pattern.substring(1)
       : this.service.pattern;
@@ -304,19 +317,52 @@ export class ServiceRegistrationState extends ServiceConfigState {
         }
       } catch (error) {
         assertErrorThrown(error);
+        errorCount += 1;
         this.editorStore.applicationStore.logService.warn(
           LogEvent.create(
             LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
           ),
           `Can't check registration status for env '${envConfig.env}': ${error.message}`,
         );
+        LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckFailure(
+          this.editorStore.applicationStore.telemetryService,
+          sourceInfo,
+          {
+            servicePath,
+            env: envConfig.env,
+            errorMessage: error.message,
+          },
+        );
       }
     }
     this.setRegisteredEnvs(envs);
     this.deploymentCheckState.complete();
+    LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckSucceeded(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      {
+        servicePath,
+        envCount: this.registrationOptions.length,
+        durationMs: Date.now() - startedAt,
+        registeredEnvCount: envs.length,
+        errorCount,
+      },
+    );
   }
 
   *registerService(): GeneratorFn<void> {
+    const startedAt = Date.now();
+    const telemetryBase = {
+      trigger: SERVICE_REGISTRATION_TRIGGER.SINGLE,
+      executionMode: this.serviceExecutionMode,
+      serviceCount: 1,
+      activatePostRegistration: this.activatePostRegistration,
+    };
+    LegendStudioTelemetryHelper.logEvent_ServiceRegistrationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.registrationState.inProgress();
       this.validateServiceForRegistration();
@@ -381,11 +427,21 @@ export class ServiceRegistrationState extends ServiceConfigState {
           },
         ],
       });
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, durationMs: Date.now() - startedAt },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {

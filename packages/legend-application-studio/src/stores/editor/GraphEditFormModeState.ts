@@ -52,7 +52,10 @@ import {
   graph_renameElement,
 } from '../graph-modifier/GraphModifierHelper.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
-import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  FORM_MODE_COMPILATION_ERROR_KIND,
+  LegendStudioTelemetryHelper,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { GraphEditorMode } from './GraphEditorMode.js';
 import { GlobalBulkServiceRegistrationState } from './sidebar-state/BulkServiceRegistrationState.js';
 import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
@@ -548,6 +551,21 @@ export class GraphEditFormModeState extends GraphEditorMode {
           GraphCompilationOutcome.FAILED,
         );
       }
+      // NOTE: the `assertType(error, EngineError, ...)` above guarantees
+      // `error` is an `EngineError` here, so the classification only needs
+      // to distinguish `CompilationError` from other `EngineError`s.
+      LegendStudioTelemetryHelper.logEvent_GraphCompilationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          errorKind:
+            error instanceof CompilationError
+              ? FORM_MODE_COMPILATION_ERROR_KIND.COMPILATION
+              : FORM_MODE_COMPILATION_ERROR_KIND.ENGINE,
+          errorMessage: error.message,
+          fallbackToTextMode: fallbackToTextModeForDebugging,
+        },
+      );
     } finally {
       this.editorStore.graphState.isRunningGlobalCompile = false;
     }

@@ -64,6 +64,7 @@ import {
 } from '@finos/legend-shared';
 import { CODE_EDITOR_LANGUAGE } from '@finos/legend-code-editor';
 import { CodeEditor } from '@finos/legend-lego/code-editor';
+import { LegendStudioTelemetryHelper } from '../../../__lib__/LegendStudioTelemetryHelper.js';
 
 const getWorkflowStatusIcon = (
   workflowStatus: WorkflowStatus,
@@ -500,6 +501,29 @@ export const WorkflowManager = observer(
         applicationStore.alertUnhandledError,
       );
     }, [applicationStore, workflowManagerState]);
+
+    // Panel open / close telemetry — anchors a dwell time so we can measure
+    // engagement per surface. The mount emits `panel.open` and the cleanup
+    // emits `panel.close` with `dwellMs`.
+    useEffect(() => {
+      const openedAt = Date.now();
+      const editorStore = workflowManagerState.editorStore;
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerPanelOpened(
+        editorStore.applicationStore.telemetryService,
+        editorStore.editorMode.getSourceInfo(),
+        { scope: workflowManagerState.scope },
+      );
+      return () => {
+        LegendStudioTelemetryHelper.logEvent_WorkflowManagerPanelClosed(
+          editorStore.applicationStore.telemetryService,
+          editorStore.editorMode.getSourceInfo(),
+          {
+            scope: workflowManagerState.scope,
+            dwellMs: Date.now() - openedAt,
+          },
+        );
+      };
+    }, [workflowManagerState]);
 
     return (
       <div className="panel workflow-manager">

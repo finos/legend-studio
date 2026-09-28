@@ -78,6 +78,12 @@ import { IngestDefinitionEditorState } from './editor-state/element-editor-state
 import { AvailabilityEditorState } from './editor-state/element-editor-state/availability/AvailabilityEditorState.js';
 import { ComputeEditorState } from './editor-state/element-editor-state/compute/ComputeEditorState.js';
 import type { EditorInitialConfiguration } from './editor-state/element-editor-state/ElementEditorInitialConfiguration.js';
+import {
+  EDITOR_TAB_CLOSE_TRIGGER,
+  EDITOR_TAB_OPEN_TRIGGER,
+  LegendStudioTelemetryHelper,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
+import { getEditorTabTelemetryData } from './EditorTabTelemetryHelper.js';
 
 export class EditorTabManagerState extends TabManagerState {
   readonly editorStore: EditorStore;
@@ -104,6 +110,115 @@ export class EditorTabManagerState extends TabManagerState {
     });
 
     this.editorStore = editorStore;
+  }
+
+  /**
+   * Per-tab dwell accounting for {@link EDITOR_TAB__CLOSE} telemetry.
+   * Keyed by `TabState.uuid`. `activeSince` is set when the tab becomes the
+   * current tab and cleared on switch away; `accumulatedMs` is the total time
+   * the tab held focus. On close we flush any live `activeSince` and emit
+   * the total. The map is pruned on close so it does not leak.
+   */
+  private tabDwell = new Map<
+    string,
+    { activeSince: number | undefined; accumulatedMs: number }
+  >();
+
+  private startDwell(tab: TabState): void {
+    const entry = this.tabDwell.get(tab.uuid);
+    const now = Date.now();
+    if (entry) {
+      entry.activeSince = now;
+    } else {
+      this.tabDwell.set(tab.uuid, { activeSince: now, accumulatedMs: 0 });
+    }
+  }
+
+  private flushDwell(tab: TabState): number {
+    const entry = this.tabDwell.get(tab.uuid);
+    if (!entry) {
+      return 0;
+    }
+    if (entry.activeSince !== undefined) {
+      entry.accumulatedMs += Date.now() - entry.activeSince;
+      entry.activeSince = undefined;
+    }
+    return entry.accumulatedMs;
+  }
+
+  private emitTabClose(tab: TabState, trigger: EDITOR_TAB_CLOSE_TRIGGER): void {
+    const dwellMs = this.flushDwell(tab);
+    this.tabDwell.delete(tab.uuid);
+    LegendStudioTelemetryHelper.logEvent_EditorTabClosed(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      {
+        ...getEditorTabTelemetryData(tab, this.editorStore),
+        dwellMs,
+        trigger,
+      },
+    );
+  }
+
+  override setCurrentTab(val: TabState | undefined): void {
+    const prev = this.currentTab;
+    if (prev && prev !== val) {
+      this.flushDwell(prev);
+    }
+    super.setCurrentTab(val);
+    if (val && val !== prev) {
+      this.startDwell(val);
+    }
+  }
+
+  override openTab(
+    tab: TabState,
+    trigger: EDITOR_TAB_OPEN_TRIGGER = EDITOR_TAB_OPEN_TRIGGER.PROGRAMMATIC,
+  ): void {
+    const isNew = !this.tabs.some((t) => t.match(tab));
+    super.openTab(tab);
+    if (isNew) {
+      LegendStudioTelemetryHelper.logEvent_EditorTabOpened(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...getEditorTabTelemetryData(tab, this.editorStore),
+          trigger,
+        },
+      );
+    }
+  }
+
+  override closeTab(
+    tab: TabState,
+    trigger: EDITOR_TAB_CLOSE_TRIGGER = EDITOR_TAB_CLOSE_TRIGGER.USER_CLOSE,
+  ): void {
+    if (tab.isPinned) {
+      return;
+    }
+    // Emit before super so the tab is still known and dwell can be flushed.
+    this.emitTabClose(tab, trigger);
+    super.closeTab(tab);
+  }
+
+  override closeAllTabs(
+    trigger: EDITOR_TAB_CLOSE_TRIGGER = EDITOR_TAB_CLOSE_TRIGGER.CLOSE_ALL,
+  ): void {
+    // Only non-pinned tabs are actually closed by the base implementation.
+    this.tabs
+      .filter((tab) => !tab.isPinned)
+      .forEach((tab) => this.emitTabClose(tab, trigger));
+    super.closeAllTabs();
+  }
+
+  override closeAllOtherTabs(
+    tab: TabState,
+    trigger: EDITOR_TAB_CLOSE_TRIGGER = EDITOR_TAB_CLOSE_TRIGGER.CLOSE_OTHERS,
+  ): void {
+    this.tabs
+      .filter((t) => !t.isPinned && t !== tab)
+      .forEach((t) => this.emitTabClose(t, trigger));
+    super.closeAllOtherTabs(tab);
   }
 
   get dndType(): string {
@@ -141,7 +256,7 @@ export class EditorTabManagerState extends TabManagerState {
       currentTabState,
       currentTabElementPath,
     };
-    this.closeAllTabs();
+    this.closeAllTabs(EDITOR_TAB_CLOSE_TRIGGER.NAVIGATE_AWAY);
   }
 
   clearTabCache(): void {
@@ -273,6 +388,18 @@ export class EditorTabManagerState extends TabManagerState {
           return undefined;
         })
         .filter(isNonNullable);
+      // Emit OPEN telemetry for each restored tab so dwell tracking + dashboards
+      // treat cache-recovery as a first-class open (with trigger=restore).
+      this.tabs.forEach((tab) => {
+        LegendStudioTelemetryHelper.logEvent_EditorTabOpened(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          {
+            ...getEditorTabTelemetryData(tab, this.editorStore),
+            trigger: EDITOR_TAB_OPEN_TRIGGER.RESTORE,
+          },
+        );
+      });
       this.setCurrentTab(
         this.findCurrentTab(
           this.cachedTabs.currentTabState,

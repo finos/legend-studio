@@ -101,7 +101,10 @@ import { CONFIGURATION_EDITOR_TAB } from './editor-state/project-configuration-e
 import { PACKAGEABLE_ELEMENT_TYPE } from './utils/ModelClassifierUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import { LEGEND_STUDIO_SETTING_KEY } from '../../__lib__/LegendStudioSetting.js';
-import { LegendStudioTelemetryHelper } from '../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LegendStudioTelemetryHelper,
+  GRAPH_INITIALIZATION_ERROR_KIND,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
 
 export enum GraphBuilderStatus {
   SUCCEEDED = 'SUCCEEDED',
@@ -328,6 +331,10 @@ export class EditorGraphState {
   }
 
   *buildGraph(entities: Entity[]): GeneratorFn<GraphBuilderResult> {
+    LegendStudioTelemetryHelper.logEvent_GraphInitializationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+    );
     try {
       this.isInitializingGraph = true;
       const stopWatch = new StopWatch();
@@ -429,6 +436,28 @@ export class EditorGraphState {
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
         error,
+      );
+      const errorKind =
+        error instanceof DependencyGraphBuilderError
+          ? GRAPH_INITIALIZATION_ERROR_KIND.DEPENDENCY
+          : error instanceof GraphDataDeserializationError
+            ? GRAPH_INITIALIZATION_ERROR_KIND.DESERIALIZATION
+            : error instanceof NetworkClientError
+              ? GRAPH_INITIALIZATION_ERROR_KIND.NETWORK
+              : GRAPH_INITIALIZATION_ERROR_KIND.OTHER;
+      const fallbackToTextMode = !(
+        error instanceof DependencyGraphBuilderError ||
+        error instanceof GraphDataDeserializationError ||
+        error instanceof NetworkClientError
+      );
+      LegendStudioTelemetryHelper.logEvent_GraphInitializationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          errorKind,
+          errorMessage: error.message,
+          fallbackToTextMode,
+        },
       );
       if (error instanceof DependencyGraphBuilderError) {
         this.editorStore.graphManagerState.graphBuildState.fail();

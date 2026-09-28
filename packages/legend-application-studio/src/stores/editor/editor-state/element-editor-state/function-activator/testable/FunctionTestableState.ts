@@ -111,6 +111,7 @@ import {
   createBareExternalFormat,
 } from '../../../../utils/TestableUtils.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../../../__lib__/LegendStudioEvent.js';
+import { TESTABLE_KIND } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { testSuite_addTest } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import {
   buildDefaultInstanceValue,
@@ -436,6 +437,14 @@ export class FunctionTestState extends TestableTestEditorState {
   parameterValueStates: FunctionTestParameterState[] = [];
   newParameterValueName = '';
   showNewParameterModal = false;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.FUNCTION_ACTIVATOR;
+  }
+
+  override get testablePath(): string {
+    return this.functionTestableState.function.path;
+  }
 
   constructor(
     editorStore: EditorStore,
@@ -847,6 +856,14 @@ export class FunctionTestSuiteState extends TestableTestSuiteEditorState {
 
   showCreateModal = false;
 
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.FUNCTION_ACTIVATOR;
+  }
+
+  override get testablePath(): string {
+    return this.functionTestableState.function.path;
+  }
+
   constructor(
     editorStore: EditorStore,
     functionTestableState: FunctionTestableState,
@@ -929,6 +946,14 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
 
   createSuiteModal = false;
   cachedAccessors: Accessor[] = [];
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.FUNCTION_ACTIVATOR;
+  }
+
+  override get testablePath(): string {
+    return this.function.path;
+  }
 
   constructor(functionEditorState: FunctionEditorState) {
     super(functionEditorState, functionEditorState.functionElement);

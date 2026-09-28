@@ -53,6 +53,10 @@ import { ExplorerTreeRootPackageLabel } from '../ExplorerTreeState.js';
 import type { DSL_Generation_LegendStudioApplicationPlugin_Extension } from '../../extensions/DSL_Generation_LegendStudioApplicationPlugin_Extension.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
 import {
+  GENERATION_MODE,
+  LegendStudioTelemetryHelper,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
+import {
   FileSystem_Directory,
   type FileSystemTreeNodeData,
   FileSystem_File,
@@ -194,6 +198,16 @@ export class DEPREACTED_GlobalFileGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
+      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          mode: GENERATION_MODE.GLOBAL,
+          enableArtifactGeneration:
+            this.graphGenerationState.enableArtifactGeneration,
+          errorMessage: error.message,
+        },
+      );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
@@ -310,14 +324,35 @@ export class GraphGenerationState {
       return;
     }
     this.isRunningGlobalGenerate = true;
+    const startedAt = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const telemetryBase = {
+      mode: GENERATION_MODE.GLOBAL,
+      enableArtifactGeneration: this.enableArtifactGeneration,
+    };
+    LegendStudioTelemetryHelper.logEvent_GenerationLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      telemetryBase,
+    );
     try {
       yield flowResult(this.generateModels());
       yield flowResult(this.generateArtifacts());
+      LegendStudioTelemetryHelper.logEvent_GenerationSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...telemetryBase, durationMs: Date.now() - startedAt },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...telemetryBase, errorMessage: error.message },
       );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
@@ -375,6 +410,15 @@ export class GraphGenerationState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
+      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          mode: GENERATION_MODE.GLOBAL,
+          enableArtifactGeneration: this.enableArtifactGeneration,
+          errorMessage: error.message,
+        },
+      );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
@@ -411,6 +455,15 @@ export class GraphGenerationState {
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          mode: GENERATION_MODE.GLOBAL,
+          enableArtifactGeneration: this.enableArtifactGeneration,
+          errorMessage: error.message,
+        },
       );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,

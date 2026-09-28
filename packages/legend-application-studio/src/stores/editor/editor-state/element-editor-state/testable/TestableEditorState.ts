@@ -60,6 +60,12 @@ import {
 } from './TestAssertionState.js';
 import type { ElementEditorState } from '../ElementEditorState.js';
 import { ExecutionPlanState } from '@finos/legend-query-builder';
+import {
+  LegendStudioTelemetryHelper,
+  TESTABLE_RUN_MODE,
+  type TESTABLE_KIND,
+  summarizeTestResults,
+} from '../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export class TestableTestResultState {
   readonly editorStore: EditorStore;
@@ -202,6 +208,10 @@ export abstract class TestableTestEditorState {
     this.isReadOnly = isReadOnly;
   }
 
+  abstract get testableKind(): TESTABLE_KIND;
+
+  abstract get testablePath(): string;
+
   setSelectedTab(val: TESTABLE_TEST_TAB): void {
     this.selectedTab = val;
   }
@@ -335,18 +345,47 @@ export abstract class TestableTestEditorState {
     ).length;
   }
   *runTest(): GeneratorFn<void> {
+    const parentSuite =
+      this.test.__parent instanceof TestSuite ? this.test.__parent : undefined;
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: parentSuite?.id,
+      mode: TESTABLE_RUN_MODE.RUN_TEST,
+      testCount: 1,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.resetResult();
       this.runningTestAction.inProgress();
       const result = (yield flowResult(this.fetchTestResult())) as TestResult;
       this.handleTestResult(result);
       this.runningTestAction.complete();
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults([result]),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(
         `Error running test: ${error.message}`,
       );
       this.runningTestAction.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     }
   }
 
@@ -410,7 +449,24 @@ export abstract class TestableTestSuiteEditorState {
     this.editorStore = editorStore;
   }
 
+  abstract get testableKind(): TESTABLE_KIND;
+
+  abstract get testablePath(): string;
+
   *runSuite(): GeneratorFn<void> {
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: this.suite.id,
+      mode: TESTABLE_RUN_MODE.RUN_SUITE,
+      testCount: this.suite.tests.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.runningSuiteState.inProgress();
       this.testStates.forEach((t) => t.resetResult());
@@ -429,33 +485,61 @@ export abstract class TestableTestSuiteEditorState {
         state?.handleTestResult(result);
       });
       this.runningSuiteState.complete();
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.runningSuiteState.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }
   }
 
   *runFailingTests(): GeneratorFn<void> {
+    const unitTestIds = this.testStates
+      .map((testState) => {
+        const result = testState.testResultState.result;
+        if (
+          (result instanceof TestExecuted &&
+            result.testExecutionStatus === TestExecutionStatus.FAIL) ||
+          result instanceof TestError
+        ) {
+          testState.runningTestAction.inProgress();
+          return new UniqueTestId(this.suite, testState.test);
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: this.suite.id,
+      mode: TESTABLE_RUN_MODE.RUN_FAILING,
+      testCount: unitTestIds.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.runningSuiteState.inProgress();
       const input = new RunTestsTestableInput(this.testable);
-      input.unitTestIds = this.testStates
-        .map((testState) => {
-          const result = testState.testResultState.result;
-          if (
-            (result instanceof TestExecuted &&
-              result.testExecutionStatus === TestExecutionStatus.FAIL) ||
-            result instanceof TestError
-          ) {
-            testState.runningTestAction.inProgress();
-            return new UniqueTestId(this.suite, testState.test);
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
+      input.unitTestIds = unitTestIds;
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           [input],
@@ -466,10 +550,24 @@ export abstract class TestableTestSuiteEditorState {
         state?.handleTestResult(result);
       });
       this.runningSuiteState.complete();
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.runningSuiteState.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }
@@ -516,6 +614,10 @@ export abstract class TestablePackageableElementEditorState {
   }
 
   abstract init(): void;
+
+  abstract get testableKind(): TESTABLE_KIND;
+
+  abstract get testablePath(): string;
 
   get suiteCount(): number {
     return this.testable.tests.length;
@@ -593,12 +695,25 @@ export abstract class TestablePackageableElementEditorState {
   }
 
   *runAllFailingSuites(): GeneratorFn<void> {
+    const input = new RunTestsTestableInput(this.testable);
+    this.failingSuites.forEach((s) => {
+      s.tests.forEach((t) => input.unitTestIds.push(new UniqueTestId(s, t)));
+    });
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: undefined,
+      mode: TESTABLE_RUN_MODE.RUN_ALL_FAILING,
+      testCount: input.unitTestIds.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.isRunningFailingSuitesState.inProgress();
-      const input = new RunTestsTestableInput(this.testable);
-      this.failingSuites.forEach((s) => {
-        s.tests.forEach((t) => input.unitTestIds.push(new UniqueTestId(s, t)));
-      });
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           [input],
@@ -606,10 +721,24 @@ export abstract class TestablePackageableElementEditorState {
         )) as TestResult[];
       this.handleNewResults(testResults);
       this.isRunningFailingSuitesState.complete();
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningFailingSuitesState.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     } finally {
       this.selectedTestSuite?.testStates.forEach((t) =>
         t.runningTestAction.complete(),
@@ -618,6 +747,23 @@ export abstract class TestablePackageableElementEditorState {
   }
 
   *runTestable(): GeneratorFn<void> {
+    const totalTestCount = this.suites.reduce(
+      (acc, s) => acc + s.tests.length,
+      0,
+    );
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: undefined,
+      mode: TESTABLE_RUN_MODE.RUN_TESTABLE,
+      testCount: totalTestCount,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.setTestableResults(undefined);
       this.isRunningTestableSuitesState.inProgress();
@@ -633,10 +779,24 @@ export abstract class TestablePackageableElementEditorState {
         )) as TestResult[];
       this.handleNewResults(testResults);
       this.isRunningTestableSuitesState.complete();
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTestableSuitesState.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     } finally {
       this.selectedTestSuite?.testStates.forEach((t) =>
         t.runningTestAction.complete(),
@@ -645,6 +805,19 @@ export abstract class TestablePackageableElementEditorState {
   }
 
   *runSuite(suite: TestSuite): GeneratorFn<void> {
+    const telemetryBase = {
+      testableKind: this.testableKind,
+      testablePath: this.testablePath,
+      suiteId: suite.id,
+      mode: TESTABLE_RUN_MODE.RUN_SUITE,
+      testCount: suite.tests.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.runningSuite = suite;
       this.clearTestResultsForSuite(suite);
@@ -663,10 +836,24 @@ export abstract class TestablePackageableElementEditorState {
         )) as TestResult[];
 
       this.handleNewResults(testResults);
+      LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTestableSuitesState.fail();
+      LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     } finally {
       this.selectedTestSuite?.testStates.forEach((t) =>
         t.runningTestAction.complete(),

@@ -77,6 +77,7 @@ import {
   TestableTestEditorState,
   TestableTestSuiteEditorState,
 } from '../../testable/TestableEditorState.js';
+import { TESTABLE_KIND } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { generateVariableExpressionMockValue } from '@finos/legend-query-builder';
 import {
   buildRelationElementsDataWithColumns,
@@ -207,6 +208,14 @@ export class DataProductTestState extends TestableTestEditorState {
   parameterValueStates: DataProductTestParameterState[] = [];
   newParameterValueName = '';
   showNewParameterModal = false;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.DATA_PRODUCT;
+  }
+
+  override get testablePath(): string {
+    return this.suiteState.testableState.dataProduct.path;
+  }
 
   constructor(
     suiteState: DataProductTestSuiteState,
@@ -636,6 +645,14 @@ export class DataProductTestSuiteState extends TestableTestSuiteEditorState {
   override testStates: DataProductTestState[] = [];
   declare selectTestState: DataProductTestState | undefined;
   testDataState: DataProductTestDataState;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.DATA_PRODUCT;
+  }
+
+  override get testablePath(): string {
+    return this.testableState.dataProduct.path;
+  }
 
   constructor(
     editorStore: EditorStore,
