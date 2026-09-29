@@ -54,6 +54,14 @@ import type {
 } from '../../../LegendStudioApplicationPlugin.js';
 import { ServiceEditorState } from '../../editor-state/element-editor-state/service/ServiceEditorState.js';
 import { LegendStudioUserDataHelper } from '../../../../__lib__/LegendStudioUserDataHelper.js';
+import {
+  GLOBAL_TEST_RUN_SCOPE,
+  LegendStudioTelemetryHelper,
+  TESTABLE_RUN_MODE,
+  getTestableKind,
+  getTestablePath,
+  summarizeTestResults,
+} from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 // Testable Metadata
 export interface TestableMetadata {
@@ -456,6 +464,10 @@ export class TestableState {
     this.isRunningTests.inProgress();
     let input: RunTestsTestableInput;
     let currentNode = node;
+    const testable = this.testableMetadata.testable;
+    let mode: TESTABLE_RUN_MODE = TESTABLE_RUN_MODE.RUN_TESTABLE;
+    let suiteId: string | undefined;
+    let testCount = 0;
     try {
       if (node instanceof AssertionTestTreeNodeData) {
         const atomicTest = guaranteeNonNullable(node.assertion.parentTest);
@@ -463,8 +475,11 @@ export class TestableState {
           atomicTest.__parent instanceof TestSuite
             ? atomicTest.__parent
             : undefined;
-        input = new RunTestsTestableInput(this.testableMetadata.testable);
+        input = new RunTestsTestableInput(testable);
         input.unitTestIds = [new UniqueTestId(suite, atomicTest)];
+        mode = TESTABLE_RUN_MODE.RUN_TEST;
+        suiteId = suite?.id;
+        testCount = 1;
         const parentNode = Array.from(this.treeData.nodes.values())
           .filter(filterByType(AtomicTestTreeNodeData))
           .find((n) => n.atomicTest === atomicTest);
@@ -478,30 +493,74 @@ export class TestableState {
           atomicTest.__parent instanceof TestSuite
             ? atomicTest.__parent
             : undefined;
-        input = new RunTestsTestableInput(this.testableMetadata.testable);
+        input = new RunTestsTestableInput(testable);
         input.unitTestIds = [new UniqueTestId(suite, atomicTest)];
+        mode = TESTABLE_RUN_MODE.RUN_TEST;
+        suiteId = suite?.id;
+        testCount = 1;
         node.isRunning = true;
       } else if (node instanceof TestSuiteTreeNodeData) {
-        input = new RunTestsTestableInput(this.testableMetadata.testable);
+        input = new RunTestsTestableInput(testable);
         input.unitTestIds = node.testSuite.tests.map(
           (s) => new UniqueTestId(node.testSuite, s),
         );
+        mode = TESTABLE_RUN_MODE.RUN_SUITE;
+        suiteId = node.testSuite.id;
+        testCount = node.testSuite.tests.length;
         node.isRunning = true;
       } else if (node instanceof TestableTreeNodeData) {
-        input = new RunTestsTestableInput(this.testableMetadata.testable);
+        input = new RunTestsTestableInput(testable);
+        mode = TESTABLE_RUN_MODE.RUN_TESTABLE;
+        suiteId = undefined;
+        testCount = testable.tests.reduce(
+          (acc, t) => acc + (t instanceof TestSuite ? t.tests.length : 1),
+          0,
+        );
         node.isRunning = true;
       } else {
         throw new UnsupportedOperationError(
           `Unable to run tests for node ${node}`,
         );
       }
-      const testResults =
-        (yield this.editorStore.graphManagerState.graphManager.runTests(
-          [input],
-          this.editorStore.graphManagerState.graph,
-        )) as TestResult[];
-      this.globalTestRunnerState.handleResults(testResults);
-      this.isRunningTests.complete();
+      const telemetryBase = {
+        testableKind: getTestableKind(testable),
+        testablePath: getTestablePath(testable),
+        suiteId,
+        mode,
+        testCount,
+      };
+      const startTime = Date.now();
+      LegendStudioTelemetryHelper.logEvent_TestableRunLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        telemetryBase,
+      );
+      try {
+        const testResults =
+          (yield this.editorStore.graphManagerState.graphManager.runTests(
+            [input],
+            this.editorStore.graphManagerState.graph,
+          )) as TestResult[];
+        this.globalTestRunnerState.handleResults(testResults);
+        this.isRunningTests.complete();
+        LegendStudioTelemetryHelper.logEvent_TestableRunSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          {
+            ...telemetryBase,
+            durationMs: Date.now() - startTime,
+            ...summarizeTestResults(testResults),
+          },
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        LegendStudioTelemetryHelper.logEvent_TestableRunFailure(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          { ...telemetryBase, errorMessage: error.message },
+        );
+        throw error;
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
@@ -659,11 +718,21 @@ export class GlobalTestRunnerState {
   }
 
   *runAllTests(): GeneratorFn<void> {
+    const inputs = this.ownTestableStates.map(
+      (e) => new RunTestsTestableInput(e.testableMetadata.testable),
+    );
+    const telemetryBase = {
+      scope: GLOBAL_TEST_RUN_SCOPE.ALL,
+      testableCount: inputs.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_GlobalTestRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.isRunningTests.inProgress();
-      const inputs = this.ownTestableStates.map(
-        (e) => new RunTestsTestableInput(e.testableMetadata.testable),
-      );
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           inputs,
@@ -671,10 +740,24 @@ export class GlobalTestRunnerState {
         )) as TestResult[];
       this.handleResults(testResults);
       this.isRunningTests.complete();
+      LegendStudioTelemetryHelper.logEvent_GlobalTestRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningTests.fail();
+      LegendStudioTelemetryHelper.logEvent_GlobalTestRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     }
   }
 
@@ -711,11 +794,21 @@ export class GlobalTestRunnerState {
   }
 
   *runDependenciesTests(): GeneratorFn<void> {
+    const inputs = this.allDependencyTestablesStates.map(
+      (e) => new RunTestsTestableInput(e.testableMetadata.testable),
+    );
+    const telemetryBase = {
+      scope: GLOBAL_TEST_RUN_SCOPE.DEPENDENCIES,
+      testableCount: inputs.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_GlobalTestRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryBase,
+    );
     try {
       this.isRunningDependencyTests.inProgress();
-      const inputs = this.allDependencyTestablesStates.map(
-        (e) => new RunTestsTestableInput(e.testableMetadata.testable),
-      );
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           inputs,
@@ -723,10 +816,24 @@ export class GlobalTestRunnerState {
         )) as TestResult[];
       this.handleResults(testResults);
       this.isRunningDependencyTests.complete();
+      LegendStudioTelemetryHelper.logEvent_GlobalTestRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.isRunningDependencyTests.fail();
+      LegendStudioTelemetryHelper.logEvent_GlobalTestRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryBase, errorMessage: error.message },
+      );
     }
   }
 }

@@ -50,6 +50,7 @@ import {
   TestableTestEditorState,
   TestableTestSuiteEditorState,
 } from '../../testable/TestableEditorState.js';
+import { TESTABLE_KIND } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { RelationElementState } from '../../data/EmbeddedDataState.js';
 import { atomicTest_addAssertion } from '../../../../../graph-modifier/Testable_GraphModifierHelper.js';
 import { externalFormatData_setData } from '../../../../../graph-modifier/DSL_Data_GraphModifierHelper.js';
@@ -345,6 +346,14 @@ export class AvailabilityTestState extends TestableTestEditorState {
   readonly suiteState: AvailabilityTestSuiteState;
   override test: AvailabilityBarrierTest;
 
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.AVAILABILITY;
+  }
+
+  override get testablePath(): string {
+    return this.suiteState.testableState.availability.path;
+  }
+
   constructor(
     suiteState: AvailabilityTestSuiteState,
     test: AvailabilityBarrierTest,
@@ -435,6 +444,14 @@ export class AvailabilityTestSuiteState extends TestableTestSuiteEditorState {
   override selectTestState: AvailabilityTestState | undefined;
   testToRename: AvailabilityBarrierTest | undefined;
   readonly testDataState: RelationElementState;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.AVAILABILITY;
+  }
+
+  override get testablePath(): string {
+    return this.testableState.availability.path;
+  }
 
   constructor(
     testableState: AvailabilityTestableState,

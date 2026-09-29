@@ -66,6 +66,11 @@ import {
   SERIALIZATION_FORMAT,
   ServiceTestState,
 } from './ServiceTestEditorState.js';
+import {
+  LegendStudioTelemetryHelper,
+  SERVICE_TEST_SUITE_RUN_MODE,
+  summarizeTestResults,
+} from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 
 const createEmptyServiceTestSuite = (
   serviceTestableState: ServiceTestableState,
@@ -186,15 +191,27 @@ export class ServiceTestSuiteState {
   }
 
   *runSuite(): GeneratorFn<void> {
+    const service = this.testableState.serviceEditorState.service;
+    const input = new RunTestsTestableInput(service);
+    input.unitTestIds = this.suite.tests.map(
+      (t) => new UniqueTestId(this.suite, t),
+    );
+    const telemetryData = {
+      servicePath: service.path,
+      suiteId: this.suite.id,
+      mode: SERVICE_TEST_SUITE_RUN_MODE.RUN_SUITE,
+      testCount: input.unitTestIds.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_ServiceTestSuiteRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryData,
+    );
     try {
       this.runningTestState.inProgress();
       this.testStates.forEach((t) => t.resetResult());
       this.testStates.forEach((t) => t.runningTestAction.inProgress());
-      const service = this.testableState.serviceEditorState.service;
-      const input = new RunTestsTestableInput(service);
-      input.unitTestIds = this.suite.tests.map(
-        (t) => new UniqueTestId(this.suite, t),
-      );
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           [input],
@@ -205,34 +222,60 @@ export class ServiceTestSuiteState {
         state?.handleTestResult(result);
       });
       this.runningTestState.complete();
+      LegendStudioTelemetryHelper.logEvent_ServiceTestSuiteRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryData,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.runningTestState.fail();
+      LegendStudioTelemetryHelper.logEvent_ServiceTestSuiteRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryData, errorMessage: error.message },
+      );
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }
   }
 
   *runFailingTests(): GeneratorFn<void> {
+    const service = this.testableState.serviceEditorState.service;
+    const input = new RunTestsTestableInput(service);
+    input.unitTestIds = this.testStates
+      .map((testState) => {
+        const result = testState.testResultState.result;
+        if (
+          (result instanceof TestExecuted &&
+            result.testExecutionStatus === TestExecutionStatus.FAIL) ||
+          result instanceof TestError
+        ) {
+          testState.runningTestAction.inProgress();
+          return new UniqueTestId(this.suite, testState.test);
+        }
+        return undefined;
+      })
+      .filter(isNonNullable);
+    const telemetryData = {
+      servicePath: service.path,
+      suiteId: this.suite.id,
+      mode: SERVICE_TEST_SUITE_RUN_MODE.RUN_FAILING,
+      testCount: input.unitTestIds.length,
+    };
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_ServiceTestSuiteRunLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      telemetryData,
+    );
     try {
       this.runningTestState.inProgress();
-      const service = this.testableState.serviceEditorState.service;
-      const input = new RunTestsTestableInput(service);
-      input.unitTestIds = this.testStates
-        .map((testState) => {
-          const result = testState.testResultState.result;
-          if (
-            (result instanceof TestExecuted &&
-              result.testExecutionStatus === TestExecutionStatus.FAIL) ||
-            result instanceof TestError
-          ) {
-            testState.runningTestAction.inProgress();
-            return new UniqueTestId(this.suite, testState.test);
-          }
-          return undefined;
-        })
-        .filter(isNonNullable);
       const testResults =
         (yield this.editorStore.graphManagerState.graphManager.runTests(
           [input],
@@ -243,10 +286,24 @@ export class ServiceTestSuiteState {
         state?.handleTestResult(result);
       });
       this.runningTestState.complete();
+      LegendStudioTelemetryHelper.logEvent_ServiceTestSuiteRunSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          ...telemetryData,
+          durationMs: Date.now() - startTime,
+          ...summarizeTestResults(testResults),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.runningTestState.fail();
+      LegendStudioTelemetryHelper.logEvent_ServiceTestSuiteRunFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        { ...telemetryData, errorMessage: error.message },
+      );
     } finally {
       this.testStates.forEach((t) => t.runningTestAction.complete());
     }

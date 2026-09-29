@@ -42,6 +42,10 @@ import {
   type WorkspaceType,
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  PROJECT_OVERVIEW_ACTION,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import { LegendStudioUserDataHelper } from '../../../__lib__/LegendStudioUserDataHelper.js';
 
 export enum PROJECT_OVERVIEW_ACTIVITY_MODE {
@@ -147,6 +151,19 @@ export class ProjectOverviewState {
   }
 
   *deleteWorkspace(workspace: Workspace): GeneratorFn<void> {
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: PROJECT_OVERVIEW_ACTION.DELETE_WORKSPACE,
+      projectId: this.sdlcState.activeProject.projectId,
+      patchReleaseVersionId: workspace.source,
+      workspaceType: workspace.workspaceType.toString(),
+    };
+    LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       this.isDeletingWorkspace = true;
       yield this.editorStore.sdlcServerClient.deleteWorkspace(
@@ -189,11 +206,21 @@ export class ProjectOverviewState {
           },
         );
       }
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
       );
     } finally {
       this.isDeletingWorkspace = false;
@@ -205,6 +232,17 @@ export class ProjectOverviewState {
     description: string,
     tags: string[],
   ): GeneratorFn<void> {
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: PROJECT_OVERVIEW_ACTION.UPDATE_PROJECT,
+      projectId: this.sdlcState.activeProject.projectId,
+    };
+    LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       this.updatingProjectState.inProgress();
       yield this.editorStore.sdlcServerClient.updateProject(
@@ -223,9 +261,19 @@ export class ProjectOverviewState {
           this.sdlcState.activeProject.projectId,
         ),
       );
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
+      );
     } finally {
       this.updatingProjectState.complete();
     }
@@ -346,6 +394,17 @@ export class ProjectOverviewState {
       return;
     }
     this.isCreatingVersion = true;
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: PROJECT_OVERVIEW_ACTION.CREATE_VERSION,
+      projectId: this.sdlcState.activeProject.projectId,
+    };
+    LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       this.releaseVersion.versionType = versionType;
       this.releaseVersion.validate();
@@ -356,6 +415,11 @@ export class ProjectOverviewState {
         )) as PlainObject<Version>,
       );
       yield flowResult(this.fetchLatestProjectVersion());
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -363,6 +427,11 @@ export class ProjectOverviewState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
+      );
     } finally {
       this.isCreatingVersion = false;
     }
@@ -370,6 +439,18 @@ export class ProjectOverviewState {
 
   *createPatchVersion(id: string): GeneratorFn<void> {
     this.isCreatingVersion = true;
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: PROJECT_OVERVIEW_ACTION.RELEASE_PATCH,
+      projectId: this.sdlcState.activeProject.projectId,
+      patchReleaseVersionId: id,
+    };
+    LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       const version = Version.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.releasePatch(
@@ -380,6 +461,11 @@ export class ProjectOverviewState {
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `${version.id.id} is released successfully`,
       );
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -387,6 +473,11 @@ export class ProjectOverviewState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
+      );
     } finally {
       this.isCreatingVersion = false;
     }
@@ -404,6 +495,19 @@ export class ProjectOverviewState {
     }
     this.createPatchState.inProgress();
     this.createPatchState.setMessage(`Creating patch...`);
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: PROJECT_OVERVIEW_ACTION.CREATE_PATCH,
+      projectId: this.sdlcState.activeProject.projectId,
+      patchReleaseVersionId: sourceVersion,
+      workspaceType: workspaceType.toString(),
+    };
+    LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       const newPatch = Patch.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.createPatch(
@@ -427,6 +531,11 @@ export class ProjectOverviewState {
       this.editorStore.applicationStore.notificationService.notifySuccess(
         `Workspace '${newWorkspace.workspaceId}' is succesfully created`,
       );
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
       this.editorStore.applicationStore.navigationService.navigator.goToLocation(
         generateEditorRoute(
           this.sdlcState.activeProject.projectId,
@@ -442,6 +551,11 @@ export class ProjectOverviewState {
         error,
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
+      LegendStudioTelemetryHelper.logEvent_ProjectOverviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
+      );
     } finally {
       this.createPatchState.reset();
     }

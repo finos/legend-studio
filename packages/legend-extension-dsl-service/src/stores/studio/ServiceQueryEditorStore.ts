@@ -23,7 +23,9 @@ import {
   type ServiceRegistrationEnvironmentConfig,
   EditorStore,
   LEGEND_STUDIO_APP_EVENT,
+  LegendStudioTelemetryHelper,
   MINIMUM_SERVICE_OWNERS,
+  SERVICE_REGISTRATION_TRIGGER,
   generateServiceManagementUrl,
   pureExecution_setFunction,
 } from '@finos/legend-application-studio';
@@ -343,6 +345,18 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
   *registerService(overridePattern?: string | undefined): GeneratorFn<void> {
     const registrationConfig = this.currentServiceRegistrationEnvConfig;
     if (registrationConfig) {
+      const startedAt = Date.now();
+      const telemetryBase = {
+        trigger: SERVICE_REGISTRATION_TRIGGER.SERVICE_QUERY_EDITOR,
+        executionMode: ServiceExecutionMode.SEMI_INTERACTIVE as string,
+        serviceCount: 1,
+        activatePostRegistration: true,
+      };
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationLaunched(
+        this.applicationStore.telemetryService,
+        this.editorMode.getSourceInfo(),
+        telemetryBase,
+      );
       try {
         this.registerServiceState.inProgress();
 
@@ -412,11 +426,21 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
             },
           ],
         });
+        LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
+          this.applicationStore.telemetryService,
+          this.editorMode.getSourceInfo(),
+          { ...telemetryBase, durationMs: Date.now() - startedAt },
+        );
       } catch (error) {
         assertErrorThrown(error);
         this.applicationStore.logService.error(
           LogEvent.create(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE),
           error,
+        );
+        LegendStudioTelemetryHelper.logEvent_ServiceRegistrationFailure(
+          this.applicationStore.telemetryService,
+          this.editorMode.getSourceInfo(),
+          { ...telemetryBase, errorMessage: error.message },
         );
         this.applicationStore.notificationService.notifyError(error);
       } finally {

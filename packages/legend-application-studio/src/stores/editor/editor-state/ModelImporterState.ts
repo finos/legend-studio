@@ -33,6 +33,7 @@ import {
   assertTrue,
 } from '@finos/legend-shared';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import { PROJECT_CONFIG_UPDATE_ACTION } from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import type { EditorStore } from '../EditorStore.js';
 import { generateGAVCoordinates, type Entity } from '@finos/legend-storage';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -379,6 +380,7 @@ export class ExecuteInputDebugModelImporterEditorState extends ModelImporterEdit
       await flowResult(
         this.editorStore.projectConfigurationEditorState.updateProjectConfiguration(
           updateProjectConfigurationCommand,
+          PROJECT_CONFIG_UPDATE_ACTION.UPDATE_CONFIGS,
         ),
       );
       // open the debugger element

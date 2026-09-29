@@ -17,6 +17,10 @@
 import { observable, action, flowResult, makeObservable, flow } from 'mobx';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import {
+  LegendStudioTelemetryHelper,
+  SETUP_ACTION,
+} from '../../__lib__/LegendStudioTelemetryHelper.js';
+import {
   type GeneratorFn,
   type PlainObject,
   assertErrorThrown,
@@ -305,11 +309,16 @@ export class WorkspaceSetupStore {
   }
 
   *createSandboxProject(): GeneratorFn<void> {
+    if (!this.hasSandboxAccess) {
+      this.setSandboxModal(true);
+      return;
+    }
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_SetupActionLaunched(
+      this.applicationStore.telemetryService,
+      { action: SETUP_ACTION.CREATE_SANDBOX_PROJECT },
+    );
     try {
-      if (!this.hasSandboxAccess) {
-        this.setSandboxModal(true);
-        return;
-      }
       // create sandbox project and pilot workspace
       this.applicationStore.alertService.setBlockingAlert({
         message: 'Creating sandbox project...',
@@ -355,11 +364,26 @@ export class WorkspaceSetupStore {
       this.applicationStore.notificationService.notifySuccess(
         `Sandbox project with workspace created`,
       );
+      LegendStudioTelemetryHelper.logEvent_SetupActionSucceeded(
+        this.applicationStore.telemetryService,
+        {
+          action: SETUP_ACTION.CREATE_SANDBOX_PROJECT,
+          projectId: sandbox.projectId,
+          durationMs: Date.now() - startTime,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.ENGINE_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_SetupActionFailure(
+        this.applicationStore.telemetryService,
+        {
+          action: SETUP_ACTION.CREATE_SANDBOX_PROJECT,
+          errorMessage: error.message,
+        },
       );
       this.applicationStore.notificationService.notifyError(error);
     } finally {
@@ -843,6 +867,11 @@ export class WorkspaceSetupStore {
     tags: string[] = [],
   ): GeneratorFn<void> {
     this.createOrImportProjectState.inProgress();
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_SetupActionLaunched(
+      this.applicationStore.telemetryService,
+      { action: SETUP_ACTION.CREATE_PROJECT },
+    );
     try {
       const createdProject = Project.serialization.fromJson(
         (yield this.sdlcServerClient.createProject({
@@ -862,8 +891,23 @@ export class WorkspaceSetupStore {
       yield flowResult(this.changeProject(createdProject));
 
       this.setShowCreateProjectModal(false);
+      LegendStudioTelemetryHelper.logEvent_SetupActionSucceeded(
+        this.applicationStore.telemetryService,
+        {
+          action: SETUP_ACTION.CREATE_PROJECT,
+          projectId: createdProject.projectId,
+          durationMs: Date.now() - startTime,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
+      LegendStudioTelemetryHelper.logEvent_SetupActionFailure(
+        this.applicationStore.telemetryService,
+        {
+          action: SETUP_ACTION.CREATE_PROJECT,
+          errorMessage: error.message,
+        },
+      );
       this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
@@ -876,6 +920,11 @@ export class WorkspaceSetupStore {
     artifactId: string,
   ): GeneratorFn<void> {
     this.createOrImportProjectState.inProgress();
+    const startTime = Date.now();
+    LegendStudioTelemetryHelper.logEvent_SetupActionLaunched(
+      this.applicationStore.telemetryService,
+      { action: SETUP_ACTION.IMPORT_PROJECT },
+    );
     try {
       const report = ImportReport.serialization.fromJson(
         (yield this.sdlcServerClient.importProject({
@@ -900,8 +949,23 @@ export class WorkspaceSetupStore {
       this.searchCache.clear();
 
       yield flowResult(this.changeProject(report.project));
+      LegendStudioTelemetryHelper.logEvent_SetupActionSucceeded(
+        this.applicationStore.telemetryService,
+        {
+          action: SETUP_ACTION.IMPORT_PROJECT,
+          projectId: report.project.projectId,
+          durationMs: Date.now() - startTime,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
+      LegendStudioTelemetryHelper.logEvent_SetupActionFailure(
+        this.applicationStore.telemetryService,
+        {
+          action: SETUP_ACTION.IMPORT_PROJECT,
+          errorMessage: error.message,
+        },
+      );
       this.applicationStore.notificationService.notifyError(error);
     } finally {
       this.createOrImportProjectState.reset();
@@ -915,6 +979,17 @@ export class WorkspaceSetupStore {
     workspaceType: WorkspaceType,
   ): GeneratorFn<void> {
     this.createWorkspaceState.inProgress();
+    const startTime = Date.now();
+    const identity = {
+      action: SETUP_ACTION.CREATE_WORKSPACE,
+      projectId,
+      workspaceType,
+      hasPatchReleaseVersion: patchReleaseVersionId !== undefined,
+    };
+    LegendStudioTelemetryHelper.logEvent_SetupActionLaunched(
+      this.applicationStore.telemetryService,
+      identity,
+    );
     try {
       const newWorkspace = Workspace.serialization.fromJson(
         (yield this.sdlcServerClient.createWorkspace(
@@ -944,11 +1019,19 @@ export class WorkspaceSetupStore {
       if (!matchingWorkspace) {
         this.workspaces.push(newWorkspace);
       }
+      LegendStudioTelemetryHelper.logEvent_SetupActionSucceeded(
+        this.applicationStore.telemetryService,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_SetupActionFailure(
+        this.applicationStore.telemetryService,
+        { ...identity, errorMessage: error.message },
       );
       this.applicationStore.notificationService.notifyError(error);
     } finally {

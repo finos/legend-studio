@@ -769,6 +769,17 @@ export class EditorStore implements CommandRegistrar {
       // - view project
       // - back to the setup page
       const createWorkspaceAndRelaunch = async (): Promise<void> => {
+        const startTime = Date.now();
+        const identity = {
+          projectId,
+          workspaceId,
+          workspaceType: workspaceType.toString(),
+          hasPatchReleaseVersion: patchReleaseVersionId !== undefined,
+        };
+        LegendStudioTelemetryHelper.logEvent_SdlcWorkspaceCreateLaunched(
+          this.applicationStore.telemetryService,
+          identity,
+        );
         try {
           this.applicationStore.alertService.setBlockingAlert({
             message: 'Creating workspace...',
@@ -784,12 +795,20 @@ export class EditorStore implements CommandRegistrar {
           this.applicationStore.notificationService.notifySuccess(
             `Workspace '${workspace.workspaceId}' is succesfully created. Reloading application...`,
           );
+          LegendStudioTelemetryHelper.logEvent_SdlcWorkspaceCreateSucceeded(
+            this.applicationStore.telemetryService,
+            { ...identity, durationMs: Date.now() - startTime },
+          );
           this.applicationStore.navigationService.navigator.reload();
         } catch (error) {
           assertErrorThrown(error);
           this.applicationStore.logService.error(
             LogEvent.create(LEGEND_STUDIO_APP_EVENT.WORKSPACE_SETUP_FAILURE),
             error,
+          );
+          LegendStudioTelemetryHelper.logEvent_SdlcWorkspaceCreateFailure(
+            this.applicationStore.telemetryService,
+            { ...identity, errorMessage: error.message },
           );
           this.applicationStore.notificationService.notifyError(error);
         }

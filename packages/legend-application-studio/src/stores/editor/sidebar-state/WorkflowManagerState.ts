@@ -29,6 +29,12 @@ import {
   filterByType,
 } from '@finos/legend-shared';
 import { type Version, WorkflowJob, Workflow } from '@finos/legend-server-sdlc';
+import {
+  LegendStudioTelemetryHelper,
+  WORKFLOW_MANAGER_JOB_ACTION,
+  WORKFLOW_MANAGER_SCOPE,
+  type WorkflowManagerStatusBreakdown,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
 
 export abstract class WorkflowExplorerTreeNodeData implements TreeNodeData {
   isSelected?: boolean | undefined;
@@ -94,6 +100,16 @@ const updateWorkflowJobData = (
   }
 };
 
+const computeStatusBreakdown = <T extends { status: string }>(
+  items: T[],
+): WorkflowManagerStatusBreakdown => {
+  const breakdown: WorkflowManagerStatusBreakdown = {};
+  items.forEach((item) => {
+    breakdown[item.status] = (breakdown[item.status] ?? 0) + 1;
+  });
+  return breakdown;
+};
+
 export class WorkflowLogState {
   readonly editorStore: EditorStore;
   readonly workflowManagerState: WorkflowManagerState;
@@ -101,6 +117,11 @@ export class WorkflowLogState {
 
   job: WorkflowJob | undefined;
   logs: string;
+  // Telemetry-only session state (non-observable): tracks how long the log
+  // viewer is open and how many times the user hit refresh so we can emit a
+  // summary on close.
+  private openedAt: number | undefined;
+  private refreshCount = 0;
 
   constructor(
     editorStore: EditorStore,
@@ -133,11 +154,35 @@ export class WorkflowLogState {
   }
 
   closeModal(): void {
+    if (this.job && this.openedAt !== undefined) {
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsClosed(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          scope: this.workflowManagerState.scope,
+          jobName: this.job.name,
+          dwellMs: Date.now() - this.openedAt,
+          refreshCount: this.refreshCount,
+        },
+      );
+    }
+    this.openedAt = undefined;
+    this.refreshCount = 0;
     this.setJob(undefined);
     this.setLogs('');
   }
 
   *refreshJobLogs(workflowJob: WorkflowJob): GeneratorFn<void> {
+    this.refreshCount += 1;
+    LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsRefresh(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      {
+        scope: this.workflowManagerState.scope,
+        jobName: workflowJob.name,
+      },
+    );
+    const started = Date.now();
     try {
       this.fetchJobLogState.inProgress();
       const job = (yield flowResult(
@@ -148,6 +193,16 @@ export class WorkflowLogState {
         this.workflowManagerState.getJobLogs(workflowJob),
       )) as string;
       this.setLogs(logs);
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsFetchSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          scope: this.workflowManagerState.scope,
+          jobName: workflowJob.name,
+          durationMs: Date.now() - started,
+          logSizeBytes: logs.length,
+        },
+      );
       this.fetchJobLogState.pass();
     } catch (error) {
       assertErrorThrown(error);
@@ -155,12 +210,33 @@ export class WorkflowLogState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsFetchFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          scope: this.workflowManagerState.scope,
+          jobName: workflowJob.name,
+          errorMessage: error.message,
+        },
+      );
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.fetchJobLogState.fail();
     }
   }
 
   *viewJobLogs(workflowJob: WorkflowJob): GeneratorFn<void> {
+    this.openedAt = Date.now();
+    this.refreshCount = 0;
+    LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsOpened(
+      this.editorStore.applicationStore.telemetryService,
+      this.editorStore.editorMode.getSourceInfo(),
+      {
+        scope: this.workflowManagerState.scope,
+        jobName: workflowJob.name,
+        jobStatus: workflowJob.status,
+      },
+    );
+    const started = Date.now();
     try {
       this.setJob(workflowJob);
       this.fetchJobLogState.inProgress();
@@ -168,12 +244,31 @@ export class WorkflowLogState {
         this.workflowManagerState.getJobLogs(workflowJob),
       )) as string;
       this.setLogs(logs);
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsFetchSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          scope: this.workflowManagerState.scope,
+          jobName: workflowJob.name,
+          durationMs: Date.now() - started,
+          logSizeBytes: logs.length,
+        },
+      );
       this.fetchJobLogState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobLogsFetchFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          scope: this.workflowManagerState.scope,
+          jobName: workflowJob.name,
+          errorMessage: error.message,
+        },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.fetchJobLogState.fail();
@@ -205,6 +300,7 @@ export class WorkflowState {
       refreshWorkflow: flow,
       retryJob: flow,
       runManualJob: flow,
+      runJobAction: flow,
     });
 
     this.editorStore = editorStore;
@@ -237,6 +333,15 @@ export class WorkflowState {
     workflowId: string,
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
   ): GeneratorFn<void> {
+    const telemetryService = this.editorStore.applicationStore.telemetryService;
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const scope = this.workflowManagerState.scope;
+    LegendStudioTelemetryHelper.logEvent_WorkflowManagerFetchJobsLaunched(
+      telemetryService,
+      sourceInfo,
+      { scope },
+    );
+    const started = Date.now();
     try {
       this.isExecutingWorkflowRequest = true;
       const workflowJobs = (
@@ -246,11 +351,26 @@ export class WorkflowState {
       ).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
       updateWorkflowJobData(workflowJobs, workflowId, treeData);
       this.setWorkflowTreeData({ ...treeData });
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerFetchJobsSucceeded(
+        telemetryService,
+        sourceInfo,
+        {
+          scope,
+          durationMs: Date.now() - started,
+          jobCount: workflowJobs.length,
+          statusBreakdown: computeStatusBreakdown(workflowJobs),
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerFetchJobsFailure(
+        telemetryService,
+        sourceInfo,
+        { scope, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
@@ -263,6 +383,18 @@ export class WorkflowState {
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
   ): GeneratorFn<void> {
     if (node instanceof WorkflowTreeNodeData) {
+      // Only emit the expand event when the user is opening the node (not
+      // collapsing) so we don't double-count toggles.
+      if (!node.isOpen) {
+        LegendStudioTelemetryHelper.logEvent_WorkflowManagerWorkflowExpand(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          {
+            scope: this.workflowManagerState.scope,
+            workflowStatus: node.workflow.status,
+          },
+        );
+      }
       if (!node.childrenIds) {
         yield flowResult(
           this.fetchAllWorkspaceWorkJobs(node.workflow.id, treeData),
@@ -277,20 +409,20 @@ export class WorkflowState {
     workflowJob: WorkflowJob,
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
   ): GeneratorFn<void> {
-    try {
-      this.isExecutingWorkflowRequest = true;
-      this.workflowManagerState.cancelJob(workflowJob);
-      yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-    } finally {
-      this.isExecutingWorkflowRequest = false;
-    }
+    yield flowResult(
+      this.runJobAction(
+        WORKFLOW_MANAGER_JOB_ACTION.CANCEL,
+        workflowJob,
+        treeData,
+        // NOTE: unlike retry/runManual, the current implementation does not
+        // `yield` the underlying cancel call — see `cancelJob` below. The
+        // launch event will still fire, and success will fire after the
+        // refresh completes.
+        () => {
+          this.workflowManagerState.cancelJob(workflowJob);
+        },
+      ),
+    );
   }
 
   *refreshWorkflow(
@@ -303,6 +435,14 @@ export class WorkflowState {
         this.workflowManagerState.getWorkflow(workflowId),
       )) as Workflow;
       node.workflow = workflow;
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerWorkflowRefresh(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          scope: this.workflowManagerState.scope,
+          workflowStatus: workflow.status,
+        },
+      );
     }
     yield flowResult(this.fetchAllWorkspaceWorkJobs(workflowId, treeData));
   }
@@ -311,35 +451,82 @@ export class WorkflowState {
     workflowJob: WorkflowJob,
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
   ): GeneratorFn<void> {
-    try {
-      this.isExecutingWorkflowRequest = true;
-      yield flowResult(this.workflowManagerState.retryJob(workflowJob));
-      yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
-    } catch (error) {
-      assertErrorThrown(error);
-      this.editorStore.applicationStore.logService.error(
-        LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
-        error,
-      );
-      this.editorStore.applicationStore.notificationService.notifyError(error);
-    } finally {
-      this.isExecutingWorkflowRequest = false;
-    }
+    yield flowResult(
+      this.runJobAction(
+        WORKFLOW_MANAGER_JOB_ACTION.RETRY,
+        workflowJob,
+        treeData,
+        () => flowResult(this.workflowManagerState.retryJob(workflowJob)),
+      ),
+    );
   }
 
   *runManualJob(
     workflowJob: WorkflowJob,
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
   ): GeneratorFn<void> {
+    yield flowResult(
+      this.runJobAction(
+        WORKFLOW_MANAGER_JOB_ACTION.RUN_MANUAL,
+        workflowJob,
+        treeData,
+        () => flowResult(this.workflowManagerState.runManualJob(workflowJob)),
+      ),
+    );
+  }
+
+  *runJobAction(
+    jobAction: WORKFLOW_MANAGER_JOB_ACTION,
+    workflowJob: WorkflowJob,
+    treeData: TreeData<WorkflowExplorerTreeNodeData>,
+    invoke: () => Promise<void> | void,
+  ): GeneratorFn<void> {
+    const telemetryService = this.editorStore.applicationStore.telemetryService;
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const scope = this.workflowManagerState.scope;
+    LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobActionLaunched(
+      telemetryService,
+      sourceInfo,
+      {
+        scope,
+        action: jobAction,
+        jobName: workflowJob.name,
+        jobStatus: workflowJob.status,
+      },
+    );
+    const started = Date.now();
     try {
       this.isExecutingWorkflowRequest = true;
-      yield flowResult(this.workflowManagerState.runManualJob(workflowJob));
+      const result = invoke();
+      if (result) {
+        yield result;
+      }
       yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobActionSucceeded(
+        telemetryService,
+        sourceInfo,
+        {
+          scope,
+          action: jobAction,
+          jobName: workflowJob.name,
+          durationMs: Date.now() - started,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobActionFailure(
+        telemetryService,
+        sourceInfo,
+        {
+          scope,
+          action: jobAction,
+          jobName: workflowJob.name,
+          errorMessage: error.message,
+        },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
@@ -382,6 +569,14 @@ export abstract class WorkflowManagerState {
     );
   }
 
+  /**
+   * Discriminator for telemetry so dashboards can slice workflow-manager
+   * events by which surface emitted them (workspace sidebar vs. read-only
+   * project viewer vs. project-version viewer) without joining on
+   * `sourceInfo.sourceType`.
+   */
+  abstract get scope(): WORKFLOW_MANAGER_SCOPE;
+
   abstract getWorkflows(): GeneratorFn<Workflow[]>;
   abstract getWorkflow(workflowId: string): GeneratorFn<Workflow>;
   abstract getJobs(workflowId: string): GeneratorFn<WorkflowJob[]>;
@@ -392,6 +587,14 @@ export abstract class WorkflowManagerState {
   abstract getJobLogs(workflowJob: WorkflowJob): GeneratorFn<string>;
 
   *fetchAllWorkflows(): GeneratorFn<void> {
+    const telemetryService = this.editorStore.applicationStore.telemetryService;
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    LegendStudioTelemetryHelper.logEvent_WorkflowManagerFetchWorkflowsLaunched(
+      telemetryService,
+      sourceInfo,
+      { scope: this.scope },
+    );
+    const started = Date.now();
     try {
       this.fetchWorkflowsState.inProgress();
       // NOTE: this network call can take a while, so we might consider limiting the number of workflows to 10 or so
@@ -429,12 +632,27 @@ export abstract class WorkflowManagerState {
             jobsIndex.get(workflow.id),
           ),
       );
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerFetchWorkflowsSucceeded(
+        telemetryService,
+        sourceInfo,
+        {
+          scope: this.scope,
+          durationMs: Date.now() - started,
+          workflowCount: workflows.length,
+          statusBreakdown: computeStatusBreakdown(workflows),
+        },
+      );
       this.fetchWorkflowsState.pass();
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_WorkflowManagerFetchWorkflowsFailure(
+        telemetryService,
+        sourceInfo,
+        { scope: this.scope, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
       this.fetchWorkflowsState.fail();
@@ -443,6 +661,10 @@ export abstract class WorkflowManagerState {
 }
 
 export class WorkspaceWorkflowManagerState extends WorkflowManagerState {
+  override get scope(): WORKFLOW_MANAGER_SCOPE {
+    return WORKFLOW_MANAGER_SCOPE.WORKSPACE;
+  }
+
   override *getJobs(workflowId: string): GeneratorFn<WorkflowJob[]> {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflowJobs(
@@ -532,6 +754,10 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
     this.version = version;
   }
 
+  override get scope(): WORKFLOW_MANAGER_SCOPE {
+    return WORKFLOW_MANAGER_SCOPE.PROJECT_VERSION;
+  }
+
   override *getJobs(workflowId: string): GeneratorFn<WorkflowJob[]> {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflowJobsByVersion(
@@ -611,6 +837,10 @@ export class ProjectVersionWorkflowManagerState extends WorkflowManagerState {
 }
 
 export class ProjectWorkflowManagerState extends WorkflowManagerState {
+  override get scope(): WORKFLOW_MANAGER_SCOPE {
+    return WORKFLOW_MANAGER_SCOPE.PROJECT;
+  }
+
   override *getJobs(workflowId: string): GeneratorFn<WorkflowJob[]> {
     return (
       (yield this.editorStore.sdlcServerClient.getWorkflowJobs(

@@ -25,6 +25,11 @@ import {
 import type { EditorStore } from '../EditorStore.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import {
+  LegendStudioTelemetryHelper,
+  SDLC_REVIEW_ACTION,
+  SDLC_REVIEW_ROLE,
+} from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import { LegendStudioUserDataHelper } from '../../../__lib__/LegendStudioUserDataHelper.js';
 import {
   type GeneratorFn,
@@ -287,6 +292,22 @@ export class WorkspaceReviewState {
       return;
     }
     this.isClosingWorkspaceReview = true;
+    const startTime = Date.now();
+    const reviewId = this.workspaceReview.id;
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: SDLC_REVIEW_ACTION.CLOSE,
+      role: SDLC_REVIEW_ROLE.AUTHOR,
+      projectId: this.sdlcState.activeProject.projectId,
+      patchReleaseVersionId:
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
+      reviewId,
+    };
+    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       yield this.editorStore.sdlcServerClient.rejectReview(
         this.sdlcState.activeProject.projectId,
@@ -294,11 +315,21 @@ export class WorkspaceReviewState {
         this.workspaceReview.id,
       );
       this.workspaceReview = undefined;
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
@@ -332,6 +363,20 @@ export class WorkspaceReviewState {
       return;
     }
     this.isCreatingWorkspaceReview = true;
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: SDLC_REVIEW_ACTION.CREATE,
+      role: SDLC_REVIEW_ROLE.AUTHOR,
+      projectId: this.sdlcState.activeProject.projectId,
+      patchReleaseVersionId:
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
+    };
+    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       const description =
         reviewDescription ??
@@ -348,11 +393,25 @@ export class WorkspaceReviewState {
           },
         )) as PlainObject<Review>,
       );
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        {
+          ...identity,
+          reviewId: this.workspaceReview.id,
+          durationMs: Date.now() - startTime,
+        },
+      );
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
@@ -396,12 +455,32 @@ export class WorkspaceReviewState {
       return;
     }
 
+    const startTime = Date.now();
+    const sourceInfo = this.editorStore.editorMode.getSourceInfo();
+    const identity = {
+      action: SDLC_REVIEW_ACTION.COMMIT,
+      role: SDLC_REVIEW_ROLE.AUTHOR,
+      projectId: this.sdlcState.activeProject.projectId,
+      patchReleaseVersionId:
+        this.sdlcState.activePatch?.patchReleaseVersionId.id,
+      reviewId: review.id,
+    };
+    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+      this.editorStore.applicationStore.telemetryService,
+      sourceInfo,
+      identity,
+    );
     try {
       yield this.editorStore.sdlcServerClient.commitReview(
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activePatch?.patchReleaseVersionId.id,
         review.id,
         { message: `${review.title} [review]` },
+      );
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, durationMs: Date.now() - startTime },
       );
       // Committing a review deletes the workspace on SDLC. Drop it from
       // the recents cache so the workspace setup screen doesn't keep
@@ -451,6 +530,11 @@ export class WorkspaceReviewState {
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
+      );
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        { ...identity, errorMessage: error.message },
       );
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {

@@ -30,6 +30,7 @@ import {
   TESTABLE_TEST_TAB,
   TestableTestEditorState,
 } from '../../testable/TestableEditorState.js';
+import { TESTABLE_KIND } from '../../../../../../__lib__/LegendStudioTelemetryHelper.js';
 import type { ServiceTestSuiteState } from './ServiceTestableState.js';
 import {
   service_addAssertKeyForTest,
@@ -428,6 +429,14 @@ export class ServiceTestState extends TestableTestEditorState {
   override test: ServiceTest;
   override testable: Service;
   setupState: ServiceTestSetupState;
+
+  override get testableKind(): TESTABLE_KIND {
+    return TESTABLE_KIND.SERVICE;
+  }
+
+  override get testablePath(): string {
+    return this.testable.path;
+  }
   constructor(suiteState: ServiceTestSuiteState, test: ServiceTest) {
     super(
       suiteState.testableState.serviceEditorState.service,

@@ -472,6 +472,11 @@ export class ConnectionTestDataState {
       this.generatingTestDataState.pass();
     } catch (error) {
       assertErrorThrown(error);
+      LegendStudioTelemetryHelper.logEvent_TestDataGenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        error.message,
+      );
       this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to generate test data: ${error.message}`,
       );
@@ -610,6 +615,11 @@ export class ConnectionTestDataState {
       this.generatingTestDataWithSeedDataState.pass();
     } catch (error) {
       assertErrorThrown(error);
+      LegendStudioTelemetryHelper.logEvent_TestDataGenerationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        error.message,
+      );
       this.editorStore.applicationStore.notificationService.notifyError(
         `Unable to generate test data: ${error.message}`,
       );

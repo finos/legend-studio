@@ -70,7 +70,10 @@ export * from './stores/extensions/DSL_Data_LegendStudioApplicationPlugin_Extens
 export { DataProductEditorState } from './stores/editor/editor-state/element-editor-state/dataProduct/DataProductEditorState.js';
 export { ComputeEditorState } from './stores/editor/editor-state/element-editor-state/compute/ComputeEditorState.js';
 export { LEGEND_STUDIO_DOCUMENTATION_KEY } from './__lib__/LegendStudioDocumentation.js';
-export { LegendStudioTelemetryHelper } from './__lib__/LegendStudioTelemetryHelper.js';
+export {
+  LegendStudioTelemetryHelper,
+  SERVICE_REGISTRATION_TRIGGER,
+} from './__lib__/LegendStudioTelemetryHelper.js';
 
 // components
 export { queryClass } from './components/editor/editor-group/uml-editor/ClassQueryBuilder.js';
