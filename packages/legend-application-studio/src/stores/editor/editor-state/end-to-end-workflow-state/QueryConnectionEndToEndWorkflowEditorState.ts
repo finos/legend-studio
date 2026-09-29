@@ -53,6 +53,7 @@ import {
 import type { EditorStore } from '../../EditorStore.js';
 import { BaseStepperState } from '@finos/legend-art';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../../__lib__/LegendStudioEvent.js';
+import { EDITOR_TAB_CLOSE_TRIGGER } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
 import { EntityChangeType, type EntityChange } from '@finos/legend-server-sdlc';
 import type { Entity } from '@finos/legend-storage';
 import {
@@ -180,6 +181,7 @@ export class QueryConnectionConfirmationAndGrammarEditorStepperState extends Con
     this.editorStore.tabManagerState.closeTab(
       this.editorStore.globalEndToEndWorkflowState
         .queryToConnectionWorkflowEditorState,
+      EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
     );
     const theClass = getMappingCompatibleClasses(
       at(this.workflowEditorState.workflowGraph.mappings, 0),

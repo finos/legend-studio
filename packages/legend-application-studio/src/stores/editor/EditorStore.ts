@@ -94,6 +94,7 @@ import {
 } from '@finos/legend-application';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import {
+  EDITOR_TAB_CLOSE_TRIGGER,
   LegendStudioTelemetryHelper,
   TEXT_MODE_ENTER_TRIGGER,
   TEXT_MODE_TOGGLE_DIRECTION,
@@ -575,7 +576,7 @@ export class EditorStore implements CommandRegistrar {
   }
 
   reset(): void {
-    this.tabManagerState.closeAllTabs();
+    this.tabManagerState.closeAllTabs(EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC);
     this.projectConfigurationEditorState = new ProjectConfigurationEditorState(
       this,
       this.sdlcState,

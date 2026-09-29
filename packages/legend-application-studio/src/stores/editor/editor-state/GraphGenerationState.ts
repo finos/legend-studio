@@ -551,10 +551,11 @@ export class GraphGenerationState {
         openedNodeIds,
       ),
     );
-    this.editorStore.tabManagerState.tabs =
+    this.editorStore.tabManagerState.replaceTabs(
       this.editorStore.tabManagerState.tabs
         .map((e) => this.reprocessGenerationFileState(e))
-        .filter(isNonNullable);
+        .filter(isNonNullable),
+    );
   }
 
   reprocessGenerationFileState(

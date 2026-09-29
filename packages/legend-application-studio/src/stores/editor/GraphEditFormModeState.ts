@@ -53,6 +53,7 @@ import {
 } from '../graph-modifier/GraphModifierHelper.js';
 import { ElementEditorState } from './editor-state/element-editor-state/ElementEditorState.js';
 import {
+  EDITOR_TAB_CLOSE_TRIGGER,
   FORM_MODE_COMPILATION_ERROR_KIND,
   LegendStudioTelemetryHelper,
 } from '../../__lib__/LegendStudioTelemetryHelper.js';
@@ -127,7 +128,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
       )
       .filter(isNonNullable);
     const elementsToDelete = [element, ...generatedChildrenElements];
-    this.editorStore.tabManagerState.tabs =
+    this.editorStore.tabManagerState.replaceTabs(
       this.editorStore.tabManagerState.tabs.filter((elementState) => {
         if (elementState instanceof ElementEditorState) {
           if (elementState === this.editorStore.tabManagerState.currentTab) {
@@ -138,7 +139,8 @@ export class GraphEditFormModeState extends GraphEditorMode {
           return !elementsToDelete.includes(elementState.element);
         }
         return true;
-      });
+      }),
+    );
     if (
       this.editorStore.tabManagerState.currentTab &&
       this.editorStore.tabManagerState.currentTab instanceof
@@ -149,6 +151,7 @@ export class GraphEditFormModeState extends GraphEditorMode {
     ) {
       this.editorStore.tabManagerState.closeTab(
         this.editorStore.tabManagerState.currentTab,
+        EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
       );
     }
     // remove/retire the element's generated children before remove the element itself
@@ -384,7 +387,9 @@ export class GraphEditFormModeState extends GraphEditorMode {
           prompt: 'Refreshing full application...',
           showLoading: true,
         });
-        this.editorStore.tabManagerState.closeAllTabs();
+        this.editorStore.tabManagerState.closeAllTabs(
+          EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
+        );
         this.editorStore.cleanUp();
         yield flowResult(this.editorStore.buildGraph(entities));
       }
