@@ -242,7 +242,9 @@ export class DataProductDataAccessState {
       setMissingIngests: action,
       fetchMissingIngests: flow,
       createContract: flow,
+      createContractsForAPGs: flow,
       createWorkflowRequest: flow,
+      createWorkflowRequestsForAPGs: flow,
       fetchContracts: action,
       fetchIngestEnvironmentDetails: action,
       setDataProductOwners: action,
@@ -796,6 +798,243 @@ export class DataProductDataAccessState {
             error: error.message,
             requestType: 'workflow',
           },
+        );
+      }
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(`${error.message}`);
+    } finally {
+      this.creatingWorkflowRequestState.complete();
+    }
+  }
+
+  *createContractsForAPGs(
+    consumer: V1_OrganizationalScope,
+    description: string,
+    groups: V1_AccessPointGroup[],
+    tokenProvider: () => string | undefined,
+    consumerType: string,
+  ): GeneratorFn<void> {
+    if (groups.length === 0) {
+      return;
+    }
+    try {
+      this.creatingContractState.inProgress();
+      const results = (yield Promise.all(
+        groups.map(async (group) => {
+          const request = serialize(
+            V1_createContractPayloadModelSchema(
+              this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+            {
+              description,
+              resourceId: this.product.name,
+              resourceType: V1_ResourceType.ACCESS_POINT_GROUP,
+              deploymentId: this.entitlementsDataProductDetails.deploymentId,
+              accessPointGroup: group.id,
+              consumer,
+            } satisfies V1_CreateContractPayload,
+          ) as PlainObject<V1_CreateContractPayload>;
+          try {
+            const contractsAndSubscriptions =
+              V1_deserializeDataContractResponse(
+                (await this.lakehouseContractServerClient.createContract(
+                  request,
+                  tokenProvider(),
+                )) as unknown as PlainObject<V1_DataContractsResponse>,
+                this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+              );
+            const associatedContractAndSubscription =
+              contractsAndSubscriptions[0];
+            if (
+              associatedContractAndSubscription?.dataContract
+                .consumer instanceof V1_AdhocTeam &&
+              associatedContractAndSubscription.dataContract.consumer.users.some(
+                (u) =>
+                  u.name === this.applicationStore.identityService.currentUser,
+              )
+            ) {
+              const apgState = this.dataProductViewerState.apgStates.find(
+                (e) => e.apg === group,
+              );
+              apgState?.setAssociatedUserContract(
+                associatedContractAndSubscription.dataContract,
+                this.lakehouseContractServerClient,
+                tokenProvider,
+              );
+            }
+            this.logCreatingContract(request, consumerType, undefined);
+            return { kind: 'success' as const, groupId: group.id };
+          } catch (error) {
+            assertErrorThrown(error);
+            this.logCreatingContract(request, consumerType, error.message);
+            return {
+              kind: 'failure' as const,
+              groupId: group.id,
+              error: error.message,
+            };
+          }
+        }),
+      )) as Array<
+        | { kind: 'success'; groupId: string }
+        | { kind: 'failure'; groupId: string; error: string }
+      >;
+
+      const succeededGroupIds = results
+        .filter((r) => r.kind === 'success')
+        .map((r) => r.groupId);
+      const failures = results
+        .filter(
+          (r): r is { kind: 'failure'; groupId: string; error: string } =>
+            r.kind === 'failure',
+        )
+        .map((r) => ({ groupId: r.groupId, error: r.error }));
+
+      this.setContractCreatorAPG(undefined);
+
+      if (succeededGroupIds.length > 0 && failures.length === 0) {
+        this.applicationStore.notificationService.notifySuccess(
+          `Contracts created for ${succeededGroupIds.length} access point group(s), please review pending tasks from each contract view`,
+        );
+      } else if (succeededGroupIds.length > 0 && failures.length > 0) {
+        this.applicationStore.notificationService.notifyWarning(
+          `Contracts created for ${succeededGroupIds.length} of ${groups.length} access point group(s). Failed: ${failures
+            .map((f) => `${f.groupId} (${f.error})`)
+            .join(', ')}`,
+        );
+      } else {
+        this.applicationStore.notificationService.notifyError(
+          `Failed to create contracts for all ${groups.length} access point group(s). Errors: ${failures
+            .map((f) => `${f.groupId} (${f.error})`)
+            .join(', ')}`,
+        );
+      }
+      yield this.fetchContracts(tokenProvider);
+    } catch (error) {
+      assertErrorThrown(error);
+      this.applicationStore.notificationService.notifyError(`${error.message}`);
+    } finally {
+      this.creatingContractState.complete();
+    }
+  }
+
+  *createWorkflowRequestsForAPGs(
+    consumer: V1_OrganizationalScope,
+    description: string,
+    groups: V1_AccessPointGroup[],
+    tokenProvider: () => string | undefined,
+    consumerType: string,
+  ): GeneratorFn<void> {
+    if (groups.length === 0) {
+      return;
+    }
+    try {
+      this.creatingWorkflowRequestState.inProgress();
+      const orgNodeCode = this.dataAccessPlugins
+        .map((p) => p.getOrganizationalNodeCode?.(consumer))
+        .find(isNonNullable);
+      const results = (yield Promise.all(
+        groups.map(async (group) => {
+          const request = serialize(
+            V1_createDataAccessRequestPayloadModelSchema(
+              this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+            ),
+            {
+              description,
+              resourceId: this.product.name,
+              deploymentId: this.entitlementsDataProductDetails.deploymentId,
+              accessPointGroup: group.id,
+              consumer,
+            } satisfies V1_CreateDataAccessRequestPayload,
+          ) as PlainObject<V1_CreateDataAccessRequestPayload>;
+          try {
+            const response = V1_deserializeDataRequestsWithWorkflowResponse(
+              (await this.lakehouseContractServerClient.createDataAccessRequest(
+                request,
+                tokenProvider(),
+              )) as unknown as PlainObject<V1_DataRequestsWithWorkflowResponse>,
+              this.graphManagerState.pluginManager.getPureProtocolProcessorPlugins(),
+            );
+            if (response.length > 0) {
+              const dataRequestWithWorkflow = guaranteeNonNullable(response[0]);
+              const guid = dataRequestWithWorkflow.dataRequest.guid;
+              if (orgNodeCode) {
+                const apgState = this.dataProductViewerState.apgStates.find(
+                  (s) => s.apg.id === group.id,
+                );
+                if (apgState) {
+                  // eslint-disable-next-line no-void
+                  void apgState.checkAndSetAccessForOrgRequest(
+                    orgNodeCode,
+                    guid,
+                    V1_RequestState.SUBMITTED_FOR_APPROVALS,
+                    this.dataAccessPlugins,
+                    tokenProvider(),
+                  );
+                }
+              }
+            }
+            this.applicationStore.telemetryService.logEvent(
+              DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
+              {
+                ...request,
+                consumerType,
+                status: DSL_DATAPRODUCT_EVENT_STATUS.SUCCESS,
+                requestType: 'workflow',
+              },
+            );
+            return { kind: 'success' as const, groupId: group.id };
+          } catch (error) {
+            assertErrorThrown(error);
+            this.applicationStore.telemetryService.logEvent(
+              DSL_DATAPRODUCT_EVENT.CREATE_CONTRACT,
+              {
+                ...request,
+                consumerType,
+                status: DSL_DATAPRODUCT_EVENT_STATUS.FAILURE,
+                error: error.message,
+                requestType: 'workflow',
+              },
+            );
+            return {
+              kind: 'failure' as const,
+              groupId: group.id,
+              error: error.message,
+            };
+          }
+        }),
+      )) as Array<
+        | { kind: 'success'; groupId: string }
+        | { kind: 'failure'; groupId: string; error: string }
+      >;
+
+      const succeededGroupIds = results
+        .filter((r) => r.kind === 'success')
+        .map((r) => r.groupId);
+      const failures = results
+        .filter(
+          (r): r is { kind: 'failure'; groupId: string; error: string } =>
+            r.kind === 'failure',
+        )
+        .map((r) => ({ groupId: r.groupId, error: r.error }));
+
+      this.setContractCreatorAPG(undefined);
+
+      if (succeededGroupIds.length > 0 && failures.length === 0) {
+        this.applicationStore.notificationService.notifySuccess(
+          `Data access requests created for ${succeededGroupIds.length} access point group(s)`,
+        );
+      } else if (succeededGroupIds.length > 0 && failures.length > 0) {
+        this.applicationStore.notificationService.notifyWarning(
+          `Data access requests created for ${succeededGroupIds.length} of ${groups.length} access point group(s). Failed: ${failures
+            .map((f) => `${f.groupId} (${f.error})`)
+            .join(', ')}`,
+        );
+      } else {
+        this.applicationStore.notificationService.notifyError(
+          `Failed to create data access requests for all ${groups.length} access point group(s). Errors: ${failures
+            .map((f) => `${f.groupId} (${f.error})`)
+            .join(', ')}`,
         );
       }
     } catch (error) {

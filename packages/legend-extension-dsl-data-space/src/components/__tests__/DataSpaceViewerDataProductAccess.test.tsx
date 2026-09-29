@@ -139,9 +139,7 @@ describe(
         ),
       ).toBeDefined();
       fireEvent.click(
-        within(dataAccessSection).getByRole('button', {
-          name: /Open DataProduct/i,
-        }),
+        within(dataAccessSection).getByTitle('Open Data Product'),
       );
       expect(viewDataProduct).toHaveBeenCalledWith(
         'test::product::MyProduct',
@@ -237,9 +235,9 @@ describe(
       expect(within(executableItem).getByText('otherGroup')).toBeDefined();
 
       fireEvent.click(
-        within(executableItem).getByRole('button', {
-          name: /Open DataProduct/i,
-        }),
+        within(executableItem).getByTitle(
+          /Open Data Product: test::acc::MyProduct/,
+        ),
       );
       expect(viewDataProduct).toHaveBeenCalledWith('test::acc::MyProduct', 111);
     });
@@ -320,18 +318,14 @@ describe(
         DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
       );
       expect(
-        within(getDataAccessSection()).queryByRole('button', {
-          name: /Open DataProduct/i,
-        }),
+        within(getDataAccessSection()).queryByTitle('Open Data Product'),
       ).not.toBeNull();
 
       await act(async () => {
         viewerState.setCurrentExecutionContext(relationalContext);
       });
       expect(
-        within(getDataAccessSection()).queryByRole('button', {
-          name: /Open DataProduct/i,
-        }),
+        within(getDataAccessSection()).queryByTitle('Open Data Product'),
       ).toBeNull();
     });
   },

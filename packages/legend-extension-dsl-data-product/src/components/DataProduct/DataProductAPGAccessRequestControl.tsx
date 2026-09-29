@@ -27,6 +27,7 @@ import {
 import { CaretDownIcon, InfoCircleOutlineIcon } from '@finos/legend-art';
 import { isNonEmptyString } from '@finos/legend-shared';
 import {
+  ELEMENT_PATH_DELIMITER,
   V1_AccessPointGroupReference,
   V1_transformDataContractToLiteDatacontract,
 } from '@finos/legend-graph';
@@ -234,7 +235,6 @@ export const DataProductAPGAccessRequestControl = observer(
               {buttonLabel}
               {tooltipText !== undefined && (
                 <Tooltip
-                  className="data-product__viewer__access-group__item__access__tooltip__icon"
                   title={tooltipText}
                   arrow={true}
                   slotProps={{
@@ -244,7 +244,9 @@ export const DataProductAPGAccessRequestControl = observer(
                     },
                   }}
                 >
-                  <InfoCircleOutlineIcon />
+                  <InfoCircleOutlineIcon
+                    style={{ fontSize: '1.6rem', marginLeft: '0.5rem' }}
+                  />
                 </Tooltip>
               )}
             </Button>
@@ -301,6 +303,22 @@ export const DataProductAPGAccessRequestControl = observer(
             apgState={apgState}
             dataAccessState={dataAccessState}
             tokenProvider={tokenProvider}
+            headerContent={
+              <>
+                Submit access request for{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {apgState.apg.id}
+                </span>{' '}
+                Access Point Group in{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {dataAccessState.dataProductViewerState.product.title ??
+                    dataAccessState.dataProductViewerState.product.path
+                      .split(ELEMENT_PATH_DELIMITER)
+                      .pop()}
+                </span>{' '}
+                Data Product
+              </>
+            }
           />
         )}
         {dataContractViewerState && (

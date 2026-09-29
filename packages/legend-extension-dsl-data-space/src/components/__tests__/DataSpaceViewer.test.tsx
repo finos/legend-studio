@@ -64,7 +64,7 @@ const renderDataSpaceViewer = async (
 };
 
 describe(integrationTest('DataSpaceViewer'), () => {
-  test('renders Open DataProduct button for exec context with mappingProvider and no runtime', async () => {
+  test('renders clickable Data Product label for exec context with mappingProvider and no runtime', async () => {
     const viewDataProduct = jest.fn();
     const { viewerState } = await renderDataSpaceViewer(
       TEST_DATA__mappingProviderNoRuntime as PlainObject<V1_DataSpaceAnalysisResult>,
@@ -76,15 +76,10 @@ describe(integrationTest('DataSpaceViewer'), () => {
       );
     });
 
-    // The "Open DataProduct" action wired to viewDataProduct should show
-    expect(
-      screen.getByRole('button', { name: /Open DataProduct/i }),
-    ).toBeDefined();
-    // The mapping provider path should appear in the exec context entry
+    expect(screen.getByTitle('Open Data Product')).toBeDefined();
     expect(
       screen.getByText(/test::product::UpstreamDataProduct/),
     ).toBeDefined();
-    // No runtime dropdown / label should be visible for this exec context
     expect(screen.queryByText('Runtime')).toBeNull();
   });
 

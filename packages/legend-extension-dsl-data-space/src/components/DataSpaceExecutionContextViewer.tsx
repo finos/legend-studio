@@ -92,42 +92,26 @@ const DataSpaceMappingProviderAccessControl = observer(
   },
 );
 
-export const DataSpaceOpenDataProductButton = observer(
-  (props: {
-    dataSpaceViewerState: DataSpaceViewerState;
-    dataProductPath: string;
-  }) => {
-    const { dataSpaceViewerState, dataProductPath } = props;
-    const deploymentId =
-      dataSpaceViewerState.resolveDeploymentIdForDataProduct(dataProductPath);
-    const isUnresolved = Boolean(
-      dataSpaceViewerState.getDataProductAccessState(dataProductPath)
-        ?.isDataProductUnresolved,
-    );
-    const onOpenDataProduct = (): void => {
-      if (dataSpaceViewerState.viewDataProduct && deploymentId !== undefined) {
-        dataSpaceViewerState.viewDataProduct(dataProductPath, deploymentId);
-      }
-    };
-    return (
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={onOpenDataProduct}
-        sx={{
-          display:
-            !dataSpaceViewerState.viewDataProduct ||
-            deploymentId === undefined ||
-            isUnresolved
-              ? 'none'
-              : undefined,
-        }}
-      >
-        Open DataProduct
-      </Button>
-    );
-  },
-);
+export const resolveOpenDataProductAction = (
+  dataSpaceViewerState: DataSpaceViewerState,
+  dataProductPath: string,
+): (() => void) | undefined => {
+  const deploymentId =
+    dataSpaceViewerState.resolveDeploymentIdForDataProduct(dataProductPath);
+  const isUnresolved = Boolean(
+    dataSpaceViewerState.getDataProductAccessState(dataProductPath)
+      ?.isDataProductUnresolved,
+  );
+  if (
+    !dataSpaceViewerState.viewDataProduct ||
+    deploymentId === undefined ||
+    isUnresolved
+  ) {
+    return undefined;
+  }
+  const viewDataProduct = dataSpaceViewerState.viewDataProduct;
+  return (): void => viewDataProduct(dataProductPath, deploymentId);
+};
 
 export const DataSpaceMappingProviderEntry = observer(
   (props: {
@@ -147,16 +131,33 @@ export const DataSpaceMappingProviderEntry = observer(
     const tokenProvider =
       dataSpaceViewerState.mappingProviderAccessConfig?.tokenProvider ??
       ((): undefined => undefined);
+    const onOpenDataProduct = resolveOpenDataProductAction(
+      dataSpaceViewerState,
+      mappingProvider.element,
+    );
+    const mappingProviderText = `${mappingProvider.element}${
+      mappingProvider.keys[0] ? `.${mappingProvider.keys[0]}` : ''
+    }`;
     return (
       <>
         <div className="data-space__viewer__execution-context__entry__icon">
           <PURE_DataProductIcon />
         </div>
         <div className="data-space__viewer__execution-context__entry__content data-space__viewer__execution-context__entry__content__text data-space__viewer__execution-context__mapping-provider__content">
-          <span>
-            {mappingProvider.element}
-            {mappingProvider.keys[0] ? `.${mappingProvider.keys[0]}` : ''}
-          </span>
+          {onOpenDataProduct ? (
+            <button
+              type="button"
+              className="data-space__viewer__execution-context__mapping-provider__label data-space__viewer__execution-context__mapping-provider__label--clickable"
+              title="Open Data Product"
+              onClick={onOpenDataProduct}
+            >
+              {mappingProviderText}
+            </button>
+          ) : (
+            <span className="data-space__viewer__execution-context__mapping-provider__label">
+              {mappingProviderText}
+            </span>
+          )}
           <div className="data-space__viewer__execution-context__mapping-provider__actions">
             {mappingProviderAccessState && (
               <DataSpaceMappingProviderAccessControl
@@ -164,10 +165,6 @@ export const DataSpaceMappingProviderEntry = observer(
                 tokenProvider={tokenProvider}
               />
             )}
-            <DataSpaceOpenDataProductButton
-              dataSpaceViewerState={dataSpaceViewerState}
-              dataProductPath={mappingProvider.element}
-            />
             {mappingProviderAccessState && (
               <IconButton
                 className="data-space__viewer__execution-context__refresh-btn"

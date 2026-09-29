@@ -164,6 +164,7 @@ export class DataSpaceViewerState extends BaseViewerState<
       legendAIConfig: observable,
       isVerified: computed,
       isDataAccessAvailable: computed,
+      referencedDataProductPaths: computed,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
@@ -217,6 +218,7 @@ export class DataSpaceViewerState extends BaseViewerState<
     this.legendAIConfig = DEFAULT_LEGEND_AI_CONFIG;
     this.initMappingProviderAccessState();
     this.initExecutableAccessStates();
+    this.initReferencedDataProductAccessStates();
   }
 
   get dataSpaceAnalysisResult(): DataSpaceAnalysisResult {
@@ -224,8 +226,18 @@ export class DataSpaceViewerState extends BaseViewerState<
   }
 
   protected getValidSections(): string[] {
-    return DATA_SPACE_WIKI_PAGE_SECTIONS.map((activity) =>
+    return this.wikiPageSectionsToRender.map((activity) =>
       generateAnchorForActivity(activity),
+    );
+  }
+
+  get wikiPageSectionsToRender(): DATA_SPACE_VIEWER_ACTIVITY_MODE[] {
+    if (this.referencedDataProductPaths.length > 0) {
+      return DATA_SPACE_WIKI_PAGE_SECTIONS;
+    }
+    return DATA_SPACE_WIKI_PAGE_SECTIONS.filter(
+      (section) =>
+        section !== DATA_SPACE_VIEWER_ACTIVITY_MODE.DATASPACE_LAKEHOUSE_ACCESS,
     );
   }
 
@@ -356,6 +368,28 @@ export class DataSpaceViewerState extends BaseViewerState<
     }
   }
 
+  private initReferencedDataProductAccessStates(): void {
+    for (const path of this.referencedDataProductPaths) {
+      this.buildDataProductAccessState(path);
+    }
+  }
+
+  get referencedDataProductPaths(): string[] {
+    const paths: string[] = [];
+    const seen = new Set<string>();
+    for (const metadata of this.dataSpaceAnalysisResult
+      .dataSpaceReferencesMetadataInfo) {
+      if (
+        metadata instanceof DataproductReferenceMetadata &&
+        !seen.has(metadata.dataproductPath)
+      ) {
+        seen.add(metadata.dataproductPath);
+        paths.push(metadata.dataproductPath);
+      }
+    }
+    return paths;
+  }
+
   /**
    * Looks up the initialized access state for a Data Product path (may still
    * be initializing). Used by executable renderers to grab the state for a
@@ -436,7 +470,7 @@ export class DataSpaceViewerState extends BaseViewerState<
         (activity) => generateAnchorForActivity(activity) === activityChunk,
       );
       if (activityChunk && matchingActivity) {
-        if (DATA_SPACE_WIKI_PAGE_SECTIONS.includes(matchingActivity)) {
+        if (this.wikiPageSectionsToRender.includes(matchingActivity)) {
           this.layoutState.setWikiPageAnchorToNavigate({
             anchor: zone,
           });

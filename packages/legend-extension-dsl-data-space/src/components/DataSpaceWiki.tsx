@@ -22,6 +22,7 @@ import {
   DataSpaceDescription,
   DataSpaceWikiBadges,
 } from './DataSpaceDescription.js';
+import { DataSpaceLakehouseAccess } from './DataSpaceLakehouseAccess.js';
 import { useEffect } from 'react';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
@@ -62,6 +63,7 @@ export const DataSpaceWiki = observer(
       <div className="data-space__viewer__wiki">
         <DataSpaceWikiBadges dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDescription dataSpaceViewerState={dataSpaceViewerState} />
+        <DataSpaceLakehouseAccess dataSpaceViewerState={dataSpaceViewerState} />
         <DiagramViewer
           diagramViewerState={dataSpaceViewerState.diagramViewerState}
           actions={{

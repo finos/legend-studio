@@ -17,6 +17,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
+  ELEMENT_PATH_DELIMITER,
   V1_ExecutableTDSResult,
   type QueryExplicitExecutionContextInfo,
 } from '@finos/legend-graph';
@@ -444,6 +445,23 @@ const DataProductLegendAIIntegrationInner = observer(
             apgState={contractCreatorApgState}
             dataAccessState={dataProductDataAccessState}
             tokenProvider={() => auth.user?.access_token}
+            headerContent={
+              <>
+                Submit access request for{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {contractCreatorApgState.apg.id}
+                </span>{' '}
+                Access Point Group in{' '}
+                <span className="marketplace-lakehouse-text__emphasis">
+                  {dataProductDataAccessState.dataProductViewerState.product
+                    .title ??
+                    dataProductDataAccessState.dataProductViewerState.product.path
+                      .split(ELEMENT_PATH_DELIMITER)
+                      .pop()}
+                </span>{' '}
+                Data Product
+              </>
+            }
           />
         )}
       </>
