@@ -74,7 +74,11 @@ The debugging commands are the same as the Legend Query suite's (`test:e2e:ui`, 
 
 ### Editing grammar
 
-The text mode editor is Monaco, which only renders the lines in view and auto-closes brackets and quotes as you type. So `getGrammarText()` copies the whole grammar out through the clipboard rather than reading the DOM, and `setGrammarText()` / `replaceInGrammar()` insert text the way a paste does. Assert on fragments of the grammar (`toContain`) rather than all of it: the engine decides the exact formatting.
+The text mode editor is Monaco, which only renders the lines in view, and auto-indents and auto-closes brackets as you type. So `getGrammarText()` copies the whole grammar out through the clipboard rather than reading the DOM (normalizing line endings to `\n`), and `setGrammarText()` / `replaceInGrammar()` paste text in, so every line and column is exactly what the test wrote. Assert on fragments of the grammar (`toContain`) rather than all of it: the engine decides the exact formatting.
+
+### Asserting on errors
+
+Check _where_ an error is reported, not just that one is: `getErrorLines()` gives the lines the editor marks with an error squiggle, `getCursorLine()` the line the cursor is on (the app takes it to the error), and `getProblemLocation()` the `[Ln, Col]` the Problems panel lists. Work out the expected line from the grammar the test wrote with `getLineNumber()`, and call `moveCursorToStart()` before compiling, so the cursor's position proves the app moved it (see `TextModeErrors.spec.ts`). Match engine messages on their stable part (`/Can't find type 'Integr'/`): the real engine words them, and may add detail over time. Regexes passed to locators can't use the `u` flag, which Playwright can't pass on to its selector engine.
 
 ### Opening a workspace in a broken state
 

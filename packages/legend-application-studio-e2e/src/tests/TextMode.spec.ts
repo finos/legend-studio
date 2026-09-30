@@ -15,7 +15,6 @@
  */
 
 import { test, expect, type Locator, type Page } from '@playwright/test';
-import { getEngineCalls } from '../support/EngineSpy.js';
 import { setupStudio, type StudioBackends } from '../support/StudioSetup.js';
 import {
   clickExitTextMode,
@@ -24,8 +23,11 @@ import {
   expectFormMode,
   expectNotification,
   expectTextMode,
-  getGrammarEditor,
+  getCursorLine,
+  getErrorLines,
   getGrammarText,
+  getLineNumber,
+  getProblemsIndicator,
   getPropertyNameInputs,
   getStatusBar,
   openElement,
@@ -35,10 +37,9 @@ import {
 
 /**
  * Switching the workspace between form mode and text mode, and what happens
- * when the grammar doesn't compile along the way.
+ * when the grammar doesn't compile along the way. (How the errors themselves
+ * are reported is covered in `TextModeErrors.spec.ts`.)
  */
-
-const GRAMMAR_TO_JSON = 'pure/v1/grammar/grammarToJson/model';
 
 const AGE = 'age: Integer[0..1];';
 const AGE_WITH_TYPO = 'age: Integr[0..1];';
@@ -114,36 +115,6 @@ test.describe('round trips', () => {
   });
 });
 
-test.describe('compilation errors in text mode', () => {
-  test('a type error is reported, and marked where it is', async ({ page }) => {
-    await enterTextMode(page);
-    await replaceInGrammar(page, AGE, AGE_WITH_TYPO);
-    await compile(page);
-
-    await expectNotification(page, /Compilation failed: .*Integr/);
-    await expect(
-      getGrammarEditor(page).locator('.squiggly-error'),
-    ).not.toHaveCount(0);
-    await expectTextMode(page);
-  });
-
-  test('a syntax error is reported by the parser', async ({ page }) => {
-    await enterTextMode(page);
-    // drop the semicolon ending the property
-    await replaceInGrammar(page, AGE, 'age: Integer[0..1]');
-    await compile(page);
-
-    await expectNotification(page, /Compilation failed/);
-    // the grammar never got as far as the compiler
-    await expect
-      .poll(
-        () => getEngineCalls(backends.engine, GRAMMAR_TO_JSON).at(-1)?.status,
-      )
-      .toBe(400);
-    await expectTextMode(page);
-  });
-});
-
 test.describe('leaving text mode with errors', () => {
   test('staying keeps the broken grammar to fix, then leaving works', async ({
     page,
@@ -169,6 +140,53 @@ test.describe('leaving text mode with errors', () => {
       'age',
       'nickname',
     ]);
+  });
+
+  test('a syntax error asks too, and staying takes the user to it', async ({
+    page,
+  }) => {
+    await enterTextMode(page);
+    // drop the semicolon ending the property
+    await replaceInGrammar(page, AGE, 'age: Integer[0..1]');
+    const grammar = await getGrammarText(page); // (leaves the cursor on line 1)
+    await clickExitTextMode(page);
+
+    const alert = getNotCompiledAlert(page);
+    await expect(alert).toBeVisible();
+    await expectNotification(page, /Compilation failed: Unexpected token '\}'/);
+    await alert.getByRole('button', { name: 'Stay' }).click();
+
+    // the parser reports the missing semicolon at the next token
+    await expectTextMode(page);
+    await expect
+      .poll(() => getCursorLine(page))
+      .toBe(getLineNumber(grammar, 'age: Integer') + 1);
+  });
+
+  test('a failed exit marks the error, as compiling does', async ({ page }) => {
+    // KNOWN BUG: when leaving text mode fails, the app only takes the cursor
+    // to the error (`handleCleanupFailure`). Unlike compiling (F9), it
+    // doesn't record the error: the editor marks nothing, the status bar
+    // counts no error, and the Problems panel says no problems have been
+    // detected — leaving the user only the notification to go on. Remove
+    // `test.fail()` once fixed.
+    test.fail();
+    await enterTextMode(page);
+    await replaceInGrammar(page, AGE, 'age: Integer[0..1]');
+    const grammar = await getGrammarText(page);
+    await clickExitTextMode(page);
+    await getNotCompiledAlert(page)
+      .getByRole('button', { name: 'Stay' })
+      .click();
+
+    await expectTextMode(page);
+    await expect
+      .poll(() => getErrorLines(page))
+      .toEqual([getLineNumber(grammar, 'age: Integer') + 1]);
+    await expect(getProblemsIndicator(page)).toHaveAttribute(
+      'title',
+      'Error: 1, Warnings: 0',
+    );
   });
 
   test('discarding, when nothing compiled in text mode, goes back to the model as it was', async ({

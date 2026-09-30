@@ -121,29 +121,33 @@ const focusGrammarEditor = async (page: Page): Promise<void> => {
 };
 
 /**
- * The whole grammar in the text mode editor. (The editor only renders the
- * lines in view, so this copies it out rather than reading the DOM.)
+ * The whole grammar in the text mode editor, with `\n` line endings whatever
+ * the platform's. (The editor only renders the lines in view, so this copies
+ * it out rather than reading the DOM.)
  */
 export const getGrammarText = async (page: Page): Promise<string> => {
   await focusGrammarEditor(page);
   await page.keyboard.press('ControlOrMeta+A');
   await page.keyboard.press('ControlOrMeta+C');
   await page.keyboard.press('ControlOrMeta+Home');
-  return page.evaluate(() => navigator.clipboard.readText());
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  return text.replace(/\r\n/gu, '\n');
 };
 
 /**
- * Replace the whole grammar in the text mode editor with `text`, as if the
- * user pasted it (so the editor's auto-closing of brackets and quotes
- * doesn't get in the way).
+ * Replace the whole grammar in the text mode editor with `text`, by pasting
+ * it: typed text would be auto-indented line by line, and have its brackets
+ * and quotes auto-closed, shifting every column the engine reports.
  */
 export const setGrammarText = async (
   page: Page,
   text: string,
 ): Promise<void> => {
+  await page.evaluate((value) => navigator.clipboard.writeText(value), text);
   await focusGrammarEditor(page);
   await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.insertText(text);
+  await page.keyboard.press('ControlOrMeta+V');
+  await expect.poll(() => getGrammarText(page)).toBe(text);
 };
 
 /**
@@ -160,9 +164,91 @@ export const replaceInGrammar = async (
   await setGrammarText(page, text.replace(search, replacement));
 };
 
+/** The (1-based) number of the first line of `grammar` containing `fragment`. */
+export const getLineNumber = (grammar: string, fragment: string): number => {
+  const index = grammar
+    .split('\n')
+    .findIndex((line) => line.includes(fragment));
+  expect(index, `the grammar should contain ${fragment}`).not.toBe(-1);
+  return index + 1;
+};
+
+/** Move the text mode editor's cursor to the first line. */
+export const moveCursorToStart = async (page: Page): Promise<void> => {
+  await focusGrammarEditor(page);
+  await page.keyboard.press('ControlOrMeta+Home');
+};
+
+/** The line the text mode editor's cursor is on. */
+export const getCursorLine = async (page: Page): Promise<number> =>
+  Number(
+    await getGrammarEditor(page).locator('.active-line-number').textContent(),
+  );
+
+/**
+ * The lines, among those in view, that the text mode editor marks with an
+ * error squiggle. (The editor draws each line's markers in an overlay row
+ * placed at the same height as the line's number.)
+ */
+export const getErrorLines = (page: Page): Promise<number[]> =>
+  getGrammarEditor(page).evaluate((root) => {
+    const lineNumberByTop = new Map<string, number>();
+    root.querySelectorAll('.margin-view-overlays > div').forEach((row) => {
+      const lineNumber = row.querySelector('.line-numbers')?.textContent;
+      if (lineNumber) {
+        lineNumberByTop.set((row as HTMLElement).style.top, Number(lineNumber));
+      }
+    });
+    return Array.from(root.querySelectorAll('.view-overlays > div'))
+      .filter((row) => row.querySelector('.squiggly-error'))
+      .map((row) => lineNumberByTop.get((row as HTMLElement).style.top) ?? -1)
+      .sort((a, b) => a - b);
+  });
+
 /** Compile the workspace, in form mode or text mode. */
 export const compile = async (page: Page): Promise<void> => {
   await page.getByRole('button', { name: 'Compile (F9)' }).first().click();
+};
+
+// --------------------------------- Problems ---------------------------------
+
+/**
+ * The status bar's problem counts; its title reads e.g.
+ * `Error: 1, Warnings: 0`, or `Warnings: 0` when there is no error.
+ */
+export const getProblemsIndicator = (page: Page): Locator =>
+  // (no `u` flag: Playwright can't pass it on to its selector engine)
+  getStatusBar(page).getByTitle(/Warnings: \d+$/);
+
+/** The problems listed in the Problems panel, once open. */
+export const getProblems = (page: Page): Locator =>
+  page.locator('.panel-group__problem');
+
+/** Open the Problems panel, from the status bar's problem counts. */
+export const openProblemsPanel = async (page: Page): Promise<void> => {
+  await getProblemsIndicator(page).click();
+  await expect(
+    page
+      .locator('.panel-group__problem, .panel-group__problems__placeholder')
+      .first(),
+  ).toBeVisible();
+};
+
+/**
+ * Where a problem listed in the Problems panel is, as the panel shows it in
+ * text mode (`[Ln 11, Col 16]`).
+ */
+export const getProblemLocation = async (
+  problem: Locator,
+): Promise<{ line: number; column: number }> => {
+  const match = /\[Ln (?<line>\d+), Col (?<column>\d+)\]/u.exec(
+    await problem.innerText(),
+  );
+  expect(match, 'the problem should show its location').not.toBeNull();
+  return {
+    line: Number(match?.groups?.line),
+    column: Number(match?.groups?.column),
+  };
 };
 
 // ------------------------------ Notifications ------------------------------
