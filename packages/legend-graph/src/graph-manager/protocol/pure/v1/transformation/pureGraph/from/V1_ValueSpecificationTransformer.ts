@@ -357,6 +357,7 @@ class V1_ValueSpecificationTransformer
         return cDecimal;
       }
       case PRIMITIVE_TYPE.STRING: {
+        // NOTE: `multiLine` is always `false` here, see `visit_CString` in the builder
         const cString = new V1_CString();
         cString.value = guaranteeIsString(valueSpecification.values[0]);
         return cString;

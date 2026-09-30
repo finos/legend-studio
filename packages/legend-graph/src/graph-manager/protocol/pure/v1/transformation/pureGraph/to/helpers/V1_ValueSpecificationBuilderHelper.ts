@@ -397,6 +397,10 @@ export class V1_ValueSpecificationBuilder
   }
 
   visit_CString(valueSpecification: V1_CString): ValueSpecification {
+    // NOTE: `multiLine` is dropped here as `PrimitiveInstanceValue` has nowhere to hold it,
+    // so a `'''...'''` literal in a lambda built into the metamodel (e.g. by query builder)
+    // comes back as a single-line string. Raw lambdas are unaffected.
+    // See https://github.com/finos/legend-engine/pull/4998
     return buildPrimtiveInstanceValue(
       PRIMITIVE_TYPE.STRING,
       [valueSpecification.value],
