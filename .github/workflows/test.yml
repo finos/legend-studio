@@ -26,7 +26,8 @@ jobs:
       fail-fast: false
       matrix:
         # NOTE: `core` is split across parallel jobs using Jest sharding since it is by far
-        # the longest-running group; Codecov merges the coverage reports from all shards
+        # the longest-running group; Codecov merges the coverage reports from all shards.
+        # Groups without a `shard` run in a single job (`test:ci` defaults to `--shard=1/1`)
         # See https://jestjs.io/docs/cli#--shard
         include:
           - group: core
@@ -38,9 +39,7 @@ jobs:
           - group: core
             shard: 4/4
           - group: engine-roundtrip
-            shard: 1/1
           - group: data-cube
-            shard: 1/1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -89,7 +88,7 @@ jobs:
         run: yarn build:ts && yarn build:sass
       # NOTE: all jobs produce the same build output, so only one of them needs to save it
       - name: Save build cache
-        if: matrix.group == 'core' && matrix.shard == '1/4'
+        if: matrix.group == 'core' && startsWith(matrix.shard, '1/')
         uses: actions/cache/save@v4.2.3
         with:
           path: |
