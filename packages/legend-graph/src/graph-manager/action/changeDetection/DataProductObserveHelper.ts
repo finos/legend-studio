@@ -183,6 +183,7 @@ export const observe_AccessPointGroup = skipObserved(
       accessPoints: observable,
       stereotypes: observable,
       taggedValues: observable,
+      targets: observable,
     });
     metamodel.stereotypes.forEach(observe_StereotypeReference);
     metamodel.taggedValues.forEach(observe_TaggedValue);

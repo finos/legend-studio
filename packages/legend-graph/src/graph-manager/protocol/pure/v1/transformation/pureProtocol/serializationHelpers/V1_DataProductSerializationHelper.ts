@@ -172,7 +172,7 @@ export const V1_lakehouseAccessPointModelSchema = createModelSchema(
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
-    targetEnvironment: primitive(),
+    targetEnvironment: optional(primitive()),
     title: optional(primitive()),
   },
 );
@@ -275,6 +275,10 @@ export const V1_ModelAccessPointGroupModelSchema = createModelSchema(
     secureViews: customListWithSchema(V1_SecureViewModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,
     }),
+    targets: optionalCustomList(
+      (val: string) => val,
+      (val) => val as unknown as string,
+    ),
   },
 );
 
@@ -369,6 +373,10 @@ export const V1_DefaultAccessPointGroupModelSchema = createModelSchema(
     ),
     description: optional(primitive()),
     id: primitive(),
+    targets: optionalCustomList(
+      (val: string) => val,
+      (val) => val as unknown as string,
+    ),
     title: optional(primitive()),
     stereotypes: customListWithSchema(V1_stereotypePtrModelSchema, {
       INTERNAL__forceReturnEmptyInTest: true,

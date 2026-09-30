@@ -104,6 +104,24 @@ export const accessPointGroup_setTitle = action(
   },
 );
 
+export const accessPointGroup_addTarget = action(
+  (group: AccessPointGroup, target: string) => {
+    if (!group.targets) {
+      group.targets = [target];
+    } else {
+      addUniqueEntry(group.targets, target);
+    }
+  },
+);
+
+export const accessPointGroup_deleteTarget = action(
+  (group: AccessPointGroup, target: string) => {
+    if (group.targets) {
+      deleteEntry(group.targets, target);
+    }
+  },
+);
+
 export const modelAccessPointGroup_setMapping = action(
   (
     group: ModelAccessPointGroup,
