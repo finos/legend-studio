@@ -11,6 +11,10 @@ concurrency:
   group: ci-pr-${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
+# Jobs only need to read the repository; grant more per job when needed
+permissions:
+  contents: read
+
 jobs:
   check-changeset:
     name: Validate Changesets
@@ -19,6 +23,7 @@ jobs:
     # See https://github.com/finos/legend-studio/blob/master/docs/workflow/release-process.md#recovery-releases
     if: "github.event.pull_request.base.ref != 'master' || !startsWith(github.event.pull_request.title, 'Cherry-picking changes in version ')"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
