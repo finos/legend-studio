@@ -87,7 +87,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.3.0
         with:
-          node-version: 21
+          node-version: 24
       - name: Install dependencies
         run: yarn
       # NOTE: the TypeScript build output is cached so that `tsc --build` only rebuilds

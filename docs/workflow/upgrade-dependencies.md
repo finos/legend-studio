@@ -26,22 +26,22 @@ yarn set version stable
 
 ### Node
 
-Update Node version enforeced in the root `package.json`
+Update Node version enforced in the root `package.json`
 
 ```jsonc
   ...
   "engines": {
-    "node": ">=16.8.0"
+    "node": ">=20.0.0"
   }
 ```
 
-Update Node version used for pipeline workflow
+Update Node version used for pipeline workflow (use an [LTS release](https://github.com/nodejs/release#release-schedule))
 
 ```yml
 - name: Setup Node
-  uses: actions/setup-node@v3.6.0
+  uses: actions/setup-node@v4.3.0
   with:
-    node-version: 21
+    node-version: 24
 ```
 
 ### Docker
