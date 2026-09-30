@@ -73,6 +73,15 @@ jobs:
         run: yarn check:format
       - name: Check copyright headers
         run: yarn check:copyright
+      - name: Restore build cache
+        if: github.ref != 'refs/heads/master' || github.repository != 'finos/legend-studio'
+        uses: actions/cache/restore@v4.2.3
+        with:
+          path: |
+            packages/*/lib
+            packages/*/build/prod.tsbuildinfo
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-
       - name: Check code documentation
         # We don't need this check when running the CI in the default branch
         # since we already build the website there
