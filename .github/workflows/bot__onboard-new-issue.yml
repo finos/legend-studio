@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.3.0
         with:
-          node-version: 21
+          node-version: 24
       - name: Install dependencies
         run: yarn workspaces focus --production @finos/legend-internal-github-bot
       - name: Onboard new issue
