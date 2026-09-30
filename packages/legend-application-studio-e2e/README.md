@@ -112,4 +112,4 @@ Unmocked calls fail loudly with a `501` whose message names the endpoint, and ar
 
 ## CI
 
-The `run-studio-e2e-tests` job in [`.github/workflows/test.yml`](../../.github/workflows/test.yml) runs this suite on every PR and on pushes to `master`. It starts the engine in Docker first, so the engine boots while the workspace installs and builds, then lets the Playwright `webServer` config boot the app. Failed runs retry twice, print the engine's logs, and upload the HTML report as an artifact (`studio-e2e-test-report`).
+The `run-studio-e2e-tests` job in [`.github/workflows/test.yml`](../../.github/workflows/test.yml) runs this suite on every PR and on pushes to `master`. Like the `run-tests` job, it starts the engine in Docker in the background, so pulling the image and booting the engine overlap with installing and building (from the shared build cache), and waits for the engine right before running the tests — failing fast, with its logs, if it doesn't come up. The Playwright `webServer` config then reuses that engine, and boots the app. Failed runs retry twice, print the engine's logs, and upload the HTML report as an artifact (`studio-e2e-test-report`).
