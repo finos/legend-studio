@@ -25,10 +25,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # NOTE: `core` is split across parallel jobs using Jest sharding since it is by far
+        # the longest-running group; Codecov merges the coverage reports from all shards
+        # See https://jestjs.io/docs/cli#--shard
         include:
           - group: core
+            shard: 1/4
+          - group: core
+            shard: 2/4
+          - group: core
+            shard: 3/4
+          - group: core
+            shard: 4/4
           - group: engine-roundtrip
+            shard: 1/1
           - group: data-cube
+            shard: 1/1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -48,32 +60,69 @@ jobs:
         uses: actions/setup-node@v4.3.0
         with:
           node-version: 21
-      - name: Run engine server
+      # NOTE: start the engine server in the background so pulling the image and booting
+      # the server overlap with installing dependencies and building; we wait for it to be
+      # ready right before running the tests
+      - name: Start engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: |
-          docker compose --file=grammar-test-setup-docker-compose.yml up --detach
+          (
+            code=0
+            docker compose --file=grammar-test-setup-docker-compose.yml up --detach || code=$?
+            echo "$code" > "$RUNNER_TEMP/engine-up.exit"
+          ) > "$RUNNER_TEMP/engine-up.log" 2>&1 &
+      - name: Install dependencies
+        run: yarn
+      # NOTE: we cache the TypeScript build output (along with the build info files) so that
+      # `tsc --build` only rebuilds projects affected by the change. The cache is keyed by
+      # `yarn.lock` so it is reset whenever dependencies or package versions change, which
+      # also prevents stale output from accumulating
+      - name: Restore build cache
+        uses: actions/cache/restore@v4.2.3
+        with:
+          path: |
+            packages/*/lib
+            packages/*/build/prod.tsbuildinfo
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-
+      - name: Build
+        run: yarn build:ts && yarn build:sass
+      # NOTE: all jobs produce the same build output, so only one of them needs to save it
+      - name: Save build cache
+        if: matrix.group == 'core' && matrix.shard == '1/4'
+        uses: actions/cache/save@v4.2.3
+        with:
+          path: |
+            packages/*/lib
+            packages/*/build/prod.tsbuildinfo
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+      - name: Wait for engine server
+        run: |
+          fail() {
+            cat "$RUNNER_TEMP/engine-up.log"
+            docker logs engine || true
+            exit 1
+          }
           for _ in {1..120}; do
             if curl --fail --silent --output /dev/null http://127.0.0.1:6300/api/server/v1/info; then
               exit 0
             fi
-            if [[ "$(docker inspect --format '{{.State.Running}}' engine)" != 'true' ]]; then
-              docker logs engine
-              exit 1
+            # fail fast if `docker compose up` failed (e.g. image pull failure) or the server died
+            if [[ -f "$RUNNER_TEMP/engine-up.exit" && "$(cat "$RUNNER_TEMP/engine-up.exit")" != '0' ]]; then
+              fail
+            fi
+            if [[ "$(docker inspect --format '{{.State.Status}}' engine 2>/dev/null)" =~ ^(exited|dead)$ ]]; then
+              fail
             fi
             sleep 5
           done
-          docker logs engine
-          exit 1
-      - name: Install dependencies
-        run: yarn
-      - name: Build
-        run: yarn build
+          fail
       - name: Test
         uses: nick-fields/retry@v3
         with:
           max_attempts: 2
           timeout_minutes: 60
-          command: yarn test:ci ${{ matrix.group }}
+          command: yarn test:ci ${{ matrix.group }} ${{ matrix.shard }}
       - name: Shut down engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml down
@@ -107,8 +156,16 @@ jobs:
           node-version: 21
       - name: Install dependencies
         run: yarn
+      - name: Restore build cache
+        uses: actions/cache/restore@v4.2.3
+        with:
+          path: |
+            packages/*/lib
+            packages/*/build/prod.tsbuildinfo
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-
       - name: Build
-        run: yarn build
+        run: yarn build:ts && yarn build:sass
       - name: Install Playwright browser
         run: yarn workspace @finos/legend-application-query-e2e exec playwright install --with-deps chromium
       - name: Run end-to-end tests
