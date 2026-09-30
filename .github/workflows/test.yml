@@ -204,7 +204,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4.3.0
         with:
-          node-version: 21
+          node-version: 24
       # NOTE: these tests run against a real engine server: as in the `run-tests` job, it
       # is started in the background so pulling the image and booting the server overlap
       # with installing dependencies and building, and we wait for it to be ready right
