@@ -43,6 +43,17 @@ export const getGrammarEditor = (page: Page): Locator =>
 export const getPropertyNameInputs = (page: Page): Locator =>
   page.getByTestId('class-form-editor').getByPlaceholder('Property name');
 
+/** The element editor tabs open in form mode. */
+export const getTabs = (page: Page): Locator =>
+  page.getByTestId('tab-manager__tab');
+
+/**
+ * The status bar's summary of the workspace's local changes:
+ * `no changes detected`, or `N unpushed changes`.
+ */
+export const getLocalChangesStatus = (page: Page): Locator =>
+  getStatusBar(page).getByText(/no changes detected|unpushed changes?$/);
+
 // -------------------------------- Navigation --------------------------------
 
 /** Open the test workspace, and wait for its model to show in form mode. */
@@ -74,6 +85,73 @@ export const openElement = async (page: Page, path: string): Promise<void> => {
       await node.click();
     }
   }
+};
+
+/**
+ * Open the class at `path` in form mode, and expect its properties to be
+ * `names`, in order.
+ */
+export const expectClassProperties = async (
+  page: Page,
+  path: string,
+  names: string[],
+): Promise<void> => {
+  await openElement(page, path);
+  const inputs = getPropertyNameInputs(page);
+  await expect(inputs).toHaveCount(names.length);
+  await expect
+    .poll(() =>
+      inputs.evaluateAll((elements) =>
+        elements.map((element) => (element as HTMLInputElement).value),
+      ),
+    )
+    .toEqual(names);
+};
+
+/**
+ * How long the app's change detection may take to react to the graph
+ * changing: it is throttled to run at most once a second (see
+ * `ChangeDetectionState.start()`), plus some slack.
+ */
+export const CHANGE_DETECTION_DELAY = 2_500;
+
+/**
+ * Expect `assertion` to keep holding for `duration` ms. Web-first assertions
+ * return as soon as they hold, so they can't check that something does _not_
+ * happen later — e.g. that throttled change detection doesn't report
+ * changes a second after the graph changed.
+ */
+export const expectToHold = async (
+  page: Page,
+  assertion: () => Promise<void>,
+  duration: number,
+): Promise<void> => {
+  const end = Date.now() + duration;
+  do {
+    await assertion();
+    await page.waitForTimeout(250);
+  } while (Date.now() < end);
+};
+
+/** Expect the status bar to report no local changes, and keep doing so. */
+export const expectNoLocalChanges = async (page: Page): Promise<void> => {
+  await expect(getLocalChangesStatus(page)).toHaveText('no changes detected');
+  await expectToHold(
+    page,
+    async () => {
+      expect(await getLocalChangesStatus(page).innerText()).toBe(
+        'no changes detected',
+      );
+    },
+    CHANGE_DETECTION_DELAY,
+  );
+};
+
+/** Push the workspace's local changes, from the status bar. */
+export const pushLocalChanges = async (page: Page): Promise<void> => {
+  await getStatusBar(page)
+    .getByRole('button', { name: 'Push local changes (Ctrl + S)' })
+    .click();
 };
 
 // --------------------------------- Modes -----------------------------------
@@ -208,6 +286,18 @@ export const getErrorLines = (page: Page): Promise<number[]> =>
 /** Compile the workspace, in form mode or text mode. */
 export const compile = async (page: Page): Promise<void> => {
   await page.getByRole('button', { name: 'Compile (F9)' }).first().click();
+};
+
+/**
+ * Wait for the compile in progress to finish, including what the app does
+ * after notifying its result (rebuilding the graph, recomputing local
+ * changes). Call once the result is notified: the status bar's compile
+ * button stays disabled until then.
+ */
+export const waitForCompileToFinish = async (page: Page): Promise<void> => {
+  await expect(
+    getStatusBar(page).getByRole('button', { name: 'Compile (F9)' }),
+  ).toBeEnabled();
 };
 
 // --------------------------------- Problems ---------------------------------

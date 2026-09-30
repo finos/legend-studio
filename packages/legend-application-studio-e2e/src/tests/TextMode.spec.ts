@@ -20,6 +20,7 @@ import {
   clickExitTextMode,
   compile,
   enterTextMode,
+  expectClassProperties,
   expectFormMode,
   expectNotification,
   expectTextMode,
@@ -47,21 +48,8 @@ const AGE_AND_NICKNAME = `${AGE}\n    nickname: String[0..1];`;
 
 let backends: StudioBackends;
 
-const expectPersonProperties = async (
-  page: Page,
-  names: string[],
-): Promise<void> => {
-  await openElement(page, 'model::Person');
-  const inputs = getPropertyNameInputs(page);
-  await expect(inputs).toHaveCount(names.length);
-  await expect
-    .poll(() =>
-      inputs.evaluateAll((elements) =>
-        elements.map((element) => (element as HTMLInputElement).value),
-      ),
-    )
-    .toEqual(names);
-};
+const expectPersonProperties = (page: Page, names: string[]): Promise<void> =>
+  expectClassProperties(page, 'model::Person', names);
 
 const getNotCompiledAlert = (page: Page): Locator =>
   page
