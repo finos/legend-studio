@@ -80,13 +80,26 @@ The text mode editor is Monaco, which only renders the lines in view, and auto-i
 
 Check _where_ an error is reported, not just that one is: `getErrorLines()` gives the lines the editor marks with an error squiggle, `getCursorLine()` the line the cursor is on (the app takes it to the error), and `getProblemLocation()` the `[Ln, Col]` the Problems panel lists. Work out the expected line from the grammar the test wrote with `getLineNumber()`, and call `moveCursorToStart()` before compiling, so the cursor's position proves the app moved it (see `TextModeErrors.spec.ts`). Match engine messages on their stable part (`/Can't find type 'Integr'/`): the real engine words them, and may add detail over time. Regexes passed to locators can't use the `u` flag, which Playwright can't pass on to its selector engine.
 
-### Opening a workspace in a broken state
+### Starting from another model
 
-Pass `setupStudio()` the entities to start with, e.g. a model the form editors can't build (a property of an unknown type) to test how the app recovers:
+Pass `setupStudio()` the model the workspace should start with — written in grammar, which it converts to SDLC entities through the real engine, or as the entities themselves:
 
 ```ts
+backends = await setupStudio(page, {
+  grammar: `Class model::Person
+{
+  firstName: String[1];
+  fullName() {$this.firstName}: String[1];
+}`,
+});
 backends = await setupStudio(page, { entities: [...] });
 ```
+
+Grammar keeps models with logic in them (derived properties, constraints, functions) readable; see `FormModeErrors.spec.ts`. Entities let a test start from a model the engine wouldn't produce, e.g. one the form editors can't build, to test how the app recovers.
+
+### Compilation errors in form mode
+
+In form mode, the app can show a compilation error on the derived property, constraint or function it is in — but only in logic edited in the form during the session: the form's code editors tag the logic they parse with where it belongs, while logic loaded from the workspace carries no such tag, so the app opens the model in text mode to debug instead. So to test an error shown in the form, make the broken edit in the form: `pasteIntoCodeEditor()` a body into one of `getLambdaEditors()`, wait for the form to take it in (the element then counts as changed), and compile; the error shows in `getLambdaErrors()`.
 
 ### Testing error paths
 

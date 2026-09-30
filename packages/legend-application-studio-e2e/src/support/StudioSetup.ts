@@ -46,11 +46,60 @@ export interface StudioBackends {
   unmockedCalls: string[];
 }
 
+/** The classifier path SDLC stores each kind of element under. */
+const CLASSIFIER_PATHS: Record<string, string> = {
+  class: 'meta::pure::metamodel::type::Class',
+  Enumeration: 'meta::pure::metamodel::type::Enumeration',
+  association: 'meta::pure::metamodel::relationship::Association',
+  function: 'meta::pure::metamodel::function::ConcreteFunctionDefinition',
+  profile: 'meta::pure::metamodel::extension::Profile',
+};
+
+/**
+ * The SDLC entities for a model written in grammar, as the real engine
+ * parses it — so test models with logic in them (derived properties,
+ * constraints, functions) can be written readably, rather than as protocol
+ * JSON.
+ */
+export const grammarToEntities = async (grammar: string): Promise<Entity[]> => {
+  const response = await fetch(
+    `${ENGINE_URL}/pure/v1/grammar/grammarToJson/model?returnSourceInformation=false`,
+    {
+      method: 'POST',
+      headers: { 'content-type': 'text/plain' },
+      body: grammar,
+    },
+  );
+  const json = (await response.json()) as {
+    message?: string;
+    elements?: Record<string, unknown>[];
+  };
+  if (!response.ok || !json.elements) {
+    throw new Error(`Can't parse the test model: ${json.message}`);
+  }
+  return json.elements
+    .filter((content) => content._type !== 'sectionIndex')
+    .map((content) => {
+      const type = String(content._type);
+      const classifierPath = CLASSIFIER_PATHS[type];
+      if (!classifierPath) {
+        throw new Error(
+          `No classifier path known for '${type}' elements: add it to CLASSIFIER_PATHS`,
+        );
+      }
+      return {
+        path: `${String(content.package)}::${String(content.name)}`,
+        classifierPath,
+        content,
+      };
+    });
+};
+
 /**
  * Wire the app's backends up for a test, before it navigates:
  * - SDLC: an in-memory SDLC holding the workspace every test opens, starting
- *   with `entities` (the model in `TEST_DATA__SDLC.ts` unless given) — see
- *   `SDLCMock.ts`
+ *   with `entities` (the model in `TEST_DATA__SDLC.ts` unless given), or the
+ *   model written in `grammar` — see `SDLCMock.ts`
  * - engine: the real engine, with every call recorded, and failures or holds
  *   on demand — see `EngineSpy.ts`
  * - depot and showcase: stubbed; the test project has no published versions
@@ -61,8 +110,12 @@ export interface StudioBackends {
  */
 export const setupStudio = async (
   page: Page,
-  { entities = TEST_DATA__Entities }: { entities?: Entity[] } = {},
+  options: { entities?: Entity[]; grammar?: string } = {},
 ): Promise<StudioBackends> => {
+  const entities =
+    options.grammar !== undefined
+      ? await grammarToEntities(options.grammar)
+      : (options.entities ?? TEST_DATA__Entities);
   const unmockedCalls: string[] = [];
 
   await page.route(/\/studio\/config\.json$/u, async (route) => {

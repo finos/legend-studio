@@ -43,6 +43,30 @@ export const getGrammarEditor = (page: Page): Locator =>
 export const getPropertyNameInputs = (page: Page): Locator =>
   page.getByTestId('class-form-editor').getByPlaceholder('Property name');
 
+export const getClassEditor = (page: Page): Locator =>
+  page.getByTestId('class-form-editor');
+
+export const getFunctionEditor = (page: Page): Locator =>
+  page.getByTestId('function-editor');
+
+/**
+ * The code editors for the bodies of derived properties, constraints or
+ * functions in form mode (within `scope`, e.g. a class editor).
+ */
+export const getLambdaEditors = (scope: Locator): Locator =>
+  scope.locator('.lambda-editor');
+
+/**
+ * Where a form's code editor shows the parser or compilation error of the
+ * body it holds (within `scope`).
+ */
+export const getLambdaErrors = (scope: Locator): Locator =>
+  scope.locator('.lambda-editor__error-feedback');
+
+/** The tab selected in the class editor, e.g. `Derived Properties`. */
+export const getSelectedClassEditorTab = (page: Page): Locator =>
+  getClassEditor(page).locator('.uml-element-editor__tab--active');
+
 /** The element editor tabs open in form mode. */
 export const getTabs = (page: Page): Locator =>
   page.getByTestId('tab-manager__tab');
@@ -213,18 +237,33 @@ export const getGrammarText = async (page: Page): Promise<string> => {
 };
 
 /**
- * Replace the whole grammar in the text mode editor with `text`, by pasting
- * it: typed text would be auto-indented line by line, and have its brackets
- * and quotes auto-closed, shifting every column the engine reports.
+ * Replace the whole content of a code editor (e.g. the text mode editor, or
+ * the editor of a derived property's body in form mode) with `text`, by
+ * pasting it: typed text would be auto-indented line by line, and have its
+ * brackets and quotes auto-closed, shifting every column the engine reports.
  */
+export const pasteIntoCodeEditor = async (
+  page: Page,
+  editor: Locator,
+  text: string,
+): Promise<void> => {
+  await page.evaluate((value) => navigator.clipboard.writeText(value), text);
+  // (click the editor's own box, near its start: its text layer can be
+  // wider than the editor, and scrolled sideways under the panels beside it)
+  await editor
+    .locator('.monaco-editor')
+    .first()
+    .click({ position: { x: 70, y: 8 } });
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.press('ControlOrMeta+V');
+};
+
+/** Replace the whole grammar in the text mode editor with `text`. */
 export const setGrammarText = async (
   page: Page,
   text: string,
 ): Promise<void> => {
-  await page.evaluate((value) => navigator.clipboard.writeText(value), text);
-  await focusGrammarEditor(page);
-  await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.press('ControlOrMeta+V');
+  await pasteIntoCodeEditor(page, getGrammarEditor(page), text);
   await expect.poll(() => getGrammarText(page)).toBe(text);
 };
 
