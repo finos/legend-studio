@@ -96,7 +96,9 @@ export const grammarToEntities = async (grammar: string): Promise<Entity[]> => {
 };
 
 /**
- * Wire the app's backends up for a test, before it navigates:
+ * Wire the app's backends up for a test, before it navigates — for every
+ * tab of the test's browser context, so a tab the app opens (e.g. the full
+ * editor, from strict text mode) shares them, SDLC state included:
  * - SDLC: an in-memory SDLC holding the workspace every test opens, starting
  *   with `entities` (the model in `TEST_DATA__SDLC.ts` unless given), or the
  *   model written in `grammar` — see `SDLCMock.ts`
@@ -118,7 +120,7 @@ export const setupStudio = async (
       : (options.entities ?? TEST_DATA__Entities);
   const unmockedCalls: string[] = [];
 
-  await page.route(/\/studio\/config\.json$/u, async (route) => {
+  await page.context().route(/\/studio\/config\.json$/u, async (route) => {
     const response = await route.fetch();
     const config = (await response.json()) as Record<
       string,
@@ -160,14 +162,15 @@ export const setupStudio = async (
       );
     };
   const { groupId, artifactId } = TEST_DATA__ProjectConfiguration;
-  await page.route(
-    `${MOCK_DEPOT_URL}/**`,
-    stub('depot', { [`projects/${groupId}/${artifactId}/versions`]: [] }),
-  );
-  await page.route(
-    `${MOCK_SHOWCASE_URL}/**`,
-    stub('showcase', { showcases: [] }),
-  );
+  await page
+    .context()
+    .route(
+      `${MOCK_DEPOT_URL}/**`,
+      stub('depot', { [`projects/${groupId}/${artifactId}/versions`]: [] }),
+    );
+  await page
+    .context()
+    .route(`${MOCK_SHOWCASE_URL}/**`, stub('showcase', { showcases: [] }));
 
   const sdlc = await installSDLCMock(page, entities, (call) =>
     unmockedCalls.push(call),

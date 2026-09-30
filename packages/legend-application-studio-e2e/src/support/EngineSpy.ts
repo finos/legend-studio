@@ -118,7 +118,7 @@ export const installEngineSpy = async (
     });
   };
 
-  await page.route(`${ENGINE_URL}/**`, (route) =>
+  await page.context().route(`${ENGINE_URL}/**`, (route) =>
     // the page may be gone by the time the engine answers (e.g. the test
     // ended during a held call), leaving the response nowhere to go
     respond(route).catch(() => undefined),

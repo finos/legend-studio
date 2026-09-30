@@ -10,7 +10,7 @@ The tests exercise the Legend Studio webapp served by the `@finos/legend-applica
 - **SDLC**: an in-memory SDLC server, answered in the browser by [`SDLCMock.ts`](./src/support/SDLCMock.ts). It holds one project (`E2E-1`) with one user workspace (`e2e-workspace`) holding a small model (see [`TEST_DATA__SDLC.ts`](./src/support/TEST_DATA__SDLC.ts)). Pushing changes commits a new revision that later loads serve back, so a test can push, reload and see what was saved.
 - **Depot and showcase**: stubbed in the browser; the test project has no dependencies, published versions or showcases.
 
-[`setupStudio()`](./src/support/StudioSetup.ts) wires all of this up per test, by intercepting the app's `config.json` with Playwright's [`page.route()`](https://playwright.dev/docs/network#modify-requests): the SDLC, depot and showcase URLs point at ports where nothing listens, so a real SDLC server running locally can never leak into a test.
+[`setupStudio()`](./src/support/StudioSetup.ts) wires all of this up per test, by intercepting the app's `config.json` with Playwright's [`route()`](https://playwright.dev/docs/network#modify-requests): the SDLC, depot and showcase URLs point at ports where nothing listens, so a real SDLC server running locally can never leak into a test. It routes the test's whole browser context rather than one page, so a tab the app opens (e.g. the full editor, opened from strict text mode) gets the same backends, and sees the same SDLC state.
 
 ## Running the tests
 

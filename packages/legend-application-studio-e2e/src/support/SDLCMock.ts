@@ -403,7 +403,7 @@ export const installSDLCMock = async (
     );
   };
 
-  await page.route(`${MOCK_SDLC_URL}/**`, respond);
+  await page.context().route(`${MOCK_SDLC_URL}/**`, respond);
 
   return captured;
 };
