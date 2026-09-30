@@ -25,10 +25,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # NOTE: `core` is split across parallel jobs using Jest sharding since it is by far
+        # the longest-running group; Codecov merges the coverage reports from all shards
+        # See https://jestjs.io/docs/cli#--shard
         include:
           - group: core
+            shard: 1/4
+          - group: core
+            shard: 2/4
+          - group: core
+            shard: 3/4
+          - group: core
+            shard: 4/4
           - group: engine-roundtrip
+            shard: 1/1
           - group: data-cube
+            shard: 1/1
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -73,7 +85,7 @@ jobs:
         with:
           max_attempts: 2
           timeout_minutes: 60
-          command: yarn test:ci ${{ matrix.group }}
+          command: yarn test:ci ${{ matrix.group }} ${{ matrix.shard }}
       - name: Shut down engine server
         working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
         run: docker compose --file=grammar-test-setup-docker-compose.yml down
