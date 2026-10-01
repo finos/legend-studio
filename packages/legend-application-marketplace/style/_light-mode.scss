@@ -2886,6 +2886,46 @@
     }
   }
 
+  .data-space__viewer__lakehouse-access {
+    border-color: var(--color-hclight-grey-30);
+
+    &__header {
+      color: var(--color-hclight-grey-40);
+      background: var(--color-hclight-grey-10);
+      border-bottom-color: var(--color-hclight-grey-30);
+    }
+
+    &__group + &__group {
+      border-top-color: var(--color-hclight-grey-30);
+    }
+
+    &__group__caret {
+      color: var(--color-hclight-grey-40);
+    }
+
+    &__group__label {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__group__count {
+      background: var(--color-hclight-grey-10);
+      color: var(--color-hclight-grey-60);
+    }
+
+    &__row + &__row {
+      border-top-color: var(--color-hclight-grey-15);
+    }
+
+    &__row__apg {
+      color: var(--color-hclight-grey-90);
+    }
+
+    &__row__loading,
+    &__row__unavailable {
+      color: var(--color-hclight-grey-60);
+    }
+  }
+
   .viewer__wiki__section__header {
     color: var(--color-hclight-blue-60);
     border-bottom-color: var(--color-hclight-blue-60);

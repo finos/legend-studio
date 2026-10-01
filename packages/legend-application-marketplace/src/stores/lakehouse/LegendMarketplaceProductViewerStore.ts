@@ -1021,6 +1021,9 @@ export class LegendMarketplaceProductViewerStore {
                 this.marketplaceBaseStore.permitWorkflowServerClient,
               dataAccessPlugins:
                 this.marketplaceBaseStore.applicationStore.pluginManager.getApplicationPlugins(),
+              dataProductConfig:
+                this.marketplaceBaseStore.applicationStore.config.options
+                  .dataProductConfig,
               userSearchService: this.marketplaceBaseStore.userSearchService,
               dataAccessStateActions: {
                 getContractTaskUrl: (contractId: string, taskId: string) =>

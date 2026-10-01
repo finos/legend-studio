@@ -28,15 +28,12 @@ import { BaseLayoutState } from '@finos/legend-extension-dsl-data-product';
 
 export const DATA_SPACE_WIKI_PAGE_SECTIONS = [
   DATA_SPACE_VIEWER_ACTIVITY_MODE.DESCRIPTION,
+  DATA_SPACE_VIEWER_ACTIVITY_MODE.DATASPACE_LAKEHOUSE_ACCESS,
   DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
   DATA_SPACE_VIEWER_ACTIVITY_MODE.MODELS_DOCUMENTATION,
   DATA_SPACE_VIEWER_ACTIVITY_MODE.QUICK_START,
   DATA_SPACE_VIEWER_ACTIVITY_MODE.DATA_ACCESS,
 ];
-
-const DATA_SPACE_WIKI_PAGE_ANCHORS = DATA_SPACE_WIKI_PAGE_SECTIONS.map(
-  (activity) => generateAnchorForActivity(activity),
-);
 
 export class DataSpaceLayoutState extends BaseLayoutState {
   private dataSpaceViewerState!: DataSpaceViewerState;
@@ -53,7 +50,9 @@ export class DataSpaceLayoutState extends BaseLayoutState {
   }
 
   protected getValidAnchors(): string[] {
-    return DATA_SPACE_WIKI_PAGE_ANCHORS;
+    return this.dataSpaceViewerState.wikiPageSectionsToRender.map((activity) =>
+      generateAnchorForActivity(activity),
+    );
   }
 
   protected get expectedGridCount(): number {
@@ -63,7 +62,7 @@ export class DataSpaceLayoutState extends BaseLayoutState {
   override get isWikiPageFullyRendered(): boolean {
     return (
       super.isWikiPageFullyRendered &&
-      DATA_SPACE_WIKI_PAGE_SECTIONS.includes(
+      this.dataSpaceViewerState.wikiPageSectionsToRender.includes(
         this.dataSpaceViewerState.currentActivity,
       )
     );

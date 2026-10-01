@@ -15,12 +15,12 @@
  */
 
 import {
+  type V1_AccessPointGroup,
   type V1_OrganizationalScope,
-  ELEMENT_PATH_DELIMITER,
   V1_ModelAccessPointGroup,
 } from '@finos/legend-graph';
 import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
+import { type ReactNode, useMemo, useState } from 'react';
 import { flowResult } from 'mobx';
 import {
   Button,
@@ -54,12 +54,37 @@ export const EntitlementsDataContractCreator = observer(
     tokenProvider: () => string | undefined;
     apgState: DataProductAPGState;
     dataAccessState: DataProductDataAccessState;
+    headerContent: ReactNode;
+    overrideTargetApgs?: V1_AccessPointGroup[] | undefined;
   }) => {
-    const { open, onClose, tokenProvider, apgState, dataAccessState } = props;
+    const {
+      open,
+      onClose,
+      tokenProvider,
+      apgState,
+      dataAccessState,
+      headerContent,
+      overrideTargetApgs,
+    } = props;
     const viewerState = dataAccessState.dataProductViewerState;
-    const accessPointGroup = guaranteeNonNullable(
-      dataAccessState.contractCreatorAPG,
-      'Cannot show DataContractCreator. No access point group is selected.',
+    const isBulkMode =
+      overrideTargetApgs !== undefined && overrideTargetApgs.length > 0;
+    const accessPointGroup = isBulkMode
+      ? undefined
+      : guaranteeNonNullable(
+          dataAccessState.contractCreatorAPG,
+          'Cannot show DataContractCreator. No access point group is selected.',
+        );
+    const targetApgs: V1_AccessPointGroup[] = useMemo(
+      () =>
+        isBulkMode
+          ? guaranteeNonNullable(overrideTargetApgs)
+          : [guaranteeNonNullable(accessPointGroup)],
+      [isBulkMode, overrideTargetApgs, accessPointGroup],
+    );
+    const anyTargetIsModelAPG = useMemo(
+      () => targetApgs.some((apg) => apg instanceof V1_ModelAccessPointGroup),
+      [targetApgs],
     );
     const consumerTypeRendererConfigs: ContractConsumerTypeRendererConfig[] =
       useMemo(
@@ -70,15 +95,24 @@ export const EntitlementsDataContractCreator = observer(
             .filter(isNonNullable)
             .filter(
               (rendererConfig: ContractConsumerTypeRendererConfig) =>
+                isBulkMode ||
                 apgState.access !== AccessPointGroupAccess.ENTERPRISE ||
                 rendererConfig.enableForEnterpriseAPGs,
             )
-            .filter(
-              (rendererConfig: ContractConsumerTypeRendererConfig) =>
-                !(apgState.apg instanceof V1_ModelAccessPointGroup) ||
-                rendererConfig.type !== 'System Account',
+            .filter((rendererConfig: ContractConsumerTypeRendererConfig) =>
+              isBulkMode
+                ? !anyTargetIsModelAPG ||
+                  rendererConfig.type !== 'System Account'
+                : !(apgState.apg instanceof V1_ModelAccessPointGroup) ||
+                  rendererConfig.type !== 'System Account',
             ),
-        [apgState.access, apgState.apg, dataAccessState.dataAccessPlugins],
+        [
+          apgState.access,
+          apgState.apg,
+          dataAccessState.dataAccessPlugins,
+          isBulkMode,
+          anyTargetIsModelAPG,
+        ],
       );
     const [selectedConsumerType, setSelectedConsumerType] = useState<string>(
       consumerTypeRendererConfigs[0]?.type ?? '',
@@ -108,12 +142,35 @@ export const EntitlementsDataContractCreator = observer(
 
     const onCreate = (): void => {
       if (isValid && consumer && description) {
-        if (currentRequestType === DataAccessRequestType.WORKFLOW) {
+        if (isBulkMode) {
+          if (currentRequestType === DataAccessRequestType.WORKFLOW) {
+            flowResult(
+              dataAccessState.createWorkflowRequestsForAPGs(
+                consumer,
+                description,
+                targetApgs,
+                tokenProvider,
+                selectedConsumerType,
+              ),
+            ).catch(viewerState.applicationStore.alertUnhandledError);
+          } else {
+            flowResult(
+              dataAccessState.createContractsForAPGs(
+                consumer,
+                description,
+                targetApgs,
+                tokenProvider,
+                selectedConsumerType,
+              ),
+            ).catch(viewerState.applicationStore.alertUnhandledError);
+          }
+          onClose();
+        } else if (currentRequestType === DataAccessRequestType.WORKFLOW) {
           flowResult(
             dataAccessState.createWorkflowRequest(
               consumer,
               description,
-              accessPointGroup,
+              guaranteeNonNullable(accessPointGroup),
               tokenProvider,
               selectedConsumerType,
             ),
@@ -123,7 +180,7 @@ export const EntitlementsDataContractCreator = observer(
             dataAccessState.createContract(
               consumer,
               description,
-              accessPointGroup,
+              guaranteeNonNullable(accessPointGroup),
               tokenProvider,
               selectedConsumerType,
             ),
@@ -131,10 +188,6 @@ export const EntitlementsDataContractCreator = observer(
         }
       }
     };
-
-    const dataProductTitle =
-      viewerState.product.title ??
-      viewerState.product.path.split(ELEMENT_PATH_DELIMITER).pop();
 
     return (
       <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth="md">
@@ -151,17 +204,7 @@ export const EntitlementsDataContractCreator = observer(
           {!dataAccessState.creatingContractState.isInProgress &&
             !dataAccessState.creatingWorkflowRequestState.isInProgress && (
               <>
-                <div>
-                  Submit access request for{' '}
-                  <span className="marketplace-lakehouse-text__emphasis">
-                    {accessPointGroup.id}
-                  </span>{' '}
-                  Access Point Group in{' '}
-                  <span className="marketplace-lakehouse-text__emphasis">
-                    {dataProductTitle}
-                  </span>{' '}
-                  Data Product
-                </div>
+                <div>{headerContent}</div>
                 <LakehouseResiliencyDisclaimer
                   applicationStore={viewerState.applicationStore}
                 />
@@ -184,7 +227,9 @@ export const EntitlementsDataContractCreator = observer(
                             viewerState.applicationStore.telemetryService,
                             config.type,
                             viewerState.product.path,
-                            accessPointGroup.id,
+                            isBulkMode
+                              ? targetApgs.map((apg) => apg.id).join(',')
+                              : guaranteeNonNullable(accessPointGroup).id,
                           );
                         }
                       }}

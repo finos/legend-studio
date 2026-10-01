@@ -46,7 +46,7 @@ import {
   LakehouseDataProductExecutableAccessorInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import { DataSpaceMarkdownTextViewer } from './DataSpaceMarkdownTextViewer.js';
-import { DataSpaceOpenDataProductButton } from './DataSpaceExecutionContextViewer.js';
+import { resolveOpenDataProductAction } from './DataSpaceExecutionContextViewer.js';
 import type { DSL_DataSpace_LegendApplicationPlugin_Extension } from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 import { useEffect, useRef, useState } from 'react';
 import { DataSpaceWikiPlaceholder } from './DataSpacePlaceholder.js';
@@ -227,6 +227,10 @@ const DataSpaceDataProductAccessPanel = observer(
           const accessState = viewerState.getDataProductAccessState(
             group.dataProductPath,
           );
+          const onOpenDataProduct = resolveOpenDataProductAction(
+            viewerState,
+            group.dataProductPath,
+          );
           return (
             <div
               key={group.dataProductPath}
@@ -250,21 +254,28 @@ const DataSpaceDataProductAccessPanel = observer(
                   />
                 </button>
                 <div className="data-space__viewer__quickstart__tds__apg-access__group__header">
-                  <span
-                    className="data-space__viewer__quickstart__tds__apg-access__group__label"
-                    title={group.dataProductPath}
-                  >
-                    {extractElementNameFromPath(group.dataProductPath)}
-                  </span>
+                  {onOpenDataProduct ? (
+                    <button
+                      type="button"
+                      className="data-space__viewer__quickstart__tds__apg-access__group__label data-space__viewer__quickstart__tds__apg-access__group__label--clickable"
+                      title={`Open Data Product: ${group.dataProductPath}`}
+                      onClick={onOpenDataProduct}
+                    >
+                      {extractElementNameFromPath(group.dataProductPath)}
+                    </button>
+                  ) : (
+                    <span
+                      className="data-space__viewer__quickstart__tds__apg-access__group__label"
+                      title={group.dataProductPath}
+                    >
+                      {extractElementNameFromPath(group.dataProductPath)}
+                    </span>
+                  )}
                   <span className="data-space__viewer__quickstart__tds__apg-access__group__count">
                     {group.accessPointGroupIds.length}
                   </span>
                 </div>
                 <div className="data-space__viewer__quickstart__tds__apg-access__group__actions">
-                  <DataSpaceOpenDataProductButton
-                    dataSpaceViewerState={viewerState}
-                    dataProductPath={group.dataProductPath}
-                  />
                   {accessState && (
                     <IconButton
                       className="data-space__viewer__quickstart__tds__apg-access__group__refresh-btn"

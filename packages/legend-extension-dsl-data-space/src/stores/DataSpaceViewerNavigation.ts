@@ -20,6 +20,7 @@ import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram'
 
 export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   DESCRIPTION = 'description',
+  DATASPACE_LAKEHOUSE_ACCESS = 'dataspace-lakehouse-access',
   DIAGRAM_VIEWER = 'diagram-viewer',
   MODELS_DOCUMENTATION = 'models-documentation',
   QUICK_START = 'quick-start',
