@@ -188,6 +188,7 @@ jobs:
   run-studio-e2e-tests:
     name: Run Legend Studio End-to-End Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -230,6 +231,8 @@ jobs:
       - name: Build
         run: yarn build:ts && yarn build:sass
       - name: Install Playwright browser
+        # NOTE: this normally takes under a minute, but can hang when the apt mirrors are slow
+        timeout-minutes: 10
         run: yarn workspace @finos/legend-application-studio-e2e exec playwright install --with-deps chromium
       - name: Wait for engine server
         run: |
