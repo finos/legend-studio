@@ -16,6 +16,10 @@ concurrency:
   group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}', github.sha, github.workflow) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
   cancel-in-progress: true
 
+# Jobs only need to read the repository; grant more per job when needed
+permissions:
+  contents: read
+
 jobs:
   # This job is to make sure Webpack builds the application fine. This is helpful
   # to know as we don't want to find out this failure as late as when we prepare the
@@ -23,6 +27,7 @@ jobs:
   application-build-check:
     name: Check Application Build
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:

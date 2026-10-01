@@ -7,7 +7,7 @@ on:
   # to serve the web application statically
   #
   # However, this suffers from the fact that the image is often flagged for CVEs from underlying OS images (i.e. debian)
-  # As such, to lessen the noise, we only run this workflow on schedule or when there are changes to the Dockerfiles
+  # As such, to lessen the noise, we only run this workflow on schedule or when there are changes to the Dockerfiles (or this workflow)
   schedule:
     - cron: '0 0 * * 2' # every Tuesday on default branch
   push:
@@ -16,11 +16,13 @@ on:
       - 'release/**'
     paths:
       - '**/Dockerfile'
+      - '.github/workflows/check-docker.yml'
   pull_request:
     branches:
       - '**'
     paths:
       - '**/Dockerfile'
+      - '.github/workflows/check-docker.yml'
   # Allow triggering this workflow manually
   workflow_dispatch: {}
 
@@ -31,10 +33,15 @@ concurrency:
   group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}', github.sha, github.workflow) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
   cancel-in-progress: true
 
+# Jobs only need to read the repository; grant more per job when needed
+permissions:
+  contents: read
+
 jobs:
   check-docker-image:
     name: Run Docker Image Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -69,7 +76,9 @@ jobs:
       - name: Build image
         run: yarn workspace ${{ matrix.package }} build-dry:docker ${{ github.sha }}
       - name: Scan image for security issues
-        uses: aquasecurity/trivy-action@0.30.0
+        # NOTE: pinned to a commit since trivy-action tags were rewritten in a supply chain attack
+        # See https://github.com/aquasecurity/trivy-action/releases/tag/v0.35.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           # TODO: we should probably also setup misconfiguration scanning
           # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code

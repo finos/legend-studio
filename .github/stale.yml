@@ -12,6 +12,8 @@ exemptLabels:
   - 'Type: Regression'
   - 'Status: Needs Investigation'
   - 'Resolution: Backlog'
+  # Dependency update PRs (often security fixes) should be merged or closed deliberately
+  - 'dependencies'
 # Label to use when marking an issue as stale
 staleLabel: 'Resolution: Stale'
 issues:

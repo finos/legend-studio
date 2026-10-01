@@ -16,10 +16,15 @@ concurrency:
   group: ${{ github.ref == 'refs/heads/master' && format('ci-default-branch-{0}-{1}', github.sha, github.workflow) || format('ci-pr-{0}-{1}', github.ref, github.workflow) }}
   cancel-in-progress: true
 
+# Jobs only need to read the repository; grant more per job when needed
+permissions:
+  contents: read
+
 jobs:
   check-code:
     name: Run Code Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
@@ -48,6 +53,7 @@ jobs:
   check-codebase-maintenance:
     name: Run Codebase Maintenance Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
