@@ -184,3 +184,86 @@ jobs:
           name: e2e-test-report
           path: packages/legend-application-query-e2e/build/playwright-report
           retention-days: 14
+
+  run-studio-e2e-tests:
+    name: Run Legend Studio End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+      - name: Get Yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      - name: Setup Yarn cache
+        uses: actions/cache@v4.2.3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
+      - name: Setup Node
+        uses: actions/setup-node@v4.3.0
+        with:
+          node-version: 24
+      # NOTE: these tests run against a real engine server: as in the `run-tests` job, it
+      # is started in the background so pulling the image and booting the server overlap
+      # with installing dependencies and building, and we wait for it to be ready right
+      # before running the tests
+      - name: Start engine server
+        working-directory: ./fixtures/legend-docker-setup/grammar-test-setup
+        run: |
+          (
+            code=0
+            docker compose --file=grammar-test-setup-docker-compose.yml up --detach || code=$?
+            echo "$code" > "$RUNNER_TEMP/engine-up.exit"
+          ) > "$RUNNER_TEMP/engine-up.log" 2>&1 &
+      - name: Install dependencies
+        run: yarn
+      - name: Restore build cache
+        uses: actions/cache/restore@v4.2.3
+        with:
+          path: |
+            packages/*/lib
+            packages/*/build/prod.tsbuildinfo
+          key: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-build-${{ hashFiles('yarn.lock') }}-
+      - name: Build
+        run: yarn build:ts && yarn build:sass
+      - name: Install Playwright browser
+        # NOTE: this normally takes under a minute, but can hang when the apt mirrors are slow
+        timeout-minutes: 10
+        run: yarn workspace @finos/legend-application-studio-e2e exec playwright install --with-deps chromium
+      - name: Wait for engine server
+        run: |
+          fail() {
+            cat "$RUNNER_TEMP/engine-up.log"
+            docker logs engine || true
+            exit 1
+          }
+          for _ in {1..120}; do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:6300/api/server/v1/info; then
+              exit 0
+            fi
+            # fail fast if `docker compose up` failed (e.g. image pull failure) or the server died
+            if [[ -f "$RUNNER_TEMP/engine-up.exit" && "$(cat "$RUNNER_TEMP/engine-up.exit")" != '0' ]]; then
+              fail
+            fi
+            if [[ "$(docker inspect --format '{{.State.Status}}' engine 2>/dev/null)" =~ ^(exited|dead)$ ]]; then
+              fail
+            fi
+            sleep 5
+          done
+          fail
+      - name: Run end-to-end tests
+        run: yarn workspace @finos/legend-application-studio-e2e test:e2e
+      - name: Print engine server logs
+        if: failure()
+        run: docker logs engine || true
+      - name: Upload end-to-end test report
+        if: failure()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: studio-e2e-test-report
+          path: packages/legend-application-studio-e2e/build/playwright-report
+          retention-days: 14
