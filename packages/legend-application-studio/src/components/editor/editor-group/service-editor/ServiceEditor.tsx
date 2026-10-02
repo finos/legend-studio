@@ -71,6 +71,7 @@ import {
   validate_ServicePattern,
   validate_ServiceMcpServer,
   DeploymentOwnership,
+  Service,
   UserListOwnership,
 } from '@finos/legend-graph';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../../__lib__/LegendStudioApplicationNavigationContext.js';
@@ -78,7 +79,11 @@ import { ServiceTestableEditor } from './testable/ServiceTestableEditor.js';
 import { flowResult } from 'mobx';
 import { ServicePostValidationsEditor } from './ServicePostValidationEditor.js';
 import type { DSL_Service_LegendStudioApplicationPlugin_Extension } from '../../../../stores/extensions/DSL_Service_LegendStudioApplicationPlugin_Extension.js';
-import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LEGENDAI_SUGGEST_STAGE,
+  LEGENDAI_SUGGEST_SURFACE,
+} from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+import { useLegendAISuggestTelemetry } from '../LegendAISuggestTelemetryHooks.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 import { DocumentationLink } from '@finos/legend-lego/application';
 
@@ -267,32 +272,42 @@ const ServiceGeneralEditor = observer(() => {
   const [aiDocSuggestion, setAIDocSuggestion] = useState<string | undefined>(
     undefined,
   );
+  const aiSuggestTelemetry = useLegendAISuggestTelemetry(
+    editorStore,
+    { surface: LEGENDAI_SUGGEST_SURFACE.SERVICE, elementPath: service.path },
+    { legendAIUrl, available: Boolean(aiDocSuggester), isReadOnly },
+  );
   const suggestDocumentationWithAI = async (): Promise<void> => {
     if (!aiDocSuggester || !legendAIUrl) {
       return;
     }
-    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestLaunched(
-      applicationStore.telemetryService,
-      service.path,
-      editorStore.editorMode.getSourceInfo(),
-    );
+    const request = aiSuggestTelemetry.launch({
+      existingText: service.documentation,
+    });
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
+    let stage = LEGENDAI_SUGGEST_STAGE.SERIALIZE;
     try {
       const serviceGrammar =
         await editorStore.graphManagerState.graphManager.elementsToPureCode([
           service,
         ]);
+      stage = LEGENDAI_SUGGEST_STAGE.REQUEST;
       const suggestion = await aiDocSuggester(serviceGrammar, legendAIUrl);
-      setAIDocSuggestion(suggestion);
+      const shouldShow = aiSuggestTelemetry.succeed(request, {
+        suggestionText: suggestion,
+        definitionsLength: serviceGrammar.length,
+        currentText: service.documentation,
+      });
+      if (!shouldShow) {
+        applicationStore.notificationService.notifyWarning(
+          'LegendAI did not return a documentation suggestion for this service',
+        );
+      }
+      setAIDocSuggestion(shouldShow ? suggestion : undefined);
     } catch (error) {
       assertErrorThrown(error);
-      LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestFailure(
-        applicationStore.telemetryService,
-        service.path,
-        error.message,
-        editorStore.editorMode.getSourceInfo(),
-      );
+      aiSuggestTelemetry.fail(request, error, stage);
       if (
         error instanceof NetworkClientError &&
         (error.response.status === HttpStatus.UNAUTHORIZED ||
@@ -314,20 +329,23 @@ const ServiceGeneralEditor = observer(() => {
     if (!aiDocSuggestion) {
       return;
     }
-    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestApplied(
-      applicationStore.telemetryService,
-      service.path,
-      editorStore.editorMode.getSourceInfo(),
-    );
+    const servicePath = service.path;
+    aiSuggestTelemetry.apply({
+      existingText: service.documentation,
+      appliedText: aiDocSuggestion,
+      readCurrentText: (store) => {
+        const element =
+          store.graphManagerState.graph.getNullableElement(servicePath);
+        return element instanceof Service
+          ? { found: true, text: element.documentation }
+          : { found: false };
+      },
+    });
     service_setDocumentation(service, aiDocSuggestion);
     setAIDocSuggestion(undefined);
   };
   const discardAIDocSuggestion = (): void => {
-    LegendStudioTelemetryHelper.logEvent_ServiceLegendAISuggestDiscarded(
-      applicationStore.telemetryService,
-      service.path,
-      editorStore.editorMode.getSourceInfo(),
-    );
+    aiSuggestTelemetry.discard();
     setAIDocSuggestion(undefined);
   };
 

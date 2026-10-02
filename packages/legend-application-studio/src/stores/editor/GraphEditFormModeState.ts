@@ -484,6 +484,19 @@ export class GraphEditFormModeState extends GraphEditorMode {
       );
     } catch (error) {
       assertErrorThrown(error);
+      if (!(error instanceof EngineError)) {
+        // Non-engine errors (e.g. network) are re-thrown below by `assertType`;
+        // still close out the `launch` emitted above so it has a terminal event.
+        LegendStudioTelemetryHelper.logEvent_GraphCompilationFailure(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          {
+            errorKind: FORM_MODE_COMPILATION_ERROR_KIND.OTHER,
+            errorMessage: error.message,
+            fallbackToTextMode: false,
+          },
+        );
+      }
       // TODO: we probably should make this pattern of error the handling for all other exceptions in the codebase
       // i.e. there should be a catch-all handler (we can use if-else construct to check error types)
       assertType(error, EngineError, `Unhandled exception:\n${error}`);
@@ -526,6 +539,24 @@ export class GraphEditFormModeState extends GraphEditorMode {
         }
       }
 
+      // NOTE: the `assertType(error, EngineError, ...)` above guarantees
+      // `error` is an `EngineError` here, so the classification only needs
+      // to distinguish `CompilationError` from other `EngineError`s.
+      // Emitted before the (potentially slow, potentially throwing) switch to
+      // text mode so the failure is always recorded with an accurate timestamp.
+      LegendStudioTelemetryHelper.logEvent_GraphCompilationFailure(
+        this.editorStore.applicationStore.telemetryService,
+        this.editorStore.editorMode.getSourceInfo(),
+        {
+          errorKind:
+            error instanceof CompilationError
+              ? FORM_MODE_COMPILATION_ERROR_KIND.COMPILATION
+              : FORM_MODE_COMPILATION_ERROR_KIND.ENGINE,
+          errorMessage: error.message,
+          fallbackToTextMode: fallbackToTextModeForDebugging,
+        },
+      );
+
       // decide if we need to fall back to text mode for debugging
       if (fallbackToTextModeForDebugging) {
         // TODO: when we support showing multiple notifications, we can split this into 2
@@ -551,21 +582,6 @@ export class GraphEditFormModeState extends GraphEditorMode {
           GraphCompilationOutcome.FAILED,
         );
       }
-      // NOTE: the `assertType(error, EngineError, ...)` above guarantees
-      // `error` is an `EngineError` here, so the classification only needs
-      // to distinguish `CompilationError` from other `EngineError`s.
-      LegendStudioTelemetryHelper.logEvent_GraphCompilationFailure(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        {
-          errorKind:
-            error instanceof CompilationError
-              ? FORM_MODE_COMPILATION_ERROR_KIND.COMPILATION
-              : FORM_MODE_COMPILATION_ERROR_KIND.ENGINE,
-          errorMessage: error.message,
-          fallbackToTextMode: fallbackToTextModeForDebugging,
-        },
-      );
     } finally {
       this.editorStore.graphState.isRunningGlobalCompile = false;
     }

@@ -169,7 +169,10 @@ describe(
       jest.restoreAllMocks();
     });
 
-    const runCompile = async (error: Error): Promise<void> => {
+    const runCompile = async (
+      error: Error,
+      options?: { switchModesError?: Error },
+    ): Promise<void> => {
       const editorStore = TEST__getTestEditorStore();
       // Force the compile step to reject with our target error.
       jest
@@ -177,11 +180,14 @@ describe(
         .mockRejectedValue(error);
       // Both reachable branches (CompilationError with unresolvable coords,
       // and plain EngineError) end up yielding `switchModes` for the
-      // text-mode fallback. Stub it to a resolved flow.
+      // text-mode fallback. Stub it to a resolved (or rejected) flow.
+      const switchModesError = options?.switchModesError;
+      const switchModes = (): Promise<void> =>
+        switchModesError ? Promise.reject(switchModesError) : Promise.resolve();
       jest
         .spyOn(editorStore, 'switchModes')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .mockReturnValue(Promise.resolve() as any);
+        .mockImplementation(switchModes as any);
       const formMode = editorStore.graphEditorMode as GraphEditFormModeState;
       await flowResult(formMode.globalCompile());
     };
@@ -204,6 +210,29 @@ describe(
       expect(failureSpy.mock.calls[0]?.[2]).toEqual({
         errorKind: FORM_MODE_COMPILATION_ERROR_KIND.ENGINE,
         errorMessage: error.message,
+        fallbackToTextMode: true,
+      });
+    });
+
+    test('non-engine error classifies as OTHER (no text-mode fallback) before being re-thrown', async () => {
+      const error = new Error('network boom');
+      await expect(runCompile(error)).rejects.toThrow();
+      expect(failureSpy).toHaveBeenCalledTimes(1);
+      expect(failureSpy.mock.calls[0]?.[2]).toEqual({
+        errorKind: FORM_MODE_COMPILATION_ERROR_KIND.OTHER,
+        errorMessage: error.message,
+        fallbackToTextMode: false,
+      });
+    });
+
+    test('failure is emitted even when the text-mode fallback itself throws', async () => {
+      const error = new EngineError('engine boom');
+      await expect(
+        runCompile(error, { switchModesError: new Error('switch boom') }),
+      ).rejects.toThrow('switch boom');
+      expect(failureSpy).toHaveBeenCalledTimes(1);
+      expect(failureSpy.mock.calls[0]?.[2]).toMatchObject({
+        errorKind: FORM_MODE_COMPILATION_ERROR_KIND.ENGINE,
         fallbackToTextMode: true,
       });
     });
