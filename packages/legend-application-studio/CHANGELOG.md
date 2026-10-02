@@ -1,5 +1,118 @@
 # @finos/legend-application-studio
 
+## 28.21.46
+
+### Patch Changes
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add editor tab lifecycle telemetry (`editor.tab.open` / `editor.tab.close`). Fires on every open (including cache-restore after graph rebuild) and every close (single, close-others, close-all, cache-and-close). Close events carry cumulative active-tab dwell time. Payloads bucket tabs by `tabKind` (`element`, `entity-diff`, `artifact-generation`, `model-importer`, `project-configuration`, `end-to-end-workflow`, `other`) and, for element tabs, further by `elementKind` (`class`, `mapping`, `service`, ...). See [studio-telemetry.md](docs/technical/studio-telemetry.md#editor-tabs) for the full shape.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a structured `editor.project-overview.action.{launch,success,failure}`
+  lifecycle around the project overview sidebar's SDLC writes: delete
+  workspace, update project metadata, cut a release version, release a patch
+  branch, open a new patch branch (which also creates its initial workspace).
+
+  Payload carries `action`, `projectId`, `patchReleaseVersionId?` (release /
+  create patch), `workspaceType?` (delete workspace / create patch), plus
+  `durationMs` on success and `errorMessage` on failure. Fires from inside
+  the workspace editor, so `sourceInfo` is populated. The
+  `SDLC_MANAGER_FAILURE` developer log stays in place alongside the new
+  failure event.
+
+  Read paths on `ProjectOverviewState` (fetch workspaces / patches / latest
+  version / revision / reviews) continue to log through
+  `SDLC_MANAGER_FAILURE` — they are background reads, not user-triggered
+  actions.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add structured launch + success telemetry for service registration precheck (`editor.service-editor.registration-check.launch` / `.success`) and generation (`editor.generation.launch` / `.success`). The pre-existing `.failure` events remain and are now also emitted through the telemetry service, tagged with the same payload keys (`servicePath` / `env` for the precheck; `mode` / `elementPath?` / `generationType?` for generation) so error rates are queryable alongside launches and successes.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a structured `sdlc.review.action.{launch,success,failure}` telemetry
+  lifecycle around SDLC review actions (create / commit / close / reopen /
+  approve). Fires from both the workspace author side (WorkspaceReviewState —
+  carries `sourceInfo` from the workspace editor) and the reviewer side
+  (ProjectReviewerStore — no editor mode, so `sourceInfo` is undefined;
+  `projectId`, `patchReleaseVersionId?`, and `reviewId` are carried on the
+  payload so reviewer-side events remain sliceable).
+
+  Payloads carry `action`, `role` (`author` / `reviewer`), `projectId`,
+  `patchReleaseVersionId?`, plus `reviewId` (optional on `create` launch /
+  failure, populated everywhere else), `durationMs` on success, and
+  `errorMessage` on failure. The existing `sdlc.manager.failure` developer
+  error log is left in place for backward compatibility.
+
+  Guardrail early-returns (snapshot dependencies, sandbox project, conflict
+  resolution mode) do not emit a `launch`, so `launch` counts remain a fair
+  denominator for `success + failure`.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a dedicated `sdlc.workspace-create.{launch,success,failure}` lifecycle
+  around the ad-hoc "Create workspace" recovery prompt that fires when a user
+  deep-links to a workspace that doesn't exist yet. Distinct from
+  `setup.action.create-workspace` (setup screen callsite) — this is the
+  in-editor bootstrap callsite with its own error-handling and legacy
+  `WORKSPACE_SETUP_FAILURE` log bucket, which stays in place.
+
+  Payload carries `projectId`, `workspaceId`, `workspaceType`, and
+  `hasPatchReleaseVersion`, plus `durationMs` on success and `errorMessage`
+  on failure. `sourceInfo` is omitted — no editor mode is active at this
+  point.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add structured `editor.service-editor.test-suite-run.{launch,success,failure}` telemetry around the service editor's testable panel run flows (`Run Suite` / `Run Failing`). Payloads carry `sourceInfo?`, `servicePath`, `suiteId`, `mode`, `testCount`, plus `durationMs` and pass / fail / error result counts on success, complementing the existing generic `editor.service-editor.test-runner.failure` bucket.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add structured telemetry lifecycles around two more SDLC-adjacent surfaces:
+
+  **Workspace setup** — new `setup.action.{launch,success,failure}` family
+  covering `create-sandbox-project`, `create-project`, `import-project`, and
+  `create-workspace`. Payload carries `action`, `projectId?`, `workspaceType?`
+  (create-workspace), `hasPatchReleaseVersion?` (create-workspace), plus
+  `durationMs` on success and `errorMessage` on failure. `create-project` and
+  `import-project` previously emitted no telemetry at all; `create-workspace`
+  and `create-sandbox-project` were failure-only via `WORKSPACE_SETUP_FAILURE`
+  / `ENGINE_MANAGER_FAILURE` buckets, which are left in place for backward
+  compatibility. Setup runs before any editor mode, so `sourceInfo` is always
+  `undefined`.
+
+  **Project configuration update** — new
+  `editor.project-config.update.{launch,success,failure}` family covering
+  `update-configs` (dependency add/remove, platform configurations,
+  run-dependency-tests toggle), `update-to-latest-structure` (structure
+  version bump), and `change-project-type` (managed / embedded toggle). All
+  three funnel through `updateProjectConfiguration`, where the lifecycle is
+  emitted with the `action` discriminator so dashboards can slice per entry
+  point. Carries `sourceInfo`.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Complete the launch/success/failure lifecycle for three Studio editor operations that previously had success telemetry only, so their error rates become measurable without grepping the generic failure buckets.
+
+  - New `editor.form-mode.compilation.failure` event with `sourceInfo?`, `errorKind` (`compilation` / `engine` / `other`), `errorMessage`, and `fallbackToTextMode` (whether Studio auto-redirected to text mode because the error could not be revealed inline).
+  - New `editor.test.test-data-generation.failure` event with `sourceInfo?` and `errorMessage`, fired from the two `-ForDatabaseConnection` codepaths that already emit the matching `launch` and `success` events.
+  - New `graph-manager.initialize-graph.launch` and `graph-manager.initialize-graph.failure` events; the failure payload carries `errorKind` (`dependency` / `deserialization` / `network` / `other`), `errorMessage`, and `fallbackToTextMode`.
+
+  Enums `FORM_MODE_COMPILATION_ERROR_KIND` and `GRAPH_INITIALIZATION_ERROR_KIND` are exported from `LegendStudioTelemetryHelper`.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Structure service-registration telemetry so registration success rate, latency, and error rate are measurable per entry point.
+
+  - New `editor.service-editor.registration.launch` and `editor.service-editor.registration.success` events. Both carry `sourceInfo?`, `trigger` (`single` / `bulk` / `service-query-editor`), `executionMode?` (raw `ServiceExecutionMode`), `serviceCount`, and `activatePostRegistration`. Success additionally carries `durationMs` (activation call included when opted in).
+  - The existing `editor.service-editor.registration.failure` string constant is now emitted through the telemetry service (in addition to the developer-console `logService.error` call), with the same structured payload plus `errorMessage`.
+  - Wired into all three registration codepaths: `ServiceRegistrationState.registerService` (`single`), `BulkServiceRegistrationState.registerServices` (`bulk`), and `ServiceQueryEditorStore.registerService` in the `dsl-service` extension (`service-query-editor`).
+
+  Enum `SERVICE_REGISTRATION_TRIGGER` is exported from `@finos/legend-application-studio` for downstream consumers.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add a unified `editor.testable.run.{launch,success,failure}` telemetry lifecycle
+  around the shared testable editors (mapping, data product, ingest, function
+  activator, availability). Instrumented run entry points cover suite runs,
+  run-failing, run-testable, run-all-failing, single-test runs from the per-test
+  editor, and single-test / suite / testable runs launched from the global test
+  runner sidebar. Payloads carry `testableKind`, `testablePath`, `suiteId`,
+  `mode` (run-suite / run-failing / run-testable / run-all-failing / run-test),
+  `testCount`, plus `durationMs` and passed/failed/errored counts on success.
+
+  Also add a `global-test-runner.run.{launch,success,failure}` lifecycle for the
+  sidebar "run all tests" and "run dependencies tests" flows (cross-testable),
+  with `scope` (all / dependencies) and `testableCount` on every event.
+
+  The existing service test-suite events are left unchanged for backward
+  compatibility.
+
+- [#5570](https://github.com/finos/legend-studio/pull/5570) [`8dc8e4c`](https://github.com/finos/legend-studio/commit/8dc8e4ce7812cd6e5e307c1910f193c52736e2a9) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Add telemetry for the workflow manager: panel open/close (with dwell), workflows and jobs fetch launch/success/failure (with duration, counts and status breakdown), workflow expand/refresh, job actions retry/cancel/run-manual (launch/success/failure with `jobName`, `jobStatus` and `action`), and job-logs viewer open/close/refresh/fetch events. All events carry an optional `sourceInfo` and a `scope` discriminator (`workspace` / `project` / `project-version`) so dashboards can slice pipeline health per surface without joining on `sourceInfo.sourceType`.
+
 ## 28.21.45
 
 ## 28.21.44

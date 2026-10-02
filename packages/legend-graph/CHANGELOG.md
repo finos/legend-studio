@@ -1,5 +1,11 @@
 # @finos/legend-graph
 
+## 32.7.2
+
+### Patch Changes
+
+- [#5404](https://github.com/finos/legend-studio/pull/5404) [`5f6c7f2`](https://github.com/finos/legend-studio/commit/5f6c7f2a1746e33dca910c987525844e03904e92) ([@rafaelbey](https://github.com/rafaelbey)) - Support engine's multi-line (`'''...'''`) string literal protocol changes: `V1_CString` (and its raw value specification counterpart) now carries an optional `multiLine` flag, and a tagged value's `value` accepts both the plain string and the `{ _type: 'string', multiLine: true, value: '...' }` wire shapes.
+
 ## 32.7.1
 
 ### Patch Changes

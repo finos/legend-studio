@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.5.2
+
+### Patch Changes
+
+- [#5579](https://github.com/finos/legend-studio/pull/5579) [`a28d0df`](https://github.com/finos/legend-studio/commit/a28d0df28d532d6fe22ebc17613824a85930e015) ([@yash0024](https://github.com/yash0024)) - Enable the new DataSpace Data Product Access section in the Marketplace product viewer, including light-mode styling for the section and its controls.
+
 ## 0.5.1
 
 ### Patch Changes

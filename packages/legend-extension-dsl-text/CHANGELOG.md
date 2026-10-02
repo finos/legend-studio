@@ -1,5 +1,7 @@
 # @finos/legend-extension-dsl-text
 
+## 6.0.504
+
 ## 6.0.503
 
 ## 6.0.502
