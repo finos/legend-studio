@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-space
 
+## 10.4.259
+
+### Patch Changes
+
+- [#5569](https://github.com/finos/legend-studio/pull/5569) [`404099a`](https://github.com/finos/legend-studio/commit/404099a07781a0a1ba106b5146c8fff79e005b73) ([@jackp5150](https://github.com/jackp5150)) - Added badges and related dataspaces to wiki
+
+- [#5579](https://github.com/finos/legend-studio/pull/5579) [`a28d0df`](https://github.com/finos/legend-studio/commit/a28d0df28d532d6fe22ebc17613824a85930e015) ([@yash0024](https://github.com/yash0024)) - Add a new "Data Product Access" section to the DataSpace viewer that lists every referenced Data Product and lets users request access to all of its Access Point Groups in a single click.
+
 ## 10.4.258
 
 ### Patch Changes

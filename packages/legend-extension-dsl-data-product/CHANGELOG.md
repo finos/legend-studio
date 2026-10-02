@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.1.2
+
+### Patch Changes
+
+- [#5579](https://github.com/finos/legend-studio/pull/5579) [`a28d0df`](https://github.com/finos/legend-studio/commit/a28d0df28d532d6fe22ebc17613824a85930e015) ([@yash0024](https://github.com/yash0024)) - Allow the access request dialog to submit contracts and workflow requests for multiple Access Point Groups at once, and let callers customize the dialog header.
+
 ## 0.1.1
 
 ### Patch Changes
