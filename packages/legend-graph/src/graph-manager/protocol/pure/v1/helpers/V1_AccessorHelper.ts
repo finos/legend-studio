@@ -87,13 +87,10 @@ import {
 import type { V1_AccessPointImplementation } from '../lakehouse/deploy/V1_DataProductArtifact.js';
 import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
 import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
-import { TaggedValue } from '../../../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
-import { TagExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/TagReference.js';
+import type { TaggedValue } from '../../../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
 import { StereotypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
-import {
-  getTag,
-  getStereotype,
-} from '../../../../../graph/helpers/DomainHelper.js';
+import { getStereotype } from '../../../../../graph/helpers/DomainHelper.js';
+import { V1_buildTaggedValue } from '../transformation/pureGraph/to/helpers/V1_DomainBuilderHelper.js';
 
 const buildV1GenericType = (fullPath: string): V1_GenericTypeProtocol => {
   // Strip package prefix — primitive types are indexed by simple name
@@ -276,18 +273,7 @@ export const V1_buildRelationTypeFromV1RelationType = (
       .filter((s): s is StereotypeExplicitReference => s !== undefined);
     relationColumn.taggedValues = (col.taggedValues ?? [])
       .map((taggedValue) =>
-        returnUndefOnError(
-          () =>
-            new TaggedValue(
-              TagExplicitReference.create(
-                getTag(
-                  graph.getProfile(taggedValue.tag.profile),
-                  taggedValue.tag.value,
-                ),
-              ),
-              taggedValue.value,
-            ),
-        ),
+        returnUndefOnError(() => V1_buildTaggedValue(taggedValue, context)),
       )
       .filter((tv): tv is TaggedValue => tv !== undefined);
     return relationColumn;
