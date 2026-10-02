@@ -233,24 +233,67 @@ export class GlobalBulkServiceRegistrationState {
       const successfulResults = registrationResults.filter(
         (result) => result instanceof ServiceRegistrationSuccess,
       );
+      const failedResults = registrationResults.filter(
+        (result) => result instanceof ServiceRegistrationFail,
+      );
 
+      let activationFailedCount: number | undefined;
       if (this.activatePostRegistration) {
-        yield Promise.resolve(
+        // Wait for every activation to settle so a single rejected activation
+        // neither hides the registration results nor goes unhandled.
+        const activationResults = (yield Promise.allSettled(
           successfulResults.map((serviceResult) =>
             this.editorStore.graphManagerState.graphManager.activateService(
               config.executionUrl,
               serviceResult.serviceInstanceId,
             ),
           ),
+        )) as PromiseSettledResult<void>[];
+        const activationFailures = activationResults.filter(
+          (result): result is PromiseRejectedResult =>
+            result.status === 'rejected',
+        );
+        activationFailedCount = activationFailures.length;
+        activationFailures.forEach((result) =>
+          this.editorStore.applicationStore.logService.error(
+            LogEvent.create(
+              LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE,
+            ),
+            result.reason,
+          ),
         );
       }
       this.handleResults(registrationResults);
       this.isServiceRegistering.complete();
-      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        { ...telemetryBase, durationMs: Date.now() - startedAt },
-      );
+      const outcomeCounts = {
+        registeredCount: successfulResults.length,
+        failedCount: failedResults.length,
+        activationFailedCount,
+      };
+      // A bulk run where nothing got registered is a failed run; partial
+      // success is reported on the success payload via the outcome counts.
+      const firstFailure = failedResults[0];
+      if (successfulResults.length === 0 && firstFailure) {
+        LegendStudioTelemetryHelper.logEvent_ServiceRegistrationFailure(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          {
+            ...telemetryBase,
+            ...outcomeCounts,
+            errorMessage: firstFailure.errorMessage,
+          },
+        );
+      } else {
+        LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          this.editorStore.editorMode.getSourceInfo(),
+          {
+            ...telemetryBase,
+            ...outcomeCounts,
+            durationMs: Date.now() - startedAt,
+          },
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(

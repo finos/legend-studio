@@ -73,11 +73,24 @@ export { LEGEND_STUDIO_DOCUMENTATION_KEY } from './__lib__/LegendStudioDocumenta
 export {
   LegendStudioTelemetryHelper,
   SERVICE_REGISTRATION_TRIGGER,
+  LEGENDAI_SUGGEST_SURFACE,
+  LEGENDAI_SUGGEST_STAGE,
+  LEGENDAI_SUGGEST_ERROR_KIND,
+  LEGENDAI_SUGGEST_ABANDON_PHASE,
+  LEGENDAI_SUGGEST_RETENTION,
+  LEGENDAI_SUGGEST_MATCH_STRATEGY,
+  type LegendAISuggestTarget,
 } from './__lib__/LegendStudioTelemetryHelper.js';
+export {
+  LegendAISuggestTelemetryTracker,
+  type LegendAISuggestRequest,
+  type LegendAIAppliedTextReader,
+} from './stores/editor/LegendAISuggestTelemetry.js';
 
 // components
 export { queryClass } from './components/editor/editor-group/uml-editor/ClassQueryBuilder.js';
 export * from './components/editor/EditorStoreProvider.js';
+export { useLegendAISuggestTelemetry } from './components/editor/editor-group/LegendAISuggestTelemetryHooks.js';
 export { ActivityBarMenu } from './components/editor/ActivityBar.js';
 export * from './components/workspace-setup/ProjectSelectorUtils.js';
 export * from './components/workspace-setup/WorkspaceSelectorUtils.js';

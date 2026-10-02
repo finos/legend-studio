@@ -461,6 +461,10 @@ export abstract class LocalChangesState {
           revisionId: latestRevision.id,
         },
       );
+      this.editorStore.legendAIAppliedSuggestionRegistry.reportPushedChanges(
+        this.editorStore,
+        localChanges,
+      );
 
       // ======= (RE)START CHANGE DETECTION =======
 

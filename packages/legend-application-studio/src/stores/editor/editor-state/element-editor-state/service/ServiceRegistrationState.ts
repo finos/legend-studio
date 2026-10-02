@@ -301,7 +301,8 @@ export class ServiceRegistrationState extends ServiceConfigState {
       { servicePath, envCount: this.registrationOptions.length },
     );
     const envs: string[] = [];
-    let errorCount = 0;
+    const failedEnvs: string[] = [];
+    let lastErrorMessage: string | undefined;
     const servicePattern = this.service.pattern.startsWith('/')
       ? this.service.pattern.substring(1)
       : this.service.pattern;
@@ -317,37 +318,49 @@ export class ServiceRegistrationState extends ServiceConfigState {
         }
       } catch (error) {
         assertErrorThrown(error);
-        errorCount += 1;
+        failedEnvs.push(envConfig.env);
+        lastErrorMessage = error.message;
         this.editorStore.applicationStore.logService.warn(
           LogEvent.create(
             LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
           ),
           `Can't check registration status for env '${envConfig.env}': ${error.message}`,
         );
-        LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckFailure(
-          this.editorStore.applicationStore.telemetryService,
-          sourceInfo,
-          {
-            servicePath,
-            env: envConfig.env,
-            errorMessage: error.message,
-          },
-        );
       }
     }
     this.setRegisteredEnvs(envs);
     this.deploymentCheckState.complete();
-    LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckSucceeded(
-      this.editorStore.applicationStore.telemetryService,
-      sourceInfo,
-      {
-        servicePath,
-        envCount: this.registrationOptions.length,
-        durationMs: Date.now() - startedAt,
-        registeredEnvCount: envs.length,
-        errorCount,
-      },
-    );
+    // A precheck run only counts as failed when no env could be probed at
+    // all; partial per-env errors are reported on the success payload.
+    const envCount = this.registrationOptions.length;
+    const durationMs = Date.now() - startedAt;
+    if (lastErrorMessage !== undefined && failedEnvs.length === envCount) {
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckFailure(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        {
+          servicePath,
+          envCount,
+          durationMs,
+          errorCount: failedEnvs.length,
+          failedEnvs,
+          errorMessage: lastErrorMessage,
+        },
+      );
+    } else {
+      LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckSucceeded(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        {
+          servicePath,
+          envCount,
+          durationMs,
+          registeredEnvCount: envs.length,
+          errorCount: failedEnvs.length,
+          failedEnvs,
+        },
+      );
+    }
   }
 
   *registerService(): GeneratorFn<void> {
@@ -430,7 +443,12 @@ export class ServiceRegistrationState extends ServiceConfigState {
       LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
         this.editorStore.applicationStore.telemetryService,
         this.editorStore.editorMode.getSourceInfo(),
-        { ...telemetryBase, durationMs: Date.now() - startedAt },
+        {
+          ...telemetryBase,
+          durationMs: Date.now() - startedAt,
+          registeredCount: 1,
+          failedCount: 0,
+        },
       );
     } catch (error) {
       assertErrorThrown(error);

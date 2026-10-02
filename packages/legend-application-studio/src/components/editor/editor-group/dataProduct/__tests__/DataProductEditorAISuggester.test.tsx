@@ -375,6 +375,69 @@ test(
 
 test(
   integrationTest(
+    'Suggest → Apply emits the unified editor.legendai-suggest.* lifecycle scoped to the access point group',
+  ),
+  async () => {
+    const { editorGroup, editorStore } = await setupEditorWithAI(true);
+    const logEventSpy = createSpy(
+      editorStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+    const payloadsOf = (event: string): Record<string, unknown>[] =>
+      logEventSpy.mock.calls
+        .filter(([name]) => name === event)
+        .map(([, data]) => data as Record<string, unknown>);
+
+    const suggestBtn = await findByText(editorGroup, 'Suggest with AI');
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+    const applyBtn = await findByText(editorGroup, 'Apply');
+    await act(async () => {
+      fireEvent.click(applyBtn);
+    });
+
+    const target = {
+      surface: 'data-product',
+      elementPath: 'model::sampleDataProduct',
+      accessPointGroupId: 'group1',
+    };
+    const [launch] = payloadsOf(
+      LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__LAUNCH,
+    );
+    expect(launch).toMatchObject({ ...target, accessPointCount: 1 });
+    const suggestionId = launch?.suggestionId;
+    expect(
+      payloadsOf(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__SUCCESS),
+    ).toEqual([
+      expect.objectContaining({
+        ...target,
+        suggestionId,
+        confidence: expect.any(Number),
+        accessPointSuggestionCount: 1,
+      }),
+    ]);
+    expect(payloadsOf(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__APPLY)).toEqual(
+      [
+        expect.objectContaining({
+          ...target,
+          suggestionId,
+          matchStrategy: 'name',
+          accessPointsUpdated: 1,
+          accessPointsRenamed: 0,
+          namesSanitized: 0,
+          accessPointCountMismatch: false,
+        }),
+      ],
+    );
+    expect(
+      payloadsOf(LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__APPLY),
+    ).toHaveLength(1);
+  },
+);
+
+test(
+  integrationTest(
     'Clicking "Dismiss" clears AI suggestion without applying it',
   ),
   async () => {

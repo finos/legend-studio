@@ -117,7 +117,8 @@ import {
   type LakehouseAccessPoint,
   type Mapping,
   type PackageableElement,
-  type DataProduct,
+  type AccessPointGroup,
+  DataProduct,
   DataProductEmbeddedImageIcon,
   DataProductLibraryIcon,
   Email,
@@ -199,11 +200,17 @@ import type { LegendStudioApplicationStore } from '../../../../stores/LegendStud
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import { RelationElementSampleValuesEditor } from '../data-editor/RelationElementSampleValuesEditor.js';
 import type {
+  AccessPointGroupMeta,
   AccessPointMeta,
   DataProductDocResponse,
   DSL_DataProduct_LegendStudioApplicationPlugin_Extension,
 } from '../../../../stores/extensions/DSL_DataProduct_LegendStudioApplicationPlugin_Extension.js';
-import { LegendStudioTelemetryHelper } from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+import {
+  LEGENDAI_SUGGEST_MATCH_STRATEGY,
+  LEGENDAI_SUGGEST_STAGE,
+  LEGENDAI_SUGGEST_SURFACE,
+} from '../../../../__lib__/LegendStudioTelemetryHelper.js';
+import { useLegendAISuggestTelemetry } from '../LegendAISuggestTelemetryHooks.js';
 import { LEGEND_STUDIO_DOCUMENTATION_KEY } from '../../../../__lib__/LegendStudioDocumentation.js';
 
 export enum AP_GROUP_MODAL_ERRORS {
@@ -1164,6 +1171,43 @@ const AccessPointLoadingSentinel = (props: {
   ref?: React.Ref<HTMLDivElement>;
 }) => <div ref={props.ref} className="access-point-editor__sentinel" />;
 
+/**
+ * Finds the suggested metadata for an access point group: by group name
+ * first, falling back to the group's position in the product.
+ */
+const matchAccessPointGroupSuggestion = (
+  suggestion: DataProductDocResponse,
+  groupId: string,
+  groupIndex: number,
+): {
+  groupMeta: AccessPointGroupMeta | undefined;
+  accessPointMetas: AccessPointMeta[];
+} => {
+  const groupMeta =
+    suggestion.access_point_groups.find((g) => g.name === groupId) ??
+    suggestion.access_point_groups[groupIndex];
+  const accessPointMetas = suggestion.access_points.filter(
+    (ap) => ap.group === (groupMeta?.name ?? groupId),
+  );
+  return { groupMeta, accessPointMetas };
+};
+
+/**
+ * Flattens the access point group fields a LegendAI suggestion writes so the
+ * applied value can be compared with what is eventually pushed.
+ */
+const serializeAccessPointGroupAppliedFields = (
+  group: AccessPointGroup,
+  accessPointCount: number,
+): string =>
+  [
+    group.title ?? '',
+    group.description ?? '',
+    ...group.accessPoints
+      .slice(0, accessPointCount)
+      .flatMap((ap) => [ap.id, ap.title ?? '', ap.description ?? '']),
+  ].join('\n');
+
 const AccessPointGroupEditor = observer(
   (props: { groupState: AccessPointGroupState; isReadOnly: boolean }) => {
     const { groupState, isReadOnly } = props;
@@ -1287,38 +1331,71 @@ const AccessPointGroupEditor = observer(
           )
           .find(Boolean)
       : undefined;
+    const aiSuggestTelemetry = useLegendAISuggestTelemetry(
+      editorStore,
+      {
+        surface: LEGENDAI_SUGGEST_SURFACE.DATA_PRODUCT,
+        elementPath: productEditorState.product.path,
+        accessPointGroupId: groupState.value.id,
+      },
+      { legendAIUrl, available: Boolean(aiDocSuggester), isReadOnly },
+    );
     const suggestWithAI = async (): Promise<void> => {
       if (!aiDocSuggester || !legendAIUrl) {
         return;
       }
-      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestLaunched(
-        editorStore.applicationStore.telemetryService,
-        productEditorState.product.path,
-        editorStore.editorMode.getSourceInfo(),
-      );
+      const request = aiSuggestTelemetry.launch({
+        existingText: groupState.value.description,
+        accessPointCount: groupState.value.accessPoints.length,
+      });
       setIsSuggestingWithAI(true);
       setAISuggestion(undefined);
+      let stage = LEGENDAI_SUGGEST_STAGE.SERIALIZE;
       try {
         const definitions =
           await editorStore.graphManagerState.graphManager.graphToPureCode(
             editorStore.graphManagerState.graph,
           );
+        stage = LEGENDAI_SUGGEST_STAGE.REQUEST;
         const product = productEditorState.product;
         const suggestion = await aiDocSuggester(
           { definitions, data_product_name: product.path },
           legendAIUrl,
         );
+        const { groupMeta, accessPointMetas } = matchAccessPointGroupSuggestion(
+          suggestion,
+          groupState.value.id,
+          productEditorState.accessPointGroupStates.indexOf(groupState),
+        );
+        const shouldShow = aiSuggestTelemetry.succeed(request, {
+          // the response is structured, so measure the parts shown for this group
+          suggestionText: [
+            groupMeta?.title,
+            groupMeta?.description,
+            ...accessPointMetas.flatMap((ap) => [
+              ap.name,
+              ap.title,
+              ap.description,
+            ]),
+          ]
+            .filter(Boolean)
+            .join('\n'),
+          definitionsLength: definitions.length,
+          currentText: groupState.value.description,
+          confidence: groupMeta?.confidence,
+          accessPointSuggestionCount: accessPointMetas.length,
+        });
+        if (!shouldShow) {
+          editorStore.applicationStore.notificationService.notifyWarning(
+            `LegendAI did not return a suggestion for access point group '${groupState.value.id}'`,
+          );
+        }
         runInAction(() => {
-          setAISuggestion(suggestion);
+          setAISuggestion(shouldShow ? suggestion : undefined);
         });
       } catch (error) {
         assertErrorThrown(error);
-        LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestFailure(
-          editorStore.applicationStore.telemetryService,
-          productEditorState.product.path,
-          error.message,
-          editorStore.editorMode.getSourceInfo(),
-        );
+        aiSuggestTelemetry.fail(request, error, stage);
         if (
           error instanceof NetworkClientError &&
           (error.response.status === HttpStatus.UNAUTHORIZED ||
@@ -1343,67 +1420,98 @@ const AccessPointGroupEditor = observer(
       if (!aiSuggestion) {
         return;
       }
-      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestApplied(
-        editorStore.applicationStore.telemetryService,
-        productEditorState.product.path,
-        editorStore.editorMode.getSourceInfo(),
-      );
+      const group = groupState.value;
+      const existingText = group.description;
       // Find matching group in the response
-      const gIdx =
-        productEditorState.accessPointGroupStates.indexOf(groupState);
-      const groupMeta =
-        aiSuggestion.access_point_groups.find(
-          (g) => g.name === groupState.value.id,
-        ) ?? aiSuggestion.access_point_groups[gIdx];
-      if (groupMeta) {
-        accessPointGroup_setTitle(groupState.value, groupMeta.title);
-        accessPointGroup_setDescription(
-          groupState.value,
-          groupMeta.description,
+      const { groupMeta, accessPointMetas: apMetas } =
+        matchAccessPointGroupSuggestion(
+          aiSuggestion,
+          group.id,
+          productEditorState.accessPointGroupStates.indexOf(groupState),
         );
+      const matchStrategy = !groupMeta
+        ? LEGENDAI_SUGGEST_MATCH_STRATEGY.NONE
+        : groupMeta.name === group.id
+          ? LEGENDAI_SUGGEST_MATCH_STRATEGY.NAME
+          : LEGENDAI_SUGGEST_MATCH_STRATEGY.INDEX;
+      if (groupMeta) {
+        accessPointGroup_setTitle(group, groupMeta.title);
+        accessPointGroup_setDescription(group, groupMeta.description);
       }
       // Apply access point metadata for this group
-      const apMetas = aiSuggestion.access_points.filter(
-        (ap) => ap.group === (groupMeta?.name ?? groupState.value.id),
+      const accessPointsUpdated = Math.min(
+        apMetas.length,
+        group.accessPoints.length,
       );
-      for (
-        let j = 0;
-        j < apMetas.length && j < groupState.value.accessPoints.length;
-        j++
-      ) {
+      let accessPointsRenamed = 0;
+      let namesSanitized = 0;
+      for (let j = 0; j < accessPointsUpdated; j++) {
         const apMeta = apMetas[j] as (typeof apMetas)[number];
-        const ap = groupState.value.accessPoints[
-          j
-        ] as (typeof groupState.value.accessPoints)[number];
+        const ap = group.accessPoints[j] as (typeof group.accessPoints)[number];
         // Convert suggested name to valid identifier (alphanumeric + underscore)
         const sanitizedName = apMeta.name.replace(/[^0-9a-zA-Z_]/g, '_');
+        if (sanitizedName !== apMeta.name) {
+          namesSanitized++;
+        }
         if (sanitizedName) {
+          if (ap.id !== sanitizedName) {
+            accessPointsRenamed++;
+          }
           ap.id = sanitizedName;
         }
         accessPoint_setTitle(ap, apMeta.title);
         accessPoint_setDescription(ap, apMeta.description);
       }
+      const productPath = productEditorState.product.path;
+      const groupId = group.id;
+      aiSuggestTelemetry.apply({
+        existingText,
+        appliedText:
+          groupMeta || accessPointsUpdated
+            ? serializeAccessPointGroupAppliedFields(group, accessPointsUpdated)
+            : '',
+        readCurrentText: (store) => {
+          const element =
+            store.graphManagerState.graph.getNullableElement(productPath);
+          const currentGroup =
+            element instanceof DataProduct
+              ? element.accessPointGroups.find((g) => g.id === groupId)
+              : undefined;
+          return currentGroup
+            ? {
+                found: true,
+                text: serializeAccessPointGroupAppliedFields(
+                  currentGroup,
+                  accessPointsUpdated,
+                ),
+              }
+            : { found: false };
+        },
+        dataProduct: {
+          matchStrategy,
+          accessPointsUpdated,
+          accessPointsRenamed,
+          namesSanitized,
+          accessPointCountMismatch:
+            apMetas.length !== group.accessPoints.length,
+        },
+      });
       setAISuggestion(undefined);
     };
     const discardAISuggestion = (): void => {
-      LegendStudioTelemetryHelper.logEvent_DataProductLegendAISuggestDiscarded(
-        editorStore.applicationStore.telemetryService,
-        productEditorState.product.path,
-        editorStore.editorMode.getSourceInfo(),
-      );
+      aiSuggestTelemetry.discard();
       setAISuggestion(undefined);
     };
 
     // Computed AI suggestion for current group
-    const groupIndex =
-      productEditorState.accessPointGroupStates.indexOf(groupState);
-    const aiGroupMeta =
-      aiSuggestion?.access_point_groups.find(
-        (g) => g.name === groupState.value.id,
-      ) ?? aiSuggestion?.access_point_groups[groupIndex];
-    const aiAccessPointMetas = aiSuggestion?.access_points.filter(
-      (ap) => ap.group === (aiGroupMeta?.name ?? groupState.value.id),
-    );
+    const { groupMeta: aiGroupMeta, accessPointMetas: aiAccessPointMetas } =
+      aiSuggestion
+        ? matchAccessPointGroupSuggestion(
+            aiSuggestion,
+            groupState.value.id,
+            productEditorState.accessPointGroupStates.indexOf(groupState),
+          )
+        : { groupMeta: undefined, accessPointMetas: undefined };
 
     const handleRemoveAccessPointGroup = (): void => {
       editorStore.applicationStore.alertService.setActionAlertInfo({

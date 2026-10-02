@@ -366,6 +366,70 @@ test(
 
 test(
   integrationTest(
+    'Suggest → Apply emits the unified editor.legendai-suggest.* lifecycle with a shared suggestionId',
+  ),
+  async () => {
+    const { editorGroup, editorStore } = await setupEditorWithAI(true);
+    const logEventSpy = createSpy(
+      editorStore.applicationStore.telemetryService,
+      'logEvent',
+    );
+    const payloadsOf = (event: string): Record<string, unknown>[] =>
+      logEventSpy.mock.calls
+        .filter(([name]) => name === event)
+        .map(([, data]) => data as Record<string, unknown>);
+
+    const suggestBtn = await waitFor(
+      () =>
+        editorGroup.querySelector(
+          '.service-editor__ai-suggest-btn',
+        ) as HTMLButtonElement,
+    );
+    await act(async () => {
+      fireEvent.click(suggestBtn);
+    });
+    const applyBtn = await waitFor(
+      () =>
+        editorGroup.querySelector(
+          '.service-editor__ai-suggestion__apply-btn',
+        ) as HTMLButtonElement,
+    );
+    await act(async () => {
+      fireEvent.click(applyBtn);
+    });
+
+    const [launch] = payloadsOf(
+      LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__LAUNCH,
+    );
+    expect(launch).toMatchObject({
+      surface: 'service',
+      elementPath: 'model::RelationalService',
+      attempt: 1,
+    });
+    const suggestionId = launch?.suggestionId;
+    expect(typeof suggestionId).toBe('string');
+    expect(
+      payloadsOf(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__SUCCESS),
+    ).toEqual([
+      expect.objectContaining({
+        suggestionId,
+        suggestionLength: 'AI Generated Documentation'.length,
+        editedWhilePending: false,
+      }),
+    ]);
+    expect(payloadsOf(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__APPLY)).toEqual(
+      [expect.objectContaining({ suggestionId, surface: 'service' })],
+    );
+    // the legacy per-surface events still fire
+    expect(
+      payloadsOf(LEGEND_STUDIO_APP_EVENT.SERVICE_LEGENDAI_SUGGEST__APPLY),
+    ).toHaveLength(1);
+    expect(editorStore.legendAIAppliedSuggestionRegistry.size).toBe(1);
+  },
+);
+
+test(
+  integrationTest(
     'Failure of the AI documentation suggestion is logged via telemetry',
   ),
   async () => {

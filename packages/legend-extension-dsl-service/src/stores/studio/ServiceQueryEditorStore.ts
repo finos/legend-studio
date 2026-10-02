@@ -429,7 +429,12 @@ export abstract class ServiceQueryEditorStore extends EditorStore {
         LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
           this.applicationStore.telemetryService,
           this.editorMode.getSourceInfo(),
-          { ...telemetryBase, durationMs: Date.now() - startedAt },
+          {
+            ...telemetryBase,
+            durationMs: Date.now() - startedAt,
+            registeredCount: 1,
+            failedCount: 0,
+          },
         );
       } catch (error) {
         assertErrorThrown(error);
