@@ -46,9 +46,11 @@ import {
 } from '@finos/legend-server-sdlc';
 import { LEGEND_STUDIO_APP_EVENT } from '../../__lib__/LegendStudioEvent.js';
 import {
+  EDITOR_TAB_CLOSE_TRIGGER,
   LegendStudioTelemetryHelper,
   SDLC_REVIEW_ACTION,
   SDLC_REVIEW_ROLE,
+  type SdlcReviewActionSuccessData,
 } from '../../__lib__/LegendStudioTelemetryHelper.js';
 import { LegendStudioUserDataHelper } from '../../__lib__/LegendStudioUserDataHelper.js';
 import { DEFAULT_TAB_SIZE } from '@finos/legend-application';
@@ -288,7 +290,9 @@ export class ProjectReviewerStore {
   }
 
   refresh(): void {
-    this.editorStore.tabManagerState.closeAllTabs();
+    this.editorStore.tabManagerState.closeAllTabs(
+      EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
+    );
     this.reviewReport = undefined;
     flowResult(this.fetchReviewComparison()).catch(
       this.editorStore.applicationStore.alertUnhandledError,
@@ -437,19 +441,20 @@ export class ProjectReviewerStore {
   *approveReview(): GeneratorFn<void> {
     this.approveState.inProgress();
     const startTime = Date.now();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.APPROVE,
-      role: SDLC_REVIEW_ROLE.REVIEWER,
-      projectId: this.projectId,
-      patchReleaseVersionId: this.patchReleaseVersionId,
-      reviewId: this.review.id,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      undefined,
-      identity,
-    );
+    let identity: Omit<SdlcReviewActionSuccessData, 'durationMs'> | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.APPROVE,
+        role: SDLC_REVIEW_ROLE.REVIEWER,
+        projectId: this.projectId,
+        patchReleaseVersionId: this.patchReleaseVersionId,
+        reviewId: this.review.id,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        undefined,
+        identity,
+      );
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.approveReview(
           this.projectId,
@@ -468,11 +473,13 @@ export class ProjectReviewerStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        undefined,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          undefined,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.approveState.complete();
@@ -482,19 +489,20 @@ export class ProjectReviewerStore {
   *commitReview(): GeneratorFn<void> {
     this.commitState.inProgress();
     const startTime = Date.now();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.COMMIT,
-      role: SDLC_REVIEW_ROLE.REVIEWER,
-      projectId: this.projectId,
-      patchReleaseVersionId: this.patchReleaseVersionId,
-      reviewId: this.review.id,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      undefined,
-      identity,
-    );
+    let identity: Omit<SdlcReviewActionSuccessData, 'durationMs'> | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.COMMIT,
+        role: SDLC_REVIEW_ROLE.REVIEWER,
+        projectId: this.projectId,
+        patchReleaseVersionId: this.patchReleaseVersionId,
+        reviewId: this.review.id,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        undefined,
+        identity,
+      );
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.commitReview(
           this.projectId,
@@ -528,11 +536,13 @@ export class ProjectReviewerStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        undefined,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          undefined,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.commitState.complete();
@@ -542,19 +552,20 @@ export class ProjectReviewerStore {
   *reOpenReview(): GeneratorFn<void> {
     this.reOpenState.inProgress();
     const startTime = Date.now();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.REOPEN,
-      role: SDLC_REVIEW_ROLE.REVIEWER,
-      projectId: this.projectId,
-      patchReleaseVersionId: this.patchReleaseVersionId,
-      reviewId: this.review.id,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      undefined,
-      identity,
-    );
+    let identity: Omit<SdlcReviewActionSuccessData, 'durationMs'> | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.REOPEN,
+        role: SDLC_REVIEW_ROLE.REVIEWER,
+        projectId: this.projectId,
+        patchReleaseVersionId: this.patchReleaseVersionId,
+        reviewId: this.review.id,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        undefined,
+        identity,
+      );
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.reopenReview(
           this.projectId,
@@ -573,11 +584,13 @@ export class ProjectReviewerStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        undefined,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          undefined,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.reOpenState.complete();
@@ -587,19 +600,20 @@ export class ProjectReviewerStore {
   *closeReview(): GeneratorFn<void> {
     this.closeState.inProgress();
     const startTime = Date.now();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.CLOSE,
-      role: SDLC_REVIEW_ROLE.REVIEWER,
-      projectId: this.projectId,
-      patchReleaseVersionId: this.patchReleaseVersionId,
-      reviewId: this.review.id,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      undefined,
-      identity,
-    );
+    let identity: Omit<SdlcReviewActionSuccessData, 'durationMs'> | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.CLOSE,
+        role: SDLC_REVIEW_ROLE.REVIEWER,
+        projectId: this.projectId,
+        patchReleaseVersionId: this.patchReleaseVersionId,
+        reviewId: this.review.id,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        undefined,
+        identity,
+      );
       this.currentReview = Review.serialization.fromJson(
         (yield this.editorStore.sdlcServerClient.closeReview(
           this.projectId,
@@ -618,11 +632,13 @@ export class ProjectReviewerStore {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        undefined,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          undefined,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.closeState.complete();

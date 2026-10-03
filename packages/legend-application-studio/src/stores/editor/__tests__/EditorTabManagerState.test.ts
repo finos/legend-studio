@@ -48,6 +48,19 @@ class FakeTab extends TabState {
   }
 }
 
+/**
+ * `TabState` whose distinct instances `match()` each other by key, mirroring
+ * editor states that compare by underlying element rather than identity.
+ */
+class MatchingFakeTab extends FakeTab {
+  constructor(readonly key: string) {
+    super(key);
+  }
+  override match(tab: TabState): boolean {
+    return tab instanceof MatchingFakeTab && tab.key === this.key;
+  }
+}
+
 type OpenCall = Parameters<
   typeof LegendStudioTelemetryHelper.logEvent_EditorTabOpened
 >;
@@ -190,5 +203,44 @@ describe('EditorTabManagerState telemetry wiring', () => {
 
     expect(closeSpy).not.toHaveBeenCalled();
     expect(manager.tabs).toEqual([tab]);
+  });
+
+  test('closeTab on a tab that is not opened throws without emitting CLOSE', () => {
+    const { manager, closeSpy } = setup();
+    manager.openTab(new FakeTab('opened'));
+
+    expect(() => manager.closeTab(new FakeTab('not-opened'))).toThrow();
+    expect(closeSpy).not.toHaveBeenCalled();
+  });
+
+  test('closeTab via a matching instance reports the opened tab dwell', () => {
+    const { manager, closeSpy, closeCalls } = setup();
+    const opened = new MatchingFakeTab('key');
+    manager.openTab(opened);
+    jest.advanceTimersByTime(6_000);
+
+    manager.closeTab(new MatchingFakeTab('key'));
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(closeCalls()[0]?.[2]).toMatchObject({ dwellMs: 6_000 });
+    expect(manager.tabs).toEqual([]);
+  });
+
+  test('replaceTabs emits PROGRAMMATIC CLOSE only for dropped tabs', () => {
+    const { manager, closeSpy, closeCalls } = setup();
+    const kept = new FakeTab('kept');
+    const dropped = new FakeTab('dropped');
+    manager.openTab(dropped);
+    jest.advanceTimersByTime(2_000);
+    manager.openTab(kept);
+
+    manager.replaceTabs([kept]);
+
+    expect(closeSpy).toHaveBeenCalledTimes(1);
+    expect(closeCalls()[0]?.[2]).toMatchObject({
+      dwellMs: 2_000,
+      trigger: EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
+    });
+    expect(manager.tabs).toEqual([kept]);
   });
 });

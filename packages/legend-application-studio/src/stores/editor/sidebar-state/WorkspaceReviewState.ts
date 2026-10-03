@@ -29,6 +29,8 @@ import {
   LegendStudioTelemetryHelper,
   SDLC_REVIEW_ACTION,
   SDLC_REVIEW_ROLE,
+  type SdlcReviewActionLaunchData,
+  type SdlcReviewActionSuccessData,
 } from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import { LegendStudioUserDataHelper } from '../../../__lib__/LegendStudioUserDataHelper.js';
 import {
@@ -295,20 +297,21 @@ export class WorkspaceReviewState {
     const startTime = Date.now();
     const reviewId = this.workspaceReview.id;
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.CLOSE,
-      role: SDLC_REVIEW_ROLE.AUTHOR,
-      projectId: this.sdlcState.activeProject.projectId,
-      patchReleaseVersionId:
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
-      reviewId,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      sourceInfo,
-      identity,
-    );
+    let identity: Omit<SdlcReviewActionSuccessData, 'durationMs'> | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.CLOSE,
+        role: SDLC_REVIEW_ROLE.AUTHOR,
+        projectId: this.sdlcState.activeProject.projectId,
+        patchReleaseVersionId:
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
+        reviewId,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        identity,
+      );
       yield this.editorStore.sdlcServerClient.rejectReview(
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activePatch?.patchReleaseVersionId.id,
@@ -326,11 +329,13 @@ export class WorkspaceReviewState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        sourceInfo,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          sourceInfo,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isClosingWorkspaceReview = false;
@@ -365,19 +370,20 @@ export class WorkspaceReviewState {
     this.isCreatingWorkspaceReview = true;
     const startTime = Date.now();
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.CREATE,
-      role: SDLC_REVIEW_ROLE.AUTHOR,
-      projectId: this.sdlcState.activeProject.projectId,
-      patchReleaseVersionId:
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      sourceInfo,
-      identity,
-    );
+    let identity: SdlcReviewActionLaunchData | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.CREATE,
+        role: SDLC_REVIEW_ROLE.AUTHOR,
+        projectId: this.sdlcState.activeProject.projectId,
+        patchReleaseVersionId:
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        identity,
+      );
       const description =
         reviewDescription ??
         `review from ${this.editorStore.applicationStore.config.appName} for workspace ${this.sdlcState.activeWorkspace.workspaceId}`;
@@ -408,11 +414,13 @@ export class WorkspaceReviewState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        sourceInfo,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          sourceInfo,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCreatingWorkspaceReview = false;
@@ -457,20 +465,21 @@ export class WorkspaceReviewState {
 
     const startTime = Date.now();
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
-    const identity = {
-      action: SDLC_REVIEW_ACTION.COMMIT,
-      role: SDLC_REVIEW_ROLE.AUTHOR,
-      projectId: this.sdlcState.activeProject.projectId,
-      patchReleaseVersionId:
-        this.sdlcState.activePatch?.patchReleaseVersionId.id,
-      reviewId: review.id,
-    };
-    LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
-      this.editorStore.applicationStore.telemetryService,
-      sourceInfo,
-      identity,
-    );
+    let identity: Omit<SdlcReviewActionSuccessData, 'durationMs'> | undefined;
     try {
+      identity = {
+        action: SDLC_REVIEW_ACTION.COMMIT,
+        role: SDLC_REVIEW_ROLE.AUTHOR,
+        projectId: this.sdlcState.activeProject.projectId,
+        patchReleaseVersionId:
+          this.sdlcState.activePatch?.patchReleaseVersionId.id,
+        reviewId: review.id,
+      };
+      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionLaunched(
+        this.editorStore.applicationStore.telemetryService,
+        sourceInfo,
+        identity,
+      );
       yield this.editorStore.sdlcServerClient.commitReview(
         this.sdlcState.activeProject.projectId,
         this.sdlcState.activePatch?.patchReleaseVersionId.id,
@@ -531,11 +540,13 @@ export class WorkspaceReviewState {
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.SDLC_MANAGER_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
-        this.editorStore.applicationStore.telemetryService,
-        sourceInfo,
-        { ...identity, errorMessage: error.message },
-      );
+      if (identity) {
+        LegendStudioTelemetryHelper.logEvent_SdlcReviewActionFailure(
+          this.editorStore.applicationStore.telemetryService,
+          sourceInfo,
+          { ...identity, errorMessage: error.message },
+        );
+      }
       this.editorStore.applicationStore.notificationService.notifyError(error);
     } finally {
       this.isCommittingWorkspaceReview = false;

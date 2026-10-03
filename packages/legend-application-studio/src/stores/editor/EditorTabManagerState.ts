@@ -107,6 +107,7 @@ export class EditorTabManagerState extends TabManagerState {
       recoverTabs: action,
       clearTabCache: action,
       cacheAndClose: action,
+      replaceTabs: action,
     });
 
     this.editorStore = editorStore;
@@ -118,11 +119,22 @@ export class EditorTabManagerState extends TabManagerState {
    * current tab and cleared on switch away; `accumulatedMs` is the total time
    * the tab held focus. On close we flush any live `activeSince` and emit
    * the total. The map is pruned on close so it does not leak.
+   *
+   * NOTE: always key off the opened tab instance (see `resolveOpenedTab`),
+   * since callers may pass a different instance that merely `match()`es it.
    */
   private tabDwell = new Map<
     string,
     { activeSince: number | undefined; accumulatedMs: number }
   >();
+
+  /**
+   * Returns the tab instance actually held in `tabs` that matches the given
+   * tab, falling back to the given tab when it is not opened.
+   */
+  private resolveOpenedTab(tab: TabState): TabState {
+    return this.tabs.find((t) => t.match(tab)) ?? tab;
+  }
 
   private startDwell(tab: TabState): void {
     const entry = this.tabDwell.get(tab.uuid);
@@ -161,13 +173,16 @@ export class EditorTabManagerState extends TabManagerState {
   }
 
   override setCurrentTab(val: TabState | undefined): void {
-    const prev = this.currentTab;
-    if (prev && prev !== val) {
+    const prev = this.currentTab
+      ? this.resolveOpenedTab(this.currentTab)
+      : undefined;
+    const next = val ? this.resolveOpenedTab(val) : undefined;
+    if (prev && prev !== next) {
       this.flushDwell(prev);
     }
     super.setCurrentTab(val);
-    if (val && val !== prev) {
-      this.startDwell(val);
+    if (next && next !== prev) {
+      this.startDwell(next);
     }
   }
 
@@ -197,7 +212,12 @@ export class EditorTabManagerState extends TabManagerState {
       return;
     }
     // Emit before super so the tab is still known and dwell can be flushed.
-    this.emitTabClose(tab, trigger);
+    // Only emit when the tab is actually opened: otherwise super will throw
+    // and nothing is closed.
+    const openedTab = this.tabs.find((t) => t.match(tab));
+    if (openedTab) {
+      this.emitTabClose(openedTab, trigger);
+    }
     super.closeTab(tab);
   }
 
@@ -219,6 +239,21 @@ export class EditorTabManagerState extends TabManagerState {
       .filter((t) => !t.isPinned && t !== tab)
       .forEach((t) => this.emitTabClose(t, trigger));
     super.closeAllOtherTabs(tab);
+  }
+
+  /**
+   * Replaces the opened tabs wholesale (e.g. dropping tabs whose element was
+   * deleted), bypassing the usual `closeTab` flow. Tabs no longer present are
+   * reported as closed so telemetry and dwell accounting stay consistent.
+   */
+  replaceTabs(
+    tabs: EditorState[],
+    trigger: EDITOR_TAB_CLOSE_TRIGGER = EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
+  ): void {
+    this.tabs
+      .filter((tab) => !tabs.includes(tab))
+      .forEach((tab) => this.emitTabClose(tab, trigger));
+    this.tabs = tabs;
   }
 
   get dndType(): string {

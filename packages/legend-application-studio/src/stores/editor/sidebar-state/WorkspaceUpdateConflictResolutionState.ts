@@ -17,6 +17,7 @@
 import { action, flowResult, makeObservable, observable, flow } from 'mobx';
 import type { EditorStore } from '../EditorStore.js';
 import { LEGEND_STUDIO_APP_EVENT } from '../../../__lib__/LegendStudioEvent.js';
+import { EDITOR_TAB_CLOSE_TRIGGER } from '../../../__lib__/LegendStudioTelemetryHelper.js';
 import type { EditorSDLCState } from '../EditorSDLCState.js';
 import {
   type GeneratorFn,
@@ -316,7 +317,9 @@ export class WorkspaceUpdateConflictResolutionState extends AbstractConflictReso
         this.hasResolvedAllConflicts,
       'Editor must be in conflict resolution mode and all conflicts must have been marked as resolved to call this method',
     );
-    this.editorStore.tabManagerState.closeAllTabs();
+    this.editorStore.tabManagerState.closeAllTabs(
+      EDITOR_TAB_CLOSE_TRIGGER.PROGRAMMATIC,
+    );
     this.editorStore.setActiveActivity(ACTIVITY_MODE.EXPLORER, {
       keepShowingIfMatchedCurrent: true,
     });
