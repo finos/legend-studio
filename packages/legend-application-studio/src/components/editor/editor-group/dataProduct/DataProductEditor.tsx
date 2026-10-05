@@ -144,6 +144,8 @@ import {
 import {
   accessPoint_setClassification,
   accessPoint_setReproducible,
+  accessPointGroup_addTarget,
+  accessPointGroup_deleteTarget,
   accessPointGroup_setDescription,
   accessPointGroup_setName,
   dataProduct_setDescription,
@@ -549,7 +551,13 @@ export const LakehouseDataProductAccessPointEditor = observer(
     };
 
     const updateAccessPointTargetEnvironment = action(
-      (targetEnvironment: LakehouseTargetEnv) => {
+      (targetEnvironment: LakehouseTargetEnv | undefined) => {
+        if (
+          targetEnvironment !== undefined &&
+          groupState.value.targets?.length
+        ) {
+          groupState.value.targets = undefined;
+        }
         accessPoint.targetEnvironment = targetEnvironment;
       },
     );
@@ -818,6 +826,15 @@ export const LakehouseDataProductAccessPointEditor = observer(
                     className="access-point-editor__dropdown"
                     content={
                       <MenuContent>
+                        <MenuContentItem
+                          className="btn__dropdown-combo__option"
+                          title="Clear"
+                          onClick={() =>
+                            updateAccessPointTargetEnvironment(undefined)
+                          }
+                        >
+                          {' '}
+                        </MenuContentItem>
                         {Object.values(LakehouseTargetEnv).map(
                           (environment) => (
                             <MenuContentItem
@@ -1319,6 +1336,31 @@ const AccessPointGroupEditor = observer(
       accessPointGroup_setTitle(groupState.value, val);
     };
 
+    const getTargetEnvironmentOptions = () => {
+      const existingTargets = groupState.value.targets ?? [];
+      return Object.values(LakehouseTargetEnv)
+        .filter((target) => !existingTargets.includes(target))
+        .map((target) => ({
+          label: target,
+          value: target,
+        }));
+    };
+
+    const handleAddTargetEnvironment = action(
+      (val: { label: string; value: LakehouseTargetEnv } | null): void => {
+        if (val) {
+          accessPointGroup_addTarget(groupState.value, val.value);
+          lakehouseAccessPointStates.forEach((accessPointState) => {
+            accessPointState.accessPoint.targetEnvironment = undefined;
+          });
+        }
+      },
+    );
+
+    const handleRemoveTargetEnvironment = (target: string) => {
+      accessPointGroup_deleteTarget(groupState.value, target);
+    };
+
     // AI suggestion for APG
     const legendAIUrl = editorStore.applicationStore.config.legendAIUrl;
     const aiDocSuggester = legendAIUrl
@@ -1737,6 +1779,47 @@ const AccessPointGroupEditor = observer(
               {aiGroupMeta.description}
             </div>
           )}
+        </div>
+        <div className="data-product-editor__operational-input data-product-editor__apg-targets-input">
+          <div
+            className="panel__content__form__section__header__label"
+            style={{ justifyContent: 'space-between', width: '45rem' }}
+          >
+            Target Environments
+          </div>
+          <div className="panel__content__form__section__header__prompt">
+            Select where this Data Product will be deployed.
+          </div>
+          <div className="panel__content__form__section__list__id-list">
+            {groupState.value.targets?.map((target) => (
+              <div
+                className="panel__content__form__section__list__item"
+                key={target}
+              >
+                {target}
+                <button
+                  className="panel__content__form__section__list__item__remove-btn"
+                  disabled={isReadOnly}
+                  onClick={() => handleRemoveTargetEnvironment(target)}
+                  tabIndex={-1}
+                  title="Remove Target Environment"
+                >
+                  <TimesIcon />
+                </button>
+              </div>
+            ))}
+          </div>
+          <CustomSelectorInput
+            className="panel__content__form__section__dropdown"
+            options={getTargetEnvironmentOptions()}
+            onChange={handleAddTargetEnvironment}
+            placeholder={'Add Target Environment...'}
+            darkMode={
+              !productEditorState.editorStore.applicationStore.layoutService
+                .TEMPORARY__isLightColorThemeEnabled
+            }
+            disabled={isReadOnly}
+          />
         </div>
         {editorStore.applicationStore.config.options.dataProductConfig && (
           <AccessPointGroupPublicToggle groupState={groupState} />
@@ -2483,28 +2566,26 @@ const HomeTab = observer(
             <div className="panel__content__form__section__header__prompt">
               Select if this Data Product is Internal or External
             </div>
-            <div className="panel__content__form__section__list__new-item__input">
-              <CustomSelectorInput
-                options={DATA_PRODUCT_TYPE_OPTIONS}
-                onChange={handleDataProductTypeChange}
-                value={
-                  product.type instanceof InternalDataProductType
+            <CustomSelectorInput
+              className="panel__content__form__section__dropdown"
+              options={DATA_PRODUCT_TYPE_OPTIONS}
+              onChange={handleDataProductTypeChange}
+              value={
+                product.type instanceof InternalDataProductType
+                  ? DATA_PRODUCT_TYPE_OPTIONS.find(
+                      (option) => option.value === DATA_PRODUCT_TYPE.INTERNAL,
+                    )
+                  : product.type instanceof ExternalDataProductType
                     ? DATA_PRODUCT_TYPE_OPTIONS.find(
-                        (option) => option.value === DATA_PRODUCT_TYPE.INTERNAL,
+                        (option) => option.value === DATA_PRODUCT_TYPE.EXTERNAL,
                       )
-                    : product.type instanceof ExternalDataProductType
-                      ? DATA_PRODUCT_TYPE_OPTIONS.find(
-                          (option) =>
-                            option.value === DATA_PRODUCT_TYPE.EXTERNAL,
-                        )
-                      : null
-                }
-                darkMode={
-                  !dataProductEditorState.editorStore.applicationStore
-                    .layoutService.TEMPORARY__isLightColorThemeEnabled
-                }
-              />
-            </div>
+                    : null
+              }
+              darkMode={
+                !dataProductEditorState.editorStore.applicationStore
+                  .layoutService.TEMPORARY__isLightColorThemeEnabled
+              }
+            />
             {product.type instanceof ExternalDataProductType && (
               <div className="data-product-editor__external-link">
                 <div className="panel__content__form__section__header__prompt">
@@ -3102,15 +3183,14 @@ const OperationalTab = observer(
               </div>
             ))}
           </div>
-          <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput<EnumOption<Region>>
-              options={getCoverageRegionOptions()}
-              onChange={handleAddRegion}
-              placeholder={CHOOSE_REGION}
-              darkMode={true}
-              disabled={isReadOnly}
-            />
-          </div>
+          <CustomSelectorInput<EnumOption<Region>>
+            className="panel__content__form__section__dropdown"
+            options={getCoverageRegionOptions()}
+            onChange={handleAddRegion}
+            placeholder={CHOOSE_REGION}
+            darkMode={true}
+            disabled={isReadOnly}
+          />
         </div>
         <div className="data-product-editor__operational-input">
           <div
@@ -3122,28 +3202,27 @@ const OperationalTab = observer(
           <div className="panel__content__form__section__header__prompt">
             Select the update frequency of this Data Product.
           </div>
-          <div className="panel__content__form__section__list__new-item__input">
-            <CustomSelectorInput<EnumOption<DeliveryFrequency>>
-              options={(
-                Object.values(DeliveryFrequency) as DeliveryFrequency[]
-              ).map((frequency) => ({
-                label: frequency,
-                value: frequency,
-              }))}
-              onChange={handleUpdateFrequencyChange}
-              value={
-                product.operationalMetadata?.updateFrequency
-                  ? {
-                      label: product.operationalMetadata.updateFrequency,
-                      value: product.operationalMetadata.updateFrequency,
-                    }
-                  : null
-              }
-              placeholder="Select update frequency..."
-              darkMode={true}
-              disabled={isReadOnly}
-            />
-          </div>
+          <CustomSelectorInput<EnumOption<DeliveryFrequency>>
+            className="panel__content__form__section__dropdown"
+            options={(
+              Object.values(DeliveryFrequency) as DeliveryFrequency[]
+            ).map((frequency) => ({
+              label: frequency,
+              value: frequency,
+            }))}
+            onChange={handleUpdateFrequencyChange}
+            value={
+              product.operationalMetadata?.updateFrequency
+                ? {
+                    label: product.operationalMetadata.updateFrequency,
+                    value: product.operationalMetadata.updateFrequency,
+                  }
+                : null
+            }
+            placeholder="Select update frequency..."
+            darkMode={true}
+            disabled={isReadOnly}
+          />
         </div>
       </div>
     );

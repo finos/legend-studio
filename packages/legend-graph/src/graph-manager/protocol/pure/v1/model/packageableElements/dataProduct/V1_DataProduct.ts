@@ -64,7 +64,7 @@ export class V1_LakehouseAccessPoint
   extends V1_AccessPoint
   implements Hashable
 {
-  targetEnvironment!: string;
+  targetEnvironment: string | undefined;
   classification: string | undefined;
   func!: V1_RawLambda;
   reproducible: boolean | undefined;
@@ -73,7 +73,7 @@ export class V1_LakehouseAccessPoint
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.LAKEHOUSE_ACCESS_POINT,
-      this.targetEnvironment,
+      this.targetEnvironment ?? '',
       this.classification ?? '',
       this.func,
       this.reproducible ?? '',
@@ -110,6 +110,7 @@ export class V1_AccessPointGroup implements Hashable {
   description: string | undefined;
   stereotypes: V1_StereotypePtr[] = [];
   accessPoints: V1_AccessPoint[] = [];
+  targets: string[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -119,6 +120,7 @@ export class V1_AccessPointGroup implements Hashable {
       this.description ?? '',
       hashArray(this.accessPoints),
       hashArray(this.stereotypes),
+      hashArray(this.targets ?? []),
     ]);
   }
 }

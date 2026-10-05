@@ -101,7 +101,7 @@ export enum DataProductAccessType {
 }
 
 export class LakehouseAccessPoint extends AccessPoint {
-  targetEnvironment: string;
+  targetEnvironment: string | undefined;
   classification: string | undefined;
   func: RawLambda;
   reproducible: boolean | undefined;
@@ -109,7 +109,7 @@ export class LakehouseAccessPoint extends AccessPoint {
 
   constructor(
     id: string,
-    targetEnv: string,
+    targetEnv: string | undefined,
     func: RawLambda,
     owner: AccessPointGroup,
   ) {
@@ -122,7 +122,7 @@ export class LakehouseAccessPoint extends AccessPoint {
     return hashArray([
       super.hashCode,
       CORE_HASH_STRUCTURE.LAKEHOUSE_ACCESS_POINT,
-      this.targetEnvironment,
+      this.targetEnvironment ?? '',
       this.classification ?? '',
       this.func,
       this.reproducible ?? '',
@@ -197,6 +197,7 @@ export class AccessPointGroup extends AnnotatedElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
   accessPoints: AccessPoint[] = [];
+  targets: string[] | undefined;
 
   get hashCode(): string {
     return hashArray([
@@ -207,6 +208,7 @@ export class AccessPointGroup extends AnnotatedElement implements Hashable {
       this.description ?? '',
       hashArray(this.accessPoints),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
+      hashArray(this.targets ?? []),
     ]);
   }
 }

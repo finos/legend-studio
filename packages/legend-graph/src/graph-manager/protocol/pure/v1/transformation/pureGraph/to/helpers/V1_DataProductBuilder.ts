@@ -194,6 +194,7 @@ export const V1_buildAccessPointGroup = (
     group.id = elementGroup.id;
     group.title = elementGroup.title;
     group.description = elementGroup.description;
+    group.targets = elementGroup.targets;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
       V1_buildAccessPoint(ep, context, group),
     );
@@ -254,6 +255,7 @@ export const V1_buildAccessPointGroup = (
     group.id = elementGroup.id;
     group.title = elementGroup.title;
     group.description = elementGroup.description;
+    group.targets = elementGroup.targets;
     group.accessPoints = elementGroup.accessPoints.map((ep) =>
       V1_buildAccessPoint(ep, context, group),
     );
