@@ -28,6 +28,11 @@ import {
 } from '../../../../__test-utils__/GraphManagerTestUtils.js';
 import type { GraphManagerState } from '../../../../GraphManagerState.js';
 import { Class } from '../../../../../graph/metamodel/pure/packageableElements/domain/Class.js';
+import {
+  LakehouseRuntime,
+  LakehouseSingleStoreRuntime,
+} from '../../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
+import { V1_ExecuteInput } from '../engine/execution/V1_ExecuteInput.js';
 
 let graphManagerState: GraphManagerState;
 let v1Manager: V1_PureGraphManager;
@@ -136,3 +141,55 @@ describe(unitTest('createExecutionInput model context type'), () => {
     expect(input.model).not.toBeInstanceOf(V1_PureModelContextCombination);
   });
 });
+
+describe(
+  unitTest('createExecutionInput embedded lakehouse runtime serialization'),
+  () => {
+    // Regression test: an embedded (non-pointer) LakehouseRuntime/
+    // LakehouseSingleStoreRuntime used to be silently mis-serialized as a
+    // bare V1_EngineRuntime by V1_serializeRuntime (it matched
+    // `instanceof V1_EngineRuntime` before any Lakehouse-specific check),
+    // dropping `environment`/`warehouse` and mislabeling `_type`. This is
+    // the exact JSON shape sent over the wire by e.g.
+    // LegendSQLStudioPlaygroundState.executeRawSQL(), which passes the raw
+    // runtime metamodel object (not a RuntimePointer) into `runQuery`.
+    test('LakehouseRuntime keeps its environment/warehouse when embedded directly', async () => {
+      const graph = graphManagerState.graph;
+      const runtime = new LakehouseRuntime('dev01', 'myWarehouse');
+      const input = await v1Manager.createExecutionInput(
+        graph,
+        undefined,
+        dummyLambda,
+        runtime,
+        undefined,
+      );
+      const json = V1_ExecuteInput.serialization.toJson(input);
+      expect(json.runtime).toEqual({
+        _type: 'LakehouseRuntime',
+        connectionStores: [],
+        connections: [],
+        environment: 'dev01',
+        mappings: [],
+        warehouse: 'myWarehouse',
+      });
+    });
+
+    test('LakehouseSingleStoreRuntime keeps its environment when embedded directly', async () => {
+      const graph = graphManagerState.graph;
+      const runtime = new LakehouseSingleStoreRuntime('dev01');
+      const input = await v1Manager.createExecutionInput(
+        graph,
+        undefined,
+        dummyLambda,
+        runtime,
+        undefined,
+      );
+      const json = V1_ExecuteInput.serialization.toJson(input);
+      expect(json.runtime).toEqual({
+        _type: 'LakehouseSingleStoreRuntime',
+        environment: 'dev01',
+        mappings: [],
+      });
+    });
+  },
+);

@@ -22,7 +22,7 @@ import {
   Database,
   DataProduct,
   EngineRuntime,
-  LakehouseRuntime,
+  LakehouseBaseRuntime,
 } from '@finos/legend-graph';
 import { UnsupportedOperationError } from '@finos/legend-shared';
 
@@ -37,13 +37,13 @@ export const getCompatibleRuntimesFromAccessorOwner = (
   }
   if (accessorOwner instanceof IngestDefinition) {
     return graphManagerState.usableRuntimes.filter(
-      (runtime) => runtime.runtimeValue instanceof LakehouseRuntime,
+      (runtime) => runtime.runtimeValue instanceof LakehouseBaseRuntime,
     );
   } else if (accessorOwner instanceof Database) {
     return graphManagerState.usableRuntimes.filter(
       (runtime) =>
         runtime.runtimeValue instanceof EngineRuntime &&
-        !(runtime.runtimeValue instanceof LakehouseRuntime) &&
+        !(runtime.runtimeValue instanceof LakehouseBaseRuntime) &&
         runtime.runtimeValue.mappings.length === 0,
     );
   }

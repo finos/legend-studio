@@ -18,6 +18,7 @@ import { useState, useEffect, useCallback, forwardRef } from 'react';
 import { observer } from 'mobx-react-lite';
 import {
   type RuntimeEditorState,
+  LakehouseBaseRuntimeEditorState,
   LakehouseRuntimeEditorState,
   PackageableRuntimeEditorState,
   RuntimeEditorRuntimeTabState,
@@ -84,6 +85,7 @@ import type { ConnectionEditorState } from '../../../stores/editor/editor-state/
 import { useEditorStore } from '../EditorStoreProvider.js';
 import {
   type PackageableElementReference,
+  type PackageableRuntime,
   Connection,
   ConnectionPointer,
   Runtime,
@@ -117,9 +119,16 @@ import {
 } from '../../../stores/graph-modifier/DSL_Mapping_GraphModifierHelper.js';
 import { LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../../../__lib__/LegendStudioApplicationNavigationContext.js';
 import { CUSTOM_LABEL } from '../../../stores/editor/NewElementState.js';
-import { lakehouseRuntime_setWarehouse } from '../../../stores/graph-modifier/DSL_LakehouseRuntime_GraphModifierHelper.js';
-import { useAuth } from 'react-oidc-context';
-import { flowResult } from 'mobx';
+import {
+  lakehouseRuntime_setWarehouse,
+  lakehouseRuntime_setConnection,
+  LakehouseComputeEngine,
+  LAKEHOUSE_COMPUTE_ENGINE_LABEL,
+  getLakehouseComputeEngine,
+  lakehouseRuntime_setComputeEngine,
+} from '../../../stores/graph-modifier/DSL_LakehouseRuntime_GraphModifierHelper.js';
+import { useAuth, type AuthContextProps } from 'react-oidc-context';
+import { flowResult, runInAction } from 'mobx';
 
 const getConnectionTooltipText = (
   connection: Connection,
@@ -1054,17 +1063,175 @@ export const RuntimeEditor = observer(
   },
 );
 
-export const LakehouseRuntimeEditor = observer(
+/**
+ * NOTE: `useAuth()` is typed as always returning `AuthContextProps`, but its
+ * implementation just reads `useContext(AuthContext)` and only warns (does
+ * not throw) when there is no ancestor `AuthProvider`, so it can genuinely
+ * be `undefined` at runtime, e.g. when this editor renders outside one.
+ */
+const useLakehouseSummariesEffect = (
+  editorStore: EditorStore,
+  lakehouseRuntimeEditorState: LakehouseBaseRuntimeEditorState,
+): void => {
+  const auth = useAuth() as AuthContextProps | undefined;
+  const applicationStore = editorStore.applicationStore;
+  useEffect(() => {
+    flowResult(
+      lakehouseRuntimeEditorState.fetchLakehouseSummaries(
+        auth?.user?.access_token,
+      ),
+    ).catch(applicationStore.alertUnhandledError);
+  }, [
+    applicationStore.alertUnhandledError,
+    auth?.user?.access_token,
+    lakehouseRuntimeEditorState,
+  ]);
+};
+
+const LakehouseBaseRuntimeEditor = (props: {
+  isReadOnly: boolean;
+  children: React.ReactNode;
+}): React.ReactElement => {
+  const { isReadOnly, children } = props;
+  return (
+    <div className="data-product-editor">
+      <div className="panel">
+        <div className="panel__header">
+          <div className="panel__header__title">
+            {isReadOnly && (
+              <div className="uml-element-editor__header__lock">
+                <LockIcon />
+              </div>
+            )}
+            <div className="panel__header__title__label">lakehouse runtime</div>
+          </div>
+        </div>
+        <div className="panel" style={{ padding: '1rem', flex: 0 }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LakehouseEnvironmentSelector = observer(
+  (props: {
+    lakehouseRuntimeEditorState: LakehouseBaseRuntimeEditorState;
+    darkMode: boolean;
+  }) => {
+    const { lakehouseRuntimeEditorState, darkMode } = props;
+    const lakehouseRuntime = lakehouseRuntimeEditorState.runtimeValue;
+    const environmentOptions = lakehouseRuntimeEditorState.envOptions;
+    const onEnvironmentSelectionChange = (
+      val: {
+        value: string;
+        label: string;
+      } | null,
+    ): void => {
+      runInAction(() => {
+        if (!val) {
+          lakehouseRuntime.environment = undefined;
+          return;
+        }
+        if (val.value !== lakehouseRuntime.environment) {
+          lakehouseRuntime.environment = val.value;
+        }
+      });
+    };
+    const selectedEnvironmentOption = lakehouseRuntime.environment
+      ? {
+          label: lakehouseRuntime.environment,
+          value: lakehouseRuntime.environment,
+        }
+      : null;
+
+    return (
+      <PanelFormSection>
+        <div className="panel__content__form__section__header__label">
+          Environment
+        </div>
+        <div className="explorer__new-element-modal__driver">
+          <CustomSelectorInput
+            className="explorer__new-element-modal__driver__dropdown"
+            options={environmentOptions}
+            onChange={onEnvironmentSelectionChange}
+            value={selectedEnvironmentOption}
+            darkMode={darkMode}
+          />
+        </div>
+      </PanelFormSection>
+    );
+  },
+);
+
+const LakehouseComputeEngineSelector = observer(
+  (props: {
+    runtimeEditorState: RuntimeEditorState;
+    packageableRuntime: PackageableRuntime;
+    lakehouseRuntimeEditorState: LakehouseBaseRuntimeEditorState;
+    darkMode: boolean;
+  }) => {
+    const {
+      runtimeEditorState,
+      packageableRuntime,
+      lakehouseRuntimeEditorState,
+      darkMode,
+    } = props;
+    const computeEngine = getLakehouseComputeEngine(
+      lakehouseRuntimeEditorState.runtimeValue,
+    );
+    const computeEngineOptions = Object.values(LakehouseComputeEngine).map(
+      (engine) => ({
+        label: LAKEHOUSE_COMPUTE_ENGINE_LABEL[engine],
+        value: engine,
+      }),
+    );
+    const selectedComputeEngineOption = {
+      label: LAKEHOUSE_COMPUTE_ENGINE_LABEL[computeEngine],
+      value: computeEngine,
+    };
+    const onComputeEngineChange = (val: {
+      label: string;
+      value: LakehouseComputeEngine;
+    }): void => {
+      if (val.value === computeEngine) {
+        return;
+      }
+      const nextRuntimeValue = lakehouseRuntime_setComputeEngine(
+        packageableRuntime,
+        val.value,
+        runtimeEditorState.editorStore.changeDetectionState.observerContext,
+      );
+      runtimeEditorState.setRuntimeValueEditorState(nextRuntimeValue);
+    };
+
+    return (
+      <PanelFormSection>
+        <div className="panel__content__form__section__header__label">
+          Compute Engine
+        </div>
+        <div className="explorer__new-element-modal__driver">
+          <CustomSelectorInput
+            className="explorer__new-element-modal__driver__dropdown"
+            options={computeEngineOptions}
+            onChange={onComputeEngineChange}
+            value={selectedComputeEngineOption}
+            darkMode={darkMode}
+          />
+        </div>
+      </PanelFormSection>
+    );
+  },
+);
+
+const SnowflakeRuntimeSourceFields = observer(
   (props: {
     runtimeEditorState: RuntimeEditorState;
     lakehouseRuntimeEditorState: LakehouseRuntimeEditorState;
-    isReadOnly: boolean;
+    darkMode: boolean;
   }) => {
-    const { runtimeEditorState, lakehouseRuntimeEditorState, isReadOnly } =
-      props;
+    const { runtimeEditorState, lakehouseRuntimeEditorState, darkMode } = props;
     const editorStore = runtimeEditorState.editorStore;
-    const auth = useAuth();
-    const applicationStore = editorStore.applicationStore;
     const lakehouseRuntime = lakehouseRuntimeEditorState.runtimeValue;
     // type
     const typeOptions = Object.values(LakehouseRuntimeType).map((type) => ({
@@ -1083,30 +1250,9 @@ export const LakehouseRuntimeEditor = observer(
         lakehouseRuntimeEditorState.setLakehouseRuntimeType(val.value);
       }
     };
-    const environmentOptions = lakehouseRuntimeEditorState.envOptions;
-    const onEnvironmentSelectionChange = (
-      val: {
-        value: string;
-        label: string;
-      } | null,
-    ): void => {
-      if (!val) {
-        lakehouseRuntime.environment = undefined;
-        return;
-      }
-      if (val.value !== lakehouseRuntime.environment) {
-        lakehouseRuntime.environment = val.value;
-      }
-    };
     const handleWarehouseChange = (val: string | undefined): void => {
       lakehouseRuntime_setWarehouse(lakehouseRuntime, val);
     };
-    const selectedEnvironmentOption = lakehouseRuntime.environment
-      ? {
-          label: lakehouseRuntime.environment,
-          value: lakehouseRuntime.environment,
-        }
-      : null;
 
     const connection =
       lakehouseRuntime.connectionPointer?.packageableConnection.value;
@@ -1119,109 +1265,109 @@ export const LakehouseRuntimeEditor = observer(
       val: PackageableElementOption<PackageableConnection>,
     ): void => {
       if (val.value !== connection) {
-        lakehouseRuntime.connectionPointer = new ConnectionPointer(
-          PackageableElementExplicitReference.create(val.value),
-        );
+        lakehouseRuntime_setConnection(lakehouseRuntime, val.value);
       }
     };
 
-    useEffect(() => {
-      flowResult(
-        lakehouseRuntimeEditorState.fetchLakehouseSummaries(
-          auth.user?.access_token,
-        ),
-      ).catch(applicationStore.alertUnhandledError);
-    }, [
-      applicationStore.alertUnhandledError,
-      auth.user?.access_token,
-      lakehouseRuntimeEditorState,
-    ]);
-
     return (
       <>
-        <div className="data-product-editor">
-          <div className="panel">
-            <div className="panel__header">
-              <div className="panel__header__title">
-                {isReadOnly && (
-                  <div className="uml-element-editor__header__lock">
-                    <LockIcon />
-                  </div>
-                )}
-                <div className="panel__header__title__label">
-                  lakehouse runtime
-                </div>
-              </div>
-            </div>
-            <div className="panel" style={{ padding: '1rem', flex: 0 }}>
-              <PanelFormSection>
-                <div className="panel__content__form__section__header__label">
-                  Lakehouse Runtime Source
-                </div>
-                <div className="explorer__new-element-modal__driver">
-                  <CustomSelectorInput
-                    className="explorer__new-element-modal__driver__dropdown"
-                    options={typeOptions}
-                    onChange={onTypeChange}
-                    value={selectedType}
-                    darkMode={
-                      !applicationStore.layoutService
-                        .TEMPORARY__isLightColorThemeEnabled
-                    }
-                  />
-                </div>
-              </PanelFormSection>
-              {lakehouseRuntimeEditorState.lakehouseRuntimeType ===
-              LakehouseRuntimeType.ENVIRONMENT ? (
-                <>
-                  <PanelFormSection>
-                    <div className="panel__content__form__section__header__label">
-                      Environment
-                    </div>
-                    <div className="explorer__new-element-modal__driver">
-                      <CustomSelectorInput
-                        className="explorer__new-element-modal__driver__dropdown"
-                        options={environmentOptions}
-                        onChange={onEnvironmentSelectionChange}
-                        value={selectedEnvironmentOption}
-                        darkMode={
-                          !applicationStore.layoutService
-                            .TEMPORARY__isLightColorThemeEnabled
-                        }
-                      />
-                    </div>
-                  </PanelFormSection>
-                  <PanelFormTextField
-                    name="Warehouse"
-                    value={lakehouseRuntime.warehouse}
-                    prompt="Provide the warehouse"
-                    update={handleWarehouseChange}
-                    placeholder="Enter warehouse"
-                  />
-                </>
-              ) : (
-                <PanelFormSection>
-                  <div className="panel__content__form__section__header__label">
-                    Connection
-                  </div>
-                  <div className="explorer__new-element-modal__driver">
-                    <CustomSelectorInput
-                      className="explorer__new-element-modal__driver__dropdown"
-                      options={connectionOptions}
-                      onChange={onConnectionSelectionChange}
-                      value={selectedConnectionOption}
-                      darkMode={
-                        !applicationStore.layoutService
-                          .TEMPORARY__isLightColorThemeEnabled
-                      }
-                    />
-                  </div>
-                </PanelFormSection>
-              )}
-            </div>
+        <PanelFormSection>
+          <div className="panel__content__form__section__header__label">
+            Lakehouse Runtime Source
           </div>
-        </div>
+          <div className="explorer__new-element-modal__driver">
+            <CustomSelectorInput
+              className="explorer__new-element-modal__driver__dropdown"
+              options={typeOptions}
+              onChange={onTypeChange}
+              value={selectedType}
+              darkMode={darkMode}
+            />
+          </div>
+        </PanelFormSection>
+        {lakehouseRuntimeEditorState.lakehouseRuntimeType ===
+        LakehouseRuntimeType.ENVIRONMENT ? (
+          <PanelFormTextField
+            name="Warehouse"
+            value={lakehouseRuntime.warehouse}
+            prompt="Provide the warehouse"
+            update={handleWarehouseChange}
+            placeholder="Enter warehouse"
+          />
+        ) : (
+          <PanelFormSection>
+            <div className="panel__content__form__section__header__label">
+              Connection
+            </div>
+            <div className="explorer__new-element-modal__driver">
+              <CustomSelectorInput
+                className="explorer__new-element-modal__driver__dropdown"
+                options={connectionOptions}
+                onChange={onConnectionSelectionChange}
+                value={selectedConnectionOption}
+                darkMode={darkMode}
+              />
+            </div>
+          </PanelFormSection>
+        )}
       </>
+    );
+  },
+);
+
+export const LakehouseRuntimeEditor = observer(
+  (props: {
+    runtimeEditorState: RuntimeEditorState;
+    packageableRuntime: PackageableRuntime;
+    lakehouseRuntimeEditorState: LakehouseBaseRuntimeEditorState;
+    isReadOnly: boolean;
+  }) => {
+    const {
+      runtimeEditorState,
+      packageableRuntime,
+      lakehouseRuntimeEditorState,
+      isReadOnly,
+    } = props;
+    const editorStore = runtimeEditorState.editorStore;
+    const applicationStore = editorStore.applicationStore;
+    const darkMode =
+      !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
+    const computeEngine = getLakehouseComputeEngine(
+      lakehouseRuntimeEditorState.runtimeValue,
+    );
+    // always true exactly when computeEngine === SNOWFLAKE (the two track the
+    // same underlying runtime class); kept as a separate check only so TS can
+    // narrow the type SnowflakeRuntimeSourceFields requires below
+    const isSnowflakeRuntimeEditorState =
+      lakehouseRuntimeEditorState instanceof LakehouseRuntimeEditorState;
+
+    useLakehouseSummariesEffect(editorStore, lakehouseRuntimeEditorState);
+
+    return (
+      <LakehouseBaseRuntimeEditor isReadOnly={isReadOnly}>
+        {lakehouseRuntimeEditorState.lakehouseRuntimeType ===
+          LakehouseRuntimeType.ENVIRONMENT && (
+          <LakehouseEnvironmentSelector
+            lakehouseRuntimeEditorState={lakehouseRuntimeEditorState}
+            darkMode={darkMode}
+          />
+        )}
+        <LakehouseComputeEngineSelector
+          runtimeEditorState={runtimeEditorState}
+          packageableRuntime={packageableRuntime}
+          lakehouseRuntimeEditorState={lakehouseRuntimeEditorState}
+          darkMode={darkMode}
+        />
+        {computeEngine === LakehouseComputeEngine.SNOWFLAKE &&
+          isSnowflakeRuntimeEditorState && (
+            <SnowflakeRuntimeSourceFields
+              key={lakehouseRuntimeEditorState.uuid}
+              runtimeEditorState={runtimeEditorState}
+              lakehouseRuntimeEditorState={lakehouseRuntimeEditorState}
+              darkMode={darkMode}
+            />
+          )}
+      </LakehouseBaseRuntimeEditor>
     );
   },
 );
@@ -1238,13 +1384,17 @@ export const PackageableRuntimeEditor = observer(() => {
     LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.RUNTIME_EDITOR,
   );
 
-  return engineState instanceof LakehouseRuntimeEditorState ? (
-    <LakehouseRuntimeEditor
-      lakehouseRuntimeEditorState={engineState}
-      isReadOnly={isReadOnly}
-      runtimeEditorState={editorState.runtimeEditorState}
-    />
-  ) : (
+  if (engineState instanceof LakehouseBaseRuntimeEditorState) {
+    return (
+      <LakehouseRuntimeEditor
+        lakehouseRuntimeEditorState={engineState}
+        packageableRuntime={editorState.runtime}
+        isReadOnly={isReadOnly}
+        runtimeEditorState={editorState.runtimeEditorState}
+      />
+    );
+  }
+  return (
     <RuntimeEditor
       runtimeEditorState={editorState.runtimeEditorState}
       isReadOnly={isReadOnly}

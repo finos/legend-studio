@@ -68,7 +68,9 @@ import {
   isStubbed_StoreConnections,
   getAllIdentifiedConnections,
   generateIdentifiedConnectionId,
+  type LakehouseBaseRuntime,
   LakehouseRuntime,
+  LakehouseSingleStoreRuntime,
   ConcreteFunctionDefinition,
 } from '@finos/legend-graph';
 import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../../extensions/DSL_Mapping_LegendStudioApplicationPlugin_Extension.js';
@@ -899,42 +901,36 @@ export enum LakehouseRuntimeType {
   CONNECTION = 'CONNECTION',
 }
 
-export class LakehouseRuntimeEditorState extends EngineRuntimeEditorState {
-  declare runtimeValue: LakehouseRuntime;
+export abstract class LakehouseBaseRuntimeEditorState extends EngineRuntimeEditorState {
+  /**
+   * NOTE: a fresh instance is built by `RuntimeEditorState.setRuntimeValueEditorState`
+   * whenever the compute engine swap replaces the concrete runtime class, so this
+   * changes exactly when that swap happens -- used to force a remount of the
+   * compute-engine-specific fields (e.g. Warehouse) in the UI.
+   */
+  readonly uuid = uuid();
+  declare runtimeValue: LakehouseBaseRuntime;
   availableEnvs: IngestDeploymentServerConfig[] | undefined;
+  /**
+   * Only `LakehouseRuntime` can switch out of environment mode today; a
+   * subclass whose runtime gains connection support just needs to set this.
+   */
   lakehouseRuntimeType = LakehouseRuntimeType.ENVIRONMENT;
 
-  constructor(state: RuntimeEditorState, value: LakehouseRuntime) {
+  constructor(state: RuntimeEditorState, value: LakehouseBaseRuntime) {
     super(state, value);
     makeObservable(this, {
       availableEnvs: observable,
+      lakehouseRuntimeType: observable,
       fetchLakehouseSummaries: flow,
       setEnvSummaries: action,
-      lakehouseRuntimeType: observable,
-      setLakehouseRuntimeType: action,
       envOptions: computed,
     });
     this.runtimeValue = value;
-    // fix when metamodel is more clear on this
-    if (value.connectionPointer) {
-      this.lakehouseRuntimeType = LakehouseRuntimeType.CONNECTION;
-    }
   }
 
-  setLakehouseRuntimeType(val: LakehouseRuntimeType): void {
-    if (val !== this.lakehouseRuntimeType) {
-      this.lakehouseRuntimeType = val;
-      if (val === LakehouseRuntimeType.CONNECTION) {
-        this.runtimeValue.environment = undefined;
-        this.runtimeValue.warehouse = undefined;
-      } else {
-        this.setConnection(undefined);
-      }
-    }
-  }
-
-  setConnection(val: PackageableConnection | undefined): void {
-    lakehouseRuntime_setConnection(this.runtimeValue, val);
+  protected get isEnvironmentModeActive(): boolean {
+    return this.lakehouseRuntimeType === LakehouseRuntimeType.ENVIRONMENT;
   }
 
   get envOptions(): { label: string; value: string }[] {
@@ -972,7 +968,7 @@ export class LakehouseRuntimeEditorState extends EngineRuntimeEditorState {
         )) as unknown as IngestDeploymentServerConfig[] | undefined;
         this.setEnvSummaries(res);
         if (
-          this.lakehouseRuntimeType === LakehouseRuntimeType.ENVIRONMENT &&
+          this.isEnvironmentModeActive &&
           !this.runtimeValue.environment &&
           this.envOptions.length
         ) {
@@ -982,6 +978,40 @@ export class LakehouseRuntimeEditorState extends EngineRuntimeEditorState {
     } catch (error) {
       assertErrorThrown(error);
     }
+  }
+}
+
+export class LakehouseSingleStoreRuntimeEditorState extends LakehouseBaseRuntimeEditorState {
+  declare runtimeValue: LakehouseSingleStoreRuntime;
+}
+
+export class LakehouseRuntimeEditorState extends LakehouseBaseRuntimeEditorState {
+  declare runtimeValue: LakehouseRuntime;
+
+  constructor(state: RuntimeEditorState, value: LakehouseRuntime) {
+    super(state, value);
+    makeObservable(this, {
+      setLakehouseRuntimeType: action,
+    });
+    if (value.connectionPointer) {
+      this.lakehouseRuntimeType = LakehouseRuntimeType.CONNECTION;
+    }
+  }
+
+  setLakehouseRuntimeType(val: LakehouseRuntimeType): void {
+    if (val !== this.lakehouseRuntimeType) {
+      this.lakehouseRuntimeType = val;
+      if (val === LakehouseRuntimeType.CONNECTION) {
+        this.runtimeValue.environment = undefined;
+        this.runtimeValue.warehouse = undefined;
+      } else {
+        this.setConnection(undefined);
+      }
+    }
+  }
+
+  setConnection(val: PackageableConnection | undefined): void {
+    lakehouseRuntime_setConnection(this.runtimeValue, val);
   }
 }
 
@@ -1002,19 +1032,50 @@ export class RuntimeEditorState {
   ) {
     makeObservable(this, {
       runtimeValueEditorState: observable,
+      setRuntimeValueEditorState: action,
     });
 
     this.editorStore = editorStore;
     this.runtime = runtime;
     this.isEmbeddedRuntime = isEmbeddedRuntime;
-    const runtimeValue =
-      runtime instanceof RuntimePointer
-        ? runtime.packageableRuntime.value.runtimeValue
-        : guaranteeType(runtime, EngineRuntime);
-    this.runtimeValueEditorState =
-      runtimeValue instanceof LakehouseRuntime
-        ? new LakehouseRuntimeEditorState(this, runtimeValue)
+    this.runtimeValueEditorState = this.buildRuntimeValueEditorState(
+      this.resolveRuntimeValue(),
+    );
+  }
+
+  private resolveRuntimeValue(): EngineRuntime {
+    return this.runtime instanceof RuntimePointer
+      ? this.runtime.packageableRuntime.value.runtimeValue
+      : guaranteeType(this.runtime, EngineRuntime);
+  }
+
+  private buildRuntimeValueEditorState(
+    runtimeValue: EngineRuntime,
+  ): EngineRuntimeEditorState {
+    return runtimeValue instanceof LakehouseRuntime
+      ? new LakehouseRuntimeEditorState(this, runtimeValue)
+      : runtimeValue instanceof LakehouseSingleStoreRuntime
+        ? new LakehouseSingleStoreRuntimeEditorState(this, runtimeValue)
         : new EngineRuntimeEditorState(this, runtimeValue);
+  }
+
+  /**
+   * Rebuilds the concrete runtime-value editor state after the underlying
+   * runtime's concrete type changes in place (e.g. Lakehouse compute-engine
+   * swap between `LakehouseRuntime` and `LakehouseSingleStoreRuntime`).
+   * Carries over already-fetched Lakehouse environment options so callers
+   * don't need to refetch (which requires an auth token round-trip).
+   */
+  setRuntimeValueEditorState(runtimeValue: EngineRuntime): void {
+    const previous = this.runtimeValueEditorState;
+    const next = this.buildRuntimeValueEditorState(runtimeValue);
+    if (
+      previous instanceof LakehouseBaseRuntimeEditorState &&
+      next instanceof LakehouseBaseRuntimeEditorState
+    ) {
+      next.setEnvSummaries(previous.availableEnvs);
+    }
+    this.runtimeValueEditorState = next;
   }
 }
 

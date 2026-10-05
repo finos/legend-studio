@@ -89,8 +89,14 @@ export class V1_SingleConnectionEngineRuntime extends V1_EngineRuntime {
   }
 }
 
-export class V1_LakehouseRuntime extends V1_EngineRuntime implements Hashable {
+export abstract class V1_LakehouseBaseRuntime extends V1_EngineRuntime {
   environment?: string | undefined;
+}
+
+export class V1_LakehouseRuntime
+  extends V1_LakehouseBaseRuntime
+  implements Hashable
+{
   warehouse?: string | undefined;
   connectionPointer?: V1_ConnectionPointer | undefined;
   override get hashCode(): string {
@@ -99,6 +105,18 @@ export class V1_LakehouseRuntime extends V1_EngineRuntime implements Hashable {
       this.environment ?? '',
       this.warehouse ?? '',
       this.connectionPointer ?? '',
+    ]);
+  }
+}
+
+export class V1_LakehouseSingleStoreRuntime
+  extends V1_LakehouseBaseRuntime
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.LAKEHOUSE_SINGLE_STORE_RUNTIME,
+      this.environment ?? '',
     ]);
   }
 }

@@ -144,8 +144,16 @@ export class SingleConnectionRuntime extends EngineRuntime {
   }
 }
 
-export class LakehouseRuntime extends EngineRuntime implements Hashable {
+export abstract class LakehouseBaseRuntime extends EngineRuntime {
   environment?: string | undefined;
+
+  constructor(environment?: string) {
+    super();
+    this.environment = environment;
+  }
+}
+
+export class LakehouseRuntime extends LakehouseBaseRuntime implements Hashable {
   warehouse?: string | undefined;
   connectionPointer?: ConnectionPointer | undefined;
 
@@ -154,8 +162,7 @@ export class LakehouseRuntime extends EngineRuntime implements Hashable {
     warehouse?: string,
     connectionPointer?: ConnectionPointer,
   ) {
-    super();
-    this.environment = environment;
+    super(environment);
     this.warehouse = warehouse;
     this.connectionPointer = connectionPointer;
   }
@@ -166,6 +173,18 @@ export class LakehouseRuntime extends EngineRuntime implements Hashable {
       this.environment ?? '',
       this.warehouse ?? '',
       this.connectionPointer ?? '',
+    ]);
+  }
+}
+
+export class LakehouseSingleStoreRuntime
+  extends LakehouseBaseRuntime
+  implements Hashable
+{
+  override get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.LAKEHOUSE_SINGLE_STORE_RUNTIME,
+      this.environment ?? '',
     ]);
   }
 }

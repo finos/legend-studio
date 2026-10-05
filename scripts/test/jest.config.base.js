@@ -167,7 +167,17 @@ export const getBaseJestConfig = (isGlobal) => {
         // See https://github.com/jestjs/jest/issues/13186
         coverageProvider: 'v8',
         coverageReporters: ['clover', 'json', 'lcov', 'text-summary'],
-        coverageDirectory: '<rootDir>/build/coverage',
+        /**
+         * CI splits the run across parallel shards (`jest --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL`).
+         * Each shard instruments the whole source tree but only records hits for the slice of tests
+         * it ran, so every shard emits a *partial* report. Writing them all to one path makes the
+         * artifacts collide on download, leaving only the last shard -- which is why coverage was
+         * being reported off roughly a fifth of the suite. Give each shard its own directory so the
+         * reports coexist and the coverage consumer can merge them.
+         */
+        coverageDirectory: process.env.CI_NODE_INDEX
+          ? `<rootDir>/build/coverage/shard-${process.env.CI_NODE_INDEX}`
+          : '<rootDir>/build/coverage',
         watchPathIgnorePatterns: [
           ...baseConfig.watchPathIgnorePatterns,
           '<rootDir>/packages/.*/build',

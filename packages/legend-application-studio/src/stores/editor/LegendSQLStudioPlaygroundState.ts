@@ -30,7 +30,7 @@ import {
   TDSExecutionResult,
   type RawLambda,
   type ExecutionResultWithMetadata,
-  LakehouseRuntime,
+  LakehouseBaseRuntime,
   GRAPH_MANAGER_EVENT,
 } from '@finos/legend-graph';
 import type { EditorStore } from './EditorStore.js';
@@ -178,9 +178,9 @@ export class LegendSQLStudioPlaygroundState extends LegendSQLPlaygroundState {
         );
         return;
       }
-      if (!(packageableRuntime.runtimeValue instanceof LakehouseRuntime)) {
+      if (!(packageableRuntime.runtimeValue instanceof LakehouseBaseRuntime)) {
         this.editorStore.applicationStore.notificationService.notifyError(
-          new Error('Runtime must be a LakehouseRuntime'),
+          new Error('Runtime must be a Lakehouse runtime'),
         );
         return;
       }

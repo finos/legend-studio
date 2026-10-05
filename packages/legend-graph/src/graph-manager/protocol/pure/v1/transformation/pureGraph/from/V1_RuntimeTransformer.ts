@@ -23,6 +23,7 @@ import {
   type Runtime,
   SingleConnectionRuntime,
   LakehouseRuntime,
+  LakehouseSingleStoreRuntime,
 } from '../../../../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import {
   V1_initPackageableElement,
@@ -38,6 +39,7 @@ import {
   V1_ConnectionStores,
   V1_SingleConnectionEngineRuntime,
   V1_LakehouseRuntime,
+  V1_LakehouseSingleStoreRuntime,
 } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_transformConnection,
@@ -78,6 +80,10 @@ const transformEngineRuntime = (
     lakehouseRuntime.connectionPointer = element.connectionPointer
       ? V1_transformConnectionPointer(element.connectionPointer)
       : undefined;
+    runtime = lakehouseRuntime;
+  } else if (element instanceof LakehouseSingleStoreRuntime) {
+    const lakehouseRuntime = new V1_LakehouseSingleStoreRuntime();
+    lakehouseRuntime.environment = element.environment;
     runtime = lakehouseRuntime;
   } else {
     runtime = new V1_EngineRuntime();

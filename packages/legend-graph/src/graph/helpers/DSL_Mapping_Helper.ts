@@ -33,7 +33,7 @@ import { RootRelationalInstanceSetImplementation } from '../metamodel/pure/packa
 import type { PropertyMapping } from '../metamodel/pure/packageableElements/mapping/PropertyMapping.js';
 import { InstanceSetImplementation } from '../metamodel/pure/packageableElements/mapping/InstanceSetImplementation.js';
 import {
-  LakehouseRuntime,
+  LakehouseBaseRuntime,
   type EngineRuntime,
   type IdentifiedConnection,
 } from '../metamodel/pure/packageableElements/runtime/Runtime.js';
@@ -351,7 +351,7 @@ export const generateIdentifiedConnectionId = (
 };
 
 const isLakehouseRuntime = (runtimeValue: EngineRuntime): boolean => {
-  return runtimeValue instanceof LakehouseRuntime;
+  return runtimeValue instanceof LakehouseBaseRuntime;
 };
 
 export const getMappingCompatibleRuntimes = (

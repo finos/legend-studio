@@ -26,10 +26,12 @@ import {
   ConnectionStores,
   SingleConnectionRuntime,
   LakehouseRuntime,
+  LakehouseSingleStoreRuntime,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/runtime/Runtime.js';
 import type { V1_GraphBuilderContext } from '../../../../transformation/pureGraph/to/V1_GraphBuilderContext.js';
 import {
   V1_LakehouseRuntime,
+  V1_LakehouseSingleStoreRuntime,
   V1_SingleConnectionEngineRuntime,
   type V1_EngineRuntime,
 } from '../../../../model/packageableElements/runtime/V1_Runtime.js';
@@ -63,6 +65,8 @@ export const V1_buildEngineRuntime = (
       runtime.warehouse,
       conPointer,
     );
+  } else if (runtime instanceof V1_LakehouseSingleStoreRuntime) {
+    runtimeValue = new LakehouseSingleStoreRuntime(runtime.environment);
   } else {
     runtimeValue = new EngineRuntime();
   }

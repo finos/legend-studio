@@ -28,6 +28,7 @@ import {
   type DataProductElementScope,
   PackageableRuntime,
   resolveUsableDataProductClasses,
+  LakehouseBaseRuntime,
   LakehouseRuntime,
   type LambdaFunction,
   attachRuntimeFromQuery,
@@ -295,7 +296,7 @@ export class ModelAccessPointDataProductExecutionState extends DataProductExecut
 
   get compatibleRuntimes(): PackageableRuntime[] {
     return this.queryBuilderState.graphManagerState.usableRuntimes.filter(
-      (runtime) => runtime.runtimeValue instanceof LakehouseRuntime,
+      (runtime) => runtime.runtimeValue instanceof LakehouseBaseRuntime,
     );
   }
 }
@@ -344,7 +345,7 @@ export class LakehouseDataProductExecutionState extends DataProductExecutionStat
 
   get compatibleRuntimes(): PackageableRuntime[] {
     return this.queryBuilderState.graphManagerState.usableRuntimes.filter(
-      (runtime) => runtime.runtimeValue instanceof LakehouseRuntime,
+      (runtime) => runtime.runtimeValue instanceof LakehouseBaseRuntime,
     );
   }
 
@@ -921,8 +922,12 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         ? this.executionState.selectedRuntime
         : undefined;
     const lakehouseRuntime =
-      selectedRuntime?.runtimeValue instanceof LakehouseRuntime
+      selectedRuntime?.runtimeValue instanceof LakehouseBaseRuntime
         ? selectedRuntime.runtimeValue
+        : undefined;
+    const snowflakeRuntime =
+      lakehouseRuntime instanceof LakehouseRuntime
+        ? lakehouseRuntime
         : undefined;
     // NOTE: `dataProduct` is declared with definite assignment, but is genuinely unset
     // on an artifact which was constructed rather than deserialized
@@ -938,7 +943,7 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
         : undefined,
       deploymentId: artifactInfo?.deploymentId,
       environment: lakehouseRuntime?.environment,
-      warehouse: lakehouseRuntime?.warehouse,
+      warehouse: snowflakeRuntime?.warehouse,
       supportEmails: (this.dataProduct.supportInfo?.emails ?? []).map(
         (email) => email.address,
       ),

@@ -67,6 +67,7 @@ import type { PackageableRuntime } from '../../../graph/metamodel/pure/packageab
 import {
   EngineRuntime,
   LakehouseRuntime,
+  LakehouseSingleStoreRuntime,
   RuntimePointer,
   type IdentifiedConnection,
   type Runtime,
@@ -1167,10 +1168,13 @@ export const observe_EngineRuntime = skipObservedWithContext(
         warehouse: observable,
         connectionPointer: observable,
       });
-
       if (metamodel.connectionPointer) {
         observe_ConnectionPointer(metamodel.connectionPointer);
       }
+    } else if (metamodel instanceof LakehouseSingleStoreRuntime) {
+      makeObservable(metamodel, {
+        environment: observable,
+      });
     }
 
     return metamodel;
