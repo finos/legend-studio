@@ -24,9 +24,9 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05; committed                                                                                                                                                                                                    |
-| Code        | **None yet.** Next milestone step: M1.0                                                                                                                                                                                                                         |
+| Code        | **None yet.** Next milestone step: M1.0, **waiting for the user's go-ahead**                                                                                                                                                                                    |
 | Decisions   | PLAN.md §0, D1–D10. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
-| Plan review | A four-agent review of PLAN.md (evidence, requirements, semantics, repo conventions) is running; its fixes are pending (see Open items)                                                                                                                         |
+| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
 ## Milestone checklist
 
@@ -40,7 +40,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [ ] **M1.5** IR and emitter (join algorithm, filter emission, typed literals, origins, debug printer)
 - [ ] **M1.6** Saved spec v1 codec (round trip, rest preservation, Unknown passthrough)
 - [ ] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
-- [ ] **M1.8** Canvas and editors on `/query/cube` (picker, canvas, Join/Filter/Source panels, grid, export/import spec)
+- [ ] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
+- [ ] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
 - [ ] **M1.9** Slice acceptance (part B, manual) and hardening
 - [ ] M2 Rename + Join autofix + simple unary transforms
 - [ ] M3 Entry points, sources modal, depot catalog (user to design entry points and the sources modal first)
@@ -49,18 +50,18 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-1. Triage the plan review findings and fold the valid ones into PLAN.md (in progress, 2026-10-05).
-2. Start **M1.0**: scaffold the two packages per PLAN.md §3.1–3.5. Keep the PR small: build, lint, purity guard, and a
-   placeholder page at `/query/cube` behind the flag.
+Wait for the user's go-ahead, then start **M1.0**: scaffold the two packages per PLAN.md §3.1–3.5. Keep the PR small:
+
+- build, lint and the purity guards;
+- a placeholder page at `/query/cube` behind the flag.
 
 ## Open items
 
-| Item                                              | Owner  | Notes                                                                                                                                                                                                                                                                                                                                                |
-| ------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Plan review findings                              | Claude | Run `wf_fbdcba3a-637` (resumed 2026-10-05); apply verified fixes, then commit. If this chat is gone before triage, the findings persist in `~/.claude/projects/-Users-mauriciouyaguari-Goldman-Sachs-legend-studio/f7a9ecc2-5ae2-4b59-b432-81982ee80476/subagents/workflows/wf_fbdcba3a-637/journal.jsonl` (one `"type":"result"` line per reviewer) |
-| Where to keep the scratch evidence                | User   | Harnesses from planning are in a session-only scratchpad and will be lost. Proposed: copy the curated set (window regression matrix, per-dialect plan harness, precise-type fixture, relation-function tests, check scripts) to a local folder outside the repo, not committed                                                                       |
-| Entry points and the sources modal (D7 follow-up) | User   | Designed before M3                                                                                                                                                                                                                                                                                                                                   |
-| Upstream defects (PLAN.md Appendix B)             | –      | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                                                                                                                                 |
+| Item                                              | Owner | Notes                                                                                                                                                                                                                                             |
+| ------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planning evidence                                 | –     | Copied to `/Users/mauriciouyaguari/Goldman Sachs/legend-cube-evidence/` (outside both repos, not committed); see its `README.md`. Reports in `wf/`, harnesses runnable from there (paths rewritten). M1.7 and M5 reuse the fixtures and harnesses |
+| Entry points and the sources modal (D7 follow-up) | User  | Designed before M3                                                                                                                                                                                                                                |
+| Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                              |
 
 ## Environment (local)
 
@@ -107,5 +108,24 @@ Each is verified and detailed in PLAN.md.
   - Committed PLAN.md (`baeab7d0a`).
   - Verified the two remaining plan inferences live (`toOne()` NULL semantics; FULL merged-key typing) and updated
     PLAN.md.
-  - Started the plan review.
   - Added this file.
+  - Copied the planning evidence to `legend-cube-evidence/` (outside the repos) with a README; smoke-tested the
+    harnesses from there.
+  - Plan review (4 reviewers, 31 findings). Verified the high-severity ones live, then folded them into PLAN.md.
+    Main changes:
+    - lint-compliant builder layout (port in `graph-manager/`, factory outside `v1/`);
+    - FULL merged key nullable if either key is nullable;
+    - Not over a group pushed to the leaves for D4;
+    - `genericType` IR node for casts;
+    - quoted table names keep their quotes;
+    - REAL-column equality caveat;
+    - specified ALLTYPES rows;
+    - discriminating RIGHT/FULL acceptance cases and order-insensitive asserts;
+    - Unknown node per-instance ports;
+    - Execute gated on the capture subtree;
+    - value pipeline keeps invalid text and canonicalizes numbers;
+    - engine-test wiring;
+    - M1.8 split into M1.8a and M1.8b.
+  - **Partially rejected:** blocking joins on `OTHER`-typed columns. They are flagged "type unknown" with an inline
+    warning instead, because the failure is a loud engine error, not silent wrong data, and v1 has no cast to work
+    around a block.
