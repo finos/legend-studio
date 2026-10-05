@@ -68,7 +68,7 @@ import {
   Database,
   DataProduct,
   IngestDefinition,
-  LakehouseRuntime,
+  LakehouseBaseRuntime,
   PackageableElementExplicitReference,
   observe_ValueSpecification,
   observe_RelationElementsData,
@@ -1058,7 +1058,7 @@ export class FunctionTestableState extends TestablePackageableElementEditorState
             `Function Test Suite Only supports One Runtime at this time. Found ${engineRuntimes.length}`,
           );
           const engineRuntime = guaranteeNonNullable(engineRuntimes[0]);
-          if (!(engineRuntime instanceof LakehouseRuntime)) {
+          if (!(engineRuntime instanceof LakehouseBaseRuntime)) {
             assertTrue(
               !(
                 engineRuntime.connectionStores.length &&

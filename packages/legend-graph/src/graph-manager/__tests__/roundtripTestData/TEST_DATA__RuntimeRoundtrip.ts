@@ -150,3 +150,126 @@ export const TEST_DATA__RuntimeRoundtrip = [
     classifierPath: 'meta::pure::metamodel::section::SectionIndex',
   },
 ];
+
+// References to resolve in Runtime
+// - EngineRuntime mapping
+export const TEST_DATA__LakehouseRuntimeRoundtrip = [
+  {
+    path: 'test::tMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'tMapping',
+      package: 'test',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'test::tRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'tRuntime',
+      package: 'test',
+      runtimeValue: {
+        _type: 'LakehouseRuntime',
+        connectionStores: [],
+        connections: [],
+        environment: 'dev01',
+        mappings: [
+          {
+            path: 'tMapping',
+            type: 'MAPPING',
+          },
+        ],
+        warehouse: 'myWarehouse',
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          imports: [],
+          elements: ['test::tMapping'],
+          parserName: 'Mapping',
+        },
+        {
+          _type: 'importAware',
+          imports: ['test'],
+          elements: ['test::tRuntime'],
+          parserName: 'Runtime',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
+// References to resolve in Runtime
+// - EngineRuntime mapping
+export const TEST_DATA__LakehouseSingleStoreRuntimeRoundtrip = [
+  {
+    path: 'test::tMapping',
+    content: {
+      _type: 'mapping',
+      classMappings: [],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'tMapping',
+      package: 'test',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'test::tRuntime',
+    content: {
+      _type: 'runtime',
+      name: 'tRuntime',
+      package: 'test',
+      runtimeValue: {
+        _type: 'LakehouseSingleStoreRuntime',
+        environment: 'dev01',
+        mappings: [
+          {
+            path: 'tMapping',
+            type: 'MAPPING',
+          },
+        ],
+      },
+    },
+    classifierPath: 'meta::pure::runtime::PackageableRuntime',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          imports: [],
+          elements: ['test::tMapping'],
+          parserName: 'Mapping',
+        },
+        {
+          _type: 'importAware',
+          imports: ['test'],
+          elements: ['test::tRuntime'],
+          parserName: 'Runtime',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];

@@ -50,7 +50,7 @@ import {
   V1_MappingModelCoveragePartition,
   V1_getGenericTypeFullPath,
   V1_buildFullPath,
-  V1_LakehouseRuntime,
+  V1_LakehouseBaseRuntime,
   V1_packageableRuntimeModelSchema,
   V1_RelationType,
   GenericType,
@@ -514,7 +514,7 @@ export class V1_DSL_DataSpace_PureGraphManagerExtension extends DSL_DataSpace_Pu
         V1_packageableRuntimeModelSchema,
         runtimeEntity.content,
       );
-      if (runtimeProtocol.runtimeValue instanceof V1_LakehouseRuntime) {
+      if (runtimeProtocol.runtimeValue instanceof V1_LakehouseBaseRuntime) {
         dataSpaceAnalysisResult.__INTERNAL__useRelationTDS = true;
       }
     }

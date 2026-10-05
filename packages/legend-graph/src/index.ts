@@ -966,7 +966,9 @@ export { Mapping } from './graph/metamodel/pure/packageableElements/mapping/Mapp
 export {
   Runtime,
   EngineRuntime,
+  LakehouseBaseRuntime,
   LakehouseRuntime,
+  LakehouseSingleStoreRuntime,
   SingleConnectionRuntime,
   RuntimePointer,
   IdentifiedConnection,
@@ -1071,7 +1073,9 @@ export {
   V1_IdentifiedConnection,
   V1_StoreConnections,
   V1_RuntimePointer,
+  V1_LakehouseBaseRuntime,
   V1_LakehouseRuntime,
+  V1_LakehouseSingleStoreRuntime,
 } from './graph-manager/protocol/pure/v1/model/packageableElements/runtime/V1_Runtime.js';
 export {
   V1_ClassMapping,

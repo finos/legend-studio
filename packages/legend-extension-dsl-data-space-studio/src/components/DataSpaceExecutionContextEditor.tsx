@@ -44,7 +44,7 @@ import {
 } from '@finos/legend-art';
 import {
   DataProduct,
-  LakehouseRuntime,
+  LakehouseBaseRuntime,
   Mapping,
   ModelAccessPointGroup,
   PackageableElementExplicitReference,
@@ -496,7 +496,7 @@ const DefaultRuntimeEditor = observer(
     const runtimeWarning =
       defaultRuntime &&
       mapping &&
-      !(defaultRuntime.runtimeValue instanceof LakehouseRuntime) &&
+      !(defaultRuntime.runtimeValue instanceof LakehouseBaseRuntime) &&
       !compatibleRuntimes.includes(defaultRuntime)
         ? `Runtime is not associated with mapping '${mapping.path}'.`
         : undefined;

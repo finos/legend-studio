@@ -76,7 +76,11 @@ import {
   TEST_DATA__RelationFunctionMappingWithEmbedded,
   TEST_DATA__RelationFunctionMappingWithInlineEmbedded,
 } from './roundtripTestData/TEST_DATA__MappingRoundtrip.js';
-import { TEST_DATA__RuntimeRoundtrip } from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
+import {
+  TEST_DATA__RuntimeRoundtrip,
+  TEST_DATA__LakehouseRuntimeRoundtrip,
+  TEST_DATA__LakehouseSingleStoreRuntimeRoundtrip,
+} from './roundtripTestData/TEST_DATA__RuntimeRoundtrip.js';
 import { TEST_DATA__ModelJoinAssociationMapping_Simple } from './roundtripTestData/TEST_DATA__ModelJoinMappingRoundtrip.js';
 import {
   TEST__buildGraphWithEntities,
@@ -172,12 +176,16 @@ describe(unitTest('Connection import resolution roundtrip'), () => {
 });
 
 describe(unitTest('Runtime import resolution roundtrip'), () => {
-  test.each([['Simple runtime', TEST_DATA__RuntimeRoundtrip]])(
-    '%s',
-    async (testName, entities) => {
-      await TEST__checkBuildingElementsRoundtrip(entities);
-    },
-  );
+  test.each([
+    ['Simple runtime', TEST_DATA__RuntimeRoundtrip],
+    ['Lakehouse runtime', TEST_DATA__LakehouseRuntimeRoundtrip],
+    [
+      'Lakehouse single store runtime',
+      TEST_DATA__LakehouseSingleStoreRuntimeRoundtrip,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });
 
 describe(unitTest('Mapping import resolution roundtrip'), () => {

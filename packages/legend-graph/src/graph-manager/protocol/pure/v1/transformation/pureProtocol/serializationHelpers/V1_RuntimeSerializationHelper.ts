@@ -42,6 +42,7 @@ import {
   V1_ConnectionStores,
   V1_SingleConnectionEngineRuntime,
   V1_LakehouseRuntime,
+  V1_LakehouseSingleStoreRuntime,
 } from '../../../model/packageableElements/runtime/V1_Runtime.js';
 import {
   V1_serializeConnectionValue,
@@ -58,6 +59,7 @@ export enum V1_RuntimeType {
   ENGINE_RUNTIME = 'engineRuntime',
   SINGLE_ENGINE_RUNTIME = 'localEngineRuntime',
   LAKEHOUSE_RUNTIME = 'LakehouseRuntime',
+  LAKEHOUSE_SINGLE_STORE_RUNTIME = 'LakehouseSingleStoreRuntime',
 }
 
 export const V1_runtimePointerModelSchema = createModelSchema(
@@ -117,21 +119,34 @@ export const V1_setupEngineRuntimeSerialization = (
   });
   createModelSchema(V1_LakehouseRuntime, {
     _type: usingConstantValueSchema(V1_RuntimeType.LAKEHOUSE_RUNTIME),
-    connectionStores: list(object(V1_ConnectionStores)),
-    connections: list(object(V1_StoreConnections)),
-    mappings: list(usingModelSchema(V1_packageableElementPointerModelSchema)),
-    environment: optional(primitive()),
-    warehouse: optional(primitive()),
     connectionPointer: optional(
       usingModelSchema(V1_connectionPointerModelSchema),
     ),
+    connectionStores: list(object(V1_ConnectionStores)),
+    connections: list(object(V1_StoreConnections)),
+    environment: optional(primitive()),
+    mappings: list(usingModelSchema(V1_packageableElementPointerModelSchema)),
+    warehouse: optional(primitive()),
+  });
+  // NOTE: unlike `V1_LakehouseRuntime`, `connectionStores`/`connections` are
+  // omitted -- nothing populates or reads them for this type
+  createModelSchema(V1_LakehouseSingleStoreRuntime, {
+    _type: usingConstantValueSchema(
+      V1_RuntimeType.LAKEHOUSE_SINGLE_STORE_RUNTIME,
+    ),
+    environment: optional(primitive()),
+    mappings: list(usingModelSchema(V1_packageableElementPointerModelSchema)),
   });
 };
 
 export const V1_serializeRuntime = (
   protocol: V1_Runtime,
 ): PlainObject<V1_Runtime> => {
-  if (protocol instanceof V1_EngineRuntime) {
+  if (protocol instanceof V1_LakehouseRuntime) {
+    return serialize(V1_LakehouseRuntime, protocol);
+  } else if (protocol instanceof V1_LakehouseSingleStoreRuntime) {
+    return serialize(V1_LakehouseSingleStoreRuntime, protocol);
+  } else if (protocol instanceof V1_EngineRuntime) {
     return serialize(V1_EngineRuntime, protocol);
   } else if (protocol instanceof V1_RuntimePointer) {
     return serialize(V1_runtimePointerModelSchema, protocol);
@@ -148,6 +163,10 @@ export const V1_deserializeRuntime = (
       return deserialize(V1_runtimePointerModelSchema, json);
     case V1_RuntimeType.ENGINE_RUNTIME:
       return deserialize(V1_EngineRuntime, json);
+    case V1_RuntimeType.LAKEHOUSE_RUNTIME:
+      return deserialize(V1_LakehouseRuntime, json);
+    case V1_RuntimeType.LAKEHOUSE_SINGLE_STORE_RUNTIME:
+      return deserialize(V1_LakehouseSingleStoreRuntime, json);
     case V1_RuntimeType.LEGACY_RUNTIME:
     case undefined:
       return deserialize(V1_LegacyRuntime, json);
@@ -165,6 +184,8 @@ export const V1_serializeRuntimeValue = (
     return serialize(V1_SingleConnectionEngineRuntime, protocol);
   } else if (protocol instanceof V1_LakehouseRuntime) {
     return serialize(V1_LakehouseRuntime, protocol);
+  } else if (protocol instanceof V1_LakehouseSingleStoreRuntime) {
+    return serialize(V1_LakehouseSingleStoreRuntime, protocol);
   }
   return serialize(V1_EngineRuntime, protocol);
 };
@@ -176,6 +197,8 @@ export const V1_deserializeRuntimeValue = (
     return deserialize(V1_SingleConnectionEngineRuntime, json);
   } else if (json._type === V1_RuntimeType.LAKEHOUSE_RUNTIME) {
     return deserialize(V1_LakehouseRuntime, json);
+  } else if (json._type === V1_RuntimeType.LAKEHOUSE_SINGLE_STORE_RUNTIME) {
+    return deserialize(V1_LakehouseSingleStoreRuntime, json);
   }
   return deserialize(V1_EngineRuntime, json);
 };

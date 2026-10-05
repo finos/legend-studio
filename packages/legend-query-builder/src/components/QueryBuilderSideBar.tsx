@@ -30,6 +30,7 @@ import {
   type Mapping,
   type Runtime,
   type ValueSpecification,
+  LakehouseBaseRuntime,
   LakehouseRuntime,
   LATEST_DATE,
   PrimitiveInstanceValue,
@@ -186,13 +187,17 @@ export const QueryBuilderClassSelector = observer(
   },
 );
 
-export const buildLakehouseRuntimeLabel = (runtime: LakehouseRuntime): string =>
-  `${runtime.environment ?? '(no env)'} / ${runtime.warehouse ?? '(no warehouse)'}`;
+export const buildLakehouseRuntimeLabel = (
+  runtime: LakehouseBaseRuntime,
+): string =>
+  runtime instanceof LakehouseRuntime
+    ? `${runtime.environment ?? '(no env)'} / ${runtime.warehouse ?? '(no warehouse)'}`
+    : `${runtime.environment ?? '(no env)'}`;
 
 export const resolveLakehouseRuntime = (
   runtime: Runtime | undefined,
-): LakehouseRuntime | undefined => {
-  if (runtime instanceof LakehouseRuntime) {
+): LakehouseBaseRuntime | undefined => {
+  if (runtime instanceof LakehouseBaseRuntime) {
     return runtime;
   }
   if (runtime instanceof RuntimePointer) {
