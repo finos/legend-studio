@@ -14,40 +14,22 @@
  * limitations under the License.
  */
 
-import { describe, test, expect, jest } from '@jest/globals';
-import {
-  type createMock,
-  integrationTest,
-  unitTest,
-} from '@finos/legend-shared/test';
+import { describe, test, expect } from '@jest/globals';
+import { integrationTest, unitTest } from '@finos/legend-shared/test';
 import {
   EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl,
-  generateDataProductNativeRoute,
   generateDataProductModelRoute,
   generateDataProductRoute,
   generateDataProductLakehouseRoute,
-  generateDataProductSampleQueryRoute,
   DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
-  DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN,
   LEGEND_QUERY_ROUTE_PATTERN,
 } from '../../__lib__/LegendQueryNavigation.js';
-import {
-  DataProductAccessType,
-  stub_RawLambda,
-  V1_DataProductArtifact,
-  V1_DataProductInfo,
-  V1_NativeModelAccessInfo,
-  V1_SampleQuery,
-  V1_TemplateExecutableInfo,
-} from '@finos/legend-graph';
+import { DataProductAccessType, stub_RawLambda } from '@finos/legend-graph';
 import { TEST__getTestLegendQueryApplicationConfig } from '../../stores/__test-utils__/LegendQueryApplicationTestUtils.js';
 import {
   TEST__provideMockedQueryEditorStore,
   TEST_QUERY_NAME,
   TEST__setUpDataProductExistingQueryEditor,
-  TEST__setUpDataProductNativeExistingQueryEditor,
-  TEST__provideMockedDataProductSampleQueryCreatorStore,
-  TEST__setUpDataProductSampleQueryEditor,
 } from '../__test-utils__/QueryEditorComponentTestUtils.js';
 import { act, fireEvent, getByText, waitFor } from '@testing-library/react';
 import {
@@ -61,7 +43,6 @@ import {
   parseGAVCoordinates,
 } from '@finos/legend-storage';
 import { matchPath } from '@finos/legend-application/browser';
-import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 
 const TEST_DATA__DataProductEntities = [
   {
@@ -151,240 +132,6 @@ const TEST_DATA__DataProductEntities = [
   },
 ];
 
-const TEST_DATA__NativeDataProductEntities = [
-  {
-    path: 'test::NativeDataProduct',
-    content: {
-      _type: 'dataProduct',
-      nativeModelAccess: {
-        defaultExecutionContext: 'defaultCtx',
-        nativeModelExecutionContexts: [
-          {
-            key: 'defaultCtx',
-            mapping: {
-              path: 'model::dummyMapping',
-            },
-            runtime: {
-              path: 'model::dummyRuntime',
-            },
-          },
-        ],
-        featuredElements: [],
-        sampleQueries: [],
-      },
-      name: 'NativeDataProduct',
-      package: 'test',
-      title: 'My Native Product',
-      supportInfo: {
-        emails: [
-          {
-            address: 'native-support@test.org',
-            title: 'Support',
-          },
-        ],
-      },
-    },
-    classifierPath:
-      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
-  },
-  {
-    path: 'model::dummyMapping',
-    content: {
-      _type: 'mapping',
-      classMappings: [],
-      enumerationMappings: [],
-      includedMappings: [],
-      name: 'dummyMapping',
-      package: 'model',
-      tests: [],
-    },
-    classifierPath: 'meta::pure::mapping::Mapping',
-  },
-  {
-    path: 'model::dummyRuntime',
-    content: {
-      _type: 'runtime',
-      name: 'dummyRuntime',
-      package: 'model',
-      runtimeValue: {
-        _type: 'engineRuntime',
-        connectionStores: [],
-        connections: [],
-        mappings: [
-          {
-            path: 'model::dummyMapping',
-            type: 'MAPPING',
-          },
-        ],
-      },
-    },
-    classifierPath: 'meta::pure::runtime::PackageableRuntime',
-  },
-];
-
-const TEST_DATA__DataProductAndNativeDataProductEntities = [
-  {
-    path: 'test::MyDataProduct',
-    content: {
-      _type: 'dataProduct',
-      nativeModelAccess: {
-        defaultExecutionContext: 'defaultCtx',
-        nativeModelExecutionContexts: [
-          {
-            key: 'defaultCtx',
-            mapping: {
-              path: 'model::dummyMapping',
-            },
-            runtime: {
-              path: 'model::dummyRuntime2',
-            },
-          },
-        ],
-        featuredElements: [],
-        sampleQueries: [
-          {
-            _type: 'packageableElementSampleQuery',
-            executionContextKey: 'defaultCtx',
-            id: 'ID',
-            query: {
-              path: 'test::myFunction__String_1_',
-            },
-            title: 'Test Sample Query',
-          },
-        ],
-      },
-      accessPointGroups: [
-        {
-          _type: 'modelAccessPointGroup',
-          accessPoints: [
-            {
-              _type: 'functionAccessPoint',
-              id: 'myFuncAP',
-              query: {
-                _type: 'lambda',
-                body: [{ _type: 'integer', value: 1 }],
-                parameters: [],
-              },
-            },
-            {
-              _type: 'lakehouseAccessPoint',
-              id: 'myLakehouseAP',
-              func: {
-                _type: 'lambda',
-                body: [{ _type: 'integer', value: 1 }],
-                parameters: [],
-              },
-              reproducible: false,
-              targetEnvironment: 'Snowflake',
-            },
-          ],
-          id: 'grp1',
-          mapping: {
-            path: 'model::dummyMapping',
-          },
-        },
-      ],
-      name: 'MyDataProduct',
-      package: 'test',
-      title: 'My Test Product',
-      supportInfo: {
-        emails: [
-          {
-            address: 'support@test.org',
-            title: 'Support',
-          },
-        ],
-      },
-    },
-    classifierPath:
-      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
-  },
-  {
-    path: 'model::dummyMapping',
-    content: {
-      _type: 'mapping',
-      classMappings: [],
-      enumerationMappings: [],
-      includedMappings: [],
-      name: 'dummyMapping',
-      package: 'model',
-      tests: [],
-    },
-    classifierPath: 'meta::pure::mapping::Mapping',
-  },
-  {
-    path: 'model::dummyRuntime',
-    content: {
-      _type: 'runtime',
-      name: 'dummyRuntime',
-      package: 'model',
-      runtimeValue: {
-        _type: 'LakehouseRuntime',
-        connectionStores: [],
-        connections: [],
-        mappings: [
-          {
-            path: 'model::dummyMapping',
-            type: 'MAPPING',
-          },
-        ],
-        environment: 'Production',
-        warehouse: 'SNOW_WH_01',
-      },
-    },
-    classifierPath: 'meta::pure::runtime::PackageableRuntime',
-  },
-  {
-    path: 'model::dummyRuntime2',
-    content: {
-      _type: 'runtime',
-      name: 'dummyRuntime2',
-      package: 'model',
-      runtimeValue: {
-        _type: 'engineRuntime',
-        connectionStores: [],
-        connections: [],
-        mappings: [
-          {
-            path: 'model::dummyMapping',
-            type: 'MAPPING',
-          },
-        ],
-      },
-    },
-    classifierPath: 'meta::pure::runtime::PackageableRuntime',
-  },
-  {
-    classifierPath:
-      'meta::pure::metamodel::function::ConcreteFunctionDefinition',
-    path: 'test::myFunction__String_1_',
-    content: {
-      _type: 'function',
-      body: [
-        {
-          _type: 'string',
-          value: '',
-        },
-      ],
-      name: 'myFunction__String_1_',
-      package: 'test',
-      parameters: [],
-      postConstraints: [],
-      preConstraints: [],
-      returnMultiplicity: {
-        lowerBound: 1,
-        upperBound: 1,
-      },
-      returnGenericType: {
-        rawType: {
-          _type: 'packageableType',
-          fullPath: 'String',
-        },
-      },
-    },
-  },
-];
-
 describe('DataProduct Info', () => {
   describe('Marketplace URL generation', () => {
     test(
@@ -460,25 +207,6 @@ describe('DataProduct Info', () => {
 
   describe('Route generation', () => {
     test(
-      unitTest('generateDataProductNativeRoute produces correct URL pattern'),
-      () => {
-        const route = generateDataProductNativeRoute(
-          'com.example',
-          'my-artifact',
-          '1.0.0',
-          'test::MyDataProduct',
-          'defaultCtx',
-        );
-        expect(route).toContain('/data-product/native/');
-        expect(route).toContain('com.example');
-        expect(route).toContain('my-artifact');
-        expect(route).toContain('1.0.0');
-        expect(route).toContain('test::MyDataProduct');
-        expect(route).toContain('defaultCtx');
-      },
-    );
-
-    test(
       unitTest('generateDataProductModelRoute produces correct URL pattern'),
       () => {
         const route = generateDataProductModelRoute(
@@ -491,23 +219,6 @@ describe('DataProduct Info', () => {
         expect(route).toContain('/data-product/model/');
         expect(route).toContain('test::MyDataProduct');
         expect(route).toContain('grp1');
-      },
-    );
-
-    test(
-      unitTest(
-        'generateDataProductRoute dispatches to native route for NATIVE type',
-      ),
-      () => {
-        const route = generateDataProductRoute(
-          'com.example',
-          'my-artifact',
-          '1.0.0',
-          'test::MyDataProduct',
-          DataProductAccessType.NATIVE,
-          'defaultCtx',
-        );
-        expect(route).toContain('/data-product/native/');
       },
     );
 
@@ -556,14 +267,14 @@ describe('DataProduct Info', () => {
           'my-artifact',
           '1.0.0',
           'test::MyProduct',
-          DataProductAccessType.NATIVE,
+          DataProductAccessType.MODEL,
           'execKey1',
         );
         expect(dp.groupId).toBe('com.example');
         expect(dp.artifactId).toBe('my-artifact');
         expect(dp.versionId).toBe('1.0.0');
         expect(dp.dataProductPath).toBe('test::MyProduct');
-        expect(dp.dataProductType).toBe(DataProductAccessType.NATIVE);
+        expect(dp.dataProductType).toBe(DataProductAccessType.MODEL);
         expect(dp.id).toBe('execKey1');
         expect(dp.path).toBe('test::MyProduct');
         expect(dp.execContext).toBe('execKey1');
@@ -682,124 +393,6 @@ describe('DataProduct Info', () => {
     );
   });
 
-  describe('Existing Query - Native Execution Context', () => {
-    test(
-      integrationTest(
-        'Loads existing query with native execution context and renders query builder',
-      ),
-      async () => {
-        const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore();
-        mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
-        const { renderResult } =
-          await TEST__setUpDataProductNativeExistingQueryEditor(
-            mockedQueryEditorStore,
-            'test::NativeDataProduct',
-            'defaultCtx',
-            stub_RawLambda(),
-            TEST_DATA__NativeDataProductEntities,
-          );
-
-        // Open the "See more options" menu
-        await act(async () => {
-          fireEvent.click(renderResult.getByTitle('See more options'));
-        });
-
-        // Click "About Data Product"
-        await act(async () => {
-          fireEvent.click(renderResult.getByText('About Data Product'));
-        });
-
-        // Verify the modal is shown and contains expected content
-        const aboutModal = await waitFor(() =>
-          renderResult.getByRole('dialog'),
-        );
-
-        // About Data Product title
-        await waitFor(() => getByText(aboutModal, 'About Data Product'));
-
-        // Project info
-        await waitFor(() =>
-          getByText(aboutModal, 'test.group:test-artifact:0.0.0'),
-        );
-
-        // Data Product name (title field)
-        await waitFor(() => getByText(aboutModal, 'My Native Product'));
-
-        // Mapping
-        await waitFor(() => getByText(aboutModal, 'dummyMapping'));
-
-        // Support Email
-        await waitFor(() => getByText(aboutModal, 'native-support@test.org'));
-      },
-    );
-  });
-
-  describe('Existing Query - Native Execution Context on DataProduct also containing ModelAccess', () => {
-    test(
-      integrationTest(
-        'Loads existing query with native execution context and renders query builder when data product contains both nativeModelAccess and modelAccessPointGroup',
-      ),
-      async () => {
-        const mockedQueryEditorStore = TEST__provideMockedQueryEditorStore();
-        mockedQueryEditorStore.setExistingQueryName(TEST_QUERY_NAME);
-        // Build mock artifact with sample query
-        const sampleQueryInfo = new V1_TemplateExecutableInfo();
-        sampleQueryInfo.id = 'ID';
-        sampleQueryInfo.executionContextKey = 'defaultCtx';
-        sampleQueryInfo.query = 'test::myFunction__String_1_';
-        const sampleQuery = new V1_SampleQuery();
-        sampleQuery.title = 'Test Sample Query';
-        sampleQuery.info = sampleQueryInfo;
-        const nativeAccess = new V1_NativeModelAccessInfo();
-        nativeAccess.sampleQueries = [sampleQuery];
-        const mockArtifact = new V1_DataProductArtifact();
-        mockArtifact.nativeModelAccess = nativeAccess;
-
-        const { renderResult } =
-          await TEST__setUpDataProductNativeExistingQueryEditor(
-            mockedQueryEditorStore,
-            'test::MyDataProduct',
-            'defaultCtx',
-            stub_RawLambda(),
-            TEST_DATA__DataProductAndNativeDataProductEntities,
-            mockArtifact,
-          );
-
-        // Verify the Context dropdown is visible with the current native context selected
-        const contextLabel = await waitFor(() =>
-          renderResult.getByTitle('execution id'),
-        );
-        expect(contextLabel.textContent).toBe('Execution ID');
-
-        // Verify both MODEL and NATIVE tags are present in the dropdown options
-        const contextInput = renderResult.container.querySelector(
-          '#query-builder__setup__execution-id-selector',
-        ) as HTMLElement;
-        fireEvent.keyDown(contextInput, { key: 'ArrowDown' });
-        // Both model and native options should show their tags
-        await waitFor(() => renderResult.getByText('MODEL'));
-        // NATIVE appears twice: in the selected value display and in the menu option
-        await waitFor(() =>
-          expect(renderResult.queryAllByText('NATIVE').length).toBe(2),
-        );
-
-        // Verify the Sample Queries button is visible with count 1
-        const sampleQueriesButton = await waitFor(() =>
-          renderResult.getByText('Sample Queries ( 1 )'),
-        );
-        expect(sampleQueriesButton).not.toBeNull();
-
-        // Click the Sample Queries button
-        await act(async () => {
-          fireEvent.click(sampleQueriesButton);
-        });
-
-        // Verify the sample query title is visible in the popover
-        await waitFor(() => renderResult.getByText('Test Sample Query'));
-      },
-    );
-  });
-
   describe('Existing Query - ModelAccess Execution Context', () => {
     test(
       integrationTest(
@@ -829,164 +422,7 @@ describe('DataProduct Info', () => {
   });
 });
 
-describe('Sample Query - Native Execution Context', () => {
-  test(
-    integrationTest('Load Sample Data Product Query in Query Editor'),
-    async () => {
-      const mockedQueryEditorStore =
-        TEST__provideMockedDataProductSampleQueryCreatorStore();
-
-      // Build artifact with sample query matching id 'sampleQuery'
-      const sampleQueryInfo = new V1_TemplateExecutableInfo();
-      sampleQueryInfo.id = 'sampleQuery';
-      sampleQueryInfo.executionContextKey = 'defaultCtx';
-      sampleQueryInfo.query = 'test::myFunction__String_1_';
-      const sampleQuery = new V1_SampleQuery();
-      sampleQuery.title = 'Test Sample Query';
-      sampleQuery.info = sampleQueryInfo;
-      const nativeAccess = new V1_NativeModelAccessInfo();
-      nativeAccess.sampleQueries = [sampleQuery];
-      const dataProductInfo = new V1_DataProductInfo();
-      dataProductInfo.path = 'test::MyDataProduct';
-      const mockArtifact = new V1_DataProductArtifact();
-      mockArtifact.nativeModelAccess = nativeAccess;
-      mockArtifact.dataProduct = dataProductInfo;
-
-      const { renderResult } = await TEST__setUpDataProductSampleQueryEditor(
-        mockedQueryEditorStore,
-        'test::MyDataProduct',
-        'defaultCtx',
-        stub_RawLambda(),
-        TEST_DATA__DataProductAndNativeDataProductEntities,
-        mockArtifact,
-      );
-
-      expect(
-        renderResult.getByRole('button', { name: 'Run Query' }),
-      ).toBeDefined();
-
-      // Open About Data Product modal
-      await act(async () => {
-        fireEvent.click(renderResult.getByTitle('See more options'));
-      });
-      await act(async () => {
-        fireEvent.click(renderResult.getByText('About Data Product'));
-      });
-      const aboutModal = await waitFor(() => renderResult.getByRole('dialog'));
-      await waitFor(() => getByText(aboutModal, 'My Test Product'));
-      await waitFor(() =>
-        getByText(aboutModal, 'test-group:test-artifact:test-version'),
-      );
-      await waitFor(() => getByText(aboutModal, 'support@test.org'));
-
-      // Copy link copies a data product native route
-      const mockWriteText = jest
-        .fn<(text: string) => Promise<void>>()
-        .mockResolvedValue(undefined);
-      Object.assign(navigator, {
-        clipboard: { writeText: mockWriteText },
-      });
-      const copyLinkButton = renderResult.getByTitle(
-        'copy data product query set up link to clipboard',
-      );
-      await act(async () => {
-        fireEvent.click(copyLinkButton);
-      });
-      expect(mockWriteText).toHaveBeenCalledTimes(1);
-      expect(mockWriteText).toHaveBeenCalledWith(
-        expect.stringContaining('/data-product/native/'),
-      );
-      expect(mockWriteText).toHaveBeenCalledWith(
-        expect.stringContaining('test::MyDataProduct'),
-      );
-    },
-  );
-
-  test(
-    integrationTest(
-      'Sample Data Product Query tags its source info with the sample query',
-    ),
-    async () => {
-      const mockedQueryEditorStore =
-        TEST__provideMockedDataProductSampleQueryCreatorStore();
-
-      const sampleQueryInfo = new V1_TemplateExecutableInfo();
-      sampleQueryInfo.id = 'sampleQuery';
-      sampleQueryInfo.executionContextKey = 'defaultCtx';
-      sampleQueryInfo.query = 'test::myFunction__String_1_';
-      const sampleQuery = new V1_SampleQuery();
-      sampleQuery.title = 'Test Sample Query';
-      sampleQuery.info = sampleQueryInfo;
-      const nativeAccess = new V1_NativeModelAccessInfo();
-      nativeAccess.sampleQueries = [sampleQuery];
-      const dataProductInfo = new V1_DataProductInfo();
-      dataProductInfo.path = 'test::MyDataProduct';
-      const mockArtifact = new V1_DataProductArtifact();
-      mockArtifact.nativeModelAccess = nativeAccess;
-      mockArtifact.dataProduct = dataProductInfo;
-
-      await TEST__setUpDataProductSampleQueryEditor(
-        mockedQueryEditorStore,
-        'test::MyDataProduct',
-        'defaultCtx',
-        stub_RawLambda(),
-        TEST_DATA__DataProductAndNativeDataProductEntities,
-        mockArtifact,
-      );
-
-      // the shared data product builder is mocked, so check the source info
-      // the sample query creator passes to it
-      const buildCalls = (
-        mockedQueryEditorStore.buildDataProductQueryBuilderState as ReturnType<
-          typeof createMock
-        >
-      ).mock.calls;
-      expect(buildCalls).toHaveLength(1);
-      expect(buildCalls[0]?.[10]).toEqual({
-        sourceType: LegendQuerySourceType.DATA_PRODUCT_SAMPLE,
-        groupId: 'test-group',
-        artifactId: 'test-artifact',
-        versionId: 'test-version',
-        dataProduct: 'test::MyDataProduct',
-        sampleQueryId: 'sampleQuery',
-      });
-    },
-  );
-});
-
 describe('resolveQueryableElement', () => {
-  test(
-    unitTest(
-      'returns QueryableDataProduct when all data-product params are present',
-    ),
-    () => {
-      const dpParams = {
-        [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
-          generateGAVCoordinates('com.example', 'my-artifact', '1.0.0'),
-        [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]:
-          'test::MyDataProduct',
-        [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE]:
-          DataProductAccessType.NATIVE,
-        [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_ID]:
-          'defaultCtx',
-      };
-      const result = resolveQueryableElement(
-        dpParams,
-        {},
-        undefined,
-        undefined,
-      );
-      expect(result).toBeInstanceOf(QueryableDataProduct);
-      const dp = result as QueryableDataProduct;
-      expect(dp.groupId).toBe('com.example');
-      expect(dp.artifactId).toBe('my-artifact');
-      expect(dp.versionId).toBe('1.0.0');
-      expect(dp.dataProductPath).toBe('test::MyDataProduct');
-      expect(dp.dataProductType).toBe(DataProductAccessType.NATIVE);
-      expect(dp.id).toBe('defaultCtx');
-    },
-  );
-
   test(unitTest('returns QueryableDataProduct for MODEL access type'), () => {
     const dpParams = {
       [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV]:
@@ -1100,7 +536,7 @@ describe('resolveQueryableElement', () => {
         [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]:
           'test::MyDataProduct',
         [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE]:
-          DataProductAccessType.NATIVE,
+          DataProductAccessType.MODEL,
         [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_ID]:
           'ap1',
         [DATA_SPACE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_SPACE_PATH]:
@@ -1140,7 +576,7 @@ describe('resolveQueryableElement', () => {
         [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH]:
           'test::MyDataProduct',
         [DATA_PRODUCT_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_ACCESS_TYPE]:
-          DataProductAccessType.NATIVE,
+          DataProductAccessType.MODEL,
         // accessId intentionally missing
       };
       const result = resolveQueryableElement(
@@ -1199,7 +635,6 @@ describe('Route generation - completeness', () => {
     ),
     () => {
       const routes = [
-        generateDataProductNativeRoute('g', 'a', 'v', 'dp::Path', 'apId'),
         generateDataProductModelRoute('g', 'a', 'v', 'dp::Path', 'apId'),
         generateDataProductLakehouseRoute('g', 'a', 'v', 'dp::Path', 'apId'),
       ];
@@ -1209,79 +644,9 @@ describe('Route generation - completeness', () => {
       }
     },
   );
-
-  test(
-    unitTest(
-      'generateDataProductSampleQueryRoute produces correct URL pattern',
-    ),
-    () => {
-      const route = generateDataProductSampleQueryRoute(
-        'com.example',
-        'my-artifact',
-        '1.0.0',
-        'test::MyDataProduct',
-        'sq-001',
-      );
-      expect(route).toContain('/data-product/native/sample-query/');
-      expect(route).toContain('test::MyDataProduct');
-      expect(route).toContain('sq-001');
-    },
-  );
-
-  test(
-    unitTest(
-      'sample query route matches the DATA_PRODUCT_SAMPLE_QUERY pattern',
-    ),
-    () => {
-      const route = generateDataProductSampleQueryRoute(
-        'g',
-        'a',
-        'v',
-        'dp::Path',
-        'sqId',
-      );
-      const match = matchPath(
-        LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT_SAMPLE_QUERY,
-        route,
-      );
-      expect(match).not.toBeNull();
-    },
-  );
 });
 
 describe('Route round-trip', () => {
-  test(
-    unitTest(
-      'native route round-trips through resolveQueryableElement to QueryableDataProduct',
-    ),
-    () => {
-      const route = generateDataProductNativeRoute(
-        'com.example',
-        'my-artifact',
-        '1.0.0',
-        'test::MyDP',
-        'nativeAP',
-      );
-      const match = matchPath(LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT, route);
-      expect(match).not.toBeNull();
-      const params = (match as NonNullable<typeof match>).params;
-      const result = resolveQueryableElement(
-        params,
-        params,
-        undefined,
-        undefined,
-      );
-      expect(result).toBeInstanceOf(QueryableDataProduct);
-      const dp = result as QueryableDataProduct;
-      expect(dp.groupId).toBe('com.example');
-      expect(dp.artifactId).toBe('my-artifact');
-      expect(dp.versionId).toBe('1.0.0');
-      expect(dp.dataProductPath).toBe('test::MyDP');
-      expect(dp.dataProductType).toBe(DataProductAccessType.NATIVE);
-      expect(dp.id).toBe('nativeAP');
-    },
-  );
-
   test(
     unitTest(
       'model route round-trips through resolveQueryableElement to QueryableDataProduct',
@@ -1339,50 +704,11 @@ describe('Route round-trip', () => {
     },
   );
 
-  test(
-    unitTest(
-      'sample query route round-trips and extracts GAV, dataProductPath, and sampleQueryId',
-    ),
-    () => {
-      const route = generateDataProductSampleQueryRoute(
-        'com.example',
-        'my-artifact',
-        '1.0.0',
-        'test::MyDP',
-        'sq-001',
-      );
-      const match = matchPath(
-        LEGEND_QUERY_ROUTE_PATTERN.DATA_PRODUCT_SAMPLE_QUERY,
-        route,
-      );
-      expect(match).not.toBeNull();
-      const params = (match as NonNullable<typeof match>).params;
-      const gavParam =
-        params[DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.GAV];
-      expect(gavParam).toBeDefined();
-      const parsed = parseGAVCoordinates(gavParam as string);
-      expect(parsed.groupId).toBe('com.example');
-      expect(parsed.artifactId).toBe('my-artifact');
-      expect(parsed.versionId).toBe('1.0.0');
-      expect(
-        params[
-          DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN
-            .DATA_PRODUCT_PATH
-        ],
-      ).toBe('test::MyDP');
-      expect(
-        params[
-          DATA_PRODUCT_SAMPLE_QUERY_CREATOR_ROUTE_PATTERN_TOKEN.SAMPLE_QUERY_ID
-        ],
-      ).toBe('sq-001');
-    },
-  );
-
   test(unitTest('GAV coordinates survive the route round-trip intact'), () => {
     const groupId = 'com.very.long.group';
     const artifactId = 'my-complex-artifact';
     const versionId = '10.20.30';
-    const route = generateDataProductNativeRoute(
+    const route = generateDataProductModelRoute(
       groupId,
       artifactId,
       versionId,

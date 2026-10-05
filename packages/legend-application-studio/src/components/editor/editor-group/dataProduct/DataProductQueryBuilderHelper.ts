@@ -17,7 +17,6 @@
 import {
   type DataProduct,
   type DataProductAccessor,
-  type NativeModelExecutionContext,
   LakehouseAccessPoint,
   ModelAccessPointGroup,
 } from '@finos/legend-graph';
@@ -39,9 +38,6 @@ import {
 
 const isQueryableDataProduct = (dataProduct: DataProduct): boolean => {
   return (
-    Boolean(
-      dataProduct.nativeModelAccess?.nativeModelExecutionContexts.length,
-    ) ||
     dataProduct.accessPointGroups.filter(filterByType(ModelAccessPointGroup))
       .length > 0 ||
     dataProduct.accessPointGroups
@@ -53,13 +49,7 @@ const isQueryableDataProduct = (dataProduct: DataProduct): boolean => {
 
 const resolveDefaultExecState = (
   dataProduct: DataProduct,
-):
-  | ModelAccessPointGroup
-  | LakehouseAccessPoint
-  | NativeModelExecutionContext
-  | undefined => {
-  const nativeAccessPoints =
-    dataProduct.nativeModelAccess?.defaultExecutionContext;
+): ModelAccessPointGroup | LakehouseAccessPoint | undefined => {
   const modeled = dataProduct.accessPointGroups.filter(
     filterByType(ModelAccessPointGroup),
   )[0];
@@ -67,7 +57,7 @@ const resolveDefaultExecState = (
     .map((group) => group.accessPoints)
     .flat()
     .filter(filterByType(LakehouseAccessPoint))[0];
-  return modeled ?? lakehouseAccessPoints ?? nativeAccessPoints;
+  return modeled ?? lakehouseAccessPoints;
 };
 
 export const queryDataProduct = async (
@@ -77,7 +67,7 @@ export const queryDataProduct = async (
   try {
     assertTrue(
       isQueryableDataProduct(dataProduct),
-      'Data Product is not queryable. Data Product must have either a lakehouse, model or native access point',
+      'Data Product is not queryable. Data Product must have either a lakehouse or model access point',
     );
     const embeddedQueryBuilderState = editorStore.embeddedQueryBuilderState;
     const defaultExecutionContext = guaranteeNonNullable(

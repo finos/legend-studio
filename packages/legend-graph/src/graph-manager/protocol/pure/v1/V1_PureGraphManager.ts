@@ -395,6 +395,7 @@ import { V1_Availability } from './model/packageableElements/availability/V1_Ava
 import {
   V1_DataProductArtifact,
   V1_ModelAccessPointGroupInfo,
+  type V1_AccessPointGroupInfo,
   type V1_NativeModelExecutionContextInfo,
   type V1_MappingGenerationInfo,
 } from './lakehouse/deploy/V1_DataProductArtifact.js';
@@ -4148,6 +4149,42 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     );
   }
 
+  private buildLakehouseAccessPointGroupFromInfo(
+    groupInfo: V1_AccessPointGroupInfo,
+    pureGraph: PureModel,
+  ): AccessPointGroup {
+    const apGroup = new AccessPointGroup();
+    apGroup.id = groupInfo.id;
+    apGroup.description = groupInfo.description;
+    apGroup.accessPoints = groupInfo.accessPointImplementations.map(
+      (apImpl) => {
+        const lakehouseAP = new LakehouseAccessPoint(
+          apImpl.id,
+          '',
+          new RawLambda(undefined, undefined),
+          apGroup,
+        );
+        lakehouseAP.description = apImpl.description;
+        lakehouseAP.__internal__RelationType =
+          V1_buildRelationTypeFromAccessPointImplementation(apImpl, pureGraph);
+        return lakehouseAP;
+      },
+    );
+    return apGroup;
+  }
+
+  private buildModelAccessPointGroupStubFromInfo(
+    groupInfo: V1_ModelAccessPointGroupInfo,
+  ): ModelAccessPointGroup {
+    const group = new ModelAccessPointGroup();
+    group.id = groupInfo.id;
+    group.description = groupInfo.description;
+    group.mapping = PackageableElementExplicitReference.create(
+      new Mapping(groupInfo.mappingGeneration.path),
+    );
+    return group;
+  }
+
   private async buildLakehouseAccessDataProductAnalysis(
     artifact: V1_DataProductArtifact,
     dataProductPath: string,
@@ -4184,36 +4221,17 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
 
     const dataProduct = pureGraph.getDataProduct(dataProductPath);
 
-    // Create access point groups with LakehouseAccessPoints from artifact data
-    dataProduct.accessPointGroups = artifact.accessPointGroups
-      .filter(
-        (groupInfo) => !(groupInfo instanceof V1_ModelAccessPointGroupInfo),
-      )
-      .map((groupInfo) => {
-        const apGroup = new AccessPointGroup();
-        apGroup.id = groupInfo.id;
-        apGroup.description = groupInfo.description;
-        apGroup.accessPoints = groupInfo.accessPointImplementations.map(
-          (apImpl) => {
-            const lakehouseAP = new LakehouseAccessPoint(
-              apImpl.id,
-              '', // targetEnvironment is not available in the artifact
-              new RawLambda(undefined, undefined),
-              apGroup,
-            );
-            lakehouseAP.description = apImpl.description;
-            // Cache the relation type derived from the artifact's lambda
-            // generic type so downstream consumers can avoid re-computing it.
-            lakehouseAP.__internal__RelationType =
-              V1_buildRelationTypeFromAccessPointImplementation(
-                apImpl,
-                pureGraph,
-              );
-            return lakehouseAP;
-          },
+    dataProduct.accessPointGroups = artifact.accessPointGroups.map(
+      (groupInfo) => {
+        if (groupInfo instanceof V1_ModelAccessPointGroupInfo) {
+          return this.buildModelAccessPointGroupStubFromInfo(groupInfo);
+        }
+        return this.buildLakehouseAccessPointGroupFromInfo(
+          groupInfo,
+          pureGraph,
         );
-        return apGroup;
-      });
+      },
+    );
 
     // Find the lakehouse access point matching the requested id
     const lakehouseResult = dataProduct.accessPointGroups
@@ -4389,8 +4407,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       data.nativeModelAccess = na;
     }
 
-    if (modelAccessPointGroups.length > 0) {
-      data.accessPointGroups = modelAccessPointGroups.map((groupInfo) => {
+    data.accessPointGroups = artifact.accessPointGroups.map((groupInfo) => {
+      if (groupInfo instanceof V1_ModelAccessPointGroupInfo) {
         const group = new ModelAccessPointGroup();
         group.id = groupInfo.id;
         const groupMappingPath = groupInfo.mappingGeneration.path;
@@ -4405,8 +4423,9 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           pureGraph,
         );
         return group;
-      });
-    }
+      }
+      return this.buildLakehouseAccessPointGroupFromInfo(groupInfo, pureGraph);
+    });
 
     // Resolve the target exec state
     if (accessGroup instanceof V1_ModelAccessPointGroupInfo) {

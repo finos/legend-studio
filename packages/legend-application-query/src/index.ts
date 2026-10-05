@@ -32,7 +32,6 @@ export {
   generateExistingQueryEditorRoute,
   generateServiceQueryCreatorRoute,
   generateDataProductRoute,
-  generateDataProductNativeRoute,
   generateDataProductModelRoute,
   generateDataProductLakehouseRoute,
   LEGEND_QUERY_ROUTE_PATTERN,

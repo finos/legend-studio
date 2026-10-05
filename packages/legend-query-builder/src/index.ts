@@ -67,12 +67,10 @@ export { FunctionQueryBuilderState } from './stores/workflows/FunctionQueryBuild
 export {
   DataProductQueryBuilderState,
   type DataProductOption,
-  buildExecOptions,
   type ModelAccessPointGroupOption,
   buildModelAccessPointGroupOption,
   type ExecutionIdOption,
   resolveDataProductAccessor,
-  NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
   LakehouseDataProductExecutionState,
 } from './stores/workflows/dataProduct/DataProductQueryBuilderState.js';
