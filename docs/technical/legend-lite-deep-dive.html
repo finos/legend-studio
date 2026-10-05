@@ -1,0 +1,2266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Legend Lite Deep Dive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f4f6f8;
+        --surface: #ffffff;
+        --surface-2: #eaeef2;
+        --ink: #18202b;
+        --ink-2: #465263;
+        --ink-3: #6b7686;
+        --rule: #d5dbe2;
+        --accent: #1f5fbf;
+        --accent-soft: #e3ecfa;
+        --code-bg: #eef1f5;
+        --lite: #0f7a62;
+        --lite-soft: #dcf2ea;
+        --studio: #8a4b0f;
+        --studio-soft: #f8ead9;
+        --diff: #5a4aa8;
+        --diff-soft: #ebe8f8;
+        --warn: #9a6a00;
+        --warn-soft: #fbf1d5;
+        --sql-kw: #1f5fbf;
+        --sql-str: #0f7a62;
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          --bg: #11161d;
+          --surface: #171e27;
+          --surface-2: #1f2833;
+          --ink: #e3e8ef;
+          --ink-2: #aeb8c6;
+          --ink-3: #8692a3;
+          --rule: #2b3542;
+          --accent: #7fb0ff;
+          --accent-soft: #1d2b42;
+          --code-bg: #1b232e;
+          --lite: #5fd3b0;
+          --lite-soft: #15332b;
+          --studio: #f0b36e;
+          --studio-soft: #3a2a17;
+          --diff: #b5a8ff;
+          --diff-soft: #2a2645;
+          --warn: #f1c75b;
+          --warn-soft: #352c12;
+          --sql-kw: #7fb0ff;
+          --sql-str: #5fd3b0;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme='dark'] {
+        --bg: #11161d;
+        --surface: #171e27;
+        --surface-2: #1f2833;
+        --ink: #e3e8ef;
+        --ink-2: #aeb8c6;
+        --ink-3: #8692a3;
+        --rule: #2b3542;
+        --accent: #7fb0ff;
+        --accent-soft: #1d2b42;
+        --code-bg: #1b232e;
+        --lite: #5fd3b0;
+        --lite-soft: #15332b;
+        --studio: #f0b36e;
+        --studio-soft: #3a2a17;
+        --diff: #b5a8ff;
+        --diff-soft: #2a2645;
+        --warn: #f1c75b;
+        --warn-soft: #352c12;
+        --sql-kw: #7fb0ff;
+        --sql-str: #5fd3b0;
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--ink);
+        font-family:
+          'IBM Plex Sans',
+          system-ui,
+          -apple-system,
+          'Segoe UI',
+          sans-serif;
+        font-size: 15.5px;
+        line-height: 1.6;
+        padding-inline: 16px;
+        padding-block: 0 64px;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 220px minmax(0, 1fr);
+        gap: 48px;
+      }
+      @media (max-width: 900px) {
+        .wrap {
+          grid-template-columns: minmax(0, 1fr);
+          gap: 0;
+        }
+        .toc {
+          display: none;
+        }
+      }
+      .toc {
+        position: sticky;
+        top: env(safe-area-inset-top, 0px);
+        align-self: start;
+        padding-top: 40px;
+        font-size: 13.5px;
+        max-height: 100vh;
+        overflow-y: auto;
+      }
+      .toc .k {
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 11.5px;
+        color: var(--ink-3);
+        margin-bottom: 8px;
+      }
+      .toc ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 2px;
+      }
+      .toc a {
+        color: var(--ink-2);
+        text-decoration: none;
+        display: block;
+        padding: 4px 10px;
+        border-left: 2px solid var(--rule);
+      }
+      .toc a:hover,
+      .toc a:focus-visible {
+        color: var(--accent);
+        border-left-color: var(--accent);
+        outline: none;
+      }
+      main {
+        min-width: 0;
+        padding-top: 32px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+        text-wrap: balance;
+        line-height: 1.2;
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(30px, 4.4vw, 44px);
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 27px;
+        font-weight: 600;
+        margin-top: 56px;
+        padding-top: 18px;
+        border-top: 1px solid var(--rule);
+      }
+      h3 {
+        font-size: 19px;
+        font-weight: 600;
+        margin-top: 30px;
+      }
+      p,
+      li {
+        max-width: 72ch;
+      }
+      p {
+        margin: 12px 0;
+      }
+      a {
+        color: var(--accent);
+      }
+      code,
+      .mono {
+        font-family: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+        font-size: 0.86em;
+      }
+      :not(pre) > code {
+        background: var(--code-bg);
+        padding: 1px 5px;
+        border-radius: 4px;
+        overflow-wrap: anywhere;
+      }
+      pre {
+        background: var(--code-bg);
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-size: 13.5px;
+        line-height: 1.55;
+        margin: 14px 0;
+      }
+      pre code {
+        font-size: inherit;
+        background: none;
+        padding: 0;
+      }
+      .kw {
+        color: var(--sql-kw);
+        font-weight: 500;
+      }
+      .str {
+        color: var(--sql-str);
+      }
+      .cm {
+        color: var(--ink-3);
+      }
+      .eyebrow {
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 600;
+      }
+      .lede {
+        font-size: 18px;
+        color: var(--ink-2);
+        max-width: 68ch;
+        margin-top: 14px;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 18px;
+        color: var(--ink-3);
+        font-size: 13px;
+        margin-top: 16px;
+      }
+      .meta span {
+        font-variant-numeric: tabular-nums;
+      }
+      .tldr {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 18px 22px;
+        margin-top: 26px;
+      }
+      .tldr h3 {
+        margin-top: 0;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--ink-2);
+      }
+      .tldr ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+        display: grid;
+        gap: 6px;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 12px;
+        margin: 22px 0;
+      }
+      .stat {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        padding: 12px 14px;
+      }
+      .stat b {
+        display: block;
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        font-size: 24px;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat small {
+        color: var(--ink-3);
+        font-size: 12.5px;
+        line-height: 1.4;
+        display: block;
+      }
+      .tbl {
+        overflow-x: auto;
+        margin: 14px 0;
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--rule);
+      }
+      th {
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-2);
+        background: var(--surface-2);
+        position: sticky;
+        top: 0;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      td.f {
+        font-weight: 600;
+        min-width: 150px;
+      }
+      td .ev {
+        display: block;
+        color: var(--ink-3);
+        font-size: 12.5px;
+        margin-top: 3px;
+        overflow-wrap: anywhere;
+      }
+      .chip {
+        display: inline-block;
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 2px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .chip.lite {
+        background: var(--lite-soft);
+        color: var(--lite);
+      }
+      .chip.studio {
+        background: var(--studio-soft);
+        color: var(--studio);
+      }
+      .chip.diff {
+        background: var(--diff-soft);
+        color: var(--diff);
+      }
+      .chip.par {
+        background: var(--surface-2);
+        color: var(--ink-2);
+      }
+      .chip.eff {
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .chip.warn {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+      .pipeline {
+        list-style: none;
+        padding: 0;
+        margin: 16px 0;
+        display: grid;
+        gap: 0;
+        border: 1px solid var(--rule);
+        border-radius: 8px;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .pipeline li {
+        display: grid;
+        grid-template-columns: 44px 150px minmax(0, 1fr);
+        gap: 12px;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--rule);
+        max-width: none;
+        align-items: baseline;
+      }
+      .pipeline li:last-child {
+        border-bottom: 0;
+      }
+      .pipeline .ph {
+        font-family: 'IBM Plex Mono', monospace;
+        font-weight: 500;
+        color: var(--accent);
+      }
+      .pipeline .nm {
+        font-weight: 600;
+      }
+      .pipeline .band {
+        grid-column: 1/-1;
+        background: var(--surface-2);
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 12px;
+        color: var(--ink-2);
+        padding: 6px 14px;
+        margin: 0 -14px;
+      }
+      @media (max-width: 560px) {
+        .pipeline li {
+          grid-template-columns: 36px minmax(0, 1fr);
+        }
+        .pipeline .ds {
+          grid-column: 2;
+        }
+      }
+      .callout {
+        border-left: 3px solid var(--warn);
+        background: var(--warn-soft);
+        padding: 12px 16px;
+        border-radius: 0 8px 8px 0;
+        margin: 16px 0;
+        max-width: 80ch;
+      }
+      .callout p {
+        margin: 4px 0;
+      }
+      .feat {
+        display: grid;
+        gap: 14px;
+        margin-top: 18px;
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--rule);
+        border-radius: 10px;
+        padding: 16px 18px;
+      }
+      .card header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 8px 12px;
+      }
+      .card h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .card .rank {
+        font-family: 'IBM Plex Mono', monospace;
+        color: var(--ink-3);
+        font-size: 13px;
+      }
+      .card .tags {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-left: auto;
+      }
+      .card dl {
+        display: grid;
+        grid-template-columns: 120px minmax(0, 1fr);
+        gap: 6px 14px;
+        margin: 12px 0 0;
+      }
+      .card dt {
+        color: var(--ink-3);
+        font-size: 13px;
+        font-family: 'IBM Plex Sans Condensed', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding-top: 2px;
+      }
+      .card dd {
+        margin: 0;
+        max-width: 75ch;
+      }
+      @media (max-width: 560px) {
+        .card dl {
+          grid-template-columns: minmax(0, 1fr);
+        }
+        .card dt {
+          padding-top: 6px;
+        }
+      }
+      .two {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 14px;
+        margin: 14px 0;
+      }
+      .two .card h3 {
+        font-size: 16px;
+      }
+      .two ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 4px;
+        font-size: 14.5px;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        font-size: 13px;
+        color: var(--ink-2);
+        margin: 10px 0;
+      }
+      footer {
+        margin-top: 56px;
+        padding-top: 18px;
+        border-top: 1px solid var(--rule);
+        color: var(--ink-3);
+        font-size: 13px;
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="toc" aria-label="Contents">
+        <div class="k">Contents</div>
+        <ol>
+          <li><a href="#what">What it is</a></li>
+          <li><a href="#vs-engine">vs legend-engine</a></li>
+          <li><a href="#compile">Compilation</a></li>
+          <li><a href="#sql">SQL generation</a></li>
+          <li><a href="#exec">Execution</a></li>
+          <li><a href="#tests">Compatibility &amp; tests</a></li>
+          <li><a href="#query-gap">Query gap analysis</a></li>
+          <li><a href="#cube-gap">DataCube gap analysis</a></li>
+          <li><a href="#steal">DataCube features to add</a></li>
+          <li><a href="#ask">Questions for Neema</a></li>
+          <li><a href="#method">How this was checked</a></li>
+        </ol>
+      </nav>
+
+      <main>
+        <div class="eyebrow">neema2/legend-lite · read at commit 16c8120</div>
+        <h1>Legend Lite Deep Dive</h1>
+        <p class="lede">
+          What legend-lite is, how it compiles Pure, generates SQL and executes
+          queries compared with legend-engine, and how its new Legend Query and
+          DataCube compare with the ones in legend-studio.
+        </p>
+        <div class="meta">
+          <span
+            >Compared against: legend-studio <code>76b80a4b3</code> (Oct 2026) ·
+            legend-engine local checkout <code>b90b8b03e1</code> (Apr
+            2026)</span
+          >
+        </div>
+
+        <div class="tldr">
+          <h3>The short version</h3>
+          <ul>
+            <li>
+              <strong
+                >legend-lite is a clean-room rewrite of legend-engine's query
+                path in plain Java 21.</strong
+              >
+              It parses Pure with a hand-written parser, type-checks in Java,
+              and compiles every query to a single SQL statement that runs
+              inside the database. Engine, by contrast, runs Pure-written plan
+              generation on the legend-pure runtime and may finish work in the
+              JVM.
+            </li>
+            <li>
+              <strong>It is built to be wire-compatible with engine:</strong> it
+              serves the same <code>/api/pure/v1</code> endpoints, so a client
+              written for engine (Query, DataCube) can point at it. Its parser
+              emits byte-identical protocol JSON for its 22,725-element test
+              corpus.
+            </li>
+            <li>
+              <strong>The big architectural move:</strong> the same planner is
+              compiled to WebAssembly (TeaVM), so the Query and DataCube apps
+              can plan in the browser and run on DuckDB-WASM in the tab, with no
+              server.
+            </li>
+            <li>
+              <strong>Scope is narrow but deep:</strong> relational only, on
+              DuckDB, H2, Postgres and SQLite. Engine's ~20 database extensions
+              and its non-relational stores (service store, Mongo, Elastic,
+              flat-data…) are parse-only in lite.
+            </li>
+            <li>
+              <strong
+                >The Query app is days old (v1: 2026-10-01) and about 6.6K
+                lines</strong
+              >, against roughly 180K for yours. It covers the core
+              build/run/save loop. It has none of the enterprise surface: Depot
+              projects, data products, Lakehouse, services, lineage,
+              entitlements, AI chat.
+            </li>
+            <li>
+              <strong>The DataCube is the more interesting one.</strong> It
+              ships working versions of several features that are greyed-out
+              <em>WIP</em> placeholders in yours (heatmap, plot, treemap,
+              selection stats, HTML/PDF export), plus charts, dashboards,
+              drill-through, an OLAP ad-hoc mode and share links.
+            </li>
+          </ul>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <b>221K</b
+            ><small
+              >lines of Java in <code>core/src/main/java</code> (README quotes
+              ~120K for the compiler packages alone)</small
+            >
+          </div>
+          <div class="stat">
+            <b>5,763 · 2,881</b
+            ><small
+              >.java · .pure files in your legend-engine checkout (excluding
+              <code>target/</code>)</small
+            >
+          </div>
+          <div class="stat">
+            <b>0 vs 154</b
+            ><small
+              >ANTLR <code>.g4</code> grammars: legend-lite vs
+              legend-engine</small
+            >
+          </div>
+          <div class="stat">
+            <b>~49K vs ~50K</b
+            ><small
+              >lines of TS+CSS: lite DataCube vs your
+              <code>legend-data-cube</code> +
+              <code>legend-application-data-cube</code></small
+            >
+          </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <h2 id="what">1. What legend-lite is</h2>
+        <p>
+          The README describes it as
+          <q
+            >a clean-room reimplementation of the FINOS Legend Engine in modern
+            Java 21</q
+          >. In practice it reimplements the slice of engine that takes a Pure
+          model and a query and returns rows: parsing, compiling, mapping
+          resolution, SQL generation and execution. It was built as a
+          <em>strangler fig</em>. An older implementation (<code>engine/</code>,
+          package <code>com.gs.legend</code>) was replaced by
+          <code>core/</code> (package <code>com.legend</code>), and
+          <code>docs/GATES.md</code> records that the old module was deleted on
+          2026-08-11.
+        </p>
+        <p>
+          The repo is unusual in how much of its process is written down: 318
+          files in <code>docs/</code> (audits, homework, plans, burndowns), an
+          <code>AGENTS.md</code> of architectural invariants, and Bazel "gates"
+          that every change must pass. It reads as a project built largely with
+          AI agents under tight rules. For example: no fallbacks, no
+          <code>default -&gt;</code> in sealed switches, and the frontend does
+          all typing.
+        </p>
+
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr>
+                <th>Module</th>
+                <th>What it is</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="f"><code>core/</code></td>
+                <td>
+                  The compiler and runtime: lexer → parser → typer → store
+                  resolver → lowerer → SQL dialects → JDBC executor, plus the
+                  HTTP server (<code>com.legend.server</code>), LSP and diagram
+                  service. 1,058 Java files.
+                </td>
+              </tr>
+              <tr>
+                <td class="f"><code>wasm/</code></td>
+                <td>
+                  The planner (<code>planner.Wasm</code>) compiled ahead of time
+                  by TeaVM to a WebAssembly-GC module, with differential tests
+                  holding it to the JVM's answers.
+                </td>
+              </tr>
+              <tr>
+                <td class="f"><code>warehouse/</code></td>
+                <td>
+                  A small multi-user SQL server over native DuckDB (and
+                  attachable Postgres catalogs), with sign-in tokens and
+                  per-user history. DataCube's "Live" plane; also the
+                  <code>bazel run //datacube:app -- postgresql://…</code>
+                  developer path.
+                </td>
+              </tr>
+              <tr>
+                <td class="f"><code>datacube/</code></td>
+                <td>
+                  A DataCube rewritten in plain TypeScript and DOM (no React),
+                  using ECharts, DuckDB-WASM and fflate. ~49K lines, 221 TS
+                  files.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">
+                  <code>query/</code>, <code>query-store/</code>,
+                  <code>pure-protocol/</code>
+                </td>
+                <td>
+                  Legend Query rebuilt the same way (~6.6K lines), a saved-query
+                  store with the engine's <code>/pure/v1/query</code> contract,
+                  and a TS library for V1 protocol JSON.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">
+                  <code>pct/</code>, <code>parser-equivalence/</code>,
+                  <code>spec/</code>, <code>projects/</code>
+                </td>
+                <td>
+                  Compatibility harnesses. These are the upstream Pure
+                  Compatibility Tests run per database, byte-parity with
+                  engine's parser, the relational test corpus ported from
+                  engine, and ~55 synthetic finance projects used as a realistic
+                  model corpus.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">
+                  <code>tools/</code>, <code>experiments/</code>,
+                  <code>repro/</code>
+                </td>
+                <td>
+                  Census and scoreboard scripts, the release-bump tool, TeaVM
+                  rules, spikes.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Everything builds with Bazel (<code>bazel test //...</code>). The
+          legend-engine / legend-pure release used as the "spec" is pinned by
+          sha256 in <code>MODULE.bazel</code>, and the tests read upstream
+          sources as declared inputs.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 id="vs-engine">2. How it compares to legend-engine</h2>
+        <p>
+          The core difference is <strong>where the language lives</strong>. In
+          legend-engine, Pure is metacircular: the compiler builds a legend-pure
+          M3 graph (<code>PureModel.java</code>), and plan generation and SQL
+          generation are themselves written in Pure. Examples are
+          <code
+            >core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure</code
+          >
+          and the per-database <code>sqlQueryToString/dbExtension.pure</code>,
+          which are compiled to Java by legend-pure. An
+          <code>ExecutionPlan</code> is produced as data and executed node by
+          node by <code>PlanExecutor</code>. In legend-lite, every phase is
+          ordinary Java over sealed records, and there is no Pure interpreter in
+          the loop.
+        </p>
+
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr>
+                <th>Dimension</th>
+                <th>legend-engine</th>
+                <th>legend-lite</th>
+                <th>Why it matters</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="f">Parsing</td>
+                <td>
+                  ANTLR4: 154 <code>.g4</code> files in your checkout, walked
+                  into V1 protocol (<code>PureModelContextData</code>)
+                </td>
+                <td>
+                  Hand-written recursive descent
+                  (<code>parser/ElementParser</code>, <code>SpecParser</code>);
+                  no ANTLR anywhere
+                </td>
+                <td>
+                  Lite is far smaller and faster to start, but every grammar
+                  extension must be hand-ported. It keeps parity by diffing JSON
+                  against engine.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Compilation / typing</td>
+                <td>
+                  <code>PureModel</code> + <code>CompileContext</code> +
+                  per-element handlers build a legend-pure M3 graph; function
+                  typing is driven by Pure's own metamodel
+                </td>
+                <td>
+                  <code>PureModelContext.from</code> builds typed records;
+                  <code>SpecCompiler</code> with ~70 per-construct checkers and
+                  an <code>InferenceKernel</code> types queries into a sealed
+                  <code>TypedSpec</code> HIR
+                </td>
+                <td>
+                  Lite's typing is explicit, testable Java. The trade-off is
+                  that each native function's typing rule is hand-written, where
+                  engine gets it from the Pure signature.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Plan &amp; SQL generation</td>
+                <td>
+                  Written in Pure (router, <code>pureToSQLQuery.pure</code>,
+                  <code>dbExtension.pure</code> per DB), compiled to Java
+                </td>
+                <td>
+                  Java: <code>StoreResolver</code> (mapping → physical),
+                  <code>Lowerer</code> (→ dialect-free SQL tree),
+                  <code>SqlDialect.render</code>
+                </td>
+                <td>
+                  Lite has a single "fold" authority that decides when a SELECT
+                  can be extended or must be nested, which keeps SQL flat.
+                  Engine's SQL gen is extensible in Pure but much harder to
+                  follow.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Execution</td>
+                <td>
+                  <code>PlanExecutor</code> runs a tree of
+                  <code>ExecutionNode</code>s: SQL nodes, TDS/relation
+                  instantiation, graph-fetch nodes, in-memory and Java-codegen
+                  platform nodes
+                </td>
+                <td>
+                  <code>exec/Executor</code> runs one SQL statement over JDBC.
+                  Graph fetch and M2M are compiled to SQL that builds JSON
+                  (<code>json_object</code>, <code>json_group_array</code>)
+                </td>
+                <td>
+                  "100% push-down" is the design rule: no rows are processed in
+                  the JVM. Graph results are built by the database and streamed
+                  through as bytes.
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Databases</td>
+                <td>
+                  ~20 relational extensions (Snowflake, Databricks, BigQuery,
+                  Postgres, SQL Server, Sybase, Oracle, Trino, Spanner, DuckDB,
+                  H2…)
+                </td>
+                <td>
+                  DuckDB (primary), H2, Postgres (added Oct 2026), SQLite; plus
+                  "engine-style" renderers used to match engine's SQL text in
+                  tests
+                </td>
+                <td>Lite is not a drop-in for GS production stores today.</td>
+              </tr>
+              <tr>
+                <td class="f">Other stores</td>
+                <td>
+                  Service store, flat-data, Mongo, Elastic, external formats,
+                  persistence, function activators, GraphQL, SQL-to-Pure…
+                </td>
+                <td>
+                  These grammars <em>parse</em> (for parser parity) but none
+                  execute. The keywords appear only in <code>lexer/</code>,
+                  <code>parser/</code>, <code>model/</code> and
+                  <code>protocol/</code>
+                </td>
+                <td>Lite is relational-only.</td>
+              </tr>
+              <tr>
+                <td class="f">Extension model</td>
+                <td>
+                  ServiceLoader extensions across 50+ <code>xts-*</code> module
+                  families
+                </td>
+                <td>
+                  Closed: sealed hierarchies, dialect classes,
+                  <code>DialectCapability</code> flags. ArchUnit enforces 23
+                  dependency rules
+                </td>
+                <td>Lite favours exhaustiveness checks over pluggability.</td>
+              </tr>
+              <tr>
+                <td class="f">Milestoning</td>
+                <td>Full (business/processing/bitemporal)</td>
+                <td>
+                  Supported in the resolver
+                  (<code>resolver/TemporalContext</code>,
+                  <code>TemporalFrame</code>)
+                </td>
+                <td>Present, with less battle-testing.</td>
+              </tr>
+              <tr>
+                <td class="f">Runtime footprint</td>
+                <td>Large Dropwizard server, hundreds of jars</td>
+                <td>
+                  JDK <code>HttpServer</code>; one deploy jar; the core compiles
+                  against no jar, with exactly three JDBC drivers. The same
+                  planner also runs as WASM in a browser
+                </td>
+                <td>Lite can run on a laptop or in a browser tab.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Engine endpoints lite serves</h3>
+        <p>
+          From <code>core/…/server/LegendHttpServer.java</code> and
+          <code>PureV1Api.java</code>:
+          <code>grammar/grammarToJson/{lambda,model}</code>,
+          <code>grammar/jsonToGrammar/lambda</code> (+batch),
+          <code>compilation/{compile,lambdaRelationType,lambdaReturnType}</code
+          >, <code>execution/{generatePlan,execute}</code>, the
+          <code>/pure/v1/query</code> saved-query store,
+          <code>server/v1/currentUser</code>, plus <code>/lsp</code>,
+          <code>/engine/diagram</code> and <code>/health</code>. The model
+          travels as text (<code>{"_type":"text","code":…}</code>). It does
+          <strong>not</strong> serve SDLC, Depot, data space analytics, mapping
+          coverage analytics or the other analysis endpoints your Query app
+          calls (the design doc lists them as G6 and G9, "not added").
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 id="compile">3. Compilation</h2>
+        <p>
+          One driver, <code>com.legend.Compiler</code>, owns the order of eleven
+          phases. Phases A–F run once per model and produce a
+          <code>ModelContext</code>. Phases G–K run once per query. The table
+          below is the order from <code>core/README.md</code>.
+        </p>
+        <ol class="pipeline">
+          <li class="band">Frontend</li>
+          <li>
+            <span class="ph">A</span><span class="nm">Lex</span
+            ><span class="ds"
+              ><code>Lexer.tokenize</code>: text → <code>TokenStream</code> (int
+              arrays internally; JDK-only package)</span
+            >
+          </li>
+          <li>
+            <span class="ph">B</span><span class="nm">Parse elements</span
+            ><span class="ds"
+              ><code>ElementParser</code>: classes, enums, associations,
+              functions, databases, mappings, runtimes, connections and services
+              become sealed <code>PackageableElement</code> records named after
+              engine's protocol classes. Function bodies and derived properties
+              are parsed eagerly into value specs.</span
+            >
+          </li>
+          <li>
+            <span class="ph">C</span><span class="nm">Parse specs</span
+            ><span class="ds"
+              ><code>SpecParser</code>: expressions become
+              <code>LambdaFunction</code>, <code>AppliedFunction</code>,
+              <code>ColSpec</code>, <code>GraphFetchTree</code>… (engine names,
+              verbatim)</span
+            >
+          </li>
+          <li>
+            <span class="ph">D</span><span class="nm">Resolve names</span
+            ><span class="ds"
+              ><code>NameResolver.resolve</code>: imports and simple names
+              become fully qualified paths against the platform prelude</span
+            >
+          </li>
+          <li>
+            <span class="ph">E</span><span class="nm">Normalize</span
+            ><span class="ds"
+              ><code>ModelNormalizer</code>: the key design move.
+              <strong
+                >Mappings are desugared into synthesized Pure functions</strong
+              >, so a class mapping becomes "a function that returns this
+              class's rows". The legacy mapping DSL then flows through the same
+              machinery as user functions.</span
+            >
+          </li>
+          <li>
+            <span class="ph">F</span><span class="nm">Compile elements</span
+            ><span class="ds"
+              ><code>PureModelContext.from</code>: typed
+              <code>TypedClass</code>, <code>TypedMapping</code>,
+              <code>TypedDatabase</code>… Elements reference each other by FQN
+              string, not live pointers, so loading stays lazy. Function bodies
+              are <em>not</em> type-checked here; they are checked on
+              demand.</span
+            >
+          </li>
+          <li class="band">Per query</li>
+          <li>
+            <span class="ph">G</span><span class="nm">Compile spec</span
+            ><span class="ds"
+              ><code>SpecCompiler</code> / <code>Typer</code> dispatches each
+              native to a checker (<code>FilterChecker</code>,
+              <code>GroupByChecker</code>, <code>OverChecker</code>,
+              <code>PivotChecker</code>, <code>GraphFetchChecker</code>…). Each
+              returns a typed node with its type, multiplicity and, for
+              relations, a column schema (<code>RelationType</code>). Overloads
+              resolve in <code>Overloads</code>; lambda parameters are inferred
+              in <code>InferenceKernel</code>.</span
+            >
+          </li>
+          <li>
+            <span class="ph">G½</span><span class="nm">Inline</span
+            ><span class="ds"
+              ><code>UserCallInliner</code>: β-inlines user function calls so
+              the backend never sees a user call</span
+            >
+          </li>
+        </ol>
+        <p>
+          The rule that gives the design its shape is
+          <strong>"the frontend does all typing."</strong> If a type is missing
+          downstream, the fix goes in the frontend. The lowerer may not infer
+          anything. Errors carry a phase (<code
+            >PARSE, RESOLVE, NORMALIZE, MODEL, TYPE, MAPPING, LOWER,
+            EXECUTE</code
+          >) rather than a stack of Pure frames.
+        </p>
+        <p>
+          Compared with engine: engine's <code>PureModel</code> compiles
+          everything (including function bodies, via
+          <code>buildPureFunctions</code>) into a mutable M3 graph. Lite's
+          README explicitly calls that out as a violation it does not carry
+          forward.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 id="sql">4. SQL generation</h2>
+        <ol class="pipeline">
+          <li class="band">Midend</li>
+          <li>
+            <span class="ph">H</span><span class="nm">Store resolution</span
+            ><span class="ds"
+              ><code>StoreResolver</code> rewrites the logical query against the
+              mapping: class sources, property substitution, association joins,
+              navigation trees (<code>NavMaterializer</code>), graph-fetch
+              emission, milestoning context. Its post-condition is enforced: no
+              <code>TypedGetAll</code> or user call may survive this
+              phase.</span
+            >
+          </li>
+          <li>
+            <span class="ph">I</span><span class="nm">Lowering</span
+            ><span class="ds"
+              ><code>Lowerer</code> turns <code>TypedSpec</code> into a sealed,
+              dialect-free SQL tree (<code>sql/SqlQuery</code>,
+              <code>SqlSelect</code>, <code>SqlExpr</code>). It is helped by
+              <code>Scalars</code>, <code>Aggregates</code>,
+              <code>Windows</code>, <code>Pivots</code>,
+              <code>JsonEmission</code> and, importantly,
+              <code>Fold</code>.</span
+            >
+          </li>
+          <li class="band">Backend</li>
+          <li>
+            <span class="ph">J</span><span class="nm">Render</span
+            ><span class="ds"
+              ><code>SqlDialect.render</code> is the only place SQL text exists:
+              <code>AnsiSqlRenderer</code> → <code>DuckDb</code>,
+              <code>H2</code>/<code>H2Modern</code>, <code>Postgres</code>,
+              SQLite via <code>Lexicon</code>, plus capability adapters
+              (<code>QualifyToSubselect</code>,
+              <code>LateralExplodeToUnion</code>,
+              <code>FoldToListReduce</code>…)</span
+            >
+          </li>
+        </ol>
+
+        <h3>The "fold" rule keeps SQL flat</h3>
+        <p>
+          <code>lowering/Fold.java</code> is the single authority for one
+          question: can this pipeline step extend the current SELECT, or must
+          the current SELECT be wrapped as a subquery first? The answer comes
+          from SQL's fixed evaluation order (FROM → WHERE → GROUP BY → HAVING →
+          window → QUALIFY → SELECT → DISTINCT → ORDER BY → LIMIT). For example,
+          a filter after a limit doesn't commute, so it isolates. The file notes
+          that engine's plan generation re-derived this per operator and
+          drifted. The golden tests in
+          <code>lowering/LowerRelationTest.java</code> show the result:
+        </p>
+        <pre><code><span class="cm">// Pure</span>
+#&gt;{test::DB.T_PERSON}#
+  -&gt;filter(x|$x.AGE &gt; 20)
+  -&gt;groupBy(~FIRM, ~total : x|$x.AGE : y|$y-&gt;sum())
+
+<span class="cm">-- DuckDB: one SELECT</span>
+<span class="kw">SELECT</span> t0.FIRM, <span class="kw">SUM</span>(t0.AGE) <span class="kw">AS</span> total
+<span class="kw">FROM</span> T_PERSON <span class="kw">AS</span> t0
+<span class="kw">WHERE</span> t0.AGE &gt; 20
+<span class="kw">GROUP BY</span> t0.FIRM</code></pre>
+        <pre><code><span class="cm">// filter → select → sort → limit also folds into ONE flat SELECT</span>
+<span class="kw">SELECT</span> t0.NAME, t0.AGE <span class="kw">FROM</span> T_PERSON <span class="kw">AS</span> t0
+<span class="kw">WHERE</span> t0.AGE &gt; 30 <span class="kw">ORDER BY</span> t0.AGE <span class="kw">DESC NULLS FIRST LIMIT</span> 2</code></pre>
+
+        <h3>Mappings, associations and graph fetch</h3>
+        <ul>
+          <li>
+            <strong>Associations:</strong> to-one and to-many navigation in
+            <code>project</code> become <code>LEFT OUTER JOIN</code>s. In
+            <code>filter</code> they become <code>WHERE EXISTS (…)</code>, which
+            avoids row explosion. Self-joins are aliased.
+          </li>
+          <li>
+            <strong>Model-to-model:</strong> because mappings are synthesized
+            functions (phase E), an M2M chain A→B→C→table substitutes down to a
+            single relational query. Engine would typically run part of this in
+            memory.
+          </li>
+          <li>
+            <strong>Graph fetch:</strong> the entire object tree is one SQL
+            statement of correlated subqueries building JSON (<code
+              >json_object</code
+            >
+            for to-one, <code>json_group_array</code> for to-many, any depth).
+            In "snapshot" mode the database returns one row holding the whole
+            JSON array. In "streaming" mode it returns one
+            <code>json_object</code> per row, and the executor writes the bytes
+            straight through
+            (<code>StreamingIntegrationTest.java:440-450</code>).
+          </li>
+        </ul>
+
+        <!-- ============================================================ -->
+        <h2 id="exec">5. Execution</h2>
+        <p>
+          A request to <code>POST /api/pure/v1/execution/execute</code> carries
+          the model as text and a lambda. It is parsed and compiled through
+          phases A–J, and the SQL runs over the connection that the runtime
+          names (<code>->from(runtime)</code> or a runtime pointer in the
+          request). Parameters arrive as engine's
+          <code>parameterValues</code> and are bound as <code>let</code>s.
+          <code>generatePlan</code> returns an engine-shaped plan carrying the
+          SQL. In lite the plan is a single SQL envelope
+          (<code>plan/QueryPlan</code>, <code>PlanText</code>), not a tree of
+          heterogeneous nodes.
+        </p>
+
+        <div class="two">
+          <div class="card">
+            <h3>Three execution planes</h3>
+            <ul>
+              <li>
+                <strong>In the tab:</strong> the WASM planner runs in a Web
+                Worker and writes the SQL. DuckDB-WASM in the same tab executes
+                it. No server at all; saved queries go to IndexedDB.
+              </li>
+              <li>
+                <strong>Warehouse:</strong> SQL goes to the native
+                DuckDB/Postgres warehouse as the signed-in user, with per-user
+                history.
+              </li>
+              <li>
+                <strong>Server:</strong> legend-lite's JVM server (or, by
+                design, real legend-engine) plans and executes.
+              </li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>WASM planner</h3>
+            <ul>
+              <li>
+                <code>planner.Wasm</code> is compiled by TeaVM;
+                <code>planner.JvmMain</code> calls the same class on the JVM.
+              </li>
+              <li>
+                Differential tests compare WASM answers to JVM answers on every
+                push, including refusals and the timezone database.
+              </li>
+              <li>
+                Failure is a return value (<code>"OK\n"+sql</code> or
+                <code>"ERR\n"+class+message</code>) to avoid TeaVM exception
+                bridging.
+              </li>
+            </ul>
+          </div>
+        </div>
+        <p>
+          <strong>Receipts.</strong> Every plane issues a receipt per query
+          (<code>datacube/src/receipt.ts</code>) saying which engine ran it, the
+          SQL, and the warehouse's own statement id. It is evidence of where a
+          query actually ran, rather than the tab describing itself.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 id="tests">6. Compatibility and testing</h2>
+        <div class="callout">
+          <p>
+            <strong>These numbers come from the repo's own docs.</strong> I
+            didn't run the Bazel gates. <code>core/README.md</code> says to
+            regenerate rather than quote, and the figures below are dated.
+          </p>
+        </div>
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr>
+                <th>Harness</th>
+                <th>What it checks</th>
+                <th>Reported result</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="f">Parser equivalence</td>
+                <td>
+                  Lite's parser vs engine's ANTLR parser, byte-identical
+                  protocol JSON
+                </td>
+                <td>
+                  22,725 / 22,725 elements; 43/43 rejection parity (README,
+                  2026-08-06)
+                </td>
+              </tr>
+              <tr>
+                <td class="f">PCT on DuckDB</td>
+                <td>Upstream Pure Compatibility Tests, five suites</td>
+                <td>1,109 run / 36 ledgered / 0 skipped (2026-08-06)</td>
+              </tr>
+              <tr>
+                <td class="f">PCT on H2</td>
+                <td>Relation suite on H2 2.4.240</td>
+                <td>
+                  469 tests, 26 expected failures, each pinned by message
+                  (GATES.md, 2026-10-02)
+                </td>
+              </tr>
+              <tr>
+                <td class="f">PCT on Postgres 16</td>
+                <td>All five suites, embedded Postgres</td>
+                <td>
+                  1,249 tests; expected failures driven from 267 down to 112
+                  over the last week of commits
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Relational corpus</td>
+                <td>Engine's relational tests, ported</td>
+                <td>2,575 run / 2,298 pass (2026-08-06)</td>
+              </tr>
+              <tr>
+                <td class="f">WASM differential</td>
+                <td>Browser planner = JVM planner</td>
+                <td>Gated in CI</td>
+              </tr>
+              <tr>
+                <td class="f">Browser lane</td>
+                <td>
+                  Playwright drives the DataCube and Query sites, live warehouse
+                  vs snapped DuckDB-WASM answers
+                </td>
+                <td>Linux CI</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ============================================================ -->
+        <h2 id="query-gap">7. Legend Query: gap analysis</h2>
+        <p>
+          Lite's Query (<code>query/</code>) was designed on 2026-09-30 and
+          shipped v1 on 2026-10-01. It deliberately mirrors your look and routes
+          (legend-art tokens, the same icons, <code>/edit/:id</code>,
+          <code>/extensions/dataspace/…</code>). Its builder emits V1 lambda
+          JSON, never Pure text, and is round-trip tested against the WASM
+          parser. It is about 6.6K lines of plain TypeScript. Your
+          <code>legend-application-query</code> and
+          <code>legend-query-builder</code> together are about 181K.
+        </p>
+        <div class="legend">
+          <span
+            ><span class="chip studio">Yours only</span> legend-studio has it,
+            lite doesn't</span
+          ><span
+            ><span class="chip lite">Lite only</span> lite has it, yours
+            doesn't</span
+          ><span
+            ><span class="chip diff">Differs</span> both, materially
+            different</span
+          ><span
+            ><span class="chip par">Parity</span> both, broadly equivalent</span
+          >
+        </div>
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th></th>
+                <th>legend-studio (yours)</th>
+                <th>legend-lite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="f">Execution location</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>Always legend-engine</td>
+                <td>
+                  Configurable per page: WASM planner + DuckDB-WASM in the tab
+                  with no server, the warehouse, or a server<span class="ev"
+                    >query/demo/config*.json,
+                    src/backend/browser-engine.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Model source</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Depot/SDLC projects by GAV, versions,
+                  <code>latest</code>/snapshot
+                </td>
+                <td>
+                  <code>.pure</code> files sent as text; Depot listed as M3
+                  "todo"
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Data products, Lakehouse, ingest</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Data product query creator, Lakehouse producer/consumer,
+                  ingest flows<span class="ev"
+                    >legend-application-query/src/components/data-product,
+                    ingest</span
+                  >
+                </td>
+                <td>Out of scope by design</td>
+              </tr>
+              <tr>
+                <td class="f">Services</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Clone service query, load project service, update service
+                  query, productionizer<span class="ev"
+                    >CloneQueryServiceSetup.tsx, QueryProductionizerSetup.tsx,
+                    UpdateExistingServiceQuerySetup.tsx</span
+                  >
+                </td>
+                <td>Opens a service's query to run; no productionizing</td>
+              </tr>
+              <tr>
+                <td class="f">Data space</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  Full viewer powered by engine's data space analytics endpoint
+                </td>
+                <td>
+                  Viewer built by reading the model client-side (description,
+                  contexts, docs, quick start); no analytics endpoint (G9)
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Explorer</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  Property tree, derived/qualified props, subtypes, search,
+                  preview, <strong>mapped-only via model coverage</strong>
+                </td>
+                <td>
+                  Same tree, derived and subtype nodes, preview data, property
+                  search (partial); no mapped-only filter (G6)
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Projection, filter, post-filter, OLAP</td>
+                <td><span class="chip par">Parity</span></td>
+                <td>Full</td>
+                <td>
+                  Projection columns, AND/OR filter tree with exists,
+                  post-filter, window functions, derivation columns
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Aggregation</td>
+                <td><span class="chip par">Parity</span></td>
+                <td>
+                  Count, distinct, sum, avg, min, max, std dev, percentile,
+                  joinStrings, wavg
+                </td>
+                <td>Same set; percentile and wavg were added after v1</td>
+              </tr>
+              <tr>
+                <td class="f">Parameters, constants, milestoning</td>
+                <td><span class="chip par">Parity</span></td>
+                <td>Full, including bitemporal and propagation</td>
+                <td>
+                  Present (<code>builder/milestoning.ts</code>,
+                  <code>ui/constants.ts</code>, <code>ui/params.ts</code>);
+                  newer and less tested
+                </td>
+              </tr>
+              <tr>
+                <td class="f">
+                  Watermark, calendar aggregation, functions explorer
+                </td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>Yes</td>
+                <td>Not present (M3 "todo")</td>
+              </tr>
+              <tr>
+                <td class="f">Text mode &amp; unsupported queries</td>
+                <td><span class="chip par">Parity</span></td>
+                <td>
+                  Pure editor, form↔text round trip, unsupported-query editor
+                </td>
+                <td>
+                  Show/edit Pure, parse back to the form, run/save unsupported
+                  queries
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Results grid</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  AG Grid TDS result with cell actions, keyboard shortcuts and
+                  CSV export behind a data-leakage attestation<span class="ev"
+                    >legend-query-builder/src/components/result/QueryBuilderResultPanel.tsx:329</span
+                  >
+                </td>
+                <td>
+                  Virtualized plain grid (sort, copy, Filter By/Out, CSV), plus
+                  a one-click <strong>Grid | DataCube</strong> switch that
+                  embeds DataCube over the same query
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Plan view</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Execution plan tree + SQL viewer<span class="ev"
+                    >legend-query-builder/src/components/execution-plan</span
+                  >
+                </td>
+                <td>Executed SQL only</td>
+              </tr>
+              <tr>
+                <td class="f">Saved queries</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>Engine query store</td>
+                <td>
+                  Same <code>/pure/v1/query</code> contract, backed by IndexedDB
+                  (no server) or lite's server; create/save
+                  as/rename/delete/history/diff/undo
+                </td>
+              </tr>
+              <tr>
+                <td class="f">
+                  Lineage, entitlements / data access, SQL playground
+                </td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Yes<span class="ev"
+                    >components/lineage, data-access, sql-playground</span
+                  >
+                </td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td class="f">AI</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Query agent chat<span class="ev"
+                    >legend-query-builder/src/components/QueryAgentChat.tsx</span
+                  >
+                </td>
+                <td>No</td>
+              </tr>
+              <tr>
+                <td class="f">Extensibility &amp; telemetry</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Plugin system
+                  (<code>QueryBuilder_LegendApplicationPlugin_Extension</code>),
+                  telemetry
+                </td>
+                <td>None; one app, no plugin points</td>
+              </tr>
+              <tr>
+                <td class="f">Footprint</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>
+                  React/MobX, graph manager, full Legend graph in the browser
+                </td>
+                <td>
+                  Static site; no framework; builds in seconds; runs offline
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong>Takeaway:</strong> lite's Query isn't a threat to yours on
+          features. It covers the core "pick a source, build, run, save" loop
+          and none of the GS-specific surface. Its interesting idea is the
+          <strong>no-server plane</strong>: typing, plan and "show SQL" are
+          instant because they run in the tab.
+        </p>
+
+        <!-- ============================================================ -->
+        <h2 id="cube-gap">8. DataCube: gap analysis</h2>
+        <p>
+          Lite's DataCube started as a port of yours. Its own census
+          (<code>datacube/docs/UPSTREAM_CENSUS.md</code>, 2026-09-25) reads your
+          source file by file, then went past it. It replaces AG Grid with its
+          own virtualized grid (<code>grid/grid.ts</code>) and React/MobX with
+          plain classes, and adds ECharts for charts. Each row below was checked
+          in both codebases.
+        </p>
+        <div class="tbl">
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th></th>
+                <th>legend-studio (yours)</th>
+                <th>legend-lite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="f">Charts (plot, treemap)</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>
+                  "Show Plot…" and "Show TreeMap…" menu items exist but are
+                  disabled WIP<span class="ev"
+                    >legend-data-cube/src/stores/view/grid/DataCubeGridMenuBuilder.tsx:1133-1143</span
+                  >
+                </td>
+                <td>
+                  Bar, line, scatter, pie, heatmap, treemap via ECharts. A chart
+                  is the cube's own query regrouped, so the database aggregates.
+                  Clicking a mark filters the grid<span class="ev"
+                    >datacube/src/chart-spec.ts, chart-render.ts,
+                    chart-option.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Dashboards</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>None</td>
+                <td>
+                  A board of tiles on a snap grid (drag, resize, keyboard)
+                  holding a grid and charts. Charts follow the grid or are
+                  frozen; "Open in grid" edits a chart's grouping<span
+                    class="ev"
+                    >layout/board.ts, layout/tile-layout.ts,
+                    page/cube-page.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Heatmap</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>
+                  Menu entry is disabled WIP<span class="ev"
+                    >DataCubeGridMenuBuilder.tsx:1111</span
+                  >
+                </td>
+                <td>Per-column heatmap in the column menu and column editor</td>
+              </tr>
+              <tr>
+                <td class="f">Selection statistics</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>
+                  Config flag exists; the checkbox is <code>disabled</code> with
+                  a WIP badge<span class="ev"
+                    >components/view/editor/DataCubeEditorGeneralPropertiesPanel.tsx:240-248</span
+                  >
+                </td>
+                <td>
+                  Working; the selection is a rectangle of cells, not rows, so
+                  it fits pivots<span class="ev"
+                    >datacube/src/selection.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Drill-through</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>
+                  Double-click drills down the dimensional tree in
+                  multidimensional mode only<span class="ev"
+                    >stores/view/grid/DataCubeGridState.ts:323</span
+                  >
+                </td>
+                <td>
+                  Double-click a number to see the rows behind it
+                  (<code>drillLambda</code>)<span class="ev"
+                    >datacube/src/query.ts, app.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">OLAP ad-hoc mode</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  Multidimensional grid mode, marked WIP: drill-down/drill-out
+                  over a dimension tree<span class="ev"
+                    >DataCubeEditorDimensionsPanel.tsx:619</span
+                  >
+                </td>
+                <td>
+                  Full Essbase-style ad-hoc analysis: Zoom In (next/all/bottom
+                  level), Zoom Out, Keep Only, Remove Only, pivot to POV, member
+                  selection dialog<span class="ev"
+                    >datacube/src/adhoc/*,
+                    datacube/docs/AD_HOC_ANALYSIS.md</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Aggregates</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>
+                  sum, avg, count, min, max, uniq, first, last, var, std,
+                  strjoin; <code>median</code> and <code>wavg</code> are
+                  commented out<span class="ev"
+                    >stores/core/DataCubeQueryEngine.ts:176-205</span
+                  >
+                </td>
+                <td>
+                  Adds median, weighted average (with a weight column), min/max
+                  on dates and text<span class="ev"
+                    >datacube/src/ui/panel-column.ts:75-81</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Export formats</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  CSV, Excel (via AG Grid <code>exportDataAsExcel</code>); HTML,
+                  Plain Text, PDF, Specification and all Email entries are
+                  WIP<span class="ev">DataCubeGridMenuBuilder.tsx:560-655</span>
+                </td>
+                <td>
+                  CSV, real OOXML <code>.xlsx</code> with typed cells, number
+                  formats, merged frozen headers; aligned plain text;
+                  hand-written PDF; HTML<span class="ev"
+                    >export-xlsx.ts, export-doc.ts, export-rich.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Sharing</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>Saved cubes in the engine query store, opened by id</td>
+                <td>
+                  Same store contract, <em>plus</em> a share link that carries
+                  the whole page (query, config, charts, layout) deflated into
+                  the URL fragment, with no server<span class="ev"
+                    >share/link.ts, share/link-p1.ts</span
+                  >
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Save format</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Canonical <code>PersistentDataCube</code> /
+                  <code>DataCubeSpecification</code> in the engine query
+                  store<span class="ev"
+                    >legend-application-data-cube/src/stores/builder/LegendDataCubeBuilderStore.tsx</span
+                  >
+                </td>
+                <td>
+                  Uses the same record and endpoints, but the
+                  <code>content</code> is its own <code>CubeDocument</code>, so
+                  it can't open your specs<span class="ev">cube-store.ts</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Local cache / snapshot</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  <code>CachedDataCubeSource</code> + DuckDB plumbing; the
+                  grid's Cache toggle is WIP<span class="ev"
+                    >components/view/grid/DataCubeGrid.tsx:367</span
+                  >
+                </td>
+                <td>
+                  "Snap mode": freeze the rows behind the view into DuckDB-WASM
+                  and keep a stable, timestamped denominator for reconciling
+                  numbers<span class="ev">snap.ts</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="f">JSON columns</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>None found</td>
+                <td>
+                  Infers a Variant column's shape and offers each field (and
+                  array counts, first values) as a generated calculated
+                  column<span class="ev">json-shape.ts, ui/json-fields.ts</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Sources</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  Legend query, user-defined function, freeform TDS, local CSV,
+                  Lakehouse producer/consumer<span class="ev"
+                    >legend-application-data-cube/src/stores/builder/source/*</span
+                  >
+                </td>
+                <td>
+                  CSV, Parquet, remote https/s3 Parquet and Iceberg, warehouse
+                  and Postgres tables, Legend queries, samples; no Lakehouse or
+                  Depot
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Execution</td>
+                <td><span class="chip diff">Differs</span></td>
+                <td>
+                  Pure → legend-engine (DuckDB only for local files and cache)
+                </td>
+                <td>
+                  Three planes; planning in the tab via WASM; per-query receipts
+                </td>
+              </tr>
+              <tr>
+                <td class="f">Undo/redo</td>
+                <td><span class="chip par">Parity</span></td>
+                <td>
+                  <code>DataCubeSnapshotService.undo/redo</code> with keyboard
+                  bindings<span class="ev">components/DataCube.tsx:67-75</span>
+                </td>
+                <td>Undo covering every action, with keyboard shortcuts</td>
+              </tr>
+              <tr>
+                <td class="f">Embedding</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  A library embedded by Query, Studio, REPL and Marketplace;
+                  extensible engine abstraction (<code>DataCubeEngine</code>)
+                </td>
+                <td>A standalone app, also embedded by lite's Query</td>
+              </tr>
+              <tr>
+                <td class="f">Code editor</td>
+                <td><span class="chip studio">Yours only</span></td>
+                <td>
+                  Engine-backed typeahead in calculated-column editors
+                  (<code>getQueryTypeahead</code>)
+                </td>
+                <td>Its own in-scope completion list</td>
+              </tr>
+              <tr>
+                <td class="f">Accessibility</td>
+                <td><span class="chip lite">Lite only</span></td>
+                <td>AG Grid defaults</td>
+                <td>ARIA treegrid with full keyboard navigation</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ============================================================ -->
+        <h2 id="steal">9. DataCube features to add to yours</h2>
+        <p>
+          Ranked by value for effort. Effort assumes your architecture: MobX
+          stores, the <code>DataCubeEngine</code> abstraction, AG Grid
+          Enterprise, <code>LayoutService</code> windows, and legend-engine as
+          the backend. Several of these fill slots your code has already
+          reserved as WIP menu items.
+        </p>
+
+        <div class="feat">
+          <article class="card">
+            <header>
+              <span class="rank">01</span>
+              <h3>Selection stats</h3>
+              <div class="tags">
+                <span class="chip eff">Effort S</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Select a block of cells and see sum, average, count, min and max
+                in the status bar, as in Excel. Users notice this immediately.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>datacube/src/selection.ts</code> models the selection as a
+                cell rectangle (not rows) and computes stats as pure functions
+                over the visible leaf columns.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                <code>showSelectionStats</code> is already in
+                <code>DataCubeConfiguration.ts:282</code>; the checkbox is
+                disabled
+                (<code>DataCubeEditorGeneralPropertiesPanel.tsx:246</code>).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Enable the flag. Listen to AG Grid's
+                <code>rangeSelectionChanged</code> /
+                <code>getCellRanges()</code> and aggregate numeric cells
+                client-side into a status-bar item next to the row count.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">02</span>
+              <h3>Median and weighted average</h3>
+              <div class="tags">
+                <span class="chip eff">Effort S–M</span
+                ><span class="chip warn">Check engine functions</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Weighted average is everywhere in finance (price × quantity);
+                median is the robust alternative to mean.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>ui/panel-column.ts:75-81, 307</code>: weighted average
+                takes a weight column as an aggregation parameter.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                <code>MEDIAN</code> and <code>wavg</code> are commented out in
+                the operator enum (<code>DataCubeQueryEngine.ts:183, 202</code
+                >).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Add <code>DataCubeQueryAggregateOperation</code> subclasses
+                under <code>stores/core/aggregation/</code>, and a
+                <code>weightColumn</code> on the column configuration. Confirm
+                that <code>median()</code>/<code>wavg()</code> are available in
+                the Pure relation API on your engine version.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">03</span>
+              <h3>Column heatmap</h3>
+              <div class="tags">
+                <span class="chip eff">Effort M</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>Outliers jump out of a pivot without any charting.</dd>
+              <dt>In lite</dt>
+              <dd>
+                A per-column toggle in the column menu and column editor;
+                colours come from theme tokens
+                (<code>grid/screen-colours.ts</code>).
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                "Heatmap › Add to / Remove from" exists and is disabled
+                (<code>DataCubeGridMenuBuilder.tsx:1111</code>).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Add <code>heatmap</code> to the column configuration and
+                snapshot. Colour cells with an AG Grid
+                <code>cellStyle</code> function scaled to the column's min/max.
+                With the server-side row model, get min/max from the loaded
+                block, or from a cheap extra aggregate query.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">04</span>
+              <h3>Drill-through to the rows behind a number</h3>
+              <div class="tags">
+                <span class="chip eff">Effort M</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                "Why is this subtotal 4.2M?" is answered with one double-click.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>drillLambda</code> in
+                <code>datacube/src/query.ts</code> takes the cube's query, adds
+                the cell's group-by path (and pivot column values) as equality
+                filters, drops the grouping, and opens the detail rows.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                Double-click only drills the tree in the WIP multidimensional
+                mode (<code>DataCubeGridState.ts:323</code>).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                On <code>cellDoubleClicked</code> in a grouped or pivoted view,
+                clone the current snapshot, convert the row path into filter
+                nodes, clear the vertical and horizontal pivots, and open it in
+                a new <code>LayoutService</code> window as a child DataCube.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">05</span>
+              <h3>Charts: plot and treemap</h3>
+              <div class="tags">
+                <span class="chip eff">Effort M–L</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Fills your "Show Plot…" and "Show TreeMap…" slots. Lite's key
+                decision is that a chart is a <em>view of the cube</em>, not a
+                second engine: it reuses the cube's query regrouped by the
+                chart's x and split, so the database aggregates and filters stay
+                consistent.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>chart-spec.ts</code> (a plain JSON spec, so it can be
+                saved), <code>chart-option.ts</code>, and
+                <code>chart-render.ts</code> (the only file that touches
+                ECharts). Clicking a mark filters the grid.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                Disabled WIP menu items
+                (<code>DataCubeGridMenuBuilder.tsx:1133-1143</code>).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Add a chart spec to <code>DataCubeConfiguration</code>. Build
+                the chart query with the existing snapshot → Pure path
+                (<code>DataCubeQueryBuilder</code>), with the chart's dimensions
+                as the group-by, and render in a window. Library choice: AG
+                Charts pairs naturally with AG Grid Enterprise, or ECharts as
+                lite uses. Either one is a new dependency to justify.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">06</span>
+              <h3>
+                The WIP exports: HTML, plain text, PDF, and a better Excel
+              </h3>
+              <div class="tags">
+                <span class="chip eff">Effort M</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                These are already in your menu as placeholders. Plain text,
+                aligned for pasting into chat or a ticket, is cheap and popular.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                One export model of the grid as shown
+                (<code>export-model.ts</code>) feeds every format.
+                <code>export-xlsx.ts</code> writes typed numbers and dates with
+                Excel format codes matching the grid's formats, plus merged and
+                frozen header rows. <code>export-doc.ts</code> writes plain text
+                and a WinAnsi-encoded PDF.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                CSV and AG Grid Excel work; HTML, Plain Text, PDF, Specification
+                and all Email entries are WIP
+                (<code>DataCubeGridMenuBuilder.tsx:560-655</code>).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Start with HTML and plain text from AG Grid's displayed rows.
+                Map your number-format config to Excel format codes in the
+                <code>exportDataAsExcel</code> <code>excelStyles</code>. PDF is
+                the costliest to do well.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">07</span>
+              <h3>Share link in the URL</h3>
+              <div class="tags">
+                <span class="chip eff">Effort M</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Send a colleague exactly what you're looking at without saving a
+                cube first.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>share/link.ts</code>: the page JSON (query, configuration,
+                open rows, charts, layout, and the source <em>by identity</em>,
+                never data) is deflated with a frozen preset dictionary and
+                base64url-encoded after <code>#p1.</code>. The fragment never
+                reaches a server. Unknown versions are refused by name.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                Sharing means saving to the query store and sharing the id.
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Serialize your <code>DataCubeSpecification</code>, deflate it
+                (lite uses fflate; check whether a compressor is already in your
+                lockfile), and add a route that reads the fragment. Version the
+                format from day one.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">08</span>
+              <h3>Snap mode</h3>
+              <div class="tags">
+                <span class="chip eff">Effort M–L</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Lite reframes your cache toggle as a user-facing idea: "I
+                reconciled against the 09:00 snap." It's fast, and the numbers
+                don't move under the analyst while they work.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>snap.ts</code> freezes the rows behind the current view
+                into DuckDB-WASM, plans against them locally, and shows the
+                snap's time.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                <code>CachedDataCubeSource</code>,
+                <code>initializeCache</code>/<code>disposeCache</code> on the
+                engine, and a WIP Cache toggle
+                (<code>DataCubeGrid.tsx:367</code>).
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Finish the toggle: show the snapshot timestamp in the status
+                bar, add a "re-snap" action, and warn on size. Most of the
+                plumbing already exists.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">09</span>
+              <h3>JSON field explorer</h3>
+              <div class="tags">
+                <span class="chip eff">Effort M</span
+                ><span class="chip warn">Needs Variant support</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Semi-structured columns become usable without writing Pure.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>json-shape.ts</code> infers a document shape from a
+                sample, classifying numbers from text so ids past 2^53 aren't
+                mangled. <code>ui/json-fields.ts</code> lists each field and
+                generates the calculated column's Pure, which is then compiled
+                like any other.
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Fits your extended-columns editor. Depends on Variant support in
+                the Pure relation API on your engine version.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">10</span>
+              <h3>Dashboards</h3>
+              <div class="tags">
+                <span class="chip eff">Effort L</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                One page of a grid plus charts that follow it. This is the most
+                "product" feature lite has.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>layout/tile-layout.ts</code> is a pure, node-testable
+                layout model (no overlaps, static tiles, responsive repack).
+                <code>layout/board.ts</code> draws it with CSS grid.
+                <code>page/cube-page.ts</code> wires charts to a grid through a
+                narrow <code>ChartSource</code> interface.
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Needs charts (item 5) first. Then a board view beside your
+                existing windowed layout, and a page document in your
+                specification.
+              </dd>
+            </dl>
+          </article>
+
+          <article class="card">
+            <header>
+              <span class="rank">11</span>
+              <h3>OLAP ad-hoc analysis mode</h3>
+              <div class="tags">
+                <span class="chip eff">Effort XL</span
+                ><span class="chip par">No engine change</span>
+              </div>
+            </header>
+            <dl>
+              <dt>Why</dt>
+              <dd>
+                Essbase / Smart View users will recognize it: zoom in and out by
+                level, keep only or remove only members, a point-of-view bar,
+                member selection.
+              </dd>
+              <dt>In lite</dt>
+              <dd>
+                <code>datacube/src/adhoc/</code> (<code>session.ts</code>,
+                <code>outline.ts</code>, <code>member-selection.ts</code>,
+                <code>mode.ts</code>), spec in
+                <code>datacube/docs/AD_HOC_ANALYSIS.md</code>. Every number is
+                still a database query.
+              </dd>
+              <dt>Yours today</dt>
+              <dd>
+                The WIP multidimensional mode, with dimensions, a dimensional
+                tree, and drill-down/drill-out, is the natural foundation.
+              </dd>
+              <dt>How</dt>
+              <dd>
+                Treat lite's spec as the target for completing your
+                multidimensional mode, rather than porting code.
+              </dd>
+            </dl>
+          </article>
+        </div>
+
+        <!-- ============================================================ -->
+        <h2 id="ask">10. Questions worth asking Neema</h2>
+        <ul>
+          <li>
+            Is the goal for legend-lite to
+            <strong>replace legend-engine for some workloads</strong>, or to be
+            a fast, portable reference implementation that engine converges
+            toward?
+          </li>
+          <li>
+            Is the WASM no-server plane meant for production use with GS models,
+            or is it for demos and offline work? How would entitlements and data
+            access work there?
+          </li>
+          <li>
+            What is the plan for databases beyond DuckDB, H2 and Postgres
+            (Snowflake, Databricks, Sybase), given that SQL generation is
+            hand-written per dialect?
+          </li>
+          <li>
+            Should your DataCube adopt lite's features in place (your WIP
+            slots), or is the intent for lite's DataCube to become the new one?
+            This matters for where you invest.
+          </li>
+          <li>
+            Would he want lite's DataCube to read and write your
+            <code>DataCubeSpecification</code>? Its census calls the save format
+            its biggest gap, and it would make the two interoperable.
+          </li>
+        </ul>
+
+        <!-- ============================================================ -->
+        <h2 id="method">11. How this was checked</h2>
+        <p>
+          legend-lite was cloned at <code>16c8120</code> (2 Oct 2026) and read
+          directly. The comparison used your legend-studio working tree and your
+          local legend-engine checkout. Every gap-table row and every "yours
+          today" claim cites a line checked by hand in both repos. Lite's census
+          and design docs were used as leads only, and their claims were
+          re-checked in code. Several were already out of date: for example,
+          constants, milestoning, percentile and wavg landed in lite's Query
+          after its design doc listed them as gaps.
+        </p>
+        <p>
+          Limits: I didn't build or run either project. The test numbers in
+          section 6 are quoted from lite's docs. The engine checkout is from
+          April 2026, so newer engine features may be missing from section 2. A
+          multi-agent cross-check was attempted twice but hit the account's
+          session limit before any agent finished, so this report was produced
+          in a single pass.
+        </p>
+        <footer>
+          Prepared for a legend-studio maintainer comparing their Query and
+          DataCube with legend-lite.
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>
