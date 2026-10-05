@@ -23,6 +23,7 @@ import {
   observable,
 } from 'mobx';
 import { ExplorerTreeState } from './ExplorerTreeState.js';
+import { LegendAIAppliedSuggestionRegistry } from './LegendAISuggestTelemetry.js';
 import {
   ACTIVITY_MODE,
   PANEL_MODE,
@@ -222,6 +223,8 @@ export class EditorStore implements CommandRegistrar {
   readonly showcasePanelDisplayState: PanelDisplayState;
   readonly showcaseDefaultSize = 500;
   readonly tabManagerState = new EditorTabManagerState(this);
+  readonly legendAIAppliedSuggestionRegistry =
+    new LegendAIAppliedSuggestionRegistry();
   supportedElementTypesWithCategory: Map<string, string[]>;
 
   lazyTextEditorStore = new LazyTextEditorStore(this);

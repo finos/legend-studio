@@ -836,7 +836,7 @@ describe('LegendStudioTelemetryHelper - service registration', () => {
     });
   });
 
-  test('logEvent_ServiceRegistrationSucceeded emits SERVICE_REGISTRATION_SUCCESS with durationMs', () => {
+  test('logEvent_ServiceRegistrationSucceeded emits SERVICE_REGISTRATION_SUCCESS with durationMs and per-service outcome counts', () => {
     const { service, calls } = buildTelemetryStub();
 
     LegendStudioTelemetryHelper.logEvent_ServiceRegistrationSucceeded(
@@ -848,6 +848,8 @@ describe('LegendStudioTelemetryHelper - service registration', () => {
         serviceCount: 4,
         activatePostRegistration: false,
         durationMs: 12500,
+        registeredCount: 3,
+        failedCount: 1,
       },
     );
 
@@ -862,6 +864,8 @@ describe('LegendStudioTelemetryHelper - service registration', () => {
       serviceCount: 4,
       activatePostRegistration: false,
       durationMs: 12500,
+      registeredCount: 3,
+      failedCount: 1,
     });
   });
 
@@ -1323,6 +1327,7 @@ describe('LegendStudioTelemetryHelper - service registration precheck', () => {
         durationMs: 987,
         registeredEnvCount: 2,
         errorCount: 1,
+        failedEnvs: ['PROD'],
       },
     );
 
@@ -1337,22 +1342,26 @@ describe('LegendStudioTelemetryHelper - service registration precheck', () => {
       durationMs: 987,
       registeredEnvCount: 2,
       errorCount: 1,
+      failedEnvs: ['PROD'],
     });
   });
 
-  test('logEvent_ServiceRegistrationCheckFailure emits SERVICE_REGISTRATION_CHECK_FAILURE with env and errorMessage', () => {
+  test('logEvent_ServiceRegistrationCheckFailure emits one run-level SERVICE_REGISTRATION_CHECK_FAILURE with failedEnvs and errorMessage', () => {
     const { service, calls } = buildTelemetryStub();
 
     LegendStudioTelemetryHelper.logEvent_ServiceRegistrationCheckFailure(
       service,
       undefined,
       {
-        servicePath: 'demo::Service',
-        env: 'PROD',
+        ...CHECK_BASE,
+        durationMs: 120,
+        errorCount: 3,
+        failedEnvs: ['DEV', 'UAT', 'PROD'],
         errorMessage: 'timeout',
       },
     );
 
+    expect(calls).toHaveLength(1);
     const call = guaranteeNonNullable(calls[0]);
     expect(call.event).toBe(
       LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
@@ -1360,7 +1369,10 @@ describe('LegendStudioTelemetryHelper - service registration precheck', () => {
     expect(call.data).toEqual({
       sourceInfo: undefined,
       servicePath: 'demo::Service',
-      env: 'PROD',
+      envCount: 3,
+      durationMs: 120,
+      errorCount: 3,
+      failedEnvs: ['DEV', 'UAT', 'PROD'],
       errorMessage: 'timeout',
     });
   });

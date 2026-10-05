@@ -135,6 +135,20 @@ export enum LEGEND_STUDIO_APP_EVENT {
   SERVICE_LEGENDAI_SUGGEST__DISCARD = 'editor.service-editor.legendai-suggest.discard',
   SERVICE_LEGENDAI_SUGGEST__FAILURE = 'editor.service-editor.legendai-suggest.failure',
 
+  // unified LegendAI suggest lifecycle across surfaces (service / dataspace /
+  // data product). Every event carries a `surface` discriminator; events
+  // after `launch` also carry a `suggestionId` so a single suggestion can be
+  // followed end to end. The per-surface events above are still emitted
+  // alongside these for backward compatibility.
+  LEGENDAI_SUGGEST__EXPOSURE = 'editor.legendai-suggest.exposure',
+  LEGENDAI_SUGGEST__LAUNCH = 'editor.legendai-suggest.launch',
+  LEGENDAI_SUGGEST__SUCCESS = 'editor.legendai-suggest.success',
+  LEGENDAI_SUGGEST__FAILURE = 'editor.legendai-suggest.failure',
+  LEGENDAI_SUGGEST__APPLY = 'editor.legendai-suggest.apply',
+  LEGENDAI_SUGGEST__DISCARD = 'editor.legendai-suggest.discard',
+  LEGENDAI_SUGGEST__ABANDON = 'editor.legendai-suggest.abandon',
+  LEGENDAI_SUGGEST__PERSISTED = 'editor.legendai-suggest.persisted',
+
   // push to dev
   METADATA_PUSH_TO_METADATA = 'editor.metadata.push-to-metadata',
   METADATA_PUSH_TO_METADATA__LAUNCH = 'editor.metadata.push-to-metadata.launch',

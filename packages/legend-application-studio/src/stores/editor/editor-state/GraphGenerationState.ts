@@ -153,15 +153,19 @@ export class DEPREACTED_GlobalFileGenerationState {
   /**
    * Generated file generations in the graph.
    * NOTE: This method does not update graph and application only the files are generated.
+   *
+   * Errors are handled (logged + notified) here and returned rather than
+   * re-thrown so the caller can keep generating; the caller owns the
+   * `editor.generation.*` telemetry outcome.
    */
   *DEPREACTED_generateFiles(
     generationOutputIndex: Map<string, GenerationOutput[]>,
-  ): GeneratorFn<void> {
+  ): GeneratorFn<Error | undefined> {
     try {
       const generationSpecs =
         this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
-        return;
+        return undefined;
       }
       assertTrue(
         generationSpecs.length === 1,
@@ -192,25 +196,17 @@ export class DEPREACTED_GlobalFileGenerationState {
         }
         generationOutputIndex.set(fileGeneration.value.path, result);
       }
+      return undefined;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        {
-          mode: GENERATION_MODE.GLOBAL,
-          enableArtifactGeneration:
-            this.graphGenerationState.enableArtifactGeneration,
-          errorMessage: error.message,
-        },
-      );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
+      return error;
     }
   }
 
@@ -336,13 +332,30 @@ export class GraphGenerationState {
       telemetryBase,
     );
     try {
-      yield flowResult(this.generateModels());
-      yield flowResult(this.generateArtifacts());
-      LegendStudioTelemetryHelper.logEvent_GenerationSucceeded(
-        this.editorStore.applicationStore.telemetryService,
-        sourceInfo,
-        { ...telemetryBase, durationMs: Date.now() - startedAt },
-      );
+      // NOTE: both steps handle (log + notify) their own errors and return
+      // them instead of throwing, so artifact generation still runs when
+      // model generation fails. We only decide the telemetry outcome here so
+      // each run emits exactly one terminal event.
+      const modelGenerationError = (yield flowResult(this.generateModels())) as
+        | Error
+        | undefined;
+      const artifactGenerationError = (yield flowResult(
+        this.generateArtifacts(),
+      )) as Error | undefined;
+      const generationError = modelGenerationError ?? artifactGenerationError;
+      if (generationError) {
+        LegendStudioTelemetryHelper.logEvent_GenerationFailure(
+          this.editorStore.applicationStore.telemetryService,
+          sourceInfo,
+          { ...telemetryBase, errorMessage: generationError.message },
+        );
+      } else {
+        LegendStudioTelemetryHelper.logEvent_GenerationSucceeded(
+          this.editorStore.applicationStore.telemetryService,
+          sourceInfo,
+          { ...telemetryBase, durationMs: Date.now() - startedAt },
+        );
+      }
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
@@ -362,13 +375,17 @@ export class GraphGenerationState {
     }
   }
 
-  *generateModels(): GeneratorFn<void> {
+  /**
+   * Errors are handled (logged + notified) here and returned rather than
+   * re-thrown; see {@link GraphGenerationState.globalGenerate}.
+   */
+  *generateModels(): GeneratorFn<Error | undefined> {
     try {
       this.generatedEntities = new Map<string, Entity[]>(); // reset the map of generated entities
       const generationSpecs =
         this.editorStore.graphManagerState.graph.ownGenerationSpecifications;
       if (!generationSpecs.length) {
-        return;
+        return undefined;
       }
       assertTrue(
         generationSpecs.length === 1,
@@ -404,41 +421,37 @@ export class GraphGenerationState {
           this.editorStore.graphState.updateGenerationGraphAndApplication(),
         );
       }
+      return undefined;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        {
-          mode: GENERATION_MODE.GLOBAL,
-          enableArtifactGeneration: this.enableArtifactGeneration,
-          errorMessage: error.message,
-        },
-      );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
+      return error;
     }
   }
 
   /**
    * Generated artifacts generations in graph
    * NOTE: This method does not update graph and application only the files are generated.
+   *
+   * Errors are handled (logged + notified) here and returned rather than
+   * re-thrown; see {@link GraphGenerationState.globalGenerate}.
    */
-  *generateArtifacts(): GeneratorFn<void> {
+  *generateArtifacts(): GeneratorFn<Error | undefined> {
     try {
       this.emptyGeneratedArtifacts();
       const generationOutputIndex = new Map<string, GenerationOutput[]>();
       // handle deprecated file generations
-      yield flowResult(
+      const fileGenerationError = (yield flowResult(
         this.globalFileGenerationState.DEPREACTED_generateFiles(
           generationOutputIndex,
         ),
-      );
+      )) as Error | undefined;
       let artifacts = new ArtifactGenerationExtensionResult();
       if (this.enableArtifactGeneration) {
         artifacts =
@@ -450,24 +463,17 @@ export class GraphGenerationState {
 
       // handle results
       this.processGenerationResult(artifacts, generationOutputIndex);
+      return fileGenerationError;
     } catch (error) {
       assertErrorThrown(error);
       this.editorStore.applicationStore.logService.error(
         LogEvent.create(LEGEND_STUDIO_APP_EVENT.GENERATION_FAILURE),
         error,
       );
-      LegendStudioTelemetryHelper.logEvent_GenerationFailure(
-        this.editorStore.applicationStore.telemetryService,
-        this.editorStore.editorMode.getSourceInfo(),
-        {
-          mode: GENERATION_MODE.GLOBAL,
-          enableArtifactGeneration: this.enableArtifactGeneration,
-          errorMessage: error.message,
-        },
-      );
       this.editorStore.graphState.editorStore.applicationStore.notificationService.notifyError(
         `${error.message}`,
       );
+      return error;
     }
   }
 

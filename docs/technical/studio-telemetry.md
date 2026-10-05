@@ -40,7 +40,7 @@ Fired around the "compile the model" lifecycle. Payloads reuse `GraphManagerOper
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
 | `editor.compilation.compile-graph.launch`  | `sourceInfo?`                                                                                                                |
 | `editor.form-mode.compilation.success`     | `sourceInfo?` · operation report · `dependenciesCount`                                                                       |
-| `editor.form-mode.compilation.failure`     | `sourceInfo?` · `errorKind` (`compilation` / `engine`) · `errorMessage` · `fallbackToTextMode`                               |
+| `editor.form-mode.compilation.failure`     | `sourceInfo?` · `errorKind` (`compilation` / `engine` / `other`) · `errorMessage` · `fallbackToTextMode`                     |
 | `editor.compilation.compile-text.launch`   | `sourceInfo?`                                                                                                                |
 | `editor.text-mode.compilation.success`     | `sourceInfo?` · operation report · `dependenciesCount`                                                                       |
 | `graph-manager.initialize-graph.launch`    | `sourceInfo?`                                                                                                                |
@@ -53,6 +53,7 @@ Fired around the "compile the model" lifecycle. Payloads reuse `GraphManagerOper
 Design notes:
 
 - **`fallbackToTextMode` on form-mode compilation failure.** True when Studio could not reveal the error inline and redirected the user to text mode for debugging. A rising rate is a signal that specific element editors are failing to surface errors — worth splitting by `errorKind`.
+- **Every form-mode `compile-graph.launch` gets a terminal event.** `errorKind: other` covers non-engine errors (e.g. network) that are re-thrown to the generic handler; they never fall back to text mode. The failure event is emitted _before_ the text-mode fallback runs, so it is recorded even if the mode switch itself fails.
 - **`fallbackToTextMode` on graph init failure.** True only for the "other" bucket (the generic catch-all that redirects to text mode). `dependency`, `deserialization`, and `network` failures each have their own recovery paths and never fall back.
 - **Text-mode compilation has no dedicated `launch`.** It shares `editor.compilation.compile-text.launch` with the pre-existing generic launch event.
 
@@ -201,15 +202,40 @@ Design notes:
 
 ### LegendAI suggest (service / dataspace / data product)
 
-Three parallel event families — one per element type. Payload is uniform per family: the element path (`servicePath`, `dataSpacePath`, or `dataProductPath`) plus `sourceInfo?` plus `errorMessage` on failures. Together they answer "how often is AI suggest launched, and how often is a suggestion accepted vs. discarded".
+One unified family covers the "Suggest with AI" button on all three surfaces, discriminated by `surface` (`service` / `dataspace` / `data-product`). Every event after `launch` carries the `suggestionId` minted at launch, so a single suggestion can be followed from request to push. The lifecycle is driven by `LegendAISuggestTelemetryTracker` ([LegendAISuggestTelemetry.ts](packages/legend-application-studio/src/stores/editor/LegendAISuggestTelemetry.ts)) via the `useLegendAISuggestTelemetry` hook.
 
-| Family                                                                  | Events                    |
-| ----------------------------------------------------------------------- | ------------------------- |
-| `editor.service-editor.legendai-suggest.{launch,apply,discard,failure}` | Service editor AI suggest |
-| `editor.dataspace.legendai-suggest.{launch,apply,discard,failure}`      | DataSpace AI suggest      |
-| `editor.data-product.legendai-suggest.{launch,apply,discard,failure}`   | Data product AI suggest   |
+Common target fields: `sourceInfo?` · `surface` · `elementPath` · `accessPointGroupId?` (data product only — suggestions are launched per access point group). Identity fields (all events but `exposure`): target + `suggestionId` · `attempt` (1-based count of suggestions requested from that editor instance).
 
-Adoption per family = `apply / launch`; abandonment = `discard / launch`; error rate = `failure / launch`.
+| Event                               | Payload (beyond target / identity)                                                                                                                                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `editor.legendai-suggest.exposure`  | `available` (suggester plugin installed) · `isReadOnly` — once per editor mount, only when `legendAIUrl` is configured                                                                                              |
+| `editor.legendai-suggest.launch`    | `hadExistingText` · `existingLength` · `accessPointCount?`                                                                                                                                                          |
+| `editor.legendai-suggest.success`   | `durationMs` · `definitionsLength` · `suggestionLength` · `confidence?` · `editedWhilePending` · `accessPointSuggestionCount?`                                                                                      |
+| `editor.legendai-suggest.failure`   | `durationMs` · `stage` (`serialize` / `request`) · `errorKind` · `httpStatus?` · `errorMessage`                                                                                                                     |
+| `editor.legendai-suggest.apply`     | `timeToDecisionMs` · `hadExistingText` · `existingLength` · `suggestionLength` · data product only: `matchStrategy` · `accessPointsUpdated` · `accessPointsRenamed` · `namesSanitized` · `accessPointCountMismatch` |
+| `editor.legendai-suggest.discard`   | `timeToDecisionMs`                                                                                                                                                                                                  |
+| `editor.legendai-suggest.abandon`   | `phase` (`pending` / `shown`) · `elapsedMs`                                                                                                                                                                         |
+| `editor.legendai-suggest.persisted` | `retention` (`unchanged` / `edited` / `cleared` / `element-removed`) · `editRatio?` · `msSinceApply` · `supersededApplyCount`                                                                                       |
+
+Enums exported from `@finos/legend-application-studio`: `LEGENDAI_SUGGEST_SURFACE`, `LEGENDAI_SUGGEST_STAGE`, `LEGENDAI_SUGGEST_ERROR_KIND`, `LEGENDAI_SUGGEST_ABANDON_PHASE`, `LEGENDAI_SUGGEST_RETENTION`, `LEGENDAI_SUGGEST_MATCH_STRATEGY`.
+
+Design notes:
+
+- **Funnel.** `exposure(available)` → `launch` → `success` → `apply` → `persisted(unchanged | edited)`. Each `launch` ends in exactly one of `success` / `failure`; each `success` ends in at most one of `apply` / `discard` / `abandon(shown)`.
+- **`errorKind`.** `serialization` (grammar composition failed locally, `stage: serialize`), `entitlement` (HTTP 401/403 — the user needs LegendAI entitlements), `client` (other 4xx), `server` (5xx), `empty-response` (LegendAI answered with nothing to show; the user gets a warning toast), `other`.
+- **`abandon`** fires when the editor unmounts (tab switch / close, mode switch) while a request is in flight (`pending`) or a suggestion is on screen (`shown`). A request that settles after a `pending` abandon still reports its `success` / `failure`, but can no longer be applied.
+- **`editedWhilePending`** is true when the target text changed between launch and response — applying then overwrites the user's in-flight edit.
+- **`persisted`** fires on the first successful push that includes the element after an apply, comparing the applied text with what was pushed. `editRatio` is a normalized Levenshtein distance (0 = same, 1 = fully rewritten), only set for `edited` and omitted for texts over 2000 characters. Only the latest apply per target is followed; earlier ones are counted in `supersededApplyCount`. Applies whose element is renamed before pushing are not reported. For data products the compared text is the group's title / description plus the id / title / description of each updated access point.
+- **`confidence`** is model-reported: the description confidence for dataspaces, the matched group's confidence for data products, and absent for services (the service API returns plain text).
+- **`definitionsLength`** is the size of the grammar sent to LegendAI — the element alone for services, the whole graph for dataspaces and data products — useful for correlating latency with input size.
+
+Legacy per-surface families are still emitted alongside, unchanged, for existing dashboards:
+
+| Family                                                                  | Payload                                                      |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `editor.service-editor.legendai-suggest.{launch,apply,discard,failure}` | `servicePath` · `sourceInfo?` · `errorMessage` (failure)     |
+| `editor.dataspace.legendai-suggest.{launch,apply,discard,failure}`      | `dataSpacePath` · `sourceInfo?` · `errorMessage` (failure)   |
+| `editor.data-product.legendai-suggest.{launch,apply,discard,failure}`   | `dataProductPath` · `sourceInfo?` · `errorMessage` (failure) |
 
 ### Service registration
 
@@ -217,11 +243,11 @@ Fired from the three service-registration entry points: the per-service editor b
 
 Enum exported from the telemetry helper: `SERVICE_REGISTRATION_TRIGGER`.
 
-| Event                                        | Payload                                                                                                     |
-| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `editor.service-editor.registration.launch`  | `sourceInfo?` · `trigger` · `executionMode?` · `serviceCount` · `activatePostRegistration`                  |
-| `editor.service-editor.registration.success` | `sourceInfo?` · `trigger` · `executionMode?` · `serviceCount` · `activatePostRegistration` · `durationMs`   |
-| `editor.service-editor.registration.failure` | `sourceInfo?` · `trigger` · `executionMode?` · `serviceCount` · `activatePostRegistration` · `errorMessage` |
+| Event                                        | Payload                                                                                                                                                                      |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `editor.service-editor.registration.launch`  | `sourceInfo?` · `trigger` · `executionMode?` · `serviceCount` · `activatePostRegistration`                                                                                   |
+| `editor.service-editor.registration.success` | `sourceInfo?` · `trigger` · `executionMode?` · `serviceCount` · `activatePostRegistration` · `durationMs` · `registeredCount` · `failedCount` · `activationFailedCount?`     |
+| `editor.service-editor.registration.failure` | `sourceInfo?` · `trigger` · `executionMode?` · `serviceCount` · `activatePostRegistration` · `errorMessage` · `registeredCount?` · `failedCount?` · `activationFailedCount?` |
 
 Design notes:
 
@@ -229,23 +255,24 @@ Design notes:
 - **`serviceCount` is always populated.** `1` for `single` / `service-query-editor`, N for `bulk` (the number of user-selected services in the batch).
 - **`executionMode?` may be undefined at launch.** The single-service flow allows launching before the mode is chosen; the bulk and service-query-editor flows always populate it (bulk from the shared config panel, service-query-editor is always `SEMI_INTERACTIVE`).
 - **`durationMs` on success includes the post-registration activation call** when `activatePostRegistration` is true. This is intentional: from a user's perspective, "registered" only means anything if activation succeeded.
+- **Per-service outcome counts.** `single` / `service-query-editor` successes always carry `registeredCount: 1, failedCount: 0` (a failed registration throws and emits `failure`). `bulk` runs report the engine's per-service split: a run where no service registered emits `failure` (with the counts and the first service error as `errorMessage`); partial success emits `success`. `activationFailedCount` (bulk + `activatePostRegistration` only) counts registered services whose activation call rejected — bulk activations are awaited with `Promise.allSettled`, so one failed activation neither hides the results nor goes unhandled.
 - **`registration.failure` is the same event constant that already backed `logService.error` calls.** Existing developer-console error logs continue; the failure event is now also emitted through the telemetry service so error rates are queryable alongside launches and successes.
 
 ### Service registration precheck
 
-Fired when the service editor opens the registration modal and probes each configured environment to check whether the service pattern is already deployed. Complements the existing `editor.service-editor.registration-check.failure` per-env warning bucket with launch + success so dashboards can measure precheck volume, duration, and error rate.
+Fired when the service editor opens the registration modal and probes each configured environment to check whether the service pattern is already deployed. Each precheck run emits one `launch` and exactly one `success` or `failure`, so dashboards can measure precheck volume, duration, and error rate.
 
 | Event                                              | Payload                                                                                                                   |
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `editor.service-editor.registration-check.launch`  | `sourceInfo?` · `servicePath` · `envCount`                                                                                |
-| `editor.service-editor.registration-check.success` | `sourceInfo?` · `servicePath` · `envCount` · `durationMs` · `registeredEnvCount` · `errorCount`                           |
-| `editor.service-editor.registration-check.failure` | `sourceInfo?` · `servicePath` · `env` · `errorMessage` (per-env; multiple may fire in a single precheck, one per bad env) |
+| `editor.service-editor.registration-check.success` | `sourceInfo?` · `servicePath` · `envCount` · `durationMs` · `registeredEnvCount` · `errorCount` · `failedEnvs`            |
+| `editor.service-editor.registration-check.failure` | `sourceInfo?` · `servicePath` · `envCount` · `durationMs` · `errorCount` · `failedEnvs` · `errorMessage` (last env error) |
 
 Design notes:
 
-- **Precheck is per-env in a loop.** One `launch` + one `success` bracket the whole loop; `failure` events are emitted per-env when the underlying `checkServiceRegisteredByPattern` call throws. `success.errorCount` matches the number of `failure` events emitted between the launch and success.
+- **Precheck is per-env in a loop, reported per run.** Per-env errors from `checkServiceRegisteredByPattern` are aggregated into `errorCount` / `failedEnvs` (the per-env developer-console warning under the same event name is unchanged).
+- **`failure` means no env could be probed** (`errorCount == envCount`). Partial per-env errors still produce a `success`.
 - **`registered=` bookkeeping.** `registeredEnvCount` is the number of envs where the service is already deployed; `envCount - registeredEnvCount - errorCount` is the "not yet deployed" bucket.
-- **Success always fires**, even when every env errored, because the precheck itself completes (it just reports zero registered envs). Dashboards should treat `errorCount == envCount` as the "totally broken precheck" bucket.
 
 ### Generation
 
@@ -266,7 +293,7 @@ Design notes:
 
 - **`elementPath` / `generationType` only carry values for `element-schema`**; for `global` they are undefined because a global run spans multiple elements and multiple generation types.
 - **`enableArtifactGeneration` only carries a value for `global`.** It reflects the `GraphGenerationState.enableArtifactGeneration` flag at the moment the run was launched, and lets dashboards separate "generate models only" runs from "generate models + artifacts" runs. Undefined for `element-schema`.
-- **Sub-step failures still fire during a `global` run.** `generateModels`, `generateArtifacts`, and the deprecated file-generation flow each catch and swallow their own errors (the `notifyError` toast is the user-facing signal). A failure event now fires alongside each of those swallowed errors, tagged with `mode: 'global'`. Because sub-steps swallow, a `success` event may also fire in the same session — dashboards should compute error rate as `failure / launch` rather than expecting mutual exclusion within a session.
+- **A `global` run emits exactly one `success` or `failure`.** `generateModels`, `generateArtifacts`, and the deprecated file-generation flow each handle their own errors (the `notifyError` toast is the user-facing signal) and return them, so artifact generation still runs after a model generation failure. `globalGenerate` emits `failure` with the first sub-step error, or `success` when every step succeeded.
 - **`editor.generation.failure` is the same constant that already backed `logService.error` calls.** Existing developer-console error logs continue; the telemetry event is now emitted alongside so error rate is queryable.
 
 ### Push to dev metadata
@@ -312,7 +339,7 @@ Design notes:
 
 - **`statusBreakdown` is `Record<status, count>`.** Values come from `WorkflowStatus` / `WorkflowJobStatus` (uppercase enum names, e.g. `SUCCEEDED`, `FAILED`, `IN_PROGRESS`). It is shape-only — never raw workflow ids or names.
 - **`workflow.expand` fires on open only.** Collapse does not emit an event, so `expand` counts are per-open (dashboard-friendly).
-- **`job-action.launch` may be followed by `success` or `failure`.** Missing follow-ups mean the tab closed mid-action. For `cancel`, the current implementation does not await the underlying SDLC call — the success event fires after the follow-up refresh, so `durationMs` for `cancel` is really "cancel → refresh completed", not "server confirmed cancel".
+- **`job-action.launch` may be followed by `success` or `failure`.** Missing follow-ups mean the tab closed mid-action. All three actions (including `cancel`) await the underlying SDLC call, so a rejected call reports `failure`; `durationMs` covers the action plus the follow-up refresh.
 - **`logSizeBytes` is the log length in bytes**, never the log content.
 - **Read-only viewer surfaces attach `sourceInfo` too.** Since the project viewer's `getSourceInfo()` returns a `LegendProjectIdSourceInfo` / `LegendGAVSourceInfo` (see [ProjectViewerEditorMode.ts](packages/legend-application-studio/src/stores/project-view/ProjectViewerEditorMode.ts)), workflow-manager events fired from viewer surfaces carry the appropriate envelope. `scope` still distinguishes viewer flavors even before the graph loads (source info is undefined then).
 

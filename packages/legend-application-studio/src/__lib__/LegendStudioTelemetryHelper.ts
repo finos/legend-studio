@@ -174,6 +174,8 @@ export enum GRAPH_EDITOR_MODE_LABEL {
 export enum FORM_MODE_COMPILATION_ERROR_KIND {
   COMPILATION = 'compilation',
   ENGINE = 'engine',
+  /** Non-engine error (e.g. network) surfaced while compiling. */
+  OTHER = 'other',
 }
 
 export enum GRAPH_INITIALIZATION_ERROR_KIND {
@@ -194,6 +196,22 @@ export type ServiceRegistrationCommonData = {
   executionMode: string | undefined;
   serviceCount: number;
   activatePostRegistration: boolean;
+};
+
+/**
+ * Per-service outcome counts for a registration run. For `single` /
+ * `service-query-editor` runs these are always `1` / `0` on success (a
+ * failed registration throws and emits `.failure` instead); `bulk` runs
+ * report the per-service split returned by the engine.
+ */
+export type ServiceRegistrationOutcomeCounts = {
+  registeredCount: number;
+  failedCount: number;
+  /**
+   * Only set for `bulk` runs with `activatePostRegistration` — number of
+   * successfully registered services whose activation call rejected.
+   */
+  activationFailedCount?: number | undefined;
 };
 
 export type ServiceRegistrationCheckCommonData = {
@@ -602,6 +620,160 @@ export type GlobalTestRunCommonData = {
   testableCount: number;
 };
 
+/**
+ * Which editor surface a LegendAI suggestion was requested from.
+ */
+export enum LEGENDAI_SUGGEST_SURFACE {
+  SERVICE = 'service',
+  DATASPACE = 'dataspace',
+  DATA_PRODUCT = 'data-product',
+}
+
+/**
+ * Which step of a suggestion request failed: serializing the model to grammar
+ * (done locally by the graph manager) or the LegendAI request itself.
+ */
+export enum LEGENDAI_SUGGEST_STAGE {
+  SERIALIZE = 'serialize',
+  REQUEST = 'request',
+}
+
+export enum LEGENDAI_SUGGEST_ERROR_KIND {
+  /** Grammar serialization failed before LegendAI was called. */
+  SERIALIZATION = 'serialization',
+  /** HTTP 401 / 403 — the user lacks LegendAI entitlements. */
+  ENTITLEMENT = 'entitlement',
+  /** Any other HTTP 4xx. */
+  CLIENT = 'client',
+  /** HTTP 5xx. */
+  SERVER = 'server',
+  /** LegendAI answered but the suggestion was empty, so nothing was shown. */
+  EMPTY_RESPONSE = 'empty-response',
+  OTHER = 'other',
+}
+
+/**
+ * What the user was looking at when they left the editor without applying or
+ * dismissing: a request still in flight, or a suggestion already on screen.
+ */
+export enum LEGENDAI_SUGGEST_ABANDON_PHASE {
+  PENDING = 'pending',
+  SHOWN = 'shown',
+}
+
+/**
+ * State of an applied suggestion's text at the time the element was pushed.
+ */
+export enum LEGENDAI_SUGGEST_RETENTION {
+  UNCHANGED = 'unchanged',
+  EDITED = 'edited',
+  CLEARED = 'cleared',
+  ELEMENT_REMOVED = 'element-removed',
+}
+
+/**
+ * Data product only: how the suggested access point group metadata was matched
+ * to the group the user applied it on.
+ */
+export enum LEGENDAI_SUGGEST_MATCH_STRATEGY {
+  NAME = 'name',
+  INDEX = 'index',
+  NONE = 'none',
+}
+
+/**
+ * Identifies the editor target a suggestion is about. `accessPointGroupId` is
+ * only set for data product suggestions, which are launched per access point
+ * group.
+ */
+export type LegendAISuggestTarget = {
+  surface: LEGENDAI_SUGGEST_SURFACE;
+  elementPath: string;
+  accessPointGroupId?: string | undefined;
+};
+
+export type LegendAISuggestIdentity = LegendAISuggestTarget & {
+  suggestionId: string;
+  /** 1-based count of suggestions requested from this editor instance. */
+  attempt: number;
+};
+
+export type LegendAISuggestExposureData = LegendAISuggestTarget & {
+  /** Whether a suggester plugin is installed for this surface. */
+  available: boolean;
+  isReadOnly: boolean;
+};
+
+export type LegendAISuggestLaunchData = LegendAISuggestIdentity & {
+  hadExistingText: boolean;
+  existingLength: number;
+  /** Data product only. */
+  accessPointCount?: number | undefined;
+};
+
+export type LegendAISuggestSuccessData = LegendAISuggestIdentity & {
+  durationMs: number;
+  /** Length of the grammar sent to LegendAI. */
+  definitionsLength: number;
+  suggestionLength: number;
+  /** Model-reported confidence, when the surface's API returns one. */
+  confidence?: number | undefined;
+  /** The user edited the target text while the request was in flight. */
+  editedWhilePending: boolean;
+  /** Data product only: number of access point suggestions for this group. */
+  accessPointSuggestionCount?: number | undefined;
+};
+
+export type LegendAISuggestFailureData = LegendAISuggestIdentity & {
+  durationMs: number;
+  stage: LEGENDAI_SUGGEST_STAGE;
+  errorKind: LEGENDAI_SUGGEST_ERROR_KIND;
+  httpStatus?: number | undefined;
+  errorMessage: string;
+};
+
+export type LegendAISuggestDataProductApplyData = {
+  matchStrategy: LEGENDAI_SUGGEST_MATCH_STRATEGY;
+  accessPointsUpdated: number;
+  /** Access points whose id was changed by the suggestion. */
+  accessPointsRenamed: number;
+  /** Suggested names that had to be sanitized into valid identifiers. */
+  namesSanitized: number;
+  /** Suggested access point count differs from the group's access point count. */
+  accessPointCountMismatch: boolean;
+};
+
+export type LegendAISuggestApplyData = LegendAISuggestIdentity &
+  Partial<LegendAISuggestDataProductApplyData> & {
+    timeToDecisionMs: number;
+    hadExistingText: boolean;
+    existingLength: number;
+    suggestionLength: number;
+  };
+
+export type LegendAISuggestDiscardData = LegendAISuggestIdentity & {
+  timeToDecisionMs: number;
+};
+
+export type LegendAISuggestAbandonData = LegendAISuggestIdentity & {
+  phase: LEGENDAI_SUGGEST_ABANDON_PHASE;
+  /** Time since launch (pending) or since the suggestion was shown (shown). */
+  elapsedMs: number;
+};
+
+export type LegendAISuggestPersistedData = LegendAISuggestIdentity & {
+  retention: LEGENDAI_SUGGEST_RETENTION;
+  /**
+   * Normalized edit distance between the applied and pushed text (0 = same,
+   * 1 = fully rewritten). Only set for `edited`, and omitted for very long
+   * texts to keep the computation cheap.
+   */
+  editRatio?: number | undefined;
+  msSinceApply: number;
+  /** Earlier applies on the same target that were replaced before this push. */
+  supersededApplyCount: number;
+};
+
 export class LegendStudioTelemetryHelper {
   static logEvent_GraphCompilationLaunched(
     service: TelemetryService,
@@ -739,7 +911,8 @@ export class LegendStudioTelemetryHelper {
   static logEvent_ServiceRegistrationSucceeded(
     service: TelemetryService,
     sourceInfo: LegendSourceInfo | undefined,
-    data: ServiceRegistrationCommonData & { durationMs: number },
+    data: ServiceRegistrationCommonData &
+      ServiceRegistrationOutcomeCounts & { durationMs: number },
   ): void {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_SUCCESS, {
       sourceInfo,
@@ -750,7 +923,8 @@ export class LegendStudioTelemetryHelper {
   static logEvent_ServiceRegistrationFailure(
     service: TelemetryService,
     sourceInfo: LegendSourceInfo | undefined,
-    data: ServiceRegistrationCommonData & { errorMessage: string },
+    data: ServiceRegistrationCommonData &
+      Partial<ServiceRegistrationOutcomeCounts> & { errorMessage: string },
   ): void {
     service.logEvent(LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_FAILURE, {
       sourceInfo,
@@ -758,7 +932,10 @@ export class LegendStudioTelemetryHelper {
     });
   }
 
-  // Service registration precheck (per-env "is this service already deployed?")
+  // Service registration precheck ("is this service already deployed?" probed
+  // against every configured env). One launch and exactly one terminal event
+  // (success / failure) per precheck run; per-env errors are aggregated into
+  // `errorCount` / `failedEnvs` rather than emitted individually.
   static logEvent_ServiceRegistrationCheckLaunched(
     service: TelemetryService,
     sourceInfo: LegendSourceInfo | undefined,
@@ -777,6 +954,7 @@ export class LegendStudioTelemetryHelper {
       durationMs: number;
       registeredEnvCount: number;
       errorCount: number;
+      failedEnvs: string[];
     },
   ): void {
     service.logEvent(
@@ -788,7 +966,13 @@ export class LegendStudioTelemetryHelper {
   static logEvent_ServiceRegistrationCheckFailure(
     service: TelemetryService,
     sourceInfo: LegendSourceInfo | undefined,
-    data: { servicePath: string; env: string; errorMessage: string },
+    data: ServiceRegistrationCheckCommonData & {
+      durationMs: number;
+      errorCount: number;
+      failedEnvs: string[];
+      /** Message of the last per-env error encountered. */
+      errorMessage: string;
+    },
   ): void {
     service.logEvent(
       LEGEND_STUDIO_APP_EVENT.SERVICE_REGISTRATION_CHECK_FAILURE,
@@ -1127,6 +1311,95 @@ export class LegendStudioTelemetryHelper {
       LEGEND_STUDIO_APP_EVENT.DATA_PRODUCT_LEGENDAI_SUGGEST__FAILURE,
       { dataProductPath, errorMessage, sourceInfo },
     );
+  }
+
+  // Unified LegendAI suggest (service / dataspace / data product)
+  static logEvent_LegendAISuggestExposure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestExposureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__EXPOSURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestLaunched(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestLaunchData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__LAUNCH, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestSucceeded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestSuccessData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__SUCCESS, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestFailure(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestFailureData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__FAILURE, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestApplied(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestApplyData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__APPLY, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestDiscarded(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestDiscardData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__DISCARD, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestAbandoned(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestAbandonData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__ABANDON, {
+      sourceInfo,
+      ...data,
+    });
+  }
+
+  static logEvent_LegendAISuggestPersisted(
+    service: TelemetryService,
+    sourceInfo: LegendSourceInfo | undefined,
+    data: LegendAISuggestPersistedData,
+  ): void {
+    service.logEvent(LEGEND_STUDIO_APP_EVENT.LEGENDAI_SUGGEST__PERSISTED, {
+      sourceInfo,
+      ...data,
+    });
   }
 
   // Push to Dev Metadata

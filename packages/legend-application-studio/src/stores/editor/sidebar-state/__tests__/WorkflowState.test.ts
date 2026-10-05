@@ -48,7 +48,9 @@ import {
  *   - Launched fires up-front with `{scope, action, jobName, jobStatus}`.
  *   - Succeeded fires after the invoke completes, with `durationMs` present.
  *   - Failure fires when the invoke throws, with `errorMessage` propagated,
- *     and that Succeeded does NOT also fire.
+ *     and that Succeeded does NOT also fire. This includes `cancelJob`, whose
+ *     underlying call must be awaited (not fire-and-forget) for a rejected
+ *     cancel to be reported as a failure.
  * We stub `refreshWorkflow` because it is exercised in its own path — here
  * we only care about the wrapper's classification / lifecycle.
  */
@@ -80,6 +82,7 @@ const buildWorkflowManagerStateStub = (): WorkflowManagerState =>
     scope: WORKFLOW_MANAGER_SCOPE.WORKSPACE,
     retryJob: jest.fn(() => Promise.resolve()),
     runManualJob: jest.fn(() => Promise.resolve()),
+    cancelJob: jest.fn(() => Promise.resolve()),
   }) as unknown as WorkflowManagerState;
 
 const buildWorkflowState = (): WorkflowState => {
@@ -137,6 +140,7 @@ describe(unitTest('WorkflowState.runJobAction telemetry lifecycle'), () => {
   test.each([
     ['retryJob' as const, WORKFLOW_MANAGER_JOB_ACTION.RETRY],
     ['runManualJob' as const, WORKFLOW_MANAGER_JOB_ACTION.RUN_MANUAL],
+    ['cancelJob' as const, WORKFLOW_MANAGER_JOB_ACTION.CANCEL],
   ])(
     'success path: %s emits Launched then Succeeded with the correct action + payload',
     async (method, expectedAction) => {
@@ -170,6 +174,7 @@ describe(unitTest('WorkflowState.runJobAction telemetry lifecycle'), () => {
   test.each([
     ['retryJob' as const, WORKFLOW_MANAGER_JOB_ACTION.RETRY],
     ['runManualJob' as const, WORKFLOW_MANAGER_JOB_ACTION.RUN_MANUAL],
+    ['cancelJob' as const, WORKFLOW_MANAGER_JOB_ACTION.CANCEL],
   ])(
     'failure path: %s emits Launched then Failure (not Succeeded) with the error message',
     async (method, expectedAction) => {

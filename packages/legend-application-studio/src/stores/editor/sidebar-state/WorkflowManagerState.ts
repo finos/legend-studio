@@ -414,13 +414,7 @@ export class WorkflowState {
         WORKFLOW_MANAGER_JOB_ACTION.CANCEL,
         workflowJob,
         treeData,
-        // NOTE: unlike retry/runManual, the current implementation does not
-        // `yield` the underlying cancel call — see `cancelJob` below. The
-        // launch event will still fire, and success will fire after the
-        // refresh completes.
-        () => {
-          this.workflowManagerState.cancelJob(workflowJob);
-        },
+        () => flowResult(this.workflowManagerState.cancelJob(workflowJob)),
       ),
     );
   }
@@ -479,7 +473,7 @@ export class WorkflowState {
     jobAction: WORKFLOW_MANAGER_JOB_ACTION,
     workflowJob: WorkflowJob,
     treeData: TreeData<WorkflowExplorerTreeNodeData>,
-    invoke: () => Promise<void> | void,
+    invoke: () => Promise<void>,
   ): GeneratorFn<void> {
     const telemetryService = this.editorStore.applicationStore.telemetryService;
     const sourceInfo = this.editorStore.editorMode.getSourceInfo();
@@ -497,10 +491,7 @@ export class WorkflowState {
     const started = Date.now();
     try {
       this.isExecutingWorkflowRequest = true;
-      const result = invoke();
-      if (result) {
-        yield result;
-      }
+      yield invoke();
       yield flowResult(this.refreshWorkflow(workflowJob.workflowId, treeData));
       LegendStudioTelemetryHelper.logEvent_WorkflowManagerJobActionSucceeded(
         telemetryService,

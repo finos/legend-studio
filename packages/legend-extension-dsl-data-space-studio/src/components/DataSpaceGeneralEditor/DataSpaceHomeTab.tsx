@@ -16,10 +16,13 @@
 
 import {
   useEditorStore,
+  useLegendAISuggestTelemetry,
   LEGEND_STUDIO_DOCUMENTATION_KEY,
-  LegendStudioTelemetryHelper,
+  LEGENDAI_SUGGEST_STAGE,
+  LEGENDAI_SUGGEST_SURFACE,
   type DSL_DataSpace_LegendStudioApplicationPlugin_Extension,
 } from '@finos/legend-application-studio';
+import { DataSpace } from '@finos/legend-extension-dsl-data-space/graph';
 import {
   clsx,
   PanelForm,
@@ -78,35 +81,49 @@ export const DataSpaceHomeTab = observer(() => {
   const [aiDocSuggestion, setAIDocSuggestion] = useState<string | undefined>(
     undefined,
   );
+  const aiSuggestTelemetry = useLegendAISuggestTelemetry(
+    editorStore,
+    {
+      surface: LEGENDAI_SUGGEST_SURFACE.DATASPACE,
+      elementPath: dataSpace.path,
+    },
+    { legendAIUrl, available: Boolean(aiDocSuggester), isReadOnly },
+  );
   const suggestDocumentationWithAI = async (): Promise<void> => {
     if (!aiDocSuggester || !legendAIUrl) {
       return;
     }
-    LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestLaunched(
-      editorStore.applicationStore.telemetryService,
-      dataSpace.path,
-      editorStore.editorMode.getSourceInfo(),
-    );
+    const request = aiSuggestTelemetry.launch({
+      existingText: dataSpace.description,
+    });
     setIsSuggestingWithAI(true);
     setAIDocSuggestion(undefined);
+    let stage = LEGENDAI_SUGGEST_STAGE.SERIALIZE;
     try {
       const definitions =
         await editorStore.graphManagerState.graphManager.graphToPureCode(
           editorStore.graphManagerState.graph,
         );
+      stage = LEGENDAI_SUGGEST_STAGE.REQUEST;
       const suggestion = await aiDocSuggester(
         { definitions, data_space_name: dataSpace.path },
         legendAIUrl,
       );
-      setAIDocSuggestion(suggestion.description);
+      const shouldShow = aiSuggestTelemetry.succeed(request, {
+        suggestionText: suggestion.description,
+        definitionsLength: definitions.length,
+        currentText: dataSpace.description,
+        confidence: suggestion.confidence,
+      });
+      if (!shouldShow) {
+        editorStore.applicationStore.notificationService.notifyWarning(
+          'LegendAI did not return a description suggestion for this data space',
+        );
+      }
+      setAIDocSuggestion(shouldShow ? suggestion.description : undefined);
     } catch (error) {
       assertErrorThrown(error);
-      LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestFailure(
-        editorStore.applicationStore.telemetryService,
-        dataSpace.path,
-        error.message,
-        editorStore.editorMode.getSourceInfo(),
-      );
+      aiSuggestTelemetry.fail(request, error, stage);
       if (
         error instanceof NetworkClientError &&
         (error.response.status === HttpStatus.UNAUTHORIZED ||
@@ -129,20 +146,23 @@ export const DataSpaceHomeTab = observer(() => {
     if (!aiDocSuggestion) {
       return;
     }
-    LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestApplied(
-      editorStore.applicationStore.telemetryService,
-      dataSpace.path,
-      editorStore.editorMode.getSourceInfo(),
-    );
+    const dataSpacePath = dataSpace.path;
+    aiSuggestTelemetry.apply({
+      existingText: dataSpace.description,
+      appliedText: aiDocSuggestion,
+      readCurrentText: (store) => {
+        const element =
+          store.graphManagerState.graph.getNullableElement(dataSpacePath);
+        return element instanceof DataSpace
+          ? { found: true, text: element.description }
+          : { found: false };
+      },
+    });
     dataSpace_setDescription(dataSpace, aiDocSuggestion);
     setAIDocSuggestion(undefined);
   };
   const discardAIDocSuggestion = (): void => {
-    LegendStudioTelemetryHelper.logEvent_DataSpaceLegendAISuggestDiscarded(
-      editorStore.applicationStore.telemetryService,
-      dataSpace.path,
-      editorStore.editorMode.getSourceInfo(),
-    );
+    aiSuggestTelemetry.discard();
     setAIDocSuggestion(undefined);
   };
 
