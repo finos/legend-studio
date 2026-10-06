@@ -797,33 +797,63 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   async getLambdaRelationTypeFromRawInput(
     rawInput: V1_LambdaReturnTypeInput,
   ): Promise<RelationTypeMetadata> {
-    return buildRelationTypeMetadata(
-      deserialize(
-        V1_relationTypeModelSchema,
-        (await this.engineServerClient.lambdaRelationType(
-          V1_LambdaReturnTypeInput.serialization.toJson(rawInput),
-        )) as unknown as PlainObject<V1_RelationType>,
-      ),
-    );
+    try {
+      return buildRelationTypeMetadata(
+        deserialize(
+          V1_relationTypeModelSchema,
+          (await this.engineServerClient.lambdaRelationType(
+            V1_LambdaReturnTypeInput.serialization.toJson(rawInput),
+          )) as unknown as PlainObject<V1_RelationType>,
+        ),
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async getBatchLambdasRelationTypeFromRawInput(
     rawInput: V1_BatchLambdaRelationTypeInput,
   ): Promise<BatchLambdasRelationTypeResult> {
-    const response = V1_buildBatchLambdaRelationTypeResult(
-      await this.engineServerClient.batchLambdasRelationType(
-        V1_BatchLambdaRelationTypeInput.serialization.toJson(rawInput),
-      ),
-    );
-    const results = new Map<string, RelationTypeMetadata>();
-    response.results.forEach((relationType, key) =>
-      results.set(key, buildRelationTypeMetadata(relationType)),
-    );
-    const errors = new Map<string, EngineError>();
-    response.errors?.forEach((error, key) =>
-      errors.set(key, V1_buildEngineError(error)),
-    );
-    return { results, errors };
+    try {
+      const response = V1_buildBatchLambdaRelationTypeResult(
+        await this.engineServerClient.batchLambdasRelationType(
+          V1_BatchLambdaRelationTypeInput.serialization.toJson(rawInput),
+        ),
+      );
+      const results = new Map<string, RelationTypeMetadata>();
+      response.results.forEach((relationType, key) =>
+        results.set(key, buildRelationTypeMetadata(relationType)),
+      );
+      const errors = new Map<string, EngineError>();
+      response.errors?.forEach((engineError, key) =>
+        errors.set(key, V1_buildEngineError(engineError)),
+      );
+      return { results, errors };
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async getCodeCompletion(
