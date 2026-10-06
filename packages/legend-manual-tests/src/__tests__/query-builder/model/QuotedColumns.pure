@@ -1,0 +1,13 @@
+###Relational
+Database test::QuotedColumnDatabase
+(
+  Schema PEOPLE
+  (
+    Table PERSON
+    (
+      ID INTEGER PRIMARY KEY,
+      "first name" VARCHAR(20),
+      "last name" VARCHAR(20)
+    )
+  )
+)
