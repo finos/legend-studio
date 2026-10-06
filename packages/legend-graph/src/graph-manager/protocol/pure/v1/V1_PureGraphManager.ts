@@ -443,7 +443,7 @@ import {
   V1_createAccessorFromPackageableElement,
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
-  V1_buildRelationTypeFromAccessPointImplementation,
+  V1_buildResolvedRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
   V1_buildResolvedRelationTypeFromV1RelationType,
 } from './helpers/V1_AccessorHelper.js';
@@ -4218,8 +4218,22 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           apGroup,
         );
         lakehouseAP.description = apImpl.description;
-        lakehouseAP.__internal__RelationType =
-          V1_buildRelationTypeFromAccessPointImplementation(apImpl, pureGraph);
+        const resolved =
+          V1_buildResolvedRelationTypeFromAccessPointImplementation(
+            apImpl,
+            pureGraph,
+          );
+        if (resolved?.unresolvedColumns.length) {
+          this.logService.warn(
+            LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+            `Can't resolve the type of column(s) ${resolved.unresolvedColumns
+              .map((column) => `'${column.name}' (type '${column.typePath}')`)
+              .join(
+                ', ',
+              )} of access point '${apImpl.id}': typing them as '${CORE_PURE_PATH.ANY}'`,
+          );
+        }
+        lakehouseAP.__internal__RelationType = resolved?.relationType;
         return lakehouseAP;
       },
     );
