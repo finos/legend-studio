@@ -515,7 +515,7 @@ class V1_ValueSpecificationTransformer
       colProtocol.function1 = guaranteeType(fun1, V1_Lambda);
     }
     if (fun2) {
-      colProtocol.function2 = guaranteeType(fun1, V1_Lambda);
+      colProtocol.function2 = guaranteeType(fun2, V1_Lambda);
     }
     classInstance.value = colProtocol;
     return classInstance;
