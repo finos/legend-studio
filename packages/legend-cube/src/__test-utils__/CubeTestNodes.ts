@@ -18,7 +18,7 @@ import { BinaryNode, UnaryNode } from '../graph/QueryNode.js';
 import { ensureSchemas, validate } from '../inference/ValidationUtils.js';
 import { RelationalTableSource } from '../nodes/sources/RelationalTableSource.js';
 import { Schema, SchemaColumn } from '../schema/Schema.js';
-import { PrimitiveType } from '../types/CubeType.js';
+import { EnumType, PrimitiveType } from '../types/CubeType.js';
 
 /** A column of a primitive type, e.g. `column('ORDER_ID', 'Int')` or `column('NAME', 'Varchar', true, [40])` */
 export const column = (
@@ -28,6 +28,14 @@ export const column = (
   params: number[] = [],
 ): SchemaColumn =>
   new SchemaColumn(name, PrimitiveType.get(path, params), nullable);
+
+/** A column of an enumeration, e.g. `enumColumn('region', 'trading::Region', ['EMEA', 'APAC'])` */
+export const enumColumn = (
+  name: string,
+  path: string,
+  values: string[],
+  nullable = false,
+): SchemaColumn => new SchemaColumn(name, new EnumType(path, values), nullable);
 
 export const TEST_DATABASE = 'test::Northwind';
 

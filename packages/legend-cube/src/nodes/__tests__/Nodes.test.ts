@@ -25,6 +25,7 @@ import { MESSAGE_SOURCE_SCHEMA_UNRESOLVED } from '../../messages/CubeMessages.js
 import { Schema } from '../../schema/Schema.js';
 import {
   createNodeRegistry,
+  JOIN_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   type TransformDefinition,
@@ -33,6 +34,7 @@ import {
   type RelationalTableCoordinates,
   RelationalTableSource,
 } from '../sources/RelationalTableSource.js';
+import { Join, JoinType } from '../transforms/Join.js';
 import { UnknownNode } from '../UnknownNode.js';
 
 const COORDINATES = {
@@ -145,15 +147,30 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table source by default', () => {
+  test('Has the relational table source and the join by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    expect(registry.transforms).toEqual([]);
+    expect(registry.transforms).toEqual([JOIN_DEFINITION]);
+    expect(registry.get('join')).toBe(JOIN_DEFINITION);
     expect(registry.queryRules).toHaveLength(1);
+  });
+
+  test('Creates a join with the default settings', () => {
+    expect(JOIN_DEFINITION.kind).toBe('transform');
+    expect(JOIN_DEFINITION.type).toBe('join');
+    expect(JOIN_DEFINITION.label).toBe('Join Another Input');
+    expect(JOIN_DEFINITION.icon).toBe('join');
+    expect(JOIN_DEFINITION.beta).toBe(false);
+    const join = JOIN_DEFINITION.create('join101');
+    expect(join).toBeInstanceOf(Join);
+    expect(join.id).toBe('join101');
+    expect(join.leftColumns).toEqual([]);
+    expect(join.rightColumns).toEqual([]);
+    expect(join.joinType).toBe(JoinType.LEFT_OUTER);
   });
 
   test('Builds and resolves sources through the definition', () => {

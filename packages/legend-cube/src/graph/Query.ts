@@ -434,19 +434,29 @@ export class Query {
     );
   }
 
-  /** Swaps the two inputs of a binary node, e.g. to turn a left outer join around */
+  /**
+   * Swaps the two inputs of a binary node, e.g. to turn a left outer join
+   * around. The node's settings follow its inputs (`withSwappedInputs`).
+   */
   swapInputs(nodeId: string): Query {
     const node = this.getNode(nodeId);
     const [first, second] = node?.ports ?? [];
     if (
+      !node ||
       !this.canSwapInputs(nodeId) ||
       first === undefined ||
       second === undefined
     ) {
       throw new Error(`Can't swap the inputs of node "${nodeId}"`);
     }
+    const swapped = node.withSwappedInputs();
+    if (swapped.id !== node.id) {
+      throw new Error(
+        `Swapping the inputs of node "${nodeId}" gave a node with id "${swapped.id}"`,
+      );
+    }
     return new Query(
-      this.nodes,
+      this.nodes.map((n) => (n === node ? swapped : n)),
       this.connections.map((c) =>
         c.target === nodeId
           ? new Connection(

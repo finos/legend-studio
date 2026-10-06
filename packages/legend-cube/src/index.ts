@@ -33,6 +33,7 @@ export * from './inference/ValidationUtils.js';
 export * from './inference/SchemaInference.js';
 
 export * from './nodes/sources/RelationalTableSource.js';
+export * from './nodes/transforms/Join.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 

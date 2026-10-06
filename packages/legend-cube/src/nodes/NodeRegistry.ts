@@ -24,6 +24,7 @@ import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { Join } from './transforms/Join.js';
 import { UnknownNode } from './UnknownNode.js';
 
 /** What the palette, the context menu and the saved-spec codec know about a type of node */
@@ -68,6 +69,15 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     resolve: (node, resolution) => node.withResolution(resolution),
     queryRules: [relationalSourcesShareDatabase],
   };
+
+export const JOIN_DEFINITION: TransformDefinition<Join> = {
+  kind: 'transform',
+  type: Join.TYPE,
+  label: 'Join Another Input',
+  icon: 'join',
+  beta: false,
+  create: (id) => new Join(id),
+};
 
 /**
  * The node types Cube offers, as the one source of truth for the palette, the
@@ -117,6 +127,6 @@ export class NodeRegistry {
   }
 }
 
-/** A registry with every node type Cube supports */
+/** A registry with every node type Cube supports: sources, then transforms in menu order */
 export const createNodeRegistry = (): NodeRegistry =>
-  new NodeRegistry([RELATIONAL_TABLE_SOURCE_DEFINITION]);
+  new NodeRegistry([RELATIONAL_TABLE_SOURCE_DEFINITION, JOIN_DEFINITION]);

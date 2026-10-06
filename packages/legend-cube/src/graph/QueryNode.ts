@@ -59,6 +59,15 @@ export abstract class QueryNode {
   }
 
   /**
+   * The node to keep once its two inputs swap ports: by default this node. A
+   * node whose settings name its inputs by side, such as a Join's key
+   * columns, returns a new node (same id) with those settings swapped too.
+   */
+  withSwappedInputs(): QueryNode {
+    return this;
+  }
+
+  /**
    * Checks the node against its input schemas, given in port order, and
    * appends a message to `errors` for each problem found.
    */

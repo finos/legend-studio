@@ -35,7 +35,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route (always mounted, no flag: D11)
 - [x] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
 - [x] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
-- [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
+- [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER). Built and committed; verification workflow not finished
 - [ ] **M1.4** Filter (tree, operators by family, value validation, builder helpers)
 - [ ] **M1.5** IR and emitter (join algorithm, filter emission, typed literals, origins, debug printer)
 - [ ] **M1.6** Saved spec v1 codec (round trip, rest preservation, Unknown passthrough)
@@ -51,20 +51,15 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-Wait for the user's go-ahead, then start **M1.3, Join** (PLAN.md §11.1; the design is in §4.7 and spec §7.11). It is
-headless and test-driven, and needs no engine:
+Finish **M1.3, Join**. The code and 543 core tests are committed; `check:ci`, package lint and `tsc` are green.
 
-- `Join` as a `BinaryNode` with ports `leftTds`/`rightTds`, state `{leftColumns, rightColumns, joinType}` (default
-  `LEFT_OUTER`, plus `FULL_OUTER`), registered as a transform in `createNodeRegistry()`;
-- §7.11 validation steps 1–5 with the verbatim messages (already in `messages/CubeMessages.ts`), using
-  `areCompatibleTypes` for step 4 and the duplicate rule for step 5;
-- output order and the nullability and merged-key rules per join type (§4.7), with `getLeastCommonAncestor` for a FULL
-  merged key whose types differ;
-- tests per the M1.3 "done when" in §11.1, including spec Appendix C.5(b) verbatim.
-
-Process that worked for M1.2 (ultracode): a workflow extracts a cited requirement checklist from the spec and plan while
-the code is written; a second workflow checks every requirement and hunts bugs, with skeptics confirming each finding;
-fix, then re-verify until nothing new turns up. Run `tsc --noEmit` on the package too: Jest does not type-check.
+- The verification workflow (`m13-verify`, run `wf_b3831658-543`) was stopped part-way when the usage limit was
+  reached. Resume it with `Workflow({scriptPath: <session>/workflows/scripts/m13-verify-wf_b3831658-543.js,
+resumeFromRunId: 'wf_b3831658-543'})` (args: `checklist_file` = the scratchpad `m13-checklist.json`, `total` 92),
+  or re-run it. Rebuild `packages/legend-cube/lib` first. Fix what it confirms, then run `yarn lint:ci`.
+- Decisions to confirm with the user are in PLAN.md §4.7, "Settled in M1.3" (swap also swaps the key columns;
+  both columns of a pair checked; blank names).
+- Then report M1.3 and wait for the go-ahead on **M1.4, Filter**.
 
 ## Open items
 
@@ -192,3 +187,10 @@ Each is verified and detailed in PLAN.md.
   - Verification: a 5-agent workflow built a 168-item cited checklist; a 92-agent workflow checked it and hunted
     bugs, confirming 40 issues (37 test gaps, the `ensureSchemas` shape check, quoted names in `describe()`), all
     fixed; a 19-agent re-verification found 14 more test gaps and one weak check, all fixed. 453 core tests.
+- **2026-10-05, M1.3 (in progress).**
+  - `Join` (`src/nodes/transforms/Join.ts`): ports `leftTds`/`rightTds`, §7.11 steps 1–5 with the catalogue
+    messages, comparison-class compatibility, the duplicate rule, §7.11 output order, nullability and merged-key
+    rules per join type, FULL OUTER. Exported helpers for the emitter. Registered as "Join Another Input".
+  - `QueryNode.withSwappedInputs()` hook, applied by `Query.swapInputs`: a Join's key columns follow its inputs.
+  - A 4-agent workflow built a 92-item checklist (81 in scope, 11 ambiguities); the code follows its recommendations
+    except two recorded choices (PLAN §4.7). 10 hand mutations, all caught. 543 core tests.

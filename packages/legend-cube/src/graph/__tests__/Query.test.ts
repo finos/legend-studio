@@ -522,7 +522,10 @@ describe(unitTest('Swapping inputs'), () => {
     const swapped = query.swapInputs('j');
     expect(edges(swapped)).toEqual(['j>f:tds', 'l>j:tds2', 'r>j:tds1']);
     expect(swapped.selected).toBe('f');
-    expect(swapped.nodes).toEqual(query.nodes);
+    // a node whose settings don't name its inputs by side stays as it is
+    swapped.nodes.forEach((node, index) =>
+      expect(node).toBe(query.nodes[index]),
+    );
     // swapping twice restores the inputs
     expect(edges(swapped.swapInputs('j'))).toEqual(edges(query));
   });
@@ -543,6 +546,38 @@ describe(unitTest('Swapping inputs'), () => {
       'j',
     ).swapInputs('j');
     expect(edges(query)).toEqual(['l>j:tds2']);
+  });
+
+  test('Keeps the node its settings swap gives, which must have the same id', () => {
+    class SidedNode extends TestBinaryNode {
+      constructor(
+        id: string,
+        readonly side: string,
+        readonly swappedId = id,
+      ) {
+        super(id);
+      }
+
+      override withSwappedInputs(): QueryNode {
+        return new SidedNode(
+          this.swappedId,
+          this.side === 'left' ? 'right' : 'left',
+        );
+      }
+    }
+    const build = (node: QueryNode): Query =>
+      new Query([source('l'), node], [edge('l', 'j', 'tds1')], 'j');
+    const original = new SidedNode('j', 'left');
+    const swapped = build(original).swapInputs('j');
+    const node = swapped.getNode('j');
+    expect(node).toBeInstanceOf(SidedNode);
+    expect(node?.key).not.toBe(original.key);
+    expect((node as SidedNode).side).toBe('right');
+    expect(edges(swapped)).toEqual(['l>j:tds2']);
+
+    const renaming = build(new SidedNode('j', 'left', 'k'));
+    expect(renaming.canSwapInputs('j')).toBe(true);
+    expect(() => renaming.swapInputs('j')).toThrow(/gave a node with id "k"/u);
   });
 
   test.each<[string, () => Query, string]>([

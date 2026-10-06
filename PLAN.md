@@ -389,6 +389,8 @@ Settled in M1.2 (spec §4.4 leaves these open or assumes unary nodes):
 - **`generateId`** counts only ids that are the type followed by digits, for nodes of that type (stricter than the
   spec's lenient `parseInt`). Past safe integers it falls back to the scan, which covers 1–10000.
 - **Undo** creates a new object identity, as §17.4 requires: `query.clone()`.
+- **`swapInputs`** also applies the node's `withSwappedInputs()`, so settings that name inputs by side follow them
+  (added in M1.3 for Join, §4.7). The node it gives must keep its id.
 - `CubeDocument` holds `{ context, query, meta }`, where `context = { model: ModelRef; runtime?: string }` is
   query-level (§6.2).
 
@@ -474,6 +476,28 @@ resolved.`). A resolution error is reported verbatim from the engine (first line
 - **`describe()`:** `Join additional input` (§7.11). **`swapInputs`:** §4.4.
 - **Autofix** (`renameInputs`): deferred to M2, which brings the Rename node. The fix must generate collision-free
   names (§21).
+
+Settled in M1.3 (the spec leaves these open):
+
+- **Swapping inputs swaps the key columns too.** Spec §4.4 only flips the connections, which leaves a join whose key
+  names differ checking its left keys against the new left input, so it always turned invalid. Nodes now have a
+  `withSwappedInputs()` hook (default: the node itself) that `Query.swapInputs` applies; Join returns a copy with
+  `leftColumns` and `rightColumns` exchanged and the same join type. So a swap turns a LEFT join around (the other
+  input's rows are kept) and stays valid. It applies with a single input too.
+- **Within a key pair (step 4)** both columns are checked for presence, then their types only when both exist. Every
+  pair is checked (`validateAllItems`); steps 1, 2, 3 and 5 each stop at the first failure, in spec order.
+- **A blank key name** reports the generic `Left join column does not have a name.` (or `Right …`).
+- **Step 5** lists the duplicate names in left input order. `getDuplicateJoinColumns` keeps the spec's `extra`
+  argument for Difference; `buildJoinSchemaColumns`' `exclude` set waits for Difference (M6).
+- **A key may repeat** (`[a, a]` ⋈ `[a, b]`); each name is still one output column.
+- **INNER keeps nullability as input**; it does not infer that matched keys are non-null.
+- **The FULL merged key** keeps the left type when the two types are equal (for an enumeration, the left one's
+  values), else takes their least common ancestor. Compatible types always have one; otherwise it throws.
+- `schematize` re-validates and gives `undefined` for an invalid join, so it never builds a schema with duplicate
+  names. The helpers the emitter needs are exported: `getSameNamedJoinKeys`, `buildJoinSchemaColumns`,
+  `getMergedJoinKeyType`.
+- The palette entry is "Join Another Input" (spec §7.0), icon `join`. Join types are labelled Inner, Left Outer,
+  Right Outer and Full Outer, in that order.
 
 ### 4.8 Filter (`type: 'filter'`)
 
