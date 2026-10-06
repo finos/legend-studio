@@ -1,5 +1,7 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.87
+
 ## 0.3.86
 
 ## 0.3.85
