@@ -25,8 +25,13 @@ import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Schema, type SchemaColumn } from '../../schema/Schema.js';
+import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { type IR, storeAccessor } from '../CubeIR.js';
-import { emitJoin } from '../emitters/JoinEmitter.js';
+import {
+  emitJoin,
+  JOIN_KIND_PATH,
+  JOIN_KINDS,
+} from '../emitters/JoinEmitter.js';
 import { printIR } from '../IRPrinter.js';
 import { QueryEmitter } from '../QueryEmitter.js';
 
@@ -74,6 +79,45 @@ const emit = (
   joinType: JoinType,
 ): string =>
   printIR(emitIR(leftColumns, rightColumns, leftKeys, rightKeys, joinType));
+
+/** The IR nodes directly inside a node, in the order they are printed */
+const childrenOf = (node: IR): readonly IR[] => {
+  switch (node.k) {
+    case 'func':
+      return node.params;
+    case 'property':
+      return [node.receiver];
+    case 'lambda':
+      return node.body;
+    case 'collection':
+      return node.values;
+    case 'colSpec':
+      return [node.fn1, node.fn2].filter((fn): fn is IR => fn !== undefined);
+    case 'colSpecArray':
+      return node.specs;
+    default:
+      return [];
+  }
+};
+
+/** Every IR node of a tree, in the order they are printed */
+const nodesOf = (ir: IR): IR[] => [
+  ir,
+  ...childrenOf(ir).flatMap((child) => nodesOf(child)),
+];
+
+/** The name of every column spec (`~name`) and property (`.name`) in the IR, in order */
+const namesOf = (ir: IR): string[] =>
+  nodesOf(ir).flatMap((node) => {
+    switch (node.k) {
+      case 'colSpec':
+        return [`~${node.name}`];
+      case 'property':
+        return [`.${node.name}`];
+      default:
+        return [];
+    }
+  });
 
 describe(unitTest('Join emission'), () => {
   // a same-named key: renamed on the side whose value is not kept
@@ -392,6 +436,220 @@ describe(unitTest('Join emission'), () => {
     );
   });
 
+  // the same pair of keys twice: one rename, one merge, two comparisons
+  test.each<[JoinType, string]>([
+    [
+      JoinType.INNER,
+      `${L}->join(${R}->rename(~a, ~a__cube_r), ${KIND}.INNER, {l, r | ($l.a == $r.a__cube_r) && ($l.a == $r.a__cube_r)})->select(~[a, x, y])`,
+    ],
+    [
+      JoinType.LEFT_OUTER,
+      `${L}->join(${R}->rename(~a, ~a__cube_r), ${KIND}.LEFT, {l, r | ($l.a == $r.a__cube_r) && ($l.a == $r.a__cube_r)})->select(~[a, x, y])`,
+    ],
+    [
+      JoinType.RIGHT_OUTER,
+      `${L}->rename(~a, ~a__cube_l)->join(${R}, ${KIND}.RIGHT, {l, r | ($l.a__cube_l == $r.a) && ($l.a__cube_l == $r.a)})->select(~[a, x, y])`,
+    ],
+    [
+      JoinType.FULL_OUTER,
+      `${L}->rename(~a, ~a__cube_l)->join(${R}->rename(~a, ~a__cube_r), ${KIND}.FULL, {l, r | ($l.a__cube_l == $r.a__cube_r) && ($l.a__cube_l == $r.a__cube_r)})->extend(~[a: x | $x.a__cube_l->coalesce($x.a__cube_r)])->select(~[a, x, y])`,
+    ],
+  ])('Joins on the same pair of keys twice (%s)', (joinType, expected) => {
+    expect(
+      emit(
+        [int('a'), column('x')],
+        [int('a'), column('y')],
+        ['a', 'a'],
+        ['a', 'a'],
+        joinType,
+      ),
+    ).toBe(expected);
+    // both keys nullable: toOne() in each comparison
+    expect(
+      emit(
+        [int('a', true), column('x')],
+        [int('a', true), column('y')],
+        ['a', 'a'],
+        ['a', 'a'],
+        joinType,
+      ).match(/->toOne\(\) == /gu),
+    ).toHaveLength(2);
+  });
+
+  // names that are not identifiers: quoted in the text, as they are in the IR
+  const SELECTED = `~['k.ey', 'a b', 'it\\'s', 'c.d', 'x y']`;
+  const SELECTED_NAMES = ['~k.ey', '~a b', "~it's", '~c.d', '~x y'];
+  test.each<[JoinType, string, string[]]>([
+    [
+      JoinType.INNER,
+      `${L}->join(${R}->rename(~'k.ey', ~'k.ey__cube_r'), ${KIND}.INNER, {l, r | $l.'k.ey' == $r.'k.ey__cube_r'})->select(${SELECTED})`,
+      ['~k.ey', '~k.ey__cube_r', '.k.ey', '.k.ey__cube_r', ...SELECTED_NAMES],
+    ],
+    [
+      JoinType.LEFT_OUTER,
+      `${L}->join(${R}->rename(~'k.ey', ~'k.ey__cube_r'), ${KIND}.LEFT, {l, r | $l.'k.ey' == $r.'k.ey__cube_r'})->select(${SELECTED})`,
+      ['~k.ey', '~k.ey__cube_r', '.k.ey', '.k.ey__cube_r', ...SELECTED_NAMES],
+    ],
+    [
+      JoinType.RIGHT_OUTER,
+      `${L}->rename(~'k.ey', ~'k.ey__cube_l')->join(${R}, ${KIND}.RIGHT, {l, r | $l.'k.ey__cube_l' == $r.'k.ey'})->select(${SELECTED})`,
+      ['~k.ey', '~k.ey__cube_l', '.k.ey__cube_l', '.k.ey', ...SELECTED_NAMES],
+    ],
+    [
+      JoinType.FULL_OUTER,
+      `${L}->rename(~'k.ey', ~'k.ey__cube_l')->join(${R}->rename(~'k.ey', ~'k.ey__cube_r'), ${KIND}.FULL, {l, r | $l.'k.ey__cube_l' == $r.'k.ey__cube_r'})->extend(~['k.ey': x | $x.'k.ey__cube_l'->coalesce($x.'k.ey__cube_r')->cast(@String)])->select(${SELECTED})`,
+      [
+        '~k.ey',
+        '~k.ey__cube_l',
+        '~k.ey',
+        '~k.ey__cube_r',
+        '.k.ey__cube_l',
+        '.k.ey__cube_r',
+        '~k.ey',
+        '.k.ey__cube_l',
+        '.k.ey__cube_r',
+        ...SELECTED_NAMES,
+      ],
+    ],
+  ])(
+    'Keeps names that are not identifiers as they are (%s)',
+    (joinType, expected, names) => {
+      const ir = emitIR(
+        [
+          column('k.ey', `${P}Varchar`, false, [15]),
+          column('a b'),
+          column("it's"),
+          column('c.d'),
+        ],
+        [column('k.ey', `${P}Varchar`, false, [2]), column('x y')],
+        ['k.ey'],
+        ['k.ey'],
+        joinType,
+      );
+      expect(printIR(ir)).toBe(expected);
+      // the IR has the raw names, unquoted: the serializer reads them
+      expect(namesOf(ir)).toEqual(names);
+    },
+  );
+
+  test.each<[JoinType, string]>([
+    [JoinType.INNER, 'INNER'],
+    [JoinType.LEFT_OUTER, 'LEFT'],
+    [JoinType.RIGHT_OUTER, 'RIGHT'],
+    [JoinType.FULL_OUTER, 'FULL'],
+  ])('Emits the join kind as an enumeration value (%s)', (joinType, kind) => {
+    const ir = emitIR(
+      [int('id'), column('a')],
+      [int('id'), column('b')],
+      ['id'],
+      ['id'],
+      joinType,
+    );
+    // FULL nests the join in an extend
+    const joins = nodesOf(ir).filter(
+      (node) => node.k === 'func' && node.name === 'join',
+    );
+    expect(joins).toHaveLength(1);
+    const [join] = joins;
+    expect(JOIN_KINDS[joinType]).toBe(kind);
+    expect(join?.k === 'func' ? join.params[2] : undefined).toEqual({
+      k: 'enumValue',
+      enumPath: JOIN_KIND_PATH,
+      value: kind,
+      origin: { nodeId: 'join101', role: 'join' },
+    });
+    expect(JOIN_KIND_PATH).toBe(KIND);
+  });
+
+  test('Gives each part of a FULL join its origin', () => {
+    expect(
+      listOrigins(
+        emitIR(
+          [
+            column('id', 'Integer', true),
+            column('k', `${P}Varchar`, true, [15]),
+            column('a'),
+          ],
+          [
+            column('id', 'Integer', true),
+            column('k', `${P}Varchar`, false, [2]),
+            column('b'),
+          ],
+          ['id', 'k'],
+          ['id', 'k'],
+          JoinType.FULL_OUTER,
+        ),
+      ),
+    ).toEqual([
+      'select@join101:select',
+      'extend@join101:merge',
+      'join@join101:join',
+      // ->rename(~id, …)->rename(~k, …): the rename of k is the outer call
+      'rename@join101:rename',
+      'rename@join101:rename',
+      `${L}@relational101:accessor`,
+      'rename@join101:rename',
+      'rename@join101:rename',
+      `${R}@relational102:accessor`,
+      `${KIND}.FULL@join101:join`,
+      'and@join101:condition',
+      // id: both keys nullable
+      'equal@join101:condition',
+      'toOne@join101:toOne',
+      '.id__cube_l@join101:key',
+      '.id__cube_r@join101:key',
+      // k: only the left key nullable
+      'equal@join101:condition',
+      '.k__cube_l@join101:key',
+      '.k__cube_r@join101:key',
+      // id: the same type on both sides, no cast
+      'coalesce@join101:coalesce',
+      '.id__cube_l@join101:mergeKey',
+      '.id__cube_r@join101:mergeKey',
+      // k: Varchar(15) and Varchar(2)
+      'cast@join101:cast',
+      'coalesce@join101:coalesce',
+      '.k__cube_l@join101:mergeKey',
+      '.k__cube_r@join101:mergeKey',
+    ]);
+  });
+
+  test('Gives each part of a RIGHT join its origin, and none to its inputs', () => {
+    expect(
+      listOrigins(
+        emitJoin(
+          new Join('join101', {
+            leftColumns: ['id'],
+            rightColumns: ['id'],
+            joinType: JoinType.RIGHT_OUTER,
+          }),
+          [
+            storeAccessor(['test::Northwind', 'NORTHWIND', 'L']),
+            storeAccessor(['test::Northwind', 'NORTHWIND', 'R']),
+          ],
+          {
+            inputSchemas: [
+              new Schema([int('id'), column('a')]),
+              new Schema([int('id'), column('b')]),
+            ],
+            schema: new Schema([int('id'), column('a'), column('b')]),
+          },
+        ),
+      ),
+    ).toEqual([
+      'select@join101:select',
+      'join@join101:join',
+      // only the left side is renamed
+      'rename@join101:rename',
+      `${L}@-`,
+      `${R}@-`,
+      `${KIND}.RIGHT@join101:join`,
+      'equal@join101:condition',
+      '.id__cube_l@join101:key',
+      '.id@join101:key',
+    ]);
+  });
+
   test('Joins in the order of the swapped inputs', () => {
     const query = new Query(
       [
@@ -440,6 +698,33 @@ describe(unitTest('Join emission'), () => {
         },
       ),
     ).toThrow('Join "join101" would select k, k2, but its schema is k2, k');
+    // a schema with more columns than the select, or fewer (whole messages)
+    expect(() =>
+      emitJoin(
+        new Join('join101', { leftColumns: ['k'], rightColumns: ['k2'] }),
+        inputs,
+        {
+          inputSchemas: [new Schema([int('k')]), new Schema([int('k2')])],
+          schema: new Schema([int('k'), int('k2'), int('extra')]),
+        },
+      ),
+    ).toThrow(
+      new Error(
+        'Join "join101" would select k, k2, but its schema is k, k2, extra',
+      ),
+    );
+    expect(() =>
+      emitJoin(
+        new Join('join101', { leftColumns: ['k'], rightColumns: ['k2'] }),
+        inputs,
+        {
+          inputSchemas: [new Schema([int('k')]), new Schema([int('k2')])],
+          schema: new Schema([int('k')]),
+        },
+      ),
+    ).toThrow(
+      new Error('Join "join101" would select k, k2, but its schema is k'),
+    );
     expect(() =>
       emitJoin(
         new Join('join101', { leftColumns: ['k'], rightColumns: ['k2'] }),

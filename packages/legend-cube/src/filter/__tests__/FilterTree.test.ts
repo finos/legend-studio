@@ -374,6 +374,62 @@ describe(unitTest('Filter comparisons'), () => {
     expect(raw.value).toEqual(string(`50%_O'Brien`));
   });
 
+  test('Refuse a backslash in a LIKE pattern, which the engine would misread', () => {
+    const message = (operator: FilterOperator): string =>
+      `Filter values for "${FILTER_OPERATOR_DESCRIPTIONS[operator]}" cannot contain a backslash (\\) yet.`;
+    [
+      O.STARTS_WITH,
+      O.DOES_NOT_START_WITH,
+      O.ENDS_WITH,
+      O.DOES_NOT_END_WITH,
+      O.CONTAINS,
+      O.DOES_NOT_CONTAIN,
+    ].forEach((operator) => {
+      expect(
+        errorsOf(compare('SHIP_COUNTRY', operator, string('CORP\\'))),
+      ).toEqual([message(operator)]);
+      expect(
+        errorsOf(compare('SHIP_COUNTRY', operator, string('C:\\data\\x'))),
+      ).toEqual([message(operator)]);
+      // a doubled backslash or one before a wildcard is misread as well
+      ['a\\\\b', '0\\%', 'a\\_'].forEach((value) =>
+        expect(
+          errorsOf(compare('SHIP_COUNTRY', operator, string(value))),
+        ).toEqual([message(operator)]),
+      );
+      // under a negation and in a group too, since each rule checks itself
+      expect(
+        errorsOf(
+          new NotFilter(
+            and(
+              compare('SHIP_COUNTRY', operator, string('a\\b')),
+              compare('ORDER_ID', O.EQUAL, integer('1')),
+            ),
+          ),
+        ),
+      ).toEqual([message(operator)]);
+      expect(
+        errorsOf(compare('SHIP_COUNTRY', operator, string('no backslash'))),
+      ).toEqual([]);
+    });
+    // other operators compare the value as it is, so a backslash is fine
+    expect(
+      errorsOf(compare('SHIP_COUNTRY', O.EQUAL, string('CORP\\BLONP'))),
+    ).toEqual([]);
+    expect(
+      errorsOf(compare('SHIP_COUNTRY', O.NOT_EQUAL, string('CORP\\BLONP'))),
+    ).toEqual([]);
+    expect(
+      errorsOf(
+        compare('SHIP_COUNTRY', O.NOT_IN, [string('a\\b'), string('c')]),
+      ),
+    ).toEqual([]);
+    // an invalid value is reported as such, before the pattern check
+    expect(errorsOf(compare('ORDER_ID', O.EQUAL, invalid('1\\2')))).toEqual([
+      'Filter value "1\\2" is not a valid SmallInt.',
+    ]);
+  });
+
   test('Check every item of a list, reporting each bad one', () => {
     expect(
       errorsOf(

@@ -85,6 +85,7 @@ export type IR =
       readonly k: 'enumValue';
       readonly enumPath: string;
       readonly value: string;
+      readonly origin?: Origin;
     }
   /** For window isolation (from M5) */
   | { readonly k: 'let'; readonly name: string; readonly value: IR }
@@ -106,7 +107,7 @@ export enum EmitRole {
   ACCESSOR = 'accessor',
   /** a Join: a rename to a temporary name */
   RENAME = 'rename',
-  /** a Join: the join call */
+  /** a Join: the join call and its join kind */
   JOIN = 'join',
   /** a Join: the condition's comparisons and their `and` */
   CONDITION = 'condition',
@@ -126,11 +127,11 @@ export enum EmitRole {
   SELECT = 'select',
   /** a Filter: the filter call */
   FILTER = 'filter',
-  /** a Filter: a comparison, `and`, `or` or `not` */
+  /** a Filter: a comparison, `and`, `or`, `not`, or the `isEmpty` that keeps NULL rows in a negation */
   PREDICATE = 'predicate',
   /** a Filter: a column in a comparison */
   COLUMN = 'column',
-  /** a Filter: a value in a comparison */
+  /** a Filter: a value in a comparison, a literal or an enumeration value */
   VALUE = 'value',
   /** the capture node: `limit(rowLimit + 1)` and its literal */
   LIMIT = 'limit',
@@ -200,8 +201,11 @@ export const genericType = (
     ? { k: 'genericType', path, params }
     : { k: 'genericType', path };
 
-export const enumValue = (enumPath: string, value: string): IR => ({
-  k: 'enumValue',
-  enumPath,
-  value,
-});
+export const enumValue = (
+  enumPath: string,
+  value: string,
+  origin?: Origin,
+): IR =>
+  origin
+    ? { k: 'enumValue', enumPath, value, origin }
+    : { k: 'enumValue', enumPath, value };

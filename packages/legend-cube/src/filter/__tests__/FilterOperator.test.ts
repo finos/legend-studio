@@ -25,6 +25,8 @@ import {
 import { PRIMITIVE_TYPE_PATH } from '../../types/PrimitiveTypeRegistry.js';
 import {
   EMPTY_OPERATORS,
+  hasUnescapedPatternCharacter,
+  PATTERN_OPERATORS,
   FILTER_OPERATOR_DESCRIPTIONS,
   FILTER_OPERATORS,
   FilterOperator,
@@ -142,6 +144,34 @@ describe(unitTest('Filter operators'), () => {
       FilterOperator.LESS_THAN_OR_EQUAL,
     ].forEach((operator) =>
       expect(getNegatedOperator(operator)).toBeUndefined(),
+    );
+  });
+
+  test('Know which operators are LIKE patterns, where a backslash is unsafe', () => {
+    expect([...PATTERN_OPERATORS]).toEqual([
+      'StartsWith',
+      'DoesNotStartWith',
+      'EndsWith',
+      'DoesNotEndWith',
+      'Contains',
+      'DoesNotContain',
+    ]);
+    PATTERN_OPERATORS.forEach((operator) => {
+      expect(getFilterValueShape(operator)).toBe('single');
+      expect(hasUnescapedPatternCharacter(operator, 'CORP\\')).toBe(true);
+      expect(hasUnescapedPatternCharacter(operator, 'a\\b\\c')).toBe(true);
+      // a backslash that looks escaped, or that escapes a wildcard, is still
+      // misread: the engine escapes `%` and `_` but never `\`
+      expect(hasUnescapedPatternCharacter(operator, 'a\\\\b')).toBe(true);
+      expect(hasUnescapedPatternCharacter(operator, '0\\%')).toBe(true);
+      expect(hasUnescapedPatternCharacter(operator, 'a\\_')).toBe(true);
+      // the wildcards and quotes the engine does escape are fine
+      expect(hasUnescapedPatternCharacter(operator, `50%_O'Brien`)).toBe(false);
+    });
+    FILTER_OPERATORS.filter(
+      (operator) => !PATTERN_OPERATORS.includes(operator),
+    ).forEach((operator) =>
+      expect(hasUnescapedPatternCharacter(operator, 'CORP\\')).toBe(false),
     );
   });
 

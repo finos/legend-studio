@@ -63,52 +63,24 @@ export class QueryEmitter {
   }
 
   /**
-   * Whether the node can be emitted: it is valid, which needs every node
-   * upstream of it to be valid too, and of a registered type
+   * Whether the node can be emitted: it and every node upstream of it are
+   * valid and of a registered type
    */
   canEmit(nodeId: string): boolean {
-    const node = this.query.getNode(nodeId);
-    return (
-      node !== undefined &&
-      this.inference.validity.get(nodeId)?.length === 0 &&
-      this.registry.get(node.type) !== undefined
-    );
+    return this.findEmitError(nodeId, new Set()) === undefined;
   }
 
   /**
    * The relation expression of a node: its upstream tree, without `limit` or
-   * `from`, e.g. for typing the node with the engine. The node and everything
-   * upstream of it must be valid.
+   * `from`, e.g. for typing the node with the engine. The node must be one
+   * `canEmit` accepts.
    */
   emitRelation(nodeId: string): RelationExpr {
-    const node = this.query.getNode(nodeId);
-    if (!node) {
-      throw new Error(`Can't emit node "${nodeId}": it is not in the query`);
+    const error = this.findEmitError(nodeId, new Set());
+    if (error) {
+      throw new Error(error);
     }
-    const errors = this.inference.validity.get(nodeId) ?? [];
-    if (errors.length) {
-      throw new Error(
-        `Can't emit node "${nodeId}": it is invalid (${errors.join(' ')})`,
-      );
-    }
-    const definition = this.registry.get(node.type);
-    if (!definition) {
-      throw new Error(
-        `Can't emit node "${nodeId}": its type "${node.type}" is unknown`,
-      );
-    }
-    const inputIds = this.query.getInputIds(nodeId);
-    const inputs = inputIds.map((inputId) => {
-      if (inputId === undefined) {
-        throw new Error(`Can't emit node "${nodeId}": an input is missing`);
-      }
-      return this.emitRelation(inputId);
-    });
-    // the definition is the one registered for the node's type
-    return (definition as TransformDefinition).emit(node, inputs, {
-      inputSchemas: inputIds.map((inputId) => this.schemaOf(inputId as string)),
-      schema: this.schemaOf(nodeId),
-    });
+    return this.emitNode(nodeId);
   }
 
   /** The lambda that types a node with the engine: `{| <relation>}` */
@@ -155,6 +127,56 @@ export class QueryEmitter {
           originOf(captureId, EmitRole.FROM),
         ),
       ],
+    );
+  }
+
+  /** Why the node can't be emitted, if it can't; `checked` holds the nodes already found emittable */
+  private findEmitError(
+    nodeId: string,
+    checked: Set<string>,
+  ): string | undefined {
+    if (checked.has(nodeId)) {
+      return undefined;
+    }
+    const node = this.query.getNode(nodeId);
+    if (!node) {
+      return `Can't emit node "${nodeId}": it is not in the query`;
+    }
+    const errors = this.inference.validity.get(nodeId);
+    if (!errors || errors.length) {
+      return `Can't emit node "${nodeId}": it is invalid (${(errors ?? []).join(' ')})`;
+    }
+    if (!this.registry.get(node.type)) {
+      return `Can't emit node "${nodeId}": its type "${node.type}" is unknown`;
+    }
+    for (const inputId of this.query.getInputIds(nodeId)) {
+      const error =
+        inputId === undefined
+          ? `Can't emit node "${nodeId}": an input is missing`
+          : this.findEmitError(inputId, checked);
+      if (error) {
+        return error;
+      }
+    }
+    checked.add(nodeId);
+    return undefined;
+  }
+
+  private emitNode(nodeId: string): RelationExpr {
+    const node = this.query.getNode(nodeId);
+    const definition = node && this.registry.get(node.type);
+    if (!node || !definition) {
+      throw new Error(`Can't emit node "${nodeId}"`);
+    }
+    const inputIds = this.query.getInputIds(nodeId) as readonly string[];
+    // the definition is the one registered for the node's type
+    return (definition as TransformDefinition).emit(
+      node,
+      inputIds.map((inputId) => this.emitNode(inputId)),
+      {
+        inputSchemas: inputIds.map((inputId) => this.schemaOf(inputId)),
+        schema: this.schemaOf(nodeId),
+      },
     );
   }
 

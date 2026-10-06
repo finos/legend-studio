@@ -17,7 +17,7 @@
 | D1  | Saved cubes will live in a **new dedicated Cube store** in `legend-engine-application-query`. **Not in v1.** v1 defines and tests the saved spec format (codec + round trip) only; actual saving and the engine store come after the POC works end to end.                                                                                                                                                                                         | user                  |
 | D2  | The slice runs **locally** against a **Cube-owned Northwind fixture sent as an inline model** (no depot). Entry points and the sources modal get expanded later, once designed. v1 scope: one model, one Database element, one runtime per query.                                                                                                                                                                                                  | user (default)        |
 | D3  | **ag-grid Enterprise license is available** in every deployment. Use `@finos/legend-lego/data-grid` (enterprise modules).                                                                                                                                                                                                                                                                                                                          | user                  |
-| D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (engine-native; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                                                                                                        | user (default)        |
+| D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (made explicit by the emitter, §8.4: the engine does it only for columns it types `[0..1]`; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                            | user (default)        |
 | D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected (widen autofix later).                                                                                                             | user (default)        |
 | D6  | Post-slice source order: services → Pure functions → data products → ingest. Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                                                                         | user (default)        |
 | D7  | Route **`/cube`** inside Legend Query (URL `/query/cube`), hard-wired in the Query router. New module(s) `legend-cube` / `legend-cube-builder` (§3). Further entry points, the sources modal and the final look are revisited in M3.                                                                                                                                                                                                               | user + recommendation |
@@ -1170,22 +1170,31 @@ type Origin = { nodeId: string; role: string };
 **Filter.** `->filter({row | <expr>})`. Variable names are fixed (`row`; `l`/`r` in join conditions), so they never
 collide with column names, which are always accessed as properties.
 
-| Operator                                          | Emitted                                                                                                                                        | SQL behaviour ✅                                              |
-| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| Equal / GreaterThan / GTE / LT / LTE              | `equal`, `greaterThan`, `greaterThanEqual`, `lessThan`, `lessThanEqual`(`$row.c`, lit)                                                         | positive comparisons exclude NULLs                            |
-| StartsWith / EndsWith / Contains                  | `startsWith`, `endsWith`, `contains`(`$row.c`, string)                                                                                         | `LIKE`, with wildcards and quotes escaped ✅                  |
-| In                                                | `in($row.c, [lits])`                                                                                                                           | `IN (…)`                                                      |
-| IsEmpty                                           | `isEmpty($row.c)`                                                                                                                              | `IS NULL`                                                     |
-| NotEqual, DoesNotStartWith/EndWith/Contain, NotIn | `not(<positive>)`, i.e. §8.4's encoding                                                                                                        | **includes NULLs** (D4): `IS DISTINCT FROM`, `… OR c IS NULL` |
-| IsNotEmpty                                        | `not(isEmpty($row.c))`                                                                                                                         | `IS NOT NULL` (excludes NULLs, by definition)                 |
-| And / Or                                          | `and` / `or` (binary, folded left)                                                                                                             | –                                                             |
-| Not over a group                                  | **pushed down to the leaves (De Morgan)**: `not(and(a,b))` → `or(not a, not b)`; `not(or(a,b))` → `and(not a, not b)`; double negation cancels | keeps D4 for groups too                                       |
+| Operator                                          | Emitted                                                                                                                                        | SQL behaviour ✅                                                                                         |
+| ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Equal / GreaterThan / GTE / LT / LTE              | `equal`, `greaterThan`, `greaterThanEqual`, `lessThan`, `lessThanEqual`(`$row.c`, lit)                                                         | positive comparisons exclude NULLs                                                                       |
+| StartsWith / EndsWith / Contains                  | `startsWith`, `endsWith`, `contains`(`$row.c`, string)                                                                                         | `LIKE`, with `%`, `_` and quotes escaped ✅; **not** `\`, so a value with a backslash is refused (below) |
+| In                                                | `in($row.c, [lits])`                                                                                                                           | `IN (…)`                                                                                                 |
+| IsEmpty                                           | `isEmpty($row.c)`                                                                                                                              | `IS NULL`                                                                                                |
+| NotEqual, DoesNotStartWith/EndWith/Contain, NotIn | `not(<positive>)`; on a column Cube infers nullable, `isEmpty($row.c) \|\| not(<positive>)`                                                    | **includes NULLs** (D4): `c IS NULL OR NOT …`                                                            |
+| IsNotEmpty                                        | `not(isEmpty($row.c))`                                                                                                                         | `IS NOT NULL` (excludes NULLs, by definition)                                                            |
+| And / Or                                          | `and` / `or` (binary, folded left)                                                                                                             | –                                                                                                        |
+| Not over a group                                  | **pushed down to the leaves (De Morgan)**: `not(and(a,b))` → `or(not a, not b)`; `not(or(a,b))` → `and(not a, not b)`; double negation cancels | keeps D4 for groups too                                                                                  |
 
 - **Not over a group is never emitted as such.** The engine renders `not(<and/or>)` as SQL `NOT (… OR …)`, which
   drops NULL rows, contradicting D4 ✅. On ORDERS, `!(SHIP_REGION == 'BC' || SHIP_COUNTRY == 'France')` returns 306
   rows; pushed to the leaves it returns 736 = 830 − 17 − 77, the D4 answer ✅.
-- A leaf negation of an operator without a negation pair (e.g. `!(x > 5)`) stays `not(<leaf>)`. The engine already
-  makes it NULL-inclusive (`not (x is not null and x > 5)`) ✅.
+- A leaf negation of an operator without a negation pair (e.g. `!(x > 5)`) stays `not(<leaf>)`, never the opposite
+  comparison (`<=` drops NULL rows).
+- **Every negation of a column Cube infers nullable is `isEmpty($row.c) || not(<positive>)`** (M1.5 verification). The
+  engine makes `not(…)` NULL-inclusive (`not (x is not null and x > 5)`) only for a column it types `[0..1]` itself,
+  and an outer join does not widen its multiplicity (Appendix B). So after an outer join, `!($row.c->contains('a'))`
+  on a column NOT NULL in its table became `not c like '%a%'` and dropped every NULL-padded row ✅. With the guard:
+  ORDERS ⟕ CUSTOMERS[France], `COMPANY_NAME` DoesNotContain `'a'` returns 768 (was 15); CUSTOMERS ⟕ ORDERS,
+  `Not(ORDER_ID > 10500)` returns 255 (was 253); a FULL merged key DoesNotStartWith `'W'` returns 843 (was 336); each
+  matches an independent computation ✅. On columns the database declares nullable the guard is redundant and
+  harmless (same rows) ✅. NotEqual and NotIn get it too, so Cube does not depend on the engine's `IS DISTINCT FROM`
+  (D8). IsNotEmpty is the one negation without it: it excludes NULLs by definition.
 - The saved filter shape (§10.3) is unchanged; the push-down is an emitter rule.
 - `toOne()` is never inserted in filters: it breaks the NULL behaviour of negations ✅.
 
@@ -1230,34 +1239,51 @@ raw numeric tokens from strings.
 
 Settled in M1.5 (the plan leaves these open):
 
-- **IR as built** (`src/ir/`): the §8.3 union, with `origin` on `func`, `property`, `literal` and `storeAccessor` only;
-  the serializer (M1.7) stamps the other kinds from their nearest ancestor. `RelationExpr` is an alias of the IR.
-  Join kinds and enumeration values are both `enumValue` (one serializer rule); `elementPtr` is only the runtime.
+- **IR as built** (`src/ir/`): the §8.3 union, with `origin` on `func`, `property`, `literal`, `enumValue` and
+  `storeAccessor` only; the serializer (M1.7) stamps the other kinds from their nearest ancestor. `RelationExpr` is an
+  alias of the IR. Join kinds and enumeration values are both `enumValue` (one serializer rule); `elementPtr` is only
+  the runtime.
 - **Emitters** are on the registry's definitions (`emit(node, inputs, context)`, context = input schemas in port
   order and the node's own schema). `QueryEmitter` runs inference with the registry's query rules, emits a node's
   upstream tree (`emitRelation`), a typing lambda `{| <relation>}` and the execution lambda
   `{| <relation>->limit(rowLimit + 1)->from(runtime)}`. The limit is one computed integer literal; `rowLimit` must be
-  a whole number ≥ 1 and the runtime is required. Emitting an invalid node, a node after one, an Unknown node or an
-  unregistered type throws (`canEmit` tells beforehand).
+  a whole number ≥ 1 and the runtime is required. `canEmit` and `emitRelation` share one check: a node can be emitted
+  when it and every node upstream of it are valid and of a registered type; otherwise `emitRelation` throws the
+  reason.
 - **Join:** temporary names `<n>__cube_l` / `<n>__cube_r`, then `…2`, `…3` until no column of either input (or an
   earlier temporary name) has it; renames chain in key order; key pairs fold left with `and`; one `extend` merges
   every same-named key of a FULL join, with the variable `x`; the cast's type is the merged type's `path` and
   `params`. The emitter checks that the renamed inputs share no name and that the `select` equals the join's
   inferred schema, so a mismatch fails in Cube, not as an engine HTTP 500.
 - **Filter:** variable `row`; Not over a group is pushed to the leaves by recursion (a negation flips And/Or, takes a
-  paired operator, or stays `not(…)` on an unpaired one); a group of one rule emits that rule; enumeration values
-  take their path from the column type.
-- **Origin roles:** `accessor`; for a join `rename`, `join`, `condition`, `key`, `toOne`, `merge`, `mergeKey`,
-  `coalesce`, `cast`, `select`; for a filter `filter`, `predicate`, `column`, `value`; `limit` and `from` carry the
-  capture node's id.
+  paired operator, or stays `not(…)` on an unpaired one); every negation but IsNotEmpty on a nullable column is
+  guarded with `isEmpty` (above); a group of one rule emits that rule; enumeration values take their path from the
+  column type.
+- **No backslash in a LIKE pattern** (re-verification, 2026-10-06): the engine escapes `%` and `_` in the patterns of
+  `startsWith`, `endsWith` and `contains` but not the escape character `\` (Appendix B), so on H2 `StartsWith 'CORP\'`
+  matched 0 of 11 rows and `StartsWith 'Vin\s'` matched `Vins…`, negations included. No LIKE-free form works on the
+  engine today (`substring` does not type-check on `[0..1]`, `indexOf` has no SQL), and pre-escaping in Cube would
+  double-escape once the engine is fixed (D8). So the filter **refuses** a backslash in a StartsWith, EndsWith or
+  Contains value (and their negations): the rule is invalid with "Filter values for "…" cannot contain a backslash
+  (\) yet.", and the emitter throws if it ever sees one. Equal and In keep backslashes. Lift this when the engine is
+  fixed.
+- **Origin roles:** `accessor`; for a join `rename`, `join` (also its join kind), `condition`, `key`, `toOne`,
+  `merge`, `mergeKey`, `coalesce`, `cast`, `select`; for a filter `filter`, `predicate` (including the `isEmpty` and
+  `or` of a guard), `column`, `value` (literals and enumeration values); `limit` and `from` carry the capture node's
+  id.
 - **Debug printer:** valid Pure text, checked against the local engine (2026-10-06): the slice text parsed and returned
   the 19 rows; RIGHT, FULL (with a Not pushed down: 736 orders + the 2 customers without orders) and two-key LEFT
   ran too. Operators are infix with operator operands in parentheses, `!(…)` always parenthesized, everything else
-  an arrow call; names single-quoted with `\'` escapes when not identifiers; floats always have a decimal point
-  (Pure reads `1e3` as an element name), decimals end in `D`, dates start with `%`. Two known differences from the
-  JSON, for M1.7's golden comparison: a negative number prints as `-3`, which Pure parses as `minus(3)`, and a
-  quoted dotted table name (`"a.b"`) prints as stored, which Pure splits into two segments. A redact mode prints
-  every literal as `?`.
+  an arrow call; a body of several statements ends each with `;` (`{| 1; 2;}`: Pure rejects `{| 1; 2}`); names and
+  enumeration values are single-quoted when not identifiers, and so are `true`, `false` and the constraint keywords
+  `owner`, `externalId`, `function`, `message` and `enforcementLevel` (Pure lexes `~owner:` as one token), which
+  Pure does not read as names; strings and quoted names escape `\`, `'`, newline, carriage return and tab (Pure rejects a
+  raw line break in a string); floats always have a decimal point (Pure reads `1e3` as an element name), decimals end
+  in `D`, dates start with `%`. Three known differences from the JSON, for M1.7's golden comparison: a negative number
+  prints as `-3`, which Pure parses as `minus(3)`; a quoted dotted table name (`"a.b"`) prints as stored, which
+  Pure splits into two segments; and `-9223372036854775808` (the smallest long) does not parse at all, as with the
+  engine's own composer. A redact mode prints every literal, and every enumeration value with the `value`
+  role, as `?`.
 - **Not verified on the engine yet** (M1.7): the FULL merged-key casts to `Date` (StrictDate with Date) and to
   `DateTime` (Timestamp with DateTime); planning verified the Varchar, Numeric and numeric ones.
 
@@ -1946,7 +1972,9 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 - `CHAR(n)` → `Varchar(1)` (`RelationalCompilerExtension.java:1030`).
 - `BINARY`/`VARBINARY` give a "Match failure" that kills the table accessor.
 - View columns are typed `Varchar(0)`.
-- Outer joins don't widen multiplicity; aggregates are reported `[1]` but can be null.
+- Outer joins don't widen multiplicity; aggregates are reported `[1]` but can be null. A consequence: `not(…)` on a
+  column NULL-padded by an outer join is rendered without its NULL branch and drops those rows, so Cube guards every
+  negation of a nullable column with `isEmpty` (§8.4).
 - NPEs: `groupBy(~[], …)`, `groupBy` with no aggregations, `concatenate` with a column-count mismatch.
 - `rank` without ORDER BY compiles. Mixing FuncColSpec and AggColSpec in one `extend` throws a ClassCastException.
   `if()` drops type parameters ("Wrong type variables count").
@@ -1955,6 +1983,9 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
   truncated to the day. `toDecimal` truncates the scale on H2.
 - Slice fails PCT on SQL Server (`limit m,n`); drop fails PCT on SQL Server and DB2 (`limit m,-1`); Sybase emits the same SQL but has no PCT module. CTE names are not quoted for keywords on
   SQL Server, DB2 and Sybase.
+- `escapeLikeExprDefault` (`extensionDefaults.pure:1061-1070`) escapes `_` and `%` but not the escape character `\`,
+  so on H2 a backslash in a `startsWith`, `endsWith` or `contains` value changes what matches; the engine test at
+  `testWithFunction.pure:59-61` locks today's SQL in. Cube refuses such values (§8.4).
 - Enum equality after `project` compares the source value. Dotted quoted table names split into four path parts and
   resolve the wrong table. A literal one past the long range silently wraps.
 - `BaseStoredVersionedAssetDao`: no version check, non-atomic updates, `GET` rewrites the document, and id reuse

@@ -20,6 +20,7 @@ import {
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_DOES_NOT_HAVE_A_NAME,
   MESSAGE_FILTER_OPERATOR_UNSUPPORTED,
+  MESSAGE_FILTER_VALUE_BACKSLASH,
   MESSAGE_FILTER_VALUE_INVALID,
   MESSAGE_FILTER_VALUE_OUT_OF_RANGE,
   MESSAGE_FILTER_VALUE_REQUIRED,
@@ -38,6 +39,7 @@ import {
   FILTER_OPERATOR_DESCRIPTIONS,
   FilterOperator,
   getFilterValueShape,
+  hasUnescapedPatternCharacter,
   isFilterOperator,
   isOperatorAvailable,
 } from './FilterOperator.js';
@@ -285,7 +287,9 @@ export class ColumnComparisonFilter extends FilterRule {
             value !== undefined && !isFilterValueList(value),
             MESSAGE_FILTER_VALUE_REQUIRED,
             errors,
-          ) && validateValueItem(value as FilterValueItem, type, errors)
+          ) &&
+          validateValueItem(value as FilterValueItem, type, errors) &&
+          this.validatePattern(value as FilterValueItem, errors)
         );
       case 'list':
         return (
@@ -301,6 +305,18 @@ export class ColumnComparisonFilter extends FilterRule {
       default:
         return assertUnreachable(shape);
     }
+  }
+
+  // a backslash changes what a `LIKE` pattern matches (engine defect, PLAN Appendix B)
+  private validatePattern(item: FilterValueItem, errors?: string[]): boolean {
+    return validate(
+      item.kind !== 'string' ||
+        !hasUnescapedPatternCharacter(this.operator, item.value),
+      MESSAGE_FILTER_VALUE_BACKSLASH(
+        FILTER_OPERATOR_DESCRIPTIONS[this.operator],
+      ),
+      errors,
+    );
   }
 
   private describeWith(value: string): string {

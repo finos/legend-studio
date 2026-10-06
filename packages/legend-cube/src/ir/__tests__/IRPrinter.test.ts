@@ -106,6 +106,23 @@ describe(unitTest('IR printer'), () => {
     expect(printIR(integer('-5'))).toBe('-5');
   });
 
+  test('Puts a negative float or decimal before an arrow or as an operand in parentheses', () => {
+    const float = (value: string): IR => literal({ kind: 'float', value });
+    const decimal = (value: string): IR => literal({ kind: 'decimal', value });
+    expect(printIR(func('abs', [float('-1.5')]))).toBe('(-1.5)->abs()');
+    expect(printIR(func('abs', [decimal('-1.5')]))).toBe('(-1.5D)->abs()');
+    expect(printIR(func('greaterThan', [row('A'), float('-1.5')]))).toBe(
+      '$row.A > (-1.5)',
+    );
+    expect(printIR(func('lessThan', [row('A'), decimal('-2')]))).toBe(
+      '$row.A < (-2D)',
+    );
+    // positive numbers and bare negative numbers take none
+    expect(printIR(func('abs', [float('1.5')]))).toBe('1.5->abs()');
+    expect(printIR(float('-1.5'))).toBe('-1.5');
+    expect(printIR(decimal('-1.5'))).toBe('-1.5D');
+  });
+
   test('Quotes names that are not identifiers', () => {
     expect(printIR(row('A_1'))).toBe('$row.A_1');
     expect(printIR(row('_a'))).toBe('$row._a');
@@ -116,6 +133,54 @@ describe(unitTest('IR printer'), () => {
     expect(printIR(row('back\\slash'))).toBe("$row.'back\\\\slash'");
     expect(printIR(colSpec('a b'))).toBe("~'a b'");
     expect(printIR(colSpec('id__cube_r'))).toBe('~id__cube_r');
+  });
+
+  test('Quotes the names Pure does not read as names', () => {
+    expect(printIR(row('true'))).toBe("$row.'true'");
+    expect(printIR(row('false'))).toBe("$row.'false'");
+    expect(printIR(row('function'))).toBe("$row.'function'");
+    expect(printIR(colSpec('false'))).toBe("~'false'");
+    expect(printIR(colSpecArray([colSpec('true'), colSpec('A')]))).toBe(
+      "~['true', A]",
+    );
+    expect(printIR(colSpec('function', lambda(['x'], [integer('1')])))).toBe(
+      "~'function': x | 1",
+    );
+    // the other constraint keywords, which Pure lexes with `~…:` as one token
+    ['owner', 'externalId', 'message', 'enforcementLevel'].forEach((word) => {
+      expect(printIR(colSpec(word, lambda(['x'], [integer('1')])))).toBe(
+        `~'${word}': x | 1`,
+      );
+      expect(printIR(row(word))).toBe(`$row.'${word}'`);
+    });
+    // only these exact words: other words, keywords and casings stay bare
+    expect(printIR(row('True'))).toBe('$row.True');
+    expect(printIR(row('FALSE'))).toBe('$row.FALSE');
+    expect(printIR(row('functions'))).toBe('$row.functions');
+    expect(printIR(row('let'))).toBe('$row.let');
+    expect(printIR(row('all'))).toBe('$row.all');
+    expect(printIR(colSpec('let'))).toBe('~let');
+  });
+
+  test('Escapes backslashes, quotes, line breaks and tabs in strings and names', () => {
+    expect(printIR(text("a\nb\rc\td\\e'f"))).toBe("'a\\nb\\rc\\td\\\\e\\'f'");
+    // every occurrence, not only the first
+    expect(printIR(text("\\\\''\n\n\r\r\t\t"))).toBe(
+      "'\\\\\\\\\\'\\'\\n\\n\\r\\r\\t\\t'",
+    );
+    expect(printIR(row("O'Brien's"))).toBe("$row.'O\\'Brien\\'s'");
+    // the backslash is escaped first: a backslash then `n` is not a newline
+    expect(printIR(text('a\\nb'))).toBe("'a\\\\nb'");
+    expect(printIR(text('a\nb'))).toBe("'a\\nb'");
+    expect(printIR(text('a\\nb'))).not.toBe(printIR(text('a\nb')));
+    expect(printIR(text("\\'"))).toBe("'\\\\\\''");
+    expect(printIR(row('a\nb'))).toBe("$row.'a\\nb'");
+    expect(printIR(row('a\\tb'))).toBe("$row.'a\\\\tb'");
+    expect(printIR(row('a\tb'))).toBe("$row.'a\\tb'");
+    expect(printIR(colSpec('a\nb'))).toBe("~'a\\nb'");
+    expect(printIR(colSpecArray([colSpec('a\r\nb'), colSpec('c')]))).toBe(
+      "~['a\\r\\nb', c]",
+    );
   });
 
   test('Prints lambdas', () => {
@@ -129,8 +194,24 @@ describe(unitTest('IR printer'), () => {
       ),
     ).toBe('{l, r | $l.a == $r.b}');
     expect(printIR(lambda([], [integer('1')]))).toBe('{| 1}');
+    // Pure ends every statement with `;` when there is more than one
     expect(printIR(lambda(['x'], [integer('1'), integer('2')]))).toBe(
-      '{x | 1; 2}',
+      '{x | 1; 2;}',
+    );
+    expect(printIR(lambda([], [integer('1'), integer('2')]))).toBe('{| 1; 2;}');
+  });
+
+  test('Ends every statement of a column function with more than one with a semicolon', () => {
+    const twoStatements = colSpec(
+      'a',
+      lambda(['x'], [integer('1'), integer('2')]),
+    );
+    expect(printIR(twoStatements)).toBe('~a: x | 1; 2;');
+    expect(printIR(colSpecArray([twoStatements, colSpec('b')]))).toBe(
+      '~[a: x | 1; 2;, b]',
+    );
+    expect(printIR(colSpec('a', lambda(['x'], [integer('1')])))).toBe(
+      '~a: x | 1',
     );
   });
 
@@ -155,6 +236,11 @@ describe(unitTest('IR printer'), () => {
     ['a float', { kind: 'float', value: '32.38' }, '32.38'],
     ['a float with an exponent', { kind: 'float', value: '1e3' }, '1.0e3'],
     [
+      'a float with an upper-case exponent',
+      { kind: 'float', value: '1E3' },
+      '1.0E3',
+    ],
+    [
       'a float with a decimal exponent',
       { kind: 'float', value: '-1.5E-3' },
       '-1.5E-3',
@@ -170,6 +256,11 @@ describe(unitTest('IR printer'), () => {
       { kind: 'decimal', value: '2e10' },
       '2.0e10D',
     ],
+    [
+      'a decimal with an upper-case exponent',
+      { kind: 'decimal', value: '2E10' },
+      '2.0E10D',
+    ],
     ['a date', { kind: 'strictDate', value: '1997-01-01' }, '%1997-01-01'],
     [
       'a date-time',
@@ -177,6 +268,16 @@ describe(unitTest('IR printer'), () => {
       '%2024-01-02T12:00:00.123456789',
     ],
     ['an enumeration value', { kind: 'enum', value: 'EMEA' }, 'EMEA'],
+    [
+      'an enumeration value that is not an identifier',
+      { kind: 'enum', value: 'Dark Blue' },
+      "'Dark Blue'",
+    ],
+    [
+      'an enumeration value that is a reserved word',
+      { kind: 'enum', value: 'true' },
+      "'true'",
+    ],
   ])('Prints %s', (_, value, expected) => {
     expect(printIR(literal(value))).toBe(expected);
     expect(printIR(literal(value), { redactLiterals: true })).toBe('?');
@@ -221,19 +322,32 @@ describe(unitTest('IR printer'), () => {
     expect(printIR(enumValue('a::Region', 'EMEA'))).toBe('a::Region.EMEA');
   });
 
+  test('Quotes enumeration values that are not identifiers', () => {
+    expect(printIR(enumValue('a::E', 'EMEA'))).toBe('a::E.EMEA');
+    expect(printIR(enumValue('a::E', 'Dark Blue'))).toBe("a::E.'Dark Blue'");
+    expect(printIR(enumValue('a::E', 'true'))).toBe("a::E.'true'");
+    expect(printIR(enumValue('a::E', 'false'))).toBe("a::E.'false'");
+    expect(printIR(enumValue('a::E', '1ST'))).toBe("a::E.'1ST'");
+    expect(printIR(enumValue('a::E', "it's"))).toBe("a::E.'it\\'s'");
+    expect(
+      printIR(enumValue('meta::pure::functions::relation::JoinKind', 'INNER')),
+    ).toBe('meta::pure::functions::relation::JoinKind.INNER');
+  });
+
   test('Prints the forms the slice does not use', () => {
     expect(printIR({ k: 'let', name: 'n_join101', value: integer('1') })).toBe(
       'let n_join101 = 1',
     );
     expect(
       printIR({ k: 'block', statements: [integer('1'), variable('x')] }),
-    ).toBe('{1; $x}');
+    ).toBe('{1; $x;}');
+    expect(printIR({ k: 'block', statements: [integer('1')] })).toBe('{1}');
     expect(printIR({ k: 'raw', json: { _type: 'integer', value: 1 } })).toBe(
       '<raw {"_type":"integer","value":1}>',
     );
   });
 
-  test('Redacts every literal and nothing else', () => {
+  test('Redacts every literal, and no name or accessor', () => {
     const filter = func('filter', [
       storeAccessor(['a::Db', 'SCH', 'T']),
       lambda(
@@ -254,11 +368,71 @@ describe(unitTest('IR printer'), () => {
     );
   });
 
+  test('Redacts the enumeration values of a filter, and no other enumeration value', () => {
+    const value = { nodeId: 'filter101', role: 'value' };
+    const options = { redactLiterals: true };
+    expect(printIR(enumValue('a::Region', 'EMEA', value), options)).toBe('?');
+    expect(
+      printIR(
+        func('in', [
+          row('REGION'),
+          collection([
+            enumValue('a::Region', 'EMEA', value),
+            enumValue('a::Region', 'Dark Blue', value),
+          ]),
+        ]),
+        options,
+      ),
+    ).toBe('$row.REGION->in([?, ?])');
+    // a join kind, and an enumeration value without origin, are not values users typed
+    expect(
+      printIR(
+        enumValue('meta::pure::functions::relation::JoinKind', 'INNER', {
+          nodeId: 'join101',
+          role: 'join',
+        }),
+        options,
+      ),
+    ).toBe('meta::pure::functions::relation::JoinKind.INNER');
+    expect(printIR(enumValue('a::Region', 'EMEA'), options)).toBe(
+      'a::Region.EMEA',
+    );
+    // without the option, the value is printed
+    expect(printIR(enumValue('a::Region', 'EMEA', value))).toBe(
+      'a::Region.EMEA',
+    );
+  });
+
   test('Ignores origins', () => {
     const origin = { nodeId: 'filter101', role: 'column' };
     expect(printIR(columnAccess('row', 'A', origin))).toBe(
       printIR(columnAccess('row', 'A')),
     );
     expect(printIR(func('f', [variable('x')], origin))).toBe('$x->f()');
+    const value = { nodeId: 'filter101', role: 'value' };
+    expect(printIR(enumValue('a::Region', 'EMEA', value))).toBe(
+      printIR(enumValue('a::Region', 'EMEA')),
+    );
+    expect(
+      printIR(
+        enumValue('meta::pure::functions::relation::JoinKind', 'LEFT', {
+          nodeId: 'join101',
+          role: 'join',
+        }),
+      ),
+    ).toBe(
+      printIR(enumValue('meta::pure::functions::relation::JoinKind', 'LEFT')),
+    );
+    expect(printIR(literal({ kind: 'string', value: 'France' }, value))).toBe(
+      printIR(text('France')),
+    );
+    expect(
+      printIR(
+        storeAccessor(['a::Db', 'SCH', 'T'], {
+          nodeId: 'relational101',
+          role: 'accessor',
+        }),
+      ),
+    ).toBe(printIR(storeAccessor(['a::Db', 'SCH', 'T'])));
   });
 });

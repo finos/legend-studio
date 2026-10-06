@@ -184,7 +184,7 @@ export const emitJoin = (
     [
       left,
       right,
-      enumValue(JOIN_KIND_PATH, JOIN_KINDS[joinType]),
+      enumValue(JOIN_KIND_PATH, JOIN_KINDS[joinType], origin(EmitRole.JOIN)),
       lambda([LEFT, RIGHT], [condition]),
     ],
     origin(EmitRole.JOIN),

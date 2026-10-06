@@ -17,6 +17,7 @@
 import {
   FilterOperator,
   getNegatedOperator,
+  hasUnescapedPatternCharacter,
   NEGATIVE_OPERATORS,
 } from '../../filter/FilterOperator.js';
 import {
@@ -66,12 +67,15 @@ const OPERATOR_FUNCTIONS: Readonly<Partial<Record<FilterOperator, string>>> =
 
 /**
  * Emits a filter as `->filter({row | <predicate>})` (PLAN §8.4):
- * - a negative operator is `not` over its positive one (`!($row.c == 'x')`),
- *   so NULL rows are kept, as the engine does natively (D4);
+ * - a negative operator is `not` over its positive one (`!($row.c == 'x')`);
  * - a Not over a group is pushed down to the leaves (De Morgan), because the
  *   engine's `NOT (… OR …)` would drop NULL rows; a double negation cancels;
- * - a Not over a comparison takes its negated operator, or stays `not(…)` for
- *   one without (`!($row.c > 5)` also keeps NULL rows, `<=` would not);
+ * - a Not over a comparison takes its negated operator, or is `not(…)` for
+ *   one without (`!($row.c > 5)`; `<=` would drop NULL rows);
+ * - a negation keeps NULL rows (D4): on a column the input schema marks
+ *   nullable it is `$row.c->isEmpty() || !(…)`, because the engine keeps them
+ *   only for columns it types [0..1] itself, and it does not after an outer
+ *   join (PLAN Appendix B). IsNotEmpty is the one negation that drops them;
  * - And and Or are binary, folded left; a group of one rule is that rule;
  * - values are typed literals of the column's type; enumeration values are
  *   written `EnumPath.VALUE`.
@@ -101,7 +105,7 @@ export const emitFilter = (
     }
     // an enumeration value's kind is only taken by enumeration columns
     return item.kind === 'enum'
-      ? enumValue(type.path, item.value)
+      ? enumValue(type.path, item.value, origin(EmitRole.VALUE))
       : literal(item, origin(EmitRole.VALUE));
   };
 
@@ -139,6 +143,14 @@ export const emitFilter = (
         if (value === undefined || isFilterValueList(value)) {
           throw new Error(
             `Filter "${node.id}" has a comparison without a value`,
+          );
+        }
+        if (
+          value.kind === 'string' &&
+          hasUnescapedPatternCharacter(operator, value.value)
+        ) {
+          throw new Error(
+            `Filter "${node.id}" has a backslash in a pattern, which the engine would misread`,
           );
         }
         return func(
@@ -180,17 +192,32 @@ export const emitFilter = (
       }
       case 'comparison': {
         const comparison = rule as ColumnComparisonFilter;
-        const negatedOperator = negated
+        // undefined: a negated operator without a negated one, e.g. Not(>)
+        const operator = negated
           ? getNegatedOperator(comparison.operator)
-          : undefined;
-        const operator = negatedOperator ?? comparison.operator;
-        const positive = NEGATIVE_OPERATORS.includes(operator)
-          ? (getNegatedOperator(operator) as FilterOperator)
-          : operator;
+          : comparison.operator;
+        const positive =
+          operator === undefined
+            ? comparison.operator
+            : NEGATIVE_OPERATORS.includes(operator)
+              ? (getNegatedOperator(operator) as FilterOperator)
+              : operator;
         const predicate = emitComparison(comparison, positive, schema);
-        const once = positive === operator ? predicate : not(predicate);
-        // an operator without a negated one stays under a `not`
-        return negated && !negatedOperator ? not(once) : once;
+        if (positive === operator) {
+          return predicate;
+        }
+        const negation = not(predicate);
+        return positive === FilterOperator.IS_EMPTY ||
+          !schema.lookup(comparison.columnName)?.nullable
+          ? negation
+          : func(
+              'or',
+              [
+                emitComparison(comparison, FilterOperator.IS_EMPTY, schema),
+                negation,
+              ],
+              origin(EmitRole.PREDICATE),
+            );
       }
       default:
         return assertUnreachable(rule.kind);

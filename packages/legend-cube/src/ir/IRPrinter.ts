@@ -16,10 +16,13 @@
 
 import { assertUnreachable } from '../utils/AssertionUtils.js';
 import type { LiteralValue } from '../values/LiteralValue.js';
-import type { IR } from './CubeIR.js';
+import { EmitRole, type IR } from './CubeIR.js';
 
 export interface IRPrintOptions {
-  /** Print every literal as `?`, for logs: literals are values users typed */
+  /**
+   * Print every literal, and every enumeration value that is a filter's value
+   * (role `value`), as `?`, for logs: they are values users typed
+   */
   readonly redactLiterals?: boolean;
 }
 
@@ -35,14 +38,33 @@ const INFIX_OPERATORS: Readonly<Record<string, string>> = Object.freeze({
 
 const IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/u;
 
+/**
+ * Words Pure does not read as a name where Cube prints names: `true` and
+ * `false` anywhere, and the constraint keywords before a column function
+ * (`~owner: …` lexes as one token); quoted, they read as names everywhere
+ */
+const RESERVED_NAMES: ReadonlySet<string> = new Set([
+  'true',
+  'false',
+  'owner',
+  'externalId',
+  'function',
+  'message',
+  'enforcementLevel',
+]);
+
+/** Pure's string syntax: backslash first, so the escapes it adds stay as they are */
+const printString = (value: string): string =>
+  `'${value
+    .replaceAll('\\', '\\\\')
+    .replaceAll("'", "\\'")
+    .replaceAll('\n', '\\n')
+    .replaceAll('\r', '\\r')
+    .replaceAll('\t', '\\t')}'`;
+
 /** A name as Pure writes it: as is when it is an identifier, else single-quoted */
 const printName = (name: string): string =>
-  IDENTIFIER.test(name)
-    ? name
-    : `'${name.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
-
-const printString = (value: string): string =>
-  `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
+  IDENTIFIER.test(name) && !RESERVED_NAMES.has(name) ? name : printString(name);
 
 // Pure reads `1e3` as an element name, so a number with an exponent needs a
 // decimal point (`1.0e3`); a float needs one anyway to read as a float
@@ -67,7 +89,7 @@ const printLiteral = (value: LiteralValue): string => {
     case 'dateTime':
       return `%${value.value}`;
     case 'enum':
-      return value.value;
+      return printName(value.value);
     default:
       return assertUnreachable(value);
   }
@@ -99,6 +121,11 @@ const isNegativeNumber = (ir: IR): boolean =>
  */
 export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
   const print = (node: IR): string => printIR(node, options);
+  // Pure ends every statement with `;` when there is more than one
+  const statements = (nodes: readonly IR[]): string =>
+    nodes.length > 1
+      ? nodes.map((node) => `${print(node)};`).join(' ')
+      : nodes.map(print).join('');
   // an operand of an operator, or the receiver of an arrow call
   const operand = (node: IR): string =>
     isInfix(node) || isNot(node) || isNegativeNumber(node)
@@ -107,7 +134,7 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
   // a lambda as a column function: `x | body`
   const bareLambda = (node: IR): string =>
     node.k === 'lambda'
-      ? `${node.params.join(', ')} | ${node.body.map(print).join('; ')}`
+      ? `${node.params.join(', ')} | ${statements(node.body)}`
       : print(node);
   const colSpecBody = (node: IR): string =>
     node.k === 'colSpec'
@@ -135,7 +162,7 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
     case 'lambda':
       return ir.params.length
         ? `{${bareLambda(ir)}}`
-        : `{| ${ir.body.map(print).join('; ')}}`;
+        : `{| ${statements(ir.body)}}`;
     case 'literal':
       return options.redactLiterals ? '?' : printLiteral(ir.value);
     case 'collection':
@@ -151,11 +178,13 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
     case 'genericType':
       return `@${ir.path}${ir.params?.length ? `(${ir.params.join(', ')})` : ''}`;
     case 'enumValue':
-      return `${ir.enumPath}.${ir.value}`;
+      return options.redactLiterals && ir.origin?.role === EmitRole.VALUE
+        ? '?'
+        : `${ir.enumPath}.${printName(ir.value)}`;
     case 'let':
       return `let ${ir.name} = ${print(ir.value)}`;
     case 'block':
-      return `{${ir.statements.map(print).join('; ')}}`;
+      return `{${statements(ir.statements)}}`;
     case 'raw':
       return `<raw ${JSON.stringify(ir.json)}>`;
     default:

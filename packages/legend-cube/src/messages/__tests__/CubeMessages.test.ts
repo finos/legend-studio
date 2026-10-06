@@ -145,4 +145,7 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_FILTER_VALUE_OUT_OF_RANGE('40000', 'SmallInt')).toBe(
     'Filter value "40000" is out of range for SmallInt.',
   );
+  expect(MESSAGES.MESSAGE_FILTER_VALUE_BACKSLASH('starts with')).toBe(
+    'Filter values for "starts with" cannot contain a backslash (\\) yet.',
+  );
 });

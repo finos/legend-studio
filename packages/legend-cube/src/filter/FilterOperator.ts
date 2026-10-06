@@ -106,6 +106,26 @@ export const SET_OPERATORS: readonly FilterOperator[] = Object.freeze([
   FilterOperator.NOT_IN,
 ]);
 
+/** Operators the engine runs as SQL `LIKE` patterns */
+export const PATTERN_OPERATORS: readonly FilterOperator[] = Object.freeze([
+  FilterOperator.STARTS_WITH,
+  FilterOperator.DOES_NOT_START_WITH,
+  FilterOperator.ENDS_WITH,
+  FilterOperator.DOES_NOT_END_WITH,
+  FilterOperator.CONTAINS,
+  FilterOperator.DOES_NOT_CONTAIN,
+]);
+
+/**
+ * Whether a value can't be used with an operator because of an engine defect:
+ * the engine escapes `%` and `_` in `LIKE` patterns but not the escape
+ * character `\`, so a backslash changes what matches (PLAN Appendix B)
+ */
+export const hasUnescapedPatternCharacter = (
+  operator: FilterOperator,
+  value: string,
+): boolean => PATTERN_OPERATORS.includes(operator) && value.includes('\\');
+
 /** What an operator takes: no value, one value or a non-empty list of values */
 export type FilterValueShape = 'none' | 'single' | 'list';
 
