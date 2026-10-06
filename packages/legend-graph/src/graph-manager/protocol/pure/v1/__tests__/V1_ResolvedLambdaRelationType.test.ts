@@ -77,7 +77,6 @@ const ENGINE_RELATION_TYPE: PlainObject<V1_RelationType> = {
   columns: [
     {
       name: 'CUSTOMER_ID',
-      description: 'The customer who placed the order',
       genericType: {
         multiplicityArguments: [],
         rawType: {
@@ -189,7 +188,6 @@ const expectLosslessColumns = (columns: RelationColumn[]): void => {
   ).toEqual([5]);
   expect(customerId.multiplicity.lowerBound).toBe(0);
   expect(customerId.multiplicity.upperBound).toBe(1);
-  expect(customerId.description).toBe('The customer who placed the order');
   expect(
     customerId.stereotypes.map((stereotype) => stereotype.value.value),
   ).toEqual(['important']);
@@ -206,7 +204,6 @@ const expectLosslessColumns = (columns: RelationColumn[]): void => {
   );
   expect(color.multiplicity.lowerBound).toBe(1);
   expect(color.multiplicity.upperBound).toBe(1);
-  expect(color.description).toBeUndefined();
 };
 
 beforeAll(async () => {
@@ -218,7 +215,7 @@ afterEach(() => {
 });
 
 describe(unitTest('getLambdaResolvedRelationType'), () => {
-  test('keeps type parameters, multiplicity, description and column metadata', async () => {
+  test('keeps type parameters, multiplicity and column metadata', async () => {
     const spy = jest
       .spyOn(getEngineServerClient(), 'lambdaRelationType')
       .mockResolvedValue(ENGINE_RELATION_TYPE);

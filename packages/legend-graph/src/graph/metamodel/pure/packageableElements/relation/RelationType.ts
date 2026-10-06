@@ -25,7 +25,6 @@ import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
 export class RelationColumn extends Function implements Hashable {
   genericType: GenericTypeReference;
   multiplicity: Multiplicity = Multiplicity.ONE;
-  description?: string | undefined;
 
   constructor(name: string, type: GenericTypeReference) {
     super(name);
