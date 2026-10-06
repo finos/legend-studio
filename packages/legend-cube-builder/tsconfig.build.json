@@ -5,5 +5,9 @@
     "jsx": "react-jsx"
   },
   "exclude": ["src/**/__tests__/**/*.*", "src/**/__mocks__/**/*.*"],
-  "references": [{ "path": "../legend-cube/tsconfig.build.json" }]
+  "references": [
+    { "path": "../legend-shared/tsconfig.build.json" },
+    { "path": "../legend-graph/tsconfig.build.json" },
+    { "path": "../legend-cube/tsconfig.build.json" }
+  ]
 }

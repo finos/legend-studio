@@ -45,6 +45,8 @@
   },
   "dependencies": {
     "@finos/legend-cube": "workspace:*",
+    "@finos/legend-graph": "workspace:*",
+    "@finos/legend-shared": "workspace:*",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
     "react": "19.0.1",
@@ -55,6 +57,7 @@
     "@jest/globals": "29.7.0",
     "@testing-library/dom": "10.4.0",
     "@testing-library/react": "16.2.0",
+    "axios": "1.16.0",
     "cross-env": "7.0.3",
     "eslint": "9.22.0",
     "jest": "29.7.0",

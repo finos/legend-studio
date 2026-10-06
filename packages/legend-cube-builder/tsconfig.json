@@ -7,5 +7,9 @@
     "jsx": "react-jsxdev"
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"],
-  "references": [{ "path": "../legend-cube" }]
+  "references": [
+    { "path": "../legend-shared" },
+    { "path": "../legend-graph" },
+    { "path": "../legend-cube" }
+  ]
 }
