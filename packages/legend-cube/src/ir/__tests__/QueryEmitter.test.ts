@@ -24,6 +24,7 @@ import {
   column,
   TestBinaryNode,
   TestUnaryNode,
+  testSpecCodec,
 } from '../../__test-utils__/CubeTestNodes.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -259,6 +260,7 @@ const probeDefinition = <N extends QueryNode>(
     calls.push({ node, inputs, context });
     return func('probe', [...inputs]);
   },
+  spec: testSpecCodec(create),
 });
 
 describe(unitTest('Query emission'), () => {

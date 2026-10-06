@@ -36,6 +36,7 @@ import {
   getLeastCommonAncestor,
 } from '../../types/TypeCompatibility.js';
 import { assertUnreachable } from '../../utils/AssertionUtils.js';
+import type { JsonObject } from '../../utils/Json.js';
 
 export enum JoinType {
   INNER = 'INNER',
@@ -288,8 +289,12 @@ export class Join extends BinaryNode {
   readonly joinType: JoinType;
 
   /** By default, no key columns yet and a left outer join */
-  constructor(id: string, settings: Partial<JoinSettings> = {}) {
-    super(id);
+  constructor(
+    id: string,
+    settings: Partial<JoinSettings> = {},
+    rest?: JsonObject,
+  ) {
+    super(id, rest);
     const {
       leftColumns = [],
       rightColumns = [],
@@ -316,12 +321,16 @@ export class Join extends BinaryNode {
 
   /** A new join with the same id, and these settings changed */
   withSettings(changes: Partial<JoinSettings>): Join {
-    return new Join(this.id, {
-      leftColumns: this.leftColumns,
-      rightColumns: this.rightColumns,
-      joinType: this.joinType,
-      ...changes,
-    });
+    return new Join(
+      this.id,
+      {
+        leftColumns: this.leftColumns,
+        rightColumns: this.rightColumns,
+        joinType: this.joinType,
+        ...changes,
+      },
+      this.rest,
+    );
   }
 
   /** The key columns swap sides with the inputs, so the join stays valid; the join type stays */

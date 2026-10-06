@@ -25,6 +25,10 @@ import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
+import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
+import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
+import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
+import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -57,6 +61,8 @@ export interface TransformDefinition<N extends QueryNode = QueryNode>
     inputs: readonly RelationExpr[],
     context: EmitContext,
   ): RelationExpr;
+  /** How the saved spec stores the node's own fields */
+  readonly spec: NodeSpecCodec<N>;
 }
 
 export interface SourceDefinition<S extends SourceNode = SourceNode>
@@ -74,6 +80,8 @@ export interface SourceDefinition<S extends SourceNode = SourceNode>
     inputs: readonly RelationExpr[],
     context: EmitContext,
   ): RelationExpr;
+  /** How the saved spec stores the node's own fields */
+  readonly spec: NodeSpecCodec<S>;
 }
 
 export type AnyNodeDefinition = TransformDefinition | SourceDefinition;
@@ -90,6 +98,7 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     resolve: (node, resolution) => node.withResolution(resolution),
     queryRules: [relationalSourcesShareDatabase],
     emit: (node) => emitRelationalTableSource(node),
+    spec: RELATIONAL_TABLE_SOURCE_CODEC,
   };
 
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {
@@ -100,6 +109,7 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   beta: false,
   create: (id) => new Filter(id),
   emit: emitFilter,
+  spec: FILTER_CODEC,
 };
 
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
@@ -110,6 +120,7 @@ export const JOIN_DEFINITION: TransformDefinition<Join> = {
   beta: false,
   create: (id) => new Join(id),
   emit: emitJoin,
+  spec: JOIN_CODEC,
 };
 
 /**

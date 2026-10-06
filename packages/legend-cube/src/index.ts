@@ -28,6 +28,7 @@ export * from './schema/Schema.js';
 export * from './graph/Connection.js';
 export * from './graph/QueryNode.js';
 export * from './graph/Query.js';
+export * from './graph/CubeDocument.js';
 
 export * from './inference/ValidationUtils.js';
 export * from './inference/SchemaInference.js';
@@ -51,3 +52,12 @@ export * from './ir/emitters/FilterEmitter.js';
 export * from './ir/QueryEmitter.js';
 
 export * from './messages/CubeMessages.js';
+
+export * from './utils/Json.js';
+export * from './spec/SpecReader.js';
+export * from './spec/NodeSpecCodec.js';
+export * from './spec/codecs/SchemaSnapshotCodec.js';
+export * from './spec/codecs/RelationalTableSourceCodec.js';
+export * from './spec/codecs/JoinCodec.js';
+export * from './spec/codecs/FilterCodec.js';
+export * from './spec/CubeSpecCodec.js';

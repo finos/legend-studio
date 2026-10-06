@@ -219,6 +219,10 @@ export const emitFilter = (
               origin(EmitRole.PREDICATE),
             );
       }
+      case 'unsupported':
+        throw new Error(
+          `Filter "${node.id}" has a rule this version can't read`,
+        );
       default:
         return assertUnreachable(rule.kind);
     }

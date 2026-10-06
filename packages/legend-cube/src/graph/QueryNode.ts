@@ -16,6 +16,7 @@
 
 import type { Schema } from '../schema/Schema.js';
 import { ensureSchemas } from '../inference/ValidationUtils.js';
+import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
 
 let nextKey = 1;
 
@@ -29,14 +30,20 @@ export abstract class QueryNode {
   readonly key: number;
   /** Unique within the query and shown to users, e.g. `filter101` */
   readonly id: string;
+  /**
+   * The keys of the node's saved JSON that this version does not know, kept
+   * so a re-save writes them back (PLAN §10.3); edits keep them too
+   */
+  readonly rest: JsonObject;
 
-  constructor(id: string) {
+  constructor(id: string, rest: JsonObject = EMPTY_JSON_OBJECT) {
     if (!id) {
       throw new Error(`Query node id cannot be empty`);
     }
     this.key = nextKey;
     nextKey += 1;
     this.id = id;
+    this.rest = rest;
   }
 
   /** The type discriminator, e.g. `filter` */

@@ -62,15 +62,14 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 Next: **M1.6, the saved spec codec.**
 
-**M1.6: sample specs written, waiting for the user's review** (2026-10-06). The requirements workflow
-(`m16-requirements`, run `wf_72e1273a-5c2`) produced 158 requirements and 18 open shape questions; a copy is at
-`legend-cube-evidence/m16-checklist.txt`. Seven samples are in `packages/legend-cube/src/spec/__tests__/fixtures/`
-(uncommitted): `slice`, `left-join-negations`, `full-join`, `unfinished`, `newer-version`, `invalid-values`, `empty`.
-They were generated from real core objects by a throwaway encoder (scratchpad `m16/samples.mjs`) following the
-checklist's recommended rules, validated, and the three complete ones run on the engine (19, 183, 133 rows).
-After the user answers the shape questions: record them as "Settled in M1.6" in PLAN §10.3 (also fix §10.3's
-"not wraps composites only" and §5.8's boolean wording), then build the codec (CubeDocument, registry
-encode/decode hooks, rest, UnknownNode raw JSON, unsupported filter rule, migrations, read-only flag, size cap).
+**M1.6, the saved spec codec, is in progress** (2026-10-06). The user reviewed the samples and chose the four
+shape questions (PLAN §10.3 "Settled in M1.6"). Requirements: `m16-requirements` (run `wf_72e1273a-5c2`), 158 items,
+copy at `legend-cube-evidence/m16-checklist.txt`. Built and committed (`feat: add the Legend Cube saved spec codec`):
+`graph/CubeDocument.ts`, `spec/` (codec, reader, per-node codecs in `spec/codecs/`), `rest` on `QueryNode` (carried
+by every copy), `columnRest` on relational sources, `UnknownNode.json`, the `UnsupportedFilter` rule, the seven
+sample fixtures and a corpus round-trip test. Next: the detailed unit tests (decode errors with paths, degrading,
+rest everywhere, defaults, versions and migrations, size cap), then the verify workflow, fixes, and the report.
+Re-reading invalid values after re-resolution is M1.8a (user).
 
 ## Open items
 

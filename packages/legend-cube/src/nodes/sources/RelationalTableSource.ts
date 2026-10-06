@@ -28,6 +28,7 @@ import {
   MESSAGE_SOURCE_SCHEMA_UNRESOLVED,
 } from '../../messages/CubeMessages.js';
 import type { Schema } from '../../schema/Schema.js';
+import type { JsonObject } from '../../utils/Json.js';
 
 /** Where a table is: its Database element (by path), and its schema and name in that database */
 export interface RelationalTableCoordinates {
@@ -35,6 +36,14 @@ export interface RelationalTableCoordinates {
   readonly schema: string;
   readonly table: string;
 }
+
+/** The keys of a saved snapshot column, and of its type, that this version does not know */
+export interface SnapshotColumnRest {
+  readonly column: JsonObject;
+  readonly type: JsonObject;
+}
+
+const NO_COLUMN_REST: ReadonlyMap<string, SnapshotColumnRest> = new Map();
 
 const isNonEmptyString = (value: unknown): value is string =>
   typeof value === 'string' && value.length > 0;
@@ -58,13 +67,20 @@ export class RelationalTableSource extends SourceNode {
   readonly schema: string;
   readonly table: string;
   readonly resolution: SourceResolution;
+  /**
+   * Unknown keys of the saved schema snapshot's columns, by column name. They
+   * stay with the columns of that name when the source is resolved again.
+   */
+  readonly columnRest: ReadonlyMap<string, SnapshotColumnRest>;
 
   constructor(
     id: string,
     coordinates: RelationalTableCoordinates,
     resolution: SourceResolution = UNRESOLVED,
+    rest?: JsonObject,
+    columnRest: ReadonlyMap<string, SnapshotColumnRest> = NO_COLUMN_REST,
   ) {
-    super(id);
+    super(id, rest);
     if (
       !isNonEmptyString(coordinates.database) ||
       !isNonEmptyString(coordinates.schema) ||
@@ -78,6 +94,7 @@ export class RelationalTableSource extends SourceNode {
     this.schema = coordinates.schema;
     this.table = coordinates.table;
     this.resolution = resolution;
+    this.columnRest = columnRest;
   }
 
   /**
@@ -112,7 +129,13 @@ export class RelationalTableSource extends SourceNode {
 
   /** A new source, with the same id and coordinates, and this resolution */
   withResolution(resolution: SourceResolution): RelationalTableSource {
-    return new RelationalTableSource(this.id, this, resolution);
+    return new RelationalTableSource(
+      this.id,
+      this,
+      resolution,
+      this.rest,
+      this.columnRest,
+    );
   }
 
   /**

@@ -1,0 +1,182 @@
+{
+  "formatVersion": 1,
+  "name": "Values to fix",
+  "context": {
+    "model": {
+      "kind": "local",
+      "id": "cube-northwind"
+    },
+    "runtime": "showcase::northwind::mapping::StoreRuntime"
+  },
+  "query": {
+    "selected": "filter101",
+    "nodes": [
+      {
+        "kind": "relational",
+        "id": "relational101",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "ORDERS",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": true
+          },
+          {
+            "name": "EMPLOYEE_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "ORDER_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "REQUIRED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIPPED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_VIA",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "FREIGHT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Double"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "filter",
+        "id": "filter101",
+        "inputs": ["relational101"],
+        "filter": {
+          "op": "and",
+          "rules": [
+            {
+              "column": "EMPLOYEE_ID",
+              "operator": "Equal",
+              "value": {
+                "kind": "invalid",
+                "text": "ten"
+              }
+            },
+            {
+              "column": "ORDER_ID",
+              "operator": "LessThan",
+              "value": {
+                "kind": "invalid",
+                "text": "99999"
+              }
+            },
+            {
+              "column": "ORDER_DATE",
+              "operator": "Equal",
+              "value": {
+                "kind": "invalid",
+                "text": "1997-02-30"
+              }
+            },
+            {
+              "column": "SHIP_VIA",
+              "operator": "In",
+              "value": [
+                {
+                  "kind": "integer",
+                  "value": "1"
+                },
+                {
+                  "kind": "invalid",
+                  "text": "two"
+                },
+                {
+                  "kind": "integer",
+                  "value": "3"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

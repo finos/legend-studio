@@ -1,0 +1,165 @@
+{
+  "formatVersion": 1,
+  "name": "Saved by a newer Cube",
+  "context": {
+    "model": {
+      "kind": "local",
+      "id": "cube-northwind"
+    },
+    "runtime": "showcase::northwind::mapping::StoreRuntime"
+  },
+  "query": {
+    "selected": "pivot101",
+    "nodes": [
+      {
+        "kind": "relational",
+        "id": "relational101",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "ORDERS",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": true
+          },
+          {
+            "name": "EMPLOYEE_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "ORDER_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "REQUIRED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIPPED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_VIA",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "FREIGHT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Double"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "filter",
+        "id": "filter101",
+        "inputs": ["relational101"],
+        "filter": {
+          "column": "SHIP_COUNTRY",
+          "operator": "Equal",
+          "value": {
+            "kind": "string",
+            "value": "France"
+          }
+        },
+        "comment": "only French shipments"
+      },
+      {
+        "kind": "pivot",
+        "id": "pivot101",
+        "inputs": ["filter101"],
+        "rows": ["SHIP_CITY"],
+        "values": [
+          {
+            "column": "FREIGHT",
+            "aggregation": "sum"
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "presentation": {
+      "showGraph": false
+    },
+    "drilldown": {
+      "levels": ["SHIP_COUNTRY", "SHIP_CITY"]
+    }
+  },
+  "description": "A field this version does not know"
+}

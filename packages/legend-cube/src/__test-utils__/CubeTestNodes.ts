@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { BinaryNode, UnaryNode } from '../graph/QueryNode.js';
+import { BinaryNode, type QueryNode, UnaryNode } from '../graph/QueryNode.js';
 import { ensureSchemas, validate } from '../inference/ValidationUtils.js';
 import { RelationalTableSource } from '../nodes/sources/RelationalTableSource.js';
 import { Schema, SchemaColumn } from '../schema/Schema.js';
+import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import { EnumType, PrimitiveType } from '../types/CubeType.js';
 
 /** A column of a primitive type, e.g. `column('ORDER_ID', 'Int')` or `column('NAME', 'Varchar', true, [40])` */
@@ -107,3 +108,12 @@ export class TestBinaryNode extends BinaryNode {
     return `Test binary "${this.id}"`;
   }
 }
+
+/** A saved-spec codec for a test node, which has no fields of its own */
+export const testSpecCodec = <N extends QueryNode>(
+  create: (id: string) => N,
+): NodeSpecCodec<N> => ({
+  keys: [],
+  encode: () => ({}),
+  decode: (id) => create(id),
+});

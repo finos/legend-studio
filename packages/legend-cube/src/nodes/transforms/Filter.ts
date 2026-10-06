@@ -22,6 +22,7 @@ import {
   MESSAGE_FILTER_EMPTY,
 } from '../../messages/CubeMessages.js';
 import type { Schema } from '../../schema/Schema.js';
+import type { JsonObject } from '../../utils/Json.js';
 
 /** Keeps the rows of its input that match its filter; the columns stay as they are */
 export class Filter extends UnaryNode {
@@ -30,8 +31,8 @@ export class Filter extends UnaryNode {
   readonly filter: FilterRule | undefined;
 
   /** By default, no filter yet */
-  constructor(id: string, filter?: FilterRule) {
-    super(id);
+  constructor(id: string, filter?: FilterRule, rest?: JsonObject) {
+    super(id, rest);
     // decoded filters arrive as `unknown`, so check the shape anyway
     const value: unknown = filter;
     if (value !== undefined && !isFilterRule(value)) {
@@ -46,7 +47,7 @@ export class Filter extends UnaryNode {
 
   /** A new filter node with the same id, and this filter */
   withFilter(filter: FilterRule | undefined): Filter {
-    return new Filter(this.id, filter);
+    return new Filter(this.id, filter, this.rest);
   }
 
   /** Needs a filter, which must be valid against the input schema */

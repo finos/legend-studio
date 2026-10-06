@@ -17,6 +17,7 @@
 import { QueryNode } from '../graph/QueryNode.js';
 import { ensureSchemas } from '../inference/ValidationUtils.js';
 import type { Schema } from '../schema/Schema.js';
+import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
 
 /**
  * A node of a type this version of Cube doesn't know, e.g. from a query saved
@@ -27,13 +28,25 @@ import type { Schema } from '../schema/Schema.js';
  * its edges are real connections: the graph rules, healing on removal and
  * layout all apply to them. Since what its ports mean is unknown, it never
  * accepts new inputs.
+ *
+ * It keeps the JSON it was saved as, so re-saving writes it back as it was
+ * (PLAN §4.10): everything but `id` and `inputs`, which come from the query.
  */
 export class UnknownNode extends QueryNode {
   static readonly TYPE = 'unknown';
 
   private readonly inputPorts: readonly string[];
+  /** The saved JSON without `id` and `inputs`, `kind` included, e.g. `{kind: 'pivot', rows: […]}` */
+  readonly json: JsonObject;
+  /** Whether the saved JSON had an `inputs` key, which re-saving then writes too */
+  readonly hasInputs: boolean;
 
-  constructor(id: string, inputCount: number) {
+  constructor(
+    id: string,
+    inputCount: number,
+    json: JsonObject = EMPTY_JSON_OBJECT,
+    hasInputs = inputCount > 0,
+  ) {
     super(id);
     if (!Number.isSafeInteger(inputCount) || inputCount < 0) {
       throw new Error(
@@ -43,6 +56,13 @@ export class UnknownNode extends QueryNode {
     this.inputPorts = Object.freeze(
       Array.from({ length: inputCount }, (_, index) => `in${index}`),
     );
+    this.json = json;
+    this.hasInputs = hasInputs || inputCount > 0;
+  }
+
+  /** The type it was saved with, e.g. `pivot` */
+  get savedKind(): string | undefined {
+    return typeof this.json.kind === 'string' ? this.json.kind : undefined;
   }
 
   get type(): string {

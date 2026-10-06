@@ -20,6 +20,7 @@ import {
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_DOES_NOT_HAVE_A_NAME,
   MESSAGE_FILTER_OPERATOR_UNSUPPORTED,
+  MESSAGE_FILTER_UNSUPPORTED,
   MESSAGE_FILTER_VALUE_BACKSLASH,
   MESSAGE_FILTER_VALUE_INVALID,
   MESSAGE_FILTER_VALUE_OUT_OF_RANGE,
@@ -35,6 +36,7 @@ import {
 } from '../values/LiteralValue.js';
 import { checkValue } from '../values/ValueEntry.js';
 import { assertUnreachable } from '../utils/AssertionUtils.js';
+import { copyJson, type JsonValue } from '../utils/Json.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
   FilterOperator,
@@ -48,6 +50,9 @@ const FILTER_COLUMN = 'Filter column';
 
 /** Stands for a value in the redacted description of a filter */
 const REDACTED_VALUE = '?';
+
+/** How a rule this version can't read describes itself */
+const UNSUPPORTED_FILTER_DESCRIPTION = '(unsupported filter)';
 
 /** One value of a comparison: a literal, or text that is not a value of the column type, kept to be fixed */
 export type FilterValueItem = LiteralValue | InvalidValue;
@@ -90,7 +95,7 @@ export const isFilterValueList = (
 let nextKey = 1;
 
 /** What a filter rule is: a comparison, an And/Or group, or a negation */
-export type FilterRuleKind = 'comparison' | 'composite' | 'not';
+export type FilterRuleKind = 'comparison' | 'composite' | 'not' | 'unsupported';
 
 /**
  * A node of a filter tree: a comparison, an And/Or group of rules, or the
@@ -121,7 +126,12 @@ export abstract class FilterRule {
   abstract toRedactedString(): string;
 }
 
-const FILTER_RULE_KINDS: readonly string[] = ['comparison', 'composite', 'not'];
+const FILTER_RULE_KINDS: readonly string[] = [
+  'comparison',
+  'composite',
+  'not',
+  'unsupported',
+];
 
 /** Whether the value is a filter rule: by shape, not `instanceof`, so rules from another copy of the module work */
 export const isFilterRule = (value: unknown): value is FilterRule =>
@@ -455,5 +465,37 @@ export class NotFilter extends FilterRule {
 
   toRedactedString(): string {
     return `not (${this.rule.toRedactedString()})`;
+  }
+}
+
+/**
+ * A rule this version can't read, e.g. one saved by a newer version with an
+ * operator added since (PLAN §10.3, Settled in M1.6). It keeps the JSON it was
+ * saved as, so re-saving writes it back as it was, and it is never valid.
+ */
+export class UnsupportedFilter extends FilterRule {
+  /** The saved JSON, as it was read */
+  readonly json: JsonValue;
+
+  constructor(json: JsonValue, key?: number) {
+    super(key);
+    this.json = copyJson(json);
+  }
+
+  get kind(): 'unsupported' {
+    return 'unsupported';
+  }
+
+  validate(schema: Schema, errors?: string[]): boolean {
+    return validate(false, MESSAGE_FILTER_UNSUPPORTED, errors);
+  }
+
+  // never the JSON, which may hold values users typed
+  override toString(): string {
+    return UNSUPPORTED_FILTER_DESCRIPTION;
+  }
+
+  toRedactedString(): string {
+    return UNSUPPORTED_FILTER_DESCRIPTION;
   }
 }

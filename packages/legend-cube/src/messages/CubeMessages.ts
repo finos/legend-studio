@@ -177,6 +177,9 @@ export const MESSAGE_NO_VALID_TYPE = (name: string): string =>
 
 export const MESSAGE_FILTER_EMPTY = 'Filter cannot be empty.';
 
+/** Spec §8.5: a filter this version can't read, kept as it was saved */
+export const MESSAGE_FILTER_UNSUPPORTED = 'This filter is not supported yet.';
+
 export const MESSAGE_FILTER_VALUE_REQUIRED = 'Filter value is required.';
 
 export const MESSAGE_COMPOSITE_FILTER_EMPTY =

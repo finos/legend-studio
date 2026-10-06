@@ -20,6 +20,7 @@ import {
   column,
   TestBinaryNode,
   TestUnaryNode,
+  testSpecCodec,
 } from '../../__test-utils__/CubeTestNodes.js';
 import type { RelationExpr } from '../../ir/CubeIR.js';
 import { MESSAGE_SOURCE_SCHEMA_UNRESOLVED } from '../../messages/CubeMessages.js';
@@ -221,6 +222,7 @@ describe(unitTest('Node registry'), () => {
       beta: true,
       create: (id) => new TestBinaryNode(id),
       emit: (node, [left]) => left as RelationExpr,
+      spec: testSpecCodec((id) => new TestBinaryNode(id)),
     };
     const registry = new NodeRegistry([transform]);
     expect(registry.transforms).toEqual([transform]);
@@ -369,6 +371,7 @@ describe(unitTest('Nodes, more cases'), () => {
       beta: false,
       create: (id) => new TestUnaryNode(id),
       emit: (node, [input]) => input as RelationExpr,
+      spec: testSpecCodec((id) => new TestUnaryNode(id)),
     };
     const registry = new NodeRegistry([
       RELATIONAL_TABLE_SOURCE_DEFINITION,
@@ -393,6 +396,7 @@ describe(unitTest('Nodes, more cases'), () => {
       beta: false,
       create: (id) => new TestUnaryNode(id),
       emit: (node, [input]) => input as RelationExpr,
+      spec: testSpecCodec((id) => new TestUnaryNode(id)),
     });
     expect(second.get(TestUnaryNode.TYPE)).toBeUndefined();
     expect(createNodeRegistry().get(TestUnaryNode.TYPE)).toBeUndefined();
