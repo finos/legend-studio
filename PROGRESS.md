@@ -89,7 +89,9 @@ next):
 12. the real Northwind text in the core's sample specs (and a `legend-cube` changeset);
 13. final gate: `check:ci`, `lint:ci`, all tests with :6300 up.
 
-**Next:** step 1. The engine on `localhost:6300` is up.
+**Done:** steps 1–3 (`683f38619` builder wiring and Cube-local engine helpers; `02fc56cea` the `CubeEngine` port
+types and `V1_CubeLambdaSerializer`, whose JSON equals the engine's own parse of the slice, LEFT/RIGHT/FULL joins and
+negations). **Next:** step 4, the Cube Northwind fixture. The engine on `localhost:6300` is up.
 
 ## Open items
 
