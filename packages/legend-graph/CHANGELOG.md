@@ -1,5 +1,31 @@
 # @finos/legend-graph
 
+## 32.7.3
+
+### Patch Changes
+
+- [#5593](https://github.com/finos/legend-studio/pull/5593) [`627f9a2`](https://github.com/finos/legend-studio/commit/627f9a2e8082582fcf375b335015189844358f5f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix batch lambda relation typing: read the engine's `result` map (not `results`), which made every `lambdaRelationType/batch` call throw, and share one parser between the graph manager and direct engine-client callers.
+
+- [#5590](https://github.com/finos/legend-studio/pull/5590) [`622a065`](https://github.com/finos/legend-studio/commit/622a0658b06d069630773e976dc5caa477c80b88) ([@yash0024](https://github.com/yash0024)) - Support data products that expose both modelled access point groups and lakehouse access points when querying on Legend Query.
+
+- [#5588](https://github.com/finos/legend-studio/pull/5588) [`2f1ad2c`](https://github.com/finos/legend-studio/commit/2f1ad2c75f3bbe89c65cfcbdad380b1699946c12) ([@nikhitabokaria](https://github.com/nikhitabokaria)) - Add support for `LakehouseSingleStoreRuntime` and recognize it as a lakehouse runtime everywhere it matters:
+
+  - Introduce `LakehouseSingleStoreRuntime` (SingleStore, `environment` only) alongside the existing `LakehouseRuntime` (Snowflake, `environment` + `warehouse`, or a `connection`), sharing a new `LakehouseBaseRuntime`/`V1_LakehouseBaseRuntime` base that carries only `environment` -- matching the backend engine's own `LakehouseBaseRuntime` class hierarchy. `warehouse` and `connectionPointer` remain exclusive to `LakehouseRuntime`.
+  - Add V1 transformation, builder and serialization support for the new type in `legend-graph`, including a fix to `V1_serializeRuntime`/`V1_deserializeRuntime`'s dispatch order (Lakehouse subtypes must be checked before the generic `V1_EngineRuntime` check, since `V1_LakehouseRuntime` extends it and would otherwise be misclassified).
+  - Broaden lakehouse-runtime recognition that's generic to _any_ Lakehouse runtime (mapping-compatibility exemption, change-detection/hashing, compatible-runtime filtering in `legend-query-builder`/`legend-extension-dsl-data-space`, info-modal guards) to `instanceof LakehouseBaseRuntime`, while keeping narrow `instanceof LakehouseRuntime` checks only where behavior genuinely differs (the warehouse field, the connection picker, the type-selector UI, and runtime labels).
+  - Split the Studio runtime editor (state + component) into a shared `LakehouseBaseRuntimeEditorState`/`LakehouseBaseRuntimeEditor` plus `LakehouseSingleStoreRuntimeEditorState`/`LakehouseSingleStoreRuntimeEditor` (environment field only) and `LakehouseRuntimeEditorState`/`LakehouseRuntimeEditor` (adds the type toggle, warehouse field and connection picker), and extend new-element creation, `FunctionTestableState` and change-detection to recognize the new type.
+  - Extend `LakehouseRuntimeConfigModal` to support editing a `LakehouseSingleStoreRuntime` (environment only, no warehouse field), while preserving the user's previously-persisted Snowflake warehouse preference when applying an env-only change on a single-store runtime, since the persisted user-data blob is fully overwritten rather than merged.
+  - Guard against `useAuth()` returning `undefined` (e.g. when rendered outside an `AuthProvider`) before accessing `auth.user?.access_token` in the lakehouse runtime editor, to avoid a runtime crash.
+  - Add import-resolution roundtrip tests for `LakehouseRuntime` and `LakehouseSingleStoreRuntime`, and fix the `createModelSchema` field order for both (`environment`/`warehouse` were declared after `mappings`), which violated the ASCII-alphabetical field-ordering convention expected for backend Jackson/GSON compatibility.
+
+- [#5602](https://github.com/finos/legend-studio/pull/5602) [`be63884`](https://github.com/finos/legend-studio/commit/be63884951326d8bfec0c5cc646a6b2ce97b26b8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Keep type parameters on class properties, derived properties and lambda parameters: `Varchar(200)` and `Numeric(10,2)` no longer lose their parameters when an element is serialized from the graph (which made the engine reject it with "Wrong type variables count (0)"), and lambda parameters such as `v: Varchar(10)[1]` and `r: Relation<(a:Integer)>[1]` keep their type variable values and type arguments. Property and derived property hashes now include type variable values when present, so editing only a parameter (e.g. `Varchar(200)` to `Varchar(300)`) is detected as a change; hashes of properties without type variable values are unchanged.
+
+- [#5595](https://github.com/finos/legend-studio/pull/5595) [`7486ddf`](https://github.com/finos/legend-studio/commit/7486ddfc5771ea99fd5d9eb6bfb7c3e098b974e8) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Name relational accessor columns the way the engine does: a quoted column such as `"first name"` is now `first name` in the accessor's relation type, so `$r.'first name'` builds in the query builder instead of failing with "Can't find property first name in relation".
+
+- [#5596](https://github.com/finos/legend-studio/pull/5596) [`d320806`](https://github.com/finos/legend-studio/commit/d320806c977ef851785b9dab55adce16b0eeac77) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Report an engine compilation failure from `getLambdaRelationType` and `getBatchLambdasRelationType` as a `CompilationError` (with source information), like `getLambdaReturnType`. Fix the single `ColSpec` transformer, which wrote `function1` into `function2`.
+
+- [#5587](https://github.com/finos/legend-studio/pull/5587) [`4e5cd58`](https://github.com/finos/legend-studio/commit/4e5cd58f23b47773b275608e56bdcd5bed7a7519) ([@janeenyamak1](https://github.com/janeenyamak1)) - Support adding targets at in the DataProduct UI. Enforce only having targets or targetEnvironment specified on the access point in the UI. Fix drop down UI bug on APG operations tab and home tab.
+
 ## 32.7.2
 
 ### Patch Changes

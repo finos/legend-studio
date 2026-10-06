@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.1.3
+
+### Patch Changes
+
+- [#5593](https://github.com/finos/legend-studio/pull/5593) [`627f9a2`](https://github.com/finos/legend-studio/commit/627f9a2e8082582fcf375b335015189844358f5f) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix batch lambda relation typing: read the engine's `result` map (not `results`), which made every `lambdaRelationType/batch` call throw, and share one parser between the graph manager and direct engine-client callers.
+
+- [#5601](https://github.com/finos/legend-studio/pull/5601) [`d2ee319`](https://github.com/finos/legend-studio/commit/d2ee31915ede4d32250b8b0fb1147f69858ad509) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Handle data product access point relation type failures: the Studio data product editor no longer sticks a false "returns a Relation type" warning after a failed engine call (it retries, logs the failure, and shows the engine's per access point error), and the data product viewer no longer lets a failed engine lookup hide the artifact's columns or swallow the error.
+
 ## 0.1.2
 
 ### Patch Changes
