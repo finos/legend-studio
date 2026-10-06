@@ -66,7 +66,7 @@ export const CUBE_ENGINE_TEST__grammarToJson_lambda = async (
 
 /** The relation types of a batch of lambdas: `{result, errors}`, keyed as the input */
 export const CUBE_ENGINE_TEST__lambdaRelationTypeBatch = async (
-  input: PlainObject,
+  input: object,
 ): Promise<PlainObject> =>
   (
     await axios.post<unknown, AxiosResponse<PlainObject>>(
@@ -78,7 +78,7 @@ export const CUBE_ENGINE_TEST__lambdaRelationTypeBatch = async (
 
 /** Compiles a model context; a model that doesn't compile is an HTTP 400 */
 export const CUBE_ENGINE_TEST__compile = async (
-  model: PlainObject,
+  model: object,
 ): Promise<PlainObject> =>
   (
     await axios.post<unknown, AxiosResponse<PlainObject>>(
@@ -116,7 +116,7 @@ export const CUBE_ENGINE_TEST__jsonToGrammar_lambda = async (
  * as it is.
  */
 export const CUBE_ENGINE_TEST__execute = async (
-  input: PlainObject | string,
+  input: object | string,
 ): Promise<{ ok: boolean; status: number; text: () => Promise<string> }> => {
   const response = await axios.post<unknown, AxiosResponse<string>>(
     `${PURE_API}/execution/execute`,
