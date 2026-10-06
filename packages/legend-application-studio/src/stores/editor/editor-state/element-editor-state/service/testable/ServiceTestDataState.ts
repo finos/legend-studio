@@ -117,19 +117,12 @@ export const createMockPrimitiveValueSpecificationFromRelationalDataType = (
   relationalDataType: RelationalDataType,
   graph: PureModel,
   observerContext: ObserverContext,
-): ValueSpecification | undefined => {
-  const primitiveTypeFromRelational =
-    getPrimitiveTypeFromRelationalType(relationalDataType);
-
-  if (primitiveTypeFromRelational) {
-    return createMockPrimitiveValueSpecification(
-      primitiveTypeFromRelational,
-      graph,
-      observerContext,
-    );
-  }
-  return undefined;
-};
+): ValueSpecification =>
+  createMockPrimitiveValueSpecification(
+    getPrimitiveTypeFromRelationalType(relationalDataType),
+    graph,
+    observerContext,
+  );
 
 export class ServiceTestDataParametersState extends LambdaParametersState {
   connectionTestDataState: ConnectionTestDataState;
@@ -280,14 +273,12 @@ export class TableRowIdentifierState {
         this.connectionTestDataState.editorStore.changeDetectionState
           .observerContext,
       );
-    if (valueSpec) {
-      const rowIdentifierState = new RowIdentifierState(
-        this.connectionTestDataState,
-        column,
-        valueSpec,
-      );
-      this.rowIdentifierStates.push(rowIdentifierState);
-    }
+    const rowIdentifierState = new RowIdentifierState(
+      this.connectionTestDataState,
+      column,
+      valueSpec,
+    );
+    this.rowIdentifierStates.push(rowIdentifierState);
   }
 
   removeRowIdentifierState(rowIdentifierState: RowIdentifierState): void {

@@ -113,10 +113,8 @@ export const RowIdentifierEditor = observer(
             tableRowIdentifierState.connectionTestDataState.editorStore
               .changeDetectionState.observerContext,
           );
-        if (valueSpec) {
-          rowIdentifierState.updateRowIdentifierValue(valueSpec);
-          rowIdentifierState.updateRowIdentifierColumn(val.value);
-        }
+        rowIdentifierState.updateRowIdentifierValue(valueSpec);
+        rowIdentifierState.updateRowIdentifierColumn(val.value);
       }
     };
 
@@ -129,9 +127,7 @@ export const RowIdentifierEditor = observer(
           tableRowIdentifierState.connectionTestDataState.editorStore
             .changeDetectionState.observerContext,
         );
-      if (valueSpec) {
-        rowIdentifierState.updateRowIdentifierValue(valueSpec);
-      }
+      rowIdentifierState.updateRowIdentifierValue(valueSpec);
     };
 
     return (
@@ -166,10 +162,8 @@ export const RowIdentifierEditor = observer(
                 .changeDetectionState.observerContext
             }
             typeCheckOption={{
-              expectedType: guaranteeNonNullable(
-                getPrimitiveTypeFromRelationalType(
-                  guaranteeNonNullable(rowIdentifierState.column.type),
-                ),
+              expectedType: getPrimitiveTypeFromRelationalType(
+                guaranteeNonNullable(rowIdentifierState.column.type),
               ),
             }}
             resetValue={resetNode}

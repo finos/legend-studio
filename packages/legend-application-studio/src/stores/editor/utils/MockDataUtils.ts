@@ -21,7 +21,6 @@ import {
   Randomizer,
   UnsupportedOperationError,
   type PlainObject,
-  isNonNullable,
   filterByType,
 } from '@finos/legend-shared';
 import type { EditorStore } from '../EditorStore.js';
@@ -37,16 +36,12 @@ import {
   TableAlias,
   Table,
   Column,
-  VarChar,
   type RelationalDataType,
-  Char,
-  VarBinary,
+  BigInt,
   TinyInt,
   Float,
   Timestamp,
-  Binary,
   Bit,
-  Other,
   Numeric,
   Decimal,
   Double,
@@ -220,49 +215,56 @@ export const createMockDataForClassWithFormat = (
   }
 };
 
+/**
+ * Maps a relational column type to the standard primitive type used to read
+ * the column with a TDS getter (e.g. `$row.getFloat('COL')`) and to mock its
+ * values.
+ *
+ * NOTE: this matches how the engine types `tableToTDS()` columns, except that
+ * `DECIMAL` and `NUMERIC` map to `Decimal` (the engine uses `Float`), so mock
+ * values keep exact-numeric semantics. Binary, JSON, semi-structured and other
+ * types have no TDS getter or literal of their own and map to `String`.
+ */
 export const getPrimitiveTypeFromRelationalType = (
   type: RelationalDataType,
-): PrimitiveType | undefined => {
-  if (
-    type instanceof VarChar ||
-    type instanceof Char ||
-    type instanceof VarBinary ||
-    type instanceof Binary ||
-    type instanceof Bit ||
-    type instanceof Other
-  ) {
-    return PrimitiveType.STRING;
-  } else if (type instanceof Numeric) {
-    return PrimitiveType.NUMBER;
-  } else if (type instanceof Decimal) {
-    return PrimitiveType.DECIMAL;
+): PrimitiveType => {
+  if (type instanceof Bit) {
+    return PrimitiveType.BOOLEAN;
   } else if (
-    type instanceof Double ||
     type instanceof Integer ||
-    type instanceof Real ||
+    type instanceof BigInt ||
     type instanceof SmallInt ||
     type instanceof TinyInt
   ) {
     return PrimitiveType.INTEGER;
-  } else if (type instanceof Float) {
+  } else if (
+    type instanceof Float ||
+    type instanceof Double ||
+    type instanceof Real
+  ) {
     return PrimitiveType.FLOAT;
+  } else if (type instanceof Decimal || type instanceof Numeric) {
+    return PrimitiveType.DECIMAL;
   } else if (type instanceof ColumnDate) {
-    return PrimitiveType.DATE;
+    return PrimitiveType.STRICTDATE;
   } else if (type instanceof Timestamp) {
     return PrimitiveType.DATETIME;
   }
-  return undefined;
+  // VARCHAR, CHAR, BINARY, VARBINARY, JSON, SEMISTRUCTURED, OTHER
+  return PrimitiveType.STRING;
 };
+
 export const createMockDataForColumn = (
   col: Column,
   isPrimaryKey: boolean,
   idx?: number | undefined,
-): string | undefined => {
+): string => {
   const type = col.type;
 
   if (
     (type instanceof Double ||
       type instanceof Integer ||
+      type instanceof BigInt ||
       type instanceof Real ||
       type instanceof SmallInt ||
       type instanceof TinyInt) &&
@@ -271,13 +273,13 @@ export const createMockDataForColumn = (
   ) {
     return idx.toString();
   }
-  const primitive = getPrimitiveTypeFromRelationalType(type);
-  if (primitive) {
-    return createMockPrimitiveProperty(primitive, col.name).toString();
-  } else if (type instanceof Json || type instanceof SemiStructured) {
+  if (type instanceof Json || type instanceof SemiStructured) {
     return '{}';
   }
-  return undefined;
+  return createMockPrimitiveProperty(
+    getPrimitiveTypeFromRelationalType(type),
+    col.name,
+  ).toString();
 };
 
 export const createMockDataForTable = (
@@ -292,7 +294,6 @@ export const createMockDataForTable = (
         .map((col) =>
           createMockDataForColumn(col, table.primaryKey.includes(col), idx),
         )
-        .filter(isNonNullable)
         .join(','),
     )
     .join('\n');
