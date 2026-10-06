@@ -26,7 +26,10 @@ import {
   RelationColumn,
 } from '../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { GenericType } from '../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
-import { GenericTypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import {
+  type GenericTypeReference,
+  GenericTypeExplicitReference,
+} from '../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 import { IngestDefinition } from '../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { Database } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
@@ -46,15 +49,19 @@ import { V1_GraphBuilderExtensions } from '../transformation/pureGraph/to/V1_Gra
 import { V1_GenericType as V1_GenericTypeProtocol } from '../model/packageableElements/type/V1_GenericType.js';
 import { V1_PackageableType } from '../model/packageableElements/type/V1_PackageableType.js';
 import {
+  LogEvent,
   LogService,
   returnUndefOnError,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  ELEMENT_PATH_DELIMITER,
   MILESTONE_INGEST_COLUMNS,
   PRECISE_PRIMITIVE_TYPE,
   PRIMITIVE_TYPE,
 } from '../../../../../graph/MetaModelConst.js';
+import { extractElementNameFromPath } from '../../../../../graph/MetaModelUtils.js';
+import { GRAPH_MANAGER_EVENT } from '../../../../../__lib__/GraphManagerEvent.js';
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_deserializeIngestDefinitionContent } from '../transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 import {
@@ -85,7 +92,10 @@ import {
   LakehouseAccessPoint,
 } from '../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import type { V1_AccessPointImplementation } from '../lakehouse/deploy/V1_DataProductArtifact.js';
-import { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
+import {
+  type V1_RelationTypeColumn,
+  V1_RelationType,
+} from '../model/packageableElements/type/V1_RelationType.js';
 import { V1_getGenericTypeFullPath } from './V1_DomainHelper.js';
 import type { TaggedValue } from '../../../../../graph/metamodel/pure/packageableElements/domain/TaggedValue.js';
 import { StereotypeExplicitReference } from '../../../../../graph/metamodel/pure/packageableElements/domain/StereotypeReference.js';
@@ -160,6 +170,65 @@ const addMilestonedColumnsForWriteMode = (
   }
 };
 
+/**
+ * Resolves the generic type an ingest dataset column declares, keeping its
+ * parameters (e.g. the `255` in `Varchar(255)`).
+ *
+ * 1. Resolve the column's own generic type, so user enumerations and classes
+ *    resolve to themselves.
+ * 2. If that fails, retry with the package stripped from the type path, still
+ *    keeping the parameters: standard primitive types are indexed by name
+ *    only, so e.g. `meta::pure::metamodel::type::Integer` only resolves this
+ *    way.
+ *    TODO: remove this fallback once primitive types are indexed by full path.
+ * 3. Otherwise, warn and fall back to `String` rather than fail to build the
+ *    accessor.
+ */
+const resolveIngestDatasetColumnGenericType = (
+  column: V1_RelationTypeColumn,
+  datasetName: string,
+  context: V1_GraphBuilderContext,
+): GenericTypeReference => {
+  const genericType = column.genericType;
+  let error: unknown;
+  try {
+    return context.resolveGenericTypeFromProtocolWithRelationType(genericType);
+  } catch (e) {
+    error = e;
+  }
+  const rawType = genericType.rawType;
+  if (
+    rawType instanceof V1_PackageableType &&
+    rawType.fullPath.includes(ELEMENT_PATH_DELIMITER)
+  ) {
+    const strippedRawType = new V1_PackageableType();
+    strippedRawType.fullPath = extractElementNameFromPath(rawType.fullPath);
+    const strippedGenericType = new V1_GenericTypeProtocol();
+    strippedGenericType.rawType = strippedRawType;
+    strippedGenericType.typeArguments = genericType.typeArguments;
+    strippedGenericType.multiplicityArguments =
+      genericType.multiplicityArguments;
+    strippedGenericType.typeVariableValues = genericType.typeVariableValues;
+    try {
+      return context.resolveGenericTypeFromProtocolWithRelationType(
+        strippedGenericType,
+      );
+    } catch {
+      // report the error of the column's own type below
+    }
+  }
+  const typePath =
+    rawType instanceof V1_PackageableType ? rawType.fullPath : undefined;
+  context.logService.warn(
+    LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+    `Can't resolve type${typePath ? ` '${typePath}'` : ''} of column '${column.name}' in ingest dataset '${datasetName}': typing the column as '${PRIMITIVE_TYPE.STRING}'`,
+    error,
+  );
+  return context.resolveGenericTypeFromProtocolWithRelationType(
+    buildV1GenericType(PRIMITIVE_TYPE.STRING),
+  );
+};
+
 const buildRelationTypeFromIngestDataset = (
   dataset: V1_IngestDataset,
   context: V1_GraphBuilderContext,
@@ -168,18 +237,11 @@ const buildRelationTypeFromIngestDataset = (
   const writeMode = dataset.writeMode ?? effectiveWriteMode;
   const relationType = new RelationType('__ingest_dataset__');
   relationType.columns = dataset.source.schema.columns.map((col) => {
-    const rawTypePath =
-      col.genericType.rawType instanceof V1_PackageableType
-        ? col.genericType.rawType.fullPath
-        : PRIMITIVE_TYPE.STRING;
-    const v1GenericType = buildV1GenericType(rawTypePath);
-    const resolvedGenericType =
-      returnUndefOnError(() =>
-        context.resolveGenericTypeFromProtocolWithRelationType(v1GenericType),
-      ) ??
-      context.resolveGenericTypeFromProtocolWithRelationType(
-        buildV1GenericType(PRIMITIVE_TYPE.STRING),
-      );
+    const resolvedGenericType = resolveIngestDatasetColumnGenericType(
+      col,
+      dataset.name,
+      context,
+    );
     const relationColumn = new RelationColumn(col.name, resolvedGenericType);
     relationColumn.multiplicity = context.graph.getMultiplicity(
       col.multiplicity.lowerBound,
