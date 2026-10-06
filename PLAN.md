@@ -142,8 +142,10 @@ packages/legend-cube-builder/src/
                                     V1_LegendCubeEngine (precedent: QueryBuilder_PureGraphManagerExtensionBuilder.ts)
   graph-manager/protocol/pure/v1/   V1_CubeLambdaSerializer (IR → protocol JSON + sourceInformation stamps),
                                     V1_CubeRelationTypeAdapter (relation-type JSON → CubeType),
-                                    V1_CubeExecutionResultReader (lossless), V1_LegendCubeEngine (implements the port;
-                                    imports only the port, legend-graph, legend-shared and @finos/legend-cube)
+                                    V1_CubeModelOutlineBuilder (parsed model → databases, flags, runtimes),
+                                    V1_CubeExecutionResultReader (lossless), V1_CubeEngineErrors (payload → node error),
+                                    V1_LegendCubeEngine (implements the port; builds its own client; imports only the
+                                    port, legend-graph, legend-shared and @finos/legend-cube)
   stores/       CubeEditorState, CubeExecutionState, LocalModelCatalog (the bundled model texts; talks only to the
                 port; loadModel parses a model context once and returns its databases and runtimes as plain data), CubeHost interface, fixtures/ (Cube Northwind model as a TS string)
   components/   CubeEditor (layout), canvas/, palette/, editors/ (Join, Filter, Source), source-picker/, grid/

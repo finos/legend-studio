@@ -89,9 +89,16 @@ next):
 12. the real Northwind text in the core's sample specs (and a `legend-cube` changeset);
 13. final gate: `check:ci`, `lint:ci`, all tests with :6300 up.
 
-**Done:** steps 1–3 (`683f38619` builder wiring and Cube-local engine helpers; `02fc56cea` the `CubeEngine` port
-types and `V1_CubeLambdaSerializer`, whose JSON equals the engine's own parse of the slice, LEFT/RIGHT/FULL joins and
-negations). Step 4: the Cube Northwind fixture (`stores/fixtures/CubeNorthwindModel.ts`) and its engine tests; every expected count verified (PLAN §6.2.4). **Next:** step 5, `loadModel`, the runtime rule and `LocalModelCatalog`. The engine on `localhost:6300` is up.
+**Built (2026-10-06), steps 1–12:** `683f38619` builder wiring and engine test helpers; `02fc56cea` port types and
+lambda serializer; `75dee4fcd`/`fa6bccfc5` the Cube Northwind fixture; `e91e39bea` the engine adapter
+(`V1_LegendCubeEngine`, outline, relation-type adapter, result reader, errors, `buildCubeEngine`,
+`LocalModelCatalog`); `58f90a919` Part A against :6300 (30 tests, including the parity file
+`src/__tests__/CubeNorthwindRelationTypes.json`); `0221d4df5` the real Northwind text in the core's sample specs, with
+an engine test (compiles, runtime offered, snapshots identical to the engine). 1558 tests green; `check:ci`, lint
+clean. **Next:** the M1.7 verify workflow (requirements in `legend-cube-evidence/m17-requirements-result.json`), fixes,
+re-verify, then the M1.7 report to the user. CI risk to watch: CI runs the `engine-roundtrip` group on the docker
+engine image, whose version may differ from :6300 (parity file, `loadNorthwindData`); not checkable locally (no
+docker).
 
 ## Open items
 
