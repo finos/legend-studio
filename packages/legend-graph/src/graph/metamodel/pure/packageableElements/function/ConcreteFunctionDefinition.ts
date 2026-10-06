@@ -67,6 +67,11 @@ export class ConcreteFunctionDefinition
       this.returnType.value.typeVariableValues?.length
         ? this.returnType.value
         : '',
+      // NOTE: type variable values of the return type (e.g. the `3` in `Varchar(3)`) are
+      // only hashed when present so the hash of every other function stays unchanged
+      this.returnType.value.typeVariableValues?.length
+        ? hashArray(this.returnType.value.typeVariableValues)
+        : undefined,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashRawLambda(undefined, this.expressionSequence),
