@@ -51,18 +51,22 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-Start **M1.5, IR and emitter** (PLAN.md §11.1; the design is in §8.2–8.4, the verified lambdas in §8.5 and in the
-evidence folder's `relfn/final_*.pure`, `final/slice.pure` and `checks/check_coalesce*.mjs`). It is headless and
-test-driven:
+Finish **M1.5, IR and emitter**. The code is committed (`feat: add the Legend Cube IR and emitter`) with its
+known issues; the fixes go in a separate `fix:` commit.
 
-- the Cube IR (§8.3) with an `origin` on every emitted node, and the debug printer (golden text);
-- emit for the relational source, Join (§8.4: temporary names, `toOne()` when both keys are nullable, FULL coalesce
-  - `cast` of the common ancestor when the key types differ, final `select` in §7.11 order) and Filter (operator
-    table, negatives as `not(positive)`, Not over a group pushed to the leaves, typed literals);
-- the capture wrapper (`limit(rowLimit + 1)`, `from(runtime)`).
+The verification workflow (`m15-verify`, run `wf_81b27cf8-2fd`) finished: 30 confirmed issues, 11 of them bugs. The
+full result is saved at the session scratchpad `m15-verify-result.json` (re-run the workflow if it is gone). Fix,
+re-verify, then commit:
 
-A requirements-checklist workflow for M1.5 (`m15-requirements`) was started on 2026-10-05; use its result, or re-run
-it. Process as before: checklist, build, verify workflow with skeptics, fix, re-verify; `tsc --noEmit` on the package.
+- **D4 after outer joins (design):** negated LIKE operators (`!contains`, `!startsWith`, `!endsWith`) and `not(…)`
+  over unpaired comparisons drop the NULL rows an outer join adds. Needs a check on the engine and probably an
+  explicit `isEmpty() || …` form; record the decision in PLAN §8.4.
+- **Printer:** `true`/`false` (and other keywords) as names must be quoted; CR/LF in strings and names must be
+  escaped; enumeration values that are not identifiers must be quoted; redact mode must hide enumeration values.
+- **Driver:** `canEmit` must also check that every upstream node's type is registered.
+- 19 test gaps (registry dispatch with a custom emitter, lossless big numbers through the filter path, …).
+
+Then report M1.5 to the user, including the "Settled in M1.5" choices for their OK, and continue with **M1.6**.
 
 ## Open items
 

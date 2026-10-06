@@ -1,0 +1,207 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { LiteralValue } from '../values/LiteralValue.js';
+
+/**
+ * Which query node an IR node was emitted for, and what part of it the IR
+ * node is (e.g. a Join's `rename` or `select`). The serializer stamps it on
+ * the protocol JSON as `cube:<nodeId>:<role>`, and the engine echoes it back
+ * in errors, so they can be shown on the right canvas node.
+ */
+export interface Origin {
+  readonly nodeId: string;
+  /** One of `EmitRole`; never contains `:` */
+  readonly role: string;
+}
+
+/**
+ * The Cube IR: a host-free model of the Pure expression Cube runs, one-to-one
+ * with the engine's protocol JSON (which the builder's serializer produces).
+ * Every arrow call and operator is a `func` whose first parameter is its
+ * receiver or left operand, as the engine's parser builds it.
+ */
+export type IR =
+  | {
+      readonly k: 'func';
+      readonly name: string;
+      readonly params: readonly IR[];
+      readonly origin?: Origin;
+    }
+  | {
+      readonly k: 'property';
+      readonly name: string;
+      readonly receiver: IR;
+      readonly origin?: Origin;
+    }
+  | { readonly k: 'var'; readonly name: string }
+  | {
+      readonly k: 'lambda';
+      readonly params: readonly string[];
+      readonly body: readonly IR[];
+    }
+  | {
+      readonly k: 'literal';
+      readonly value: LiteralValue;
+      readonly origin?: Origin;
+    }
+  | { readonly k: 'collection'; readonly values: readonly IR[] }
+  | {
+      readonly k: 'colSpec';
+      readonly name: string;
+      readonly fn1?: IR;
+      readonly fn2?: IR;
+    }
+  | { readonly k: 'colSpecArray'; readonly specs: readonly IR[] }
+  | {
+      readonly k: 'storeAccessor';
+      /** The Database element's path, then the schema and table names as stored (quotes included) */
+      readonly path: readonly [string, string, string];
+      readonly origin?: Origin;
+    }
+  /** A packageable element, such as the runtime; never a type */
+  | { readonly k: 'elementPtr'; readonly path: string }
+  /** A type argument, e.g. of `cast`: `@String`, `@meta::pure::precisePrimitives::Varchar(15)` */
+  | {
+      readonly k: 'genericType';
+      readonly path: string;
+      readonly params?: readonly number[];
+    }
+  /** An enumeration value, e.g. `JoinKind.INNER` */
+  | {
+      readonly k: 'enumValue';
+      readonly enumPath: string;
+      readonly value: string;
+    }
+  /** For window isolation (from M5) */
+  | { readonly k: 'let'; readonly name: string; readonly value: IR }
+  | { readonly k: 'block'; readonly statements: readonly IR[] }
+  /** Protocol JSON passed through as is (Extend expressions, from M6) */
+  | { readonly k: 'raw'; readonly json: unknown };
+
+/** An IR expression whose value is a relation */
+export type RelationExpr = IR;
+
+export type IRKind = IR['k'];
+
+/** The kinds of IR node that carry an origin */
+export type IRWithOrigin = Extract<IR, { readonly origin?: Origin }>;
+
+/** The parts of a query node an IR node can be, used as an origin's role */
+export enum EmitRole {
+  /** a source's store accessor */
+  ACCESSOR = 'accessor',
+  /** a Join: a rename to a temporary name */
+  RENAME = 'rename',
+  /** a Join: the join call */
+  JOIN = 'join',
+  /** a Join: the condition's comparisons and their `and` */
+  CONDITION = 'condition',
+  /** a Join: a key column in the condition */
+  KEY = 'key',
+  /** a Join: `toOne()` on a nullable left key */
+  TO_ONE = 'toOne',
+  /** a FULL Join: the extend that merges same-named keys */
+  MERGE = 'merge',
+  /** a FULL Join: a temporary key column read by the merge */
+  MERGE_KEY = 'mergeKey',
+  /** a FULL Join: `coalesce` of the two keys */
+  COALESCE = 'coalesce',
+  /** a FULL Join: `cast` of the merged key to the keys' common type */
+  CAST = 'cast',
+  /** a Join: the final select */
+  SELECT = 'select',
+  /** a Filter: the filter call */
+  FILTER = 'filter',
+  /** a Filter: a comparison, `and`, `or` or `not` */
+  PREDICATE = 'predicate',
+  /** a Filter: a column in a comparison */
+  COLUMN = 'column',
+  /** a Filter: a value in a comparison */
+  VALUE = 'value',
+  /** the capture node: `limit(rowLimit + 1)` and its literal */
+  LIMIT = 'limit',
+  /** the capture node: `from(runtime)` */
+  FROM = 'from',
+}
+
+// -------------------- constructors --------------------
+
+export const func = (
+  name: string,
+  params: readonly IR[],
+  origin?: Origin,
+): IR =>
+  origin ? { k: 'func', name, params, origin } : { k: 'func', name, params };
+
+/** `$<variable>.<column>` */
+export const columnAccess = (
+  variable: string,
+  name: string,
+  origin?: Origin,
+): IR => {
+  const receiver: IR = { k: 'var', name: variable };
+  return origin
+    ? { k: 'property', name, receiver, origin }
+    : { k: 'property', name, receiver };
+};
+
+export const variable = (name: string): IR => ({ k: 'var', name });
+
+export const lambda = (params: readonly string[], body: readonly IR[]): IR => ({
+  k: 'lambda',
+  params,
+  body,
+});
+
+export const literal = (value: LiteralValue, origin?: Origin): IR =>
+  origin ? { k: 'literal', value, origin } : { k: 'literal', value };
+
+export const collection = (values: readonly IR[]): IR => ({
+  k: 'collection',
+  values,
+});
+
+/** `~name`, or with a function, `~name: x | …` */
+export const colSpec = (name: string, fn1?: IR): IR =>
+  fn1 ? { k: 'colSpec', name, fn1 } : { k: 'colSpec', name };
+
+export const colSpecArray = (specs: readonly IR[]): IR => ({
+  k: 'colSpecArray',
+  specs,
+});
+
+export const storeAccessor = (
+  path: readonly [string, string, string],
+  origin?: Origin,
+): IR =>
+  origin ? { k: 'storeAccessor', path, origin } : { k: 'storeAccessor', path };
+
+export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
+
+export const genericType = (
+  path: string,
+  params: readonly number[] = [],
+): IR =>
+  params.length
+    ? { k: 'genericType', path, params }
+    : { k: 'genericType', path };
+
+export const enumValue = (enumPath: string, value: string): IR => ({
+  k: 'enumValue',
+  enumPath,
+  value,
+});

@@ -1228,6 +1228,39 @@ collide with column names, which are always accessed as properties.
 **Literals.** Typed by the column family (§5.8) and serialized losslessly: integer and decimal values are written as
 raw numeric tokens from strings.
 
+Settled in M1.5 (the plan leaves these open):
+
+- **IR as built** (`src/ir/`): the §8.3 union, with `origin` on `func`, `property`, `literal` and `storeAccessor` only;
+  the serializer (M1.7) stamps the other kinds from their nearest ancestor. `RelationExpr` is an alias of the IR.
+  Join kinds and enumeration values are both `enumValue` (one serializer rule); `elementPtr` is only the runtime.
+- **Emitters** are on the registry's definitions (`emit(node, inputs, context)`, context = input schemas in port
+  order and the node's own schema). `QueryEmitter` runs inference with the registry's query rules, emits a node's
+  upstream tree (`emitRelation`), a typing lambda `{| <relation>}` and the execution lambda
+  `{| <relation>->limit(rowLimit + 1)->from(runtime)}`. The limit is one computed integer literal; `rowLimit` must be
+  a whole number ≥ 1 and the runtime is required. Emitting an invalid node, a node after one, an Unknown node or an
+  unregistered type throws (`canEmit` tells beforehand).
+- **Join:** temporary names `<n>__cube_l` / `<n>__cube_r`, then `…2`, `…3` until no column of either input (or an
+  earlier temporary name) has it; renames chain in key order; key pairs fold left with `and`; one `extend` merges
+  every same-named key of a FULL join, with the variable `x`; the cast's type is the merged type's `path` and
+  `params`. The emitter checks that the renamed inputs share no name and that the `select` equals the join's
+  inferred schema, so a mismatch fails in Cube, not as an engine HTTP 500.
+- **Filter:** variable `row`; Not over a group is pushed to the leaves by recursion (a negation flips And/Or, takes a
+  paired operator, or stays `not(…)` on an unpaired one); a group of one rule emits that rule; enumeration values
+  take their path from the column type.
+- **Origin roles:** `accessor`; for a join `rename`, `join`, `condition`, `key`, `toOne`, `merge`, `mergeKey`,
+  `coalesce`, `cast`, `select`; for a filter `filter`, `predicate`, `column`, `value`; `limit` and `from` carry the
+  capture node's id.
+- **Debug printer:** valid Pure text, checked against the local engine (2026-10-06): the slice text parsed and returned
+  the 19 rows; RIGHT, FULL (with a Not pushed down: 736 orders + the 2 customers without orders) and two-key LEFT
+  ran too. Operators are infix with operator operands in parentheses, `!(…)` always parenthesized, everything else
+  an arrow call; names single-quoted with `\'` escapes when not identifiers; floats always have a decimal point
+  (Pure reads `1e3` as an element name), decimals end in `D`, dates start with `%`. Two known differences from the
+  JSON, for M1.7's golden comparison: a negative number prints as `-3`, which Pure parses as `minus(3)`, and a
+  quoted dotted table name (`"a.b"`) prints as stored, which Pure splits into two segments. A redact mode prints
+  every literal as `?`.
+- **Not verified on the engine yet** (M1.7): the FULL merged-key casts to `Date` (StrictDate with Date) and to
+  `DateTime` (Timestamp with DateTime); planning verified the Varchar, Numeric and numeric ones.
+
 ### 8.5 Verified Northwind example (the slice's shape)
 
 This lambda was run on the live engine just now. The Cube emitter must produce the equivalent protocol JSON, with

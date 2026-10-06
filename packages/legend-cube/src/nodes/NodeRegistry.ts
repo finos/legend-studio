@@ -20,6 +20,11 @@ import type {
   SourceResolution,
 } from '../graph/QueryNode.js';
 import type { QueryRule } from '../inference/SchemaInference.js';
+import type { RelationExpr } from '../ir/CubeIR.js';
+import type { EmitContext } from '../ir/EmitContext.js';
+import { emitFilter } from '../ir/emitters/FilterEmitter.js';
+import { emitJoin } from '../ir/emitters/JoinEmitter.js';
+import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -43,6 +48,15 @@ export interface TransformDefinition<N extends QueryNode = QueryNode>
   readonly kind: 'transform';
   /** A new node of the type, with default settings */
   create(id: string): N;
+  /**
+   * Builds the IR of a valid node from the IR of its inputs, in port order: a
+   * relation expression, e.g. `<input>->filter({row | …})`
+   */
+  emit(
+    node: N,
+    inputs: readonly RelationExpr[],
+    context: EmitContext,
+  ): RelationExpr;
 }
 
 export interface SourceDefinition<S extends SourceNode = SourceNode>
@@ -54,6 +68,12 @@ export interface SourceDefinition<S extends SourceNode = SourceNode>
   resolve(node: S, resolution: SourceResolution): S;
   /** Rules over the whole query that this kind of source needs */
   readonly queryRules?: readonly QueryRule[];
+  /** The source's relation expression, e.g. a store accessor */
+  emit(
+    node: S,
+    inputs: readonly RelationExpr[],
+    context: EmitContext,
+  ): RelationExpr;
 }
 
 export type AnyNodeDefinition = TransformDefinition | SourceDefinition;
@@ -69,6 +89,7 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
       RelationalTableSource.fromCoordinates(id, coordinates),
     resolve: (node, resolution) => node.withResolution(resolution),
     queryRules: [relationalSourcesShareDatabase],
+    emit: (node) => emitRelationalTableSource(node),
   };
 
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {
@@ -78,6 +99,7 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   icon: 'filter',
   beta: false,
   create: (id) => new Filter(id),
+  emit: emitFilter,
 };
 
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
@@ -87,6 +109,7 @@ export const JOIN_DEFINITION: TransformDefinition<Join> = {
   icon: 'join',
   beta: false,
   create: (id) => new Join(id),
+  emit: emitJoin,
 };
 
 /**

@@ -42,4 +42,12 @@ export * from './nodes/transforms/Filter.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 
+export * from './ir/CubeIR.js';
+export * from './ir/EmitContext.js';
+export * from './ir/IRPrinter.js';
+export * from './ir/emitters/RelationalTableSourceEmitter.js';
+export * from './ir/emitters/JoinEmitter.js';
+export * from './ir/emitters/FilterEmitter.js';
+export * from './ir/QueryEmitter.js';
+
 export * from './messages/CubeMessages.js';
