@@ -409,7 +409,7 @@ const setupLakehouseDataProductTest = async (
     ),
   );
   const batchRelationTypeResponse = {
-    results: batchRelationTypeResults,
+    result: batchRelationTypeResults,
     errors: {},
   };
   createSpy(
