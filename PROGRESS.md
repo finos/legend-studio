@@ -67,9 +67,29 @@ tests; `check:ci` and `lint:ci` green.
     table as a parity test; a local typer replaces that method after the legend-graph fixes (§6.2.6).
 - Re-reading invalid values after re-resolution is M1.8a.
 
-**Next: M1.7 (thin end-to-end, headless).** The requirements workflow `m17-requirements` (run `wf_7f344217-230`) is
-running: a cited checklist, a build order, PLAN contradictions and open questions. Show the user the build order
-and the open questions before writing M1.7 code. The engine on `localhost:6300` is up.
+**M1.7 (thin end-to-end, headless) is in progress.** Requirements: `m17-requirements` (run `wf_7f344217-230`), 151
+in-scope items, a 13-step build order and 12 open questions; full result in
+`legend-cube-evidence/m17-requirements-result.json`. The user settled every question on 2026-10-06 (PLAN §8.7
+"Settled before M1.7"): extra `CUBETEST` fixture tables (§6.2.4) so all of Part A runs on real nodes; Date/DateTime
+casts shape-checked now, end-to-end in M6; result numbers by type family per column; and the seven adapter
+recommendations. Engine probes in `legend-cube-evidence/m17-probes/`. Build order (each step tested before the
+next):
+
+1. builder wiring and Cube-local engine helpers;
+2. port types and `buildCubeEngine`;
+3. lambda serializer and stamps (unit tests, no engine);
+4. Cube Northwind + ALLTYPES + extra CUBETEST fixture, with probes of every expected count;
+5. `loadModel` outline, runtime rule, `LocalModelCatalog`;
+6. relation-type adapter, `resolveSchemas`, `typeLambdas`, the parity file;
+7. lambda goldens (offline and engine);
+8. result reader and `execute`;
+9. error mapping (A.9);
+10. the rest of Part A and the join cases;
+11. `renderPure`;
+12. the real Northwind text in the core's sample specs (and a `legend-cube` changeset);
+13. final gate: `check:ci`, `lint:ci`, all tests with :6300 up.
+
+**Next:** step 1. The engine on `localhost:6300` is up.
 
 ## Open items
 

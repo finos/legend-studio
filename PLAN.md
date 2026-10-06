@@ -143,7 +143,7 @@ packages/legend-cube-builder/src/
   graph-manager/protocol/pure/v1/   V1_CubeLambdaSerializer (IR → protocol JSON + sourceInformation stamps),
                                     V1_CubeRelationTypeAdapter (relation-type JSON → CubeType),
                                     V1_CubeExecutionResultReader (lossless), V1_LegendCubeEngine (implements the port;
-                                    imports only ../../../CubeEngine.js and legend-graph)
+                                    imports only the port, legend-graph, legend-shared and @finos/legend-cube)
   stores/       CubeEditorState, CubeExecutionState, LocalModelCatalog (the bundled model texts; talks only to the
                 port; loadModel parses a model context once and returns its databases and runtimes as plain data), CubeHost interface, fixtures/ (Cube Northwind model as a TS string)
   components/   CubeEditor (layout), canvas/, palette/, editors/ (Join, Filter, Source), source-picker/, grid/
@@ -212,9 +212,11 @@ What the repo actually enforces:
     - Cube-local helpers are needed because `EngineTestSupport` has no `/lambdaRelationType/batch` helper, and its
       `execute` helper returns already-parsed JSON. That would bypass the lossless result reader M1.7 must test.
     - The helpers cover:
-      - `grammarToJson/model`;
+      - `grammarToJson/model` and `grammarToJson/lambda` (the A.11 golden and the printIR-parse comparison);
       - `lambdaRelationType/batch` (a plain JSON POST);
+      - `compilation/compile` (the corpus compile check; a `text` context works ✅);
       - `jsonToGrammar/lambda`;
+      - `GET /api/server/v1/info` (the engine commit, logged by Part A);
       - `execute` (`responseType: 'text'`), returning `{ ok: true, status: 200, text: async () => body }` so the
         lossless reader runs exactly as in the browser.
 - **CSS:**
@@ -926,6 +928,19 @@ interface ModelContext extends JsonObject {
     - **ID 3:** every nullable column NULL.
   - The scratch fixtures behind the type findings (`ops/types.pure`, `precise/model.pure`, kept in
     `legend-cube-evidence/`) had different rows. These rows are **new** and get verified in M1.7.
+- **More `CUBETEST` tables** (Settled before M1.7, user 2026-10-06). The slice has only Source, Join and Filter
+  nodes, so some Part A cases need tables shaped for them. All are created after `call loadNorthwindData()`, since
+  some copy Northwind columns, and all live in `NorthwindDatabase` (one database per query):
+  - **A quoted, dotted table** `"ORDER.LINES"` (e.g. `LINE_ID INT`, `RIGHT_COL VARCHAR(10)`), plus a decoy table
+    that a misread dotted path would resolve to, so the "silently another table" hazard (§6.2.1) can fail a test;
+  - **problem tables**, one or two rows each: a `BINARY(8)` column, a `CHAR(3)` key, an `OTHER` column, and a view
+    over `ALLTYPES`;
+  - **narrow copies of Northwind columns** (`CREATE TABLE … AS SELECT`), so the expected counts stay the same:
+    `EMP_REGION(EMPLOYEE_ID, REGION)` and `CUST_REGION(CUSTOMER_ID, REGION)` for the REGION join (A.6; joining the
+    raw tables breaks Cube's duplicate rule on ADDRESS, CITY, POSTAL_CODE, COUNTRY), `CATEGORY_REGION(CATEGORY_ID,
+SHIP_REGION NOT NULL)` copied from `CATEGORY_NAME` for the one-nullable-key FULL join (A.4), and key pairs
+    `VARCHAR(15)`/`VARCHAR(2)` and `DECIMAL(10,2)`/`NUMERIC(12,4)` for the parameter-only FULL casts (§8.4).
+  - M1.7 verifies every expected count on the engine before the tests assert it.
 
 **6.2.5 Runtime rule.**
 
@@ -1183,9 +1198,9 @@ type IR =
   | { k: 'colSpec'; name: string; fn1?: IR; fn2?: IR }
   | { k: 'colSpecArray'; specs: IR[] }
   | { k: 'storeAccessor'; path: [string, string, string]; origin?: Origin }
-  | { k: 'elementPtr'; path: string } // packageable elements (runtime, JoinKind enum) — never for types
+  | { k: 'elementPtr'; path: string } // the runtime only (Settled in M1.5) — never for types
   | { k: 'genericType'; path: string; params?: number[] } // type argument, e.g. of cast: genericTypeInstance
-  | { k: 'enumValue'; enumPath: string; value: string }
+  | { k: 'enumValue'; enumPath: string; value: string; origin?: Origin } // JoinKind and enumeration values
   | { k: 'let'; name: string; value: IR }
   | { k: 'block'; statements: IR[] } // for §8.6, unused in slice
   | { k: 'raw'; json: unknown }; // escape hatch (Extend expressions)
@@ -1318,8 +1333,11 @@ Settled in M1.5 (the plan leaves these open; the user confirmed them on 2026-10-
   Pure splits into two segments; and `-9223372036854775808` (the smallest long) does not parse at all, as with the
   engine's own composer. A redact mode prints every literal, and every enumeration value with the `value`
   role, as `?`.
-- **Not verified on the engine yet** (M1.7): the FULL merged-key casts to `Date` (StrictDate with Date) and to
-  `DateTime` (Timestamp with DateTime); planning verified the Varchar, Numeric and numeric ones.
+- **Not reachable from relational tables:** the FULL merged-key casts to `Date` (StrictDate with Date) and to
+  `DateTime` (Timestamp with DateTime). Relational columns type as `StrictDate` and `Timestamp` (§5.1), and §5.4
+  rejects StrictDate ⋈ Timestamp. M1.7 checks their shape on the engine with hand-built IR; the end-to-end check
+  moves to M6, when Extend can produce these types (user, 2026-10-06). Planning verified the Varchar, Numeric and
+  numeric ones.
 
 ### 8.5 Verified Northwind example (the slice's shape)
 
@@ -1439,19 +1457,47 @@ interface CubeEngine {
 | `execute`    | `runQuery(body, { returnAsResponse: true, abortController })`, then `parseLosslessJSON(await response.text())`. Without `returnAsResponse` the client ends in a lossy `response.json()` 📄 | `:856` |
 | `renderPure` | `JSONToGrammar_lambda`                                                                                                                                                                     | `:565` |
 
-- **Execution results** are parsed **losslessly**, as with `convertUnsafeNumbersToString` in
-  [V1_RemoteEngine.ts:951](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts:951).
-  SQL comes from `activities[]` where `_type == 'relational'`. A 200 response with an unparseable body is reported as
+- **Execution results** are parsed **losslessly** (raw tokens keep their text, e.g. `12.30` ✅). Each cell's JS type
+  is decided **per column** from the type the result builder gives (`builder.columns[].type` ✅): Integer and
+  Decimal family values are their exact text (`"9007199254740993"`, `"12.30"`, `"5"`), Float family values are
+  numbers, dates are strings and booleans are booleans (Settled before M1.7). SQL comes from `activities[]` where `_type == 'relational'`. A 200 response with an unparseable body is reported as
   an execution error, because the engine can stream a stack trace into a 200 ✅.
 - **Request bodies** that carry integer or decimal literals are produced with `stringifyLosslessJSON` and passed as
   a pre-stringified string, cast to the client's `PlainObject` parameter type. The client sends string bodies
   verbatim 📄.
 - **Error mapping:** every emitted node gets `sourceInformation.sourceId = "cube:<nodeId>:<role>"`, including the
   accessor's `value` object. The engine echoes the **innermost** failing node's stamp in compile errors, including
-  per-key in batch ✅. The adapter turns these into `hostIssues` by node id; the first line goes on the node and the
-  full text in the panel. Plan-time and database errors carry no location, so they attach to the capture node.
+  per-key in batch ✅. The adapter turns these into `CubeEngineError`s by node id (Settled before M1.7), which M1.8a
+  turns into host issues; the first line goes on the node and the full text in the panel. Plan-time and database errors carry no location, so they attach to the capture node.
 - **Graph-manager wrappers are bypassed** for typing on purpose: they drop parameters and the batch wrapper throws
   (D8). A tracer service must be set on the client, or every call throws 📄.
+
+**Settled before M1.7** (user, 2026-10-06; requirements `m17-requirements`, run `wf_7f344217-230`, kept in
+`legend-cube-evidence/m17-requirements-result.json`). Engine facts probed the same day (`m17-probes/`): a table with
+a `BINARY` column fails **alone** in the batch call, the other keys still type ✅; `compilation/compile` accepts a
+`text` context ✅; `execute` returns each column's type in `builder.columns` ✅.
+
+- **Fixture:** the extra `CUBETEST` tables of §6.2.4.
+- **Date/DateTime casts:** a shape check now, the end-to-end check in M6 (§8.4).
+- **Numbers in results:** by type family, per column (above).
+- **Row limit:** the adapter returns every row it receives (up to limit + 1); M1.8a's editor state shows `limit`
+  rows and the truncation warning. The port never sees the limit.
+- **Picker flags** (§6.2.6: BINARY unavailable, views hidden, CHAR length unknown, OTHER type unknown) are read from
+  the `Database` definition in `loadModel`'s `CubeModelOutline`, in `v1/`. No extra engine calls, no core or saved
+  format change. The parity test still records the engine's answer for those tables.
+- **`CubeEngineError`** is a class: `nodeId?`, `firstLine`, `detail`, and a `kind` (`compile`, `execution`,
+  `unsupportedModel`, `network`). Typing returns one per key; `execute` rejects with one, on the stamped node or
+  else the capture node. A whole-call failure gives one for every key.
+- **An unsupported model kind** gives _This cube's model kind "<\_type>" isn't supported yet._, from the builder
+  (the core never reads the model). `loadModel`, typing and `execute` all give it without calling the engine.
+- **Parity test format:** a checked-in JSON file under the builder's tests with the engine's raw terms per fixture
+  table (column name, type path, parameters, multiplicity; a failing table stores its error's first line),
+  compared exactly, plus a check through the adapter. Not a Jest snapshot, so `-u` can't accept an engine change;
+  the failure message says the engine's typing changed.
+- **Lambda tests:** offline tests against checked-in expected JSON, plus engine tests (A.11) that compare with the
+  engine's own parse of the same Pure text.
+- **Engine tests** follow the repo convention: `*.engine-roundtrip-test.ts` runs in a plain `yarn test` and fails
+  without an engine; `yarn test:group core` skips it. Nothing skips automatically.
 
 ### 8.8 Full mapping: spec constructs → lambda
 
@@ -1537,7 +1583,7 @@ Every engine defect is listed in Appendix B.
 - Columns come from Cube's **inferred** schema, not from the result builder, which is lossy.
 - Column ids are positional (`c0…cN`) with `headerName = column name`. ag-grid treats dots in `field` as nested
   paths, and column names may contain dots or spaces.
-- Alignment and formatting follow the type family. Integer and Decimal values stay as strings when unsafe.
+- Alignment, sorting and formatting follow the type family. Integer and Decimal values arrive as exact text (§8.7).
 - **Execution is explicit:** Execute or F9. Edits mark results **stale** (§12.1).
 - **Row limit:** user-settable, kept in local storage, default 1,000. Cube emits `->limit(limit + 1)` to detect
   truncation and warn. The original fetched everything and truncated client-side (§12.7).
@@ -1846,7 +1892,9 @@ before layout, so it holds by construction.
    - `ORDERS` has 14 columns, including `ORDER_ID SmallInt` not nullable, `CUSTOMER_ID Varchar(5)` nullable,
      `ORDER_DATE StrictDate` nullable, and `FREIGHT Double` nullable.
    - `CUSTOMERS` has 11 columns.
-   - `ALLTYPES` resolves to `TinyInt, BigInt, Float4, Double, Numeric(10,2), Timestamp, Boolean, Varchar(n)`.
+   - `ALLTYPES` resolves all 12 columns of §6.2.4: `ID Int` (not nullable), then `TI TinyInt`, `SI SmallInt`,
+     `BI BigInt`, `F Float4`, `D Double`, `DEC Numeric(10,2)`, `NUM Numeric(12,4)`, `DT StrictDate`, `TS Timestamp`,
+     `B Boolean`, `VC Varchar(20)`, all nullable. The parity test (§6.2.6) records the engine's exact answer.
 2. **Join schema.** `join101` (INNER, `CUSTOMER_ID = CUSTOMER_ID`).
    - The Cube-inferred schema has **24 columns in §7.11 order**.
    - Name, order, type path and parameters equal `lambdaRelationType` of the emitted lambda prefix.
@@ -1864,8 +1912,9 @@ In [1, 4]`, captured and executed.
    - **FULL:** `CUSTOMERS[COUNTRY == 'France'] FULL_OUTER ORDERS[SHIP_COUNTRY == 'Germany']` on `CUSTOMER_ID`, with
      upstream Filter nodes, returns **133** rows: 11 customer-only and 122 order-only, and the merged `CUSTOMER_ID` is
      never null ✅.
-   - **FULL with exactly one nullable key** that contains NULLs (e.g. `ORDERS.SHIP_REGION` against a NOT NULL key):
-     the 507 NULL-key orders survive with a NULL merged key. Cube marks the key nullable; the engine says `[1]` ✅.
+   - **FULL with exactly one nullable key** that contains NULLs: `ORDERS` FULL_OUTER the fixture's
+     `CUBETEST.CATEGORY_REGION` on `SHIP_REGION` (NOT NULL there, §6.2.4). The 507 NULL-key orders survive with a
+     NULL merged key. Cube marks the key nullable; the engine says `[1]` ✅.
 5. **Precise literals** on `ALLTYPES` (rows in §6.2.4):
 
    - `BI > 15000000000` → [2], with `BI` read back losslessly as `"9007199254740993"`;
@@ -1881,8 +1930,9 @@ In [1, 4]`, captured and executed.
    - on ORDERS, `NOT (SHIP_REGION Equal 'BC' OR SHIP_COUNTRY Equal 'France')` returns **736** rows (Not pushed to the
      leaves);
    - `SHIP_REGION NotEqual 'BC'` returns **813** rows (NULL rows included);
-   - `EMPLOYEES.REGION ⋈ CUSTOMERS.REGION`, both keys nullable, returns **15 / 19 / 103 / 107** rows for INNER / LEFT /
-     RIGHT / FULL, with no NULL×NULL pairs ✅.
+   - `CUBETEST.EMP_REGION ⋈ CUBETEST.CUST_REGION` on `REGION` (copies of the `EMPLOYEES` and `CUSTOMERS` columns,
+     §6.2.4), both keys nullable, returns **15 / 19 / 103 / 107** rows for INNER / LEFT / RIGHT / FULL, with no
+     NULL×NULL pairs ✅.
 7. **Negatives, all local (no engine call needed):**
    - `ORDER_DETAILS ⋈ PRODUCTS` on `PRODUCT_ID` gives
      `Duplicate column names between inputs are not supported if they are not part of the join columns: "UNIT_PRICE"`.
