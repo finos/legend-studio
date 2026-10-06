@@ -138,13 +138,10 @@ const LegendQueryWebApplicationRouter = observer(() => {
             element={<DataSpaceArtifactInspector />}
           />
 
-          {/* Legend Cube (in development) */}
-          {applicationStore.config.options.TEMPORARY__enableLegendCube && (
-            <Route
-              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
-              element={<CubeEditor />}
-            />
-          )}
+          <Route
+            path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
+            element={<CubeEditor />}
+          />
 
           {/* LEGACY DATA SPACE */}
           <Route

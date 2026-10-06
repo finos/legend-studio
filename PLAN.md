@@ -24,6 +24,7 @@
 | D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                        | user (default)        |
 | D9  | Execution is a **Pure relation-function chain** over store accessors (`#>{db.schema.table}#`), built as **protocol JSON** (never Pure text). Legend SQL is only a possible future "SQL source" node.                                                                                                                                   | recommendation (§8.1) |
 | D10 | Precise primitives are modeled **inside the host-free domain**. The host adapts the engine's relation-type JSON at the boundary, in a package-local `v1/` folder.                                                                                                                                                                      | recommendation (§5)   |
+| D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.)                                                                                                                                                                        | user                  |
 
 ---
 
@@ -38,7 +39,7 @@ Thin vertical slice, working live on a developer machine:
 - **Types:** full precise-primitive support (`Varchar(n)`, `SmallInt`, `Numeric(p,s)`, `Timestamp`, …).
 - **Path:** pick tables → canvas → live schema inference and validation → lambda → live execution → results grid →
   saved-spec codec (export/import JSON as a dev affordance; no store).
-- **Hosting:** Legend Query route `/query/cube`, behind a config flag.
+- **Hosting:** Legend Query route `/query/cube`, always mounted (no feature flag, D11).
 
 ### 1.2 Not in the slice
 
@@ -238,15 +239,7 @@ What the repo actually enforces:
   - Query's `baseUrl` is `/query/`, so the URL is **`/query/cube`** 📄.
   - Plugin page entries are not used: they force an `/extensions/` prefix 📄.
   - `/cube/:cubeId` is reserved for saved cubes (M8).
-- **Flag:** a new `TEMPORARY__enableLegendCube` option in
-  [LegendQueryApplicationConfig.ts](packages/legend-application-query/src/application/LegendQueryApplicationConfig.ts:76)
-  (default `false`). Turn it on **only for local dev**:
-  - The bootstrap's `setup()` also writes the bundle's `dist/query/config.json` (`bundle`, `bundle:fast`) and is
-    exported for downstream deployments, so it must not hard-code the flag 📄.
-  - Instead, the deployment's `scripts/setup.js` passes `{ dev: true }` (or checks that the output dir is `./dev`),
-    and only then does `setup()` add `extensions.core.TEMPORARY__enableLegendCube: true`.
-  - Existing checkouts regenerate their dev config with
-    `yarn workspace @finos/legend-application-query-deployment setup`.
+- **No feature flag** (D11): the route is always mounted.
 - **Keyboard shortcuts:** Legend binds keys only through plugins' `getExtraKeyedCommandConfigEntries()`, collected
   at app start 📄. F9 is already bound in Query to the query builder's compile command, which is only registered
   while the query builder is mounted.
@@ -1577,7 +1570,7 @@ base ref), `yarn lint:ci` and the tests. M1.1–M1.6 are **headless and test-dri
 
 | Step      | Deliverable                                                                                                                                                                                                                                                                                                                                        | Done when                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **M1.0**  | Scaffolding: both packages (§3.1–3.4); the purity lint guard and import-scan test; the `/cube` route and `TEMPORARY__enableLegendCube` flag rendering a placeholder; changesets                                                                                                                                                                    | `yarn build`, all CI checks green; `localhost:9001/query/cube` renders the placeholder with the flag on                                                                                                                                                                                                                                                                                                                                                                                |
+| **M1.0**  | Scaffolding: both packages (§3.1–3.4); the purity lint guard and import-scan test; the `/cube` route rendering a placeholder; changesets                                                                                                                                                                                                           | `yarn build`, all CI checks green; `localhost:9001/query/cube` renders the placeholder                                                                                                                                                                                                                                                                                                                                                                                                 |
 | **M1.1**  | Types and values: the registry (§5.3), `CubeType` interning and equality, families, comparison classes (§5.4), `LiteralValue` coercion and validation (§5.6), type display                                                                                                                                                                         | Table-driven tests: every engine type path parses (including short names and `Varchar(0)`); the compatibility matrix; integer width boundaries including Java long ±1 and unsigned; date and datetime formats; Boolean strictness; `parseValue` keeps invalid text as `{kind:'invalid'}`, keeps STRING untrimmed, and canonicalizes numerics (`+5`, `007`, `.5`, `5.`, `-0`, `1e3` accepted and normalized; `0x10`, `Infinity`, `NaN` rejected); kind-mismatch rejection               |
 | **M1.2**  | Graph and inference: `QueryNode`, `Connection`, `Query` with the five invariants **plus acyclicity**; every §4.4 operation, including `connect(…, port)`; per-type `generateId`; `buildSchemasAndValidity` with the sentinels; the query-level rule pass; the node registries; `RelationalTableSource` (with a given schema); `UnknownNode`        | Every invariant violation throws; every `canX` is total; the connect cycle case is rejected, while moving a node after a node further down its own chain is allowed and stays acyclic; propagation is proven with **test-only stub nodes** (a two-port binary stub and a pass-through unary stub): disconnecting a binary input gives `ERR_INCOMPLETE` there and `ERR_SCHEMAS` on every downstream node, with no duplicates; an Unknown node's synthetic ports carry its edges         |
 | **M1.3**  | Join: §7.11 validation steps 1–5 with verbatim messages; comparison-class compatibility; the duplicate rule; output order; nullability and merged-key rules per join type (§4.7); `swapInputs`; `describe`                                                                                                                                         | Appendix C.3's join row, retyped with precise types (`bookId` first; right duplicate dropped); C.5(b) message verbatim; multi-key and partially same-named keys; `Varchar(5)`⋈`Varchar(40)` OK; `Varchar`⋈`SmallInt` and `StrictDate`⋈`Timestamp` rejected; LEFT/RIGHT/FULL nullability matrix, including FULL with exactly one nullable key → merged key nullable                                                                                                                     |
@@ -1664,7 +1657,6 @@ Prerequisites, detailed in [PROGRESS.md › Environment](PROGRESS.md):
 - An engine on :6300, either IntelliJ (`org.finos.legend.engine.server.Server`, no arguments) or the repo's docker
   compose: `cd fixtures/legend-docker-setup/grammar-test-setup && docker compose --file=grammar-test-setup-docker-compose.yml up --detach`.
   CORS from `localhost:9001` was verified for the IntelliJ engine only; check it once for docker.
-- The dev config regenerated with the flag on (§3.5).
 - `yarn dev:ts` and `yarn dev:query`.
 
 The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.2.4).

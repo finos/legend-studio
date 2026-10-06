@@ -20,7 +20,6 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const outputDir = resolve(__dirname, `../${process.argv[2]}`);
+const outputDir = process.argv[2];
 
-// `./dev` holds the config of the local development server
-setup(outputDir, { dev: outputDir === resolve(__dirname, '../dev') });
+setup(resolve(__dirname, `../${outputDir}`));

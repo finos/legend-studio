@@ -90,14 +90,6 @@ class LegendQueryApplicationCoreOptions {
   TEMPORARY__enableMinimalGraph = false;
 
   /**
-   * Mounts Legend Cube, the canvas query builder, at `/cube`. It is in
-   * development, so only the local development config turns it on.
-   *
-   * Default to `false`
-   */
-  TEMPORARY__enableLegendCube = false;
-
-  /**
    * Config specific to query builder
    */
   queryBuilderConfig: QueryBuilderConfig | undefined;
@@ -126,7 +118,6 @@ class LegendQueryApplicationCoreOptions {
       ),
       NonProductionFeatureFlag: optional(primitive()),
       TEMPORARY__enableMinimalGraph: optional(primitive()),
-      TEMPORARY__enableLegendCube: optional(primitive()),
       oidcConfig: optional(
         usingModelSchema(LegendQueryOIDCConfiguration.serialization.schema),
       ),

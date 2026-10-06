@@ -25,14 +25,14 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
 | Code        | **M1.0 done** (scaffolding), committed on `cubeV1`, not pushed. Next milestone step: **M1.1**                                                                                                                                                                   |
-| Decisions   | PLAN.md §0, D1–D10. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
+| Decisions   | PLAN.md §0, D1–D11. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
 ## Milestone checklist
 
 See PLAN.md §11 for the deliverables and "done when" of each step.
 
-- [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route + `TEMPORARY__enableLegendCube` flag
+- [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route (always mounted, no flag: D11)
 - [ ] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
 - [ ] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
 - [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
@@ -67,7 +67,7 @@ The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §
 | ------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Planning evidence                                 | –     | Copied to `/Users/mauriciouyaguari/Goldman Sachs/legend-cube-evidence/` (outside both repos, not committed); see its `README.md`. Reports in `wf/`, harnesses runnable from there (paths rewritten). M1.7 and M5 reuse the fixtures and harnesses |
 | Entry points and the sources modal (D7 follow-up) | User  | Designed before M3                                                                                                                                                                                                                                |
-| Lazy-load the Cube page (M1.8a)                   | –     | Query imports the Cube page statically, so from M1.8 the canvas stack would sit in Query's main bundle even with the flag off. Consider `React.lazy` for the route                                                                                |
+| Lazy-load the Cube page (M1.8a)                   | –     | Query imports the Cube page statically, so from M1.8 the canvas stack would sit in Query's main bundle, even for users who never open the page. Consider `React.lazy` for the route                                                               |
 | Push and PR                                       | User  | `cubeV1` is local only. Push and open a PR when the user asks                                                                                                                                                                                     |
 | Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                              |
 
@@ -81,8 +81,6 @@ The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §
   - Check with `curl -s localhost:6300/api/server/v1/info`; planning used commit `93d92b4`.
 - **Legend Query dev:** `yarn dev:ts` plus `yarn dev:query` → `http://localhost:9001/query/`. The Cube page is at
   `http://localhost:9001/query/cube`.
-  - It needs the `TEMPORARY__enableLegendCube` flag, which only the dev config sets. Regenerate that config once with
-    `yarn workspace @finos/legend-application-query-deployment setup`.
   - Run `yarn build` at least once first: `dev:ts` doesn't build the stylesheets (`lib/index.css`) that the Query
     bundle imports.
 - **Northwind:** the engine loads it into H2 through `call loadNorthwindData()` in the connection's
@@ -152,8 +150,8 @@ Each is verified and detailed in PLAN.md.
     - the build compiles against the ECMAScript library with no ambient types;
     - a unit test checks module references and the compile, against bad fixtures too.
   - A probe file importing `mobx` and reading `window` was rejected by all three guards.
-  - Legend Query: route `/cube` and option `TEMPORARY__enableLegendCube` (default off, with a config test). The
-    bootstrap's `setup(outputDir, { dev })` turns the option on for the dev config only; the deployment passes `dev`
-    for `./dev`. The bootstrap stylesheet imports the builder's CSS.
+  - Legend Query: route `/cube`, always mounted; the bootstrap stylesheet imports the builder's CSS. M1.0 first put
+    the route behind a `TEMPORARY__enableLegendCube` option; the user dropped it the same day (D11), with its config
+    test and the dev-only setup changes.
   - The builder declares only what it uses (core, React, React DOM). Other dependencies, and the `@xyflow/react` CSS
     import, arrive with the step that first needs them.
