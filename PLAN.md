@@ -477,7 +477,7 @@ resolved.`). A resolution error is reported verbatim from the engine (first line
 - **Autofix** (`renameInputs`): deferred to M2, which brings the Rename node. The fix must generate collision-free
   names (§21).
 
-Settled in M1.3 (the spec leaves these open):
+Settled in M1.3 (the spec leaves these open; the user confirmed the first three on 2026-10-05):
 
 - **Swapping inputs swaps the key columns too.** Spec §4.4 only flips the connections, which leaves a join whose key
   names differ checking its left keys against the new left input, so it always turned invalid. Nodes now have a
@@ -526,6 +526,44 @@ Settled in M1.3 (the spec leaves these open):
 
 - **`describe()`:** `Filter by <toString()>` on the canvas. A **redacted** variant (column and operator only) is used
   for telemetry and logs (§21 "filter toString leaks values").
+
+Settled in M1.4 (the spec leaves these open; the user confirmed them on 2026-10-05):
+
+- **Values** are `LiteralValue | InvalidValue`, or a list of them for In/NotIn, so unparseable text is kept for its
+  message (§4.9). The saved spec (M1.6) must store `{kind: 'invalid', text}` as well.
+- **Validation order** within a comparison, stopping at the first failure: the column (a blank one reports
+  `Filter column does not have a name.`), the operator, the value's shape, then each value. In the operator message
+  `"<op>"` is the operator's description (`Filter operator "contains" is not supported …`) and `<T>` the type's
+  display name. A list on a single-value operator, a single value on In/NotIn, or an empty list all report
+  `Filter value is required.` A value on IsEmpty/IsNotEmpty is ignored. Groups check every rule, lists every item.
+- **StrictTime** offers only IsEmpty and IsNotEmpty, like Variant and unknown types, since it takes no values.
+- **Negation** uses the paired operator when there is one; otherwise a Not wraps the rule, including a single
+  comparison such as `not (x is greater than 5)`. So §10.3's "`not` wraps composites only" becomes "composites and
+  comparisons without a negated operator" (M1.6).
+- **Rule keys** survive edits (`withColumn`, `withOperator`, `withValue`, `withRules` and the helpers), so editor rows
+  keep their identity; new rules and new Not or group wrappers get fresh keys.
+- **A blank row** has the column `''`, shown as `(blank)` (the spec's `ColumnComparisonFilter("(blank)")`).
+- **Normalize/unwrap** act on the top level only; nested single-rule groups are kept. `undefined` normalizes to one
+  blank row, so it does not round-trip.
+- **Column change:** the operator and value are kept when the new column takes the same values: the same family and,
+  for enumerations, the same enumeration. Otherwise the operator resets to Equal (or, for a type without Equal such
+  as Variant, its first operator, IsEmpty) and the value clears. (The plan said family only; two different
+  enumerations share the ENUM family, so they reset too.) When kept, text that was invalid is read again for the
+  new type (300 is out of range for TinyInt but valid for SmallInt). The codec (M1.6) should do the same against the
+  resolved schema on load.
+- **Construction** refuses an unknown operator, group operator or value shape, as Join refuses an unknown join type,
+  and the Filter node refuses anything that is not a filter rule (by shape: `kind`, `validate`, `toRedactedString`);
+  every other invalid state (unknown or blank column, unavailable operator, missing or ill-typed value, empty group,
+  no filter) is constructible and reported by validation. The codec (M1.6) keeps filters it cannot decode as
+  unsupported ("This filter is not supported yet.").
+- **Operator change** keeps the value when the new operator takes the same shape (none, one, or a list).
+- **Descriptions:** a comparison reads `<column> <operator description> <value>`, with strings and invalid text in
+  double quotes, other values as typed, and lists as `(a, b)`; groups join rules with `and` / `or`, nested groups of
+  two or more rules in parentheses; a Not reads `not (…)`; nothing reads `(blank)`. The redacted form replaces each
+  value with `?`; `describeRedacted()` is on every node (the description by default).
+- `Filter.schematize` re-validates, like Join's, and passes its input schema through when valid. A core predicate,
+  `isExactFloatComparison`, drives the editor's floating-point hint (§5.5).
+- The palette entry is "Filter by Column" (spec §7.0), icon `filter`, before Join (menu order).
 
 ### 4.9 Literal values
 

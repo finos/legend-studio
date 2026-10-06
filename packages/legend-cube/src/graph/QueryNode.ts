@@ -81,6 +81,14 @@ export abstract class QueryNode {
 
   /** A one-line description for the canvas and the details panel */
   abstract describe(): string;
+
+  /**
+   * The description without the values users typed, which may be sensitive,
+   * for logs and telemetry. By default the description, which has none.
+   */
+  describeRedacted(): string {
+    return this.describe();
+  }
 }
 
 /** What resolving a source gave: nothing yet, its schema, or the error to show */

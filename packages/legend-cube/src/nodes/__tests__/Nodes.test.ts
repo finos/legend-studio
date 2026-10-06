@@ -25,6 +25,7 @@ import { MESSAGE_SOURCE_SCHEMA_UNRESOLVED } from '../../messages/CubeMessages.js
 import { Schema } from '../../schema/Schema.js';
 import {
   createNodeRegistry,
+  FILTER_DEFINITION,
   JOIN_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
@@ -34,6 +35,7 @@ import {
   type RelationalTableCoordinates,
   RelationalTableSource,
 } from '../sources/RelationalTableSource.js';
+import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { UnknownNode } from '../UnknownNode.js';
 
@@ -147,16 +149,40 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table source and the join by default', () => {
+  test('Has the relational table source, the filter and the join by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    expect(registry.transforms).toEqual([JOIN_DEFINITION]);
+    // transforms in the spec's menu order: Filter comes before Join
+    expect(registry.transforms).toEqual([FILTER_DEFINITION, JOIN_DEFINITION]);
+    expect(registry.get('filter')).toBe(FILTER_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     expect(registry.queryRules).toHaveLength(1);
+  });
+
+  test('Creates a filter with no filter yet', () => {
+    expect(FILTER_DEFINITION.kind).toBe('transform');
+    expect(FILTER_DEFINITION.type).toBe('filter');
+    expect(FILTER_DEFINITION.label).toBe('Filter by Column');
+    expect(FILTER_DEFINITION.icon).toBe('filter');
+    expect(FILTER_DEFINITION.beta).toBe(false);
+    const filter = FILTER_DEFINITION.create('filter101');
+    expect(filter).toBeInstanceOf(Filter);
+    expect(filter.id).toBe('filter101');
+    expect(filter.filter).toBeUndefined();
+  });
+
+  test('Describes nodes without user values for logs', () => {
+    const source = new RelationalTableSource('relational101', COORDINATES);
+    expect(source.describeRedacted()).toBe(source.describe());
+    const join = JOIN_DEFINITION.create('join101');
+    expect(join.describeRedacted()).toBe('Join additional input');
+    expect(new UnknownNode('u', 1).describeRedacted()).toBe(
+      'Unknown Transform "u"',
+    );
   });
 
   test('Creates a join with the default settings', () => {

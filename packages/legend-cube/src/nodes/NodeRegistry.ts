@@ -24,6 +24,7 @@ import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
 import { UnknownNode } from './UnknownNode.js';
 
@@ -69,6 +70,15 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     resolve: (node, resolution) => node.withResolution(resolution),
     queryRules: [relationalSourcesShareDatabase],
   };
+
+export const FILTER_DEFINITION: TransformDefinition<Filter> = {
+  kind: 'transform',
+  type: Filter.TYPE,
+  label: 'Filter by Column',
+  icon: 'filter',
+  beta: false,
+  create: (id) => new Filter(id),
+};
 
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
   kind: 'transform',
@@ -129,4 +139,8 @@ export class NodeRegistry {
 
 /** A registry with every node type Cube supports: sources, then transforms in menu order */
 export const createNodeRegistry = (): NodeRegistry =>
-  new NodeRegistry([RELATIONAL_TABLE_SOURCE_DEFINITION, JOIN_DEFINITION]);
+  new NodeRegistry([
+    RELATIONAL_TABLE_SOURCE_DEFINITION,
+    FILTER_DEFINITION,
+    JOIN_DEFINITION,
+  ]);
