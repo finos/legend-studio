@@ -41,6 +41,7 @@ import {
   V1_DataRequestsWithWorkflowResponse,
   V1_DataRequestWithWorkflow,
   V1_GenericWorkflowTask,
+  V1_LiteDataRequestsResponse,
   V1_OrgMember,
   V1_OrgMembersResponse,
   V1_PendingDataRequestTaskEntry,
@@ -277,6 +278,26 @@ export const V1_deserializeDataRequestsWithWorkflowResponse = (
 ): V1_DataRequestWithWorkflow[] => {
   const response = deserialize(
     V1_dataRequestsWithWorkflowResponseModelSchema(plugins),
+    json,
+  );
+  return response.dataRequests;
+};
+
+// ------------------------------------- Lite Data Requests Response -------------------------------------
+
+export const V1_liteDataRequestsResponseModelSchema = (
+  plugins: PureProtocolProcessorPlugin[],
+) =>
+  createModelSchema(V1_LiteDataRequestsResponse, {
+    dataRequests: customListWithSchema(V1_dataRequestModelSchema(plugins)),
+  });
+
+export const V1_deserializeDataRequestsResponse = (
+  json: PlainObject<V1_LiteDataRequestsResponse>,
+  plugins: PureProtocolProcessorPlugin[],
+): V1_DataRequest[] => {
+  const response = deserialize(
+    V1_liteDataRequestsResponseModelSchema(plugins),
     json,
   );
   return response.dataRequests;

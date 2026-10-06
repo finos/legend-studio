@@ -131,6 +131,10 @@ export class V1_DataRequestsWithWorkflowResponse {
   dataRequests: V1_DataRequestWithWorkflow[] = [];
 }
 
+export class V1_LiteDataRequestsResponse {
+  dataRequests: V1_DataRequest[] = [];
+}
+
 export class V1_DataRequestTasksResponse {
   workflowTasks: V1_WorkflowTask[] = [];
 }
