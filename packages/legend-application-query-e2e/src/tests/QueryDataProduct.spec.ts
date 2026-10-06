@@ -318,12 +318,14 @@ test.describe('with a Lakehouse environment', () => {
     await page.goto(MODEL_ACCESS_URL);
     await waitForModel(page);
 
-    // only the model access point groups: Lakehouse access points aren't
-    // loaded for a model access query
+    // the data product has both kinds of access, so the model access point
+    // groups are listed alongside the Lakehouse access points
     await getAccessSelector(page).click();
     await expect(page.getByRole('option')).toHaveText([
+      `${COVID_LAKEHOUSE_ACCESS_POINT_ID}${COVID_LAKEHOUSE_ACCESS_POINT_GROUP_ID}LAKEHOUSE`,
       `${COVID_ACCESS_POINT_GROUP_ID}MODEL`,
       `${COVID_REPORTING_ACCESS_POINT_GROUP_ID}MODEL`,
+      `${COVID_DEATHS_ACCESS_POINT_ID}${COVID_MORTALITY_ACCESS_POINT_GROUP_ID}LAKEHOUSE`,
     ]);
     await page
       .getByRole('option', {
@@ -355,10 +357,13 @@ test.describe('with a Lakehouse environment', () => {
     await page.goto(LAKEHOUSE_ACCESS_URL);
     await waitForAccessPoint(page, COVID_LAKEHOUSE_ACCESS_POINT_ID);
 
-    // each access point is shown with its group
+    // each access point is shown with its group, alongside the model access
+    // point groups
     await getAccessSelector(page).click();
     await expect(page.getByRole('option')).toHaveText([
       `${COVID_LAKEHOUSE_ACCESS_POINT_ID}${COVID_LAKEHOUSE_ACCESS_POINT_GROUP_ID}LAKEHOUSE`,
+      `${COVID_ACCESS_POINT_GROUP_ID}MODEL`,
+      `${COVID_REPORTING_ACCESS_POINT_GROUP_ID}MODEL`,
       `${COVID_DEATHS_ACCESS_POINT_ID}${COVID_MORTALITY_ACCESS_POINT_GROUP_ID}LAKEHOUSE`,
     ]);
     await page
