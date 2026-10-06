@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { type CubeType, EnumType, PrimitiveType } from './CubeType.js';
+import { type CubeType, isPrimitiveType, PrimitiveType } from './CubeType.js';
+import { findPrimitiveTypeInfo } from './PrimitiveTypeRegistry.js';
 import { TypeFamily } from './TypeFamily.js';
 import { assertUnreachable } from '../utils/AssertionUtils.js';
 
@@ -84,7 +85,7 @@ export const areCompatibleTypes = (a: CubeType, b: CubeType): boolean => {
     return false;
   }
   if (classA === ComparisonClass.ENUM || classB === ComparisonClass.ENUM) {
-    return a instanceof EnumType && a.equals(b);
+    return classA === classB && a.equals(b);
   }
   if (classA === ComparisonClass.DATE || classB === ComparisonClass.DATE) {
     const isDateClass = (c: ComparisonClass): boolean =>
@@ -96,14 +97,17 @@ export const areCompatibleTypes = (a: CubeType, b: CubeType): boolean => {
   return classA === classB;
 };
 
-const getAncestors = (type: PrimitiveType): PrimitiveType[] => {
-  const ancestors: PrimitiveType[] = [];
-  for (
-    let current: PrimitiveType | undefined = type;
-    current;
-    current = current.parent
-  ) {
-    ancestors.push(current);
+// the type, then its parents up the registry's hierarchy
+const getAncestors = (type: CubeType): CubeType[] => {
+  const ancestors = [type];
+  if (isPrimitiveType(type)) {
+    for (
+      let parentPath = findPrimitiveTypeInfo(type.path)?.parentPath;
+      parentPath;
+      parentPath = findPrimitiveTypeInfo(parentPath)?.parentPath
+    ) {
+      ancestors.push(PrimitiveType.get(parentPath));
+    }
   }
   return ancestors;
 };
@@ -117,12 +121,8 @@ export const getLeastCommonAncestor = (
   a: CubeType,
   b: CubeType,
 ): CubeType | undefined => {
-  if (a.equals(b)) {
-    return a;
-  }
-  if (!(a instanceof PrimitiveType) || !(b instanceof PrimitiveType)) {
-    return undefined;
-  }
-  const ancestorsOfB = new Set(getAncestors(b));
-  return getAncestors(a).find((ancestor) => ancestorsOfB.has(ancestor));
+  const ancestorsOfB = getAncestors(b);
+  return getAncestors(a).find((ancestor) =>
+    ancestorsOfB.some((other) => other.equals(ancestor)),
+  );
 };

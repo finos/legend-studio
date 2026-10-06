@@ -46,8 +46,17 @@ export abstract class CubeType {
   /** the full path with any parameters, as written in Pure */
   abstract get fullName(): string;
 
+  /**
+   * Primitive and opaque types are interned, so equal types are usually the
+   * same instance. Equality is still structural, as it must hold across copies
+   * of this module too: the same family and the same full name, which for an
+   * enumeration is its path alone, so its values are not compared.
+   */
   equals(other: CubeType): boolean {
-    return this === other;
+    return (
+      this === other ||
+      (this.family === other.family && this.fullName === other.fullName)
+    );
   }
 
   toString(): string {
@@ -156,10 +165,6 @@ export class EnumType extends CubeType {
   get fullName(): string {
     return this.path;
   }
-
-  override equals(other: CubeType): boolean {
-    return other instanceof EnumType && other.path === this.path;
-  }
 }
 
 /**
@@ -201,6 +206,16 @@ export class OpaqueType extends CubeType {
     return `${this.path}${formatParameters(this.params)}`;
   }
 }
+
+/**
+ * Type guards that go by the family, so unlike `instanceof` they also work
+ * across copies of this module.
+ */
+export const isPrimitiveType = (type: CubeType): type is PrimitiveType =>
+  type.family !== TypeFamily.ENUM && type.family !== TypeFamily.OPAQUE;
+
+export const isEnumType = (type: CubeType): type is EnumType =>
+  type.family === TypeFamily.ENUM;
 
 /**
  * Resolves a type from a path (full or short) and parameters, as they come from

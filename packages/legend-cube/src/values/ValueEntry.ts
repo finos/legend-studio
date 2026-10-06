@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { type CubeType, EnumType, PrimitiveType } from '../types/CubeType.js';
+import {
+  type CubeType,
+  isEnumType,
+  isPrimitiveType,
+} from '../types/CubeType.js';
 import { TypeFamily } from '../types/TypeFamily.js';
 import { assertUnreachable } from '../utils/AssertionUtils.js';
 import {
@@ -114,8 +118,7 @@ const readLiteral = (text: string, type: CubeType): ReadResult => {
         return 'invalid';
       }
       const value = canonicalizeInteger(text);
-      const range =
-        type instanceof PrimitiveType ? type.info.integerRange : undefined;
+      const range = isPrimitiveType(type) ? type.info.integerRange : undefined;
       if (range && (BigInt(value) < range.min || BigInt(value) > range.max)) {
         return 'outOfRange';
       }
@@ -150,7 +153,7 @@ const readLiteral = (text: string, type: CubeType): ReadResult => {
       }
       return isDateTime(text) ? { kind: 'dateTime', value: text } : 'invalid';
     case TypeFamily.ENUM:
-      return type instanceof EnumType && type.values.includes(text)
+      return isEnumType(type) && type.values.includes(text)
         ? { kind: 'enum', value: text }
         : 'invalid';
     case TypeFamily.STRICT_TIME:
