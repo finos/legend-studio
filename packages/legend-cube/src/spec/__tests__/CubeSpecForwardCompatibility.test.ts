@@ -912,12 +912,12 @@ const INTERLEAVED = {
   alphaTop: { nested: [1, null] },
   context: {
     zetaContext: 1,
+    // kept whole, in the order read (PLAN §6.2.2)
     model: {
-      label: 'Northwind',
       zetaModel: 'z',
-      kind: 'local',
+      _type: 'text',
       alphaModel: null,
-      id: 'cube-northwind',
+      code: '###Relational',
     },
     runtime: 'test::Runtime',
     alphaContext: [true],
@@ -1001,11 +1001,10 @@ const CANONICAL = {
   name: 'Unknown keys',
   context: {
     model: {
-      kind: 'local',
-      id: 'cube-northwind',
-      label: 'Northwind',
       zetaModel: 'z',
+      _type: 'text',
       alphaModel: null,
+      code: '###Relational',
     },
     runtime: 'test::Runtime',
     zetaContext: 1,
@@ -1097,7 +1096,12 @@ describe(unitTest('Saved spec: unknown keys'), () => {
       alphaTop: { nested: [1, null] },
     });
     expect(context?.rest).toEqual({ zetaContext: 1, alphaContext: [true] });
-    expect(context?.model.rest).toEqual({ zetaModel: 'z', alphaModel: null });
+    expect(context?.model).toStrictEqual({
+      zetaModel: 'z',
+      _type: 'text',
+      alphaModel: null,
+      code: '###Relational',
+    });
     expect(document.queryRest).toEqual({ zetaQuery: 'z', alphaQuery: 2 });
 
     const source = query.getNode('relational101') as RelationalTableSource;
@@ -1147,38 +1151,36 @@ describe(unitTest('Saved spec: unknown keys'), () => {
     );
   });
 
-  test('Keeps the unknown keys of a project model', () => {
-    const json = {
-      formatVersion: 1,
-      context: {
-        model: {
-          zeta: 'z',
-          kind: 'project',
-          groupId: 'org.finos',
-          artifactId: 'northwind',
-          versionId: '1.0.0',
-          alpha: null,
-        },
-      },
-      query: { nodes: [] },
+  test('Keeps a model of any kind whole, as a frozen copy', () => {
+    // PLAN §6.2.2: only the host reads the model, so a kind Cube can't run
+    // still opens and is re-saved exactly
+    const model = {
+      _type: 'composite',
+      zeta: 'z',
+      nested: { list: [1, { flag: null }] },
+      alpha: null,
     };
-    const { document } = decodeCubeSpec(json);
-    expect(document.context?.model.rest).toEqual({ zeta: 'z', alpha: null });
-    expect(reSave(json)).toBe(
-      JSON.stringify({
-        formatVersion: 1,
-        context: {
-          model: {
-            kind: 'project',
-            groupId: 'org.finos',
-            artifactId: 'northwind',
-            versionId: '1.0.0',
-            zeta: 'z',
-            alpha: null,
-          },
-        },
-        query: { nodes: [] },
-      }),
+    const json = { formatVersion: 1, context: { model }, query: { nodes: [] } };
+    const read = decodeCubeSpec(json).document.context?.model;
+    expect(read).toStrictEqual(model);
+    // a deep copy, frozen all the way down, and the input left as it was
+    expect(read).not.toBe(model);
+    expect(read?.nested).not.toBe(model.nested);
+    expect(Object.isFrozen(read)).toBe(true);
+    expect(Object.isFrozen((read?.nested as JsonObject).list)).toBe(true);
+    expect(
+      Object.isFrozen(((read?.nested as JsonObject).list as JsonValue[])[1]),
+    ).toBe(true);
+    expect(Object.isFrozen(model.nested)).toBe(false);
+    expect(reSave(json)).toBe(JSON.stringify(json));
+  });
+
+  test('Keeps a model key named __proto__', () => {
+    // JSON.parse makes it an own key, which a copy must not turn into a prototype
+    const text =
+      '{"formatVersion":1,"context":{"model":{"_type":"text","__proto__":{"a":1},"code":"x"}},"query":{"nodes":[]}}';
+    expect(JSON.stringify(encodeCubeSpec(parseCubeSpec(text).document))).toBe(
+      text,
     );
   });
 
@@ -1217,11 +1219,7 @@ describe(unitTest('Saved spec: unknown keys'), () => {
     const document = new CubeDocument({
       name: 'Real name',
       context: {
-        model: {
-          kind: 'local',
-          id: 'cube-northwind',
-          rest: { kind: 'project', id: 'fake', label: 'fake', extraModel: 1 },
-        },
+        model: { _type: 'text', code: '###Relational' },
         runtime: 'test::Runtime',
         rest: { model: 'fake', runtime: 'fake', extraContext: 2 },
       },
@@ -1304,13 +1302,13 @@ describe(unitTest('Saved spec: unknown keys'), () => {
         extraTop: 11,
       },
     });
-    // absent known keys (a label, a snapshot, a filter) stay absent too
+    // absent known keys (a snapshot, a filter) stay absent too
     expect(JSON.stringify(encodeCubeSpec(document))).toBe(
       JSON.stringify({
         formatVersion: 1,
         name: 'Real name',
         context: {
-          model: { kind: 'local', id: 'cube-northwind', extraModel: 1 },
+          model: { _type: 'text', code: '###Relational' },
           runtime: 'test::Runtime',
           extraContext: 2,
         },
@@ -1366,41 +1364,6 @@ describe(unitTest('Saved spec: unknown keys'), () => {
           extraMeta: 10,
         },
         extraTop: 11,
-      }),
-    );
-  });
-
-  test('Never writes an unknown key of a project model over a known one', () => {
-    const document = new CubeDocument({
-      context: {
-        model: {
-          kind: 'project',
-          groupId: 'org.finos',
-          artifactId: 'northwind',
-          versionId: '1.0.0',
-          rest: {
-            kind: 'local',
-            groupId: 'fake',
-            artifactId: 'fake',
-            versionId: 'fake',
-            extraProject: 1,
-          },
-        },
-      },
-    });
-    expect(JSON.stringify(encodeCubeSpec(document))).toBe(
-      JSON.stringify({
-        formatVersion: 1,
-        context: {
-          model: {
-            kind: 'project',
-            groupId: 'org.finos',
-            artifactId: 'northwind',
-            versionId: '1.0.0',
-            extraProject: 1,
-          },
-        },
-        query: { nodes: [] },
       }),
     );
   });

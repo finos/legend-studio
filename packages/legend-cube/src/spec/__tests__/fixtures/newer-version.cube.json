@@ -3,8 +3,8 @@
   "name": "Saved by a newer Cube",
   "context": {
     "model": {
-      "kind": "local",
-      "id": "cube-northwind"
+      "_type": "text",
+      "code": "// stub: M1.7 puts the Cube Northwind model (Pure grammar) here\n"
     },
     "runtime": "showcase::northwind::mapping::StoreRuntime"
   },

@@ -21,7 +21,7 @@ import {
   CubeDocument,
   type CubeMeta,
   DEFAULT_META,
-  type ModelRef,
+  type ModelContext,
   type Presentation,
 } from '../graph/CubeDocument.js';
 import { Query } from '../graph/Query.js';
@@ -33,6 +33,7 @@ import {
 } from '../nodes/NodeRegistry.js';
 import { UnknownNode } from '../nodes/UnknownNode.js';
 import {
+  copyJson,
   EMPTY_JSON_OBJECT,
   type JsonObject,
   type JsonValue,
@@ -84,8 +85,6 @@ export interface CubeSpecDecodeOptions {
 
 const TOP_LEVEL_KEYS = ['formatVersion', 'name', 'context', 'query', 'meta'];
 const CONTEXT_KEYS = ['model', 'runtime'];
-const LOCAL_MODEL_KEYS = ['kind', 'id', 'label'];
-const PROJECT_MODEL_KEYS = ['kind', 'groupId', 'artifactId', 'versionId'];
 const QUERY_KEYS = ['selected', 'nodes'];
 const NODE_KEYS = ['kind', 'id', 'inputs'];
 const META_KEYS = ['presentation'];
@@ -130,24 +129,8 @@ export const migrateCubeSpec = (
 
 // ---------------------------------------- encode ----------------------------------------
 
-const encodeModel = (model: ModelRef): JsonObject =>
-  model.kind === 'local'
-    ? {
-        kind: model.kind,
-        id: model.id,
-        ...(model.label !== undefined ? { label: model.label } : {}),
-        ...restOf(model.rest, LOCAL_MODEL_KEYS),
-      }
-    : {
-        kind: model.kind,
-        groupId: model.groupId,
-        artifactId: model.artifactId,
-        versionId: model.versionId,
-        ...restOf(model.rest, PROJECT_MODEL_KEYS),
-      };
-
 const encodeContext = (context: CubeContext): JsonObject => ({
-  model: encodeModel(context.model),
+  model: copyJson(context.model),
   ...(context.runtime !== undefined ? { runtime: context.runtime } : {}),
   ...restOf(context.rest, CONTEXT_KEYS),
 });
@@ -241,31 +224,12 @@ export const encodeCubeSpec = (
 
 // ---------------------------------------- decode ----------------------------------------
 
-const decodeModel = (value: unknown, path: string): ModelRef => {
+const decodeModel = (value: unknown, path: string): ModelContext => {
   const json = readObject(value, path);
-  const kind = readString(json, 'kind', path);
-  switch (kind) {
-    case 'local': {
-      const label = readOptionalString(json, 'label', path, true);
-      return {
-        kind,
-        id: readString(json, 'id', path),
-        ...(label !== undefined ? { label } : {}),
-        ...readRest(json, LOCAL_MODEL_KEYS),
-      };
-    }
-    case 'project':
-      return {
-        kind,
-        groupId: readString(json, 'groupId', path),
-        artifactId: readString(json, 'artifactId', path),
-        versionId: readString(json, 'versionId', path),
-        ...readRest(json, PROJECT_MODEL_KEYS),
-      };
-    default:
-      // nothing can be resolved or run without a model it knows
-      return fail(pathTo(path, 'kind'), `"${kind}" is not a known model kind`);
-  }
+  // any kind is kept: the host decides which it can run, and a cube whose
+  // model it can't run still opens offline (PLAN §6.2.2)
+  readString(json, '_type', path);
+  return copyJson(json) as ModelContext;
 };
 
 const decodeContext = (value: unknown, path: string): CubeContext => {

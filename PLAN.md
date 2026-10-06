@@ -136,7 +136,7 @@ packages/legend-cube/src/
   utils/        internal helpers, e.g. the exhaustive-switch assertion
   index.ts
 packages/legend-cube-builder/src/
-  graph-manager/CubeEngine.ts       CubeEngine port + CubeModelContext / CubeResult / CubeEngineError (no V1_* symbols)
+  graph-manager/CubeEngine.ts       CubeEngine port + CubeModelOutline / CubeResult / CubeEngineError (no V1_* symbols)
   graph-manager/protocol/pure/CubeEngineBuilder.ts
                                     buildCubeEngine(config, tracerService): CubeEngine. The ONLY place that constructs
                                     V1_LegendCubeEngine (precedent: QueryBuilder_PureGraphManagerExtensionBuilder.ts)
@@ -144,8 +144,8 @@ packages/legend-cube-builder/src/
                                     V1_CubeRelationTypeAdapter (relation-type JSON → CubeType),
                                     V1_CubeExecutionResultReader (lossless), V1_LegendCubeEngine (implements the port;
                                     imports only ../../../CubeEngine.js and legend-graph)
-  stores/       CubeEditorState, CubeExecutionState, LocalModelCatalog (talks only to the port; loadModel returns
-                databases and runtimes as plain data), CubeHost interface, fixtures/ (Cube Northwind model as a TS string)
+  stores/       CubeEditorState, CubeExecutionState, LocalModelCatalog (the bundled model texts; talks only to the
+                port; loadModel parses a model context once and returns its databases and runtimes as plain data), CubeHost interface, fixtures/ (Cube Northwind model as a TS string)
   components/   CubeEditor (layout), canvas/, palette/, editors/ (Join, Filter, Source), source-picker/, grid/
   __lib__/      icons, labels, help text (§17.9), command config (§3.5), test ids
   __test-utils__/  Cube-local axios engine helpers for engine-backed tests (§3.4)
@@ -391,8 +391,8 @@ Settled in M1.2 (spec §4.4 leaves these open or assumes unary nodes):
 - **Undo** creates a new object identity, as §17.4 requires: `query.clone()`.
 - **`swapInputs`** also applies the node's `withSwappedInputs()`, so settings that name inputs by side follow them
   (added in M1.3 for Join, §4.7). The node it gives must keep its id.
-- `CubeDocument` holds `{ context, query, meta }`, where `context = { model: ModelRef; runtime?: string }` is
-  query-level (§6.2).
+- `CubeDocument` holds `{ context, query, meta }`, where `context = { model: ModelContext; runtime?: string }` is
+  query-level (§6.2), and the model is the engine's model context as plain JSON (§6.2.2).
 
 ### 4.4 Inference and validation engine
 
@@ -846,8 +846,8 @@ expects `results`, so Cube parses the raw response itself.
 
 **6.2.1 Coordinates.**
 
-- Each source holds `{database, schema, table}`. `context.model` is a `ModelRef` and `context.runtime` is a runtime
-  path, both query-level (one model, one runtime per query, D2).
+- Each source holds `{database, schema, table}`. `context.model` is a model context (§6.2.2) and `context.runtime` is
+  a runtime path, both query-level (one model, one runtime per query, D2).
 - **Schema and table names** are stored exactly as the Database protocol's `name`, **quote characters included**: a
   quoted table `"a.b"` is the path `["db", "S1", "\"a.b\""]` ✅. The unquoted `["db","S1","a.b"]` fails with
   "Can't find table" ✅. Quotes are stripped only for display.
@@ -855,23 +855,45 @@ expects `results`, so Cube parses the raw response itself.
 - **Dotted names must never round-trip through Pure text:** `#>{db.S1."a.b"}#` silently resolves to a different
   table ✅. M1.7 adds a quoted, dotted table to the fixture so this path is tested.
 
-**6.2.2 Model reference.**
+**6.2.2 Model context** (Settled in M1.6, user OK 2026-10-06; it replaces a `{kind: 'local', id}` /
+`{kind: 'project', …}` reference).
 
 ```ts
-type ModelRef =
-  | { kind: 'local'; id: string; label?: string } // slice: bundled fixture or pasted model (dev only)
-  | { kind: 'project'; groupId: string; artifactId: string; versionId: string }; // M3 (depot)
+// the engine's V1_PureModelContext as plain JSON; only the builder's v1/ seam types it
+interface ModelContext extends JsonObject {
+  readonly _type: string;
+}
+// slice: { _type: 'text', code: '<Pure grammar>' }  (bundled fixture or pasted model; dev and local only)
+// M3:    { _type: 'pointer', sdlcInfo: { _type: 'alloy', groupId, artifactId, version, packageableElementPointers: [] } }
 ```
+
+- **The cube holds the model, not an id.** A `.cube.json` is self-contained: it runs against any engine (e.g. the
+  local one on :6300) with no catalog, and a pasted model survives a reload.
+- **The core keeps it opaque.** It checks only that the model is an object with a non-empty string `_type`, and
+  re-saves it exactly as read. It never imports a `V1_*` type (D12).
+- **The builder reads it.** Its `v1/` seam types it as `PlainObject<V1_PureModelContext>` (precedent: Data Cube's
+  `FreeformTDSExpressionDataCubeSource.model`, saved raw). It decides which kinds it can run: `text` in the slice,
+  `pointer` from M3. A cube whose model has another `_type` still opens and edits offline from its schema snapshots;
+  resolving and running report that the model kind isn't supported.
+- **Saved as `text`, never `data`:** smaller, readable, and not tied to the element protocol's version.
+- **Costs accepted:**
+  - the text counts against the 1 MiB cap (Northwind is about 25 KB); a model too large gives the existing
+    "too large to save" error;
+  - a cube keeps the model it was made with, so a later fix to the bundled fixture doesn't reach it (snapshot drift
+    still flags changed tables);
+  - a text model with a LocalH2 connection runs its setup SQL on the engine when executed, as a pasted model does,
+    so text models stay dev and local only.
 
 **6.2.3 `LocalModelCatalog` (slice).**
 
-1. Take Pure grammar text: a bundled fixture or a pasted model.
-2. Parse it once with `grammarToJSON_model`
+1. Take Pure grammar text: a bundled fixture or a pasted model. Picking one copies its text into the cube as
+   `{_type: 'text', code}` (§6.2.2).
+2. Parse it once per load with `grammarToJSON_model`
    ([V1_EngineServerClient.ts:405](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts:405)).
    The result is a model-context JSON (`{_type:'data', elements}`).
 3. Read `Database` elements (schemas → tables) and `PackageableRuntime` elements from it, in the `v1/` seam.
-4. Send that same data context to every typing and execution call. Inline `data` and `text` contexts both work for
-   `lambdaRelationType` and `execute`, and need no depot ✅.
+4. Send the cube's saved `text` context with every typing and execution call. Inline `data` and `text` contexts
+   both work for `lambdaRelationType` and `execute`, and need no depot ✅.
 
 **6.2.4 Cube Northwind fixture.** `legend-cube-builder/src/stores/fixtures/CubeNorthwindModel.ts`, a TS string.
 
@@ -924,6 +946,18 @@ Problem tables are flagged in the picker rather than crashing the canvas:
 | a view                    | every column is `Varchar(0)` ✅               | hidden in v1                         |
 | a `CHAR(n)` column        | typed `Varchar(1)` ✅                         | "length unknown"                     |
 | an `OTHER`/`ARRAY` column | typed bare `String`, values may be numbers ✅ | "type unknown" (untyped, §5.4)       |
+
+**Settled before M1.7 (user, 2026-10-06): the engine types tables now, a local typer later.**
+
+- M1.7 types tables with the engine, as above: `resolveSchemas` makes one batched `lambdaRelationType` call per
+  load, and one per table picked. Downstream schemas are inferred by Cube, so the number of calls doesn't grow with
+  the graph.
+- Typing tables locally from the `Database` definition (no call per pick; column details for every table up
+  front) replaces that one port method later, once legend-graph is fixed (`LEGEND-GRAPH-ISSUES.md`, groups A, B, D
+  and E; M2.0 or after). The Pure text still needs one engine parse per load either way.
+- M1.7 records the engine's relation type of every table in the Cube Northwind + ALLTYPES fixture (the quoted,
+  dotted table and the problem tables included) as an engine-backed parity test. The local typer must reproduce it
+  exactly.
 
 **6.2.7 Picker UI (slice).** A minimal dialog. M3 redesigns it.
 
@@ -1375,18 +1409,19 @@ Never put a `let` after a Sort: `ORDER BY` inside a CTE is lost, and SQL Server 
 ### 8.7 Engine port and Legend adapter (builder)
 
 ```ts
+// `model` is the document's saved model context (§6.2.2), sent as it is
 interface CubeEngine {
-  loadModel(source: LocalModelSource): Promise<CubeModelContext>; // grammar → data context (slice)
+  loadModel(model: ModelContext): Promise<CubeModelOutline>; // parsed once: databases and runtimes as plain data
   resolveSchemas(
-    ctx: CubeModelContext,
+    model: ModelContext,
     accessors: Map<NodeId, AccessorPath>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
   typeLambdas(
-    ctx: CubeModelContext,
+    model: ModelContext,
     lambdas: Map<NodeId, IR>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
   execute(
-    ctx: CubeModelContext,
+    model: ModelContext,
     lambda: IR,
     opts: { abortController?: AbortController }, // the client takes an AbortController, not a signal
   ): Promise<CubeResult>; // {columns, rows, sql[], durationMs}
@@ -1526,13 +1561,13 @@ Every engine defect is listed in Appendix B.
 
 ### 10.1 Query graph model
 
-| Aspect     | Answer                                                                                                                  |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Shape      | `CubeDocument { context: {model: ModelRef; runtime?}; query: Query (nodes, connections, selected); meta: Meta }`, as §4 |
-| Owner      | `@finos/legend-cube`. Immutable classes; every edit makes a new `Query`                                                 |
-| Round trip | ↔ CubeSpec via the core codec (§10.3). The UI never holds a second copy of the truth                                   |
-| Versioning | None of its own; versioned through the spec's `formatVersion`                                                           |
-| Storage    | In memory (MobX `observable.ref`) while editing                                                                         |
+| Aspect     | Answer                                                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Shape      | `CubeDocument { context: {model: ModelContext; runtime?}; query: Query (nodes, connections, selected); meta: Meta }`, as §4 |
+| Owner      | `@finos/legend-cube`. Immutable classes; every edit makes a new `Query`                                                     |
+| Round trip | ↔ CubeSpec via the core codec (§10.3). The UI never holds a second copy of the truth                                       |
+| Versioning | None of its own; versioned through the spec's `formatVersion`                                                               |
+| Storage    | In memory (MobX `observable.ref`) while editing                                                                             |
 
 ### 10.2 Executed lambda / value specification
 
@@ -1551,7 +1586,10 @@ Every engine defect is listed in Appendix B.
   "formatVersion": 1,
   "name": "French orders 1997",
   "context": {
-    "model": { "kind": "local", "id": "cube-northwind" }, // or { "kind": "project", groupId, artifactId, versionId }
+    "model": {
+      "_type": "text",
+      "code": "###Relational\nDatabase showcase::northwind::store::NorthwindDatabase\n(…)…",
+    }, // M3: { "_type": "pointer", "sdlcInfo": {…} }
     "runtime": "showcase::northwind::mapping::StoreRuntime",
   },
   "query": {
@@ -1680,8 +1718,8 @@ value}`. **Negations are stored as negated operators** (`NotEqual`, `NotIn`, …
     (§8.2).
   - Server-side **Save** gating is decided in M8.
 
-Settled in M1.6 (the plan leaves these open; the user chose the first four on 2026-10-06, the rest are defaults
-shown with the sample specs):
+Settled in M1.6 (the plan leaves these open; the user chose the first five on 2026-10-06, the fifth, the model
+context, after reviewing the samples; the rest are defaults shown with the sample specs):
 
 - **Not around a comparison** without a negated operator (e.g. Not(GreaterThan)) is `{op: 'not', rule: {…}}`, the
   same wrapper as around a group. The codec never normalizes the tree: it writes rules as the node holds them.
@@ -1694,12 +1732,18 @@ shown with the sample specs):
   - a known node whose settings can't be read (e.g. `joinType: 'CROSS'`) becomes an **Unknown node** that keeps its
     JSON, its kind and its inputs;
   - a missing or wrongly typed required field (no `database`, a non-array `leftColumns`, a non-boolean `nullable`,
-    a known field set to `null`; unknown keys and an Unknown node's JSON keep their nulls) and an unknown model kind are still **decode errors**.
-- **Unknown keys are kept on every object**: top level, `context`, `model`, `query`, nodes, snapshot columns and
+    a known field set to `null`; unknown keys and an Unknown node's JSON keep their nulls) and a model that is not an
+    object with a non-empty string `_type` are still **decode errors**. A model of a `_type` the builder can't run is
+    not (§6.2.2).
+- **Unknown keys are kept on every object**: top level, `context`, `query`, nodes, snapshot columns and
   types, `meta`, `presentation`, width items. Rules and values are the exception above (unsupported), since ignoring
   a key such as `caseInsensitive` would change the rows. A snapshot column's unknown keys (on the column or its
   type) live on the source node by column name; when the host re-resolves the source they stay with the columns that
   still exist.
+- **The model is the engine's model context** as plain JSON (§6.2.2): `{_type: 'text', code}` in the slice,
+  `{_type: 'pointer', sdlcInfo}` from M3. It is kept whole and re-saved exactly as read. The sample specs hold a
+  short stub `code`, since the codec never parses Pure; M1.7 gives them the Cube Northwind text and checks on the
+  engine that they compile.
 - **Shape:** keys in the order of the §10.3 example, known keys first and unknown ones after them in the order read;
   anything absent or at its default is left out (`name`, `context` before the first source, `runtime`,
   `selected` on an empty query, `schemaSnapshot` when not resolved, `filter`, `value`, `params`, `meta`,

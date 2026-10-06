@@ -20,29 +20,19 @@ import { Query } from './Query.js';
 // Each plain-data part keeps the keys of its saved JSON that this version
 // does not know, in `rest`, so a re-save writes them back (PLAN §10.3)
 
-/** A model bundled with Cube or pasted by the user (dev only) */
-export interface LocalModelRef {
-  readonly kind: 'local';
-  readonly id: string;
-  readonly label?: string;
-  readonly rest?: JsonObject;
+/**
+ * Where the query's tables come from: the engine's model context as plain
+ * JSON, e.g. `{_type: 'text', code}` for Pure text (a bundled or pasted model,
+ * dev only) or `{_type: 'pointer', sdlcInfo}` for a published project (M3).
+ * It is kept whole, exactly as saved; only the host reads it (PLAN §6.2.2).
+ */
+export interface ModelContext extends JsonObject {
+  readonly _type: string;
 }
-
-/** A model published from a project (from M3) */
-export interface ProjectModelRef {
-  readonly kind: 'project';
-  readonly groupId: string;
-  readonly artifactId: string;
-  readonly versionId: string;
-  readonly rest?: JsonObject;
-}
-
-/** Where the query's tables come from */
-export type ModelRef = LocalModelRef | ProjectModelRef;
 
 /** The model and runtime of the whole query: one of each per query (D2) */
 export interface CubeContext {
-  readonly model: ModelRef;
+  readonly model: ModelContext;
   /** The path of the runtime the query runs with */
   readonly runtime?: string;
   readonly rest?: JsonObject;

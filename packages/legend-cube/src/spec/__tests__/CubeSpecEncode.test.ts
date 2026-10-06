@@ -40,6 +40,7 @@ import {
   CubeDocument,
   type CubeMeta,
   DEFAULT_META,
+  type ModelContext,
   type Presentation,
 } from '../../graph/CubeDocument.js';
 import { Query } from '../../graph/Query.js';
@@ -161,10 +162,9 @@ const decodedSchema = (json: JsonObject, id: string): Schema => {
 
 // ---------------------------------------- samples ----------------------------------------
 
-const LOCAL_CONTEXT: CubeContext = {
-  model: { kind: 'local', id: 'cube-northwind' },
-  runtime: RUNTIME,
-};
+const TEXT_MODEL: ModelContext = { _type: 'text', code: '###Relational' };
+
+const TEXT_CONTEXT: CubeContext = { model: TEXT_MODEL, runtime: RUNTIME };
 
 const ORDERS = resolvedTable('relational101', 'ORDERS', [
   column('ORDER_ID', `${PRECISE}SmallInt`),
@@ -179,7 +179,7 @@ const CUSTOMERS = resolvedTable('relational102', 'CUSTOMERS', [
 /** The PLAN §10.3 example, cut down: ORDERS INNER JOIN CUSTOMERS, then a filter, captured */
 const SLICE = new CubeDocument({
   name: 'French orders 1997',
-  context: LOCAL_CONTEXT,
+  context: TEXT_CONTEXT,
   query: new Query(
     [
       ORDERS,
@@ -222,10 +222,7 @@ const SLICE = new CubeDocument({
 const SLICE_SPEC: JsonObject = {
   formatVersion: 1,
   name: 'French orders 1997',
-  context: {
-    model: { kind: 'local', id: 'cube-northwind' },
-    runtime: RUNTIME,
-  },
+  context: { model: TEXT_MODEL, runtime: RUNTIME },
   query: {
     selected: 'filter101',
     nodes: [
@@ -344,68 +341,37 @@ describe(unitTest('Saved spec encoding: document'), () => {
     });
   });
 
-  test('Writes a local model with its label and the runtime', () => {
-    // R12, R14
-    expectEncoded(
-      new CubeDocument({
-        context: {
-          model: { kind: 'local', id: 'cube-northwind', label: 'Northwind' },
-          runtime: RUNTIME,
-        },
-      }),
-      {
-        formatVersion: 1,
-        context: {
-          model: { kind: 'local', id: 'cube-northwind', label: 'Northwind' },
-          runtime: RUNTIME,
-        },
-        query: { nodes: [] },
+  test('Writes the model as it is, and the runtime', () => {
+    // R12, R14: the model is the engine's model context, of any kind (PLAN §6.2.2)
+    const pointer: ModelContext = {
+      _type: 'pointer',
+      sdlcInfo: {
+        _type: 'alloy',
+        groupId: 'org.finos.legend',
+        artifactId: 'northwind',
+        version: '1.0.0',
+        packageableElementPointers: [],
       },
-    );
+    };
+    [TEXT_MODEL, pointer, { _type: 'composite' }].forEach((model) => {
+      expectEncoded(
+        new CubeDocument({ context: { model, runtime: RUNTIME } }),
+        {
+          formatVersion: 1,
+          context: { model, runtime: RUNTIME },
+          query: { nodes: [] },
+        },
+      );
+    });
   });
 
-  test('Leaves out a model label and a runtime that are not set', () => {
-    // R12, R14
-    expectEncoded(
-      new CubeDocument({
-        context: { model: { kind: 'local', id: 'cube-northwind' } },
-      }),
-      {
-        formatVersion: 1,
-        context: { model: { kind: 'local', id: 'cube-northwind' } },
-        query: { nodes: [] },
-      },
-    );
-  });
-
-  test('Writes a project model with its coordinates in order', () => {
-    // R11, R13
-    expectEncoded(
-      new CubeDocument({
-        context: {
-          model: {
-            kind: 'project',
-            groupId: 'org.finos.legend',
-            artifactId: 'northwind',
-            versionId: '1.0.0',
-          },
-          runtime: RUNTIME,
-        },
-      }),
-      {
-        formatVersion: 1,
-        context: {
-          model: {
-            kind: 'project',
-            groupId: 'org.finos.legend',
-            artifactId: 'northwind',
-            versionId: '1.0.0',
-          },
-          runtime: RUNTIME,
-        },
-        query: { nodes: [] },
-      },
-    );
+  test('Leaves out a runtime that is not set', () => {
+    // R14
+    expectEncoded(new CubeDocument({ context: { model: TEXT_MODEL } }), {
+      formatVersion: 1,
+      context: { model: TEXT_MODEL },
+      query: { nodes: [] },
+    });
   });
 
   test('Leaves out meta when the presentation is at its defaults', () => {
@@ -1619,16 +1585,12 @@ describe(unitTest('Saved spec encoding: rest'), () => {
     });
   });
 
-  test('Writes the known fields of the document, context, model, query and meta from the model, not from their rest', () => {
-    // R109, R111, R113 and the nested rests of PLAN §10.3 (Settled in M1.6)
+  test('Writes the known fields of the document, context, query and meta from the model, not from their rest', () => {
+    // R109, R111 and the nested rests of PLAN §10.3 (Settled in M1.6)
     const document = new CubeDocument({
       context: {
-        model: {
-          kind: 'local',
-          id: 'cube-northwind',
-          rest: { kind: 'project', id: 'other', label: 'Other', source: 'x' },
-        },
-        rest: { model: { kind: 'local', id: 'other' }, runtime: 'r', zone: 1 },
+        model: { ...TEXT_MODEL, source: 'x' },
+        rest: { model: { _type: 'pointer' }, runtime: 'r', zone: 1 },
       },
       queryRest: { selected: 'ghost', nodes: [], page: 2 },
       meta: {
@@ -1662,7 +1624,7 @@ describe(unitTest('Saved spec encoding: rest'), () => {
     const expected: JsonObject = {
       formatVersion: 1,
       context: {
-        model: { kind: 'local', id: 'cube-northwind', source: 'x' },
+        model: { ...TEXT_MODEL, source: 'x' },
         zone: 1,
       },
       query: { nodes: [], page: 2 },
@@ -1682,40 +1644,19 @@ describe(unitTest('Saved spec encoding: rest'), () => {
     expect(JSON.stringify(encoded)).toBe(JSON.stringify(expected));
   });
 
-  test('Keeps unknown keys of a project model after its coordinates', () => {
-    // R113: a project model's rest never overrides its coordinates
-    expect(
-      encodeCubeSpec(
-        new CubeDocument({
-          context: {
-            model: {
-              kind: 'project',
-              groupId: 'g',
-              artifactId: 'a',
-              versionId: 'v',
-              rest: {
-                kind: 'local',
-                groupId: 'x',
-                artifactId: 'y',
-                mirror: true,
-              },
-            },
-          },
-        }),
-      ),
-    ).toStrictEqual({
-      formatVersion: 1,
-      context: {
-        model: {
-          kind: 'project',
-          groupId: 'g',
-          artifactId: 'a',
-          versionId: 'v',
-          mirror: true,
-        },
-      },
-      query: { nodes: [] },
-    });
+  test('Writes a copy of the whole model, keys in the order it holds them', () => {
+    // PLAN §6.2.2: the model is kept whole, nested keys and nulls included
+    const model: ModelContext = {
+      code: '###Relational',
+      _type: 'text',
+      serializer: { name: 'pure', version: null },
+    };
+    const encoded = encodeCubeSpec(new CubeDocument({ context: { model } }));
+    const written = (encoded.context as JsonObject).model;
+    expect(JSON.stringify(written)).toBe(JSON.stringify(model));
+    // a deep copy: nothing the document holds is shared with the output
+    expect(written).not.toBe(model);
+    expect((written as JsonObject).serializer).not.toBe(model.serializer);
   });
 
   test('Writes the unknown keys of a snapshot column and its type after their known keys', () => {
@@ -1982,7 +1923,7 @@ describe(unitTest('Cube document'), () => {
   };
   const BASE = new CubeDocument({
     name: 'Orders',
-    context: LOCAL_CONTEXT,
+    context: TEXT_CONTEXT,
     query: QUERY,
     queryRest: { page: 2 },
     meta: META,
@@ -2017,12 +1958,12 @@ describe(unitTest('Cube document'), () => {
 
   test('Changes the context into a new document that keeps the other parts', () => {
     const context: CubeContext = {
-      model: { kind: 'local', id: 'cube-other' },
+      model: { _type: 'text', code: '###Pure' },
     };
     const changed = BASE.withContext(context);
     expect(changed.context).toBe(context);
     expectKept(changed, ['name', 'query', 'queryRest', 'meta', 'rest']);
-    expect(BASE.context).toBe(LOCAL_CONTEXT);
+    expect(BASE.context).toBe(TEXT_CONTEXT);
     expect(BASE.withContext(undefined).context).toBeUndefined();
   });
 

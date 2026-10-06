@@ -86,12 +86,16 @@ const ORDER_ID = {
   type: { path: 'Integer' },
   nullable: false,
 };
-const LOCAL_MODEL = { kind: 'local', id: 'cube-northwind' };
-const PROJECT_MODEL = {
-  kind: 'project',
-  groupId: 'org.finos.legend',
-  artifactId: 'northwind',
-  versionId: '1.0.0',
+const TEXT_MODEL = { _type: 'text', code: '###Relational' };
+const POINTER_MODEL = {
+  _type: 'pointer',
+  sdlcInfo: {
+    _type: 'alloy',
+    groupId: 'org.finos.legend',
+    artifactId: 'northwind',
+    version: '1.0.0',
+    packageableElementPointers: [],
+  },
 };
 
 /** A document whose query has these nodes, and this selected node */
@@ -151,8 +155,10 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['an enumeration type', withType({ path: 'my::Region', values: ['EMEA'] })],
     ['a join', withJoin(JOIN_101)],
     ['a filter', withNodes([FILTER_101], 'filter101')],
-    ['a local model', withModel({ ...LOCAL_MODEL, label: 'Northwind' })],
-    ['a project model', withModel(PROJECT_MODEL)],
+    ['a text model', withModel(TEXT_MODEL)],
+    ['a pointer model', withModel(POINTER_MODEL)],
+    // the host decides which kinds it can run (PLAN §6.2.2)
+    ['a model of a kind Cube does not run', withModel({ _type: 'composite' })],
     [
       'a presentation',
       withPresentation({
@@ -1033,93 +1039,44 @@ describe(unitTest('Saved spec decode errors'), () => {
       'must be an object',
     ],
     [
-      'a model without a kind',
-      withModel({ id: 'cube-northwind' }),
-      'context.model.kind',
+      'a model without a _type',
+      withModel({ code: '###Relational' }),
+      'context.model._type',
       'is required',
     ],
     [
-      // nothing can be resolved without a model this version knows
-      'a model of an unknown kind',
-      withModel({ kind: 'remote', id: 'cube-northwind' }),
-      'context.model.kind',
-      '"remote" is not a known model kind',
-    ],
-    [
-      'a local model without an id',
-      withModel({ kind: 'local' }),
-      'context.model.id',
-      'is required',
-    ],
-    [
-      'a local model with an empty id',
-      withModel({ kind: 'local', id: '' }),
-      'context.model.id',
+      'a model with an empty _type',
+      withModel({ ...TEXT_MODEL, _type: '' }),
+      'context.model._type',
       'must not be empty',
     ],
     [
-      'a label that is a number',
-      withModel({ ...LOCAL_MODEL, label: 1 }),
-      'context.model.label',
+      'a model whose _type is a number',
+      withModel({ ...TEXT_MODEL, _type: 1 }),
+      'context.model._type',
       'must be a string',
     ],
     [
-      'a label set to null',
-      withModel({ ...LOCAL_MODEL, label: null }),
-      'context.model.label',
+      'a model whose _type is null',
+      withModel({ ...TEXT_MODEL, _type: null }),
+      'context.model._type',
       'must be a string',
-    ],
-    [
-      'a project model without a groupId',
-      withModel({
-        kind: 'project',
-        artifactId: 'northwind',
-        versionId: '1.0.0',
-      }),
-      'context.model.groupId',
-      'is required',
-    ],
-    [
-      'a project model without an artifactId',
-      withModel({
-        kind: 'project',
-        groupId: 'org.finos.legend',
-        versionId: '1.0.0',
-      }),
-      'context.model.artifactId',
-      'is required',
-    ],
-    [
-      'a project model without a versionId',
-      withModel({
-        kind: 'project',
-        groupId: 'org.finos.legend',
-        artifactId: 'northwind',
-      }),
-      'context.model.versionId',
-      'is required',
-    ],
-    [
-      'a project model with an empty versionId',
-      withModel({ ...PROJECT_MODEL, versionId: '' }),
-      'context.model.versionId',
-      'must not be empty',
     ],
     [
       'an empty runtime',
-      withContext({ model: LOCAL_MODEL, runtime: '' }),
+      withContext({ model: TEXT_MODEL, runtime: '' }),
       'context.runtime',
       'must not be empty',
     ],
     [
       'a runtime that is a number',
-      withContext({ model: LOCAL_MODEL, runtime: 1 }),
+      withContext({ model: TEXT_MODEL, runtime: 1 }),
       'context.runtime',
       'must be a string',
     ],
     [
       'a runtime set to null',
-      withContext({ model: LOCAL_MODEL, runtime: null }),
+      withContext({ model: TEXT_MODEL, runtime: null }),
       'context.runtime',
       'must be a string',
     ],
@@ -1523,14 +1480,14 @@ describe(unitTest('Saved spec versions'), () => {
       'is required (this cube was saved by a newer version of Cube, in format 7)',
     ],
     [
-      'with a model of an unknown kind',
+      'with a model without a _type',
       {
         formatVersion: 2,
         context: { model: { kind: 'remote', id: 'cube-northwind' } },
         query: { nodes: [] },
       },
-      'context.model.kind',
-      '"remote" is not a known model kind (this cube was saved by a newer version of Cube, in format 2)',
+      'context.model._type',
+      'is required (this cube was saved by a newer version of Cube, in format 2)',
     ],
   ])(
     'Names the newer format when a newer document %s cannot be read',
