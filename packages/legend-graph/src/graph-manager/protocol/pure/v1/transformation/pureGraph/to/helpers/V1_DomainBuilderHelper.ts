@@ -73,6 +73,9 @@ import { V1_buildTestAssertion } from './V1_TestBuilderHelper.js';
 import type { TestSuite } from '../../../../../../../../graph/metamodel/pure/test/Test.js';
 import { DefaultValue } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/DefaultValue.js';
 import { V1_getGenericTypeFullPath } from '../../../../helpers/V1_DomainHelper.js';
+import type { V1_GenericType } from '../../../../model/packageableElements/type/V1_GenericType.js';
+import type { GenericTypeReference } from '../../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
+import { V1_buildValueSpecification } from './V1_ValueSpecificationBuilderHelper.js';
 
 export const V1_buildTaggedValue = (
   taggedValue: V1_TaggedValue,
@@ -198,6 +201,33 @@ const V1_extractPropertyAggregationKind = (val: string): AggregationKind => {
   return val as AggregationKind;
 };
 
+/**
+ * Resolves the generic type of a property or derived property.
+ *
+ * The raw type is resolved exactly as before, so the reference keeps its input
+ * spelling (e.g. a class referenced through a section import). On top of that we
+ * keep the type variable values, e.g. the `200` in `Varchar(200)`, which would
+ * otherwise be dropped and make the engine reject the element when it is
+ * serialized back from the metamodel.
+ *
+ * NOTE: type arguments are still not resolved here.
+ */
+const V1_buildPropertyGenericType = (
+  genericType: V1_GenericType,
+  context: V1_GraphBuilderContext,
+): GenericTypeReference => {
+  const genericTypeReference = context.resolveGenericType(
+    V1_getGenericTypeFullPath(genericType),
+  );
+  if (genericType.typeVariableValues.length) {
+    genericTypeReference.value.typeVariableValues =
+      genericType.typeVariableValues.map((value) =>
+        V1_buildValueSpecification(value, context),
+      );
+  }
+  return genericTypeReference;
+};
+
 export const V1_buildProperty = (
   property: V1_Property,
   context: V1_GraphBuilderContext,
@@ -222,7 +252,7 @@ export const V1_buildProperty = (
       property.multiplicity.lowerBound,
       property.multiplicity.upperBound,
     ),
-    context.resolveGenericType(V1_getGenericTypeFullPath(property.genericType)),
+    V1_buildPropertyGenericType(property.genericType, context),
     owner,
   );
   pureProperty.aggregation = property.aggregation
@@ -265,9 +295,7 @@ export const V1_buildDerivedProperty = (
       property.returnMultiplicity.lowerBound,
       property.returnMultiplicity.upperBound,
     ),
-    context.resolveGenericType(
-      V1_getGenericTypeFullPath(property.returnGenericType),
-    ),
+    V1_buildPropertyGenericType(property.returnGenericType, context),
     owner,
   );
   derivedProperty.stereotypes = property.stereotypes

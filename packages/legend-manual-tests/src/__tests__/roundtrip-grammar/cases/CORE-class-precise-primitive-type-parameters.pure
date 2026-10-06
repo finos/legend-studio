@@ -1,0 +1,22 @@
+###Pure
+import test::*;
+Class test::Address
+{
+  street: Varchar(100)[1];
+}
+
+Class test::PrecisePerson
+{
+  name: Varchar(200)[1];
+  balance: Numeric(10,2)[0..1];
+  createdAt: Timestamp[1];
+  id: BigInt[1];
+  nickname: String[0..1];
+  address: Address[0..1];
+  displayName() {$this.name}: Varchar(200)[1];
+}
+
+function test::currencyCode(): Varchar(3)[1]
+{
+  'USD'->cast(@Varchar(3))
+}

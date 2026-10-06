@@ -187,9 +187,13 @@ export class V1_ValueSpecificationBuilder
         variable.multiplicity.upperBound,
       );
       const ve = new VariableExpression(variable.name, multiplicity);
-      ve.genericType = this.context.resolveGenericType(
-        V1_getGenericTypeFullPath(variable.genericType),
-      );
+      // NOTE: a packageable raw type resolves the same way as with `resolveGenericType()`;
+      // this also keeps the type arguments (e.g. the relation type in `Relation<(a:Integer)>`)
+      // and the type variable values (e.g. the `10` in `Varchar(10)`)
+      ve.genericType =
+        this.context.resolveGenericTypeFromProtocolWithRelationType(
+          variable.genericType,
+        );
       this.processingContext.addInferredVariables(variable.name, ve);
       return ve;
     } else {

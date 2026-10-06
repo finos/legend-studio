@@ -40,6 +40,11 @@ export class V1_Property implements Hashable {
       this.genericType.rawType instanceof V1_PackageableType
         ? this.genericType.rawType.fullPath
         : '',
+      // NOTE: type variable values (e.g. the `200` in `Varchar(200)`) are only hashed
+      // when present so the hash of every other property stays unchanged
+      this.genericType.typeVariableValues.length
+        ? hashArray(this.genericType.typeVariableValues)
+        : undefined,
       this.aggregation ?? '',
       this.defaultValue ?? '',
       hashArray(this.stereotypes),
