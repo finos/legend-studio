@@ -61,6 +61,14 @@ export enum PRIMITIVE_TYPE {
   BYTE = 'Byte',
 }
 
+/**
+ * Paths of the precise primitive types, which the engine defines in
+ * `meta::pure::precisePrimitives`.
+ *
+ * NOTE: some members are deprecated, as they are not types the engine
+ * defines; to list the precise primitive types, use
+ * {@link PRECISE_PRIMITIVE_TYPE_PATHS} rather than the values of this enum.
+ */
 export enum PRECISE_PRIMITIVE_TYPE {
   VARCHAR = 'meta::pure::precisePrimitives::Varchar',
   INT = 'meta::pure::precisePrimitives::Int',
@@ -73,13 +81,52 @@ export enum PRECISE_PRIMITIVE_TYPE {
   U_BIG_INT = 'meta::pure::precisePrimitives::UBigInt',
   FLOAT = 'meta::pure::precisePrimitives::Float4',
   DOUBLE = 'meta::pure::precisePrimitives::Double',
+  /**
+   * @deprecated the engine defines no such type: use `PRIMITIVE_TYPE.DECIMAL`,
+   * or `PRECISE_PRIMITIVE_TYPE.NUMERIC` for a decimal with a precision and a
+   * scale
+   */
   DECIMAL = 'meta::pure::precisePrimitives::Decimal',
+  /**
+   * @deprecated the engine defines no such type: use `PRIMITIVE_TYPE.STRICTDATE`
+   */
   STRICTDATE = 'meta::pure::precisePrimitives::Date',
+  /**
+   * @deprecated use `PRECISE_PRIMITIVE_TYPE.TIMESTAMP`, which has the same
+   * value: the path of the precise primitive type `Timestamp`
+   */
   DATETIME = 'meta::pure::precisePrimitives::Timestamp',
+  /**
+   * @deprecated the engine defines no such type: use `PRIMITIVE_TYPE.STRICTTIME`
+   */
   STRICTTIME = 'meta::pure::precisePrimitives::Time',
   NUMERIC = 'meta::pure::precisePrimitives::Numeric',
-  TIMESTAMP = 'meta::relational::metamodel::datatype::Timestamp',
+  // NOTE: the deprecated `DATETIME` has the same value until it is removed
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
+  TIMESTAMP = 'meta::pure::precisePrimitives::Timestamp',
 }
+
+/**
+ * Paths of the precise primitive types the engine defines, i.e. the values of
+ * {@link PRECISE_PRIMITIVE_TYPE} without its deprecated members.
+ *
+ * See https://github.com/finos/legend-pure/blob/master/legend-pure-core/legend-pure-m3-precisePrimitives/src/main/resources/platform_precise_primitives/precisePrimitives.pure
+ */
+export const PRECISE_PRIMITIVE_TYPE_PATHS: readonly PRECISE_PRIMITIVE_TYPE[] = [
+  PRECISE_PRIMITIVE_TYPE.TINY_INT,
+  PRECISE_PRIMITIVE_TYPE.U_TINY_INT,
+  PRECISE_PRIMITIVE_TYPE.SMALL_INT,
+  PRECISE_PRIMITIVE_TYPE.U_SMALL_INT,
+  PRECISE_PRIMITIVE_TYPE.INT,
+  PRECISE_PRIMITIVE_TYPE.U_INT,
+  PRECISE_PRIMITIVE_TYPE.BIG_INT,
+  PRECISE_PRIMITIVE_TYPE.U_BIG_INT,
+  PRECISE_PRIMITIVE_TYPE.VARCHAR,
+  PRECISE_PRIMITIVE_TYPE.TIMESTAMP,
+  PRECISE_PRIMITIVE_TYPE.FLOAT,
+  PRECISE_PRIMITIVE_TYPE.DOUBLE,
+  PRECISE_PRIMITIVE_TYPE.NUMERIC,
+];
 
 export enum ATOMIC_TEST_TYPE {
   Service_Test = 'serviceTest',
