@@ -620,6 +620,41 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
         .rawType,
     ).toBe(PrimitiveType.BOOLEAN);
   });
+
+  test('strips the surrounding quotes from quoted column names, like the engine', async () => {
+    const db = createTestDatabase('test::MyDB', [
+      {
+        name: 'public',
+        tables: [
+          {
+            name: 'PERSON',
+            columns: [
+              { name: 'ID', type: new RelationalInteger() },
+              { name: '"first name"', type: new VarChar(20) },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    const accessor = guaranteeNonNullable(
+      await createAccessorFromPackageableElement(db, {
+        schemaName: 'public',
+        tableName: 'PERSON',
+      }),
+    );
+
+    expect(accessor.relationType.columns.map((column) => column.name)).toEqual([
+      'ID',
+      'first name',
+    ]);
+    // the store keeps the quoted name
+    expect(
+      guaranteeNonNullable(
+        guaranteeNonNullable(db.schemas[0]).tables[0],
+      ).columns.map((column) => (column as Column).name),
+    ).toEqual(['ID', '"first name"']);
+  });
 });
 
 // ──────────────────────────────────────────────────────────

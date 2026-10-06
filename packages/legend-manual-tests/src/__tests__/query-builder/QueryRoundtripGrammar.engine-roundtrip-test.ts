@@ -234,6 +234,12 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Contact Name':x|$x.CONTACT_NAME, Region:x|$x.REGION])->filter(row|$row.'Contact Name'->isEmpty() || !$row.Region->isEmpty())",
   },
+  {
+    testName: '[Accessor] Store Accessor on columns with quoted names',
+    model: 'QuotedColumns',
+    queryGrammar:
+      "|#>{test::QuotedColumnDatabase.PEOPLE.PERSON}#->filter(x|$x.'first name' == 'John')->project(~[Id:x|$x.ID, 'First Name':x|$x.'first name', 'Last Name':x|$x.'last name'])->filter(row|$row.'Last Name' == 'Doe')",
+  },
 
   {
     testName:

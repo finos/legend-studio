@@ -192,13 +192,25 @@ const buildRelationTypeFromIngestDataset = (
   return relationType;
 };
 
+/**
+ * The store keeps a quoted column name with its quotes (`"first name"`), but the
+ * engine strips one surrounding pair when typing a relational accessor, so
+ * queries refer to the column as `$r.'first name'`.
+ */
+const getRelationColumnName = (column: Column): string =>
+  column.name.length > 1 &&
+  column.name.startsWith('"') &&
+  column.name.endsWith('"')
+    ? column.name.slice(1, -1)
+    : column.name;
+
 const buildRelationTypeFromTable = (table: Table): RelationType => {
   const relationType = new RelationType('__database_table__');
   relationType.columns = table.columns
     .filter((col): col is Column => col instanceof Column)
     .map((col) => {
       const relationColumn = new RelationColumn(
-        col.name,
+        getRelationColumnName(col),
         GenericTypeExplicitReference.create(
           new GenericType(mapRelationalDataTypeToPrimitiveType(col.type)),
         ),
