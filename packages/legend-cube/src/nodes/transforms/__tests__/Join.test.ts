@@ -128,9 +128,12 @@ describe(unitTest('Join node'), () => {
 
   test('Keeps its own frozen copy of the key columns', () => {
     const leftColumns = ['a'];
-    const node = new Join('join101', { leftColumns, rightColumns: ['b'] });
+    const rightColumns = ['b'];
+    const node = new Join('join101', { leftColumns, rightColumns });
     leftColumns.push('c');
+    rightColumns.push('d');
     expect(node.leftColumns).toEqual(['a']);
+    expect(node.rightColumns).toEqual(['b']);
     expect(Object.isFrozen(node.leftColumns)).toBe(true);
     expect(Object.isFrozen(node.rightColumns)).toBe(true);
   });
@@ -152,6 +155,24 @@ describe(unitTest('Join node'), () => {
         }),
     ).toThrow();
     expect(() => new Join('')).toThrow();
+    // a list with a hole has no column name there
+    const sparse: string[] = [];
+    sparse[1] = 'a';
+    expect(
+      () =>
+        new Join('join101', { leftColumns: sparse, rightColumns: ['b', 'a'] }),
+    ).toThrow('Join columns must be lists of column names');
+    expect(
+      () =>
+        new Join('join101', { leftColumns: ['b', 'a'], rightColumns: sparse }),
+    ).toThrow('Join columns must be lists of column names');
+    expect(
+      () =>
+        new Join('join101', {
+          leftColumns: new Array<string>(1),
+          rightColumns: new Array<string>(1),
+        }),
+    ).toThrow('Join columns must be lists of column names');
   });
 
   test('Offers four join types, in order, with labels', () => {
@@ -185,17 +206,28 @@ describe(unitTest('Join node'), () => {
     expect(node.withSettings({ leftColumns: ['c'] }).leftColumns).toEqual([
       'c',
     ]);
+    // a change of key columns keeps every join type, not just the default
+    JOIN_TYPES.forEach((joinType) => {
+      const columnsOnly = join(['a'], ['b'], joinType).withSettings({
+        leftColumns: ['c'],
+      });
+      expect(columnsOnly.joinType).toBe(joinType);
+      expect(columnsOnly.rightColumns).toEqual(['b']);
+    });
   });
 
-  test('Swaps its key columns, not its join type, when its inputs swap', () => {
-    const node = join(['a', 'b'], ['x', 'y'], JoinType.LEFT_OUTER);
-    const swapped = node.withSwappedInputs();
-    expect(swapped.id).toBe(node.id);
-    expect(swapped.key).not.toBe(node.key);
-    expect(swapped.leftColumns).toEqual(['x', 'y']);
-    expect(swapped.rightColumns).toEqual(['a', 'b']);
-    expect(swapped.joinType).toBe(JoinType.LEFT_OUTER);
-  });
+  test.each(JOIN_TYPES)(
+    'Swaps its key columns, not its join type (%s), when its inputs swap',
+    (joinType) => {
+      const node = join(['a', 'b'], ['x', 'y'], joinType);
+      const swapped = node.withSwappedInputs();
+      expect(swapped.id).toBe(node.id);
+      expect(swapped.key).not.toBe(node.key);
+      expect(swapped.leftColumns).toEqual(['x', 'y']);
+      expect(swapped.rightColumns).toEqual(['a', 'b']);
+      expect(swapped.joinType).toBe(joinType);
+    },
+  );
 
   test('Checks that it gets one input schema per port', () => {
     const node = join(['bookId'], ['bookId']);
@@ -349,6 +381,71 @@ describe(unitTest('Join validation'), () => {
     expect(validationErrors(join(['a'], ['b']), left, right)).toEqual([
       'Duplicate column names between inputs are not supported if they are not part of the join columns: "a", "b"',
     ]);
+  });
+
+  test('Step 5: with a same-named key, other key names still count as duplicates', () => {
+    const duplicates = (left: Schema, right: Schema): string[] =>
+      validationErrors(join(['A', 'B'], ['A', 'C']), left, right);
+    const message = (...names: string[]): string =>
+      `Duplicate column names between inputs are not supported if they are not part of the join columns: ${names.map((n) => `"${n}"`).join(', ')}`;
+    expect(
+      duplicates(
+        schema(column('A'), column('B'), column('x')),
+        schema(column('A'), column('C'), column('y')),
+      ),
+    ).toEqual([]);
+    expect(
+      duplicates(
+        schema(column('A'), column('B'), column('x')),
+        schema(column('A'), column('C'), column('B')),
+      ),
+    ).toEqual([message('B')]);
+    expect(
+      duplicates(
+        schema(column('A'), column('B'), column('C')),
+        schema(column('A'), column('C'), column('y')),
+      ),
+    ).toEqual([message('C')]);
+    expect(
+      duplicates(
+        schema(column('A'), column('C'), column('B')),
+        schema(column('A'), column('C'), column('B')),
+      ),
+    ).toEqual([message('C', 'B')]);
+  });
+
+  test('Matches column names exactly, by case and spacing', () => {
+    expect(getSameNamedJoinKeys(['ID'], ['id'])).toEqual([]);
+    expect(getSameNamedJoinKeys([' a'], ['a'])).toEqual([]);
+    // `ID` and `id` are two columns, so neither is a duplicate
+    expect(
+      outputOf(
+        join(['ID'], ['id']),
+        schema(column('ID'), column('a')),
+        schema(column('id'), column('b')),
+      ).map((c) => c.split(' ')[0]),
+    ).toEqual(['ID', 'id', 'a', 'b']);
+    expect(
+      validationErrors(
+        join(['k'], ['k2']),
+        schema(column('k'), column('Region'), column('x ')),
+        schema(column('k2'), column('region'), column('x')),
+      ),
+    ).toEqual([]);
+    expect(
+      validationErrors(
+        join(['ID'], ['id']),
+        schema(column('id')),
+        schema(column('id')),
+      ),
+    ).toEqual(['Left join column "ID" is not present in the input schema.']);
+    expect(
+      validationErrors(
+        join([' id'], ['id']),
+        schema(column('id')),
+        schema(column('id')),
+      ),
+    ).toEqual(['Left join column " id" is not present in the input schema.']);
   });
 
   test('Step 5 is not reached when a key is broken', () => {
@@ -677,6 +774,36 @@ describe(unitTest('Join output schema'), () => {
     ]);
   });
 
+  test.each(JOIN_TYPES)(
+    'Puts a same-named key at its left key position (%s)',
+    (joinType) => {
+      expect(
+        outputOf(
+          join(['x', 'k'], ['y', 'k'], joinType),
+          schema(column('k'), column('x'), column('lo')),
+          schema(column('ro'), column('k'), column('y')),
+        ).map((c) => c.split(' ')[0]),
+      ).toEqual(['x', 'k', 'y', 'lo', 'ro']);
+    },
+  );
+
+  test('Keeps nullable keys nullable in an INNER join', () => {
+    expect(
+      outputOf(
+        join(['id'], ['ref'], JoinType.INNER),
+        schema(column('id', `${PRECISE}Int`, true), column('l')),
+        schema(column('ref', `${PRECISE}Int`, true), column('r')),
+      ),
+    ).toEqual(['id Int?', 'ref Int?', 'l Integer', 'r Integer']);
+    expect(
+      outputOf(
+        join(['lk'], ['rk'], JoinType.INNER),
+        schema(columnOf('lk', varchar(15), true)),
+        schema(columnOf('rk', varchar(2), true)),
+      ),
+    ).toEqual(['lk Varchar(15)?', 'rk Varchar(2)?']);
+  });
+
   test('Takes a same-named key from the side whose value it keeps', () => {
     const left = schema(column('id', `${PRECISE}SmallInt`), column('l'));
     const right = schema(column('id', `${PRECISE}Int`, true), column('r'));
@@ -795,6 +922,12 @@ describe(unitTest('Join output schema'), () => {
     const right = new EnumType(REGION, ['EMEA', 'APAC']);
     expect(getMergedJoinKeyType(left, right)).toBe(left);
     expect(getMergedJoinKeyType(varchar(15), varchar(15))).toBe(varchar(15));
+    const output = join(['k'], ['k'], JoinType.FULL_OUTER).schematize([
+      schema(columnOf('k', left)),
+      schema(columnOf('k', right)),
+    ]);
+    expect(output?.type('k')).toBe(left);
+    expect((output?.type('k') as EnumType).values).toEqual(['EMEA']);
   });
 
   test('Has no merged key type for types with nothing in common', () => {
@@ -1062,7 +1195,7 @@ describe(unitTest('Join in a query'), () => {
     expect(restored.rightColumns).toEqual(['ID']);
   });
 
-  test('Swaps its key columns with a single input', () => {
+  test('Swaps its key columns with a single input, staying incomplete', () => {
     const query = new Query(
       [trades(), join(['tradeId'], ['bookId'])],
       [edge('relational101', 'join101', 'leftTds')],
@@ -1072,6 +1205,10 @@ describe(unitTest('Join in a query'), () => {
     const node = query.getNode('join101') as Join;
     expect(node.leftColumns).toEqual(['bookId']);
     expect(node.rightColumns).toEqual(['tradeId']);
+    expect(node.joinType).toBe(JoinType.INNER);
+    const { schemas, validity } = buildSchemasAndValidity(query);
+    expect(validity.get('join101')).toEqual([ERR_INCOMPLETE]);
+    expect(schemas.get('join101')).toBeUndefined();
   });
 
   test('Heals with its left input when removed', () => {

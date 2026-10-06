@@ -24,7 +24,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **M1.0–M1.2 done** (scaffolding; types and values; graph and inference), committed on `cubeV1`, not pushed. Next milestone step: **M1.3**                                                                                                                       |
+| Code        | **M1.0–M1.3 done** (scaffolding; types and values; graph and inference; join), committed on `cubeV1`, not pushed. In progress: **M1.4**                                                                                                                         |
 | Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
@@ -35,7 +35,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route (always mounted, no flag: D11)
 - [x] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
 - [x] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
-- [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER). Built and committed; verification workflow not finished
+- [x] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
 - [ ] **M1.4** Filter (tree, operators by family, value validation, builder helpers)
 - [ ] **M1.5** IR and emitter (join algorithm, filter emission, typed literals, origins, debug printer)
 - [ ] **M1.6** Saved spec v1 codec (round trip, rest preservation, Unknown passthrough)
@@ -194,3 +194,9 @@ Each is verified and detailed in PLAN.md.
   - `QueryNode.withSwappedInputs()` hook, applied by `Query.swapInputs`: a Join's key columns follow its inputs.
   - A 4-agent workflow built a 92-item checklist (81 in scope, 11 ambiguities); the code follows its recommendations
     except two recorded choices (PLAN §4.7). 10 hand mutations, all caught. 543 core tests.
+  - Verification (28 agents, resumed after the usage stop) confirmed 12 issues: one bug (key lists with holes passed
+    the constructor check) and 11 test gaps (exact name matching, partially same-named duplicates, merged-key
+    position for every join type, INNER nullable keys, join type kept by edits and swaps, FULL merged enum values,
+    frozen right list, single-input swap stays incomplete). All fixed; each named mutant now fails a test.
+  - The three M1.3 choices in PLAN §4.7 (swap swaps key columns; both columns of a pair checked; blank names) still
+    await the user's OK.

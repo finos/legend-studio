@@ -78,8 +78,10 @@ export interface JoinSettings {
   readonly joinType: JoinType;
 }
 
+// `Array.from` turns holes into `undefined`, which `every` would skip
 const isStringArray = (value: unknown): value is readonly string[] =>
-  Array.isArray(value) && value.every((item) => typeof item === 'string');
+  Array.isArray(value) &&
+  Array.from(value as unknown[]).every((item) => typeof item === 'string');
 
 /**
  * The names `n` with `leftColumns[i] === rightColumns[i] === n`: the
