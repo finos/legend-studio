@@ -210,6 +210,7 @@ import {
   V1_transformQuerySearchSpecification,
   V1_buildSourceInformation,
   V1_buildExecutionContextInfo,
+  V1_buildEngineError,
 } from './engine/V1_EngineHelper.js';
 import {
   V1_buildExecutionResult,
@@ -348,6 +349,7 @@ import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_Dat
 import { EngineError } from '../../../action/EngineError.js';
 import type {
   BatchLambdasRelationTypeResult,
+  BatchLambdasResolvedRelationTypeResult,
   LambdasReturnTypeResult,
 } from '../../../AbstractPureGraphManager.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
@@ -373,6 +375,7 @@ import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/Deb
 import { V1_buildDebugTestsResult } from './engine/test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './engine/V1_GraphManagerEngine.js';
 import type { RelationTypeMetadata } from '../../../action/relation/RelationTypeMetadata.js';
+import type { RelationType } from '../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import type { CodeCompletionResult } from '../../../action/compilation/Completion.js';
 import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../action/DeploymentResult.js';
@@ -2172,6 +2175,48 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.getBatchLambdasRelationTypeFromRawInput(
       this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
     );
+  }
+
+  override async getLambdaResolvedRelationType(
+    lambda: RawLambda,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<RelationType> {
+    return V1_buildRelationTypeFromV1RelationType(
+      await this.engine.getLambdaV1RelationType(
+        this.buildLambdaReturnTypeInput(lambda, graph, options),
+      ),
+      graph,
+    );
+  }
+
+  override async getBatchLambdasResolvedRelationType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<BatchLambdasResolvedRelationTypeResult> {
+    const response = await this.engine.getBatchLambdasV1RelationType(
+      this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
+    );
+    const results = new Map<string, RelationType>();
+    const errors = new Map<string, EngineError>();
+    response.errors?.forEach((engineError, key) =>
+      errors.set(key, V1_buildEngineError(engineError)),
+    );
+    response.results.forEach((v1RelationType, key) => {
+      try {
+        results.set(
+          key,
+          V1_buildRelationTypeFromV1RelationType(v1RelationType, graph),
+        );
+      } catch (error) {
+        assertErrorThrown(error);
+        // a relation type we can't resolve fails only its own lambda, like an
+        // engine error, so the other lambdas still get their relation type
+        errors.set(key, new EngineError(error.message));
+      }
+    });
+    return { results, errors };
   }
 
   getCodeComplete(

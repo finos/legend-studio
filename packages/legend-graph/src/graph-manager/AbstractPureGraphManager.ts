@@ -64,6 +64,7 @@ import {
   type ServerClientConfig,
   type TracerService,
   ActionState,
+  UnsupportedOperationError,
 } from '@finos/legend-shared';
 import type { LightQuery, Query, QueryInfo } from './action/query/Query.js';
 import type {
@@ -121,6 +122,7 @@ import type { TestDataGenerationResult } from '../graph/metamodel/pure/packageab
 import type { TableRowIdentifiers } from '../graph/metamodel/pure/packageableElements/service/TableRowIdentifiers.js';
 import type { TestDebug } from '../graph/metamodel/pure/test/result/DebugTestsResult.js';
 import type { RelationTypeMetadata } from './action/relation/RelationTypeMetadata.js';
+import type { RelationType } from '../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import type { CodeCompletionResult } from './action/compilation/Completion.js';
 import type { DeploymentResult } from './action/DeploymentResult.js';
 import type {
@@ -223,6 +225,11 @@ export type LambdasReturnTypeResult = {
 
 export type BatchLambdasRelationTypeResult = {
   results: Map<string, RelationTypeMetadata>;
+  errors: Map<string, EngineError>;
+};
+
+export type BatchLambdasResolvedRelationTypeResult = {
+  results: Map<string, RelationType>;
   errors: Map<string, EngineError>;
 };
 
@@ -462,6 +469,24 @@ export abstract class AbstractPureGraphManager {
     options?: { keepSourceInformation?: boolean },
   ): Promise<RelationTypeMetadata>;
 
+  /**
+   * Like {@link getLambdaRelationType}, but returns the relation type with
+   * each column's type resolved against `graph`, keeping what the metadata
+   * drops: type parameters (`Varchar(5)`), type arguments, description,
+   * stereotypes and tagged values.
+   *
+   * Throws if a column type can't be resolved in `graph`.
+   */
+  async getLambdaResolvedRelationType(
+    lambda: RawLambda,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<RelationType> {
+    throw new UnsupportedOperationError(
+      `Can't get resolved lambda relation type: not supported by this graph manager`,
+    );
+  }
+
   abstract getCodeComplete(
     codeBlock: string,
     graph: PureModel,
@@ -482,6 +507,22 @@ export abstract class AbstractPureGraphManager {
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
   ): Promise<BatchLambdasRelationTypeResult>;
+
+  /**
+   * Batch version of {@link getLambdaResolvedRelationType}. A lambda the
+   * engine can't type, or whose relation type can't be resolved in `graph`,
+   * gets an entry in `errors` instead of `results`; the other lambdas are
+   * unaffected.
+   */
+  async getBatchLambdasResolvedRelationType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<BatchLambdasResolvedRelationTypeResult> {
+    throw new UnsupportedOperationError(
+      `Can't get resolved batch lambdas relation type: not supported by this graph manager`,
+    );
+  }
 
   // ------------------------------------------- Relation -------------------------------------------
 

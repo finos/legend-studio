@@ -543,6 +543,7 @@ export {
   AbstractPureGraphManager,
   type LambdasReturnTypeResult,
   type BatchLambdasRelationTypeResult,
+  type BatchLambdasResolvedRelationTypeResult,
   type ExecutionOptions,
   type GraphBuilderOptions,
   type TEMPORARY__EngineSetupConfig,

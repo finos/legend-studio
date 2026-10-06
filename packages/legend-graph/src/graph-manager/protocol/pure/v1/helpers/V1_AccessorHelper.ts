@@ -333,6 +333,7 @@ export const V1_buildRelationTypeFromV1RelationType = (
       col.multiplicity.lowerBound,
       col.multiplicity.upperBound,
     );
+    relationColumn.description = col.description;
     relationColumn.stereotypes = (col.stereotypes ?? [])
       .map((stereotypePtr) =>
         returnUndefOnError(() =>
