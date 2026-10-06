@@ -46,7 +46,8 @@ const TYPE_KEYS = ['path', 'params', 'values'];
  * A type as saved: `{path, params?}`, or `{path, values}` for an enumeration.
  * Paths are canonical (precise types in full, base types bare).
  */
-const encodeType = (type: CubeType, rest: JsonObject): JsonObject => {
+const encodeType = (type: CubeType, typeRest: JsonObject): JsonObject => {
+  const rest = pickUnknownKeys(typeRest, TYPE_KEYS);
   if (isEnumType(type)) {
     return { path: type.path, values: [...type.values], ...rest };
   }
@@ -101,7 +102,7 @@ export const encodeSchemaSnapshot = (
       name: column.name,
       type: encodeType(column.type, rest?.type ?? EMPTY_JSON_OBJECT),
       nullable: column.nullable,
-      ...(rest?.column ?? EMPTY_JSON_OBJECT),
+      ...pickUnknownKeys(rest?.column ?? EMPTY_JSON_OBJECT, COLUMN_KEYS),
     };
   });
 

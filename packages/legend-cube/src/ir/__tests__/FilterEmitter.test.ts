@@ -38,6 +38,7 @@ import {
   type FilterValue,
   isFilterValueList,
   NotFilter,
+  UnsupportedFilter,
 } from '../../filter/FilterTree.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -833,5 +834,79 @@ describe(unitTest('Filter emission'), () => {
     expect(
       afterJoin(JoinType.LEFT_OUTER, not(compare('CITY', O.IS_EMPTY))),
     ).toBe('!($row.CITY->isEmpty())');
+  });
+});
+
+describe(unitTest('Filters with an unsupported rule'), () => {
+  // a rule saved by a newer version, with an operator this version doesn't have
+  const unsupported = (): UnsupportedFilter =>
+    new UnsupportedFilter({
+      column: 'i',
+      operator: 'Between',
+      value: [
+        { kind: 'integer', value: '1' },
+        { kind: 'integer', value: '5' },
+      ],
+    });
+  // a valid comparison next to it, which emits without error
+  const valid = (): ColumnComparisonFilter =>
+    compare('i', O.GREATER_THAN, integer('5'));
+
+  const placements: [string, () => FilterRule][] = [
+    ['at the root', () => unsupported()],
+    ['in an And group', () => and(valid(), unsupported())],
+    ['in an Or group', () => or(unsupported(), valid())],
+    ['in a group of one', () => and(unsupported())],
+    ['under a Not', () => not(unsupported())],
+    ['under a Not over a group', () => not(and(valid(), unsupported()))],
+    ['under a double Not', () => not(not(unsupported()))],
+    [
+      'deep in nested groups',
+      () => and(valid(), or(valid(), not(and(unsupported(), valid())))),
+    ],
+  ];
+
+  test.each(placements)(
+    'Makes the filter impossible to emit with the rule %s',
+    (_, build) => {
+      const emitter = new QueryEmitter(
+        new Query(
+          [
+            resolvedTable('relational101', 'T', COLUMNS),
+            new Filter('filter101', build()),
+          ],
+          [new Connection('relational101', 'filter101', 'tds')],
+          'filter101',
+        ),
+      );
+      expect(emitter.canEmit('filter101')).toBe(false);
+      expect(() => emitter.emitRelation('filter101')).toThrow(
+        `Can't emit node "filter101": it is invalid (This filter is not supported yet.)`,
+      );
+      expect(() => emitter.emitTypingLambda('filter101')).toThrow(
+        `Can't emit node "filter101": it is invalid (This filter is not supported yet.)`,
+      );
+      // the source upstream still can be
+      expect(emitter.canEmit('relational101')).toBe(true);
+    },
+  );
+
+  test.each(placements)(
+    'Refuses to emit the rule %s when asked directly',
+    (_, build) => {
+      const schema = new Schema(COLUMNS);
+      const input = storeAccessor(['test::Northwind', 'NORTHWIND', 'T']);
+      expect(() =>
+        emitFilter(new Filter('filter101', build()), [input], {
+          inputSchemas: [schema],
+          schema,
+        }),
+      ).toThrow(`Filter "filter101" has a rule this version can't read`);
+    },
+  );
+
+  test('Emits the same filter once the unsupported rule is gone', () => {
+    const filter = and(valid(), unsupported());
+    expect(predicate(filter.withRules([valid()]))).toBe('$row.i > 5');
   });
 });

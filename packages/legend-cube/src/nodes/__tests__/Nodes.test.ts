@@ -22,10 +22,21 @@ import {
   TestUnaryNode,
   testSpecCodec,
 } from '../../__test-utils__/CubeTestNodes.js';
+import { FilterOperator } from '../../filter/FilterOperator.js';
+import {
+  ColumnComparisonFilter,
+  UnsupportedFilter,
+} from '../../filter/FilterTree.js';
+import { type QueryNode, UNRESOLVED } from '../../graph/QueryNode.js';
 import type { RelationExpr } from '../../ir/CubeIR.js';
 import { MESSAGE_SOURCE_SCHEMA_UNRESOLVED } from '../../messages/CubeMessages.js';
 import { Schema } from '../../schema/Schema.js';
+import { FILTER_CODEC } from '../../spec/codecs/FilterCodec.js';
+import { JOIN_CODEC } from '../../spec/codecs/JoinCodec.js';
+import { RELATIONAL_TABLE_SOURCE_CODEC } from '../../spec/codecs/RelationalTableSourceCodec.js';
+import type { JsonObject } from '../../utils/Json.js';
 import {
+  type AnyNodeDefinition,
   createNodeRegistry,
   FILTER_DEFINITION,
   JOIN_DEFINITION,
@@ -36,6 +47,7 @@ import {
 import {
   type RelationalTableCoordinates,
   RelationalTableSource,
+  type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
@@ -227,10 +239,15 @@ describe(unitTest('Node registry'), () => {
     const registry = new NodeRegistry([transform]);
     expect(registry.transforms).toEqual([transform]);
     expect(registry.get('missing')).toBeUndefined();
-    expect(() => registry.register(transform)).toThrow();
+    expect(() => registry.register(transform)).toThrow(
+      'Node type "testBinary" is already registered',
+    );
     expect(() =>
       registry.register({ ...transform, type: UnknownNode.TYPE }),
-    ).toThrow();
+    ).toThrow('Node type "unknown" is reserved');
+    expect(() => new NodeRegistry([{ ...transform, type: 'unknown' }])).toThrow(
+      'Node type "unknown" is reserved',
+    );
   });
 });
 
@@ -401,4 +418,300 @@ describe(unitTest('Nodes, more cases'), () => {
     expect(second.get(TestUnaryNode.TYPE)).toBeUndefined();
     expect(createNodeRegistry().get(TestUnaryNode.TYPE)).toBeUndefined();
   });
+});
+
+describe(unitTest('Unknown keys on nodes'), () => {
+  // keys a newer version saved on a node, kept for re-saving
+  const REST: JsonObject = {
+    color: 'blue',
+    tags: ['a', null],
+    layout: { x: 1, y: null },
+  };
+  const RESOLVED = { kind: 'resolved', schema: ORDERS_SCHEMA } as const;
+
+  test('Default to none', () => {
+    const nodes: QueryNode[] = [
+      new TestUnaryNode('unary101'),
+      new TestBinaryNode('binary101'),
+      new Filter('filter101'),
+      new Join('join101'),
+      new RelationalTableSource('relational101', COORDINATES),
+      new UnknownNode('pivot101', 1, { kind: 'pivot', color: 'blue' }),
+      FILTER_DEFINITION.create('filter102'),
+      JOIN_DEFINITION.create('join102'),
+      // the source picker's extra keys are not unknown keys of a saved node
+      RelationalTableSource.fromCoordinates('relational102', {
+        ...COORDINATES,
+        color: 'blue',
+      }),
+    ];
+    nodes.forEach((node) => {
+      expect(node.rest).toEqual({});
+      expect(Object.isFrozen(node.rest)).toBe(true);
+    });
+  });
+
+  test('A join keeps them through its edits', () => {
+    const join = new Join(
+      'join101',
+      {
+        leftColumns: ['CUSTOMER_ID'],
+        rightColumns: ['ID'],
+        joinType: JoinType.INNER,
+      },
+      REST,
+    );
+    expect(join.rest).toBe(REST);
+    const edited = join.withSettings({ joinType: JoinType.FULL_OUTER });
+    expect(edited.joinType).toBe(JoinType.FULL_OUTER);
+    expect(edited.rest).toBe(REST);
+    expect(join.withSettings({}).rest).toBe(REST);
+    const swapped = join.withSwappedInputs();
+    expect(swapped.leftColumns).toEqual(['ID']);
+    expect(swapped.rightColumns).toEqual(['CUSTOMER_ID']);
+    expect(swapped.rest).toBe(REST);
+    expect(swapped.withSwappedInputs().rest).toBe(REST);
+    // and a join without any keeps none
+    expect(new Join('join102').withSwappedInputs().rest).toEqual({});
+  });
+
+  test('A filter keeps them through its edits', () => {
+    const filter = new Filter('filter101', undefined, REST);
+    expect(filter.rest).toBe(REST);
+    const filtered = filter.withFilter(
+      new ColumnComparisonFilter('ORDER_ID', FilterOperator.IS_EMPTY),
+    );
+    expect(filtered.filter?.kind).toBe('comparison');
+    expect(filtered.rest).toBe(REST);
+    expect(filtered.withFilter(undefined).rest).toBe(REST);
+    expect(new Filter('filter102').withFilter(undefined).rest).toEqual({});
+  });
+
+  test('A relational source keeps them through every resolution', () => {
+    const source = new RelationalTableSource(
+      'relational101',
+      COORDINATES,
+      UNRESOLVED,
+      REST,
+    );
+    expect(source.rest).toBe(REST);
+    [
+      RESOLVED,
+      UNRESOLVED,
+      { kind: 'failed', message: 'Table "ORDERS" not found' } as const,
+    ].forEach((resolution) => {
+      expect(source.withResolution(resolution).rest).toBe(REST);
+      expect(
+        RELATIONAL_TABLE_SOURCE_DEFINITION.resolve(source, resolution).rest,
+      ).toBe(REST);
+    });
+  });
+
+  test("A relational source keeps its snapshot columns' unknown keys through every resolution", () => {
+    const plain = new RelationalTableSource('relational101', COORDINATES);
+    expect(plain.columnRest).toBeInstanceOf(Map);
+    expect(plain.columnRest.size).toBe(0);
+    expect(plain.withResolution(RESOLVED).columnRest.size).toBe(0);
+    expect(
+      RelationalTableSource.fromCoordinates('relational102', COORDINATES)
+        .columnRest.size,
+    ).toBe(0);
+
+    const columnRest = new Map<string, SnapshotColumnRest>([
+      [
+        'ORDER_ID',
+        { column: { description: 'The order' }, type: { unsigned: true } },
+      ],
+    ]);
+    const source = new RelationalTableSource(
+      'relational101',
+      COORDINATES,
+      RESOLVED,
+      REST,
+      columnRest,
+    );
+    expect(source.columnRest).toBe(columnRest);
+    [
+      RESOLVED,
+      { kind: 'resolved', schema: new Schema([]) } as const,
+      UNRESOLVED,
+      { kind: 'failed', message: 'Table "ORDERS" not found' } as const,
+    ].forEach((resolution) => {
+      const resolved = source.withResolution(resolution);
+      expect(resolved.columnRest).toBe(columnRest);
+      expect(resolved.rest).toBe(REST);
+      expect(
+        RELATIONAL_TABLE_SOURCE_DEFINITION.resolve(source, resolution)
+          .columnRest,
+      ).toBe(columnRest);
+    });
+  });
+});
+
+describe(unitTest('Unknown node, as saved'), () => {
+  test('Has no saved JSON by default', () => {
+    const node = new UnknownNode('pivot101', 1);
+    expect(node.json).toEqual({});
+    expect(Object.isFrozen(node.json)).toBe(true);
+    expect(node.savedKind).toBeUndefined();
+    expect(node.rest).toEqual({});
+  });
+
+  test('Keeps the JSON it was saved with, and reads the kind it was saved as', () => {
+    const json: JsonObject = {
+      kind: 'pivot',
+      rows: ['SHIP_COUNTRY'],
+      note: null,
+    };
+    const node = new UnknownNode('pivot101', 1, json);
+    expect(node.json).toEqual({
+      kind: 'pivot',
+      rows: ['SHIP_COUNTRY'],
+      note: null,
+    });
+    expect(node.savedKind).toBe('pivot');
+    // it is still of the reserved type, and describes itself by id
+    expect(node.type).toBe('unknown');
+    expect(node.describe()).toBe('Unknown Transform "pivot101"');
+    // what it was saved with is its JSON, not unknown keys of a known node
+    expect(node.rest).toEqual({});
+    // a node saved with the reserved kind itself
+    expect(
+      new UnknownNode('unknown101', 0, { kind: 'unknown' }).savedKind,
+    ).toBe('unknown');
+  });
+
+  test.each<[string, JsonObject]>([
+    ['no kind', { rows: [] }],
+    ['a number', { kind: 5 }],
+    ['null', { kind: null }],
+    ['a boolean', { kind: true }],
+    ['an object', { kind: { name: 'pivot' } }],
+    ['a list', { kind: ['pivot'] }],
+  ])('Has no saved kind when its JSON has %s for one', (_, json) => {
+    expect(new UnknownNode('pivot101', 1, json).savedKind).toBeUndefined();
+  });
+
+  test('Has inputs when it has ports, or when told it was saved with an empty list', () => {
+    expect(new UnknownNode('pivot101', 2).hasInputs).toBe(true);
+    expect(new UnknownNode('pivot101', 1, {}).hasInputs).toBe(true);
+    // ports can't be without inputs
+    expect(new UnknownNode('pivot101', 2, {}, false).hasInputs).toBe(true);
+    expect(new UnknownNode('source101', 0).hasInputs).toBe(false);
+    expect(new UnknownNode('source101', 0, {}, false).hasInputs).toBe(false);
+    // saved with `inputs: []`
+    expect(new UnknownNode('source101', 0, {}, true).hasInputs).toBe(true);
+  });
+});
+
+describe(unitTest('A filter node with an unsupported rule'), () => {
+  test('Is invalid with the unsupported message and describes the rule without its JSON', () => {
+    const rule = new UnsupportedFilter({
+      column: 'ORDER_ID',
+      operator: 'Between',
+      value: [
+        { kind: 'integer', value: '1' },
+        { kind: 'integer', value: '5' },
+      ],
+    });
+    const filter = new Filter('filter101', rule);
+    expect(filter.filter).toBe(rule);
+    const errors: string[] = [];
+    expect(filter.validate([ORDERS_SCHEMA], errors)).toBe(false);
+    expect(errors).toEqual(['This filter is not supported yet.']);
+    expect(filter.schematize([ORDERS_SCHEMA])).toBeUndefined();
+    expect(filter.describe()).toBe('Filter by (unsupported filter)');
+    expect(filter.describeRedacted()).toBe('Filter by (unsupported filter)');
+  });
+});
+
+describe(unitTest('Saved-spec hooks of the registry'), () => {
+  test('Every definition has a spec codec, listing the keys it writes', () => {
+    expect(RELATIONAL_TABLE_SOURCE_DEFINITION.spec).toBe(
+      RELATIONAL_TABLE_SOURCE_CODEC,
+    );
+    expect(RELATIONAL_TABLE_SOURCE_DEFINITION.spec.keys).toEqual([
+      'database',
+      'schema',
+      'table',
+      'schemaSnapshot',
+    ]);
+    expect(FILTER_DEFINITION.spec).toBe(FILTER_CODEC);
+    expect(FILTER_DEFINITION.spec.keys).toEqual(['filter']);
+    expect(JOIN_DEFINITION.spec).toBe(JOIN_CODEC);
+    expect(JOIN_DEFINITION.spec.keys).toEqual([
+      'joinType',
+      'leftColumns',
+      'rightColumns',
+    ]);
+    const registry = createNodeRegistry();
+    [...registry.sources, ...registry.transforms].forEach(
+      (definition: AnyNodeDefinition) => {
+        expect(typeof definition.spec.encode).toBe('function');
+        expect(typeof definition.spec.decode).toBe('function');
+        // the codec handles kind, id and inputs, never the node's own fields
+        ['kind', 'id', 'inputs'].forEach((key) =>
+          expect(definition.spec.keys).not.toContain(key),
+        );
+      },
+    );
+  });
+
+  test.each<[string, AnyNodeDefinition, () => QueryNode]>([
+    [
+      'an unresolved source',
+      RELATIONAL_TABLE_SOURCE_DEFINITION,
+      () => new RelationalTableSource('relational101', COORDINATES),
+    ],
+    [
+      'a resolved source',
+      RELATIONAL_TABLE_SOURCE_DEFINITION,
+      () =>
+        new RelationalTableSource('relational101', COORDINATES, {
+          kind: 'resolved',
+          schema: ORDERS_SCHEMA,
+        }),
+    ],
+    [
+      'a filter without a filter',
+      FILTER_DEFINITION,
+      () => new Filter('filter101'),
+    ],
+    [
+      'a filter',
+      FILTER_DEFINITION,
+      () =>
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('ORDER_ID', FilterOperator.IS_EMPTY),
+        ),
+    ],
+    [
+      'a join',
+      JOIN_DEFINITION,
+      () =>
+        new Join('join101', {
+          leftColumns: ['A'],
+          rightColumns: ['B'],
+          joinType: JoinType.RIGHT_OUTER,
+        }),
+    ],
+  ])(
+    'Writes the fields of %s in the order of its keys, and reads them back with the unknown keys given',
+    (_, definition, build) => {
+      const { spec } = definition as TransformDefinition;
+      const node = build();
+      const json = spec.encode(node);
+      expect(Object.keys(json)).toEqual(
+        spec.keys.filter((key) => Object.keys(json).includes(key)),
+      );
+      const rest: JsonObject = { color: 'blue' };
+      const decoded = spec.decode(node.id, json, 'query.nodes[0]', rest);
+      expect(decoded.type).toBe(definition.type);
+      expect(decoded.id).toBe(node.id);
+      expect(decoded.key).not.toBe(node.key);
+      expect(decoded.rest).toBe(rest);
+      expect(spec.encode(decoded)).toEqual(json);
+    },
+  );
 });

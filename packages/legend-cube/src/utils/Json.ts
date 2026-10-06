@@ -53,11 +53,9 @@ export const pickUnknownKeys = (
   object: JsonObject,
   known: readonly string[],
 ): JsonObject => {
-  const rest: Record<string, JsonValue> = {};
-  Object.entries(object).forEach(([key, value]) => {
-    if (!known.includes(key)) {
-      rest[key] = value;
-    }
-  });
+  // `fromEntries` defines own keys, so a key named `__proto__` is kept too
+  const rest: JsonObject = Object.fromEntries(
+    Object.entries(object).filter(([key]) => !known.includes(key)),
+  );
   return Object.keys(rest).length ? copyJson(rest) : EMPTY_JSON_OBJECT;
 };

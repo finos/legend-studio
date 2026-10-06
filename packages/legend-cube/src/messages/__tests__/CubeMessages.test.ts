@@ -20,16 +20,26 @@ import { resolve } from 'path';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import * as MESSAGES from '../CubeMessages.js';
 
+const SPEC = readFileSync(
+  resolve(__dirname, '../../../../../docs/design/WIP-CUBE-SPEC.md'),
+  'utf-8',
+);
+
+/** The part of the spec from one heading to the next one given */
+const specSection = (from: string, to: string): string => {
+  const start = SPEC.indexOf(from);
+  const end = SPEC.indexOf(to, start);
+  if (start < 0 || end < 0) {
+    throw new Error(`The spec has no section from "${from}" to "${to}"`);
+  }
+  return SPEC.slice(start, end);
+};
+
 // the spec's message catalogue (§16), with its placeholders, e.g. `<Label>`
-const SPEC_CATALOGUE = ((): string => {
-  const spec = readFileSync(
-    resolve(__dirname, '../../../../../docs/design/WIP-CUBE-SPEC.md'),
-    'utf-8',
-  );
-  const start = spec.indexOf('## 16. Validation message catalogue');
-  const end = spec.indexOf('## 17. User interface');
-  return spec.slice(start, end);
-})();
+const SPEC_CATALOGUE = specSection(
+  '## 16. Validation message catalogue',
+  '## 17. User interface',
+);
 
 // the lines of the code blocks in the catalogue: one message per line
 const CATALOGUE_LINES = new Set(
@@ -149,3 +159,22 @@ test(unitTest('Messages added by Cube'), () => {
     'Filter values for "starts with" cannot contain a backslash (\\) yet.',
   );
 });
+
+test(
+  unitTest('Messages the spec gives outside its catalogue match it verbatim'),
+  () => {
+    // the filter builder UI (§8.5) quotes it, so it is not in the §16 code blocks
+    const filterBuilder = specSection(
+      '### 8.5 Filter builder UI',
+      '## 9. Expressions',
+    );
+    expect(MESSAGES.MESSAGE_FILTER_UNSUPPORTED).toBe(
+      'This filter is not supported yet.',
+    );
+    expect(filterBuilder).toContain(`"${MESSAGES.MESSAGE_FILTER_UNSUPPORTED}"`);
+    // straight quotes only
+    expect(/^[\x20-\x7E]+$/u.test(MESSAGES.MESSAGE_FILTER_UNSUPPORTED)).toBe(
+      true,
+    );
+  },
+);

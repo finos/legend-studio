@@ -17,7 +17,11 @@
 import { QueryNode } from '../graph/QueryNode.js';
 import { ensureSchemas } from '../inference/ValidationUtils.js';
 import type { Schema } from '../schema/Schema.js';
-import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
+import {
+  EMPTY_JSON_OBJECT,
+  type JsonObject,
+  pickUnknownKeys,
+} from '../utils/Json.js';
 
 /**
  * A node of a type this version of Cube doesn't know, e.g. from a query saved
@@ -56,7 +60,8 @@ export class UnknownNode extends QueryNode {
     this.inputPorts = Object.freeze(
       Array.from({ length: inputCount }, (_, index) => `in${index}`),
     );
-    this.json = json;
+    // `id` and `inputs` always come from the query
+    this.json = pickUnknownKeys(json, ['id', 'inputs']);
     this.hasInputs = hasInputs || inputCount > 0;
   }
 

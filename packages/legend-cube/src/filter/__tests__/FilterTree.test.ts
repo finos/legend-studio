@@ -17,7 +17,9 @@
 import { describe, expect, test } from '@jest/globals';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { column, enumColumn } from '../../__test-utils__/CubeTestNodes.js';
+import { MESSAGE_FILTER_UNSUPPORTED } from '../../messages/CubeMessages.js';
 import { Schema } from '../../schema/Schema.js';
+import type { JsonValue } from '../../utils/Json.js';
 import type { LiteralValue } from '../../values/LiteralValue.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -35,6 +37,7 @@ import {
   isFilterRule,
   isFilterValueList,
   NotFilter,
+  UnsupportedFilter,
 } from '../FilterTree.js';
 
 const PRECISE = 'meta::pure::precisePrimitives::';
@@ -755,5 +758,173 @@ describe(unitTest('Filter groups and negations'), () => {
       expect(filter.toString()).toContain(secret);
       expect(filter.toRedactedString()).not.toContain(secret);
     });
+  });
+});
+
+describe(unitTest('Unsupported filter rules'), () => {
+  // a rule saved by a newer version, with an operator this version doesn't have
+  const between = (): {
+    column: string;
+    operator: string;
+    value: { kind: string; value: string }[];
+  } => ({
+    column: 'FREIGHT',
+    operator: 'Between',
+    value: [
+      { kind: 'float', value: '10' },
+      { kind: 'float', value: '20' },
+    ],
+  });
+
+  test('Are filter rules of kind "unsupported"', () => {
+    const rule = new UnsupportedFilter(between());
+    expect(rule.kind).toBe('unsupported');
+    expect(isFilterRule(rule)).toBe(true);
+    expect(new UnsupportedFilter(between(), 42).key).toBe(42);
+    expect(new UnsupportedFilter(between()).key).not.toBe(rule.key);
+  });
+
+  test('Are never valid, whatever the schema', () => {
+    const rule = new UnsupportedFilter(between());
+    expect(errorsOf(rule)).toEqual(['This filter is not supported yet.']);
+    expect(errorsOf(rule)).toEqual([MESSAGE_FILTER_UNSUPPORTED]);
+    expect(errorsOf(rule, new Schema([]))).toEqual([
+      'This filter is not supported yet.',
+    ]);
+    // even when the JSON reads as a valid comparison on this schema
+    expect(
+      errorsOf(
+        new UnsupportedFilter({
+          column: 'ORDER_ID',
+          operator: 'Equal',
+          value: { kind: 'integer', value: '1' },
+        }),
+      ),
+    ).toEqual(['This filter is not supported yet.']);
+    // after the messages already given
+    const errors = ['Before.'];
+    expect(rule.validate(ORDERS, errors)).toBe(false);
+    expect(errors).toEqual(['Before.', 'This filter is not supported yet.']);
+  });
+
+  test('Describe themselves without their JSON, which may hold values users typed', () => {
+    const json = {
+      column: 'SHIP_COUNTRY',
+      operator: 'Matches',
+      value: { kind: 'string', value: 'Sécret' },
+      caseInsensitive: true,
+    };
+    const rule = new UnsupportedFilter(json);
+    expect(rule.toString()).toBe('(unsupported filter)');
+    expect(rule.toRedactedString()).toBe('(unsupported filter)');
+    ['Sécret', 'SHIP_COUNTRY', 'Matches', 'caseInsensitive', '{'].forEach(
+      (text) => {
+        expect(rule.toString()).not.toContain(text);
+        expect(rule.toRedactedString()).not.toContain(text);
+      },
+    );
+  });
+
+  test('Keep a frozen deep copy of their JSON', () => {
+    const json = between();
+    const rule = new UnsupportedFilter(json);
+    expect(rule.json).toEqual(between());
+    expect(rule.json).not.toBe(json);
+    // later changes to the JSON given don't reach the rule
+    json.operator = 'Equal';
+    json.value.push({ kind: 'float', value: '30' });
+    (json.value[0] as { value: string }).value = '0';
+    expect(rule.json).toEqual(between());
+    // the copy can't be changed, at any depth
+    const copy = rule.json as unknown as {
+      operator: string;
+      value: { value: string }[];
+    };
+    const [first] = copy.value as [{ value: string }];
+    expect(Object.isFrozen(copy)).toBe(true);
+    expect(Object.isFrozen(copy.value)).toBe(true);
+    expect(Object.isFrozen(first)).toBe(true);
+    expect(() => {
+      copy.operator = 'Equal';
+    }).toThrow(TypeError);
+    expect(() => copy.value.push({ value: '30' })).toThrow(TypeError);
+    expect(() => {
+      first.value = '0';
+    }).toThrow(TypeError);
+    expect(rule.json).toEqual(between());
+    // the JSON given is not frozen: the rule freezes its own copy
+    expect(Object.isFrozen(json)).toBe(false);
+    expect(Object.isFrozen(json.value)).toBe(false);
+  });
+
+  test('Keep any JSON as it was read, nulls and key order included', () => {
+    const values: JsonValue[] = [
+      'x',
+      1,
+      true,
+      null,
+      [],
+      [{ op: 'xor', rules: [] }],
+      { op: 'xor', rules: [null, { column: 'A', operator: 'Equal' }] },
+      { column: 'A', operator: 'Equal', value: null },
+    ];
+    values.forEach((json) =>
+      expect(new UnsupportedFilter(json).json).toEqual(json),
+    );
+    expect(
+      Object.keys(
+        new UnsupportedFilter({ op: 'xor', z: 1, a: 2, rules: [] })
+          .json as object,
+      ),
+    ).toEqual(['op', 'z', 'a', 'rules']);
+  });
+
+  test('Sit in a group or under a negation, which are then invalid', () => {
+    const unsupported = new UnsupportedFilter(between());
+    const country = compare('SHIP_COUNTRY', O.EQUAL, string('France'));
+    const group = and(country, unsupported);
+    expect(group.rules[1]).toBe(unsupported);
+    expect(errorsOf(group)).toEqual(['This filter is not supported yet.']);
+    expect(group.toString()).toBe(
+      'SHIP_COUNTRY is "France" and (unsupported filter)',
+    );
+    expect(group.toRedactedString()).toBe(
+      'SHIP_COUNTRY is ? and (unsupported filter)',
+    );
+    const negation = new NotFilter(unsupported);
+    expect(negation.rule).toBe(unsupported);
+    expect(errorsOf(negation)).toEqual(['This filter is not supported yet.']);
+    expect(negation.toString()).toBe('not ((unsupported filter))');
+    expect(negation.toRedactedString()).toBe('not ((unsupported filter))');
+    expect(errorsOf(or(unsupported))).toEqual([
+      'This filter is not supported yet.',
+    ]);
+    expect(or(unsupported).toString()).toBe('(unsupported filter)');
+  });
+
+  test('Report their message among the others, in tree order', () => {
+    const unsupported = new UnsupportedFilter(between());
+    const nested = or(
+      compare('NOPE', O.IS_EMPTY),
+      new NotFilter(and(unsupported, compare('ORDER_ID', O.EQUAL))),
+    );
+    expect(errorsOf(nested)).toEqual([
+      'Filter column "NOPE" is not present in the input schema.',
+      'This filter is not supported yet.',
+      'Filter value is required.',
+    ]);
+    expect(nested.toString()).toBe(
+      'NOPE is empty or not ((unsupported filter) and ORDER_ID is (blank))',
+    );
+    expect(nested.toRedactedString()).toBe(
+      'NOPE is empty or not ((unsupported filter) and ORDER_ID is ?)',
+    );
+    // each unsupported rule gives the message
+    expect(
+      errorsOf(and(unsupported, new UnsupportedFilter({ op: 'xor' }))),
+    ).toEqual([
+      'This filter is not supported yet.',
+      'This filter is not supported yet.',
+    ]);
   });
 });

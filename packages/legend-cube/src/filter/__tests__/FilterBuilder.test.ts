@@ -34,6 +34,7 @@ import {
   type FilterRule,
   type FilterValue,
   NotFilter,
+  UnsupportedFilter,
 } from '../FilterTree.js';
 
 const PRECISE = 'meta::pure::precisePrimitives::';
@@ -78,8 +79,10 @@ const shape = (rule: FilterRule): unknown => {
       const g = rule as CompositeFilter;
       return { op: g.operator, rules: g.rules.map(shape) };
     }
-    default:
+    case 'not':
       return { not: shape((rule as NotFilter).rule) };
+    default:
+      return { unsupported: (rule as UnsupportedFilter).json };
   }
 };
 
@@ -172,6 +175,10 @@ describe(unitTest('Normalizing and unwrapping the root'), () => {
       ]),
     ],
     ['an empty group', new CompositeFilter(CompositeFilterOperator.AND, [])],
+    [
+      'an unsupported rule',
+      new UnsupportedFilter({ column: 'FREIGHT', operator: 'Between' }),
+    ],
     [
       'a negated group',
       new NotFilter(
@@ -458,5 +465,70 @@ describe(unitTest('Keys'), () => {
     // an edit keeps the row's key
     expect(row.key).toBe((blank as ColumnComparisonFilter).key);
     expect(keys(unwrapFilter(root))).toEqual(all);
+  });
+});
+
+describe(unitTest('Unsupported rules in the editor'), () => {
+  // a rule saved by a newer version, with an operator this version doesn't have
+  const BETWEEN = {
+    column: 'FREIGHT',
+    operator: 'Between',
+    value: [
+      { kind: 'float', value: '10' },
+      { kind: 'float', value: '20' },
+    ],
+  };
+
+  test('Normalizing wraps an unsupported rule in an And group, and unwrapping gives it back', () => {
+    const rule = new UnsupportedFilter(BETWEEN);
+    const root = normalizeFilter(rule);
+    expect(root.kind).toBe('composite');
+    expect(root.operator).toBe(CompositeFilterOperator.AND);
+    expect(root.rules).toHaveLength(1);
+    expect(root.rules[0]).toBe(rule);
+    // the wrapper is a new group
+    expect(root.key).not.toBe(rule.key);
+    expect(unwrapFilter(root)).toBe(rule);
+    expect(unwrapFilter(rule)).toBe(rule);
+    // a group with an unsupported rule among others stays as it is
+    const group = new CompositeFilter(CompositeFilterOperator.OR, [
+      rule,
+      compare('ORDER_ID', O.EQUAL, integer('1')),
+    ]);
+    expect(normalizeFilter(group)).toBe(group);
+    expect(unwrapFilter(group)).toBe(group);
+    // so is one nested below the top
+    const nested = new CompositeFilter(CompositeFilterOperator.AND, [
+      new CompositeFilter(CompositeFilterOperator.OR, [rule]),
+      compare('ORDER_ID', O.IS_EMPTY),
+    ]);
+    expect(unwrapFilter(nested)).toBe(nested);
+  });
+
+  test('Negating wraps an unsupported rule in a Not, and negating that gives it back', () => {
+    const rule = new UnsupportedFilter(BETWEEN);
+    const negated = negateFilter(rule) as NotFilter;
+    expect(negated.kind).toBe('not');
+    expect(negated).toBeInstanceOf(NotFilter);
+    expect(negated.rule).toBe(rule);
+    expect(negated.key).not.toBe(rule.key);
+    expect(negateFilter(negated)).toBe(rule);
+    // its JSON is left as it was
+    expect(rule.json).toEqual(BETWEEN);
+    expect(shape(negateFilter(negateFilter(rule)))).toEqual({
+      unsupported: BETWEEN,
+    });
+  });
+
+  test('Keys stay unique in a tree holding unsupported rules', () => {
+    const rule = new UnsupportedFilter(BETWEEN);
+    const root = normalizeFilter(rule).withRules([
+      negateFilter(rule),
+      compare('ORDER_ID', O.EQUAL, integer('1')),
+      new UnsupportedFilter({ op: 'xor', rules: [] }),
+    ]);
+    const all = keys(root);
+    expect(all).toHaveLength(5);
+    expect(new Set(all).size).toBe(all.length);
   });
 });
