@@ -18,6 +18,7 @@ import axios, { type AxiosResponse } from 'axios';
 import {
   ContentType,
   HttpHeader,
+  parseLosslessJSON,
   type PlainObject,
 } from '@finos/legend-shared';
 import { ENGINE_TEST_SUPPORT_API_URL } from '@finos/legend-graph/test';
@@ -40,6 +41,28 @@ export const CUBE_ENGINE_TEST__getCommit = async (): Promise<string> => {
   const info = data.info as { legendSDLC?: Record<string, string> } | undefined;
   return info?.legendSDLC?.['git.commit.id'] ?? 'unknown';
 };
+
+/**
+ * The protocol JSON the engine parses Pure lambda text into, read losslessly
+ * (a JSON parse would round large numbers) and without source information
+ */
+export const CUBE_ENGINE_TEST__grammarToJson_lambda = async (
+  code: string,
+): Promise<unknown> =>
+  parseLosslessJSON(
+    (
+      await axios.post<unknown, AxiosResponse<string>>(
+        `${PURE_API}/grammar/grammarToJson/lambda`,
+        code,
+        {
+          headers: { [HttpHeader.CONTENT_TYPE]: ContentType.TEXT_PLAIN },
+          params: { returnSourceInformation: false },
+          responseType: 'text',
+          transformResponse: (data: string) => data,
+        },
+      )
+    ).data,
+  );
 
 /** The relation types of a batch of lambdas: `{result, errors}`, keyed as the input */
 export const CUBE_ENGINE_TEST__lambdaRelationTypeBatch = async (
