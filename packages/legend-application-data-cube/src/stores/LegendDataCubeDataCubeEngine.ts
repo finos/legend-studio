@@ -50,11 +50,9 @@ import {
   V1_ClassInstanceType,
   V1_Column,
   V1_Database,
-  V1_Date,
   V1_DuckDBDatasourceSpecification,
   V1_EngineRuntime,
   V1_IdentifiedConnection,
-  V1_Integer,
   V1_PackageableElementPointer,
   V1_PackageableRuntime,
   V1_PureModelContextData,
@@ -64,12 +62,8 @@ import {
   V1_StoreConnections,
   V1_Table,
   V1_TestAuthenticationStrategy,
-  V1_VarChar,
-  V1_Bit,
-  V1_Float,
   PackageableElementPointerType,
   DatabaseType,
-  PRIMITIVE_TYPE,
   V1_serializePureModelContextData,
   V1_deserializePureModelContext,
   type V1_ConcreteFunctionDefinition,
@@ -83,8 +77,6 @@ import {
   V1_LakehouseRuntime,
   V1_IngestDefinition,
   V1_DataProductAccessor,
-  PRECISE_PRIMITIVE_TYPE,
-  CORE_PURE_PATH,
   V1_DataProductOriginType,
   V1_entitlementsDataProductDetailsResponseToDataProductDetails,
   V1_AdHocDeploymentDataProductOrigin,
@@ -135,7 +127,10 @@ import {
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
 import { LegendDataCubeDuckDBEngine } from './LegendDataCubeDuckDBEngine.js';
-import { getRelationalDataTypeFromDuckDBType } from './LegendDataCubeDuckDBColumnType.js';
+import {
+  getRelationalDataTypeFromCachedPureType,
+  getRelationalDataTypeFromDuckDBType,
+} from './LegendDataCubeDuckDBColumnType.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -1443,56 +1438,7 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
         tableColumns: result.result.builder.columns.map((col) => {
           const column = new V1_Column();
           column.name = col.name;
-          switch (col.type as string) {
-            case PRIMITIVE_TYPE.BINARY:
-            case PRIMITIVE_TYPE.BOOLEAN: {
-              column.type = new V1_Bit();
-              break;
-            }
-            case PRECISE_PRIMITIVE_TYPE.INT:
-            case PRECISE_PRIMITIVE_TYPE.TINY_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_TINY_INT:
-            case PRECISE_PRIMITIVE_TYPE.SMALL_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_SMALL_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_INT:
-            case PRECISE_PRIMITIVE_TYPE.BIG_INT:
-            case PRECISE_PRIMITIVE_TYPE.U_BIG_INT:
-            case PRIMITIVE_TYPE.INTEGER: {
-              column.type = new V1_Integer();
-              break;
-            }
-            case PRECISE_PRIMITIVE_TYPE.DOUBLE:
-            case PRECISE_PRIMITIVE_TYPE.DECIMAL:
-            case PRECISE_PRIMITIVE_TYPE.NUMERIC:
-            case PRIMITIVE_TYPE.NUMBER:
-            case PRIMITIVE_TYPE.FLOAT:
-            case PRIMITIVE_TYPE.DECIMAL: {
-              column.type = new V1_Float();
-              break;
-            }
-            case PRIMITIVE_TYPE.DATE:
-            case PRIMITIVE_TYPE.STRICTDATE:
-            case PRECISE_PRIMITIVE_TYPE.STRICTDATE:
-            case PRIMITIVE_TYPE.STRICTDATE:
-            case PRECISE_PRIMITIVE_TYPE.TIMESTAMP:
-            case PRECISE_PRIMITIVE_TYPE.STRICTTIME:
-            case PRECISE_PRIMITIVE_TYPE.DATETIME:
-            case PRIMITIVE_TYPE.DATETIME: {
-              column.type = new V1_Date();
-              break;
-            }
-            case PRECISE_PRIMITIVE_TYPE.VARCHAR:
-            case CORE_PURE_PATH.VARIANT:
-            case PRIMITIVE_TYPE.STRING: {
-              column.type = new V1_VarChar();
-              break;
-            }
-            default: {
-              throw new UnsupportedOperationError(
-                `Can't initialize cache: failed to find matching relational data type for Pure type '${col.type}' when synthesizing table definition`,
-              );
-            }
-          }
+          column.type = getRelationalDataTypeFromCachedPureType(col.type);
           return column;
         }),
       });
