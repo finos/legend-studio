@@ -49,7 +49,6 @@ import {
   type ExecutionResultWithMetadata,
   TDSExecutionResult,
   getColumn,
-  PrimitiveType,
   PRIMITIVE_TYPE,
   TDSRow,
   type Schema,
@@ -105,7 +104,7 @@ const buildTableToTDSQueryNonNumericWithColumnGrammar = (
   const db = table.schema._OWNER.path;
   const PREVIEW_COLUMN_NAME = 'Count Value';
   const columnGetter = getTDSColumnDerivedProperyFromType(
-    getPrimitiveTypeFromRelationalType(column.type) ?? PrimitiveType.STRING,
+    getPrimitiveTypeFromRelationalType(column.type),
   );
   return `|${db}->tableReference(
     '${schemaName}',
@@ -135,7 +134,7 @@ const buildTableToTDSQueryNumericWithColumnGrammar = (
   const schemaName = table.schema.name;
   const db = table.schema._OWNER.path;
   const columnGetter = getTDSColumnDerivedProperyFromType(
-    getPrimitiveTypeFromRelationalType(column.type) ?? PrimitiveType.STRING,
+    getPrimitiveTypeFromRelationalType(column.type),
   );
   return `|${db}->tableReference(
     '${schemaName}',
@@ -181,9 +180,10 @@ const buildTableToTDSQueryNumericWithColumnGrammar = (
   )`;
 };
 
-const buildTableToTDSQueryColumnQuery = (column: Column): [string, boolean] => {
-  const type =
-    getPrimitiveTypeFromRelationalType(column.type) ?? PrimitiveType.STRING;
+export const buildTableToTDSQueryColumnQuery = (
+  column: Column,
+): [string, boolean] => {
+  const type = getPrimitiveTypeFromRelationalType(column.type);
   const numerics = [
     PRIMITIVE_TYPE.NUMBER,
     PRIMITIVE_TYPE.INTEGER,
