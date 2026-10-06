@@ -739,7 +739,7 @@ describe('fetchAccessPointRelationTypes', () => {
     const batchLambdasRelationType = jest
       .spyOn(engineServerClient, 'batchLambdasRelationType')
       .mockResolvedValue({
-        results: { ap1: { columns: [] }, ap2: { columns: [] } },
+        result: { ap1: { columns: [] }, ap2: { columns: [] } },
         errors: {},
       });
     const onFailure = jest.fn();
@@ -768,7 +768,7 @@ describe('fetchAccessPointRelationTypes', () => {
     jest
       .spyOn(engineServerClient, 'batchLambdasRelationType')
       .mockResolvedValue({
-        results: { ap1: { columns: [] } },
+        result: { ap1: { columns: [] } },
         errors: { ap2: { message: 'engine could not type ap2' } },
       });
     const onFailure = jest.fn();

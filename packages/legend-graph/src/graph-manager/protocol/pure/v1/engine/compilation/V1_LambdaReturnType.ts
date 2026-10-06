@@ -84,8 +84,12 @@ export interface V1_LambdaReturnTypeResult {
   returnType: string;
 }
 
+/**
+ * NOTE: the engine (`LambdaRelationTypesResult`) names the successful map `result`
+ * (singular), and always sends both maps, empty or not.
+ */
 export type V1_BatchLambdaRelationTypeResponse = {
-  results: Record<string, PlainObject<V1_RelationType>>;
+  result: Record<string, PlainObject<V1_RelationType>>;
   errors: Record<string, PlainObject<V1_EngineError>>;
 };
 
@@ -98,7 +102,7 @@ export const V1_buildBatchLambdaRelationTypeResult = (
   response: V1_BatchLambdaRelationTypeResponse,
 ): V1_BatchLambdaRelationTypeResult => ({
   results: new Map(
-    Object.entries(response.results).map(([key, columns]) => [
+    Object.entries(response.result).map(([key, columns]) => [
       key,
       deserialize(V1_relationTypeModelSchema, columns),
     ]),
