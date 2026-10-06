@@ -70,12 +70,6 @@ import {
   PackageableElementPointerType,
   DatabaseType,
   PRIMITIVE_TYPE,
-  V1_BigInt,
-  V1_Decimal,
-  V1_Double,
-  V1_Timestamp,
-  V1_TinyInt,
-  V1_SmallInt,
   V1_serializePureModelContextData,
   V1_deserializePureModelContext,
   type V1_ConcreteFunctionDefinition,
@@ -141,6 +135,7 @@ import {
 } from '@finos/legend-shared';
 import type { LegendDataCubeApplicationStore } from './LegendDataCubeBaseStore.js';
 import { LegendDataCubeDuckDBEngine } from './LegendDataCubeDuckDBEngine.js';
+import { getRelationalDataTypeFromDuckDBType } from './LegendDataCubeDuckDBColumnType.js';
 import { APPLICATION_EVENT } from '@finos/legend-application';
 import {
   LEGEND_QUERY_DATA_CUBE_SOURCE_TYPE,
@@ -557,8 +552,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
               column.name = col[0] as string;
               // TODO: confirm this is in accordance to engine
               // check if we have a duckdb enum mapping
-              // See https://duckdb.org/docs/sql/data_types/overview.html
-              this._getColumnType(col, column);
+              column.type = getRelationalDataTypeFromDuckDBType(
+                col[1] as string,
+              );
               return column;
             }),
           });
@@ -770,8 +766,9 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
                 column.name = col[0] as string;
                 // TODO: confirm this is in accordance to engine
                 // check if we have a duckdb enum mapping
-                // See https://duckdb.org/docs/sql/data_types/overview.html
-                this._getColumnType(col, column);
+                column.type = getRelationalDataTypeFromDuckDBType(
+                  col[1] as string,
+                );
                 return column;
               }),
             });
@@ -1777,65 +1774,6 @@ export class LegendDataCubeDataCubeEngine extends DataCubeEngine {
     const { dbReference, columnNames } =
       await this._duckDBEngine.ingestLocalFileData(data, format, refId);
     return { dbReference, columnNames };
-  }
-
-  private _getColumnType(col: string[], column: V1_Column) {
-    switch (col[1] as string) {
-      case 'BIT': {
-        column.type = new V1_Bit();
-        break;
-      }
-      case 'BOOLEAN': {
-        // TODO: understand why boolean is not present in relationalDataType
-        column.type = new V1_VarChar();
-        break;
-      }
-      case 'DATE': {
-        column.type = new V1_Date();
-        break;
-      }
-      case 'DECIMAL': {
-        column.type = new V1_Decimal();
-        break;
-      }
-      case 'DOUBLE': {
-        column.type = new V1_Double();
-        break;
-      }
-      case 'FLOAT': {
-        column.type = new V1_Float();
-        break;
-      }
-      case 'INTEGER': {
-        column.type = new V1_Integer();
-        break;
-      }
-      case 'TININT': {
-        column.type = new V1_TinyInt();
-        break;
-      }
-      case 'SMALLINT': {
-        column.type = new V1_SmallInt();
-        break;
-      }
-      case 'BIGINT': {
-        column.type = new V1_BigInt();
-        break;
-      }
-      case 'TIMESTAMP': {
-        column.type = new V1_Timestamp();
-        break;
-      }
-      case 'VARCHAR': {
-        column.type = new V1_VarChar();
-        break;
-      }
-      default: {
-        throw new UnsupportedOperationError(
-          `Can't ingest local file data: failed to find matching relational data type for DuckDB type '${col[1]}' when synthesizing table definition`,
-        );
-      }
-    }
   }
 
   private _synthesizeMinimalModelContext(data: {
