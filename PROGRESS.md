@@ -25,7 +25,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
 | Code        | **M1.0 and M1.1 done** (scaffolding; types and values), committed on `cubeV1`, not pushed. Next milestone step: **M1.2**                                                                                                                                        |
-| Decisions   | PLAN.md §0, D1–D11. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
+| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
 ## Milestone checklist
@@ -43,6 +43,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [ ] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
 - [ ] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
 - [ ] **M1.9** Slice acceptance (part B, manual) and hardening
+- [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
 - [ ] M2 Rename + Join autofix + simple unary transforms
 - [ ] M3 Entry points, sources modal, depot catalog (user to design entry points and the sources modal first)
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
@@ -68,6 +69,7 @@ The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §
 | Planning evidence                                 | –     | Copied to `/Users/mauriciouyaguari/Goldman Sachs/legend-cube-evidence/` (outside both repos, not committed); see its `README.md`. Reports in `wf/`, harnesses runnable from there (paths rewritten). M1.7 and M5 reuse the fixtures and harnesses |
 | Entry points and the sources modal (D7 follow-up) | User  | Designed before M3                                                                                                                                                                                                                                |
 | Lazy-load the Cube page (M1.8a)                   | –     | Query imports the Cube page statically, so from M1.8 the canvas stack would sit in Query's main bundle, even for users who never open the page. Consider `React.lazy` for the route                                                               |
+| legend-graph precise-primitive fix (M2.0, D12)    | –     | Can start any time as its own PR to master, in parallel with the slice. Until M2.0, keep the type seam narrow (PLAN.md §4.1)                                                                                                                      |
 | Push and PR                                       | User  | `cubeV1` is local only. Push and open a PR when the user asks                                                                                                                                                                                     |
 | Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                              |
 
