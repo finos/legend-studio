@@ -40,6 +40,7 @@ import {
 } from '@finos/legend-shared';
 import type * as LegendApplication from '@finos/legend-application';
 import {
+  type V1_BatchLambdaRelationTypeResponse,
   type V1_DataContract,
   type V1_DataProduct,
   type V1_EntitlementsDataProductDetails,
@@ -168,6 +169,10 @@ const setupLakehouseDataProductTest = async (
   mockGenerationFiles?: StoredFileGeneration[],
   extraActions?: Record<string, unknown>,
   userSearchService?: UserSearchService,
+  relationTypeMocks?: {
+    // replaces the default engine batch relation type response
+    batchLambdasRelationType?: () => Promise<V1_BatchLambdaRelationTypeResponse>;
+  },
 ) => {
   const dataProductViewerState = await TEST__getDataProductViewerState(
     dataProduct,
@@ -176,6 +181,13 @@ const setupLakehouseDataProductTest = async (
     userSearchService,
   );
   createdViewerStates.push(dataProductViewerState);
+  // spy before init, since relation type errors are notified while rendering
+  const notifyErrorSpy = relationTypeMocks
+    ? jest.spyOn(
+        dataProductViewerState.applicationStore.notificationService,
+        'notifyError',
+      )
+    : undefined;
 
   const dataProductDataAccessState = entitlementsDataProductDetails
     ? TEST__getDataProductDataAccessState(
@@ -416,16 +428,17 @@ const setupLakehouseDataProductTest = async (
     dataProductViewerState.engineServerClient,
     'batchLambdasRelationType',
   ).mockImplementation(
-    async () =>
-      new Promise((resolve) => {
-        if (mockGenerationFiles) {
-          // Simulate engine response taking some time to ensure the artifact is used
-          // instead of the engine response
-          setTimeout(() => resolve(batchRelationTypeResponse), 500);
-        } else {
-          resolve(batchRelationTypeResponse);
-        }
-      }),
+    relationTypeMocks?.batchLambdasRelationType ??
+      (async () =>
+        new Promise((resolve) => {
+          if (mockGenerationFiles) {
+            // Simulate engine response taking some time to ensure the artifact is used
+            // instead of the engine response
+            setTimeout(() => resolve(batchRelationTypeResponse), 500);
+          } else {
+            resolve(batchRelationTypeResponse);
+          }
+        })),
   );
 
   createSpy(
@@ -477,7 +490,12 @@ const setupLakehouseDataProductTest = async (
     await new Promise((resolve) => setTimeout(resolve, 0)); // wait for async state updates
   });
 
-  return { renderResult, dataProductDataAccessState, dataProductViewerState };
+  return {
+    renderResult,
+    dataProductDataAccessState,
+    dataProductViewerState,
+    notifyErrorSpy,
+  };
 };
 
 describe('DataProductViewer', () => {
@@ -592,6 +610,104 @@ describe('DataProductViewer', () => {
       screen.getByText('Varchar(32)');
       screen.getByText('int_val');
       screen.getByText('Int');
+    });
+
+    describe('Access Point relation type failures', () => {
+      const ENGINE_ERROR_MESSAGE =
+        "Can't find table 'NOPE' in schema 'NORTHWIND' and database 'NorthwindDatabase'";
+      const BATCH_ERROR_MESSAGE = 'Engine is unavailable';
+      // engine answers with an error for the only access point of `mockSDLCDataProduct`
+      const perKeyEngineError =
+        async (): Promise<V1_BatchLambdaRelationTypeResponse> => ({
+          result: {},
+          errors: {
+            'GROUP1::customer_demographics': {
+              message: ENGINE_ERROR_MESSAGE,
+              sourceInformation: {
+                sourceId: '',
+                startLine: 1,
+                startColumn: 2,
+                endLine: 1,
+                endColumn: 66,
+              },
+              status: 'error',
+            },
+          },
+        });
+      const batchFailure =
+        async (): Promise<V1_BatchLambdaRelationTypeResponse> => {
+          throw new Error(BATCH_ERROR_MESSAGE);
+        };
+
+      // NOTE: here the columns screen mounts after the artifact has loaded, so
+      // the race where the engine failure settles first is covered in
+      // `DataProductAccessPointState.test.ts`
+      test.each([
+        ['an engine error for the access point', perKeyEngineError],
+        ['a failed batch call', batchFailure],
+      ])(
+        'Column Specifications table shows columns from artifact when the engine returns %s',
+        async (_, batchLambdasRelationType) => {
+          const { notifyErrorSpy } = await setupLakehouseDataProductTest(
+            mockSDLCDataProduct,
+            mockEntitlementsSDLCDataProduct,
+            [],
+            [],
+            {
+              groupId: 'test.group',
+              artifactId: 'test-artifact',
+              versionId: '1.0.0',
+            },
+            getMockDataProductGenerationFilesByType(mockSDLCDataProduct),
+            undefined,
+            undefined,
+            { batchLambdasRelationType },
+          );
+
+          await screen.findByText('Column Name');
+          await screen.findByText('artifact_varchar_val');
+          screen.getByText('Varchar(500)');
+          screen.getByText('artifact_int_val');
+          expect(notifyErrorSpy).not.toHaveBeenCalledWith(
+            expect.stringContaining(
+              'Error fetching access point relation type',
+            ),
+          );
+        },
+      );
+
+      test.each([
+        [
+          'an engine error for the access point',
+          perKeyEngineError,
+          ENGINE_ERROR_MESSAGE,
+        ],
+        ['a failed batch call', batchFailure, BATCH_ERROR_MESSAGE],
+      ])(
+        'Notifies the engine error when there is no artifact and the engine returns %s',
+        async (_, batchLambdasRelationType, expectedMessage) => {
+          // ad-hoc data product: no artifact to fall back on
+          const { notifyErrorSpy } = await setupLakehouseDataProductTest(
+            mockSDLCDataProduct,
+            mockEntitlementsAdHocDataProduct,
+            [],
+            [],
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            { batchLambdasRelationType },
+          );
+
+          await screen.findByText('Column Name');
+          await waitFor(() =>
+            expect(notifyErrorSpy).toHaveBeenCalledWith(
+              `Error fetching access point relation type: ${expectedMessage}`,
+            ),
+          );
+          expect(screen.queryByText('varchar_val')).toBeNull();
+        },
+      );
     });
 
     test('Renders button with Lakehouse environment name', async () => {

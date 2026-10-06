@@ -175,12 +175,32 @@ export class DataProductAccessPointState {
     }
   }
 
+  /**
+   * Rejects when the engine has no relation type for this Lakehouse access
+   * point, so that `Promise.any` in `fetchRelationType` falls back to the
+   * artifact instead of taking an empty answer.
+   */
   async fetchRelationTypeFromEngine(): Promise<V1_RelationType | undefined> {
     if (this.accessPoint instanceof V1_LakehouseAccessPoint) {
-      const { results } =
-        await this.apgState.dataProductViewerState.batchRelationTypePromise;
-      return results.get(`${this.apgState.apg.id}::${this.accessPoint.id}`);
+      const viewerState = this.apgState.dataProductViewerState;
+      const key = `${this.apgState.apg.id}::${this.accessPoint.id}`;
+      const { results, errors } = await viewerState.batchRelationTypePromise;
+      const relationType = results.get(key);
+      if (relationType) {
+        return relationType;
+      }
+      const engineError = errors?.get(key);
+      if (engineError) {
+        throw new Error(engineError.message);
+      }
+      throw (
+        viewerState.batchRelationTypeError ??
+        new Error(
+          `Engine returned no relation type for access point: ${this.accessPoint.id}`,
+        )
+      );
     }
+    // NOTE: the engine is not asked for non-Lakehouse access points
     return undefined;
   }
 
@@ -193,20 +213,27 @@ export class DataProductAccessPointState {
       return;
     }
     this.fetchingRelationTypeState.inProgress();
+    const engineRelationTypePromise = this.fetchRelationTypeFromEngine();
+    const relationTypePromises = [
+      ...(dataProductArtifactPromise
+        ? [this.fetchRelationTypeFromArtifact(dataProductArtifactPromise)]
+        : []),
+      engineRelationTypePromise,
+    ];
     try {
-      const relationType = await Promise.any([
-        ...(dataProductArtifactPromise
-          ? [this.fetchRelationTypeFromArtifact(dataProductArtifactPromise)]
-          : []),
-        this.fetchRelationTypeFromEngine(),
-      ]);
+      const relationType = await Promise.any(relationTypePromises);
       this.relationType = relationType;
     } catch (error) {
       assertErrorThrown(error);
       if (error instanceof AggregateError) {
-        // Default to showing the relation type from engine error
+        // Show the engine error, since it explains why the access point has
+        // no relation type; `AggregateError.errors` follows the input order
+        const engineError: unknown =
+          error.errors[relationTypePromises.indexOf(engineRelationTypePromise)];
         this.apgState.applicationStore.notificationService.notifyError(
-          `Error fetching access point relation type: ${error.errors[1] ?? error.errors[0] ?? error.message}`,
+          `Error fetching access point relation type: ${
+            engineError instanceof Error ? engineError.message : error.message
+          }`,
         );
       } else {
         this.apgState.applicationStore.notificationService.notifyError(
