@@ -17,6 +17,7 @@
 import { TypeFamily } from './TypeFamily.js';
 import {
   findPrimitiveTypeInfo,
+  type IntegerRange,
   type PRIMITIVE_TYPE_PATH,
   type PrimitiveTypeInfo,
 } from './PrimitiveTypeRegistry.js';
@@ -216,6 +217,10 @@ export const isPrimitiveType = (type: CubeType): type is PrimitiveType =>
 
 export const isEnumType = (type: CubeType): type is EnumType =>
   type.family === TypeFamily.ENUM;
+
+/** The values an integer literal of the type may take, for the INTEGER family */
+export const getIntegerRange = (type: CubeType): IntegerRange | undefined =>
+  isPrimitiveType(type) ? type.info.integerRange : undefined;
 
 /**
  * Resolves a type from a path (full or short) and parameters, as they come from

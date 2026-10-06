@@ -16,8 +16,8 @@
 
 import {
   type CubeType,
+  getIntegerRange,
   isEnumType,
-  isPrimitiveType,
 } from '../types/CubeType.js';
 import { TypeFamily } from '../types/TypeFamily.js';
 import { assertUnreachable } from '../utils/AssertionUtils.js';
@@ -104,6 +104,15 @@ const isDateTime = (text: string): boolean => {
   );
 };
 
+// the engine returns timestamps in UTC, e.g. `2024-02-29T13:45:12.123456000+0000`
+const UTC_SUFFIX = /(?:Z|\+0000)$/u;
+
+/** Reads a date-time, dropping a trailing `Z` or `+0000` so values copied from results can be pasted */
+const readDateTime = (text: string): string | undefined => {
+  const value = text.replace(UTC_SUFFIX, '');
+  return isDateTime(value) ? value : undefined;
+};
+
 /** Reads text as a value of the type. Both `parseValue()` and `checkValue()` rely on it. */
 const readLiteral = (text: string, type: CubeType): ReadResult => {
   switch (type.family) {
@@ -118,7 +127,7 @@ const readLiteral = (text: string, type: CubeType): ReadResult => {
         return 'invalid';
       }
       const value = canonicalizeInteger(text);
-      const range = isPrimitiveType(type) ? type.info.integerRange : undefined;
+      const range = getIntegerRange(type);
       if (range && (BigInt(value) < range.min || BigInt(value) > range.max)) {
         return 'outOfRange';
       }
@@ -145,13 +154,17 @@ const readLiteral = (text: string, type: CubeType): ReadResult => {
       return isStrictDate(text)
         ? { kind: 'strictDate', value: text }
         : 'invalid';
-    case TypeFamily.DATETIME:
-      return isDateTime(text) ? { kind: 'dateTime', value: text } : 'invalid';
-    case TypeFamily.DATE:
+    case TypeFamily.DATETIME: {
+      const value = readDateTime(text);
+      return value === undefined ? 'invalid' : { kind: 'dateTime', value };
+    }
+    case TypeFamily.DATE: {
       if (isStrictDate(text)) {
         return { kind: 'strictDate', value: text };
       }
-      return isDateTime(text) ? { kind: 'dateTime', value: text } : 'invalid';
+      const value = readDateTime(text);
+      return value === undefined ? 'invalid' : { kind: 'dateTime', value };
+    }
     case TypeFamily.ENUM:
       return isEnumType(type) && type.values.includes(text)
         ? { kind: 'enum', value: text }

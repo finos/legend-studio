@@ -156,6 +156,27 @@ const ACCEPTED: [CubeType, string, LiteralValue][] = [
     '2024-12-31T23:59:59.123456789',
     { kind: 'dateTime', value: '2024-12-31T23:59:59.123456789' },
   ],
+  // a trailing `Z` or `+0000` (UTC, as the engine returns timestamps) is dropped
+  [
+    TIMESTAMP,
+    '2024-02-29T13:45:12.123456000+0000',
+    { kind: 'dateTime', value: '2024-02-29T13:45:12.123456000' },
+  ],
+  [
+    DATE_TIME,
+    '2024-02-29T13:45:12Z',
+    { kind: 'dateTime', value: '2024-02-29T13:45:12' },
+  ],
+  [
+    DATE_TIME,
+    ' 2024-02-29T13:45:12Z ',
+    { kind: 'dateTime', value: '2024-02-29T13:45:12' },
+  ],
+  [
+    DATE,
+    '2024-02-29T13:45:12+0000',
+    { kind: 'dateTime', value: '2024-02-29T13:45:12' },
+  ],
   // DATE (abstract): a date or a date-time
   [DATE, '2024-02-29', { kind: 'strictDate', value: '2024-02-29' }],
   [
@@ -239,8 +260,16 @@ const REJECTED: [CubeType, string, ValueProblem['reason']][] = [
   [DATE_TIME, '2024-02-29T23:59:60', 'invalid'],
   [DATE_TIME, '2023-02-29T00:00:00', 'invalid'],
   [DATE_TIME, '2024-02-29 13:45:12', 'invalid'],
-  [DATE_TIME, '2024-02-29T13:45:12Z', 'invalid'],
-  [DATE_TIME, '2024-02-29T13:45:12+0000', 'invalid'],
+  // only UTC suffixes are dropped; other offsets, other spellings and doubled suffixes are rejected
+  [DATE_TIME, '2024-02-29T13:45:12+0100', 'invalid'],
+  [DATE_TIME, '2024-02-29T13:45:12-0500', 'invalid'],
+  [DATE_TIME, '2024-02-29T13:45:12+00:00', 'invalid'],
+  [DATE_TIME, '2024-02-29T13:45:12z', 'invalid'],
+  [DATE_TIME, '2024-02-29T13:45:12ZZ', 'invalid'],
+  [DATE_TIME, '2024-02-29T13:45:12+0000Z', 'invalid'],
+  [DATE_TIME, '2024-02-29T13:45Z', 'invalid'],
+  [STRICT_DATE, '2024-02-29Z', 'invalid'],
+  [DATE, '2024-02-29Z', 'invalid'],
   [DATE_TIME, '2024-02-29T13:45:12.', 'invalid'],
   [DATE_TIME, '2024-02-29T13:45:12.1234567890', 'invalid'],
   // DATE (abstract)
@@ -327,6 +356,11 @@ describe(unitTest('Value checking'), () => {
     ],
     [{ kind: 'string', value: 'x' }, VARIANT, { reason: 'invalid', text: 'x' }],
     // stale or hand-edited literals: out of range, or not canonical
+    [
+      { kind: 'dateTime', value: '2024-02-29T13:45:12Z' },
+      TIMESTAMP,
+      { reason: 'invalid', text: '2024-02-29T13:45:12Z' },
+    ],
     [integer('40000'), SMALL_INT, { reason: 'outOfRange', text: '40000' }],
     [integer('+5'), INTEGER, { reason: 'invalid', text: '+5' }],
     [integer(' 5'), INTEGER, { reason: 'invalid', text: ' 5' }],
