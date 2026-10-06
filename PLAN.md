@@ -132,6 +132,7 @@ packages/legend-cube/src/
   messages/     §16 catalogue (verbatim) + additions
   ir/           Cube IR (host-free Pure AST), emitter per node, join algorithm, debug printer
   spec/         CubeSpec v1 codec, Meta, rest-preservation, migrations
+  utils/        internal helpers, e.g. the exhaustive-switch assertion
   index.ts
 packages/legend-cube-builder/src/
   graph-manager/CubeEngine.ts       CubeEngine port + CubeModelContext / CubeResult / CubeEngineError (no V1_* symbols)
@@ -619,6 +620,7 @@ paths 📄.
   - **DATETIME** (`DateTime`, `Timestamp`).
   - Abstract **DATE** is compatible with STRICT_DATE and DATETIME.
   - **ENUM** only with the same enum path.
+  - **STRICT_TIME** only with STRICT_TIME (settled in M1.1; no relational column maps to it yet).
   - VARIANT and OPAQUE are never compatible.
 - The **StrictDate ↔ Timestamp** pair is rejected: it executes but silently matches only midnight ✅.
 - The message stays verbatim.
@@ -673,6 +675,15 @@ Values are stored as strings (§4.9). Validation per type:
 
 Accepted numeric text is canonicalized to the JSON number grammar (§4.9). Every value that fails becomes
 `{kind:'invalid', text}` with `Filter value "<text>" is not a valid <T>.`
+
+Settled in M1.1:
+
+- **FLOAT:** a number a double can't hold (e.g. `1e400`) is **out of range**, not invalid. DECIMAL and NUMBER
+  accept it.
+- **DATE** (the abstract `Date`) takes a STRICT_DATE or a DATETIME value; the literal kind follows the text.
+- **STRICT_TIME, VARIANT and OPAQUE** take no values.
+- `checkValue` returns a structured problem (`required`, `invalid` or `outOfRange`). M1.4's Filter turns it into the
+  messages above.
 
 Input affordances follow §17.7, with `Timestamp` as `datetime-local` (with seconds) and `Numeric` as text.
 

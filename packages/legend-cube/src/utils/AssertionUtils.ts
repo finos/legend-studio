@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-export * from './types/TypeFamily.js';
-export * from './types/PrimitiveTypeRegistry.js';
-export * from './types/CubeType.js';
-export * from './types/TypeCompatibility.js';
-export * from './types/EnumValueQualification.js';
-
-export * from './values/LiteralValue.js';
-export * from './values/ValueEntry.js';
+/**
+ * For the `default` of a switch that handles every case: the compiler rejects
+ * the call as soon as a case is missing, e.g. when an enum gains a member.
+ */
+export const assertUnreachable = (value: never): never => {
+  throw new Error(`Unexpected value: ${String(value)}`);
+};

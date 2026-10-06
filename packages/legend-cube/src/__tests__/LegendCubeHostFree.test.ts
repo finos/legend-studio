@@ -18,15 +18,13 @@ import { describe, expect, test } from '@jest/globals';
 import { readdirSync, readFileSync } from 'fs';
 import { join, relative, resolve } from 'path';
 import ts from 'typescript';
+import { unitTest } from '../__test-utils__/CubeTestUtils.js';
 
 /**
  * Guards the host-free rule of the core (see README.md): outside tests, the core
  * imports only its own modules and uses only ECMAScript globals. ESLint and the
  * build config enforce the same rule; this test also runs when those are skipped.
- *
- * NOTE: the core can't depend on `@finos/legend-shared`, so `unitTest()` is inlined.
  */
-const unitTest = (testName: string): string => `[UNIT] ${testName}`;
 
 const PACKAGE_DIR = resolve(__dirname, '../..');
 const SOURCE_DIR = resolve(PACKAGE_DIR, 'src');

@@ -24,7 +24,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **M1.0 done** (scaffolding), committed on `cubeV1`, not pushed. Next milestone step: **M1.1**                                                                                                                                                                   |
+| Code        | **M1.0 and M1.1 done** (scaffolding; types and values), committed on `cubeV1`, not pushed. Next milestone step: **M1.2**                                                                                                                                        |
 | Decisions   | PLAN.md §0, D1–D11. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
@@ -33,7 +33,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 See PLAN.md §11 for the deliverables and "done when" of each step.
 
 - [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route (always mounted, no flag: D11)
-- [ ] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
+- [x] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
 - [ ] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
 - [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
 - [ ] **M1.4** Filter (tree, operators by family, value validation, builder helpers)
@@ -50,16 +50,16 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-Start **M1.1, types and values** (PLAN.md §11.1; the design is in §5.3–5.6 and §4.9). It is headless and test-driven,
-and needs no engine:
+Wait for the user's go-ahead, then start **M1.2, graph and inference** (PLAN.md §11.1; the design is in §4.2–4.6 and
+§4.10). It is headless and test-driven, and needs no engine:
 
-- the precise primitive registry, `CubeType` interning and equality, families, comparison classes, type display;
-- `LiteralValue` parsing and validation (`parseValue` keeps invalid text, keeps STRING untrimmed, canonicalizes
-  numbers);
-- table-driven tests, per the M1.1 "done when" in §11.1.
+- `SchemaColumn` and `Schema` (§4.2), on M1.1's `CubeType`;
+- `QueryNode`, `Connection` and `Query`, with the five invariants plus acyclicity, and every §4.4 operation;
+- `buildSchemasAndValidity` with the sentinels, the query-level rule pass and the node registries;
+- `RelationalTableSource` (with a given schema) and `UnknownNode`;
+- propagation proven with test-only stub nodes, per the M1.2 "done when" in §11.1.
 
-The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §3.3). `yarn build` and
-`LegendCubeHostFree.test.ts` fail otherwise.
+The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §3.3).
 
 ## Open items
 
@@ -155,3 +155,16 @@ Each is verified and detailed in PLAN.md.
     test and the dev-only setup changes.
   - The builder declares only what it uses (core, React, React DOM). Other dependencies, and the `@xyflow/react` CSS
     import, arrive with the step that first needs them.
+- **2026-10-05, M1.1.**
+  - The user dropped the `TEMPORARY__enableLegendCube` flag first (D11): `/query/cube` is always mounted.
+  - Types (`packages/legend-cube/src/types/`): the registry of 24 primitives; interned `PrimitiveType` and
+    `OpaqueType`, `EnumType` equal by path; `resolveCubeType` never throws (unknown paths and misfitting
+    parameters become opaque); comparison classes and `areCompatibleTypes`; `getLeastCommonAncestor` (needed by
+    FULL joins in M1.3); enum qualification helpers.
+  - Values (`src/values/`): `LiteralValue`, `parseValue` and `checkValue`, both built on one reader, so
+    canonical form, kind and range checks can't drift apart.
+  - Tests: 281 in the core. One table drives `parseValue` and `checkValue` for every accepted and rejected input.
+    Three mutations of the code (UBigInt range, negative zero, date compatibility) were each caught.
+  - PLAN.md §5.4 and §5.6 record what M1.1 settled: StrictTime is its own comparison class; a non-finite FLOAT
+    value is out of range; the abstract `Date` takes a date or a date-time; value problems are structured, and
+    M1.4 adds their messages.

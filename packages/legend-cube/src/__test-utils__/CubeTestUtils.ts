@@ -14,11 +14,5 @@
  * limitations under the License.
  */
 
-export * from './types/TypeFamily.js';
-export * from './types/PrimitiveTypeRegistry.js';
-export * from './types/CubeType.js';
-export * from './types/TypeCompatibility.js';
-export * from './types/EnumValueQualification.js';
-
-export * from './values/LiteralValue.js';
-export * from './values/ValueEntry.js';
+// NOTE: the core can't depend on `@finos/legend-shared`, so this mirrors its `unitTest()`
+export const unitTest = (testName: string): string => `[UNIT] ${testName}`;
