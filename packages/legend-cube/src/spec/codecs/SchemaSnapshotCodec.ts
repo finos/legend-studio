@@ -82,9 +82,14 @@ const decodeType = (value: unknown, path: string): CubeType => {
     json.params === undefined
       ? []
       : readArray(json.params, pathTo(path, 'params')).map((item, index) =>
-          typeof item === 'number'
+          // a number past the double range (`1e400`) reads as Infinity, which
+          // would be saved as `null`
+          typeof item === 'number' && Number.isFinite(item)
             ? item
-            : fail(pathTo(pathTo(path, 'params'), index), 'must be a number'),
+            : fail(
+                pathTo(pathTo(path, 'params'), index),
+                'must be a finite number',
+              ),
         );
   // a path Cube doesn't know, or parameters that don't fit, give an opaque
   // type that is saved back as it was

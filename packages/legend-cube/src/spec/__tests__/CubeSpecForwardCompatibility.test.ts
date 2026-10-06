@@ -296,6 +296,16 @@ const UNSUPPORTED_CASES: readonly UnsupportedCase[] = [
     secret: SECRET,
   },
   {
+    // R100: only kind 'invalid' carries text, so this is not an invalid value
+    name: 'a literal value with text instead of value',
+    rule: {
+      column: 'COUNTRY',
+      operator: 'Equal',
+      value: { kind: 'string', text: SECRET },
+    },
+    secret: SECRET,
+  },
+  {
     name: 'a group whose rules is not a list',
     rule: {
       op: 'and',
@@ -325,6 +335,28 @@ const UNSUPPORTED_CASES: readonly UnsupportedCase[] = [
         { kind: 'string', value: 7 },
         { kind: 'string', value: 'Spain' },
       ],
+    },
+    secret: SECRET,
+  },
+  // R86: a null where a rule or a value should be is unreadable too, never a
+  // decode error
+  {
+    // in a group beside readable rules, and as the rule of a not
+    name: 'a rule that is null',
+    rule: null,
+    secret: 'null',
+  },
+  {
+    name: 'a comparison whose value is null',
+    rule: { column: 'COUNTRY', operator: 'Equal', value: null },
+    secret: '"value":null',
+  },
+  {
+    name: 'an In list with a null item',
+    rule: {
+      column: 'COUNTRY',
+      operator: 'In',
+      value: [{ kind: 'string', value: SECRET }, null],
     },
     secret: SECRET,
   },
@@ -677,6 +709,66 @@ describe(unitTest('Saved spec: unknown nodes'), () => {
     expect(reSave(json)).toBe(JSON.stringify(json));
   });
 
+  // PLAN §10.3, Settled in M1.6: a known node whose settings can't be read
+  // keeps its inputs, even when their count doesn't fit its kind's ports
+  test.each([
+    {
+      name: 'one input',
+      inputs: ['relational101'],
+      ports: ['in0'],
+      inputIds: ['relational101'],
+      connections: ['relational101 -> join101.in0'],
+    },
+    {
+      name: 'three inputs',
+      inputs: ['relational101', null, 'relational102'],
+      ports: ['in0', 'in1', 'in2'],
+      inputIds: ['relational101', undefined, 'relational102'],
+      connections: [
+        'relational101 -> join101.in0',
+        'relational102 -> join101.in2',
+      ],
+    },
+  ])(
+    'Keeps a join of an unknown join type saved with $name as an Unknown node with a port per input',
+    ({ inputs, ports, inputIds, connections }) => {
+      const json = inputsSpec({
+        kind: 'join',
+        id: 'join101',
+        inputs,
+        joinType: 'CROSS',
+        leftColumns: [],
+        rightColumns: [],
+      });
+      const { document } = decodeCubeSpec(json);
+      const node = document.query.getNode('join101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('join');
+      expect(node.ports).toEqual(ports);
+      expect(document.query.getInputIds('join101')).toEqual(inputIds);
+      expect(describeConnections(document.query)).toEqual(connections);
+      expect(reSave(json)).toBe(JSON.stringify(json));
+    },
+  );
+
+  test('Keeps a join of an unknown join type saved without inputs as an Unknown node without ports', () => {
+    const json = inputsSpec({
+      kind: 'join',
+      id: 'join101',
+      joinType: 'CROSS',
+      leftColumns: [],
+      rightColumns: [],
+    });
+    const { document } = decodeCubeSpec(json);
+    const node = document.query.getNode('join101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('join');
+    expect(node.ports).toEqual([]);
+    expect(node.hasInputs).toBe(false);
+    expect(document.query.connections).toEqual([]);
+    expect(reSave(json)).toBe(JSON.stringify(json));
+  });
+
   test('Re-opens a newer cube after its Unknown node lost its input, and refuses to rewire it', () => {
     const json = readFixture('newer-version.cube.json');
     const { document } = decodeCubeSpec(json);
@@ -854,6 +946,16 @@ const INTERLEAVED = {
             alphaColumn: { list: [1] },
           },
           { name: 'QTY', type: { path: 'Integer' }, nullable: false },
+          {
+            name: 'STATUS',
+            type: {
+              zetaEnum: 'z',
+              path: 'my::Status',
+              values: ['OPEN', 'SHUT'],
+              alphaEnum: null,
+            },
+            nullable: false,
+          },
         ],
         alphaNode: null,
       },
@@ -932,6 +1034,17 @@ const CANONICAL = {
             alphaColumn: { list: [1] },
           },
           { name: 'QTY', type: { path: 'Integer' }, nullable: false },
+          {
+            name: 'STATUS',
+            // an enumeration type too: after its path and values
+            type: {
+              path: 'my::Status',
+              values: ['OPEN', 'SHUT'],
+              zetaEnum: 'z',
+              alphaEnum: null,
+            },
+            nullable: false,
+          },
         ],
         zetaNode: 1,
         alphaNode: null,
@@ -997,6 +1110,7 @@ describe(unitTest('Saved spec: unknown keys'), () => {
           type: { zetaType: 'z', alphaType: null },
         },
       ],
+      ['STATUS', { column: {}, type: { zetaEnum: 'z', alphaEnum: null } }],
     ]);
     expect(query.getNode('join101')?.rest).toEqual({
       zetaJoin: 'z',
@@ -1289,6 +1403,56 @@ describe(unitTest('Saved spec: unknown keys'), () => {
         query: { nodes: [] },
       }),
     );
+  });
+
+  // R114: a column's unknown keys are kept when only the column, or only its
+  // type, has some
+  test('Keeps the unknown keys of a snapshot column that has them only on the column, or only on its type', () => {
+    const json = {
+      formatVersion: 1,
+      query: {
+        selected: 'relational101',
+        nodes: [
+          {
+            kind: 'relational',
+            id: 'relational101',
+            ...COORDINATES,
+            schemaSnapshot: [
+              {
+                name: 'COUNTRY',
+                type: { path: 'String' },
+                nullable: true,
+                zetaColumn: 'z',
+              },
+              {
+                name: 'QTY',
+                type: { path: 'Integer', zetaType: 'z' },
+                nullable: false,
+              },
+              {
+                name: 'STATUS',
+                type: {
+                  path: 'my::Status',
+                  values: ['OPEN', 'SHUT'],
+                  zetaEnum: null,
+                },
+                nullable: true,
+              },
+              { name: 'ACTIVE', type: { path: 'Boolean' }, nullable: false },
+            ],
+          },
+        ],
+      },
+    };
+    const source = decodeCubeSpec(json).document.query.getNode(
+      'relational101',
+    ) as RelationalTableSource;
+    expect([...source.columnRest.entries()]).toStrictEqual([
+      ['COUNTRY', { column: { zetaColumn: 'z' }, type: {} }],
+      ['QTY', { column: {}, type: { zetaType: 'z' } }],
+      ['STATUS', { column: {}, type: { zetaEnum: null } }],
+    ]);
+    expect(reSave(json)).toBe(JSON.stringify(json));
   });
 
   // like every other object, a snapshot column and its type never write an

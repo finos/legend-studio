@@ -40,6 +40,7 @@ import {
   CubeDocument,
   type CubeMeta,
   DEFAULT_META,
+  type Presentation,
 } from '../../graph/CubeDocument.js';
 import { Query } from '../../graph/Query.js';
 import {
@@ -47,6 +48,10 @@ import {
   type SourceResolution,
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
+import {
+  NodeRegistry,
+  RELATIONAL_TABLE_SOURCE_DEFINITION,
+} from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -418,6 +423,44 @@ describe(unitTest('Saved spec encoding: document'), () => {
     });
   });
 
+  test('Leaves out a presentation at its defaults when meta has other keys', () => {
+    // R118: meta is written for its other keys, with no `presentation`
+    const presentations: Presentation[] = [
+      DEFAULT_META.presentation,
+      { showGraph: true, columnWidths: [] },
+    ];
+    presentations.forEach((presentation) => {
+      expectEncoded(
+        new CubeDocument({
+          meta: { presentation, rest: { drilldown: { levels: ['CITY'] } } },
+        }),
+        {
+          formatVersion: 1,
+          query: { nodes: [] },
+          meta: { drilldown: { levels: ['CITY'] } },
+        },
+      );
+    });
+  });
+
+  test('Reads a meta without a presentation as the default presentation, and saves it back the same', () => {
+    // R115: presentation is optional; the other keys of meta are kept
+    const json: JsonObject = {
+      formatVersion: 1,
+      query: { nodes: [] },
+      meta: { drilldown: { levels: ['CITY'] } },
+    };
+    const { document } = decodeCubeSpec(json);
+    expect(document.meta.presentation).toStrictEqual({
+      showGraph: true,
+      columnWidths: [],
+    });
+    expect(document.meta.rest).toStrictEqual({
+      drilldown: { levels: ['CITY'] },
+    });
+    expect(JSON.stringify(encodeCubeSpec(document))).toBe(JSON.stringify(json));
+  });
+
   test('Writes showGraph only when it is false', () => {
     // R116
     expectEncoded(
@@ -430,6 +473,30 @@ describe(unitTest('Saved spec encoding: document'), () => {
         meta: { presentation: { showGraph: false } },
       },
     );
+  });
+
+  test('Reads an explicit showGraph true as shown, and leaves it out when saving', () => {
+    // R116: as a hand-edited spec or another writer may have it
+    const shown = parseCubeSpec(
+      '{"formatVersion": 1, "query": {"nodes": []}, "meta": {"presentation": {"showGraph": true}}}',
+    ).document;
+    expect(shown.meta.presentation.showGraph).toBe(true);
+    expect(encodeCubeSpec(shown)).toStrictEqual({
+      formatVersion: 1,
+      query: { nodes: [] },
+    });
+    const widths = [{ column: 'CITY', width: 90 }];
+    const withWidths = decodeCubeSpec({
+      formatVersion: 1,
+      query: { nodes: [] },
+      meta: { presentation: { showGraph: true, columnWidths: widths } },
+    }).document;
+    expect(withWidths.meta.presentation.showGraph).toBe(true);
+    expect(encodeCubeSpec(withWidths)).toStrictEqual({
+      formatVersion: 1,
+      query: { nodes: [] },
+      meta: { presentation: { columnWidths: widths } },
+    });
   });
 
   test('Writes column widths as a list of {column, width}, only when there are some', () => {
@@ -551,6 +618,26 @@ describe(unitTest('Saved spec encoding: query graph'), () => {
           ],
         },
       },
+    );
+  });
+
+  test("Refuses to save a node whose type the registry doesn't know", () => {
+    // C82: never a bare {kind, id} that loses the node's inputs and settings
+    const document = documentOf(
+      [
+        table('relational101', 'ORDERS'),
+        new Filter('filter101', compare('COUNTRY', O.EQUAL, FRANCE)),
+      ],
+      [edge('relational101', 'filter101', 'tds')],
+      'filter101',
+    );
+    expect(() =>
+      encodeCubeSpec(
+        document,
+        new NodeRegistry([RELATIONAL_TABLE_SOURCE_DEFINITION]),
+      ),
+    ).toThrow(
+      new Error(`Can't save node "filter101": its type "filter" is unknown`),
     );
   });
 });
@@ -814,6 +901,125 @@ describe(unitTest('Saved spec encoding: relational sources'), () => {
           ],
         },
       });
+    });
+
+    /** A source whose snapshot has one nullable column `C<n>` per type */
+    const typesSpec = (types: readonly JsonObject[]): JsonObject => ({
+      formatVersion: 1,
+      query: {
+        selected: 'relational101',
+        nodes: [
+          {
+            ...tableSpec('relational101', 'ORDERS'),
+            schemaSnapshot: types.map((type, index) => ({
+              name: `C${index}`,
+              type,
+              nullable: true,
+            })),
+          },
+        ],
+      },
+    });
+    const resaved = (json: JsonObject): string =>
+      JSON.stringify(encodeCubeSpec(decodeCubeSpec(json).document));
+
+    test('Re-saves a type it does not know as written, whatever was read before it', () => {
+      // R56: a path with parentheses is not the path with parameters, in
+      // either order within a document
+      [
+        [{ path: 'my::Foo(1)' }, { path: 'my::Foo', params: [1] }],
+        [{ path: 'my::Bar', params: [1, 2] }, { path: 'my::Bar(1,2)' }],
+      ].forEach((types) => {
+        expect(resaved(typesSpec(types))).toBe(
+          JSON.stringify(typesSpec(types)),
+        );
+      });
+      // nor across documents: types are shared by every document read
+      const earlier = typesSpec([{ path: 'my::geo::Line(4)' }]);
+      const later = typesSpec([{ path: 'my::geo::Line', params: [4] }]);
+      expect(resaved(earlier)).toBe(JSON.stringify(earlier));
+      expect(resaved(later)).toBe(JSON.stringify(later));
+    });
+
+    test("Keeps parameters that don't fit a known type as written, as an opaque type", () => {
+      // R56: negative, fractional or too many parameters
+      const types = [
+        { path: `${PRECISE}Varchar`, params: [-1] },
+        { path: `${PRECISE}Varchar`, params: [1.5] },
+        { path: `${PRECISE}Varchar`, params: [5, 6] },
+        { path: `${PRECISE}Numeric`, params: [10, -2] },
+      ];
+      const json = typesSpec(types);
+      expect(
+        decodedSchema(json, 'relational101').columns.map(
+          (schemaColumn) => schemaColumn.type,
+        ),
+      ).toEqual(types.map(({ path, params }) => OpaqueType.get(path, params)));
+      expect(resaved(json)).toBe(JSON.stringify(json));
+    });
+
+    test('Keeps column names that Pure would quote verbatim, unquoted, in the snapshot and in a rule', () => {
+      // R60: names are stored as lambdaRelationType returns them, never
+      // quoted or unquoted the way Pure writes them (unlike R44, R45)
+      const NAMES = [
+        'Unit Price',
+        'ORDER ID.v2',
+        "O'Brien",
+        "'Freight'",
+        '"Ship Via"',
+      ];
+      const json: JsonObject = {
+        formatVersion: 1,
+        query: {
+          selected: 'filter101',
+          nodes: [
+            {
+              ...tableSpec('relational101', 'ORDERS'),
+              schemaSnapshot: NAMES.map((name) => ({
+                name,
+                type: { path: `${PRECISE}Int` },
+                nullable: false,
+              })),
+            },
+            {
+              kind: 'filter',
+              id: 'filter101',
+              inputs: ['relational101'],
+              filter: {
+                column: 'Unit Price',
+                operator: 'GreaterThan',
+                value: { kind: 'integer', value: '5' },
+              },
+            },
+          ],
+        },
+      };
+      expectEncoded(
+        documentOf(
+          [
+            resolvedTable(
+              'relational101',
+              'ORDERS',
+              NAMES.map((name) => column(name, `${PRECISE}Int`)),
+            ),
+            new Filter(
+              'filter101',
+              compare('Unit Price', O.GREATER_THAN, {
+                kind: 'integer',
+                value: '5',
+              }),
+            ),
+          ],
+          [edge('relational101', 'filter101', 'tds')],
+          'filter101',
+        ),
+        json,
+      );
+      expect(
+        decodedSchema(json, 'relational101').columns.map(
+          (schemaColumn) => schemaColumn.name,
+        ),
+      ).toEqual(NAMES);
     });
   });
 });
@@ -1112,6 +1318,24 @@ describe(unitTest('Saved spec encoding: filters'), () => {
       },
     ],
     [
+      'a one-item list on In',
+      compare('COUNTRY', O.IN, [FRANCE]),
+      {
+        column: 'COUNTRY',
+        operator: 'In',
+        value: [{ kind: 'string', value: 'France' }],
+      },
+    ],
+    [
+      'a one-item list on NotIn',
+      compare('COUNTRY', O.NOT_IN, [FRANCE]),
+      {
+        column: 'COUNTRY',
+        operator: 'NotIn',
+        value: [{ kind: 'string', value: 'France' }],
+      },
+    ],
+    [
       'an empty list on NotIn',
       compare('COUNTRY', O.NOT_IN, []),
       { column: 'COUNTRY', operator: 'NotIn', value: [] },
@@ -1274,6 +1498,21 @@ describe(unitTest('Saved spec encoding: filters'), () => {
 
   test.each(RULES)('Saves %s as the node holds it', (_, rule, json) => {
     expectEncoded(filterDocument(rule), filterSpec(json));
+  });
+
+  test('Reads a one-item In or NotIn list as a list, not as its item', () => {
+    // R87: the most common In, one value picked
+    [O.IN, O.NOT_IN].forEach((operator) => {
+      const { filter } = decodeCubeSpec(
+        filterSpec({
+          column: 'COUNTRY',
+          operator,
+          value: [{ kind: 'string', value: 'France' }],
+        }),
+      ).document.query.getNode('filter101') as Filter;
+      expect(filter).toBeInstanceOf(ColumnComparisonFilter);
+      expect((filter as ColumnComparisonFilter).value).toStrictEqual([FRANCE]);
+    });
   });
 
   test('Spells every operator as its name', () => {

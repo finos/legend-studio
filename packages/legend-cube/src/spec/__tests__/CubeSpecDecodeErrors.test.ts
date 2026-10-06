@@ -223,6 +223,13 @@ describe(unitTest('Saved spec decode errors'), () => {
       'must be a whole number of at least 1',
     ],
     [
+      // whole, but past the integers a double holds exactly
+      'a formatVersion past the safe integers',
+      { formatVersion: 2 ** 53, query: { nodes: [] } },
+      'formatVersion',
+      'must be a whole number of at least 1',
+    ],
+    [
       'a formatVersion set to null',
       { formatVersion: null, query: { nodes: [] } },
       'formatVersion',
@@ -816,7 +823,7 @@ describe(unitTest('Saved spec decode errors'), () => {
       'a type param that is a string',
       withType({ path: VARCHAR, params: ['15'] }),
       `${TYPE}.params[0]`,
-      'must be a number',
+      'must be a finite number',
     ],
     [
       'a type param set to null',
@@ -825,7 +832,20 @@ describe(unitTest('Saved spec decode errors'), () => {
         params: [10, null],
       }),
       `${TYPE}.params[1]`,
-      'must be a number',
+      'must be a finite number',
+    ],
+    [
+      // R56: it would be saved as null, which can't be read
+      'a type param that is not finite',
+      withType({ path: VARCHAR, params: [Infinity] }),
+      `${TYPE}.params[0]`,
+      'must be a finite number',
+    ],
+    [
+      'a type param that is not a number',
+      withType({ path: 'my::Unknown', params: [1, NaN] }),
+      `${TYPE}.params[1]`,
+      'must be a finite number',
     ],
     [
       'enumeration values together with params',
@@ -1347,6 +1367,18 @@ describe(unitTest('Saved spec text'), () => {
     expect(document.name).toBe('Orders');
     expect(formatVersion).toBe(1);
     expect(readOnly).toBe(false);
+  });
+
+  test('Refuses a number past the double range, which JSON reads as Infinity', () => {
+    // R56: the text is valid JSON, but the number can't be saved back
+    const text = JSON.stringify(
+      withType({ path: 'my::Unknown', params: [15] }),
+    ).replace('[15]', '[1e400]');
+    const error = decodeErrorOf(() => parseCubeSpec(text));
+    expect([error.path, error.detail]).toEqual([
+      `${TYPE}.params[0]`,
+      'must be a finite number',
+    ]);
   });
 
   test('Refuses text over the cap before parsing it', () => {

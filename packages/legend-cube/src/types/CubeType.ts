@@ -186,7 +186,9 @@ export class OpaqueType extends CubeType {
   }
 
   static get(path: string, params: readonly number[] = []): OpaqueType {
-    const key = `${path}${formatParameters(params)}`;
+    // path and parameters kept apart, so a path `Foo(1)` is not the type
+    // `Foo` with the parameter 1: each is saved back as it was read
+    const key = JSON.stringify([path, params]);
     let type = OpaqueType.INSTANCES.get(key);
     if (!type) {
       type = new OpaqueType(path, params);
