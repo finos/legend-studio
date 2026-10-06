@@ -52,21 +52,25 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 ## Next action
 
 **M1.5 (IR and emitter) is done**: `ec129bd50` (feature) plus the `fix:` commit after it (three verification rounds:
-30 issues, then 3, then 1, all fixed; 933 core tests; `check:ci` and `lint:ci` green). Waiting for the user's OK on
-PLAN §8.4 "Settled in M1.5", in particular two items found by verification:
+30 issues, then 3, then 1, all fixed; 933 core tests; `check:ci` and `lint:ci` green). The user approved PLAN §8.4
+"Settled in M1.5" on 2026-10-06, including two items found by verification:
 
 - D4 is enforced by the emitter: every negation of a nullable column is `isEmpty($row.c) || not(…)`, because the
-  engine drops NULL rows after outer joins (D4's "engine-native" wording corrected).
+  engine drops NULL rows after outer joins (D4's "engine-native" wording corrected; user OK 2026-10-06).
 - A backslash in a StartsWith/EndsWith/Contains value (and negations) is refused, because the engine does not
-  escape `\` in LIKE patterns (Appendix B); lift when the engine is fixed.
+  escape `\` in LIKE patterns (Appendix B); lift when the engine is fixed. **User OK 2026-10-06 (option a).**
 
 Next: **M1.6, the saved spec codec.**
 
-**M1.6 starts with sample specs for the user's review, before any codec code** (user request, 2026-10-06). Write a
-few sample `.cube.json` documents: the slice; a LEFT join with negations; a FULL join; an unfinished query with a
-`null` input; an Unknown node kind that must round-trip; a value that failed validation. Then stop and ask the user
-about the open shape questions: `not` around a comparison that has no negated operator (e.g. Not(>), which PLAN §10.3
-does not allow yet), and storing an invalid value as `{kind:'invalid', text}`.
+**M1.6: sample specs written, waiting for the user's review** (2026-10-06). The requirements workflow
+(`m16-requirements`, run `wf_72e1273a-5c2`) produced 158 requirements and 18 open shape questions; a copy is at
+`legend-cube-evidence/m16-checklist.txt`. Seven samples are in `packages/legend-cube/src/spec/__tests__/fixtures/`
+(uncommitted): `slice`, `left-join-negations`, `full-join`, `unfinished`, `newer-version`, `invalid-values`, `empty`.
+They were generated from real core objects by a throwaway encoder (scratchpad `m16/samples.mjs`) following the
+checklist's recommended rules, validated, and the three complete ones run on the engine (19, 183, 133 rows).
+After the user answers the shape questions: record them as "Settled in M1.6" in PLAN §10.3 (also fix §10.3's
+"not wraps composites only" and §5.8's boolean wording), then build the codec (CubeDocument, registry
+encode/decode hooks, rest, UnknownNode raw JSON, unsupported filter rule, migrations, read-only flag, size cap).
 
 ## Open items
 
