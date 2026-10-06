@@ -40,6 +40,7 @@ import {
   RelationColumn,
 } from '../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { GenericType } from '../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
+import type { Type } from '../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import { GenericTypeExplicitReference } from '../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { Schema } from '../../graph/metamodel/pure/packageableElements/store/relational/model/Schema.js';
 import { Table } from '../../graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
@@ -366,7 +367,7 @@ describe(
       );
 
       const graph = graphManagerState.graph;
-      const expected: [string, unknown, unknown[], Multiplicity][] = [
+      const expected: [string, Type, unknown[], Multiplicity][] = [
         ['col_string', PrimitiveType.STRING, [], Multiplicity.ONE],
         ['col_integer', PrimitiveType.INTEGER, [], Multiplicity.ONE],
         ['col_float', PrimitiveType.FLOAT, [], Multiplicity.ONE],
@@ -411,17 +412,31 @@ describe(
       ];
 
       const cols = accessor.relationType.columns;
-      expect(cols.map((c) => c.name)).toEqual(expected.map(([name]) => name));
-      expected.forEach(([name, rawType, typeParameters, multiplicity]) => {
-        const col = guaranteeNonNullable(cols.find((c) => c.name === name));
-        expect({
-          name,
-          rawType: col.genericType.value.rawType,
+      // compare every column at once, so a failure shows all the wrong columns
+      expect(
+        cols.map((col) => ({
+          name: col.name,
+          rawType: col.genericType.value.rawType.path,
           typeParameters: getColumnTypeParameters(col),
-          multiplicity: col.multiplicity,
-        }).toEqual({ name, rawType, typeParameters, multiplicity });
-        // the resolved types are the graph's own instances
-        expect(col.genericType.value.rawType).toBe(rawType);
+          multiplicity: [
+            col.multiplicity.lowerBound,
+            col.multiplicity.upperBound,
+          ],
+        })),
+      ).toEqual(
+        expected.map(([name, rawType, typeParameters, multiplicity]) => ({
+          name,
+          rawType: rawType.path,
+          typeParameters,
+          multiplicity: [multiplicity.lowerBound, multiplicity.upperBound],
+        })),
+      );
+      // the resolved types are the graph's own instances
+      expected.forEach(([name, rawType]) => {
+        expect(
+          guaranteeNonNullable(cols.find((c) => c.name === name)).genericType
+            .value.rawType,
+        ).toBe(rawType);
       });
     });
 
@@ -479,6 +494,15 @@ describe(
           }),
         );
 
+        // one warning per unresolvable column, naming the type
+        expect(warnSpy).toHaveBeenCalledTimes(2);
+        const warnings = warnSpy.mock.calls.map((call) => String(call[1]));
+        expect(warnings[0]).toContain(`'SomeCustomType'`);
+        expect(warnings[0]).toContain(`'col'`);
+        expect(warnings[0]).toContain(`'ds'`);
+        expect(warnings[1]).toContain(`'test::Unknown'`);
+        expect(warnings[1]).toContain(`'col_with_package'`);
+
         const cols = accessor.relationType.columns;
         expect(cols.map((c) => c.name)).toEqual([
           'col',
@@ -501,15 +525,6 @@ describe(
           PrecisePrimitiveType.VARCHAR,
         );
         expect(getColumnTypeParameters(knownCol)).toEqual([20]);
-
-        // one warning per unresolvable column, naming the type
-        expect(warnSpy).toHaveBeenCalledTimes(2);
-        const warnings = warnSpy.mock.calls.map((call) => String(call[1]));
-        expect(warnings[0]).toContain(`'SomeCustomType'`);
-        expect(warnings[0]).toContain(`'col'`);
-        expect(warnings[0]).toContain(`'ds'`);
-        expect(warnings[1]).toContain(`'test::Unknown'`);
-        expect(warnings[1]).toContain(`'col_with_package'`);
       } finally {
         warnSpy.mockRestore();
       }
