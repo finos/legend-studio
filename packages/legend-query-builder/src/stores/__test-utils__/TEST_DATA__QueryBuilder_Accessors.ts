@@ -859,3 +859,102 @@ export const TEST_DATA__QueryBuilder_Accessors = [
       'meta::external::ingest::specification::metamodel::IngestDefinition',
   },
 ];
+
+export const TEST_DATA__QueryBuilder_Accessors_QuotedColumnDatabase = [
+  {
+    path: 'database::QuotedColumnDatabase',
+    content: {
+      _type: 'relational',
+      filters: [],
+      joins: [],
+      name: 'QuotedColumnDatabase',
+      package: 'database',
+      schemas: [
+        {
+          name: 'default',
+          tables: [
+            {
+              columns: [
+                {
+                  name: 'ID',
+                  nullable: false,
+                  type: {
+                    _type: 'Integer',
+                  },
+                },
+                {
+                  name: '"first name"',
+                  nullable: true,
+                  type: {
+                    _type: 'Varchar',
+                    size: 20,
+                  },
+                },
+              ],
+              name: 'PERSON',
+              primaryKey: ['ID'],
+            },
+          ],
+          views: [],
+        },
+      ],
+    },
+    classifierPath: 'meta::relational::metamodel::Database',
+  },
+];
+
+// |#>{database::QuotedColumnDatabase.default.PERSON}#->filter(x|$x.'first name' == 'John')
+export const TEST_DATA__QueryBuilder_Accessors_FilterOnQuotedColumn = {
+  _type: 'lambda',
+  body: [
+    {
+      _type: 'func',
+      function: 'filter',
+      parameters: [
+        {
+          _type: 'classInstance',
+          multiplicity: {
+            lowerBound: 1,
+            upperBound: 1,
+          },
+          type: '>',
+          value: {
+            path: ['database::QuotedColumnDatabase', 'default', 'PERSON'],
+          },
+        },
+        {
+          _type: 'lambda',
+          body: [
+            {
+              _type: 'func',
+              function: 'equal',
+              parameters: [
+                {
+                  _type: 'property',
+                  parameters: [
+                    {
+                      _type: 'var',
+                      name: 'x',
+                    },
+                  ],
+                  property: 'first name',
+                },
+                {
+                  _type: 'string',
+                  value: 'John',
+                },
+              ],
+            },
+          ],
+          parameters: [
+            {
+              _type: 'var',
+              name: 'x',
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  parameters: [],
+};

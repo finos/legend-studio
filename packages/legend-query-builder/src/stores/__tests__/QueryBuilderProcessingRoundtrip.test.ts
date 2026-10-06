@@ -88,6 +88,8 @@ import {
   TEST_DATA__QueryBuilder_Accessors_SimpleProjection_WithFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_WithPostFilter,
   TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+  TEST_DATA__QueryBuilder_Accessors_QuotedColumnDatabase,
+  TEST_DATA__QueryBuilder_Accessors_FilterOnQuotedColumn,
 } from '../__test-utils__/TEST_DATA__QueryBuilder_Accessors.js';
 
 const pluginManager = TEST__LegendApplicationPluginManager.create();
@@ -299,6 +301,11 @@ const cases: RoundtripTestCase[] = [
     'Accessor — simple select() from Ingest table',
     accessorCtx,
     TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest,
+  ],
+  [
+    'Accessor — filter() on a Database column with a quoted name',
+    { entities: TEST_DATA__QueryBuilder_Accessors_QuotedColumnDatabase },
+    TEST_DATA__QueryBuilder_Accessors_FilterOnQuotedColumn,
   ],
 ];
 
