@@ -74,6 +74,11 @@ export class V1_ConcreteFunctionDefinition extends V1_PackageableElement {
       this.returnGenericType.typeVariableValues.length
         ? this.returnGenericType
         : '',
+      // NOTE: type variable values of the return type (e.g. the `3` in `Varchar(3)`) are
+      // only hashed when present so the hash of every other function stays unchanged
+      this.returnGenericType.typeVariableValues.length
+        ? hashArray(this.returnGenericType.typeVariableValues)
+        : undefined,
       hashArray(this.taggedValues),
       hashArray(this.stereotypes),
       hashRawLambda(undefined, this.body),
