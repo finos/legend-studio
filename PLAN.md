@@ -940,7 +940,13 @@ interface ModelContext extends JsonObject {
     raw tables breaks Cube's duplicate rule on ADDRESS, CITY, POSTAL_CODE, COUNTRY), `CATEGORY_REGION(CATEGORY_ID,
 SHIP_REGION NOT NULL)` copied from `CATEGORY_NAME` for the one-nullable-key FULL join (A.4), and key pairs
     `VARCHAR(15)`/`VARCHAR(2)` and `DECIMAL(10,2)`/`NUMERIC(12,4)` for the parameter-only FULL casts (§8.4).
-  - M1.7 verifies every expected count on the engine before the tests assert it.
+  - Verified on the engine (2026-10-06, `legend-cube-evidence/m17-probes/fixture-probe.mjs`) ✅: every table types
+    in one batch call except `PROBLEM_BINARY`, which fails alone; `CHAR(3)` types as `Varchar(1)`, `OTHER` as
+    `String`, the view's columns as `Varchar(0)`; the dotted table's Pure-text path silently reads the decoy, and
+    its unquoted path fails with "Can't find table"; `EMP_REGION ⋈ CUST_REGION` gives 15 / 19 / 103 / 107 rows;
+    `ORDERS ⟗ CATEGORY_REGION` gives 838 rows, with the 507 NULL-key orders; `KEY_VC15 ⟗ KEY_VC2` 5 rows and
+    `KEY_DEC ⟗ KEY_NUM` 3 rows. ALLTYPES reads back as designed, `BI` as `9007199254740993` and `TS` as
+    `2024-01-02T03:04:05.678000000+0000`.
 
 **6.2.5 Runtime rule.**
 

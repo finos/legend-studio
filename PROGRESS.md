@@ -91,7 +91,7 @@ next):
 
 **Done:** steps 1–3 (`683f38619` builder wiring and Cube-local engine helpers; `02fc56cea` the `CubeEngine` port
 types and `V1_CubeLambdaSerializer`, whose JSON equals the engine's own parse of the slice, LEFT/RIGHT/FULL joins and
-negations). **Next:** step 4, the Cube Northwind fixture. The engine on `localhost:6300` is up.
+negations). Step 4: the Cube Northwind fixture (`stores/fixtures/CubeNorthwindModel.ts`) and its engine tests; every expected count verified (PLAN §6.2.4). **Next:** step 5, `loadModel`, the runtime rule and `LocalModelCatalog`. The engine on `localhost:6300` is up.
 
 ## Open items
 
