@@ -68,7 +68,14 @@ copy at `legend-cube-evidence/m16-checklist.txt`. Built and committed (`feat: ad
 `graph/CubeDocument.ts`, `spec/` (codec, reader, per-node codecs in `spec/codecs/`), `rest` on `QueryNode` (carried
 by every copy), `columnRest` on relational sources, `UnknownNode.json`, the `UnsupportedFilter` rule, the seven
 sample fixtures and a corpus round-trip test. Next: the detailed unit tests (decode errors with paths, degrading,
-rest everywhere, defaults, versions and migrations, size cap), then the verify workflow, fixes, and the report.
+rest everywhere, defaults, versions and migrations, size cap), then the verify workflow, fixes, and the report. Tests are in (`f00d108c9`, 1361 core tests; they found 3 bugs, fixed in the same
+commit). The verify workflow `m16-verify` (run `wf_dea717f7-e23`) finished: 21 confirmed
+issues (3 bugs, 18 test gaps), 24 refuted. Full result: `legend-cube-evidence/m16-verify-result.json`. Bugs: type
+params accept Infinity (1e400 re-saves as null, which import then refuses: require Number.isFinite in
+SchemaSnapshotCodec decodeType); OpaqueType interning merges `{path:'Foo(1)'}` with `{path:'Foo', params:[1]}`, so a
+saved type's JSON changes on round trip. **Next:** fix those, add the 18 missing tests (e.g. R47 two databases
+decode and only the second source is invalid), re-verify the delta, run `GITHUB_BASE_REF=master yarn check:ci` and
+`yarn lint:ci`, commit, then report M1.6 to the user.
 Re-reading invalid values after re-resolution is M1.8a (user).
 
 ## Open items
