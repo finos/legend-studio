@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 import {
+  type V1_BatchLambdaRelationTypeResult,
+  type V1_DataProductArtifact,
   V1_AccessPoint,
+  V1_EngineError,
   V1_LakehouseAccessPoint,
   V1_RawLambda,
+  V1_RelationType,
 } from '@finos/legend-graph';
 import { DataProductAccessPointState } from '../DataProductAccessPointState.js';
 import type { DataProductAPGState } from '../DataProductAPGState.js';
@@ -72,5 +76,154 @@ describe('DataProductAccessPointState', () => {
 
       expect(state.isParameterized).toBe(false);
     });
+  });
+});
+
+describe('DataProductAccessPointState relation type', () => {
+  const APG_ID = 'GROUP1';
+  const ACCESS_POINT_ID = 'test_access_point';
+  const BATCH_KEY = `${APG_ID}::${ACCESS_POINT_ID}`;
+  const ENGINE_ERROR_MESSAGE = "Can't find table 'NOPE' in schema 'NORTHWIND'";
+  const BATCH_ERROR_MESSAGE = 'Engine is unavailable';
+
+  const buildState = (
+    batchResult: V1_BatchLambdaRelationTypeResult,
+    batchError?: Error,
+  ): {
+    state: DataProductAccessPointState;
+    notifyError: jest.Mock<(message: string) => void>;
+  } => {
+    const notifyError = jest.fn<(message: string) => void>();
+    const apgState = {
+      apg: { id: APG_ID },
+      dataProductViewerState: {
+        batchRelationTypePromise: Promise.resolve(batchResult),
+        batchRelationTypeError: batchError,
+      },
+      applicationStore: { notificationService: { notifyError } },
+    } as unknown as DataProductAPGState;
+    return {
+      state: new DataProductAccessPointState(
+        apgState,
+        buildLakehouseAccessPoint(undefined),
+      ),
+      notifyError,
+    };
+  };
+
+  const buildEngineError = (): V1_EngineError => {
+    const engineError = new V1_EngineError();
+    engineError.message = ENGINE_ERROR_MESSAGE;
+    return engineError;
+  };
+
+  // the artifact arrives after the engine has answered
+  const buildArtifactPromise = (
+    relationType: V1_RelationType | undefined,
+  ): Promise<V1_DataProductArtifact | undefined> =>
+    new Promise((resolve) =>
+      setTimeout(
+        () =>
+          resolve({
+            accessPointGroups: [
+              {
+                id: APG_ID,
+                accessPointImplementations: [
+                  {
+                    id: ACCESS_POINT_ID,
+                    lambdaGenericType: relationType
+                      ? { typeArguments: [{ rawType: relationType }] }
+                      : undefined,
+                  },
+                ],
+              },
+            ],
+          } as unknown as V1_DataProductArtifact),
+        10,
+      ),
+    );
+
+  test('uses the engine relation type when the engine returns one', async () => {
+    const engineRelationType = new V1_RelationType();
+    const { state, notifyError } = buildState({
+      results: new Map([[BATCH_KEY, engineRelationType]]),
+      errors: new Map(),
+    });
+
+    await state.fetchRelationType(undefined);
+
+    expect(state.relationType).toBe(engineRelationType);
+    expect(notifyError).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    [
+      'an engine error for the access point',
+      {
+        results: new Map(),
+        errors: new Map([[BATCH_KEY, buildEngineError()]]),
+      },
+      undefined,
+    ],
+    [
+      'a failed batch call',
+      { results: new Map(), errors: new Map() },
+      new Error(BATCH_ERROR_MESSAGE),
+    ],
+  ])(
+    'uses the artifact relation type when the engine returns %s',
+    async (_, batchResult, batchError) => {
+      const artifactRelationType = new V1_RelationType();
+      const { state, notifyError } = buildState(batchResult, batchError);
+
+      await state.fetchRelationType(buildArtifactPromise(artifactRelationType));
+
+      expect(state.relationType).toBe(artifactRelationType);
+      expect(notifyError).not.toHaveBeenCalled();
+    },
+  );
+
+  test.each([
+    [
+      'an engine error for the access point',
+      {
+        results: new Map(),
+        errors: new Map([[BATCH_KEY, buildEngineError()]]),
+      },
+      undefined,
+      ENGINE_ERROR_MESSAGE,
+    ],
+    [
+      'a failed batch call',
+      { results: new Map(), errors: new Map() },
+      new Error(BATCH_ERROR_MESSAGE),
+      BATCH_ERROR_MESSAGE,
+    ],
+  ])(
+    'notifies the engine failure when the artifact has no relation type and the engine returns %s',
+    async (_, batchResult, batchError, expectedMessage) => {
+      const { state, notifyError } = buildState(batchResult, batchError);
+
+      await state.fetchRelationType(buildArtifactPromise(undefined));
+
+      expect(state.relationType).toBeUndefined();
+      expect(notifyError).toHaveBeenCalledWith(
+        `Error fetching access point relation type: ${expectedMessage}`,
+      );
+    },
+  );
+
+  test('notifies the engine failure when there is no artifact', async () => {
+    const { state, notifyError } = buildState(
+      { results: new Map(), errors: new Map() },
+      new Error(BATCH_ERROR_MESSAGE),
+    );
+
+    await state.fetchRelationType(undefined);
+
+    expect(state.relationType).toBeUndefined();
+    expect(notifyError).toHaveBeenCalledWith(
+      `Error fetching access point relation type: ${BATCH_ERROR_MESSAGE}`,
+    );
   });
 });
