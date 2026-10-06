@@ -44,6 +44,7 @@ import { QueryCreator } from './data-space/DataProductQueryCreator.js';
 import { IngestQueryCreator } from './ingest/IngestQueryCreator.js';
 import { ExistingQueryDataCubeViewer } from './data-cube/ExistingQueryDataCubeViewer.js';
 import { DataSpaceArtifactInspector } from './DataSpaceArtifactInspector.js';
+import { CubeEditor } from '@finos/legend-cube-builder';
 import {
   AuthProvider,
   withAuthenticationRequired,
@@ -136,6 +137,14 @@ const LegendQueryWebApplicationRouter = observer(() => {
             path={LEGEND_QUERY_ROUTE_PATTERN.DEV_DATA_SPACE_INSPECTOR}
             element={<DataSpaceArtifactInspector />}
           />
+
+          {/* Legend Cube (in development) */}
+          {applicationStore.config.options.TEMPORARY__enableLegendCube && (
+            <Route
+              path={LEGEND_QUERY_ROUTE_PATTERN.CUBE}
+              element={<CubeEditor />}
+            />
+          )}
 
           {/* LEGACY DATA SPACE */}
           <Route

@@ -17,7 +17,13 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
-export const setup = (outputDir) => {
+/**
+ * Writes the application's `version.json` and `config.json` to `outputDir`.
+ *
+ * Set `dev` when the output is for the local development server: this turns on
+ * features that are still in development.
+ */
+export const setup = (outputDir, { dev = false } = {}) => {
   if (!existsSync(outputDir)) {
     mkdirSync(outputDir);
   }
@@ -98,6 +104,15 @@ export const setup = (outputDir) => {
             },
           ],
         },
+        ...(dev
+          ? {
+              extensions: {
+                core: {
+                  TEMPORARY__enableLegendCube: true,
+                },
+              },
+            }
+          : {}),
       },
       undefined,
       2,

@@ -1,29 +1,29 @@
 {
-  "name": "@finos/legend-application-query",
-  "version": "13.8.57",
-  "description": "Legend Query application core",
+  "name": "@finos/legend-cube-builder",
+  "version": "0.0.1",
+  "description": "Legend Cube builder: the canvas UI and the Legend engine adapter of the Legend Cube query builder",
   "keywords": [
     "legend",
-    "legend-application",
-    "legend-query",
-    "query builder"
+    "legend-cube",
+    "legend-cube-builder",
+    "cube",
+    "query"
   ],
-  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-application-query",
+  "homepage": "https://github.com/finos/legend-studio/tree/master/packages/legend-cube-builder",
   "bugs": {
     "url": "https://github.com/finos/legend-studio/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/finos/legend-studio.git",
-    "directory": "packages/legend-application-query"
+    "directory": "packages/legend-cube-builder"
   },
   "license": "Apache-2.0",
   "sideEffects": false,
   "type": "module",
   "exports": {
     ".": "./lib/index.js",
-    "./lib/index.css": "./lib/index.css",
-    "./lib/light-mode.css": "./lib/light-mode.css"
+    "./lib/index.css": "./lib/index.css"
   },
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -44,35 +44,17 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
-    "@finos/legend-application": "workspace:*",
-    "@finos/legend-art": "workspace:*",
-    "@finos/legend-code-editor": "workspace:*",
-    "@finos/legend-cube-builder": "workspace:*",
-    "@finos/legend-data-cube": "workspace:*",
-    "@finos/legend-extension-dsl-data-space": "workspace:*",
-    "@finos/legend-graph": "workspace:*",
-    "@finos/legend-lego": "workspace:*",
-    "@finos/legend-query-builder": "workspace:*",
-    "@finos/legend-server-depot": "workspace:*",
-    "@finos/legend-server-lakehouse": "workspace:*",
-    "@finos/legend-shared": "workspace:*",
-    "@finos/legend-storage": "workspace:*",
-    "@testing-library/dom": "10.4.0",
-    "@testing-library/react": "16.2.0",
+    "@finos/legend-cube": "workspace:*",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
-    "mobx": "6.13.6",
-    "mobx-react-lite": "4.1.0",
-    "oidc-client-ts": "3.2.0",
     "react": "19.0.1",
-    "react-dom": "19.0.1",
-    "react-oidc-context": "3.3.0",
-    "reactflow": "11.11.4",
-    "serializr": "3.0.3"
+    "react-dom": "19.0.1"
   },
   "devDependencies": {
     "@finos/legend-dev-utils": "workspace:*",
     "@jest/globals": "29.7.0",
+    "@testing-library/dom": "10.4.0",
+    "@testing-library/react": "16.2.0",
     "cross-env": "7.0.3",
     "eslint": "9.22.0",
     "jest": "29.7.0",
@@ -86,8 +68,5 @@
   },
   "publishConfig": {
     "directory": "build/publishContent"
-  },
-  "extensions": {
-    "applicationQueryPlugin": "@finos/legend-application-query-plugin-core"
   }
 }

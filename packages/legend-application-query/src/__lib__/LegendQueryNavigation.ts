@@ -65,6 +65,9 @@ export const LEGEND_QUERY_ROUTE_PATTERN = Object.freeze({
   // Developer-only diagnostic page for inspecting depot DataSpace
   // analytics artifact sizes. See `DataSpaceArtifactInspector`.
   DEV_DATA_SPACE_INSPECTOR: '/dev/dataspace-inspector',
+  // Legend Cube, the canvas query builder (in development): mounted only when
+  // the `TEMPORARY__enableLegendCube` option is on
+  CUBE: '/cube',
 });
 
 // DataProduct

@@ -1,0 +1,6 @@
+/build
+/style
+**/__mocks__/**
+**/__tests__/**
+/*.*
+!tsconfig.json

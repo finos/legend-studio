@@ -1,12 +1,12 @@
 # Legend Cube — Implementation Plan
 
-> **Status:** draft for review · 2026-10-05 · branch `cubeV1` (rebased on master `0665e6f4c`, where the spec landed as
+> **Status:** approved 2026-10-05 · branch `cubeV1` (rebased on master `0665e6f4c`, where the spec landed as
 > `docs/design/WIP-CUBE-SPEC.md` in #5589)
 > **Inputs:** [docs/design/WIP-CUBE-SPEC.md](docs/design/WIP-CUBE-SPEC.md), the planning brief, and an investigation of
 > `legend-studio` + `legend-engine` (HEAD `93d92b4`) with ~1,500 checks against a live engine on `localhost:6300`.
 > **Evidence markers:** ✅ verified live against the engine · 📄 traced in code · 💭 inference, to be verified in the
 > milestone that needs it.
-> **No code has been written.** This document is the plan; nothing in it is implemented.
+> **Implementation status** is tracked in [PROGRESS.md](PROGRESS.md), not here.
 
 ---
 
@@ -92,6 +92,9 @@ CubeSpec JSON ◄────────────────────►
 | `@finos/legend-cube` (`packages/legend-cube`)                 | Host-free core. Spec §2.2 `cube-domain`, plus the IR emitter and the spec codec.                              | **none** at runtime. Dev: `@finos/legend-dev-utils`, `@jest/globals`, `jest`, `typescript`, `eslint`, `rimraf`, `npm-run-all`, `cross-env`.                                                                                                 | `packages/legend-storage` (headless) |
 | `@finos/legend-cube-builder` (`packages/legend-cube-builder`) | UI and Legend adapter. Spec §2.2 `cube-engine` + `cube-sources` + `cube-ui` + `cube-persistence`, as folders. | `@finos/legend-cube`, `legend-graph`, `legend-application`, `legend-art`, `legend-lego`, `legend-shared`, `@xyflow/react@12.4.4`, `@dagrejs/dagre@1.1.4`, `react-dnd@16.0.1`, `mobx@6.13.6`, `mobx-react-lite@4.1.0`, `react@19.0.1` (peer) | `packages/legend-data-cube` (UI lib) |
 
+The dependency lists are the target. Each step adds the dependencies it first uses, so nothing is declared unused: M1.0
+declares only `@finos/legend-cube`, React and React DOM in the builder.
+
 Why two packages and not five (spec §19.3):
 
 - The rule that the core has **no host imports** is the spec's most important structural rule (§2.2). A package
@@ -156,18 +159,32 @@ in `legend-application-query`.
 ### 3.3 Guarding the core's purity
 
 The core gets four layers of protection, because `tsc` resolves _undeclared_ workspace packages through the root
-`node_modules/@finos` symlinks 📄:
+`node_modules/@finos` symlinks 📄. All four have been in place since M1.0 ✅. Each was checked with a probe file that
+imports `mobx` and reads `window`: lint, the build and the test all reject it.
 
-1. Declare nothing host-related in `packages/legend-cube/package.json`, not even as a devDependency.
-2. A root `eslint.config.js` block scoped to `packages/legend-cube/src/**`:
-   `no-restricted-imports: { patterns: ['@finos/*', 'react', 'react-*', 'mobx*', 'ag-grid-*', '@xyflow/*', 'serializr'] }`.
-3. **Host globals.** Import guards alone don't stop the core from using browser or Node globals: the shared tsconfig
-   includes the DOM lib and `@types/node` declares `fetch` 📄. In the same scoped eslint block, for non-test files,
-   add `no-restricted-globals` for `window`, `document`, `localStorage`, `sessionStorage`, `navigator`, `location`,
-   `fetch` and `XMLHttpRequest`, and set `lib: ["esnext"]` in `packages/legend-cube/tsconfig.json`. Don't set
-   `types: []`, because the import-scan test needs Node's `fs` types.
-4. A unit test in `legend-cube` that scans `src/**/*.ts` for forbidden import specifiers and those global names. It
-   runs in CI even when lint is skipped.
+1. **No dependencies.** `packages/legend-cube/package.json` declares no runtime, peer or optional dependencies. Its only
+   dev dependencies are tooling: `@finos/legend-dev-utils`, Jest, TypeScript, ESLint and the script helpers. The test
+   in item 4 checks this.
+2. **Relative imports only (ESLint).** A root `eslint.config.js` block covers the non-test files under
+   `packages/legend-cube/src/**`.
+   - `no-restricted-imports` rejects every specifier that doesn't start with `./` or `../`. That is stricter than a
+     list of host packages and needs no upkeep.
+   - `no-restricted-globals` flags `window`, `document`, `localStorage`, `sessionStorage`, `navigator`,
+     `location`, `fetch`, `XMLHttpRequest`, `process`, `console`, `setTimeout`, `setInterval` and
+     `structuredClone`, for feedback while typing.
+3. **ECMAScript globals only (build).** `packages/legend-cube/tsconfig.json` sets `lib: ["esnext"]` and
+   `types: ["node"]`, because the tests need Node. `tsconfig.build.json` also sets `types: []` and leaves out the
+   test folders.
+   - So `yarn build` fails on **any** browser or Node global outside tests, not just the names above: `URL`,
+     `TextEncoder`, `crypto`, `queueMicrotask` and the like are out too.
+   - The core needs none of them. Write plain ECMAScript instead; for example, copy values without
+     `structuredClone`.
+4. **A unit test** (`src/__tests__/LegendCubeHostFree.test.ts`) runs in CI even when lint is skipped.
+   - It parses each non-test source file and rejects any module reference that isn't relative: static imports and
+     re-exports (type-only ones too), `import()`, `require()`, `import x = require()` and triple-slash directives.
+   - It compiles the non-test sources against the ECMAScript library with no ambient types, and checks the package's
+     dependencies.
+   - Each check also runs against small bad fixtures, so the test proves it can fail.
 
 ### 3.4 Build, test and lint conventions
 
@@ -198,7 +215,8 @@ What the repo actually enforces:
       - `execute` (`responseType: 'text'`), returning `{ ok: true, status: 200, text: async () => body }` so the
         lossless reader runs exactly as in the browser.
 - **CSS:**
-  - The builder's `style/index.scss` starts with `@import url('@xyflow/react/dist/style.css');`.
+  - From M1.8b, with the canvas, the builder's `style/index.scss` starts with
+    `@import url('@xyflow/react/dist/style.css');`.
   - Legend Query's bootstrap `style/index.scss` imports `@finos/legend-cube-builder/lib/index.css`.
   - Tailwind only scans `../legend-*/src/**/*.tsx`: the package folder must start with `legend-`, and Tailwind
     classes go in `.tsx` files 📄.
@@ -1718,6 +1736,8 @@ and sources modal are designed. M3 can run in parallel if desired.
 ---
 
 ## Appendix A: Spec deltas, section by section
+
+The user accepted the departures from the spec's guidance sections (§14.4, §17.7, §17.11) on 2026-10-05.
 
 | Spec §               | Status           | Change                                                                                                                                                                                                                                                                                     |
 | -------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

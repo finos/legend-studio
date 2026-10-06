@@ -23,8 +23,8 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | Item        | State                                                                                                                                                                                                                                                           |
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
-| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05; committed                                                                                                                                                                                                    |
-| Code        | **None yet.** Next milestone step: M1.0, **waiting for the user's go-ahead**                                                                                                                                                                                    |
+| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
+| Code        | **M1.0 done** (scaffolding), committed on `cubeV1`, not pushed. Next milestone step: **M1.1**                                                                                                                                                                   |
 | Decisions   | PLAN.md §0, D1–D10. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
@@ -32,7 +32,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 
 See PLAN.md §11 for the deliverables and "done when" of each step.
 
-- [ ] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route + `TEMPORARY__enableLegendCube` flag
+- [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route + `TEMPORARY__enableLegendCube` flag
 - [ ] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
 - [ ] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
 - [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
@@ -50,10 +50,16 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-Wait for the user's go-ahead, then start **M1.0**: scaffold the two packages per PLAN.md §3.1–3.5. Keep the PR small:
+Start **M1.1, types and values** (PLAN.md §11.1; the design is in §5.3–5.6 and §4.9). It is headless and test-driven,
+and needs no engine:
 
-- build, lint and the purity guards;
-- a placeholder page at `/query/cube` behind the flag.
+- the precise primitive registry, `CubeType` interning and equality, families, comparison classes, type display;
+- `LiteralValue` parsing and validation (`parseValue` keeps invalid text, keeps STRING untrimmed, canonicalizes
+  numbers);
+- table-driven tests, per the M1.1 "done when" in §11.1.
+
+The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §3.3). `yarn build` and
+`LegendCubeHostFree.test.ts` fail otherwise.
 
 ## Open items
 
@@ -61,6 +67,8 @@ Wait for the user's go-ahead, then start **M1.0**: scaffold the two packages per
 | ------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Planning evidence                                 | –     | Copied to `/Users/mauriciouyaguari/Goldman Sachs/legend-cube-evidence/` (outside both repos, not committed); see its `README.md`. Reports in `wf/`, harnesses runnable from there (paths rewritten). M1.7 and M5 reuse the fixtures and harnesses |
 | Entry points and the sources modal (D7 follow-up) | User  | Designed before M3                                                                                                                                                                                                                                |
+| Lazy-load the Cube page (M1.8a)                   | –     | Query imports the Cube page statically, so from M1.8 the canvas stack would sit in Query's main bundle even with the flag off. Consider `React.lazy` for the route                                                                                |
+| Push and PR                                       | User  | `cubeV1` is local only. Push and open a PR when the user asks                                                                                                                                                                                     |
 | Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                              |
 
 ## Environment (local)
@@ -71,8 +79,12 @@ Wait for the user's go-ahead, then start **M1.0**: scaffold the two packages per
   - **No Mongo**, so the engine's query stores don't work locally.
   - Its depot setting points at `127.0.0.1:6200`, but nothing runs there.
   - Check with `curl -s localhost:6300/api/server/v1/info`; planning used commit `93d92b4`.
-- **Legend Query dev:** `yarn dev:ts` plus `yarn dev:query` → `http://localhost:9001/query/`. The Cube page will be at
-  `/query/cube` once the flag exists (M1.0).
+- **Legend Query dev:** `yarn dev:ts` plus `yarn dev:query` → `http://localhost:9001/query/`. The Cube page is at
+  `http://localhost:9001/query/cube`.
+  - It needs the `TEMPORARY__enableLegendCube` flag, which only the dev config sets. Regenerate that config once with
+    `yarn workspace @finos/legend-application-query-deployment setup`.
+  - Run `yarn build` at least once first: `dev:ts` doesn't build the stylesheets (`lib/index.css`) that the Query
+    bundle imports.
 - **Northwind:** the engine loads it into H2 through `call loadNorthwindData()` in the connection's
   `testDataSetupSqls`. The shared grammar is
   `packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure`. Cube will ship its own corrected
@@ -96,6 +108,8 @@ Each is verified and detailed in PLAN.md.
   aggregates. Cube validates and infers both itself (§5.4–5.6, §4.7).
 - Take schemas from `lambdaRelationType` (and its `/batch` form, whose response field is `result`). Studio's wrappers
   drop type parameters, and its batch wrapper reads `results`, so it throws (§5.1, §8.7).
+- The core (`@finos/legend-cube`) is host-free: relative imports and plain ECMAScript only, so no `console`,
+  `setTimeout`, `structuredClone` or `URL` either. ESLint, `yarn build` and a unit test enforce it (§3.3).
 - Window extend followed by a filter gives wrong rows, and some dialects silently drop the filter. Isolate window
   nodes with `let` (§8.6, from M5).
 
@@ -129,3 +143,17 @@ Each is verified and detailed in PLAN.md.
   - **Partially rejected:** blocking joins on `OTHER`-typed columns. They are flagged "type unknown" with an inline
     warning instead, because the failure is a loud engine error, not silent wrong data, and v1 has no cast to work
     around a block.
+- **2026-10-05, M1.0.**
+  - The user accepted the departures from the spec's guidance sections (§14.4, §17.7, §17.11) and gave the go-ahead.
+  - Scaffolded `@finos/legend-cube` and `@finos/legend-cube-builder` (0.0.1 each, patch changeset), with root and
+    Query tsconfig references.
+  - The core's host-free guard is stricter than planned; PLAN.md §3.3 describes it as built:
+    - lint allows relative imports only;
+    - the build compiles against the ECMAScript library with no ambient types;
+    - a unit test checks module references and the compile, against bad fixtures too.
+  - A probe file importing `mobx` and reading `window` was rejected by all three guards.
+  - Legend Query: route `/cube` and option `TEMPORARY__enableLegendCube` (default off, with a config test). The
+    bootstrap's `setup(outputDir, { dev })` turns the option on for the dev config only; the deployment passes `dev`
+    for `./dev`. The bootstrap stylesheet imports the builder's CSS.
+  - The builder declares only what it uses (core, React, React DOM). Other dependencies, and the `@xyflow/react` CSS
+    import, arrive with the step that first needs them.

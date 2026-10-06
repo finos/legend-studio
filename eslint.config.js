@@ -57,6 +57,56 @@ const ignores = {
   ],
 };
 
+const LEGEND_CUBE_HOST_FREE_MESSAGE =
+  'The Legend Cube core is host-free: see packages/legend-cube/README.md';
+
+/**
+ * Outside tests, the Legend Cube core (`@finos/legend-cube`) imports only its own
+ * modules and uses no browser or Node globals. Its build config and a unit test
+ * enforce the same rule; this gives feedback while typing.
+ *
+ * @type {import('eslint').Linter.Config}
+ */
+const legendCubeHostFree = {
+  files: ['packages/legend-cube/src/**/*.{ts,tsx}'],
+  ignores: [
+    'packages/legend-cube/src/**/__tests__/**',
+    'packages/legend-cube/src/**/__test-utils__/**',
+    'packages/legend-cube/src/**/__mocks__/**',
+  ],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            regex: '^(?!\\.{1,2}/)',
+            message: LEGEND_CUBE_HOST_FREE_MESSAGE,
+          },
+        ],
+      },
+    ],
+    'no-restricted-globals': [
+      'error',
+      ...[
+        'window',
+        'document',
+        'localStorage',
+        'sessionStorage',
+        'navigator',
+        'location',
+        'fetch',
+        'XMLHttpRequest',
+        'process',
+        'console',
+        'setTimeout',
+        'setInterval',
+        'structuredClone',
+      ].map((name) => ({ name, message: LEGEND_CUBE_HOST_FREE_MESSAGE })),
+    ],
+  },
+};
+
 export default [
   ignores,
   legend_plugin.configs.recommended,
@@ -66,4 +116,5 @@ export default [
   // turn on the stylistic checks only when running in the IDE to speed up pipeline performance
   // the formatting checks are done by Prettier in the pipeline separately and gated by lint-staged when comitting code
   isIDE && legend_plugin.configs.stylistic,
+  legendCubeHostFree,
 ].filter(Boolean);

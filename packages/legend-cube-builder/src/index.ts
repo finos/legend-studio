@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2020-present, Goldman Sachs
+ * Copyright (c) 2026-present, Goldman Sachs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,5 @@
  * limitations under the License.
  */
 
-import { setup } from '@finos/legend-application-query-bootstrap/scripts/setup.js';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-const outputDir = resolve(__dirname, `../${process.argv[2]}`);
-
-// `./dev` holds the config of the local development server
-setup(outputDir, { dev: outputDir === resolve(__dirname, '../dev') });
+export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
+export { CubeEditor } from './components/CubeEditor.js';
