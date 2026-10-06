@@ -22,3 +22,18 @@ export * from './types/EnumValueQualification.js';
 
 export * from './values/LiteralValue.js';
 export * from './values/ValueEntry.js';
+
+export * from './schema/Schema.js';
+
+export * from './graph/Connection.js';
+export * from './graph/QueryNode.js';
+export * from './graph/Query.js';
+
+export * from './inference/ValidationUtils.js';
+export * from './inference/SchemaInference.js';
+
+export * from './nodes/sources/RelationalTableSource.js';
+export * from './nodes/UnknownNode.js';
+export * from './nodes/NodeRegistry.js';
+
+export * from './messages/CubeMessages.js';

@@ -373,7 +373,22 @@ five invariants, every operation and every `canX` predicate), plus the following
 | **Per-type `generateId`**            | §4.4's global max cannot produce Appendix C's ids (`join101` + `filter101`) 📄. Take `max(100, ids of nodes of that type) + 1`; the collision fallback is unchanged.                                                                                                                                                                                                                                                                                |
 | **Port labels in metadata**          | §17.3 pitfall 4. `Join.PORT_LABELS = ['Left', 'Right']`.                                                                                                                                                                                                                                                                                                                                                                                            |
 
-- **Undo** creates a new object identity, as §17.4 requires.
+Settled in M1.2 (spec §4.4 leaves these open or assumes unary nodes):
+
+- **Port invariant (7):** a connection must target one of its target's ports. Port capacity stays out of the
+  constructor, as in the spec.
+- **Healing** (`remove`, `move`): the node's first connected input, in port order, feeds its output's target on the
+  same port. A binary node's other input is dropped.
+- **`move`** heals like `remove` before splicing, since the spec only says "disconnect". Moving a node after the
+  selected node selects it, as `add` does; otherwise the selection is unchanged.
+- **Nodes that don't accept new inputs** (`acceptsNewInputs`, false for Unknown, §4.10): `canAdd(…, after)`,
+  `canMove`, `canConnect(*, it)` and `canSwapInputs` are false. Changes that keep its ports are allowed: healing into
+  it on removal, and splicing a node in front of it.
+- **`replace(node)`** swaps the node with the same id for a new node object (spec §4.1's key check) and needs every
+  port in use. Every operation asserts its `canX` and throws.
+- **`generateId`** counts only ids that are the type followed by digits, for nodes of that type (stricter than the
+  spec's lenient `parseInt`). Past safe integers it falls back to the scan, which covers 1–10000.
+- **Undo** creates a new object identity, as §17.4 requires: `query.clone()`.
 - `CubeDocument` holds `{ context, query, meta }`, where `context = { model: ModelRef; runtime?: string }` is
   query-level (§6.2).
 
@@ -387,6 +402,12 @@ five invariants, every operation and every `canX` predicate), plus the following
     Message: `Sources from different databases are not supported yet; "<db>" differs from "<db0>".`
   - **Host-supplied issues** (engine errors mapped back by node id, §8.7) live in a separate map and do not take
     part in schema propagation. The UI merges them for display.
+- Settled in M1.2:
+  - A node with a rule error is invalid, so it has no schema and downstream nodes report `ERR_SCHEMAS`. Rule errors
+    come first in its list, before a sentinel or its own errors. The rule takes the first relational source in
+    `query.nodes` order, and every relational source counts, connected or not.
+  - A node that validates but gives no schema gets `ERR_OTHER`, the converse of "invalid ⇒ no schema".
+  - `isIncompleteError` joins `isSchemasError` (which stays `ERR_SCHEMAS` only).
 
 ### 4.5 Node contracts and registry
 
@@ -415,6 +436,12 @@ interface SourceDefinition<S extends SourceNode> extends NodeDefinition<S> {
 
 Node instances implement spec §5.2 `validate(inputSchemas, errors)` / `schematize(inputSchemas)` plus `describe()`.
 
+As built in M1.2: a `NodeDefinition {type, label, icon, beta}` with `TransformDefinition {kind: 'transform', create}`
+and `SourceDefinition {kind: 'source', fromCoordinates, resolve, queryRules?}`. `decode`/`encode` arrive with the
+codec (M1.6) and `emit` with the IR (M1.5). Port labels live on node instances (`portLabels`, Left/Right for binary
+nodes). The registry is built by `createNodeRegistry()`, not held as a module-level singleton, and reserves the
+`unknown` type.
+
 ### 4.6 Relational table source (`type: 'relational'`)
 
 - **State:** `{ database: string /* element path */; schema: string; table: string; resolution }`.
@@ -423,6 +450,9 @@ Node instances implement spec §5.2 `validate(inputSchemas, errors)` / `schemati
 resolved.`). A resolution error is reported verbatim from the engine (first line).
 - **`describe()`:** `Table "<table>" from schema "<schema>"` (§6.2), or `(unknown)` when unresolved.
 - **No parameters.** Coordinates are validated at construction (non-empty strings).
+- **As built in M1.2:** `resolution` is `unresolved | resolved {schema} | failed {message}`. `describe()` is
+  `(unknown)` only while unresolved; a failed source still shows its table, so the canvas names the broken one. The
+  same-database rule (§4.4) lives with the source.
 
 ### 4.7 Join (`type: 'join'`, ports `['leftTds','rightTds']`)
 

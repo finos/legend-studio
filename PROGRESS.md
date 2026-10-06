@@ -24,7 +24,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **M1.0 and M1.1 done** (scaffolding; types and values), committed on `cubeV1`, not pushed. Next milestone step: **M1.2**                                                                                                                                        |
+| Code        | **M1.0–M1.2 done** (scaffolding; types and values; graph and inference), committed on `cubeV1`, not pushed. Next milestone step: **M1.3**                                                                                                                       |
 | Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
@@ -34,7 +34,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 - [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route (always mounted, no flag: D11)
 - [x] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
-- [ ] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
+- [x] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
 - [ ] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
 - [ ] **M1.4** Filter (tree, operators by family, value validation, builder helpers)
 - [ ] **M1.5** IR and emitter (join algorithm, filter emission, typed literals, origins, debug printer)
@@ -51,16 +51,20 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-Wait for the user's go-ahead, then start **M1.2, graph and inference** (PLAN.md §11.1; the design is in §4.2–4.6 and
-§4.10). It is headless and test-driven, and needs no engine:
+Wait for the user's go-ahead, then start **M1.3, Join** (PLAN.md §11.1; the design is in §4.7 and spec §7.11). It is
+headless and test-driven, and needs no engine:
 
-- `SchemaColumn` and `Schema` (§4.2), on M1.1's `CubeType`;
-- `QueryNode`, `Connection` and `Query`, with the five invariants plus acyclicity, and every §4.4 operation;
-- `buildSchemasAndValidity` with the sentinels, the query-level rule pass and the node registries;
-- `RelationalTableSource` (with a given schema) and `UnknownNode`;
-- propagation proven with test-only stub nodes, per the M1.2 "done when" in §11.1.
+- `Join` as a `BinaryNode` with ports `leftTds`/`rightTds`, state `{leftColumns, rightColumns, joinType}` (default
+  `LEFT_OUTER`, plus `FULL_OUTER`), registered as a transform in `createNodeRegistry()`;
+- §7.11 validation steps 1–5 with the verbatim messages (already in `messages/CubeMessages.ts`), using
+  `areCompatibleTypes` for step 4 and the duplicate rule for step 5;
+- output order and the nullability and merged-key rules per join type (§4.7), with `getLeastCommonAncestor` for a FULL
+  merged key whose types differ;
+- tests per the M1.3 "done when" in §11.1, including spec Appendix C.5(b) verbatim.
 
-The core stays host-free: relative imports and plain ECMAScript only (PLAN.md §3.3).
+Process that worked for M1.2 (ultracode): a workflow extracts a cited requirement checklist from the spec and plan while
+the code is written; a second workflow checks every requirement and hunts bugs, with skeptics confirming each finding;
+fix, then re-verify until nothing new turns up. Run `tsc --noEmit` on the package too: Jest does not type-check.
 
 ## Open items
 
@@ -170,3 +174,21 @@ Each is verified and detailed in PLAN.md.
   - PLAN.md §5.4 and §5.6 record what M1.1 settled: StrictTime is its own comparison class; a non-finite FLOAT
     value is out of range; the abstract `Date` takes a date or a date-time; value problems are structured, and
     M1.4 adds their messages.
+- **2026-10-05, M1.2.**
+  - Recorded D12 (legend-graph types from M2.0; narrow type seam until then) and that date-time values accept a
+    trailing `Z` or `+0000`.
+  - Schema (`src/schema/`): `SchemaColumn {name, type, nullable}`, `Schema` with unique names, order-sensitive
+    `equals` that ignores nullability, and `isIdenticalTo` for drift detection.
+  - Graph (`src/graph/`): `QueryNode` (with `SourceNode`, `UnaryNode`, `BinaryNode`), `Connection`, and an
+    immutable `Query` with the five spec invariants plus acyclicity and a port invariant, every operation with a
+    total `canX` predicate, `replace`, `clone` and per-type `generateId`.
+  - Inference (`src/inference/`): `buildSchemasAndValidity` with the three sentinels and the query-rule pass; the
+    validation combinators.
+  - Nodes (`src/nodes/`): `RelationalTableSource` with the same-database rule, `UnknownNode` with synthetic ports,
+    and `NodeRegistry`/`createNodeRegistry()`. Messages (`src/messages/`): the full §16 catalogue plus Cube's
+    additions, tested line for line against the spec.
+  - PLAN.md §4.3–4.6 record what M1.2 settled (healing in port order, move selection, nodes that refuse new inputs,
+    rule-error order, describe of failed or quoted sources).
+  - Verification: a 5-agent workflow built a 168-item cited checklist; a 92-agent workflow checked it and hunted
+    bugs, confirming 40 issues (37 test gaps, the `ensureSchemas` shape check, quoted names in `describe()`), all
+    fixed; a 19-agent re-verification found 14 more test gaps and one weak check, all fixed. 453 core tests.
