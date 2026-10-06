@@ -19,8 +19,6 @@
  * `buildQueryForPersistence()` (saving to query store) for each query builder
  * workflow variant:
  *
- *  - DataProduct NATIVE  – buildQuery() embeds `from(query, mapping, runtime)`,
- *                          buildQueryForPersistence() emits a plain lambda.
  *  - DataProduct MODEL   – buildQuery() embeds `with(query, dataProduct)` + `from(…, runtime)`,
  *                          buildQueryForPersistence() emits a plain lambda.
  *  - Accessor            – buildQuery() embeds `from(query, runtime)`,
@@ -38,7 +36,6 @@ import {
   QueryBuilderAdvancedWorkflowState,
   QueryBuilderActionConfig,
   DataProductQueryBuilderState,
-  NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
   LakehouseDataProductExecutionState,
   resolveDataProductAccessor,
@@ -53,7 +50,6 @@ import {
   Core_GraphManagerPreset,
   ModelAccessPointGroup,
   LakehouseAccessPoint,
-  type NativeModelExecutionContext,
   PackageableElementExplicitReference,
   RuntimePointer,
   RelationTypeMetadata,
@@ -79,7 +75,7 @@ import type { Entity } from '@finos/legend-storage';
 /**
  * Minimal entity set used by all DataProduct tests.
  * Contains a Person class, a Mapping, two PackageableRuntimes
- * (engineRuntime for NATIVE, LakehouseRuntime for MODEL), and two
+ * (engineRuntime and LakehouseRuntime), and two
  * DataProducts (one per access type).
  */
 const TEST_DATA__DataProductEntities: Entity[] = [
@@ -143,28 +139,6 @@ const TEST_DATA__DataProductEntities: Entity[] = [
       },
     },
     classifierPath: 'meta::pure::runtime::PackageableRuntime',
-  },
-  {
-    path: 'model::NativeDP',
-    content: {
-      _type: 'dataProduct',
-      name: 'NativeDP',
-      package: 'model',
-      nativeModelAccess: {
-        defaultExecutionContext: 'ctx1',
-        nativeModelExecutionContexts: [
-          {
-            key: 'ctx1',
-            mapping: { path: 'model::TestMapping' },
-            runtime: { path: 'model::TestEngineRuntime' },
-          },
-        ],
-        featuredElements: [],
-        sampleQueries: [],
-      },
-    },
-    classifierPath:
-      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   },
   {
     path: 'model::ModelDP',
@@ -271,10 +245,7 @@ const buildAccessorTestSetup = async () => {
 const buildDataProductState = (
   applicationStore: InstanceType<typeof ApplicationStore>,
   graphManagerState: ReturnType<typeof TEST__getTestGraphManagerState>,
-  executionValue:
-    | NativeModelExecutionContext
-    | ModelAccessPointGroup
-    | LakehouseAccessPoint,
+  executionValue: ModelAccessPointGroup | LakehouseAccessPoint,
   dataProductPath: string,
 ) => {
   const dataProduct = graphManagerState.graph.getDataProduct(dataProductPath);
@@ -336,89 +307,6 @@ const getOuterFunctionName = (
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
-
-describe(
-  unitTest('DataProduct NATIVE – buildQuery vs buildQueryForPersistence'),
-  () => {
-    test(
-      unitTest('buildQuery() wraps lambda with from(query, mapping, runtime)'),
-      async () => {
-        const { applicationStore, graphManagerState } =
-          await buildDataProductTestSetup();
-
-        const nativeAccess = guaranteeNonNullable(
-          graphManagerState.graph.getDataProduct('model::NativeDP')
-            .nativeModelAccess,
-        );
-        const execCtx = guaranteeNonNullable(
-          nativeAccess.nativeModelExecutionContexts[0],
-        );
-
-        const state = buildDataProductState(
-          applicationStore,
-          graphManagerState,
-          execCtx,
-          'model::NativeDP',
-        );
-
-        expect(state.executionState).toBeInstanceOf(
-          NativeModelDataProductExecutionState,
-        );
-
-        // buildQuery() must produce a lambda whose outermost expression is from()
-        const outerFn = getOuterFunctionName(
-          graphManagerState,
-          state.buildQuery(),
-        );
-        expect(outerFn).toBe('from');
-      },
-    );
-
-    test(
-      unitTest(
-        'buildQueryForPersistence() omits execution context from lambda',
-      ),
-      async () => {
-        const { applicationStore, graphManagerState } =
-          await buildDataProductTestSetup();
-
-        const nativeAccess = guaranteeNonNullable(
-          graphManagerState.graph.getDataProduct('model::NativeDP')
-            .nativeModelAccess,
-        );
-        const execCtx = guaranteeNonNullable(
-          nativeAccess.nativeModelExecutionContexts[0],
-        );
-
-        const state = buildDataProductState(
-          applicationStore,
-          graphManagerState,
-          execCtx,
-          'model::NativeDP',
-        );
-
-        // buildQueryForPersistence() must NOT wrap with from()
-        const outerFn = getOuterFunctionName(
-          graphManagerState,
-          state.buildQueryForPersistence(),
-        );
-        expect(outerFn).not.toBe('from');
-        expect(outerFn).not.toBe('with');
-
-        // The two outputs must differ — persistence form is a subset of execution form
-        const execJson =
-          graphManagerState.graphManager.serializeRawValueSpecification(
-            state.buildQuery(),
-          );
-        const persistJson =
-          graphManagerState.graphManager.serializeRawValueSpecification(
-            state.buildQueryForPersistence(),
-          );
-        expect(execJson).not.toEqual(persistJson);
-      },
-    );
-  },
-);
 
 describe(
   unitTest('DataProduct MODEL – buildQuery vs buildQueryForPersistence'),

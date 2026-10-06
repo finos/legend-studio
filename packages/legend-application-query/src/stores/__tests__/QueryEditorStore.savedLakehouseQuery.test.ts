@@ -24,7 +24,6 @@ import {
   type QueryInfo,
   QueryDataProductLakehouseExecutionContextInfo,
   QueryDataProductModelAccessExecutionContextInfo,
-  QueryDataProductNativeExecutionContextInfo,
   V1_DataProductArtifact,
 } from '@finos/legend-graph';
 import { QueryBuilder_GraphManagerPreset } from '@finos/legend-query-builder';
@@ -117,15 +116,9 @@ describe(
     );
 
     test(
-      unitTest(
-        'skips full graph build for native and model data product exec contexts',
-      ),
+      unitTest('skips full graph build for model data product exec context'),
       async () => {
         for (const exec of [
-          Object.assign(new QueryDataProductNativeExecutionContextInfo(), {
-            dataProductPath: 'model::NativeDP',
-            executionKey: 'ctx1',
-          }),
           Object.assign(new QueryDataProductModelAccessExecutionContextInfo(), {
             dataProductPath: 'model::ModelDP',
             accessPointGroupId: 'grp1',
@@ -197,43 +190,6 @@ describe(
         expect(capturedDataProductPath).toBe('model::LakehouseDP');
         expect(capturedAccessId).toBe('lhAP1');
         expect(capturedAccessType).toBe(DataProductAccessType.LAKEHOUSE);
-      },
-    );
-
-    test(
-      unitTest(
-        'maps QueryDataProductNativeExecutionContextInfo → DataProductAccessType.NATIVE with executionKey',
-      ),
-      async () => {
-        const editorStore = await buildEditorStore();
-        const exec = new QueryDataProductNativeExecutionContextInfo();
-        exec.dataProductPath = 'model::NativeDP';
-        exec.executionKey = 'ctx1';
-        const queryInfo = makeQueryInfo(exec);
-
-        editorStore.fetchDataProductArtifact = async () =>
-          new V1_DataProductArtifact();
-
-        let capturedAccessType: DataProductAccessType | undefined;
-        let capturedAccessId: string | undefined;
-        editorStore.buildDataProductQueryBuilderState = (async (
-          _groupId: string,
-          _artifactId: string,
-          _versionId: string,
-          _dataProductPath: string,
-          _artifact: V1_DataProductArtifact,
-          accessId: string,
-          accessType: DataProductAccessType,
-        ) => {
-          capturedAccessId = accessId;
-          capturedAccessType = accessType;
-          return {} as LegendQueryDataProductQueryBuilderState;
-        }) as unknown as typeof editorStore.buildDataProductQueryBuilderState;
-
-        await editorStore.initQueryBuildStateFromQuery(queryInfo);
-
-        expect(capturedAccessId).toBe('ctx1');
-        expect(capturedAccessType).toBe(DataProductAccessType.NATIVE);
       },
     );
 

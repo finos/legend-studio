@@ -31,14 +31,12 @@ import {
 } from '@finos/legend-graph';
 import {
   QueryBuilder_GraphManagerPreset,
-  NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
   LakehouseDataProductExecutionState,
 } from '@finos/legend-query-builder';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import type { Entity } from '@finos/legend-storage';
 import { ExistingQueryEditorStore } from '../QueryEditorStore.js';
-import { LegendQuerySourceType } from '../../__lib__/LegendQuerySourceInfo.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../__test-utils__/LegendQueryApplicationTestUtils.js';
@@ -54,7 +52,6 @@ import { LegendQueryDataProductQueryBuilderState } from '../data-product/query-b
  * - model::TestMapping (empty mapping)
  * - model::TestEngineRuntime (engine runtime)
  * - model::TestLakehouseRuntime (LakehouseRuntime)
- * - model::NativeDP (native-only data product)
  * - model::ModelDP (model access point group data product)
  * - model::LakehouseDP (lakehouse-only data product with LakehouseAccessPoint)
  * - model::MixedDP (model + lakehouse access points)
@@ -104,28 +101,6 @@ const TEST_DATA__Entities: Entity[] = [
       },
     },
     classifierPath: 'meta::pure::runtime::PackageableRuntime',
-  },
-  {
-    path: 'model::NativeDP',
-    content: {
-      _type: 'dataProduct',
-      name: 'NativeDP',
-      package: 'model',
-      nativeModelAccess: {
-        defaultExecutionContext: 'ctx1',
-        nativeModelExecutionContexts: [
-          {
-            key: 'ctx1',
-            mapping: { path: 'model::TestMapping' },
-            runtime: { path: 'model::TestEngineRuntime' },
-          },
-        ],
-        featuredElements: [],
-        sampleQueries: [],
-      },
-    },
-    classifierPath:
-      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
   },
   {
     path: 'model::ModelDP',
@@ -310,67 +285,6 @@ const createMockLakehousePackageableRuntime = (
 
 describe(
   unitTest(
-    'buildDataProductQueryBuilderState – native data product (no LakehouseAccessPoint)',
-  ),
-  () => {
-    test(
-      unitTest(
-        'creates NativeModelDataProductExecutionState for native access type',
-      ),
-      async () => {
-        const { editorStore } = await buildTestSetup();
-        const dataProductPath = 'model::NativeDP';
-        const artifact = createMockArtifact();
-
-        // Mock buildGraphAndDataproductAnalyticsResult to skip graph building
-        editorStore.buildGraphAndDataproductAnalyticsResult = async () =>
-          createMockAnalysisResult(dataProductPath, 'model::TestMapping');
-
-        // Mock createLakehousePackageableRuntime — should NOT be called for native
-        let lakehouseRuntimeCalled = false;
-        editorStore.createLakehousePackageableRuntime = async () => {
-          lakehouseRuntimeCalled = true;
-          return createMockLakehousePackageableRuntime(dataProductPath);
-        };
-
-        const result = await editorStore.buildDataProductQueryBuilderState(
-          'test.group',
-          'test-artifact',
-          '0.0.0',
-          dataProductPath,
-          artifact,
-          'ctx1',
-          DataProductAccessType.NATIVE,
-          async () => {
-            /* no-op */
-          },
-        );
-
-        expect(result).toBeInstanceOf(LegendQueryDataProductQueryBuilderState);
-        expect(result.executionState).toBeInstanceOf(
-          NativeModelDataProductExecutionState,
-        );
-        // createLakehousePackageableRuntime should NOT be called for native access
-        expect(lakehouseRuntimeCalled).toBe(false);
-        // the fallback source info must carry the `sourceType` discriminator —
-        // without it, telemetry from this path cannot be sliced alongside the
-        // creator-route events
-        expect(result.sourceInfo).toEqual({
-          sourceType: LegendQuerySourceType.DATA_PRODUCT,
-          groupId: 'test.group',
-          artifactId: 'test-artifact',
-          versionId: '0.0.0',
-          dataProduct: dataProductPath,
-          accessType: DataProductAccessType.NATIVE,
-          accessId: 'ctx1',
-        });
-      },
-    );
-  },
-);
-
-describe(
-  unitTest(
     'buildDataProductQueryBuilderState – model access point group data product',
   ),
   () => {
@@ -476,7 +390,7 @@ describe(
 
     test(
       unitTest(
-        'falls back to ModelAccessPointGroup in mixed product even with lakehouse accessId',
+        'resolves LakehouseAccessPoint in mixed product when accessId matches a lakehouse access point',
       ),
       async () => {
         const { editorStore } = await buildTestSetup();
@@ -490,10 +404,6 @@ describe(
           createMockLakehousePackageableRuntime(dataProductPath);
         editorStore.createLakehousePackageableRuntime = async () => mockRuntime;
 
-        // Pass a lakehouse access point ID in a mixed product.
-        // The current implementation prioritizes the first ModelAccessPointGroup
-        // fallback over searching lakehouse access points when the accessId
-        // doesn't match any model group or native context.
         const result = await editorStore.buildDataProductQueryBuilderState(
           'test.group',
           'test-artifact',
@@ -507,10 +417,8 @@ describe(
           },
         );
 
-        // In a mixed product, the fallback to the first model access point
-        // group takes priority over searching lakehouse access points by ID.
         expect(result.executionState).toBeInstanceOf(
-          ModelAccessPointDataProductExecutionState,
+          LakehouseDataProductExecutionState,
         );
       },
     );
@@ -703,41 +611,20 @@ describe(
 
     test(
       unitTest(
-        'resolveDataProductExecutionState returns NativeModelExecutionContext for native product',
-      ),
-      async () => {
-        const { editorStore, graphManagerState } = await buildTestSetup();
-        const dataProduct =
-          graphManagerState.graph.getDataProduct('model::NativeDP');
-
-        const result = editorStore.resolveDataProductExecutionState(
-          dataProduct,
-          'ctx1',
-        );
-
-        expect(result).not.toBeInstanceOf(LakehouseAccessPoint);
-        expect(result).not.toBeInstanceOf(ModelAccessPointGroup);
-      },
-    );
-
-    test(
-      unitTest(
-        'resolveDataProductExecutionState falls back to ModelAccessPointGroup in mixed product even with lakehouse accessId',
+        'resolveDataProductExecutionState returns matching LakehouseAccessPoint in mixed product',
       ),
       async () => {
         const { editorStore, graphManagerState } = await buildTestSetup();
         const dataProduct =
           graphManagerState.graph.getDataProduct('model::MixedDP');
 
-        // In a mixed product, the first ModelAccessPointGroup fallback
-        // takes priority over searching lakehouse access points by ID.
         const result = editorStore.resolveDataProductExecutionState(
           dataProduct,
           'lhAP2',
         );
 
-        expect(result).toBeInstanceOf(ModelAccessPointGroup);
-        expect((result as ModelAccessPointGroup).id).toBe('modelGrp');
+        expect(result).toBeInstanceOf(LakehouseAccessPoint);
+        expect((result as LakehouseAccessPoint).id).toBe('lhAP2');
       },
     );
   },

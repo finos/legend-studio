@@ -21,6 +21,7 @@ import {
   Core_GraphManagerPreset,
   DataProductAccessor,
   LakehouseAccessPoint,
+  ModelAccessPointGroup,
   RuntimePointer,
   SimpleFunctionExpression,
   V1_DataProductArtifact,
@@ -43,6 +44,7 @@ import {
 import {
   DataProductQueryBuilderState,
   LakehouseDataProductExecutionState,
+  ModelAccessPointDataProductExecutionState,
   resolveDataProductAccessor,
 } from '../DataProductQueryBuilderState.js';
 import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
@@ -570,6 +572,429 @@ describe(
         // the fixture passes a constructed (not deserialized) artifact, whose
         // `dataProduct` is unset despite being declared as definitely assigned
         expect(state.dataProductAccessInfo.deploymentId).toBeUndefined();
+      },
+    );
+  },
+);
+
+const TEST_DATA__ClassAndMappingEntities: Entity[] = [
+  {
+    path: 'model::ClassA',
+    content: {
+      _type: 'class',
+      name: 'ClassA',
+      package: 'model',
+      properties: [],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::ClassB',
+    content: {
+      _type: 'class',
+      name: 'ClassB',
+      package: 'model',
+      properties: [],
+    },
+    classifierPath: 'meta::pure::metamodel::type::Class',
+  },
+  {
+    path: 'model::MappingA',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'operation',
+          class: 'model::ClassA',
+          id: 'mappingA_classA',
+          operation: 'STORE_UNION',
+          parameters: ['mappingA_classA'],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'MappingA',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+  {
+    path: 'model::MappingB',
+    content: {
+      _type: 'mapping',
+      classMappings: [
+        {
+          _type: 'operation',
+          class: 'model::ClassB',
+          id: 'mappingB_classB',
+          operation: 'STORE_UNION',
+          parameters: ['mappingB_classB'],
+          root: true,
+        },
+      ],
+      enumerationMappings: [],
+      includedMappings: [],
+      name: 'MappingB',
+      package: 'model',
+      tests: [],
+    },
+    classifierPath: 'meta::pure::mapping::Mapping',
+  },
+];
+
+const TEST_DATA__ModelOnlyEntities: Entity[] = [
+  ...TEST_DATA__ClassAndMappingEntities,
+  {
+    path: 'model::ModelOnlyDP',
+    content: {
+      _type: 'dataProduct',
+      name: 'ModelOnlyDP',
+      package: 'model',
+      accessPointGroups: [
+        {
+          _type: 'modelAccessPointGroup',
+          id: 'modelGrpA',
+          title: 'Model Group A',
+          mapping: { path: 'model::MappingA', type: 'MAPPING' },
+          accessPoints: [],
+        },
+        {
+          _type: 'modelAccessPointGroup',
+          id: 'modelGrpB',
+          title: 'Model Group B',
+          mapping: { path: 'model::MappingB', type: 'MAPPING' },
+          accessPoints: [],
+        },
+      ],
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+];
+
+const TEST_DATA__MixedEntities: Entity[] = [
+  ...TEST_DATA__ClassAndMappingEntities,
+  {
+    path: 'model::MixedModelAndLakehouseDP',
+    content: {
+      _type: 'dataProduct',
+      name: 'MixedModelAndLakehouseDP',
+      package: 'model',
+      accessPointGroups: [
+        {
+          _type: 'modelAccessPointGroup',
+          id: 'modelGrpA',
+          title: 'Model Group A',
+          mapping: { path: 'model::MappingA', type: 'MAPPING' },
+          accessPoints: [],
+        },
+        {
+          _type: 'modelAccessPointGroup',
+          id: 'modelGrpB',
+          title: 'Model Group B',
+          mapping: { path: 'model::MappingB', type: 'MAPPING' },
+          accessPoints: [],
+        },
+        {
+          _type: 'accessPointGroup',
+          id: 'lhGroup',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              id: 'lhAP1',
+              title: 'Lakehouse AP 1',
+              func: {
+                _type: 'lambda',
+                body: [{ _type: 'integer', value: 1 }],
+                parameters: [],
+              },
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+            {
+              _type: 'lakehouseAccessPoint',
+              id: 'lhAP2',
+              title: 'Lakehouse AP 2',
+              func: {
+                _type: 'lambda',
+                body: [{ _type: 'integer', value: 2 }],
+                parameters: [],
+              },
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+        },
+      ],
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+];
+
+const buildModelOnlyDataProductState = async () => {
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager
+    .usePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ])
+    .install();
+  const applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
+    TEST_DATA__ModelOnlyEntities,
+  );
+
+  const dataProduct =
+    graphManagerState.graph.getDataProduct('model::ModelOnlyDP');
+  const modelGroups = dataProduct.accessPointGroups.filter(
+    (group): group is ModelAccessPointGroup =>
+      group instanceof ModelAccessPointGroup,
+  );
+  const modelGrpA = guaranteeNonNullable(
+    modelGroups.find((g) => g.id === 'modelGrpA'),
+  );
+  const modelGrpB = guaranteeNonNullable(
+    modelGroups.find((g) => g.id === 'modelGrpB'),
+  );
+
+  const artifact = new V1_DataProductArtifact();
+  const state = new DataProductQueryBuilderState(
+    applicationStore,
+    graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
+    dataProduct,
+    artifact,
+    QueryBuilderActionConfig.INSTANCE,
+    modelGrpA,
+    undefined,
+    async () => {
+      /* no-op */
+    },
+  );
+  return { state, modelGrpA, modelGrpB, graphManagerState };
+};
+
+const buildMixedDataProductState = async () => {
+  const pluginManager = TEST__LegendApplicationPluginManager.create();
+  pluginManager
+    .usePresets([
+      new Core_GraphManagerPreset(),
+      new QueryBuilder_GraphManagerPreset(),
+    ])
+    .install();
+  const applicationStore = new ApplicationStore(
+    TEST__getGenericApplicationConfig(),
+    pluginManager,
+  );
+  const graphManagerState = TEST__getTestGraphManagerState(pluginManager);
+  await TEST__buildGraphWithEntities(
+    graphManagerState,
+    TEST_DATA__MixedEntities,
+  );
+
+  const dataProduct = graphManagerState.graph.getDataProduct(
+    'model::MixedModelAndLakehouseDP',
+  );
+  const modelGroups = dataProduct.accessPointGroups.filter(
+    (group): group is ModelAccessPointGroup =>
+      group instanceof ModelAccessPointGroup,
+  );
+  const modelGrpA = guaranteeNonNullable(
+    modelGroups.find((g) => g.id === 'modelGrpA'),
+  );
+  const modelGrpB = guaranteeNonNullable(
+    modelGroups.find((g) => g.id === 'modelGrpB'),
+  );
+  const lakehouseAccessPoints = dataProduct.accessPointGroups
+    .flatMap((group) => group.accessPoints)
+    .filter(
+      (ap): ap is LakehouseAccessPoint => ap instanceof LakehouseAccessPoint,
+    );
+  const lhAP1 = guaranteeNonNullable(
+    lakehouseAccessPoints.find((ap) => ap.id === 'lhAP1'),
+  );
+  const lhAP2 = guaranteeNonNullable(
+    lakehouseAccessPoints.find((ap) => ap.id === 'lhAP2'),
+  );
+
+  const artifact = new V1_DataProductArtifact();
+  const state = new DataProductQueryBuilderState(
+    applicationStore,
+    graphManagerState,
+    QueryBuilderAdvancedWorkflowState.INSTANCE,
+    dataProduct,
+    artifact,
+    QueryBuilderActionConfig.INSTANCE,
+    lhAP1,
+    undefined,
+    async () => {
+      /* no-op */
+    },
+  );
+  return { state, modelGrpA, modelGrpB, lhAP1, lhAP2, graphManagerState };
+};
+
+describe(
+  unitTest('DataProductQueryBuilderState - changeExecutionId context switches'),
+  () => {
+    test(
+      unitTest(
+        'switches between ModelAccessPointGroups in a model-only data product',
+      ),
+      async () => {
+        const { state, modelGrpA, modelGrpB, graphManagerState } =
+          await buildModelOnlyDataProductState();
+        const classA = graphManagerState.graph.getClass('model::ClassA');
+        const classB = graphManagerState.graph.getClass('model::ClassB');
+
+        const initialState = guaranteeType(
+          state.executionState,
+          ModelAccessPointDataProductExecutionState,
+        );
+        expect(initialState.exectionValue).toBe(modelGrpA);
+        expect(state.usableClasses).toEqual([classA]);
+
+        const options = state.executionIdOptions;
+        expect(options).toHaveLength(2);
+        expect(options.every((o) => o.tag === 'MODEL')).toBe(true);
+        expect(options.map((o) => o.value)).toEqual(
+          expect.arrayContaining([modelGrpA, modelGrpB]),
+        );
+
+        await state.changeExecutionId({
+          label: modelGrpB.title ?? modelGrpB.id,
+          tag: 'MODEL',
+          value: modelGrpB,
+        });
+
+        const stateAfterFirstSwitch = guaranteeType(
+          state.executionState,
+          ModelAccessPointDataProductExecutionState,
+        );
+        expect(stateAfterFirstSwitch.exectionValue).toBe(modelGrpB);
+        expect(stateAfterFirstSwitch.mapping).toBe(modelGrpB.mapping.value);
+        expect(state.executionContextState.mapping).toBe(
+          modelGrpB.mapping.value,
+        );
+        expect(state.usableClasses).toEqual([classB]);
+
+        await state.changeExecutionId({
+          label: modelGrpA.title ?? modelGrpA.id,
+          tag: 'MODEL',
+          value: modelGrpA,
+        });
+
+        const stateAfterSecondSwitch = guaranteeType(
+          state.executionState,
+          ModelAccessPointDataProductExecutionState,
+        );
+        expect(stateAfterSecondSwitch.exectionValue).toBe(modelGrpA);
+        expect(stateAfterSecondSwitch.mapping).toBe(modelGrpA.mapping.value);
+        expect(state.executionContextState.mapping).toBe(
+          modelGrpA.mapping.value,
+        );
+        expect(state.usableClasses).toEqual([classA]);
+      },
+    );
+
+    test(
+      unitTest(
+        'switches between ModelAccessPointGroups and LakehouseAccessPoints in a mixed data product',
+      ),
+      async () => {
+        const { state, modelGrpA, modelGrpB, lhAP1, lhAP2, graphManagerState } =
+          await buildMixedDataProductState();
+        const classA = graphManagerState.graph.getClass('model::ClassA');
+        const classB = graphManagerState.graph.getClass('model::ClassB');
+
+        const initialState = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        expect(initialState.exectionValue).toBe(lhAP1);
+        expect(state.usableClasses).toEqual([]);
+
+        const options = state.executionIdOptions;
+        expect(options).toHaveLength(4);
+        const modelOptions = options.filter((o) => o.tag === 'MODEL');
+        const lakehouseOptions = options.filter((o) => o.tag === 'LAKEHOUSE');
+        expect(modelOptions).toHaveLength(2);
+        expect(lakehouseOptions).toHaveLength(2);
+        expect(modelOptions.map((o) => o.value)).toEqual(
+          expect.arrayContaining([modelGrpA, modelGrpB]),
+        );
+        expect(lakehouseOptions.map((o) => o.value)).toEqual(
+          expect.arrayContaining([lhAP1, lhAP2]),
+        );
+        expect(lakehouseOptions.every((o) => o.groupId === 'lhGroup')).toBe(
+          true,
+        );
+
+        await state.changeExecutionId({
+          label: modelGrpA.title ?? modelGrpA.id,
+          tag: 'MODEL',
+          value: modelGrpA,
+        });
+
+        const stateAfterLakehouseToModel = guaranteeType(
+          state.executionState,
+          ModelAccessPointDataProductExecutionState,
+        );
+        expect(stateAfterLakehouseToModel.exectionValue).toBe(modelGrpA);
+        expect(stateAfterLakehouseToModel.mapping).toBe(
+          modelGrpA.mapping.value,
+        );
+        expect(state.usableClasses).toEqual([classA]);
+
+        await state.changeExecutionId({
+          label: modelGrpB.title ?? modelGrpB.id,
+          tag: 'MODEL',
+          value: modelGrpB,
+        });
+
+        const stateAfterModelToModel = guaranteeType(
+          state.executionState,
+          ModelAccessPointDataProductExecutionState,
+        );
+        expect(stateAfterModelToModel.exectionValue).toBe(modelGrpB);
+        expect(stateAfterModelToModel.mapping).toBe(modelGrpB.mapping.value);
+        expect(state.usableClasses).toEqual([classB]);
+
+        await state.changeExecutionId({
+          label: lhAP2.title ?? lhAP2.id,
+          tag: 'LAKEHOUSE',
+          groupId: 'lhGroup',
+          value: lhAP2,
+        });
+
+        const stateAfterModelToLakehouse = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        expect(stateAfterModelToLakehouse.exectionValue).toBe(lhAP2);
+        expect(state.usableClasses).toEqual([]);
+
+        await state.changeExecutionId({
+          label: lhAP1.title ?? lhAP1.id,
+          tag: 'LAKEHOUSE',
+          groupId: 'lhGroup',
+          value: lhAP1,
+        });
+
+        const stateAfterLakehouseToLakehouse = guaranteeType(
+          state.executionState,
+          LakehouseDataProductExecutionState,
+        );
+        expect(stateAfterLakehouseToLakehouse.exectionValue).toBe(lhAP1);
+        expect(state.usableClasses).toEqual([]);
       },
     );
   },

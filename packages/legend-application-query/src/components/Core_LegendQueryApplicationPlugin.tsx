@@ -79,7 +79,6 @@ import {
   type QueryBuilderPropagateExecutionContextChangeHelper,
   QUERY_BUILDER_SUPPORTED_GET_ALL_FUNCTIONS,
   type QueryExportUsageConfiguration,
-  type TemplateQueryPanelContentRenderer,
   DataProductQueryBuilderState,
 } from '@finos/legend-query-builder';
 import {
@@ -137,9 +136,7 @@ import { observer } from 'mobx-react-lite';
 import { useQueryEditorStore } from './QueryEditorStoreProvider.js';
 import { useLegendQueryApplicationStore } from './LegendQueryFrameworkProvider.js';
 import { LegendQueryDataSpaceQueryBuilderState } from '../stores/data-space/query-builder/LegendQueryDataSpaceQueryBuilderState.js';
-import { LegendQueryDataProductQueryBuilderState } from '../stores/data-product/query-builder/LegendQueryDataProductQueryBuilderState.js';
 import { IngestLegendQueryBuilderState } from '../stores/ingest/IngestLegendQueryBuilderState.js';
-import { renderDataProductSampleQueryPanelContent } from './data-product/DataProductSampleQueryPanel.js';
 
 const isDataProductOrIngestQuery = (
   queryBuilderState: QueryBuilderState,
@@ -1289,20 +1286,6 @@ export class Core_LegendQueryApplicationPlugin extends LegendQueryApplicationPlu
             QueryBuilderActionConfig_QueryApplication
         ) {
           return propagateExecutionContextChange;
-        }
-        return undefined;
-      },
-    ];
-  }
-
-  // TODO: create plugin for DataProducts
-  getExtraTemplateQueryPanelContentRenderer(): TemplateQueryPanelContentRenderer[] {
-    return [
-      (queryBuilderState: QueryBuilderState): React.ReactNode => {
-        if (
-          queryBuilderState instanceof LegendQueryDataProductQueryBuilderState
-        ) {
-          return renderDataProductSampleQueryPanelContent(queryBuilderState);
         }
         return undefined;
       },

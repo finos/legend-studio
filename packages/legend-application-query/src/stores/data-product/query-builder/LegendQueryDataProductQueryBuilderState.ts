@@ -16,7 +16,6 @@
 
 import {
   DataProductQueryBuilderState,
-  NativeModelDataProductExecutionState,
   ModelAccessPointDataProductExecutionState,
   type DataProductOption,
   type QueryBuilderActionConfig,
@@ -38,18 +37,17 @@ import type {
 import {
   LegendSDLC,
   INTERNAL_ELEMENT_PATH,
-  type PackageableRuntime,
+  createPath,
   type Class,
   type DataProduct,
   type GraphManagerState,
   type ModelAccessPointGroup,
-  type NativeModelExecutionContext,
   type PackageableElement,
+  type PackageableRuntime,
   type V1_DataProductArtifact,
   type LakehouseAccessPoint,
 } from '@finos/legend-graph';
 import {
-  generateDataProductNativeRoute,
   generateDataProductModelRoute,
   generateDataProductLakehouseRoute,
 } from '../../../__lib__/LegendQueryNavigation.js';
@@ -79,10 +77,7 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     actionConfig: QueryBuilderActionConfig,
     dataProduct: DataProduct,
     artifact: V1_DataProductArtifact | undefined,
-    executionState:
-      | NativeModelExecutionContext
-      | ModelAccessPointGroup
-      | LakehouseAccessPoint,
+    executionState: ModelAccessPointGroup | LakehouseAccessPoint,
     depotServerClient: DepotServerClient,
     project: ProjectGAVCoordinates,
     onDataProductChange: (val: DepotEntityWithOrigin) => Promise<void>,
@@ -137,18 +132,8 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
         ModelAccessPointDataProductExecutionState &&
       origin instanceof LegendSDLC
     ) {
-      const packageableRuntime = await this.createLakehousePackageableRuntime(
-        this.dataProduct.path,
-        {
-          groupId: origin.groupId,
-          artifactId: origin.artifactId,
-          versionId: origin.versionId,
-        },
-      );
-      this.graphManagerState.graph.addElement(
-        packageableRuntime,
-        INTERNAL_ELEMENT_PATH,
-      );
+      const packageableRuntime =
+        await this.getOrCreateLakehousePackageableRuntime(origin);
 
       if (!this.executionState.adhocRuntime) {
         this.executionState.withAdhocRuntime();
@@ -159,21 +144,36 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
       this.executionState instanceof LakehouseDataProductExecutionState &&
       origin instanceof LegendSDLC
     ) {
-      const packageableRuntime = await this.createLakehousePackageableRuntime(
-        this.dataProduct.path,
-        {
-          groupId: origin.groupId,
-          artifactId: origin.artifactId,
-          versionId: origin.versionId,
-        },
-      );
-      this.graphManagerState.graph.addElement(
-        packageableRuntime,
-        INTERNAL_ELEMENT_PATH,
-      );
+      const packageableRuntime =
+        await this.getOrCreateLakehousePackageableRuntime(origin);
       this.executionState.changeSelectedRuntime(packageableRuntime);
     }
     await super.prepareAccessForExecution();
+  }
+
+  private async getOrCreateLakehousePackageableRuntime(
+    origin: LegendSDLC,
+  ): Promise<PackageableRuntime> {
+    const runtimeName = `${this.dataProduct.path}_LakehouseRuntime`;
+    const runtimePath = createPath(INTERNAL_ELEMENT_PATH, runtimeName);
+    const existing =
+      this.graphManagerState.graph.getNullableRuntime(runtimePath);
+    if (existing) {
+      return existing;
+    }
+    const packageableRuntime = await this.createLakehousePackageableRuntime(
+      this.dataProduct.path,
+      {
+        groupId: origin.groupId,
+        artifactId: origin.artifactId,
+        versionId: origin.versionId,
+      },
+    );
+    this.graphManagerState.graph.addElement(
+      packageableRuntime,
+      INTERNAL_ELEMENT_PATH,
+    );
+    return packageableRuntime;
   }
 
   override get dataProductOptions(): DataProductOption[] {
@@ -229,17 +229,7 @@ export class LegendQueryDataProductQueryBuilderState extends DataProductQueryBui
     const dataProduct = this.dataProduct;
     const execState = this.executionState;
     let route: string;
-    if (execState instanceof NativeModelDataProductExecutionState) {
-      route = this.applicationStore.navigationService.navigator.generateAddress(
-        generateDataProductNativeRoute(
-          this.project.groupId,
-          this.project.artifactId,
-          this.project.versionId,
-          dataProduct.path,
-          execState.exectionValue.key,
-        ),
-      );
-    } else if (execState instanceof ModelAccessPointDataProductExecutionState) {
+    if (execState instanceof ModelAccessPointDataProductExecutionState) {
       route = this.applicationStore.navigationService.navigator.generateAddress(
         generateDataProductModelRoute(
           this.project.groupId,

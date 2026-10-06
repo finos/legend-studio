@@ -43,7 +43,6 @@ import {
 } from '@finos/legend-shared';
 import {
   type LightQuery,
-  type NativeModelExecutionContext,
   type RawLambda,
   type Runtime,
   type Service,
@@ -76,7 +75,6 @@ import {
   QUERY_PROFILE_PATH,
   QueryDataSpaceExecutionContextInfo,
   QueryExplicitExecutionContextInfo,
-  QueryDataProductNativeExecutionContextInfo,
   QueryDataProductModelAccessExecutionContextInfo,
   QueryDataProductLakehouseExecutionContextInfo,
   QueryIngestExecutionContextInfo,
@@ -1068,31 +1066,6 @@ export abstract class QueryEditorStore {
     artifact: V1_DataProductArtifact,
     executionContextId: string | undefined,
   ): string {
-    // Try native execution contexts first
-    if (artifact.nativeModelAccess) {
-      const native = artifact.nativeModelAccess;
-      if (executionContextId) {
-        const matchingContext = native.nativeModelExecutionContexts.find(
-          (ctx) => ctx.key === executionContextId,
-        );
-        if (matchingContext) {
-          return matchingContext.mapping;
-        }
-      }
-      // Fall back to default execution context
-      const defaultContext = native.nativeModelExecutionContexts.find(
-        (ctx) => ctx.key === native.defaultExecutionContext,
-      );
-      if (defaultContext) {
-        return defaultContext.mapping;
-      }
-      // Fall back to first context
-      const firstContext = native.nativeModelExecutionContexts[0];
-      if (firstContext) {
-        return firstContext.mapping;
-      }
-    }
-
     // Try model access point groups
     const modelGroups = artifact.accessPointGroups.filter(
       (g): g is V1_ModelAccessPointGroupInfo =>
@@ -1197,48 +1170,25 @@ export abstract class QueryEditorStore {
 
   /**
    * Resolves the execution state for a data product by looking up `accessId`
-   * in both model access point groups (by `id`) and native execution contexts
-   * (by `key`). Throws if no matching state is found.
+   * in both model access point groups (by `id`) and lakehouse access points
+   * (by `id`). Throws if no matching state is found.
    */
   resolveDataProductExecutionState(
     dataProduct: DataProduct,
     accessId: string | undefined,
-  ):
-    | NativeModelExecutionContext
-    | ModelAccessPointGroup
-    | LakehouseAccessPoint {
-    // Search model access point groups
+  ): ModelAccessPointGroup | LakehouseAccessPoint {
     const modelGroups = dataProduct.accessPointGroups.filter(
       filterByType(ModelAccessPointGroup),
     );
+    const lakehouseAccessPoints = dataProduct.accessPointGroups
+      .flatMap((group) => group.accessPoints)
+      .filter(filterByType(LakehouseAccessPoint));
+
     if (accessId) {
       const matchingGroup = modelGroups.find((g) => g.id === accessId);
       if (matchingGroup) {
         return matchingGroup;
       }
-    }
-    // Search native model execution contexts
-    const nativeAccess = dataProduct.nativeModelAccess;
-    if (nativeAccess && accessId) {
-      const matchingContext = nativeAccess.nativeModelExecutionContexts.find(
-        (ctx) => ctx.key === accessId,
-      );
-      if (matchingContext) {
-        return matchingContext;
-      }
-    }
-
-    // Fall back: prioritize first model access point group over native default
-    const firstGroup = modelGroups[0];
-    if (firstGroup) {
-      return firstGroup;
-    }
-
-    // Search lakehouse access points
-    const lakehouseAccessPoints = dataProduct.accessPointGroups
-      .flatMap((group) => group.accessPoints)
-      .filter(filterByType(LakehouseAccessPoint));
-    if (accessId) {
       const matchingLakehouseAP = lakehouseAccessPoints.find(
         (ap) => ap.id === accessId,
       );
@@ -1248,8 +1198,8 @@ export abstract class QueryEditorStore {
     }
 
     return guaranteeNonNullable(
-      modelGroups[0] ?? nativeAccess?.defaultExecutionContext,
-      `Can't resolve execution state for data product '${dataProduct.path}'${accessId ? ` with access ID '${accessId}'` : ''}. Data product must have model access point groups or native model access.`,
+      modelGroups[0] ?? lakehouseAccessPoints[0],
+      `Can't resolve execution state for data product '${dataProduct.path}'${accessId ? ` with access ID '${accessId}'` : ''}. Data product must have model access point groups or lakehouse access points.`,
     );
   }
 
@@ -2196,8 +2146,6 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
         queryInfo?.executionContext instanceof
           QueryDataSpaceExecutionContextInfo ||
         queryInfo?.executionContext instanceof
-          QueryDataProductNativeExecutionContextInfo ||
-        queryInfo?.executionContext instanceof
           QueryDataProductModelAccessExecutionContextInfo ||
         queryInfo?.executionContext instanceof
           QueryDataProductLakehouseExecutionContextInfo ||
@@ -2505,18 +2453,12 @@ export class ExistingQueryEditorStore extends QueryEditorStore {
       );
       return classQueryBuilderState;
     } else if (
-      exec instanceof QueryDataProductNativeExecutionContextInfo ||
       exec instanceof QueryDataProductModelAccessExecutionContextInfo ||
       exec instanceof QueryDataProductLakehouseExecutionContextInfo
     ) {
       let executionContextId: string;
       let accessType: DataProductAccessType;
-      if (exec instanceof QueryDataProductNativeExecutionContextInfo) {
-        executionContextId = exec.executionKey;
-        accessType = DataProductAccessType.NATIVE;
-      } else if (
-        exec instanceof QueryDataProductModelAccessExecutionContextInfo
-      ) {
+      if (exec instanceof QueryDataProductModelAccessExecutionContextInfo) {
         executionContextId = exec.accessPointGroupId;
         accessType = DataProductAccessType.MODEL;
       } else {
