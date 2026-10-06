@@ -3030,6 +3030,7 @@ __metadata:
     react-dom: "npm:19.0.1"
     rimraf: "npm:6.0.1"
     sass: "npm:1.85.1"
+    serializr: "npm:3.0.3"
     typescript: "npm:5.8.2"
   peerDependencies:
     react: ^19.0.1

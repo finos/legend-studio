@@ -16,3 +16,21 @@
 
 export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
 export { CubeEditor } from './components/CubeEditor.js';
+
+export * from './graph-manager/CubeEngine.js';
+export { getRuntimesForDatabase } from './graph-manager/CubeModelOutlineHelper.js';
+export {
+  buildCubeEngine,
+  type CubeEngineConfig,
+} from './graph-manager/protocol/pure/CubeEngineBuilder.js';
+export {
+  BUNDLED_MODELS,
+  type BundledModel,
+  createTextModel,
+  LocalModelCatalog,
+} from './stores/LocalModelCatalog.js';
+export {
+  CUBE_NORTHWIND_DATABASE,
+  CUBE_NORTHWIND_MODEL,
+  CUBE_NORTHWIND_RUNTIME,
+} from './stores/fixtures/CubeNorthwindModel.js';
