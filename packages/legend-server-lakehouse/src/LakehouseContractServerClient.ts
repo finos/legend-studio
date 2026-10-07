@@ -36,11 +36,13 @@ import type {
   V1_LiteDataContractsPaginatedResponse,
   V1_LiteDataContractsResponse,
   V1_LiteDataContractWithUserStatus,
+  V1_LiteDataRequestsResponse,
   V1_PaginationMetadataRecord,
   V1_PendingDataRequestTasksResponse,
   V1_PendingTasksResponse,
   V1_TaskResponse,
   V1_TaskStatus,
+  V1_User,
   V1_UserPendingContractsRecord,
   V1_UserPendingContractsResponse,
 } from '@finos/legend-graph';
@@ -281,13 +283,12 @@ export class LakehouseContractServerClient extends AbstractServerClient {
   private _dataAccessRequests = (): string => `${this.baseUrl}/datarequests`;
 
   getDataRequestsForDataProduct = (
-    resourceType: string,
     resourceId: string,
     did: number,
     token: string | undefined,
-  ): Promise<PlainObject> =>
+  ): Promise<PlainObject<V1_LiteDataRequestsResponse>> =>
     this.get(
-      `${this._dataAccessRequests()}/lite/resourceType/${encodeURIComponent(resourceType)}/resourceId/${encodeURIComponent(resourceId)}/did/${encodeURIComponent(did)}`,
+      `${this._dataAccessRequests()}/lite/resourceType/${encodeURIComponent('ACCESS_POINT_GROUP')}/resourceId/${encodeURIComponent(resourceId)}/did/${encodeURIComponent(did)}`,
       {},
       this._token(token),
     );
@@ -365,6 +366,17 @@ export class LakehouseContractServerClient extends AbstractServerClient {
       {},
       this._token(token),
       { user },
+    );
+
+  getApprovedUsersForCompletedDataRequests = (
+    requestIds: string[],
+    token: string | undefined,
+  ): Promise<PlainObject<Record<string, PlainObject<V1_User>[]>>> =>
+    this.post(
+      `${this._dataAccessRequests()}/completed/approvedUsers/query/byIds`,
+      requestIds,
+      undefined,
+      this._token(token),
     );
 
   // TODO: add implementations
