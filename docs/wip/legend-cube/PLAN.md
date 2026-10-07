@@ -1199,14 +1199,15 @@ history. Domain objects are immutable but not all frozen (only `Query`'s arrays 
 - **Telemetry:** the host passes telemetry through; Cube sends no events in M1.8. Events are designed with M3's entry
   points, with redaction from day one.
 - **Undo:** `CubeDocument` snapshots, at most 100. Import is one undo step. Source re-resolution never pushes. No
-  redo in the slice.
+  redo in the slice. A restored query is a new object (§4.3); an edit that left the query alone, such as a
+  rename, keeps it, with its rows and engine errors (S6, 2026-10-07).
 - **Export/Import spec:** always visible, labelled "(dev)"; it is the only way to save until M8. Import asks no
   confirmation (it can be undone) and never executes; Part B step 8 reads "import it, press F9". The check is that
   `serializeCubeSpec` gives the same text before and after, since nodes get fresh keys on decode.
 - **Re-checking tables on import:** a source that fails to re-resolve keeps its saved snapshot and gets a warning
   ("could not re-check this table: …"). Schema drift shows as a non-blocking warning listing the changed columns.
 - **Newer-version spec:** opens read-only with a banner. View, Execute and Show Pure work; edits, the picker, Undo
-  and Export are disabled.
+  and Export are disabled. Select (choosing the node to run) still works, and Import replaces the cube (S7, 2026-10-07).
 - **Spec without a model or runtime:** opens editable with Execute disabled and a tooltip naming what is missing; no
   fix-up UI in M1.8.
 - **Show Pure:** its own dialog with Copy. Numbers read 0 until the deferred `renderPure` bug is fixed (PROGRESS.md

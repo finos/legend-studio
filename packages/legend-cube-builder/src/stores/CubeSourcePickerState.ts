@@ -189,9 +189,13 @@ export class CubeSourcePickerState {
 
   /**
    * Opens the dialog on the cube's model, or on the only model offered. A
-   * model whose outline failed to load is loaded again.
+   * model whose outline failed to load is loaded again. Does nothing while
+   * the cube is read-only.
    */
   open(): void {
+    if (this.editorState.readOnly) {
+      return;
+    }
     this.isOpen = true;
     this.error = undefined;
     const model =

@@ -33,6 +33,7 @@ import type { CubeEngineError } from '../graph-manager/CubeEngine.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
+import { CubeSpecTransferState } from './CubeSpecTransferState.js';
 
 /** An engine error placed on a node: its first line shows on the node, its detail in the grid */
 export interface CubeHostIssue {
@@ -55,6 +56,7 @@ export class CubeEditorState {
   readonly registry: NodeRegistry;
   readonly execution: CubeExecutionState;
   readonly sourcePicker: CubeSourcePickerState;
+  readonly specTransfer: CubeSpecTransferState;
 
   document: CubeDocument;
   /** Earlier documents, oldest first */
@@ -63,6 +65,13 @@ export class CubeEditorState {
   hostIssues: ReadonlyMap<string, CubeHostIssue> = new Map();
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
+  /**
+   * The cube was saved by a newer version of Cube: it can be viewed and run,
+   * but not changed, undone or exported (Settled before M1.8)
+   */
+  readOnly = false;
+  /** Documents in the undo history that were read-only, so undo restores the flag */
+  private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
     makeObservable(this, {
@@ -70,11 +79,13 @@ export class CubeEditorState {
       history: observable.ref,
       hostIssues: observable.ref,
       rowLimit: observable,
+      readOnly: observable,
       analysis: computed,
       emitter: computed,
       canUndo: computed,
       applyDocument: action,
       undo: action,
+      importDocument: action,
       applyQuery: action,
       select: action,
       setHostIssue: action,
@@ -92,6 +103,7 @@ export class CubeEditorState {
       : DEFAULT_ROW_LIMIT;
     this.execution = new CubeExecutionState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
+    this.specTransfer = new CubeSpecTransferState(this);
   }
 
   /** Each node's schema and errors, query-level rules included, as the emitter sees them */
@@ -107,7 +119,7 @@ export class CubeEditorState {
   }
 
   get canUndo(): boolean {
-    return this.history.length > 0;
+    return this.history.length > 0 && !this.readOnly;
   }
 
   /** The one way to change the cube; the document before goes to the undo history */
@@ -115,8 +127,22 @@ export class CubeEditorState {
     if (next === this.document) {
       return;
     }
-    this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
+    this.pushHistory();
     this.replaceDocument(next);
+  }
+
+  /**
+   * Opens another cube in place of this one, e.g. an imported spec: one undo
+   * step. Stops any run and any table being added, and drops the last run's
+   * rows and errors, which belong to the cube before. Never runs the cube.
+   */
+  importDocument(next: CubeDocument, readOnly: boolean): void {
+    this.pushHistory();
+    this.execution.reset();
+    this.sourcePicker.close();
+    this.hostIssues = new Map();
+    this.document = next;
+    this.readOnly = readOnly;
   }
 
   /**
@@ -127,16 +153,24 @@ export class CubeEditorState {
    */
   undo(): void {
     const previous = this.history.at(-1);
-    if (!previous) {
+    if (!previous || !this.canUndo) {
       return;
     }
     this.history = this.history.slice(0, -1);
+    this.readOnly = this.readOnlyDocuments.has(previous);
     const { query } = this.document;
     this.replaceDocument(
       previous.withQuery(
         previous.query === query ? query : previous.query.clone(),
       ),
     );
+  }
+
+  private pushHistory(): void {
+    if (this.readOnly) {
+      this.readOnlyDocuments.add(this.document);
+    }
+    this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
   }
 
   /** Engine errors belong to the query they came from, so they are dropped when the query changes */

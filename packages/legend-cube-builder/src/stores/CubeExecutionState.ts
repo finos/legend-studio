@@ -99,6 +99,7 @@ export class CubeExecutionState {
       execute: flow,
       clearError: action,
       stop: action,
+      reset: action,
     });
     this.editorState = editorState;
   }
@@ -243,5 +244,12 @@ export class CubeExecutionState {
   stop(): void {
     this.runController?.abort();
     this.runController = undefined;
+  }
+
+  /** Stops any run and forgets the last one's rows and error, e.g. when another cube is opened */
+  reset(): void {
+    this.stop();
+    this.result = undefined;
+    this.error = undefined;
   }
 }

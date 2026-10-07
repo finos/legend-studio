@@ -30,9 +30,14 @@ import { CubeButton } from './CubeButton.js';
 import { CubeNodeList } from './graph/CubeNodeList.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
+import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
+
+const READ_ONLY_TITLE =
+  "This cube was saved by a newer version of Legend Cube, so it can't be changed or exported";
 
 const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
   const { editorState } = props;
+  const { readOnly } = editorState;
   return (
     <div
       className="flex h-full flex-col bg-[var(--color-bg-panel)]"
@@ -42,17 +47,46 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
         <span className="min-w-0 flex-1 truncate text-lg font-medium">
           {editorState.document.name ?? UNSAVED_CUBE_NAME}
         </span>
-        <CubeButton onClick={() => editorState.sourcePicker.open()}>
+        <CubeButton
+          title={readOnly ? READ_ONLY_TITLE : undefined}
+          disabled={readOnly}
+          onClick={() => editorState.sourcePicker.open()}
+        >
           Add table
         </CubeButton>
         <CubeButton
-          title="Undo the last change"
+          title={readOnly ? READ_ONLY_TITLE : 'Undo the last change'}
           disabled={!editorState.canUndo}
           onClick={() => editorState.undo()}
         >
           Undo
         </CubeButton>
+        <CubeButton
+          title={
+            readOnly
+              ? READ_ONLY_TITLE
+              : "Show the cube's spec, to copy or download"
+          }
+          disabled={readOnly}
+          onClick={() => editorState.specTransfer.openExport()}
+        >
+          Export (dev)
+        </CubeButton>
+        <CubeButton
+          title="Open a cube from its spec, in place of this one"
+          onClick={() => editorState.specTransfer.openImport()}
+        >
+          Import (dev)
+        </CubeButton>
       </div>
+      {readOnly && (
+        <div
+          className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
+          role="status"
+        >
+          {READ_ONLY_TITLE}. You can view and run it.
+        </div>
+      )}
       <div className="min-h-0 flex-1 overflow-auto">
         <CubeNodeList
           editorState={editorState}
@@ -61,6 +95,7 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
               <span>No tables yet: add a table to start.</span>
               <CubeButton
                 primary={true}
+                disabled={readOnly}
                 onClick={() => editorState.sourcePicker.open()}
               >
                 Add a table
@@ -70,6 +105,7 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
         />
       </div>
       <CubeSourcePicker editorState={editorState} />
+      <CubeSpecTransferDialog editorState={editorState} />
     </div>
   );
 });
