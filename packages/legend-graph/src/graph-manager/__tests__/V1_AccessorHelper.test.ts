@@ -16,7 +16,11 @@
 
 import { test, describe, expect, beforeAll, jest } from '@jest/globals';
 import { unitTest } from '@finos/legend-shared/test';
-import { guaranteeNonNullable, type PlainObject } from '@finos/legend-shared';
+import {
+  guaranteeNonNullable,
+  guaranteeType,
+  type PlainObject,
+} from '@finos/legend-shared';
 import {
   type Accessor,
   type AccessorOwner,
@@ -36,11 +40,16 @@ import {
   RelationColumn,
 } from '../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { GenericType } from '../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
+import type { Type } from '../../graph/metamodel/pure/packageableElements/domain/Type.js';
 import { GenericTypeExplicitReference } from '../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { Schema } from '../../graph/metamodel/pure/packageableElements/store/relational/model/Schema.js';
 import { Table } from '../../graph/metamodel/pure/packageableElements/store/relational/model/Table.js';
 import { Column } from '../../graph/metamodel/pure/packageableElements/store/relational/model/Column.js';
-import { PrimitiveType } from '../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import {
+  PrecisePrimitiveType,
+  PrimitiveType,
+} from '../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { PrimitiveInstanceValue } from '../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
 import {
   type RelationalDataType,
   VarChar,
@@ -81,7 +90,28 @@ import { Multiplicity } from '../../graph/metamodel/pure/packageableElements/dom
 const graphManagerState = TEST__getTestGraphManagerState();
 
 beforeAll(async () => {
-  await TEST__buildGraphWithEntities(graphManagerState, []);
+  await TEST__buildGraphWithEntities(graphManagerState, [
+    {
+      path: 'test::Color',
+      classifierPath: 'meta::pure::metamodel::type::Enumeration',
+      content: {
+        _type: 'Enumeration',
+        name: 'Color',
+        package: 'test',
+        values: [{ value: 'RED' }, { value: 'GREEN' }],
+      },
+    },
+    {
+      path: 'test::Address',
+      classifierPath: 'meta::pure::metamodel::type::Class',
+      content: {
+        _type: 'class',
+        name: 'Address',
+        package: 'test',
+        properties: [],
+      },
+    },
+  ]);
 });
 
 const createAccessorFromPackageableElement = async (
@@ -105,13 +135,21 @@ const createTestIngestDefinition = (
   path: string,
   datasets: {
     name: string;
-    columns: { name: string; fullPath: string }[];
+    columns: {
+      name: string;
+      fullPath: string;
+      // integer type parameters, e.g. `[10, 2]` for `Numeric(10,2)`
+      typeParameters?: number[];
+      multiplicity?: { lowerBound: number; upperBound?: number };
+    }[];
   }[],
+  writeMode?: string,
 ): IngestDefinition => {
   const ingest = new IngestDefinition(
     guaranteeNonNullable(path.split('::').pop()),
   );
   ingest.content = {
+    ...(writeMode ? { writeMode: { _type: writeMode } } : {}),
     datasets: datasets.map((ds) => ({
       name: ds.name,
       primaryKey: [],
@@ -123,8 +161,14 @@ const createTestIngestDefinition = (
             name: col.name,
             genericType: {
               rawType: { _type: 'packageableType', fullPath: col.fullPath },
+              typeArguments: [],
+              multiplicityArguments: [],
+              typeVariableValues: (col.typeParameters ?? []).map((value) => ({
+                _type: 'integer',
+                value,
+              })),
             },
-            multiplicity: { lowerBound: 1, upperBound: 1 },
+            multiplicity: col.multiplicity ?? { lowerBound: 1, upperBound: 1 },
           })),
         },
       },
@@ -132,6 +176,14 @@ const createTestIngestDefinition = (
   } as PlainObject;
   return ingest;
 };
+
+/**
+ * Reads the integer type parameters of a column, e.g. `[10, 2]` for `Numeric(10,2)`.
+ */
+const getColumnTypeParameters = (column: RelationColumn): unknown[] =>
+  (column.genericType.value.typeVariableValues ?? []).map(
+    (value) => guaranteeType(value, PrimitiveInstanceValue).values[0],
+  );
 
 const createTestDatabase = (
   path: string,
@@ -259,7 +311,9 @@ describe(
       expect(accessor).toBeUndefined();
     });
 
-    test('maps Pure type paths to correct PrimitiveTypes', async () => {
+    test('maps Pure type paths to their types, keeping type parameters and multiplicity', async () => {
+      // shaped like the dataset schema of an ingest definition
+      // (see `TEST_DATA__QueryBuilder_Accessors` in legend-query-builder)
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'ds',
@@ -273,6 +327,34 @@ describe(
             { name: 'col_datetime', fullPath: 'DateTime' },
             { name: 'col_strictdate', fullPath: 'StrictDate' },
             { name: 'col_number', fullPath: 'Number' },
+            {
+              name: 'col_varchar_full_path',
+              fullPath: 'meta::pure::precisePrimitives::Varchar',
+              typeParameters: [10],
+            },
+            {
+              name: 'col_varchar',
+              fullPath: 'Varchar',
+              typeParameters: [255],
+              multiplicity: { lowerBound: 0, upperBound: 1 },
+            },
+            {
+              name: 'col_numeric',
+              fullPath: 'Numeric',
+              typeParameters: [10, 2],
+            },
+            { name: 'col_bigint', fullPath: 'BigInt' },
+            {
+              name: 'col_enum',
+              fullPath: 'test::Color',
+              multiplicity: { lowerBound: 0, upperBound: 1 },
+            },
+            { name: 'col_class', fullPath: 'test::Address' },
+            {
+              name: 'col_variant',
+              fullPath: 'meta::pure::metamodel::variant::Variant',
+              multiplicity: { lowerBound: 0, upperBound: 1 },
+            },
           ],
         },
       ]);
@@ -284,22 +366,78 @@ describe(
         }),
       );
 
+      const graph = graphManagerState.graph;
+      const expected: [string, Type, unknown[], Multiplicity][] = [
+        ['col_string', PrimitiveType.STRING, [], Multiplicity.ONE],
+        ['col_integer', PrimitiveType.INTEGER, [], Multiplicity.ONE],
+        ['col_float', PrimitiveType.FLOAT, [], Multiplicity.ONE],
+        ['col_decimal', PrimitiveType.DECIMAL, [], Multiplicity.ONE],
+        ['col_boolean', PrimitiveType.BOOLEAN, [], Multiplicity.ONE],
+        ['col_date', PrimitiveType.DATE, [], Multiplicity.ONE],
+        ['col_datetime', PrimitiveType.DATETIME, [], Multiplicity.ONE],
+        ['col_strictdate', PrimitiveType.STRICTDATE, [], Multiplicity.ONE],
+        ['col_number', PrimitiveType.NUMBER, [], Multiplicity.ONE],
+        [
+          'col_varchar_full_path',
+          PrecisePrimitiveType.VARCHAR,
+          [10],
+          Multiplicity.ONE,
+        ],
+        [
+          'col_varchar',
+          PrecisePrimitiveType.VARCHAR,
+          [255],
+          Multiplicity.ZERO_ONE,
+        ],
+        [
+          'col_numeric',
+          PrecisePrimitiveType.NUMERIC,
+          [10, 2],
+          Multiplicity.ONE,
+        ],
+        ['col_bigint', PrecisePrimitiveType.BIG_INT, [], Multiplicity.ONE],
+        [
+          'col_enum',
+          graph.getEnumeration('test::Color'),
+          [],
+          Multiplicity.ZERO_ONE,
+        ],
+        ['col_class', graph.getClass('test::Address'), [], Multiplicity.ONE],
+        [
+          'col_variant',
+          graph.getType('meta::pure::metamodel::variant::Variant'),
+          [],
+          Multiplicity.ZERO_ONE,
+        ],
+      ];
+
       const cols = accessor.relationType.columns;
-      expect(cols).toHaveLength(9);
-
-      const getType = (name: string) =>
-        guaranteeNonNullable(cols.find((c) => c.name === name)).genericType
-          .value.rawType;
-
-      expect(getType('col_string')).toBe(PrimitiveType.STRING);
-      expect(getType('col_integer')).toBe(PrimitiveType.INTEGER);
-      expect(getType('col_float')).toBe(PrimitiveType.FLOAT);
-      expect(getType('col_decimal')).toBe(PrimitiveType.DECIMAL);
-      expect(getType('col_boolean')).toBe(PrimitiveType.BOOLEAN);
-      expect(getType('col_date')).toBe(PrimitiveType.DATE);
-      expect(getType('col_datetime')).toBe(PrimitiveType.DATETIME);
-      expect(getType('col_strictdate')).toBe(PrimitiveType.STRICTDATE);
-      expect(getType('col_number')).toBe(PrimitiveType.NUMBER);
+      // compare every column at once, so a failure shows all the wrong columns
+      expect(
+        cols.map((col) => ({
+          name: col.name,
+          rawType: col.genericType.value.rawType.path,
+          typeParameters: getColumnTypeParameters(col),
+          multiplicity: [
+            col.multiplicity.lowerBound,
+            col.multiplicity.upperBound,
+          ],
+        })),
+      ).toEqual(
+        expected.map(([name, rawType, typeParameters, multiplicity]) => ({
+          name,
+          rawType: rawType.path,
+          typeParameters,
+          multiplicity: [multiplicity.lowerBound, multiplicity.upperBound],
+        })),
+      );
+      // the resolved types are the graph's own instances
+      expected.forEach(([name, rawType]) => {
+        expect(
+          guaranteeNonNullable(cols.find((c) => c.name === name)).genericType
+            .value.rawType,
+        ).toBe(rawType);
+      });
     });
 
     test('resolves fully qualified type paths', async () => {
@@ -328,13 +466,88 @@ describe(
       ).toBe(PrimitiveType.INTEGER);
     });
 
-    test('defaults to STRING for unknown type paths', async () => {
+    test('falls back to String, with a warning, for unknown type paths', async () => {
       const ingest = createTestIngestDefinition('test::MyIngest', [
         {
           name: 'ds',
-          columns: [{ name: 'col', fullPath: 'SomeCustomType' }],
+          columns: [
+            { name: 'col', fullPath: 'SomeCustomType' },
+            {
+              name: 'col_with_package',
+              fullPath: 'test::Unknown',
+              typeParameters: [10],
+              multiplicity: { lowerBound: 0, upperBound: 1 },
+            },
+            { name: 'col_known', fullPath: 'Varchar', typeParameters: [20] },
+          ],
         },
       ]);
+
+      const warnSpy = jest
+        .spyOn(graphManagerState.graphManager.logService, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        const accessor = guaranteeNonNullable(
+          await createAccessorFromPackageableElement(ingest, {
+            tableName: 'ds',
+            schemaName: undefined,
+          }),
+        );
+
+        // one warning per unresolvable column, naming the type
+        expect(warnSpy).toHaveBeenCalledTimes(2);
+        const warnings = warnSpy.mock.calls.map((call) => String(call[1]));
+        expect(warnings[0]).toContain(`'SomeCustomType'`);
+        expect(warnings[0]).toContain(`'col'`);
+        expect(warnings[0]).toContain(`'ds'`);
+        expect(warnings[1]).toContain(`'test::Unknown'`);
+        expect(warnings[1]).toContain(`'col_with_package'`);
+
+        const cols = accessor.relationType.columns;
+        expect(cols.map((c) => c.name)).toEqual([
+          'col',
+          'col_with_package',
+          'col_known',
+        ]);
+        const unknownCol = guaranteeNonNullable(cols[0]);
+        expect(unknownCol.genericType.value.rawType).toBe(PrimitiveType.STRING);
+        expect(getColumnTypeParameters(unknownCol)).toEqual([]);
+        expect(unknownCol.multiplicity).toBe(Multiplicity.ONE);
+        const unknownColWithPackage = guaranteeNonNullable(cols[1]);
+        expect(unknownColWithPackage.genericType.value.rawType).toBe(
+          PrimitiveType.STRING,
+        );
+        expect(getColumnTypeParameters(unknownColWithPackage)).toEqual([]);
+        expect(unknownColWithPackage.multiplicity).toBe(Multiplicity.ZERO_ONE);
+        // the other columns are unaffected
+        const knownCol = guaranteeNonNullable(cols[2]);
+        expect(knownCol.genericType.value.rawType).toBe(
+          PrecisePrimitiveType.VARCHAR,
+        );
+        expect(getColumnTypeParameters(knownCol)).toEqual([20]);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    test('adds milestoning columns typed Timestamp for a business-temporal write mode', async () => {
+      const ingest = createTestIngestDefinition(
+        'test::MyIngest',
+        [
+          {
+            name: 'ds',
+            columns: [
+              { name: 'country', fullPath: 'Varchar', typeParameters: [255] },
+              {
+                name: 'color',
+                fullPath: 'test::Color',
+                multiplicity: { lowerBound: 0, upperBound: 1 },
+              },
+            ],
+          },
+        ],
+        'batch_milestoned_business_temporal',
+      );
 
       const accessor = guaranteeNonNullable(
         await createAccessorFromPackageableElement(ingest, {
@@ -343,10 +556,44 @@ describe(
         }),
       );
 
-      expect(
-        guaranteeNonNullable(accessor.relationType.columns[0]).genericType.value
-          .rawType,
-      ).toBe(PrimitiveType.STRING);
+      const cols = accessor.relationType.columns;
+      expect(cols.map((c) => c.name)).toEqual([
+        'country',
+        'color',
+        'LAKE_IN_ID',
+        'LAKE_OUT_ID',
+        'LAKE_DIGEST',
+        'LAKE_FROM',
+        'LAKE_THRU',
+      ]);
+      const getColumn = (name: string): RelationColumn =>
+        guaranteeNonNullable(cols.find((c) => c.name === name));
+
+      // the declared columns keep their own types
+      expect(getColumn('country').genericType.value.rawType).toBe(
+        PrecisePrimitiveType.VARCHAR,
+      );
+      expect(getColumnTypeParameters(getColumn('country'))).toEqual([255]);
+      expect(getColumn('color').genericType.value.rawType).toBe(
+        graphManagerState.graph.getEnumeration('test::Color'),
+      );
+      expect(getColumn('color').multiplicity).toBe(Multiplicity.ZERO_ONE);
+
+      expect(getColumn('LAKE_IN_ID').genericType.value.rawType).toBe(
+        PrimitiveType.INTEGER,
+      );
+      expect(getColumn('LAKE_OUT_ID').genericType.value.rawType).toBe(
+        PrimitiveType.INTEGER,
+      );
+      expect(getColumn('LAKE_DIGEST').genericType.value.rawType).toBe(
+        PrimitiveType.STRING,
+      );
+      expect(getColumn('LAKE_FROM').genericType.value.rawType).toBe(
+        PrecisePrimitiveType.TIMESTAMP,
+      );
+      expect(getColumn('LAKE_THRU').genericType.value.rawType).toBe(
+        PrecisePrimitiveType.TIMESTAMP,
+      );
     });
 
     test('accessor path and labels are correct', async () => {
