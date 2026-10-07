@@ -15,6 +15,7 @@
  */
 
 import {
+  PanelLoadingIndicator,
   ResizablePanel,
   ResizablePanelGroup,
   ResizablePanelSplitter,
@@ -22,7 +23,10 @@ import {
 import type { CubeDocument } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { UNSAVED_CUBE_NAME } from '../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_PENDING_LABEL,
+  UNSAVED_CUBE_NAME,
+} from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import type { CubeHost } from '../stores/CubeHost.js';
@@ -47,6 +51,11 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
         <span className="min-w-0 flex-1 truncate text-lg font-medium">
           {editorState.document.name ?? UNSAVED_CUBE_NAME}
         </span>
+        {editorState.isResolvingSources && (
+          <span className="shrink-0 text-base text-[var(--color-text-secondary)]">
+            {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
+          </span>
+        )}
         <CubeButton
           title={readOnly ? READ_ONLY_TITLE : undefined}
           disabled={readOnly}
@@ -79,6 +88,7 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
           Import (dev)
         </CubeButton>
       </div>
+      <PanelLoadingIndicator isLoading={editorState.isResolvingSources} />
       {readOnly && (
         <div
           className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"

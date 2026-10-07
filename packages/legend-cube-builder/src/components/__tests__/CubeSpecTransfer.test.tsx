@@ -23,6 +23,7 @@ import {
   test,
 } from '@jest/globals';
 import { CubeDocument, Query, serializeCubeSpec } from '@finos/legend-cube';
+import { readFileAsText } from '@finos/legend-shared';
 import {
   fireEvent,
   screen,
@@ -39,7 +40,6 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
-import { readFileAsText } from '@finos/legend-shared';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
 import type { CubeHost } from '../../stores/CubeHost.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
@@ -249,5 +249,27 @@ describe('Cube spec export and import, on the page', () => {
         screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
       ).getByText<HTMLButtonElement>('Execute').disabled,
     ).toBe(false);
+  });
+
+  test("Types the imported cube's tables again and warns on a table that changed since it was saved", async () => {
+    const { fake } = await renderPage();
+    const spec = JSON.parse(serializeCubeSpec(ordersDocument())) as {
+      query: { nodes: { schemaSnapshot: { name: string }[] }[] };
+    };
+    const [orders] = spec.query.nodes;
+    // saved before SHIP_COUNTRY was added
+    if (orders) {
+      orders.schemaSnapshot = orders.schemaSnapshot.filter(
+        (column) => column.name !== 'SHIP_COUNTRY',
+      );
+    }
+    const dialog = await importText(JSON.stringify(spec));
+    await waitForElementToBeRemoved(dialog);
+    const row = screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    expect((await within(row).findByRole('status')).textContent).toBe(
+      'This table changed since the cube was saved: added SHIP_COUNTRY',
+    );
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(within(header()).queryByText('resolving source')).toBeNull();
   });
 });

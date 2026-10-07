@@ -18,18 +18,35 @@ import {
   buildSchemasAndValidity,
   createNodeRegistry,
   CubeDocument,
+  diffSchemas,
   type NodeRegistry,
   type Query,
   QueryEmitter,
+  RelationalTableSource,
+  rereadQueryFilterValues,
+  type Schema,
   type SchemaInferenceResult,
 } from '@finos/legend-cube';
-import { action, computed, makeObservable, observable } from 'mobx';
+import type { GeneratorFn } from '@finos/legend-shared';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   DEFAULT_ROW_LIMIT,
+  getSchemaDriftWarning,
+  getSourceRecheckWarning,
   LEGEND_CUBE_USER_DATA_KEY,
   MAX_UNDO_STEPS,
 } from '../__lib__/LegendCubeLabels.js';
-import type { CubeEngineError } from '../graph-manager/CubeEngine.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../graph-manager/CubeEngine.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
@@ -63,6 +80,15 @@ export class CubeEditorState {
   history: readonly CubeDocument[] = [];
   /** Engine errors by node id: shown with the node's own errors, never part of inference */
   hostIssues: ReadonlyMap<string, CubeHostIssue> = new Map();
+  /**
+   * Warnings by node key, e.g. a table that changed since the cube was saved:
+   * shown on the node, never errors, and gone once the node is replaced
+   */
+  warnings: ReadonlyMap<number, readonly string[]> = new Map();
+  /** The cube's tables are being typed again, after an import */
+  isResolvingSources = false;
+  /** Counts re-resolutions, so an answer that comes after another cube was opened is dropped */
+  private resolveRequest = 0;
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /**
@@ -78,6 +104,8 @@ export class CubeEditorState {
       document: observable.ref,
       history: observable.ref,
       hostIssues: observable.ref,
+      warnings: observable.ref,
+      isResolvingSources: observable,
       rowLimit: observable,
       readOnly: observable,
       analysis: computed,
@@ -86,6 +114,7 @@ export class CubeEditorState {
       applyDocument: action,
       undo: action,
       importDocument: action,
+      reresolveSources: flow,
       applyQuery: action,
       select: action,
       setHostIssue: action,
@@ -141,8 +170,110 @@ export class CubeEditorState {
     this.execution.reset();
     this.sourcePicker.close();
     this.hostIssues = new Map();
+    this.warnings = new Map();
     this.document = next;
     this.readOnly = readOnly;
+    flowResult(this.reresolveSources()).catch(
+      this.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * Types the cube's tables again, in one engine call, outside the undo
+   * history (PLAN §10.3, Settled before M1.8):
+   * - a table whose columns are the saved ones is left as it is;
+   * - a table that changed takes its new columns, with a warning listing the
+   *   changes;
+   * - a table with saved columns that can't be typed keeps them, with a
+   *   warning; one without them shows the engine's error.
+   *
+   * Then filter values saved as invalid text are read again against the
+   * columns. A source the user changed meanwhile is left alone.
+   */
+  *reresolveSources(): GeneratorFn<void> {
+    const request = ++this.resolveRequest;
+    const { context, query } = this.document;
+    const sources = query.nodes.filter(
+      (node): node is RelationalTableSource =>
+        node instanceof RelationalTableSource,
+    );
+    if (!context || !sources.length) {
+      this.isResolvingSources = false;
+      return;
+    }
+    this.isResolvingSources = true;
+    let answers: ReadonlyMap<string, Schema | CubeEngineError>;
+    try {
+      answers = (yield this.host.engine.resolveSchemas(
+        context.model,
+        new Map(
+          sources.map((source) => [
+            source.id,
+            [source.database, source.schema, source.table],
+          ]),
+        ),
+      )) as Map<string, Schema | CubeEngineError>;
+    } catch (error) {
+      const failure =
+        error instanceof CubeEngineError
+          ? error
+          : new CubeEngineError(
+              CubeEngineErrorKind.NETWORK,
+              error instanceof Error ? error.message : String(error),
+            );
+      answers = new Map(sources.map((source) => [source.id, failure]));
+    }
+    if (request !== this.resolveRequest) {
+      return;
+    }
+    this.isResolvingSources = false;
+    const warnings = new Map(this.warnings);
+    let next = sources.reduce((current, source) => {
+      if (current.getNode(source.id) !== source) {
+        return current;
+      }
+      const answer =
+        answers.get(source.id) ??
+        new CubeEngineError(
+          CubeEngineErrorKind.COMPILE,
+          'The engine gave no schema for this table',
+          source.id,
+        );
+      const saved =
+        source.resolution.kind === 'resolved'
+          ? source.resolution.schema
+          : undefined;
+      if (answer instanceof CubeEngineError) {
+        if (saved) {
+          warnings.set(source.key, [getSourceRecheckWarning(answer.firstLine)]);
+          return current;
+        }
+        return current.replace(
+          source.withResolution({ kind: 'failed', message: answer.detail }),
+        );
+      }
+      if (saved?.isIdenticalTo(answer)) {
+        return current;
+      }
+      const resolved = source.withResolution({
+        kind: 'resolved',
+        schema: answer,
+      });
+      if (saved) {
+        warnings.set(resolved.key, [
+          getSchemaDriftWarning(diffSchemas(saved, answer)),
+        ]);
+      }
+      return current.replace(resolved);
+    }, this.document.query);
+    next = rereadQueryFilterValues(
+      next,
+      buildSchemasAndValidity(next, this.registry.queryRules).schemas,
+    );
+    this.warnings = warnings;
+    if (next !== this.document.query) {
+      this.replaceDocument(this.document.withQuery(next));
+    }
   }
 
   /**

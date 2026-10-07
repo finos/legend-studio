@@ -30,6 +30,7 @@ const CubeNodeRow = observer(
       ...(editorState.analysis.validity.get(node.id) ?? []),
       ...(hostIssue ? [hostIssue.firstLine] : []),
     ];
+    const warnings = editorState.warnings.get(node.key) ?? [];
     return (
       <li
         className="flex items-start gap-2 border-b border-[var(--color-border-subtle)] px-2 py-1.5"
@@ -52,6 +53,16 @@ const CubeNodeRow = observer(
               role="alert"
             >
               {error}
+            </div>
+          ))}
+          {warnings.map((warning, index) => (
+            <div
+              // eslint-disable-next-line react/no-array-index-key
+              key={index}
+              className="text-sm text-[var(--color-status-warn)]"
+              role="status"
+            >
+              {warning}
             </div>
           ))}
         </div>
@@ -78,7 +89,7 @@ const CubeNodeRow = observer(
 /**
  * The query's nodes as a list, until the canvas replaces it (PLAN §7.8,
  * Settled before M1.8): each with its description, its errors and engine
- * errors, and Select to make it the node Execute runs.
+ * errors, its warnings, and Select to make it the node Execute runs.
  */
 export const CubeNodeList = observer(
   (props: { editorState: CubeEditorState; emptyState: React.ReactNode }) => {

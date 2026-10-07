@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { SchemaColumn, SchemaDiff } from '@finos/legend-cube';
 import { CubeTableFlag } from '../graph-manager/CubeEngine.js';
 
 // The page's own text and settings; validation messages live in the core's
@@ -69,3 +70,33 @@ export const CUBE_TABLE_FLAG_LABELS: Readonly<
     description: "A column's type (OTHER or ARRAY) is not known to Cube.",
   },
 };
+
+const describeColumnType = (column: SchemaColumn): string =>
+  `${column.type.displayName}${column.nullable ? '?' : ''}`;
+
+const listColumns = (columns: readonly SchemaColumn[]): string =>
+  columns.map((column) => column.name).join(', ');
+
+/** The warning on a source whose table changed since the cube was saved; the table's new columns are used */
+export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
+  const changes = [
+    ...(diff.added.length ? [`added ${listColumns(diff.added)}`] : []),
+    ...(diff.removed.length ? [`removed ${listColumns(diff.removed)}`] : []),
+    ...(diff.changed.length
+      ? [
+          `changed ${diff.changed
+            .map(
+              (change) =>
+                `${change.after.name} (${describeColumnType(change.before)} to ${describeColumnType(change.after)})`,
+            )
+            .join(', ')}`,
+        ]
+      : []),
+    ...(diff.reordered ? ['reordered its columns'] : []),
+  ];
+  return `This table changed since the cube was saved: ${changes.join('; ')}`;
+};
+
+/** The warning on a source with saved columns that the engine couldn't type again */
+export const getSourceRecheckWarning = (firstLine: string): string =>
+  `Could not re-check this table, so it keeps its saved columns: ${firstLine}`;
