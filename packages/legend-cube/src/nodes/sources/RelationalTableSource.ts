@@ -52,7 +52,7 @@ const isNonEmptyString = (value: unknown): value is string =>
  * Names are stored as in the Database element, quotes included (e.g. `"a.b"`),
  * because the engine needs them; display drops one pair of surrounding quotes.
  */
-const toDisplayName = (name: string): string =>
+export const getRelationalDisplayName = (name: string): string =>
   name.length > 1 && name.startsWith('"') && name.endsWith('"')
     ? name.slice(1, -1)
     : name;
@@ -170,7 +170,7 @@ export class RelationalTableSource extends SourceNode {
   describe(): string {
     return this.resolution.kind === 'unresolved'
       ? '(unknown)'
-      : `Table "${toDisplayName(this.table)}" from schema "${toDisplayName(this.schema)}"`;
+      : `Table "${getRelationalDisplayName(this.table)}" from schema "${getRelationalDisplayName(this.schema)}"`;
   }
 }
 

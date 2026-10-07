@@ -23,6 +23,7 @@ export {
   buildCubeEngine,
   type CubeEngineConfig,
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';
+export type { CubeHost } from './stores/CubeHost.js';
 export {
   BUNDLED_MODELS,
   type BundledModel,

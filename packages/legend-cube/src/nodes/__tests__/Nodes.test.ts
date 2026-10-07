@@ -45,6 +45,7 @@ import {
   type TransformDefinition,
 } from '../NodeRegistry.js';
 import {
+  getRelationalDisplayName,
   type RelationalTableCoordinates,
   RelationalTableSource,
   type SnapshotColumnRest,
@@ -336,6 +337,15 @@ describe(unitTest('Node contracts'), () => {
         },
       ).describe(),
     ).toBe('Table """ from schema "NORTHWIND"');
+  });
+
+  test('Drops one pair of surrounding quotes from a name for display, and nothing else', () => {
+    expect(getRelationalDisplayName('"a.b"')).toBe('a.b');
+    expect(getRelationalDisplayName('""a""')).toBe('"a"');
+    expect(getRelationalDisplayName('ORDERS')).toBe('ORDERS');
+    expect(getRelationalDisplayName('"a')).toBe('"a');
+    expect(getRelationalDisplayName('"')).toBe('"');
+    expect(getRelationalDisplayName('""')).toBe('');
   });
 });
 

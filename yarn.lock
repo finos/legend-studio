@@ -3012,6 +3012,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@finos/legend-cube-builder@workspace:packages/legend-cube-builder"
   dependencies:
+    "@finos/legend-application": "workspace:*"
     "@finos/legend-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
