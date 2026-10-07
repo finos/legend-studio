@@ -12,6 +12,7 @@
     { "path": "../legend-application" },
     { "path": "../legend-art" },
     { "path": "../legend-graph" },
+    { "path": "../legend-lego" },
     { "path": "../legend-cube" }
   ]
 }

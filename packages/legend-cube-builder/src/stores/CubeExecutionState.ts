@@ -27,6 +27,8 @@ import type { CubeEditorState } from './CubeEditorState.js';
 
 /** What the grid shows of a run: the rows within the limit, under the schema the run was made with */
 export interface CubeExecutionResult {
+  /** Counts the page's runs: the grid is built anew for each */
+  readonly id: number;
   /** The query that ran: results are stale once the document holds another */
   readonly query: Query;
   /** The capture node's schema when the run started; the grid's columns, by position */
@@ -83,6 +85,7 @@ export class CubeExecutionState {
   error: CubeEngineError | undefined;
   /** The abort controller of the run in flight, if any */
   private runController: AbortController | undefined;
+  private runCount = 0;
 
   constructor(editorState: CubeEditorState) {
     makeObservable<CubeExecutionState, 'runController'>(this, {
@@ -178,6 +181,7 @@ export class CubeExecutionState {
       }
       const limited = response.rows.length > rowLimit;
       this.result = {
+        id: ++this.runCount,
         query,
         schema,
         rows: limited ? response.rows.slice(0, rowLimit) : response.rows,

@@ -48,6 +48,7 @@
     "@finos/legend-art": "workspace:*",
     "@finos/legend-cube": "workspace:*",
     "@finos/legend-graph": "workspace:*",
+    "@finos/legend-lego": "workspace:*",
     "@finos/legend-shared": "workspace:*",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",

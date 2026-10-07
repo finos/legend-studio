@@ -20,4 +20,7 @@ export enum LEGEND_CUBE_TEST_ID {
   GRID_REGION = 'legend-cube__grid-region',
   NODE_LIST = 'legend-cube__node-list',
   NODE_ROW = 'legend-cube__node-row',
+  RESULT_GRID = 'legend-cube__result-grid',
+  GRID_TOOLBAR = 'legend-cube__grid-toolbar',
+  EXECUTION_ERROR = 'legend-cube__execution-error',
 }

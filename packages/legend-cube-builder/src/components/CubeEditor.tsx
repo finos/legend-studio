@@ -28,6 +28,7 @@ import { CubeEditorState } from '../stores/CubeEditorState.js';
 import type { CubeHost } from '../stores/CubeHost.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeNodeList } from './graph/CubeNodeList.js';
+import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 
 const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
@@ -66,15 +67,6 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
   );
 });
 
-const CubeGridRegion: React.FC = () => (
-  <div
-    className="flex h-full items-center justify-center bg-[var(--color-bg-panel)] text-base text-[var(--color-text-secondary)]"
-    data-testid={LEGEND_CUBE_TEST_ID.GRID_REGION}
-  >
-    Execute the query to see its rows.
-  </div>
-);
-
 /**
  * The Legend Cube page: the query above, its results below, both always
  * shown (PLAN §7.1). The host gives it the engine, the models and the
@@ -102,7 +94,7 @@ export const CubeEditor = observer(
           </ResizablePanel>
           <ResizablePanelSplitter />
           <ResizablePanel minSize={96}>
-            <CubeGridRegion />
+            <CubeGridRegion editorState={editorState} />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

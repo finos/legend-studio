@@ -3017,6 +3017,7 @@ __metadata:
     "@finos/legend-cube": "workspace:*"
     "@finos/legend-dev-utils": "workspace:*"
     "@finos/legend-graph": "workspace:*"
+    "@finos/legend-lego": "workspace:*"
     "@finos/legend-shared": "workspace:*"
     "@jest/globals": "npm:29.7.0"
     "@testing-library/dom": "npm:10.4.0"
