@@ -79,7 +79,13 @@ engine test: ORDERS gives 830 rows); `cd9882a70` S3 page shell and the Legend Qu
 `/query/cube`; `7c96d8bdb` S4 source picker; `8444d7e42` S5 results grid and execution. `check:ci`, `lint:ci` and
 1905 tests (core, builder, Query) green. Checked in the browser against :6300: the outline, the batch typing call
 (compressed body, CORS from :9001) and execute (830 rows in about 0.6 s; truncation at limit 10) all work.
-Verification `m18-democut-verify` (run `wf_97b39b15-ae7`) is running. **Next:** fix what it confirms, then S6–S12.
+Verification `m18-democut-verify` (run `wf_97b39b15-ae7`, `legend-cube-evidence/m18-democut-verify-result.json`):
+74 real out of 86 (6 bugs, 3 unmet requirements, 61 test gaps). The bugs and requirements are fixed in `0b0fe82dc`:
+a run's error now belongs to its query (an edit clears it; a run that fails after an edit shows nothing), closing
+the picker drops a pending Add, a cube with a model but no runtime keeps the picked runtime, the grid checks column
+names as well as the count, long one-line errors keep Details, duplicate error keys, loading bars beside the pending
+labels, and Show SQL. The missing tests are being written by `m18-democut-tests` (run `wf_511e7e31-7cb`), each
+checked against its mutant. **Next:** commit those tests, then S6–S12.
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
