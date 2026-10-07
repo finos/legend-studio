@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { getBaseJestProjectConfig } from '../../scripts/test/jest.config.base.js';
+import { getBaseJestDOMProjectConfig } from '../../scripts/test/jest.config.base.js';
 import { loadJSON } from '@finos/legend-dev-utils/DevUtils';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -22,12 +22,19 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const packageJson = loadJSON(resolve(__dirname, './package.json'));
-const base = getBaseJestProjectConfig(packageJson.name, 'packages/legend-art');
 
-export default {
-  ...base,
-  setupFiles: [
-    ...base.setupFiles,
-    '@finos/legend-dev-utils/jest/setupDOMPolyfills',
-  ],
-};
+/**
+ * NOTE: this used to compose `getBaseJestProjectConfig` (the Node variant) and
+ * append `setupDOMPolyfills` on top. That setup file assigns `window.*` and
+ * `document.fonts` at the top level, so it can only run under `jsdom` -- with no
+ * test files in this package the mismatch was invisible, but the first test
+ * added would have failed at setup with `window is not defined`.
+ *
+ * `getBaseJestDOMProjectConfig` already supplies `testEnvironment: 'jsdom'`,
+ * `setupDOMPolyfills`, and the mocks for pure-ESM modules, and is what every
+ * other UI package in the monorepo uses.
+ */
+export default getBaseJestDOMProjectConfig(
+  packageJson.name,
+  'packages/legend-art',
+);
