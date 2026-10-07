@@ -34,6 +34,7 @@ import {
 } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { isTableSelectable } from '../../stores/CubeSourcePickerState.js';
+import { CubeButton } from '../CubeButton.js';
 
 /** One step of the picker: a labelled list of choices, read-only when the cube fixes it */
 const CubePickerStep: React.FC<{
@@ -72,6 +73,9 @@ const CubePickerStep: React.FC<{
  * redesigns. The table lands with its schema; the first one fixes the cube's
  * model and runtime.
  */
+/** The Model option that offers a text box for Pure text */
+const PASTE_MODEL_OPTION = 'paste';
+
 export const CubeSourcePicker = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
@@ -106,20 +110,32 @@ export const CubeSourcePicker = observer(
                 value={
                   isFixed
                     ? 'fixed'
-                    : picker.models.find(
-                        (model) => model.model === picker.model,
-                      )?.id
+                    : picker.isPastingModel
+                      ? PASTE_MODEL_OPTION
+                      : picker.models.find(
+                          (model) => model.model === picker.model,
+                        )?.id
                 }
                 options={
                   isFixed
                     ? [{ value: 'fixed', label: fixedModelLabel }]
-                    : picker.models.map((model) => ({
-                        value: model.id,
-                        label: model.label,
-                      }))
+                    : [
+                        ...picker.models.map((model) => ({
+                          value: model.id,
+                          label: model.label,
+                        })),
+                        {
+                          value: PASTE_MODEL_OPTION,
+                          label: 'Paste Pure model…',
+                        },
+                      ]
                 }
                 disabled={isFixed}
                 onChange={(id) => {
+                  if (id === PASTE_MODEL_OPTION) {
+                    picker.startPastingModel();
+                    return;
+                  }
                   const model = picker.models.find(
                     (candidate) => candidate.id === id,
                   );
@@ -130,6 +146,40 @@ export const CubeSourcePicker = observer(
                   }
                 }}
               />
+              {picker.isPastingModel && !isFixed && (
+                <div className="flex flex-col gap-1">
+                  <textarea
+                    className="h-40 w-full resize-y rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] p-1 font-mono text-sm text-[var(--color-text-primary)]"
+                    aria-label="Pure model"
+                    placeholder={
+                      '###Relational\nDatabase my::Database ( … )\n\n###Runtime\nRuntime my::Runtime { … }'
+                    }
+                    spellCheck={false}
+                    value={picker.pastedModelText}
+                    onChange={(event) =>
+                      picker.setPastedModelText(event.target.value)
+                    }
+                  />
+                  <div className="flex items-center gap-2">
+                    <CubeButton
+                      disabled={
+                        !picker.pastedModelText.trim() || picker.isLoadingModel
+                      }
+                      onClick={() => {
+                        flowResult(picker.loadPastedModel()).catch(
+                          applicationStore.alertUnhandledError,
+                        );
+                      }}
+                    >
+                      Load model
+                    </CubeButton>
+                    <span className="text-sm text-[var(--color-text-muted)]">
+                      The cube keeps the model&apos;s text, which counts towards
+                      the 1 MiB a cube spec can hold.
+                    </span>
+                  </div>
+                </div>
+              )}
               {picker.isLoadingModel && (
                 <div className="text-base text-[var(--color-text-secondary)]">
                   {CUBE_PENDING_LABEL.LOADING_MODEL}

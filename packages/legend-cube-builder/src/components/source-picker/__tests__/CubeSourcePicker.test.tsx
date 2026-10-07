@@ -47,9 +47,12 @@ import {
 } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
   type CubeEngine,
+  CubeEngineError,
+  CubeEngineErrorKind,
   type CubeModelOutline,
   CubeTableFlag,
 } from '../../../graph-manager/CubeEngine.js';
+import { createTextModel } from '../../../stores/LocalModelCatalog.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
@@ -507,4 +510,147 @@ describe('Cube source picker', () => {
       ]);
     },
   );
+});
+
+describe('Cube source picker: a pasted Pure model', () => {
+  const PASTED = '###Relational\nDatabase my::Northwind ( )';
+
+  /** Chooses 'Paste Pure model…' and types the text */
+  const pasteModel = (dialog: HTMLElement, code: string): void => {
+    fireEvent.change(within(dialog).getByLabelText('Model'), {
+      target: { value: 'paste' },
+    });
+    fireEvent.change(within(dialog).getByLabelText('Pure model'), {
+      target: { value: code },
+    });
+  };
+
+  test('Loads the outline of a pasted model, adds a table from it, and keeps the text in the cube', async () => {
+    const { fake } = await renderPage();
+    const dialog = await openPicker();
+    // the bundled model loads first, as the only one
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    const model = within(dialog).getByLabelText<HTMLSelectElement>('Model');
+    expect(selectOptions(model)).toEqual(['cube-northwind', 'paste']);
+    expect(model.selectedOptions[0]?.textContent).toBe(
+      'Northwind (Cube fixture)',
+    );
+
+    fireEvent.change(model, { target: { value: 'paste' } });
+    expect(within(dialog).queryByRole('list', { name: 'Tables' })).toBeNull();
+    const load = within(dialog).getByText<HTMLButtonElement>('Load model');
+    expect(load.disabled).toBe(true);
+    fireEvent.change(within(dialog).getByLabelText('Pure model'), {
+      target: { value: PASTED },
+    });
+    fireEvent.click(load);
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    expect(fake.loadModel).toHaveBeenLastCalledWith(createTextModel(PASTED));
+    expect(model.selectedOptions[0]?.textContent).toBe('Paste Pure model…');
+
+    fireEvent.click(within(tables).getByText('ORDERS'));
+    fireEvent.click(within(dialog).getByText('Add'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    expect(fake.resolveSchemas.mock.calls[0]?.[0]).toEqual({
+      _type: 'text',
+      code: PASTED,
+    });
+
+    // later picks come from the pasted model
+    fireEvent.click(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByText(
+        'Add table',
+      ),
+    );
+    const again = await screen.findByRole('dialog');
+    const fixed = within(again).getByLabelText<HTMLSelectElement>('Model');
+    expect(fixed.disabled).toBe(true);
+    expect(fixed.selectedOptions[0]?.textContent).toBe("The cube's model");
+    expect(within(again).queryByLabelText('Pure model')).toBeNull();
+  });
+
+  test("Shows why a pasted model doesn't load, in the dialog, and adds nothing", async () => {
+    const { fake } = await renderPage();
+    const dialog = await openPicker();
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    fake.loadModel.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        "Unexpected token 'Databse' at line 2\n…",
+      ),
+    );
+    pasteModel(dialog, '###Relational\nDatabse x');
+    fireEvent.click(within(dialog).getByText('Load model'));
+    expect((await within(dialog).findByRole('alert')).textContent).toBe(
+      "Unexpected token 'Databse' at line 2",
+    );
+    expect(within(dialog).getByText<HTMLButtonElement>('Add').disabled).toBe(
+      true,
+    );
+    // the text stays, to be fixed
+    expect(
+      within(dialog).getByLabelText<HTMLTextAreaElement>('Pure model').value,
+    ).toBe('###Relational\nDatabse x');
+  });
+
+  test('Goes back to a bundled model when it is chosen again', async () => {
+    const { fake } = await renderPage();
+    const dialog = await openPicker();
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    pasteModel(dialog, PASTED);
+    fireEvent.change(within(dialog).getByLabelText('Model'), {
+      target: { value: 'cube-northwind' },
+    });
+    expect(within(dialog).queryByLabelText('Pure model')).toBeNull();
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    expect(fake.loadModel).toHaveBeenLastCalledWith(CUBE_NORTHWIND_MODEL);
+  });
+
+  test('Keeps offering the pasted text when the picker is opened again before a table is added', async () => {
+    const { fake } = await renderPage();
+    const dialog = await openPicker();
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    pasteModel(dialog, PASTED);
+    fireEvent.click(within(dialog).getByText('Load model'));
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.click(within(dialog).getByText('Cancel'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    const loads = fake.loadModel.mock.calls.length;
+
+    const reopened = await openPicker();
+    expect(
+      within(reopened).getByLabelText<HTMLTextAreaElement>('Pure model').value,
+    ).toBe(PASTED);
+    await within(reopened).findByRole('list', { name: 'Tables' });
+    // the catalog keeps the outline: nothing is parsed again
+    expect(fake.loadModel.mock.calls.length).toBe(loads);
+  });
+
+  test("Opens a cube on a model that isn't bundled, e.g. an imported one, from the cube's own text", async () => {
+    const pasted = createTextModel(PASTED);
+    const { fake } = await renderPage(
+      undefined,
+      undefined,
+      new CubeDocument({
+        context: { model: pasted, runtime: NORTHWIND_RUNTIME },
+        query: new Query(
+          [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS)],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    fireEvent.click(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByText(
+        'Add table',
+      ),
+    );
+    const dialog = await screen.findByRole('dialog');
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    expect(fake.loadModel).toHaveBeenCalledWith(pasted);
+    expect(
+      within(dialog).getByLabelText<HTMLSelectElement>('Model')
+        .selectedOptions[0]?.textContent,
+    ).toBe("The cube's model");
+  });
 });

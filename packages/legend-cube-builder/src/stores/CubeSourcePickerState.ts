@@ -42,7 +42,7 @@ import {
 } from '../graph-manager/CubeEngine.js';
 import { getRuntimesForDatabase } from '../graph-manager/CubeModelOutlineHelper.js';
 import type { CubeEditorState } from './CubeEditorState.js';
-import type { BundledModel } from './LocalModelCatalog.js';
+import { type BundledModel, createTextModel } from './LocalModelCatalog.js';
 
 const toMessage = (error: unknown): string => {
   assertErrorThrown(error);
@@ -65,6 +65,9 @@ export class CubeSourcePickerState {
 
   isOpen = false;
   model: ModelContext | undefined;
+  /** The model is Pure text the user pastes, not a bundled one */
+  isPastingModel = false;
+  pastedModelText = '';
   outline: CubeModelOutline | undefined;
   isLoadingModel = false;
   databasePath: string | undefined;
@@ -82,6 +85,8 @@ export class CubeSourcePickerState {
     makeObservable(this, {
       isOpen: observable,
       model: observable.ref,
+      isPastingModel: observable,
+      pastedModelText: observable,
       outline: observable.ref,
       isLoadingModel: observable,
       databasePath: observable,
@@ -105,7 +110,10 @@ export class CubeSourcePickerState {
       selectSchema: action,
       selectTable: action,
       setTableSearch: action,
+      startPastingModel: action,
+      setPastedModelText: action,
       selectModel: flow,
+      loadPastedModel: flow,
       confirm: flow,
     });
     this.editorState = editorState;
@@ -200,7 +208,9 @@ export class CubeSourcePickerState {
     this.error = undefined;
     const model =
       this.fixedContext?.model ??
-      (this.models.length === 1 ? this.models[0]?.model : this.model);
+      (this.models.length === 1 && !this.isPastingModel
+        ? this.models[0]?.model
+        : this.model);
     if (!model) {
       return;
     }
@@ -227,7 +237,35 @@ export class CubeSourcePickerState {
     this.isResolving = false;
   }
 
+  /** Offers a text box for a Pure model in place of the bundled ones */
+  startPastingModel(): void {
+    this.isPastingModel = true;
+    this.model = undefined;
+    this.outline = undefined;
+    this.error = undefined;
+    this.isLoadingModel = false;
+    this.resetFrom('database');
+  }
+
+  setPastedModelText(text: string): void {
+    this.pastedModelText = text;
+  }
+
+  /**
+   * Loads the pasted Pure text as the model: the cube will hold the text
+   * itself, so it counts towards the size a saved cube can have
+   */
+  *loadPastedModel(): GeneratorFn<void> {
+    if (this.pastedModelText.trim()) {
+      yield flowResult(this.selectModel(createTextModel(this.pastedModelText)));
+    }
+  }
+
+  /** Loads a model's outline; a bundled model ends pasting */
   *selectModel(model: ModelContext): GeneratorFn<void> {
+    if (this.models.some((bundled) => bundled.model === model)) {
+      this.isPastingModel = false;
+    }
     this.model = model;
     this.outline = undefined;
     this.error = undefined;
