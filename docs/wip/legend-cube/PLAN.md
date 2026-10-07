@@ -2,7 +2,7 @@
 
 > **Status:** approved 2026-10-05 · branch `cubeV1` (rebased on master `0665e6f4c`, where the spec landed as
 > `docs/design/WIP-CUBE-SPEC.md` in #5589)
-> **Inputs:** [docs/design/WIP-CUBE-SPEC.md](docs/design/WIP-CUBE-SPEC.md), the planning brief, and an investigation of
+> **Inputs:** [docs/design/WIP-CUBE-SPEC.md](../../../docs/design/WIP-CUBE-SPEC.md), the planning brief, and an investigation of
 > `legend-studio` + `legend-engine` (HEAD `93d92b4`) with ~1,500 checks against a live engine on `localhost:6300`.
 > **Evidence markers:** ✅ verified live against the engine · 📄 traced in code · 💭 inference, to be verified in the
 > milestone that needs it.
@@ -26,6 +26,7 @@
 | D10 | Precise primitives are modeled **inside the host-free domain**. The host adapts the engine's relation-type JSON at the boundary, in a package-local `v1/` folder.                                                                                                                                                                                                                                                                                  | recommendation (§5)                |
 | D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.)                                                                                                                                                                                                                                                                                    | user                               |
 | D12 | **Types: Cube's own registry for the slice, legend-graph's types from M2.0**, for consistency with the rest of Legend. M2.0 first fixes legend-graph's precise primitives (own PR), then rebases `CubeType` on legend-graph's `GenericType` and narrows the core rule to "metamodel only, no `V1_*`, no UI or app packages" (a §2.2 departure). Until then the type seam stays narrow (§4.1) so the switch stays internal. Replaces D10 from M2.0. | user + recommendation              |
+| D13 | **First merge after M1.8a, as one PR** (2026-10-07), so new sources and operations can then be built in parallel. Show Pure's "numbers as 0" bug is fixed before it. The working docs live in `docs/wip/legend-cube/` (PLAN, PROGRESS, and ISSUES for the known issues later PRs fix); the legend-graph issue list stays out of the repo.                                                                                                          |
 
 ---
 
@@ -156,7 +157,7 @@ packages/legend-cube-builder/src/
 
 **The repo's `@finos/legend/enforce-module-import-hierarchy` lint rule** (error level) forbids imports in **both**
 directions between `stores/`/`components/` and `graph-manager/protocol/*/v*/`
-([enforce-module-import-hierarchy.js](packages/eslint-plugin/src/rules/enforce-module-import-hierarchy.js)) 📄.
+([enforce-module-import-hierarchy.js](../../../packages/eslint-plugin/src/rules/enforce-module-import-hierarchy.js)) 📄.
 That is why the port sits in `graph-manager/`, the factory sits just outside `v1/`, and `stores/` and `components/`
 never import from `v1/`. The Query host calls `buildCubeEngine` from the builder's index, so no `V1_*` symbol appears
 in `legend-application-query`.
@@ -205,12 +206,12 @@ What the repo actually enforces:
   - Engine-backed tests are named `*.engine-roundtrip-test.ts`. CI runs them against the docker engine.
   - `fetch` is blocked in Jest (`legend-dev-utils/jest/blockFetch.js`), and `V1_EngineServerClient` uses `fetch`.
     So engine tests use axios against the hard-coded `http://localhost:6300/api`
-    ([EngineTestSupport.ts](packages/legend-graph/src/graph-manager/__test-utils__/EngineTestSupport.ts)) 📄.
+    ([EngineTestSupport.ts](../../../packages/legend-graph/src/graph-manager/__test-utils__/EngineTestSupport.ts)) 📄.
   - **How the engine tests are wired:**
     - Engine tests drive the real `V1_LegendCubeEngine`. They spy its `V1_EngineServerClient` methods and route
       them to Cube-local axios helpers in `legend-cube-builder/src/__test-utils__/`, with `axios` as a devDependency
       as in legend-graph. The precedent is
-      [LegendDataCubeStoreTestUtils.tsx:470-503](packages/legend-application-data-cube/src/components/__test-utils__/LegendDataCubeStoreTestUtils.tsx:470).
+      [LegendDataCubeStoreTestUtils.tsx:470-503](../../../packages/legend-application-data-cube/src/components/__test-utils__/LegendDataCubeStoreTestUtils.tsx:470).
     - Cube-local helpers are needed because `EngineTestSupport` has no `/lambdaRelationType/batch` helper, and its
       `execute` helper returns already-parsed JSON. That would bypass the lossless result reader M1.7 must test.
     - The helpers cover:
@@ -239,8 +240,8 @@ What the repo actually enforces:
 
 - **Route:**
   - `CUBE: '/cube'` is in `LEGEND_QUERY_ROUTE_PATTERN`
-    ([LegendQueryNavigation.ts:76](packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:76)) and
-    mounted in [LegendQueryWebApplication.tsx](packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:146)
+    ([LegendQueryNavigation.ts:76](../../../packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:76)) and
+    mounted in [LegendQueryWebApplication.tsx](../../../packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:146)
     since M1.0. M1.8a only swaps the route element for a Query-side wrapper that builds the host, loaded lazily
     (Settled before M1.8).
   - Query's `baseUrl` is `/query/`, so the URL is **`/query/cube`** 📄.
@@ -262,7 +263,7 @@ What the repo actually enforces:
   `LegendQueryCubeHost`. It implements `CubeHost` (defined in the builder) from Query's application store:
 
   - engine server client config (Query's `engineServerUrl`, as at
-    [QueryEditorStore.ts:631](packages/legend-application-query/src/stores/QueryEditorStore.ts:631));
+    [QueryEditorStore.ts:631](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts:631));
   - notifications and alerts;
   - telemetry;
   - the bundled model catalog.
@@ -278,20 +279,20 @@ What the repo actually enforces:
 
 ### 3.6 UI libraries (all already in `yarn.lock`; no new third-party packages)
 
-| Need          | Library (version)                                                      | Precedent                                                                                                                                                                                |
-| ------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Canvas        | `@xyflow/react` 12.4.4 (MIT)                                           | Studio database diagram [DatabaseDiagramCanvas.tsx](packages/legend-application-studio/src/components/editor/editor-group/database-editor/DatabaseDiagramCanvas.tsx)                     |
-| Layout        | `@dagrejs/dagre` 1.1.4 (MIT)                                           | [DatabaseDiagramHelper.ts](packages/legend-application-studio/src/components/editor/editor-group/database-editor/DatabaseDiagramHelper.ts) (left-to-right, centre → top-left conversion) |
-| Drag and drop | `react-dnd` 16.0.1 (MIT); `DndProvider` already wraps every Legend app | query builder, legend-lego                                                                                                                                                               |
-| Grid          | ag-grid 35.0.0 via `@finos/legend-lego/data-grid` (enterprise, D3)     | [DataGrid.tsx](packages/legend-lego/src/data-grid/DataGrid.tsx)                                                                                                                          |
-| State         | `mobx` 6.13.6, `mobx-react-lite` 4.1.0                                 | repo-wide                                                                                                                                                                                |
+| Need          | Library (version)                                                      | Precedent                                                                                                                                                                                         |
+| ------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canvas        | `@xyflow/react` 12.4.4 (MIT)                                           | Studio database diagram [DatabaseDiagramCanvas.tsx](../../../packages/legend-application-studio/src/components/editor/editor-group/database-editor/DatabaseDiagramCanvas.tsx)                     |
+| Layout        | `@dagrejs/dagre` 1.1.4 (MIT)                                           | [DatabaseDiagramHelper.ts](../../../packages/legend-application-studio/src/components/editor/editor-group/database-editor/DatabaseDiagramHelper.ts) (left-to-right, centre → top-left conversion) |
+| Drag and drop | `react-dnd` 16.0.1 (MIT); `DndProvider` already wraps every Legend app | query builder, legend-lego                                                                                                                                                                        |
+| Grid          | ag-grid 35.0.0 via `@finos/legend-lego/data-grid` (enterprise, D3)     | [DataGrid.tsx](../../../packages/legend-lego/src/data-grid/DataGrid.tsx)                                                                                                                          |
+| State         | `mobx` 6.13.6, `mobx-react-lite` 4.1.0                                 | repo-wide                                                                                                                                                                                         |
 
 Not used: `reactflow` 11 (legacy, lineage viewer only), elkjs (not installed; EPL), Data Cube's floating-window layout
 manager.
 
 ### 3.7 Housekeeping found along the way (separate, optional)
 
-- [AGENTS.md:120](AGENTS.md:120) says DataCube consumes metamodel only, but `legend-data-cube` uses `V1_*` throughout,
+- [AGENTS.md:120](../../../AGENTS.md:120) says DataCube consumes metamodel only, but `legend-data-cube` uses `V1_*` throughout,
   outside `v1/` folders 📄. Cube follows the stricter rule: V1 symbols appear only under
   `legend-cube-builder/src/graph-manager/protocol/pure/v1/`, as `legend-query-builder` does. AGENTS.md should be
   clarified separately.
@@ -665,25 +666,25 @@ RelationalCompilerExtension.java:1005-1100`) ✅:
 - **The execution result builder is lossy:** it drops parameters, and `relationalType` reads `VARCHAR(1024)` for
   every `Varchar` ✅. **Schemas must come from `lambdaRelationType`.**
 - **Studio** 📄:
-  - [MetaModelConst.ts:64-82](packages/legend-graph/src/graph/MetaModelConst.ts:64): `PRECISE_PRIMITIVE_TYPE` lists
+  - [MetaModelConst.ts:64-82](../../../packages/legend-graph/src/graph/MetaModelConst.ts:64): `PRECISE_PRIMITIVE_TYPE` lists
     paths the engine does not have (`precisePrimitives::Date`, `::Time`, `::Decimal`) and a wrong `Timestamp`.
   - `PrecisePrimitiveType` extends `DataType` and is indexed by short name; there are three disagreeing
     precise→standard maps.
-  - [V1_RemoteEngine.ts:779-801](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts:779):
+  - [V1_RemoteEngine.ts:779-801](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts:779):
     `getLambdaRelationType` drops `typeVariableValues`. Its batch variant reads `results`, but the engine returns
     `result`, so it throws ✅
-    ([V1_LambdaReturnType.ts:87-90](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.ts:87)).
+    ([V1_LambdaReturnType.ts:87-90](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.ts:87)).
   - Client-side table typing
-    ([STO_Relational_Helper.ts:222-263](packages/legend-graph/src/graph/helpers/STO_Relational_Helper.ts:222))
+    ([STO_Relational_Helper.ts:222-263](../../../packages/legend-graph/src/graph/helpers/STO_Relational_Helper.ts:222))
     disagrees with the engine.
   - The query builder normalizes precise types to standard ones for operators and editors.
   - Data Cube keeps only a path string and hard-codes `Varchar(16777216)`
-    ([DataCubeQueryBuilderUtils.ts:284](packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts:284)).
+    ([DataCubeQueryBuilderUtils.ts:284](../../../packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts:284)).
   - **What works:** `V1_relationTypeModelSchema`
-    ([V1_TypeSerializationHelper.ts:128](packages/legend-graph/src/graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.ts:128))
+    ([V1_TypeSerializationHelper.ts:128](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.ts:128))
     keeps the parameters ✅. `V1_buildRelationTypeFromV1RelationType` even works against an empty `PureModel` ✅.
   - **Literals:** JS `JSON.parse` corrupts large Integer and Decimal values. `parseLosslessJSON` /
-    `stringifyLosslessJSON` exist in [FormatterUtils.ts:201](packages/legend-shared/src/format/FormatterUtils.ts:201).
+    `stringifyLosslessJSON` exist in [FormatterUtils.ts:201](../../../packages/legend-shared/src/format/FormatterUtils.ts:201).
 
 ### 5.2 Decision: the domain models precise primitives itself (D10)
 
@@ -896,7 +897,7 @@ interface ModelContext extends JsonObject {
 1. Take Pure grammar text: a bundled fixture or a pasted model. Picking one copies its text into the cube as
    `{_type: 'text', code}` (§6.2.2).
 2. Parse it once per load with `grammarToJSON_model`
-   ([V1_EngineServerClient.ts:405](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts:405)).
+   ([V1_EngineServerClient.ts:405](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts:405)).
    The result is a model-context JSON (`{_type:'data', elements}`).
 3. Read `Database` elements (schemas → tables) and `PackageableRuntime` elements from it, in the `v1/` seam.
 4. Send the cube's saved `text` context with every typing and execution call. Inline `data` and `text` contexts
@@ -905,7 +906,7 @@ interface ModelContext extends JsonObject {
 **6.2.4 Cube Northwind fixture.** `legend-cube-builder/src/stores/fixtures/CubeNorthwindModel.ts`, a TS string.
 
 - It is a corrected copy of the Database in
-  [Northwind.pure](packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure). The shared model is
+  [Northwind.pure](../../../packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure). The shared model is
   left untouched, because the query-builder grammar tests use it.
 - Corrections:
   - `ORDERS.FREIGHT`, `ORDER_DETAILS.UNIT_PRICE`/`DISCOUNT` and `PRODUCTS.UNIT_PRICE` become `REAL` (→ `Double`). In
@@ -979,8 +980,8 @@ Problem tables are flagged in the picker rather than crashing the canvas:
   load, and one per table picked. Downstream schemas are inferred by Cube, so the number of calls doesn't grow with
   the graph.
 - Typing tables locally from the `Database` definition (no call per pick; column details for every table up
-  front) replaces that one port method later, once legend-graph is fixed (`LEGEND-GRAPH-ISSUES.md`, groups A, B, D
-  and E; M2.0 or after). The Pure text still needs one engine parse per load either way.
+  front) replaces that one port method later, once legend-graph is fixed (the legend-graph issue list kept outside the repo, groups A,
+  B, D and E; M2.0 or after). The Pure text still needs one engine parse per load either way.
 - M1.7 records the engine's relation type of every table in the Cube Northwind + ALLTYPES fixture (the quoted,
   dotted table and the problem tables included) as an engine-backed parity test. The local typer must reproduce it
   exactly.
@@ -1506,7 +1507,7 @@ interface CubeEngine {
 ```
 
 `V1_LegendCubeEngine` (under `v1/`) implements it with
-[V1_EngineServerClient](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts):
+[V1_EngineServerClient](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts):
 
 | Port method  | Client call(s)                                                                                                                                                                             | Line   |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------ |
@@ -1874,11 +1875,11 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
 ### 10.5 How Legend Query persists today, and why Cube doesn't use it
 
 Findings: engine `legend-engine-application-query`, Studio
-[Query.ts](packages/legend-graph/src/graph-manager/action/query/Query.ts),
-[QueryEditorStore.ts:556-585](packages/legend-application-query/src/stores/QueryEditorStore.ts:556).
+[Query.ts](../../../packages/legend-graph/src/graph-manager/action/query/Query.ts),
+[QueryEditorStore.ts:556-585](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts:556).
 
 - **`content` must be Pure-lambda text.** Legend Query re-parses it on load
-  ([QueryEditorStore.ts:2662](packages/legend-application-query/src/stores/QueryEditorStore.ts:2662)).
+  ([QueryEditorStore.ts:2662](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts:2662)).
 - **Project coordinates and an execution context are mandatory.** An explicit context needs a mapping, which a
   `#>{}#` lambda does not have.
 - **One owner.** **No optimistic concurrency:** the client's version is ignored 📄✅.
@@ -2177,11 +2178,11 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 
 ## Appendix C: Evidence index
 
-**Spec:** [docs/design/WIP-CUBE-SPEC.md](docs/design/WIP-CUBE-SPEC.md).
+**Spec:** [docs/design/WIP-CUBE-SPEC.md](../../../docs/design/WIP-CUBE-SPEC.md).
 
 **Northwind:**
 
-- model: [Northwind.pure](packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure)
+- model: [Northwind.pure](../../../packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure)
 - engine DDL and loader: `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-execution/legend-engine-xt-relationalStore-executionPlan-connection/src/main/resources/org/finos/legend/engine/plan/execution/stores/relational/connection/driver/vendors/h2/h2NorthwindDdl.sql`
   and `…/src/main/java/…/ds/specifications/LocalH2DataSourceSpecification.java:38-74`, `…/vendors/h2/H2Commands.java:73-87`
 
@@ -2207,21 +2208,21 @@ H2 portability manifest: `legend-engine-xts-relationalStore/legend-engine-xt-rel
 - query store: `legend-engine-application-query/` (`QueryStoreManager.java`, `DataCubeQueryStoreManager.java`, `Query.java:25-53`)
   and `legend-engine-shared-mongo/…/BaseStoredVersionedAssetDao.java`
 
-**Studio APIs:** [V1_EngineServerClient.ts](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts),
-[V1_RemoteEngine.ts](packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts),
-[V1_TypeSerializationHelper.ts](packages/legend-graph/src/graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.ts),
-[FormatterUtils.ts](packages/legend-shared/src/format/FormatterUtils.ts).
+**Studio APIs:** [V1_EngineServerClient.ts](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts),
+[V1_RemoteEngine.ts](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts),
+[V1_TypeSerializationHelper.ts](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.ts),
+[FormatterUtils.ts](../../../packages/legend-shared/src/format/FormatterUtils.ts).
 
-**Legend Query:** [LegendQueryNavigation.ts](packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts),
-[LegendQueryWebApplication.tsx](packages/legend-application-query/src/components/LegendQueryWebApplication.tsx),
-[LegendQueryApplicationConfig.ts](packages/legend-application-query/src/application/LegendQueryApplicationConfig.ts),
-[ExistingQueryDataCubeViewer.ts](packages/legend-application-query/src/stores/data-cube/ExistingQueryDataCubeViewer.ts) (embedding precedent).
+**Legend Query:** [LegendQueryNavigation.ts](../../../packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts),
+[LegendQueryWebApplication.tsx](../../../packages/legend-application-query/src/components/LegendQueryWebApplication.tsx),
+[LegendQueryApplicationConfig.ts](../../../packages/legend-application-query/src/application/LegendQueryApplicationConfig.ts),
+[ExistingQueryDataCubeViewer.ts](../../../packages/legend-application-query/src/stores/data-cube/ExistingQueryDataCubeViewer.ts) (embedding precedent).
 
 **Data Cube (neighbour):**
 
-- [DataCubeEngine.tsx](packages/legend-data-cube/src/stores/core/DataCubeEngine.tsx)
-- [DataCubeQueryBuilderUtils.ts](packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts)
-- [LegendDataCubeDataCubeEngine.ts](packages/legend-application-data-cube/src/stores/LegendDataCubeDataCubeEngine.ts)
+- [DataCubeEngine.tsx](../../../packages/legend-data-cube/src/stores/core/DataCubeEngine.tsx)
+- [DataCubeQueryBuilderUtils.ts](../../../packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts)
+- [LegendDataCubeDataCubeEngine.ts](../../../packages/legend-application-data-cube/src/stores/LegendDataCubeDataCubeEngine.ts)
 - **Reuse:** the xyflow + dagre stack, engine-client calls, and the undo / commit-on-Apply patterns.
 - **Keep separate:** snapshot model, filter and aggregate classes, type utilities, grid datasource, persistence.
 
