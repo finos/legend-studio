@@ -174,8 +174,11 @@ export class V1_LegendCubeEngine implements CubeEngine {
     // the engine answers `result`; legend-graph's response type says `results` (LG-1)
     const results = (response.result ?? response.results ?? {}) as PlainObject;
     const errors = (response.errors ?? {}) as PlainObject;
+    // own keys only: a node id like `__proto__` mustn't read Object.prototype
     lambdas.forEach((_, nodeId) => {
-      const relationType = results[nodeId];
+      const relationType = Object.hasOwn(results, nodeId)
+        ? results[nodeId]
+        : undefined;
       if (relationType) {
         try {
           typed.set(nodeId, V1_buildCubeSchema(relationType as PlainObject));
@@ -194,7 +197,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
       typed.set(
         nodeId,
         V1_buildCubeEngineError(
-          errors[nodeId],
+          Object.hasOwn(errors, nodeId) ? errors[nodeId] : undefined,
           nodeId,
           CubeEngineErrorKind.COMPILE,
         ) ??

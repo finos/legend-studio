@@ -147,9 +147,9 @@ describe('Cube Northwind fixture', () => {
     const { result, errors } = await typeOf({
       json: accessor('CUBETEST', '"ORDER.LINES"'),
       unquoted: accessor('CUBETEST', 'ORDER.LINES'),
-      text: (await ENGINE_TEST_SUPPORT__grammarToJSON_lambda(
+      text: await ENGINE_TEST_SUPPORT__grammarToJSON_lambda(
         `|#>{${CUBE_NORTHWIND_DATABASE}.CUBETEST."ORDER.LINES"}#`,
-      )) as PlainObject,
+      ),
     });
     expect(columnNames(result.json)).toEqual(['LINE_ID', 'RIGHT_COL']);
     expect(columnNames(result.text)).toEqual(['WRONG_TABLE']);

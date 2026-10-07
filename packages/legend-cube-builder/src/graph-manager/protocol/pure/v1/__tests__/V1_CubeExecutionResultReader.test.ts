@@ -41,6 +41,7 @@ const ALLTYPES = response(
     ['BI', `${P}BigInt`],
     ['F', `${P}Float4`],
     ['D', `${P}Double`],
+    // a Numeric with no precision and scale is opaque to Cube, so is text too
     ['DEC', `${P}Numeric`],
     ['DT', 'StrictDate'],
     ['TS', `${P}Timestamp`],
@@ -83,6 +84,33 @@ describe('Cube execution result reader', () => {
       ],
       ['3', null, null, null, null, null, null, null, null],
     ]);
+  });
+
+  // the result builder types a FULL join's merged key by the types it merges:
+  // Int and Double give Number, Float4 and Double give Float, and two Numerics
+  // give Decimal
+  test.each<[string, string, string[], unknown[]]>([
+    [
+      'Number',
+      'as their exact text',
+      ['1.0', '2.50', '5'],
+      ['1.0', '2.50', '5'],
+    ],
+    [
+      'Decimal',
+      'as their exact text',
+      ['12.30', '9007199254740993.5', '3'],
+      ['12.30', '9007199254740993.5', '3'],
+    ],
+    ['Float', 'as numbers', ['5124.0', '0.1', '1'], [5124, 0.1, 1]],
+  ])('Reads the values of a %s column %s', (type, _, tokens, values) => {
+    const { rows } = V1_readCubeExecutionResult(
+      response(
+        [['K', type]],
+        tokens.map((token) => `[${token}]`),
+      ),
+    );
+    expect(rows).toEqual(values.map((value) => [value]));
   });
 
   test('Reads the column names in order, and the SQL of every relational activity', () => {

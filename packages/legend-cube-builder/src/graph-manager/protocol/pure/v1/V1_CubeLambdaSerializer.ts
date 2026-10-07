@@ -145,15 +145,20 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
         inherited,
       );
     case 'colSpec':
+      // the engine reports a missing column on the spec's value, which is
+      // also what a column list holds, so the value is stamped too
       return stamped(
         {
           _type: 'classInstance',
           type: 'colSpec',
-          value: {
-            name: ir.name,
-            ...(ir.fn1 ? { function1: serialize(ir.fn1, inherited) } : {}),
-            ...(ir.fn2 ? { function2: serialize(ir.fn2, inherited) } : {}),
-          },
+          value: stamped(
+            {
+              name: ir.name,
+              ...(ir.fn1 ? { function1: serialize(ir.fn1, inherited) } : {}),
+              ...(ir.fn2 ? { function2: serialize(ir.fn2, inherited) } : {}),
+            },
+            inherited,
+          ),
         },
         inherited,
       );

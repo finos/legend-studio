@@ -138,6 +138,88 @@ describe('Cube engine errors', () => {
     });
   });
 
+  test.each<[string, CubeEngineErrorKind]>([
+    ['COMPILATION', CubeEngineErrorKind.COMPILE],
+    ['PARSER', CubeEngineErrorKind.COMPILE],
+    ['COMPOSER', CubeEngineErrorKind.EXECUTION],
+  ])(
+    'Reads a failed run whose error type is %s as an error of kind %s',
+    (errorType, kind) => {
+      // a run's errors are execution errors by default, yet a model that
+      // doesn't parse or compile still gives a compile error
+      expect(
+        fields(
+          V1_toCubeEngineError(
+            networkError(500, {
+              errorType,
+              message: "Unexpected token '<EOF>'\nmore detail",
+              trace: TRACE,
+            }),
+            'filter101',
+            CubeEngineErrorKind.EXECUTION,
+          ),
+        ),
+      ).toEqual({
+        kind,
+        nodeId: 'filter101',
+        role: undefined,
+        firstLine: "Unexpected token '<EOF>'",
+        detail: "Unexpected token '<EOF>'\nmore detail",
+      });
+    },
+  );
+
+  test('Keeps the kind given for a failed call whose error type is neither COMPILATION nor PARSER', () => {
+    // e.g. typing a lambda, whose errors are compile errors by default
+    expect(
+      fields(
+        V1_toCubeEngineError(
+          networkError(500, {
+            errorType: 'COMPOSER',
+            message: "Can't render the lambda\nmore detail",
+            trace: TRACE,
+          }),
+          'filter101',
+          CubeEngineErrorKind.COMPILE,
+        ),
+      ),
+    ).toEqual({
+      kind: CubeEngineErrorKind.COMPILE,
+      nodeId: 'filter101',
+      role: undefined,
+      firstLine: "Can't render the lambda",
+      detail: "Can't render the lambda\nmore detail",
+    });
+  });
+
+  test("Reads a failed call whose body isn't JSON as a network error with the body's text", () => {
+    // e.g. a proxy's error page
+    expect(
+      fields(
+        V1_toCubeEngineError(
+          networkError(502, '<html>502 Bad Gateway</html>\nupstream down'),
+          'filter101',
+          CubeEngineErrorKind.EXECUTION,
+        ),
+      ),
+    ).toEqual({
+      kind: CubeEngineErrorKind.NETWORK,
+      nodeId: 'filter101',
+      role: undefined,
+      firstLine: '<html>502 Bad Gateway</html>',
+      detail: '<html>502 Bad Gateway</html>\nupstream down',
+    });
+    // the client cuts a long body, and the error keeps the client's cut
+    const body = `upstream down\n${'x'.repeat(6000)}`;
+    const long = V1_toCubeEngineError(
+      networkError(502, body),
+      'filter101',
+      CubeEngineErrorKind.EXECUTION,
+    );
+    expect(long.firstLine).toBe('upstream down');
+    expect(long.detail).toBe(body.substring(0, 5000));
+  });
+
   test('Reads a failed call with no payload, or any other error, as a network error on the fallback node', () => {
     expect(
       fields(

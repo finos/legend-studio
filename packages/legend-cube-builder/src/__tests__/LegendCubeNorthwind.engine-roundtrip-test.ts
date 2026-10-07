@@ -24,6 +24,7 @@ import {
   createNodeRegistry,
   CubeDocument,
   decodeCubeSpec,
+  EmitRole,
   encodeCubeSpec,
   Filter,
   FilterOperator,
@@ -35,6 +36,7 @@ import {
   JoinType,
   lambda,
   type LiteralValue,
+  type ModelContext,
   NotFilter,
   Query,
   type QueryNode,
@@ -48,7 +50,11 @@ import {
   columnAccess,
   storeAccessor,
 } from '@finos/legend-cube';
-import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
+import {
+  NetworkClientError,
+  parseLosslessJSON,
+  stringifyLosslessJSON,
+} from '@finos/legend-shared';
 import {
   CUBE_ENGINE_TEST__getCommit,
   CUBE_ENGINE_TEST__grammarToJson_lambda,
@@ -61,6 +67,7 @@ import {
 } from '../stores/fixtures/CubeNorthwindModel.js';
 import {
   CubeEngineError,
+  CubeEngineErrorKind,
   type CubeResult,
   type CubeResultValue,
 } from '../graph-manager/CubeEngine.js';
@@ -78,8 +85,10 @@ let engine: V1_LegendCubeEngine;
 let calls: ReturnType<typeof V1_createEngineBackedCubeEngine>['calls'];
 
 beforeAll(async () => {
-  // which engine these results come from
-  expect(await CUBE_ENGINE_TEST__getCommit()).toMatch(/^[0-9a-f]{40}$/u);
+  // which engine these results come from, logged for provenance (PLAN §11.2)
+  const commit = await CUBE_ENGINE_TEST__getCommit();
+  expect(commit).toMatch(/^[0-9a-f]{40}$/u);
+  process.stdout.write(`Legend Cube part A: engine commit ${commit}\n`);
 });
 
 // spies are restored after each test
@@ -211,6 +220,19 @@ const inferredSchema = (query: Query): Schema => {
   expect(schema).toBeDefined();
   return schema as Schema;
 };
+
+/** A resolved source whose schema snapshot has a column the table no longer has */
+const withStaleColumn = (
+  source: RelationalTableSource,
+  column: SchemaColumn,
+): RelationalTableSource =>
+  source.withResolution({
+    kind: 'resolved',
+    schema: new Schema([
+      ...(source.resolution as { schema: Schema }).schema.columns,
+      column,
+    ]),
+  });
 
 const ORDERS = (): RelationalTableSource =>
   table('relational101', 'NORTHWIND', 'ORDERS');
@@ -589,12 +611,24 @@ describe('A.4 Join kinds', () => {
     ).toBe(true);
   });
 
-  test.each<[string, string, string, number]>([
-    ['Varchar(15) and Varchar(2)', 'KEY_VC15', 'KEY_VC2', 5],
-    ['Numeric(10,2) and Numeric(12,4)', 'KEY_DEC', 'KEY_NUM', 3],
+  test.each<[string, string, string, CubeResultValue[]]>([
+    // ('AB', 'ABCDEFGHIJ', NULL) ⟗ ('AB', 'CD', NULL): each NULL key stays unmatched
+    [
+      'Varchar(15) and Varchar(2)',
+      'KEY_VC15',
+      'KEY_VC2',
+      ['AB', 'ABCDEFGHIJ', 'CD', null, null],
+    ],
+    // (1.25, 2.50) ⟗ (1.2500, 3.0000): a Decimal key reads back as its exact text, scale kept
+    [
+      'Numeric(10,2) and Numeric(12,4)',
+      'KEY_DEC',
+      'KEY_NUM',
+      ['1.25', '2.50', '3.0000'],
+    ],
   ])(
-    'FULL on keys of %s, differing only in parameters, casts the merged key and runs, a filter after it too',
-    async (_, left, right, rows) => {
+    'FULL on keys of %s, differing only in parameters, casts the merged key and reads it back exactly, a filter after it too',
+    async (_, left, right, keys) => {
       const join = await joinOf(
         table('relational101', 'CUBETEST', left),
         table('relational102', 'CUBETEST', right),
@@ -602,7 +636,7 @@ describe('A.4 Join kinds', () => {
         JoinType.FULL_OUTER,
       );
       const joined = await run(join);
-      expect(joined.rows).toHaveLength(rows);
+      expect(sorted(valuesOf(joined, 'K'))).toEqual(keys);
       const filtered = queryOf(
         [
           ...join.nodes,
@@ -614,10 +648,12 @@ describe('A.4 Join kinds', () => {
           ['join101', 'filter101', 'tds'],
         ],
       );
-      expect((await run(filtered)).rows).toHaveLength(
-        valuesOf(joined, 'K').filter((value) => value !== null).length,
+      expect(sorted(valuesOf(await run(filtered), 'K'))).toEqual(
+        keys.filter((value) => value !== null),
       );
     },
+    // a FULL join run twice has come close to the default timeout on a busy engine
+    60_000,
   );
 });
 
@@ -731,19 +767,14 @@ describe('A.6 D4 NULL semantics', () => {
 // -------------------------------- A.9 to A.11 --------------------------------
 
 describe('A.9 Error mapping, A.10 Spec round trip, A.11 Golden shape', () => {
-  test("A column the engine doesn't have puts the engine's error on the filter that names it", async () => {
+  test("A column the engine doesn't have puts the engine's compile error on the filter that names it", async () => {
     const [orders] = await resolve([ORDERS()]);
-    const stale = (orders as RelationalTableSource).withResolution({
-      kind: 'resolved',
-      schema: new Schema([
-        ...((orders as RelationalTableSource).resolution as { schema: Schema })
-          .schema.columns,
-        new SchemaColumn('REMOVED', resolveCubeType('String'), true),
-      ]),
-    });
     const query = queryOf(
       [
-        stale,
+        withStaleColumn(
+          orders as RelationalTableSource,
+          new SchemaColumn('REMOVED', resolveCubeType('String'), true),
+        ),
         new Filter(
           'filter101',
           compare('REMOVED', FilterOperator.EQUAL, string('x')),
@@ -751,14 +782,122 @@ describe('A.9 Error mapping, A.10 Spec round trip, A.11 Golden shape', () => {
       ],
       [['relational101', 'filter101', 'tds']],
     );
+    // the engine echoes the stamp cube:filter101:column
+    const error = {
+      kind: CubeEngineErrorKind.COMPILE,
+      nodeId: 'filter101',
+      role: EmitRole.COLUMN,
+      firstLine: expect.stringContaining(
+        "The column 'REMOVED' can't be found in the relation",
+      ),
+    };
+    // typed under another key, so only the stamp can place the error on filter101
     const typed = await engine.typeLambdas(
       MODEL,
       new Map([
-        ['filter101', new QueryEmitter(query).emitTypingLambda('filter101')],
+        ['stale', new QueryEmitter(query).emitTypingLambda('filter101')],
       ]),
     );
-    expect(typed.get('filter101')).toMatchObject({ nodeId: 'filter101' });
-    await expect(run(query)).rejects.toMatchObject({ nodeId: 'filter101' });
+    expect(typed.get('stale')).toBeInstanceOf(CubeEngineError);
+    expect(typed.get('stale')).toMatchObject(error);
+    await expect(run(query)).rejects.toMatchObject(error);
+  });
+
+  test("A join key the engine doesn't have puts the run's error on the join, not on the filter the run is captured at", async () => {
+    const [orders, customers] = await resolve([ORDERS(), CUSTOMERS()]);
+    const query = queryOf(
+      [
+        withStaleColumn(
+          orders as RelationalTableSource,
+          new SchemaColumn(
+            'REMOVED_KEY',
+            resolveCubeType('meta::pure::precisePrimitives::Varchar', [15]),
+            true,
+          ),
+        ),
+        customers as RelationalTableSource,
+        new Join('join101', {
+          leftColumns: ['CUSTOMER_ID', 'REMOVED_KEY'],
+          rightColumns: ['CUSTOMER_ID', 'REGION'],
+          joinType: JoinType.INNER,
+        }),
+        new Filter(
+          'filter101',
+          compare('SHIP_COUNTRY', FilterOperator.EQUAL, string('France')),
+        ),
+      ],
+      [
+        ['relational101', 'join101', 'leftTds'],
+        ['relational102', 'join101', 'rightTds'],
+        ['join101', 'filter101', 'tds'],
+      ],
+    );
+    await expect(run(query)).rejects.toMatchObject({
+      kind: CubeEngineErrorKind.COMPILE,
+      nodeId: 'join101',
+      role: EmitRole.KEY,
+      firstLine: expect.stringContaining(
+        "The column 'REMOVED_KEY' can't be found in the relation",
+      ),
+    });
+  });
+
+  test("A model that doesn't parse fails every key of a batch, its outline and a run, with the engine's parser error", async () => {
+    const broken: ModelContext = {
+      _type: 'text',
+      code: `###Relational\nDatabase ${DATABASE}\n(\n  Table T (`,
+    };
+    // the engine refuses the whole batch: a non-2xx response, not per-key errors
+    await expect(
+      CUBE_ENGINE_TEST__lambdaRelationTypeBatch({ model: broken, lambdas: {} }),
+    ).rejects.toMatchObject({ response: { status: 400 } });
+    const parserError = {
+      kind: CubeEngineErrorKind.COMPILE,
+      firstLine: expect.stringContaining("Unexpected token '<EOF>'"),
+    };
+    const typed = await engine.resolveSchemas(
+      broken,
+      new Map([
+        ['relational101', [DATABASE, 'NORTHWIND', 'ORDERS'] as const],
+        ['relational102', [DATABASE, 'NORTHWIND', 'CUSTOMERS'] as const],
+      ]),
+    );
+    expect(calls.batchLambdasRelationType).toHaveBeenCalledTimes(1);
+    ['relational101', 'relational102'].forEach((nodeId) => {
+      expect(typed.get(nodeId)).toBeInstanceOf(CubeEngineError);
+      expect(typed.get(nodeId)).toMatchObject({ ...parserError, nodeId });
+    });
+    await expect(engine.loadModel(broken)).rejects.toMatchObject(parserError);
+    // a run's default kind is execution, so only the engine's PARSER errorType
+    // makes it compile; the error has no stamp, so it lands on the capture node
+    const [orders] = await resolve([ORDERS()]);
+    await expect(
+      engine.execute(
+        broken,
+        new QueryEmitter(
+          queryOf([orders as RelationalTableSource], []),
+        ).emitExecutionLambda({ rowLimit: ROW_LIMIT, runtime: RUNTIME }),
+      ),
+    ).rejects.toMatchObject({ ...parserError, nodeId: 'relational101' });
+  });
+
+  test("The engine-backed client rejects a lambda the engine can't read as the real client does, with the engine's payload", async () => {
+    // what A.9 relies on: a non-2xx response is a NetworkClientError whose
+    // payload is the engine's parsed JSON, not an axios error or its raw text
+    const rejection = engine.client.JSONToGrammar_lambda({
+      _type: 'lambda',
+      parameters: [],
+      body: [{ _type: 'classInstance', type: 'nonsense', value: {} }],
+    });
+    await expect(rejection).rejects.toBeInstanceOf(NetworkClientError);
+    await expect(rejection).rejects.toMatchObject({
+      response: { status: 500 },
+      payload: {
+        message: expect.stringContaining(
+          "Can't parse the ClassInstance value for type 'nonsense'",
+        ),
+      },
+    });
   });
 
   test('A saved and reopened slice emits the same lambda, and runs to the same 19 orders', async () => {

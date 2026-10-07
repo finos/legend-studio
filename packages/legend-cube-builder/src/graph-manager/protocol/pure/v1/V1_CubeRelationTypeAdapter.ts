@@ -18,7 +18,6 @@ import { resolveCubeType, Schema, SchemaColumn } from '@finos/legend-cube';
 import {
   V1_CInteger,
   V1_PackageableType,
-  type V1_RelationType,
   V1_relationTypeModelSchema,
 } from '@finos/legend-graph';
 import type { PlainObject } from '@finos/legend-shared';
@@ -34,10 +33,7 @@ import { deserialize } from 'serializr';
  * when it may be empty
  */
 export const V1_buildCubeSchema = (json: PlainObject): Schema => {
-  const relationType = deserialize(
-    V1_relationTypeModelSchema,
-    json,
-  ) as V1_RelationType;
+  const relationType = deserialize(V1_relationTypeModelSchema, json);
   return new Schema(
     relationType.columns.map((column) => {
       const { rawType, typeVariableValues } = column.genericType;

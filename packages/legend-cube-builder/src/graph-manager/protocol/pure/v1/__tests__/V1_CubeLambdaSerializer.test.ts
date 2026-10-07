@@ -86,22 +86,42 @@ const sourceIds = (json: unknown): string[] => {
   return ids;
 };
 
-/** The protocol nodes (objects with a `_type`) that carry no stamp, under the root */
+/** The column specs a class instance holds: its own value, or each spec of its column list */
+const columnSpecsOf = (object: PlainObject): unknown[] => {
+  if (object._type === 'classInstance' && object.type === 'colSpec') {
+    return [object.value];
+  } else if (
+    object._type === 'classInstance' &&
+    object.type === 'colSpecArray'
+  ) {
+    return (object.value as { colSpecs: unknown[] }).colSpecs;
+  }
+  return [];
+};
+
+/**
+ * The protocol nodes that carry no stamp, under the root: the objects with a
+ * `_type`, and the column specs, which have none but take a stamp
+ */
 const unstampedNodes = (json: unknown): string[] => {
   const found: string[] = [];
+  const columnSpecs = new Set<unknown>();
   const visit = (value: unknown, path: string): void => {
     if (Array.isArray(value)) {
       value.forEach((item, index) => visit(item, `${path}[${index}]`));
     } else if (value && typeof value === 'object') {
       const object = value as PlainObject;
+      columnSpecsOf(object).forEach((spec) => columnSpecs.add(spec));
+      const kind = columnSpecs.has(object) ? 'column spec' : object._type;
       if (
         path &&
-        typeof object._type === 'string' &&
-        // a type's raw type is part of the type, not an expression
-        object._type !== 'packageableType' &&
+        typeof kind === 'string' &&
+        // a raw type is left unstamped: the engine reports on it only an
+        // unknown type or wrong type parameters, which Cube's casts never have
+        kind !== 'packageableType' &&
         !object.sourceInformation
       ) {
-        found.push(`${path} (${object._type})`);
+        found.push(`${path} (${kind})`);
       }
       Object.entries(object).forEach(([key, child]) => {
         if (key !== 'sourceInformation') {
@@ -112,6 +132,38 @@ const unstampedNodes = (json: unknown): string[] => {
   };
   visit(json, '');
   return found;
+};
+
+/** Each variable in the JSON as `<name> <source id>`, in document order */
+const variableStamps = (json: unknown): string[] => {
+  const found: string[] = [];
+  const visit = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+    } else if (value && typeof value === 'object') {
+      const object = value as PlainObject;
+      if (object._type === 'var') {
+        found.push(
+          `${String(object.name)} ${String((object.sourceInformation as { sourceId?: string } | undefined)?.sourceId)}`,
+        );
+      }
+      Object.entries(object).forEach(([key, child]) => {
+        if (key !== 'sourceInformation') {
+          visit(child);
+        }
+      });
+    }
+  };
+  visit(json);
+  return found;
+};
+
+/** `~total: x | $x.B : y | $y->sum()`, a column spec with both functions */
+const TOTAL: IR = {
+  k: 'colSpec',
+  name: 'total',
+  fn1: lambda(['x'], [columnAccess('x', 'B')]),
+  fn2: lambda(['y'], [func('sum', [variable('y')])]),
 };
 
 describe('Cube lambda serializer: shapes', () => {
@@ -229,7 +281,7 @@ describe('Cube lambda serializer: shapes', () => {
     });
   });
 
-  test('Writes a column spec, with its function, and a column list of bare specs', () => {
+  test('Writes a column spec, with its functions, and a column list of bare specs', () => {
     expect(bodyOf(colSpec('A'))).toEqual({
       _type: 'classInstance',
       type: 'colSpec',
@@ -255,10 +307,46 @@ describe('Cube lambda serializer: shapes', () => {
         },
       },
     });
+    // the second function is its own, never one built from the first
+    const total = {
+      name: 'total',
+      function1: {
+        _type: 'lambda',
+        parameters: [{ _type: 'var', name: 'x' }],
+        body: [
+          {
+            _type: 'property',
+            property: 'B',
+            parameters: [{ _type: 'var', name: 'x' }],
+          },
+        ],
+      },
+      function2: {
+        _type: 'lambda',
+        parameters: [{ _type: 'var', name: 'y' }],
+        body: [
+          {
+            _type: 'func',
+            function: 'sum',
+            parameters: [{ _type: 'var', name: 'y' }],
+          },
+        ],
+      },
+    };
+    expect(bodyOf(TOTAL)).toEqual({
+      _type: 'classInstance',
+      type: 'colSpec',
+      value: total,
+    });
     expect(bodyOf(colSpecArray([colSpec('A'), colSpec('B')]))).toEqual({
       _type: 'classInstance',
       type: 'colSpecArray',
       value: { colSpecs: [{ name: 'A' }, { name: 'B' }] },
+    });
+    expect(bodyOf(colSpecArray([colSpec('A'), TOTAL]))).toEqual({
+      _type: 'classInstance',
+      type: 'colSpecArray',
+      value: { colSpecs: [{ name: 'A' }, total] },
     });
   });
 
@@ -369,6 +457,126 @@ describe('Cube lambda serializer: source stamps', () => {
     expect(sourceIds(json)).toEqual(Array(5).fill(SOURCE_ID));
   });
 
+  test('Stamps the nodes under two origins with the nearer one, not the farther', () => {
+    const filter = 'cube:filter101:filter';
+    const key = 'cube:join101:key';
+    const json = V1_serializeCubeLambda(
+      lambda(
+        [],
+        [
+          func(
+            'filter',
+            [
+              lambda(
+                ['x'],
+                [
+                  func(
+                    'equal',
+                    [
+                      variable('x'),
+                      columnAccess('x', 'C', {
+                        nodeId: 'join101',
+                        role: EmitRole.KEY,
+                      }),
+                      columnAccess('x', 'D'),
+                    ],
+                    ORIGIN,
+                  ),
+                ],
+              ),
+            ],
+            { nodeId: 'filter101', role: EmitRole.FILTER },
+          ),
+        ],
+      ),
+    );
+    expect(unstampedNodes(json)).toEqual([]);
+    expect(sourceIds(json)).toEqual([
+      filter, // x, the lambda's parameter
+      SOURCE_ID, // x, under equal
+      key, // x, under $x.C
+      key, // $x.C
+      SOURCE_ID, // x, under $x.D
+      SOURCE_ID, // $x.D
+      SOURCE_ID, // equal
+      filter, // the lambda
+      filter, // filter
+    ]);
+  });
+
+  test("Stamps a column spec's value, and each spec of a column list, where the engine reports a missing column", () => {
+    const json = V1_serializeCubeLambda(
+      lambda(
+        [],
+        [
+          func(
+            'rename',
+            [colSpec('A'), colSpecArray([colSpec('B'), TOTAL])],
+            ORIGIN,
+          ),
+        ],
+      ),
+    );
+    const stamp = { sourceId: SOURCE_ID };
+    expect(json).toHaveProperty(
+      'body.0.parameters.0.value.sourceInformation',
+      stamp,
+    );
+    expect(json).toHaveProperty(
+      'body.0.parameters.1.value.colSpecs.0.sourceInformation',
+      stamp,
+    );
+    expect(json).toHaveProperty(
+      'body.0.parameters.1.value.colSpecs.1.sourceInformation',
+      stamp,
+    );
+    expect(unstampedNodes(json)).toEqual([]);
+  });
+
+  test('Leaves raw JSON as it is under a stamped node, keeping its own source information and adding none', () => {
+    const at = (startColumn: number, endColumn: number): PlainObject => ({
+      sourceId: '',
+      startLine: 1,
+      startColumn,
+      endLine: 1,
+      endColumn,
+    });
+    // built afresh for the input and for the expectation, so a change made
+    // to the input in place shows
+    const located = (): PlainObject => ({
+      _type: 'func',
+      function: 'toUpper',
+      parameters: [
+        { _type: 'string', value: 'from M6', sourceInformation: at(1, 9) },
+      ],
+      sourceInformation: at(10, 18),
+    });
+    const written = V1_serializeCubeLambda(
+      lambda(
+        [],
+        [
+          func(
+            'joinStrings',
+            [
+              { k: 'raw', json: located() },
+              { k: 'raw', json: { _type: 'string', value: ', ' } },
+            ],
+            ORIGIN,
+          ),
+        ],
+      ),
+    );
+    expect(written).toHaveProperty('body.0.sourceInformation', {
+      sourceId: SOURCE_ID,
+    });
+    expect(written).toHaveProperty('body.0.parameters.0', located());
+    expect(written).toHaveProperty('body.0.parameters.1', {
+      _type: 'string',
+      value: ', ',
+    });
+    expect(written).not.toHaveProperty('body.0.parameters.1.sourceInformation');
+  });
+
   test("Stamps a store accessor's value too, where the engine reports a wrong table", () => {
     const json = V1_serializeCubeLambda(
       lambda(
@@ -431,6 +639,27 @@ describe('Cube lambda serializer: source stamps', () => {
         'cube:filter101:from',
       ]),
     );
+  });
+
+  test('Stamps each variable of an emitted query with the node and role that read it', () => {
+    const json = V1_serializeCubeLambda(
+      new QueryEmitter(sliceQuery()).emitExecutionLambda({
+        rowLimit: 1000,
+        runtime: NORTHWIND_RUNTIME,
+      }),
+    );
+    expect(variableStamps(json)).toEqual([
+      // the join condition's parameters, then its keys
+      'l cube:join101:join',
+      'r cube:join101:join',
+      'l cube:join101:key',
+      'r cube:join101:key',
+      // the filter's parameter, then its columns
+      'row cube:filter101:filter',
+      'row cube:filter101:column',
+      'row cube:filter101:column',
+      'row cube:filter101:column',
+    ]);
   });
 
   test.each<[string, Origin | undefined]>([
