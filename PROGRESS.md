@@ -73,7 +73,13 @@ then the verify fixes in the commit after `f52cfdc39`. 1595 Cube tests green wit
 (run `wf_b4b35e14-0fb`), 164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
 that no longer match the code, 19 core/builder gaps and 24 open questions; full result in
 `legend-cube-evidence/m18-requirements-result.json`. The first five steps are the **demo cut**: the user can open
-`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Next: build S1–S5 (the demo cut)**, verify, show the user, then S6–S12.
+`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Demo cut built (2026-10-07):** `10e0a9b6e` S1 host contract and test
+harness (plus the core's `getRelationalDisplayName` export); `abb556c15` S2 editor and execution state (with an
+engine test: ORDERS gives 830 rows); `cd9882a70` S3 page shell and the Legend Query host, lazy-loaded at
+`/query/cube`; `7c96d8bdb` S4 source picker; `8444d7e42` S5 results grid and execution. `check:ci`, `lint:ci` and
+1905 tests (core, builder, Query) green. Checked in the browser against :6300: the outline, the batch typing call
+(compressed body, CORS from :9001) and execute (830 rows in about 0.6 s; truncation at limit 10) all work.
+Verification `m18-democut-verify` (run `wf_97b39b15-ae7`) is running. **Next:** fix what it confirms, then S6–S12.
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
