@@ -27,6 +27,7 @@
     "./data-grid": "./lib/data-grid/index.js",
     "./graph-editor": "./lib/graph-editor/index.js",
     "./legend-ai": "./lib/legend-ai/index.js",
+    "./sse-chat": "./lib/sse-chat/index.js",
     "./legend-ai/test": "./lib/legend-ai/__test-utils__/LegendAITestUtils.js",
     "./model-documentation": "./lib/model-documentation/index.js",
     "./lib/index.css": "./lib/index.css"
