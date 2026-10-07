@@ -675,4 +675,17 @@ describe('Legend Cube engine: Pure text', () => {
     ).toBe('|1');
     expect(render.mock.calls[0]?.[1]).toBe('PRETTY');
   });
+
+  test('Sends the lambda as text, so its numbers keep every digit', async () => {
+    const engine = newEngine();
+    const render = jest
+      .spyOn(engine.client, 'JSONToGrammar_lambda')
+      .mockResolvedValue('|9007199254740993');
+    await engine.renderPure(
+      lambda([], [literal({ kind: 'integer', value: '9007199254740993' })]),
+    );
+    const body = render.mock.calls[0]?.[0] as unknown;
+    expect(typeof body).toBe('string');
+    expect(body as string).toMatch(/"value":9007199254740993[,}]/u);
+  });
 });

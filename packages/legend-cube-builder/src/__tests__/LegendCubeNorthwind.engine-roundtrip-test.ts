@@ -953,6 +953,10 @@ describe('A.9 Error mapping, A.10 Spec round trip, A.11 Golden shape', () => {
     );
     expect(text).toContain('->from(');
     expect(text).toContain('JoinKind.INNER');
+    // its literals, as written: the row limit (one more than asked) and the employee ids
+    expect(text).toContain(`->limit(${ROW_LIMIT + 1})`);
+    expect(text).toMatch(/\[\s*1,\s*4\s*\]/u);
+    expect(text).toContain('%1997-01-01');
   });
 });
 

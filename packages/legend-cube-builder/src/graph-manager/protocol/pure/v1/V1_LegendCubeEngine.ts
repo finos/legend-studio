@@ -263,8 +263,12 @@ export class V1_LegendCubeEngine implements CubeEngine {
 
   async renderPure(lambdaIR: IR): Promise<string> {
     try {
+      // sent as text, as typing and execution are: the serialized lambda holds
+      // lossless numbers, which plain JSON.stringify would write as objects
       return await this.client.JSONToGrammar_lambda(
-        V1_serializeCubeLambda(lambdaIR),
+        stringifyLosslessJSON(
+          V1_serializeCubeLambda(lambdaIR),
+        ) as unknown as PlainObject,
         V1_RenderStyle.PRETTY,
       );
     } catch (error) {
