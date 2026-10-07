@@ -32,6 +32,7 @@ import {
 import type { CubeEngineError } from '../graph-manager/CubeEngine.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
+import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 
 /** An engine error placed on a node: its first line shows on the node, its detail in the grid */
 export interface CubeHostIssue {
@@ -53,6 +54,7 @@ export class CubeEditorState {
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
   readonly execution: CubeExecutionState;
+  readonly sourcePicker: CubeSourcePickerState;
 
   document: CubeDocument;
   /** Earlier documents, oldest first */
@@ -87,6 +89,7 @@ export class CubeEditorState {
       ? storedLimit
       : DEFAULT_ROW_LIMIT;
     this.execution = new CubeExecutionState(this);
+    this.sourcePicker = new CubeSourcePickerState(this);
   }
 
   /** Each node's schema and errors, query-level rules included, as the emitter sees them */

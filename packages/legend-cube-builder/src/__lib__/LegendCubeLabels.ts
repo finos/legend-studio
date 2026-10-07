@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { CubeTableFlag } from '../graph-manager/CubeEngine.js';
+
 // The page's own text and settings; validation messages live in the core's
 // CubeMessages (PLAN §4.11)
 
@@ -49,3 +51,21 @@ export const getRowLimitError = (text: string): string | undefined => {
 
 export const getTruncationMessage = (rowLimit: number): string =>
   `Showing the first ${rowLimit.toLocaleString('en-US')} rows; the query returned more.`;
+
+/** How the picker shows a table's problem, and why (PLAN §6.2.6) */
+export const CUBE_TABLE_FLAG_LABELS: Readonly<
+  Record<CubeTableFlag, { label: string; description: string }>
+> = {
+  [CubeTableFlag.UNAVAILABLE]: {
+    label: 'unavailable',
+    description: "A column's type (BINARY or VARBINARY) can't be read by Cube.",
+  },
+  [CubeTableFlag.LENGTH_UNKNOWN]: {
+    label: 'length unknown',
+    description: 'A CHAR column: its length is not known to Cube.',
+  },
+  [CubeTableFlag.TYPE_UNKNOWN]: {
+    label: 'type unknown',
+    description: "A column's type (OTHER or ARRAY) is not known to Cube.",
+  },
+};

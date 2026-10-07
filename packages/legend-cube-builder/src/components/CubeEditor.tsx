@@ -26,7 +26,9 @@ import { UNSAVED_CUBE_NAME } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import type { CubeHost } from '../stores/CubeHost.js';
+import { CubeButton } from './CubeButton.js';
 import { CubeNodeList } from './graph/CubeNodeList.js';
+import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 
 const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
   const { editorState } = props;
@@ -36,16 +38,30 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
       data-testid={LEGEND_CUBE_TEST_ID.GRAPH_REGION}
     >
       <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2">
-        <span className="truncate text-lg font-medium">
+        <span className="min-w-0 flex-1 truncate text-lg font-medium">
           {editorState.document.name ?? UNSAVED_CUBE_NAME}
         </span>
+        <CubeButton onClick={() => editorState.sourcePicker.open()}>
+          Add table
+        </CubeButton>
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
         <CubeNodeList
           editorState={editorState}
-          emptyState="No tables yet: add a table to start."
+          emptyState={
+            <div className="flex flex-col items-center gap-2">
+              <span>No tables yet: add a table to start.</span>
+              <CubeButton
+                primary={true}
+                onClick={() => editorState.sourcePicker.open()}
+              >
+                Add a table
+              </CubeButton>
+            </div>
+          }
         />
       </div>
+      <CubeSourcePicker editorState={editorState} />
     </div>
   );
 });
