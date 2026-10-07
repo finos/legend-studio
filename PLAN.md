@@ -238,10 +238,11 @@ What the repo actually enforces:
 ### 3.5 Legend Query integration (slice)
 
 - **Route:**
-  - Add `CUBE: '/cube'` to `LEGEND_QUERY_ROUTE_PATTERN`
-    ([LegendQueryNavigation.ts:56](packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:56)).
-  - Mount it in [LegendQueryWebApplication.tsx](packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:59)
-    next to `DEV_DATA_SPACE_INSPECTOR`.
+  - `CUBE: '/cube'` is in `LEGEND_QUERY_ROUTE_PATTERN`
+    ([LegendQueryNavigation.ts:76](packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:76)) and
+    mounted in [LegendQueryWebApplication.tsx](packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:146)
+    since M1.0. M1.8a only swaps the route element for a Query-side wrapper that builds the host, loaded lazily
+    (Settled before M1.8).
   - Query's `baseUrl` is `/query/`, so the URL is **`/query/cube`** 📄.
   - Plugin page entries are not used: they force an `/extensions/` prefix 📄.
   - `/cube/:cubeId` is reserved for saved cubes (M8).
@@ -250,8 +251,10 @@ What the repo actually enforces:
   at app start 📄. F9 is already bound in Query to the query builder's compile command, which is only registered
   while the query builder is mounted.
   - The builder exports `LEGEND_CUBE_COMMAND_CONFIG` (execute: F9; undo: Control+KeyZ / Meta+KeyZ).
-  - Query contributes it via `getExtraKeyedCommandConfigEntries()` on its core application plugin. This is the only
-    plugin hook Cube uses.
+  - Query contributes it via `getExtraKeyedCommandConfigEntries()` on a core application plugin. This is the only
+    plugin hook Cube uses. Query has two: `Core_LegendQuery_LegendApplicationPlugin` (`src/application/`) and
+    `Core_LegendQueryApplicationPlugin` (`src/components/`); neither overrides the hook today, and Query's test helper
+    installs only the second. M1.8b (S20) picks one and tests F9 on `/cube` with the query builder's plugin installed.
   - The Cube page registers the commands with `applicationStore.commandService`, as the query builder's
     `useCommands` does.
   - The undo command's `trigger` returns `false` while focus is in an input, textarea or contenteditable.
@@ -375,7 +378,7 @@ five invariants, every operation and every `canX` predicate), plus the following
 | **Acyclicity invariant (6)**         | §5.1 says cycles are impossible. They aren't: `connect(F1,F2)` then `connect(F2,F1)` satisfies invariant 3 📄. `canConnect` and `connect(…, port)` reject a target that is the source or upstream of it. `canMove` is **unchanged** from §4.4: move isolates the node first, so it cannot create a cycle, and a stricter rule would forbid moves the spec allows. The constructor asserts the graph is acyclic; `visit()` keeps an in-progress set. |
 | **`connect(source, target, port?)`** | The canvas lets users drop on a specific Left or Right handle. With no port, behaviour is spec's "first free port".                                                                                                                                                                                                                                                                                                                                 |
 | **Per-type `generateId`**            | §4.4's global max cannot produce Appendix C's ids (`join101` + `filter101`) 📄. Take `max(100, ids of nodes of that type) + 1`; the collision fallback is unchanged.                                                                                                                                                                                                                                                                                |
-| **Port labels in metadata**          | §17.3 pitfall 4. `Join.PORT_LABELS = ['Left', 'Right']`.                                                                                                                                                                                                                                                                                                                                                                                            |
+| **Port labels in metadata**          | §17.3 pitfall 4. Join's `portLabels` getter, `['Left', 'Right']` (inherited from `BinaryNode`).                                                                                                                                                                                                                                                                                                                                                     |
 
 Settled in M1.2 (spec §4.4 leaves these open or assumes unary nodes):
 
@@ -985,8 +988,9 @@ Problem tables are flagged in the picker rather than crashing the canvas:
 **6.2.7 Picker UI (slice).** A minimal dialog. M3 redesigns it.
 
 1. Pick a model (bundled "Northwind (Cube fixture)" or "Paste Pure model…").
-2. Pick a runtime (filtered by §6.2.5).
-3. Pick database → schema → a table list with search, column counts and the flags above.
+2. Pick a database, then a runtime filtered to it (§6.2.5; the filter needs the database, so it comes first —
+   Settled before M1.8). A step with a single choice is picked automatically.
+3. Pick schema → a table list with search, column counts and the flags above.
 
 Confirming resolves the table first and then adds the node (§17.8: "lands with its schema populated"). The first
 source fixes `context.model` and `context.runtime`; later picks are limited to that runtime's database.
@@ -1070,8 +1074,9 @@ A resizable **side panel** on the right holds the node editor. A panel replaces 
 
 - **Layout pipeline**, recomputed on each change as a pure function of `query`:
   1. Build a dagre `Graph({multigraph: true})` with `rankdir: 'LR'`.
-  2. Insert nodes **sorted by id** and edges **sorted by `port + source + target`**, keyed by port so self-joins
-     keep both edges (§17.3 determinism, verified for dagre ✅).
+  2. Insert nodes **sorted by id** and edges **sorted by `port + source + target`**, keyed by port (§17.3
+     determinism, verified for dagre ✅). Invariant 3 means one node never feeds both ports of a Join (a self-join
+     is two source nodes of one table), so the multigraph is a safeguard only.
   3. Run layout and convert centres to top-left (fixes §17.3 pitfall 1).
 - **Nodes:**
   - Fixed size (200×72), with the icon and the `describe()` text clamped to two lines; the full text is in the
@@ -1079,7 +1084,8 @@ A resizable **side panel** on the right holds the node editor. A panel replaces 
   - React Flow keys nodes by `id`.
   - `nodesDraggable=false`: the user does not position nodes.
   - Zoom, pan, minimap and fit-view come from xyflow (fixes pitfall 5).
-- **Binary ports:** two named target handles, `leftTds` (upper) and `rightTds` (lower). Edges into binary nodes carry
+- **Binary ports:** one target handle per `node.ports` entry: Join's `leftTds` (upper) and `rightTds` (lower); a
+  plain `BinaryNode` has `tds1`/`tds2`. Edges into binary nodes carry
   **visible** "Left"/"Right" labels (fixes pitfall 4). Dagre does not guarantee Left sits above Right, so crossing
   edges are acceptable 📄.
 - **Node states:**
@@ -1151,18 +1157,62 @@ re-resolves the schema. A refresh that changes the schema shows a warning listin
 
 `CubeEditorState`:
 
-| Field                                    | Contents                                            |
-| ---------------------------------------- | --------------------------------------------------- |
-| `document` (`observable.ref`, immutable) | the `CubeDocument`                                  |
-| `history` / `future`                     | undo                                                |
-| `analysis` (`computed`)                  | `buildSchemasAndValidity(document.query)`           |
-| `hostIssues` (`Map<nodeId, string[]>`)   | engine errors mapped back to nodes                  |
-| `resolution` (`ActionState`)             | source schema requests                              |
-| `execution` (`CubeExecutionState`)       | result, stale flag, stats, error                    |
-| `ui`                                     | open editor node, panel sizes; ephemeral, not saved |
+| Field                                             | Contents                                                                                                                  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `document` (`observable.ref`, immutable)          | the `CubeDocument`                                                                                                        |
+| `history`                                         | undo: `CubeDocument` snapshots, at most 100; no redo in the slice (Settled before M1.8)                                   |
+| `analysis` (`computed`)                           | `buildSchemasAndValidity(document.query, registry.queryRules)`: the query-level rules must be passed, the default is none |
+| `hostIssues` (`Map<nodeId, {firstLine, detail}>`) | engine errors mapped back to nodes                                                                                        |
+| `warnings` (`Map<nodeId, …>`)                     | non-blocking: schema drift and failed re-checks (Settled before M1.8)                                                     |
+| `resolution` (`ActionState`)                      | source schema requests                                                                                                    |
+| `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                          |
+| `ui`                                              | open editor node, panel sizes; ephemeral, not saved                                                                       |
 
-Every edit goes through `applyQuery(next)`, which pushes onto history. Domain objects are frozen classes, so MobX
-never observes them deeply.
+Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change or Import), which pushes onto
+history. Domain objects are immutable but not all frozen (only `Query`'s arrays are), so they are held as
+`observable.ref` and MobX never observes them deeply.
+
+**Settled before M1.8** (user, 2026-10-07; requirements `m18-requirements`, run `wf_b4b35e14-0fb`, kept in
+`legend-cube-evidence/m18-requirements-result.json`). The canvas questions are asked at the start of M1.8b.
+
+- **Before the canvas (M1.8a):** the graph region shows an interim read-only list of the query's nodes (`describe()`,
+  errors, host issues, a capture marker) with a **Select** action. The canvas replaces it in M1.8b.
+- **Host:** `CubeHost` gives the page the engine, the model catalog and Query's application store (commands, user
+  data, clipboard, layout/theme, notifications, alerts, telemetry), as `QueryBuilderState` holds `applicationStore`.
+  The engine config and the catalog stay host choices.
+- **Picker order:** model → database → runtime filtered to it → schema → table (§6.2.7).
+- **Route:** the Cube page loads lazily (`React.lazy` + `Suspense`), so the canvas stack stays out of Query's main
+  bundle.
+- **Engine errors:** the first line shows in the grid region (detail expandable) and on the failing node's row (later,
+  on the canvas node). They clear on the next Execute and on any change to `document.query`. Picker errors stay in
+  the picker and Show Pure errors in its dialog; no toasts.
+- **Row limit:** default 1,000, kept in user data. A change marks results stale and doesn't re-run. Input commits on
+  blur or Enter; a non-integer or a value below 1 is refused inline and the previous value kept. A soft warning shows
+  above 100,000, with no hard cap. Truncation text: "Showing the first <limit> rows; the query returned more."
+- **Grid display (slice):** headers show the column name, with the type label, nullable marker and full path in the
+  header tooltip. Nulls show a muted `(null)`. Integer and Decimal values show their exact text, right-aligned and
+  sorted numerically, with no grouping (formatting is M7). Dates and timestamps show as the engine returns them;
+  booleans as true/false. Column widths pass through unchanged until M7.
+- **Running:** while a query runs, Execute becomes **Stop**, which aborts it; leaving the page or importing aborts it
+  too. Only the latest run's result is applied.
+- **Telemetry:** the host passes telemetry through; Cube sends no events in M1.8. Events are designed with M3's entry
+  points, with redaction from day one.
+- **Undo:** `CubeDocument` snapshots, at most 100. Import is one undo step. Source re-resolution never pushes. No
+  redo in the slice.
+- **Export/Import spec:** always visible, labelled "(dev)"; it is the only way to save until M8. Import asks no
+  confirmation (it can be undone) and never executes; Part B step 8 reads "import it, press F9". The check is that
+  `serializeCubeSpec` gives the same text before and after, since nodes get fresh keys on decode.
+- **Re-checking tables on import:** a source that fails to re-resolve keeps its saved snapshot and gets a warning
+  ("could not re-check this table: …"). Schema drift shows as a non-blocking warning listing the changed columns.
+- **Newer-version spec:** opens read-only with a banner. View, Execute and Show Pure work; edits, the picker, Undo
+  and Export are disabled.
+- **Spec without a model or runtime:** opens editable with Execute disabled and a tooltip naming what is missing; no
+  fix-up UI in M1.8.
+- **Show Pure:** its own dialog with Copy. Numbers read 0 until the deferred `renderPure` bug is fixed (PROGRESS.md
+  open items).
+- **Technical (decided without asking):** Query tests use a local fake engine (no `./test` export from the builder
+  yet); the core gains small host-free helpers the UI needs (re-reading filter values against a schema, a schema
+  diff, the display name of a table, the reason a capture subtree can't emit).
 
 ---
 
@@ -1440,16 +1490,16 @@ interface CubeEngine {
   loadModel(model: ModelContext): Promise<CubeModelOutline>; // parsed once: databases and runtimes as plain data
   resolveSchemas(
     model: ModelContext,
-    accessors: Map<NodeId, AccessorPath>,
+    accessors: ReadonlyMap<NodeId, AccessorPath>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
   typeLambdas(
     model: ModelContext,
-    lambdas: Map<NodeId, IR>,
+    lambdas: ReadonlyMap<NodeId, IR>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
   execute(
     model: ModelContext,
     lambda: IR,
-    opts: { abortController?: AbortController }, // the client takes an AbortController, not a signal
+    options?: { abortController?: AbortController }, // the client takes an AbortController, not a signal
   ): Promise<CubeResult>; // {columns, rows, sql[], durationMs}
   renderPure(lambda: IR): Promise<string>; // JSONToGrammar PRETTY, display only
 }
@@ -1493,7 +1543,7 @@ a `BINARY` column fails **alone** in the batch call, the other keys still type �
 - **Picker flags** (§6.2.6: BINARY unavailable, views hidden, CHAR length unknown, OTHER type unknown) are read from
   the `Database` definition in `loadModel`'s `CubeModelOutline`, in `v1/`. No extra engine calls, no core or saved
   format change. The parity test still records the engine's answer for those tables.
-- **`CubeEngineError`** is a class: `nodeId?`, `firstLine`, `detail`, and a `kind` (`compile`, `execution`,
+- **`CubeEngineError`** is a class: `nodeId?`, `role?` (the stamp's emit role), `firstLine`, `detail`, and a `kind` (`compile`, `execution`,
   `unsupportedModel`, `network`). Typing returns one per key; `execute` rejects with one, on the stamped node or
   else the capture node. A whole-call failure gives one for every key.
 - **An unsupported model kind** gives _This cube's model kind "<\_type>" isn't supported yet._, from the builder
@@ -1870,19 +1920,19 @@ Findings: engine `legend-engine-application-query`, Studio
 Each step ends green on `GITHUB_BASE_REF=master yarn check:ci` (after `git fetch origin`; the changeset check needs the
 base ref), `yarn lint:ci` and the tests. M1.1–M1.6 are **headless and test-driven**; nothing in them needs the engine.
 
-| Step      | Deliverable                                                                                                                                                                                                                                                                                                                                        | Done when                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **M1.0**  | Scaffolding: both packages (§3.1–3.4); the purity lint guard and import-scan test; the `/cube` route rendering a placeholder; changesets                                                                                                                                                                                                           | `yarn build`, all CI checks green; `localhost:9001/query/cube` renders the placeholder                                                                                                                                                                                                                                                                                                                                                                                                 |
-| **M1.1**  | Types and values: the registry (§5.3), `CubeType` interning and equality, families, comparison classes (§5.4), `LiteralValue` coercion and validation (§5.6), type display                                                                                                                                                                         | Table-driven tests: every engine type path parses (including short names and `Varchar(0)`); the compatibility matrix; integer width boundaries including Java long ±1 and unsigned; date and datetime formats; Boolean strictness; `parseValue` keeps invalid text as `{kind:'invalid'}`, keeps STRING untrimmed, and canonicalizes numerics (`+5`, `007`, `.5`, `5.`, `-0`, `1e3` accepted and normalized; `0x10`, `Infinity`, `NaN` rejected); kind-mismatch rejection               |
-| **M1.2**  | Graph and inference: `QueryNode`, `Connection`, `Query` with the five invariants **plus acyclicity**; every §4.4 operation, including `connect(…, port)`; per-type `generateId`; `buildSchemasAndValidity` with the sentinels; the query-level rule pass; the node registries; `RelationalTableSource` (with a given schema); `UnknownNode`        | Every invariant violation throws; every `canX` is total; the connect cycle case is rejected, while moving a node after a node further down its own chain is allowed and stays acyclic; propagation is proven with **test-only stub nodes** (a two-port binary stub and a pass-through unary stub): disconnecting a binary input gives `ERR_INCOMPLETE` there and `ERR_SCHEMAS` on every downstream node, with no duplicates; an Unknown node's synthetic ports carry its edges         |
-| **M1.3**  | Join: §7.11 validation steps 1–5 with verbatim messages; comparison-class compatibility; the duplicate rule; output order; nullability and merged-key rules per join type (§4.7); `swapInputs`; `describe`                                                                                                                                         | Appendix C.3's join row, retyped with precise types (`bookId` first; right duplicate dropped); C.5(b) message verbatim; multi-key and partially same-named keys; `Varchar(5)`⋈`Varchar(40)` OK; `Varchar`⋈`SmallInt` and `StrictDate`⋈`Timestamp` rejected; LEFT/RIGHT/FULL nullability matrix, including FULL with exactly one nullable key → merged key nullable                                                                                                                     |
-| **M1.4**  | Filter: tree, operator availability by family (§5.5), shape and type validation, §8.5 helpers, `describe` and its redacted form                                                                                                                                                                                                                    | Operator matrix for every registry type; validation messages verbatim plus the new ones; normalize/unwrap round trips; the column- and operator-change reset rules; Appendix C.5(a) literally (`join101` `ERR_INCOMPLETE`, `filter101` `ERR_SCHEMAS`) now that Join and Filter both exist                                                                                                                                                                                              |
-| **M1.5**  | IR and emitter: the IR (§8.3); emit for source, join (§8.4 algorithm: temps, `toOne` for both-nullable keys, FULL coalesce + cast) and filter (operator table, negations, Not-over-group pushed to the leaves, typed literals); the `genericType` node for casts; the capture wrapper (`limit`, `from`); `origin` on every node; the debug printer | Golden debug-printed output for INNER/LEFT/RIGHT/FULL × {same-named key, different names, multi-key} (FULL with differing key types emits the cast), every filter operator × family, and Not over And/Or/nested groups (De Morgan; double negation cancels)                                                                                                                                                                                                                            |
-| **M1.6**  | Spec v1 codec (§10.3): encode and decode, typed values, schema snapshots, `rest` preservation (top level, per node, meta), Unknown passthrough, migration skeleton, the newer-version read-only flag                                                                                                                                               | Round-trip tests over a fixture corpus (no property-testing library is in the lockfile): `decode(encode(doc))` is deep-equal; re-encoding is byte-identical; an unknown node kind and unknown fields survive the round trip; decode a spec with an Unknown node → delete its upstream node → encode → decode succeeds, and rewiring the Unknown's input elsewhere is refused                                                                                                           |
-| **M1.7**  | **Thin end-to-end, headless** (builder): the `v1/` serializer (IR → protocol JSON with `sourceInformation`), the relation-type adapter, the lossless result reader, `V1_LegendCubeEngine`, the Cube Northwind + ALLTYPES fixture, `LocalModelCatalog`. Engine-backed tests (§11.2 part A)                                                          | Acceptance part A passes against `localhost:6300`, and in CI against the docker engine, wired as §3.4 describes (spied client methods → Cube-local axios helpers, so the lossless reader is exercised). The FULL-join cast, the `toOne()` rule and the FULL merged-key nullability are covered by tests. A v1-seam unit test resolves a quoted, dotted table name                                                                                                                      |
-| **M1.8a** | **Editor state and page (no canvas yet):** `CubeEditorState`; the `/query/cube` page; source picker (§6.2.7); grid with execute, stale and limit; Show Pure; Export/Import spec (dev); undo                                                                                                                                                        | jsdom tests against a mocked `CubeEngine` port: the runtime list holds only runtimes whose store keys exactly include the chosen database; flagged tables show their flag and a picked table lands with its schema; Execute renders the port's rows, an edit marks results stale, and a `limit + 1` result shows the truncation warning; Show Pure shows `renderPure`'s text; Export then Import gives an equal `CubeDocument`; Execute is disabled iff the capture subtree is invalid |
-| **M1.8b** | **Canvas and editors:** canvas (§7.2–7.3), palette, drag and drop, context menu; editor shell + Join, Filter and Source panels; keyboard shortcuts (§3.5)                                                                                                                                                                                          | jsdom tests: one undo entry per Apply; drop-target legality matches `canConnect`/`canMove`; the editor shows the upstream-invalid warning; F9 triggers execute; Join Apply turns the node valid; edges into binary nodes carry visible Left/Right labels                                                                                                                                                                                                                               |
-| **M1.9**  | Slice acceptance and hardening: manual script (§11.2 part B) on `yarn dev:query` + engine; package READMEs; optional Playwright e2e against the real engine (the `legend-application-studio-e2e` pattern, not query-e2e's mocked engine)                                                                                                           | Part B passes; M1 review sign-off                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Step      | Deliverable                                                                                                                                                                                                                                                                                                                                        | Done when                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **M1.0**  | Scaffolding: both packages (§3.1–3.4); the purity lint guard and import-scan test; the `/cube` route rendering a placeholder; changesets                                                                                                                                                                                                           | `yarn build`, all CI checks green; `localhost:9001/query/cube` renders the placeholder                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **M1.1**  | Types and values: the registry (§5.3), `CubeType` interning and equality, families, comparison classes (§5.4), `LiteralValue` coercion and validation (§5.6), type display                                                                                                                                                                         | Table-driven tests: every engine type path parses (including short names and `Varchar(0)`); the compatibility matrix; integer width boundaries including Java long ±1 and unsigned; date and datetime formats; Boolean strictness; `parseValue` keeps invalid text as `{kind:'invalid'}`, keeps STRING untrimmed, and canonicalizes numerics (`+5`, `007`, `.5`, `5.`, `-0`, `1e3` accepted and normalized; `0x10`, `Infinity`, `NaN` rejected); kind-mismatch rejection                         |
+| **M1.2**  | Graph and inference: `QueryNode`, `Connection`, `Query` with the five invariants **plus acyclicity**; every §4.4 operation, including `connect(…, port)`; per-type `generateId`; `buildSchemasAndValidity` with the sentinels; the query-level rule pass; the node registries; `RelationalTableSource` (with a given schema); `UnknownNode`        | Every invariant violation throws; every `canX` is total; the connect cycle case is rejected, while moving a node after a node further down its own chain is allowed and stays acyclic; propagation is proven with **test-only stub nodes** (a two-port binary stub and a pass-through unary stub): disconnecting a binary input gives `ERR_INCOMPLETE` there and `ERR_SCHEMAS` on every downstream node, with no duplicates; an Unknown node's synthetic ports carry its edges                   |
+| **M1.3**  | Join: §7.11 validation steps 1–5 with verbatim messages; comparison-class compatibility; the duplicate rule; output order; nullability and merged-key rules per join type (§4.7); `swapInputs`; `describe`                                                                                                                                         | Appendix C.3's join row, retyped with precise types (`bookId` first; right duplicate dropped); C.5(b) message verbatim; multi-key and partially same-named keys; `Varchar(5)`⋈`Varchar(40)` OK; `Varchar`⋈`SmallInt` and `StrictDate`⋈`Timestamp` rejected; LEFT/RIGHT/FULL nullability matrix, including FULL with exactly one nullable key → merged key nullable                                                                                                                               |
+| **M1.4**  | Filter: tree, operator availability by family (§5.5), shape and type validation, §8.5 helpers, `describe` and its redacted form                                                                                                                                                                                                                    | Operator matrix for every registry type; validation messages verbatim plus the new ones; normalize/unwrap round trips; the column- and operator-change reset rules; Appendix C.5(a) literally (`join101` `ERR_INCOMPLETE`, `filter101` `ERR_SCHEMAS`) now that Join and Filter both exist                                                                                                                                                                                                        |
+| **M1.5**  | IR and emitter: the IR (§8.3); emit for source, join (§8.4 algorithm: temps, `toOne` for both-nullable keys, FULL coalesce + cast) and filter (operator table, negations, Not-over-group pushed to the leaves, typed literals); the `genericType` node for casts; the capture wrapper (`limit`, `from`); `origin` on every node; the debug printer | Golden debug-printed output for INNER/LEFT/RIGHT/FULL × {same-named key, different names, multi-key} (FULL with differing key types emits the cast), every filter operator × family, and Not over And/Or/nested groups (De Morgan; double negation cancels)                                                                                                                                                                                                                                      |
+| **M1.6**  | Spec v1 codec (§10.3): encode and decode, typed values, schema snapshots, `rest` preservation (top level, per node, meta), Unknown passthrough, migration skeleton, the newer-version read-only flag                                                                                                                                               | Round-trip tests over a fixture corpus (no property-testing library is in the lockfile): `decode(encode(doc))` is deep-equal; re-encoding is byte-identical; an unknown node kind and unknown fields survive the round trip; decode a spec with an Unknown node → delete its upstream node → encode → decode succeeds, and rewiring the Unknown's input elsewhere is refused                                                                                                                     |
+| **M1.7**  | **Thin end-to-end, headless** (builder): the `v1/` serializer (IR → protocol JSON with `sourceInformation`), the relation-type adapter, the lossless result reader, `V1_LegendCubeEngine`, the Cube Northwind + ALLTYPES fixture, `LocalModelCatalog`. Engine-backed tests (§11.2 part A)                                                          | Acceptance part A passes against `localhost:6300`, and in CI against the docker engine, wired as §3.4 describes (spied client methods → Cube-local axios helpers, so the lossless reader is exercised). The FULL-join cast, the `toOne()` rule and the FULL merged-key nullability are covered by tests. A v1-seam unit test resolves a quoted, dotted table name                                                                                                                                |
+| **M1.8a** | **Editor state and page (no canvas yet):** `CubeEditorState`; the `/query/cube` page; source picker (§6.2.7); grid with execute, stale and limit; Show Pure; Export/Import spec (dev); undo                                                                                                                                                        | jsdom tests against a mocked `CubeEngine` port: the runtime list holds only runtimes whose store keys exactly include the chosen database; flagged tables show their flag and a picked table lands with its schema; Execute renders the port's rows, an edit marks results stale, and a `limit + 1` result shows the truncation warning; Show Pure shows `renderPure`'s text; Export then Import gives the same `serializeCubeSpec` text; Execute is disabled iff the capture subtree is invalid |
+| **M1.8b** | **Canvas and editors:** canvas (§7.2–7.3), palette, drag and drop, context menu; editor shell + Join, Filter and Source panels; keyboard shortcuts (§3.5)                                                                                                                                                                                          | jsdom tests: one undo entry per Apply; drop-target legality matches `canConnect`/`canMove`; the editor shows the upstream-invalid warning; F9 triggers execute; Join Apply turns the node valid; edges into binary nodes carry visible Left/Right labels                                                                                                                                                                                                                                         |
+| **M1.9**  | Slice acceptance and hardening: manual script (§11.2 part B) on `yarn dev:query` + engine; package READMEs; optional Playwright e2e against the real engine (the `legend-application-studio-e2e` pattern, not query-e2e's mocked engine)                                                                                                           | Part B passes; M1 review sign-off                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 Ordering note: M1.7 runs before M1.8 on purpose, as §20 says ("prove the engine round trip before building the
 canvas"). If the canvas misbehaves, it is the canvas. Layout determinism needs no separate test: inputs are sorted
@@ -1977,7 +2027,7 @@ The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.
    an invalid value is flagged inline.
 6. Make the filter the capture node (Ctrl-click) and press F9. The grid shows 19 rows.
 7. Edit the filter: the grid marks results stale. Undo restores the previous state. Show Pure displays the lambda.
-8. Export the spec, reload the page, import it. The same graph and the same results come back.
+8. Export the spec, reload the page, import it and press F9. The same graph and the same results come back.
 
 ### 11.3 After the slice (recommended order, outline)
 

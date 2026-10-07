@@ -73,25 +73,11 @@ then the verify fixes in the commit after `f52cfdc39`. 1595 Cube tests green wit
 (run `wf_b4b35e14-0fb`), 164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
 that no longer match the code, 19 core/builder gaps and 24 open questions; full result in
 `legend-cube-evidence/m18-requirements-result.json`. The first five steps are the **demo cut**: the user can open
-`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. The user is settling the open
-questions (PLAN "Settled before M1.8", once recorded); the canvas questions wait for M1.8b.
+`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Next: build S1–S5 (the demo cut)**, verify, show the user, then S6–S12.
 
-- **Accepted (2026-10-07), to record in PLAN "Settled before M1.8":** interim read-only node list with Select before
-  the canvas; the host hands the page the engine, the model catalog and Query's application store; picker order model
-  → database → runtime (filtered) → schema → table; lazy-load the page; engine errors in the grid region and on the
-  node's row, cleared by the next Execute or any query change; row limit (default 1,000, a change marks results stale,
-  invalid input rejected inline, soft warning above 100,000); grid display (name headers with the type in a tooltip,
-  muted `(null)`, exact numbers right-aligned without grouping, dates as the engine returns them); Import asks no
-  confirmation and never executes (Part B step 8 becomes "import, then press F9"); a failed re-check on import keeps
-  the saved schema with a warning, drift shows as non-blocking warnings; a newer-version spec opens read-only (view,
-  execute, Show Pure); a spec missing its model or runtime opens with Execute disabled and a tooltip.
-- **Not accepted yet, to ask the user again** (recommendation in brackets): Execute while running [Execute becomes
-  Stop, leaving the page aborts]; telemetry [host seam only, no Cube events in M1.8]; undo [whole-document snapshots,
-  cap 100, Import is one undo step, no Redo]; Export/Import visibility [always visible, labelled "(dev)"]; Show Pure
-  [own dialog with Copy, zeros until the deferred bug is fixed].
-- **Decided without asking (technical):** Query tests use a local fake engine (no `./test` export yet); column
-  widths pass through unchanged until M7; the core gains small host-free helpers (re-read filter values, a schema
-  diff, the display-name and emit-error exports); PLAN's stale references get corrected.
+- **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
+  "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
+  §7.2, §7.8, §8.7, §11.1 and §11.2).
 - **Asked at the start of M1.8b:** the palette's source item, the context after the last source is removed, Filter
   Apply with a blank row, a side-panel edit whose node changed underneath, shortcuts while a Cube dialog is open, and
   the per-column data for the Join "type unknown" warning (all in the requirements result).
