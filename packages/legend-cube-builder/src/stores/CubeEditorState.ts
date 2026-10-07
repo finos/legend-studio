@@ -72,7 +72,9 @@ export class CubeEditorState {
       rowLimit: observable,
       analysis: computed,
       emitter: computed,
+      canUndo: computed,
       applyDocument: action,
+      undo: action,
       applyQuery: action,
       select: action,
       setHostIssue: action,
@@ -104,15 +106,41 @@ export class CubeEditorState {
     return new QueryEmitter(this.document.query, this.registry);
   }
 
-  /**
-   * The one way to change the cube. Engine errors belong to the query they
-   * came from, so they are dropped when the query changes.
-   */
+  get canUndo(): boolean {
+    return this.history.length > 0;
+  }
+
+  /** The one way to change the cube; the document before goes to the undo history */
   applyDocument(next: CubeDocument): void {
     if (next === this.document) {
       return;
     }
     this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
+    this.replaceDocument(next);
+  }
+
+  /**
+   * Restores the document before the last edit; does nothing when there is
+   * no history. A restored query is a new object (PLAN §4.3), so rows that
+   * ran before the edit show as stale. An edit that left the query alone,
+   * such as a rename, keeps it, with its rows and engine errors.
+   */
+  undo(): void {
+    const previous = this.history.at(-1);
+    if (!previous) {
+      return;
+    }
+    this.history = this.history.slice(0, -1);
+    const { query } = this.document;
+    this.replaceDocument(
+      previous.withQuery(
+        previous.query === query ? query : previous.query.clone(),
+      ),
+    );
+  }
+
+  /** Engine errors belong to the query they came from, so they are dropped when the query changes */
+  private replaceDocument(next: CubeDocument): void {
     if (next.query !== this.document.query) {
       this.hostIssues = new Map();
       this.execution.clearError();

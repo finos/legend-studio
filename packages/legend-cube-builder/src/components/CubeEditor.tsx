@@ -45,6 +45,13 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
         <CubeButton onClick={() => editorState.sourcePicker.open()}>
           Add table
         </CubeButton>
+        <CubeButton
+          title="Undo the last change"
+          disabled={!editorState.canUndo}
+          onClick={() => editorState.undo()}
+        >
+          Undo
+        </CubeButton>
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
         <CubeNodeList

@@ -207,6 +207,33 @@ describe('Cube page', () => {
     ).toBeDefined();
   });
 
+  test('Undoes the last change from the header, and can undo nothing on a fresh page', async () => {
+    const { getAllByTestId } = await renderPage(
+      new CubeDocument({ query: sliceQuery() }),
+    );
+    const header = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
+    const undo = within(header).getByText<HTMLButtonElement>('Undo');
+    expect(undo.disabled).toBe(true);
+    fireEvent.click(
+      within(
+        rowOf(
+          getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW),
+          'join101',
+        ) as HTMLElement,
+      ).getByText('Select'),
+    );
+    expect(undo.disabled).toBe(false);
+    fireEvent.click(undo);
+    const rows = getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    expect(
+      within(rowOf(rows, 'filter101') as HTMLElement).getByText('(Selected)'),
+    ).toBeDefined();
+    expect(
+      within(rowOf(rows, 'join101') as HTMLElement).getByText('Select'),
+    ).toBeDefined();
+    expect(undo.disabled).toBe(true);
+  });
+
   test("Shows a node's errors on its row, query-level rules included", async () => {
     const otherDatabase = new RelationalTableSource(
       'relational102',
