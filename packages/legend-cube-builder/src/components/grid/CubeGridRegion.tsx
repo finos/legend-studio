@@ -20,6 +20,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import {
   CUBE_PENDING_LABEL,
+  formatDisabledReasons,
   getRowLimitError,
   getTruncationMessage,
   ROW_LIMIT_WARNING_THRESHOLD,
@@ -113,7 +114,7 @@ const CubeGridToolbar = observer(
             disabled={!execution.canExecute}
             title={
               disabledReasons.length
-                ? disabledReasons.map((reason) => `• ${reason}`).join('\n')
+                ? formatDisabledReasons(disabledReasons)
                 : 'Run the query up to the selected node'
             }
             onClick={execute}

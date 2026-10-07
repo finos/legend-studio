@@ -49,6 +49,7 @@ import {
 } from '../graph-manager/CubeEngine.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
+import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
 
@@ -74,6 +75,7 @@ export class CubeEditorState {
   readonly execution: CubeExecutionState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
+  readonly showPure: CubeShowPureState;
 
   document: CubeDocument;
   /** Earlier documents, oldest first */
@@ -133,6 +135,7 @@ export class CubeEditorState {
     this.execution = new CubeExecutionState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
+    this.showPure = new CubeShowPureState(this);
   }
 
   /** Each node's schema and errors, query-level rules included, as the emitter sees them */

@@ -77,6 +77,10 @@ const describeColumnType = (column: SchemaColumn): string =>
 const listColumns = (columns: readonly SchemaColumn[]): string =>
   columns.map((column) => column.name).join(', ');
 
+/** Why Execute (and Show Pure) can't run, one reason a line, for a tooltip */
+export const formatDisabledReasons = (reasons: readonly string[]): string =>
+  reasons.map((reason) => `• ${reason}`).join('\n');
+
 /** The warning on a source whose table changed since the cube was saved; the table's new columns are used */
 export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
   const changes = [

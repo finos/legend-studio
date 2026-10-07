@@ -21,10 +21,12 @@ import {
   ResizablePanelSplitter,
 } from '@finos/legend-art';
 import type { CubeDocument } from '@finos/legend-cube';
+import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import {
   CUBE_PENDING_LABEL,
+  formatDisabledReasons,
   UNSAVED_CUBE_NAME,
 } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
@@ -33,6 +35,7 @@ import type { CubeHost } from '../stores/CubeHost.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeNodeList } from './graph/CubeNodeList.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
+import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
 
@@ -69,6 +72,21 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
           onClick={() => editorState.undo()}
         >
           Undo
+        </CubeButton>
+        <CubeButton
+          title={
+            editorState.execution.canExecute
+              ? 'Show the Pure query that Execute runs'
+              : formatDisabledReasons(editorState.execution.disabledReasons)
+          }
+          disabled={!editorState.execution.canExecute}
+          onClick={() => {
+            flowResult(editorState.showPure.open()).catch(
+              editorState.host.applicationStore.alertUnhandledError,
+            );
+          }}
+        >
+          Show Pure
         </CubeButton>
         <CubeButton
           title={
@@ -116,6 +134,7 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
       </div>
       <CubeSourcePicker editorState={editorState} />
       <CubeSpecTransferDialog editorState={editorState} />
+      <CubeShowPureDialog editorState={editorState} />
     </div>
   );
 });
