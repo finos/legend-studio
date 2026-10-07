@@ -107,4 +107,13 @@ describe('Cube editor state, on the engine', () => {
     expect(state.execution.result?.rows).toHaveLength(10);
     expect(state.execution.result?.limited).toBe(true);
   });
+
+  test('Shows every row, and says nothing was cut, when the table has exactly `limit` rows', async () => {
+    const state = await setUp();
+    state.setRowLimit(830);
+    await flowResult(state.execution.execute());
+    expect(state.execution.error).toBeUndefined();
+    expect(state.execution.result?.rows).toHaveLength(830);
+    expect(state.execution.result?.limited).toBe(false);
+  });
 });

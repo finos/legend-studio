@@ -21,6 +21,7 @@ import {
   RelationalTableSource,
   Schema,
 } from '@finos/legend-cube';
+import { flowResult, isObservable } from 'mobx';
 import {
   DEFAULT_ROW_LIMIT,
   LEGEND_CUBE_USER_DATA_KEY,
@@ -33,6 +34,7 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
+import { FAKE_NORTHWIND_OUTLINE } from '../../__test-utils__/FakeCubeEngine.js';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -143,6 +145,59 @@ describe('Cube editor state', () => {
     expect(state.hostIssues.size).toBe(1);
     state.select('join101');
     expect(state.hostIssues.size).toBe(0);
+  });
+
+  test("Drops the last run's error in the grid too when the query changes, and keeps it when only the name or the presentation does", async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.execute.mockRejectedValueOnce(engineError('filter101'));
+    const state = new CubeEditorState(host, sliceDocument());
+    await flowResult(state.execution.execute());
+    expect(state.execution.error?.firstLine).toBe(
+      `The column 'X' can't be found`,
+    );
+    expect([...state.hostIssues.keys()]).toEqual(['filter101']);
+    state.applyDocument(state.document.withName('France'));
+    const { meta } = state.document;
+    state.applyDocument(
+      state.document.withMeta({
+        ...meta,
+        presentation: {
+          ...meta.presentation,
+          showGraph: !meta.presentation.showGraph,
+        },
+      }),
+    );
+    expect(state.history).toHaveLength(2);
+    expect(state.execution.error?.firstLine).toBe(
+      `The column 'X' can't be found`,
+    );
+    expect(state.hostIssues.size).toBe(1);
+    state.select('join101');
+    expect(state.execution.error).toBeUndefined();
+    expect(state.hostIssues.size).toBe(0);
+  });
+
+  test('Holds the undo history and the engine errors by reference, never observed deeply', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sliceDocument(),
+    );
+    state.select('join101');
+    expect(state.history).toHaveLength(1);
+    expect(isObservable(state.history)).toBe(false);
+    state.setHostIssue('join101', engineError('join101'));
+    expect(state.hostIssues.size).toBe(1);
+    expect(isObservable(state.hostIssues)).toBe(false);
+  });
+
+  test('Holds the model outline its source picker loaded by reference, never observed deeply', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    await flowResult(state.sourcePicker.selectModel(CUBE_NORTHWIND_MODEL));
+    const { outline } = state.sourcePicker;
+    expect(outline).toBeDefined();
+    // the very outline the engine answered, as the model catalog keeps it
+    expect(outline === FAKE_NORTHWIND_OUTLINE).toBe(true);
+    expect(isObservable(outline)).toBe(false);
   });
 
   test(`Runs ${DEFAULT_ROW_LIMIT} rows by default, and remembers the user's row limit`, () => {
