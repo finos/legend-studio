@@ -24,6 +24,7 @@ export * from './values/LiteralValue.js';
 export * from './values/ValueEntry.js';
 
 export * from './schema/Schema.js';
+export * from './schema/SchemaDiff.js';
 
 export * from './graph/Connection.js';
 export * from './graph/QueryNode.js';
@@ -37,6 +38,7 @@ export * from './nodes/sources/RelationalTableSource.js';
 export * from './filter/FilterOperator.js';
 export * from './filter/FilterTree.js';
 export * from './filter/FilterBuilder.js';
+export * from './filter/QueryFilterValues.js';
 
 export * from './nodes/transforms/Join.js';
 export * from './nodes/transforms/Filter.js';

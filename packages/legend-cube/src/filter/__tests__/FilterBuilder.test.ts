@@ -24,6 +24,7 @@ import {
   changeFilterOperator,
   negateFilter,
   normalizeFilter,
+  rereadFilterValues,
   unwrapFilter,
 } from '../FilterBuilder.js';
 import { FILTER_OPERATORS, FilterOperator } from '../FilterOperator.js';
@@ -33,6 +34,7 @@ import {
   CompositeFilterOperator,
   type FilterRule,
   type FilterValue,
+  type FilterValueItem,
   NotFilter,
   UnsupportedFilter,
 } from '../FilterTree.js';
@@ -530,5 +532,66 @@ describe(unitTest('Unsupported rules in the editor'), () => {
     const all = keys(root);
     expect(all).toHaveLength(5);
     expect(new Set(all).size).toBe(all.length);
+  });
+});
+
+describe(unitTest('Reading invalid values again'), () => {
+  const invalid = (text: string): FilterValueItem => ({
+    kind: 'invalid',
+    text,
+  });
+
+  test('Reads text that was invalid as a value of the column type it now has', () => {
+    const rule = compare('ORDER_ID', O.EQUAL, invalid('300'));
+    const reread = rereadFilterValues(rule, SCHEMA) as ColumnComparisonFilter;
+    expect(reread.value).toEqual(integer('300'));
+    expect(reread.key).toBe(rule.key);
+    // too large for a TinyInt
+    const tiny = compare('TINY', O.EQUAL, invalid('300'));
+    expect(rereadFilterValues(tiny, SCHEMA)).toBe(tiny);
+  });
+
+  test('Reads each invalid item of a list, and keeps the others', () => {
+    const rule = compare('ORDER_ID', O.IN, [
+      integer('1'),
+      invalid('2'),
+      invalid('two'),
+    ]);
+    const reread = rereadFilterValues(rule, SCHEMA) as ColumnComparisonFilter;
+    expect(reread.value).toEqual([integer('1'), integer('2'), invalid('two')]);
+  });
+
+  test('Gives back the rule itself when nothing is read again', () => {
+    const rules = [
+      compare('ORDER_ID', O.EQUAL, integer('3')),
+      compare('ORDER_ID', O.EQUAL, invalid('three')),
+      compare('ORDER_ID', O.IN, [integer('1'), invalid('x')]),
+      compare('NOPE', O.EQUAL, invalid('300')),
+      compare('ORDER_ID', O.IS_EMPTY),
+      new UnsupportedFilter({ op: 'someday' }),
+    ];
+    rules.forEach((rule) =>
+      expect(rereadFilterValues(rule, SCHEMA)).toBe(rule),
+    );
+    const group = new CompositeFilter(CompositeFilterOperator.OR, rules);
+    expect(rereadFilterValues(group, SCHEMA)).toBe(group);
+    const not = new NotFilter(group);
+    expect(rereadFilterValues(not, SCHEMA)).toBe(not);
+  });
+
+  test('Reads values again inside groups and negations, keeping each key', () => {
+    const fixed = compare('ORDER_ID', O.EQUAL, invalid('7'));
+    const kept = compare('SHIP_CITY', O.EQUAL, string('Paris'));
+    const group = new CompositeFilter(CompositeFilterOperator.AND, [
+      kept,
+      new NotFilter(fixed),
+    ]);
+    const reread = rereadFilterValues(group, SCHEMA) as CompositeFilter;
+    expect(reread.key).toBe(group.key);
+    expect(reread.rules[0]).toBe(kept);
+    const not = reread.rules[1] as NotFilter;
+    expect(not.key).toBe((group.rules[1] as NotFilter).key);
+    expect((not.rule as ColumnComparisonFilter).value).toEqual(integer('7'));
+    expect(reread.validate(SCHEMA)).toBe(true);
   });
 });

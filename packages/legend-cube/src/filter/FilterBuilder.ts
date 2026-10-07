@@ -78,8 +78,14 @@ const takeSameValues = (from: CubeType, to: CubeType): boolean =>
 const readInvalidAgain = (
   item: FilterValueItem,
   type: CubeType,
-): FilterValueItem =>
-  item.kind === 'invalid' ? (parseValue(item.text, type) ?? item) : item;
+): FilterValueItem => {
+  if (item.kind !== 'invalid') {
+    return item;
+  }
+  const value = parseValue(item.text, type);
+  // text that is still invalid stays the same item
+  return value === undefined || value.kind === 'invalid' ? item : value;
+};
 
 const readValueAgain = (
   value: FilterValue | undefined,
@@ -91,6 +97,45 @@ const readValueAgain = (
   return isFilterValueList(value)
     ? value.map((item) => readInvalidAgain(item, type))
     : readInvalidAgain(value, type);
+};
+
+const isSameValue = (
+  before: FilterValue | undefined,
+  after: FilterValue | undefined,
+): boolean =>
+  before === after ||
+  (isFilterValueList(before) &&
+    isFilterValueList(after) &&
+    before.length === after.length &&
+    before.every((item, index) => item === after[index]));
+
+/**
+ * The rule with every value that was invalid text read again against the
+ * column types of `schema`, e.g. after a source's table was typed again:
+ * '300' becomes a SmallInt once the column is one. Text that still isn't a
+ * value stays as it is, and so do rules on columns `schema` doesn't have.
+ * The rule itself comes back when nothing was read again.
+ */
+export const rereadFilterValues = (
+  rule: FilterRule,
+  schema: Schema,
+): FilterRule => {
+  if (rule instanceof ColumnComparisonFilter) {
+    const type = schema.type(rule.columnName);
+    const value = type ? readValueAgain(rule.value, type) : rule.value;
+    return isSameValue(rule.value, value) ? rule : rule.withValue(value);
+  }
+  if (rule instanceof CompositeFilter) {
+    const rules = rule.rules.map((child) => rereadFilterValues(child, schema));
+    return rules.every((child, index) => child === rule.rules[index])
+      ? rule
+      : rule.withRules(rules);
+  }
+  if (rule instanceof NotFilter) {
+    const inner = rereadFilterValues(rule.rule, schema);
+    return inner === rule.rule ? rule : rule.withRule(inner);
+  }
+  return rule;
 };
 
 /**
