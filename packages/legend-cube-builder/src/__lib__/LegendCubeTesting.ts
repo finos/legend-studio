@@ -23,4 +23,5 @@ export enum LEGEND_CUBE_TEST_ID {
   RESULT_GRID = 'legend-cube__result-grid',
   GRID_TOOLBAR = 'legend-cube__grid-toolbar',
   EXECUTION_ERROR = 'legend-cube__execution-error',
+  SQL_PANEL = 'legend-cube__sql-panel',
 }

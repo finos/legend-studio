@@ -24,6 +24,7 @@ import {
 import { flowResult } from 'mobx';
 import { TEST__createCubeApplicationStore } from '../__test-utils__/CubeTestApplication.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
+import { sliceQuery } from '../__test-utils__/CubeNorthwindTestQueries.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import {
   CUBE_NORTHWIND_DATABASE,
@@ -83,6 +84,20 @@ describe('Cube editor state, on the engine', () => {
     expect(result?.limited).toBe(false);
     expect(result?.rows[0]?.length).toBe(result?.schema.columns.length);
     expect(result?.sql.length).toBeGreaterThan(0);
+  });
+
+  test('Runs the slice (ORDERS ⋈ CUSTOMERS, then the France filter): 19 rows under the columns Cube inferred', async () => {
+    const state = await setUp();
+    state.applyDocument(state.document.withQuery(sliceQuery()));
+    await flowResult(state.execution.execute());
+    const { result, error } = state.execution;
+    expect(error).toBeUndefined();
+    expect(result?.rows).toHaveLength(19);
+    expect(result?.schema.columns.map((column) => column.name)).toEqual(
+      state.analysis.schemas
+        .get('filter101')
+        ?.columns.map((column) => column.name),
+    );
   });
 
   test('Keeps the limit and says the run was cut when the table has more rows', async () => {

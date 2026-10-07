@@ -275,15 +275,22 @@ describe('Cube results', () => {
     expect(fake.execute).toHaveBeenCalledTimes(1);
   });
 
-  test("Copies the run's SQL", async () => {
+  test("Shows the run's SQL on request, and copies it", async () => {
     const writeText = jest.fn(async (_text: string) => Promise.resolve());
     Object.assign(navigator, { clipboard: { writeText } });
     await renderPage();
     fireEvent.click(executeButton());
     await cellTexts(0);
-    fireEvent.click(within(toolbar()).getByText('Copy SQL'));
+    fireEvent.click(within(toolbar()).getByText('Show SQL'));
+    const panel = screen.getByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL);
+    expect(
+      within(panel).getByText('select "ID", "NAME" from S.T'),
+    ).toBeDefined();
+    fireEvent.click(within(panel).getByText('Copy SQL'));
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith('select "ID", "NAME" from S.T'),
     );
+    fireEvent.click(within(toolbar()).getByText('Hide SQL'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.SQL_PANEL)).toBeNull();
   });
 });

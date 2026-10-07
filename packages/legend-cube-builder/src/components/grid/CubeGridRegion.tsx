@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { PanelLoadingIndicator } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -81,74 +82,112 @@ const CubeRowLimitInput = observer(
   },
 );
 
-const CubeGridToolbar = observer((props: { editorState: CubeEditorState }) => {
+const CubeGridToolbar = observer(
+  (props: {
+    editorState: CubeEditorState;
+    showSql: boolean;
+    onToggleSql: () => void;
+  }) => {
+    const { editorState, showSql, onToggleSql } = props;
+    const { execution, host } = editorState;
+    const { applicationStore } = host;
+    const { result } = execution;
+    const disabledReasons = execution.disabledReasons;
+    const execute = (): void => {
+      flowResult(execution.execute()).catch(
+        applicationStore.alertUnhandledError,
+      );
+    };
+    return (
+      <div
+        className="flex h-8 shrink-0 items-center gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2"
+        data-testid={LEGEND_CUBE_TEST_ID.GRID_TOOLBAR}
+      >
+        {execution.isRunning ? (
+          <CubeButton title="Stop the run" onClick={() => execution.stop()}>
+            Stop
+          </CubeButton>
+        ) : (
+          <CubeButton
+            primary={true}
+            disabled={!execution.canExecute}
+            title={
+              disabledReasons.length
+                ? disabledReasons.map((reason) => `• ${reason}`).join('\n')
+                : 'Run the query up to the selected node'
+            }
+            onClick={execute}
+          >
+            Execute
+          </CubeButton>
+        )}
+        <CubeRowLimitInput editorState={editorState} />
+        {execution.isRunning && (
+          <span className="text-base text-[var(--color-text-secondary)]">
+            {CUBE_PENDING_LABEL.EXECUTING_QUERY}
+          </span>
+        )}
+        {execution.isStale && (
+          <span
+            className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-base text-[var(--color-status-warn)]"
+            title="The query or the row limit changed since this run"
+          >
+            Stale: execute again to refresh
+          </span>
+        )}
+        {result && !execution.isRunning && (
+          <>
+            <span className="text-base text-[var(--color-text-secondary)]">
+              {`${result.rows.length.toLocaleString('en-US')} row${result.rows.length === 1 ? '' : 's'} in ${formatDuration(result.durationMs)}`}
+            </span>
+            {result.limited && (
+              <span className="text-base text-[var(--color-status-warn)]">
+                {getTruncationMessage(result.rowLimit)}
+              </span>
+            )}
+            {result.sql.length > 0 && (
+              <CubeButton aria-expanded={showSql} onClick={onToggleSql}>
+                {showSql ? 'Hide SQL' : 'Show SQL'}
+              </CubeButton>
+            )}
+          </>
+        )}
+      </div>
+    );
+  },
+);
+
+/** The SQL the run's database ran, with Copy */
+const CubeSqlPanel = observer((props: { editorState: CubeEditorState }) => {
   const { editorState } = props;
-  const { execution, host } = editorState;
-  const { applicationStore } = host;
-  const { result } = execution;
-  const disabledReasons = execution.disabledReasons;
-  const execute = (): void => {
-    flowResult(execution.execute()).catch(applicationStore.alertUnhandledError);
-  };
+  const { applicationStore } = editorState.host;
+  const sql = editorState.execution.result?.sql ?? [];
+  if (!sql.length) {
+    return null;
+  }
   const copySql = (): void => {
     applicationStore.clipboardService
-      .copyTextToClipboard(result?.sql.join('\n\n') ?? '')
+      .copyTextToClipboard(sql.join('\n\n'))
       .catch(applicationStore.alertUnhandledError);
   };
   return (
     <div
-      className="flex h-8 shrink-0 items-center gap-3 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2"
-      data-testid={LEGEND_CUBE_TEST_ID.GRID_TOOLBAR}
+      className="flex max-h-40 shrink-0 gap-2 overflow-auto border-b border-[var(--color-border-default)] p-2"
+      data-testid={LEGEND_CUBE_TEST_ID.SQL_PANEL}
     >
-      {execution.isRunning ? (
-        <CubeButton title="Stop the run" onClick={() => execution.stop()}>
-          Stop
-        </CubeButton>
-      ) : (
-        <CubeButton
-          primary={true}
-          disabled={!execution.canExecute}
-          title={
-            disabledReasons.length
-              ? disabledReasons.map((reason) => `• ${reason}`).join('\n')
-              : 'Run the query up to the selected node'
-          }
-          onClick={execute}
-        >
-          Execute
-        </CubeButton>
-      )}
-      <CubeRowLimitInput editorState={editorState} />
-      {execution.isRunning && (
-        <span className="text-base text-[var(--color-text-secondary)]">
-          {CUBE_PENDING_LABEL.EXECUTING_QUERY}
-        </span>
-      )}
-      {execution.isStale && (
-        <span
-          className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-base text-[var(--color-status-warn)]"
-          title="The query or the row limit changed since this run"
-        >
-          Stale: execute again to refresh
-        </span>
-      )}
-      {result && !execution.isRunning && (
-        <>
-          <span className="text-base text-[var(--color-text-secondary)]">
-            {`${result.rows.length.toLocaleString('en-US')} row${result.rows.length === 1 ? '' : 's'} in ${formatDuration(result.durationMs)}`}
-          </span>
-          {result.limited && (
-            <span className="text-base text-[var(--color-status-warn)]">
-              {getTruncationMessage(result.rowLimit)}
-            </span>
-          )}
-          {result.sql.length > 0 && (
-            <CubeButton title={result.sql.join('\n\n')} onClick={copySql}>
-              Copy SQL
-            </CubeButton>
-          )}
-        </>
-      )}
+      <div className="min-w-0 flex-1">
+        {sql.map((statement, index) => (
+          <pre
+            // statements hold no state, and the same one may run twice
+            // eslint-disable-next-line react/no-array-index-key
+            key={index}
+            className="whitespace-pre-wrap font-mono text-sm"
+          >
+            {statement}
+          </pre>
+        ))}
+      </div>
+      <CubeButton onClick={copySql}>Copy SQL</CubeButton>
     </div>
   );
 });
@@ -159,20 +198,23 @@ const CubeExecutionError = observer(
     if (!error) {
       return null;
     }
-    const firstLine =
-      error.firstLine.length > MAX_ERROR_LINE_LENGTH
-        ? `${error.firstLine.slice(0, MAX_ERROR_LINE_LENGTH)}…`
-        : error.firstLine;
+    const isCut = error.firstLine.length > MAX_ERROR_LINE_LENGTH;
+    const firstLine = isCut
+      ? `${error.firstLine.slice(0, MAX_ERROR_LINE_LENGTH)}…`
+      : error.firstLine;
     return (
       <div
         className="m-2 rounded-sm border border-[var(--color-status-error)] bg-[var(--color-status-error-bg)] p-2 text-base"
         data-testid={LEGEND_CUBE_TEST_ID.EXECUTION_ERROR}
         role="alert"
       >
-        <div className="font-medium text-[var(--color-status-error)]">
+        <div
+          className="font-medium text-[var(--color-status-error)]"
+          title={isCut ? error.firstLine : undefined}
+        >
           {firstLine}
         </div>
-        {error.detail !== error.firstLine && (
+        {(isCut || error.detail !== error.firstLine) && (
           <details className="mt-1">
             <summary className="cursor-pointer text-[var(--color-text-secondary)]">
               Details
@@ -192,6 +234,7 @@ export const CubeGridRegion = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
     const { execution, host } = editorState;
+    const [showSql, setShowSql] = useState(false);
     const darkMode =
       !host.applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
     return (
@@ -199,7 +242,15 @@ export const CubeGridRegion = observer(
         className="flex h-full flex-col bg-[var(--color-bg-panel)]"
         data-testid={LEGEND_CUBE_TEST_ID.GRID_REGION}
       >
-        <CubeGridToolbar editorState={editorState} />
+        <PanelLoadingIndicator isLoading={execution.isRunning} />
+        <CubeGridToolbar
+          editorState={editorState}
+          showSql={showSql}
+          onToggleSql={() => setShowSql(!showSql)}
+        />
+        {showSql && !execution.isRunning && (
+          <CubeSqlPanel editorState={editorState} />
+        )}
         <div className="min-h-0 flex-1">
           {execution.error ? (
             <CubeExecutionError editorState={editorState} />

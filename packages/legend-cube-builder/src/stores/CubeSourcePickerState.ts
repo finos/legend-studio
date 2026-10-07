@@ -75,6 +75,8 @@ export class CubeSourcePickerState {
   isResolving = false;
   /** Why the outline or the table couldn't be loaded, shown in the dialog */
   error: string | undefined;
+  /** Counts Add presses: closing the dialog moves it on, so the pending Add is dropped */
+  private confirmRequest = 0;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
@@ -214,8 +216,11 @@ export class CubeSourcePickerState {
     }
   }
 
+  /** Closes the dialog; a table still being typed is not added */
   close(): void {
     this.isOpen = false;
+    this.confirmRequest++;
+    this.isResolving = false;
   }
 
   *selectModel(model: ModelContext): GeneratorFn<void> {
@@ -301,6 +306,7 @@ export class CubeSourcePickerState {
     const id = editorState.document.query.generateId(
       RelationalTableSource.TYPE,
     );
+    const request = ++this.confirmRequest;
     this.isResolving = true;
     this.error = undefined;
     try {
@@ -310,6 +316,9 @@ export class CubeSourcePickerState {
           [id, [coordinates.database, coordinates.schema, coordinates.table]],
         ]),
       )) as Awaited<ReturnType<typeof editorState.host.engine.resolveSchemas>>;
+      if (request !== this.confirmRequest) {
+        return;
+      }
       const schema = typed.get(id);
       if (schema === undefined || schema instanceof CubeEngineError) {
         throw (
@@ -331,17 +340,29 @@ export class CubeSourcePickerState {
         );
       }
       const query = document.query.add(node);
+      // the first table sets the model and runtime; a cube saved with a model
+      // but no runtime takes the picked runtime and keeps the rest
       editorState.applyDocument(
-        document.context
+        document.context?.runtime !== undefined
           ? document.withQuery(query)
-          : document.withContext({ model, runtime }).withQuery(query),
+          : document
+              .withContext({
+                ...document.context,
+                model: document.context?.model ?? model,
+                runtime,
+              })
+              .withQuery(query),
       );
       this.isOpen = false;
       this.resetFrom('table');
     } catch (error) {
-      this.error = toMessage(error);
+      if (request === this.confirmRequest) {
+        this.error = toMessage(error);
+      }
     } finally {
-      this.isResolving = false;
+      if (request === this.confirmRequest) {
+        this.isResolving = false;
+      }
     }
   }
 

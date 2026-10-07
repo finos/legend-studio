@@ -115,6 +115,7 @@ export class CubeEditorState {
     this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
     if (next.query !== this.document.query) {
       this.hostIssues = new Map();
+      this.execution.clearError();
     }
     this.document = next;
   }

@@ -43,9 +43,11 @@ const CubeNodeRow = observer(
               {node.id}
             </span>
           </div>
-          {errors.map((error) => (
+          {errors.map((error, index) => (
             <div
-              key={error}
+              // two errors can read the same; these lines hold no state
+              // eslint-disable-next-line react/no-array-index-key
+              key={index}
               className="text-sm text-[var(--color-status-error)]"
               role="alert"
             >

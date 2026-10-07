@@ -22,6 +22,7 @@ import {
   ModalFooter,
   ModalFooterButton,
   ModalHeader,
+  PanelLoadingIndicator,
 } from '@finos/legend-art';
 import { getRelationalDisplayName } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
@@ -95,6 +96,9 @@ export const CubeSourcePicker = observer(
           <ModalHeader>
             <div className="modal__title">Add a table</div>
           </ModalHeader>
+          <PanelLoadingIndicator
+            isLoading={picker.isLoadingModel || picker.isResolving}
+          />
           <ModalBody>
             <div className="flex flex-col gap-2">
               <CubePickerStep

@@ -97,6 +97,7 @@ export class CubeExecutionState {
       disabledReasons: computed,
       canExecute: computed,
       execute: flow,
+      clearError: action,
       stop: action,
     });
     this.editorState = editorState;
@@ -172,10 +173,21 @@ export class CubeExecutionState {
       if (this.runController !== controller) {
         return;
       }
+      // rows are read by position, so the engine's columns must be the query's
       if (response.columns.length !== schema.columns.length) {
         throw new CubeEngineError(
           CubeEngineErrorKind.EXECUTION,
           `The engine returned ${response.columns.length} columns, but the query has ${schema.columns.length}`,
+          captureId,
+        );
+      }
+      const misplaced = schema.columns.findIndex(
+        (column, position) => response.columns[position] !== column.name,
+      );
+      if (misplaced !== -1) {
+        throw new CubeEngineError(
+          CubeEngineErrorKind.EXECUTION,
+          `The engine returned the column "${response.columns[misplaced]}" at position ${misplaced + 1}, but the query has "${schema.columns[misplaced]?.name}" there`,
           captureId,
         );
       }
@@ -206,16 +218,25 @@ export class CubeExecutionState {
             );
       // the rows of an earlier run are never shown as this run's
       this.result = undefined;
-      this.error = engineError;
-      this.editorState.setHostIssue(
-        engineError.nodeId ?? captureId,
-        engineError,
-      );
+      // an error belongs to the query it came from: one that changed while
+      // the run was in flight drops it, as an edit after the run would
+      if (this.editorState.document.query === query) {
+        this.error = engineError;
+        this.editorState.setHostIssue(
+          engineError.nodeId ?? captureId,
+          engineError,
+        );
+      }
     } finally {
       if (this.runController === controller) {
         this.runController = undefined;
       }
     }
+  }
+
+  /** Drops the last run's error: it described a query the cube no longer has */
+  clearError(): void {
+    this.error = undefined;
   }
 
   /** Cancels the run in flight; it shows no result and no error */
