@@ -24,7 +24,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a demo cut (S1–S5) done**; next S6–S12                |
+| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a built (S1–S12)**; verifying before the first PR     |
 | Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
@@ -94,8 +94,24 @@ green; `check:ci` and `lint:ci` green). Coverage, honestly:
 - The grid tests were not independently verified, and a few minor mutants survive; both are tracked in
   [ISSUES.md](ISSUES.md).
 
-**Next:** S6–S12 (Undo; Export/Import spec; re-resolve on import; Show Pure; paste a Pure model; telemetry: none;
-checks and a Part B manual check), then the Show Pure fix and the first PR (see Merge plan).
+**M1.8a S6–S12 built (2026-10-07):**
+
+- `8af239b6a` S6 Undo. A restored query is a new object; undoing a change that left the query alone keeps it (PLAN
+  §7.8).
+- `30ee5a0ae` S7 Export/Import spec (dev). A newer-version spec opens read-only; Select still works there (PLAN §7.8).
+- `e9732d989` + `6747f3f40` S8 re-checking tables after an import: drift warnings, saved columns kept on failure,
+  invalid filter values read again. The core gained `diffSchemas`, `rereadFilterValues` and
+  `rereadQueryFilterValues`.
+- `469bb5458` the Show Pure "numbers as 0" fix; `596c1ff52` S9 Show Pure.
+- `bfc6874a5` S10 paste a Pure model. S11 telemetry: none, by decision.
+- `b6b371d04` S12 changeset text.
+
+Checks: 1416 core, 382 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green. Part B, the
+M1.8a part, passed by hand on :9001 + :6300: pick Northwind and StoreRuntime, add ORDERS and CUSTOMERS, Execute (830
+rows), Select (stale), Undo, Show Pure (real literals, e.g. `->limit(1001)`), Export, reload, Import, Execute: the
+same 830 rows. Pressing F9 waits for M1.8b's shortcuts. Importing the slice spec and executing gives the 19 rows.
+
+**Next:** the verification `m18a-verify` (skeptics) over S6–S12, then fixes, then the first PR (see Merge plan).
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
