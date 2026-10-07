@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-export enum LEGEND_CUBE_TEST_ID {
-  EDITOR = 'legend-cube__editor',
-  GRAPH_REGION = 'legend-cube__graph-region',
-  GRID_REGION = 'legend-cube__grid-region',
-  NODE_LIST = 'legend-cube__node-list',
-  NODE_ROW = 'legend-cube__node-row',
-}
+import { CubeEditor } from '@finos/legend-cube-builder';
+import { useState } from 'react';
+import { LegendQueryCubeHost } from '../../stores/cube/LegendQueryCubeHost.js';
+import { useLegendQueryApplicationStore } from '../LegendQueryFrameworkProvider.js';
+
+/** The Cube page in Legend Query, with a host that lasts as long as the visit */
+export const LegendQueryCubePage: React.FC = () => {
+  const applicationStore = useLegendQueryApplicationStore();
+  const [host] = useState(() => new LegendQueryCubeHost(applicationStore));
+  return <CubeEditor host={host} />;
+};

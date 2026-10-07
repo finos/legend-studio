@@ -5,4 +5,4 @@
 '@finos/legend-application-query-bootstrap': patch
 ---
 
-Add the packages of Legend Cube, a canvas-based visual query builder: `@finos/legend-cube` (the host-free domain model) and `@finos/legend-cube-builder` (the UI and the Legend engine adapter). Legend Query mounts a placeholder Legend Cube page at `/query/cube`.
+Add the packages of Legend Cube, a canvas-based visual query builder: `@finos/legend-cube` (the host-free domain model) and `@finos/legend-cube-builder` (the UI and the Legend engine adapter). Legend Query hosts the Legend Cube page at `/query/cube`, loaded on first visit.

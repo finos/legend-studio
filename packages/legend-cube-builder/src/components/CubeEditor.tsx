@@ -14,21 +14,82 @@
  * limitations under the License.
  */
 
+import {
+  ResizablePanel,
+  ResizablePanelGroup,
+  ResizablePanelSplitter,
+} from '@finos/legend-art';
+import type { CubeDocument } from '@finos/legend-cube';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
+import { UNSAVED_CUBE_NAME } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
+import { CubeEditorState } from '../stores/CubeEditorState.js';
+import type { CubeHost } from '../stores/CubeHost.js';
+import { CubeNodeList } from './graph/CubeNodeList.js';
+
+const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
+  const { editorState } = props;
+  return (
+    <div
+      className="flex h-full flex-col bg-[var(--color-bg-panel)]"
+      data-testid={LEGEND_CUBE_TEST_ID.GRAPH_REGION}
+    >
+      <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2">
+        <span className="truncate text-lg font-medium">
+          {editorState.document.name ?? UNSAVED_CUBE_NAME}
+        </span>
+      </div>
+      <div className="min-h-0 flex-1 overflow-auto">
+        <CubeNodeList
+          editorState={editorState}
+          emptyState="No tables yet: add a table to start."
+        />
+      </div>
+    </div>
+  );
+});
+
+const CubeGridRegion: React.FC = () => (
+  <div
+    className="flex h-full items-center justify-center bg-[var(--color-bg-panel)] text-base text-[var(--color-text-secondary)]"
+    data-testid={LEGEND_CUBE_TEST_ID.GRID_REGION}
+  >
+    Execute the query to see its rows.
+  </div>
+);
 
 /**
- * The Legend Cube page. A placeholder for now: the source picker, the canvas
- * and the results grid replace it as they land.
+ * The Legend Cube page: the query above, its results below, both always
+ * shown (PLAN §7.1). The host gives it the engine, the models and the
+ * application store; the page's state lives as long as the page.
  */
-export const CubeEditor: React.FC = () => (
-  <div
-    className="legend-cube flex flex-col items-center justify-center gap-2"
-    data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
-  >
-    <div className="text-2xl font-medium">Legend Cube</div>
-    <div className="text-base">
-      Build queries on a canvas: drag in sources, chain joins and filters, then
-      run them. Under construction.
-    </div>
-  </div>
+export const CubeEditor = observer(
+  (props: {
+    host: CubeHost;
+    /** The cube to open; an empty one by default */
+    initialDocument?: CubeDocument | undefined;
+  }) => {
+    const [editorState] = useState(
+      () => new CubeEditorState(props.host, props.initialDocument),
+    );
+    useEffect(() => () => editorState.dispose(), [editorState]);
+
+    return (
+      <div
+        className="legend-cube flex flex-col bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
+        data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
+      >
+        <ResizablePanelGroup orientation="horizontal">
+          <ResizablePanel minSize={96}>
+            <CubeGraphRegion editorState={editorState} />
+          </ResizablePanel>
+          <ResizablePanelSplitter />
+          <ResizablePanel minSize={96}>
+            <CubeGridRegion />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
+    );
+  },
 );
