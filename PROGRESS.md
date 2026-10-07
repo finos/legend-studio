@@ -24,7 +24,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. Next: **M1.8a**                                             |
+| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a demo cut (S1–S5) done**; next S6–S12                |
 | Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
 
@@ -84,8 +84,20 @@ Verification `m18-democut-verify` (run `wf_97b39b15-ae7`, `legend-cube-evidence/
 a run's error now belongs to its query (an edit clears it; a run that fails after an edit shows nothing), closing
 the picker drops a pending Add, a cube with a model but no runtime keeps the picked runtime, the grid checks column
 names as well as the count, long one-line errors keep Details, duplicate error keys, loading bars beside the pending
-labels, and Show SQL. The missing tests are being written by `m18-democut-tests` (run `wf_511e7e31-7cb`), each
-checked against its mutant. **Next:** commit those tests, then S6–S12.
+labels, and Show SQL. The missing tests are committed in `caf705d2b` (run `m18-democut-tests`, `wf_511e7e31-7cb`,
+`legend-cube-evidence/m18-democut-tests-result.json`; 329 builder, 1404 core, 248 Query and 271 engine-roundtrip tests
+green; `check:ci` and `lint:ci` green). Coverage, honestly:
+
+- Query, editor, state and picker tests were each mutation-checked by an independent verifier. Its follow-ups were
+  done by hand: the Query host test now also checks the client name, the state repair added the outline-by-reference
+  and replaced-capture-node tests, and a grid test pins the run's headers on stale rows (the `R53liveHeaders` mutant).
+- The grid group's verifier (`verify:grid`) never ran (session limit), so the grid tests were checked only by their
+  writer, against the writer's own mutants.
+- Known surviving mutants (minor, not blocking): `ADDNOOPWHILERUNNING` (Add table is never clicked mid-run),
+  `PICKERBARNOMODEL` (the picker bar's model-loading half), #35's jsdom half (`M72emptySchema`), and n12's picker
+  call sites (an unexpected rejection in the picker).
+
+**Next:** the user is choosing the merge cut (PR scope) before S6–S12; see "Merge planning" below.
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
@@ -93,6 +105,28 @@ checked against its mutant. **Next:** commit those tests, then S6–S12.
 - **Asked at the start of M1.8b:** the palette's source item, the context after the last source is removed, Filter
   Apply with a blank row, a side-panel edit whose node changed underneath, shortcuts while a Cube dialog is open, and
   the per-column data for the Join "type unknown" warning (all in the requirements result).
+
+## Merge planning (raised 2026-10-07)
+
+The user wants to merge so that new sources and new operations can be built in parallel. To decide:
+
+- **Merge cut.** `/query/cube` is mounted with no flag (D11), so whatever merges ships in Query.
+  - Merge now (demo cut): neither deferred bug can be reached.
+  - Merge after M1.8a: S9 (Show Pure) makes the "numbers as 0" bug visible, so fix it first.
+  - Merge after M1.8b: adds the canvas and the editor shell.
+- **Split the PR?** About 39k lines in 45 commits. It could go as `@finos/legend-cube` first, then the builder and
+  the Query host.
+- **Working docs.** PLAN.md, PROGRESS.md and LEGEND-GRAPH-ISSUES.md sit at the repo root, and PROGRESS.md holds
+  absolute local paths. Move them under `docs/` (without the local paths) or leave them out of the PR.
+- **Before the PR:** rebase on `origin/master` (15 commits behind on 2026-10-07), then rerun
+  `GITHUB_BASE_REF=master yarn check:ci`. The first CI run is the first time the engine-roundtrip group runs on the
+  docker engine image.
+- **Parallel work.**
+  - Operations can be built headless now: a node class, an emitter, a codec and a `NodeRegistry` entry, plus `v1/`
+    serializer support and engine tests.
+  - There is no UI home for an operation's editor until M1.8b's editor shell, so define that panel contract before
+    the work forks.
+  - New sources wait on the entry-points and sources-modal design (before M3) and on M2.0.
 
 ## Open items
 
