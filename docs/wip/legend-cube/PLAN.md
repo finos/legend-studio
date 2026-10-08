@@ -2144,27 +2144,67 @@ In [1, 4]`, captured and executed.
 
 **Part B: manual, in the UI**
 
-Prerequisites, detailed in [PROGRESS.md › Environment](PROGRESS.md):
+Prerequisites:
 
-- An engine on :6300, either IntelliJ (`org.finos.legend.engine.server.Server`, no arguments) or the repo's docker
-  compose: `cd fixtures/legend-docker-setup/grammar-test-setup && docker compose --file=grammar-test-setup-docker-compose.yml up --detach`.
-  CORS from `localhost:9001` was verified for the IntelliJ engine only; check it once for docker.
-- `yarn dev:ts` and `yarn dev:query`.
+- **An engine on :6300** that allows LocalH2 (the bundled model sets up Northwind in H2 through `testDataSetupSqls`).
+  Either IntelliJ (`org.finos.legend.engine.server.Server`, no arguments) or the repo's docker compose:
+  `cd fixtures/legend-docker-setup/grammar-test-setup && docker compose --file=grammar-test-setup-docker-compose.yml up --detach`.
+  Check it with `curl -s localhost:6300/api/server/v1/info`, and record its `git.commit.id`.
+- **CORS** from `localhost:9001` is verified for the IntelliJ engine only. For docker it is waived (user, 2026-10-08):
+  the record says it is unchecked.
+- **The dev server:** run `yarn build` once (`yarn dev:ts` doesn't build the stylesheets, `lib/index.css`), then
+  `yarn dev:ts` and `yarn dev:query`.
+- **Chrome**, with its version recorded. Other browsers are untested (ISSUES.md).
 
 The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.2.4).
 
-1. Open `http://localhost:9001/query/cube` and pick "Northwind (Cube fixture)" and `StoreRuntime`.
-2. Add `ORDERS` and `CUSTOMERS` from the picker. They land with schemas; the source panel shows `Varchar(5)?`,
-   `SmallInt`, …
-3. Drag Join onto the canvas and connect `ORDERS` → Left and `CUSTOMERS` → Right. The join shows incomplete, then
-   invalid ("Left join columns cannot be empty.").
-4. Set the join columns. The node turns valid and Left/Right labels are visible.
-5. Drag Filter onto the join (it splices in after it) and build the three rules. Operator lists differ by type, and
-   an invalid value is flagged inline.
-6. Make the filter the capture node (Ctrl-click, or Cmd-click on macOS, where Ctrl-click opens the context menu;
-   or Select in its context menu or editor header) and press F9. The grid shows 19 rows.
-7. Edit the filter: the grid marks results stale. Undo restores the previous state. Show Pure displays the lambda.
-8. Export the spec, reload the page, import it and press F9. The same graph and the same results come back.
+1. Open `http://localhost:9001/query/cube` and open the picker: **Add table**, the canvas's "add a table" link, or the
+   palette's **Relational Database Table**. Model ("Northwind (Cube fixture)"), Database and Runtime
+   (`showcase::northwind::mapping::StoreRuntime`) fill themselves; choose Schema **NORTHWIND** (the fixture also has
+   CUBETEST).
+2. Add **ORDERS** (14 columns), then **CUSTOMERS** (11 columns), one per **Add**. Both land on the canvas with their
+   schemas; ORDERS, the first table, has the accent ring of the node Execute runs. Click ORDERS: the side panel's
+   Columns table shows `ORDER_ID SmallInt` and `CUSTOMER_ID Varchar(5)?` (CUSTOMERS' own `CUSTOMER_ID` is its key,
+   with no `?`).
+3. Drag **Join Another Input** from the palette onto empty canvas. It shows incomplete (a dashed amber border). Drag
+   from ORDERS' output handle (its right side) to the Join's upper input handle (Left), and from CUSTOMERS' to the
+   lower one (Right). The Join now shows invalid (a red border); its tooltip and its editor's Problems list say
+   "Left join columns cannot be empty."
+4. Click the Join. Set **Join type** to **Inner** (a new Join is Left Outer, which gives the same 19 rows here, so the
+   row count can't catch it), click **Add join columns**, pick `CUSTOMER_ID` on both sides and **Apply**. The Join
+   turns valid, and its two input edges are labelled Left and Right.
+5. Drag **Filter by Column** onto the Join: it splices in after it. Click the Filter; it has one blank condition. Build
+   three rules with **Add condition**, each a column, an operator and a value: `SHIP_COUNTRY` **is** `France`,
+   `ORDER_DATE` **is greater than or equal** `1997-01-01`, and `EMPLOYEE_ID` **is in list of** `1`, `4`.
+   - The operator lists differ for the three columns' types.
+   - A value is "(blank)" until clicked; type it, then Enter or click away. The date is the browser's date field. An
+     In list takes one value per "Add filter value" entry.
+   - Typing `abc` for `EMPLOYEE_ID` is flagged inline: a red border, and the tooltip says
+     `Filter value "abc" is not a valid SmallInt.` Remove it.
+   - **Apply** stores the three rules as one step.
+6. Make the Filter the node Execute runs: Cmd-click it on macOS (Ctrl-click opens the context menu there), Ctrl-click
+   elsewhere, or **Select** in its context menu or editor header (which then reads "(Selected)"). Press **F9** (Fn+F9
+   on some Mac keyboards) or click **Execute**. The grid toolbar shows "19 rows in …", the `ORDER_ID` set of §8.5.
+   Record how the node was selected and how F9 was pressed.
+7. Edit the filter (e.g. remove a rule) and **Apply**: the toolbar shows "Stale: execute again to refresh". Click
+   **Undo** (or Cmd/Ctrl+Z with the focus outside a text field and no Cube dialog open): the three rules come back,
+   and the rows stay marked stale, by design (§7.8: a restored query is a new object). **Show Pure** opens "Pure
+   query" with the lambda, ending in `->limit(1001)` at the default 1000 rows.
+8. **Export (dev)**, then **Download** (`<name>.cube.json`), and close. Reload the page: the cube is gone. **Import
+   (dev)**, choose the file under **Spec file** (or paste it as Cube spec), then **Import**. Import never executes:
+   the same graph comes back (`relational101`, `relational102`, `join101`, `filter101`, with the Filter still
+   selected), and **F9** gives the same 19 rows. A second Export gives the same text as the downloaded file.
+
+Also check and record:
+
+- **Canvas fit:** every node stays inside the canvas and the minimap covers none, after each node is added, after the
+  Join is connected and the Filter spliced in, after the editor panel opens and closes, after Import, and after
+  height-only changes: dragging the splitter between the graph and the grid, and changing the window's height.
+- **No watermark** on the grid (D3: `localhost` shows none).
+- **The console before the first F9.** Once the grid has rendered, `legend-lego`'s DataGrid turns `console.error`
+  into `console.debug` (Appendix B), so read it before then. Expected: React 19's "Accessing element.ref was removed"
+  from `react-reflex` when the editor panel opens or a splitter moves (Appendix B), and the Query ServiceWorker's
+  "fetching the script" errors. Anything else is recorded.
 
 ### 11.3 After the slice (recommended order, outline)
 
