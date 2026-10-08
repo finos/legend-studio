@@ -2261,6 +2261,12 @@ and sources modal are designed. M3 can run in parallel if desired.
 
 1. **Entry points, sources modal and final look** (D7 follow-up, M3): which Legend Query surfaces link to `/cube`;
    source-modal UX (tabs per kind vs search-first catalog); whether to adopt Data Cube's floating-window style.
+   **Where the node editor opens** (user, 2026-10-08, to decide in M3): the original app opens a small floating
+   editor anchored just below the node (spec §17.5's popover), where Cube has a side panel (§7.1). Going back means a
+   floating host for the same editors (§7.4 keeps them independent of where they are shown), with the spec's rule
+   that clicking outside never closes the editor while a dropdown, picker or dialog opened from it is open, staying on
+   screen near the canvas edges, and scrolling a tall editor. Meanwhile, new editors must work in either host: they
+   don't rely on the side panel's full height.
 2. **Sort not at the sink:** warn (recommended), drop silently, or allow?
 3. **Count rows:** add an explicit "Count rows" aggregation alongside the non-null Count?
 4. **Views and tables with `BINARY` columns** in the picker. v1 default (§6.2.6): views hidden; `BINARY` tables shown as "unavailable" and not selectable. Revisit with the M3 sources modal.
