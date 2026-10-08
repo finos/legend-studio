@@ -1,5 +1,7 @@
 # @finos/legend-server-sdlc
 
+## 5.5.1
+
 ## 5.5.0
 
 ### Minor Changes
