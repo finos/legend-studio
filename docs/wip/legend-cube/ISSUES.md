@@ -18,6 +18,17 @@
 - **Suggested fix:** in `V1_CubeLambdaSerializer`, write a decimal literal's value as a JSON string (the engine's
   `CDecimal` reads it with `new BigDecimal`). Verify it on the engine and add an engine-roundtrip test.
 
+### The row limit accepts hexadecimal and exponent text
+
+- **Found:** M2's requirements and its first verification (2026-10-08). M1 page code, so not fixed in M2's Limit
+  step.
+- **What:** the grid toolbar's row limit is checked with `Number(text.trim())` (`getRowLimitError` in
+  `LegendCubeLabels.ts`) and set with `Number(draft.trim())` (`CubeGridRegion.tsx`), so `0x10` sets 16, `1e3` 1000,
+  `0b11` 3 and `1.0` 1, where a user typing them likely meant something else.
+- **Suggested fix:** read the text once with `parseWholeNumberText` (`stores/editors/CubeIntegerText.ts`, which the
+  operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
+  Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
+
 ## Test gaps
 
 None hides a known bug.
@@ -47,3 +58,7 @@ None hides a known bug.
   the graph and grid region keeps zero width, even after the window grows, until the page reloads. Not seen in a
   normal browser tab. Suggested check: whether `CubeEditor`'s resizable layout should re-measure on a resize, or
   render only once its container has a size.
+- **Long column names on Postgres (💭, not probed).** A Rename (M2.9) accepts new names of up to 128 code points
+  (PLAN §11.4), but Postgres cuts identifiers at 63 bytes, so two long names could collide or be cut once a Postgres
+  runtime is in use. Suggested check: plan a rename to a name of 64 bytes or more on Postgres, and lower the cap per
+  database if needed.

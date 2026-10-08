@@ -33,6 +33,10 @@ as one undo step (**Cancel** drops it).
   example.
 - Give each control a stable `aria-label` (numbered per row in a list, e.g. `Sort column 2`): the tests and the
   browser rehearsal find controls by it.
+- An editor must work in either host: today's side panel, or a floating editor anchored under the node, which M3
+  decides on (PLAN §11.4, §12.2 question 1). Don't rely on the panel's height: a list scrolls on its own (a
+  `max-height` with `overflow: auto`), column and direction pickers stay native `<select>` elements, as
+  `CubeColumnPicker` is, and no editor measures the panel or reads its size.
 - Register it in `CUBE_NODE_EDITORS` (`src/components/editors/CubeNodeEditorRegistry.ts`).
 
 ## 3. Help text

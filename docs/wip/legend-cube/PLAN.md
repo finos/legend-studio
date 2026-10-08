@@ -2245,7 +2245,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 **Settled at the start of M2** (user, 2026-10-08, all on the requirements' recommendation):
 
-- **Base.** `cubeV1` had been rebased onto the 0.0.2 release (`6041ba413`) since `cube-ops` was created, and
+- **Base.** `cubeV1` had been rebased onto master `6041ba413` (#5631, just after the 0.0.2 release `43b06778a`,
+  #5628) since `cube-ops` was created, and
   `cube-ops` had no commits of its own, so it was re-pointed at `cubeV1` (`b9923ed28`): the signed-off M1.9 code, its
   guides and the exports 0.0.2 published. #5634 was squash-merged the same day (`3260216a6`, the tree of
   `0807adb12`), and M2 was rebased onto master with `git rebase --onto origin/master b9923ed28 cube-ops`. The base's
@@ -2282,8 +2283,12 @@ This subsection overrides the sections it names until they are updated (see "Sup
   - Distinct padded on SQL Server: `->distinct()->extend(~cube_d: x | 1)->select(<input columns>)`.
 
   Every other database keeps the native form, and so does an unknown type. The workarounds are data
-  (`CubeDialects.ts`); Spanner never gets the row-number form (no window columns). An engine issue is filed for the
-  SQL Server distinct.
+  (`CubeDialects.ts`, read through a `Map`, never a plain object keyed by a model-supplied name); BigQuery joins the
+  table only after a plan probe, and Spanner never gets the row-number form (no window columns). The outline's
+  runtimes gain an optional `connections` list of `{storePath, databaseType}` (a list, never a record keyed by store
+  path). Execute and Show Pure set their run or request state before they wait for the outline, and check it after,
+  so a second F9 is ignored and Stop can abort while the outline loads. An engine issue is filed for the SQL Server
+  distinct.
 
 - **Slice's wording:** the canvas reads `Take rows 10 to 20 (20 excluded)` (`Take rows 10 to (blank)` when the stop
   is missing); the help text reads "Reduces the number of rows in the previous data set, keeping only the rows from
@@ -2302,7 +2307,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
   JS defaults (a default parameter also replaces an explicit `undefined`); the defaults (10; 10 and 20) live only in
   `create(id)`. A cleared field is `undefined` and invalid ("Size must be a positive whole number."), never the
   default. Size 0, Drop 0 and an empty Slice stay invalid, as the spec says, though the engine accepts them. Slice
-  checks each bound, then `start < stop` (the engine plans a negative fetch otherwise).
+  checks each bound, then `start < stop` (the engine plans a negative fetch otherwise); it has one edit method,
+  `withRange(start, stop)`.
 - **Sort.** Directions `ASC`/`DESC`, labelled Asc/Desc. "Sorts cannot be empty."; each column must exist; Cube
   adds "Sort column "X" of type Variant cannot be sorted." (VARIANT and OPAQUE, through one exported
   `isSortableType`, also used by the editor's picker, the Sort by quick action and the row-number fallback's default
@@ -2338,13 +2344,16 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - **Emission.** New roles: `take` (a Limit node, distinct from the capture's `limit`), `drop`, `slice`, `distinct`,
   `sort`, `sortKey` (stamped with the declaring Sort), `captureSort`, `rowNumber`, `rowRange`; Restrict reuses
   `select`, Rename `rename`. `EmitContext` gains optional `inputOrder` and `databaseType`, `ExecutionOptions` an
-  optional `databaseType`, and `emitRelation` an options bag that keeps typing (no sort, no dialect) apart from
-  execution. Size literals are plain digits. Temporary columns (`cube_rn`, `cube_d`) get a numeric suffix until no
+  optional `databaseType`, the builder's `CubeOutlineRuntime` an optional `connections`, and `emitRelation` an
+  options bag that keeps typing (no sort, no dialect) apart from execution. Size literals are plain digits. Temporary columns (`cube_rn`, `cube_d`) get a numeric suffix until no
   input column has the name. The debug printer braces colSpec lambdas with several parameters (the bare form doesn't
   parse). The `v1/` serializer needs no change.
 - **Editors.** Distinct registers an editor and no draft (PLAN §7.4 item 2 covers a type with nothing to edit) and
   is listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`. Integer fields keep the typed text and read only `^[+-]?\d+$`
-  (empty is cleared, never a default). Sort and Rename start with one blank row. New editors work in either host
+  (empty is cleared, never a default); Enter and Escape get no special handling, and Ctrl+Z is the field's own undo.
+  Sort and Rename start with one blank row. Controls are found by stable labels: "Rows to keep", "Rows to drop",
+  "Start row index", "Stop row index", "Sort column <n>", "Sort direction <n>", "Old column <n>", "New column name
+  <n>", "Columns to keep". New editors work in either host
   (§12.2 question 1): their lists scroll on their own, pickers stay native selects, and nothing measures the panel.
   Icons from legend-art: Sort `SortIcon`, Restrict `DataCubeIcon.TableColumns`, Rename `PencilIcon`, Distinct
   `CompressIcon`, Limit `AlignTopIcon`, Drop `AlignBottomIcon`, Slice `AlignMiddleIcon`. Column tracing for the
@@ -2365,25 +2374,25 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 **Steps:**
 
-| Step  | Deliverable                                                                                                       |
-| ----- | ----------------------------------------------------------------------------------------------------------------- |
-| M2.1  | This subsection and PROGRESS-M2.md (docs only)                                                                    |
-| M2.2  | Limit in the core: node, codec, emitter                                                                           |
-| M2.3  | Limit in the builder (draft, integer field, editor, help text, icon) and registered                               |
-| M2.4  | Limit on the engine and in the browser: the contract proven                                                       |
-| M2.5  | Drop (native)                                                                                                     |
-| M2.6  | Slice (native)                                                                                                    |
-| M2.7  | Distinct (an editor without settings)                                                                             |
-| M2.8  | Restrict                                                                                                          |
-| M2.9  | Rename, with the column-name rule and the collision fix                                                           |
-| M2.10 | Join rename autofix                                                                                               |
-| M2.11 | Sort, the row-order module, and the ORDER BY where the order is used                                              |
-| M2.12 | The Sort warning                                                                                                  |
-| M2.13 | Database workarounds: row numbers for Drop and Slice, padded Distinct on SQL Server, the runtime's database types |
-| M2.14 | Grid quick actions: Sort by and Filter by                                                                         |
-| M2.15 | Docs, sample typing on the engine, changeset text                                                                 |
-| M2.16 | Verification (reviewers and a skeptic per finding) and the browser rehearsal                                      |
-| M2.17 | Rebase on the latest master, fold the supersessions below into the plan, PR when the user asks                    |
+| Step  | Deliverable                                                                                                                                               |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M2.1  | This subsection and PROGRESS-M2.md (docs only)                                                                                                            |
+| M2.2  | Limit in the core: node, codec, emitter                                                                                                                   |
+| M2.3  | Limit in the builder (draft, integer field, editor, help text, icon) and registered                                                                       |
+| M2.4  | Limit on the engine and in the browser: the contract proven                                                                                               |
+| M2.5  | Drop (native)                                                                                                                                             |
+| M2.6  | Slice (native)                                                                                                                                            |
+| M2.7  | Distinct (an editor without settings)                                                                                                                     |
+| M2.8  | Restrict                                                                                                                                                  |
+| M2.9  | Rename, with the column-name rule and the collision fix                                                                                                   |
+| M2.10 | Join rename autofix                                                                                                                                       |
+| M2.11 | Sort, the row-order module, and the ORDER BY where the order is used                                                                                      |
+| M2.12 | The Sort warning                                                                                                                                          |
+| M2.13 | Database workarounds: row numbers for Drop and Slice, padded Distinct on SQL Server, the runtime's database types                                         |
+| M2.14 | Grid quick actions: Sort by and Filter by                                                                                                                 |
+| M2.15 | Docs, sample typing on the engine, changeset text                                                                                                         |
+| M2.16 | Verification (reviewers and a skeptic per finding) and the browser rehearsal                                                                              |
+| M2.17 | Rebase on the latest master, fold the supersessions below into the plan, re-apply `b9923ed28` (the DuckDB WASM note, §12.2 item 9), PR when the user asks |
 
 **Supersessions** (applied to the sections they change in one docs commit at the end of M2, M2.17):
 
@@ -2397,7 +2406,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - Appendix A: §7.1 sortable types and duplicates, §7.4 Restrict's labels, §7.5 no backslash, §7.7/§7.9 defaults in
   `create`, §7.9 wording, §7.11 key rewrite, §12.4 client-side grid. Appendix B: rename and select duplicates fail with
   HTTP 500 and no source location, SQL Server's `top N distinct`, MemSQL rewriting Drop over the first sort key only.
-- PROGRESS.md's "operations start on a branch from master" note: M2 starts from `cubeV1` (above).
+- PROGRESS.md's "In parallel" note: M1.9 merged (#5634, `3260216a6`), so `cubeV1` now holds only the DuckDB WASM
+  note (`b9923ed28`); M2 runs on `cube-ops` from master, with its status in PROGRESS-M2.md.
 
 ---
 
