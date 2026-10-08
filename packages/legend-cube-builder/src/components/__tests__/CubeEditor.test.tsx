@@ -118,6 +118,12 @@ const renderPage = async (
   );
 };
 
+/** The group that stacks the graph above the results; the node editor sits beside it, in another */
+const stackedGroup = (): HTMLElement | undefined =>
+  screen
+    .queryAllByTestId(mockPanelGroupTestId)
+    .find((group) => group.getAttribute('data-orientation') === 'horizontal');
+
 /** A cube that already holds ORDERS, so the page has no empty state */
 const withOrders = (): CubeDocument =>
   new CubeDocument({
@@ -155,8 +161,7 @@ describe('Cube page', () => {
     expect(within(graph).getByText(/No tables yet/u)).toBeDefined();
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
     // stacked, the query first, in one resizable group
-    const group = getByTestId(mockPanelGroupTestId);
-    expect(group.getAttribute('data-orientation')).toBe('horizontal');
+    const group = stackedGroup() as HTMLElement;
     expect(
       [
         ...group.querySelectorAll(
@@ -186,7 +191,7 @@ describe('Cube page', () => {
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
     // the header stays, above the results, outside any resizable group
     expect(within(graph()).getByText('Add table')).toBeDefined();
-    expect(screen.queryByTestId(mockPanelGroupTestId)).toBeNull();
+    expect(stackedGroup()).toBeUndefined();
     expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
     expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
     expect(within(toolbar()).getByText(/rows? in/u)).toBeDefined();

@@ -1130,6 +1130,40 @@ All gestures from §17.4 are kept:
 - **If an upstream node is invalid,** the panel shows the upstream error instead of the editor (§17.5).
 - **Column pickers** only offer columns from the actual input schema(s). Each column shows its type label and
   nullable marker.
+- **Following the cube** (built in M1.8b S17, narrowing the user's answer to the panel with edits):
+  - a panel with unapplied edits whose node is replaced or removed underneath (Undo, a re-check, Remove) closes
+    without applying them and says so in the graph region;
+  - a panel without edits shows the replacing node (e.g. after Refresh, or after Undo of its own Apply), and closes
+    silently when the node is gone;
+  - Import always closes it without applying, since another cube can hold a node with the same id.
+- **Closing applies** (spec §17.5): clicking another node, or the panel's close button, applies first. Cancel drops
+  the edits. A read-only cube never applies.
+
+**The editor contract, for a new node type** (M1.8b S17). Every file is in `@finos/legend-cube-builder`:
+
+1. `stores/editors/Cube<Type>Draft.ts`: a `CubeNodeDraft<N>` subclass, a MobX class holding the editor's state.
+   - Its `build()` returns the node Apply stores, or `original` itself while nothing was edited.
+   - The panel compares the codec encodings (`definition.spec.encode` plus `rest`), so a node that saves the same
+     counts as no change and adds no undo step.
+   - It is made once per open and again after each Apply, so keys made in it (e.g. filter rows) stay stable.
+2. Register its factory in `CUBE_NODE_DRAFT_FACTORIES` (`stores/editors/CubeNodeDraftRegistry.ts`).
+3. `components/editors/Cube<Type>Editor.tsx`: an observer component taking `CubeNodeEditorProps`, registered in
+   `CUBE_NODE_EDITORS` (`components/editors/CubeNodeEditorRegistry.ts`). It gets:
+
+   - `draft`;
+   - `inputSchemas`, in port order and all present: while an input is missing or invalid, the panel shows why
+     instead of the editor;
+   - `readOnly`;
+   - `editorState`, for reads such as the model outline.
+
+   It changes only its draft, never the document. The panel lists the edited node's problems
+   (`node.validate`) under it, and owns Apply and Cancel.
+
+4. The help text, in `CUBE_NODE_HELP_TEXT` (`__lib__/LegendCubeHelpText.ts`).
+5. A test that every registered type has all of these (`CubeNodeEditorRegistry.test.ts`, from S19).
+
+The palette, the context menu and the canvas need nothing more: they read the core `NodeRegistry` (label, icon
+name, beta). A new icon name maps to an icon in `components/CubeNodeIcon.tsx`.
 
 ### 7.5 Join editor
 
@@ -1232,7 +1266,8 @@ history. Domain objects are immutable but not all frozen (only `Query`'s arrays 
   change: no undo entry, and the node keeps "Filter cannot be empty."
 - **A side-panel edit whose node changed underneath:** the panel records the key of the node it opened from. If that
   node is gone or its key changed (Undo, Remove, Import, re-check), the panel closes, discards its buffer and shows
-  a short notice.
+  a short notice. The question was about a panel with unapplied edits; a panel without edits follows the node
+  instead (§7.4).
 - **Shortcuts while a Cube dialog is open:** Cube's command triggers return false while any Cube dialog is open
   (picker, Import, Show Pure). Picker and Import results are also re-checked when they are applied.
 - **Join "type unknown" warning:** `CubeOutlineTable` gains `untypedColumns`, filled in `V1_CubeModelOutlineBuilder`

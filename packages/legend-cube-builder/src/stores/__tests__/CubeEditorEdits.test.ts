@@ -290,6 +290,48 @@ describe('Swapping inputs', () => {
   });
 });
 
+describe('Refreshing a source', () => {
+  test("Drops a table's earlier warning once it is found unchanged", async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const state = new CubeEditorState(
+      host,
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS)],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    const source = state.document.query.getNode('relational101');
+    fake.resolveSchemas.mockRejectedValueOnce(
+      new CubeEngineError(CubeEngineErrorKind.NETWORK, 'Engine unreachable'),
+    );
+    await flowResult(state.refreshSource('relational101'));
+    expect(state.warnings.get(source?.key ?? 0)).toHaveLength(1);
+    await flowResult(state.refreshSource('relational101'));
+    expect(state.document.query.getNode('relational101')).toBe(source);
+    expect(state.warnings.get(source?.key ?? 0)).toBeUndefined();
+    expect(state.history).toHaveLength(0);
+  });
+
+  test('Types only the refreshed source, and nothing that is not a table', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const state = new CubeEditorState(
+      host,
+      new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
+    );
+    await flowResult(state.refreshSource('relational102'));
+    expect([...(fake.resolveSchemas.mock.calls[0]?.[1].keys() ?? [])]).toEqual([
+      'relational102',
+    ]);
+    await flowResult(state.refreshSource('join101'));
+    await flowResult(state.refreshSource('nothing101'));
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('Showing and hiding the graph', () => {
   test('Saves it in the cube, keeping the rest of the presentation, as an undoable edit', () => {
     const presentationRest = { zoom: 2 };

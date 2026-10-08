@@ -38,6 +38,7 @@ import {
   observable,
 } from 'mobx';
 import {
+  CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
   getSchemaDriftWarning,
   getSourceRecheckWarning,
@@ -122,6 +123,7 @@ export class CubeEditorState {
       undo: action,
       importDocument: action,
       reresolveSources: flow,
+      refreshSource: flow,
       applyQuery: action,
       select: action,
       connect: action,
@@ -208,15 +210,15 @@ export class CubeEditorState {
 
   /**
    * Opens another cube in place of this one, e.g. an imported spec: one undo
-   * step. Stops any run and any table being added, closes the node editor,
-   * and drops the last run's rows and errors, which belong to the cube
-   * before. Never runs the cube.
+   * step. Stops any run and any table being added, closes the node editor
+   * without applying its edits, and drops the last run's rows and errors,
+   * which belong to the cube before. Never runs the cube.
    */
   importDocument(next: CubeDocument, readOnly: boolean): void {
     this.pushHistory();
     this.execution.reset();
     this.sourcePicker.close();
-    this.nodeEditor.close();
+    this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
     this.hostIssues = new Map();
     this.warnings = new Map();
     this.document = next;
@@ -241,12 +243,18 @@ export class CubeEditorState {
    * meanwhile, so undoing an edit made while the tables were typed keeps
    * them typed. A source the user changed meanwhile is a new object, and is
    * left alone.
+   *
+   * `only` types just these sources of the cube shown, e.g. one Refresh. A
+   * table found unchanged loses any earlier warning.
    */
-  *reresolveSources(): GeneratorFn<void> {
+  *reresolveSources(
+    only?: readonly RelationalTableSource[],
+  ): GeneratorFn<void> {
     const { context, query } = this.document;
-    const sources = query.nodes.filter(
+    const sources = (only ?? query.nodes).filter(
       (node): node is RelationalTableSource =>
-        node instanceof RelationalTableSource,
+        node instanceof RelationalTableSource &&
+        query.getNode(node.id) === node,
     );
     if (!context || !sources.length) {
       return;
@@ -309,6 +317,7 @@ export class CubeEditorState {
         return;
       }
       if (saved?.isIdenticalTo(answer)) {
+        warnings.delete(source.key);
         return;
       }
       const resolved = source.withResolution({
@@ -348,6 +357,18 @@ export class CubeEditorState {
     const next = check(this.document);
     if (next !== this.document) {
       this.replaceDocument(next);
+    }
+  }
+
+  /**
+   * Types a table again with the engine, from its Source panel (spec §17.6),
+   * as a re-check after an import does: no undo step, nothing changes when
+   * its columns are the same, and a warning lists any change.
+   */
+  *refreshSource(nodeId: string): GeneratorFn<void> {
+    const source = this.document.query.getNode(nodeId);
+    if (source instanceof RelationalTableSource) {
+      yield flowResult(this.reresolveSources([source]));
     }
   }
 
@@ -486,9 +507,7 @@ export class CubeEditorState {
     if (!this.canRemoveNode(nodeId)) {
       return;
     }
-    if (this.nodeEditor.nodeId === nodeId) {
-      this.nodeEditor.close();
-    }
+    // the node editor, if it shows the node, closes by itself
     const query = this.document.query.remove(nodeId);
     this.applyDocument(
       query.isEmpty
@@ -562,5 +581,6 @@ export class CubeEditorState {
   /** Stops any run; call when the page closes */
   dispose(): void {
     this.execution.stop();
+    this.nodeEditor.dispose();
   }
 }

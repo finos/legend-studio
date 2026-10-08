@@ -45,6 +45,7 @@ export enum CUBE_PENDING_LABEL {
   RESOLVING_SOURCE = 'resolving source',
   EXECUTING_QUERY = 'executing query',
   RENDERING_QUERY = 'rendering query',
+  REFRESHING_SOURCE = 'refreshing source',
 }
 
 export const getRowLimitError = (text: string): string | undefined => {
@@ -75,7 +76,8 @@ export const CUBE_TABLE_FLAG_LABELS: Readonly<
   },
 };
 
-const describeColumnType = (column: SchemaColumn): string =>
+/** A column's type as the editors show it: its display name, `?` when it takes NULL, e.g. `Varchar(5)?` */
+export const getColumnTypeLabel = (column: SchemaColumn): string =>
   `${column.type.displayName}${column.nullable ? '?' : ''}`;
 
 const listColumns = (columns: readonly SchemaColumn[]): string =>
@@ -95,7 +97,7 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
           `changed ${diff.changed
             .map(
               (change) =>
-                `${change.after.name} (${describeColumnType(change.before)} to ${describeColumnType(change.after)})`,
+                `${change.after.name} (${getColumnTypeLabel(change.before)} to ${getColumnTypeLabel(change.after)})`,
             )
             .join(', ')}`,
         ]
@@ -103,6 +105,27 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
     ...(diff.reordered ? ['reordered its columns'] : []),
   ];
   return `This table changed since the cube was saved: ${changes.join('; ')}`;
+};
+
+/** Why the node editor closed without applying its edits */
+export enum CUBE_EDITOR_CLOSED_REASON {
+  NODE_CHANGED = 'nodeChanged',
+  NODE_REMOVED = 'nodeRemoved',
+  CUBE_REPLACED = 'cubeReplaced',
+}
+
+/** The notice of a node editor that closed by itself, dropping its edits (M1.8b) */
+export const getEditorClosedNotice = (
+  nodeId: string,
+  reason: CUBE_EDITOR_CLOSED_REASON,
+): string => {
+  const cause =
+    reason === CUBE_EDITOR_CLOSED_REASON.NODE_CHANGED
+      ? `${nodeId} changed`
+      : reason === CUBE_EDITOR_CLOSED_REASON.NODE_REMOVED
+        ? `${nodeId} was removed`
+        : 'Another cube was opened';
+  return `${cause}, so the editor of ${nodeId} closed without applying its changes.`;
 };
 
 /** The warning on a source with saved columns that the engine couldn't type again */

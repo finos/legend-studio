@@ -23,6 +23,8 @@ export enum LEGEND_CUBE_TEST_ID {
   CANVAS_EDGE_LABEL = 'legend-cube__canvas-edge-label',
   PALETTE = 'legend-cube__palette',
   PALETTE_ITEM = 'legend-cube__palette-item',
+  NODE_EDITOR = 'legend-cube__node-editor',
+  EDITOR_NOTICE = 'legend-cube__editor-notice',
   RESULT_GRID = 'legend-cube__result-grid',
   GRID_TOOLBAR = 'legend-cube__grid-toolbar',
   EXECUTION_ERROR = 'legend-cube__execution-error',

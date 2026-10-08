@@ -14,28 +14,90 @@
  * limitations under the License.
  */
 
-import type { QueryNode } from '@finos/legend-cube';
-import { action, computed, makeObservable, observable } from 'mobx';
+import type { NodeRegistry, QueryNode } from '@finos/legend-cube';
+import {
+  action,
+  computed,
+  type IReactionDisposer,
+  makeObservable,
+  observable,
+  reaction,
+} from 'mobx';
+import {
+  CUBE_EDITOR_CLOSED_REASON,
+  getEditorClosedNotice,
+} from '../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from './CubeEditorState.js';
+import type { CubeNodeDraft } from './editors/CubeNodeDraft.js';
+import { createCubeNodeDraft } from './editors/CubeNodeDraftRegistry.js';
 
 /**
- * The node editor in the side panel (PLAN §7.4): which node it shows. Opening
- * it never changes which node Execute runs.
+ * Whether two nodes of the same id save the same: their own fields, as the
+ * spec stores them, and the keys this version doesn't know. A node of a type
+ * the registry doesn't know is the same only as itself.
+ */
+export const isSameNodeContent = (
+  registry: NodeRegistry,
+  a: QueryNode,
+  b: QueryNode,
+): boolean => {
+  if (a === b) {
+    return true;
+  }
+  const definition = registry.get(a.type);
+  return (
+    definition !== undefined &&
+    a.type === b.type &&
+    JSON.stringify([definition.spec.encode(a), a.rest]) ===
+      JSON.stringify([definition.spec.encode(b), b.rest])
+  );
+};
+
+/**
+ * The node editor in the side panel (PLAN §7.4, spec §17.5). Opening it
+ * never changes which node Execute runs. Edits go to a draft, and only Apply,
+ * or closing the panel, stores them, as one undo step; Cancel drops them.
+ *
+ * The panel follows the cube (user's choice, 2026-10-07): when the node it
+ * shows is replaced or removed underneath it, by Undo, a re-check or a
+ * Remove, a panel with edits closes without applying them and says so; one
+ * without edits shows the new node, or closes when the node is gone.
  */
 export class CubeNodeEditorState {
   readonly editorState: CubeEditorState;
 
   /** The id of the node the panel shows, while it is open */
   nodeId: string | undefined;
+  /** The key of the node the draft was made from */
+  private nodeKey: number | undefined;
+  draft: CubeNodeDraft | undefined;
+  /** Why the panel closed by itself, until it opens again or is dismissed */
+  notice: string | undefined;
+
+  private readonly disposeSync: IReactionDisposer;
 
   constructor(editorState: CubeEditorState) {
-    makeObservable(this, {
+    makeObservable<CubeNodeEditorState, 'nodeKey' | 'sync'>(this, {
       nodeId: observable,
+      nodeKey: observable,
+      draft: observable.ref,
+      notice: observable,
       node: computed,
+      edited: computed,
+      hasChanges: computed,
       open: action,
+      apply: action,
       close: action,
+      cancel: action,
+      discard: action,
+      dismissNotice: action,
+      sync: action,
     });
     this.editorState = editorState;
+    this.disposeSync = reaction(
+      () => this.node,
+      () => this.sync(),
+    );
   }
 
   /** The node the panel shows, as the cube has it now */
@@ -45,13 +107,119 @@ export class CubeNodeEditorState {
       : this.editorState.document.query.getNode(this.nodeId);
   }
 
+  /** The node Apply would store, built once per edit */
+  get edited(): QueryNode | undefined {
+    return this.draft?.build();
+  }
+
+  /** The draft saves differently from the node it was made from */
+  get hasChanges(): boolean {
+    const { draft, edited } = this;
+    return (
+      draft !== undefined &&
+      edited !== undefined &&
+      !isSameNodeContent(this.editorState.registry, edited, draft.original)
+    );
+  }
+
+  /** Opens the panel on a node, closing (and so applying) the one it showed */
   open(nodeId: string): void {
-    if (this.editorState.document.query.getNode(nodeId)) {
-      this.nodeId = nodeId;
+    if (nodeId === this.nodeId) {
+      this.notice = undefined;
+      return;
+    }
+    const node = this.editorState.document.query.getNode(nodeId);
+    if (!node) {
+      return;
+    }
+    this.close();
+    this.notice = undefined;
+    this.bind(node);
+  }
+
+  /**
+   * Stores the draft in place of the node, as one undo step, and goes on
+   * editing the stored node. Does nothing without changes, or while the cube
+   * is read-only.
+   */
+  apply(): void {
+    const { node, edited } = this;
+    if (
+      !node ||
+      !edited ||
+      node.key !== this.nodeKey ||
+      !this.hasChanges ||
+      this.editorState.readOnly
+    ) {
+      return;
+    }
+    const { query } = this.editorState.document;
+    if (query.canReplace(edited)) {
+      this.editorState.applyQuery(query.replace(edited));
+      this.bind(edited);
     }
   }
 
+  /** Applies the draft, then closes the panel (spec §17.5: edits commit on close) */
   close(): void {
+    this.apply();
+    this.reset();
+  }
+
+  /** Closes the panel, dropping the draft */
+  cancel(): void {
+    this.reset();
+  }
+
+  /**
+   * Closes the panel without applying the draft, e.g. when another cube is
+   * opened, saying so when that drops edits
+   */
+  discard(reason: CUBE_EDITOR_CLOSED_REASON): void {
+    const { nodeId } = this;
+    if (nodeId !== undefined && this.hasChanges) {
+      this.notice = getEditorClosedNotice(nodeId, reason);
+    }
+    this.reset();
+  }
+
+  dismissNotice(): void {
+    this.notice = undefined;
+  }
+
+  /** Stops following the cube; call when the page closes */
+  dispose(): void {
+    this.disposeSync();
+  }
+
+  private bind(node: QueryNode): void {
+    this.nodeId = node.id;
+    this.nodeKey = node.key;
+    this.draft = createCubeNodeDraft(node, this.editorState);
+  }
+
+  private reset(): void {
     this.nodeId = undefined;
+    this.nodeKey = undefined;
+    this.draft = undefined;
+  }
+
+  /** Runs whenever the node with the panel's id is another object, or gone */
+  private sync(): void {
+    const { node } = this;
+    if (this.nodeId === undefined || node?.key === this.nodeKey) {
+      return;
+    }
+    if (this.hasChanges) {
+      this.discard(
+        node
+          ? CUBE_EDITOR_CLOSED_REASON.NODE_CHANGED
+          : CUBE_EDITOR_CLOSED_REASON.NODE_REMOVED,
+      );
+    } else if (node) {
+      this.bind(node);
+    } else {
+      this.reset();
+    }
   }
 }
