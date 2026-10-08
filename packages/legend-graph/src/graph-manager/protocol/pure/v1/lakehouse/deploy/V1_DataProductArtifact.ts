@@ -19,6 +19,7 @@ import {
   optionalCustomList,
   optionalCustomUsingModelSchema,
   SerializationFactory,
+  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
@@ -185,6 +186,11 @@ export class V1_FunctionAccessPoint extends V1_ResourceBuilder {
   );
 }
 
+// handle incoming resource builders not yet modeled
+export class V1_UnknownResourceBuilder extends V1_ResourceBuilder {
+  content!: PlainObject;
+}
+
 export const V1_serializeResourceBuilder = (
   resourceBuilder: V1_ResourceBuilder,
 ): PlainObject<V1_ResourceBuilder> => {
@@ -192,6 +198,8 @@ export const V1_serializeResourceBuilder = (
     return V1_DatabaseDDL.serialization.toJson(resourceBuilder);
   } else if (resourceBuilder instanceof V1_FunctionAccessPoint) {
     return V1_FunctionAccessPoint.serialization.toJson(resourceBuilder);
+  } else if (resourceBuilder instanceof V1_UnknownResourceBuilder) {
+    return resourceBuilder.content;
   }
   throw new UnsupportedOperationError();
 };
@@ -204,9 +212,32 @@ export const V1_deserializeResourceBuilder = (
       return V1_DatabaseDDL.serialization.fromJson(json);
     case V1_ResourceBuilderType.FUNCTION_ACCESS_POINT:
       return V1_FunctionAccessPoint.serialization.fromJson(json);
-    default:
-      throw new Error(`Unknown V1_ResourceBuilder type: ${json._type}`);
+    default: {
+      const unknown = new V1_UnknownResourceBuilder();
+      unknown.content = json;
+      return unknown;
+    }
   }
+};
+
+/**
+ * NOTE: the artifact used to carry a single resource builder per access point
+ * implementation, it now carries a list. To stay compatible with artifacts
+ * generated before that change, a single resource builder is read as a
+ * one-element list.
+ */
+const V1_deserializeResourceBuilders = (
+  json:
+    | PlainObject<V1_ResourceBuilder>
+    | PlainObject<V1_ResourceBuilder>[]
+    | null,
+): V1_ResourceBuilder[] => {
+  if (!json) {
+    return [];
+  }
+  return (Array.isArray(json) ? json : [json]).map(
+    V1_deserializeResourceBuilder,
+  );
 };
 
 export abstract class V1_Producer {}
@@ -302,7 +333,7 @@ export class V1_DependencyAccessPoint {
 export class V1_AccessPointImplementation {
   id!: string;
   description: string | undefined;
-  resourceBuilder!: V1_ResourceBuilder;
+  resourceBuilder: V1_ResourceBuilder[] = [];
   relationElement: V1_RelationElement | undefined;
   lambdaGenericType: V1_GenericType | undefined;
   dependencyDatasets: V1_Dataset[] = [];
@@ -313,8 +344,8 @@ export class V1_AccessPointImplementation {
       id: primitive(),
       description: optional(primitive()),
       resourceBuilder: custom(
-        V1_serializeResourceBuilder,
-        V1_deserializeResourceBuilder,
+        (values) => serializeArray(values, V1_serializeResourceBuilder),
+        V1_deserializeResourceBuilders,
       ),
       relationElement: optional(
         custom(

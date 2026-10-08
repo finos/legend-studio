@@ -178,13 +178,15 @@ export const buildModernAccessPointImpl = (
   spec: ArtifactAccessPointImplSpec,
 ): PlainObject => ({
   id: spec.id,
-  resourceBuilder: {
-    _type: 'databaseDDL',
-    reproducible: true,
-    targetEnvironment: 'prod',
-    script: '',
-    resourceType: 'TABLE',
-  },
+  resourceBuilder: [
+    {
+      _type: 'databaseDDL',
+      reproducible: true,
+      targetEnvironment: 'prod',
+      script: '',
+      resourceType: 'TABLE',
+    },
+  ],
   dependencyDatasets: spec.datasets.map(buildDatasetJson),
   dependencyAccessPoints: (spec.dependencyAccessPoints ?? []).map((dep) => ({
     dataProductId: dep.dataProductId,

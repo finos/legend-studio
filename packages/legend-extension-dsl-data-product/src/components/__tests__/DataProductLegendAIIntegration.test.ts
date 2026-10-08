@@ -551,11 +551,83 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
         {
           id: 'group1',
           accessPointImplementations: [
-            { id: 'positions', resourceBuilder: ddl, dependencyDatasets: [] },
+            { id: 'positions', resourceBuilder: [ddl], dependencyDatasets: [] },
           ],
         },
       ],
     };
+    const result = await extractTDSServicesFromDataProduct(
+      makeViewerStateStub([], undefined, [makeApgState('group1', [apState])], {
+        dataProductArtifact: artifact,
+      }),
+    );
+    expect(result[0]?.ddlScript).toBe(
+      'CREATE VIEW positions AS SELECT id FROM raw_positions',
+    );
+  });
+
+  test('joins DDL scripts when the artifact has several resource builders', async () => {
+    const apState = makeAccessPointState(
+      'positions',
+      [makeRelationTypeColumn('id', 'String')],
+      { title: 'Positions' },
+    );
+    const table = new V1_DatabaseDDL();
+    table.script = 'CREATE TABLE raw_positions (id VARCHAR)';
+    const view = new V1_DatabaseDDL();
+    view.script = 'CREATE VIEW positions AS SELECT id FROM raw_positions';
+    const artifact = {
+      accessPointGroups: [
+        {
+          id: 'group1',
+          accessPointImplementations: [
+            {
+              id: 'positions',
+              resourceBuilder: [table, view],
+              dependencyDatasets: [],
+            },
+          ],
+        },
+      ],
+    };
+    const result = await extractTDSServicesFromDataProduct(
+      makeViewerStateStub([], undefined, [makeApgState('group1', [apState])], {
+        dataProductArtifact: artifact,
+      }),
+    );
+    expect(result[0]?.ddlScript).toBe(
+      'CREATE TABLE raw_positions (id VARCHAR)\n\nCREATE VIEW positions AS SELECT id FROM raw_positions',
+    );
+  });
+
+  test('extracts DDL script from an artifact with a legacy singular resourceBuilder', async () => {
+    const apState = makeAccessPointState(
+      'positions',
+      [makeRelationTypeColumn('id', 'String')],
+      { title: 'Positions' },
+    );
+    const artifact = V1_DataProductArtifact.serialization.fromJson({
+      dataProduct: { path: 'test::DataProduct', deploymentId: '11111' },
+      accessPointGroups: [
+        {
+          id: 'group1',
+          accessPointImplementations: [
+            {
+              id: 'positions',
+              resourceBuilder: {
+                _type: 'databaseDDL',
+                reproducible: false,
+                targetEnvironment: 'Snowflake',
+                script: 'CREATE VIEW positions AS SELECT id FROM raw_positions',
+                resourceType: 'VIEW',
+              },
+              dependencyDatasets: [],
+              dependencyAccessPoints: [],
+            },
+          ],
+        },
+      ],
+    });
     const result = await extractTDSServicesFromDataProduct(
       makeViewerStateStub([], undefined, [makeApgState('group1', [apState])], {
         dataProductArtifact: artifact,

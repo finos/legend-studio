@@ -347,10 +347,12 @@ export const TEST_DATA__DataProductArtifactWithLakehouseAccessPoints = {
         {
           id: 'ap-with-relation',
           description: 'AP backed by a relation',
-          resourceBuilder: {
-            _type: 'functionAccessPoint',
-            functionGrammar: '|1',
-          },
+          resourceBuilder: [
+            {
+              _type: 'functionAccessPoint',
+              functionGrammar: '|1',
+            },
+          ],
           lambdaGenericType: {
             rawType: {
               _type: 'packageableType',
@@ -390,15 +392,73 @@ export const TEST_DATA__DataProductArtifactWithLakehouseAccessPoints = {
         {
           id: 'ap-without-relation',
           description: 'AP without a relation type',
-          resourceBuilder: {
-            _type: 'functionAccessPoint',
-            functionGrammar: '|1',
-          },
+          resourceBuilder: [
+            {
+              _type: 'functionAccessPoint',
+              functionGrammar: '|1',
+            },
+          ],
           lambdaGenericType: {
             rawType: {
               _type: 'packageableType',
               fullPath: 'String',
             },
+          },
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * Test data for an artifact generated before the resource builder of an
+ * access point implementation became a list: `resourceBuilder` is a single
+ * object, not an array. Such artifacts must keep loading.
+ */
+export const TEST_DATA__DataProductArtifactWithLegacySingularResourceBuilder = {
+  dataProduct: {
+    path: 'test::LegacyLakehouseDataProduct',
+    deploymentId: 'deployment-legacy-1',
+    title: 'Legacy Lakehouse Data Product',
+  },
+  accessPointGroups: [
+    {
+      id: 'legacy-group',
+      accessPointImplementations: [
+        {
+          id: 'legacy-ap',
+          description: 'AP from an artifact with a singular resource builder',
+          resourceBuilder: {
+            _type: 'databaseDDL',
+            reproducible: false,
+            targetEnvironment: 'Snowflake',
+            script: 'CREATE VIEW LEGACY_AP AS SELECT 1 AS ID',
+            resourceType: 'VIEW',
+          },
+          lambdaGenericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::metamodel::relation::Relation',
+            },
+            typeArguments: [
+              {
+                rawType: {
+                  _type: 'relationType',
+                  columns: [
+                    {
+                      name: 'id',
+                      genericType: {
+                        rawType: {
+                          _type: 'packageableType',
+                          fullPath: 'Integer',
+                        },
+                      },
+                      multiplicity: { lowerBound: 1, upperBound: 1 },
+                    },
+                  ],
+                },
+              },
+            ],
           },
         },
       ],

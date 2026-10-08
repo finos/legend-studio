@@ -21,6 +21,7 @@ import {
   TEST_DATA__DataProductArtifact,
   TEST_DATA__DataProductArtifactContainingModelAPGAndNativeModelAccess,
   TEST_DATA__DataProductArtifactWithLakehouseAccessPoints,
+  TEST_DATA__DataProductArtifactWithLegacySingularResourceBuilder,
 } from './TEST_DATA__DataProductAnalysis.js';
 import {
   DataProductAccessType,
@@ -317,6 +318,39 @@ describe('analyzeDataProductAndBuildMinimalGraph', () => {
       const lakehouseAP = result.targetExecState as LakehouseAccessPoint;
       expect(lakehouseAP.id).toBe('ap-without-relation');
       expect(lakehouseAP.__internal__RelationType).toBeUndefined();
+    },
+  );
+
+  test(
+    unitTest(
+      'builds LakehouseAccessPoint from an artifact with a legacy singular resourceBuilder',
+    ),
+    async () => {
+      const graphManagerState = await setupGraphManagerState();
+      const result =
+        await graphManagerState.graphManager.analyzeDataProductAndBuildMinimalGraph(
+          'test::LegacyLakehouseDataProduct',
+          () =>
+            Promise.resolve(
+              TEST_DATA__DataProductArtifactWithLegacySingularResourceBuilder,
+            ),
+          graphManagerState.graph,
+          'legacy-ap',
+          DataProductAccessType.LAKEHOUSE,
+          {
+            groupId: 'org.finos.test',
+            artifactId: 'test-legacy-lakehouse-data-product',
+            versionId: '1.0.0',
+          },
+        );
+
+      expect(result.dataProductAnalysis.path).toBe(
+        'test::LegacyLakehouseDataProduct',
+      );
+      expect(result.targetExecState).toBeInstanceOf(LakehouseAccessPoint);
+      const lakehouseAP = result.targetExecState as LakehouseAccessPoint;
+      expect(lakehouseAP.id).toBe('legacy-ap');
+      expect(lakehouseAP.__internal__RelationType?.columns.length).toBe(1);
     },
   );
 
