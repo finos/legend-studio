@@ -24,6 +24,8 @@ import {
   ContentType,
   HttpHeader,
   type PlainObject,
+  isPlainObject,
+  isString,
 } from '@finos/legend-shared';
 import type { V1_ExecutionResult } from '../protocol/pure/v1/engine/execution/V1_ExecutionResult.js';
 import { V1_ExecuteInput } from '../protocol/pure/v1/engine/execution/V1_ExecuteInput.js';
@@ -45,11 +47,59 @@ export const ENGINE_TEST_SUPPORT_API_URL = 'http://localhost:6300/api';
 
 export { AxiosError as ENGINE_TEST_SUPPORT__NetworkClientError };
 
+const getEngineErrorMessage = (data: unknown): string | undefined => {
+  let error = data;
+  if (isString(data)) {
+    try {
+      error = JSON.parse(data);
+    } catch {
+      return data.trim() || undefined;
+    }
+  }
+  if (!isPlainObject(error) || !isString(error.message)) {
+    return undefined;
+  }
+  const sourceInformation = isPlainObject(error.sourceInformation)
+    ? error.sourceInformation
+    : undefined;
+  return [
+    isString(error.errorType) ? `[${error.errorType}]` : undefined,
+    error.message,
+    sourceInformation
+      ? `(at line ${sourceInformation.startLine}, column ${sourceInformation.startColumn})`
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(' ');
+};
+
+/**
+ * When the engine rejects a request (e.g. a compilation or parser error), append its
+ * error message to the thrown `AxiosError`; otherwise test failures only report
+ * "Request failed with status code 400". The error is still an `AxiosError`, so callers
+ * can keep inspecting its `status` and `response`.
+ */
+const engineClient = axios.create();
+engineClient.interceptors.response.use(undefined, (error: unknown) => {
+  if (error instanceof AxiosError) {
+    const engineMessage = getEngineErrorMessage(error.response?.data);
+    if (engineMessage) {
+      const originalMessage = error.message;
+      error.message = `${originalMessage}: ${engineMessage}`;
+      // The stack header may have been formatted with the original message already
+      if (error.stack && !error.stack.includes(error.message)) {
+        error.stack = error.stack.replace(originalMessage, error.message);
+      }
+    }
+  }
+  return Promise.reject(error);
+});
+
 export async function ENGINE_TEST_SUPPORT__getClassifierPathMapping(): Promise<
   ClassifierPathMapping[]
 > {
   return (
-    await axios.get<unknown, AxiosResponse>(
+    await engineClient.get<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/protocol/pure/getClassifierPathMap`,
     )
   ).data;
@@ -57,7 +107,7 @@ export async function ENGINE_TEST_SUPPORT__getClassifierPathMapping(): Promise<
 
 export async function ENGINE_TEST_SUPPORT__getSubtypeInfo(): Promise<SubtypeInfo> {
   return (
-    await axios.get<unknown, AxiosResponse<SubtypeInfo>>(
+    await engineClient.get<unknown, AxiosResponse<SubtypeInfo>>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/protocol/pure/getSubtypeInfo`,
     )
   ).data;
@@ -67,7 +117,7 @@ export async function ENGINE_TEST_SUPPORT__execute(
   executionInput: V1_ExecuteInput,
 ): Promise<PlainObject<V1_ExecutionResult>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/execution/execute`,
       V1_ExecuteInput.serialization.toJson(executionInput),
       {
@@ -84,7 +134,7 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_model(
   returnSourceInformation?: boolean | undefined,
 ): Promise<{ elements: object[] }> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/model`,
       code,
       {
@@ -104,7 +154,7 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_lambda(
   returnSourceInformation?: boolean | undefined,
 ): Promise<PlainObject<V1_ValueSpecification>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/lambda`,
       code,
       {
@@ -124,7 +174,7 @@ export async function ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
   returnSourceInformation?: boolean | undefined,
 ): Promise<PlainObject<V1_ValueSpecification>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/grammarToJson/valueSpecification`,
       code,
       {
@@ -144,7 +194,7 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_model(
   pretty?: boolean | undefined,
 ): Promise<string> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/model`,
       model,
       {
@@ -164,7 +214,7 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
   pretty?: boolean | undefined,
 ): Promise<string> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/valueSpecification`,
       value,
       {
@@ -185,7 +235,7 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_lambda(
   pretty?: boolean | undefined,
 ): Promise<string> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/grammar/jsonToGrammar/lambda`,
       value,
       {
@@ -204,7 +254,7 @@ export async function ENGINE_TEST_SUPPORT__JSONToGrammar_lambda(
 export async function ENGINE_TEST_SUPPORT__compile(
   model: PlainObject<V1_PureModelContext>,
 ): Promise<AxiosResponse<{ message: string }>> {
-  return axios.post<unknown, AxiosResponse>(
+  return engineClient.post<unknown, AxiosResponse>(
     `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/compile`,
     model,
   );
@@ -215,7 +265,7 @@ export async function ENGINE_TEST_SUPPORT__getLambdaReturnType(
   model: PlainObject<V1_PureModelContext>,
 ): Promise<PlainObject<V1_LambdaReturnTypeResult>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/lambdaReturnType`,
       {
         lambda,
@@ -230,7 +280,7 @@ export async function ENGINE_TEST_SUPPORT__getLambdaRelationType(
   model: PlainObject<V1_PureModelContext>,
 ): Promise<PlainObject<V1_RelationType>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/lambdaRelationType`,
       {
         lambda,
@@ -245,7 +295,7 @@ export async function ENGINE_TEST_SUPPORT__transformTdsToRelation_lambda(
   model: PlainObject<V1_PureModelContext>,
 ): Promise<PlainObject<V1_RawLambda>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/compilation/autofix/transformTdsToRelation/lambda`,
       {
         lambda,
@@ -259,7 +309,7 @@ export async function ENGINE_TEST_SUPPORT__generateArtifacts(
   input: V1_ArtifactGenerationExtensionInput,
 ): Promise<PlainObject<V1_ArtifactGenerationExtensionOutput>> {
   return (
-    await axios.post<unknown, AxiosResponse>(
+    await engineClient.post<unknown, AxiosResponse>(
       `${ENGINE_TEST_SUPPORT_API_URL}/pure/v1/generation/generateArtifacts`,
       V1_ArtifactGenerationExtensionInput.serialization.toJson(input),
     )

@@ -59,7 +59,9 @@ enum ROUNTRIP_TEST_PHASES {
 
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
+// See README.md for the known issues behind these exclusions.
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
+  // Stale case: the engine no longer accepts `~mainTable` inside an embedded mapping
   'STO_Relational-nested-embedded-relational-mapping.pure': SKIP,
   // Relation function mapping: engine protocol includes extra empty arrays Studio omits
   'STO_Relational-relation-function-mapping.pure': [
@@ -76,9 +78,9 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'STO_Relational-relational-and-relation-function-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
-  // Update processing to handle Persistence V2 specs
-  // See https://github.com/finos/legend-engine/pull/1764
-  'DSL_Persistence-basic.pure': SKIP,
+  // Studio omits the empty `serviceOutputTargets` the engine emits for a V1 persistence
+  'DSL_Persistence-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
+  // Stale case: no longer compiles in the engine (`Result<T|m>` type arguments)
   'CORE-legacy-service-tests.pure': SKIP,
 };
 
