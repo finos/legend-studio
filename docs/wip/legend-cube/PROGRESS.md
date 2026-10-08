@@ -56,8 +56,9 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 
 1. ✅ Docs drift and ISSUES upkeep; the `V1_*` test exception (`298a8fc2a`, `db8c98c68`).
 2. ✅ PLAN §11.2 rewritten so a person can follow Part B (`4ca34e4f1`).
-3. ✅ Small code fixes, the two picker test gaps, the builder's unused exports dropped (`b50ad35fe`, `14937744b`,
-   `1e2a80461`).
+3. ✅ Small code fixes, the two picker test gaps (`b50ad35fe`, `14937744b`). The builder's unused exports were dropped
+   (`1e2a80461`), then restored (`0c636d4cc`): 0.0.2 was released with them before the follow-up PR (user,
+   2026-10-08).
 4. ✅ The READMEs and their `docs/` guides, the draft marker, the docs trim (`65d889fe1`, `8b1cf95b8`, `67ccce323`).
 5. ✅ Rehearsal in a browser: it found that a height-only change (the splitter above the grid) didn't refit the
    canvas, fixed in `afd32717f`; every other check passed. ✅ Skeptic verification `m19-verify` (4 reviewers, a skeptic

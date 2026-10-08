@@ -41,7 +41,10 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
   `CubeResult`, `CubeModelOutline`, …), with `buildCubeEngine` and `CubeEngineConfig`;
 - `LocalModelCatalog` and `BUNDLED_MODELS`;
 - `LEGEND_CUBE_COMMAND_CONFIG` and `LEGEND_CUBE_COMMAND_KEY`, the page's shortcuts;
-- `LEGEND_CUBE_TEST_ID`.
+- `LEGEND_CUBE_TEST_ID`;
+- helpers that 0.0.2 published and nothing outside the package uses yet: `getRuntimesForDatabase`, `createTextModel`,
+  `BundledModel`, and the bundled model's `CUBE_NORTHWIND_MODEL`, `CUBE_NORTHWIND_DATABASE` and
+  `CUBE_NORTHWIND_RUNTIME`.
 
 The node-type registries (drafts, editors, help text and icons) are internal: there is no plugin API for node types
 yet.

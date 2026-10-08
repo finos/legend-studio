@@ -2064,7 +2064,8 @@ incident on legend-studio's side.
   `legend-cube-builder/src/__tests__/` need both the `v1/` adapter and `stores/`, which the import-hierarchy lint rule
   keeps apart, so they import `V1_*` from there. Product code keeps the rule (§3.7).
 - **Public API:** the builder drops exports nothing outside it uses. The core keeps its `export *`, with a README note
-  that the API is unstable before 1.0.
+  that the API is unstable before 1.0. **Reversed** (user, 2026-10-08): `@finos/legend-cube-builder` 0.0.2 was
+  released with those exports before the follow-up PR, so removing them would break its published API; they stay.
   - **Technical (decided without asking):** the engine port (`CubeEngine.ts`) stays `export *` from the builder,
     though Legend Query names only `CubeEngine` and `CubeModelOutline` today: a host implements or fakes the port, and
     needs its error, result and outline types to do so.
