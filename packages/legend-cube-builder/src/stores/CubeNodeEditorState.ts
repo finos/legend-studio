@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import type { NodeRegistry, QueryNode } from '@finos/legend-cube';
+import {
+  canFixJoinDuplicates,
+  fixJoinDuplicates,
+  type NodeRegistry,
+  type Query,
+  type QueryNode,
+  type Schema,
+} from '@finos/legend-cube';
 import {
   action,
   computed,
@@ -87,8 +94,10 @@ export class CubeNodeEditorState {
       hasChanges: computed,
       open: action,
       canSwapInputs: computed,
+      canRenameDuplicateColumns: computed,
       apply: action,
       swapInputs: action,
+      renameDuplicateColumns: action,
       close: action,
       cancel: action,
       discard: action,
@@ -188,6 +197,66 @@ export class CubeNodeEditorState {
     query = query.swapInputs(node.id);
     this.editorState.applyQuery(query);
     this.bind(query.getNode(node.id) ?? node);
+  }
+
+  /**
+   * The cube's query with the draft in place of its node, when it has
+   * changes, and the schemas of the node's inputs, which the draft doesn't
+   * change
+   */
+  private get queryWithEdits(): {
+    query: Query;
+    inputSchemas: (Schema | undefined)[];
+  } {
+    const { node, edited } = this;
+    let { query } = this.editorState.document;
+    if (edited && this.hasChanges && query.canReplace(edited)) {
+      query = query.replace(edited);
+    }
+    return {
+      query,
+      inputSchemas: node
+        ? query
+            .getInputIds(node.id)
+            .map((inputId) =>
+              inputId === undefined
+                ? undefined
+                : this.editorState.analysis.schemas.get(inputId),
+            )
+        : [],
+    };
+  }
+
+  /**
+   * Whether the join being edited, edits included, can have the columns its
+   * inputs share renamed (spec §7.11's autofix, PLAN §11.4): its only problem
+   * is the duplicate rule, and the cube isn't read-only
+   */
+  get canRenameDuplicateColumns(): boolean {
+    const { node } = this;
+    if (!node || node.key !== this.nodeKey || this.editorState.readOnly) {
+      return false;
+    }
+    const { query, inputSchemas } = this.queryWithEdits;
+    const [leftSchema, rightSchema] = inputSchemas;
+    return canFixJoinDuplicates(query, node.id, leftSchema, rightSchema);
+  }
+
+  /**
+   * Renames the columns the join's inputs share with a Rename before each
+   * input, applying the draft first, as one undo step, then goes on editing
+   * the join, whose keys follow the renames
+   */
+  renameDuplicateColumns(): void {
+    const { node } = this;
+    if (!node || !this.canRenameDuplicateColumns) {
+      return;
+    }
+    const { query, inputSchemas } = this.queryWithEdits;
+    const [leftSchema, rightSchema] = inputSchemas;
+    const fixed = fixJoinDuplicates(query, node.id, leftSchema, rightSchema);
+    this.editorState.applyQuery(fixed);
+    this.bind(fixed.getNode(node.id) ?? node);
   }
 
   /** Applies the draft, then closes the panel (spec §17.5: edits commit on close) */

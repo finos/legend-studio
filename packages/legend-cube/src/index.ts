@@ -42,6 +42,7 @@ export * from './filter/FilterBuilder.js';
 export * from './filter/QueryFilterValues.js';
 
 export * from './nodes/transforms/Join.js';
+export * from './nodes/transforms/JoinAutofix.js';
 export * from './nodes/transforms/Filter.js';
 export * from './nodes/transforms/RowSettings.js';
 export * from './nodes/transforms/Distinct.js';

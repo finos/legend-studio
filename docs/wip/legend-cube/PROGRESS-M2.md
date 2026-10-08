@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                            |
-| ------ | ---------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                               |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                |
-| Step   | M2.1–M2.9 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename); M2.10 next (the Join autofix) |
-| Tests  | 1673 core, 662 builder (core group), 236 Query, 93 builder engine-roundtrip (after M2.9)                         |
+| Item   | State                                                                                                                   |
+| ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                      |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                       |
+| Step   | M2.1–M2.10 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix); M2.11 next (Sort) |
+| Tests  | 1691 core, 669 builder (core group), 236 Query, 96 builder engine-roundtrip (after M2.10)                               |
 
 ## Steps
 
@@ -28,7 +28,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.7** Distinct
 - [x] **M2.8** Restrict
 - [x] **M2.9** Rename, with the column-name rule and the collision fix
-- [ ] **M2.10** Join rename autofix
+- [x] **M2.10** Join rename autofix
 - [ ] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
 - [ ] **M2.12** The Sort warning
 - [ ] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
@@ -181,6 +181,21 @@ non-ASCII letter and a quote parse and type as Cube infers, and a France filter 
 with the renamed columns in place. Browser on :9002: an imported rename runs (830 rows); typing ORDER_ID as the new name
 marks the row with the collision message. Gates: `check:ci` and `lint:ci` green; 1673 core, 662 builder (core group),
 236 Query and 93 engine-roundtrip tests.
+
+**M2.10, the Join rename autofix (2026-10-08).** `planJoinDuplicateFix`, `canFixJoinDuplicates` and
+`fixJoinDuplicates` (`JoinAutofix.ts`): each column both inputs share and the join doesn't take as the same key on both
+sides becomes `c_1` before the Left input and `c_2` before the Right, or `c_<side>_2`, `_3`… when taken in either input
+or already given (Left names first), cut to 128 code points; a fix whose names would be invalid is not offered. Key
+lists are rewritten through the renames, so a key at another position or crossed keys still join. One query change: a
+Rename spliced before each input on its port, ids generated one after the other, the selection kept. The fix is offered
+only when the duplicate rule is the join's only problem. In the builder, `CubeNodeEditorState.renameDuplicateColumns`
+applies the panel's edits first, as one undo step, and rebinds to the join; the Join editor's shared-column list
+previews the new names and has a "Rename them" button. Sample: `join-autofix.cube.json` (EMPLOYEES and CUSTOMERS,
+ADDRESS, CITY, POSTAL_CODE and COUNTRY renamed, joined on REGION). Engine: ORDER_DETAILS ⋈ PRODUCTS fixed types as Cube
+infers and returns 2155 rows with UNIT_PRICE_1 and UNIT_PRICE_2; with UNIT_PRICE_1 taken upstream the fix takes
+UNIT_PRICE_1_2. Browser on :9002: an imported ORDER_DETAILS ⋈ PRODUCTS shows "UNIT_PRICE → UNIT_PRICE_1 (Left),
+UNIT_PRICE_2 (Right)"; "Rename them" splices the two Renames and the join turns valid; F9 shows the first 1,000 rows. Gates: `check:ci` and `lint:ci` green; 1691 core, 669 builder (core
+group), 236 Query and 96 engine-roundtrip tests.
 
 ## Open items
 

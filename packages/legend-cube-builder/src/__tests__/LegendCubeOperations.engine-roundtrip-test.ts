@@ -21,8 +21,11 @@ import {
   CubeDocument,
   Distinct,
   Drop,
+  buildSchemasAndValidity,
+  createNodeRegistry,
   Filter,
   FilterOperator,
+  fixJoinDuplicates,
   Join,
   JoinType,
   Limit,
@@ -513,5 +516,71 @@ describe('Rename on the engine', () => {
     expect(result.columns.indexOf('Ship Country')).toBe(13);
     expect(result.columns.indexOf('Order')).toBe(0);
     expect(result.columns).not.toContain('SHIP_COUNTRY');
+  });
+});
+
+describe('Join autofix on the engine', () => {
+  /** ORDER_DETAILS ⋈ PRODUCTS on PRODUCT_ID (they share UNIT_PRICE), before the Right input this node */
+  const detailsJoinProducts = async (
+    beforeRight: QueryNode[] = [],
+  ): Promise<Query> => {
+    const [details, products] = await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', 'ORDER_DETAILS'),
+      TEST__northwindTable('relational102', 'PRODUCTS'),
+    ]);
+    const join = new Join('join101', {
+      leftColumns: ['PRODUCT_ID'],
+      rightColumns: ['PRODUCT_ID'],
+      joinType: JoinType.INNER,
+    });
+    const right = [products as RelationalTableSource, ...beforeRight];
+    return new Query(
+      [details as RelationalTableSource, ...right, join],
+      [
+        ...right
+          .slice(1)
+          .map(
+            (node, index) =>
+              new Connection((right[index] as QueryNode).id, node.id, 'tds'),
+          ),
+        new Connection('relational101', 'join101', 'leftTds'),
+        new Connection((right.at(-1) as QueryNode).id, 'join101', 'rightTds'),
+      ],
+      'join101',
+    );
+  };
+
+  /** The query with the join's shared columns renamed */
+  const fixed = (query: Query): Query => {
+    const { schemas } = buildSchemasAndValidity(
+      query,
+      createNodeRegistry().queryRules,
+    );
+    const [left, right] = query
+      .getInputIds('join101')
+      .map((id) => schemas.get(id ?? ''));
+    return fixJoinDuplicates(query, 'join101', left, right);
+  };
+
+  test('Gives a join its inputs could not run, which the engine types and runs', async () => {
+    const query = fixed(await detailsJoinProducts());
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(2155);
+    expect(result.columns).toContain('UNIT_PRICE_1');
+    expect(result.columns).toContain('UNIT_PRICE_2');
+    expect(result.columns).not.toContain('UNIT_PRICE');
+  });
+
+  test('Takes the next free name when an earlier Rename made the first one', async () => {
+    const query = fixed(
+      await detailsJoinProducts([
+        new Rename('rename101', [{ from: 'PRODUCT_NAME', to: 'UNIT_PRICE_1' }]),
+      ]),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    expect(
+      buildSchemasAndValidity(query).schemas.get('join101')?.names(),
+    ).toContain('UNIT_PRICE_1_2');
   });
 });

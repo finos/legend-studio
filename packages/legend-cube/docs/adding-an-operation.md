@@ -41,6 +41,11 @@ An operation that gives a column a name, as Rename does, checks it with `isValid
 code points) and refuses a name a column of its output already has (`MESSAGE_ALREADY_IN_INPUT_SCHEMA`). Export the
 check of one item, as `validateRenameMapping` is, so an editor can mark each row with the node's own messages.
 
+A helper that changes several nodes at once, as the Join autofix does (`src/nodes/transforms/JoinAutofix.ts`), lives
+next to its node, not on `Query`, and composes Query operations into one returned query: generate each new id from the
+query that already holds the previous new node (`generateId` twice on the same query gives the same id), and restore
+the selection if an `add` moved it. The caller applies the result as one undo step.
+
 ## 2. Its messages
 
 Every message of the spec's catalogue (§16) is already a constant in `src/messages/CubeMessages.ts`, including those
