@@ -66,6 +66,30 @@ describe('Row count draft', () => {
     expect(draft.build().size).toBe(-3);
   });
 
+  test.each([1.5, 1e21, -0.5])(
+    'Gives back an untouched saved size %p that its text cannot hold',
+    (size) => {
+      // only a spec the app didn't write holds such a size
+      const limit = new Limit('limit101', size);
+      const draft = new CubeRowCountDraft(limit);
+      expect(draft.sizeText).toBe(String(size));
+      expect(draft.size).toBeUndefined();
+      expect(draft.build()).toBe(limit);
+    },
+  );
+
+  test.each([1.5, 1e21, -0.5])(
+    'Gives the original back once the opening text of %p is typed back',
+    (size) => {
+      const limit = new Limit('limit101', size);
+      const draft = new CubeRowCountDraft(limit);
+      draft.setSizeText(`${String(size)}x`);
+      expect(draft.build().size).toBeUndefined();
+      draft.setSizeText(` ${String(size)} `);
+      expect(draft.build()).toBe(limit);
+    },
+  );
+
   test('Opens a cleared size as an empty field', () => {
     const limit = new Limit('limit101', undefined);
     const draft = new CubeRowCountDraft(limit);

@@ -22,7 +22,13 @@ import {
   MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
   Query,
 } from '@finos/legend-cube';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -151,17 +157,24 @@ describe('Limit editor', () => {
     expect(editorState.execution.canExecute).toBe(false);
   });
 
-  test.each(['0', '-3', '1.5', '1e3', '0x10', 'ten'])(
-    'Marks %j as not a positive whole number',
-    async (text) => {
-      await render(ordersLimited(10));
-      await openLimit();
-      type(text);
-      expect(sizeField().value).toBe(text);
-      expect(sizeField().getAttribute('aria-invalid')).toBe('true');
-      expect(problems()).toEqual([MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER]);
-    },
-  );
+  test.each([
+    '0',
+    '-3',
+    '1.5',
+    '1e3',
+    '0x10',
+    'ten',
+    // whole, but past what a double holds exactly
+    '9007199254740993',
+    '99999999999999999999',
+  ])('Marks %j as not a positive whole number', async (text) => {
+    await render(ordersLimited(10));
+    await openLimit();
+    type(text);
+    expect(sizeField().value).toBe(text);
+    expect(sizeField().getAttribute('aria-invalid')).toBe('true');
+    expect(problems()).toEqual([MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER]);
+  });
 
   test('Takes a size with a sign or spaces around it', async () => {
     const editorState = await render(ordersLimited(10));
@@ -197,6 +210,13 @@ describe('Limit editor', () => {
     expect(editorState.analysis.validity.get('limit101')).toEqual([]);
   });
 
+  test('Is a text field that asks for the numeric keypad', async () => {
+    await render(ordersLimited(10));
+    await openLimit();
+    expect(sizeField().getAttribute('type')).toBe('text');
+    expect(sizeField().getAttribute('inputmode')).toBe('numeric');
+  });
+
   test('Shows a read-only cube without letting it change', async () => {
     const editorState = await render(new Query());
     await TEST__importDocument(
@@ -207,5 +227,69 @@ describe('Limit editor', () => {
     await openLimit();
     expect(sizeField().disabled).toBe(true);
     expect(button('Apply').disabled).toBe(true);
+  });
+});
+
+describe('Limit editor, on a saved size the field cannot hold', () => {
+  // only a spec the app didn't write holds such a size: it must stay as saved
+  // until the user types something else
+  const renderImported = async (): Promise<CubeEditorState> => {
+    const editorState = await render(new Query());
+    await TEST__importDocument(
+      editorState,
+      new CubeDocument({ context: CONTEXT, query: ordersLimited(1.5) }),
+    );
+    return editorState;
+  };
+
+  test('Opens it as written and marked, with nothing to apply, and closes without changing it', async () => {
+    const editorState = await renderImported();
+    const steps = editorState.history.length;
+    await openLimit();
+    expect(sizeField().value).toBe('1.5');
+    expect(sizeField().getAttribute('aria-invalid')).toBe('true');
+    expect(problems()).toEqual([MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER]);
+    expect(button('Apply').disabled).toBe(true);
+    fireEvent.click(
+      within(panel()).getByRole('button', { name: 'Close the editor' }),
+    );
+    expect(storedSize(editorState)).toBe(1.5);
+    expect(editorState.history).toHaveLength(steps);
+  });
+
+  test('Keeps it when another node is opened', async () => {
+    const editorState = await renderImported();
+    const steps = editorState.history.length;
+    await openLimit();
+    fireEvent.click(await TEST__findCanvasNode('relational101'));
+    await waitFor(() =>
+      expect(editorState.nodeEditor.nodeId).toBe('relational101'),
+    );
+    expect(storedSize(editorState)).toBe(1.5);
+    expect(editorState.history).toHaveLength(steps);
+  });
+
+  test('Keeps it once its text is typed back, with nothing to apply', async () => {
+    const editorState = await renderImported();
+    const steps = editorState.history.length;
+    await openLimit();
+    type('1.5x');
+    expect(button('Apply').disabled).toBe(false);
+    type('1.5');
+    expect(button('Apply').disabled).toBe(true);
+    fireEvent.click(
+      within(panel()).getByRole('button', { name: 'Close the editor' }),
+    );
+    expect(storedSize(editorState)).toBe(1.5);
+    expect(editorState.history).toHaveLength(steps);
+  });
+
+  test('Says nothing of lost changes on Undo once its text is typed back', async () => {
+    const editorState = await renderImported();
+    await openLimit();
+    type('1.5x');
+    type('1.5');
+    act(() => editorState.undo());
+    expect(editorState.nodeEditor.notice).toBeUndefined();
   });
 });

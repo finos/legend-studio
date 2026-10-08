@@ -17,20 +17,26 @@
 import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
 import {
   ColumnComparisonFilter,
+  Connection,
+  CubeDocument,
   Filter,
   FilterOperator,
+  Join,
+  JoinType,
   Limit,
   printIR,
-  type Query,
+  Query,
   type QueryNode,
   QueryEmitter,
   type RelationalTableSource,
 } from '@finos/legend-cube';
+import { flowResult } from 'mobx';
 import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
 import {
   CUBE_ENGINE_TEST__getCommit,
   CUBE_ENGINE_TEST__grammarToJson_lambda,
 } from '../__test-utils__/CubeEngineTestSupport.js';
+import { TEST__createCubeApplicationStore } from '../__test-utils__/CubeTestApplication.js';
 import {
   TEST__chainOf,
   TEST__columnValues,
@@ -42,7 +48,12 @@ import {
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import { V1_serializeCubeLambda } from '../graph-manager/protocol/pure/v1/V1_CubeLambdaSerializer.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
-import { CUBE_NORTHWIND_RUNTIME } from '../stores/fixtures/CubeNorthwindModel.js';
+import { CubeEditorState } from '../stores/CubeEditorState.js';
+import {
+  CUBE_NORTHWIND_MODEL,
+  CUBE_NORTHWIND_RUNTIME,
+} from '../stores/fixtures/CubeNorthwindModel.js';
+import { LocalModelCatalog } from '../stores/LocalModelCatalog.js';
 
 // M2's operations on the engine (PLAN §11.4), on the Cube Northwind fixture.
 // Rows come back in H2's order unless a Sort reaches the node that runs, so
@@ -58,9 +69,10 @@ beforeAll(async () => {
   process.stdout.write(`Legend Cube operations: engine commit ${commit}\n`);
 });
 
-// spies are restored after each test
+// spies are restored after each test; the row limit is kept per user
 beforeEach(() => {
   ({ engine } = V1_createEngineBackedCubeEngine());
+  localStorage.clear();
 });
 
 const orders = async (): Promise<RelationalTableSource> => {
@@ -76,6 +88,45 @@ const ordersThen = async (...nodes: QueryNode[]): Promise<Query> =>
 
 const orderIds = (values: readonly unknown[]): number[] =>
   values.map((value) => Number(value));
+
+/** ORDERS and CUSTOMERS, resolved */
+const ordersAndCustomers = async (): Promise<
+  [RelationalTableSource, RelationalTableSource]
+> =>
+  (await TEST__resolveSources(engine, [
+    TEST__northwindTable('relational101', 'ORDERS'),
+    TEST__northwindTable('relational102', 'CUSTOMERS'),
+  ])) as [RelationalTableSource, RelationalTableSource];
+
+/** A join on CUSTOMER_ID of the two nodes, each given with what feeds it */
+const joinOn = (
+  left: QueryNode[],
+  right: QueryNode[],
+  joinType: JoinType,
+): Query => {
+  const join = new Join('join101', {
+    leftColumns: ['CUSTOMER_ID'],
+    rightColumns: ['CUSTOMER_ID'],
+    joinType,
+  });
+  const chain = (nodes: QueryNode[]): Connection[] =>
+    nodes
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection((nodes[index] as QueryNode).id, node.id, 'tds'),
+      );
+  return new Query(
+    [...left, ...right, join],
+    [
+      ...chain(left),
+      ...chain(right),
+      new Connection((left.at(-1) as QueryNode).id, 'join101', 'leftTds'),
+      new Connection((right.at(-1) as QueryNode).id, 'join101', 'rightTds'),
+    ],
+    'join101',
+  );
+};
 
 /** The execution lambda as protocol JSON, without the source information Cube stamps */
 const emittedJson = (query: Query, rowLimit = ROW_LIMIT): unknown =>
@@ -129,7 +180,7 @@ describe('Limit on the engine', () => {
     expect(result.rows).toHaveLength(830);
   });
 
-  test("Tells the Limit's rows from the run's row limit", async () => {
+  test('Fetches one row past the row limit, and no more than the Limit gives', async () => {
     // 10 rows under a row limit of 10: the run fetches 11 and gets 10, so nothing is cut off
     const exact = await TEST__runQuery(
       engine,
@@ -162,5 +213,92 @@ describe('Limit on the engine', () => {
     expect(TEST__columnValues(result, 'SHIP_COUNTRY')).toEqual(
       Array(5).fill('France'),
     );
+  });
+});
+
+describe('Limit inside a query, on the engine', () => {
+  test('Limits one side of a join, and a left join still keeps every order', async () => {
+    const [ordersTable, customersTable] = await ordersAndCustomers();
+    const query = joinOn(
+      [ordersTable],
+      [customersTable, new Limit('limit101', 5)],
+      JoinType.LEFT_OUTER,
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const ids = orderIds(TEST__columnValues(result, 'ORDER_ID'));
+    expect(ids).toHaveLength(830);
+    expect(new Set(ids).size).toBe(830);
+  });
+
+  test('Joins only the rows a Limit takes', async () => {
+    const [ordersTable, customersTable] = await ordersAndCustomers();
+    const query = joinOn(
+      [ordersTable, new Limit('limit101', 5)],
+      [customersTable],
+      JoinType.INNER,
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const ids = orderIds(TEST__columnValues(result, 'ORDER_ID'));
+    expect(ids).toHaveLength(5);
+    expect(new Set(ids).size).toBe(5);
+  });
+
+  test('Filters only the rows a Limit takes', async () => {
+    const query = await ordersThen(
+      new Limit('limit101', 5),
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'France',
+        }),
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const countries = TEST__columnValues(result, 'SHIP_COUNTRY');
+    expect(countries.length).toBeLessThanOrEqual(5);
+    countries.forEach((country) => expect(country).toBe('France'));
+  });
+});
+
+describe('Limit in the editor, on the engine', () => {
+  /** The page's state on the engine, running ORDERS → Limit of this size */
+  const editorOf = async (size: number): Promise<CubeEditorState> => {
+    const state = new CubeEditorState({
+      applicationStore: TEST__createCubeApplicationStore(),
+      engine,
+      modelCatalog: new LocalModelCatalog(engine),
+    });
+    state.applyDocument(
+      new CubeDocument({
+        context: {
+          model: CUBE_NORTHWIND_MODEL,
+          runtime: CUBE_NORTHWIND_RUNTIME,
+        },
+        query: await ordersThen(new Limit('limit101', size)),
+      }),
+    );
+    return state;
+  };
+
+  test("Shows a Limit's rows in full when they fit the row limit", async () => {
+    const state = await editorOf(10);
+    state.setRowLimit(10);
+    await flowResult(state.execution.execute());
+    expect(state.execution.error).toBeUndefined();
+    expect(state.execution.result?.rows).toHaveLength(10);
+    expect(state.execution.result?.limited).toBe(false);
+  });
+
+  test("Cuts a Limit's rows at the row limit, and says so", async () => {
+    const state = await editorOf(5);
+    state.setRowLimit(3);
+    await flowResult(state.execution.execute());
+    expect(state.execution.error).toBeUndefined();
+    expect(state.execution.result?.rows).toHaveLength(3);
+    expect(state.execution.result?.limited).toBe(true);
   });
 });

@@ -21,7 +21,13 @@ import {
   LegendApplicationPlugin,
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
-import { Connection, CubeDocument, Limit, Query } from '@finos/legend-cube';
+import {
+  Connection,
+  CubeDocument,
+  type IR,
+  Limit,
+  Query,
+} from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   LEGEND_CUBE_COMMAND_CONFIG,
@@ -253,6 +259,52 @@ describe('Cube keyboard shortcuts', () => {
     size.blur();
     pressUndo();
     expect(await selected('limit101')).toBe('true');
+  });
+
+  test('Runs the stored Limit on F9 while its new size is not applied', async () => {
+    const { fake } = await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Limit('limit101', 10),
+          ],
+          [new Connection('relational101', 'limit101', 'tds')],
+          'limit101',
+        ),
+      }),
+    );
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    const panel = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const size = within(panel).getByLabelText<HTMLInputElement>('Rows to keep');
+    size.focus();
+    fireEvent.change(size, { target: { value: '5' } });
+    pressF9(size);
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    // the Limit's own size in the lambda that ran: the stored 10, not the typed 5
+    const takes: string[] = [];
+    const visit = (node: unknown): void => {
+      if (Array.isArray(node)) {
+        node.forEach(visit);
+      } else if (typeof node === 'object' && node !== null) {
+        const ir = node as IR & { origin?: { role: string } };
+        if (ir.k === 'literal' && ir.origin?.role === 'take') {
+          takes.push(String(ir.value.value));
+        }
+        Object.values(node).forEach(visit);
+      }
+    };
+    visit(fake.execute.mock.calls[0]?.[1]);
+    expect(takes).toEqual(['10']);
+    expect(size.value).toBe('5');
+    expect(
+      within(panel).getByRole<HTMLButtonElement>('button', { name: 'Apply' })
+        .disabled,
+    ).toBe(false);
+    expect(within(graph()).getByText<HTMLButtonElement>('Undo').disabled).toBe(
+      true,
+    );
   });
 
   test('Takes its commands away when the page closes', async () => {

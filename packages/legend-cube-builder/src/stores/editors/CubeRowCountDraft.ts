@@ -29,23 +29,25 @@ export interface CubeRowCountNode<N extends QueryNode> extends QueryNode {
  * The draft of a node whose one setting is a number of rows (spec §17.6: "one
  * integer field"). It keeps the text as typed. Text that isn't a whole
  * number, empty text included, builds a cleared size, which the node reports:
- * never the default (spec §7.7).
+ * never the default (spec §7.7). The text it opened with gives the original
+ * back, so a saved size the field can't read (`1.5` from an imported spec) is
+ * kept unless the user types something else.
  */
 export class CubeRowCountDraft<
   N extends CubeRowCountNode<N>,
 > extends CubeNodeDraft<N> {
   sizeText: string;
-  /** Anything was typed; until then, `build()` gives the original back */
-  private touched = false;
+  /** The text the field opened with, which builds the original */
+  private readonly initialText: string;
 
   constructor(original: N) {
     super(original);
-    makeObservable<CubeRowCountDraft<N>, 'touched'>(this, {
+    makeObservable(this, {
       sizeText: observable,
-      touched: observable,
       setSizeText: action,
     });
-    this.sizeText = original.size === undefined ? '' : String(original.size);
+    this.initialText = original.size === undefined ? '' : String(original.size);
+    this.sizeText = this.initialText;
   }
 
   /** The size the text gives: `undefined` unless it is a whole number */
@@ -55,12 +57,12 @@ export class CubeRowCountDraft<
 
   setSizeText(text: string): void {
     this.sizeText = text;
-    this.touched = true;
   }
 
+  /** The original while the field holds its opening text or the same size */
   build(): N {
     const { original, size } = this;
-    return !this.touched || size === original.size
+    return this.sizeText.trim() === this.initialText || size === original.size
       ? original
       : original.withSize(size);
   }

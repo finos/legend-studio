@@ -43,7 +43,10 @@ export const CubeNodeIcon: React.FC<{
   className?: string;
 }> = (props) => {
   const { icon, className } = props;
+  // an own key only: a name such as `constructor` must not reach Object's
   const Icon =
-    (icon === undefined ? undefined : NODE_ICONS[icon]) ?? QuestionSquareIcon;
+    icon !== undefined && hasCubeNodeIcon(icon)
+      ? (NODE_ICONS[icon] ?? QuestionSquareIcon)
+      : QuestionSquareIcon;
   return <Icon className={clsx(className)} />;
 };

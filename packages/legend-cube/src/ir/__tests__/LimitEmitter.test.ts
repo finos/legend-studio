@@ -92,6 +92,8 @@ describe(unitTest('Limit emission'), () => {
     ['a cleared size', undefined],
     ['size 0', 0],
     ['a fraction', 1.5],
+    ['a size a double holds only roughly', 1e21],
+    ['a size past safe integers', 2 ** 53],
   ])("Refuses to emit %s, which validation doesn't let through", (_, size) => {
     expect(() =>
       emitLimit(new Limit('limit101', size), [
