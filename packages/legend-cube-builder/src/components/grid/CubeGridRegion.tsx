@@ -18,6 +18,7 @@ import { PanelLoadingIndicator } from '@finos/legend-art';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { EXECUTE_SHORTCUT_LABEL } from '../../__lib__/LegendCubeCommand.js';
 import {
   CUBE_PENDING_LABEL,
   formatDisabledReasons,
@@ -115,7 +116,7 @@ const CubeGridToolbar = observer(
             title={
               disabledReasons.length
                 ? formatDisabledReasons(disabledReasons)
-                : 'Run the query up to the selected node'
+                : `Run the query up to the selected node (${EXECUTE_SHORTCUT_LABEL})`
             }
             onClick={execute}
           >

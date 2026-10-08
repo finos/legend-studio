@@ -256,7 +256,9 @@ What the repo actually enforces:
   - Query contributes it via `getExtraKeyedCommandConfigEntries()` on a core application plugin. This is the only
     plugin hook Cube uses. Query has two: `Core_LegendQuery_LegendApplicationPlugin` (`src/application/`) and
     `Core_LegendQueryApplicationPlugin` (`src/components/`); neither overrides the hook today, and Query's test helper
-    installs only the second. M1.8b (S20) picks one and tests F9 on `/cube` with the query builder's plugin installed.
+    installs only the second. **M1.8b (S20) uses `Core_LegendQuery_LegendApplicationPlugin`**, the one the app
+    installs first, and a Query test shows that F9 on `/cube` reaches Cube's Execute with the query builder's plugin
+    also binding F9 (the query builder's Compile is registered only while it is mounted).
   - The Cube page registers the commands with `applicationStore.commandService`, as the query builder's
     `useCommands` does.
   - The undo command's `trigger` returns `false` while focus is in an input, textarea or contenteditable.

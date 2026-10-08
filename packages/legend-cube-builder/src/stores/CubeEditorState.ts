@@ -29,6 +29,7 @@ import {
   type Schema,
   type SchemaInferenceResult,
 } from '@finos/legend-cube';
+import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   action,
@@ -38,6 +39,7 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
+import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
 import {
   CUBE_EDITOR_CLOSED_REASON,
   DEFAULT_ROW_LIMIT,
@@ -67,13 +69,23 @@ export interface CubeHostIssue {
 const isValidRowLimit = (value: number | undefined): value is number =>
   value !== undefined && Number.isSafeInteger(value) && value >= 1;
 
+/** Focus is where text is typed, so Ctrl+Z is the field's own undo */
+const isTypingText = (): boolean => {
+  const element = document.activeElement;
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    (element instanceof HTMLElement && element.isContentEditable)
+  );
+};
+
 /**
  * The state of one Cube page (PLAN §7.8). The document is immutable: every
  * edit makes a new one through `applyDocument`, which keeps the previous one
  * for undo. Domain and port values are held by reference, never observed
  * deeply.
  */
-export class CubeEditorState {
+export class CubeEditorState implements CommandRegistrar {
   readonly host: CubeHost;
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
@@ -131,6 +143,7 @@ export class CubeEditorState {
       analysis: computed,
       emitter: computed,
       canUndo: computed,
+      isDialogOpen: computed,
       applyDocument: action,
       undo: action,
       importDocument: action,
@@ -230,6 +243,46 @@ export class CubeEditorState {
     } catch {
       // no outline, no warning: nothing is blocked on it
     }
+  }
+
+  /** One of Cube's dialogs is open: the source picker, Import or Export, Show Pure */
+  get isDialogOpen(): boolean {
+    return (
+      this.sourcePicker.isOpen ||
+      this.specTransfer.mode !== undefined ||
+      this.showPure.isOpen
+    );
+  }
+
+  /**
+   * The page's keyboard shortcuts, while it is open (spec §17.12). Each does
+   * nothing when its button can't be used, and nothing while a Cube dialog
+   * is open, since a dialog doesn't stop the app's shortcuts (user's choice,
+   * 2026-10-07). Undo leaves Ctrl+Z to a text field that has the focus.
+   */
+  registerCommands(): void {
+    const { commandService, alertUnhandledError } = this.host.applicationStore;
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.EXECUTE,
+      trigger: () =>
+        !this.isDialogOpen &&
+        this.execution.canExecute &&
+        !this.execution.isRunning,
+      action: () => {
+        flowResult(this.execution.execute()).catch(alertUnhandledError);
+      },
+    });
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.UNDO,
+      trigger: () => !this.isDialogOpen && this.canUndo && !isTypingText(),
+      action: () => this.undo(),
+    });
+  }
+
+  deregisterCommands(): void {
+    Object.values(LEGEND_CUBE_COMMAND_KEY).forEach((key) =>
+      this.host.applicationStore.commandService.deregisterCommand(key),
+    );
   }
 
   get canUndo(): boolean {

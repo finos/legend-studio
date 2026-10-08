@@ -18,9 +18,12 @@ import {
   Core_LegendApplicationPlugin,
   LEGEND_APPLICATION_COLOR_THEME,
   LEGEND_APPLICATION_SETTING_KEY,
+  collectKeyedCommandConfigEntriesFromConfig,
   collectSettingConfigurationEntriesFromConfig,
+  type KeyedCommandConfigEntry,
   type SettingConfigurationEntry,
 } from '@finos/legend-application';
+import { LEGEND_CUBE_COMMAND_CONFIG } from '@finos/legend-cube-builder';
 
 export const LEGEND_QUERY_APPLICATION_SETTING_CONFIG = {
   [LEGEND_APPLICATION_SETTING_KEY.COLOR_THEME]: {
@@ -33,6 +36,17 @@ export class Core_LegendQuery_LegendApplicationPlugin extends Core_LegendApplica
   override getExtraSettingConfigurationEntries(): SettingConfigurationEntry[] {
     return collectSettingConfigurationEntriesFromConfig(
       LEGEND_QUERY_APPLICATION_SETTING_CONFIG,
+    );
+  }
+
+  /**
+   * The Cube page's shortcuts (F9, Ctrl/Cmd+Z): a Legend application binds
+   * keys only through its plugins, and the page registers the commands only
+   * while it is open (PLAN §3.5)
+   */
+  override getExtraKeyedCommandConfigEntries(): KeyedCommandConfigEntry[] {
+    return collectKeyedCommandConfigEntriesFromConfig(
+      LEGEND_CUBE_COMMAND_CONFIG,
     );
   }
 }

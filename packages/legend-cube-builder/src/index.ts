@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+export {
+  LEGEND_CUBE_COMMAND_CONFIG,
+  LEGEND_CUBE_COMMAND_KEY,
+} from './__lib__/LegendCubeCommand.js';
 export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
 export { CubeEditor } from './components/CubeEditor.js';
 

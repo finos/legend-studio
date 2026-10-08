@@ -21,10 +21,12 @@ import {
   ResizablePanelGroup,
   ResizablePanelSplitter,
 } from '@finos/legend-art';
+import { useCommands } from '@finos/legend-application';
 import type { CubeDocument } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { UNDO_SHORTCUT_LABEL } from '../__lib__/LegendCubeCommand.js';
 import {
   CUBE_PENDING_LABEL,
   formatDisabledReasons,
@@ -90,7 +92,11 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
           Add table
         </CubeButton>
         <CubeButton
-          title={readOnly ? READ_ONLY_CUBE_TITLE : 'Undo the last change'}
+          title={
+            readOnly
+              ? READ_ONLY_CUBE_TITLE
+              : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
+          }
           disabled={!editorState.canUndo}
           onClick={() => editorState.undo()}
         >
@@ -190,6 +196,7 @@ export const CubeEditor = observer(
       () => new CubeEditorState(props.host, props.initialDocument),
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
+    useCommands(editorState);
     const maxGraphHeight = useMaxGraphHeight();
     const isEditorOpen = editorState.nodeEditor.nodeId !== undefined;
     const editorPanel = getCollapsiblePanelGroupProps(!isEditorOpen, {
