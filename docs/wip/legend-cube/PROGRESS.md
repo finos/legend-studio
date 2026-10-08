@@ -34,7 +34,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.9** Slice acceptance (part B, manual) and hardening (accepted and signed off 2026-10-08; merged as #5634, `3260216a6`)
 - [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. No longer gates the sources (PLAN §6.8)
 - [ ] M2 Rename + Join autofix + simple unary transforms
-- [ ] M3 Sources: the direct connection first (H2 and DuckDB; PLAN §6.8), then Depot databases; entry points and the sources modal
+- [ ] M3 Sources: the direct connection first (H2 and DuckDB; PLAN §6.8), then data products, then Depot databases; entry points and the sources modal
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
 
