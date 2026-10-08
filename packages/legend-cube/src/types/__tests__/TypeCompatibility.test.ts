@@ -22,11 +22,14 @@ import {
   OpaqueType,
   PrimitiveType,
 } from '../CubeType.js';
+import { PRIMITIVE_TYPE_INFOS } from '../PrimitiveTypeRegistry.js';
+import { TypeFamily } from '../TypeFamily.js';
 import {
   areCompatibleTypes,
   ComparisonClass,
   getComparisonClass,
   getLeastCommonAncestor,
+  isSortableType,
 } from '../TypeCompatibility.js';
 
 const type = (path: string, params: number[] = []): PrimitiveType =>
@@ -168,6 +171,30 @@ describe(unitTest('Type compatibility'), () => {
     [UNKNOWN, undefined],
   ])('The comparison class of %s is %s', (cubeType, comparisonClass) => {
     expect(getComparisonClass(cubeType)).toBe(comparisonClass);
+  });
+});
+
+describe(unitTest('Sortable types'), () => {
+  test('Sorts every primitive type but Variant', () => {
+    const unsortable = PRIMITIVE_TYPE_INFOS.filter(
+      ({ path, arity }) =>
+        !isSortableType(
+          PrimitiveType.get(
+            path,
+            Array.from({ length: arity }, () => 10),
+          ),
+        ),
+    ).map(({ family }) => family);
+    expect(unsortable).toEqual([TypeFamily.VARIANT]);
+  });
+
+  test.each<[CubeType, boolean]>([
+    [BOOLEAN, true],
+    [COLOR, true],
+    [VARIANT, false],
+    [UNKNOWN, false],
+  ])('Sorts %s: %p', (cubeType, sortable) => {
+    expect(isSortableType(cubeType)).toBe(sortable);
   });
 });
 

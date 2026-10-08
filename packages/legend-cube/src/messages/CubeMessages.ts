@@ -205,6 +205,13 @@ export const MESSAGE_FILTER_VALUE_OUT_OF_RANGE = (
   type: string,
 ): string => `Filter value ${quote(value)} is out of range for ${type}.`;
 
+/** Added by Cube: Variant and unknown types can't be compared, so not sorted either (PLAN §11.4) */
+export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Sort column ${quote(column)} of type ${typeName} cannot be sorted.`;
+
 /** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN Appendix B) */
 export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
   `Filter values for ${quote(operator)} cannot contain a backslash (\\) yet.`;

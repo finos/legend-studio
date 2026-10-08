@@ -15,6 +15,7 @@
  */
 
 import { UnaryNode } from '../../graph/QueryNode.js';
+import type { RowOrder } from '../../inference/RowOrder.js';
 import {
   ensureSchemas,
   validate,
@@ -104,6 +105,23 @@ export class Restrict extends UnaryNode {
     return new Schema(
       schema.columns.filter((column) => this.columns.includes(column.name)),
     );
+  }
+
+  /**
+   * The input's order up to its first key on a column it doesn't keep: the
+   * rows are still in order by the keys before it, not by the ones after
+   */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    const [input] = inputOrders;
+    if (!input) {
+      return input;
+    }
+    const dropped = input.findIndex(
+      ({ column }) => !this.columns.includes(column),
+    );
+    return dropped < 0 ? input : input.slice(0, dropped);
   }
 
   describe(): string {

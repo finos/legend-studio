@@ -695,6 +695,9 @@ describe(unitTest('Query emission'), () => {
       'drop',
       'slice',
       'distinct',
+      'sort',
+      'sortKey',
+      'captureSort',
       'limit',
       'from',
     ]);

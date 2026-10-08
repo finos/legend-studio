@@ -23,7 +23,12 @@ import {
   StringTypeIcon,
   ToggleIcon,
 } from '@finos/legend-art';
-import { type CubeType, type Schema, TypeFamily } from '@finos/legend-cube';
+import {
+  type CubeType,
+  type Schema,
+  type SchemaColumn,
+  TypeFamily,
+} from '@finos/legend-cube';
 import { getColumnTypeLabel } from '../../__lib__/LegendCubeLabels.js';
 
 const FAMILY_ICONS: Readonly<
@@ -55,7 +60,9 @@ export const CubeColumnTypeIcon: React.FC<{
  * columns of the actual input). Each option names its type, e.g.
  * `CUSTOMER_ID: Varchar(5)?`; the picked column's type shows beside, with
  * its family's icon and its full type in the tooltip. A column the input
- * doesn't have stays shown, so the problem can be seen and fixed.
+ * doesn't have stays shown, so the problem can be seen and fixed. A column
+ * the editor can't take here (`isColumnDisabled`) is shown but can't be
+ * picked.
  */
 export const CubeColumnPicker: React.FC<{
   /** What the column is for, e.g. `Left join column 1`: the picker's accessible name */
@@ -67,8 +74,18 @@ export const CubeColumnPicker: React.FC<{
   disabled?: boolean | undefined;
   /** Marks the pick as wrong, e.g. a type that doesn't match */
   invalid?: boolean | undefined;
+  /** Whether a column can't be picked, e.g. a Sort's Variant column, or one another row has */
+  isColumnDisabled?: ((column: SchemaColumn) => boolean) | undefined;
 }> = (props) => {
-  const { label, schema, value, onChange, disabled, invalid } = props;
+  const {
+    label,
+    schema,
+    value,
+    onChange,
+    disabled,
+    invalid,
+    isColumnDisabled,
+  } = props;
   const picked = value ? schema.lookup(value) : undefined;
   return (
     <div className="flex min-w-0 items-center gap-1">
@@ -95,6 +112,7 @@ export const CubeColumnPicker: React.FC<{
             key={column.name}
             value={column.name}
             title={column.type.fullName}
+            disabled={isColumnDisabled?.(column)}
           >
             {`${column.name}: ${getColumnTypeLabel(column)}`}
           </option>

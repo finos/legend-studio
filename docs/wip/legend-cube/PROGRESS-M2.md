@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                   |
-| ------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                      |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                       |
-| Step   | M2.1–M2.10 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix); M2.11 next (Sort) |
-| Tests  | 1691 core, 669 builder (core group), 236 Query, 96 builder engine-roundtrip (after M2.10)                               |
+| Item   | State                                                                                                                                     |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                        |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                         |
+| Step   | M2.1–M2.11 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort); M2.12 next (the Sort warning) |
+| Tests  | 1767 core, 685 builder (core group), 236 Query, 106 builder engine-roundtrip (after M2.11)                                                |
 
 ## Steps
 
@@ -29,7 +29,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.8** Restrict
 - [x] **M2.9** Rename, with the column-name rule and the collision fix
 - [x] **M2.10** Join rename autofix
-- [ ] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
+- [x] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
 - [ ] **M2.12** The Sort warning
 - [ ] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
 - [ ] **M2.14** Grid quick actions: Sort by and Filter by
@@ -196,6 +196,34 @@ infers and returns 2155 rows with UNIT_PRICE_1 and UNIT_PRICE_2; with UNIT_PRICE
 UNIT_PRICE_1_2. Browser on :9002: an imported ORDER_DETAILS ⋈ PRODUCTS shows "UNIT_PRICE → UNIT_PRICE_1 (Left),
 UNIT_PRICE_2 (Right)"; "Rename them" splices the two Renames and the join turns valid; F9 shows the first 1,000 rows. Gates: `check:ci` and `lint:ci` green; 1691 core, 669 builder (core
 group), 236 Query and 96 engine-roundtrip tests.
+
+**M2.11, Sort and the row order (2026-10-08).** `Sort` ("Sort by Column", first in the palette) holds
+`{column, direction}` keys, `ASC` or `DESC` (as Join stores its type's enum, not the spec's V1 `Ascending`). It checks
+"Sorts cannot be empty.", then each key stopping at its first problem (`validateSortKey`, exported): the column
+named, in the input, and of a type that sorts (`isSortableType`: every type but Variant and the ones Cube doesn't
+know, "Sort column "X" of type Variant cannot be sorted."), then "Sort columns cannot have duplicates."; it describes
+itself as `Sort by "A" Asc, "B" Desc`. A new Sort has no key, as a new Rename has no mapping. The row order:
+`QueryNode.outputOrder` and `consumesInputOrder`, read by `computeRowOrders` (`inference/RowOrder.ts`); a source, a
+Join and any node that doesn't say otherwise give no order, Filter, Distinct, Limit, Drop and Slice keep it, Restrict
+keeps the keys before the first one it drops, Rename renames them, a Sort puts its keys first and then its input's on
+other columns, and an Unknown node leaves it unknown. Emission: a Sort writes nothing where it stands
+(`emitSort`); `emitRelation(id, { withRowOrder: true })` gives a Limit, Drop or Slice its input's order, which its
+emitter writes as `sort(…)` just before it (`emitSortedInput`, role `sort` on that node, each key `sortKey` on the
+Sort that declared it), and `emitExecutionLambda` sorts by the capture's own order before its row limit (role
+`captureSort`); typing lambdas have no sort. One key is written bare, several as a list. `SORT_CODEC` writes
+`{sorts: [{column, direction}]}`; an empty direction is a decode error, and an unknown direction or entry key keeps the
+node as an Unknown node once every entry has been read. The sample `operations.cube.json` gains a Sort before its
+Drop. The builder adds `CubeSortDraft` (one blank row to start, blank rows left out, the original kept while the rows
+are those it opened with), `CubeSortEditor` (column, direction, move up, move down and remove per row; columns that
+don't sort or that another row has can't be picked; scrolling on its own), `isColumnDisabled` on `CubeColumnPicker`,
+the spec's help text and `SortIcon`. Engine: without a Sort, H2 gives ORDERS in ascending ORDER_ID order (the control),
+so every Sort test sorts descending: a Sort at the capture shows 11077 down to 11072 at a row limit of 5; Sort then
+Limit 5 gives 11077–11073, Drop 825 gives 10252–10248, Slice [10, 15) gives 11067–11063, all in order; a key renamed
+and filtered sorts under its new name; two Sorts merge, the later first; a Restrict that drops the key writes no sort.
+Browser on :9002: ORDERS → Sort (ORDER_ID, Descending) runs 830 rows from 11077 down; with Take first 10 rows after it,
+Show Pure reads `->sort(~ORDER_ID->descending())->limit(10)->sort(~ORDER_ID->descending())->limit(1001)` and the 10
+rows come in order. The editor's row grid needed the Tailwind rebuild (now in the builder guide). Gates: `check:ci` and `lint:ci` green; 1767 core, 685 builder (core group), 236 Query and 106 engine-roundtrip
+tests.
 
 ## Open items
 

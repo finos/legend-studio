@@ -46,6 +46,7 @@ import { CubePalette, PALETTE_EMPTY_HINT } from '../CubePalette.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const TABLE = 'Relational Database Table';
+const SORT = 'Sort by Column';
 const FILTER = 'Filter by Column';
 const RESTRICT = 'Restrict Columns';
 const RENAME = 'Rename Columns';
@@ -141,6 +142,7 @@ describe('Cube palette', () => {
     ).toEqual([
       TABLE,
       'separator',
+      SORT,
       FILTER,
       RESTRICT,
       RENAME,

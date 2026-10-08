@@ -25,7 +25,13 @@ It has:
 - `schematize(inputSchemas)`: the output schema, or `undefined` when the inputs don't validate;
 - `describe()`, the one line the canvas shows, and `describeRedacted()`, the same without the values users typed,
   for logs (by default `describe()`, so override it if the node holds user values);
-- `withSwappedInputs()`, for a binary node whose settings name its inputs by side.
+- `withSwappedInputs()`, for a binary node whose settings name its inputs by side;
+- `outputOrder(inputOrders)`, the order its rows come in, for `computeRowOrders` (`src/inference/RowOrder.ts`). By
+  default none, as from a source or a join. A node that keeps its input's rows in order returns `keepInputOrder`
+  (Filter, Distinct); one that drops or renames columns maps the order (Restrict keeps the keys before the first one
+  it drops, Rename renames them); Sort puts its own keys first;
+- `consumesInputOrder`, true for a node that takes rows by their order (Limit, Drop, Slice): its emitter then sorts its
+  input first (see 3).
 
 Nodes are immutable. An edit makes a new node with the same `id` and the same `rest`, the saved keys this version
 doesn't know, so a re-save writes them back.
@@ -49,8 +55,8 @@ the selection if an `add` moved it. The caller applies the result as one undo st
 ## 2. Its messages
 
 Every message of the spec's catalogue (§16) is already a constant in `src/messages/CubeMessages.ts`, including those
-of operations not built yet (e.g. `MESSAGE_SORT_DIRECTION_EMPTY`, `MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER`): reuse
-it, don't add a copy. A message the catalogue doesn't have goes in the same file with an `/** Added by Cube: <why> */`
+of operations not built yet (e.g. `MESSAGE_AGGREGATION_FUNCTION_EMPTY`): reuse it, don't add a copy. A few stay
+unreachable (`MESSAGE_SORT_DIRECTION_EMPTY`: Cube's directions are an enum the codec checks). A message the catalogue doesn't have goes in the same file with an `/** Added by Cube: <why> */`
 comment, and an exact-text assertion in the 'Messages added by Cube' test of `CubeMessages.test.ts`.
 
 ## 3. Its emitter
@@ -61,6 +67,12 @@ order: `(node, inputs, context) => RelationExpr`. It only runs on a valid node.
 Give every part it emits an origin, `originOf(node.id, EmitRole.…)`, so an engine error lands on the node: a part with
 none takes its nearest ancestor's, a downstream node's. Add an `EmitRole` for a new kind of part; a role never
 contains `:`.
+
+Row order (PLAN §11.4): a Sort emits nothing where it stands. When the relation is emitted to run
+(`emitRelation(id, { withRowOrder: true })`, as `emitExecutionLambda` does), a node with `consumesInputOrder` gets its
+input's order as `context.inputOrder`, and its emitter wraps its input with `emitSortedInput(node, input, context)`
+(`src/ir/emitters/SortEmitter.ts`), as Limit's does; the run sorts by the capture node's order before its row limit.
+Typing lambdas carry no sort. A direct call with no context, as in an emitter's own tests, sorts nothing.
 
 ## 4. Its codec
 

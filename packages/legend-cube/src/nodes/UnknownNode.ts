@@ -15,6 +15,7 @@
  */
 
 import { QueryNode } from '../graph/QueryNode.js';
+import type { RowOrder } from '../inference/RowOrder.js';
 import { ensureSchemas } from '../inference/ValidationUtils.js';
 import type { Schema } from '../schema/Schema.js';
 import {
@@ -80,6 +81,13 @@ export class UnknownNode extends QueryNode {
 
   override get acceptsNewInputs(): boolean {
     return false;
+  }
+
+  /** Unknown: what the node does to the rows' order is not known */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    return undefined;
   }
 
   /** Never valid: what the node does is unknown. It gives no reason, so it shows the generic error. */

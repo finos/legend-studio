@@ -37,6 +37,8 @@ import {
   Rename,
   Restrict,
   Slice,
+  Sort,
+  SortDirection,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
@@ -66,7 +68,8 @@ import { LocalModelCatalog } from '../stores/LocalModelCatalog.js';
 // M2's operations on the engine (PLAN §11.4), on the Cube Northwind fixture.
 // Rows come back in H2's order unless a Sort reaches the node that runs, so
 // results are compared as counts and sets. ORDERS has 830 orders, ORDER_ID
-// 10248 to 11077 with no gap.
+// 10248 to 11077 with no gap. H2 scans ORDERS in ascending ORDER_ID order, so
+// the Sort tests sort descending: without the sort, they fail.
 
 const ROW_LIMIT = 10000;
 
@@ -413,6 +416,192 @@ describe('Slice on the engine', () => {
     expect(TEST__columnValues(result, 'SHIP_COUNTRY')).toEqual(
       Array(7).fill('France'),
     );
+  });
+});
+
+const { ASC, DESC } = SortDirection;
+
+/** A Sort on ORDER_ID, descending */
+const byOrderIdDesc = (id = 'sort101'): Sort =>
+  new Sort(id, [{ column: 'ORDER_ID', direction: DESC }]);
+
+const frenchOrders = (): Filter =>
+  new Filter(
+    'filter101',
+    new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+      kind: 'string',
+      value: 'France',
+    }),
+  );
+
+/** The numbers from `from` down to `to` */
+const countDown = (from: number, to: number): number[] =>
+  Array.from({ length: from - to + 1 }, (_, index) => from - index);
+
+describe('Sort on the engine', () => {
+  test('Gets ORDERS in ascending ORDER_ID order without a Sort, so these tests sort descending', async () => {
+    // the control: were the sort not written, the tests below would get these rows
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Limit('limit101', 5)),
+      ROW_LIMIT,
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(10252, 10248).reverse(),
+    );
+  });
+
+  test.each<[string, Sort]>([
+    ['one key', byOrderIdDesc()],
+    [
+      'two keys',
+      new Sort('sort101', [
+        { column: 'SHIP_COUNTRY', direction: DESC },
+        { column: 'ORDER_ID', direction: ASC },
+      ]),
+    ],
+  ])(
+    'Emits what the engine parses from the printed Pure with %s, and types as Cube infers',
+    async (_, sort) => {
+      for (const query of [
+        await ordersThen(sort),
+        await ordersThen(sort, new Limit('limit101', 5)),
+      ]) {
+        const lambda = new QueryEmitter(query).emitExecutionLambda({
+          rowLimit: ROW_LIMIT,
+          runtime: CUBE_NORTHWIND_RUNTIME,
+        });
+        expect(emittedJson(query)).toEqual(
+          await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+        );
+        await TEST__expectEngineTyping(engine, query);
+      }
+    },
+  );
+
+  test('Shows the rows in the order of a Sort that reaches the run, cut at the row limit', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(byOrderIdDesc()),
+      5,
+    );
+    // one more row than the row limit, the sixth in order too
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(11077, 11072),
+    );
+  });
+
+  test("Takes the first rows by a Sort's order", async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(byOrderIdDesc(), new Limit('limit101', 5)),
+      ROW_LIMIT,
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(11077, 11073),
+    );
+  });
+
+  test("Drops the first rows by a Sort's order", async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(byOrderIdDesc(), new Drop('drop101', 825)),
+      ROW_LIMIT,
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(10252, 10248),
+    );
+  });
+
+  test("Takes a range of rows by a Sort's order", async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(byOrderIdDesc(), new Slice('slice101', 10, 15)),
+      ROW_LIMIT,
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(11067, 11063),
+    );
+  });
+
+  test('Sorts by a renamed key under its new name, through a filter', async () => {
+    const french = orderIds(
+      TEST__columnValues(
+        await TEST__runQuery(
+          engine,
+          await ordersThen(frenchOrders()),
+          ROW_LIMIT,
+        ),
+        'ORDER_ID',
+      ),
+    );
+    expect(french).toHaveLength(77);
+    const query = await ordersThen(
+      byOrderIdDesc(),
+      new Rename('rename101', [{ from: 'ORDER_ID', to: 'Order Id' }]),
+      frenchOrders(),
+      new Limit('limit101', 3),
+    );
+    expect(
+      printIR(
+        new QueryEmitter(query).emitRelation('limit101', {
+          withRowOrder: true,
+        }),
+      ),
+    ).toContain(`->sort(~'Order Id'->descending())->limit(3)`);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(orderIds(TEST__columnValues(result, 'Order Id'))).toEqual(
+      [...french].sort((a, b) => b - a).slice(0, 3),
+    );
+  });
+
+  test("Puts the later Sort's keys first, then the earlier's", async () => {
+    const venezuelan = orderIds(
+      TEST__columnValues(
+        await TEST__runQuery(
+          engine,
+          await ordersThen(
+            new Filter(
+              'filter101',
+              new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+                kind: 'string',
+                value: 'Venezuela',
+              }),
+            ),
+          ),
+          ROW_LIMIT,
+        ),
+        'ORDER_ID',
+      ),
+    );
+    const query = await ordersThen(
+      byOrderIdDesc(),
+      new Sort('sort102', [{ column: 'SHIP_COUNTRY', direction: DESC }]),
+      new Limit('limit101', 5),
+    );
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    // Venezuela is the last country, and its orders come by ORDER_ID descending
+    expect(TEST__columnValues(result, 'SHIP_COUNTRY')).toEqual(
+      Array(5).fill('Venezuela'),
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      [...venezuelan].sort((a, b) => b - a).slice(0, 5),
+    );
+  });
+
+  test('Writes no sort once a Restrict drops the key, and still runs', async () => {
+    const query = await ordersThen(
+      byOrderIdDesc(),
+      new Restrict('restrict101', ['SHIP_COUNTRY']),
+      new Limit('limit101', 5),
+    );
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(printIR(lambda)).not.toContain('sort(');
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(5);
   });
 });
 

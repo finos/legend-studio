@@ -6,7 +6,7 @@ schema inference and validation, the transforms, filters, the Cube IR and its em
 
 The UI, the stores and the Legend engine adapter live in [`@finos/legend-cube-builder`](../legend-cube-builder).
 
-**Status:** work in progress, version 0.0.x. It has relational tables, Join, Filter, Restrict, Rename, Distinct, Drop, Limit and Slice. The API is not
+**Status:** work in progress, version 0.0.x. It has relational tables, Join, Sort, Filter, Restrict, Rename, Distinct, Drop, Limit and Slice. The API is not
 stable before 1.0: `src/index.ts` re-exports whole modules.
 
 ## How it fits together
@@ -15,26 +15,27 @@ stable before 1.0: `src/index.ts` re-exports whole modules.
   immutable `Query` of `QueryNode`s and `Connection`s, and presentation settings. Every edit makes a new `Query`.
 - **Inference:** `buildSchemasAndValidity` gives each node its output schema and its errors.
 - **Emitting:** `QueryEmitter` turns a valid query into the Cube IR, a host-free Pure AST (`printIR` prints it for
-  debugging). The builder's `v1/` adapter writes the IR as the engine's protocol JSON. The engine's Pure text is
+  debugging). A Sort's order is written where it is used: before a Limit, Drop or Slice, and before the run's row
+  limit. The builder's `v1/` adapter writes the IR as the engine's protocol JSON. The engine's Pure text is
   never parsed back.
 - **Saving:** `encodeCubeSpec` and `decodeCubeSpec` (or `serializeCubeSpec` and `parseCubeSpec`, for text) write and
   read the saved spec.
 - **Node types:** `createNodeRegistry()` lists them, in palette order. The palette, the context menu and the codec
   all read it.
 
-| Folder       | Holds                                                                                                                                                                    |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `types/`     | `CubeType`, the registry of precise primitive types, type families, compatibility                                                                                        |
-| `values/`    | literal values, read and checked per type                                                                                                                                |
-| `schema/`    | `Schema` and `SchemaColumn`, schema diffs                                                                                                                                |
-| `graph/`     | `QueryNode` and its base classes, `Connection`, `Query`, `CubeDocument`                                                                                                  |
-| `inference/` | schema inference, which marks incomplete and upstream-invalid nodes; validation helpers                                                                                  |
-| `nodes/`     | the node registry; `sources/` (relational table), `transforms/` (Join, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, and the row settings they share), Unknown |
-| `filter/`    | the filter tree, operators by type family, helpers that build filters                                                                                                    |
-| `messages/`  | the validation messages, including `ERR_INCOMPLETE` and `ERR_SCHEMAS` for incomplete and upstream-invalid nodes                                                          |
-| `ir/`        | the Cube IR, an emitter per node type (`emitters/`), the debug printer                                                                                                   |
-| `spec/`      | the saved-spec codec, a codec per node type (`codecs/`), migrations                                                                                                      |
-| `utils/`     | assertions and JSON helpers                                                                                                                                              |
+| Folder       | Holds                                                                                                                                                                          |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `types/`     | `CubeType`, the registry of precise primitive types, type families, compatibility                                                                                              |
+| `values/`    | literal values, read and checked per type                                                                                                                                      |
+| `schema/`    | `Schema` and `SchemaColumn`, schema diffs                                                                                                                                      |
+| `graph/`     | `QueryNode` and its base classes, `Connection`, `Query`, `CubeDocument`                                                                                                        |
+| `inference/` | schema inference, which marks incomplete and upstream-invalid nodes; validation helpers; the rows' order through the graph (`RowOrder.ts`)                                     |
+| `nodes/`     | the node registry; `sources/` (relational table), `transforms/` (Join, Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, and the row settings they share), Unknown |
+| `filter/`    | the filter tree, operators by type family, helpers that build filters                                                                                                          |
+| `messages/`  | the validation messages, including `ERR_INCOMPLETE` and `ERR_SCHEMAS` for incomplete and upstream-invalid nodes                                                                |
+| `ir/`        | the Cube IR, an emitter per node type (`emitters/`), the debug printer                                                                                                         |
+| `spec/`      | the saved-spec codec, a codec per node type (`codecs/`), migrations                                                                                                            |
+| `utils/`     | assertions and JSON helpers                                                                                                                                                    |
 
 ## Saved spec
 

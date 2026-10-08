@@ -70,6 +70,14 @@ export const getComparisonClass = (
 };
 
 /**
+ * Whether a column of the type can be sorted on: every type Cube compares,
+ * so not VARIANT or OPAQUE (PLAN §11.4). Sort, its editor, the grid's Sort by
+ * and the row-number fallback all use this one rule.
+ */
+export const isSortableType = (type: CubeType): boolean =>
+  getComparisonClass(type) !== undefined;
+
+/**
  * Whether two types can be compared, e.g. as a pair of join keys: they must be
  * in the same comparison class, where the abstract `Date` also compares with
  * `StrictDate` and `DateTime`.

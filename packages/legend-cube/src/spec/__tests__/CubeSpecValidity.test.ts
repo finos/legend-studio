@@ -122,6 +122,20 @@ const rowCountSpec = (
 const limitSpec = (size: number | undefined): JsonObject =>
   rowCountSpec('limit', size);
 
+/** A saved spec: `relational101` feeding `sort101`, which has these keys */
+const sortSpec = (
+  sorts: { column: string; direction: string }[],
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'sort101',
+    nodes: [
+      RELATIONAL,
+      { kind: 'sort', id: 'sort101', inputs: ['relational101'], sorts },
+    ],
+  },
+});
+
 /** A saved spec: `relational101` feeding `rename101`, which has these mappings */
 const renameSpec = (mappings: { from: string; to: string }[]): JsonObject => ({
   formatVersion: 1,
@@ -600,6 +614,30 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       'a valid restrict, picked out of order',
       restrictSpec(['COUNTRY', 'QTY']),
       { relational101: [], restrict101: [] },
+    ],
+    [
+      'a sort with no key',
+      sortSpec([]),
+      { relational101: [], sort101: [MESSAGE_CANNOT_BE_EMPTY('Sorts')] },
+    ],
+    [
+      'a sort on a column twice',
+      sortSpec([
+        { column: 'QTY', direction: 'ASC' },
+        { column: 'QTY', direction: 'DESC' },
+      ]),
+      {
+        relational101: [],
+        sort101: [MESSAGE_CANNOT_HAVE_DUPLICATES('Sort columns')],
+      },
+    ],
+    [
+      'a valid sort, an enumeration among its keys',
+      sortSpec([
+        { column: 'REGION', direction: 'DESC' },
+        { column: 'QTY', direction: 'ASC' },
+      ]),
+      { relational101: [], sort101: [] },
     ],
     [
       'a rename onto a column the input keeps',

@@ -15,6 +15,7 @@
  */
 
 import { UnaryNode } from '../../graph/QueryNode.js';
+import { keepInputOrder, type RowOrder } from '../../inference/RowOrder.js';
 import { ensureSchemas } from '../../inference/ValidationUtils.js';
 import type { Schema } from '../../schema/Schema.js';
 import type { JsonObject } from '../../utils/Json.js';
@@ -62,6 +63,18 @@ export class Drop extends UnaryNode {
   /** The input schema, or `undefined` when the size is invalid */
   override schematize(inputSchemas: readonly Schema[]): Schema | undefined {
     return this.validate(inputSchemas) ? inputSchemas[0] : undefined;
+  }
+
+  /** The input's order: the rows after the first, in order */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    return keepInputOrder(inputOrders);
+  }
+
+  /** It takes rows by its input's order, so the emitter sorts its input first */
+  override get consumesInputOrder(): boolean {
+    return true;
   }
 
   describe(): string {

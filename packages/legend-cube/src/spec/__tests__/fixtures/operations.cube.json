@@ -126,9 +126,18 @@
         ]
       },
       {
+        "kind": "sort",
+        "id": "sort101",
+        "inputs": ["relational101"],
+        "sorts": [
+          { "column": "SHIP_COUNTRY", "direction": "DESC" },
+          { "column": "ORDER_ID", "direction": "ASC" }
+        ]
+      },
+      {
         "kind": "drop",
         "id": "drop101",
-        "inputs": ["relational101"],
+        "inputs": ["sort101"],
         "size": 10
       },
       {

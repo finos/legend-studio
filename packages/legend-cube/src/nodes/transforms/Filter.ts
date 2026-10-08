@@ -16,6 +16,7 @@
 
 import { type FilterRule, isFilterRule } from '../../filter/FilterTree.js';
 import { UnaryNode } from '../../graph/QueryNode.js';
+import { keepInputOrder, type RowOrder } from '../../inference/RowOrder.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
 import {
   BLANK_PLACEHOLDER,
@@ -63,6 +64,13 @@ export class Filter extends UnaryNode {
   /** The input schema, or `undefined` when the filter is invalid */
   override schematize(inputSchemas: readonly Schema[]): Schema | undefined {
     return this.validate(inputSchemas) ? inputSchemas[0] : undefined;
+  }
+
+  /** The input's order: removing rows keeps the others in order */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    return keepInputOrder(inputOrders);
   }
 
   describe(): string {

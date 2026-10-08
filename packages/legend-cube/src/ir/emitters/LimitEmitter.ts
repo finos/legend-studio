@@ -17,15 +17,19 @@
 import type { Limit } from '../../nodes/transforms/Limit.js';
 import { isPositiveWholeNumber } from '../../nodes/transforms/RowSettings.js';
 import { EmitRole, func, literal, type RelationExpr } from '../CubeIR.js';
-import { originOf } from '../EmitContext.js';
+import { type EmitContext, originOf } from '../EmitContext.js';
+import { emitSortedInput } from './SortEmitter.js';
 
 /**
- * Emits a limit as `<input>->limit(<size>)`. The size is written as plain
- * digits: the serializer would also accept a number token such as `1e3`.
+ * Emits a limit as `<input>->limit(<size>)`, the input sorted first by its
+ * order when the context gives one (`emitSortedInput`). The size is written
+ * as plain digits: the serializer would also accept a number token such as
+ * `1e3`.
  */
 export const emitLimit = (
   node: Limit,
   inputs: readonly RelationExpr[],
+  context?: EmitContext,
 ): RelationExpr => {
   const [input] = inputs;
   const { size } = node;
@@ -41,7 +45,10 @@ export const emitLimit = (
   const origin = originOf(node.id, EmitRole.TAKE);
   return func(
     'limit',
-    [input, literal({ kind: 'integer', value: String(size) }, origin)],
+    [
+      emitSortedInput(node, input, context),
+      literal({ kind: 'integer', value: String(size) }, origin),
+    ],
     origin,
   );
 };

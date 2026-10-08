@@ -24,6 +24,7 @@ import {
   Rename,
   Restrict,
   Slice,
+  Sort,
   UnknownNode,
 } from '@finos/legend-cube';
 
@@ -47,6 +48,8 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [Restrict.TYPE]: 'Restricts outgoing data set to the specified columns only.',
   [Slice.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only the rows from position "start" up to, but not including, position "stop", counting from 0.',
+  [Sort.TYPE]:
+    'Reorders rows of the previous data set by one or more columns, either in ascending or descending order per column.',
   [UnknownNode.TYPE]: 'Source or transformation unknown to the application.',
 };
 

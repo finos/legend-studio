@@ -29,6 +29,8 @@ as one undo step (**Cancel** drops it).
 - It changes only the draft. An action on the document, such as Join's Swap Inputs, goes through
   `editorState.nodeEditor`, which applies the draft first.
 - `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
+  `isColumnDisabled` shows a column without letting it be picked, as Sort does for a type that can't be sorted
+  (`isSortableType`) and a column another row has.
 - A whole-number setting (a size, a row index) is a `CubeIntegerField` over text the draft keeps as typed, read with
   `parseWholeNumberText` (`src/stores/editors/CubeIntegerText.ts`): an optional sign and digits, nothing else, and empty
   text gives `undefined`, which the node reports. Never `Number()` the raw text (it reads `''` as 0, `0x10` as 16 and
@@ -40,6 +42,9 @@ as one undo step (**Cancel** drops it).
   decides on (PLAN §11.4, §12.2 question 1). Don't rely on the panel's height: a list scrolls on its own (a
   `max-height` with `overflow: auto`), column and direction pickers stay native `<select>` elements, as
   `CubeColumnPicker` is, and no editor measures the panel or reads its size.
+- A Tailwind class no other file uses yet, such as an arbitrary `grid-cols-[…]`, does nothing in the dev server until
+  the deployment's Tailwind build runs again ([hosting.md](./hosting.md)); jsdom tests don't see it either way, so
+  check a new layout in the browser.
 - Register it in `CUBE_NODE_EDITORS` (`src/components/editors/CubeNodeEditorRegistry.ts`).
 
 ## 3. Help text

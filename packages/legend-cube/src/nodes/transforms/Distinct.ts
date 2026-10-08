@@ -15,6 +15,7 @@
  */
 
 import { UnaryNode } from '../../graph/QueryNode.js';
+import { keepInputOrder, type RowOrder } from '../../inference/RowOrder.js';
 import { ensureSchemas } from '../../inference/ValidationUtils.js';
 import type { Schema } from '../../schema/Schema.js';
 
@@ -30,6 +31,13 @@ export class Distinct extends UnaryNode {
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     ensureSchemas(inputSchemas, this.ports);
     return true;
+  }
+
+  /** The input's order: removing repeated rows keeps the others in order */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    return keepInputOrder(inputOrders);
   }
 
   describe(): string {

@@ -141,6 +141,12 @@ export enum EmitRole {
   SLICE = 'slice',
   /** a Distinct: its distinct call */
   DISTINCT = 'distinct',
+  /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
+  SORT = 'sort',
+  /** a Sort: one of its keys, wherever the order is written */
+  SORT_KEY = 'sortKey',
+  /** the capture node: the sort by its own order, before its limit */
+  CAPTURE_SORT = 'captureSort',
   /** the capture node: `limit(rowLimit + 1)` and its literal */
   LIMIT = 'limit',
   /** the capture node: `from(runtime)` */

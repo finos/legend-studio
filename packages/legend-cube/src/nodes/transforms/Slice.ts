@@ -15,6 +15,7 @@
  */
 
 import { UnaryNode } from '../../graph/QueryNode.js';
+import { keepInputOrder, type RowOrder } from '../../inference/RowOrder.js';
 import { ensureSchemas, validate } from '../../inference/ValidationUtils.js';
 import { MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP } from '../../messages/CubeMessages.js';
 import type { Schema } from '../../schema/Schema.js';
@@ -95,6 +96,18 @@ export class Slice extends UnaryNode {
   }
 
   /** `Take rows 10 to 20 (20 excluded)`: the stop row is not kept (PLAN §11.4) */
+  /** The input's order: the rows of the range, in order */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    return keepInputOrder(inputOrders);
+  }
+
+  /** It takes rows by its input's order, so the emitter sorts its input first */
+  override get consumesInputOrder(): boolean {
+    return true;
+  }
+
   describe(): string {
     const range = `Take rows ${describeRowSetting(this.start)} to ${describeRowSetting(this.stop)}`;
     return this.stop === undefined ? range : `${range} (${this.stop} excluded)`;

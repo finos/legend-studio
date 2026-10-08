@@ -48,6 +48,7 @@ import {
   RENAME_DEFINITION,
   RESTRICT_DEFINITION,
   SLICE_DEFINITION,
+  SORT_DEFINITION,
   type TransformDefinition,
 } from '../NodeRegistry.js';
 import {
@@ -64,6 +65,7 @@ import { Limit } from '../transforms/Limit.js';
 import { Rename } from '../transforms/Rename.js';
 import { Restrict } from '../transforms/Restrict.js';
 import { Slice } from '../transforms/Slice.js';
+import { Sort } from '../transforms/Sort.js';
 import { UnknownNode } from '../UnknownNode.js';
 
 const COORDINATES = {
@@ -183,8 +185,9 @@ describe(unitTest('Node registry'), () => {
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order (§7): Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
+      SORT_DEFINITION,
       FILTER_DEFINITION,
       RESTRICT_DEFINITION,
       RENAME_DEFINITION,
@@ -194,10 +197,23 @@ describe(unitTest('Node registry'), () => {
       SLICE_DEFINITION,
       JOIN_DEFINITION,
     ]);
+    expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     expect(registry.queryRules).toHaveLength(1);
+  });
+
+  test('Creates a sort with no key yet', () => {
+    expect(SORT_DEFINITION.kind).toBe('transform');
+    expect(SORT_DEFINITION.type).toBe('sort');
+    expect(SORT_DEFINITION.label).toBe('Sort by Column');
+    expect(SORT_DEFINITION.icon).toBe('sort');
+    expect(SORT_DEFINITION.beta).toBe(false);
+    const sort = SORT_DEFINITION.create('sort101');
+    expect(sort).toBeInstanceOf(Sort);
+    expect(sort.id).toBe('sort101');
+    expect(sort.sorts).toEqual([]);
   });
 
   test('Creates a filter with no filter yet', () => {

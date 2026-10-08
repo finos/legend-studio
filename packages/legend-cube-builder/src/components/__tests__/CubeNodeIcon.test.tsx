@@ -25,6 +25,7 @@ import {
   FilterIcon,
   PencilIcon,
   QuestionSquareIcon,
+  SortIcon,
   TableIcon,
 } from '@finos/legend-art';
 import { createNodeRegistry } from '@finos/legend-cube';
@@ -42,6 +43,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
   rename: PencilIcon,
+  sort: SortIcon,
 };
 
 /** The markup an icon draws */

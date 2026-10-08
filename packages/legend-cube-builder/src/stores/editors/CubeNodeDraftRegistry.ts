@@ -24,6 +24,7 @@ import {
   Rename,
   Restrict,
   Slice,
+  Sort,
 } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
@@ -34,6 +35,7 @@ import { CubeRenameDraft } from './CubeRenameDraft.js';
 import { CubeRestrictDraft } from './CubeRestrictDraft.js';
 import { CubeRowCountDraft } from './CubeRowCountDraft.js';
 import { CubeSliceDraft } from './CubeSliceDraft.js';
+import { CubeSortDraft } from './CubeSortDraft.js';
 
 /** Makes the draft of a node of one type */
 export type CubeNodeDraftFactory = (
@@ -50,6 +52,7 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   string,
   CubeNodeDraftFactory
 > = new Map<string, CubeNodeDraftFactory>([
+  [Sort.TYPE, (node) => new CubeSortDraft(guaranteeType(node, Sort))],
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],
   [
     Restrict.TYPE,

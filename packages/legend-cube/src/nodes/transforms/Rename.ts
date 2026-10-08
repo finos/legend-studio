@@ -15,6 +15,7 @@
  */
 
 import { UnaryNode } from '../../graph/QueryNode.js';
+import type { RowOrder } from '../../inference/RowOrder.js';
 import {
   ensureSchemas,
   validate,
@@ -162,6 +163,17 @@ export class Rename extends UnaryNode {
           : column;
       }),
     );
+  }
+
+  /** The input's order, its keys on renamed columns under their new names */
+  override outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    const [input] = inputOrders;
+    return input?.map((key) => {
+      const mapping = this.mappings.find(({ from }) => from === key.column);
+      return mapping ? { ...key, column: mapping.to } : key;
+    });
   }
 
   describe(): string {

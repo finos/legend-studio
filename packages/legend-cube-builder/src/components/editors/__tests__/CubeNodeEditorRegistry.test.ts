@@ -65,6 +65,7 @@ describe('Node editor registries', () => {
       restrict: 'Restricts outgoing data set to the specified columns only.',
       slice:
         'Reduces the number of rows in the previous data set, keeping only the rows from position "start" up to, but not including, position "stop", counting from 0.',
+      sort: 'Reorders rows of the previous data set by one or more columns, either in ascending or descending order per column.',
       unknown: 'Source or transformation unknown to the application.',
     });
     expect(SELECT_NODE_TOOLTIP).toBe(

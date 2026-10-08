@@ -81,6 +81,12 @@ const RENAME_101 = {
   inputs: [null],
   mappings: [{ from: 'SHIP_COUNTRY', to: 'Ship Country' }],
 };
+const SORT_101 = {
+  kind: 'sort',
+  id: 'sort101',
+  inputs: [null],
+  sorts: [{ column: 'ORDER_ID', direction: 'DESC' }],
+};
 const RESTRICT_101 = {
   kind: 'restrict',
   id: 'restrict101',
@@ -179,6 +185,17 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a limit', withNodes([LIMIT_101], 'limit101')],
     ['a drop', withNodes([DROP_101], 'drop101')],
     ['a restrict', withNodes([RESTRICT_101], 'restrict101')],
+    ['a sort', withNodes([SORT_101], 'sort101')],
+    [
+      'a sort with a blank column and no keys',
+      withNodes(
+        [
+          { ...SORT_101, sorts: [{ column: '', direction: 'ASC' }] },
+          { ...SORT_101, id: 'sort102', sorts: [] },
+        ],
+        'sort101',
+      ),
+    ],
     ['a rename', withNodes([RENAME_101], 'rename101')],
     [
       'a rename with blank names',
@@ -1099,6 +1116,67 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
       'query.nodes[0].size',
       'must be a finite number',
+    ],
+    [
+      'a sort without sorts',
+      withNodes([{ kind: 'sort', id: 'sort101', inputs: [null] }], 'sort101'),
+      'query.nodes[0].sorts',
+      'is required',
+    ],
+    [
+      'sorts that are not a list',
+      withNodes([{ ...SORT_101, sorts: { column: 'A' } }], 'sort101'),
+      'query.nodes[0].sorts',
+      'must be a list',
+    ],
+    [
+      'a sort entry that is a column name',
+      withNodes([{ ...SORT_101, sorts: ['ORDER_ID'] }], 'sort101'),
+      'query.nodes[0].sorts[0]',
+      'must be an object',
+    ],
+    [
+      'a sort entry without a direction',
+      withNodes([{ ...SORT_101, sorts: [{ column: 'A' }] }], 'sort101'),
+      'query.nodes[0].sorts[0].direction',
+      'is required',
+    ],
+    [
+      // as an empty joinType: a direction the user can't have picked
+      'a sort entry with an empty direction',
+      withNodes(
+        [{ ...SORT_101, sorts: [{ column: 'A', direction: '' }] }],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[0].direction',
+      'must not be empty',
+    ],
+    [
+      'a sort entry whose column is a number',
+      withNodes(
+        [{ ...SORT_101, sorts: [{ column: 1, direction: 'ASC' }] }],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[0].column',
+      'must be a string',
+    ],
+    [
+      // malformed fields are decode errors even after an unknown direction or key
+      'a sort entry without a column after one with an unknown direction',
+      withNodes(
+        [
+          {
+            ...SORT_101,
+            sorts: [
+              { column: 'A', direction: 'RANDOM' },
+              { direction: 'ASC', nulls: 'first' },
+            ],
+          },
+        ],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[1].column',
+      'is required',
     ],
     [
       'a rename without mappings',

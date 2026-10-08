@@ -30,6 +30,7 @@ import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitRename } from '../ir/emitters/RenameEmitter.js';
 import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
+import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
@@ -39,6 +40,7 @@ import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { RENAME_CODEC } from '../spec/codecs/RenameCodec.js';
 import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
+import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import {
@@ -53,6 +55,7 @@ import { Limit } from './transforms/Limit.js';
 import { Rename } from './transforms/Rename.js';
 import { Restrict } from './transforms/Restrict.js';
 import { Slice } from './transforms/Slice.js';
+import { Sort } from './transforms/Sort.js';
 import { UnknownNode } from './UnknownNode.js';
 
 /** What the palette, the context menu and the saved-spec codec know about a type of node */
@@ -118,6 +121,17 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     emit: (node) => emitRelationalTableSource(node),
     spec: RELATIONAL_TABLE_SOURCE_CODEC,
   };
+
+export const SORT_DEFINITION: TransformDefinition<Sort> = {
+  kind: 'transform',
+  type: Sort.TYPE,
+  label: 'Sort by Column',
+  icon: 'sort',
+  beta: false,
+  create: (id) => new Sort(id),
+  emit: emitSort,
+  spec: SORT_CODEC,
+};
 
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   kind: 'transform',
@@ -259,6 +273,7 @@ export class NodeRegistry {
 export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
+    SORT_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,
     RENAME_DEFINITION,

@@ -17,16 +17,19 @@
 import type { Drop } from '../../nodes/transforms/Drop.js';
 import { isPositiveWholeNumber } from '../../nodes/transforms/RowSettings.js';
 import { EmitRole, func, literal, type RelationExpr } from '../CubeIR.js';
-import { originOf } from '../EmitContext.js';
+import { type EmitContext, originOf } from '../EmitContext.js';
+import { emitSortedInput } from './SortEmitter.js';
 
 /**
- * Emits a drop as `<input>->drop(<size>)`, the native form. The size is
+ * Emits a drop as `<input>->drop(<size>)`, the native form, the input sorted
+ * first by its order when the context gives one (`emitSortedInput`). The size is
  * written as plain digits: the serializer would also accept a number token
  * such as `1e3`.
  */
 export const emitDrop = (
   node: Drop,
   inputs: readonly RelationExpr[],
+  context?: EmitContext,
 ): RelationExpr => {
   const [input] = inputs;
   const { size } = node;
@@ -42,7 +45,10 @@ export const emitDrop = (
   const origin = originOf(node.id, EmitRole.DROP);
   return func(
     'drop',
-    [input, literal({ kind: 'integer', value: String(size) }, origin)],
+    [
+      emitSortedInput(node, input, context),
+      literal({ kind: 'integer', value: String(size) }, origin),
+    ],
     origin,
   );
 };

@@ -47,6 +47,7 @@ import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
+import { Sort } from '../../nodes/transforms/Sort.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -1715,9 +1716,15 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       nodes: [
         RELATIONAL,
         {
+          kind: 'sort',
+          id: 'sort101',
+          inputs: ['relational101'],
+          sorts: [{ column: 'COUNTRY', direction: 'DESC' }],
+        },
+        {
           kind: 'drop',
           id: 'drop101',
-          inputs: ['relational101'],
+          inputs: ['sort101'],
           size: 10,
         },
         {
@@ -1757,6 +1764,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     });
     expect(readOnly).toBe(false);
     [
+      'sort101',
       'drop101',
       'limit101',
       'slice101',
@@ -1772,9 +1780,10 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       'distinct101 -> restrict101.in0',
       'drop101 -> limit101.in0',
       'limit101 -> slice101.in0',
-      'relational101 -> drop101.in0',
+      'relational101 -> sort101.in0',
       'restrict101 -> rename101.in0',
       'slice101 -> distinct101.in0',
+      'sort101 -> drop101.in0',
     ]);
     expect(JSON.stringify(encodeCubeSpec(document, M1_REGISTRY))).toBe(
       JSON.stringify(LIMITED),
@@ -1786,10 +1795,12 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     expect(document.query.generateId('distinct')).not.toBe('distinct101');
     expect(document.query.generateId('restrict')).not.toBe('restrict101');
     expect(document.query.generateId('rename')).not.toBe('rename101');
+    expect(document.query.generateId('sort')).not.toBe('sort101');
   });
 
   test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
     const { query } = decodeCubeSpec(LIMITED).document;
+    expect(query.getNode('sort101')).toBeInstanceOf(Sort);
     expect(query.getNode('drop101')).toBeInstanceOf(Drop);
     expect(query.getNode('slice101')).toBeInstanceOf(Slice);
     expect(query.getNode('distinct101')).toBeInstanceOf(Distinct);
@@ -1828,6 +1839,40 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     ]);
     expect(reSave(json)).toBe(JSON.stringify(json));
   });
+
+  test.each<[string, JsonObject[]]>([
+    ['a direction', [{ column: 'COUNTRY', direction: 'RANDOM' }]],
+    [
+      'a key on an entry',
+      [
+        { column: 'ID', direction: 'ASC' },
+        { column: 'COUNTRY', direction: 'DESC', nulls: 'first' },
+      ],
+    ],
+  ])(
+    'Keeps a sort with %s this version does not know as an Unknown node, re-saved verbatim',
+    (_, sorts) => {
+      // ignoring either could change the rows (PLAN §11.4)
+      const json = {
+        formatVersion: 1,
+        query: {
+          selected: 'sort101',
+          nodes: [
+            RELATIONAL,
+            { kind: 'sort', id: 'sort101', inputs: ['relational101'], sorts },
+          ],
+        },
+      };
+      const { document } = decodeCubeSpec(json);
+      const node = document.query.getNode('sort101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('sort');
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> sort101.in0',
+      ]);
+      expect(reSave(json)).toBe(JSON.stringify(json));
+    },
+  );
 
   test('Keeps the unknown keys of a limit whose size changes or is cleared', () => {
     const document = decodeCubeSpec(LIMITED).document;

@@ -62,6 +62,7 @@ import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
+import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -1571,6 +1572,67 @@ describe(unitTest('Saved spec encoding: limits'), () => {
     );
     expect(encodeCubeSpec(document)).toStrictEqual(
       limitSpec({ size: 5, note: 'top five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: sorts'), () => {
+  /** The saved spec of one unconnected sort, `sort101`, with these fields of its own */
+  const sortSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'sort101',
+      nodes: [{ kind: 'sort', id: 'sort101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Always writes its keys, an empty list included', () => {
+    expectEncoded(
+      documentOf([new Sort('sort101')], [], 'sort101'),
+      sortSpec({ sorts: [] }),
+    );
+  });
+
+  test('Writes each key as column, then direction, in order, blanks and repeats kept', () => {
+    expectEncoded(
+      documentOf(
+        [
+          new Sort('sort101', [
+            { column: 'SHIP_COUNTRY', direction: SortDirection.DESC },
+            { column: '', direction: SortDirection.ASC },
+            { column: 'SHIP_COUNTRY', direction: SortDirection.ASC },
+          ]),
+        ],
+        [],
+        'sort101',
+      ),
+      sortSpec({
+        sorts: [
+          { column: 'SHIP_COUNTRY', direction: 'DESC' },
+          { column: '', direction: 'ASC' },
+          { column: 'SHIP_COUNTRY', direction: 'ASC' },
+        ],
+      }),
+    );
+  });
+
+  test('Writes the keys from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        documentOf(
+          [
+            new Sort(
+              'sort101',
+              [{ column: 'A', direction: SortDirection.ASC }],
+              { sorts: [], note: 'n' },
+            ),
+          ],
+          [],
+          'sort101',
+        ),
+      ),
+    ).toStrictEqual(
+      sortSpec({ sorts: [{ column: 'A', direction: 'ASC' }], note: 'n' }),
     );
   });
 });

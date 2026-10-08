@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { RowOrder } from '../inference/RowOrder.js';
 import type { Schema } from '../schema/Schema.js';
 import { ensureSchemas } from '../inference/ValidationUtils.js';
 import { EMPTY_JSON_OBJECT, type JsonObject } from '../utils/Json.js';
@@ -72,6 +73,27 @@ export abstract class QueryNode {
    */
   withSwappedInputs(): QueryNode {
     return this;
+  }
+
+  /**
+   * The order the node's rows come in, from its inputs' orders in port order
+   * (`undefined` where unknown), for `computeRowOrders` (PLAN §11.4). By
+   * default no order, as from a source or a join: a node that keeps its
+   * input's order says so, so a new node never claims an order on columns it
+   * may not have.
+   */
+  outputOrder(
+    inputOrders: readonly (RowOrder | undefined)[],
+  ): RowOrder | undefined {
+    return [];
+  }
+
+  /**
+   * Whether the node takes rows by their order, as a Limit does: the emitter
+   * then writes its input's order as a sort just before it (PLAN §11.4)
+   */
+  get consumesInputOrder(): boolean {
+    return false;
   }
 
   /**

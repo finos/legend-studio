@@ -17,16 +17,19 @@
 import { isRowIndex } from '../../nodes/transforms/RowSettings.js';
 import type { Slice } from '../../nodes/transforms/Slice.js';
 import { EmitRole, func, literal, type RelationExpr } from '../CubeIR.js';
-import { originOf } from '../EmitContext.js';
+import { type EmitContext, originOf } from '../EmitContext.js';
+import { emitSortedInput } from './SortEmitter.js';
 
 /**
  * Emits a slice as `<input>->slice(<start>, <stop>)`, the native form, whose
  * range is the node's: rows from `start` up to `stop`, counting from 0. The
- * bounds are written as plain digits.
+ * input is sorted first by its order when the context gives one
+ * (`emitSortedInput`). The bounds are written as plain digits.
  */
 export const emitSlice = (
   node: Slice,
   inputs: readonly RelationExpr[],
+  context?: EmitContext,
 ): RelationExpr => {
   const [input] = inputs;
   const { start, stop } = node;
@@ -46,7 +49,7 @@ export const emitSlice = (
   return func(
     'slice',
     [
-      input,
+      emitSortedInput(node, input, context),
       literal({ kind: 'integer', value: String(start) }, origin),
       literal({ kind: 'integer', value: String(stop) }, origin),
     ],

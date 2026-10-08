@@ -25,6 +25,7 @@ import {
   FilterIcon,
   PencilIcon,
   QuestionSquareIcon,
+  SortIcon,
   TableIcon,
 } from '@finos/legend-art';
 
@@ -41,6 +42,7 @@ const NODE_ICONS: Readonly<
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
   rename: PencilIcon,
+  sort: SortIcon,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */
