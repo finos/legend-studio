@@ -2237,8 +2237,7 @@ and sources modal are designed. M3 can run in parallel if desired.
 
 ### 11.4 M2: simple unary operations
 
-M2 is built on the branch `cube-ops`, from `cubeV1` at `b9923ed28` (the M1.9 line after the 0.0.2 release). Its status
-is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
+M2 is built on the branch `cube-ops`, on master since #5634 (M1.9) merged as `3260216a6`. Its status is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
 critic and a finalize step), 140 checklist items, a 17-step build order and 5 questions; the full result is kept in the
 local evidence folder. The engine facts below were probed on the local engine (`93d92b4`) at compile and plan time ✅.
 
@@ -2248,9 +2247,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
 
 - **Base.** `cubeV1` had been rebased onto the 0.0.2 release (`6041ba413`) since `cube-ops` was created, and
   `cube-ops` had no commits of its own, so it was re-pointed at `cubeV1` (`b9923ed28`): the signed-off M1.9 code, its
-  guides and the exports 0.0.2 published. After the M1.9 follow-up PR (#5634) is squash-merged:
-  `git rebase --onto origin/master b9923ed28 cube-ops`. A commit of that base that #5634 doesn't carry stays on
-  `cubeV1`.
+  guides and the exports 0.0.2 published. #5634 was squash-merged the same day (`3260216a6`, the tree of
+  `0807adb12`), and M2 was rebased onto master with `git rebase --onto origin/master b9923ed28 cube-ops`. The base's
+  one commit #5634 didn't carry (`b9923ed28`, the DuckDB WASM note in §12.2) stays on `cubeV1`.
 - **First operation:** Limit, end to end (core, codec, emitter, editor, engine test, browser), before the others. It
   has a setting, a draft, a codec number, a message, an integer literal and an editor input.
 - **Where Sort's ORDER BY goes (answers §12.2 question 2): where the order is used.** Probes of
@@ -2384,9 +2383,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
 | M2.14 | Grid quick actions: Sort by and Filter by                                                                         |
 | M2.15 | Docs, sample typing on the engine, changeset text                                                                 |
 | M2.16 | Verification (reviewers and a skeptic per finding) and the browser rehearsal                                      |
-| M2.17 | Rebase onto master after #5634, fold the supersessions below into the plan, PR when the user asks                 |
+| M2.17 | Rebase on the latest master, fold the supersessions below into the plan, PR when the user asks                    |
 
-**Supersessions** (applied to the sections they change in one docs commit after the rebase):
+**Supersessions** (applied to the sections they change in one docs commit at the end of M2, M2.17):
 
 - §4: an entry per M2 node, and the row-order hooks; §4.7: the autofix's names and key rewrite.
 - §7.4 item 2: a transform with nothing to edit (Distinct) has an editor and no draft.
