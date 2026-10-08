@@ -19,7 +19,13 @@ import {
   CubeDirectDatabaseType,
   type CubeExploredTable,
 } from '../../../CubeConnectionExplorer.js';
-import { CubeTableFlag } from '../../../CubeEngine.js';
+import {
+  CubeEngineError,
+  type CubeEngineErrorKind,
+  CubeTableFlag,
+  type NodeId,
+} from '../../../CubeEngine.js';
+import { V1_toCubeEngineError } from './V1_CubeEngineErrors.js';
 
 // Reading a direct connection's database through the engine's schema
 // exploration (PLAN §6.8), the call Studio's database builder makes. The
@@ -269,4 +275,62 @@ export const V1_buildExploredDatabase = (
     tables: explored,
     missing,
   };
+};
+
+/**
+ * What a failed exploration's engine message means, for the errors whose
+ * message alone says little (a bare `NullPointerException: `, a Java class
+ * name): matched on the message's first line
+ */
+const EXPLORATION_FAILURES: readonly [RegExp, string][] = [
+  [
+    /InvalidTypeIdException/u,
+    "The engine doesn't know this kind of connection or authentication",
+  ],
+  [
+    /UnrecognizedPropertyException/u,
+    "The engine doesn't recognize a property of the connection",
+  ],
+  [
+    /NullPointerException/u,
+    "The engine couldn't open the connection: its authentication may be missing or unresolved",
+  ],
+  [
+    /ConnectException|Connection refused/u,
+    "The engine couldn't reach the database",
+  ],
+  [
+    /Maximum number of tables/u,
+    'The database has too many tables to read at once',
+  ],
+  [
+    /SQLException|SQL statement|Parser Error/u,
+    "The database refused a statement: check the connection's setup SQL",
+  ],
+];
+
+/**
+ * The error of a failed exploration: the engine's message, led by what it
+ * means when the message alone says little. A network failure stays one
+ */
+export const V1_toCubeExplorationError = (
+  error: unknown,
+  kind: CubeEngineErrorKind,
+  nodeId?: NodeId,
+): CubeEngineError => {
+  const engineError = V1_toCubeEngineError(error, nodeId, kind);
+  if (engineError.kind !== kind) {
+    return engineError;
+  }
+  const meaning = EXPLORATION_FAILURES.find(([pattern]) =>
+    pattern.test(engineError.firstLine),
+  )?.[1];
+  return meaning
+    ? new CubeEngineError(
+        kind,
+        `${meaning}\n${engineError.detail}`,
+        engineError.nodeId,
+        engineError.role,
+      )
+    : engineError;
 };

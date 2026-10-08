@@ -15,7 +15,9 @@
  */
 
 import type { TracerService } from '@finos/legend-shared';
+import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
 import type { CubeEngine } from '../../CubeEngine.js';
+import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -32,3 +34,13 @@ export const buildCubeEngine = (
   config: CubeEngineConfig,
   tracerService: TracerService,
 ): CubeEngine => new V1_LegendCubeEngine(config, tracerService);
+
+/**
+ * The connection explorer of a host that offers direct connections (PLAN
+ * §6.8), over the same engine as its Cube engine
+ */
+export const buildCubeConnectionExplorer = (
+  config: CubeEngineConfig,
+  tracerService: TracerService,
+): CubeConnectionExplorer =>
+  new V1_LegendCubeConnectionExplorer(config, tracerService);

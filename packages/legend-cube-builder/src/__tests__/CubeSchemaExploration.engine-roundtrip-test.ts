@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import { describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, test } from '@jest/globals';
 import type { PlainObject } from '@finos/legend-shared';
 import { CUBE_ENGINE_TEST__schemaExploration } from '../__test-utils__/CubeConnectionTestSupport.js';
+import { V1_createEngineBackedCubeConnectionExplorer } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeConnectionExplorerTestUtils.js';
 import {
   DIRECT_DUCKDB_CONNECTION,
   DIRECT_DUCKDB_SCHEMA,
@@ -84,4 +85,64 @@ describe('Schema exploration for direct connections', () => {
     });
     // the first DuckDB call loads the engine's driver
   }, 20_000);
+});
+
+describe('Connection explorer on the engine', () => {
+  let engineBacked: ReturnType<
+    typeof V1_createEngineBackedCubeConnectionExplorer
+  >;
+  beforeEach(() => {
+    engineBacked = V1_createEngineBackedCubeConnectionExplorer();
+  });
+
+  test("Lists an H2 database's schemas without the database's own, then a schema's tables", async () => {
+    const { explorer } = engineBacked;
+    const schemas = await explorer.listSchemas(DIRECT_H2_CONNECTION);
+    expect(schemas).toContain(DIRECT_H2_SCHEMA);
+    expect(schemas).not.toContain('INFORMATION_SCHEMA');
+    expect(
+      await explorer.listTables(DIRECT_H2_CONNECTION, DIRECT_H2_SCHEMA),
+    ).toEqual([
+      {
+        name: 'ORDERS',
+        storedName: '"ORDERS"',
+        columnCount: 3,
+        hiddenColumnCount: 0,
+        flags: [],
+      },
+    ]);
+    expect(engineBacked.calls.buildDatabase).toHaveBeenCalledTimes(2);
+  });
+
+  test("Lists an in-memory DuckDB database's schemas, then a schema's tables", async () => {
+    const { explorer } = engineBacked;
+    expect(await explorer.listSchemas(DIRECT_DUCKDB_CONNECTION)).toContain(
+      DIRECT_DUCKDB_SCHEMA,
+    );
+    expect(
+      await explorer.listTables(DIRECT_DUCKDB_CONNECTION, DIRECT_DUCKDB_SCHEMA),
+    ).toEqual([
+      {
+        name: 'orders',
+        storedName: '"orders"',
+        columnCount: 3,
+        hiddenColumnCount: 0,
+        flags: [],
+      },
+    ]);
+  }, 20_000);
+
+  test('Says what a failure means: here, setup SQL the database refuses', async () => {
+    const { explorer } = engineBacked;
+    const broken = JSON.parse(
+      JSON.stringify(DIRECT_H2_CONNECTION),
+    ) as PlainObject;
+    (broken.datasourceSpecification as PlainObject).testDataSetupSqls = [
+      'create tabel CUBE_DIRECT_BROKEN.T (ID INT)',
+    ];
+    await expect(explorer.listSchemas(broken)).rejects.toMatchObject({
+      firstLine:
+        "The database refused a statement: check the connection's setup SQL",
+    });
+  });
 });

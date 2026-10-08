@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PlainObject } from '@finos/legend-shared';
 import type { CubeTableFlag } from './CubeEngine.js';
 
 // Direct connections (PLAN §6.8), in Cube's own terms: what the connection
@@ -66,4 +67,40 @@ export interface CubeExploredTable {
   /** The columns left out because the engine can't type them; Cube shows how many */
   hiddenColumnCount: number;
   flags: readonly CubeTableFlag[];
+}
+
+/**
+ * A direct connection as a cube saves it: protocol JSON, which only the
+ * engine's implementation reads
+ */
+export type CubeDirectConnection = PlainObject;
+
+/** What the page knows of a connection without calling the engine */
+export type CubeConnectionDescription =
+  | { supported: true; summary: CubeConnectionSummary }
+  /** Why Cube can't use the connection, in words a user can act on */
+  | { supported: false; problems: readonly string[] };
+
+/**
+ * Reading a direct connection's database (PLAN §6.8), for the picker: its own
+ * port, beside the `CubeEngine`, so hosts without direct connections need
+ * neither. Calls fail with a `CubeEngineError`, with no node
+ */
+export interface CubeConnectionExplorer {
+  /** The connection the connection form describes */
+  buildConnection(draft: CubeConnectionDraft): CubeDirectConnection;
+
+  /** Whether Cube can use a connection, and what the page shows of it: no engine call */
+  describeConnection(
+    connection: CubeDirectConnection,
+  ): CubeConnectionDescription;
+
+  /** The schemas of the connection's database, without the database's own; tests the connection */
+  listSchemas(connection: CubeDirectConnection): Promise<readonly string[]>;
+
+  /** A schema's tables and views, with how many columns Cube can use and hides */
+  listTables(
+    connection: CubeDirectConnection,
+    schema: string,
+  ): Promise<readonly CubeExploredTable[]>;
 }

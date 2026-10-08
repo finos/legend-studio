@@ -1,0 +1,32 @@
+{
+  "unresolvedAuthentication": {
+    "code": -1,
+    "message": "NullPointerException: ",
+    "status": "error",
+    "trace": "java.lang.RuntimeException: com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: java.lang.NullPointerException"
+  },
+  "unreachableDatabase": {
+    "code": -1,
+    "message": "ConnectException: Connection refused (Connection refused)",
+    "status": "error",
+    "trace": "java.lang.RuntimeException: com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: org.h2.jdbc.JdbcSQLNonTransientConnectionException: Connection is broken: \"java.net.ConnectException: Connection refused (Connection refused): localhost:9092\" [90067-214]"
+  },
+  "setupSqlError": {
+    "code": -1,
+    "message": "JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"create [*]tabel CUBE_BAD.T (ID INT)\"; expected \"OR REPLACE, FORCE, VIEW, ALIAS, SEQUENCE, USER, TRIGGER, ROLE, SCHEMA, CONSTANT, DOMAIN, TYPE, DATATYPE, AGGREGATE, LINKED, MEMORY, CACHED, LOCAL TEMPORARY, GLOBAL TEMPORARY, TEMP, TEMPORARY, TABLE, SYNONYM, UNIQUE, HASH, SPATIAL, INDEX\"; SQL statement:\ncreate tabel CUBE_BAD.T (ID INT) [42001-214]",
+    "status": "error",
+    "trace": "java.lang.RuntimeException: org.h2.jdbc.JdbcSQLSyntaxErrorException: Syntax error in SQL statement \"create [*]tabel CUBE_BAD.T (ID INT)\"; expected \"OR REPLACE, FORCE, VIEW, ALIAS, SEQUENCE, USER, TRIGGER, ROLE, SCHEMA, CONSTANT, DOMAIN, TYPE, DATATYPE, AGGREGATE, LINKED, MEMORY, CACHED, LOCAL TEMPORARY, GLOBAL TEMPORARY, TEMP, TEMPORARY, TABLE, SYNONYM, UNIQUE, HASH, SPATIAL, INDEX\"; SQL statement:"
+  },
+  "unknownAuthenticationType": {
+    "code": -1,
+    "message": "InvalidTypeIdException: Could not resolve type id 'Test' as a subtype of `org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy`: known type ids = [TrinoDelegatedKerberosAuth, apiToken, delegatedKerberos, gcpApplicationDefaultCredentials, gcpWorkloadIdentityFederation, h2Default, middleTierUserNamePassword, oauth, snowflakePublic, test, userNamePassword] (for POJO property 'authenticationStrategy')\n at [Source: (org.glassfish.jersey.message.internal.ReaderInterceptorExecutor$UnCloseableInputStream); line: 1, column: 265] (through reference chain: org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabaseBuilderInput[\"connection\"]->org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection[\"authenticationStrategy\"])",
+    "status": "error",
+    "trace": "com.fasterxml.jackson.databind.exc.InvalidTypeIdException: Could not resolve type id 'Test' as a subtype of `org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy`: known type ids = [TrinoDelegatedKerberosAuth, apiToken, delegatedKerberos, gcpApplicationDefaultCredentials, gcpWorkloadIdentityFederation, h2Default, middleTierUserNamePassword, oauth, snowflakePublic, test, userNamePassword] (for POJO property 'authenticationStrategy')"
+  },
+  "unknownProperty": {
+    "code": -1,
+    "message": "UnrecognizedPropertyException: Unrecognized field \"bogus\" (class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection), not marked as ignorable (14 known properties: \"postProcessors\", \"authenticationStrategy\", \"localMode\", \"postProcessorWithParameter\", \"databaseType\", \"timeZone\", \"type\", \"element\", \"datasourceSpecification\", \"queryTimeOutInSeconds\", \"quoteIdentifiers\", \"queryGenerationConfigs\", \"elementSourceInformation\", \"sourceInformation\"])\n at [Source: (org.glassfish.jersey.message.internal.ReaderInterceptorExecutor$UnCloseableInputStream); line: 1, column: 96] (through reference chain: org.finos.legend.engine.plan.execution.stores.relational.exploration.model.DatabaseBuilderInput[\"connection\"]->org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection[\"bogus\"])",
+    "status": "error",
+    "trace": "com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException: Unrecognized field \"bogus\" (class org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection), not marked as ignorable (14 known properties: \"postProcessors\", \"authenticationStrategy\", \"localMode\", \"postProcessorWithParameter\", \"databaseType\", \"timeZone\", \"type\", \"element\", \"datasourceSpecification\", \"queryTimeOutInSeconds\", \"quoteIdentifiers\", \"queryGenerationConfigs\", \"elementSourceInformation\", \"sourceInformation\"])"
+  }
+}
