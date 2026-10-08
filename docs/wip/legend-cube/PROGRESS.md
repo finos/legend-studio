@@ -67,7 +67,10 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
    tests; the changeset `legend-cube-slice-acceptance` (both packages, patch: neither had been released on
    2026-10-08, so the dropped exports broke nobody; recheck npm before the PR). The rehearsal passed again on the rebased head. **Acceptance head:** `92afa6f9f`,
    the last commit that changes code or tests.
-6. The user's Part B run, the acceptance record and the sign-off.
+6. ✅ **Part B acceptance, 2026-10-08:** the user ran all of PLAN §11.2 Part B by hand and reported that it passed,
+   on `cubeV1` at `4064209a6` (code and tests as at the acceptance head `92afa6f9f`), in Chrome, against the local
+   IntelliJ engine (commit `93d92b4`); docker CORS waived. Still to record: the user's M1 sign-off. Then the follow-up
+   PR.
 
 **In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
 from `cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
