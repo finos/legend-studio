@@ -62,7 +62,11 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 5. ✅ Rehearsal in a browser: it found that a height-only change (the splitter above the grid) didn't refit the
    canvas, fixed in `afd32717f`; every other check passed. ✅ Skeptic verification `m19-verify` (4 reviewers, a skeptic
    per finding): 38 findings kept, 2 refuted, mostly docs; fixed in `92afa6f9f` (a picker test re-picked the model
-   in a way no browser can) and the docs commits after it. Still to do: the final gates.
+   in a way no browser can) and the docs commits after it. ✅ Final gates on the rebased branch (2026-10-08):
+   `check:ci` and `lint:ci` green; 1419 core, 538 builder (core group), 236 Query and 63 builder engine-roundtrip
+   tests; the changeset `legend-cube-slice-acceptance` (both packages, patch; neither was released before, so the
+   dropped exports break nobody). The rehearsal passed again on the rebased head. **Acceptance head:** `92afa6f9f`,
+   the last commit that changes code or tests.
 6. The user's Part B run, the acceptance record and the sign-off.
 
 **In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
