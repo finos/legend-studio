@@ -33,7 +33,7 @@ Mapping my::relationFunctionMappingWithValueFn
     ~func my::personFunction():Relation<Any>[1]
     firstName: FIRSTNAME,
     age: AGE,
-    greeted: 'Hi ' + $src.FIRSTNAME
+    greeted: 'Hi ' + $row.FIRSTNAME
   }
 )
 
