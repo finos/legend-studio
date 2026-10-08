@@ -163,16 +163,20 @@ export const LegendMarketplaceSearchBar = observer(
 
         try {
           const client = legendMarketplaceBaseStore.marketplaceServerClient;
-          const fetchSuggestions =
-            searchMode === MarketplaceSearchMode.LAKEHOUSE_ACCESS
-              ? client.getLakehouseAccessAutosuggestions
-              : client.getAutosuggestions;
-          const response = await fetchSuggestions(
-            query,
-            legendMarketplaceBaseStore.envState.lakehouseEnvironment,
-            SEARCH_SUGGESTION_CONSTANTS.AUTOSUGGEST_LIMIT,
-            signal,
-          );
+          const limit = SEARCH_SUGGESTION_CONSTANTS.AUTOSUGGEST_LIMIT;
+          // There's no way to put the search bar into Lakehouse Access mode while
+          // autosuggest is enabled (no settings-menu switch for it, and the one page
+          // that sets that mode disables autosuggest), so this only ever needs to
+          // choose between DataSpaces and the unified fallback.
+          const response =
+            searchMode === MarketplaceSearchMode.DATA_SPACES
+              ? await client.getDataSpaceAutosuggestions(query, limit, signal)
+              : await client.getAutosuggestions(
+                  query,
+                  legendMarketplaceBaseStore.envState.lakehouseEnvironment,
+                  limit,
+                  signal,
+                );
 
           const autosuggestResults = response.results;
           const userQuerySuggestion = createSearchQuerySuggestion(query);

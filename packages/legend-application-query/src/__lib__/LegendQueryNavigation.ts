@@ -372,7 +372,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataspaceViewUr
     versionId: string,
     dataspacePath: string,
   ): string =>
-    `${marketplaceApplicationUrl}/dataProduct/legacy/${generateGAVCoordinates(
+    `${marketplaceApplicationUrl}/dataspace/${generateGAVCoordinates(
       groupId,
       artifactId,
       versionId,

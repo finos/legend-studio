@@ -98,6 +98,59 @@ describe('MarketplaceServerClient', () => {
     });
   });
 
+  describe(unitTest('dataSpaceSearch'), () => {
+    test(unitTest('defaults to hybrid search with no filters'), async () => {
+      await client.dataSpaceSearch('customer');
+
+      expect(getSpy).toHaveBeenCalledWith(
+        'http://test-marketplace-server/v1/search/dataSpaces',
+        {},
+        undefined,
+        {
+          query: 'customer',
+          search_type: SearchType.HYBRID,
+          page_size: 12,
+          page_number: 1,
+          include_filter_metadata: true,
+          show_all: false,
+        },
+      );
+    });
+
+    test(unitTest('omits search_filters when none are supplied'), async () => {
+      await client.dataSpaceSearch('customer', SearchType.HYBRID, []);
+
+      const params = getSpy.mock.calls[0]?.[3] as Record<string, unknown>;
+      expect(params.search_filters).toBeUndefined();
+    });
+
+    test(unitTest('includes search_filters when supplied'), async () => {
+      await client.dataSpaceSearch(
+        'customer',
+        SearchType.HYBRID,
+        ['data_product_source=External'],
+        24,
+        2,
+        true,
+      );
+
+      expect(getSpy).toHaveBeenCalledWith(
+        'http://test-marketplace-server/v1/search/dataSpaces',
+        {},
+        undefined,
+        {
+          query: 'customer',
+          search_type: SearchType.HYBRID,
+          search_filters: ['data_product_source=External'],
+          page_size: 24,
+          page_number: 2,
+          include_filter_metadata: true,
+          show_all: true,
+        },
+      );
+    });
+  });
+
   describe(unitTest('lakehouseAccessSearch'), () => {
     test(
       unitTest('defaults to full-text search against the lakehouseAccess path'),
@@ -200,6 +253,33 @@ describe('MarketplaceServerClient', () => {
       unitTest('never calls the dataProducts autosuggest path'),
       async () => {
         await client.getLakehouseAccessAutosuggestions('cust', 'prod');
+
+        expect(getSpy).not.toHaveBeenCalledWith(
+          expect.stringContaining('/autosuggest/dataProducts/'),
+          expect.anything(),
+          expect.anything(),
+          expect.anything(),
+        );
+      },
+    );
+  });
+
+  describe(unitTest('getDataSpaceAutosuggestions'), () => {
+    test(unitTest('hits the dataSpaces autosuggest path'), async () => {
+      await client.getDataSpaceAutosuggestions('cust', 5);
+
+      expect(getSpy).toHaveBeenCalledWith(
+        'http://test-marketplace-server/v1/autosuggest/dataSpaces',
+        {},
+        undefined,
+        { query: 'cust', limit: 5 },
+      );
+    });
+
+    test(
+      unitTest('never calls the dataProducts autosuggest path'),
+      async () => {
+        await client.getDataSpaceAutosuggestions('cust');
 
         expect(getSpy).not.toHaveBeenCalledWith(
           expect.stringContaining('/autosuggest/dataProducts/'),

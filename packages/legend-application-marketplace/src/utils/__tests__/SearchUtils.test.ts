@@ -531,7 +531,7 @@ describe('generatePathForDataProductSearchResult', () => {
       'com::example::MyProduct',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataProduct/legacy/com.example:my-artifact:1.0.0/com::example::MyProduct',
+      '/dataspace/com.example:my-artifact:1.0.0/com::example::MyProduct',
     );
   });
 
@@ -541,10 +541,12 @@ describe('generatePathForDataProductSearchResult', () => {
       'my-artifact',
       '1.0.0',
       'com::example::MyProduct',
+      // Simulates a backend-provided link still using the old, pre-rename URL shape —
+      // `hasNonLegacyDataProductLink` must keep recognizing this as legacy.
       'https://marketplace.example.com/dataProduct/legacy/com.example:my-artifact:1.0.0/com%3A%3Aexample%3A%3AMyProduct',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataProduct/legacy/com.example:my-artifact:1.0.0/com::example::MyProduct',
+      '/dataspace/com.example:my-artifact:1.0.0/com::example::MyProduct',
     );
   });
 
@@ -570,7 +572,7 @@ describe('generatePathForDataProductSearchResult', () => {
       undefined,
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataProduct/legacy/org.test:artifact:2.0.0/org::test::Product',
+      '/dataspace/org.test:artifact:2.0.0/org::test::Product',
     );
   });
 
@@ -583,7 +585,7 @@ describe('generatePathForDataProductSearchResult', () => {
       'not-a-url',
     );
     expect(generatePathForDataProductSearchResult(result)).toBe(
-      '/dataProduct/legacy/org.test:artifact:2.0.0/org::test::Product',
+      '/dataspace/org.test:artifact:2.0.0/org::test::Product',
     );
   });
 

@@ -35,7 +35,6 @@ import {
   UserSearchService,
 } from '@finos/legend-shared';
 import { createSpy } from '@finos/legend-shared/test';
-import { V1_EntitlementsLakehouseEnvironmentType } from '@finos/legend-graph';
 import {
   mockDataProductsLiteResponse,
   mockLegacyDataProductSummaryEntity,
@@ -99,27 +98,24 @@ const setupTestComponent = async (
     mockSetSearchParams,
   ]);
 
-  // Spies for semantic search
+  // Spies for semantic search.
+  // `dataSpaceSearch` isn't scoped to a Lakehouse deployment environment (DataSpaces
+  // are SDLC artifacts, not Lakehouse deployments), so — unlike the unified endpoint it
+  // replaced — it never receives `dataProductEnv` as an argument. The per-environment
+  // fixture is instead selected from the `dataProductEnv` this component was set up
+  // with, to keep exercising the same three fixtures across environments.
   createSpy(
     MOCK__baseStore.marketplaceServerClient,
-    'dataProductSearch',
-  ).mockImplementation(
-    async (
-      _: string,
-      lakehouseEnv: V1_EntitlementsLakehouseEnvironmentType,
-    ) => {
-      if (lakehouseEnv === V1_EntitlementsLakehouseEnvironmentType.PRODUCTION) {
-        return mockProdSearchResultResponse;
-      } else if (
-        lakehouseEnv ===
-        V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL
-      ) {
-        return mockProdParSearchResultResponse;
-      } else {
-        return mockDevSearchResultResponse;
-      }
-    },
-  );
+    'dataSpaceSearch',
+  ).mockImplementation(async () => {
+    if (dataProductEnv === 'prod') {
+      return mockProdSearchResultResponse;
+    } else if (dataProductEnv === 'prod-par') {
+      return mockProdParSearchResultResponse;
+    } else {
+      return mockDevSearchResultResponse;
+    }
+  });
 
   // Spies for producer search
   createSpy(
@@ -335,7 +331,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
       mockGoToLocation;
 
-    await screen.findByText('4 Products');
+    await screen.findByText('4 DataSpaces');
     fireEvent.click(screen.getByRole('radio', { name: 'Data Fields' }));
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
@@ -343,31 +339,41 @@ describe('MarketplaceLakehouseSearchResults', () => {
     );
   });
 
-  test('shows an intro banner explaining Lakehouse Access results are included', async () => {
+  test('shows an intro banner explaining this tab now shows DataSpaces only', async () => {
     await setupTestComponent('data', 'prod');
 
     expect(
-      await screen.findByText(
-        /Results include both DataSpaces .* and Lakehouse Access items \(Data Product\)/,
-      ),
+      await screen.findByText(/This tab now shows DataSpaces only/),
     ).toBeDefined();
+  });
+
+  test('intro banner links "Lakehouse Access tab" to the Lakehouse Access tab, with a space before it', async () => {
+    await setupTestComponent('data', 'prod');
+
+    const link = await screen.findByRole('link', {
+      name: 'Lakehouse Access tab',
+    });
+    expect(link.getAttribute('href')).toContain('/lakehouseAccess/results');
+    // Regression check for a flex-layout bug where the space before this link, being
+    // its own text-node child of a `display: flex` container, silently collapsed.
+    expect(link.previousSibling?.textContent?.endsWith(' ')).toBe(true);
   });
 
   test('search type tabs are not shown when there is no search query', async () => {
     await setupTestComponent('', 'prod');
 
     await screen.findByPlaceholderText('Search Legend Marketplace');
-    expect(screen.queryByRole('radio', { name: 'Dataspaces' })).toBeNull();
+    expect(screen.queryByRole('radio', { name: 'DataSpaces' })).toBeNull();
     expect(screen.queryByRole('radio', { name: 'Data Fields' })).toBeNull();
   });
 
   describe('Semantic search', () => {
     test('Semantic search only calls semantic search endpoint', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
       ).toHaveBeenCalledTimes(1);
       expect(
         MOCK__baseStore.lakehouseContractServerClient.getAllLiteDataProducts,
@@ -380,7 +386,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Prod data product environment only displays production data products and legacy data products', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Lakehouse Data Product with title shows title
       expect(screen.getByText('Lakehouse SDLC Data Product'));
@@ -399,7 +405,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Production-parallel environment displays production-parallel data products', async () => {
       await setupTestComponent('data', 'prod-par');
 
-      expect(await screen.findByText('2 Products'));
+      expect(await screen.findByText('2 DataSpaces'));
 
       // Shows SDLC Data Product title
       expect(screen.getByText('Lakehouse SDLC Data Product'));
@@ -411,7 +417,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Development environment displays development data products', async () => {
       await setupTestComponent('data', 'dev');
 
-      expect(await screen.findByText('2 Products'));
+      expect(await screen.findByText('2 DataSpaces'));
 
       // Shows title
       expect(screen.getByText('Lakehouse SDLC Data Product'));
@@ -492,7 +498,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
         expect.stringContaining(
-          '/dataProduct/legacy/com.example.legacy:legacy-data-product:2.0.0/test::Legacy_Data_Product',
+          '/dataspace/com.example.legacy:legacy-data-product:2.0.0/test::Legacy_Data_Product',
         ),
       );
     });
@@ -500,7 +506,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Lakehouse data products show ingest environment name in chip', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Wait for the environment to be fetched and displayed
       await waitFor(() => {
@@ -517,7 +523,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Lakehouse data products show license chip when licenseTo is set', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // The mock data has licenseTo: 'Enterprise' on some results
       await waitFor(() => {
@@ -531,7 +537,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Clicking on ingest environment chip displays tooltip with owners', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Wait for the environment to be fetched and displayed
       const lakehouseChips = await waitFor(() =>
@@ -559,7 +565,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
         true,
       );
 
-      await screen.findByText('3 Products');
+      await screen.findByText('3 DataSpaces');
 
       expect(
         MOCK__baseStore.lakehouseContractServerClient.getAllLiteDataProducts,
@@ -568,14 +574,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
         MOCK__baseStore.depotServerClient.getEntitiesSummaryByClassifier,
       ).toHaveBeenCalledTimes(1);
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
       ).not.toHaveBeenCalled();
     });
 
     test('Prod data product environment only displays production data products and legacy data products', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      await screen.findByText('3 Products');
+      await screen.findByText('3 DataSpaces');
 
       // Data product with title shows title
       expect(screen.getByText('SDLC Production Data Product'));
@@ -597,7 +603,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Production-parallel environment displays production-parallel data products', async () => {
       await setupTestComponent('data', 'prod-par', true);
 
-      expect(await screen.findByText('1 Products'));
+      expect(await screen.findByText('1 DataSpaces'));
 
       // Shows title
       expect(screen.getByText('SDLC Prod-Parallel Data Product'));
@@ -615,7 +621,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Development environment displays development data products and legacy data products', async () => {
       await setupTestComponent('data', 'dev', true);
 
-      expect(await screen.findByText('2 Products'));
+      expect(await screen.findByText('2 DataSpaces'));
 
       // Shows title
       expect(screen.getByText('SDLC Development Data Product'));
@@ -636,7 +642,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('filters data products by name based on query param', async () => {
       await setupTestComponent('no_title', 'prod', true);
 
-      expect(await screen.findByText('1 Products'));
+      expect(await screen.findByText('1 DataSpaces'));
 
       expect(screen.getByText('SDLC_PRODUCTION_DATAPRODUCT_NO_TITLE'));
       expect(screen.queryByText('SDLC Production Data Product')).toBeNull();
@@ -723,7 +729,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       expect(mockVisitAddress).toHaveBeenCalledWith(
         expect.stringContaining(
-          '/dataProduct/legacy/com.example.legacy:test-legacy-data-product:1.0.0/test::dataproduct::LegacyDataProduct',
+          '/dataspace/com.example.legacy:test-legacy-data-product:1.0.0/test::dataproduct::LegacyDataProduct',
         ),
       );
     });
@@ -731,7 +737,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Lakehouse data products show Lakehouse chip', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      expect(await screen.findByText('3 Products'));
+      expect(await screen.findByText('3 DataSpaces'));
 
       // Check for 2 lakehouse chips (text may include environment name).
       // NOTE: match the `Lakehouse - <env>` chip format specifically rather than a bare
@@ -746,10 +752,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Navigating to next page shows page 2 results', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => mockPaginatedSearchResultPage1Response);
 
       const searchInput = screen.getByDisplayValue('data');
@@ -761,13 +767,13 @@ describe('MarketplaceLakehouseSearchResults', () => {
         await flushMicrotasks();
       });
 
-      await screen.findByText('15 Products');
+      await screen.findByText('15 DataSpaces');
       expect(screen.getByText('Paginated Data Product 1')).toBeDefined();
       expect(screen.getByText('Paginated Data Product 12')).toBeDefined();
       expect(screen.queryByText('Paginated Data Product 13')).toBeNull();
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => mockPaginatedSearchResultPage2Response);
 
       const nextPageButton = screen.getByLabelText('Go to page 2');
@@ -782,25 +788,17 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(screen.queryByText('Paginated Data Product 1')).toBeNull();
 
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenLastCalledWith(
-        'paginated',
-        expect.anything(),
-        'hybrid',
-        [],
-        12,
-        2,
-        false,
-      );
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
+      ).toHaveBeenLastCalledWith('paginated', 'hybrid', [], 12, 2, false);
     });
 
     test('Selecting items per page triggers search with updated page size', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       const paginationContainer = screen
@@ -822,25 +820,17 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
       ).toHaveBeenCalledTimes(1);
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith(
-        'data',
-        expect.anything(),
-        'hybrid',
-        [],
-        48,
-        1,
-        false,
-      );
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
+      ).toHaveBeenCalledWith('data', 'hybrid', [], 48, 1, false);
     });
 
     test('Pagination controls render for producer search', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      await screen.findByText('3 Products');
+      await screen.findByText('3 DataSpaces');
 
       expect(screen.getByText('Items per page:')).toBeDefined();
       expect(screen.getByText(/Showing/)).toBeDefined();
@@ -851,7 +841,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Taxonomy filter panel renders with tree nodes from search response', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Wait for taxonomy tree to render
       // Top-level (depth 0) nodes are expanded by default, so their
@@ -872,7 +862,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Taxonomy header is rendered', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         expect(screen.getByText('Filters')).toBeDefined();
@@ -900,7 +890,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       createSpy(
         MOCK__baseStore.marketplaceServerClient,
-        'dataProductSearch',
+        'dataSpaceSearch',
       ).mockResolvedValue(emptyTaxonomySearchResponse);
 
       createSpy(
@@ -954,7 +944,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Filter sections render all filter categories', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         const filterPanel = document.querySelector(
@@ -979,11 +969,11 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Clicking a filter checkbox triggers search with correct search_filters', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Clear initial call count
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       const filterPanel = document.querySelector(
@@ -997,12 +987,11 @@ describe('MarketplaceLakehouseSearchResults', () => {
         await flushMicrotasks();
       });
 
-      // Verify dataProductSearch was called with the correct filter
+      // Verify dataSpaceSearch was called with the correct filter
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
       ).toHaveBeenCalledWith(
         'data',
-        expect.anything(),
         'hybrid',
         ['data_product_source=External'],
         12,
@@ -1014,7 +1003,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Clicking multiple filters passes all filters to search', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1022,7 +1011,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       const panel = within(filterPanel);
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Click on 'Internal' source filter
@@ -1032,7 +1021,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Click on 'External' source filter
@@ -1043,9 +1032,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       // Verify the latest call has both filter values joined in one filter
       const lastCall = (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mock.calls[0];
-      const filters = lastCall?.[3] as string[];
+      const filters = lastCall?.[2] as string[];
       expect(filters).toHaveLength(1);
       const filterValues = filters[0]?.split('=')[1]?.split(',') ?? [];
       expect(filters[0]?.startsWith('data_product_source=')).toBe(true);
@@ -1057,7 +1046,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Clear all button appears when filters are active and resets filters', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1077,7 +1066,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(panel.getByText('Clear all')).toBeDefined();
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Click "Clear all"
@@ -1088,16 +1077,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       // Search should be re-triggered with empty filters
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith(
-        'data',
-        expect.anything(),
-        'hybrid',
-        [],
-        12,
-        1,
-        false,
-      );
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
+      ).toHaveBeenCalledWith('data', 'hybrid', [], 12, 1, false);
 
       // "Clear all" should disappear
       expect(panel.queryByText('Clear all')).toBeNull();
@@ -1106,7 +1087,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Filter panel is not rendered for producer search', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      await screen.findByText('3 Products');
+      await screen.findByText('3 DataSpaces');
 
       // Filter panel should not be present
       expect(screen.queryByText('Source')).toBeNull();
@@ -1137,11 +1118,11 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     test('Show all button appears on last page when has_filtered_products is true', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Re-mock with has_filtered_products: true
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => createShowAllMockResponse(true));
 
       const searchInput = screen.getByDisplayValue('data');
@@ -1160,11 +1141,11 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     test('Show all button is hidden when has_filtered_products is false', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Re-mock with has_filtered_products: false
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => createShowAllMockResponse(false));
 
       const searchInput = screen.getByDisplayValue('data');
@@ -1182,7 +1163,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     test('Show all button is hidden for producer search', async () => {
       await setupTestComponent('data', 'prod', true);
-      await screen.findByText('3 Products');
+      await screen.findByText('3 DataSpaces');
 
       expect(
         screen.queryByText("Can't find what you're looking for?"),
@@ -1192,11 +1173,11 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     test('Clicking show all triggers re-search with show_all=true', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Re-mock with has_filtered_products: true
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => createShowAllMockResponse(true));
 
       const searchInput = screen.getByDisplayValue('data');
@@ -1210,10 +1191,10 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       // Clear mock call history to isolate the "show all" click
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => createShowAllMockResponse(false));
 
       await act(async () => {
@@ -1223,10 +1204,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       // Should have been called with show_all=true (last param)
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
       ).toHaveBeenCalledWith(
         'showalltest',
-        expect.anything(),
         'hybrid',
         [],
         12,
@@ -1237,11 +1217,11 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
     test('hasFilteredDataProducts is reset between searches', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // First search: API returns has_filtered_products: true
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => createShowAllMockResponse(true));
 
       const searchInput = screen.getByDisplayValue('data');
@@ -1256,7 +1236,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
 
       // Second search: API returns has_filtered_products: false
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockImplementation(async () => createShowAllMockResponse(false));
 
       fireEvent.change(screen.getByDisplayValue('filtered'), {
@@ -1316,7 +1296,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('renders tile and list view toggle buttons', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       expect(screen.getByTitle('Tile View')).toBeDefined();
       expect(screen.getByTitle('List View')).toBeDefined();
@@ -1325,7 +1305,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('tile view is active by default', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const tileBtn = screen.getByTitle('Tile View');
       expect(tileBtn.className).toContain(
@@ -1341,7 +1321,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('clicking list view toggle switches to list view', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const listBtn = screen.getByTitle('List View');
       await act(async () => {
@@ -1361,7 +1341,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('clicking tile view toggle switches back to tile view', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Switch to list view first
       const listBtn = screen.getByTitle('List View');
@@ -1386,7 +1366,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('list view renders data product items', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       // Switch to list view
       const listBtn = screen.getByTitle('List View');
@@ -1401,7 +1381,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('view toggle is available in producer search mode', async () => {
       await setupTestComponent('data', 'prod', true);
 
-      await screen.findByText('3 Products');
+      await screen.findByText('3 DataSpaces');
 
       expect(screen.getByTitle('Tile View')).toBeDefined();
       expect(screen.getByTitle('List View')).toBeDefined();
@@ -1412,7 +1392,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('renders all license filter options under Access section', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1434,7 +1414,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('renders tooltip info icons for each license option', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         expect(screen.getByText('Access')).toBeDefined();
@@ -1464,7 +1444,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('clicking a license filter triggers search with license_to filter', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1476,7 +1456,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Click on 'Enterprise' license filter
@@ -1486,10 +1466,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
       ).toHaveBeenCalledWith(
         'data',
-        expect.anything(),
         'hybrid',
         ['license_to=Enterprise'],
         12,
@@ -1501,7 +1480,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('clicking multiple license filters passes combined filter', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1519,7 +1498,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Click 'Restricted'
@@ -1529,9 +1508,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       const lastCall = (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mock.calls[0];
-      const filters = lastCall?.[3] as string[];
+      const filters = lastCall?.[2] as string[];
       expect(filters).toHaveLength(1);
       expect(filters[0]?.startsWith('license_to=')).toBe(true);
       const licenseValues =
@@ -1544,7 +1523,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('clicking Unknown license maps to empty string in filter', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1556,7 +1535,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
       const undefinedOptions = panel.getAllByText('Unknown');
       const undefinedOption = undefinedOptions[0] as HTMLElement;
@@ -1566,22 +1545,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith(
-        'data',
-        expect.anything(),
-        'hybrid',
-        ['license_to='],
-        12,
-        1,
-        false,
-      );
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
+      ).toHaveBeenCalledWith('data', 'hybrid', ['license_to='], 12, 1, false);
     });
 
     test('clear all resets license filters', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       const filterPanel = document.querySelector(
         '.marketplace-search-filters-panel',
@@ -1601,7 +1572,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
       expect(panel.getByText('Clear all')).toBeDefined();
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Clear all
@@ -1611,16 +1582,8 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       expect(
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch,
-      ).toHaveBeenCalledWith(
-        'data',
-        expect.anything(),
-        'hybrid',
-        [],
-        12,
-        1,
-        false,
-      );
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch,
+      ).toHaveBeenCalledWith('data', 'hybrid', [], 12, 1, false);
     });
   });
 
@@ -1628,7 +1591,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('renders the Unknown node at the bottom of the taxonomy tree', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         expect(screen.getByText('Taxonomy')).toBeDefined();
@@ -1650,14 +1613,14 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('clicking the Unknown taxonomy node triggers search with taxonomy= filter', async () => {
       const { MOCK__baseStore } = await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         expect(screen.getByText('Taxonomy')).toBeDefined();
       });
 
       (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mockClear();
 
       // Find the taxonomy tree section and click the "Unknown" node there
@@ -1672,9 +1635,9 @@ describe('MarketplaceLakehouseSearchResults', () => {
       });
 
       const lastCall = (
-        MOCK__baseStore.marketplaceServerClient.dataProductSearch as jest.Mock
+        MOCK__baseStore.marketplaceServerClient.dataSpaceSearch as jest.Mock
       ).mock.calls[0];
-      const filters = lastCall?.[3] as string[];
+      const filters = lastCall?.[2] as string[];
       expect(filters).toHaveLength(1);
       expect(filters[0]).toBe('taxonomy=');
     });
@@ -1682,7 +1645,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Unknown taxonomy node appears in search results when searching "unkn"', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         expect(screen.getByText('Taxonomy')).toBeDefined();
@@ -1715,7 +1678,7 @@ describe('MarketplaceLakehouseSearchResults', () => {
     test('Unknown taxonomy node does not appear when search term does not match', async () => {
       await setupTestComponent('data', 'prod');
 
-      await screen.findByText('4 Products');
+      await screen.findByText('4 DataSpaces');
 
       await waitFor(() => {
         expect(screen.getByText('Taxonomy')).toBeDefined();

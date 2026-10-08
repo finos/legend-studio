@@ -31,6 +31,7 @@ import {
   Route,
   Routes,
   Navigate,
+  useParams,
 } from '@finos/legend-application/browser';
 import {
   LegendMarketplaceFrameworkProvider,
@@ -38,7 +39,13 @@ import {
   useLegendMarketplaceBaseStore,
 } from './providers/LegendMarketplaceFrameworkProvider.js';
 import { IntelligenceCatalogStoreProvider } from './providers/IntelligenceCatalogStoreProvider.js';
-import { LEGEND_MARKETPLACE_ROUTE_PATTERN } from '../__lib__/LegendMarketplaceNavigation.js';
+import {
+  LEGEND_MARKETPLACE_ROUTE_PATTERN,
+  LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN,
+  generateLegacyDataProductPath,
+  type LegacyDataProductPathParams,
+} from '../__lib__/LegendMarketplaceNavigation.js';
+import { guaranteeNonNullable } from '@finos/legend-shared';
 import {
   type AuthProviderProps,
   AuthProvider,
@@ -187,6 +194,24 @@ const RedirectPreservingParams: React.FC<{ to: string }> = ({ to }) => {
   const location = useLocation();
   return (
     <Navigate to={{ pathname: to, search: location.search }} replace={true} />
+  );
+};
+
+/**
+ * Redirects the deprecated `/dataProduct/legacy/:gav/:path` URL to its
+ * `/dataspace/:gav/:path` replacement, carrying the matched GAV/path over rather than
+ * hardcoding the new pattern, so this keeps working if the pattern moves again.
+ */
+const RedirectLegacyDataProduct: React.FC = () => {
+  const params = useParams<LegacyDataProductPathParams>();
+  const gav = guaranteeNonNullable(
+    params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV],
+  );
+  const path = guaranteeNonNullable(
+    params[LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH],
+  );
+  return (
+    <Navigate to={generateLegacyDataProductPath(gav, path)} replace={true} />
   );
 };
 
@@ -420,6 +445,12 @@ export const LegendMarketplaceWebApplicationRouter = observer(() => {
                   }
                 />
               }
+            />
+            <Route
+              path={
+                LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LEGACY_DATA_PRODUCT
+              }
+              element={<RedirectLegacyDataProduct />}
             />
             <Route
               path={LEGEND_MARKETPLACE_ROUTE_PATTERN.DEPRECATED_LAKEHOUSE}
