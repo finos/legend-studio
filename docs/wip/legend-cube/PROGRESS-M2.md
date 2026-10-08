@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                     |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                        |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                         |
-| Step   | M2.1–M2.11 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort); M2.12 next (the Sort warning) |
-| Tests  | 1767 core, 685 builder (core group), 236 Query, 106 builder engine-roundtrip (after M2.11)                                                |
+| Item   | State                                                                                                                                                           |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                              |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                               |
+| Step   | M2.1–M2.12 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort, the Sort warning); M2.13 next (database workarounds) |
+| Tests  | 1789 core, 694 builder (core group), 236 Query, 106 builder engine-roundtrip (after M2.12)                                                                      |
 
 ## Steps
 
@@ -30,7 +30,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.9** Rename, with the column-name rule and the collision fix
 - [x] **M2.10** Join rename autofix
 - [x] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
-- [ ] **M2.12** The Sort warning
+- [x] **M2.12** The Sort warning
 - [ ] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
 - [ ] **M2.14** Grid quick actions: Sort by and Filter by
 - [ ] **M2.15** Docs, sample typing on the engine, changeset text
@@ -224,6 +224,26 @@ Browser on :9002: ORDERS → Sort (ORDER_ID, Descending) runs 830 rows from 1107
 Show Pure reads `->sort(~ORDER_ID->descending())->limit(10)->sort(~ORDER_ID->descending())->limit(1001)` and the 10
 rows come in order. The editor's row grid needed the Tailwind rebuild (now in the builder guide). Gates: `check:ci` and `lint:ci` green; 1767 core, 685 builder (core group), 236 Query and 106 engine-roundtrip
 tests.
+
+**M2.12, the Sort warning (2026-10-08).** `findLostSortOrders` (`inference/RowOrder.ts`) follows each Sort's order
+down its chain, by the same row orders the emitter writes, to the first Limit, Drop or Slice or to the chain's end, and
+reports a full loss (no key left: a Join, a Restrict that drops every key, or a later Sort on all the same columns,
+named after the first node that holds none) or a partial loss (a Restrict dropped some keys first, named with those
+columns as the Sort names them). A later Sort on only some of the same columns, a Rename, an Unknown node and a Sort
+without a named key report nothing; the selection plays no part. The messages, added by Cube: "This sort has no
+effect: join101 does not keep the row order. A sort only orders the query's output, or the rows a later Drop, Limit or
+Slice takes." and "Sorting by "B" has no effect: restrict101 removes that column before the order is used." They name
+the node by its id rather than its description (the requirements said `describe()`), since a description such as
+`Restrict Columns to: "A"` carries its own quotes. In the builder, `CubeEditorState.derivedWarnings` (computed, by
+node id, never stored) and `getNodeWarnings` (stored, then derived) feed the canvas (the tooltip after the errors, the
+`legend-cube__node--warning` class and a `WarningIcon`) and the node editor, which now shows every node's warnings as
+`role="status"` lines above its editor (moved from the source editor). A loss waits until the Sort and the node that
+loses its order have no errors, so a Restrict just added, with no column yet, doesn't warn (found in the browser).
+The pins for "Sorts cannot be empty." (spec §7.1) and "Sort column "X" of type Variant cannot be sorted." are in
+`CubeMessages.test.ts`. Browser on :9002: EMPLOYEES → Sort (LAST_NAME, FIRST_NAME) → an empty Restrict shows no
+warning; keeping LAST_NAME warns on the Sort, on the canvas and in its panel, that FIRST_NAME is removed; Execute stays
+enabled and returns the 9 last names in order. Gates: `check:ci` and `lint:ci` green; 1789 core, 694 builder (core
+group), 236 Query and 106 engine-roundtrip tests.
 
 ## Open items
 

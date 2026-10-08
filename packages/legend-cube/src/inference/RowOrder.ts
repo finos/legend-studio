@@ -16,7 +16,7 @@
 
 import type { Query } from '../graph/Query.js';
 import type { QueryNode } from '../graph/QueryNode.js';
-import type { SortDirection } from '../nodes/transforms/Sort.js';
+import { Sort, type SortDirection } from '../nodes/transforms/Sort.js';
 
 /**
  * One key of the order a node's rows come in: a column, as named at that
@@ -72,4 +72,96 @@ export const computeRowOrders = (
   };
   query.nodes.forEach(visit);
   return orders;
+};
+
+/**
+ * How a Sort's order is lost before it is used: the node that loses it, and,
+ * when only some of its columns are lost, those columns as the Sort names
+ * them, in its order
+ */
+export interface SortOrderLoss {
+  readonly nodeId: string;
+  readonly droppedColumns?: readonly string[];
+}
+
+/**
+ * The Sorts whose order is lost before it is used (PLAN §11.4), by Sort id,
+ * from the query's structure alone: the selection plays no part. Each Sort's
+ * order is followed down its chain to the first node that takes rows by it
+ * (a Limit, Drop or Slice) or to the chain's end, where it orders the output.
+ *
+ * - A full loss: no key of the Sort is left there. It names the first node
+ *   whose rows hold none, e.g. a Join, a Restrict that drops every key, or a
+ *   later Sort on all the same columns.
+ * - A partial loss: some keys are left, but a node that is not a Sort (a
+ *   Restrict) removed others first. It names that node and those columns.
+ *
+ * A later Sort on some of the same columns is no loss: the others still break
+ * its ties. Where the order becomes unknown (an Unknown node), nothing is
+ * reported, nor for a Sort without a named key, whose own error shows.
+ */
+export const findLostSortOrders = (
+  query: Query,
+  rowOrders: ReadonlyMap<string, RowOrder | undefined> = computeRowOrders(
+    query,
+  ),
+): ReadonlyMap<string, SortOrderLoss> => {
+  const losses = new Map<string, SortOrderLoss>();
+  query.nodes.forEach((sort) => {
+    if (!(sort instanceof Sort)) {
+      return;
+    }
+    // the Sort's own named keys, by their place among its keys
+    const keysOf = (order: RowOrder): Set<number> =>
+      new Set(
+        order
+          .filter(({ sortId, column }) => sortId === sort.id && column !== '')
+          .map(({ keyIndex }) => keyIndex),
+      );
+    const start = rowOrders.get(sort.id);
+    let held = start && keysOf(start);
+    if (!held?.size) {
+      return;
+    }
+    let dropper: string | undefined;
+    const dropped = new Set<number>();
+    let node: QueryNode = sort;
+    for (;;) {
+      const target = query.getOutputConnection(node.id)?.target;
+      const next = target === undefined ? undefined : query.getNode(target);
+      // the chain's end orders the output, and a Limit, Drop or Slice its rows
+      if (!next || next.consumesInputOrder) {
+        break;
+      }
+      const order = rowOrders.get(next.id);
+      if (!order) {
+        return;
+      }
+      const after = keysOf(order);
+      if (!after.size) {
+        losses.set(sort.id, { nodeId: next.id });
+        return;
+      }
+      // a later Sort on the same column replaces the key: no loss
+      if (!(next instanceof Sort)) {
+        for (const keyIndex of held) {
+          if (!after.has(keyIndex)) {
+            dropper ??= next.id;
+            dropped.add(keyIndex);
+          }
+        }
+      }
+      held = after;
+      node = next;
+    }
+    if (dropper !== undefined) {
+      losses.set(sort.id, {
+        nodeId: dropper,
+        droppedColumns: sort.sorts
+          .filter((_, keyIndex) => dropped.has(keyIndex))
+          .map(({ column }) => column),
+      });
+    }
+  });
+  return losses;
 };

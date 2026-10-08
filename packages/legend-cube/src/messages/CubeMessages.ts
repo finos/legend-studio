@@ -212,6 +212,23 @@ export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (
 ): string =>
   `Sort column ${quote(column)} of type ${typeName} cannot be sorted.`;
 
+/**
+ * Added by Cube: a Sort whose order is lost before it is used, as a Join loses
+ * it; a warning, never a validation error (PLAN §11.4). The node is named by
+ * its id, which its tooltip and editor show.
+ */
+export const MESSAGE_SORT_ORDER_LOST = (nodeId: string): string =>
+  `This sort has no effect: ${nodeId} does not keep the row order. A sort only orders the query's output, or the rows a later Drop, Limit or Slice takes.`;
+
+/** Added by Cube: a Sort some of whose columns a later Restrict removes before the order is used (PLAN §11.4) */
+export const MESSAGE_SORT_COLUMNS_DROPPED = (
+  columns: readonly string[],
+  nodeId: string,
+): string =>
+  `Sorting by ${columns.map(quote).join(', ')} has no effect: ${nodeId} removes ${
+    columns.length === 1 ? 'that column' : 'those columns'
+  } before the order is used.`;
+
 /** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN Appendix B) */
 export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
   `Filter values for ${quote(operator)} cannot contain a backslash (\\) yet.`;

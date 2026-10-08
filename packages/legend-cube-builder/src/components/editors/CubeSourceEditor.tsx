@@ -40,7 +40,6 @@ export const CubeSourceEditor = observer((props: CubeNodeEditorProps) => {
   const source = guaranteeType(props.draft.original, RelationalTableSource);
   const refreshing = editorState.isPendingSource(source);
   const { resolution } = source;
-  const warnings = editorState.warnings.get(source.key) ?? [];
   return (
     <div className="relative flex flex-col gap-2">
       <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-base">
@@ -70,15 +69,6 @@ export const CubeSourceEditor = observer((props: CubeNodeEditorProps) => {
         )}
       </div>
       <PanelLoadingIndicator isLoading={refreshing} />
-      {warnings.map((warning) => (
-        <div
-          key={warning}
-          className="text-sm text-[var(--color-status-warn)]"
-          role="status"
-        >
-          {warning}
-        </div>
-      ))}
       {resolution.kind === 'resolved' ? (
         <table className="w-full text-base" aria-label="Columns">
           <thead>

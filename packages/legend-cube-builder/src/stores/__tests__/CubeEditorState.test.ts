@@ -16,14 +16,23 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  Connection,
   CubeDocument,
   DEFAULT_META,
+  Filter,
+  Join,
+  MESSAGE_SORT_COLUMNS_DROPPED,
+  MESSAGE_SORT_ORDER_LOST,
   Query,
+  type QueryNode,
   RelationalTableSource,
+  Restrict,
   Schema,
   serializeCubeSpec,
+  Sort,
+  SortDirection,
 } from '@finos/legend-cube';
-import { flowResult, isObservable } from 'mobx';
+import { flowResult, isObservable, runInAction } from 'mobx';
 import {
   DEFAULT_ROW_LIMIT,
   LEGEND_CUBE_USER_DATA_KEY,
@@ -31,6 +40,7 @@ import {
 } from '../../__lib__/LegendCubeLabels.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
+  CUSTOMERS_COLUMNS,
   NORTHWIND_RUNTIME,
   northwindTable,
   ORDERS_COLUMNS,
@@ -271,5 +281,146 @@ describe('Cube editor state', () => {
       '50',
     );
     expect(new CubeEditorState(host).rowLimit).toBe(DEFAULT_ROW_LIMIT);
+  });
+});
+
+/** ORDERS sorted by CUSTOMER_ID then ORDER_ID, then these nodes, the last selected */
+const sortedOrdersThen = (...nodes: QueryNode[]): CubeDocument => {
+  const all = [
+    northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+    new Sort('sort101', [
+      { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+      { column: 'ORDER_ID', direction: SortDirection.DESC },
+    ]),
+    ...nodes,
+  ];
+  return new CubeDocument({
+    context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
+    query: new Query(
+      all,
+      all
+        .slice(1)
+        .map(
+          (node, index) =>
+            new Connection((all[index] as QueryNode).id, node.id, 'tds'),
+        ),
+      all.at(-1)?.id,
+    ),
+  });
+};
+
+/** The sorted ORDERS joined to CUSTOMERS on CUSTOMER_ID, the join selected */
+const sortedOrdersJoined = (): CubeDocument => {
+  const sorted = sortedOrdersThen();
+  return sorted.withQuery(
+    new Query(
+      [
+        ...sorted.query.nodes,
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101', {
+          leftColumns: ['CUSTOMER_ID'],
+          rightColumns: ['CUSTOMER_ID'],
+        }),
+      ],
+      [
+        ...sorted.query.connections,
+        new Connection('sort101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+      ],
+      'join101',
+    ),
+  );
+};
+
+describe('Sort warnings', () => {
+  test('Warns on a Sort whose order a Join loses, never as an error, so the cube still runs', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersJoined(),
+    );
+    expect(Object.fromEntries(state.derivedWarnings)).toEqual({
+      sort101: [MESSAGE_SORT_ORDER_LOST('join101')],
+    });
+    const sort = state.document.query.getNode('sort101') as Sort;
+    expect(state.getNodeWarnings(sort)).toEqual([
+      MESSAGE_SORT_ORDER_LOST('join101'),
+    ]);
+    expect(state.analysis.validity.get('sort101')).toEqual([]);
+    expect(state.warnings.size).toBe(0);
+    expect(state.execution.canExecute).toBe(true);
+  });
+
+  test('Names the Restrict and the columns it drops before the order is used', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersThen(
+        new Restrict('restrict101', ['CUSTOMER_ID', 'SHIP_CITY']),
+      ),
+    );
+    expect(Object.fromEntries(state.derivedWarnings)).toEqual({
+      sort101: [MESSAGE_SORT_COLUMNS_DROPPED(['ORDER_ID'], 'restrict101')],
+    });
+  });
+
+  test('Waits until the Sort and the node that loses its order have no errors', () => {
+    // a Restrict just added, with no column yet
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersThen(new Restrict('restrict101')),
+    );
+    expect(state.derivedWarnings.size).toBe(0);
+    state.applyQuery(
+      state.document.query.replace(new Restrict('restrict101', ['SHIP_CITY'])),
+    );
+    expect(Object.fromEntries(state.derivedWarnings)).toEqual({
+      sort101: [MESSAGE_SORT_ORDER_LOST('restrict101')],
+    });
+    // a Sort with a column the input lacks shows its error only
+    state.applyQuery(
+      state.document.query.replace(
+        new Sort('sort101', [
+          { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+          { column: 'SHIPPER', direction: SortDirection.ASC },
+        ]),
+      ),
+    );
+    expect(state.derivedWarnings.size).toBe(0);
+  });
+
+  test('Has no warning for a Sort whose order reaches the output', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersThen(new Filter('filter101')),
+    );
+    expect(state.derivedWarnings.size).toBe(0);
+  });
+
+  test('Follows the query: the warning goes with the Join, and undo brings it back', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersJoined(),
+    );
+    state.removeNode('join101');
+    expect(state.derivedWarnings.size).toBe(0);
+    expect(state.warnings.size).toBe(0);
+    state.undo();
+    expect(Object.fromEntries(state.derivedWarnings)).toEqual({
+      sort101: [MESSAGE_SORT_ORDER_LOST('join101')],
+    });
+  });
+
+  test("Puts a node's stored warnings before its derived ones", () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersJoined(),
+    );
+    const sort = state.document.query.getNode('sort101') as Sort;
+    runInAction(() => {
+      state.warnings = new Map([[sort.key, ['A stored warning']]]);
+    });
+    expect(state.getNodeWarnings(sort)).toEqual([
+      'A stored warning',
+      MESSAGE_SORT_ORDER_LOST('join101'),
+    ]);
   });
 });

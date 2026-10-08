@@ -56,6 +56,15 @@ text (§17.9) where it has one.
 
 Map the icon name of the node's definition to a legend-art icon in `NODE_ICONS` (`src/components/CubeNodeIcon.tsx`).
 
+## Warnings
+
+A warning is never an error: it doesn't make the node invalid or keep Execute from running. A warning worked out from
+the query, as the Sort warning is (`findLostSortOrders` in the core), goes in `CubeEditorState.derivedWarnings`, by
+node id, so it follows every edit and undo and is never stored; one about the outside world, such as a table that
+changed, is stored in `CubeEditorState.warnings`, by node key. `getNodeWarnings(node)` gives both: the canvas marks the
+node (`legend-cube__node--warning`) and lists them in its tooltip after its errors, and the panel shows each one as a
+`role="status"` line above the editor. A derived warning waits until the nodes it names have no errors of their own.
+
 ## Columns that change name
 
 The Join editor warns when a join key's column has no type in the model, tracing the column back to its table and the

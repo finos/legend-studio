@@ -32,6 +32,8 @@ It has:
   it drops, Rename renames them); Sort puts its own keys first;
 - `consumesInputOrder`, true for a node that takes rows by their order (Limit, Drop, Slice): its emitter then sorts its
   input first (see 3).
+  `findLostSortOrders` reads the same hooks to warn on a Sort whose order a node loses before it is used, so a node
+  that drops columns or reorders rows must say so here, or the warning and the SQL disagree.
 
 Nodes are immutable. An edit makes a new node with the same `id` and the same `rest`, the saved keys this version
 doesn't know, so a re-save writes them back.

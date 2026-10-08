@@ -30,7 +30,12 @@ import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
-import { computeRowOrders, type OrderKey } from '../RowOrder.js';
+import {
+  computeRowOrders,
+  findLostSortOrders,
+  type OrderKey,
+  type SortOrderLoss,
+} from '../RowOrder.js';
 
 const { ASC, DESC } = SortDirection;
 
@@ -248,5 +253,184 @@ describe(unitTest('Row order'), () => {
     const query = chain(orders(), byCountryThenId(), new Limit('limit101', 5));
     const rowOrders = computeRowOrders(query);
     expect(rowOrders.get('limit101') === rowOrders.get('sort101')).toBe(true);
+  });
+});
+
+/** Sort101 by A then B, ascending, on a table with A, B and C */
+const ABC = (id = 'relational101'): QueryNode =>
+  resolvedTable(id, 'T', [column('A'), column('B'), column('C')]);
+const byAThenB = (id = 'sort101'): Sort =>
+  new Sort(id, [
+    { column: 'A', direction: ASC },
+    { column: 'B', direction: ASC },
+  ]);
+const byA = (id: string, direction = ASC): Sort =>
+  new Sort(id, [{ column: 'A', direction }]);
+
+const lossesOf = (query: Query): Record<string, SortOrderLoss> =>
+  Object.fromEntries(findLostSortOrders(query));
+
+/** A join of two chains, each given with what feeds it, on A */
+const joined = (left: QueryNode[], right: QueryNode[]): Query => {
+  const connect = (nodes: QueryNode[]): Connection[] =>
+    nodes
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection((nodes[index] as QueryNode).id, node.id, 'tds'),
+      );
+  return new Query(
+    [
+      ...left,
+      ...right,
+      new Join('join101', { leftColumns: ['A'], rightColumns: ['A'] }),
+    ],
+    [
+      ...connect(left),
+      ...connect(right),
+      new Connection((left.at(-1) as QueryNode).id, 'join101', 'leftTds'),
+      new Connection((right.at(-1) as QueryNode).id, 'join101', 'rightTds'),
+    ],
+    'join101',
+  );
+};
+
+describe(unitTest('Lost sort orders'), () => {
+  test.each<[string, QueryNode[]]>([
+    ['a Sort at the end of its chain', []],
+    ['a Filter after it', [new Filter('filter101')]],
+    ['a Distinct after it', [new Distinct('distinct101')]],
+    [
+      'a Restrict that keeps its keys',
+      [new Restrict('restrict101', ['B', 'A'])],
+    ],
+    ['a Rename of a key', [new Rename('rename101', [{ from: 'A', to: 'X' }])]],
+    ['a Limit after it', [new Limit('limit101', 5)]],
+    ['a Drop after it', [new Drop('drop101', 5)]],
+    ['a Slice after it', [new Slice('slice101', 0, 5)]],
+    [
+      'a Limit that takes rows by it before a Restrict drops its keys',
+      [new Limit('limit101', 5), new Restrict('restrict101', ['C'])],
+    ],
+    [
+      'a later Sort on another column, which it orders the ties of',
+      [new Sort('sort102', [{ column: 'C', direction: DESC }])],
+    ],
+    ['a later Sort on one of its two columns', [byA('sort102', DESC)]],
+    ['an Unknown node after it', [new UnknownNode('pivot101', 1)]],
+  ])('Reports nothing for %s', (_, after) => {
+    expect(lossesOf(chain(ABC(), byAThenB(), ...after))).toEqual({});
+  });
+
+  test("Reports nothing for a Limit after a Sort, whatever a Join does to the Limit's rows", () => {
+    expect(
+      lossesOf(
+        joined(
+          [ABC(), byAThenB(), new Limit('limit101', 5)],
+          [ABC('relational102')],
+        ),
+      ),
+    ).toEqual({});
+  });
+
+  test('Names the Join that loses the order, on either side', () => {
+    expect(
+      lossesOf(
+        joined([ABC(), byAThenB()], [ABC('relational102'), byA('sort102')]),
+      ),
+    ).toEqual({
+      sort101: { nodeId: 'join101' },
+      sort102: { nodeId: 'join101' },
+    });
+  });
+
+  test('Names a later Sort on all the same columns, whose order replaces it', () => {
+    expect(
+      lossesOf(chain(ABC(), byA('sort101'), byA('sort102', DESC))),
+    ).toEqual({ sort101: { nodeId: 'sort102' } });
+  });
+
+  test.each<[string, QueryNode[]]>([
+    ['at the end of the chain', []],
+    ['before a Limit', [new Limit('limit101', 5)]],
+  ])(
+    'Names a Restrict that drops some of its columns, and those columns, %s',
+    (_, after) => {
+      expect(
+        lossesOf(
+          chain(
+            ABC(),
+            byAThenB(),
+            new Restrict('restrict101', ['A', 'C']),
+            ...after,
+          ),
+        ),
+      ).toEqual({
+        sort101: { nodeId: 'restrict101', droppedColumns: ['B'] },
+      });
+    },
+  );
+
+  test('Names a Restrict that drops every key as losing the order', () => {
+    expect(
+      lossesOf(chain(ABC(), byAThenB(), new Restrict('restrict101', ['C']))),
+    ).toEqual({ sort101: { nodeId: 'restrict101' } });
+    // the first key dropped: the second no longer orders anything
+    expect(
+      lossesOf(chain(ABC(), byAThenB(), new Restrict('restrict101', ['B']))),
+    ).toEqual({ sort101: { nodeId: 'restrict101' } });
+  });
+
+  test('Names the node that loses the rest of the order after a Restrict dropped some', () => {
+    expect(
+      lossesOf(
+        joined(
+          [ABC(), byAThenB(), new Restrict('restrict101', ['A', 'C'])],
+          [ABC('relational102')],
+        ),
+      ),
+    ).toEqual({ sort101: { nodeId: 'join101' } });
+  });
+
+  test('Names the columns as the Sort names them, in its order, through a Rename', () => {
+    const sort = new Sort('sort101', [
+      { column: 'C', direction: ASC },
+      { column: 'B', direction: DESC },
+      { column: 'A', direction: ASC },
+    ]);
+    // C is kept; A and B are renamed and then dropped
+    expect(
+      lossesOf(
+        chain(
+          ABC(),
+          sort,
+          new Rename('rename101', [
+            { from: 'A', to: 'X' },
+            { from: 'B', to: 'Y' },
+          ]),
+          new Restrict('restrict101', ['C']),
+        ),
+      ),
+    ).toEqual({
+      sort101: { nodeId: 'restrict101', droppedColumns: ['B', 'A'] },
+    });
+  });
+
+  test('Reports nothing for a Sort without a named key, whose own error shows', () => {
+    expect(
+      lossesOf(
+        chain(
+          ABC(),
+          new Sort('sort101', [{ column: '', direction: ASC }]),
+          new Restrict('restrict101', ['C']),
+        ),
+      ),
+    ).toEqual({});
+  });
+
+  test('Reads the structure only: the selection plays no part', () => {
+    const query = chain(ABC(), byAThenB(), new Restrict('restrict101', ['A']));
+    expect(lossesOf(query.select('sort101'))).toEqual(lossesOf(query));
+    expect(lossesOf(query.select('relational101'))).toEqual(lossesOf(query));
   });
 });

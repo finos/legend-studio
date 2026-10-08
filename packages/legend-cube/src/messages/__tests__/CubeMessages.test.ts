@@ -158,6 +158,18 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_FILTER_VALUE_BACKSLASH('starts with')).toBe(
     'Filter values for "starts with" cannot contain a backslash (\\) yet.',
   );
+  expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
+    'Sort column "PAYLOAD" of type Variant cannot be sorted.',
+  );
+  expect(MESSAGES.MESSAGE_SORT_ORDER_LOST('join101')).toBe(
+    "This sort has no effect: join101 does not keep the row order. A sort only orders the query's output, or the rows a later Drop, Limit or Slice takes.",
+  );
+  expect(MESSAGES.MESSAGE_SORT_COLUMNS_DROPPED(['B'], 'restrict101')).toBe(
+    'Sorting by "B" has no effect: restrict101 removes that column before the order is used.',
+  );
+  expect(MESSAGES.MESSAGE_SORT_COLUMNS_DROPPED(['B', 'C'], 'restrict101')).toBe(
+    'Sorting by "B", "C" has no effect: restrict101 removes those columns before the order is used.',
+  );
 });
 
 test(
@@ -182,5 +194,11 @@ test(
       'Column renames cannot be empty.',
     );
     expect(rename).toContain('"Column renames cannot be empty."');
+    // and Sort's (§7.1)
+    const sort = specSection('### 7.1 Sort', '### 7.2 Group');
+    expect(MESSAGES.MESSAGE_CANNOT_BE_EMPTY('Sorts')).toBe(
+      'Sorts cannot be empty.',
+    );
+    expect(sort).toContain('"Sorts cannot be empty."');
   },
 );
