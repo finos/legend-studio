@@ -17,9 +17,11 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   CubeDocument,
+  DEFAULT_META,
   Query,
   RelationalTableSource,
   Schema,
+  serializeCubeSpec,
 } from '@finos/legend-cube';
 import { flowResult, isObservable } from 'mobx';
 import {
@@ -67,6 +69,45 @@ describe('Cube editor state', () => {
     expect(state.document.context).toBeUndefined();
     expect(state.document.query.nodes).toEqual([]);
     expect(state.history).toEqual([]);
+  });
+
+  test('Opens an empty cube again after a reload: the cube, edited or imported, is never kept in browser storage, only the row limit', async () => {
+    // not the default presentation, so one brought back from storage shows
+    const meta = {
+      presentation: {
+        showGraph: false,
+        columnWidths: [{ column: 'ORDER_ID', width: 120 }],
+      },
+    };
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.applyDocument(sliceDocument().withName('France').withMeta(meta));
+    state.select('join101');
+    expect(state.setRowLimit(25)).toBe(true);
+    state.specTransfer.openImport();
+    state.specTransfer.setImportText(
+      serializeCubeSpec(sliceDocument().withName('Imported').withMeta(meta)),
+    );
+    expect(state.specTransfer.importSpec()).toBe(true);
+    // let the import's tables be typed again before the page closes
+    await new Promise((resolve) => {
+      setTimeout(resolve, 0);
+    });
+    expect(state.isResolvingSources).toBe(false);
+    expect(state.document.name).toBe('Imported');
+    expect(state.document.meta.presentation.showGraph).toBe(false);
+    state.dispose();
+
+    // the page opens again in the same browser, with no cube given
+    const reloaded = new CubeEditorState(TEST__createCubeHost().host);
+    // the browser storage survived: the row limit is remembered
+    expect(reloaded.rowLimit).toBe(25);
+    expect(reloaded.document.name).toBeUndefined();
+    expect(reloaded.document.context).toBeUndefined();
+    // ids and counts only: a failed match on nodes or documents can't be
+    // reported across Jest's workers, since their schemas hold BigInts
+    expect(reloaded.document.query.nodes.map(({ id }) => id)).toEqual([]);
+    expect(reloaded.document.meta).toEqual(DEFAULT_META);
+    expect(reloaded.history.length).toBe(0);
   });
 
   test('Checks the query-level rules too: tables from two databases are an error', () => {

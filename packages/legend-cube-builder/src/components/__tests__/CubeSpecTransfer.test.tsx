@@ -22,9 +22,27 @@ import {
   jest,
   test,
 } from '@jest/globals';
-import { CubeDocument, Query, serializeCubeSpec } from '@finos/legend-cube';
-import { readFileAsText } from '@finos/legend-shared';
 import {
+  Core_LegendApplicationPlugin,
+  LEGEND_APPLICATION_COLOR_THEME,
+} from '@finos/legend-application';
+import {
+  ColumnComparisonFilter,
+  CompositeFilter,
+  CompositeFilterOperator,
+  Connection,
+  CubeDocument,
+  FilterOperator,
+  MAX_SPEC_BYTES,
+  Query,
+  Schema,
+  serializeCubeSpec,
+  UnknownNode,
+  UnsupportedFilter,
+} from '@finos/legend-cube';
+import { guaranteeNonNullable, readFileAsText } from '@finos/legend-shared';
+import {
+  act,
   fireEvent,
   screen,
   waitFor,
@@ -33,7 +51,10 @@ import {
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
-import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
+import {
+  TEST__createCubeApplicationStore,
+  TEST__createCubeHost,
+} from '../../__test-utils__/CubeTestApplication.js';
 import {
   NORTHWIND_RUNTIME,
   northwindTable,
@@ -41,9 +62,12 @@ import {
   sliceQuery,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
+import type { CubeEngine } from '../../graph-manager/CubeEngine.js';
 import type { CubeHost } from '../../stores/CubeHost.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../CubeEditor.js';
+
+type ResolvedSchemas = Awaited<ReturnType<CubeEngine['resolveSchemas']>>;
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -64,10 +88,44 @@ const ordersDocument = (): CubeDocument =>
     ),
   });
 
+/**
+ * A cube that can't run, with everything a saved cube may hold that this
+ * version can't use: a filter value that isn't a number, a filter rule it
+ * doesn't support, a node of an unknown kind with an unconnected input, and
+ * an unknown key
+ */
+const unfinishedDocument = (): CubeDocument => {
+  const slice = sliceQuery(
+    new CompositeFilter(CompositeFilterOperator.AND, [
+      new ColumnComparisonFilter('ORDER_ID', FilterOperator.EQUAL, {
+        kind: 'invalid',
+        text: 'ten',
+      }),
+      new UnsupportedFilter({ kind: 'regex', column: 'SHIP_NAME' }),
+    ]),
+  );
+  return new CubeDocument({
+    name: 'Unfinished',
+    context: CONTEXT,
+    query: new Query(
+      [
+        ...slice.nodes,
+        new UnknownNode('pivot101', 2, {
+          kind: 'pivot',
+          pivotColumns: ['SHIP_COUNTRY'],
+        }),
+      ],
+      [...slice.connections, new Connection('filter101', 'pivot101', 'in0')],
+      'pivot101',
+    ),
+    rest: { savedBy: 'a newer Cube' },
+  });
+};
+
 const renderPage = async (
   initialDocument?: CubeDocument,
+  { host, fake } = TEST__createCubeHost(),
 ): Promise<{ host: CubeHost; fake: FakeCubeEngine }> => {
-  const { host, fake } = TEST__createCubeHost();
   await TEST__renderInCubeApplication(
     <CubeEditor host={host} initialDocument={initialDocument} />,
     host.applicationStore,
@@ -76,14 +134,72 @@ const renderPage = async (
   return { host, fake };
 };
 
-const header = (): HTMLElement =>
+const graphRegion = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
 const headerButton = (text: string): HTMLButtonElement =>
-  within(header()).getByText<HTMLButtonElement>(text);
+  within(graphRegion()).getByText<HTMLButtonElement>(text);
+/**
+ * The strip along the top of the graph region, with the cube's name and its
+ * buttons: the one that holds Import, which is never hidden
+ */
+const headerStrip = (): HTMLElement =>
+  guaranteeNonNullable(headerButton('Import (dev)').parentElement);
 const nodeIds = (): string[] =>
   screen
     .queryAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)
     .map((row) => row.querySelector('.text-sm')?.textContent ?? '');
+const nodeRow = (id: string): HTMLElement =>
+  guaranteeNonNullable(
+    screen
+      .queryAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)
+      .find((row) => row.querySelector('.text-sm')?.textContent === id),
+  );
+const executeButton = (): HTMLButtonElement =>
+  within(
+    screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
+  ).getByText<HTMLButtonElement>('Execute');
+/**
+ * legend-art's loading bar among the region's own children, which has one
+ * class while it loads and another while idle
+ */
+const barIn = (region: HTMLElement): Element | undefined =>
+  Array.from(region.children).find((child) =>
+    child.className.startsWith('panel-loading-indicator'),
+  );
+/** The spec the Export dialog shows */
+const exportedText = (dialog: HTMLElement): string =>
+  within(dialog).getByLabelText<HTMLTextAreaElement>('Cube spec').value;
+
+/**
+ * Whether the dialog's frame and the named footer buttons are drawn dark,
+ * as `[name, dark, light]`: the theme shows only in legend-art's classes
+ */
+const themeOf = (
+  dialog: HTMLElement,
+  buttons: string[],
+): [boolean | undefined, (string | boolean)[][]] => [
+  dialog.querySelector('.modal')?.classList.contains('modal--dark'),
+  buttons.map((name) => {
+    const { classList } = within(dialog).getByRole('button', { name });
+    return [
+      name,
+      classList.contains('btn--dark'),
+      classList.contains('btn--light'),
+    ];
+  }),
+];
+
+// a function, since `<T>` in a .tsx arrow function reads as a JSX tag
+function deferred<T>(): {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+} {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((onResolve) => {
+    resolve = onResolve;
+  });
+  return { promise, resolve };
+}
 
 /** Opens Import, pastes the text and presses Import */
 const importText = async (text: string): Promise<HTMLElement> => {
@@ -142,9 +258,7 @@ describe('Cube spec export and import, on the page', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText('Export spec (dev)')).toBeDefined();
     const spec = serializeCubeSpec(sliceDocument());
-    expect(
-      within(dialog).getByLabelText<HTMLTextAreaElement>('Cube spec').value,
-    ).toBe(spec);
+    expect(exportedText(dialog)).toBe(spec);
 
     fireEvent.click(within(dialog).getByText('Copy'));
     expect(copy).toHaveBeenCalledWith(spec, expect.anything());
@@ -163,12 +277,116 @@ describe('Cube spec export and import, on the page', () => {
     await waitForElementToBeRemoved(dialog);
   });
 
+  test("Exports a cube that can't run, and imports it back as it was saved", async () => {
+    const document = unfinishedDocument();
+    await renderPage(document);
+    // the cube really can't run
+    expect(executeButton().disabled).toBe(true);
+    expect(headerButton('Show Pure').disabled).toBe(true);
+
+    const exportButton = headerButton('Export (dev)');
+    expect(exportButton.disabled).toBe(false);
+    fireEvent.click(exportButton);
+    let dialog = await screen.findByRole('dialog');
+    const spec = serializeCubeSpec(document);
+    expect(exportedText(dialog)).toBe(spec);
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    const saved = JSON.parse(spec) as {
+      savedBy?: unknown;
+      query: { nodes: { id: string; inputs?: unknown }[] };
+    };
+    expect(saved.savedBy).toBe('a newer Cube');
+    expect(
+      saved.query.nodes.find((node) => node.id === 'pivot101')?.inputs,
+    ).toEqual(['filter101', null]);
+    fireEvent.click(within(dialog).getByText('Close'));
+    await waitForElementToBeRemoved(dialog);
+
+    // the invalid value, the unsupported rule, the unknown node, its
+    // unconnected input and the unknown key all come back
+    dialog = await importText(spec);
+    await waitForElementToBeRemoved(dialog);
+    await waitFor(() =>
+      expect(within(graphRegion()).queryByText('resolving source')).toBeNull(),
+    );
+    expect(nodeIds()).toEqual([
+      'relational101',
+      'relational102',
+      'join101',
+      'filter101',
+      'pivot101',
+    ]);
+    fireEvent.click(headerButton('Export (dev)'));
+    dialog = await screen.findByRole('dialog');
+    expect(exportedText(dialog)).toBe(spec);
+  });
+
+  test('Says why a cube too large to save is not exported, and offers nothing to copy or download', async () => {
+    await renderPage(ordersDocument().withName('x'.repeat(MAX_SPEC_BYTES)));
+    fireEvent.click(headerButton('Export (dev)'));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByRole('alert').textContent).toBe(
+      `The cube is too large to save: its spec is over ${MAX_SPEC_BYTES} bytes`,
+    );
+    expect(within(dialog).queryByLabelText('Cube spec')).toBeNull();
+    expect(within(dialog).getByText<HTMLButtonElement>('Copy').disabled).toBe(
+      true,
+    );
+    expect(
+      within(dialog).getByText<HTMLButtonElement>('Download').disabled,
+    ).toBe(true);
+    fireEvent.click(within(dialog).getByText('Close'));
+    await waitForElementToBeRemoved(dialog);
+  });
+
+  test.each([
+    [LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT, false],
+    [LEGEND_APPLICATION_COLOR_THEME.DEFAULT_DARK, true],
+  ])(
+    'Draws the Export and Import dialogs and their buttons in the color theme %s (dark: %s)',
+    async (theme, dark) => {
+      const created = TEST__createCubeHost(
+        undefined,
+        // the core plugin registers the light theme
+        TEST__createCubeApplicationStore([new Core_LegendApplicationPlugin()]),
+      );
+      const { layoutService } = created.host.applicationStore;
+      layoutService.setColorTheme(theme);
+      // a theme that isn't registered is ignored, which would test nothing
+      expect(layoutService.currentColorTheme.key).toBe(theme);
+      await renderPage(ordersDocument(), created);
+
+      fireEvent.click(headerButton('Export (dev)'));
+      let dialog = await screen.findByRole('dialog');
+      expect(themeOf(dialog, ['Copy', 'Download', 'Close'])).toEqual([
+        dark,
+        [
+          ['Copy', dark, !dark],
+          ['Download', dark, !dark],
+          ['Close', dark, !dark],
+        ],
+      ]);
+      fireEvent.click(within(dialog).getByText('Close'));
+      await waitForElementToBeRemoved(dialog);
+
+      fireEvent.click(headerButton('Import (dev)'));
+      dialog = await screen.findByRole('dialog');
+      expect(themeOf(dialog, ['Import', 'Cancel'])).toEqual([
+        dark,
+        [
+          ['Import', dark, !dark],
+          ['Cancel', dark, !dark],
+        ],
+      ]);
+    },
+  );
+
   test('Imports a pasted spec in place of the cube, runs nothing, and Undo brings the cube back', async () => {
     const { fake } = await renderPage(ordersDocument());
     expect(nodeIds()).toEqual(['relational101']);
     const dialog = await importText(serializeCubeSpec(sliceDocument()));
     await waitForElementToBeRemoved(dialog);
-    expect(within(header()).getByText('Orders in France')).toBeDefined();
+    expect(within(graphRegion()).getByText('Orders in France')).toBeDefined();
     expect(nodeIds()).toEqual([
       'relational101',
       'relational102',
@@ -229,26 +447,52 @@ describe('Cube spec export and import, on the page', () => {
     expect(nodeIds()).toHaveLength(4);
   });
 
-  test('Opens a spec from a newer version read-only, says so, and still runs it', async () => {
-    await renderPage(ordersDocument());
+  test('Opens a spec from a newer version read-only, says so, and still selects, runs and shows its Pure', async () => {
+    const PURE = '#>{showcase::northwind::store::NorthwindDatabase}#';
+    const { fake } = await renderPage(
+      ordersDocument(),
+      TEST__createCubeHost({ pure: PURE }),
+    );
     const newer = JSON.stringify({
       ...JSON.parse(serializeCubeSpec(sliceDocument())),
       formatVersion: 2,
     });
     const dialog = await importText(newer);
     await waitForElementToBeRemoved(dialog);
-    expect(within(header()).getByRole('status').textContent).toContain(
+    const banner = within(graphRegion()).getByRole('status');
+    expect(banner.textContent).toContain(
       'saved by a newer version of Legend Cube',
     );
     expect(headerButton('Add table').disabled).toBe(true);
     expect(headerButton('Undo').disabled).toBe(true);
     expect(headerButton('Export (dev)').disabled).toBe(true);
     expect(headerButton('Import (dev)').disabled).toBe(false);
-    expect(
-      within(
-        screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
-      ).getByText<HTMLButtonElement>('Execute').disabled,
-    ).toBe(false);
+    expect(executeButton().disabled).toBe(false);
+
+    // Show Pure works
+    const showPure = headerButton('Show Pure');
+    expect(showPure.disabled).toBe(false);
+    fireEvent.click(showPure);
+    const pure = await screen.findByRole('dialog');
+    expect((await within(pure).findByLabelText('Pure query')).textContent).toBe(
+      PURE,
+    );
+    expect(fake.renderPure).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(pure).getByText('Close'));
+    await waitForElementToBeRemoved(pure);
+
+    // so does Select, and the cube stays read-only
+    const select = within(nodeRow('join101')).getByText<HTMLButtonElement>(
+      'Select',
+    );
+    expect(select.disabled).toBe(false);
+    fireEvent.click(select);
+    expect(within(nodeRow('join101')).getByText('(Selected)')).toBeDefined();
+    expect(within(nodeRow('filter101')).getByText('Select')).toBeDefined();
+    expect(within(graphRegion()).getByRole('status')).toBe(banner);
+    expect(headerButton('Undo').disabled).toBe(true);
+    expect(headerButton('Export (dev)').disabled).toBe(true);
+    expect(executeButton().disabled).toBe(false);
   });
 
   test("Types the imported cube's tables again and warns on a table that changed since it was saved", async () => {
@@ -270,6 +514,49 @@ describe('Cube spec export and import, on the page', () => {
       'This table changed since the cube was saved: added SHIP_COUNTRY',
     );
     expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
-    expect(within(header()).queryByText('resolving source')).toBeNull();
+    expect(within(graphRegion()).queryByText('resolving source')).toBeNull();
+  });
+
+  test("Says 'resolving source' with a bar over the query while an imported cube's tables are typed again", async () => {
+    const { fake } = await renderPage();
+    const held = deferred<ResolvedSchemas>();
+    fake.resolveSchemas.mockReturnValueOnce(held.promise);
+    const dialog = await importText(serializeCubeSpec(ordersDocument()));
+    await waitForElementToBeRemoved(dialog);
+
+    // the label sits in the header strip, beside the cube's name
+    const strip = headerStrip();
+    expect(strip.parentElement).toBe(graphRegion());
+    expect(within(strip).getByText('Unsaved Query')).toBeDefined();
+    expect(within(strip).getByText('resolving source')).toBeDefined();
+    // the bar is the graph region's own child, and covers it
+    expect(barIn(graphRegion())?.className).toBe('panel-loading-indicator');
+    await waitFor(() =>
+      expect(
+        graphRegion().classList.contains('panel-loading-indicator__container'),
+      ).toBe(true),
+    );
+    // the results are not held up
+    const grid = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION);
+    expect(grid.querySelector('.panel-loading-indicator')).toBeNull();
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
+    });
+    await waitFor(() =>
+      expect(within(graphRegion()).queryByText('resolving source')).toBeNull(),
+    );
+    // the idle bar stays in place
+    expect(barIn(graphRegion())?.className).toBe(
+      'panel-loading-indicator--disabled',
+    );
+    await waitFor(() =>
+      expect(
+        graphRegion().classList.contains('panel-loading-indicator__container'),
+      ).toBe(false),
+    );
+    expect(nodeIds()).toEqual(['relational101']);
+    expect(within(nodeRow('relational101')).queryByRole('status')).toBeNull();
   });
 });

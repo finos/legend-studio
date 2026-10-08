@@ -57,6 +57,10 @@ const OLD_ORDERS_COLUMNS = ORDERS_COLUMNS.filter(
     : column,
 );
 
+/** ORDERS as saved with one column other than the engine's */
+const ordersSavedWith = (saved: SchemaColumn): SchemaColumn[] =>
+  ORDERS_COLUMNS.map((column) => (column.name === saved.name ? saved : column));
+
 const ordersAndCustomers = (ordersColumns = ORDERS_COLUMNS): Query =>
   new Query(
     [
@@ -109,15 +113,23 @@ const settle = async (): Promise<void> =>
     setTimeout(resolve, 0);
   });
 
-/** Imports `document`, as Import (dev) does, which types its tables again */
-const importDocument = (
-  state: CubeEditorState,
-  document: CubeDocument,
-): void => {
+/** Imports the spec `text`, as Import (dev) does, which types its tables again */
+const importText = (state: CubeEditorState, text: string): void => {
   state.specTransfer.openImport();
-  state.specTransfer.setImportText(serializeCubeSpec(document));
+  state.specTransfer.setImportText(text);
   expect(state.specTransfer.importSpec()).toBe(true);
 };
+
+/** Imports `document`, as Import (dev) does, which types its tables again */
+const importDocument = (state: CubeEditorState, document: CubeDocument): void =>
+  importText(state, serializeCubeSpec(document));
+
+/** The spec text of `document` as a later format version saves it: it opens read-only */
+const newerSpecText = (document: CubeDocument): string =>
+  JSON.stringify({
+    ...(JSON.parse(serializeCubeSpec(document)) as Record<string, unknown>),
+    formatVersion: 2,
+  });
 
 /** Imports `document` and waits for its tables to be typed again */
 const importAndWait = async (
@@ -217,6 +229,70 @@ describe("Typing an imported cube's tables again", () => {
     expect(state.history).toHaveLength(1);
     state.undo();
     expect(state.document.query.nodes).toEqual([]);
+  });
+
+  test('Counts a column that only became nullable as a change: FREIGHT was saved as a Double that could not be null', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    await importAndWait(
+      state,
+      new CubeDocument({
+        context: CONTEXT,
+        query: ordersAndCustomers(
+          ordersSavedWith(
+            new SchemaColumn('FREIGHT', PrimitiveType.get(`${P}Double`), false),
+          ),
+        ),
+      }),
+    );
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([
+      'This table changed since the cube was saved: changed FREIGHT (Double to Double?)',
+    ]);
+    expect(warningsOf(state, 'relational102')).toBeUndefined();
+  });
+
+  test('Counts a column whose type alone changed as a change, with no column added or removed', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    await importAndWait(
+      state,
+      new CubeDocument({
+        context: CONTEXT,
+        query: ordersAndCustomers(
+          ordersSavedWith(
+            new SchemaColumn(
+              'SHIP_VIA',
+              PrimitiveType.get(`${P}TinyInt`),
+              true,
+            ),
+          ),
+        ),
+      }),
+    );
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([
+      'This table changed since the cube was saved: changed SHIP_VIA (TinyInt? to SmallInt?)',
+    ]);
+    expect(warningsOf(state, 'relational102')).toBeUndefined();
+  });
+
+  test('Counts columns that only moved as a change, and takes their new order', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    await importAndWait(
+      state,
+      new CubeDocument({
+        context: CONTEXT,
+        // ORDER_ID saved last
+        query: ordersAndCustomers([
+          ...ORDERS_COLUMNS.slice(1),
+          ...ORDERS_COLUMNS.slice(0, 1),
+        ]),
+      }),
+    );
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([
+      'This table changed since the cube was saved: reordered its columns',
+    ]);
+    expect(warningsOf(state, 'relational102')).toBeUndefined();
   });
 
   test('Reads a filter value saved as invalid text again once its column is typed: 300 is a SmallInt, not a TinyInt', async () => {
@@ -352,6 +428,39 @@ describe("Typing an imported cube's tables again", () => {
     expect(state.analysis.validity.get('relational102')).toEqual([
       'The table "NORTHWIND.NOPE" can\'t be found',
     ]);
+  });
+
+  test('Treats a table the engine gave no answer for as one it could not type', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.resolveSchemas.mockResolvedValue(new Map());
+    const state = new CubeEditorState(host);
+    await importAndWait(
+      state,
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', OLD_ORDERS_COLUMNS),
+            unsnapshotted('relational102', 'CUSTOMERS'),
+          ],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    expect(
+      state.analysis.schemas
+        .get('relational101')
+        ?.isIdenticalTo(new Schema(OLD_ORDERS_COLUMNS)),
+    ).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([
+      'Could not re-check this table, so it keeps its saved columns: The engine gave no schema for this table',
+    ]);
+    expect(nodeOf(state, 'relational102').resolution).toEqual({
+      kind: 'failed',
+      message: 'The engine gave no schema for this table',
+    });
+    expect(warningsOf(state, 'relational102')).toBeUndefined();
   });
 
   test('Treats a failed call as a failure of every table, e.g. a model of a kind Cube cannot run yet, and keeps the cube editable', async () => {
@@ -502,6 +611,57 @@ describe("Typing an imported cube's tables again", () => {
     expect(warningsOf(state, 'relational101')).toEqual([DRIFT_WARNING]);
   });
 
+  test('Says it is resolving again when Undo brings back a cube whose tables are still typed, though the tables of another import were typed meanwhile', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const first = deferred<Answer>();
+    fake.resolveSchemas.mockReturnValueOnce(first.promise);
+    const state = new CubeEditorState(host);
+    importDocument(state, oldOrdersDocument());
+    expect(state.isResolvingSources).toBe(true);
+    // a second import with a table, whose own answer comes at once
+    await importAndWait(
+      state,
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [unsnapshotted('relational101', 'CUSTOMERS')],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+
+    state.undo();
+    expect(state.isResolvingSources).toBe(true);
+    first.resolve(FRESH);
+    await settle();
+    expect(state.isResolvingSources).toBe(false);
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([DRIFT_WARNING]);
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(2);
+  });
+
+  test('Keeps a cube saved by a newer version read-only when its tables are typed after another import, so Undo brings it back read-only', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const answer = deferred<Answer>();
+    fake.resolveSchemas.mockReturnValueOnce(answer.promise);
+    const state = new CubeEditorState(host);
+    importText(state, newerSpecText(oldOrdersDocument()));
+    expect(state.readOnly).toBe(true);
+    // another cube, imported before the first one's tables are typed
+    importDocument(state, new CubeDocument({ context: CONTEXT }));
+    expect(state.readOnly).toBe(false);
+    answer.resolve(FRESH);
+    await settle();
+
+    state.undo();
+    // the cube brought back is the one typed meanwhile
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([DRIFT_WARNING]);
+    expect(state.readOnly).toBe(true);
+    expect(state.canUndo).toBe(false);
+  });
+
   test('Says it is resolving only while the cube shown has a table being typed: not after Undo, nor once another cube is open', async () => {
     const { host, fake } = TEST__createCubeHost();
     const answer = deferred<Answer>();
@@ -524,6 +684,36 @@ describe("Typing an imported cube's tables again", () => {
     answer.resolve(FRESH);
     await settle();
     expect(state.isResolvingSources).toBe(false);
+  });
+
+  test('Stops saying it is resolving when a cube with no tables, or with no model, replaces one being typed, and says it again when Undo brings that one back', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const answer = deferred<Answer>();
+    fake.resolveSchemas.mockReturnValueOnce(answer.promise);
+    const state = new CubeEditorState(host);
+    importDocument(state, oldOrdersDocument());
+    expect(state.isResolvingSources).toBe(true);
+
+    // a model with no tables: nothing to type
+    importDocument(state, new CubeDocument({ context: CONTEXT }));
+    expect(state.isResolvingSources).toBe(false);
+    // the same tables, by id, but no model to type them with
+    importDocument(state, new CubeDocument({ query: ordersAndCustomers() }));
+    expect(state.isResolvingSources).toBe(false);
+
+    state.undo();
+    expect(state.document.query.nodes).toEqual([]);
+    expect(state.isResolvingSources).toBe(false);
+    // the first cube is back, its tables still being typed
+    state.undo();
+    expect(state.isResolvingSources).toBe(true);
+
+    answer.resolve(FRESH);
+    await settle();
+    expect(state.isResolvingSources).toBe(false);
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([DRIFT_WARNING]);
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
   });
 
   test('Does nothing for a cube with no tables or no model', async () => {

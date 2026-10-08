@@ -745,6 +745,90 @@ describe('Cube source picker: failures', () => {
 });
 
 describe('Cube source picker: a pasted model', () => {
+  const PASTED = '###Relational\nDatabase my::Northwind ( )';
+
+  test('A pasted model is copied into the cube as its text, with the runtime of its first table', async () => {
+    const { state, fake } = setUp();
+    // the bundled model loads first, as the only one
+    await openPicker(state);
+    const picker = state.sourcePicker;
+    picker.startPastingModel();
+    picker.setPastedModelText(PASTED);
+    await flowResult(picker.loadPastedModel());
+    expect(fake.loadModel).toHaveBeenLastCalledWith(createTextModel(PASTED));
+    await pick(state, 'NORTHWIND', 'ORDERS');
+    expect(picker.error).toBeUndefined();
+    expect(nodeIds(state)).toEqual(['relational101']);
+    // the text itself, not the bundled model nor a missing one
+    expect(state.document.context).toEqual({
+      model: createTextModel(PASTED),
+      runtime: NORTHWIND_RUNTIME,
+    });
+    expect(state.history).toHaveLength(1);
+  });
+
+  test("Choosing to paste while the bundled model loads drops that load: its late outline isn't shown, and the pasted text loads", async () => {
+    const { state, fake } = setUp();
+    const held = deferred<CubeModelOutline>();
+    fake.loadModel.mockReturnValueOnce(held.promise);
+    const picker = state.sourcePicker;
+    picker.open();
+    expect(picker.isLoadingModel).toBe(true);
+    picker.startPastingModel();
+    expect(picker.isPastingModel).toBe(true);
+    expect(picker.model).toBeUndefined();
+    // nothing is loading any more, so Load model can be pressed
+    expect(picker.isLoadingModel).toBe(false);
+
+    held.resolve(FAKE_NORTHWIND_OUTLINE);
+    await nextMacrotask();
+    expect(picker.isPastingModel).toBe(true);
+    expect(picker.model).toBeUndefined();
+    expect(picker.outline).toBeUndefined();
+    expect(picker.isLoadingModel).toBe(false);
+    expect(picker.databasePath).toBeUndefined();
+    expect(picker.canConfirm).toBe(false);
+
+    picker.setPastedModelText(PASTED);
+    await flowResult(picker.loadPastedModel());
+    expect(fake.loadModel).toHaveBeenLastCalledWith(createTextModel(PASTED));
+    expect(picker.model).toEqual(createTextModel(PASTED));
+    expect(picker.isPastingModel).toBe(true);
+    expect(picker.databasePath).toBe(NORTHWIND_DATABASE);
+  });
+
+  test('Choosing to paste, then closing before Load model, keeps the text box on reopening and loads no model', async () => {
+    const { state, fake } = setUp();
+    await openPicker(state);
+    const picker = state.sourcePicker;
+    picker.startPastingModel();
+    picker.setPastedModelText(PASTED);
+    picker.close();
+    await openPicker(state);
+    expect(picker.isOpen).toBe(true);
+    expect(picker.isPastingModel).toBe(true);
+    expect(picker.pastedModelText).toBe(PASTED);
+    expect(picker.model).toBeUndefined();
+    expect(picker.outline).toBeUndefined();
+    expect(picker.isLoadingModel).toBe(false);
+    expect(fake.loadModel).toHaveBeenCalledTimes(1);
+  });
+
+  test("Choosing to paste clears a bundled model's load error", async () => {
+    const { state, fake } = setUp();
+    fake.loadModel.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.COMPILE,
+        'Unexpected token\nat line 3',
+      ),
+    );
+    await openPicker(state);
+    const picker = state.sourcePicker;
+    expect(picker.error).toBe('Unexpected token');
+    picker.startPastingModel();
+    expect(picker.error).toBeUndefined();
+  });
+
   test("Stops offering the pasted text once the cube's own model is loaded, e.g. an imported cube's", async () => {
     const state = new CubeEditorState(TEST__createCubeHost().host);
     const picker = state.sourcePicker;

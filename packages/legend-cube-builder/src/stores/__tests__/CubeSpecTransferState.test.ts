@@ -21,19 +21,24 @@ import {
   CubeDocument,
   FilterOperator,
   MAX_SPEC_BYTES,
+  PrimitiveType,
   Query,
+  Schema,
+  SchemaColumn,
   serializeCubeSpec,
   UnknownNode,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
+  CUSTOMERS_COLUMNS,
   NORTHWIND_RUNTIME,
   northwindTable,
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import {
+  type CubeEngine,
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeResult,
@@ -88,6 +93,75 @@ const ordersDocument = (): CubeDocument =>
     ),
   });
 
+/** The slice: two tables, a join and a filter, captured at the filter */
+const sliceDocument = (): CubeDocument =>
+  new CubeDocument({ context: CONTEXT, query: sliceQuery() });
+
+type ResolvedSchemas = Awaited<ReturnType<CubeEngine['resolveSchemas']>>;
+
+/** An answer the test gives when it chooses */
+const deferred = <T>(): {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+} => {
+  let resolve: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+};
+
+/** Lets every answer the fake engine already gave land */
+const settle = async (): Promise<void> =>
+  new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+
+/** Imports `text`, as Import (dev) does */
+const importSpecText = (state: CubeEditorState, text: string): void => {
+  state.specTransfer.openImport();
+  state.specTransfer.setImportText(text);
+  expect(state.specTransfer.importSpec()).toBe(true);
+};
+
+/**
+ * The cube's node ids: a failed match on the nodes themselves can't be
+ * reported across Jest's workers, since their schemas hold BigInts
+ */
+const nodeIds = (state: CubeEditorState): string[] =>
+  state.document.query.nodes.map(({ id }) => id);
+
+/** ORDERS as the engine types it once a column was added since the slice was saved */
+const SHIPPED_ORDERS_COLUMNS = [
+  ...ORDERS_COLUMNS,
+  new SchemaColumn(
+    'SHIP_PHONE',
+    PrimitiveType.get('meta::pure::precisePrimitives::Varchar', [24]),
+    true,
+  ),
+];
+
+/** The engine's answer for the slice's tables, ORDERS with its column added */
+const SHIPPED_SLICE_SCHEMAS: ResolvedSchemas = new Map([
+  ['relational101', new Schema(SHIPPED_ORDERS_COLUMNS)],
+  ['relational102', new Schema(CUSTOMERS_COLUMNS)],
+]);
+
+const SHIPPED_ORDERS_WARNING =
+  'This table changed since the cube was saved: added SHIP_PHONE';
+
+/** ORDERS, in the cube shown, has the column added since the slice was saved */
+const hasShippedOrders = (state: CubeEditorState): boolean =>
+  state.analysis.schemas
+    .get('relational101')
+    ?.isIdenticalTo(new Schema(SHIPPED_ORDERS_COLUMNS)) ?? false;
+
+const warningsOf = (
+  state: CubeEditorState,
+  id: string,
+): readonly string[] | undefined =>
+  state.warnings.get(state.document.query.getNode(id)?.key ?? -1);
+
 const ORDERS_RESULT: CubeResult = {
   columns: ORDERS_COLUMNS.map((column) => column.name),
   rows: [ORDERS_COLUMNS.map(() => null)],
@@ -136,7 +210,8 @@ describe('Cube spec export and import', () => {
     expect(serializeCubeSpec(state.document, state.registry)).toBe(
       serializeCubeSpec(document, state.registry),
     );
-    expect(state.document).not.toBe(document);
+    // compared by identity: a failed match on documents can't be reported
+    expect(state.document === document).toBe(false);
     const pivot = state.document.query.getNode('pivot101');
     expect(pivot).toBeInstanceOf(UnknownNode);
     expect((pivot as UnknownNode).savedKind).toBe('pivot');
@@ -174,8 +249,9 @@ describe('Cube spec export and import', () => {
       "Can't import the spec: query.nodes[0].database is required",
     );
     expect(state.specTransfer.mode).toBe(CUBE_SPEC_TRANSFER_MODE.IMPORT);
-    expect(state.document).toBe(document);
-    expect(state.history).toBe(history);
+    // compared by identity: a failed match on documents can't be reported
+    expect(state.document === document).toBe(true);
+    expect(state.history === history).toBe(true);
     expect(state.execution.result).toBe(result);
 
     // typing again clears the error
@@ -203,7 +279,7 @@ describe('Cube spec export and import', () => {
     );
   });
 
-  test('Never runs an imported cube, and drops the rows, SQL and engine errors of the cube before', async () => {
+  test('Never runs an imported cube, and drops the rows, SQL and node errors of the cube before', async () => {
     const { host, fake } = TEST__createCubeHost({ result: ORDERS_RESULT });
     const state = new CubeEditorState(host, ordersDocument());
     await flowResult(state.execution.execute());
@@ -218,8 +294,28 @@ describe('Cube spec export and import', () => {
     state.specTransfer.importSpec();
     expect(state.document.name).toBe('Unfinished');
     expect(state.execution.result).toBeUndefined();
-    expect(state.execution.error).toBeUndefined();
     expect(state.hostIssues.size).toBe(0);
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+  });
+
+  test('Drops the error of the last run of the cube before, even when the imported tables are left as they are', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.execute.mockRejectedValue(
+      new CubeEngineError(CubeEngineErrorKind.EXECUTION, 'Old error'),
+    );
+    const state = new CubeEditorState(host, ordersDocument());
+    await flowResult(state.execution.execute());
+    expect(state.execution.error?.firstLine).toBe('Old error');
+
+    importSpecText(state, serializeCubeSpec(ordersDocument()));
+    const imported = state.document;
+    expect(state.execution.error).toBeUndefined();
+    await settle();
+    // its table has the saved columns: the imported cube is not replaced
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
+    expect(state.isResolvingSources).toBe(false);
+    expect(state.document === imported).toBe(true);
+    expect(state.execution.error).toBeUndefined();
     expect(fake.execute).toHaveBeenCalledTimes(1);
   });
 
@@ -248,15 +344,70 @@ describe('Cube spec export and import', () => {
     expect(state.execution.error).toBeUndefined();
   });
 
-  test('Drops a table that was still being added when the import came', () => {
-    const state = new CubeEditorState(TEST__createCubeHost().host);
-    state.sourcePicker.open();
-    expect(state.sourcePicker.isOpen).toBe(true);
-    state.specTransfer.openImport();
-    state.specTransfer.setImportText(serializeCubeSpec(ordersDocument()));
-    state.specTransfer.importSpec();
-    expect(state.sourcePicker.isOpen).toBe(false);
-    expect(state.sourcePicker.isResolving).toBe(false);
+  test('Drops a table that was still being added when the import came', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const state = new CubeEditorState(host);
+    const picker = state.sourcePicker;
+    picker.open();
+    expect(picker.isOpen).toBe(true);
+    await settle();
+    expect(picker.isLoadingModel).toBe(false);
+    picker.selectTable('ORDERS');
+    expect(picker.canConfirm).toBe(true);
+    const answer = deferred<ResolvedSchemas>();
+    fake.resolveSchemas.mockReturnValueOnce(answer.promise);
+    const adding = flowResult(picker.confirm());
+    expect(picker.isResolving).toBe(true);
+
+    // a cube with no model, as the one before: only closing the picker drops the Add
+    importSpecText(
+      state,
+      serializeCubeSpec(new CubeDocument({ name: 'Imported' })),
+    );
+    expect(picker.isOpen).toBe(false);
+    expect(picker.isResolving).toBe(false);
+    answer.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
+    await adding;
+    expect(state.document.name).toBe('Imported');
+    expect(nodeIds(state)).toEqual([]);
+    expect(state.history).toHaveLength(1);
+    expect(picker.isOpen).toBe(false);
+    expect(picker.error).toBeUndefined();
+  });
+
+  test('Keeps saying the tables are being typed while those of a newer import are, when the answer for the cube before comes first', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const first = deferred<ResolvedSchemas>();
+    const second = deferred<ResolvedSchemas>();
+    fake.resolveSchemas
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    const state = new CubeEditorState(host);
+    importSpecText(state, serializeCubeSpec(ordersDocument()));
+    expect(state.isResolvingSources).toBe(true);
+    // another cube whose table has the same id, but is another table
+    importSpecText(
+      state,
+      serializeCubeSpec(
+        new CubeDocument({
+          context: CONTEXT,
+          query: new Query(
+            [northwindTable('relational101', 'CUSTOMERS', CUSTOMERS_COLUMNS)],
+            [],
+            'relational101',
+          ),
+        }),
+      ),
+    );
+    expect(fake.resolveSchemas).toHaveBeenCalledTimes(2);
+    expect(state.isResolvingSources).toBe(true);
+
+    first.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
+    await settle();
+    expect(state.isResolvingSources).toBe(true);
+    second.resolve(new Map([['relational101', new Schema(CUSTOMERS_COLUMNS)]]));
+    await settle();
+    expect(state.isResolvingSources).toBe(false);
   });
 
   test('Is one undo step', () => {
@@ -286,14 +437,44 @@ describe('Cube spec export and import', () => {
     expect(state.execution.canExecute).toBe(true);
   });
 
+  test('Still lets the node to run be chosen on a cube opened read-only, which stays read-only, and types its tables again', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const answer = deferred<ResolvedSchemas>();
+    fake.resolveSchemas.mockReturnValueOnce(answer.promise);
+    const state = new CubeEditorState(host);
+    importSpecText(state, newerSpecText(sliceDocument()));
+    expect(state.readOnly).toBe(true);
+    expect(state.isResolvingSources).toBe(true);
+    expect(state.document.query.selected).toBe('filter101');
+    state.select('join101');
+    expect(state.document.query.selected).toBe('join101');
+    expect(state.readOnly).toBe(true);
+    expect(state.canUndo).toBe(false);
+    state.undo();
+    expect(state.document.query.selected).toBe('join101');
+
+    // its tables are typed again, ORDERS with a column added: the choice stays
+    answer.resolve(SHIPPED_SLICE_SCHEMAS);
+    await settle();
+    expect(state.isResolvingSources).toBe(false);
+    expect(hasShippedOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([
+      SHIPPED_ORDERS_WARNING,
+    ]);
+    expect(state.document.query.selected).toBe('join101');
+    expect(state.readOnly).toBe(true);
+    expect(state.canUndo).toBe(false);
+    expect(state.execution.canExecute).toBe(true);
+  });
+
   test('Leaves read-only when another spec is imported, and undo brings the read-only cube back read-only', () => {
     const state = new CubeEditorState(TEST__createCubeHost().host);
     state.specTransfer.openImport();
-    state.specTransfer.setImportText(newerSpecText(ordersDocument()));
+    state.specTransfer.setImportText(newerSpecText(sliceDocument()));
     state.specTransfer.importSpec();
+    // choosing the node to run still works while read-only
+    state.select('join101');
     const readOnlyDocument = state.document;
-    // choosing the node to run is no change to the saved cube
-    state.select('relational101');
 
     state.specTransfer.openImport();
     state.specTransfer.setImportText(serializeCubeSpec(unfinishedDocument()));
@@ -301,11 +482,47 @@ describe('Cube spec export and import', () => {
     expect(state.readOnly).toBe(false);
     expect(state.canUndo).toBe(true);
     state.undo();
-    expect(state.document.query.nodes).toEqual(readOnlyDocument.query.nodes);
+    // compared as text: a failed match on nodes can't be reported
+    expect(serializeCubeSpec(state.document, state.registry)).toBe(
+      serializeCubeSpec(readOnlyDocument, state.registry),
+    );
+    expect(state.document.query.selected).toBe('join101');
     expect(state.readOnly).toBe(true);
   });
 
-  test('Reads a spec file into the import text, and refuses a file over the size cap unread', async () => {
+  test('Brings a cube opened read-only back read-only on undo, even when its tables were typed while another cube was open', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const answer = deferred<ResolvedSchemas>();
+    fake.resolveSchemas.mockReturnValueOnce(answer.promise);
+    const state = new CubeEditorState(host);
+    importSpecText(state, newerSpecText(sliceDocument()));
+    expect(state.readOnly).toBe(true);
+    // an editable cube, whose table the fake types as it was saved
+    importSpecText(state, serializeCubeSpec(ordersDocument()));
+    await settle();
+    expect(state.readOnly).toBe(false);
+    expect(state.isResolvingSources).toBe(false);
+
+    answer.resolve(SHIPPED_SLICE_SCHEMAS);
+    await settle();
+    expect(state.readOnly).toBe(false);
+    expect(nodeIds(state)).toEqual(['relational101']);
+    state.undo();
+    expect(state.readOnly).toBe(true);
+    expect(state.canUndo).toBe(false);
+    expect(nodeIds(state)).toEqual([
+      'relational101',
+      'relational102',
+      'join101',
+      'filter101',
+    ]);
+    expect(hasShippedOrders(state)).toBe(true);
+    expect(warningsOf(state, 'relational101')).toEqual([
+      SHIPPED_ORDERS_WARNING,
+    ]);
+  });
+
+  test('Reads a spec file into the import text, refuses a file over the size cap unread, and drops that refusal once another file is read', async () => {
     const state = new CubeEditorState(TEST__createCubeHost().host);
     state.specTransfer.openImport();
     const text = serializeCubeSpec(ordersDocument());
@@ -326,6 +543,46 @@ describe('Cube spec export and import', () => {
       `The file is too large to import: a spec is at most ${MAX_SPEC_BYTES} bytes`,
     );
     expect(state.specTransfer.importText).toBe(text);
+
+    const other = serializeCubeSpec(unfinishedDocument());
+    await flowResult(
+      state.specTransfer.readImportFile(
+        new File([other], 'unfinished.cube.json'),
+      ),
+    );
+    expect(state.specTransfer.importText).toBe(other);
+    expect(state.specTransfer.error).toBeUndefined();
+  });
+
+  test('Reads a file of exactly the size cap', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.specTransfer.openImport();
+    await flowResult(
+      state.specTransfer.readImportFile(
+        new File(['x'.repeat(MAX_SPEC_BYTES)], 'full.cube.json'),
+      ),
+    );
+    expect(state.specTransfer.error).toBeUndefined();
+    // not the text itself: a failed match would print all of it
+    expect(state.specTransfer.importText.length).toBe(MAX_SPEC_BYTES);
+    expect(state.specTransfer.isReadingFile).toBe(false);
+  });
+
+  test('Drops the error of a spec that failed to import once a file is read', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.specTransfer.openImport();
+    state.specTransfer.setImportText('{');
+    expect(state.specTransfer.importSpec()).toBe(false);
+    expect(state.specTransfer.error).toMatch(
+      /^Can't import the spec: it is not valid JSON/u,
+    );
+
+    const text = serializeCubeSpec(ordersDocument());
+    await flowResult(
+      state.specTransfer.readImportFile(new File([text], 'orders.cube.json')),
+    );
+    expect(state.specTransfer.importText).toBe(text);
+    expect(state.specTransfer.error).toBeUndefined();
   });
 
   test('Drops a file read that finishes after the dialog closed', async () => {
@@ -351,9 +608,90 @@ describe('Cube spec export and import', () => {
 
 describe('Cube spec files', () => {
   const readerClass = globalThis.FileReader;
+  /** The reads started, in order, while `HeldReader` is the browser's reader */
+  const heldReads: HeldReader[] = [];
+
+  /** A reader whose read ends only when the test says: with a load, or an error event as browsers send */
+  class HeldReader {
+    onload: (() => void) | null = null;
+    onerror: ((event: ProgressEvent) => void) | null = null;
+    result: string | null = null;
+    error: DOMException | null = null;
+
+    readAsText(): void {
+      heldReads.push(this);
+    }
+
+    load(text: string): void {
+      this.result = text;
+      this.onload?.();
+    }
+
+    fail(): void {
+      this.error = new DOMException(
+        'The file could not be read',
+        'NotReadableError',
+      );
+      const event = new ProgressEvent('error');
+      Object.defineProperty(event, 'target', { value: this });
+      this.onerror?.(event);
+    }
+  }
+
+  /** The read started `index`-th, which the test ends */
+  const heldRead = (index: number): HeldReader => {
+    const read = heldReads[index];
+    expect(read).toBeDefined();
+    return read as HeldReader;
+  };
+
+  beforeEach(() => {
+    heldReads.length = 0;
+  });
 
   afterEach(() => {
     globalThis.FileReader = readerClass;
+  });
+
+  test('Shows the file chosen last, and is reading until that one is read', async () => {
+    globalThis.FileReader = HeldReader as unknown as typeof FileReader;
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.specTransfer.openImport();
+    const first = flowResult(
+      state.specTransfer.readImportFile(new File(['{}'], 'first.cube.json')),
+    );
+    const second = flowResult(
+      state.specTransfer.readImportFile(new File(['{}'], 'second.cube.json')),
+    );
+    expect(heldReads).toHaveLength(2);
+
+    heldRead(0).load('first');
+    await first;
+    expect(state.specTransfer.isReadingFile).toBe(true);
+    expect(state.specTransfer.importText).toBe('');
+    heldRead(1).load('second');
+    await second;
+    expect(state.specTransfer.isReadingFile).toBe(false);
+    expect(state.specTransfer.importText).toBe('second');
+  });
+
+  test("Never says a file chosen before the one read couldn't be read", async () => {
+    globalThis.FileReader = HeldReader as unknown as typeof FileReader;
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.specTransfer.openImport();
+    const first = flowResult(
+      state.specTransfer.readImportFile(new File(['{}'], 'first.cube.json')),
+    );
+    const second = flowResult(
+      state.specTransfer.readImportFile(new File(['{}'], 'second.cube.json')),
+    );
+    heldRead(1).load('second');
+    await second;
+    heldRead(0).fail();
+    await first;
+    expect(state.specTransfer.error).toBeUndefined();
+    expect(state.specTransfer.importText).toBe('second');
+    expect(state.specTransfer.isReadingFile).toBe(false);
   });
 
   test('Ends the reading of a file when a file over the size cap is chosen while it is read', async () => {
