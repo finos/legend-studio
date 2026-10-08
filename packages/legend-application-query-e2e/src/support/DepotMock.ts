@@ -521,13 +521,15 @@ const lakehouseAccessPointGroup = (
     ([accessPointId, data]) => ({
       id: accessPointId,
       description: `COVID cases: ${accessPointId}`,
-      resourceBuilder: {
-        _type: 'databaseDDL',
-        reproducible: false,
-        targetEnvironment: 'Snowflake',
-        script: `CREATE VIEW ${accessPointId.toUpperCase()} AS SELECT 1`,
-        resourceType: 'VIEW',
-      },
+      resourceBuilder: [
+        {
+          _type: 'databaseDDL',
+          reproducible: false,
+          targetEnvironment: 'Snowflake',
+          script: `CREATE VIEW ${accessPointId.toUpperCase()} AS SELECT 1`,
+          resourceType: 'VIEW',
+        },
+      ],
       // what querying the access point returns: a relation
       lambdaGenericType: {
         rawType: {

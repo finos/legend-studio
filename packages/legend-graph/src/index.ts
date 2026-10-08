@@ -392,6 +392,7 @@ export {
   V1_Dataset,
   V1_DependencyAccessPoint,
   V1_DatabaseDDL,
+  V1_UnknownResourceBuilder,
   V1_SampleQuery,
   V1_ExecutableInfo,
   V1_TemplateExecutableInfo,

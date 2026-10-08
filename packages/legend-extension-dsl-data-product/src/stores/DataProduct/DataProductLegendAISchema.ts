@@ -47,7 +47,7 @@ import {
   type TDSServiceSchema,
   type LegendAIAccessPointRelationship,
 } from '@finos/legend-lego/legend-ai';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { filterByType, guaranteeNonNullable } from '@finos/legend-shared';
 import { getRelationColumnDescription } from '../../utils/LakehouseUtils.js';
 import { findArtifactRelationType } from '../../utils/DataProductIngestUtils.js';
 import type { DataProductViewerState } from './DataProductViewerState.js';
@@ -272,8 +272,11 @@ function buildAccessPointService(
     dataProductPath: productPath,
     accessPointGroupTitle: groupTitle,
   };
-  if (impl?.resourceBuilder instanceof V1_DatabaseDDL) {
-    entry.ddlScript = impl.resourceBuilder.script;
+  const ddlScripts = (impl?.resourceBuilder ?? [])
+    .filter(filterByType(V1_DatabaseDDL))
+    .map((builder) => builder.script);
+  if (ddlScripts.length) {
+    entry.ddlScript = ddlScripts.join('\n\n');
   }
   if (
     ap instanceof V1_LakehouseAccessPoint &&

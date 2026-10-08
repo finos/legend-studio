@@ -621,13 +621,15 @@ export const getMockDataProductGenerationFilesByType = (
           id: group.id,
           desecription: group.description,
           accessPointImplementations: group.accessPoints.map((ap) => ({
-            resourceBuilder: {
-              _type: 'databaseDDL',
-              reproducible: false,
-              targetEnvironment: 'Snowflake',
-              script: '',
-              resourceType: 'VIEW',
-            },
+            resourceBuilder: [
+              {
+                _type: 'databaseDDL',
+                reproducible: false,
+                targetEnvironment: 'Snowflake',
+                script: '',
+                resourceType: 'VIEW',
+              },
+            ],
             id: ap.id,
             lambdaGenericType: {
               rawType: {
