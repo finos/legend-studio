@@ -2235,6 +2235,171 @@ Also check and record:
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points
 and sources modal are designed. M3 can run in parallel if desired.
 
+### 11.4 M2: simple unary operations
+
+M2 is built on the branch `cube-ops`, from `cubeV1` at `b9923ed28` (the M1.9 line after the 0.0.2 release). Its status
+is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
+critic and a finalize step), 140 checklist items, a 17-step build order and 5 questions; the full result is kept in the
+local evidence folder. The engine facts below were probed on the local engine (`93d92b4`) at compile and plan time ✅.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M2** (user, 2026-10-08, all on the requirements' recommendation):
+
+- **Base.** `cubeV1` had been rebased onto the 0.0.2 release (`6041ba413`) since `cube-ops` was created, and
+  `cube-ops` had no commits of its own, so it was re-pointed at `cubeV1` (`b9923ed28`): the signed-off M1.9 code, its
+  guides and the exports 0.0.2 published. After the M1.9 follow-up PR (#5634) is squash-merged:
+  `git rebase --onto origin/master b9923ed28 cube-ops`. A commit of that base that #5634 doesn't carry stays on
+  `cubeV1`.
+- **First operation:** Limit, end to end (core, codec, emitter, editor, engine test, browser), before the others. It
+  has a setting, a draft, a codec number, a message, an integer literal and an editor input.
+- **Where Sort's ORDER BY goes (answers §12.2 question 2): where the order is used.** Probes of
+  `<table>->sort(…)->X->limit(1001)` on H2, Postgres, SQL Server, Snowflake, DB2 and Oracle:
+
+  - the ORDER BY stays in the outer query through Filter, Distinct, a Restrict that keeps the sort keys, and another
+    Sort (sorts merge, the later keys first);
+  - it moves into a derived table through any Rename, a Restrict that drops a key, and a Join on either side. SQL
+    Server rejects an ORDER BY in a derived table without TOP;
+  - after a Limit, Drop or Slice, the capture's own `limit(rowLimit + 1)` hides the display order.
+
+  So a Sort node emits nothing where it stands. Cube tracks the row order through the graph (a host-free row-order
+  module; keys follow Renames) and emits `sort(<keys>)` just before a Limit, Drop or Slice that takes rows by that
+  order, and before the capture's limit: `{| <relation>->sort(<order>)->limit(rowLimit + 1)->from(runtime)}`. That
+  SQL is correct on every probed database. Show Pure shows the sort near the end. Typing lambdas carry no sort.
+  The warning fires only when the order is lost: a Join, a Restrict that drops sort keys (partial loss names the
+  columns), or a later Sort on all the same columns. It is derived, never stored and never a validation error, so
+  Execute stays enabled.
+
+- **Databases that reject Drop, Slice or Distinct: detect them from the runtime.** The engine writes Drop and Slice
+  as `limit m,-1` / `limit m,n`, which SQL Server, Sybase and Sybase IQ reject (Drop also DB2 and MemSQL), and
+  writes a Distinct before a limit as `select top N distinct` on SQL Server, which T-SQL rejects (💭, plan only). The
+  model outline gains each runtime's connection database types; Execute and Show Pure pass the capture's type to the
+  emitter, waiting for the cached outline only when the capture subtree has a Drop, Slice or Distinct. Those databases
+  get:
+
+  - Drop and Slice through row numbers:
+    `->extend(over(<order>), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter(<range>)->select(<input columns>)`,
+    `over()` sorted by the input order, else by the first sortable column; row numbers count from 1;
+  - Distinct padded on SQL Server: `->distinct()->extend(~cube_d: x | 1)->select(<input columns>)`.
+
+  Every other database keeps the native form, and so does an unknown type. The workarounds are data
+  (`CubeDialects.ts`); Spanner never gets the row-number form (no window columns). An engine issue is filed for the
+  SQL Server distinct.
+
+- **Slice's wording:** the canvas reads `Take rows 10 to 20 (20 excluded)` (`Take rows 10 to (blank)` when the stop
+  is missing); the help text reads "Reduces the number of rows in the previous data set, keeping only the rows from
+  position "start" up to, but not including, position "stop", counting from 0."; the editor hints "Rows count from
+  0: the start row is kept, the stop row is not." The palette label stays the spec's `Take rows <x> to <y>`.
+
+**Decided without asking** (technical choices from the requirements, listed for review):
+
+- **Nodes.** One immutable `UnaryNode` class per operation in `src/nodes/transforms/`: `Sort`, `Restrict`,
+  `Rename`, `Distinct`, `Drop`, `Limit`, `Slice` (types `sort` … `slice`, spec §7.0). Registered in spec menu order
+  (Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Join), with the spec's palette labels, `<x>`
+  included. A type is registered in the step that adds its editor, help text and icon. Constructors refuse only
+  wrong shapes (an unknown direction, NaN, Infinity); every other invalid state is constructible and reported by
+  validation. No M2 node redacts anything: names and sizes are not values.
+- **Clearable settings.** Limit and Drop take `(id, size: number | undefined)` and Slice `(id, start, stop)`, with no
+  JS defaults (a default parameter also replaces an explicit `undefined`); the defaults (10; 10 and 20) live only in
+  `create(id)`. A cleared field is `undefined` and invalid ("Size must be a positive whole number."), never the
+  default. Size 0, Drop 0 and an empty Slice stay invalid, as the spec says, though the engine accepts them. Slice
+  checks each bound, then `start < stop` (the engine plans a negative fetch otherwise).
+- **Sort.** Directions `ASC`/`DESC`, labelled Asc/Desc. "Sorts cannot be empty."; each column must exist; Cube
+  adds "Sort column "X" of type Variant cannot be sorted." (VARIANT and OPAQUE, through one exported
+  `isSortableType`, also used by the editor's picker, the Sort by quick action and the row-number fallback's default
+  key) and "Sort columns cannot have duplicates.". The two Sort direction messages stay in the catalogue, unreachable.
+- **Restrict.** Its messages use the labels `Columns` and `Column`. The output keeps the input's order; the editor
+  stores picks in input order.
+- **Rename.** The column-name rule (`src/schema/ColumnName.ts`, shared with the autofix, Group and Extend):
+  non-empty, trimmed, no `"`, no `\`, no control characters, at most 128 code points. A backslash compiles in the
+  rename but breaks every later reference to the column ✅; `"` and control characters compile but are banned by
+  Appendix A's rule. Failures use the catalogue's "New column name is not valid column name.", and the editor shows
+  the rule under the field. A mapping may not share its old or new name with another mapping (no swaps or chains),
+  and its new name may not be an untouched input column: "New column name "X" is already present in the input
+  schema." (the collision fix). Names are never trimmed. Postgres truncates identifiers at 63 bytes (💭); recorded in
+  ISSUES.
+- **Join autofix.** For each duplicate column `c`, a Rename before each input gives `c_1` (Left) and `c_2` (Right),
+  then `c_<side>_2`, `_3`… when a name is taken in either input or already generated; names are cut to 128 code
+  points. Key lists are rewritten through the same renames, so a duplicate that is a key at another position, or
+  crossed keys, still give a valid join. New Renames are always added, never merged into existing ones. One query
+  change, one undo step, the selection kept; the panel's edits are applied first. Core API:
+  `planJoinDuplicateFix`, `canFixJoinDuplicates`, `fixJoinDuplicates` (`JoinAutofix.ts`, not on `Query`).
+- **Row order.** `outputOrder` and `consumesInputOrder` on nodes, `computeRowOrders(query)`: a source and a Join give
+  no order, Filter, Distinct, Limit, Drop and Slice pass it on, Rename renames its keys, Restrict keeps the longest
+  prefix whose columns it keeps, Sort puts its keys first, and only an Unknown node leaves it unknown. The warning
+  (`findLostSortOrders`) and the emitter both use it.
+- **Saved spec.** `{sorts: [{column, direction}]}`, `{columns: […]}`, `{mappings: [{from, to}]}`, nothing for
+  Distinct, `{size}` and `{start, stop}`. Lists are always written, empty ones too. Sizes and indexes are JSON numbers
+  (strings are for literal values only), written whenever set, defaults included; a cleared one is left out, never
+  `null`, so it reads back as cleared and the panel counts clearing a default as an edit. An unknown non-empty
+  direction, or an unknown key on a sort entry or rename mapping, makes the node an Unknown node (it could change the
+  rows); an empty direction is a decode error, as an empty `joinType` is. A future key that changes rows on a node
+  with no list (e.g. Distinct gaining `columns`) needs a new kind or a format version. Samples: one shared
+  `operations.cube.json` extended by each step, plus `join-autofix.cube.json`.
+- **Emission.** New roles: `take` (a Limit node, distinct from the capture's `limit`), `drop`, `slice`, `distinct`,
+  `sort`, `sortKey` (stamped with the declaring Sort), `captureSort`, `rowNumber`, `rowRange`; Restrict reuses
+  `select`, Rename `rename`. `EmitContext` gains optional `inputOrder` and `databaseType`, `ExecutionOptions` an
+  optional `databaseType`, and `emitRelation` an options bag that keeps typing (no sort, no dialect) apart from
+  execution. Size literals are plain digits. Temporary columns (`cube_rn`, `cube_d`) get a numeric suffix until no
+  input column has the name. The debug printer braces colSpec lambdas with several parameters (the bare form doesn't
+  parse). The `v1/` serializer needs no change.
+- **Editors.** Distinct registers an editor and no draft (PLAN §7.4 item 2 covers a type with nothing to edit) and
+  is listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`. Integer fields keep the typed text and read only `^[+-]?\d+$`
+  (empty is cleared, never a default). Sort and Rename start with one blank row. New editors work in either host
+  (§12.2 question 1): their lists scroll on their own, pickers stay native selects, and nothing measures the panel.
+  Icons from legend-art: Sort `SortIcon`, Restrict `DataCubeIcon.TableColumns`, Rename `PencilIcon`, Distinct
+  `CompressIcon`, Limit `AlignTopIcon`, Drop `AlignBottomIcon`, Slice `AlignMiddleIcon`. Column tracing for the
+  Join's "type unknown" warning learns Rename (`findColumnOrigins`).
+- **Grid quick actions** (spec §12.4, in the client-side grid from M2, before ag-grid's own menu items, which stay
+  until M7 curates the menu; no icons; Group by waits for M4). "Sort by "X"" adds an ascending Sort and "Filter by
+  "X"" an Equal on the clicked value (IsEmpty on a null cell; a trailing `+0000` dropped; the floating-point hint on
+  Float columns), after the selected node, as one undo step that selects the new node. They never execute: the rows
+  turn stale. They are enabled only while the rows shown are from the current query and no run is in progress; Sort
+  by is disabled on unsortable types, Filter by when no value can be built.
+- **Tests.** M2's engine tests are a new `LegendCubeOperations.engine-roundtrip-test.ts`; Part A's file stays
+  unchanged. A plan-only dialect test (`generatePlan`) runs on a test-only copy of the fixture model with one
+  connection per database type. Rows are compared as sets unless a Sort reaches the capture node. The M2 browser
+  rehearsal is a new evidence-folder script on :9002; still no e2e in the repo.
+- **Process.** Steps are numbered from M2.1 (M2.0 is legend-graph types). One changeset,
+  `legend-cube-unary-operations` (both Cube packages, patch). Both packages are published at 0.0.2, so M2 only adds
+  exports and makes new interface fields optional.
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                       |
+| ----- | ----------------------------------------------------------------------------------------------------------------- |
+| M2.1  | This subsection and PROGRESS-M2.md (docs only)                                                                    |
+| M2.2  | Limit in the core: node, codec, emitter                                                                           |
+| M2.3  | Limit in the builder (draft, integer field, editor, help text, icon) and registered                               |
+| M2.4  | Limit on the engine and in the browser: the contract proven                                                       |
+| M2.5  | Drop (native)                                                                                                     |
+| M2.6  | Slice (native)                                                                                                    |
+| M2.7  | Distinct (an editor without settings)                                                                             |
+| M2.8  | Restrict                                                                                                          |
+| M2.9  | Rename, with the column-name rule and the collision fix                                                           |
+| M2.10 | Join rename autofix                                                                                               |
+| M2.11 | Sort, the row-order module, and the ORDER BY where the order is used                                              |
+| M2.12 | The Sort warning                                                                                                  |
+| M2.13 | Database workarounds: row numbers for Drop and Slice, padded Distinct on SQL Server, the runtime's database types |
+| M2.14 | Grid quick actions: Sort by and Filter by                                                                         |
+| M2.15 | Docs, sample typing on the engine, changeset text                                                                 |
+| M2.16 | Verification (reviewers and a skeptic per finding) and the browser rehearsal                                      |
+| M2.17 | Rebase onto master after #5634, fold the supersessions below into the plan, PR when the user asks                 |
+
+**Supersessions** (applied to the sections they change in one docs commit after the rebase):
+
+- §4: an entry per M2 node, and the row-order hooks; §4.7: the autofix's names and key rewrite.
+- §7.4 item 2: a transform with nothing to edit (Distinct) has an editor and no draft.
+- §8.2 step 3 and §8.4: the capture re-sorts by its order; §8.8: the Sort, Distinct, Drop and Slice rows and the
+  database table above; §8.9: the SQL Server distinct.
+- §9: Sort by and Filter by come in M2.
+- §10.3: the M2 shapes and the rule for clearable settings (an exception to "absent or at its default is left out").
+- §12.2 question 2: answered (above).
+- Appendix A: §7.1 sortable types and duplicates, §7.4 Restrict's labels, §7.5 no backslash, §7.7/§7.9 defaults in
+  `create`, §7.9 wording, §7.11 key rewrite, §12.4 client-side grid. Appendix B: rename and select duplicates fail with
+  HTTP 500 and no source location, SQL Server's `top N distinct`, MemSQL rewriting Drop over the first sort key only.
+- PROGRESS.md's "operations start on a branch from master" note: M2 starts from `cubeV1` (above).
+
 ---
 
 ## 12. G. Risks and open questions
