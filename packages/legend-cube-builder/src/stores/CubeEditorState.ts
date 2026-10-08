@@ -94,6 +94,8 @@ export class CubeEditorState {
   private pendingSources: ReadonlySet<QueryNode> = new Set();
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
+  /** The palette shows icons only; kept per user, never in the cube */
+  isPaletteCollapsed: boolean;
   /**
    * The cube was saved by a newer version of Cube: it can be viewed and run,
    * but not changed, undone or exported (Settled before M1.8)
@@ -111,6 +113,7 @@ export class CubeEditorState {
       warnings: observable.ref,
       isResolvingSources: computed,
       rowLimit: observable,
+      isPaletteCollapsed: observable,
       readOnly: observable,
       analysis: computed,
       emitter: computed,
@@ -122,7 +125,10 @@ export class CubeEditorState {
       applyQuery: action,
       select: action,
       connect: action,
+      addNode: action,
+      dropNode: action,
       setShowGraph: action,
+      setPaletteCollapsed: action,
       setHostIssue: action,
       clearHostIssues: action,
       setRowLimit: action,
@@ -136,6 +142,10 @@ export class CubeEditorState {
     this.rowLimit = isValidRowLimit(storedLimit)
       ? storedLimit
       : DEFAULT_ROW_LIMIT;
+    this.isPaletteCollapsed =
+      host.applicationStore.userDataService.getBooleanValue(
+        LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
+      ) ?? false;
     this.execution = new CubeExecutionState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
@@ -399,6 +409,69 @@ export class CubeEditorState {
   }
 
   /**
+   * Whether a node of the type can be added: a transform, unconnected or
+   * spliced in after `afterId`, when the query allows it; a source only
+   * unconnected, through the source picker. Never while the cube is read-only.
+   */
+  canAddNode(type: string, afterId?: string): boolean {
+    const definition = this.registry.get(type);
+    if (this.readOnly || !definition) {
+      return false;
+    }
+    if (definition.kind === 'source') {
+      return afterId === undefined;
+    }
+    const { query } = this.document;
+    return query.canAdd(definition.create(query.generateId(type)), afterId);
+  }
+
+  /**
+   * Adds a node of the type, as the palette and the context menu do (spec
+   * §17.4): a transform with its default settings, unconnected or spliced in
+   * after `afterId`; a source opens the source picker, which adds it once
+   * the engine has typed it. Does nothing `canAddNode` refuses.
+   */
+  addNode(type: string, afterId?: string): void {
+    const definition = this.registry.get(type);
+    if (!definition || !this.canAddNode(type, afterId)) {
+      return;
+    }
+    if (definition.kind === 'source') {
+      this.sourcePicker.open();
+      return;
+    }
+    const { query } = this.document;
+    this.applyQuery(
+      query.add(definition.create(query.generateId(type)), afterId),
+    );
+  }
+
+  /** Whether dropping a node on another does anything: connect it, or else move it after it */
+  canDropNode(nodeId: string, targetId: string): boolean {
+    const { query } = this.document;
+    return (
+      !this.readOnly &&
+      (query.canConnect(nodeId, targetId) || query.canMove(nodeId, targetId))
+    );
+  }
+
+  /**
+   * Drops a node on another (spec §17.4): it feeds the target's first free
+   * port if it can, else it moves to after the target
+   */
+  dropNode(nodeId: string, targetId: string): void {
+    if (!this.canDropNode(nodeId, targetId)) {
+      return;
+    }
+    const { query } = this.document;
+    this.applyQuery(
+      query.canConnect(nodeId, targetId)
+        ? query.connect(nodeId, targetId)
+        : query.move(nodeId, targetId),
+    );
+  }
+
+  /**
    * Shows or hides the graph, which the cube saves (spec §17.1). An undoable
    * edit that leaves the query, and so the rows, as they are (M1.8b).
    */
@@ -438,6 +511,15 @@ export class CubeEditorState {
       value,
     );
     return true;
+  }
+
+  /** Collapses or expands the palette, and remembers it for the user */
+  setPaletteCollapsed(collapsed: boolean): void {
+    this.isPaletteCollapsed = collapsed;
+    this.host.applicationStore.userDataService.persistValue(
+      LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
+      collapsed,
+    );
   }
 
   /** Stops any run; call when the page closes */

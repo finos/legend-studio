@@ -17,6 +17,8 @@
 import { clsx } from '@finos/legend-art';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
+import { useRef } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import {
@@ -26,10 +28,19 @@ import {
   getInputHandleOffset,
 } from './CubeCanvasElements.js';
 import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
+import {
+  canDropOnCubeNode,
+  CUBE_DND_TYPE,
+  type CubeDragItem,
+  type CubeNodeDragItem,
+  dropOnCubeNode,
+} from './CubeCanvasDnd.js';
 
 /**
  * A node on the canvas: its type's icon and its description, never its id,
  * which is in the tooltip (spec §17.3). Its look tells its state at a glance.
+ * It can be dragged onto another node, and takes palette items and other
+ * nodes, lighting up only for a drop that would do something.
  */
 export const CubeCanvasNode = observer(
   (props: NodeProps<CubeCanvasFlowNode>) => {
@@ -37,10 +48,38 @@ export const CubeCanvasNode = observer(
     const editorState = useCubeCanvasEditorState();
     const status = getCubeCanvasNodeStatus(editorState, node);
     const connectable = !editorState.readOnly && node.acceptsNewInputs;
+    const ref = useRef<HTMLDivElement>(null);
+    const [, dragConnector] = useDrag<CubeNodeDragItem>(
+      () => ({
+        type: CUBE_DND_TYPE.NODE,
+        item: { nodeId: node.id },
+        canDrag: () => !editorState.readOnly,
+      }),
+      [editorState, node.id],
+    );
+    const [{ isDropTarget }, dropConnector] = useDrop<
+      CubeDragItem,
+      void,
+      { isDropTarget: boolean }
+    >(
+      () => ({
+        accept: [CUBE_DND_TYPE.NODE, CUBE_DND_TYPE.PALETTE_ITEM],
+        canDrop: (item) => canDropOnCubeNode(editorState, item, node.id),
+        drop: (item) => dropOnCubeNode(editorState, item, node.id),
+        collect: (monitor) => ({
+          isDropTarget: monitor.isOver({ shallow: true }) && monitor.canDrop(),
+        }),
+      }),
+      [editorState, node.id],
+    );
+    dragConnector(dropConnector(ref));
     return (
       <div
+        ref={ref}
         className={clsx(
-          'legend-cube__node flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
+          // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
+          // it from moving the node, 'nopan' from panning the canvas
+          'legend-cube__node nodrag nopan flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
           status.isInvalid
             ? 'border-[var(--color-status-error)]'
             : status.isIncomplete
@@ -54,6 +93,8 @@ export const CubeCanvasNode = observer(
             'legend-cube__node--resolving animate-pulse': status.isResolving,
             'legend-cube__node--engine-error bg-[var(--color-status-error-bg)]':
               status.hasEngineError,
+            'legend-cube__node--drop-target outline-dashed outline-2 outline-[var(--color-accent)]':
+              isDropTarget,
           },
         )}
         title={status.tooltip}

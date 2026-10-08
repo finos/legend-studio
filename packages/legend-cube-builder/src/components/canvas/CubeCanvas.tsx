@@ -30,7 +30,8 @@ import {
 // page's chunk: Query's reactflow 11 lineage viewer uses the same class names
 import '@xyflow/react/dist/style.css';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useDrop } from 'react-dnd';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
@@ -43,6 +44,11 @@ import {
   type CubeCanvasFlowNode,
 } from './CubeCanvasElements.js';
 import { CubeCanvasContext } from './CubeCanvasContext.js';
+import {
+  CUBE_DND_TYPE,
+  type CubePaletteDragItem,
+  dropOnCubeCanvas,
+} from './CubeCanvasDnd.js';
 import { CubeCanvasEdge } from './CubeCanvasEdge.js';
 import { layoutCubeQuery } from './CubeCanvasLayout.js';
 import { CubeCanvasNode } from './CubeCanvasNode.js';
@@ -147,13 +153,32 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
 /**
  * The query as a graph, laid out left to right (spec §17.3). Click a node to
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
- * output to another node's input to connect them.
+ * output to another node's input to connect them. A palette item dropped
+ * around the nodes is added unconnected.
  */
 export const CubeCanvas = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
+    const ref = useRef<HTMLDivElement>(null);
+    const [, dropConnector] = useDrop<CubePaletteDragItem>(
+      () => ({
+        accept: [CUBE_DND_TYPE.PALETTE_ITEM],
+        canDrop: () => !editorState.readOnly,
+        // a node under the pointer, whether it took the drop or refused it,
+        // keeps it from the canvas
+        drop: (item, monitor) =>
+          dropOnCubeCanvas(
+            editorState,
+            item,
+            monitor.didDrop() || !monitor.isOver({ shallow: true }),
+          ),
+      }),
+      [editorState],
+    );
+    dropConnector(ref);
     return (
       <div
+        ref={ref}
         className="relative h-full w-full"
         data-testid={LEGEND_CUBE_TEST_ID.CANVAS}
       >

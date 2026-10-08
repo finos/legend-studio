@@ -27,6 +27,7 @@ import { useEffect, useState } from 'react';
 import {
   CUBE_PENDING_LABEL,
   formatDisabledReasons,
+  READ_ONLY_CUBE_TITLE,
   UNSAVED_CUBE_NAME,
 } from '../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
@@ -35,12 +36,10 @@ import type { CubeHost } from '../stores/CubeHost.js';
 import { CubeButton } from './CubeButton.js';
 import { CubeCanvas } from './canvas/CubeCanvas.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
+import { CubePalette } from './palette/CubePalette.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
 import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.js';
-
-const READ_ONLY_TITLE =
-  "This cube was saved by a newer version of Legend Cube, so it can't be changed or exported";
 
 /** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
 const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
@@ -79,14 +78,14 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
           </span>
         )}
         <CubeButton
-          title={readOnly ? READ_ONLY_TITLE : undefined}
+          title={readOnly ? READ_ONLY_CUBE_TITLE : undefined}
           disabled={readOnly}
           onClick={() => editorState.sourcePicker.open()}
         >
           Add table
         </CubeButton>
         <CubeButton
-          title={readOnly ? READ_ONLY_TITLE : 'Undo the last change'}
+          title={readOnly ? READ_ONLY_CUBE_TITLE : 'Undo the last change'}
           disabled={!editorState.canUndo}
           onClick={() => editorState.undo()}
         >
@@ -110,7 +109,7 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
         <CubeButton
           title={
             readOnly
-              ? READ_ONLY_TITLE
+              ? READ_ONLY_CUBE_TITLE
               : "Show the cube's spec, to copy or download"
           }
           disabled={readOnly}
@@ -141,7 +140,7 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
           className="shrink-0 border-b border-[var(--color-border-default)] bg-[var(--color-status-warn-bg)] px-2 py-1 text-base text-[var(--color-status-warn)]"
           role="status"
         >
-          {READ_ONLY_TITLE}. You can view and run it.
+          {READ_ONLY_CUBE_TITLE}. You can view and run it.
         </div>
       )}
       {showGraph && (
@@ -176,27 +175,30 @@ export const CubeEditor = observer(
 
     return (
       <div
-        className="legend-cube flex flex-col bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
+        className="legend-cube flex bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
         data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
       >
-        {editorState.document.meta.presentation.showGraph ? (
-          <ResizablePanelGroup orientation="horizontal">
-            <ResizablePanel minSize={96} maxSize={maxGraphHeight}>
+        <CubePalette editorState={editorState} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          {editorState.document.meta.presentation.showGraph ? (
+            <ResizablePanelGroup orientation="horizontal">
+              <ResizablePanel minSize={96} maxSize={maxGraphHeight}>
+                <CubeGraphRegion editorState={editorState} />
+              </ResizablePanel>
+              <ResizablePanelSplitter />
+              <ResizablePanel minSize={96}>
+                <CubeGridRegion editorState={editorState} />
+              </ResizablePanel>
+            </ResizablePanelGroup>
+          ) : (
+            <>
               <CubeGraphRegion editorState={editorState} />
-            </ResizablePanel>
-            <ResizablePanelSplitter />
-            <ResizablePanel minSize={96}>
-              <CubeGridRegion editorState={editorState} />
-            </ResizablePanel>
-          </ResizablePanelGroup>
-        ) : (
-          <>
-            <CubeGraphRegion editorState={editorState} />
-            <div className="min-h-0 flex-1">
-              <CubeGridRegion editorState={editorState} />
-            </div>
-          </>
-        )}
+              <div className="min-h-0 flex-1">
+                <CubeGridRegion editorState={editorState} />
+              </div>
+            </>
+          )}
+        </div>
       </div>
     );
   },

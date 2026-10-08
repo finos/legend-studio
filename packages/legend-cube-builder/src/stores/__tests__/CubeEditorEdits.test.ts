@@ -104,6 +104,90 @@ describe('Connecting nodes', () => {
   });
 });
 
+describe('Adding nodes', () => {
+  test('Adds a transform with its default settings, on its own or spliced in after a node, as one edit each', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    state.addNode('filter');
+    expect(state.document.query.getNode('filter102')).toBeInstanceOf(Filter);
+    expect(state.document.query.getInputIds('filter102')).toEqual([undefined]);
+    state.addNode('join', 'relational101');
+    const { query } = state.document;
+    expect(query.getNode('join102')).toBeInstanceOf(Join);
+    // the new Join's Left takes ORDERS; what ORDERS fed now takes the Join
+    expect(query.getInputIds('join102')).toEqual(['relational101', undefined]);
+    expect(query.getInputIds('join101')).toEqual(['join102', 'relational102']);
+    expect(state.history).toHaveLength(2);
+  });
+
+  test('Opens the source picker for a source, which it adds only on its own', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    expect(state.canAddNode('relational', 'join101')).toBe(false);
+    state.addNode('relational', 'join101');
+    expect(state.sourcePicker.isOpen).toBe(false);
+    expect(state.canAddNode('relational')).toBe(true);
+    state.addNode('relational');
+    expect(state.sourcePicker.isOpen).toBe(true);
+    expect(state.history).toHaveLength(0);
+  });
+
+  test('Adds nothing of an unknown type, after a missing node, or while read-only', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    expect(state.canAddNode('pivot')).toBe(false);
+    expect(state.canAddNode('unknown')).toBe(false);
+    expect(state.canAddNode('filter', 'nothing101')).toBe(false);
+    state.addNode('pivot');
+    state.addNode('filter', 'nothing101');
+    expect(state.history).toHaveLength(0);
+    state.importDocument(new CubeDocument({ query: sliceQuery() }), true);
+    const { document } = state;
+    expect(state.canAddNode('filter')).toBe(false);
+    expect(state.canAddNode('relational')).toBe(false);
+    state.addNode('filter');
+    state.addNode('relational');
+    expect(state.document).toBe(document);
+    expect(state.sourcePicker.isOpen).toBe(false);
+  });
+});
+
+describe('Dropping a node on another', () => {
+  test('Connects it when it can, which comes before moving it', () => {
+    const state = createState(unwiredJoin());
+    expect(state.canDropNode('relational102', 'join101')).toBe(true);
+    state.dropNode('relational102', 'join101');
+    expect(state.document.query.connections).toEqual([
+      new Connection('relational102', 'join101', 'leftTds'),
+    ]);
+  });
+
+  test('Moves it after the other node when it cannot connect', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    state.dropNode('filter101', 'relational101');
+    const { query } = state.document;
+    expect(query.getInputIds('filter101')).toEqual(['relational101']);
+    expect(query.getInputIds('join101')).toEqual([
+      'filter101',
+      'relational102',
+    ]);
+    expect(state.history).toHaveLength(1);
+  });
+
+  test('Does nothing when it can do neither, or while read-only', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    // the Join already feeds the Filter; a table takes no input
+    expect(state.canDropNode('filter101', 'join101')).toBe(false);
+    expect(state.canDropNode('relational101', 'relational102')).toBe(false);
+    expect(state.canDropNode('filter101', 'filter101')).toBe(false);
+    state.dropNode('filter101', 'join101');
+    state.dropNode('relational101', 'relational102');
+    expect(state.history).toHaveLength(0);
+    state.importDocument(unwiredJoin(), true);
+    expect(state.canDropNode('relational102', 'join101')).toBe(false);
+    const { document } = state;
+    state.dropNode('relational102', 'join101');
+    expect(state.document).toBe(document);
+  });
+});
+
 describe('Showing and hiding the graph', () => {
   test('Saves it in the cube, keeping the rest of the presentation, as an undoable edit', () => {
     const presentationRest = { zoom: 2 };
