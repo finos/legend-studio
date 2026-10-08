@@ -31,6 +31,7 @@ import {
   type QueryNode,
   QueryEmitter,
   type RelationalTableSource,
+  Restrict,
   Slice,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
@@ -432,4 +433,43 @@ describe('Distinct on the engine', () => {
     );
     expect(result.rows).toHaveLength(830);
   });
+});
+
+describe('Restrict on the engine', () => {
+  test("Selects the kept columns in the input's order, typed as Cube infers", async () => {
+    const query = await ordersThen(
+      new Restrict('restrict101', ['SHIP_COUNTRY', 'ORDER_ID']),
+    );
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.columns).toEqual(['ORDER_ID', 'SHIP_COUNTRY']);
+    expect(result.rows).toHaveLength(830);
+  });
+
+  test.each<[string, string[], number]>([
+    ['the ship countries', ['SHIP_COUNTRY'], 21],
+    ['the ship countries and cities', ['SHIP_COUNTRY', 'SHIP_CITY'], 70],
+    ['the employees and shippers', ['EMPLOYEE_ID', 'SHIP_VIA'], 27],
+  ])(
+    'Keeps one row of each of %s with a Distinct after it',
+    async (_, columns, count) => {
+      const query = await ordersThen(
+        new Restrict('restrict101', columns),
+        new Distinct('distinct101'),
+      );
+      await TEST__expectEngineTyping(engine, query);
+      const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+      expect(result.rows).toHaveLength(count);
+      expect(new Set(result.rows.map((row) => JSON.stringify(row))).size).toBe(
+        count,
+      );
+    },
+  );
 });

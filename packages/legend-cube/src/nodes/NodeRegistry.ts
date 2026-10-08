@@ -27,6 +27,7 @@ import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
+import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
@@ -34,6 +35,7 @@ import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
+import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
@@ -46,6 +48,7 @@ import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
+import { Restrict } from './transforms/Restrict.js';
 import { Slice } from './transforms/Slice.js';
 import { UnknownNode } from './UnknownNode.js';
 
@@ -122,6 +125,17 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   create: (id) => new Filter(id),
   emit: emitFilter,
   spec: FILTER_CODEC,
+};
+
+export const RESTRICT_DEFINITION: TransformDefinition<Restrict> = {
+  kind: 'transform',
+  type: Restrict.TYPE,
+  label: 'Restrict Columns',
+  icon: 'restrict',
+  beta: false,
+  create: (id) => new Restrict(id),
+  emit: emitRestrict,
+  spec: RESTRICT_CODEC,
 };
 
 export const DISTINCT_DEFINITION: TransformDefinition<Distinct> = {
@@ -232,6 +246,7 @@ export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     FILTER_DEFINITION,
+    RESTRICT_DEFINITION,
     DISTINCT_DEFINITION,
     DROP_DEFINITION,
     LIMIT_DEFINITION,

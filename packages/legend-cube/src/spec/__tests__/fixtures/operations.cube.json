@@ -9,7 +9,7 @@
     "runtime": "showcase::northwind::mapping::StoreRuntime"
   },
   "query": {
-    "selected": "distinct101",
+    "selected": "restrict101",
     "nodes": [
       {
         "kind": "relational",
@@ -148,6 +148,12 @@
         "kind": "distinct",
         "id": "distinct101",
         "inputs": ["slice101"]
+      },
+      {
+        "kind": "restrict",
+        "id": "restrict101",
+        "inputs": ["distinct101"],
+        "columns": ["ORDER_ID", "SHIP_COUNTRY"]
       }
     ]
   }

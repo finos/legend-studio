@@ -21,6 +21,7 @@ import {
   AlignTopIcon,
   ArrowsJoinIcon,
   CompressIcon,
+  DataCubeIcon,
   FilterIcon,
   QuestionSquareIcon,
   TableIcon,
@@ -38,6 +39,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   drop: AlignBottomIcon,
   slice: AlignMiddleIcon,
   distinct: CompressIcon,
+  restrict: DataCubeIcon.TableColumns,
 };
 
 /** The markup an icon draws */

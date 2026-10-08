@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                    |
-| ------ | ---------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                       |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                        |
-| Step   | M2.1–M2.7 done (Limit, its verification, Drop, Slice, Distinct); M2.8 next (Restrict)    |
-| Tests  | 1571 core, 633 builder (core group), 236 Query, 84 builder engine-roundtrip (after M2.7) |
+| Item   | State                                                                                         |
+| ------ | --------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                            |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                             |
+| Step   | M2.1–M2.8 done (Limit, its verification, Drop, Slice, Distinct, Restrict); M2.9 next (Rename) |
+| Tests  | 1599 core, 646 builder (core group), 236 Query, 88 builder engine-roundtrip (after M2.8)      |
 
 ## Steps
 
@@ -26,7 +26,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.5** Drop (native)
 - [x] **M2.6** Slice (native)
 - [x] **M2.7** Distinct
-- [ ] **M2.8** Restrict
+- [x] **M2.8** Restrict
 - [ ] **M2.9** Rename, with the column-name rule and the collision fix
 - [ ] **M2.10** Join rename autofix
 - [ ] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
@@ -151,6 +151,19 @@ guide says how a transform with nothing to set registers. Engine: its lambda and
 (the counts that show rows removed come with Restrict). Browser on :9002: the panel shows the description with no Apply
 or Cancel, and F9 gives 830 rows. Gates: `check:ci` and `lint:ci` green; 1571 core, 633 builder (core group), 236 Query
 and 84 engine-roundtrip tests.
+
+**M2.8, Restrict (2026-10-08).** `Restrict` ("Restrict Columns") keeps the columns it lists, in the input's order:
+"Columns cannot be empty.", "Columns cannot have duplicates.", then each column named and in the input (labels
+`Columns` and `Column`, PLAN §11.4). `RESTRICT_CODEC` always writes the list, exactly as held; `emitRestrict` lists the
+inferred columns in a `select` (the `select` role, shared with Join) and checks they are a subsequence of the input. The
+list check moved from Join to `isStringList` (`utils/AssertionUtils.ts`, internal). The builder adds
+`CubeRestrictDraft` (picks kept in the input's order; a saved column the input lost stays until unticked) and
+`CubeRestrictEditor` (a checkbox list with types, All and None, scrolling on its own), the help text and
+`DataCubeIcon.TableColumns`. Engine: picks in another order come back in the input's order, and with a Distinct after
+it the ship countries give 21 rows, countries and cities 70, employees and shippers 27. Browser on :9002: the grid's
+headers are ORDER_ID, SHIP_COUNTRY for a restrict picked the other way round; the editor lists the 14 columns with two
+ticked. Gates: `check:ci` and `lint:ci` green; 1599 core, 646 builder (core group), 236 Query and 88 engine-roundtrip
+tests.
 
 ## Open items
 

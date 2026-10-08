@@ -21,6 +21,7 @@ import {
   Join,
   Limit,
   RelationalTableSource,
+  Restrict,
   type Schema,
   Slice,
 } from '@finos/legend-cube';
@@ -29,6 +30,7 @@ import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
+import { CubeRestrictEditor } from './CubeRestrictEditor.js';
 import { CubeRowCountEditor } from './CubeRowCountEditor.js';
 import { CubeSliceEditor } from './CubeSliceEditor.js';
 import { CubeSourceEditor } from './CubeSourceEditor.js';
@@ -64,6 +66,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
   [Filter.TYPE, CubeFilterEditor],
+  [Restrict.TYPE, CubeRestrictEditor],
   [Distinct.TYPE, CubeDistinctEditor],
   [Join.TYPE, CubeJoinEditor],
   [Drop.TYPE, CubeRowCountEditor],

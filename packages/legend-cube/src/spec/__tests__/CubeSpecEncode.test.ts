@@ -61,6 +61,7 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
@@ -1570,6 +1571,54 @@ describe(unitTest('Saved spec encoding: limits'), () => {
     expect(encodeCubeSpec(document)).toStrictEqual(
       limitSpec({ size: 5, note: 'top five' }),
     );
+  });
+});
+
+describe(unitTest('Saved spec encoding: restricts'), () => {
+  /** The saved spec of one unconnected restrict, `restrict101`, with these fields of its own */
+  const restrictSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'restrict101',
+      nodes: [{ kind: 'restrict', id: 'restrict101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Always writes its columns, an empty list included', () => {
+    expectEncoded(
+      documentOf([new Restrict('restrict101')], [], 'restrict101'),
+      restrictSpec({ columns: [] }),
+    );
+  });
+
+  test('Writes the columns exactly as held: order, repeats and blanks kept', () => {
+    expectEncoded(
+      documentOf(
+        [
+          new Restrict('restrict101', [
+            'SHIP_COUNTRY',
+            'ORDER_ID',
+            'ORDER_ID',
+            '',
+          ]),
+        ],
+        [],
+        'restrict101',
+      ),
+      restrictSpec({ columns: ['SHIP_COUNTRY', 'ORDER_ID', 'ORDER_ID', ''] }),
+    );
+  });
+
+  test('Writes the columns from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        documentOf(
+          [new Restrict('restrict101', ['A'], { columns: ['Z'], note: 'n' })],
+          [],
+          'restrict101',
+        ),
+      ),
+    ).toStrictEqual(restrictSpec({ columns: ['A'], note: 'n' }));
   });
 });
 

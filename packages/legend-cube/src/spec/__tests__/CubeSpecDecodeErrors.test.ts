@@ -75,6 +75,12 @@ const RELATIONAL_102 = { ...RELATIONAL_101, id: 'relational102' };
 const FILTER_101 = { kind: 'filter', id: 'filter101', inputs: [null] };
 const LIMIT_101 = { kind: 'limit', id: 'limit101', inputs: [null], size: 10 };
 const DROP_101 = { kind: 'drop', id: 'drop101', inputs: [null], size: 10 };
+const RESTRICT_101 = {
+  kind: 'restrict',
+  id: 'restrict101',
+  inputs: [null],
+  columns: ['ORDER_ID'],
+};
 const SLICE_101 = {
   kind: 'slice',
   id: 'slice101',
@@ -166,6 +172,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a filter', withNodes([FILTER_101], 'filter101')],
     ['a limit', withNodes([LIMIT_101], 'limit101')],
     ['a drop', withNodes([DROP_101], 'drop101')],
+    ['a restrict', withNodes([RESTRICT_101], 'restrict101')],
     [
       'a distinct',
       withNodes(
@@ -1078,6 +1085,27 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
       'query.nodes[0].size',
       'must be a finite number',
+    ],
+    [
+      'a restrict without columns',
+      withNodes(
+        [{ kind: 'restrict', id: 'restrict101', inputs: [null] }],
+        'restrict101',
+      ),
+      'query.nodes[0].columns',
+      'is required',
+    ],
+    [
+      'restrict columns that are not a list',
+      withNodes([{ ...RESTRICT_101, columns: 'ORDER_ID' }], 'restrict101'),
+      'query.nodes[0].columns',
+      'must be a list',
+    ],
+    [
+      'a restrict column that is a number',
+      withNodes([{ ...RESTRICT_101, columns: ['ORDER_ID', 7] }], 'restrict101'),
+      'query.nodes[0].columns[1]',
+      'must be a string',
     ],
     [
       'a slice start that is a string',

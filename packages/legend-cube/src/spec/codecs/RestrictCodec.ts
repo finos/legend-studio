@@ -14,18 +14,17 @@
  * limitations under the License.
  */
 
-/**
- * For the `default` of a switch that handles every case: the compiler rejects
- * the call as soon as a case is missing, e.g. when an enum gains a member.
- */
-export const assertUnreachable = (value: never): never => {
-  throw new Error(`Unexpected value: ${String(value)}`);
-};
+import { Restrict } from '../../nodes/transforms/Restrict.js';
+import type { NodeSpecCodec } from '../NodeSpecCodec.js';
+import { readStringList } from '../SpecReader.js';
 
 /**
- * Whether a value is a list of strings with no hole. Settings decoded from a
- * saved spec arrive as `unknown`, so constructors check their shape anyway.
+ * A restrict: its columns, always written (empty included), exactly as held:
+ * order, repeats and blanks kept, for validation to report
  */
-export const isStringList = (value: unknown): value is readonly string[] =>
-  Array.isArray(value) &&
-  Array.from(value as unknown[]).every((item) => typeof item === 'string');
+export const RESTRICT_CODEC: NodeSpecCodec<Restrict> = {
+  keys: ['columns'],
+  encode: (node) => ({ columns: [...node.columns] }),
+  decode: (id, json, path, rest) =>
+    new Restrict(id, readStringList(json, 'columns', path), rest),
+};

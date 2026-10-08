@@ -25,6 +25,8 @@ import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
   ERR_SCHEMAS,
+  MESSAGE_CANNOT_BE_EMPTY,
+  MESSAGE_CANNOT_HAVE_DUPLICATES,
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_DIFFERENT_DATABASES,
   MESSAGE_FILTER_EMPTY,
@@ -117,6 +119,23 @@ const rowCountSpec = (
 });
 const limitSpec = (size: number | undefined): JsonObject =>
   rowCountSpec('limit', size);
+
+/** A saved spec: `relational101` feeding `restrict101`, which keeps these columns */
+const restrictSpec = (columns: string[]): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'restrict101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'restrict',
+        id: 'restrict101',
+        inputs: ['relational101'],
+        columns,
+      },
+    ],
+  },
+});
 
 /** A saved spec: `relational101` feeding `slice101`, which has these bounds, each cleared when undefined */
 const sliceSpec = (
@@ -537,6 +556,32 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       },
     ],
     ['a valid slice', sliceSpec(0, 5), { relational101: [], slice101: [] }],
+    [
+      'a restrict with no column',
+      restrictSpec([]),
+      { relational101: [], restrict101: [MESSAGE_CANNOT_BE_EMPTY('Columns')] },
+    ],
+    [
+      'a restrict with a column twice',
+      restrictSpec(['QTY', 'QTY']),
+      {
+        relational101: [],
+        restrict101: [MESSAGE_CANNOT_HAVE_DUPLICATES('Columns')],
+      },
+    ],
+    [
+      'a restrict on a column the input does not have',
+      restrictSpec(['QTY', 'SHIPPER']),
+      {
+        relational101: [],
+        restrict101: [MESSAGE_NOT_IN_INPUT_SCHEMA('Column', 'SHIPPER')],
+      },
+    ],
+    [
+      'a valid restrict, picked out of order',
+      restrictSpec(['COUNTRY', 'QTY']),
+      { relational101: [], restrict101: [] },
+    ],
   ];
 
   test.each(CONNECTED)(

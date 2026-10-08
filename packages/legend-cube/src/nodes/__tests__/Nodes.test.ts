@@ -45,6 +45,7 @@ import {
   LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
+  RESTRICT_DEFINITION,
   SLICE_DEFINITION,
   type TransformDefinition,
 } from '../NodeRegistry.js';
@@ -59,6 +60,7 @@ import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { Limit } from '../transforms/Limit.js';
+import { Restrict } from '../transforms/Restrict.js';
 import { Slice } from '../transforms/Slice.js';
 import { UnknownNode } from '../UnknownNode.js';
 
@@ -179,9 +181,10 @@ describe(unitTest('Node registry'), () => {
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order (§7): Filter, Distinct, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Filter, Restrict, Distinct, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
       FILTER_DEFINITION,
+      RESTRICT_DEFINITION,
       DISTINCT_DEFINITION,
       DROP_DEFINITION,
       LIMIT_DEFINITION,
@@ -204,6 +207,18 @@ describe(unitTest('Node registry'), () => {
     expect(filter).toBeInstanceOf(Filter);
     expect(filter.id).toBe('filter101');
     expect(filter.filter).toBeUndefined();
+  });
+
+  test('Creates a restrict with no column yet', () => {
+    expect(RESTRICT_DEFINITION.kind).toBe('transform');
+    expect(RESTRICT_DEFINITION.type).toBe('restrict');
+    expect(RESTRICT_DEFINITION.label).toBe('Restrict Columns');
+    expect(RESTRICT_DEFINITION.icon).toBe('restrict');
+    expect(RESTRICT_DEFINITION.beta).toBe(false);
+    const restrict = RESTRICT_DEFINITION.create('restrict101');
+    expect(restrict).toBeInstanceOf(Restrict);
+    expect(restrict.id).toBe('restrict101');
+    expect(restrict.columns).toEqual([]);
   });
 
   test('Creates a distinct, which has nothing to set', () => {

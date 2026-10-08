@@ -123,7 +123,7 @@ export enum EmitRole {
   COALESCE = 'coalesce',
   /** a FULL Join: `cast` of the merged key to the keys' common type */
   CAST = 'cast',
-  /** a Join: the final select */
+  /** a Join's final select, and a Restrict's select */
   SELECT = 'select',
   /** a Filter: the filter call */
   FILTER = 'filter',

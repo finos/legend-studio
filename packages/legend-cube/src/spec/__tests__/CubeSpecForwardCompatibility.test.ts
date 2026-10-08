@@ -46,6 +46,7 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema } from '../../schema/Schema.js';
@@ -1733,6 +1734,12 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
           stop: 3,
         },
         { kind: 'distinct', id: 'distinct101', inputs: ['slice101'] },
+        {
+          kind: 'restrict',
+          id: 'restrict101',
+          inputs: ['distinct101'],
+          columns: ['COUNTRY'],
+        },
       ],
     },
   };
@@ -1742,12 +1749,15 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       registry: M1_REGISTRY,
     });
     expect(readOnly).toBe(false);
-    ['drop101', 'limit101', 'slice101', 'distinct101'].forEach((id) => {
-      const node = document.query.getNode(id) as UnknownNode;
-      expect(node).toBeInstanceOf(UnknownNode);
-      expect(node.savedKind).toBe(id.replace('101', ''));
-    });
+    ['drop101', 'limit101', 'slice101', 'distinct101', 'restrict101'].forEach(
+      (id) => {
+        const node = document.query.getNode(id) as UnknownNode;
+        expect(node).toBeInstanceOf(UnknownNode);
+        expect(node.savedKind).toBe(id.replace('101', ''));
+      },
+    );
     expect(describeConnections(document.query).sort()).toEqual([
+      'distinct101 -> restrict101.in0',
       'drop101 -> limit101.in0',
       'limit101 -> slice101.in0',
       'relational101 -> drop101.in0',
@@ -1761,6 +1771,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     expect(document.query.generateId('drop')).not.toBe('drop101');
     expect(document.query.generateId('slice')).not.toBe('slice101');
     expect(document.query.generateId('distinct')).not.toBe('distinct101');
+    expect(document.query.generateId('restrict')).not.toBe('restrict101');
   });
 
   test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
@@ -1768,6 +1779,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     expect(query.getNode('drop101')).toBeInstanceOf(Drop);
     expect(query.getNode('slice101')).toBeInstanceOf(Slice);
     expect(query.getNode('distinct101')).toBeInstanceOf(Distinct);
+    expect(query.getNode('restrict101')).toBeInstanceOf(Restrict);
     const node = query.getNode('limit101');
     expect(node).toBeInstanceOf(Limit);
     expect((node as Limit).size).toBe(5);

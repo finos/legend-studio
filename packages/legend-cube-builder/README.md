@@ -7,7 +7,7 @@ It holds the page (the canvas, the palette, the side-panel editors, the source p
 stores, the engine port with its `v1/` adapter, and the bundled model catalog. Legend Query hosts the page at
 `/query/cube`.
 
-**Status:** work in progress, version 0.0.x. This version has relational tables, Join, Filter, Distinct, Drop, Limit and Slice, with one model, one
+**Status:** work in progress, version 0.0.x. This version has relational tables, Join, Filter, Restrict, Distinct, Drop, Limit and Slice, with one model, one
 runtime and one database per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
 the Cube store exists. A pasted model is kept in the cube. Nothing links to the page yet, there is no redo, and Cube sends no telemetry.
 

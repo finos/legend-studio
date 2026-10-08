@@ -20,6 +20,7 @@ import {
   AlignTopIcon,
   ArrowsJoinIcon,
   CompressIcon,
+  DataCubeIcon,
   clsx,
   FilterIcon,
   QuestionSquareIcon,
@@ -37,6 +38,7 @@ const NODE_ICONS: Readonly<
   drop: AlignBottomIcon,
   slice: AlignMiddleIcon,
   distinct: CompressIcon,
+  restrict: DataCubeIcon.TableColumns,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */
