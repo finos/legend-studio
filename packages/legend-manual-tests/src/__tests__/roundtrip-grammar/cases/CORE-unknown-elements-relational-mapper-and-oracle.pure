@@ -1,0 +1,99 @@
+###Relational
+Database model::warehouse::AccountDB
+(
+  Schema alloytest
+  (
+    Table ACCOUNT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200)
+    )
+    Table ACCOUNT1
+    (
+      ID INTEGER PRIMARY KEY
+    )
+  )
+  Schema alloytest1
+  (
+  )
+
+  Table DEFAULT_ACCOUNT
+  (
+    ID INTEGER PRIMARY KEY
+  )
+)
+
+
+###QueryPostProcessor
+RelationalMapper model::mapper::AccountMapper
+(
+   DatabaseMappers:
+   [
+      [model::warehouse::AccountDB.alloytest, model::warehouse::AccountDB.default] -> 'SnowflakeOrgDB',
+      [model::warehouse::AccountDB.alloytest1] -> 'SnowflakeOrgDBNew'
+   ];
+   SchemaMappers:
+   [
+      model::warehouse::AccountDB.alloytest -> 'AlloySchema',
+      model::warehouse::AccountDB.alloytest1 -> 'AlloySchemaNew'
+   ];
+   TableMappers:
+   [
+      model::warehouse::AccountDB.alloytest.ACCOUNT -> 'AccountTable',
+      model::warehouse::AccountDB.alloytest.ACCOUNT1 -> 'AccountTableNew'
+   ];
+)
+
+RelationalMapper model::mapper::EmptyMapper
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection model::conn::MapperConnection
+{
+  store: model::warehouse::AccountDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    relationalMapper
+    {
+      model::mapper::AccountMapper, model::mapper::EmptyMapper
+    }
+  ];
+}
+
+RelationalDatabaseConnection model::conn::OracleConnection
+{
+  store: model::warehouse::AccountDB;
+  type: Oracle;
+  specification: Oracle
+  {
+    host: 'oracle.example.com';
+    port: 1521;
+    serviceName: 'ORCL';
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'base';
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}
+
+RelationalDatabaseConnection model::conn::OracleTestConnection
+{
+  store: model::warehouse::AccountDB;
+  type: Oracle;
+  specification: Oracle
+  {
+    host: 'oracle.example.com';
+    port: 1522;
+    serviceName: 'ORCL2';
+  };
+  auth: Test;
+}

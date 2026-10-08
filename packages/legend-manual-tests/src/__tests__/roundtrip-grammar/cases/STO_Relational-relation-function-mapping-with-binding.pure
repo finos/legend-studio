@@ -1,0 +1,86 @@
+###ExternalFormat
+SchemaSet my::FirmSchemaSet
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Firm;
+      location: 'my/Firm.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "my::Firm",\n  "type": "object",\n  "properties": {\n    "legalName": {\n      "type": "string"\n    }\n  },\n  "required": [\n    "legalName"\n  ]\n}';
+    }
+  ];
+}
+
+Binding my::FirmBinding
+{
+  schemaSet: my::FirmSchemaSet;
+  schemaId: Firm;
+  contentType: 'application/json';
+  modelIncludes: [
+    my::Firm
+  ];
+}
+
+
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    "first name" VARCHAR(100) NOT NULL,
+    "last name" VARCHAR(100),
+    AGE INTEGER NOT NULL,
+    FIRM_DETAILS SEMISTRUCTURED
+  )
+)
+
+
+###Pure
+Class my::Firm
+{
+  legalName: String[1];
+}
+
+Class my::PersonName
+{
+  firstName: String[1];
+  lastName: String[0..1];
+}
+
+Class my::Person
+{
+  firstName: String[1];
+  lastName: String[0..1];
+  greeting: String[1];
+  firm: my::Firm[0..1];
+  previousFirm: my::Firm[0..1];
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#->select(~[ID, 'first name', 'last name', FIRM_DETAILS])
+}
+
+
+###Mapping
+Mapping my::relationFunctionMappingWithBinding
+(
+  *my::Person[person]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    ~primaryKey: ID
+    firstName: 'first name',
+    lastName: $row.'last name',
+    greeting: 'Hi ' + $row.'first name',
+    firm: Binding my::FirmBinding : FIRM_DETAILS,
+    previousFirm: Binding my::FirmBinding : $row.FIRM_DETAILS
+  }
+  *my::PersonName[personName]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    ~primaryKey: ['first name', 'last name']
+    firstName: $row.'first name',
+    lastName: 'last name'
+  }
+)

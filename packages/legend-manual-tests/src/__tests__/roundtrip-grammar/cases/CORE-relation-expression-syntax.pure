@@ -1,0 +1,110 @@
+###Relational
+Database store::PersonDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    "first name" VARCHAR(200),
+    "last name" VARCHAR(200),
+    grp VARCHAR(10),
+    amount INTEGER
+  )
+  Table AddressTable
+  (
+    "person id" INTEGER PRIMARY KEY,
+    city VARCHAR(200)
+  )
+)
+
+
+###Pure
+Profile model::ColumnProfile
+{
+  stereotypes: [important, deprecated];
+  tags: [doc];
+}
+
+Class model::Person
+{
+  name: String[1];
+  age: Integer[1];
+}
+
+function model::quotedAccessor(): meta::pure::metamodel::relation::Relation<(id:Integer, 'first name':String)>[1]
+{
+  #>{store::PersonDB.PersonTable}#->filter(x|$x.'first name' == 'John')->select(~[id, 'first name'])
+}
+
+function model::singleColSpecFunction2(): meta::pure::metamodel::relation::Relation<(grp:String, total:Integer)>[1]
+{
+  #>{store::PersonDB.PersonTable}#->groupBy(~grp, ~total:x|$x.amount:y|$y->plus())
+}
+
+function model::colSpecArrayFunction2(): meta::pure::metamodel::relation::Relation<(grp:String, 'last name':String, total:Integer, 'Row Count':Integer)>[1]
+{
+  #>{store::PersonDB.PersonTable}#->groupBy(~[grp, 'last name'], ~[total:x|$x.amount:y|$y->plus(), 'Row Count':x|$x.id:y|$y->count()])
+}
+
+function model::extendVariants(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{store::PersonDB.PersonTable}#->extend(~fullName:x|$x.'first name'->toOne() + ' ' + $x.'last name'->toOne())->extend(~['upper name':x|$x.'first name'->toOne()->toUpper(), double:x|$x.amount->toOne() * 2])->rename(~'first name', ~firstName)->sort([~'last name'->ascending(), ~id->descending()])->distinct(~['last name', grp])->limit(10)
+}
+
+function model::windowExtend(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{store::PersonDB.PersonTable}#->extend(over(~grp, ~amount->descending()), ~'running total':{p, w, r|$r.amount}:y|$y->plus())
+}
+
+function model::windowFrames(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{store::PersonDB.default.PersonTable}#->extend(over(~grp, [~amount->descending(), ~'last name'->ascending()], 0->rows(1)), ~[rank:{p, w, r|$p->rank($w, $r)}, 'row number':{p, w, r|$p->rowNumber($r)}])->extend(over(~grp, [], 0->rows(1)), ~'running total':{p, w, r|$r.amount}:y|$y->plus())
+}
+
+function model::pivot(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{store::PersonDB.PersonTable}#->select(~[grp, 'last name', amount])->pivot(~[grp], ~[total:x|$x.amount:y|$y->plus()])
+}
+
+function model::annotatedColSpecs(): meta::pure::metamodel::relation::Relation<(grp:String, total:Integer)>[1]
+{
+  #>{store::PersonDB.PersonTable}#->extend(~[<<model::ColumnProfile.important>> {model::ColumnProfile.doc = 'derived column'} 'Display Name':x|$x.'first name'->toOne()])->select(~[<<model::ColumnProfile.important>> {model::ColumnProfile.doc = 'kept column'} 'Display Name', <<model::ColumnProfile.deprecated>> grp, amount])->groupBy(~[<<model::ColumnProfile.important>> grp], ~[{model::ColumnProfile.doc = 'sum aggregate'} total:x|$x.amount:y|$y->plus()])
+}
+
+function model::projectAnnotated(): meta::pure::metamodel::relation::Relation<('Person Name':String, 'Person Age':Integer)>[1]
+{
+  model::Person.all()->project(~[<<model::ColumnProfile.important>> {model::ColumnProfile.doc = 'name documentation'} 'Person Name':x|$x.name, 'Person Age':x|$x.age])
+}
+
+function model::joinQuoted(): meta::pure::metamodel::relation::Relation<('first name':String, city:String)>[1]
+{
+  #>{store::PersonDB.PersonTable}#->join(#>{store::PersonDB.AddressTable}#, meta::pure::functions::relation::JoinKind.INNER, {a, b|$a.id == $b.'person id'})->select(~['first name', city])
+}
+
+function model::tdsLiteral(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #TDS{
+    id, 'first name', amount:Integer[1]
+    1, John, 10
+    2, Nicole, 20
+  }#->filter(x|$x.'first name' == 'John')
+}
+
+function model::relationParameter(r: meta::pure::metamodel::relation::Relation<('first name':String, amount:Integer[1])>[1]): meta::pure::metamodel::relation::Relation<('Full Name':String, amount:Integer[1])>[1]
+{
+  $r->rename(~'first name', ~'Full Name')
+}
+
+function model::typedColSpec(r: meta::pure::metamodel::relation::Relation<(a:Integer[1], 'b c':String[1])>[1]): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  $r->rename(~'b c':String, ~'d e':String)
+}
+
+function model::castRelation(): meta::pure::metamodel::relation::Relation<('Full Name':String)>[1]
+{
+  #>{store::PersonDB.PersonTable}#->select(~'first name')->rename(~'first name', ~'Full Name')->cast(@meta::pure::metamodel::relation::Relation<('Full Name':String)>)
+}
+
+function model::oddNames(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{store::PersonDB.PersonTable}#->rename(~'first name', ~'it\'s-name')->extend(~['2nd':x|$x.'it\'s-name', 'with.dot':x|$x.grp, let:x|$x.id])->filter(x|$x.'2nd'->isNotEmpty() && $x.'with.dot'->isNotEmpty())
+}

@@ -61,9 +61,8 @@ const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 // See README.md for the known issues behind these exclusions.
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
-  // Stale case: the engine no longer accepts `~mainTable` inside an embedded mapping
-  'STO_Relational-nested-embedded-relational-mapping.pure': SKIP,
-  // Relation function mapping: engine protocol includes extra empty arrays Studio omits
+  // Relation function mappings with local properties (`+prop`): Studio drops the
+  // property's owner class from the protocol
   'STO_Relational-relation-function-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
@@ -80,8 +79,6 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   ],
   // Studio omits the empty `serviceOutputTargets` the engine emits for a V1 persistence
   'DSL_Persistence-basic.pure': [ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP],
-  // Stale case: no longer compiles in the engine (`Result<T|m>` type arguments)
-  'CORE-legacy-service-tests.pure': SKIP,
 };
 
 type GrammarRoundtripOptions = {

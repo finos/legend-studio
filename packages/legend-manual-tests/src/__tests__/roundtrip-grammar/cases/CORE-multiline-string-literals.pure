@@ -1,0 +1,108 @@
+Class model::Report
+[
+  headerCheck: $this.header != '''
+forbidden
+header
+''',
+  bodyCheck
+  (
+    ~function: $this.body->contains('''
+BODY''')
+    ~enforcementLevel: Warn
+    ~message: '''
+The body of
+''' + $this.header + '''
+must contain the word BODY
+'''
+  )
+]
+{
+  header: String[1] = '''
+Quarterly
+Report
+''';
+  body: String[1] = '''
+Line one
+
+  indented line three
+''';
+  footer() {'''
+Footer for
+''' + $this.header}: String[1];
+  signature(name: String[1]) {if($name->isEmpty(), |'''
+Anonymous
+''', |'''
+Signed by
+''' + $name)}: String[1];
+}
+
+function model::greeting(name: String[1]): String[1]
+{
+  let prefix = '''
+Hello,
+  dear
+''';
+  let suffix = '''
+Regards''';
+  $prefix + $name + $suffix;
+}
+{
+  testGreeting | greeting('''
+John
+''') => '''
+Hello,
+\u0020 dear
+John
+Regards''';
+  testSingleLineParameter 'A single-line parameter with a multi-line expected value' | greeting('Nicole') => '''
+Hello,
+\u0020 dear
+NicoleRegards''';
+}
+
+function model::lines(): String[*]
+{
+  ['''
+a
+''', 'b', 'single\nline\n', '''
+it's "quoted" \\ here
+
+after a blank line
+''']->map(x|$x + '''
+!
+''')->map({x|
+let y = '''
+?
+''';
+$x + $y;
+})
+}
+
+function model::escapes(): String[*]
+{
+  ['''
+contains \'\'\' a delimiter
+''', '''
+first line
+\u0020 second line indented, without a trailing newline''', '''
+trailing spaces\u0020\u0020
+\u0020 \u0020
+after a whitespace-only line
+''']
+}
+
+function model::newReport(): model::Report[1]
+{
+  ^model::Report(header='''
+Annual
+Report
+''' , body='''
+BODY
+''')
+}
+
+function model::empty(): String[1]
+{
+  '''
+'''
+}
