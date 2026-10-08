@@ -25,7 +25,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 | Branch      | `cubeV1`, rebased on finos master `a32e5c0fb` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                                                                                                                                              |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                                                                                                                                       |
 | Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine). **M1.8a done** (S1–S12) and **M1.8b done** (S13–S21: canvas, palette, drag and drop, context menu, editor panel with Join/Filter/Source editors, shortcuts), both verified, on `cubeV1` and in PR finos/legend-studio#5591 |
-| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not                                                                                                                             |
+| Decisions   | PLAN.md §0, D1–D13. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not                                                                                                                             |
 | Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                                                                                                                                              |
 
 ## Milestone checklist
@@ -51,6 +51,33 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
+**PR #5591 approved** by Yasirmod17 on 2026-10-08 (on `b1c73b640`); all 21 CI checks pass, including the
+`engine-roundtrip` group on CI's docker engine (engine commit `00108b70638b`, 279 tests).
+
+**M1.9 (slice acceptance and hardening) has started** (2026-10-08). Requirements: `m19-requirements` (5 readers, a
+merge, a critic and a finalize step), 108 items, a 21-step build order and 13 decisions; full result in
+`legend-cube-evidence/m19-requirements-result.json`. The user's decisions are in PLAN §11.1 "Settled at the start of
+M1.9": M1.9 lands as a follow-up PR after #5591 merges (nothing more is pushed to #5591); an agent rehearsal of Part
+B, then the user runs it by hand; no e2e; short READMEs with how-to guides in `docs/`; the `V1_*` imports of the
+engine-backed tests are allowed.
+
+M1.9 build order (requirements B1–B19, without the e2e and the optional steps):
+
+1. Docs drift and ISSUES upkeep; record the `V1_*` test exception.
+2. Rewrite PLAN §11.2 so a person can follow Part B (the UI's labels, Inner join, canvas-fit, watermark and console
+   checks).
+3. Small code fixes; the two picker test gaps; trim the builder's unused exports.
+4. The core and builder READMEs and their `docs/` guides; the docs trim.
+5. Rehearsal in a browser (fixing the canvas refit after a height-only change if it shows), a skeptic verification
+   of M1.9's diff, the final gates.
+6. The user's Part B run, the acceptance record and the sign-off.
+
+**In parallel:** operations can start now in their own session, on a branch from `b1c73b640` (the PR head), not from
+`cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
+WASM study; new sources wait on the user's design. Decimal precision stays for a later PR (user, 2026-10-07).
+
+## Milestone notes
+
 **M1.7 (thin end-to-end, headless) is done** (2026-10-07). Build: `d653123e5` to `192346e79` (see their messages),
 then the verify fixes in the commit after `8df31aaa3`. 1595 Cube tests green with :6300 up; `check:ci` and
 `lint:ci` green, and both Cube packages lint clean without the ESLint cache.
@@ -64,10 +91,8 @@ then the verify fixes in the commit after `8df31aaa3`. 1595 Cube tests green wit
   runtimes, Decimal/Number/Float result values, the engine commit logged by Part A. Fix run `m17-fixes` (run
   `wf_e3a4b9c9-23c`, `legend-cube-evidence/m17-fixes-result.json`): each new test was shown to fail on the mutant
   its finding named.
-- **Deferred by the user** until after the main end-to-end (Open items): decimal-literal precision, and Show Pure
-  printing numbers as 0.
-- CI risk to watch: CI runs the `engine-roundtrip` group on the docker engine image, whose version may differ from
-  :6300 (parity file, `loadNorthwindData`); not checkable locally (no docker).
+- **Deferred by the user** until after the main end-to-end: decimal-literal precision (still deferred, ISSUES.md).
+  Show Pure printing numbers as 0 was fixed later (`dcaf0efdb`).
 
 **M1.8 (editor state, page, picker, grid; then canvas and editors) has started.** Requirements: `m18-requirements`
 (run `wf_b4b35e14-0fb`), 164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
@@ -167,31 +192,6 @@ checking 19 rows after both runs. The video and the script are in the evidence f
 executed query leaves the rows marked stale (as §7.8 says: a restored query is a new object), and opening the editor
 panel logs React 19's `element.ref` warning from `react-reflex` (legend-art's resizable panels), not from Cube.
 
-**PR #5591 approved** by Yasirmod17 on 2026-10-08 (on `b1c73b640`); all 21 CI checks pass, including the
-`engine-roundtrip` group on CI's docker engine (engine commit `00108b70638b`, 279 tests).
-
-**M1.9 (slice acceptance and hardening) has started** (2026-10-08). Requirements: `m19-requirements` (5 readers, a
-merge, a critic and a finalize step), 108 items, a 21-step build order and 13 decisions; full result in
-`legend-cube-evidence/m19-requirements-result.json`. The user's decisions are in PLAN §11.1 "Settled at the start of
-M1.9": M1.9 lands as a follow-up PR after #5591 merges (nothing more is pushed to #5591); an agent rehearsal of Part
-B, then the user runs it by hand; no e2e; short READMEs with how-to guides in `docs/`; the `V1_*` imports of the
-engine-backed tests are allowed.
-
-M1.9 build order (requirements B1–B19, without the e2e and the optional steps):
-
-1. Docs drift and ISSUES upkeep; record the `V1_*` test exception.
-2. Rewrite PLAN §11.2 so a person can follow Part B (the UI's labels, Inner join, canvas-fit, watermark and console
-   checks).
-3. Small code fixes; the two picker test gaps; trim the builder's unused exports.
-4. The core and builder READMEs and their `docs/` guides; the docs trim.
-5. Rehearsal in a browser (fixing the canvas refit after a height-only change if it shows), a skeptic verification
-   of M1.9's diff, the final gates.
-6. The user's Part B run, the acceptance record and the sign-off.
-
-**In parallel:** operations can start now in their own session, on a branch from `b1c73b640` (the PR head), not from
-`cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
-WASM study; new sources wait on the user's design. Decimal precision stays for a later PR (user, 2026-10-07).
-
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
   §7.2, §7.8, §8.7, §11.1 and §11.2).
@@ -209,12 +209,10 @@ The user wants a first merge so that new sources and new operations can be built
   track the known issues for later PRs. LEGEND-GRAPH-ISSUES.md is not included: it moved to the local evidence
   folder.
 - **Workflows:** S6 onward uses workflows as before (requirements, build, skeptic verification).
-- **Before the PR:** rebase on `origin/master` (15 commits behind on 2026-10-07), rerun
-  `GITHUB_BASE_REF=master yarn check:ci`, and expect the first CI run to be the first time the engine-roundtrip group
-  runs on the docker engine image.
 - **Parallel work after the merge.**
-  - Operations can be built headless: a node class, an emitter, a codec and a `NodeRegistry` entry, plus `v1/`
-    serializer support and engine tests.
+  - Operations can be built headless: a node class, an emitter, a codec and a `NodeRegistry` entry, plus engine
+    tests. `v1/` needs no change while an operation emits only the IR and literal kinds `V1_CubeLambdaSerializer`
+    already handles; a new IR or literal kind needs its own case there.
   - An operation's editor follows the editor contract in PLAN §7.4 (a draft, an editor, help text, an icon; a
     registry test checks each type has them).
   - New sources wait on the entry-points and sources-modal design (before M3) and on M2.0.
@@ -228,7 +226,7 @@ The user wants a first merge so that new sources and new operations can be built
 | legend-graph precise-primitive fix (M2.0, D12)    | User  | Can start any time as its own PR to master, in parallel with the slice. Until M2.0, keep the type seam narrow (PLAN.md §4.1). The verified issue list for a separate session is kept outside the repo, in the local evidence folder (by the user's choice, 2026-10-07)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **To revisit: type tables locally** (2026-10-06)  | User  | The user wants Cube to stop asking the engine for every table's relation type: read the `Database` definition through legend-graph and build the column types from it, and later do the same for data products and ingest. This needs the legend-graph fixes above, and the core depending on legend-graph earlier than D12/M2.0 planned (it breaks the host-free rule, D10 and PLAN §3.3). It changes M1.7's schema resolution (PLAN §6.2.6, which uses the engine's batch endpoint). **Decided 2026-10-06 (user): M1.7 types tables with the engine behind `resolveSchemas` and records the engine's types for every fixture table as a parity test; the local typer replaces that method after the legend-graph fixes (PLAN §6.2.6).** Constraint to keep: local types must match the engine's compiler mapping exactly (a conformance test against the engine), or emitted queries and the grid will disagree. User direction (2026-10-06): data products are typed from their generated artifact (cached relation types), not their definition; Cube sends V1 protocol lambdas, not legend-graph's built (metamodel) lambdas |
 | Known issues                                      | –     | Bugs, test gaps and risks to fix in later PRs: [ISSUES.md](ISSUES.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Push and PR                                       | User  | First PR opened 2026-10-07 from the fork MauricioUyaguari/legend-studio `cubeV1` to finos/legend-studio master                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Push and PR                                       | User  | First PR (#5591) opened 2026-10-07 from the fork MauricioUyaguari/legend-studio `cubeV1` to finos/legend-studio master. Approved by Yasirmod17 on 2026-10-08 on `b1c73b640`, all 21 CI checks green (`engine-roundtrip` included); the merge waits on an incident. M1.9 goes in a follow-up PR                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## Environment (local)

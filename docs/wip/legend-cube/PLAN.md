@@ -1,6 +1,6 @@
 # Legend Cube — Implementation Plan
 
-> **Status:** approved 2026-10-05 · branch `cubeV1` (rebased on master `0665e6f4c`, where the spec landed as
+> **Status:** approved 2026-10-05 · branch `cubeV1` (rebased on master `a32e5c0fb`, where the spec landed as
 > `docs/design/WIP-CUBE-SPEC.md` in #5589)
 > **Inputs:** [docs/design/WIP-CUBE-SPEC.md](../../../docs/design/WIP-CUBE-SPEC.md), the planning brief, and an investigation of
 > `legend-studio` + `legend-engine` (HEAD `93d92b4`) with ~1,500 checks against a live engine on `localhost:6300`.
@@ -26,7 +26,7 @@
 | D10 | Precise primitives are modeled **inside the host-free domain**. The host adapts the engine's relation-type JSON at the boundary, in a package-local `v1/` folder.                                                                                                                                                                                                                                                                                        | recommendation (§5)                |
 | D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.)                                                                                                                                                                                                                                                                                          | user                               |
 | D12 | **Types: Cube's own registry for the slice, legend-graph's types from M2.0**, for consistency with the rest of Legend. M2.0 first fixes legend-graph's precise primitives (own PR), then rebases `CubeType` on legend-graph's `GenericType` and narrows the core rule to "metamodel only, no `V1_*`, no UI or app packages" (a §2.2 departure). Until then the type seam stays narrow (§4.1) so the switch stays internal. Replaces D10 from M2.0.       | user + recommendation              |
-| D13 | **First merge after M1.8a, as one PR** (2026-10-07), so new sources and operations can then be built in parallel. M1.8b (canvas and editors) joined the same PR before it merged (user, 2026-10-07: it is on the critical path). Show Pure's "numbers as 0" bug is fixed before it. The working docs live in `docs/wip/legend-cube/` (PLAN, PROGRESS, and ISSUES for the known issues later PRs fix); the legend-graph issue list stays out of the repo. |
+| D13 | **First merge after M1.8a, as one PR** (2026-10-07), so new sources and operations can then be built in parallel. M1.8b (canvas and editors) joined the same PR before it merged (user, 2026-10-07: it is on the critical path). Show Pure's "numbers as 0" bug is fixed before it. The working docs live in `docs/wip/legend-cube/` (PLAN, PROGRESS, and ISSUES for the known issues later PRs fix); the legend-graph issue list stays out of the repo. | user                               |
 
 ---
 
@@ -133,11 +133,14 @@ packages/legend-cube/src/
   filter/       Filter tree, operators, availability matrix, builder helpers (§8.5)
   messages/     §16 catalogue (verbatim) + additions
   ir/           Cube IR (host-free Pure AST), emitter per node, join algorithm, debug printer
-  spec/         CubeSpec v1 codec, Meta, rest-preservation, migrations
+  spec/         CubeSpec v1 codec, Meta, rest-preservation, node codecs; the migrations are a list in CubeSpecCodec
+                (CUBE_SPEC_MIGRATIONS, empty in v1)
   utils/        internal helpers, e.g. the exhaustive-switch assertion
   index.ts
 packages/legend-cube-builder/src/
   graph-manager/CubeEngine.ts       CubeEngine port + CubeModelOutline / CubeResult / CubeEngineError (no V1_* symbols)
+  graph-manager/CubeModelOutlineHelper.ts
+                                    getRuntimesForDatabase: the runtimes keyed by exactly that database (§6.2.5)
   graph-manager/protocol/pure/CubeEngineBuilder.ts
                                     buildCubeEngine(config, tracerService): CubeEngine. The ONLY place that constructs
                                     V1_LegendCubeEngine (precedent: QueryBuilder_PureGraphManagerExtensionBuilder.ts)
@@ -147,15 +150,17 @@ packages/legend-cube-builder/src/
                                     V1_CubeExecutionResultReader (lossless), V1_CubeEngineErrors (payload → node error),
                                     V1_LegendCubeEngine (implements the port; builds its own client; imports only the
                                     port, legend-graph, legend-shared and @finos/legend-cube)
-  stores/       CubeEditorState, CubeExecutionState, CubeNodeEditorState (the side panel), LocalModelCatalog (the bundled
-                model texts; talks only to the port; loadModel parses a model context once and returns its databases and
-                runtimes as plain data), CubeHost interface, editors/ (node drafts and their registry, §7.4), fixtures/
-                (Cube Northwind model as a TS string)
-  components/   CubeEditor (layout), CubeNodeIcon (node icons), canvas/, palette/, editors/ (Join, Filter, Source, and
-                the editor registry), source-picker/, grid/
+  stores/       CubeEditorState, CubeExecutionState, CubeNodeEditorState (the side panel), CubeSourcePickerState,
+                CubeShowPureState, CubeSpecTransferState (Export/Import), LocalModelCatalog (the bundled model texts;
+                talks only to the port; loadModel parses a model context once and returns its databases and runtimes as
+                plain data), CubeHost interface, editors/ (node drafts and their registry, §7.4), fixtures/ (Cube
+                Northwind model as a TS string)
+  components/   CubeEditor (layout), CubeButton, CubeNodeIcon (node icons), canvas/, palette/, editors/ (Join, Filter,
+                Source, and the editor registry), source-picker/, grid/, show-pure/, spec-transfer/
   __lib__/      labels, help text (§17.9), command config (§3.5), test ids
-  __test-utils__/  Cube-local axios engine helpers for engine-backed tests (§3.4)
-  style/index.scss
+  __test-utils__/  Cube-local axios engine helpers for engine-backed tests (§3.4), the fake engine, page and canvas
+                   helpers for jsdom tests
+packages/legend-cube-builder/style/index.scss   built to lib/index.css, which the host imports
 ```
 
 **The repo's `@finos/legend/enforce-module-import-hierarchy` lint rule** (error level) forbids imports in **both**
@@ -244,8 +249,8 @@ What the repo actually enforces:
 
 - **Route:**
   - `CUBE: '/cube'` is in `LEGEND_QUERY_ROUTE_PATTERN`
-    ([LegendQueryNavigation.ts:76](../../../packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:76)) and
-    mounted in [LegendQueryWebApplication.tsx](../../../packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:146)
+    ([LegendQueryNavigation.ts:69](../../../packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:69)) and
+    mounted in [LegendQueryWebApplication.tsx](../../../packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:142)
     since M1.0. M1.8a only swaps the route element for a Query-side wrapper that builds the host, loaded lazily
     (Settled before M1.8).
   - Query's `baseUrl` is `/query/`, so the URL is **`/query/cube`** 📄.
@@ -842,7 +847,11 @@ Measured with `lambdaRelationType` ✅:
 ### 6.1 Source seam (replaces §6.1 details; keeps the idea)
 
 Adding a source kind means two registrations and nothing else; the graph, inference, emitter, grid and codec are
-untouched (§6.7's promise):
+untouched (§6.7's promise). **Not built yet:** the core half exists (`SourceDefinition`), but the builder has no
+`SourceKindAdapter`; it is wired to relational tables. A new source kind today also touches `CubeEditorState`
+(re-checking tables, the picker's opening), `CubeSourcePickerState`, `CubeJoinDraft` (where a column comes from),
+`CubeSourceEditor`, and the port's `resolveSchemas` and `CubeModelOutline`. The seam is built with the first new
+source kind (M3, after the sources-modal design and M2.0):
 
 - **Core:** a `SourceDefinition` (§4.5), covering coordinates, codec, validate, describe, `emit` (an IR relation
   expression, e.g. an accessor), and the execution requirements it contributes (runtime, and later mapping or
@@ -2266,6 +2275,12 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 - Legend Query's version-revert modal crashes to a blank page when `lightQuery` is unset (a query without an
   execution context) 📄. Four `LegendQueryApplicationPlugin` types are declared but never used.
 - `legend-lego` `DataGrid` always registers enterprise modules. The query e2e README claims a community grid by default.
+  Outside production builds it also swaps `console.error` for `console.debug` on every render and never restores it
+  (`DataGrid.tsx:69-74`), so errors after a grid first renders show only as debug messages.
+- `legend-art` pins `react-reflex` 4.2.7, whose `ReflexContainer.getSize` and `onStopResize` read `element.ref`. With
+  React 19, opening a resizable panel or dragging a splitter logs "Accessing element.ref was removed in React 19"
+  (seen on the Cube page when the editor panel opens, M1.9). The fix is a `react-reflex` upgrade in legend-art, its own
+  PR.
 - Repo: `.yarn/constraints.pro` is never read (`yarn constraints` is a no-op). AGENTS.md's V1 rule doesn't match Data
   Cube. Bootstrap and deployment changeset entries are auto-generated by the release script (AGENTS.md wording).
 
@@ -2346,6 +2361,6 @@ H2 portability manifest: `legend-engine-xts-relationalStore/legend-engine-xt-rel
 - **Reuse:** the xyflow + dagre stack, engine-client calls, and the undo / commit-on-Apply patterns.
 - **Keep separate:** snapshot model, filter and aggregate classes, type utilities, grid datasource, persistence.
 
-**Scratch evidence** (this session only; important harnesses become repo tests in M1.7, M4 and M5): live-test
-lambdas, the window regression matrix (`g1/`), dialect plan dumps (`g4/`) and the persistence harness
-(`persistence-verify/`) are in the session scratchpad.
+**Scratch evidence** (important harnesses become repo tests in M1.7, M4 and M5): live-test lambdas, the window
+regression matrix (`g1/`), dialect plan dumps (`g4/`) and the persistence harness (`persistence-verify/`) are kept
+outside the repo, in the local planning evidence folder (PROGRESS.md › Open items).
