@@ -76,8 +76,10 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 **In parallel:** M1.9 merged on 2026-10-08 as #5634 (`3260216a6`). M2, the simple unary operations, runs on
 `cube-ops`, a branch from master, with its status in [PROGRESS-M2.md](PROGRESS-M2.md) and its decisions in PLAN §11.4;
 each operation follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB WASM study (low
-priority, research first: PLAN §12.2 item 9); new sources wait on the user's design. Decimal precision stays for a
-later PR (user, 2026-10-07).
+priority, research first: PLAN §12.2 item 9). The next sources (databases from Depot and direct connections, deployed data
+products) and their local test setup are being designed with the user: settled parts in PLAN §6.8, open ones in §12.2
+item 10, UI questions for the original app in [QUESTIONS.md](QUESTIONS.md). Decimal precision stays for a later PR
+(user, 2026-10-07).
 
 ## Milestone notes
 
@@ -218,7 +220,7 @@ The user wants a first merge so that new sources and new operations can be built
     already handles; a new IR or literal kind needs its own case there.
   - An operation's editor follows the editor contract in PLAN §7.4 (a draft, an editor, help text, an icon; a
     registry test checks each type has them).
-  - New sources wait on the entry-points and sources-modal design (before M3) and on M2.0.
+  - New sources: the design is under way with the user (PLAN §6.8); M2.0 no longer gates them (user, 2026-10-08).
 
 ## Open items
 
