@@ -1,5 +1,7 @@
 # @finos/legend-application-data-cube-bootstrap
 
+## 13.267.0
+
 ## 13.266.0
 
 ## 13.265.0

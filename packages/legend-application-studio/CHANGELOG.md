@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.49
+
+### Patch Changes
+
+- [#5625](https://github.com/finos/legend-studio/pull/5625) [`6816ff6`](https://github.com/finos/legend-studio/commit/6816ff619d66f4406dbd03d38237fc9611f7da0c) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix the database editor rendering its formula copy button (a `<button>`) inside the clickable join, filter, and view-column rows (also `<button>`s), and make the database editor test settle the formula loading deterministically.
+
 ## 28.21.48
 
 ## 28.21.47
