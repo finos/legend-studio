@@ -64,8 +64,19 @@ const filterValue = (query: Query): FilterValue | undefined =>
   ((query.getNode('filter101') as Filter).filter as ColumnComparisonFilter)
     .value;
 
-const reread = (query: Query): Query =>
-  rereadQueryFilterValues(query, buildSchemasAndValidity(query).schemas);
+const reread = (query: Query): Query => rereadQueryFilterValues(query);
+
+const valueOf = (query: Query, id: string): FilterValue | undefined =>
+  ((query.getNode(id) as Filter).filter as ColumnComparisonFilter).value;
+
+const qtyIs = (text: string): ColumnComparisonFilter =>
+  new ColumnComparisonFilter('QTY', FilterOperator.NOT_EQUAL, invalid(text));
+
+const lines = (qtyType: string): ReturnType<typeof resolvedTable> =>
+  resolvedTable('relational101', 'LINES', [
+    column('ID', `${P}Int`),
+    column('QTY', `${P}${qtyType}`, true),
+  ]);
 
 describe(unitTest("Reading a query's filter values again"), () => {
   test("Reads a Filter's invalid value against its input, behind a Join", () => {
@@ -86,6 +97,73 @@ describe(unitTest("Reading a query's filter values again"), () => {
   test('Keeps text that still is not a value of the input column, and gives back the query itself', () => {
     const query = joinedQuery('TinyInt');
     expect(reread(query)).toBe(query);
+  });
+
+  test('Reads a Filter after another Filter once that one is read, whatever order the query lists them in', () => {
+    // the downstream Filter first: inference gives it an input schema only
+    // once the Filter before it is valid
+    const query = new Query(
+      [
+        new Filter('filter102', qtyIs('301')),
+        lines('SmallInt'),
+        new Filter('filter101', qtyIs('300')),
+      ],
+      [
+        new Connection('relational101', 'filter101', 'tds'),
+        new Connection('filter101', 'filter102', 'tds'),
+      ],
+      'filter102',
+    );
+    const result = reread(query);
+    expect(valueOf(result, 'filter101')).toEqual({
+      kind: 'integer',
+      value: '300',
+    });
+    expect(valueOf(result, 'filter102')).toEqual({
+      kind: 'integer',
+      value: '301',
+    });
+    expect(buildSchemasAndValidity(result).validity.get('filter102')).toEqual(
+      [],
+    );
+  });
+
+  test('Reads sibling Filters feeding a Join in one go, each against its own input', () => {
+    const items = resolvedTable('relational102', 'ITEMS', [
+      column('ID', `${P}Int`),
+      column('QTY', `${P}TinyInt`, true),
+    ]);
+    const query = new Query(
+      [
+        lines('SmallInt'),
+        items,
+        new Filter('filter101', qtyIs('300')),
+        new Filter('filter102', qtyIs('7')),
+      ],
+      [
+        new Connection('relational101', 'filter101', 'tds'),
+        new Connection('relational102', 'filter102', 'tds'),
+      ],
+      'filter101',
+    );
+    const result = reread(query);
+    expect(valueOf(result, 'filter101')).toEqual({
+      kind: 'integer',
+      value: '300',
+    });
+    expect(valueOf(result, 'filter102')).toEqual({
+      kind: 'integer',
+      value: '7',
+    });
+  });
+
+  test("Infers schemas with the query's rules", () => {
+    const query = joinedQuery('SmallInt');
+    // a rule that marks the join invalid leaves the Filter with no input schema
+    const result = rereadQueryFilterValues(query, [
+      () => new Map([['join101', ['Not now']]]),
+    ]);
+    expect(result).toBe(query);
   });
 
   test('Passes over a Filter with no filter or no input', () => {
