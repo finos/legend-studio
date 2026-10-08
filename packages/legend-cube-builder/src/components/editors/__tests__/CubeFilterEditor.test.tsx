@@ -31,7 +31,13 @@ import {
   SchemaColumn,
   UnsupportedFilter,
 } from '@finos/legend-cube';
-import { act, fireEvent, screen, within } from '@testing-library/react';
+import {
+  act,
+  createEvent,
+  fireEvent,
+  screen,
+  within,
+} from '@testing-library/react';
 import { FILTER_FLOAT_COMPARISON_HINT } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
@@ -478,7 +484,10 @@ describe('Filter editor', () => {
       within(condition(0)).getByRole('textbox', { name: 'Filter value' });
     fireEvent.click(value());
     fireEvent.change(typed(), { target: { value: 'Paris' } });
-    fireEvent.keyDown(typed(), { key: 'Enter' });
+    const enter = createEvent.keyDown(typed(), { key: 'Enter' });
+    fireEvent(typed(), enter);
+    // so the key's press doesn't reach the value it gives the focus to
+    expect(enter.defaultPrevented).toBe(true);
     expect(document.activeElement).toBe(value());
     fireEvent.click(value());
     fireEvent.keyDown(typed(), { key: 'Escape' });

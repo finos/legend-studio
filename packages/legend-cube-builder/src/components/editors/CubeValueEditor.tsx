@@ -30,7 +30,7 @@ import {
   parseValue,
   TypeFamily,
 } from '@finos/legend-cube';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /** Why a value is not one of the type, worded as the validation says it; nothing for a valid one or none */
 export const getValueProblem = (
@@ -139,6 +139,27 @@ const CubeValueText: React.FC<{
   const { label, type, item, onChange, disabled } = props;
   const [editedText, setEditedText] = useState<string | undefined>(undefined);
   const [returnFocus, setReturnFocus] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  /** Enter and Escape, as the input being typed handles them now */
+  const onKeyRef = useRef<(key: string) => void>(() => undefined);
+  const isTyping = editedText !== undefined;
+  // a native listener: Chrome's date input gives React no Enter keydown
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!isTyping || !input) {
+      return undefined;
+    }
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Enter' || event.key === 'Escape') {
+        // or the key's press would reach the value it gives the focus to,
+        // and open it again
+        event.preventDefault();
+        onKeyRef.current(event.key);
+      }
+    };
+    input.addEventListener('keydown', onKeyDown);
+    return () => input.removeEventListener('keydown', onKeyDown);
+  }, [isTyping]);
   const text = getItemText(item);
   const problem = getValueProblem(item, type);
   const markClass = problem
@@ -179,6 +200,15 @@ const CubeValueText: React.FC<{
       onChange(parseValue(typed, type));
     }
   };
+  onKeyRef.current = (key: string): void => {
+    if (key === 'Enter') {
+      setReturnFocus(true);
+      commit(true);
+    } else if (key === 'Escape') {
+      setReturnFocus(true);
+      setEditedText(undefined);
+    }
+  };
   return (
     <input
       aria-label={label}
@@ -192,18 +222,10 @@ const CubeValueText: React.FC<{
       autoFocus={true}
       value={editedText}
       onChange={(event) => setEditedText(event.target.value)}
+      ref={inputRef}
       onBlur={() => {
         setReturnFocus(false);
         commit(false);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter') {
-          setReturnFocus(true);
-          commit(true);
-        } else if (event.key === 'Escape') {
-          setReturnFocus(true);
-          setEditedText(undefined);
-        }
       }}
     />
   );
