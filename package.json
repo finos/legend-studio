@@ -94,11 +94,21 @@
     "last 2 Chrome versions"
   ],
   "resolutions": {
+    "@fastify/proxy-addr": "5.1.1",
     "@mui/system": "7.3.6",
     "@mui/types": "7.4.9",
     "@mui/utils": "7.3.6",
     "@types/react": "19.0.10",
+    "dagre-d3-es": "7.0.13",
+    "flatted": "3.4.2",
     "glob-parent": "^6.0.1",
+    "immutable": "5.1.5",
+    "lodash": "4.18.1",
+    "lodash-es": "4.18.1",
+    "node-forge": "1.4.0",
+    "postcss": "8.5.12",
+    "serialize-javascript": "7.0.3",
+    "undici": "6.24.0",
     "whatwg-url": "^14.0.0"
   },
   "devDependencies": {
