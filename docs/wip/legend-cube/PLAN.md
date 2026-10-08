@@ -1907,7 +1907,8 @@ value}`. **Negations are stored as negated operators** (`NotEqual`, `NotIn`, …
   - A breaking change bumps it and adds a `migrate_vN_to_vN+1(json)` step; older documents migrate on load.
   - A document newer than the reader opens **read-only** with a banner.
   - Until the Cube store exists (M8) the format is marked **draft**, so changes stay cheap, but every change still
-    goes through the codec's tests.
+    goes through the codec's tests. The marks (user, 2026-10-08): `@finos/legend-cube`'s README says so, and in the UI
+    the "(dev)" on Export and Import is the marker; the spec itself carries none.
 - **Slice behaviour:**
   - The codec and round-trip tests ship in M1.6.
   - The UI has a dev-only **Export spec** (copy to clipboard or download `.cube.json`) and **Import spec** (paste or
