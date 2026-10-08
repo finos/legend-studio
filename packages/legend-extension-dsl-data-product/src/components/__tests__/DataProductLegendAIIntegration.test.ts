@@ -551,7 +551,11 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
         {
           id: 'group1',
           accessPointImplementations: [
-            { id: 'positions', resourceBuilder: ddl, dependencyDatasets: [] },
+            {
+              id: 'positions',
+              resourceBuilders: [ddl],
+              dependencyDatasets: [],
+            },
           ],
         },
       ],
@@ -707,7 +711,12 @@ describe(unitTest('extractTDSServicesFromDataProduct — access points'), () => 
         {
           id: 'group1',
           accessPointImplementations: [
-            { id: 'positions', lambdaGenericType, dependencyDatasets: [] },
+            {
+              id: 'positions',
+              lambdaGenericType,
+              resourceBuilders: [],
+              dependencyDatasets: [],
+            },
           ],
         },
       ],

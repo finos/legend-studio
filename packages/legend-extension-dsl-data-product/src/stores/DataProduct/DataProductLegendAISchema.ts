@@ -272,8 +272,11 @@ function buildAccessPointService(
     dataProductPath: productPath,
     accessPointGroupTitle: groupTitle,
   };
-  if (impl?.resourceBuilder instanceof V1_DatabaseDDL) {
-    entry.ddlScript = impl.resourceBuilder.script;
+  // TODO?: an access point implementation can build more than one resource,
+  // only the first one is surfaced for now
+  const resourceBuilder = impl?.resourceBuilders.at(0);
+  if (resourceBuilder instanceof V1_DatabaseDDL) {
+    entry.ddlScript = resourceBuilder.script;
   }
   if (
     ap instanceof V1_LakehouseAccessPoint &&

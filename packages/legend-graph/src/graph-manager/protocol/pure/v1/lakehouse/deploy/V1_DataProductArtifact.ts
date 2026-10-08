@@ -16,15 +16,18 @@
 
 import {
   deserializeMap,
+  isNonNullable,
   optionalCustomList,
   optionalCustomUsingModelSchema,
   SerializationFactory,
+  serializeArray,
   UnsupportedOperationError,
   usingConstantValueSchema,
   usingModelSchema,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  alias,
   createModelSchema,
   custom,
   deserialize,
@@ -209,6 +212,22 @@ export const V1_deserializeResourceBuilder = (
   }
 };
 
+/**
+ * An access point implementation builds either one resource or many, so the
+ * artifact carries `resourceBuilder` as a single object or as a list of them
+ * depending on how the access point was generated. Normalize both to a list.
+ */
+export const V1_deserializeResourceBuilders = (
+  json:
+    | PlainObject<V1_ResourceBuilder>
+    | PlainObject<V1_ResourceBuilder>[]
+    | undefined
+    | null,
+): V1_ResourceBuilder[] =>
+  (Array.isArray(json) ? json : [json])
+    .filter(isNonNullable)
+    .map(V1_deserializeResourceBuilder);
+
 export abstract class V1_Producer {}
 
 export class V1_AppDirProducer extends V1_Producer {
@@ -302,7 +321,7 @@ export class V1_DependencyAccessPoint {
 export class V1_AccessPointImplementation {
   id!: string;
   description: string | undefined;
-  resourceBuilder!: V1_ResourceBuilder;
+  resourceBuilders: V1_ResourceBuilder[] = [];
   relationElement: V1_RelationElement | undefined;
   lambdaGenericType: V1_GenericType | undefined;
   dependencyDatasets: V1_Dataset[] = [];
@@ -312,9 +331,15 @@ export class V1_AccessPointImplementation {
     createModelSchema(V1_AccessPointImplementation, {
       id: primitive(),
       description: optional(primitive()),
-      resourceBuilder: custom(
-        V1_serializeResourceBuilder,
-        V1_deserializeResourceBuilder,
+      resourceBuilders: alias(
+        'resourceBuilder',
+        custom(
+          (values: V1_ResourceBuilder[]) =>
+            serializeArray(values, V1_serializeResourceBuilder, {
+              skipIfEmpty: true,
+            }),
+          V1_deserializeResourceBuilders,
+        ),
       ),
       relationElement: optional(
         custom(
