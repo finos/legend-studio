@@ -30,6 +30,12 @@ It has:
 Nodes are immutable. An edit makes a new node with the same `id` and the same `rest`, the saved keys this version
 doesn't know, so a re-save writes them back.
 
+A setting the user can clear, such as Limit's size, is a required constructor parameter typed `T | undefined`, with no
+JavaScript default: a default parameter also replaces an explicit `undefined`, and a cleared field must stay cleared
+(and invalid) rather than silently become the default (spec §7.7). The default lives only in the definition's
+`create(id)`. A node never holds NaN or an infinity, which a saved spec can't write: the constructor refuses them, as it
+refuses any setting of the wrong shape. Limit (`src/nodes/transforms/Limit.ts`, with `RowSettings.ts`) is the example.
+
 ## 2. Its messages
 
 Every message of the spec's catalogue (§16) is already a constant in `src/messages/CubeMessages.ts`, including those
@@ -55,7 +61,11 @@ A `NodeSpecCodec` in `src/spec/codecs/<Type>Codec.ts`:
 - `decode(id, json, path, rest)`: the node. Throw `CubeSpecDecodeError` for a malformed field, and
   `UnreadableContent` for a value this version can't read, which keeps the node as an Unknown node.
 
-Values are typed, and numbers are written as strings.
+Literal values typed by a column are `{kind, value}`, with numbers as strings. A node's own settings, such as a size,
+are JSON numbers, read with `readOptionalFiniteNumber`, which keeps any finite number for validation to judge. A
+setting is written whenever the node has one, its default included, and left out only when cleared, never written as
+`null`: so a cleared setting reads back cleared, and the editor panel, which compares encodings, counts clearing a
+default as an edit (PLAN §11.4).
 
 After an import types the sources again, only Filter's invalid values are read again (`rereadQueryFilterValues` in
 `src/filter/QueryFilterValues.ts`). An operation that holds values typed by a column needs its own case there.
@@ -76,15 +86,21 @@ Add it to `createNodeRegistry()` in menu order, and export the new modules from 
   - the codec's round trip, `rest` included; a case in `CubeSpecDecodeErrors.test.ts` for each malformed field it
     rejects; and, if it throws `UnreadableContent`, a case in `CubeSpecForwardCompatibility.test.ts` showing the node
     kept as an Unknown node.
-- Some tests pin lists to update: the registry's transforms in `src/nodes/__tests__/Nodes.test.ts`, and, for a new
-  `EmitRole`, the roles in `src/ir/__tests__/QueryEmitter.test.ts` ('Names each part of a node with a distinct role,
-  without a colon').
-- Add a saved spec using the operation to `src/spec/__tests__/fixtures/` (`*.cube.json`), and list it in
-  `src/spec/__tests__/CubeSpecCorpus.test.ts` (`INVALID_NODES`, with the nodes it expects invalid). That test re-saves
+- Some tests pin lists to update: the registry's transforms in `src/nodes/__tests__/Nodes.test.ts` (in the spec's
+  menu order), and, for a new `EmitRole`, the roles in `src/ir/__tests__/QueryEmitter.test.ts` ('Names each part of a
+  node with a distinct role, without a colon').
+- The saved-spec suites each get the new kind: a baseline in 'Reads %s, which the failing cases start from' and a
+  'Refuses %s' case per malformed field (`CubeSpecDecodeErrors.test.ts`), an encoding block, its rest written from the
+  node and not from `rest` (`CubeSpecEncode.test.ts`), invalid settings reported through inference (`CONNECTED` in
+  `CubeSpecValidity.test.ts`), and, in `CubeSpecForwardCompatibility.test.ts`, a registry without the new kind reading it
+  as an Unknown node and re-saving it verbatim, with its unknown keys kept through edits.
+- Add the operation to the shared sample `src/spec/__tests__/fixtures/operations.cube.json`, or add a saved spec of
+  its own there (`*.cube.json`; `slice.cube.json` is taken) and list it in `src/spec/__tests__/CubeSpecCorpus.test.ts`
+  (`INVALID_NODES`, with the nodes it expects invalid). That test re-saves
   every file and checks the text comes out the same. Give it the Cube Northwind model and runtime exactly, as the
   other samples have (start from `slice.cube.json`): the builder's `CubeSpecCorpus` engine test requires them, loads
-  the model on the engine, and checks each file's table snapshots against it. The operation's own lambda is checked on
-  the engine by a builder test (see its guide).
+  the model on the engine, and checks each file's table snapshots against it; a new file raises its 'Has the samples'
+  count. The operation's own lambda is checked on the engine by a builder test (see its guide).
 
 No change is needed in the builder's `v1/` adapter while the emitter uses only IR and literal kinds the adapter
 already writes. A new kind of IR node or literal needs its own case there.

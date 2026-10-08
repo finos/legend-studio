@@ -26,6 +26,13 @@ as one undo step (**Cancel** drops it).
 - It changes only the draft. An action on the document, such as Join's Swap Inputs, goes through
   `editorState.nodeEditor`, which applies the draft first.
 - `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
+- A whole-number setting (a size, a row index) is a `CubeIntegerField` over text the draft keeps as typed, read with
+  `parseWholeNumberText` (`src/stores/editors/CubeIntegerText.ts`): an optional sign and digits, nothing else, and empty
+  text gives `undefined`, which the node reports. Never `Number()` the raw text (it reads `''` as 0, `0x10` as 16 and
+  `1e3` as 1000) and never fall back to a default. `CubeRowCountDraft` and `CubeRowCountEditor` (Limit's) are the
+  example.
+- Give each control a stable `aria-label` (numbered per row in a list, e.g. `Sort column 2`): the tests and the
+  browser rehearsal find controls by it.
 - Register it in `CUBE_NODE_EDITORS` (`src/components/editors/CubeNodeEditorRegistry.ts`).
 
 ## 3. Help text
@@ -50,11 +57,13 @@ on the wrong column.
 - `src/components/editors/__tests__/CubeNodeEditorRegistry.test.ts` fails for a type missing a piece: it checks every
   registered type for help text, an icon and an editor, and that each transform's draft gives back its node until
   edited. Add the new help text to its exact list.
-- Add the new item to the lists in `src/components/palette/__tests__/CubePalette.test.tsx` and
-  `src/components/canvas/__tests__/CubeCanvasContextMenu.test.tsx`.
+- Add the new item, in the spec's menu order, to the lists in `src/components/palette/__tests__/CubePalette.test.tsx`
+  and to `TRANSFORMS` in `src/components/canvas/__tests__/CubeCanvasContextMenu.test.tsx`.
 - A draft test (`src/stores/editors/__tests__/`) and an editor test (`src/components/editors/__tests__/`), as Join's
   and Filter's are.
-- An engine test of the operation's lambda (see [Testing](./testing.md)), asserting what it returns, not its text.
+- An engine test of the operation in `src/__tests__/LegendCubeOperations.engine-roundtrip-test.ts` (see
+  [Testing](./testing.md)): its lambda as the engine parses the printed Pure, its typing against Cube's inferred
+  schema, and what it returns, not its text.
 
 The `v1/` adapter (`V1_CubeLambdaSerializer`) needs no change while the operation's emitter uses only IR and literal
 kinds it already writes. A new kind of IR node or literal needs its own case there, with a test in

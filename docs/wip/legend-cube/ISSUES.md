@@ -42,3 +42,8 @@ None hides a known bug.
 - **Only Chrome is checked.** The dry run, the demo and the M1.9 acceptance use Chrome, and `03e095655` fixed a
   Chrome-only behaviour of the date input. Firefox and Safari are untested, value entry (Part B step 5) and the spec
   file import (step 8) above all (user, 2026-10-08).
+- **A page laid out at zero width stays empty.** Found in M2.4's browser check: when the Cube page first renders in a
+  container with no width (the app's browser pane opening), react-reflex warns "Found ReflexContainer with width=0" and
+  the graph and grid region keeps zero width, even after the window grows, until the page reloads. Not seen in a
+  normal browser tab. Suggested check: whether `CubeEditor`'s resizable layout should re-measure on a resize, or
+  render only once its container has a size.

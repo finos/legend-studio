@@ -66,4 +66,12 @@ If Tailwind classes seem to do nothing, the deployment's Tailwind watcher may ha
 `yarn workspace @finos/legend-application-query-deployment dev:tailwindcss`, or rebuild once with `build:tailwindcss`
 (again after each new class).
 
+**A second checkout.** To run a second copy next to the first (another git worktree, say), give it its own port and
+skip the watchers you don't need: in that checkout, run `yarn install`, `yarn build` and
+`yarn workspace @finos/legend-application-query-deployment setup` once, then
+`yarn workspace @finos/legend-application-query-deployment build:tailwindcss` and
+`yarn workspace @finos/legend-application-query-deployment dev:webpack --port 9002`, and open
+`http://localhost:9002/query/cube`. The dev server serves the packages' built `lib/`, so rebuild what you change
+(`yarn workspace @finos/legend-cube-builder build:ts`, and `@finos/legend-cube`'s) before looking, or run `yarn dev:ts`.
+
 The manual check of the whole page is the plan's Part B (PLAN §11.2).

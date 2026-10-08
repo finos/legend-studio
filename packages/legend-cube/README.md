@@ -42,7 +42,8 @@ A cube is saved as JSON, format version 1 (`CURRENT_FORMAT_VERSION`): `formatVer
 kept as given, and the runtime), `query` (`selected` and `nodes`) and `meta`. Each node has `kind`, `id`, its `inputs` (left
 out for a source, which has none) and its own fields.
 
-- Values are typed, and numbers are written as strings, so no digit is lost. A resolved source keeps a snapshot of
+- Literal values are typed, with numbers written as strings, so no digit is lost; a node's settings, such as a
+  Limit's size, are JSON numbers. A resolved source keeps a snapshot of
   its schema; an unresolved one is saved without it, and typed again when the cube is imported.
 - Keys this version doesn't know are kept and written back, and a node of an unknown kind is kept as an Unknown node.
 - A spec is at most 1 MiB (`MAX_SPEC_BYTES`). One saved by a newer version is read as read-only. There are no
