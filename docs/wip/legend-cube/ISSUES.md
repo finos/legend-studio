@@ -24,10 +24,10 @@ From the demo-cut test run (`m18-democut-tests`, 2026-10-07). None hides a known
 
 - **The grid tests were not independently verified.** The grid group's verifier hit the session limit, so
   `CubeGridRegion.test.tsx` was checked only by its writer, against the writer's own mutants.
-- **An empty schema seen from the page.** A picked table that lands with an empty schema is caught by the state test
-  only, not by a jsdom test.
-- **Unexpected rejections in the picker.** The grid's Execute call site is covered; the picker's `confirm` and
-  `selectModel` call sites are not.
+- **Part A's extras** (M1.9 requirements, kept for later by the user on 2026-10-08). A.4's FULL join on one nullable
+  key checks Cube's merged-key nullability but not against the engine's answer: a check must allow Cube ⊇ engine and
+  never pin the engine's `[1]`, a known engine defect (PLAN Appendix B). A.7's negatives run on synthetic schemas in
+  the core tests, not on the resolved Northwind tables (`ORDER_DETAILS ⋈ PRODUCTS`, `EMPLOYEE_ID Equal 100000`).
 
 ## Risks
 
