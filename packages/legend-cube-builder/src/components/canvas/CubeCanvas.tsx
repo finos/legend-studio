@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { ContextMenu } from '@finos/legend-art';
 import type { Query } from '@finos/legend-cube';
 import { noop } from '@finos/legend-shared';
 import {
@@ -44,6 +45,7 @@ import {
   type CubeCanvasFlowNode,
 } from './CubeCanvasElements.js';
 import { CubeCanvasContext } from './CubeCanvasContext.js';
+import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
 import {
   CUBE_DND_TYPE,
   type CubePaletteDragItem,
@@ -154,7 +156,8 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
  * The query as a graph, laid out left to right (spec §17.3). Click a node to
  * edit it, Ctrl or Cmd-click it to run the query up to it, drag from a node's
  * output to another node's input to connect them. A palette item dropped
- * around the nodes is added unconnected.
+ * around the nodes is added unconnected. Right-click it, or a node, for the
+ * context menu.
  */
 export const CubeCanvas = observer(
   (props: { editorState: CubeEditorState }) => {
@@ -182,27 +185,33 @@ export const CubeCanvas = observer(
         className="relative h-full w-full"
         data-testid={LEGEND_CUBE_TEST_ID.CANVAS}
       >
-        {editorState.document.query.isEmpty ? (
-          <div className="flex h-full items-center justify-center p-4 text-base text-[var(--color-text-secondary)]">
-            <span>
-              No tables yet:{' '}
-              <button
-                className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
-                disabled={editorState.readOnly}
-                onClick={() => editorState.sourcePicker.open()}
-              >
-                add a table
-              </button>{' '}
-              to start.
-            </span>
-          </div>
-        ) : (
-          <CubeCanvasContext.Provider value={editorState}>
-            <ReactFlowProvider>
-              <CubeCanvasFlow editorState={editorState} />
-            </ReactFlowProvider>
-          </CubeCanvasContext.Provider>
-        )}
+        <ContextMenu
+          className="h-full w-full"
+          content={<CubeCanvasContextMenu editorState={editorState} />}
+          menuProps={{ elevation: 7 }}
+        >
+          {editorState.document.query.isEmpty ? (
+            <div className="flex h-full items-center justify-center p-4 text-base text-[var(--color-text-secondary)]">
+              <span>
+                No tables yet:{' '}
+                <button
+                  className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
+                  disabled={editorState.readOnly}
+                  onClick={() => editorState.sourcePicker.open()}
+                >
+                  add a table
+                </button>{' '}
+                to start.
+              </span>
+            </div>
+          ) : (
+            <CubeCanvasContext.Provider value={editorState}>
+              <ReactFlowProvider>
+                <CubeCanvasFlow editorState={editorState} />
+              </ReactFlowProvider>
+            </CubeCanvasContext.Provider>
+          )}
+        </ContextMenu>
       </div>
     );
   },

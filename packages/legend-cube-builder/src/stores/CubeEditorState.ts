@@ -127,6 +127,8 @@ export class CubeEditorState {
       connect: action,
       addNode: action,
       dropNode: action,
+      removeNode: action,
+      swapInputs: action,
       setShowGraph: action,
       setPaletteCollapsed: action,
       setHostIssue: action,
@@ -469,6 +471,41 @@ export class CubeEditorState {
         ? query.connect(nodeId, targetId)
         : query.move(nodeId, targetId),
     );
+  }
+
+  canRemoveNode(nodeId: string): boolean {
+    return !this.readOnly && this.document.query.canRemove(nodeId);
+  }
+
+  /**
+   * Removes a node, healing the chain around it. Removing the last node also
+   * clears the cube's model and runtime, in the same undo step, so the next
+   * table can come from any model (user's choice, 2026-10-07).
+   */
+  removeNode(nodeId: string): void {
+    if (!this.canRemoveNode(nodeId)) {
+      return;
+    }
+    if (this.nodeEditor.nodeId === nodeId) {
+      this.nodeEditor.close();
+    }
+    const query = this.document.query.remove(nodeId);
+    this.applyDocument(
+      query.isEmpty
+        ? this.document.withContext(undefined).withQuery(query)
+        : this.document.withQuery(query),
+    );
+  }
+
+  canSwapInputs(nodeId: string): boolean {
+    return !this.readOnly && this.document.query.canSwapInputs(nodeId);
+  }
+
+  /** Swaps a binary node's two inputs; its settings follow them, e.g. a Join's key columns */
+  swapInputs(nodeId: string): void {
+    if (this.canSwapInputs(nodeId)) {
+      this.applyQuery(this.document.query.swapInputs(nodeId));
+    }
   }
 
   /**

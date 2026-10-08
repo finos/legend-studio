@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx } from '@finos/legend-art';
+import { clsx, ContextMenu } from '@finos/legend-art';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
@@ -28,6 +28,7 @@ import {
   getInputHandleOffset,
 } from './CubeCanvasElements.js';
 import { useCubeCanvasEditorState } from './CubeCanvasContext.js';
+import { CubeCanvasContextMenu } from './CubeCanvasContextMenu.js';
 import {
   canDropOnCubeNode,
   CUBE_DND_TYPE,
@@ -40,7 +41,9 @@ import {
  * A node on the canvas: its type's icon and its description, never its id,
  * which is in the tooltip (spec §17.3). Its look tells its state at a glance.
  * It can be dragged onto another node, and takes palette items and other
- * nodes, lighting up only for a drop that would do something.
+ * nodes, lighting up only for a drop that would do something. Its handles
+ * sit beside its draggable body, not in it, so dragging from a handle
+ * connects rather than drags the node.
  */
 export const CubeCanvasNode = observer(
   (props: NodeProps<CubeCanvasFlowNode>) => {
@@ -74,32 +77,12 @@ export const CubeCanvasNode = observer(
     );
     dragConnector(dropConnector(ref));
     return (
-      <div
-        ref={ref}
-        className={clsx(
-          // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
-          // it from moving the node, 'nopan' from panning the canvas
-          'legend-cube__node nodrag nopan flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
-          status.isInvalid
-            ? 'border-[var(--color-status-error)]'
-            : status.isIncomplete
-              ? 'border-dashed border-[var(--color-status-warn)]'
-              : 'border-[var(--color-border-default)]',
-          {
-            'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
-              status.isCapture,
-            'legend-cube__node--invalid': status.isInvalid,
-            'legend-cube__node--incomplete': status.isIncomplete,
-            'legend-cube__node--resolving animate-pulse': status.isResolving,
-            'legend-cube__node--engine-error bg-[var(--color-status-error-bg)]':
-              status.hasEngineError,
-            'legend-cube__node--drop-target outline-dashed outline-2 outline-[var(--color-accent)]':
-              isDropTarget,
-          },
-        )}
-        title={status.tooltip}
-        aria-current={status.isCapture}
-        data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
+      <ContextMenu
+        className="h-full w-full"
+        content={
+          <CubeCanvasContextMenu editorState={editorState} nodeId={node.id} />
+        }
+        menuProps={{ elevation: 7 }}
       >
         {node.ports.map((port, index) => (
           <Handle
@@ -111,20 +94,48 @@ export const CubeCanvasNode = observer(
             style={{ top: getInputHandleOffset(index, node.ports.length) }}
           />
         ))}
-        <CubeNodeIcon
-          icon={editorState.registry.get(node.type)?.icon}
-          className="shrink-0 text-lg text-[var(--color-text-secondary)]"
-        />
-        <span className="line-clamp-2 min-w-0 break-words leading-tight">
-          {node.describe()}
-        </span>
+        <div
+          ref={ref}
+          className={clsx(
+            // React Flow must leave the mouse to the HTML drag: 'nodrag' keeps
+            // it from moving the node, 'nopan' from panning the canvas
+            'legend-cube__node nodrag nopan flex h-full w-full items-center gap-2 rounded border bg-[var(--color-bg-panel)] px-2 text-base text-[var(--color-text-primary)]',
+            status.isInvalid
+              ? 'border-[var(--color-status-error)]'
+              : status.isIncomplete
+                ? 'border-dashed border-[var(--color-status-warn)]'
+                : 'border-[var(--color-border-default)]',
+            {
+              'legend-cube__node--selected ring-2 ring-[var(--color-accent)]':
+                status.isCapture,
+              'legend-cube__node--invalid': status.isInvalid,
+              'legend-cube__node--incomplete': status.isIncomplete,
+              'legend-cube__node--resolving animate-pulse': status.isResolving,
+              'legend-cube__node--engine-error bg-[var(--color-status-error-bg)]':
+                status.hasEngineError,
+              'legend-cube__node--drop-target outline-dashed outline-2 outline-[var(--color-accent)]':
+                isDropTarget,
+            },
+          )}
+          title={status.tooltip}
+          aria-current={status.isCapture}
+          data-testid={LEGEND_CUBE_TEST_ID.CANVAS_NODE}
+        >
+          <CubeNodeIcon
+            icon={editorState.registry.get(node.type)?.icon}
+            className="shrink-0 text-lg text-[var(--color-text-secondary)]"
+          />
+          <span className="line-clamp-2 min-w-0 break-words leading-tight">
+            {node.describe()}
+          </span>
+        </div>
         <Handle
           id={CUBE_OUTPUT_HANDLE_ID}
           type="source"
           position={Position.Right}
           isConnectable={!editorState.readOnly}
         />
-      </div>
+      </ContextMenu>
     );
   },
 );

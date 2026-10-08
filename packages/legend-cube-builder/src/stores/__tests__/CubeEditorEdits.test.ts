@@ -188,6 +188,108 @@ describe('Dropping a node on another', () => {
   });
 });
 
+describe('Removing nodes', () => {
+  test('Removes a node and heals the chain, as one undoable edit, keeping the model', () => {
+    const state = createState(
+      new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
+    );
+    state.removeNode('join101');
+    expect(state.document.query.getInputIds('filter101')).toEqual([
+      'relational101',
+    ]);
+    expect(state.document.context).toBe(CONTEXT);
+    expect(state.history).toHaveLength(1);
+  });
+
+  test('Clears the model and runtime with the last node, in the same undo step', () => {
+    const state = createState(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS)],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    state.removeNode('relational101');
+    expect(state.document.query.isEmpty).toBe(true);
+    expect(state.document.context).toBeUndefined();
+    expect(state.history).toHaveLength(1);
+    state.undo();
+    expect(state.document.context).toBe(CONTEXT);
+    expect(state.document.query.getNode('relational101')).toBeDefined();
+    expect(state.history).toHaveLength(0);
+  });
+
+  test('Closes the editor of the node it removes, and only that one', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    state.nodeEditor.open('filter101');
+    state.removeNode('join101');
+    expect(state.nodeEditor.nodeId).toBe('filter101');
+    state.removeNode('filter101');
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+  });
+
+  test('Removes nothing missing, or while read-only', () => {
+    const state = createState(new CubeDocument({ query: sliceQuery() }));
+    expect(state.canRemoveNode('nothing101')).toBe(false);
+    state.removeNode('nothing101');
+    expect(state.history).toHaveLength(0);
+    state.importDocument(new CubeDocument({ query: sliceQuery() }), true);
+    const { document } = state;
+    expect(state.canRemoveNode('join101')).toBe(false);
+    state.removeNode('join101');
+    expect(state.document).toBe(document);
+  });
+});
+
+describe('Swapping inputs', () => {
+  test("Swaps a binary node's inputs, its key columns following them", () => {
+    const state = createState(
+      new CubeDocument({
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+            new Join('join101', {
+              leftColumns: ['CUSTOMER_ID', 'SHIP_CITY'],
+              rightColumns: ['CUSTOMER_ID', 'CITY'],
+            }),
+          ],
+          [
+            new Connection('relational101', 'join101', 'leftTds'),
+            new Connection('relational102', 'join101', 'rightTds'),
+          ],
+          'join101',
+        ),
+      }),
+    );
+    state.swapInputs('join101');
+    const join = state.document.query.getNode('join101') as Join;
+    expect(state.document.query.getInputIds('join101')).toEqual([
+      'relational102',
+      'relational101',
+    ]);
+    expect(join.leftColumns).toEqual(['CUSTOMER_ID', 'CITY']);
+    expect(join.rightColumns).toEqual(['CUSTOMER_ID', 'SHIP_CITY']);
+    expect(state.history).toHaveLength(1);
+  });
+
+  test('Swaps nothing unary, unfed, or while read-only', () => {
+    const state = createState(unwiredJoin());
+    expect(state.canSwapInputs('join101')).toBe(false);
+    expect(state.canSwapInputs('relational101')).toBe(false);
+    state.swapInputs('join101');
+    expect(state.history).toHaveLength(0);
+    state.importDocument(new CubeDocument({ query: sliceQuery() }), true);
+    expect(state.canSwapInputs('join101')).toBe(false);
+    const { document } = state;
+    state.swapInputs('join101');
+    expect(state.document).toBe(document);
+  });
+});
+
 describe('Showing and hiding the graph', () => {
   test('Saves it in the cube, keeping the rest of the presentation, as an undoable edit', () => {
     const presentationRest = { zoom: 2 };
