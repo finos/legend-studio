@@ -306,7 +306,11 @@ manager.
 - [AGENTS.md:120](../../../AGENTS.md:120) says DataCube consumes metamodel only, but `legend-data-cube` uses `V1_*` throughout,
   outside `v1/` folders 📄. Cube follows the stricter rule: V1 symbols appear only under
   `legend-cube-builder/src/graph-manager/protocol/pure/v1/`, as `legend-query-builder` does. AGENTS.md should be
-  clarified separately.
+  clarified separately. **Test exception** (user, 2026-10-08): the engine-backed tests in
+  `legend-cube-builder/src/__tests__/` (`LegendCubeNorthwind`, `CubeSpecCorpus` and `CubeEditorState`
+  `.engine-roundtrip-test.ts`) import `V1_*` there. They need both the `v1/` adapter and `stores/` (the Northwind
+  fixture, and `CubeEditorState` itself), and the import-hierarchy rule (§3.2), which lints tests too, forbids `v1/`
+  from importing `stores/`. Product code keeps the rule.
 - `.yarn/constraints.pro` is dead; see Appendix B.
 
 ---
@@ -2069,7 +2073,10 @@ incident on legend-studio's side.
 
 ### 11.2 Slice acceptance test
 
-**Part A: automated** (`legend-cube-builder/src/__tests__/LegendCubeNorthwind.engine-roundtrip-test.ts`)
+**Part A: automated** (`legend-cube-builder/src/__tests__/LegendCubeNorthwind.engine-roundtrip-test.ts`, which
+imports `V1_*` under the test exception in §3.7). Items 7 and 8 need no engine: they are core unit tests in
+`@finos/legend-cube` (`Join.test.ts`, `CubeMessages.test.ts`, `SchemaInference.test.ts`, `Filter.test.ts`), on
+synthetic schemas rather than the resolved fixture.
 
 - **Setup:** one file, so the tests run serially. Northwind's setup drops and recreates its schema on every connection.
 - **Assertions:** check **semantics, not SQL text**, because the CI engine image tag moves with every engine merge ✅.
@@ -2191,7 +2198,7 @@ and sources modal are designed. M3 can run in parallel if desired.
 | Engine multiplicities are wrong for outer joins and aggregates ✅                                                                 | Wrong operator offers, wrong grid nulls          | Cube infers nullability; conformance allows Cube ⊇ engine only                                                                                                              |
 | Engine typing bugs: `CHAR(n)`→`Varchar(1)`, `BINARY` 500, views `Varchar(0)`, `OTHER`→`String` with numbers, CLOB invalid JSON ✅ | Bad types, crashes                               | Picker flags; no length validation; the Cube fixture avoids them; a 200 with an unparseable body is treated as an error                                                     |
 | Studio library defects (batch `result`/`results`, lossy relation-type metadata, transformer bugs) ✅📄                            | Cube built on broken APIs                        | Cube's own `v1/` seam (D8); upstream PRs separately                                                                                                                         |
-| The AGENTS.md V1 rule vs repo reality 📄                                                                                          | Review friction                                  | V1 symbols only under `legend-cube-builder/src/graph-manager/protocol/pure/v1/`; propose an AGENTS.md clarification                                                         |
+| The AGENTS.md V1 rule vs repo reality 📄                                                                                          | Review friction                                  | V1 symbols only under `legend-cube-builder/src/graph-manager/protocol/pure/v1/`, engine-backed tests excepted (§3.7); propose an AGENTS.md clarification                    |
 | Local inference (§5) must equal engine typing as transforms grow                                                                  | Divergence and confusing errors                  | Conformance suite per node type (from M4); engine typing for Extend with caching                                                                                            |
 | Saved format changes before the store exists                                                                                      | Stranded exports                                 | Format marked draft until M8; migrations are still written                                                                                                                  |
 | Northwind reloads on every connection (≈0.6 s per execute) ✅                                                                     | Slow tests                                       | Compile-only (`lambdaRelationType`, ~20–70 ms) for schema assertions; few executions                                                                                        |
