@@ -214,8 +214,20 @@ describe('Cube model outline', () => {
     const [schema, defaultSchema] = outline.databases[0]?.schemas ?? [];
     expect(schema?.name).toBe('S');
     expect(schema?.tables).toEqual([
-      { name: 'PLAIN', isView: false, columnCount: 3, flags: [] },
-      { name: '"A.B"', isView: false, columnCount: 1, flags: [] },
+      {
+        name: 'PLAIN',
+        isView: false,
+        columnCount: 3,
+        flags: [],
+        untypedColumns: [],
+      },
+      {
+        name: '"A.B"',
+        isView: false,
+        columnCount: 1,
+        flags: [],
+        untypedColumns: [],
+      },
       {
         name: 'FLAGGED',
         isView: false,
@@ -225,8 +237,16 @@ describe('Cube model outline', () => {
           CubeTableFlag.LENGTH_UNKNOWN,
           CubeTableFlag.TYPE_UNKNOWN,
         ],
+        // only the OTHER column is typed as a bare String
+        untypedColumns: ['O'],
       },
-      { name: 'VIEW', isView: true, columnCount: 2, flags: [] },
+      {
+        name: 'VIEW',
+        isView: true,
+        columnCount: 2,
+        flags: [],
+        untypedColumns: [],
+      },
     ]);
     expect(defaultSchema).toEqual({ name: 'default', tables: [] });
   });
@@ -242,6 +262,7 @@ describe('Cube model outline', () => {
       isView: false,
       columnCount: 2,
       flags: [flag],
+      untypedColumns: flag === CubeTableFlag.TYPE_UNKNOWN ? ['P'] : [],
     });
   });
 

@@ -20,7 +20,14 @@ import {
   type GenericLegendApplicationStore,
 } from '@finos/legend-application';
 import { TEST__BrowserEnvironmentProvider } from '@finos/legend-application/test';
-import { type RenderResult, render, waitFor } from '@testing-library/react';
+import type { CubeDocument } from '@finos/legend-cube';
+import {
+  act,
+  type RenderResult,
+  render,
+  waitFor,
+} from '@testing-library/react';
+import type { CubeEditorState } from '../stores/CubeEditorState.js';
 
 /** React Flow watches the canvas with an IntersectionObserver, which jsdom lacks */
 class TEST__IntersectionObserver {
@@ -69,4 +76,21 @@ export const TEST__renderInCubeApplication = async (
   );
   await waitFor(() => renderResult.getByTestId(readyTestId));
   return renderResult;
+};
+
+/**
+ * Imports a cube into a rendered page, as Import does, and waits for its
+ * tables to be typed again, so nothing changes after the test has ended
+ */
+export const TEST__importDocument = async (
+  editorState: CubeEditorState,
+  document: CubeDocument,
+  readOnly = false,
+): Promise<void> => {
+  act(() => editorState.importDocument(document, readOnly));
+  await waitFor(() => {
+    if (editorState.isResolvingSources) {
+      throw new Error('The imported tables are still being typed');
+    }
+  });
 };

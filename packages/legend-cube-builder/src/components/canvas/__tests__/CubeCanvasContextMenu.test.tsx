@@ -29,7 +29,10 @@ import {
   NORTHWIND_RUNTIME,
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__importDocument,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
@@ -193,7 +196,7 @@ describe('Canvas context menu', () => {
 
   test('Only selects in a read-only cube', async () => {
     const editorState = await render();
-    act(() => editorState.importDocument(slice(), true));
+    await TEST__importDocument(editorState, slice(), true);
     const items = await openMenu(await TEST__findCanvasNode('join101'));
     expect(enabledItems(items)).toEqual(['Select']);
     fireEvent.click(items.get('Select') as HTMLButtonElement);

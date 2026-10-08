@@ -46,7 +46,10 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__importDocument,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
@@ -99,6 +102,43 @@ const columnRows = (): string[] =>
         .map((cell) => cell.textContent)
         .join(' '),
     );
+
+/** ORDERS and CUSTOMERS feeding a Join with no key yet */
+const keylessJoin = (): CubeDocument =>
+  new CubeDocument({
+    context: CONTEXT,
+    query: new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101'),
+      ],
+      [
+        new Connection('relational101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+      ],
+      'join101',
+    ),
+  });
+
+/** Picks a pair of join keys in the open Join editor, the edit Apply would store */
+const editJoinKeys = (left = 'CUSTOMER_ID', right = 'CUSTOMER_ID'): void => {
+  fireEvent.click(within(panel()).getByText('Add join columns'));
+  const rows = within(
+    within(panel()).getByRole('list', { name: 'Join columns' }),
+  ).getAllByRole('listitem');
+  fireEvent.change(
+    within(panel()).getByLabelText(`Left join column ${rows.length}`),
+    { target: { value: left } },
+  );
+  fireEvent.change(
+    within(panel()).getByLabelText(`Right join column ${rows.length}`),
+    { target: { value: right } },
+  );
+};
+
+const storedJoin = (editorState: CubeEditorState): Join =>
+  editorState.document.query.getNode('join101') as Join;
 
 const ordersOnly = (columns: SchemaColumn[] = ORDERS_COLUMNS): CubeDocument =>
   new CubeDocument({
@@ -306,8 +346,110 @@ describe('Node editor panel', () => {
   test('Closes on Import, saying nothing when it had no edits', async () => {
     const editorState = await render(ordersOnly());
     await openPanel('relational101');
-    act(() => editorState.importDocument(ordersOnly(), false));
+    await TEST__importDocument(editorState, ordersOnly());
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
     expect(editorState.nodeEditor.notice).toBeUndefined();
+  });
+
+  test('Applies its edits when another node is clicked, then shows that one', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    fireEvent.click(await TEST__findCanvasNode('relational101'));
+    expect(storedJoin(editorState).leftColumns).toEqual(['CUSTOMER_ID']);
+    expect(editorState.history).toHaveLength(1);
+    expect(editorState.nodeEditor.nodeId).toBe('relational101');
+    expect(
+      within(panel()).getByText('Relational Database Table'),
+    ).toBeDefined();
+  });
+
+  test('Applies its edits when closed from its header', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    expect(
+      within(panel()).getByRole('button', { name: 'Close the editor' }).title,
+    ).toBe('Close, applying the changes');
+    fireEvent.click(
+      within(panel()).getByRole('button', { name: 'Close the editor' }),
+    );
+    expect(storedJoin(editorState).leftColumns).toEqual(['CUSTOMER_ID']);
+    expect(editorState.history).toHaveLength(1);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+  });
+
+  test('Closes without applying its edits, and says so, when Undo changes its node', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    fireEvent.click(within(panel()).getByText('Apply'));
+    editJoinKeys('SHIP_CITY', 'CITY');
+    act(() => editorState.undo());
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(editorState.nodeEditor.notice).toBe(
+      'join101 changed, so the editor of join101 closed without applying its changes.',
+    );
+    expect(storedJoin(editorState).leftColumns).toEqual([]);
+    expect(editorState.history).toHaveLength(0);
+    // opening it again clears the notice
+    await openPanel('join101');
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+  });
+
+  test('Shows the node Undo brings back when it had no edits', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    fireEvent.click(within(panel()).getByText('Apply'));
+    act(() => editorState.undo());
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(editorState.nodeEditor.draft?.original).toBe(
+      storedJoin(editorState),
+    );
+    expect(
+      within(
+        within(panel()).getByRole('list', { name: 'Join columns' }),
+      ).queryAllByRole('listitem'),
+    ).toHaveLength(0);
+  });
+
+  test('Says so when its node is removed with edits pending, the removal being the one undo step', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    fireEvent.contextMenu(await TEST__findCanvasNode('join101'));
+    const menu = await screen.findByRole('menu');
+    fireEvent.click(within(menu).getByRole('button', { name: 'Remove' }));
+    expect(editorState.document.query.getNode('join101')).toBeUndefined();
+    expect(editorState.history).toHaveLength(1);
+    expect(editorState.nodeEditor.notice).toBe(
+      'join101 was removed, so the editor of join101 closed without applying its changes.',
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+  });
+
+  test('Closes without applying on Import, saying so when it had edits', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    await TEST__importDocument(editorState, keylessJoin());
+    expect(editorState.nodeEditor.notice).toBe(
+      'Another cube was opened, so the editor of join101 closed without applying its changes.',
+    );
+    expect(storedJoin(editorState).leftColumns).toEqual([]);
+    expect(editorState.history).toHaveLength(1);
+  });
+
+  test("Lists the edited node's problems as they are, before Apply", async () => {
+    await render(keylessJoin());
+    await openPanel('join101');
+    const problems = (): string | null | undefined =>
+      within(panel()).queryByRole('alert', { name: 'Problems' })?.textContent;
+    expect(problems()).toBe('Left join columns cannot be empty.');
+    editJoinKeys('ORDER_ID', 'COMPANY_NAME');
+    expect(problems()).toBe(
+      'Join columns "ORDER_ID" and "COMPANY_NAME" must be of compatible types.',
+    );
   });
 });

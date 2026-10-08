@@ -55,7 +55,13 @@ const outlineTable = (
   name: string,
   flags: CubeTableFlag[] = [],
   isView = false,
-): CubeOutlineTable => ({ name, isView, columnCount: 2, flags });
+): CubeOutlineTable => ({
+  name,
+  isView,
+  columnCount: 2,
+  flags,
+  untypedColumns: [],
+});
 
 /**
  * Two databases, each with two schemas that hold a table of the same name;

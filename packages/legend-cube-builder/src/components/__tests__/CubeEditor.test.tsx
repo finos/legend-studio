@@ -19,8 +19,10 @@ import {
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
+  Connection,
   CubeDocument,
   FilterOperator,
+  Join,
   Query,
   RelationalTableSource,
   Schema,
@@ -34,6 +36,7 @@ import {
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
+  CUSTOMERS_COLUMNS,
   NORTHWIND_DATABASE,
   NORTHWIND_RUNTIME,
   northwindTable,
@@ -237,6 +240,62 @@ describe('Cube page', () => {
     } finally {
       window.innerHeight = height;
     }
+  });
+
+  test('Opens the node editor beside the page, and says in the graph region when it closed dropping edits', async () => {
+    await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+            new Join('join101'),
+          ],
+          [
+            new Connection('relational101', 'join101', 'leftTds'),
+            new Connection('relational102', 'join101', 'rightTds'),
+          ],
+          'join101',
+        ),
+      }),
+    );
+    fireEvent.click(await TEST__findCanvasNode('join101'));
+    const editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    // beside the graph and the results, in a group of its own
+    expect(
+      editor
+        .closest(`[data-orientation="vertical"]`)
+        ?.getAttribute('data-testid'),
+    ).toBe(mockPanelGroupTestId);
+    const pickKeys = (left: string, right: string): void => {
+      fireEvent.click(within(editor).getByText('Add join columns'));
+      const position = within(
+        within(editor).getByRole('list', { name: 'Join columns' }),
+      ).getAllByRole('listitem').length;
+      fireEvent.change(
+        within(editor).getByLabelText(`Left join column ${position}`),
+        { target: { value: left } },
+      );
+      fireEvent.change(
+        within(editor).getByLabelText(`Right join column ${position}`),
+        { target: { value: right } },
+      );
+    };
+    pickKeys('CUSTOMER_ID', 'CUSTOMER_ID');
+    fireEvent.click(within(editor).getByText('Apply'));
+    pickKeys('SHIP_CITY', 'CITY');
+    const graph = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
+    fireEvent.click(within(graph).getByText('Undo'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    const notice = within(graph).getByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE);
+    expect(notice.textContent).toContain(
+      'join101 changed, so the editor of join101 closed without applying its changes.',
+    );
+    fireEvent.click(within(notice).getByText('Dismiss'));
+    expect(
+      within(graph).queryByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE),
+    ).toBeNull();
   });
 
   test("Marks its root as Legend Cube's, never as Data Cube's", async () => {

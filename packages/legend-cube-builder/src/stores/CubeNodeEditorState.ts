@@ -86,7 +86,9 @@ export class CubeNodeEditorState {
       edited: computed,
       hasChanges: computed,
       open: action,
+      canSwapInputs: computed,
       apply: action,
+      swapInputs: action,
       close: action,
       cancel: action,
       discard: action,
@@ -158,6 +160,34 @@ export class CubeNodeEditorState {
       this.editorState.applyQuery(query.replace(edited));
       this.bind(edited);
     }
+  }
+
+  get canSwapInputs(): boolean {
+    const { node } = this;
+    return (
+      node !== undefined &&
+      !this.editorState.readOnly &&
+      this.editorState.document.query.canSwapInputs(node.id)
+    );
+  }
+
+  /**
+   * Swaps the node's two inputs (a Join's Swap Inputs, spec §17.6), applying
+   * the draft first, as one undo step, then goes on editing the swapped
+   * node, whose settings followed its inputs
+   */
+  swapInputs(): void {
+    const { node, edited } = this;
+    if (!node || !edited || node.key !== this.nodeKey || !this.canSwapInputs) {
+      return;
+    }
+    let { query } = this.editorState.document;
+    if (this.hasChanges && query.canReplace(edited)) {
+      query = query.replace(edited);
+    }
+    query = query.swapInputs(node.id);
+    this.editorState.applyQuery(query);
+    this.bind(query.getNode(node.id) ?? node);
   }
 
   /** Applies the draft, then closes the panel (spec §17.5: edits commit on close) */

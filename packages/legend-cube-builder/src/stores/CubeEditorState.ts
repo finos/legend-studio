@@ -19,6 +19,7 @@ import {
   createNodeRegistry,
   CubeDocument,
   diffSchemas,
+  type ModelContext,
   type NodeRegistry,
   type Query,
   QueryEmitter,
@@ -48,6 +49,7 @@ import {
 import {
   CubeEngineError,
   CubeEngineErrorKind,
+  type CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
@@ -91,6 +93,13 @@ export class CubeEditorState {
    * shown on the node, never errors, and gone once the node is replaced
    */
   warnings: ReadonlyMap<number, readonly string[]> = new Map();
+  /**
+   * The outline of each model the cube used, loaded when an editor needs it,
+   * e.g. for the Join's 'type unknown' warning; by reference, never observed
+   * deeply
+   */
+  private modelOutlines: ReadonlyMap<ModelContext, CubeModelOutline> =
+    new Map();
   /** Sources sent to the engine to be typed again, until it answers */
   private pendingSources: ReadonlySet<QueryNode> = new Set();
   /** The rows a run returns; kept per user, never in the cube */
@@ -106,8 +115,11 @@ export class CubeEditorState {
   private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
-    makeObservable<CubeEditorState, 'pendingSources'>(this, {
+    makeObservable<CubeEditorState, 'pendingSources' | 'modelOutlines'>(this, {
       pendingSources: observable.ref,
+      modelOutlines: observable.ref,
+      modelOutline: computed,
+      loadModelOutline: flow,
       document: observable.ref,
       history: observable.ref,
       hostIssues: observable.ref,
@@ -193,6 +205,31 @@ export class CubeEditorState {
         ...(hostIssue ? [hostIssue.firstLine] : []),
       ]),
     ];
+  }
+
+  /** The outline of the cube's model, once an editor has loaded it */
+  get modelOutline(): CubeModelOutline | undefined {
+    const model = this.document.context?.model;
+    return model === undefined ? undefined : this.modelOutlines.get(model);
+  }
+
+  /**
+   * Loads the outline of the cube's model, once per model. It only adds
+   * warnings, so a model that fails to load shows none.
+   */
+  *loadModelOutline(): GeneratorFn<void> {
+    const model = this.document.context?.model;
+    if (model === undefined || this.modelOutlines.has(model)) {
+      return;
+    }
+    try {
+      const outline = (yield this.host.modelCatalog.loadOutline(
+        model,
+      )) as CubeModelOutline;
+      this.modelOutlines = new Map([...this.modelOutlines, [model, outline]]);
+    } catch {
+      // no outline, no warning: nothing is blocked on it
+    }
   }
 
   get canUndo(): boolean {

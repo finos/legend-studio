@@ -64,13 +64,16 @@ const elementPath = (element: PlainObject): string => {
 
 const buildTable = (json: unknown): CubeOutlineTable => {
   const table = asObject(json);
-  const columns = asList(table.columns);
+  const columns = asList(table.columns).map(asObject);
   const flags = new Set<CubeTableFlag>();
+  const untypedColumns: string[] = [];
   columns.forEach((column) => {
-    const flag =
-      COLUMN_TYPE_FLAGS[asString(asObject(asObject(column).type)._type) ?? ''];
+    const flag = COLUMN_TYPE_FLAGS[asString(asObject(column.type)._type) ?? ''];
     if (flag) {
       flags.add(flag);
+    }
+    if (flag === CubeTableFlag.TYPE_UNKNOWN) {
+      untypedColumns.push(asString(column.name) ?? '');
     }
   });
   return {
@@ -78,6 +81,7 @@ const buildTable = (json: unknown): CubeOutlineTable => {
     isView: false,
     columnCount: columns.length,
     flags: Object.values(CubeTableFlag).filter((flag) => flags.has(flag)),
+    untypedColumns,
   };
 };
 
@@ -88,6 +92,7 @@ const buildView = (json: unknown): CubeOutlineTable => {
     isView: true,
     columnCount: asList(view.columnMappings).length,
     flags: [],
+    untypedColumns: [],
   };
 };
 
