@@ -50,6 +50,8 @@ interface CubeFilterRuleProps {
   readonly draft: CubeFilterDraft;
   readonly schema: Schema;
   readonly readOnly: boolean;
+  /** The Not the rule sits in, if any: the rule's own Not toggle undoes it */
+  readonly negation?: NotFilter | undefined;
 }
 
 const CubeRemoveRuleButton: React.FC<
@@ -66,20 +68,25 @@ const CubeRemoveRuleButton: React.FC<
   </button>
 );
 
-/** A condition: column, operator, value, and its negation and removal */
+/**
+ * A condition: column, operator and its negation and removal on one line,
+ * the value below, with the whole width of the panel
+ */
 const CubeFilterCondition = observer(
   (props: CubeFilterRuleProps & { rule: ColumnComparisonFilter }) => {
-    const { draft, schema, readOnly, rule } = props;
+    const { draft, schema, readOnly, rule, negation } = props;
     const type = schema.type(rule.columnName);
     const operators = type ? getAvailableOperators(type) : [];
-    const isNegated = NEGATIVE_OPERATORS.includes(rule.operator);
+    const shape = getFilterValueShape(rule.operator);
+    const isNegated =
+      negation !== undefined || NEGATIVE_OPERATORS.includes(rule.operator);
     return (
       <li
         className="flex flex-col gap-1 py-1"
         data-testid={LEGEND_CUBE_TEST_ID.FILTER_CONDITION}
       >
         <div className="flex items-center gap-1">
-          <div className="w-2/5 min-w-0">
+          <div className="min-w-0 flex-1">
             <CubeColumnPicker
               label="Filter column"
               schema={schema}
@@ -90,7 +97,7 @@ const CubeFilterCondition = observer(
           </div>
           <select
             aria-label="Filter operator"
-            className="h-6 shrink-0 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base"
+            className="h-6 min-w-0 max-w-[45%] shrink rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base"
             value={rule.operator}
             disabled={readOnly || !type}
             onChange={(event) => {
@@ -110,17 +117,6 @@ const CubeFilterCondition = observer(
               </option>
             ))}
           </select>
-          {type && (
-            <CubeValueEditor
-              label="Filter value"
-              type={type}
-              shape={getFilterValueShape(rule.operator)}
-              value={rule.value}
-              disabled={readOnly}
-              onChange={(value) => draft.setValue(rule.key, value)}
-            />
-          )}
-          <span className="flex-1" />
           <button
             className={clsx(SMALL_BUTTON, {
               'text-[var(--color-accent)]': isNegated,
@@ -129,12 +125,25 @@ const CubeFilterCondition = observer(
             aria-pressed={isNegated}
             title="Negate the condition, e.g. is and is not"
             disabled={readOnly || !type}
-            onClick={() => draft.toggleNegation(rule.key)}
+            // a condition in a Not leaves it; otherwise its operator turns
+            onClick={() => draft.toggleNegation(negation?.key ?? rule.key)}
           >
             Not
           </button>
           <CubeRemoveRuleButton {...props} label="Remove the condition" />
         </div>
+        {type && shape !== 'none' && (
+          <div className="flex min-w-0">
+            <CubeValueEditor
+              label="Filter value"
+              type={type}
+              shape={shape}
+              value={rule.value}
+              disabled={readOnly}
+              onChange={(value) => draft.setValue(rule.key, value)}
+            />
+          </div>
+        )}
         {type && isExactFloatComparison(rule.operator, type) && (
           <div className="text-sm text-[var(--color-text-secondary)]">
             {FILTER_FLOAT_COMPARISON_HINT}
@@ -175,7 +184,7 @@ const CubeFilterRuleEditor = observer(
             Not
           </button>
           <ul className="min-w-0 flex-1">
-            <CubeFilterRuleEditor {...props} rule={rule.rule} />
+            <CubeFilterRuleEditor {...props} rule={rule.rule} negation={rule} />
           </ul>
         </li>
       );
@@ -193,7 +202,7 @@ const CubeFilterRuleEditor = observer(
 /** An And/Or group: its rules, and buttons to add to it */
 const CubeFilterGroup = observer(
   (props: CubeFilterRuleProps & { group: CompositeFilter; isTop: boolean }) => {
-    const { draft, readOnly, group, isTop } = props;
+    const { draft, readOnly, group, isTop, negation } = props;
     return (
       <div
         className={clsx('flex flex-col gap-1', {
@@ -224,11 +233,15 @@ const CubeFilterGroup = observer(
           {!isTop && (
             <>
               <button
-                className={SMALL_BUTTON}
+                className={clsx(SMALL_BUTTON, {
+                  'text-[var(--color-accent)]': negation !== undefined,
+                })}
                 aria-label="Negate the group"
+                aria-pressed={negation !== undefined}
                 title="Keep the rows the group doesn't match"
                 disabled={readOnly}
-                onClick={() => draft.toggleNegation(group.key)}
+                // a group in a Not leaves it
+                onClick={() => draft.toggleNegation(negation?.key ?? group.key)}
               >
                 Not
               </button>
@@ -242,7 +255,13 @@ const CubeFilterGroup = observer(
         </div>
         <ul className="flex flex-col pl-2">
           {group.rules.map((rule) => (
-            <CubeFilterRuleEditor key={rule.key} {...props} rule={rule} />
+            <CubeFilterRuleEditor
+              key={rule.key}
+              {...props}
+              rule={rule}
+              // the group's Not is not its rules'
+              negation={undefined}
+            />
           ))}
         </ul>
         <div className="flex gap-1">

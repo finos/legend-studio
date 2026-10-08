@@ -24,13 +24,14 @@ import {
   EnumType,
   Filter,
   FilterOperator,
+  NotFilter,
   type FilterRule,
   PrimitiveType,
   Query,
   SchemaColumn,
   UnsupportedFilter,
 } from '@finos/legend-cube';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { act, fireEvent, screen, within } from '@testing-library/react';
 import { FILTER_FLOAT_COMPARISON_HINT } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
@@ -41,7 +42,10 @@ import {
   SLICE_FILTER,
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
-import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
+import {
+  TEST__importDocument,
+  TEST__renderInCubeApplication,
+} from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
@@ -409,5 +413,205 @@ describe('Filter editor', () => {
         editorState.document.query.getNode('filter101') as Filter
       ).filter?.toString(),
     ).toBe('EMPLOYEE_ID is in list of (4)');
+  });
+
+  test('Keeps a value blank when it is left without typing, and confirms an empty text on Enter', async () => {
+    const editorState = await render(slice());
+    pickColumn(condition(0), 'SHIP_CITY');
+    fireEvent.click(
+      within(condition(0)).getByRole('button', { name: 'Filter value' }),
+    );
+    fireEvent.blur(
+      within(condition(0)).getByRole('textbox', { name: 'Filter value' }),
+    );
+    expect(
+      within(condition(0)).getByRole('button', { name: 'Filter value' })
+        .textContent,
+    ).toBe('(blank)');
+    expect(problems()).toEqual(['Filter value is required.']);
+    // Enter confirms the empty text, a value of a text column
+    fireEvent.click(
+      within(condition(0)).getByRole('button', { name: 'Filter value' }),
+    );
+    fireEvent.keyDown(
+      within(condition(0)).getByRole('textbox', { name: 'Filter value' }),
+      { key: 'Enter' },
+    );
+    expect(
+      within(condition(0)).getByRole('button', { name: 'Filter value' })
+        .textContent,
+    ).toBe('""');
+    expect(problems()).toEqual([]);
+    fireEvent.click(button('Apply'));
+    expect(
+      (
+        (editorState.document.query.getNode('filter101') as Filter)
+          .filter as ColumnComparisonFilter
+      ).value,
+    ).toEqual({ kind: 'string', value: '' });
+  });
+
+  test('Adds nothing to a list when its Add value box is left without typing', async () => {
+    await render(slice());
+    pickColumn(condition(0), 'SHIP_CITY');
+    pickOperator(condition(0), FilterOperator.IN);
+    fireEvent.click(
+      within(condition(0)).getByRole('button', { name: 'Add filter value' }),
+    );
+    fireEvent.blur(
+      within(condition(0)).getByRole('textbox', { name: 'Add filter value' }),
+    );
+    expect(
+      within(condition(0)).queryAllByRole('button', {
+        name: /^Filter value \d+$/u,
+      }),
+    ).toHaveLength(0);
+    expect(problems()).toEqual(['Filter value is required.']);
+  });
+
+  test('Gives the focus back to the value after Enter or Escape, and leaves it where it went on blur', async () => {
+    await render(slice());
+    pickColumn(condition(0), 'SHIP_CITY');
+    const value = (): HTMLElement =>
+      within(condition(0)).getByRole('button', { name: 'Filter value' });
+    const typed = (): HTMLElement =>
+      within(condition(0)).getByRole('textbox', { name: 'Filter value' });
+    fireEvent.click(value());
+    fireEvent.change(typed(), { target: { value: 'Paris' } });
+    fireEvent.keyDown(typed(), { key: 'Enter' });
+    expect(document.activeElement).toBe(value());
+    fireEvent.click(value());
+    fireEvent.keyDown(typed(), { key: 'Escape' });
+    expect(document.activeElement).toBe(value());
+    expect(value().textContent).toBe('Paris');
+    // moving the focus elsewhere commits, and leaves the focus there
+    fireEvent.click(value());
+    fireEvent.change(typed(), { target: { value: 'Lille' } });
+    const operator = within(condition(0)).getByLabelText('Filter operator');
+    act(() => operator.focus());
+    expect(value().textContent).toBe('Lille');
+    expect(document.activeElement).toBe(operator);
+    // in a list, the Add box comes back for the next value
+    pickOperator(condition(0), FilterOperator.IN);
+    typeValue(condition(0), 'Add filter value', 'Lyon');
+    fireEvent.click(
+      within(condition(0)).getByRole('button', { name: 'Add filter value' }),
+    );
+    const add = within(condition(0)).getByRole('textbox', {
+      name: 'Add filter value',
+    });
+    fireEvent.change(add, { target: { value: 'Nice' } });
+    fireEvent.keyDown(add, { key: 'Enter' });
+    expect(document.activeElement).toBe(
+      within(condition(0)).getByRole('button', { name: 'Add filter value' }),
+    );
+    expect(
+      within(condition(0))
+        .getAllByRole('button', { name: /^Filter value \d+$/u })
+        .map((item) => item.textContent),
+    ).toEqual(['Lyon', 'Nice']);
+  });
+
+  test('Shows a condition in a Not as negated, and its Not toggle takes the Not away', async () => {
+    const editorState = await render(
+      slice(
+        new ColumnComparisonFilter('ORDER_ID', FilterOperator.GREATER_THAN, {
+          kind: 'integer',
+          value: '5',
+        }),
+      ),
+    );
+    const negate = (): HTMLElement =>
+      within(condition(0)).getByRole('button', {
+        name: 'Negate the condition',
+      });
+    expect(negate().getAttribute('aria-pressed')).toBe('false');
+    // greater than has no negated operator: it goes in a Not
+    fireEvent.click(negate());
+    expect(negate().getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(negate());
+    expect(negate().getAttribute('aria-pressed')).toBe('false');
+    expect(
+      within(panel()).queryByRole('button', { name: 'Remove the negation' }),
+    ).toBeNull();
+    // a nested group, the same
+    fireEvent.click(button('Add group'));
+    const negateGroup = (): HTMLElement => button('Negate the group');
+    expect(negateGroup().getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(negateGroup());
+    expect(negateGroup().getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(negateGroup());
+    expect(negateGroup().getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(button('Apply'));
+    expect(
+      (
+        editorState.document.query.getNode('filter101') as Filter
+      ).filter?.toString(),
+    ).toBe('ORDER_ID is greater than 5');
+  });
+
+  test('Shows a read-only cube without letting it change', async () => {
+    const editorState = await render(slice());
+    const rule = new CompositeFilter(CompositeFilterOperator.AND, [
+      new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+        kind: 'string',
+        value: 'France',
+      }),
+      new NotFilter(
+        new CompositeFilter(CompositeFilterOperator.OR, [
+          new ColumnComparisonFilter('SHIP_CITY', FilterOperator.EQUAL, {
+            kind: 'string',
+            value: 'Paris',
+          }),
+        ]),
+      ),
+    ]);
+    await TEST__importDocument(
+      editorState,
+      new CubeDocument({ context: CONTEXT, query: slice(rule) }),
+      true,
+    );
+    fireEvent.click(await TEST__findCanvasNode('filter101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    for (const row of conditions()) {
+      expect(
+        within(row).getByLabelText<HTMLSelectElement>('Filter column').disabled,
+      ).toBe(true);
+      expect(
+        within(row).getByLabelText<HTMLSelectElement>('Filter operator')
+          .disabled,
+      ).toBe(true);
+      expect(
+        within(row).getByRole<HTMLButtonElement>('button', {
+          name: 'Filter value',
+        }).disabled,
+      ).toBe(true);
+      expect(
+        within(row).getByRole<HTMLButtonElement>('button', {
+          name: 'Negate the condition',
+        }).disabled,
+      ).toBe(true);
+      expect(
+        within(row).getByRole<HTMLButtonElement>('button', {
+          name: 'Remove the condition',
+        }).disabled,
+      ).toBe(true);
+    }
+    expect(
+      within(panel()).getByLabelText<HTMLSelectElement>(
+        'Combine the conditions with',
+      ).disabled,
+    ).toBe(true);
+    expect(button('Add condition').disabled).toBe(true);
+    expect(button('Add group').disabled).toBe(true);
+    expect(button('Remove the negation').disabled).toBe(true);
+    expect(button('Apply').disabled).toBe(true);
+    fireEvent.click(
+      within(panel()).getByRole('button', { name: 'Close the editor' }),
+    );
+    expect(
+      (editorState.document.query.getNode('filter101') as Filter).filter ===
+        rule,
+    ).toBe(true);
   });
 });

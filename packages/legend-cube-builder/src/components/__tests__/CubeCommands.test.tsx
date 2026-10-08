@@ -132,7 +132,13 @@ describe('Cube keyboard shortcuts', () => {
   });
 
   test('Does nothing on F9 while Execute is disabled', async () => {
-    const { fake } = await renderPage(new CubeDocument());
+    const { fake, host } = await renderPage(new CubeDocument());
+    const { commandService } = host.applicationStore;
+    // a trigger that says no leaves the key to any other command bound to it
+    expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.EXECUTE)).toBe(
+      false,
+    );
+    expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.UNDO)).toBe(false);
     expect(
       within(toolbar()).getByText<HTMLButtonElement>('Execute').disabled,
     ).toBe(true);
@@ -141,7 +147,7 @@ describe('Cube keyboard shortcuts', () => {
   });
 
   test('Does nothing on F9 while a run is going or a Cube dialog is open', async () => {
-    const { fake } = await renderPage();
+    const { fake, host } = await renderPage();
     fake.execute.mockImplementation(
       async () => new Promise<CubeResult>(() => undefined),
     );
@@ -155,6 +161,27 @@ describe('Cube keyboard shortcuts', () => {
     expect(fake.execute).toHaveBeenCalledTimes(1);
     pressF9();
     expect(fake.execute).toHaveBeenCalledTimes(1);
+    expect(
+      host.applicationStore.commandService.runCommand(
+        LEGEND_CUBE_COMMAND_KEY.EXECUTE,
+      ),
+    ).toBe(false);
+  });
+
+  test('Does nothing on F9 or Ctrl+Z while the source picker is open', async () => {
+    const { fake } = await renderPage(
+      new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
+    );
+    fireEvent.click(await TEST__findCanvasNode('join101'), { ctrlKey: true });
+    fireEvent.click(within(graph()).getByText('Add table'));
+    const dialog = await screen.findByRole('dialog');
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    pressF9();
+    pressUndo();
+    expect(fake.execute).not.toHaveBeenCalled();
+    expect(
+      (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
+    ).toBe('true');
   });
 
   test('Undoes on Ctrl+Z or Cmd+Z with the focus on the page', async () => {
@@ -208,6 +235,16 @@ describe('Cube keyboard shortcuts', () => {
         key.startsWith('legend-cube'),
       ),
     ).toEqual([]);
+  });
+
+  test('Names the shortcuts in the tooltips of Execute and Undo while they are disabled too', async () => {
+    await renderPage(new CubeDocument());
+    const execute = within(toolbar()).getByText<HTMLButtonElement>('Execute');
+    expect(execute.disabled).toBe(true);
+    expect(execute.title).toBe('• Add a table first.\n(F9)');
+    const undo = within(graph()).getByText<HTMLButtonElement>('Undo');
+    expect(undo.disabled).toBe(true);
+    expect(undo.title).toBe('Undo the last change (Ctrl+Z / Cmd+Z)');
   });
 
   test('Names the shortcuts in the tooltips of Execute and Undo', async () => {

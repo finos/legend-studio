@@ -16,6 +16,10 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  Core_LegendApplicationPlugin,
+  LEGEND_APPLICATION_COLOR_THEME,
+} from '@finos/legend-application';
+import {
   Connection,
   CubeDocument,
   Filter,
@@ -46,7 +50,10 @@ import {
   sliceQuery,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
-import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
+import {
+  TEST__createCubeApplicationStore,
+  TEST__createCubeHost,
+} from '../../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../../__test-utils__/FakeCubeEngine.js';
 import {
   CubeEngineError,
@@ -55,7 +62,10 @@ import {
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
-import { CUBE_OUTPUT_HANDLE_ID } from '../CubeCanvasElements.js';
+import {
+  CUBE_OUTPUT_HANDLE_ID,
+  getCubeCanvasNodeStatus,
+} from '../CubeCanvasElements.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 
@@ -174,6 +184,8 @@ describe('Cube canvas', () => {
       ),
     );
     await waitFor(() => expect(hasState(orders, 'engine-error')).toBe(true));
+    // its settings are fine: an engine error is not an error of its own
+    expect(hasState(orders, 'invalid')).toBe(false);
     expect(TEST__getCanvasNodeTooltip(orders)[0]).toBe('Table gone');
   });
 
@@ -368,6 +380,181 @@ describe('Cube canvas', () => {
       screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS),
     ).getByText<HTMLButtonElement>('add a table');
     expect(link.disabled).toBe(true);
+  });
+});
+
+describe('Cube canvas, more', () => {
+  /**
+   * Runs `run` with what React Flow's click-to-connect needs and jsdom
+   * lacks: with nothing laid out, React Flow then takes the clicked handle
+   */
+  const withClickConnect = async (run: () => Promise<void>): Promise<void> => {
+    const added: [object, string][] = [];
+    const stub = (target: object, name: string, value: unknown): void => {
+      if (!(name in target)) {
+        Object.defineProperty(target, name, {
+          configurable: true,
+          writable: true,
+          value,
+        });
+        added.push([target, name]);
+      }
+    };
+    stub(document, 'elementFromPoint', (): Element | null => null);
+    stub(globalThis, 'structuredClone', (value: unknown): unknown =>
+      JSON.parse(JSON.stringify(value)),
+    );
+    try {
+      await run();
+    } finally {
+      added.forEach(([target, name]) => {
+        delete (target as Record<string, unknown>)[name];
+      });
+    }
+  };
+
+  const handle = (nodeId: string, handleId: string): Element =>
+    document.querySelector(
+      `.react-flow__node[data-id="${nodeId}"] .react-flow__handle[data-handleid="${handleId}"]`,
+    ) as Element;
+
+  test('Leaves the mouse on a node body to the HTML drag, so React Flow neither moves the node nor pans', async () => {
+    await renderCanvas(new CubeDocument({ query: sliceQuery() }));
+    await TEST__findCanvasNode('join101');
+    const nodes = TEST__getCanvasNodes();
+    expect(nodes).toHaveLength(4);
+    nodes.forEach((node) => {
+      expect(node.classList.contains('nodrag')).toBe(true);
+      // React Flow adds no 'nopan' itself while nodes can't be dragged
+      expect(node.classList.contains('nopan')).toBe(true);
+    });
+  });
+
+  test("Draws the canvas in the page's color theme, with background, controls and a minimap, and no attribution", async () => {
+    const applicationStore = TEST__createCubeApplicationStore([
+      new Core_LegendApplicationPlugin(),
+    ]);
+    const { host } = TEST__createCubeHost(undefined, applicationStore);
+    const editorState = new CubeEditorState(
+      host,
+      new CubeDocument({ query: sliceQuery() }),
+    );
+    await TEST__renderInCubeApplication(
+      <div style={{ width: 800, height: 400 }}>
+        <CubeCanvas editorState={editorState} />
+      </div>,
+      applicationStore,
+      LEGEND_CUBE_TEST_ID.CANVAS,
+    );
+    await TEST__findCanvasNode('join101');
+    const chrome = (): Record<string, boolean> => {
+      const flow = document.querySelector('.react-flow');
+      return {
+        dark: Boolean(flow?.classList.contains('dark')),
+        light: Boolean(flow?.classList.contains('light')),
+        minimap: document.querySelector('.react-flow__minimap') !== null,
+        controls: document.querySelector('.react-flow__controls') !== null,
+        background: document.querySelector('.react-flow__background') !== null,
+        attribution:
+          document.querySelector('.react-flow__attribution') !== null,
+      };
+    };
+    expect(
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+    ).toBe(false);
+    expect(chrome()).toEqual({
+      dark: true,
+      light: false,
+      minimap: true,
+      controls: true,
+      background: true,
+      attribution: false,
+    });
+    await act(async () => {
+      applicationStore.layoutService.setColorTheme(
+        LEGEND_APPLICATION_COLOR_THEME.LEGACY_LIGHT,
+      );
+    });
+    expect(
+      applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled,
+    ).toBe(true);
+    expect(chrome()).toMatchObject({ dark: false, light: true });
+  });
+
+  test('Opens a node on Enter or Space, selects it with Ctrl or Cmd, and gives no keyboard help it does not honour', async () => {
+    const state = await renderCanvas(new CubeDocument({ query: sliceQuery() }));
+    await TEST__findCanvasNode('join101');
+    const wrapper = document.querySelector<HTMLElement>(
+      '.react-flow__node[data-id="join101"]',
+    ) as HTMLElement;
+    expect(wrapper.getAttribute('aria-describedby')).toBeNull();
+    wrapper.focus();
+    fireEvent.keyDown(wrapper, { key: 'Enter' });
+    expect(state.nodeEditor.nodeId).toBe('join101');
+    const filter = document.querySelector<HTMLElement>(
+      '.react-flow__node[data-id="relational101"]',
+    ) as HTMLElement;
+    fireEvent.keyDown(filter, { key: ' ', ctrlKey: true });
+    expect(state.document.query.selected).toBe('relational101');
+    expect(state.nodeEditor.nodeId).toBe('join101');
+    // other keys do nothing
+    fireEvent.keyDown(filter, { key: 'Delete' });
+    expect(state.document.query.getNode('relational101')).toBeDefined();
+  });
+
+  test("Doesn't open a node's editor on a click on one of its handles", () =>
+    withClickConnect(async () => {
+      const state = await renderCanvas(
+        new CubeDocument({ query: sliceQuery() }),
+      );
+      await TEST__findCanvasNode('join101');
+      fireEvent.click(handle('join101', CUBE_OUTPUT_HANDLE_ID));
+      fireEvent.click(handle('join101', 'leftTds'));
+      expect(state.nodeEditor.nodeId).toBeUndefined();
+      fireEvent.click(await TEST__findCanvasNode('join101'));
+      expect(state.nodeEditor.nodeId).toBe('join101');
+    }));
+
+  test('Connects a node to the port of the handle it is clicked to, and nothing else', () =>
+    withClickConnect(async () => {
+      const state = await renderCanvas(
+        new CubeDocument({
+          query: new Query(
+            [
+              northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+              northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+              new Join('join101'),
+            ],
+            [],
+            'join101',
+          ),
+        }),
+      );
+      await TEST__findCanvasNode('join101');
+      fireEvent.click(handle('relational102', CUBE_OUTPUT_HANDLE_ID));
+      fireEvent.click(handle('join101', 'rightTds'));
+      expect(state.document.query.connections).toEqual([
+        new Connection('relational102', 'join101', 'rightTds'),
+      ]);
+      // CUSTOMERS already feeds the Join
+      fireEvent.click(handle('relational102', CUBE_OUTPUT_HANDLE_ID));
+      fireEvent.click(handle('join101', 'leftTds'));
+      expect(state.document.query.connections).toHaveLength(1);
+      expect(state.nodeEditor.nodeId).toBeUndefined();
+    }));
+
+  test('Leads the tooltip of a node with no validity entry with the R104 notice', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      new CubeDocument({ query: sliceQuery() }),
+    );
+    // a node the query doesn't hold, so inference has no entry for it
+    const ghost = new Filter('filter999');
+    expect(getCubeCanvasNodeStatus(state, ghost).tooltip.split('\n')).toEqual([
+      'This node depends on some invalid inputs.',
+      ghost.describe(),
+      'filter999',
+    ]);
   });
 });
 

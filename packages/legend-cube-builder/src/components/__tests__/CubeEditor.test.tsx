@@ -161,20 +161,25 @@ describe('Cube page', () => {
     const { getByTestId } = await renderPage();
     const graph = getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
     expect(within(graph).getByText('Unsaved Query')).toBeDefined();
-    expect(within(graph).getByText(/No tables yet/u)).toBeDefined();
+    expect(
+      within(getByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).getByText(
+        /No tables yet/u,
+      ),
+    ).toBeDefined();
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
-    // stacked, the query first, in one resizable group
+    // the header, then the graph and the results stacked in one resizable group
     const group = stackedGroup() as HTMLElement;
     expect(
       [
         ...group.querySelectorAll(
-          `[data-testid="${LEGEND_CUBE_TEST_ID.GRAPH_REGION}"], [data-testid="${LEGEND_CUBE_TEST_ID.GRID_REGION}"]`,
+          `[data-testid="${LEGEND_CUBE_TEST_ID.CANVAS}"], [data-testid="${LEGEND_CUBE_TEST_ID.GRID_REGION}"]`,
         ),
       ].map((region) => region.getAttribute('data-testid')),
-    ).toEqual([
-      LEGEND_CUBE_TEST_ID.GRAPH_REGION,
-      LEGEND_CUBE_TEST_ID.GRID_REGION,
-    ]);
+    ).toEqual([LEGEND_CUBE_TEST_ID.CANVAS, LEGEND_CUBE_TEST_ID.GRID_REGION]);
+    expect(group.contains(graph)).toBe(false);
+    expect(
+      graph.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   test('Hides the graph down to its header, keeping the rows fresh, and shows it again', async () => {
@@ -190,12 +195,14 @@ describe('Cube page', () => {
     await within(toolbar()).findByText(/rows? in/u);
     const graph = (): HTMLElement =>
       screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
-    fireEvent.click(within(graph()).getByText('Hide graph'));
+    const grid = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION);
+    const toggle = within(graph()).getByText('Hide graph');
+    fireEvent.click(toggle);
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
-    // the header stays, above the results, outside any resizable group
+    // the header and the results stay the same elements: the grid keeps its state
     expect(within(graph()).getByText('Add table')).toBeDefined();
-    expect(stackedGroup()).toBeUndefined();
-    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBe(grid);
+    expect(within(graph()).getByText('Show graph')).toBe(toggle);
     expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
     expect(within(toolbar()).getByText(/rows? in/u)).toBeDefined();
     // an edit of the cube, so Undo shows the graph again
@@ -226,7 +233,7 @@ describe('Cube page', () => {
   test('Keeps the graph to at most 60% of the window height, as the window resizes', async () => {
     const { getByTestId } = await renderPage();
     const graphPanel = (): HTMLElement | null =>
-      getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION).parentElement;
+      getByTestId(LEGEND_CUBE_TEST_ID.CANVAS).parentElement;
     expect(graphPanel()?.getAttribute('data-max-size')).toBe(
       String(Math.round(window.innerHeight * 0.6)),
     );
@@ -436,7 +443,7 @@ describe('Cube page', () => {
     fireEvent.click(within(dialog).getByText('Add'));
     await waitFor(() => expect(TEST__getCanvasNodes()).toHaveLength(2));
     expect(
-      within(await TEST__findCanvasNode('relational102', graph)).getByText(
+      within(await TEST__findCanvasNode('relational102')).getByText(
         'Table "CUSTOMERS" from schema "NORTHWIND"',
       ),
     ).toBeDefined();
@@ -459,13 +466,11 @@ describe('Cube page', () => {
     expect(
       within(graph).getByText<HTMLButtonElement>('Add table').disabled,
     ).toBe(false);
-    fireEvent.click(await TEST__findCanvasNode('join101', graph), {
+    fireEvent.click(await TEST__findCanvasNode('join101'), {
       ctrlKey: true,
     });
     expect(
-      (await TEST__findCanvasNode('join101', graph)).getAttribute(
-        'aria-current',
-      ),
+      (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
     ).toBe('true');
     // the picker opens too, and closing it leaves the run going
     fireEvent.click(within(graph).getByText('Add table'));

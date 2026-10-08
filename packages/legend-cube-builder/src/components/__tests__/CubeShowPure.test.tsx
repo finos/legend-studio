@@ -201,7 +201,8 @@ describe('Show Pure', () => {
     );
     expect(executeButton().disabled).toBe(true);
     expect(showPureButton().disabled).toBe(true);
-    expect(showPureButton().title).toBe(executeButton().title);
+    // the same reasons; Execute's also names its shortcut
+    expect(executeButton().title).toBe(`${showPureButton().title}\n(F9)`);
     expect(showPureButton().title).toContain('NOPE');
   });
 

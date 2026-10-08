@@ -31,6 +31,10 @@ const NODE_ICONS: Readonly<
   join: ArrowsJoinIcon,
 };
 
+/** Whether a node definition's icon name maps to an icon, rather than the question mark */
+export const hasCubeNodeIcon = (name: string): boolean =>
+  Object.hasOwn(NODE_ICONS, name);
+
 /** A node type's icon; an unknown name, or an Unknown node, gets a question mark */
 export const CubeNodeIcon: React.FC<{
   icon: string | undefined;

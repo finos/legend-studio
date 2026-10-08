@@ -408,4 +408,58 @@ describe('Join editor', () => {
     ).toBe(JoinType.LEFT_OUTER);
     expect(editorState.history).toHaveLength(1);
   });
+
+  test('Warns about a key on an untyped column of the Right input too', async () => {
+    await render(
+      ordersJoinCustomers(
+        ['CUSTOMER_ID', 'SHIP_REGION'],
+        ['CUSTOMER_ID', 'REGION'],
+      ),
+      (fake) =>
+        fake.loadModel.mockResolvedValue({
+          ...FAKE_NORTHWIND_OUTLINE,
+          databases: [
+            {
+              path: NORTHWIND_DATABASE,
+              schemas: [
+                {
+                  name: 'NORTHWIND',
+                  tables: [
+                    {
+                      name: 'CUSTOMERS',
+                      isView: false,
+                      columnCount: CUSTOMERS_COLUMNS.length,
+                      flags: [],
+                      untypedColumns: ['REGION'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+    );
+    await openJoin();
+    expect(await within(panel()).findByText(/^type unknown: /u)).toBeDefined();
+    expect(problems()).toEqual([]);
+    pick('Right join column 2', 'CITY');
+    expect(within(panel()).queryByText(/^type unknown: /u)).toBeNull();
+  });
+
+  test("Shows the picked column's type with its family's icon and its full type in the tooltip", async () => {
+    await render(ordersJoinCustomers(['CUSTOMER_ID'], ['CUSTOMER_ID']));
+    await openJoin();
+    const typeLabel = (label: string): HTMLElement =>
+      within(panel())
+        .getByLabelText(label)
+        .parentElement?.querySelector('span') as HTMLElement;
+    const text = typeLabel('Left join column 1');
+    expect(text.textContent).toBe('Varchar(5)?');
+    expect(text.title).toBe('meta::pure::precisePrimitives::Varchar(5)');
+    const textIcon = text.querySelector('svg')?.innerHTML;
+    pick('Left join column 1', 'EMPLOYEE_ID');
+    const number = typeLabel('Left join column 1');
+    expect(number.title).toBe('meta::pure::precisePrimitives::SmallInt');
+    expect(number.querySelector('svg')?.innerHTML).not.toBe(textIcon);
+  });
 });

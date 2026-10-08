@@ -142,7 +142,7 @@ export const CubePalette = observer(
         </div>
         <div
           className="flex min-h-0 shrink flex-col overflow-auto py-1"
-          role="list"
+          role="group"
           aria-label="Palette"
         >
           {registry.sources.map((definition) => (

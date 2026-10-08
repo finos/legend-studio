@@ -109,7 +109,7 @@ export const buildCubeCanvasEdges = (query: Query): CubeCanvasFlowEdge[] =>
 export interface CubeCanvasNodeStatus {
   /** Execute runs the query up to this node */
   readonly isCapture: boolean;
-  /** It has errors of its own */
+  /** It has errors of its own, the query rules' included; not the engine's */
   readonly isInvalid: boolean;
   /** An input is missing, or an input is invalid */
   readonly isIncomplete: boolean;
@@ -125,21 +125,22 @@ export const getCubeCanvasNodeStatus = (
   editorState: CubeEditorState,
   node: QueryNode,
 ): CubeCanvasNodeStatus => {
-  const hasValidity = editorState.analysis.validity.has(node.id);
+  const ownErrors = editorState.analysis.validity.get(node.id);
+  // the tooltip adds the engine's error; the states keep it apart
   const errors = editorState.getNodeErrors(node.id);
   const warnings = editorState.warnings.get(node.key) ?? [];
   return {
     isCapture: editorState.document.query.selected === node.id,
-    isInvalid: errors.some(
+    isInvalid: (ownErrors ?? []).some(
       (error) => !isIncompleteError(error) && !isSchemasError(error),
     ),
-    isIncomplete: errors.some(
+    isIncomplete: (ownErrors ?? []).some(
       (error) => isIncompleteError(error) || isSchemasError(error),
     ),
     isResolving: editorState.isPendingSource(node),
     hasEngineError: editorState.hostIssues.has(node.id),
     tooltip: [
-      ...(hasValidity ? [] : [MISSING_VALIDITY_TOOLTIP]),
+      ...(ownErrors ? [] : [MISSING_VALIDITY_TOOLTIP]),
       ...errors,
       ...warnings,
       node.describe(),

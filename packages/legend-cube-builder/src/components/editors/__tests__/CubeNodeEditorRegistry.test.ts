@@ -16,10 +16,14 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { createNodeRegistry, UnknownNode } from '@finos/legend-cube';
-import { CUBE_NODE_HELP_TEXT } from '../../../__lib__/LegendCubeHelpText.js';
+import {
+  CUBE_NODE_HELP_TEXT,
+  SELECT_NODE_TOOLTIP,
+} from '../../../__lib__/LegendCubeHelpText.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CUBE_NODE_DRAFT_FACTORIES } from '../../../stores/editors/CubeNodeDraftRegistry.js';
+import { hasCubeNodeIcon } from '../../CubeNodeIcon.js';
 import { CUBE_NODE_EDITORS } from '../CubeNodeEditorRegistry.js';
 
 // What a node type needs in the builder (PLAN §7.4): a new type that misses
@@ -31,9 +35,29 @@ const types = [...registry.sources, ...registry.transforms].map(
 );
 
 describe('Node editor registries', () => {
-  test.each(types)('Has help text and an editor for %s', (type) => {
+  test.each(types)('Has help text, an icon and an editor for %s', (type) => {
     expect(CUBE_NODE_HELP_TEXT[type]).toBeTruthy();
+    expect(hasCubeNodeIcon(registry.get(type)?.icon ?? '')).toBe(true);
     expect(CUBE_NODE_EDITORS.has(type)).toBe(true);
+  });
+
+  test('Maps only real icon names, never an object key', () => {
+    expect(hasCubeNodeIcon('table')).toBe(true);
+    expect(hasCubeNodeIcon('sort')).toBe(false);
+    expect(hasCubeNodeIcon('constructor')).toBe(false);
+  });
+
+  test('Carries the help text and the Select tooltip verbatim (spec §17.9)', () => {
+    expect(CUBE_NODE_HELP_TEXT).toEqual({
+      relational: 'Sources data from relational database table.',
+      filter:
+        'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
+      join: 'Joins two previous data sets using specified columns as join keys.',
+      unknown: 'Source or transformation unknown to the application.',
+    });
+    expect(SELECT_NODE_TOOLTIP).toBe(
+      'Selects this node as active and its output will be shown in the grid once query is executed.',
+    );
   });
 
   test.each(registry.transforms.map((definition) => definition.type))(

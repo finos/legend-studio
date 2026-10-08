@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   Connection,
   CubeDocument,
   Filter,
+  FILTER_DEFINITION,
   Join,
   Query,
   RelationalTableSource,
   Schema,
   type SchemaColumn,
+  UnknownNode,
 } from '@finos/legend-cube';
 import {
   act,
@@ -451,5 +453,55 @@ describe('Node editor panel', () => {
     expect(problems()).toBe(
       'Join columns "ORDER_ID" and "COMPANY_NAME" must be of compatible types.',
     );
+  });
+
+  test("Says an Unknown node can't be edited, with the Unknown help and no Apply or Cancel", async () => {
+    await render(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new UnknownNode('pivot101', 1, { kind: 'pivot' }),
+            new Filter('filter101'),
+          ],
+          [
+            new Connection('relational101', 'pivot101', 'in0'),
+            new Connection('pivot101', 'filter101', 'tds'),
+          ],
+          'filter101',
+        ),
+      }),
+    );
+    const editor = await openPanel('pivot101');
+    expect(within(editor).getByText('Unknown')).toBeDefined();
+    expect(
+      within(editor).getByText(
+        'Unknown Transform "pivot101": this node can\'t be edited.',
+      ),
+    ).toBeDefined();
+    expect(within(editor).getByRole('img', { name: 'Help' }).title).toBe(
+      CUBE_NODE_HELP_TEXT[UnknownNode.TYPE],
+    );
+    expect(within(editor).queryByText('Apply')).toBeNull();
+    expect(within(editor).queryByText('Cancel')).toBeNull();
+  });
+
+  test('Marks a node type in beta in its header', async () => {
+    const editorState = await render(
+      new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
+    );
+    const get = editorState.registry.get.bind(editorState.registry);
+    jest
+      .spyOn(editorState.registry, 'get')
+      .mockImplementation((type) =>
+        type === Filter.TYPE ? { ...FILTER_DEFINITION, beta: true } : get(type),
+      );
+    expect(
+      within(await openPanel('relational101')).queryByText('BETA'),
+    ).toBeNull();
+    expect(
+      within(await openPanel('filter101')).getByText('BETA'),
+    ).toBeDefined();
   });
 });

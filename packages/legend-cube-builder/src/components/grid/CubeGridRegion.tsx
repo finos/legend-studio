@@ -115,7 +115,7 @@ const CubeGridToolbar = observer(
             disabled={!execution.canExecute}
             title={
               disabledReasons.length
-                ? formatDisabledReasons(disabledReasons)
+                ? `${formatDisabledReasons(disabledReasons)}\n(${EXECUTE_SHORTCUT_LABEL})`
                 : `Run the query up to the selected node (${EXECUTE_SHORTCUT_LABEL})`
             }
             onClick={execute}

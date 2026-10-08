@@ -125,6 +125,9 @@ const CubeValueSelect: React.FC<{
  * One typed value (spec §17.7): shown as text, or `(blank)`, until clicked;
  * then typed, and read when the input loses focus or on Enter. Text that is
  * not a value of the type is kept, to be fixed, and marked in both modes.
+ * Leaving a blank value without typing keeps it blank; Enter on it confirms
+ * an empty text, a value of a STRING column. Enter and Escape give the focus
+ * back to the value; leaving it by focus leaves the focus where it went.
  */
 const CubeValueText: React.FC<{
   label: string;
@@ -135,6 +138,7 @@ const CubeValueText: React.FC<{
 }> = (props) => {
   const { label, type, item, onChange, disabled } = props;
   const [editedText, setEditedText] = useState<string | undefined>(undefined);
+  const [returnFocus, setReturnFocus] = useState(false);
   const text = getItemText(item);
   const problem = getValueProblem(item, type);
   const markClass = problem
@@ -150,6 +154,8 @@ const CubeValueText: React.FC<{
           'text-[var(--color-text-muted)]': item === undefined,
         })}
         disabled={disabled}
+        // back from typing with Enter or Escape
+        autoFocus={returnFocus}
         onClick={() => setEditedText(text)}
       >
         {item === undefined
@@ -160,14 +166,16 @@ const CubeValueText: React.FC<{
       </button>
     );
   }
-  const commit = (): void => {
+  const commit = (confirmed: boolean): void => {
     setEditedText(undefined);
     const typed =
       type.family === TypeFamily.DATETIME
         ? withDateTimeSeconds(editedText)
         : editedText;
-    // leaving a blank value without typing keeps it blank
-    if (typed !== text) {
+    if (
+      typed !== text ||
+      (confirmed && item === undefined && type.family === TypeFamily.STRING)
+    ) {
       onChange(parseValue(typed, type));
     }
   };
@@ -184,11 +192,16 @@ const CubeValueText: React.FC<{
       autoFocus={true}
       value={editedText}
       onChange={(event) => setEditedText(event.target.value)}
-      onBlur={commit}
+      onBlur={() => {
+        setReturnFocus(false);
+        commit(false);
+      }}
       onKeyDown={(event) => {
         if (event.key === 'Enter') {
-          commit();
+          setReturnFocus(true);
+          commit(true);
         } else if (event.key === 'Escape') {
+          setReturnFocus(true);
           setEditedText(undefined);
         }
       }}
@@ -280,8 +293,7 @@ export const CubeValueEditor: React.FC<{
       ))}
       <li className="flex items-center gap-1">
         <CubeSingleValueEditor
-          // a new value each time one is added
-          key={items.length}
+          // always blank: what it adds goes to the list above
           label={`Add ${label.toLowerCase()}`}
           type={type}
           item={undefined}

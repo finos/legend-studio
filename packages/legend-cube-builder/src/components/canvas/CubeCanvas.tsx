@@ -25,7 +25,9 @@ import {
   MiniMap,
   ReactFlow,
   ReactFlowProvider,
+  useNodesInitialized,
   useReactFlow,
+  useStore,
 } from '@xyflow/react';
 // imported here, not in the builder's stylesheet, so it loads with the Cube
 // page's chunk: Query's reactflow 11 lineage viewer uses the same class names
@@ -59,6 +61,8 @@ import { CubeCanvasNode } from './CubeCanvasNode.js';
 const NODE_TYPES = { [CUBE_CANVAS_NODE_TYPE]: CubeCanvasNode };
 const EDGE_TYPES = { [CUBE_CANVAS_EDGE_TYPE]: CubeCanvasEdge };
 const PRO_OPTIONS = { hideAttribution: true };
+/** Small, so it covers little of a short canvas */
+const MINI_MAP_STYLE = { width: 120, height: 80 };
 const FIT_VIEW_OPTIONS = { padding: 0.2, maxZoom: 1 };
 
 /**
@@ -88,18 +92,24 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
     [query, positions],
   );
   const edges = useMemo(() => buildCubeCanvasEdges(query), [query]);
-  // the view fits the graph again whenever the layout moves a node
+  // the view fits the graph again whenever the layout moves a node, or the
+  // canvas gets wider or narrower (e.g. the node editor opens beside it),
+  // once React Flow has measured every node: it fits only measured ones
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
     [positions],
   );
+  const nodesInitialized = useNodesInitialized();
+  const canvasWidth = useStore((state) => state.width);
   useEffect(() => {
-    // after React Flow has taken the new nodes
+    if (!nodesInitialized) {
+      return undefined;
+    }
     const timer = window.setTimeout(() => {
       fitView(FIT_VIEW_OPTIONS).catch(noop());
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [layoutSignature, fitView]);
+  }, [layoutSignature, canvasWidth, nodesInitialized, fitView]);
 
   return (
     <ReactFlow<CubeCanvasFlowNode, CubeCanvasFlowEdge>
@@ -115,10 +125,42 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       selectionKeyCode={null}
       multiSelectionKeyCode={null}
       onNodeClick={(event, flowNode) => {
+        // a click on a handle starts or ends a connection, not a node click
+        if (
+          event.target instanceof Element &&
+          event.target.closest('.react-flow__handle')
+        ) {
+          return;
+        }
         if (event.ctrlKey || event.metaKey) {
           editorState.select(flowNode.id);
         } else {
           editorState.nodeEditor.open(flowNode.id);
+        }
+      }}
+      // React Flow's own keyboard help speaks of selecting, moving and
+      // deleting nodes, which Cube doesn't do; Enter and Space open a node's
+      // editor instead, and Ctrl or Cmd with them select it
+      disableKeyboardA11y={true}
+      edgesFocusable={false}
+      onKeyDown={(event) => {
+        const target = event.target;
+        const nodeId =
+          target instanceof HTMLElement &&
+          target.classList.contains('react-flow__node')
+            ? target.dataset.id
+            : undefined;
+        if (
+          nodeId === undefined ||
+          (event.key !== 'Enter' && event.key !== ' ')
+        ) {
+          return;
+        }
+        event.preventDefault();
+        if (event.ctrlKey || event.metaKey) {
+          editorState.select(nodeId);
+        } else {
+          editorState.nodeEditor.open(nodeId);
         }
       }}
       isValidConnection={(connection) =>
@@ -147,7 +189,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
     >
       <Background />
       <Controls showInteractive={false} />
-      <MiniMap pannable={true} zoomable={true} />
+      <MiniMap pannable={true} zoomable={true} style={MINI_MAP_STYLE} />
     </ReactFlow>
   );
 });

@@ -126,7 +126,7 @@ describe('Cube palette', () => {
     await render();
     const list = within(
       screen.getByTestId(LEGEND_CUBE_TEST_ID.PALETTE),
-    ).getByRole('list', { name: 'Palette' });
+    ).getByRole('group', { name: 'Palette' });
     expect(
       Array.from(list.children).map(
         (child) =>
