@@ -158,7 +158,16 @@ finos/legend-studio#5591 carries it (user, 2026-10-07: it is on the critical pat
   it wasn't seen.
 - **Checks:** 1419 core, 596 builder, 236 Query and 279 engine-roundtrip tests; `check:ci` and `lint:ci` green.
 
-**Next:** push M1.8b to the PR, then M1.9 (Part B by hand as acceptance, READMEs). In parallel sessions: operations
+**Pushed** to the PR on 2026-10-08 (head `b1c73b640`). The merge waits on an incident on legend-studio's side, so
+work continues on `cubeV1` (user, 2026-10-08).
+
+**Demo video** (2026-10-08, for the PR): a Playwright script runs Part B against :9001 and :6300 and records it,
+checking 19 rows after both runs. The video and the script are in the evidence folder's `demo/`
+(`node cube-demo.mjs <outDir>`). The script is a start on M1.9's optional e2e. Two things it showed: Undo back to the
+executed query leaves the rows marked stale (as §7.8 says: a restored query is a new object), and opening the editor
+panel logs React 19's `element.ref` warning from `react-reflex` (legend-art's resizable panels), not from Cube.
+
+**Next:** M1.9 (Part B by hand as acceptance, READMEs, the e2e decision). In parallel sessions: operations
 (each follows the editor contract in PLAN §7.4), test setup, and a DuckDB WASM study; new sources wait on the
 user's design. Decimal precision stays for a later PR (user, 2026-10-07).
 
