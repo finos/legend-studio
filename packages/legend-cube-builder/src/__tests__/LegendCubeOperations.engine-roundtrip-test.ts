@@ -140,13 +140,18 @@ const joinOn = (
 };
 
 /** The execution lambda as protocol JSON, without the source information Cube stamps */
-const emittedJson = (query: Query, rowLimit = ROW_LIMIT): unknown =>
+const emittedJson = (
+  query: Query,
+  rowLimit = ROW_LIMIT,
+  databaseType?: string,
+): unknown =>
   parseLosslessJSON(
     stringifyLosslessJSON(
       V1_serializeCubeLambda(
         new QueryEmitter(query).emitExecutionLambda({
           rowLimit,
           runtime: CUBE_NORTHWIND_RUNTIME,
+          databaseType,
         }),
       ),
       (key: string, value: unknown) =>
@@ -602,6 +607,95 @@ describe('Sort on the engine', () => {
     expect(printIR(lambda)).not.toContain('sort(');
     const result = await TEST__runQuery(engine, query, ROW_LIMIT);
     expect(result.rows).toHaveLength(5);
+  });
+});
+
+// SQL Server's workarounds (PLAN §11.4), written for SqlServer but run on the
+// fixture's H2, which takes both forms: their rows must be the native forms'.
+// Sorted descending, so rows numbered in H2's scan order would fail.
+const SQL_SERVER = 'SqlServer';
+
+describe('Database workarounds, run on H2', () => {
+  test.each<[string, QueryNode[]]>([
+    ['a Drop', [byOrderIdDesc(), new Drop('drop101', 825)]],
+    ['a Slice', [byOrderIdDesc(), new Slice('slice101', 10, 15)]],
+    ['a Slice with no Sort', [new Slice('slice101', 10, 15)]],
+    [
+      'a Distinct',
+      [
+        new Restrict('restrict101', ['SHIP_COUNTRY']),
+        new Distinct('distinct101'),
+      ],
+    ],
+  ])(
+    'Emits what the engine parses from the printed Pure for %s, and types as Cube infers',
+    async (_, nodes) => {
+      const query = await ordersThen(...nodes);
+      const lambda = new QueryEmitter(query).emitExecutionLambda({
+        rowLimit: ROW_LIMIT,
+        runtime: CUBE_NORTHWIND_RUNTIME,
+        databaseType: SQL_SERVER,
+      });
+      expect(printIR(lambda)).toMatch(/rowNumber|cube_d/u);
+      expect(emittedJson(query, ROW_LIMIT, SQL_SERVER)).toEqual(
+        await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+      );
+      await TEST__expectEngineTyping(engine, query);
+    },
+  );
+
+  test('Drops the first rows by the Sort, through row numbers', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(byOrderIdDesc(), new Drop('drop101', 825)),
+      ROW_LIMIT,
+      SQL_SERVER,
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(10252, 10248),
+    );
+  });
+
+  test('Takes a range of rows by the Sort, through row numbers', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(byOrderIdDesc(), new Slice('slice101', 10, 15)),
+      ROW_LIMIT,
+      SQL_SERVER,
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual(
+      countDown(11067, 11063),
+    );
+  });
+
+  test('Numbers the rows by their first column when no Sort orders them', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Slice('slice101', 10, 15)),
+      ROW_LIMIT,
+      SQL_SERVER,
+    );
+    expect(new Set(orderIds(TEST__columnValues(result, 'ORDER_ID')))).toEqual(
+      new Set(countDown(10262, 10258)),
+    );
+  });
+
+  test('Keeps the columns of the native forms', async () => {
+    const query = await ordersThen(byOrderIdDesc(), new Drop('drop101', 825));
+    const native = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const numbered = await TEST__runQuery(engine, query, ROW_LIMIT, SQL_SERVER);
+    expect(numbered.columns).toEqual(native.columns);
+  });
+
+  test('Keeps one row of each ship city and country, padded', async () => {
+    const query = await ordersThen(
+      new Restrict('restrict101', ['SHIP_COUNTRY', 'SHIP_CITY']),
+      new Distinct('distinct101'),
+    );
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT, SQL_SERVER);
+    expect(result.rows).toHaveLength(70);
+    // in the input's order, as Restrict keeps them
+    expect(result.columns).toEqual(['SHIP_CITY', 'SHIP_COUNTRY']);
   });
 });
 

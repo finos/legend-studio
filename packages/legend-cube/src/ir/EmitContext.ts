@@ -30,6 +30,12 @@ export interface EmitContext {
    * (PLAN §11.4): typing needs no sort
    */
   readonly inputOrder?: RowOrder | undefined;
+  /**
+   * The engine's name for the database the query runs on, e.g. `SqlServer`,
+   * given only when the relation is emitted to run: some take some
+   * operations another way (`getDialectWorkarounds`)
+   */
+  readonly databaseType?: string | undefined;
 }
 
 /** The origin of an IR node emitted for a query node */

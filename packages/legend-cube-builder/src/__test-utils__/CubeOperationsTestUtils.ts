@@ -100,11 +100,16 @@ export const TEST__expectValidQuery = (query: Query): void => {
   expect([...validity].filter(([, errors]) => errors.length)).toEqual([]);
 };
 
-/** Runs the query up to its capture node, with this row limit */
+/**
+ * Runs the query up to its capture node, with this row limit; with a database
+ * type, written as for that database (on the fixture's H2 all the same, so a
+ * workaround's rows can be checked)
+ */
 export const TEST__runQuery = async (
   engine: CubeEngine,
   query: Query,
   rowLimit: number,
+  databaseType?: string,
 ): Promise<CubeResult> => {
   TEST__expectValidQuery(query);
   return engine.execute(
@@ -112,6 +117,7 @@ export const TEST__runQuery = async (
     new QueryEmitter(query).emitExecutionLambda({
       rowLimit,
       runtime: CUBE_NORTHWIND_RUNTIME,
+      databaseType,
     }),
   );
 };

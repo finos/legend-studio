@@ -123,7 +123,7 @@ export enum EmitRole {
   COALESCE = 'coalesce',
   /** a FULL Join: `cast` of the merged key to the keys' common type */
   CAST = 'cast',
-  /** a Join's final select, and a Restrict's select */
+  /** a select: a Join's last, a Restrict's, and the one that drops a temporary column */
   SELECT = 'select',
   /** a Filter: the filter call */
   FILTER = 'filter',
@@ -139,12 +139,20 @@ export enum EmitRole {
   DROP = 'drop',
   /** a Slice: its slice call and its two bounds */
   SLICE = 'slice',
-  /** a Distinct: its distinct call */
+  /** a Distinct: its distinct call, and on SQL Server the column that pads it */
   DISTINCT = 'distinct',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
   SORT = 'sort',
   /** a Sort: one of its keys, wherever the order is written */
   SORT_KEY = 'sortKey',
+  /**
+   * a Drop or Slice on a database that can't skip rows (PLAN §11.4): the
+   * extend that numbers the rows, its window and `rowNumber`, and the
+   * default key when no Sort orders the rows
+   */
+  ROW_NUMBER = 'rowNumber',
+  /** a Drop or Slice on such a database: the filter on the row numbers */
+  ROW_RANGE = 'rowRange',
   /** the capture node: the sort by its own order, before its limit */
   CAPTURE_SORT = 'captureSort',
   /** the capture node: `limit(rowLimit + 1)` and its literal */

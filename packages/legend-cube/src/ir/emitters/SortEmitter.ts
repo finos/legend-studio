@@ -23,6 +23,7 @@ import {
   colSpec,
   EmitRole,
   func,
+  type IR,
   type Origin,
   type RelationExpr,
 } from '../CubeIR.js';
@@ -45,33 +46,38 @@ export const emitSort = (
 };
 
 /**
- * `<input>->sort(<keys>)`, a key as `~column->ascending()` or
- * `~column->descending()` stamped with the Sort that declared it; several
- * keys as a list, most significant first. Every key's column must be in the
- * schema, so a mismatch fails in Cube, not on the engine.
+ * The keys of an order, each `~column->ascending()` or `~column->descending()`
+ * stamped with the Sort that declared it, most significant first. Every key's
+ * column must be in the schema, so a mismatch fails in Cube, not on the
+ * engine.
  */
-export const emitRowOrder = (
-  input: RelationExpr,
-  order: RowOrder,
-  schema: Schema,
-  origin: Origin,
-): RelationExpr => {
+export const emitSortKeys = (order: RowOrder, schema: Schema): IR[] => {
   const missing = order.filter(({ column }) => !schema.lookup(column));
   if (!order.length || missing.length) {
     throw new Error(
       `Can't sort by ${order.map(({ column }) => column).join(', ') || 'no column'}: the rows have ${schema.names().join(', ')}`,
     );
   }
-  const keys = order.map(({ column, direction, sortId }) =>
+  return order.map(({ column, direction, sortId }) =>
     func(
       direction === SortDirection.DESC ? 'descending' : 'ascending',
       [colSpec(column)],
       originOf(sortId, EmitRole.SORT_KEY),
     ),
   );
+};
+
+/** `<input>->sort(<keys>)` (`emitSortKeys`): one key as is, several as a list */
+export const emitRowOrder = (
+  input: RelationExpr,
+  order: RowOrder,
+  schema: Schema,
+  origin: Origin,
+): RelationExpr => {
+  const keys = emitSortKeys(order, schema);
   return func(
     'sort',
-    [input, keys.length === 1 ? (keys[0] as RelationExpr) : collection(keys)],
+    [input, keys.length === 1 ? (keys[0] as IR) : collection(keys)],
     origin,
   );
 };

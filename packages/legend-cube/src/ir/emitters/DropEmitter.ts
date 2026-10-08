@@ -17,12 +17,16 @@
 import type { Drop } from '../../nodes/transforms/Drop.js';
 import { isPositiveWholeNumber } from '../../nodes/transforms/RowSettings.js';
 import { EmitRole, func, literal, type RelationExpr } from '../CubeIR.js';
+import { getDialectWorkarounds } from '../CubeDialects.js';
 import { type EmitContext, originOf } from '../EmitContext.js';
+import { emitRowNumberRange, rowBound } from './RowNumberEmitter.js';
 import { emitSortedInput } from './SortEmitter.js';
 
 /**
  * Emits a drop as `<input>->drop(<size>)`, the native form, the input sorted
- * first by its order when the context gives one (`emitSortedInput`). The size is
+ * first by its order when the context gives one (`emitSortedInput`); on a
+ * database that can't skip rows, through row numbers (`emitRowNumberRange`),
+ * keeping those after the size. The size is
  * written as plain digits: the serializer would also accept a number token
  * such as `1e3`.
  */
@@ -41,6 +45,20 @@ export const emitDrop = (
     throw new Error(
       `Can't emit drop "${node.id}": it needs one input and a positive whole size`,
     );
+  }
+  // a database that rejects `limit m,-1` keeps the rows numbered after `size`
+  const fallback =
+    context && getDialectWorkarounds(context.databaseType).drop
+      ? emitRowNumberRange(node, input, context, (rowNumber) =>
+          func(
+            'greaterThan',
+            [rowNumber, rowBound(node, size)],
+            originOf(node.id, EmitRole.ROW_RANGE),
+          ),
+        )
+      : undefined;
+  if (fallback) {
+    return fallback;
   }
   const origin = originOf(node.id, EmitRole.DROP);
   return func(

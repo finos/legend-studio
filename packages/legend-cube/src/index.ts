@@ -69,6 +69,9 @@ export * from './ir/emitters/RestrictEmitter.js';
 export * from './ir/emitters/RenameEmitter.js';
 export * from './ir/emitters/SliceEmitter.js';
 export * from './ir/emitters/SortEmitter.js';
+export * from './ir/emitters/RowNumberEmitter.js';
+export * from './ir/CubeDialects.js';
+export * from './ir/TemporaryColumns.js';
 export * from './ir/QueryEmitter.js';
 
 export * from './messages/CubeMessages.js';

@@ -29,6 +29,25 @@
   operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
   Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
 
+## Engine issues to file
+
+Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.
+
+### SQL Server: `distinct()` then `limit()` renders `select top N distinct`
+
+Found in M2's requirements (plan-only, not executed: no SQL Server in reach). On `SqlServer`, the engine writes a
+relation `distinct()` followed by `limit(n)` as `select top n distinct …`
+(`sqlServerExtension.pure:66` writes TOP before DISTINCT); T-SQL needs `select distinct top n …`. Every Cube Distinct
+that runs hits it, since a run ends with `limit(rowLimit + 1)`. H2 accepts the order (the engine's own H2 test expects
+it), and Sybase and Sybase IQ already render `select distinct top`. Cube works around it (M2.13): on SQL Server a
+Distinct is written `->distinct()->extend(~cube_d: x | 1)->select(~[…])`, which plans `select top n … from (select
+distinct …, 1 as "cube_d" …)`. Draft issue for finos/legend-engine:
+
+> **SQL Server: `distinct()` followed by `limit()` generates `SELECT TOP n DISTINCT`, which T-SQL rejects.**
+> For `#>{db.S.T}#->distinct()->limit(10)` with a `SqlServer` connection, the plan's SQL is `select top 10 distinct
+…`. SQL Server requires `select distinct top 10 …`. The TOP clause is written before DISTINCT in
+> `sqlServerExtension.pure` (line 66). Sybase and Sybase IQ already write `select distinct top n`.
+
 ## Test gaps
 
 None hides a known bug.

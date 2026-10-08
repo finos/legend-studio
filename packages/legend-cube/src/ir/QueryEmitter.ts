@@ -46,6 +46,13 @@ export interface ExecutionOptions {
   readonly rowLimit: number;
   /** The path of the runtime to run the query with */
   readonly runtime: string;
+  /**
+   * The engine's name for the type of the database it runs on, e.g.
+   * `SqlServer`, for the operations some write another way
+   * (`getDialectWorkarounds`); without one, every operation is written the
+   * native way
+   */
+  readonly databaseType?: string | undefined;
 }
 
 export interface RelationOptions {
@@ -55,6 +62,8 @@ export interface RelationOptions {
    * the relation. Typing needs no sort, so by default none is written.
    */
   readonly withRowOrder?: boolean;
+  /** The database type to write the relation for (`ExecutionOptions.databaseType`); typing needs none */
+  readonly databaseType?: string | undefined;
 }
 
 /**
@@ -93,7 +102,7 @@ export class QueryEmitter {
     if (error) {
       throw new Error(error);
     }
-    return this.emitNode(nodeId, options.withRowOrder ?? false);
+    return this.emitNode(nodeId, options);
   }
 
   /** The lambda that types a node with the engine: `{| <relation>}` */
@@ -108,7 +117,7 @@ export class QueryEmitter {
    * order, if any, as a sort before the limit, so the rows shown are in it.
    */
   emitExecutionLambda(options: ExecutionOptions): IR {
-    const { rowLimit, runtime } = options;
+    const { rowLimit, runtime, databaseType } = options;
     if (!Number.isSafeInteger(rowLimit) || rowLimit < 1) {
       throw new Error(
         `The row limit must be a whole number of at least 1, but got ${rowLimit}`,
@@ -121,7 +130,10 @@ export class QueryEmitter {
     if (captureId === undefined) {
       throw new Error(`An empty query can't run`);
     }
-    const relation = this.emitRelation(captureId, { withRowOrder: true });
+    const relation = this.emitRelation(captureId, {
+      withRowOrder: true,
+      databaseType,
+    });
     const order = this.rowOrders.get(captureId);
     const sorted = order?.length
       ? emitRowOrder(
@@ -187,7 +199,8 @@ export class QueryEmitter {
     return undefined;
   }
 
-  private emitNode(nodeId: string, withRowOrder: boolean): RelationExpr {
+  private emitNode(nodeId: string, options: RelationOptions): RelationExpr {
+    const { withRowOrder, databaseType } = options;
     const node = this.query.getNode(nodeId);
     const definition = node && this.registry.get(node.type);
     if (!node || !definition) {
@@ -203,11 +216,12 @@ export class QueryEmitter {
     // the definition is the one registered for the node's type
     return (definition as TransformDefinition).emit(
       node,
-      inputIds.map((id) => this.emitNode(id, withRowOrder)),
+      inputIds.map((id) => this.emitNode(id, options)),
       {
         inputSchemas: inputIds.map((id) => this.schemaOf(id)),
         schema: this.schemaOf(nodeId),
         ...(inputOrder ? { inputOrder } : {}),
+        ...(databaseType === undefined ? {} : { databaseType }),
       },
     );
   }
