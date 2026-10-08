@@ -93,14 +93,16 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
   );
   const edges = useMemo(() => buildCubeCanvasEdges(query), [query]);
   // the view fits the graph again whenever the layout moves a node, or the
-  // canvas gets wider or narrower (e.g. the node editor opens beside it),
-  // once React Flow has measured every node: it fits only measured ones
+  // canvas changes size (e.g. the node editor opens beside it, or the
+  // splitter above the grid moves), once React Flow has measured every node:
+  // it fits only measured ones
   const layoutSignature = useMemo(
     () => JSON.stringify([...positions]),
     [positions],
   );
   const nodesInitialized = useNodesInitialized();
   const canvasWidth = useStore((state) => state.width);
+  const canvasHeight = useStore((state) => state.height);
   useEffect(() => {
     if (!nodesInitialized) {
       return undefined;
@@ -109,7 +111,7 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       fitView(FIT_VIEW_OPTIONS).catch(noop());
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [layoutSignature, canvasWidth, nodesInitialized, fitView]);
+  }, [layoutSignature, canvasWidth, canvasHeight, nodesInitialized, fitView]);
 
   return (
     <ReactFlow<CubeCanvasFlowNode, CubeCanvasFlowEdge>

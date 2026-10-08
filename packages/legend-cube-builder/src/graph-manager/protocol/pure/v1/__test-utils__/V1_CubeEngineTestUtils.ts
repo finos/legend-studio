@@ -15,7 +15,10 @@
  */
 
 import { jest } from '@jest/globals';
-import { ENGINE_TEST_SUPPORT__grammarToJSON_model } from '@finos/legend-graph/test';
+import {
+  ENGINE_TEST_SUPPORT__grammarToJSON_model,
+  ENGINE_TEST_SUPPORT_API_URL,
+} from '@finos/legend-graph/test';
 import {
   NetworkClientError,
   type PlainObject,
@@ -40,7 +43,7 @@ const clientError = (status: number, payload: unknown): NetworkClientError =>
     {
       status,
       statusText: String(status),
-      url: 'http://localhost:6300/api',
+      url: ENGINE_TEST_SUPPORT_API_URL,
     } as Response,
     payload as NetworkClientError['payload'],
   );
@@ -74,7 +77,7 @@ export const V1_createEngineBackedCubeEngine = (): {
   >;
 } => {
   const engine = new V1_LegendCubeEngine(
-    { baseUrl: 'http://localhost:6300/api' },
+    { baseUrl: ENGINE_TEST_SUPPORT_API_URL },
     new TracerService(),
   );
   const { client } = engine;

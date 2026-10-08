@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   Core_LegendApplicationPlugin,
   LEGEND_APPLICATION_COLOR_THEME,
@@ -57,6 +57,7 @@ import {
   type CubeModelOutline,
   CubeTableFlag,
 } from '../../../graph-manager/CubeEngine.js';
+import type { CubeHost } from '../../../stores/CubeHost.js';
 import { createTextModel } from '../../../stores/LocalModelCatalog.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../../CubeEditor.js';
@@ -65,11 +66,11 @@ type ResolvedSchemas = Awaited<ReturnType<CubeEngine['resolveSchemas']>>;
 
 const renderPage = async (
   answers?: FakeCubeEngineAnswers,
-  prepare?: (fake: FakeCubeEngine) => void,
+  prepare?: (fake: FakeCubeEngine, host: CubeHost) => void,
   initialDocument?: CubeDocument,
 ): Promise<{ result: RenderResult; fake: FakeCubeEngine }> => {
   const { host, fake } = TEST__createCubeHost(answers);
-  prepare?.(fake);
+  prepare?.(fake, host);
   const result = await TEST__renderInCubeApplication(
     <CubeEditor host={host} initialDocument={initialDocument} />,
     host.applicationStore,
@@ -333,6 +334,31 @@ describe('Cube source picker', () => {
     });
     expect(fake.execute).not.toHaveBeenCalled();
     expect(screen.queryByText('executing query')).toBeNull();
+  });
+
+  test('Lands the picked table with the schema the engine typed, as its Source panel shows', async () => {
+    await renderPage();
+    const dialog = await openPicker();
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.click(within(tables).getByText('ORDERS'));
+    fireEvent.click(within(dialog).getByText('Add'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(await TEST__findCanvasNode('relational101'));
+    const panel = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    const rows = within(within(panel).getByRole('table', { name: 'Columns' }))
+      .getAllByRole('row')
+      .slice(1)
+      .map((row) =>
+        within(row)
+          .getAllByRole('cell')
+          .map((cell) => cell.textContent)
+          .join(' '),
+      );
+    expect(rows).toHaveLength(ORDERS_COLUMNS.length);
+    expect(rows.slice(0, 2)).toEqual([
+      'ORDER_ID SmallInt',
+      'CUSTOMER_ID Varchar(5)?',
+    ]);
   });
 
   test('Cancel closes the picker and adds nothing', async () => {
@@ -760,5 +786,99 @@ describe('Cube source picker: a pasted Pure model', () => {
       within(dialog).getByLabelText<HTMLSelectElement>('Model')
         .selectedOptions[0]?.textContent,
     ).toBe("The cube's model");
+  });
+});
+
+describe('Cube source picker: unexpected failures', () => {
+  // a rejection that isn't an Error can't be shown as the picker's error, so
+  // each call site reports it as unhandled, and the picker stays usable
+
+  /** Renders the page with the unhandled-error alert stubbed */
+  const renderWithAlert = async (
+    prepare?: (fake: FakeCubeEngine) => void,
+  ): Promise<{
+    fake: FakeCubeEngine;
+    alertUnhandledError: jest.Mock<(error: Error) => void>;
+  }> => {
+    const alertUnhandledError = jest.fn<(error: Error) => void>();
+    const { fake } = await renderPage(undefined, (engine, host) => {
+      host.applicationStore.alertUnhandledError = alertUnhandledError;
+      prepare?.(engine);
+    });
+    return { fake, alertUnhandledError };
+  };
+
+  test('Reports a failure to load the model on opening, and stops loading', async () => {
+    const { alertUnhandledError } = await renderWithAlert((fake) =>
+      fake.loadModel.mockRejectedValueOnce(null),
+    );
+    const dialog = await openPicker();
+    await waitFor(() => expect(alertUnhandledError).toHaveBeenCalledTimes(1));
+    expect(within(dialog).queryByText('loading model')).toBeNull();
+    expect(isBarLoading(loadingBar(dialog))).toBe(false);
+  });
+
+  test('Reports a failure to load the model picked again, and stops loading', async () => {
+    const { fake, alertUnhandledError } = await renderWithAlert((engine) =>
+      engine.loadModel
+        .mockRejectedValueOnce(
+          new CubeEngineError(
+            CubeEngineErrorKind.NETWORK,
+            'The engine is unreachable',
+          ),
+        )
+        .mockRejectedValueOnce(null),
+    );
+    const dialog = await openPicker();
+    expect(
+      await within(dialog).findByText('The engine is unreachable'),
+    ).toBeDefined();
+    expect(alertUnhandledError).not.toHaveBeenCalled();
+    // the failed load isn't kept, so choosing the model again, after another
+    // choice, loads it again
+    const model = within(dialog).getByLabelText('Model');
+    fireEvent.change(model, { target: { value: 'paste' } });
+    fireEvent.change(model, { target: { value: 'cube-northwind' } });
+    await waitFor(() => expect(alertUnhandledError).toHaveBeenCalledTimes(1));
+    expect(fake.loadModel).toHaveBeenCalledTimes(2);
+    expect(within(dialog).queryByText('loading model')).toBeNull();
+    expect(isBarLoading(loadingBar(dialog))).toBe(false);
+  });
+
+  test('Reports a failure to load a pasted model, and stops loading', async () => {
+    const { fake, alertUnhandledError } = await renderWithAlert();
+    const dialog = await openPicker();
+    await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.change(within(dialog).getByLabelText('Model'), {
+      target: { value: 'paste' },
+    });
+    fireEvent.change(within(dialog).getByLabelText('Pure model'), {
+      target: { value: '###Relational\nDatabase my::Northwind ( )' },
+    });
+    fake.loadModel.mockRejectedValueOnce(null);
+    const load = within(dialog).getByText<HTMLButtonElement>('Load model');
+    fireEvent.click(load);
+    await waitFor(() => expect(alertUnhandledError).toHaveBeenCalledTimes(1));
+    expect(within(dialog).queryByText('loading model')).toBeNull();
+    expect(isBarLoading(loadingBar(dialog))).toBe(false);
+    expect(load.disabled).toBe(false);
+  });
+
+  test('Reports a failure to type the picked table, and can add it again', async () => {
+    const { alertUnhandledError } = await renderWithAlert((fake) =>
+      fake.resolveSchemas.mockRejectedValueOnce(null),
+    );
+    const dialog = await openPicker();
+    const tables = await within(dialog).findByRole('list', { name: 'Tables' });
+    fireEvent.click(within(tables).getByText('ORDERS'));
+    const add = within(dialog).getByText<HTMLButtonElement>('Add');
+    fireEvent.click(add);
+    await waitFor(() => expect(alertUnhandledError).toHaveBeenCalledTimes(1));
+    expect(within(dialog).queryByText('resolving source')).toBeNull();
+    expect(add.disabled).toBe(false);
+    fireEvent.click(add);
+    expect(await TEST__findCanvasNode('relational101')).toBeDefined();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(alertUnhandledError).toHaveBeenCalledTimes(1);
   });
 });

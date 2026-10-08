@@ -20,18 +20,15 @@
 
 ## Test gaps
 
-From the demo-cut test run (`m18-democut-tests`, 2026-10-07). None hides a known bug.
+None hides a known bug.
 
-- **The grid tests were not independently verified.** The grid group's verifier hit the session limit, so
-  `CubeGridRegion.test.tsx` was checked only by its writer, against the writer's own mutants.
-- **Add table is never clicked while a query runs.** `CubeEditor.test.tsx` 'Keeps the query usable while a query
-  runs' reads the button's `disabled` attribute only; a handler that does nothing while running survives.
-- **The picker's loading bar while the model loads.** Only the `isResolving` half of the picker bar is pinned; the
-  `isLoadingModel` half is not.
-- **An empty schema seen from the page.** A picked table that lands with an empty schema is caught by the state test
-  only, not by a jsdom test.
-- **Unexpected rejections in the picker.** The grid's Execute call site is covered; the picker's `confirm` and
-  `selectModel` call sites are not.
+- **The grid tests were not independently verified** (demo-cut test run `m18-democut-tests`, 2026-10-07). The grid
+  group's verifier hit the session limit, so `CubeGridRegion.test.tsx` was checked only by its writer, against the
+  writer's own mutants.
+- **Part A's extras** (M1.9 requirements, kept for later by the user on 2026-10-08). A.4's FULL join on one nullable
+  key checks Cube's merged-key nullability but not against the engine's answer: a check must allow Cube ⊇ engine and
+  never pin the engine's `[1]`, a known engine defect (PLAN Appendix B). A.7's negatives run on synthetic schemas in
+  the core tests, not on the resolved Northwind tables (`ORDER_DETAILS ⋈ PRODUCTS`, `EMPLOYEE_ID Equal 100000`).
 
 ## Risks
 
@@ -40,7 +37,8 @@ From the demo-cut test run (`m18-democut-tests`, 2026-10-07). None hides a known
   the session, and the query builder's lineage viewer (reactflow 11) shares its `.react-flow__*` class names. The
   lineage viewer wasn't seen after a visit to `/cube` (it needs a depot query). Check it when one is reachable.
 - **Canvas fitting is checked by hand only.** jsdom measures nothing, so React Flow never reports the nodes measured
-  and the refit after a layout or width change (`CubeCanvas.tsx`) has no jsdom test. M1.9's manual run covers it.
-- **CI's engine.** CI runs the `engine-roundtrip` group on the docker engine image, whose version may differ from the
-  local engine on :6300 (the parity file, `loadNorthwindData`). It can't be checked locally (no docker), so the first
-  CI run is the real check.
+  and the refit after a layout or size change (`CubeCanvas.tsx`) has no jsdom test. Part B checks it by hand. The M1.9
+  rehearsal found that a height-only change (the splitter above the grid) didn't refit, and that is fixed.
+- **Only Chrome is checked.** The dry run, the demo and the M1.9 acceptance use Chrome, and `03e095655` fixed a
+  Chrome-only behaviour of the date input. Firefox and Safari are untested, value entry (Part B step 5) and the spec
+  file import (step 8) above all (user, 2026-10-08).

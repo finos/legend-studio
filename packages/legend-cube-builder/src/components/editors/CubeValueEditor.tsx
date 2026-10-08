@@ -283,7 +283,8 @@ export const CubeValueEditor: React.FC<{
   return (
     <ul aria-label={label} className="flex min-w-0 flex-1 flex-col gap-1">
       {items.map((item, index) => (
-        // values can repeat, and they hold no state of their own
+        // values can repeat and have no id. A row's only state is its text
+        // while typed, which blur commits before another row can be removed
         // eslint-disable-next-line react/no-array-index-key
         <li key={index} className="flex items-center gap-1">
           <CubeSingleValueEditor
