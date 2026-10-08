@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                                                  |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                                                     |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                      |
-| Step   | M2.1–M2.16 done (every operation, the Sort warning, database workarounds, grid quick actions, docs, verification and the rehearsal); M2.17 in progress (rebase, the PLAN fold, the PR) |
-| Tests  | 1853 core, 740 builder (core group), 236 Query, 167 builder engine-roundtrip (after M2.16)                                                                                             |
+| Item   | State                                                                                                                                                                                         |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `d36aefbfc` (2026-10-08; #5634, M1.9, merged as `3260216a6`)                                                                                                            |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                             |
+| Step   | M2.1–M2.17 done: every operation, the Sort warning, database workarounds, grid quick actions, docs, verification, the rehearsal, the rebase and the PLAN fold; the PR to finos master is next |
+| Tests  | 1853 core, 740 builder (core group), 236 Query, 167 builder engine-roundtrip (after M2.17's rebase)                                                                                           |
 
 ## Steps
 
@@ -35,35 +35,36 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.14** Grid quick actions: Sort by and Filter by
 - [x] **M2.15** Docs, sample typing on the engine, changeset text
 - [x] **M2.16** Verification and the browser rehearsal
-- [ ] **M2.17** Rebase on the latest master, fold PLAN §11.4's supersessions in, PR when the user asks
+- [x] **M2.17** Rebase on the latest master, fold PLAN §11.4's supersessions in, PR when the user asks
 
 ## Commits
 
-Rebased hashes replace these at M2.17's rebase (the next commit records them).
+Hashes after M2.17's rebase onto master `d36aefbfc`.
 
-| Step               | Commit      | Subject                                                                           |
-| ------------------ | ----------- | --------------------------------------------------------------------------------- |
-| M2.1               | `2648b456d` | docs: settle Legend Cube M2 (simple unary operations)                             |
-| M2.2, M2.3         | `5d65d0251` | feat: add Limit to Legend Cube                                                    |
-| M2.4               | `39fe06233` | docs: record Legend Cube M2's Limit step and its rebase onto master               |
-| M2.4               | `9e2261496` | test: check Legend Cube's Limit on the engine, and update the guides              |
-| First verification | `0dae7f6fd` | fix: keep a Legend Cube Limit's saved size when its text is typed back            |
-| First verification | `5023fa82f` | docs: record Legend Cube M2's first verification and fix the docs it found wrong  |
-| M2.5               | `6eefe835b` | feat: add Drop to Legend Cube                                                     |
-| M2.6               | `baace76d9` | feat: add Slice to Legend Cube                                                    |
-| M2.7               | `2439cfded` | feat: add Distinct to Legend Cube                                                 |
-| M2.8               | `0da7cc79a` | feat: add Restrict to Legend Cube                                                 |
-| M2.9               | `8d2fbb310` | feat: add Rename to Legend Cube                                                   |
-| M2.10              | `fd06dec5f` | feat: rename the columns a Legend Cube Join's inputs share                        |
-| M2.11              | `7dba00d90` | feat: add Sort to Legend Cube                                                     |
-| M2.12              | `199c2ab8d` | feat: warn on a Legend Cube Sort whose order is lost                              |
-| M2.13              | `f32b537b7` | feat: write Drop, Slice and Distinct for the databases that need it               |
-| M2.13              | `b607ac45a` | feat: run Legend Cube's Drop, Slice and Distinct on the runtime's database        |
-| M2.14              | `9c407d8d6` | feat: add Sort by and Filter by to Legend Cube's result grid                      |
-| M2.15              | `d1c5d9116` | docs: describe Legend Cube's operations and type its samples on the engine        |
-| M2.16              | `69e721cff` | fix: correct what Legend Cube M2's second verification found                      |
-| M2.16              | `93fe21cf2` | fix: take every Sybase IQ Limit and ClickHouse Drop by row numbers in Legend Cube |
-| M2.16, M2.17       | (this one)  | docs: record Legend Cube M2's verification and fold its decisions into the plan   |
+| Step               | Commit      | Subject                                                                            |
+| ------------------ | ----------- | ---------------------------------------------------------------------------------- |
+| M2.1               | `1c801b58f` | docs: settle Legend Cube M2 (simple unary operations)                              |
+| M2.2, M2.3         | `200a7ecf6` | feat: add Limit to Legend Cube                                                     |
+| M2.4               | `ef0385309` | docs: record Legend Cube M2's Limit step and its rebase onto master                |
+| M2.4               | `6359ff86d` | test: check Legend Cube's Limit on the engine, and update the guides               |
+| First verification | `4f5c3b630` | fix: keep a Legend Cube Limit's saved size when its text is typed back             |
+| First verification | `b5b178004` | docs: record Legend Cube M2's first verification and fix the docs it found wrong   |
+| M2.5               | `31da68ba9` | feat: add Drop to Legend Cube                                                      |
+| M2.6               | `6de587c81` | feat: add Slice to Legend Cube                                                     |
+| M2.7               | `d940732cf` | feat: add Distinct to Legend Cube                                                  |
+| M2.8               | `40835ebe8` | feat: add Restrict to Legend Cube                                                  |
+| M2.9               | `8fe11f607` | feat: add Rename to Legend Cube                                                    |
+| M2.10              | `a2d9aae4e` | feat: rename the columns a Legend Cube Join's inputs share                         |
+| M2.11              | `95be06f8d` | feat: add Sort to Legend Cube                                                      |
+| M2.12              | `3ae292790` | feat: warn on a Legend Cube Sort whose order is lost                               |
+| M2.13              | `821af02f0` | feat: write Drop, Slice and Distinct for the databases that need it                |
+| M2.13              | `a54fdbe3c` | feat: run Legend Cube's Drop, Slice and Distinct on the runtime's database         |
+| M2.14              | `2a21e87a4` | feat: add Sort by and Filter by to Legend Cube's result grid                       |
+| M2.15              | `f61734a5c` | docs: describe Legend Cube's operations and type its samples on the engine         |
+| M2.16              | `ebfeecc25` | fix: correct what Legend Cube M2's second verification found                       |
+| M2.16              | `7570ee603` | fix: take every Sybase IQ Limit and ClickHouse Drop by row numbers in Legend Cube  |
+| M2.16              | `80b6b9d35` | docs: record Legend Cube M2's verification and fold its decisions into the plan    |
+| M2.17              | (this one)  | docs: record Legend Cube M2's rebase onto master and re-apply the DuckDB WASM note |
 
 Browser checks: M2.4 to M2.14 ran in the app's browser pane on :9002 (Chrome 152, as M2.4 recorded); the M2.16
 rehearsal in Playwright's headless Chromium 149.0.7827.55.
@@ -72,7 +73,7 @@ rehearsal in Playwright's headless Chromium 149.0.7827.55.
 
 Hashes are after the rebase onto master.
 
-**M2.1 (2026-10-08): `2648b456d`.** Requirements `m2-requirements`: 140 checklist items, a 17-step build order and 5
+**M2.1 (2026-10-08): `1c801b58f`.** Requirements `m2-requirements`: 140 checklist items, a 17-step build order and 5
 questions (the full result is kept in the local evidence folder). The user answered all five on the recommendation
 (PLAN §11.4): re-point `cube-ops` at `cubeV1`, Limit first, Sort's ORDER BY where the order is used, database
 workarounds detected from the runtime, and Slice's "(20 excluded)" wording. `cube-ops` had no commits of its own, so it
@@ -83,7 +84,7 @@ group), 236 Query and 63 builder engine-roundtrip tests.
 (`b9923ed28`, the DuckDB WASM note) was not in it. `git rebase --onto origin/master b9923ed28 cube-ops` replayed the M2
 commits with no conflicts; that note stays on `cubeV1`.
 
-**M2.2 and M2.3, Limit (2026-10-08): `5d65d0251`.** One commit: the registry test requires every registered type's
+**M2.2 and M2.3, Limit (2026-10-08): `200a7ecf6`.** One commit: the registry test requires every registered type's
 editor, help text and icon, so the core step and the builder step land together.
 
 - Core: `Limit` (no default in the constructor; 10 from its definition's `create`), the shared row settings
@@ -276,7 +277,7 @@ warning; keeping LAST_NAME warns on the Sort, on the canvas and in its panel, th
 enabled and returns the 9 last names in order. Gates: `check:ci` and `lint:ci` green; 1789 core, 694 builder (core
 group), 236 Query and 106 engine-roundtrip tests.
 
-**M2.13, database workarounds (2026-10-08).** Two commits. The core (`f32b537b7`): `CUBE_DIALECT_WORKAROUNDS`
+**M2.13, database workarounds (2026-10-08).** Two commits. The core (`821af02f0`): `CUBE_DIALECT_WORKAROUNDS`
 (`ir/CubeDialects.ts`, a `Map`: SqlServer drop, slice and distinct; Sybase and SybaseIQ drop and slice; DB2 and MemSQL
 drop), read only through `getDialectWorkarounds` (none for an unknown type, `constructor` included), and
 `needsDatabaseType` (a Drop, Slice or Distinct at or above the node). `ExecutionOptions`, `EmitContext` and
@@ -290,7 +291,7 @@ the name (`getTemporaryColumnName`). New roles `rowNumber` and `rowRange`; every
 braces a column function with several parameters, which Pure doesn't read bare. Engine: written for SqlServer and run
 on H2, every shape parses to the JSON Cube sends and types as Cube infers; sorted descending, a Drop of 825 gives
 10252–10248 and a Slice [10, 15) 11067–11063, unsorted a Slice gives 10258–10262, the columns match the native forms',
-and the padded Distinct of ship cities and countries gives 70 rows. The builder (`b607ac45a`): the outline's runtimes
+and the padded Distinct of ship cities and countries gives 70 rows. The builder (`a54fdbe3c`): the outline's runtimes
 gain `connections` (`{storePath, databaseType}`, a list), read from a connection pointer, an embedded relational
 connection and `connectionStores` (shapes probed on the engine), skipping other connections; `getDatabaseType` gives
 the one type of the runtime's connections to the databases a query reads, else none. Execute and Show Pure load the
@@ -339,13 +340,13 @@ findings, 33 survived their skeptic and merged into 26 fixes; one (the full-loss
 Sybase IQ, a Limit after a Sort on several columns, and a Distinct followed by a Limit, took the wrong rows or kept
 duplicates (the engine's `rewriteSliceAsWindowFunction` numbers a subquery's rows by the first sort key only, and inside
 the `select distinct`); a Rename to a case variant of a kept column, or an autofix name taken in another case, returned wrong data on DuckDB and would fail on SQL Server and MemSQL, which compare names without case; the partial Sort warning named columns the
-Restrict keeps, and a single node for removals by several; temporary columns ignored case. Fixed in `69e721cff`:
+Restrict keeps, and a single node for removals by several; temporary columns ignored case. Fixed in `ebfeecc25`:
 Sybase IQ's Limit and Distinct workarounds, case-insensitive names (`foldColumnName`) for Rename, the autofix and
 temporary columns, the warning's `removals` and `cutColumns` ("Sorting by "C" has no effect either: it comes after a
 removed column."), the Sort picker's reasons ("(can't be sorted)", "(already sorted on)"), tests for 15 proven gaps,
 and a plan-only check of every shape on every database type the engine plans with a static connection. Run before the
-fix, that check failed on Sybase IQ only. A third check (`m2-fix-verify`, 9 agents) over `69e721cff`: 6 low findings,
-all confirmed, and 85 mutant proofs, 83 killed. Fixed in `93fe21cf2`: every Limit on Sybase IQ goes through row numbers
+fix, that check failed on Sybase IQ only. A third check (`m2-fix-verify`, 9 agents) over `ebfeecc25`: 6 low findings,
+all confirmed, and 85 mutant proofs, 83 killed. Fixed in `7570ee603`: every Limit on Sybase IQ goes through row numbers
 (the engine also names its numbering column `row_number`, which clashes with an input column of that name), so every
 Limit now waits for the outline (short, cached; recorded in §11.4); ClickHouse's Drop goes through row numbers (after
 a descending key the engine writes `nulls firstoffset m`); `foldColumnName` normalizes (NFKC) and folds through upper
@@ -406,6 +407,19 @@ M2.1–M2.4's):
   "Filters a null Float cell…", "Adds no node in a read-only cube…").
 - M2.15 samples: a Rename or Restrict schema that differs from the engine's (CubeSpecCorpus "Types the node
   operations.cube.json runs as Cube infers it").
+
+**M2.17, rebase and the PLAN fold (2026-10-08).** The supersessions in PLAN §11.4 are applied to the sections they
+change (§4, §7, §8, §9, §10, §11.3, §12, Appendices A and B), and the list stays as the record; the database table
+gains ClickHouse. `cube-ops` was rebased onto finos master `d36aefbfc` (4 commits after #5634: Marketplace, Data
+Product and dependency bumps, none in a file M2 changes) with no conflicts, then `yarn install`, `yarn clean:cache`
+and `yarn build`. The DuckDB WASM note (`81cf0d80c` on `cubeV1`) was re-applied to PLAN §12.2 as item 9, its PLAN hunk
+only (its PROGRESS.md line is already in the fold). The guides' list of the operations that read the database type
+gains Limit. Gates on the rebased branch: `check:ci` and `lint:ci` green; 1853 core, 740 builder (core group), 236
+Query and 167 engine-roundtrip tests. The rehearsal (`rehearsal-m2.mjs`, Chromium 149.0.7827.55, :9002) passed
+every check again. Two things were set up first. The root `yarn build` leaves the Query deployment's
+`lib/tailwind.css` as a stub, so `build:tailwindcss` ran before it. The page also opens a second webpack-dev-server
+hot-reload socket to :9001 (the Query config's port), which fails when no server listens there; the rehearsal now
+counts that as dev-server noise, and the worktree's dev server passes `--client-web-socket-url` for its own socket.
 
 ## Open items
 

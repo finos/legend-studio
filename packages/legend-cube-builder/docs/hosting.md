@@ -21,7 +21,7 @@ interface CubeHost {
   and options, so Cube talks to the engine its query editor uses.
 - **The models:** `new LocalModelCatalog(engine)`. It offers `BUNDLED_MODELS` (the "Northwind (Cube fixture)" model)
   and caches each model's outline: its tables, for the source picker, and its runtimes' connections with their
-  database types, which Drop, Slice and Distinct need on some databases (PLAN §11.4). Users can also paste a Pure
+  database types, which Drop, Slice, Limit and Distinct need on some databases (PLAN §11.4). Users can also paste a Pure
   model.
 
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
