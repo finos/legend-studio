@@ -73,6 +73,7 @@ const RELATIONAL_101 = {
 };
 const RELATIONAL_102 = { ...RELATIONAL_101, id: 'relational102' };
 const FILTER_101 = { kind: 'filter', id: 'filter101', inputs: [null] };
+const LIMIT_101 = { kind: 'limit', id: 'limit101', inputs: [null], size: 10 };
 const JOIN_101 = {
   kind: 'join',
   id: 'join101',
@@ -155,6 +156,14 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['an enumeration type', withType({ path: 'my::Region', values: ['EMEA'] })],
     ['a join', withJoin(JOIN_101)],
     ['a filter', withNodes([FILTER_101], 'filter101')],
+    ['a limit', withNodes([LIMIT_101], 'limit101')],
+    [
+      'a limit whose size was cleared',
+      withNodes(
+        [{ kind: 'limit', id: 'limit101', inputs: [null] }],
+        'limit101',
+      ),
+    ],
     ['a text model', withModel(TEXT_MODEL)],
     ['a pointer model', withModel(POINTER_MODEL)],
     // the host decides which kinds it can run (PLAN §6.2.2)
@@ -483,6 +492,12 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...FILTER_101, inputs: [null, null] }], 'filter101'),
       'query.nodes[0].inputs',
       'must list the 1 input(s) of a filter node, in port order',
+    ],
+    [
+      'a limit with two inputs',
+      withNodes([{ ...LIMIT_101, inputs: [null, null] }], 'limit101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a limit node, in port order',
     ],
     [
       'a join without inputs',
@@ -997,6 +1012,37 @@ describe(unitTest('Saved spec decode errors'), () => {
       'query.nodes[0].filter',
       'must not be null',
     ],
+    // a cleared size is left out, never written as null (PLAN §11.4)
+    [
+      'a limit size set to null',
+      withNodes([{ ...LIMIT_101, size: null }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is a string',
+      withNodes([{ ...LIMIT_101, size: '10' }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is a boolean',
+      withNodes([{ ...LIMIT_101, size: true }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is a list',
+      withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is an object',
+      withNodes([{ ...LIMIT_101, size: { value: 10 } }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
   ])('Refuses %s', (_, json, path, detail) => {
     expect(failureOf(json)).toEqual([path, detail]);
   });
@@ -1336,6 +1382,36 @@ describe(unitTest('Saved spec text'), () => {
       `${TYPE}.params[0]`,
       'must be a finite number',
     ]);
+  });
+
+  test("Refuses a limit size past the double range, which can't be saved back", () => {
+    const text = JSON.stringify(withNodes([LIMIT_101], 'limit101')).replace(
+      '"size":10',
+      '"size":1e400',
+    );
+    const error = decodeErrorOf(() => parseCubeSpec(text));
+    expect([error.path, error.detail]).toEqual([
+      'query.nodes[0].size',
+      'must be a finite number',
+    ]);
+  });
+
+  test('Reads a limit size written in any JSON number form, and -0 as 0', () => {
+    const sizeOf = (token: string): unknown => {
+      const text = JSON.stringify(withNodes([LIMIT_101], 'limit101')).replace(
+        '"size":10',
+        `"size":${token}`,
+      );
+      const node = parseCubeSpec(text).document.query.getNode('limit101');
+      return (node as unknown as { size: unknown }).size;
+    };
+    expect(sizeOf('1e3')).toBe(1000);
+    expect(sizeOf('10.0')).toBe(10);
+    expect(Object.is(sizeOf('-0'), 0)).toBe(true);
+    // read as written, for validation to report
+    expect(sizeOf('1.5')).toBe(1.5);
+    expect(sizeOf('-3')).toBe(-3);
+    expect(sizeOf('1152921504606846976')).toBe(2 ** 60);
   });
 
   test('Refuses text over the cap before parsing it', () => {

@@ -50,12 +50,14 @@ import {
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
 import {
+  LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Limit } from '../../nodes/transforms/Limit.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { EnumType, OpaqueType, PrimitiveType } from '../../types/CubeType.js';
@@ -1512,6 +1514,57 @@ describe(unitTest('Saved spec encoding: filters'), () => {
           operator: spelling,
         })),
       }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: limits'), () => {
+  /** The saved spec of one unconnected limit, `limit101`, with these fields of its own */
+  const limitSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'limit101',
+      nodes: [{ kind: 'limit', id: 'limit101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Writes the size of a new limit, the default included', () => {
+    expectEncoded(
+      documentOf([LIMIT_DEFINITION.create('limit101')], [], 'limit101'),
+      limitSpec({ size: 10 }),
+    );
+  });
+
+  test('Leaves out a cleared size, so it reads back cleared, never as the default', () => {
+    const document = documentOf(
+      [new Limit('limit101', undefined)],
+      [],
+      'limit101',
+    );
+    expectEncoded(document, limitSpec({}));
+    const decoded = decodeCubeSpec(encodeCubeSpec(document)).document;
+    expect((decoded.query.getNode('limit101') as Limit).size).toBeUndefined();
+  });
+
+  test.each([0, -3, 1.5, 2 ** 60])(
+    'Writes the size %s as it stands, for validation to report',
+    (size) => {
+      expectEncoded(
+        documentOf([new Limit('limit101', size)], [], 'limit101'),
+        limitSpec({ size }),
+      );
+    },
+  );
+
+  test('Writes the size from the node, not from its rest', () => {
+    // R113
+    const document = documentOf(
+      [new Limit('limit101', 5, { size: 99, kind: 'drop', note: 'top five' })],
+      [],
+      'limit101',
+    );
+    expect(encodeCubeSpec(document)).toStrictEqual(
+      limitSpec({ size: 5, note: 'top five' }),
     );
   });
 });

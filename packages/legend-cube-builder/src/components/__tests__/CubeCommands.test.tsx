@@ -21,7 +21,7 @@ import {
   LegendApplicationPlugin,
   type LegendApplicationPluginManager,
 } from '@finos/legend-application';
-import { CubeDocument, Query } from '@finos/legend-cube';
+import { Connection, CubeDocument, Limit, Query } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   LEGEND_CUBE_COMMAND_CONFIG,
@@ -222,6 +222,37 @@ describe('Cube keyboard shortcuts', () => {
     expect(
       (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
     ).toBe('true');
+  });
+
+  test("Leaves Ctrl+Z to the size field of a Limit's editor", async () => {
+    await renderPage(
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new Limit('limit101', 10),
+          ],
+          [new Connection('relational101', 'limit101', 'tds')],
+          'limit101',
+        ),
+      }),
+    );
+    const selected = async (nodeId: string): Promise<string | null> =>
+      (await TEST__findCanvasNode(nodeId)).getAttribute('aria-current');
+    fireEvent.click(await TEST__findCanvasNode('relational101'), {
+      ctrlKey: true,
+    });
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    const size = within(
+      await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR),
+    ).getByLabelText('Rows to keep');
+    size.focus();
+    pressUndo(size);
+    expect(await selected('relational101')).toBe('true');
+    size.blur();
+    pressUndo();
+    expect(await selected('limit101')).toBe('true');
   });
 
   test('Takes its commands away when the page closes', async () => {

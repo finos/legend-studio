@@ -42,6 +42,8 @@ export * from './filter/QueryFilterValues.js';
 
 export * from './nodes/transforms/Join.js';
 export * from './nodes/transforms/Filter.js';
+export * from './nodes/transforms/RowSettings.js';
+export * from './nodes/transforms/Limit.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 
@@ -51,6 +53,7 @@ export * from './ir/IRPrinter.js';
 export * from './ir/emitters/RelationalTableSourceEmitter.js';
 export * from './ir/emitters/JoinEmitter.js';
 export * from './ir/emitters/FilterEmitter.js';
+export * from './ir/emitters/LimitEmitter.js';
 export * from './ir/QueryEmitter.js';
 
 export * from './messages/CubeMessages.js';
@@ -62,4 +65,5 @@ export * from './spec/codecs/SchemaSnapshotCodec.js';
 export * from './spec/codecs/RelationalTableSourceCodec.js';
 export * from './spec/codecs/JoinCodec.js';
 export * from './spec/codecs/FilterCodec.js';
+export * from './spec/codecs/LimitCodec.js';
 export * from './spec/CubeSpecCodec.js';

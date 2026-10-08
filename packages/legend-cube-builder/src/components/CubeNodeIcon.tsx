@@ -15,6 +15,7 @@
  */
 
 import {
+  AlignTopIcon,
   ArrowsJoinIcon,
   clsx,
   FilterIcon,
@@ -29,6 +30,7 @@ const NODE_ICONS: Readonly<
   table: TableIcon,
   filter: FilterIcon,
   join: ArrowsJoinIcon,
+  limit: AlignTopIcon,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */

@@ -109,6 +109,28 @@ export const readBoolean = (
   return typeof value === 'boolean' ? value : fail(at, 'must be true or false');
 };
 
+/**
+ * A number setting the object may leave out, e.g. a size the user cleared.
+ * Any finite number is read, and validation reports one out of range; `-0`
+ * reads as 0. A number past the double range reads as Infinity in
+ * `JSON.parse`, and is refused like any other non-number.
+ */
+export const readOptionalFiniteNumber = (
+  object: JsonObject,
+  key: string,
+  path: string,
+): number | undefined => {
+  const value = object[key];
+  if (value === undefined) {
+    return undefined;
+  }
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value === 0
+      ? 0
+      : value
+    : fail(pathTo(path, key), 'must be a finite number');
+};
+
 export const readStringList = (
   object: JsonObject,
   key: string,

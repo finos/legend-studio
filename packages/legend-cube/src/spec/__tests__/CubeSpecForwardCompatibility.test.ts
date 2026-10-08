@@ -33,10 +33,17 @@ import { Query } from '../../graph/Query.js';
 import { UNRESOLVED } from '../../graph/QueryNode.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import { QueryEmitter } from '../../ir/QueryEmitter.js';
-import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
+import {
+  createNodeRegistry,
+  FILTER_DEFINITION,
+  JOIN_DEFINITION,
+  NodeRegistry,
+  RELATIONAL_TABLE_SOURCE_DEFINITION,
+} from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Limit } from '../../nodes/transforms/Limit.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema } from '../../schema/Schema.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
@@ -1683,6 +1690,85 @@ describe(unitTest('Saved spec: unknown keys through edits'), () => {
         schema: 'NORTHWIND',
         table: 'ORDERS',
         owner: 'ops',
+      }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec: operations added since a version'), () => {
+  /** The registry of the version before M2: no operation but Filter and Join */
+  const M1_REGISTRY = new NodeRegistry([
+    RELATIONAL_TABLE_SOURCE_DEFINITION,
+    FILTER_DEFINITION,
+    JOIN_DEFINITION,
+  ]);
+
+  const LIMITED = {
+    formatVersion: 1,
+    query: {
+      selected: 'limit101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'limit',
+          id: 'limit101',
+          inputs: ['relational101'],
+          size: 5,
+          note: 'top five',
+        },
+      ],
+    },
+  };
+
+  test('Reads a limit as an Unknown node in a version without it, editable, and re-saves it verbatim', () => {
+    const { document, readOnly } = decodeCubeSpec(LIMITED, {
+      registry: M1_REGISTRY,
+    });
+    expect(readOnly).toBe(false);
+    const node = document.query.getNode('limit101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('limit');
+    expect(describeConnections(document.query)).toEqual([
+      'relational101 -> limit101.in0',
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, M1_REGISTRY))).toBe(
+      JSON.stringify(LIMITED),
+    );
+    // a new limit would not take the saved node's id
+    expect(document.query.generateId('limit')).not.toBe('limit101');
+  });
+
+  test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
+    const node = decodeCubeSpec(LIMITED).document.query.getNode('limit101');
+    expect(node).toBeInstanceOf(Limit);
+    expect((node as Limit).size).toBe(5);
+    expect(node?.rest).toEqual({ note: 'top five' });
+    expect(reSave(LIMITED)).toBe(JSON.stringify(LIMITED));
+  });
+
+  test('Keeps the unknown keys of a limit whose size changes or is cleared', () => {
+    const document = decodeCubeSpec(LIMITED).document;
+    const limit = document.query.getNode('limit101') as Limit;
+    const saved = (edited: Limit): JsonValue | undefined =>
+      savedNode(
+        encodeCubeSpec(document.withQuery(document.query.replace(edited))),
+        'limit101',
+      );
+    expect(JSON.stringify(saved(limit.withSize(20)))).toBe(
+      JSON.stringify({
+        kind: 'limit',
+        id: 'limit101',
+        inputs: ['relational101'],
+        size: 20,
+        note: 'top five',
+      }),
+    );
+    expect(JSON.stringify(saved(limit.withSize(undefined)))).toBe(
+      JSON.stringify({
+        kind: 'limit',
+        id: 'limit101',
+        inputs: ['relational101'],
+        note: 'top five',
       }),
     );
   });

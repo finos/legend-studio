@@ -17,6 +17,7 @@
 import {
   Filter,
   Join,
+  Limit,
   RelationalTableSource,
   UnknownNode,
 } from '@finos/legend-cube';
@@ -30,6 +31,8 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
   [Join.TYPE]:
     'Joins two previous data sets using specified columns as join keys.',
+  [Limit.TYPE]:
+    'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
   [UnknownNode.TYPE]: 'Source or transformation unknown to the application.',
 };
 

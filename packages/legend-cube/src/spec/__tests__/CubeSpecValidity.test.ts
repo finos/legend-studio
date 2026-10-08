@@ -34,6 +34,7 @@ import {
   MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
   MESSAGE_LEFT_JOIN_COLUMNS_EMPTY,
   MESSAGE_NOT_IN_INPUT_SCHEMA,
+  MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
 } from '../../messages/CubeMessages.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
@@ -91,6 +92,23 @@ const customers = (database: string): JsonObject => ({
     { name: 'CODE', type: { path: 'String' }, nullable: false },
     { name: 'CITY', type: { path: 'String' }, nullable: true },
   ],
+});
+
+/** A saved spec: `relational101` feeding `limit101`, which has this size, or a cleared one */
+const limitSpec = (size: number | undefined): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'limit101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'limit',
+        id: 'limit101',
+        inputs: ['relational101'],
+        ...(size === undefined ? {} : { size }),
+      },
+    ],
+  },
 });
 
 /** The saved JSON of `join101`, joining `relational101` to `relational102` on these keys */
@@ -412,6 +430,39 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       filterSpec(undefined),
       { relational101: [], filter101: [MESSAGE_FILTER_EMPTY] },
     ],
+    [
+      'a cleared limit size',
+      limitSpec(undefined),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a limit of 0 rows',
+      limitSpec(0),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a negative limit size',
+      limitSpec(-1),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a fractional limit size',
+      limitSpec(1.5),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    ['a valid limit', limitSpec(10), { relational101: [], limit101: [] }],
   ];
 
   test.each(CONNECTED)(

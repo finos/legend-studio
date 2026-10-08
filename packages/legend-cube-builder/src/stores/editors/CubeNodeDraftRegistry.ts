@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { Filter, Join, type QueryNode } from '@finos/legend-cube';
+import { Filter, Join, Limit, type QueryNode } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
+import { CubeRowCountDraft } from './CubeRowCountDraft.js';
 
 /** Makes the draft of a node of one type */
 export type CubeNodeDraftFactory = (
@@ -38,6 +39,7 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
 > = new Map<string, CubeNodeDraftFactory>([
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],
   [Join.TYPE, (node) => new CubeJoinDraft(guaranteeType(node, Join))],
+  [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
 ]);
 
 /** The node's draft; a node with nothing to edit gets a read-only one */

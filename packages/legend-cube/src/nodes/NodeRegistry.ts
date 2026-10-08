@@ -24,9 +24,11 @@ import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
+import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
+import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import {
@@ -35,6 +37,7 @@ import {
 } from './sources/RelationalTableSource.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
+import { Limit } from './transforms/Limit.js';
 import { UnknownNode } from './UnknownNode.js';
 
 /** What the palette, the context menu and the saved-spec codec know about a type of node */
@@ -112,6 +115,17 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   spec: FILTER_CODEC,
 };
 
+export const LIMIT_DEFINITION: TransformDefinition<Limit> = {
+  kind: 'transform',
+  type: Limit.TYPE,
+  label: 'Take first <x> rows',
+  icon: 'limit',
+  beta: false,
+  create: (id) => new Limit(id, Limit.DEFAULT_SIZE),
+  emit: emitLimit,
+  spec: LIMIT_CODEC,
+};
+
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
   kind: 'transform',
   type: Join.TYPE,
@@ -176,5 +190,6 @@ export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     FILTER_DEFINITION,
+    LIMIT_DEFINITION,
     JOIN_DEFINITION,
   ]);

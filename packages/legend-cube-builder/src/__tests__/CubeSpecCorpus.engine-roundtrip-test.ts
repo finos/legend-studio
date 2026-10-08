@@ -54,7 +54,7 @@ beforeEach(() => {
 
 describe('Saved spec samples, on the engine', () => {
   test('Has the samples', () => {
-    expect(FILES.length).toBeGreaterThanOrEqual(7);
+    expect(FILES.length).toBeGreaterThanOrEqual(8);
   });
 
   test('Compiles the model the samples hold', async () => {

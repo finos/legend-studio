@@ -133,6 +133,8 @@ export enum EmitRole {
   COLUMN = 'column',
   /** a Filter: a value in a comparison, a literal or an enumeration value */
   VALUE = 'value',
+  /** a Limit: its limit call and its size (the capture's own limit is `limit`) */
+  TAKE = 'take',
   /** the capture node: `limit(rowLimit + 1)` and its literal */
   LIMIT = 'limit',
   /** the capture node: `from(runtime)` */

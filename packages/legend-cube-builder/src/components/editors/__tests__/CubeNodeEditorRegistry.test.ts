@@ -43,7 +43,7 @@ describe('Node editor registries', () => {
 
   test('Maps only real icon names, never an object key', () => {
     expect(hasCubeNodeIcon('table')).toBe(true);
-    expect(hasCubeNodeIcon('sort')).toBe(false);
+    expect(hasCubeNodeIcon('no-such-icon')).toBe(false);
     expect(hasCubeNodeIcon('constructor')).toBe(false);
   });
 
@@ -53,6 +53,8 @@ describe('Node editor registries', () => {
       filter:
         'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
       join: 'Joins two previous data sets using specified columns as join keys.',
+      limit:
+        'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
       unknown: 'Source or transformation unknown to the application.',
     });
     expect(SELECT_NODE_TOOLTIP).toBe(

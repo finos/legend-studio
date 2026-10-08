@@ -40,6 +40,7 @@ import {
   createNodeRegistry,
   FILTER_DEFINITION,
   JOIN_DEFINITION,
+  LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
   type TransformDefinition,
@@ -52,6 +53,7 @@ import {
 } from '../sources/RelationalTableSource.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
+import { Limit } from '../transforms/Limit.js';
 import { UnknownNode } from '../UnknownNode.js';
 
 const COORDINATES = {
@@ -164,16 +166,21 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table source, the filter and the join by default', () => {
+  test('Has the relational table source and the transforms, in menu order, by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order: Filter comes before Join
-    expect(registry.transforms).toEqual([FILTER_DEFINITION, JOIN_DEFINITION]);
+    // transforms in the spec's menu order (§7): Filter, Limit, then Join
+    expect(registry.transforms).toEqual([
+      FILTER_DEFINITION,
+      LIMIT_DEFINITION,
+      JOIN_DEFINITION,
+    ]);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
+    expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     expect(registry.queryRules).toHaveLength(1);
   });
@@ -188,6 +195,18 @@ describe(unitTest('Node registry'), () => {
     expect(filter).toBeInstanceOf(Filter);
     expect(filter.id).toBe('filter101');
     expect(filter.filter).toBeUndefined();
+  });
+
+  test('Creates a limit of 10 rows', () => {
+    expect(LIMIT_DEFINITION.kind).toBe('transform');
+    expect(LIMIT_DEFINITION.type).toBe('limit');
+    expect(LIMIT_DEFINITION.label).toBe('Take first <x> rows');
+    expect(LIMIT_DEFINITION.icon).toBe('limit');
+    expect(LIMIT_DEFINITION.beta).toBe(false);
+    const limit = LIMIT_DEFINITION.create('limit101');
+    expect(limit).toBeInstanceOf(Limit);
+    expect(limit.id).toBe('limit101');
+    expect(limit.size).toBe(10);
   });
 
   test('Describes nodes without user values for logs', () => {
