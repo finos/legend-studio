@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                                                                    |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                                                                       |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                                        |
-| Step   | M2.1–M2.14 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort, the Sort warning, database workarounds, grid quick actions); M2.15 next (docs, sample typing) |
-| Tests  | 1824 core, 726 builder (core group), 236 Query, 133 builder engine-roundtrip (after M2.14)                                                                                                               |
+| Item   | State                                                                                                                                                    |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                       |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                        |
+| Step   | M2.1–M2.15 done (every operation, the Sort warning, database workarounds, grid quick actions, docs); M2.16 next (verification and the browser rehearsal) |
+| Tests  | 1824 core, 726 builder (core group), 236 Query, 139 builder engine-roundtrip (after M2.15)                                                               |
 
 ## Steps
 
@@ -33,7 +33,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.12** The Sort warning
 - [x] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
 - [x] **M2.14** Grid quick actions: Sort by and Filter by
-- [ ] **M2.15** Docs, sample typing on the engine, changeset text
+- [x] **M2.15** Docs, sample typing on the engine, changeset text
 - [ ] **M2.16** Verification and the browser rehearsal
 - [ ] **M2.17** Rebase on the latest master, fold PLAN §11.4's supersessions in, PR when the user asks
 
@@ -293,6 +293,14 @@ ag-grid's. Engine: on ORDERS, Sort by CUSTOMER_ID brings the rows back in CUSTOM
 the :9002 dev server reached its background time limit and stopped; ag-grid's own menu is checked in the M2.16
 rehearsal once it runs again. Gates: `check:ci` and `lint:ci` green; 1824 core, 726 builder (core group), 236 Query and
 133 engine-roundtrip tests.
+
+**M2.15, docs and the samples on the engine (2026-10-08).** The corpus engine test now types the node each sample runs
+on the engine and compares it with Cube's inferred schema: full-join, join-autofix, left-join-negations, operations
+(Sort → Drop → Limit → Slice → Distinct → Restrict → Rename) and slice; the others have an invalid or unknown node on
+the way. The changeset lists every operation. The guides gained what M2 added along the way: the row-order hooks and
+the dialect workarounds (core), warnings, `isColumnDisabled` and the Tailwind rebuild (builder), the descending-sort
+rule and the plan-only test (testing), and what the model outline now feeds (hosting). Gates: `check:ci` and `lint:ci`
+green; 1824 core, 726 builder (core group), 236 Query and 139 engine-roundtrip tests.
 
 ## Open items
 
