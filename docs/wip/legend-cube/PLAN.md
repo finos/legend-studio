@@ -12,21 +12,21 @@
 
 ## 0. Decisions
 
-| #   | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                           | Source                             |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| D1  | Saved cubes will live in a **new dedicated Cube store** in `legend-engine-application-query`. **Not in v1.** v1 defines and tests the saved spec format (codec + round trip) only; actual saving and the engine store come after the POC works end to end.                                                                                                                                                                                         | user                               |
-| D2  | The slice runs **locally** against a **Cube-owned Northwind fixture sent as an inline model** (no depot). Entry points and the sources modal get expanded later, once designed. v1 scope: one model, one Database element, one runtime per query.                                                                                                                                                                                                  | user (default)                     |
-| D3  | **ag-grid Enterprise license is available** in every deployment. Use `@finos/legend-lego/data-grid` (enterprise modules).                                                                                                                                                                                                                                                                                                                          | user                               |
-| D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (made explicit by the emitter, §8.4: the engine does it only for columns it types `[0..1]`; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                            | user (default; wording 2026-10-06) |
-| D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected (widen autofix later).                                                                                                             | user (default)                     |
-| D6  | Post-slice source order: services → Pure functions → data products → ingest. Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                                                                         | user (default)                     |
-| D7  | Route **`/cube`** inside Legend Query (URL `/query/cube`), hard-wired in the Query router. New module(s) `legend-cube` / `legend-cube-builder` (§3). Further entry points, the sources modal and the final look are revisited in M3.                                                                                                                                                                                                               | user + recommendation              |
-| D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                                                                                                                                    | user (default)                     |
-| D9  | Execution is a **Pure relation-function chain** over store accessors (`#>{db.schema.table}#`), built as **protocol JSON** (never Pure text). Legend SQL is only a possible future "SQL source" node.                                                                                                                                                                                                                                               | recommendation (§8.1)              |
-| D10 | Precise primitives are modeled **inside the host-free domain**. The host adapts the engine's relation-type JSON at the boundary, in a package-local `v1/` folder.                                                                                                                                                                                                                                                                                  | recommendation (§5)                |
-| D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.)                                                                                                                                                                                                                                                                                    | user                               |
-| D12 | **Types: Cube's own registry for the slice, legend-graph's types from M2.0**, for consistency with the rest of Legend. M2.0 first fixes legend-graph's precise primitives (own PR), then rebases `CubeType` on legend-graph's `GenericType` and narrows the core rule to "metamodel only, no `V1_*`, no UI or app packages" (a §2.2 departure). Until then the type seam stays narrow (§4.1) so the switch stays internal. Replaces D10 from M2.0. | user + recommendation              |
-| D13 | **First merge after M1.8a, as one PR** (2026-10-07), so new sources and operations can then be built in parallel. Show Pure's "numbers as 0" bug is fixed before it. The working docs live in `docs/wip/legend-cube/` (PLAN, PROGRESS, and ISSUES for the known issues later PRs fix); the legend-graph issue list stays out of the repo.                                                                                                          |
+| #   | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Source                             |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| D1  | Saved cubes will live in a **new dedicated Cube store** in `legend-engine-application-query`. **Not in v1.** v1 defines and tests the saved spec format (codec + round trip) only; actual saving and the engine store come after the POC works end to end.                                                                                                                                                                                               | user                               |
+| D2  | The slice runs **locally** against a **Cube-owned Northwind fixture sent as an inline model** (no depot). Entry points and the sources modal get expanded later, once designed. v1 scope: one model, one Database element, one runtime per query.                                                                                                                                                                                                        | user (default)                     |
+| D3  | **ag-grid Enterprise license is available** in every deployment. Use `@finos/legend-lego/data-grid` (enterprise modules).                                                                                                                                                                                                                                                                                                                                | user                               |
+| D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (made explicit by the emitter, §8.4: the engine does it only for columns it types `[0..1]`; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                                  | user (default; wording 2026-10-06) |
+| D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected (widen autofix later).                                                                                                                   | user (default)                     |
+| D6  | Post-slice source order: services → Pure functions → data products → ingest. Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                                                                               | user (default)                     |
+| D7  | Route **`/cube`** inside Legend Query (URL `/query/cube`), hard-wired in the Query router. New module(s) `legend-cube` / `legend-cube-builder` (§3). Further entry points, the sources modal and the final look are revisited in M3.                                                                                                                                                                                                                     | user + recommendation              |
+| D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                                                                                                                                          | user (default)                     |
+| D9  | Execution is a **Pure relation-function chain** over store accessors (`#>{db.schema.table}#`), built as **protocol JSON** (never Pure text). Legend SQL is only a possible future "SQL source" node.                                                                                                                                                                                                                                                     | recommendation (§8.1)              |
+| D10 | Precise primitives are modeled **inside the host-free domain**. The host adapts the engine's relation-type JSON at the boundary, in a package-local `v1/` folder.                                                                                                                                                                                                                                                                                        | recommendation (§5)                |
+| D11 | **No feature flag.** `/query/cube` is always mounted in Legend Query. (M1.0 first shipped a `TEMPORARY__enableLegendCube` option; it was removed the same day.)                                                                                                                                                                                                                                                                                          | user                               |
+| D12 | **Types: Cube's own registry for the slice, legend-graph's types from M2.0**, for consistency with the rest of Legend. M2.0 first fixes legend-graph's precise primitives (own PR), then rebases `CubeType` on legend-graph's `GenericType` and narrows the core rule to "metamodel only, no `V1_*`, no UI or app packages" (a §2.2 departure). Until then the type seam stays narrow (§4.1) so the switch stays internal. Replaces D10 from M2.0.       | user + recommendation              |
+| D13 | **First merge after M1.8a, as one PR** (2026-10-07), so new sources and operations can then be built in parallel. M1.8b (canvas and editors) joined the same PR before it merged (user, 2026-10-07: it is on the critical path). Show Pure's "numbers as 0" bug is fixed before it. The working docs live in `docs/wip/legend-cube/` (PLAN, PROGRESS, and ISSUES for the known issues later PRs fix); the legend-graph issue list stays out of the repo. |
 
 ---
 
@@ -147,10 +147,13 @@ packages/legend-cube-builder/src/
                                     V1_CubeExecutionResultReader (lossless), V1_CubeEngineErrors (payload → node error),
                                     V1_LegendCubeEngine (implements the port; builds its own client; imports only the
                                     port, legend-graph, legend-shared and @finos/legend-cube)
-  stores/       CubeEditorState, CubeExecutionState, LocalModelCatalog (the bundled model texts; talks only to the
-                port; loadModel parses a model context once and returns its databases and runtimes as plain data), CubeHost interface, fixtures/ (Cube Northwind model as a TS string)
-  components/   CubeEditor (layout), canvas/, palette/, editors/ (Join, Filter, Source), source-picker/, grid/
-  __lib__/      icons, labels, help text (§17.9), command config (§3.5), test ids
+  stores/       CubeEditorState, CubeExecutionState, CubeNodeEditorState (the side panel), LocalModelCatalog (the bundled
+                model texts; talks only to the port; loadModel parses a model context once and returns its databases and
+                runtimes as plain data), CubeHost interface, editors/ (node drafts and their registry, §7.4), fixtures/
+                (Cube Northwind model as a TS string)
+  components/   CubeEditor (layout), CubeNodeIcon (node icons), canvas/, palette/, editors/ (Join, Filter, Source, and
+                the editor registry), source-picker/, grid/
+  __lib__/      labels, help text (§17.9), command config (§3.5), test ids
   __test-utils__/  Cube-local axios engine helpers for engine-backed tests (§3.4)
   style/index.scss
 ```
@@ -255,9 +258,9 @@ What the repo actually enforces:
   - The builder exports `LEGEND_CUBE_COMMAND_CONFIG` (execute: F9; undo: Control+KeyZ / Meta+KeyZ).
   - Query contributes it via `getExtraKeyedCommandConfigEntries()` on a core application plugin. This is the only
     plugin hook Cube uses. Query has two: `Core_LegendQuery_LegendApplicationPlugin` (`src/application/`) and
-    `Core_LegendQueryApplicationPlugin` (`src/components/`); neither overrides the hook today, and Query's test helper
-    installs only the second. **M1.8b (S20) uses `Core_LegendQuery_LegendApplicationPlugin`**, the one the app
-    installs first, and a Query test shows that F9 on `/cube` reaches Cube's Execute with the query builder's plugin
+    `Core_LegendQueryApplicationPlugin` (`src/components/`); before M1.8b neither overrode the hook, and Query's
+    test helper installs only the second. **M1.8b (S20) added the override to `Core_LegendQuery_LegendApplicationPlugin`**,
+    the one the app installs first (a new Query key binding must be merged into that override's entries), and a Query test shows that F9 on `/cube` reaches Cube's Execute with the query builder's plugin
     also binding F9 (the query builder's Compile is registered only while it is mounted).
   - The Cube page registers the commands with `applicationStore.commandService`, as the query builder's
     `useCommands` does.
@@ -1137,7 +1140,8 @@ All gestures from §17.4 are kept:
     without applying them and says so in the graph region;
   - a panel without edits shows the replacing node (e.g. after Refresh, or after Undo of its own Apply), and closes
     silently when the node is gone;
-  - Import always closes it without applying, since another cube can hold a node with the same id.
+  - Import, and Undo back over an Import, always close it without applying, since another cube can hold a node with
+    the same id.
 - **Closing applies** (spec §17.5): clicking another node, or the panel's close button, applies first. Cancel drops
   the edits. A read-only cube never applies.
 
@@ -1147,8 +1151,10 @@ All gestures from §17.4 are kept:
    - Its `build()` returns the node Apply stores, or `original` itself while nothing was edited.
    - The panel compares the codec encodings (`definition.spec.encode` plus `rest`), so a node that saves the same
      counts as no change and adds no undo step.
-   - It is made once per open and again after each Apply, so keys made in it (e.g. filter rows) stay stable.
-2. Register its factory in `CUBE_NODE_DRAFT_FACTORIES` (`stores/editors/CubeNodeDraftRegistry.ts`).
+   - It is made once per open, again after each Apply or Swap Inputs, and again when a clean panel follows a
+     replaced node, so keys made in it (e.g. filter rows) stay stable while the user edits.
+2. Register its factory in `CUBE_NODE_DRAFT_FACTORIES` (`stores/editors/CubeNodeDraftRegistry.ts`). A type with
+   nothing to edit (a source) registers an editor but no factory: it gets a read-only draft, and no Apply or Cancel.
 3. `components/editors/Cube<Type>Editor.tsx`: an observer component taking `CubeNodeEditorProps`, registered in
    `CUBE_NODE_EDITORS` (`components/editors/CubeNodeEditorRegistry.ts`). It gets:
 
@@ -1158,14 +1164,19 @@ All gestures from §17.4 are kept:
    - `readOnly`;
    - `editorState`, for reads such as the model outline.
 
-   It changes only its draft, never the document. The panel lists the edited node's problems
-   (`node.validate`) under it, and owns Apply and Cancel.
+   Its edits go to its draft. A button that must change the document calls a `CubeNodeEditorState` method that
+   applies the draft first and then rebinds to the new node, as `nodeEditor.swapInputs()` does: calling
+   `editorState.applyQuery` (or `editorState.swapInputs`) directly replaces the node under unapplied edits, so the
+   panel closes and drops them. A source, which has no draft, may call an `editorState` flow that stays outside the
+   undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, and owns Apply
+   and Cancel.
 
 4. The help text, in `CUBE_NODE_HELP_TEXT` (`__lib__/LegendCubeHelpText.ts`).
-5. A test that every registered type has all of these (`CubeNodeEditorRegistry.test.ts`, from S19).
+5. Its icon name, mapped to an icon in `NODE_ICONS` (`components/CubeNodeIcon.tsx`).
+6. A test checks that every registered type has all of these (`CubeNodeEditorRegistry.test.ts`).
 
 The palette, the context menu and the canvas need nothing more: they read the core `NodeRegistry` (label, icon
-name, beta). A new icon name maps to an icon in `components/CubeNodeIcon.tsx`.
+name, beta).
 
 ### 7.5 Join editor
 
@@ -1213,12 +1224,16 @@ an earlier warning on that table cleared once it re-checks clean (M1.8b S17).
 | `analysis` (`computed`)                           | `buildSchemasAndValidity(document.query, registry.queryRules)`: the query-level rules must be passed, the default is none                                   |
 | `hostIssues` (`Map<nodeId, {firstLine, detail}>`) | engine errors mapped back to nodes                                                                                                                          |
 | `warnings` (`Map<node key, …>`)                   | non-blocking: schema drift and failed re-checks (Settled before M1.8); keyed by node key, so a warning leaves with its node, and comes back with it on Undo |
-| `resolution` (`ActionState`)                      | source schema requests                                                                                                                                      |
+| `pendingSources` (private, `observable.ref`)      | sources sent to the engine to be typed again; read through `isResolvingSources` and `isPendingSource(node)`                                                 |
+| `modelOutlines` (private, by model)               | outlines loaded on demand by `loadModelOutline`, read through `modelOutline`, e.g. for the Join's 'type unknown' warning                                    |
 | `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                                                            |
-| `ui`                                              | open editor node, panel sizes; ephemeral, not saved                                                                                                         |
+| `nodeEditor` (`CubeNodeEditorState`)              | the open editor panel: `nodeId`, `draft`, `notice`; ephemeral, not saved (panel sizes stay in the component)                                                |
+| `isPaletteCollapsed`                              | kept per user in user data, never in the cube                                                                                                               |
 
-Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change or Import), which pushes onto
-history. Domain objects are immutable but not all frozen (only `Query`'s arrays are), so they are held as
+Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change), which pushes onto history.
+Import goes through `importDocument`, which pushes history and replaces the document itself, not through
+`applyDocument`: it resets the run, the picker, the editor panel and the engine errors (warnings stay, keyed by
+nodes the imported cube doesn't share), then re-checks the sources. Domain objects are immutable but not all frozen (only `Query`'s arrays are), so they are held as
 `observable.ref` and MobX never observes them deeply.
 
 **Settled before M1.8** (user, 2026-10-07; requirements `m18-requirements`, run `wf_b4b35e14-0fb`, kept in
@@ -2098,7 +2113,8 @@ The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.
 4. Set the join columns. The node turns valid and Left/Right labels are visible.
 5. Drag Filter onto the join (it splices in after it) and build the three rules. Operator lists differ by type, and
    an invalid value is flagged inline.
-6. Make the filter the capture node (Ctrl-click) and press F9. The grid shows 19 rows.
+6. Make the filter the capture node (Ctrl-click, or Cmd-click on macOS, where Ctrl-click opens the context menu;
+   or Select in its context menu or editor header) and press F9. The grid shows 19 rows.
 7. Edit the filter: the grid marks results stale. Undo restores the previous state. Show Pure displays the lambda.
 8. Export the spec, reload the page, import it and press F9. The same graph and the same results come back.
 

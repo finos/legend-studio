@@ -28,8 +28,9 @@ export type CubeNodeDraftFactory = (
 ) => CubeNodeDraft;
 
 /**
- * The draft of each node type the panel edits, by type (PLAN §7.4). A type
- * with an editor in `CUBE_NODE_EDITORS` has its factory here.
+ * The draft of each node type the panel edits, by type (PLAN §7.4). A
+ * transform with an editor in `CUBE_NODE_EDITORS` has its factory here; a
+ * source, which has nothing to edit, has none, and so no Apply or Cancel.
  */
 export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   string,

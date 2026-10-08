@@ -35,6 +35,12 @@ From the demo-cut test run (`m18-democut-tests`, 2026-10-07). None hides a known
 
 ## Risks
 
+- **React Flow's two stylesheets.** The Cube canvas (xyflow 12) imports its CSS with the lazy Cube page, so Query's
+  other pages don't load it (checked in the M1.8b dry run). Once the Cube page has been opened, it stays loaded for
+  the session, and the query builder's lineage viewer (reactflow 11) shares its `.react-flow__*` class names. The
+  lineage viewer wasn't seen after a visit to `/cube` (it needs a depot query). Check it when one is reachable.
+- **Canvas fitting is checked by hand only.** jsdom measures nothing, so React Flow never reports the nodes measured
+  and the refit after a layout or width change (`CubeCanvas.tsx`) has no jsdom test. M1.9's manual run covers it.
 - **CI's engine.** CI runs the `engine-roundtrip` group on the docker engine image, whose version may differ from the
   local engine on :6300 (the parity file, `loadNorthwindData`). It can't be checked locally (no docker), so the first
   CI run is the real check.

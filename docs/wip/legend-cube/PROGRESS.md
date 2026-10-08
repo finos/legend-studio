@@ -18,15 +18,15 @@ Paste this as the first message:
 
 Claude's memory also points to both files, so a new chat in this repo finds them on its own.
 
-## Current state (2026-10-07)
+## Current state (2026-10-08)
 
-| Item        | State                                                                                                                                                                                                                                                                |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch      | `cubeV1`, rebased on finos master `a32e5c0fb` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                       |
-| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                |
-| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a done** (S1–S12, verified); next the first PR, then M1.8b |
-| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not      |
-| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                       |
+| Item        | State                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch      | `cubeV1`, rebased on finos master `a32e5c0fb` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                                                                                                                                              |
+| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                                                                                                                                       |
+| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine). **M1.8a done** (S1–S12) and **M1.8b done** (S13–S21: canvas, palette, drag and drop, context menu, editor panel with Join/Filter/Source editors, shortcuts), both verified, on `cubeV1` and in PR finos/legend-studio#5591 |
+| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not                                                                                                                             |
+| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                                                                                                                                              |
 
 ## Milestone checklist
 
@@ -41,7 +41,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.6** Saved spec v1 codec (round trip, rest preservation, Unknown passthrough)
 - [x] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
 - [x] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
-- [ ] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
+- [x] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
 - [ ] **M1.9** Slice acceptance (part B, manual) and hardening
 - [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
 - [ ] M2 Rename + Join autofix + simple unary transforms
@@ -109,7 +109,7 @@ green; `check:ci` and `lint:ci` green). Coverage, honestly:
 Checks: 1416 core, 382 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green. Part B, the
 M1.8a part, passed by hand on :9001 + :6300: pick Northwind and StoreRuntime, add ORDERS and CUSTOMERS, Execute (830
 rows), Select (stale), Undo, Show Pure (real literals, e.g. `->limit(1001)`), Export, reload, Import, Execute: the
-same 830 rows. Pressing F9 waits for M1.8b's shortcuts. Importing the slice spec and executing gives the 19 rows.
+same 830 rows. F9 came with M1.8b's shortcuts (S20, PLAN §3.5). Importing the slice spec and executing gives the 19 rows.
 
 **M1.8a verified (2026-10-07).** Verification `m18a-verify` (run `wf_e47c016b-840`, evidence
 `m18a-verify-result.json`): 39 real out of 45 (12 bugs, 27 test gaps).
@@ -135,20 +135,44 @@ engine-roundtrip group (279) are green, and the whole `yarn test` passes except 
 - legend-manual-tests `RoundtripGrammar.engine-roundtrip-test.ts`: the local engine (93d92b4) writes empty arrays that
   Studio's serializer leaves out. CI runs it on its own engine image.
 
-**Next:** the PR is open; after it merges, M1.8b (canvas and editors) on a new branch, with operations, test setup and a DuckDB WASM study in parallel sessions. Decimal precision stays for a later PR (user, 2026-10-07). Then M1.8b, starting with the six canvas questions.
+**M1.8b (canvas and editors) is done and verified** (2026-10-08), on `cubeV1` itself, so PR
+finos/legend-studio#5591 carries it (user, 2026-10-07: it is on the critical path for the parallel work).
+
+- **Settled at the start of M1.8b** (user, 2026-10-07, all on the recommendation): PLAN §7.8. Two answers were
+  narrowed or extended in the build, both in PLAN: a panel without edits follows its node (§7.4), and blank
+  conditions or key pairs are dropped wherever they are (§7.5, §7.6).
+- **Build:** `3c10563d0` S13 layout and dependencies; `42c881997` S14 canvas; `77baa9359` S15 palette and drag and
+  drop; `aea4fc469` S16 context menu; `fc572b42d` S17 editor panel, Source panel and the editor contract (PLAN §7.4);
+  `ae0839618` S18 Join editor and the outline's untyped columns; `4604a6b56` S19 Filter editor; `1b6acdfda` S20
+  shortcuts (Query's core plugin contributes them); `0682fdf9e` changeset text.
+- **Verification** `m18b-verify` (run `wf_4c3413c3-1d3`, evidence `m18b-verify-result.json`): 5 reviewers, 43
+  distinct findings, 40 confirmed (16 bugs, 3 unmet requirements, 14 test gaps, 7 docs), 3 refuted. Fixed in
+  `b717c4f00` (state: re-check against undo snapshots, refresh of a failing table, warnings across Import, Undo over
+  Import, draft no-ops, the 'type unknown' lookup) and `9dfcfc306` (UI and tests), docs in the commit after.
+- **Dry run of Part B** on :9001 + :6300 (2026-10-08): all eight steps pass, with real drags (palette to canvas,
+  handle to handle), F9 giving 19 rows, Cmd+Z, Show Pure, and Export, reload, Import, F9 giving the same 19 rows.
+  It found what jsdom can't: the canvas fitted before React Flow measured new nodes, the Filter row squeezed its value,
+  the graph header overflowed beside the panel, the minimap covered nodes, and Chrome's date input gives React no
+  Enter (`03e095655`). On macOS, Ctrl-click is the system's right-click, so the capture node is set with Cmd-click
+  (PLAN §11.2 step 6). xyflow's CSS loads only with the Cube page; the lineage viewer itself needs a depot query, so
+  it wasn't seen.
+- **Checks:** 1419 core, 596 builder, 236 Query and 279 engine-roundtrip tests; `check:ci` and `lint:ci` green.
+
+**Next:** push M1.8b to the PR, then M1.9 (Part B by hand as acceptance, READMEs). In parallel sessions: operations
+(each follows the editor contract in PLAN §7.4), test setup, and a DuckDB WASM study; new sources wait on the
+user's design. Decimal precision stays for a later PR (user, 2026-10-07).
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
   §7.2, §7.8, §8.7, §11.1 and §11.2).
-- **Asked at the start of M1.8b:** the palette's source item, the context after the last source is removed, Filter
-  Apply with a blank row, a side-panel edit whose node changed underneath, shortcuts while a Cube dialog is open, and
-  the per-column data for the Join "type unknown" warning (all in the requirements result).
+- **Settled at the start of M1.8b:** see PLAN §7.8.
 
 ## Merge plan (decided by the user, 2026-10-07)
 
 The user wants a first merge so that new sources and new operations can be built in parallel. PLAN §0 D13.
 
-- **Cut: after M1.8a** (S6–S12). The Show Pure "numbers as 0" bug, which S9 made visible, is fixed (`dcaf0efdb`).
+- **Cut: after M1.8a** (S6–S12), then M1.8b joined the same PR before it merged (user, 2026-10-07). The Show Pure
+  "numbers as 0" bug, which S9 made visible, is fixed (`dcaf0efdb`).
   `/query/cube` has no flag (D11), so the page ships in Query when this merges.
 - **One PR** for the whole branch; the commit history guides the review.
 - **Docs:** PLAN.md and PROGRESS.md moved to `docs/wip/legend-cube/` (2026-10-07), with ISSUES.md beside them to
@@ -161,8 +185,8 @@ The user wants a first merge so that new sources and new operations can be built
 - **Parallel work after the merge.**
   - Operations can be built headless: a node class, an emitter, a codec and a `NodeRegistry` entry, plus `v1/`
     serializer support and engine tests.
-  - An operation's editor has no UI home until M1.8b's editor shell, so define that panel contract before the work
-    forks.
+  - An operation's editor follows the editor contract in PLAN §7.4 (a draft, an editor, help text, an icon; a
+    registry test checks each type has them).
   - New sources wait on the entry-points and sources-modal design (before M3) and on M2.0.
 
 ## Open items

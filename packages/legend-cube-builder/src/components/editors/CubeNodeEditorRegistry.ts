@@ -27,8 +27,10 @@ import { CubeJoinEditor } from './CubeJoinEditor.js';
 import { CubeSourceEditor } from './CubeSourceEditor.js';
 
 /**
- * What the panel gives a node type's editor (PLAN §7.4). The editor changes
- * only its draft; the panel's Apply stores it.
+ * What the panel gives a node type's editor (PLAN §7.4). Edits go to the
+ * draft, which the panel's Apply stores; an action on the document goes
+ * through `editorState.nodeEditor` (e.g. `swapInputs`), which applies the
+ * draft first, so the panel never loses its edits under a replaced node.
  */
 export interface CubeNodeEditorProps {
   readonly editorState: CubeEditorState;
