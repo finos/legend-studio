@@ -20,13 +20,13 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 
 ## Current state (2026-10-07)
 
-| Item        | State                                                                                                                                                                                                                                                           |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                        |
-| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                           |
-| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a built (S1–S12)**; verifying before the first PR     |
-| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not |
-| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                  |
+| Item        | State                                                                                                                                                                                                                                                                |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                             |
+| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                |
+| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a done** (S1–S12, verified); next the first PR, then M1.8b |
+| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not      |
+| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                       |
 
 ## Milestone checklist
 
@@ -40,7 +40,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.5** IR and emitter (join algorithm, filter emission, typed literals, origins, debug printer)
 - [x] **M1.6** Saved spec v1 codec (round trip, rest preservation, Unknown passthrough)
 - [x] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
-- [ ] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
+- [x] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
 - [ ] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
 - [ ] **M1.9** Slice acceptance (part B, manual) and hardening
 - [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
@@ -111,7 +111,23 @@ M1.8a part, passed by hand on :9001 + :6300: pick Northwind and StoreRuntime, ad
 rows), Select (stale), Undo, Show Pure (real literals, e.g. `->limit(1001)`), Export, reload, Import, Execute: the
 same 830 rows. Pressing F9 waits for M1.8b's shortcuts. Importing the slice spec and executing gives the 19 rows.
 
-**Next:** the verification `m18a-verify` (skeptics) over S6–S12, then fixes, then the first PR (see Merge plan).
+**M1.8a verified (2026-10-07).** Verification `m18a-verify` (run `wf_e47c016b-840`, evidence
+`m18a-verify-result.json`): 39 real out of 45 (12 bugs, 27 test gaps).
+
+- `39a99bc09` core: chained Filters are re-read until nothing changes.
+- `d18dd8061` builder and docs:
+  - re-checking applies by node identity to the cube shown and to undo snapshots, so Undo never brings back an
+    unchecked table, and "resolving source" shows only while the cube shown has a table being typed;
+  - the picker's paste box shows only for the model it loaded;
+  - file reads: a too-large file ends a pending read, and read errors are worded;
+  - three doc fixes.
+- `20ed30994` the missing tests (run `m18a-tests`, `wf_06e74b7b-a8b`, evidence `m18a-tests-result.json`), each checked
+  against its mutant by an independent verifier.
+
+1419 core, 430 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green.
+
+**Next:** the first PR (see Merge plan): rebase on `origin/master`, rerun the checks, write the PR description, then
+push and open it when the user says so. Then M1.8b, starting with the six canvas questions.
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
