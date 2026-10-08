@@ -743,3 +743,36 @@ describe('Cube source picker: failures', () => {
     expect(state.document.query.nodes).toEqual([]);
   });
 });
+
+describe('Cube source picker: a pasted model', () => {
+  test("Stops offering the pasted text once the cube's own model is loaded, e.g. an imported cube's", async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    const picker = state.sourcePicker;
+    picker.open();
+    await flowResult(picker.selectModel(CUBE_NORTHWIND_MODEL));
+    picker.startPastingModel();
+    picker.setPastedModelText('###Relational\nDatabase my::Pasted ( )');
+    await flowResult(picker.loadPastedModel());
+    expect(picker.isPastingModel).toBe(true);
+    picker.close();
+
+    // a cube on a copy of Northwind, as an import decodes it
+    const copy = createTextModel(CUBE_NORTHWIND_MODEL.code as string);
+    state.importDocument(
+      new CubeDocument({
+        context: { model: copy, runtime: NORTHWIND_RUNTIME },
+      }),
+      false,
+    );
+    picker.open();
+    await flowResult(picker.selectModel(copy));
+    expect(picker.isPastingModel).toBe(false);
+    picker.close();
+
+    // back on a cube with no model, the bundled model is offered again
+    state.undo();
+    picker.open();
+    expect(picker.isPastingModel).toBe(false);
+    expect(picker.model).toBe(CUBE_NORTHWIND_MODEL);
+  });
+});

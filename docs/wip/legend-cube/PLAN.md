@@ -1158,16 +1158,16 @@ re-resolves the schema. A refresh that changes the schema shows a warning listin
 
 `CubeEditorState`:
 
-| Field                                             | Contents                                                                                                                  |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `document` (`observable.ref`, immutable)          | the `CubeDocument`                                                                                                        |
-| `history`                                         | undo: `CubeDocument` snapshots, at most 100; no redo in the slice (Settled before M1.8)                                   |
-| `analysis` (`computed`)                           | `buildSchemasAndValidity(document.query, registry.queryRules)`: the query-level rules must be passed, the default is none |
-| `hostIssues` (`Map<nodeId, {firstLine, detail}>`) | engine errors mapped back to nodes                                                                                        |
-| `warnings` (`Map<nodeId, …>`)                     | non-blocking: schema drift and failed re-checks (Settled before M1.8)                                                     |
-| `resolution` (`ActionState`)                      | source schema requests                                                                                                    |
-| `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                          |
-| `ui`                                              | open editor node, panel sizes; ephemeral, not saved                                                                       |
+| Field                                             | Contents                                                                                                                                                    |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document` (`observable.ref`, immutable)          | the `CubeDocument`                                                                                                                                          |
+| `history`                                         | undo: `CubeDocument` snapshots, at most 100; no redo in the slice (Settled before M1.8)                                                                     |
+| `analysis` (`computed`)                           | `buildSchemasAndValidity(document.query, registry.queryRules)`: the query-level rules must be passed, the default is none                                   |
+| `hostIssues` (`Map<nodeId, {firstLine, detail}>`) | engine errors mapped back to nodes                                                                                                                          |
+| `warnings` (`Map<node key, …>`)                   | non-blocking: schema drift and failed re-checks (Settled before M1.8); keyed by node key, so a warning leaves with its node, and comes back with it on Undo |
+| `resolution` (`ActionState`)                      | source schema requests                                                                                                                                      |
+| `execution` (`CubeExecutionState`)                | result, stale flag, stats, error                                                                                                                            |
+| `ui`                                              | open editor node, panel sizes; ephemeral, not saved                                                                                                         |
 
 Every edit goes through `applyQuery(next)` (or `applyDocument` for a context change or Import), which pushes onto
 history. Domain objects are immutable but not all frozen (only `Query`'s arrays are), so they are held as
@@ -1205,13 +1205,17 @@ history. Domain objects are immutable but not all frozen (only `Query`'s arrays 
   confirmation (it can be undone) and never executes; Part B step 8 reads "import it, press F9". The check is that
   `serializeCubeSpec` gives the same text before and after, since nodes get fresh keys on decode.
 - **Re-checking tables on import:** a source that fails to re-resolve keeps its saved snapshot and gets a warning
-  ("could not re-check this table: …"). Schema drift shows as a non-blocking warning listing the changed columns.
+  ("could not re-check this table: …"). Schema drift shows as a non-blocking warning listing the changed columns. The
+  answer applies, by node identity, to the cube shown and to the undo snapshots taken while it was pending, so Undo
+  never brings back an unchecked table; "resolving source" shows while the cube shown holds a table being typed
+  (`m18a-verify` fix, 2026-10-07).
 - **Newer-version spec:** opens read-only with a banner. View, Execute and Show Pure work; edits, the picker, Undo
   and Export are disabled. Select (choosing the node to run) still works, and Import replaces the cube (S7, 2026-10-07).
 - **Spec without a model or runtime:** opens editable with Execute disabled and a tooltip naming what is missing; no
   fix-up UI in M1.8.
-- **Show Pure:** its own dialog with Copy. Numbers read 0 until the deferred `renderPure` bug is fixed (PROGRESS.md
-  open items).
+- **Show Pure:** its own dialog with Copy, showing the engine's rendering of what Execute runs, row limit and
+  literals included (e.g. `->limit(1001)`). `renderPure` sends the lambda as lossless text (the "numbers as 0" bug,
+  fixed in `469bb5458`).
 - **Technical (decided without asking):** Query tests use a local fake engine (no `./test` export from the builder
   yet); the core gains small host-free helpers the UI needs (re-reading filter values against a schema, a schema
   diff, the display name of a table, the reason a capture subtree can't emit).

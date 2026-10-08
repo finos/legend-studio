@@ -68,6 +68,8 @@ export class CubeSourcePickerState {
   /** The model is Pure text the user pastes, not a bundled one */
   isPastingModel = false;
   pastedModelText = '';
+  /** The model the paste box last loaded: only it keeps the box shown */
+  private pastedModel: ModelContext | undefined;
   outline: CubeModelOutline | undefined;
   isLoadingModel = false;
   databasePath: string | undefined;
@@ -257,15 +259,17 @@ export class CubeSourcePickerState {
    */
   *loadPastedModel(): GeneratorFn<void> {
     if (this.pastedModelText.trim()) {
-      yield flowResult(this.selectModel(createTextModel(this.pastedModelText)));
+      this.pastedModel = createTextModel(this.pastedModelText);
+      yield flowResult(this.selectModel(this.pastedModel));
     }
   }
 
-  /** Loads a model's outline; a bundled model ends pasting */
+  /**
+   * Loads a model's outline. Any model but the one the paste box loaded ends
+   * pasting, e.g. a bundled model, or the model of a cube opened meanwhile.
+   */
   *selectModel(model: ModelContext): GeneratorFn<void> {
-    if (this.models.some((bundled) => bundled.model === model)) {
-      this.isPastingModel = false;
-    }
+    this.isPastingModel = model === this.pastedModel;
     this.model = model;
     this.outline = undefined;
     this.error = undefined;

@@ -124,8 +124,8 @@ same 830 rows. Pressing F9 waits for M1.8b's shortcuts. Importing the slice spec
 
 The user wants a first merge so that new sources and new operations can be built in parallel. PLAN §0 D13.
 
-- **Cut: after M1.8a** (S6–S12). Fix "Show Pure prints every number as 0" (ISSUES.md) before the PR, because S9
-  makes it visible. `/query/cube` has no flag (D11), so the page ships in Query when this merges.
+- **Cut: after M1.8a** (S6–S12). The Show Pure "numbers as 0" bug, which S9 made visible, is fixed (`469bb5458`).
+  `/query/cube` has no flag (D11), so the page ships in Query when this merges.
 - **One PR** for the whole branch; the commit history guides the review.
 - **Docs:** PLAN.md and PROGRESS.md moved to `docs/wip/legend-cube/` (2026-10-07), with ISSUES.md beside them to
   track the known issues for later PRs. LEGEND-GRAPH-ISSUES.md is not included: it moved to the local evidence

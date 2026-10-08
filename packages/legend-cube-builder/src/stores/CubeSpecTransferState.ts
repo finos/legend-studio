@@ -146,6 +146,8 @@ export class CubeSpecTransferState {
     const request = ++this.fileRequest;
     this.error = undefined;
     if (file.size > MAX_SPEC_BYTES) {
+      // a file being read before this one is dropped
+      this.isReadingFile = false;
       this.error = `The file is too large to import: a spec is at most ${MAX_SPEC_BYTES} bytes`;
       return;
     }
@@ -157,7 +159,15 @@ export class CubeSpecTransferState {
       }
     } catch (error) {
       if (request === this.fileRequest) {
-        this.error = `Can't read the file: ${errorMessage(error)}`;
+        // the browser's FileReader rejects with its error event, not an Error
+        const reason =
+          error instanceof Error
+            ? error.message
+            : error instanceof ProgressEvent &&
+                error.target instanceof FileReader
+              ? (error.target.error?.message ?? 'the browser could not read it')
+              : String(error);
+        this.error = `Can't read the file: ${reason}`;
       }
     } finally {
       if (request === this.fileRequest) {

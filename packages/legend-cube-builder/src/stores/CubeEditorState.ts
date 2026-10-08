@@ -22,6 +22,7 @@ import {
   type NodeRegistry,
   type Query,
   QueryEmitter,
+  type QueryNode,
   RelationalTableSource,
   rereadQueryFilterValues,
   type Schema,
@@ -87,10 +88,8 @@ export class CubeEditorState {
    * shown on the node, never errors, and gone once the node is replaced
    */
   warnings: ReadonlyMap<number, readonly string[]> = new Map();
-  /** The cube's tables are being typed again, after an import */
-  isResolvingSources = false;
-  /** Counts re-resolutions, so an answer that comes after another cube was opened is dropped */
-  private resolveRequest = 0;
+  /** Sources sent to the engine to be typed again, until it answers */
+  private pendingSources: ReadonlySet<QueryNode> = new Set();
   /** The rows a run returns; kept per user, never in the cube */
   rowLimit: number;
   /**
@@ -102,12 +101,13 @@ export class CubeEditorState {
   private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
-    makeObservable(this, {
+    makeObservable<CubeEditorState, 'pendingSources'>(this, {
+      pendingSources: observable.ref,
       document: observable.ref,
       history: observable.ref,
       hostIssues: observable.ref,
       warnings: observable.ref,
-      isResolvingSources: observable,
+      isResolvingSources: computed,
       rowLimit: observable,
       readOnly: observable,
       analysis: computed,
@@ -148,6 +148,13 @@ export class CubeEditorState {
 
   get emitter(): QueryEmitter {
     return new QueryEmitter(this.document.query, this.registry);
+  }
+
+  /** The cube shown has tables being typed again, after an import */
+  get isResolvingSources(): boolean {
+    return this.document.query.nodes.some((node) =>
+      this.pendingSources.has(node),
+    );
   }
 
   get canUndo(): boolean {
@@ -191,20 +198,22 @@ export class CubeEditorState {
    *   warning; one without them shows the engine's error.
    *
    * Then filter values saved as invalid text are read again against the
-   * columns. A source the user changed meanwhile is left alone.
+   * columns. The answer goes to every document holding the very source
+   * objects that were typed: the cube shown and the undo snapshots taken
+   * meanwhile, so undoing an edit made while the tables were typed keeps
+   * them typed. A source the user changed meanwhile is a new object, and is
+   * left alone.
    */
   *reresolveSources(): GeneratorFn<void> {
-    const request = ++this.resolveRequest;
     const { context, query } = this.document;
     const sources = query.nodes.filter(
       (node): node is RelationalTableSource =>
         node instanceof RelationalTableSource,
     );
     if (!context || !sources.length) {
-      this.isResolvingSources = false;
       return;
     }
-    this.isResolvingSources = true;
+    this.pendingSources = new Set([...this.pendingSources, ...sources]);
     let answers: ReadonlyMap<string, Schema | CubeEngineError>;
     try {
       answers = (yield this.host.engine.resolveSchemas(
@@ -225,16 +234,20 @@ export class CubeEditorState {
               error instanceof Error ? error.message : String(error),
             );
       answers = new Map(sources.map((source) => [source.id, failure]));
+    } finally {
+      this.pendingSources = new Set(
+        [...this.pendingSources].filter(
+          (node) => !sources.includes(node as RelationalTableSource),
+        ),
+      );
     }
-    if (request !== this.resolveRequest) {
-      return;
-    }
-    this.isResolvingSources = false;
     const warnings = new Map(this.warnings);
-    let next = sources.reduce((current, source) => {
-      if (current.getNode(source.id) !== source) {
-        return current;
-      }
+    /** Each typed source, by the object that was sent, and what replaces it */
+    const replacements = new Map<
+      RelationalTableSource,
+      RelationalTableSource
+    >();
+    sources.forEach((source) => {
       const answer =
         answers.get(source.id) ??
         new CubeEngineError(
@@ -249,14 +262,16 @@ export class CubeEditorState {
       if (answer instanceof CubeEngineError) {
         if (saved) {
           warnings.set(source.key, [getSourceRecheckWarning(answer.firstLine)]);
-          return current;
+        } else {
+          replacements.set(
+            source,
+            source.withResolution({ kind: 'failed', message: answer.detail }),
+          );
         }
-        return current.replace(
-          source.withResolution({ kind: 'failed', message: answer.detail }),
-        );
+        return;
       }
       if (saved?.isIdenticalTo(answer)) {
-        return current;
+        return;
       }
       const resolved = source.withResolution({
         kind: 'resolved',
@@ -267,15 +282,34 @@ export class CubeEditorState {
           getSchemaDriftWarning(diffSchemas(saved, answer)),
         ]);
       }
-      return current.replace(resolved);
-    }, this.document.query);
-    next = rereadQueryFilterValues(
-      next,
-      buildSchemasAndValidity(next, this.registry.queryRules).schemas,
-    );
+      replacements.set(source, resolved);
+    });
     this.warnings = warnings;
-    if (next !== this.document.query) {
-      this.replaceDocument(this.document.withQuery(next));
+    if (!replacements.size) {
+      return;
+    }
+    const check = (document: CubeDocument): CubeDocument => {
+      let checked = document.query;
+      replacements.forEach((resolved, source) => {
+        if (checked.getNode(source.id) === source) {
+          checked = checked.replace(resolved);
+        }
+      });
+      if (checked === document.query) {
+        return document;
+      }
+      const next = document.withQuery(
+        rereadQueryFilterValues(checked, this.registry.queryRules),
+      );
+      if (this.readOnlyDocuments.has(document)) {
+        this.readOnlyDocuments.add(next);
+      }
+      return next;
+    };
+    this.history = this.history.map(check);
+    const next = check(this.document);
+    if (next !== this.document) {
+      this.replaceDocument(next);
     }
   }
 

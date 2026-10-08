@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, test } from '@jest/globals';
 import {
   ColumnComparisonFilter,
   Connection,
@@ -346,5 +346,62 @@ describe('Cube spec export and import', () => {
     expect(getCubeSpecFileName('Orders 1997/France')).toBe(
       'Orders_1997_France.cube.json',
     );
+  });
+});
+
+describe('Cube spec files', () => {
+  const readerClass = globalThis.FileReader;
+
+  afterEach(() => {
+    globalThis.FileReader = readerClass;
+  });
+
+  test('Ends the reading of a file when a file over the size cap is chosen while it is read', async () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.specTransfer.openImport();
+    const first = flowResult(
+      state.specTransfer.readImportFile(new File(['{}'], 'small.cube.json')),
+    );
+    expect(state.specTransfer.isReadingFile).toBe(true);
+    await flowResult(
+      state.specTransfer.readImportFile(
+        new File(['x'.repeat(MAX_SPEC_BYTES + 1)], 'big.cube.json'),
+      ),
+    );
+    expect(state.specTransfer.isReadingFile).toBe(false);
+    await first;
+    // the earlier file was dropped
+    expect(state.specTransfer.importText).toBe('');
+    expect(state.specTransfer.isReadingFile).toBe(false);
+    expect(state.specTransfer.error).toMatch(/^The file is too large/u);
+  });
+
+  test("Says why the browser couldn't read a file", async () => {
+    // a reader that fails as browsers do: with an error event
+    class FailingReader {
+      onload: (() => void) | null = null;
+      onerror: ((event: ProgressEvent) => void) | null = null;
+      readonly result = null;
+      readonly error = new DOMException(
+        'The file could not be read',
+        'NotReadableError',
+      );
+
+      readAsText(): void {
+        const event = new ProgressEvent('error');
+        Object.defineProperty(event, 'target', { value: this });
+        this.onerror?.(event);
+      }
+    }
+    globalThis.FileReader = FailingReader as unknown as typeof FileReader;
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    state.specTransfer.openImport();
+    await flowResult(
+      state.specTransfer.readImportFile(new File(['{}'], 'locked.cube.json')),
+    );
+    expect(state.specTransfer.error).toBe(
+      "Can't read the file: The file could not be read",
+    );
+    expect(state.specTransfer.isReadingFile).toBe(false);
   });
 });
