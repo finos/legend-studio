@@ -42,7 +42,12 @@ export enum MarketplaceSearchMode {
  * two pages don't drift into two independently-edited versions of the same story.
  */
 export const LAKEHOUSE_ACCESS_TAB_INTRO_BANNER_TEXT =
-  'This is the new home for Data Products — the same entitled, Lakehouse-scoped API surface, now with its own search tab, dedicated filtering. DataSpace search on the homepage still surfaces these results for now.';
+  'This is the home for Data Products — the same entitled, Lakehouse-scoped API surface, with its own search tab and dedicated filtering. DataSpaces now live exclusively under the DataSpaces tab.';
 
+/**
+ * Rendered on the DataSpaces search results page with a hyperlink to the Lakehouse
+ * Access tab appended after it, so this deliberately doesn't end with a period or
+ * name the tab itself.
+ */
 export const DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT =
-  "Results include both DataSpaces (firm's data-domain artifact for business concepts) and Lakehouse Access items (Data Product). Lakehouse Access is moving to its own tab soon.";
+  "This tab now shows DataSpaces only (the firm's data-domain artifact for business concepts). Looking for Lakehouse Data Products? Head over to the";

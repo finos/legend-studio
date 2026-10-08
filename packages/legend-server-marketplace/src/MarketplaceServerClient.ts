@@ -202,6 +202,36 @@ export class MarketplaceServerClient extends AbstractServerClient {
     );
 
   /**
+   * Search DataSpaces only. The server enforces this scope, so Lakehouse Data
+   * Products are never returned regardless of the filters supplied here.
+   *
+   * Unlike `dataProductSearch`/`lakehouseAccessSearch`, this endpoint is not scoped to a
+   * Lakehouse deployment environment — DataSpaces are SDLC artifacts, not Lakehouse
+   * deployments, so there is no environment to disambiguate.
+   */
+  dataSpaceSearch = async (
+    query: string,
+    searchType: SearchType = SearchType.HYBRID,
+    searchFilters: string[] = [],
+    pageSize: number = 12,
+    pageNumber: number = 1,
+    showAll: boolean = false,
+  ): Promise<PlainObject<DataProductSearchResponse>> =>
+    this.get<PlainObject<DataProductSearchResponse>>(
+      `${this._search()}/dataSpaces`,
+      {},
+      undefined,
+      this._buildSearchQueryParams(
+        query,
+        searchType,
+        searchFilters,
+        pageSize,
+        pageNumber,
+        showAll,
+      ),
+    );
+
+  /**
    * Search Lakehouse Data Products only, over the lightweight lexical path.
    * The server enforces `data_product_type=lakehouse`, so DataSpaces are never
    * returned regardless of the filters supplied here.
@@ -292,6 +322,22 @@ export class MarketplaceServerClient extends AbstractServerClient {
       environment,
       limit,
       signal,
+    );
+
+  /**
+   * Unlike the other autosuggest variants, this is not scoped to a Lakehouse deployment
+   * environment — DataSpaces are SDLC artifacts, not Lakehouse deployments.
+   */
+  getDataSpaceAutosuggestions = async (
+    query: string,
+    limit: number = 5,
+    signal?: AbortSignal,
+  ): Promise<AutosuggestResponse> =>
+    this.get<AutosuggestResponse>(
+      `${this._autosuggest()}/dataSpaces`,
+      signal ? { signal } : {},
+      undefined,
+      { query, limit },
     );
 
   datasetSearch = async (

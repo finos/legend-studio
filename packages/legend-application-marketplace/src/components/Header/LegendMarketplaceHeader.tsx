@@ -199,14 +199,13 @@ export const MarketplaceLakehouseHeader = observer(() => {
       homeUrl={LEGEND_MARKETPLACE_ROUTE_PATTERN.HOME_PAGE}
       pages={[
         {
-          title: 'Dataspaces',
+          title: 'DataSpaces',
           urlRoute: LEGEND_MARKETPLACE_ROUTE_PATTERN.DATA_SPACE_SEARCH_RESULTS,
         },
         {
           title: 'Lakehouse Access',
           urlRoute:
             LEGEND_MARKETPLACE_ROUTE_PATTERN.LAKEHOUSE_ACCESS_SEARCH_RESULTS,
-          badge: 'NEW',
         },
         {
           title: 'Data APIs',

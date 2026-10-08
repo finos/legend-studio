@@ -45,7 +45,7 @@ const setupTestComponent = async () => {
 
 test('renders header with Marketplace title and Entitlements button and Marketplace landing title', async () => {
   await setupTestComponent();
-  expect(screen.getByText('Dataspaces')).toBeDefined();
+  expect(screen.getByText('DataSpaces')).toBeDefined();
   expect(screen.getByText('Data APIs')).toBeDefined();
   expect(screen.getByText('Intelligence and AI Agents')).toBeDefined();
   expect(screen.getByText('Terminals and Addons')).toBeDefined();
@@ -250,7 +250,7 @@ test('homepage still renders when trending API fails', async () => {
   await TEST__setUpMarketplaceLakehouse(MOCK__baseStore);
 
   // Page should still render header and search box even after trending API failure
-  expect(screen.getByText('Dataspaces')).toBeDefined();
+  expect(screen.getByText('DataSpaces')).toBeDefined();
   expect(
     screen.getByPlaceholderText('Which data can I help you find?'),
   ).toBeDefined();

@@ -247,8 +247,8 @@ export const LegendMarketplaceSearchResults =
                 className="marketplace-lakehouse-search-results__subtitles"
               >
                 {searchResultsStore.useProducerSearch
-                  ? `${searchResultsStore.filterSortProducts?.length ?? 0} Products`
-                  : `${searchResultsStore.totalItems} Products`}
+                  ? `${searchResultsStore.filterSortProducts?.length ?? 0} DataSpaces`
+                  : `${searchResultsStore.totalItems} DataSpaces`}
               </Typography>
               <div className="legend-marketplace-search-results__sort-bar__center-slot">
                 {isNonEmptyString(searchResultsStore.searchQuery) && (
@@ -311,7 +311,22 @@ export const LegendMarketplaceSearchResults =
               )}
               <div className="marketplace-lakehouse-search-results__main-content">
                 <TimedInfoBanner className="marketplace-lakehouse-search-results__intro-banner">
-                  {DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT}
+                  {/* Wrapped in a single `<span>` so the text/link/period are one
+                      flex item of `.MuiAlert-message`, not several — as separate
+                      flex items, the whitespace-only text node between them would
+                      collapse to zero width and swallow the space before the link. */}
+                  <span>
+                    {DATA_SPACES_LAKEHOUSE_ACCESS_INTRO_BANNER_TEXT}{' '}
+                    <a
+                      href={applicationStore.navigationService.navigator.generateAddress(
+                        generateLakehouseAccessSearchResultsRoute(undefined),
+                      )}
+                      className="marketplace-lakehouse-search-results__intro-banner__link"
+                    >
+                      Lakehouse Access tab
+                    </a>
+                    .
+                  </span>
                 </TimedInfoBanner>
                 <SearchResultsCardGrid
                   isLoading={isLoadingDataProducts}

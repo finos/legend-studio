@@ -362,7 +362,7 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
 
     expect(mockVisitAddress).toHaveBeenCalledWith(
       expect.stringContaining(
-        '/dataProduct/legacy/com.example.legacy:legacy-without-context:1.0.0/test::LegacyWithoutContext',
+        '/dataspace/com.example.legacy:legacy-without-context:1.0.0/test::LegacyWithoutContext',
       ),
     );
     expect(logWarnSpy).toHaveBeenCalled();
@@ -709,14 +709,14 @@ describe('MarketplaceLakehouseFieldSearchResults', () => {
     expect(resultState.distinctDataProducts[1]?.name).toBe('LegacyProductB');
   });
 
-  test('clicking the Dataspaces tab navigates back to product search', async () => {
+  test('clicking the DataSpaces tab navigates back to product search', async () => {
     const { MOCK__baseStore } = await setupFieldSearchTestComponent('customer');
     const mockGoToLocation = jest.fn();
     MOCK__baseStore.applicationStore.navigationService.navigator.goToLocation =
       mockGoToLocation;
 
     await screen.findByText('4 Fields');
-    fireEvent.click(screen.getByRole('radio', { name: 'Dataspaces' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'DataSpaces' }));
 
     expect(mockGoToLocation).toHaveBeenCalledWith(
       generateLakehouseSearchResultsRoute('customer', false),

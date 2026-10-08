@@ -141,7 +141,7 @@ export enum SearchResultsViewMode {
 }
 
 export enum SearchResultViewOption {
-  DATA_SPACES = 'Dataspaces',
+  DATA_SPACES = 'DataSpaces',
   DATA_FIELDS = 'Data Fields',
 }
 
@@ -724,9 +724,8 @@ export class LegendMarketplaceSearchResultsStore {
     this.executingSemanticSearchState.inProgress();
 
     try {
-      const rawResults = await this.marketplaceServerClient.dataProductSearch(
+      const rawResults = await this.marketplaceServerClient.dataSpaceSearch(
         query,
-        this.marketplaceBaseStore.envState.lakehouseEnvironment,
         SearchType.HYBRID,
         filters,
         this.itemsPerPage,
