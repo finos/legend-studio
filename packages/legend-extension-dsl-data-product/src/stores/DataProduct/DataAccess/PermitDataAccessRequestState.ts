@@ -327,6 +327,14 @@ export class PermitDataAccessRequestState implements DataAccessRequestState {
     );
   }
 
+  get isInvalidationRequest(): boolean {
+    const state = this.dataRequestWithWorkflow?.dataRequest.state;
+    return (
+      state === V1_RequestState.INVALIDATED ||
+      state === V1_RequestState.PENDING_INVALIDATION
+    );
+  }
+
   get isInProgress(): boolean {
     return (
       this.dataRequestWithWorkflow?.workflows.some((workflow) =>
