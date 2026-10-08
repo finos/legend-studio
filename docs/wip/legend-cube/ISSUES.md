@@ -20,10 +20,11 @@
 
 ## Test gaps
 
-From the demo-cut test run (`m18-democut-tests`, 2026-10-07). None hides a known bug.
+None hides a known bug.
 
-- **The grid tests were not independently verified.** The grid group's verifier hit the session limit, so
-  `CubeGridRegion.test.tsx` was checked only by its writer, against the writer's own mutants.
+- **The grid tests were not independently verified** (demo-cut test run `m18-democut-tests`, 2026-10-07). The grid
+  group's verifier hit the session limit, so `CubeGridRegion.test.tsx` was checked only by its writer, against the
+  writer's own mutants.
 - **Part A's extras** (M1.9 requirements, kept for later by the user on 2026-10-08). A.4's FULL join on one nullable
   key checks Cube's merged-key nullability but not against the engine's answer: a check must allow Cube ⊇ engine and
   never pin the engine's `[1]`, a known engine defect (PLAN Appendix B). A.7's negatives run on synthetic schemas in

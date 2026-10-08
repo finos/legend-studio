@@ -40,8 +40,10 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-**PR #5591 approved** by Yasirmod17 on 2026-10-08 (on `b1c73b640`); all 21 CI checks pass, including the
-`engine-roundtrip` group on CI's docker engine (engine commit `00108b70638b`, 279 tests).
+**PR #5591 merged** on 2026-10-08, squashed as `fbde4379f` on master, after Yasirmod17 approved it (on `b1c73b640`)
+and all 21 CI checks passed, including the `engine-roundtrip` group on CI's docker engine (engine commit
+`00108b70638b`, 279 tests). The M1.9 commits were then rebased onto it (`git rebase --onto origin/master b1c73b640
+cubeV1`, no conflicts; the old tip is kept as `cubeV1-before-m19-rebase`).
 
 **M1.9 (slice acceptance and hardening) has started** (2026-10-08). Requirements: `m19-requirements` (5 readers, a
 merge, a critic and a finalize step), 108 items, a 21-step build order and 13 decisions; the full result is kept in
@@ -50,19 +52,21 @@ M1.9": M1.9 lands as a follow-up PR after #5591 merges (nothing more is pushed t
 B, then the user runs it by hand; no e2e; short READMEs with how-to guides in `docs/`; the `V1_*` imports of the
 engine-backed tests are allowed.
 
-M1.9 build order (requirements B1–B19, without the e2e and the optional steps):
+M1.9 build order (requirements B1–B19, without the e2e and the optional steps; hashes after the rebase):
 
-1. Docs drift and ISSUES upkeep; record the `V1_*` test exception.
-2. Rewrite PLAN §11.2 so a person can follow Part B (the UI's labels, Inner join, canvas-fit, watermark and console
-   checks).
-3. Small code fixes; the two picker test gaps; trim the builder's unused exports.
-4. The core and builder READMEs and their `docs/` guides; the docs trim.
-5. Rehearsal in a browser (fixing the canvas refit after a height-only change if it shows), a skeptic verification
-   of M1.9's diff, the final gates.
+1. ✅ Docs drift and ISSUES upkeep; the `V1_*` test exception (`298a8fc2a`, `db8c98c68`).
+2. ✅ PLAN §11.2 rewritten so a person can follow Part B (`4ca34e4f1`).
+3. ✅ Small code fixes, the two picker test gaps, the builder's unused exports dropped (`b50ad35fe`, `14937744b`,
+   `1e2a80461`).
+4. ✅ The READMEs and their `docs/` guides, the draft marker, the docs trim (`65d889fe1`, `8b1cf95b8`, `67ccce323`).
+5. ✅ Rehearsal in a browser: it found that a height-only change (the splitter above the grid) didn't refit the
+   canvas, fixed in `afd32717f`; every other check passed. ✅ Skeptic verification `m19-verify` (4 reviewers, a skeptic
+   per finding): 38 findings kept, 2 refuted, mostly docs; fixed in `92afa6f9f` (a picker test re-picked the model
+   in a way no browser can) and the docs commits after it. Still to do: the final gates.
 6. The user's Part B run, the acceptance record and the sign-off.
 
-**In parallel:** operations can start now in their own session, on a branch from `b1c73b640` (the PR head), not from
-`cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
+**In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
+from `cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
 WASM study; new sources wait on the user's design. Decimal precision stays for a later PR (user, 2026-10-07).
 
 ## Milestone notes
@@ -177,7 +181,7 @@ work continues on `cubeV1` (user, 2026-10-08).
 
 **Demo video** (2026-10-08, for the PR): a Playwright script runs Part B against :9001 and :6300 and records it,
 checking 19 rows after both runs. The video and the script are in the evidence folder's `demo/`
-(`node cube-demo.mjs <outDir>`). The script is a start on M1.9's optional e2e. Two things it showed: Undo back to the
+(`node cube-demo.mjs <outDir>`). No e2e is planned (PLAN §11.1), so it stays outside the repo. Two things it showed: Undo back to the
 executed query leaves the rows marked stale (as §7.8 says: a restored query is a new object), and opening the editor
 panel logs React 19's `element.ref` warning from `react-reflex` (legend-art's resizable panels), not from Cube.
 
@@ -233,7 +237,7 @@ Each is verified and detailed in PLAN.md.
 - The engine **does not type-check** `==`, `in` or join keys, and **lies about nullability** after outer joins and
   aggregates. Cube validates and infers both itself (§5.4–5.6, §4.7).
 - Take schemas from `lambdaRelationType` (and its `/batch` form, whose response field is `result`). Studio's wrappers
-  drop type parameters, and its batch wrapper reads `results`, so it throws (§5.1, §8.7).
+  drop type parameters (§5.1, §8.7); the batch wrapper also read `results` and threw, until #5593.
 - The core (`@finos/legend-cube`) is host-free: relative imports and plain ECMAScript only, so no `console`,
   `setTimeout`, `structuredClone` or `URL` either. ESLint, `yarn build` and a unit test enforce it (§3.3).
 - Window extend followed by a filter gives wrong rows, and some dialects silently drop the filter. Isolate window

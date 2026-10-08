@@ -274,7 +274,7 @@ What the repo actually enforces:
   `LegendQueryCubeHost`. It implements `CubeHost` (defined in the builder) from Query's application store:
 
   - engine server client config (Query's `engineServerUrl`, as at
-    [QueryEditorStore.ts:631](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L631));
+    [QueryEditorStore.ts:629](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L629));
   - notifications and alerts;
   - telemetry;
   - the bundled model catalog.
@@ -685,9 +685,10 @@ RelationalCompilerExtension.java:1005-1100`) ✅:
     paths the engine does not have (`precisePrimitives::Date`, `::Time`, `::Decimal`) and a wrong `Timestamp`.
   - `PrecisePrimitiveType` extends `DataType` and is indexed by short name; there are three disagreeing
     precise→standard maps.
-  - [V1_RemoteEngine.ts:779-801](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts#L779):
-    `getLambdaRelationType` drops `typeVariableValues`. Its batch variant reads `results`, but the engine returns
-    `result`, so it throws ✅
+  - [V1_RemoteEngine.ts:190-205](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts#L190):
+    `buildRelationTypeMetadata`, behind `getLambdaRelationType`, keeps only each column's type path and drops
+    `typeVariableValues`. Its batch variant read `results` while the engine returns `result`, so it threw, until
+    #5593 (2026-10-06) fixed it
     ([V1_LambdaReturnType.ts:87-90](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.ts#L87)).
   - Client-side table typing
     ([STO_Relational_Helper.ts:222-263](../../../packages/legend-graph/src/graph/helpers/STO_Relational_Helper.ts#L222))
@@ -866,8 +867,8 @@ source kind (M3, after the sources-modal design and M2.0):
   - a **picker tab** component.
 
 Resolution replaces §6.1's single `resolveGraph` call: **one `POST /api/pure/v1/compilation/lambdaRelationType/batch`**
-covers every source, keyed by node id, with per-key errors ✅. It returns `{result, errors}`; Studio's own wrapper
-expects `results`, so Cube parses the raw response itself.
+covers every source, keyed by node id, with per-key errors ✅. It returns `{result, errors}`. Cube parses the raw response itself: Studio's
+wrapper drops type parameters (it also read `results` until #5593).
 
 ### 6.2 Relational tables, in depth (slice)
 
@@ -1628,11 +1629,11 @@ interface CubeEngine {
   accessor's `value` object. The engine echoes the **innermost** failing node's stamp in compile errors, including
   per-key in batch ✅. The adapter turns these into `CubeEngineError`s by node id (Settled before M1.7), which M1.8a
   turns into host issues; the first line goes on the node and the full text in the panel. Plan-time and database errors carry no location, so they attach to the capture node.
-- **Graph-manager wrappers are bypassed** for typing on purpose: they drop parameters and the batch wrapper throws
-  (D8). A tracer service must be set on the client, or every call throws 📄.
+- **Graph-manager wrappers are bypassed** for typing on purpose: they drop parameters (and the batch wrapper threw
+  until #5593) (D8). A tracer service must be set on the client, or every call throws 📄.
 
-**Settled before M1.7** (user, 2026-10-06; requirements `m17-requirements`). Engine facts probed the same day
-(`m17-probes/`): a table with a `BINARY` column fails **alone** in the batch call, the other keys still type ✅;
+**Settled before M1.7** (user, 2026-10-06; requirements `m17-requirements`). Engine facts probed the same day (with probe
+scripts kept outside the repo): a table with a `BINARY` column fails **alone** in the batch call, the other keys still type ✅;
 `compilation/compile` accepts a `text` context ✅; `execute` returns each column's type in `builder.columns` ✅.
 
 - **Fixture:** the extra `CUBETEST` tables of §6.2.4.
@@ -1979,7 +1980,7 @@ Findings: engine `legend-engine-application-query`, Studio
 [QueryEditorStore.ts:556-585](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L556).
 
 - **`content` must be Pure-lambda text.** Legend Query re-parses it on load
-  ([QueryEditorStore.ts:2662](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L2662)).
+  ([QueryEditorStore.ts:2604](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L2604)).
 - **Project coordinates and an execution context are mandatory.** An explicit context needs a mapping, which a
   `#>{}#` lambda does not have.
 - **One owner.** **No optimistic concurrency:** the client's version is ignored 📄✅.
@@ -2033,7 +2034,7 @@ base ref), `yarn lint:ci` and the tests. M1.1–M1.6 are **headless and test-dri
 | **M1.7**  | **Thin end-to-end, headless** (builder): the `v1/` serializer (IR → protocol JSON with `sourceInformation`), the relation-type adapter, the lossless result reader, `V1_LegendCubeEngine`, the Cube Northwind + ALLTYPES fixture, `LocalModelCatalog`. Engine-backed tests (§11.2 part A)                                                          | Acceptance part A passes against `localhost:6300`, and in CI against the docker engine, wired as §3.4 describes (spied client methods → Cube-local axios helpers, so the lossless reader is exercised). The FULL-join cast, the `toOne()` rule and the FULL merged-key nullability are covered by tests. A v1-seam unit test resolves a quoted, dotted table name                                                                                                                                |
 | **M1.8a** | **Editor state and page (no canvas yet):** `CubeEditorState`; the `/query/cube` page; source picker (§6.2.7); grid with execute, stale and limit; Show Pure; Export/Import spec (dev); undo                                                                                                                                                        | jsdom tests against a mocked `CubeEngine` port: the runtime list holds only runtimes whose store keys exactly include the chosen database; flagged tables show their flag and a picked table lands with its schema; Execute renders the port's rows, an edit marks results stale, and a `limit + 1` result shows the truncation warning; Show Pure shows `renderPure`'s text; Export then Import gives the same `serializeCubeSpec` text; Execute is disabled iff the capture subtree is invalid |
 | **M1.8b** | **Canvas and editors:** canvas (§7.2–7.3), palette, drag and drop, context menu; editor shell + Join, Filter and Source panels; keyboard shortcuts (§3.5)                                                                                                                                                                                          | jsdom tests: one undo entry per Apply; drop-target legality matches `canConnect`/`canMove`; the editor shows the upstream-invalid warning; F9 triggers execute; Join Apply turns the node valid; edges into binary nodes carry visible Left/Right labels                                                                                                                                                                                                                                         |
-| **M1.9**  | Slice acceptance and hardening: manual script (§11.2 part B) on `yarn dev:query` + engine; package READMEs; optional Playwright e2e against the real engine (the `legend-application-studio-e2e` pattern, not query-e2e's mocked engine)                                                                                                           | Part B passes; M1 review sign-off                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **M1.9**  | Slice acceptance and hardening: manual script (§11.2 part B) on `yarn dev:query` + engine; package READMEs; optional Playwright e2e against the real engine (the `legend-application-studio-e2e` pattern, not query-e2e's mocked engine; none, as settled below)                                                                                   | Part B passes; M1 review sign-off                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 
 Ordering note: M1.7 runs before M1.8 on purpose, as §20 says ("prove the engine round trip before building the
 canvas"). If the canvas misbehaves, it is the canvas. Layout determinism needs no separate test: inputs are sorted
@@ -2043,7 +2044,8 @@ before layout, so it holds by construction.
 incident on legend-studio's side.
 
 - **Where M1.9 lands:** a follow-up PR. M1.9 is built on `cubeV1` and nothing more is pushed to #5591. After #5591 is
-  squash-merged, the M1.9 commits move onto master (`git rebase --onto origin/master <merged head>`) and the
+  squash-merged, the M1.9 commits move onto master (`git rebase --onto origin/master b1c73b640 cubeV1`, `b1c73b640` being #5591's head as
+  merged, not the squash commit; done 2026-10-08 onto `fbde4379f`) and the
   follow-up PR adds a patch changeset for each library package it touches. #5591's description is edited only with
   wording the user approves.
 - **Acceptance and sign-off:** first a rehearsal of Part B in a real browser on the final head (with the canvas-fit
@@ -2063,6 +2065,9 @@ incident on legend-studio's side.
   keeps apart, so they import `V1_*` from there. Product code keeps the rule (§3.7).
 - **Public API:** the builder drops exports nothing outside it uses. The core keeps its `export *`, with a README note
   that the API is unstable before 1.0.
+  - **Technical (decided without asking):** the engine port (`CubeEngine.ts`) stays `export *` from the builder,
+    though Legend Query names only `CubeEngine` and `CubeModelOutline` today: a host implements or fakes the port, and
+    needs its error, result and outline types to do so.
 - **Docs trim:** session-only content leaves PLAN and PROGRESS before merge (the resume prompt, local paths, workflow
   run ids), and `path:line` links become links GitHub can follow, after the READMEs take over the setup.
 - **Browsers:** Chrome only, with its version recorded. Firefox and Safari are listed in ISSUES as untested.
@@ -2160,25 +2165,27 @@ The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.
 
 1. Open `http://localhost:9001/query/cube` and open the picker: **Add table**, the canvas's "add a table" link, or the
    palette's **Relational Database Table**. Model ("Northwind (Cube fixture)"), Database and Runtime
-   (`showcase::northwind::mapping::StoreRuntime`) fill themselves; choose Schema **NORTHWIND** (the fixture also has
-   CUBETEST).
-2. Add **ORDERS** (14 columns), then **CUSTOMERS** (11 columns), one per **Add**. Both land on the canvas with their
+   (`showcase::northwind::mapping::StoreRuntime`) fill themselves; choose Schema **NORTHWIND** (the list also shows
+   CUBETEST, and `default`, which holds only a decoy table).
+2. Add **ORDERS** (14 columns). The picker closes after each **Add**, so open it again and add **CUSTOMERS** (11
+   columns). Both land on the canvas with their
    schemas; ORDERS, the first table, has the accent ring of the node Execute runs. Click ORDERS: the side panel's
    Columns table shows `ORDER_ID SmallInt` and `CUSTOMER_ID Varchar(5)?` (CUSTOMERS' own `CUSTOMER_ID` is its key,
    with no `?`).
 3. Drag **Join Another Input** from the palette onto empty canvas. It shows incomplete (a dashed amber border). Drag
    from ORDERS' output handle (its right side) to the Join's upper input handle (Left), and from CUSTOMERS' to the
-   lower one (Right). The Join now shows invalid (a red border); its tooltip and its editor's Problems list say
-   "Left join columns cannot be empty."
+   lower one (Right). The Join now shows invalid (a red border); its tooltip and, once you click it, the red text at the
+   bottom of its editor say "Left join columns cannot be empty."
 4. Click the Join. Set **Join type** to **Inner** (a new Join is Left Outer, which gives the same 19 rows here, so the
    row count can't catch it), click **Add join columns**, pick `CUSTOMER_ID` on both sides and **Apply**. The Join
    turns valid, and its two input edges are labelled Left and Right.
 5. Drag **Filter by Column** onto the Join: it splices in after it. Click the Filter; it has one blank condition. Build
    three rules with **Add condition**, each a column, an operator and a value: `SHIP_COUNTRY` **is** `France`,
    `ORDER_DATE` **is greater than or equal** `1997-01-01`, and `EMPLOYEE_ID` **is in list of** `1`, `4`.
-   - The operator lists differ for the three columns' types.
+   - `SHIP_COUNTRY`'s operator list (a string: is, starts with, contains, …) differs from the list `ORDER_DATE` and
+     `EMPLOYEE_ID` share (is, is greater than, is less than, …).
    - A value is "(blank)" until clicked; type it, then Enter or click away. The date is the browser's date field. An
-     In list takes one value per "Add filter value" entry.
+     In list adds a value each time you fill the "(blank)" box below its values; each value has an × to remove it.
    - Typing `abc` for `EMPLOYEE_ID` is flagged inline: a red border, and the tooltip says
      `Filter value "abc" is not a valid SmallInt.` Remove it.
    - **Apply** stores the three rules as one step.
@@ -2189,9 +2196,11 @@ The script avoids exact comparisons on the fixture's 32-bit `REAL` columns (§6.
 7. Edit the filter (e.g. remove a rule) and **Apply**: the toolbar shows "Stale: execute again to refresh". Click
    **Undo** (or Cmd/Ctrl+Z with the focus outside a text field and no Cube dialog open): the three rules come back,
    and the rows stay marked stale, by design (§7.8: a restored query is a new object). **Show Pure** opens "Pure
-   query" with the lambda, ending in `->limit(1001)` at the default 1000 rows.
-8. **Export (dev)**, then **Download** (`<name>.cube.json`), and close. Reload the page: the cube is gone. **Import
-   (dev)**, choose the file under **Spec file** (or paste it as Cube spec), then **Import**. Import never executes:
+   query" with the lambda: it has `->limit(1001)`, one more than the default 1000 rows, and ends in
+   `->from(showcase::northwind::mapping::StoreRuntime)`.
+8. **Export (dev)**, then **Download** (`cube.cube.json`, since the cube has no name), and close. Reload the page:
+   the cube is gone. **Import (dev)**, click **Choose File** and pick the downloaded file (or paste its text into the
+   "Cube spec" box), then **Import**. Import never executes:
    the same graph comes back (`relational101`, `relational102`, `join101`, `filter101`, with the Filter still
    selected), and **F9** gives the same 19 rows. A second Export gives the same text as the downloaded file.
 
@@ -2201,8 +2210,9 @@ Also check and record:
   Join is connected and the Filter spliced in, after the editor panel opens and closes, after Import, and after
   height-only changes: dragging the splitter between the graph and the grid, and changing the window's height.
 - **No watermark** on the grid (D3: `localhost` shows none).
-- **The console before the first F9.** Once the grid has rendered, `legend-lego`'s DataGrid turns `console.error`
-  into `console.debug` (Appendix B), so read it before then. Expected: React 19's "Accessing element.ref was removed"
+- **The console, through the whole run**, at the Default and Verbose levels: outside production builds,
+  `legend-lego`'s DataGrid sends `console.error` to `console.debug` from each render until the grid is ready
+  (Appendix B), so an error logged while a run's grid loads shows only as Verbose. Expected: React 19's "Accessing element.ref was removed"
   from `react-reflex` when the editor panel opens or a splitter moves (Appendix B), and the Query ServiceWorker's
   "fetching the script" errors. Anything else is recorded.
 
@@ -2237,7 +2247,7 @@ and sources modal are designed. M3 can run in parallel if desired.
 | Window extend + filter gives wrong rows; QUALIFY silently dropped on 5 dialects ✅                                                | Wrong numbers in production                      | `let` isolation from M5 onward; the dialect harness; file engine issues                                                                                                     |
 | Engine multiplicities are wrong for outer joins and aggregates ✅                                                                 | Wrong operator offers, wrong grid nulls          | Cube infers nullability; conformance allows Cube ⊇ engine only                                                                                                              |
 | Engine typing bugs: `CHAR(n)`→`Varchar(1)`, `BINARY` 500, views `Varchar(0)`, `OTHER`→`String` with numbers, CLOB invalid JSON ✅ | Bad types, crashes                               | Picker flags; no length validation; the Cube fixture avoids them; a 200 with an unparseable body is treated as an error                                                     |
-| Studio library defects (batch `result`/`results`, lossy relation-type metadata, transformer bugs) ✅📄                            | Cube built on broken APIs                        | Cube's own `v1/` seam (D8); upstream PRs separately                                                                                                                         |
+| Studio library defects (batch `result`/`results` until #5593, lossy relation-type metadata, transformer bugs) ✅📄                | Cube built on broken APIs                        | Cube's own `v1/` seam (D8); upstream PRs separately                                                                                                                         |
 | The AGENTS.md V1 rule vs repo reality 📄                                                                                          | Review friction                                  | V1 symbols only under `legend-cube-builder/src/graph-manager/protocol/pure/v1/`, engine-backed tests excepted (§3.7); propose an AGENTS.md clarification                    |
 | Local inference (§5) must equal engine typing as transforms grow                                                                  | Divergence and confusing errors                  | Conformance suite per node type (from M4); engine typing for Extend with caching                                                                                            |
 | Saved format changes before the store exists                                                                                      | Stranded exports                                 | Format marked draft until M8; migrations are still written                                                                                                                  |
@@ -2309,10 +2319,10 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 
 **legend-studio**
 
-- `V1_LambdaReturnType.ts:87-90` / `V1_RemoteEngine.ts:811`: the batch relation-type call reads `results`; the engine
-  returns `result` ✅. It also breaks data-product code today (`DataProductIngestUtils.ts:813`;
-  `DataProductViewerState.ts:620-631` swallows the error). The tests mock `results`, which hides it.
-- `V1_RemoteEngine.ts:779-801`, `RelationTypeMetadata.ts`: precise type parameters are dropped.
+- **Fixed by #5593 (2026-10-06):** the batch relation-type call read `results` while the engine returns `result`,
+  which also broke data-product code; legend-graph now reads `result`.
+- `V1_RemoteEngine.ts:190-205` (`buildRelationTypeMetadata`), `RelationTypeMetadata.ts`: precise type parameters are
+  dropped.
 - `MetaModelConst.ts:64-82`: `PRECISE_PRIMITIVE_TYPE` has nonexistent `Date`/`Time`/`Decimal` paths and a wrong
   `Timestamp`. `PrecisePrimitiveType` has no package, so round trips shorten paths.
 - `V1_ValueSpecificationTransformer.ts:517`: ColSpec `function2` is built from `function1`. `:460`/`:496` drop the
@@ -2322,8 +2332,9 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 - Legend Query's version-revert modal crashes to a blank page when `lightQuery` is unset (a query without an
   execution context) 📄. Four `LegendQueryApplicationPlugin` types are declared but never used.
 - `legend-lego` `DataGrid` always registers enterprise modules. The query e2e README claims a community grid by default.
-  Outside production builds it also swaps `console.error` for `console.debug` on every render and never restores it
-  (`DataGrid.tsx:69-74`), so errors after a grid first renders show only as debug messages.
+  Outside production builds it also swaps `console.error` for `console.debug` on every render (`DataGrid.tsx:69-74`)
+  and restores it only in `onGridReady`, so an error logged while a grid renders, or after a re-render that doesn't
+  remount it, shows only as a debug message.
 - `legend-art` pins `react-reflex` 4.2.7, whose `ReflexContainer.getSize` and `onStopResize` read `element.ref`. With
   React 19, opening a resizable panel or dragging a splitter logs "Accessing element.ref was removed in React 19"
   (seen on the Cube page when the editor panel opens, M1.9). The fix is a `react-reflex` upgrade in legend-art, its own
