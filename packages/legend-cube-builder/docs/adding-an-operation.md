@@ -4,7 +4,8 @@ Start with the core half, in [`@finos/legend-cube`'s guide](../../legend-cube/do
 node, its messages, emitter and codec, and its entry in the node registry. The palette, the context menu and the
 canvas read that registry, so the new type shows there with no change here.
 
-The builder adds four pieces, each in a registry keyed by node type. Join and Filter are the examples to follow.
+The builder adds four pieces: a draft, an editor and help text, in registries keyed by node type, and an icon, keyed by
+the icon name the node's definition gives. Join and Filter are the examples to follow.
 
 ## 1. A draft
 
@@ -35,6 +36,14 @@ text (§17.9) where it has one.
 ## 4. An icon
 
 Map the icon name of the node's definition to a legend-art icon in `NODE_ICONS` (`src/components/CubeNodeIcon.tsx`).
+
+## Columns that change name
+
+The Join editor warns when a join key's column has no type in the model, tracing the column back to its table with
+`findColumnSources` (`src/stores/editors/CubeJoinDraft.ts`). It knows Join, and takes every other node to pass its
+input's columns through under the same name. If the new transform's output columns aren't its inputs' under the same
+name (a rename, a computed column), teach `findColumnSources` how they map back, or the warning goes missing or shows
+on the wrong column.
 
 ## Tests
 

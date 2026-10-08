@@ -13,12 +13,16 @@ run some files, e.g. `TEST_GROUP=core yarn workspace @finos/legend-cube-builder 
 
 ## Page tests, against a fake engine
 
-- `TEST__createCubeHost()` gives a host whose engine is `createFakeCubeEngine()`'s: Jest mocks answering from
-  `FAKE_NORTHWIND_OUTLINE` and `FAKE_NORTHWIND_SCHEMAS`. Override an answer per test, e.g.
-  `fake.execute.mockRejectedValueOnce(…)`.
+- `const { host, fake } = TEST__createCubeHost()` gives a host over `createFakeCubeEngine()`'s engine, and `fake`,
+  its Jest mocks, answering from `FAKE_NORTHWIND_OUTLINE` and `FAKE_NORTHWIND_SCHEMAS`. Override an answer per test,
+  e.g. `fake.execute.mockRejectedValueOnce(…)`, or pass answers to `TEST__createCubeHost(answers)`.
 - `TEST__renderInCubeApplication(<CubeEditor host={host} />, host.applicationStore, LEGEND_CUBE_TEST_ID.EDITOR)`
   renders the page in a Legend application and waits for it.
-- `TEST__importDocument` imports a cube and waits for its tables to be typed again, so nothing changes after the test.
+- A test of one part of the page makes the state itself, `new CubeEditorState(host, document)`, and renders the part
+  with it, e.g. `<CubeCanvas editorState={editorState} />` and `<CubeNodeEditorPanel editorState={editorState} />`
+  (as `CubeJoinEditor.test.tsx` does). `TEST__importDocument(editorState, document)` then imports a cube and waits
+  for its tables to be typed again, so nothing changes after the test. A `<CubeEditor>` test has no handle on the
+  state, so it imports through the Import dialog.
 - `TEST__findCanvasNode(id)`, `TEST__getCanvasNodes()` and `TEST__getCanvasNodeTooltip(node)` read the canvas.
 - `src/__test-utils__/CubeNorthwindTestQueries.ts` has the Northwind tables' columns and ready-made queries, e.g.
   `sliceQuery()`.
@@ -41,8 +45,11 @@ Drag and drop goes through react-dnd's HTML5 backend: fire `dragStart`, `dragEnt
   runs the group on that docker image.
 - **No `fetch` in Jest:** the repo's Jest setup blocks it. Engine tests reach the engine through axios: the
   `CUBE_ENGINE_TEST__*` helpers (`src/__test-utils__/CubeEngineTestSupport.ts`) for direct calls, and
-  `V1_createEngineBackedCubeEngine()` (`src/graph-manager/protocol/pure/v1/__test-utils__/`) for a `CubeEngine` whose
-  client calls go through them.
+  `V1_createEngineBackedCubeEngine()` (`src/graph-manager/protocol/pure/v1/__test-utils__/`). The latter returns
+  `{ engine, calls }`: a real `V1_LegendCubeEngine` whose client calls are spied onto those helpers (and legend-graph's
+  `ENGINE_TEST_SUPPORT__grammarToJSON_model`), and the spies. Make it in `beforeEach` or in the test: the repo's Jest
+  config restores mocks before each test, so an engine made in `beforeAll` would call the real client, and the
+  blocked `fetch`.
 - **Assert meaning, not text.** The CI engine image changes with every engine merge, so assert row counts, the set of
   keys returned, types and nullability, not SQL or Pure formatting, and never an engine answer that is a known
   defect.

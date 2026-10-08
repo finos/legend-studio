@@ -22,28 +22,28 @@ stable before 1.0: `src/index.ts` re-exports whole modules.
 - **Node types:** `createNodeRegistry()` lists them, in palette order. The palette, the context menu and the codec
   all read it.
 
-| Folder       | Holds                                                                                   |
-| ------------ | --------------------------------------------------------------------------------------- |
-| `types/`     | `CubeType`, the registry of precise primitive types, type families, compatibility       |
-| `values/`    | literal values, read and checked per type                                               |
-| `schema/`    | `Schema` and `SchemaColumn`, schema diffs                                               |
-| `graph/`     | `QueryNode` and its base classes, `Connection`, `Query`, `CubeDocument`                 |
-| `inference/` | schema inference, validation helpers, the errors that mark incomplete nodes             |
-| `nodes/`     | the node registry; `sources/` (relational table), `transforms/` (Join, Filter), Unknown |
-| `filter/`    | the filter tree, operators by type family, helpers that build filters                   |
-| `messages/`  | the validation messages                                                                 |
-| `ir/`        | the Cube IR, an emitter per node type (`emitters/`), the debug printer                  |
-| `spec/`      | the saved-spec codec, a codec per node type (`codecs/`), migrations                     |
-| `utils/`     | assertions and JSON helpers                                                             |
+| Folder       | Holds                                                                                                           |
+| ------------ | --------------------------------------------------------------------------------------------------------------- |
+| `types/`     | `CubeType`, the registry of precise primitive types, type families, compatibility                               |
+| `values/`    | literal values, read and checked per type                                                                       |
+| `schema/`    | `Schema` and `SchemaColumn`, schema diffs                                                                       |
+| `graph/`     | `QueryNode` and its base classes, `Connection`, `Query`, `CubeDocument`                                         |
+| `inference/` | schema inference, which marks incomplete and upstream-invalid nodes; validation helpers                         |
+| `nodes/`     | the node registry; `sources/` (relational table), `transforms/` (Join, Filter), Unknown                         |
+| `filter/`    | the filter tree, operators by type family, helpers that build filters                                           |
+| `messages/`  | the validation messages, including `ERR_INCOMPLETE` and `ERR_SCHEMAS` for incomplete and upstream-invalid nodes |
+| `ir/`        | the Cube IR, an emitter per node type (`emitters/`), the debug printer                                          |
+| `spec/`      | the saved-spec codec, a codec per node type (`codecs/`), migrations                                             |
+| `utils/`     | assertions and JSON helpers                                                                                     |
 
 ## Saved spec
 
 A cube is saved as JSON, format version 1 (`CURRENT_FORMAT_VERSION`): `formatVersion`, `name`, `context` (the model,
-kept as given, and the runtime), `query` (`selected` and `nodes`) and `meta`. Each node has `kind`, `id`, `inputs` and
-its own fields.
+kept as given, and the runtime), `query` (`selected` and `nodes`) and `meta`. Each node has `kind`, `id`, its `inputs` (left
+out for a source, which has none) and its own fields.
 
-- Values are typed, and numbers are written as strings, so no digit is lost. Each source keeps a snapshot of its
-  schema.
+- Values are typed, and numbers are written as strings, so no digit is lost. A resolved source keeps a snapshot of
+  its schema; an unresolved one is saved without it, and typed again when the cube is imported.
 - Keys this version doesn't know are kept and written back, and a node of an unknown kind is kept as an Unknown node.
 - A spec is at most 1 MiB (`MAX_SPEC_BYTES`). One saved by a newer version is read as read-only. There are no
   migrations yet (`CUBE_SPEC_MIGRATIONS`), since version 1 is the first.

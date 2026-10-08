@@ -14,8 +14,8 @@ interface CubeHost {
 }
 ```
 
-- **The application store** gives the page its commands, user data, clipboard, theme, notifications, alerts and
-  telemetry service. Cube keeps no auth or config of its own.
+- **The application store** gives the page its commands, user data, clipboard, theme, notifications and alerts, and
+  its telemetry service, which Cube doesn't use yet: it sends no events. Cube keeps no auth or config of its own.
 - **The engine:** `buildCubeEngine(config, tracerService)` builds Legend's implementation of the `CubeEngine` port.
   `config` is the engine client's configuration (`CubeEngineConfig`); Legend Query passes its own engine server URL
   and options, so Cube talks to the engine its query editor uses.
@@ -58,9 +58,12 @@ The page registers the commands while it is open: F9 runs the query, and Ctrl+Z 
    `curl -s localhost:6300/api/server/v1/info`.
 2. Run `yarn build` once: `yarn dev:ts` doesn't build the stylesheets.
 3. Run `yarn dev:ts` and `yarn dev:query`, and open `http://localhost:9001/query/cube`.
-4. Run `yarn workspace @finos/legend-cube-builder dev` to rebuild the stylesheet as you change it.
+4. Run `yarn workspace @finos/legend-cube-builder dev:sass` to rebuild the stylesheet as you change it (the root
+   `yarn dev:ts` already rebuilds the TypeScript).
 
-If Tailwind classes seem to do nothing, the deployment's Tailwind watcher may have stopped (it exits when
-`yarn dev:query` runs without a terminal): run `yarn workspace @finos/legend-application-query-deployment build:tailwindcss`.
+If Tailwind classes seem to do nothing, the deployment's Tailwind watcher may have stopped: it exits when
+`yarn dev:query` runs without a terminal. Restart it in a terminal of its own with
+`yarn workspace @finos/legend-application-query-deployment dev:tailwindcss`, or rebuild once with `build:tailwindcss`
+(again after each new class).
 
 The manual check of the whole page is the plan's Part B (PLAN §11.2).

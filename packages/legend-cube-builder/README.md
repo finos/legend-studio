@@ -26,10 +26,11 @@ the Cube store exists. A pasted model is kept in the cube. Nothing links to the 
 It depends on `@finos/legend-cube`, legend-graph, legend-application, legend-art, legend-lego and legend-shared, never
 on an application package (`legend-application-*`) or on legend-query-builder.
 
-**The V1 rule:** `V1_*` protocol classes appear only under `src/graph-manager/protocol/pure/v1/`. The repo's
-`enforce-module-import-hierarchy` lint rule forbids imports between `stores/` or `components/` and `v1/`, both ways,
-and `buildCubeEngine` is the only code that makes a `V1_LegendCubeEngine`. The engine-backed tests in `src/__tests__/`
-are the exception: they need both the adapter and `stores/`.
+**The V1 rule:** `V1_*` protocol code lives under `src/graph-manager/protocol/pure/v1/`. The one product file outside
+it that names `V1_*` is the seam `src/graph-manager/protocol/pure/CubeEngineBuilder.ts`: `buildCubeEngine` is the only
+product code that makes a `V1_LegendCubeEngine`, so hosts never name a `V1_*` symbol. The repo's
+`enforce-module-import-hierarchy` lint rule forbids imports between `stores/` or `components/` and `v1/`, both ways.
+The engine-backed tests in `src/__tests__/` are an exception: they need both the adapter and `stores/`.
 
 ## Public API
 
