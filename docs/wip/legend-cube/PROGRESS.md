@@ -31,7 +31,7 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
 - [x] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
 - [x] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
-- [ ] **M1.9** Slice acceptance (part B, manual) and hardening
+- [x] **M1.9** Slice acceptance (part B, manual) and hardening (accepted and signed off 2026-10-08; follow-up PR to open)
 - [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
 - [ ] M2 Rename + Join autofix + simple unary transforms
 - [ ] M3 Entry points, sources modal, depot catalog (user to design entry points and the sources modal first)
@@ -69,8 +69,8 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
    the last commit that changes code or tests.
 6. ✅ **Part B acceptance, 2026-10-08:** the user ran all of PLAN §11.2 Part B by hand and reported that it passed,
    on `cubeV1` at `4064209a6` (code and tests as at the acceptance head `92afa6f9f`), in Chrome, against the local
-   IntelliJ engine (commit `93d92b4`); docker CORS waived. Still to record: the user's M1 sign-off. Then the follow-up
-   PR.
+   IntelliJ engine (commit `93d92b4`); docker CORS waived. **M1 review sign-off** (PLAN §11.1): the finos approval of
+   #5591 (Yasirmod17, 2026-10-08) and the user's OK on 2026-10-08. Next: the follow-up PR.
 
 **In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
 from `cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
