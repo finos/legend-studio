@@ -1,5 +1,13 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.1.4
+
+### Patch Changes
+
+- [#5612](https://github.com/finos/legend-studio/pull/5612) [`2477706`](https://github.com/finos/legend-studio/commit/247770683d4fcf3a48c9568f8589f0339a4517c7) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add RMS Data requests approved users to Approved users list on Data product viewer page on Marketplace.
+
+- [#5622](https://github.com/finos/legend-studio/pull/5622) [`2f5dfa3`](https://github.com/finos/legend-studio/commit/2f5dfa362cde42cbc52f544d2bb669800b32fdd1) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Read the `resourceBuilder` of a data product artifact access point implementation as a list, matching the new artifact schema. Artifacts generated before the change, which have a single resource builder, still load. A single resource builder is read as a one-element list, and a missing or `null` one as an empty list. A resource builder of an unknown type is read as a `V1_UnknownResourceBuilder` that keeps its raw JSON, so new backend types no longer fail the whole artifact. LegendAI now joins the scripts of all `databaseDDL` resource builders of an access point.
+
 ## 0.1.3
 
 ### Patch Changes

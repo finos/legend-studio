@@ -1,5 +1,11 @@
 # @finos/legend-server-lakehouse
 
+## 0.3.88
+
+### Patch Changes
+
+- [#5612](https://github.com/finos/legend-studio/pull/5612) [`2477706`](https://github.com/finos/legend-studio/commit/247770683d4fcf3a48c9568f8589f0339a4517c7) ([@TharunRajeev](https://github.com/TharunRajeev)) - Add RMS Data requests approved users to Approved users list on Data product viewer page on Marketplace.
+
 ## 0.3.87
 
 ## 0.3.86
