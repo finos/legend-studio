@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-export enum LEGEND_CUBE_TEST_ID {
-  EDITOR = 'legend-cube__editor',
-  GRAPH_REGION = 'legend-cube__graph-region',
-  GRID_REGION = 'legend-cube__grid-region',
-  CANVAS = 'legend-cube__canvas',
-  CANVAS_NODE = 'legend-cube__canvas-node',
-  CANVAS_EDGE_LABEL = 'legend-cube__canvas-edge-label',
-  RESULT_GRID = 'legend-cube__result-grid',
-  GRID_TOOLBAR = 'legend-cube__grid-toolbar',
-  EXECUTION_ERROR = 'legend-cube__execution-error',
-  SQL_PANEL = 'legend-cube__sql-panel',
-}
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import { createContext, useContext } from 'react';
+import type { CubeEditorState } from '../../stores/CubeEditorState.js';
+
+// React Flow renders the canvas's nodes itself, so they reach the page's
+// state through a context rather than props
+export const CubeCanvasContext = createContext<CubeEditorState | undefined>(
+  undefined,
+);
+
+export const useCubeCanvasEditorState = (): CubeEditorState =>
+  guaranteeNonNullable(
+    useContext(CubeCanvasContext),
+    `A canvas node must be rendered inside the Cube canvas`,
+  );

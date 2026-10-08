@@ -47,6 +47,10 @@ import {
   within,
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
+import {
+  TEST__findCanvasNode,
+  TEST__getCanvasNodeTooltip,
+} from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
@@ -158,10 +162,13 @@ const executeButton = (): HTMLButtonElement =>
   within(toolbar()).getByText<HTMLButtonElement>('Execute');
 const rowLimitInput = (): HTMLInputElement =>
   within(toolbar()).getByLabelText<HTMLInputElement>('Row limit');
-const nodeRow = (nodeId: string): HTMLElement =>
-  screen
-    .getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)
-    .find((row) => within(row).queryByText(nodeId)) as HTMLElement;
+/** Makes the node the one Execute runs, as Ctrl-click on the canvas does */
+const selectNode = async (nodeId: string): Promise<void> => {
+  fireEvent.click(await TEST__findCanvasNode(nodeId), { ctrlKey: true });
+};
+/** The node's errors and warnings, from its tooltip, which ends with its description and id */
+const nodeProblems = async (nodeId: string): Promise<string[]> =>
+  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -2);
 
 const grid = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.RESULT_GRID);
@@ -517,7 +524,7 @@ describe('Cube results', () => {
     fireEvent.click(executeButton());
     await cellTexts(0);
     expect([0, 1].map(headerText)).toEqual(['ID', 'NAME']);
-    fireEvent.click(within(nodeRow('relational102')).getByText('Select'));
+    await selectNode('relational102');
     expect(within(toolbar()).getByText(/Stale/u)).toBeDefined();
     // the rows are still the first table's, so are their headers
     expect([0, 1].map(headerText)).toEqual(['ID', 'NAME']);
@@ -536,7 +543,7 @@ describe('Cube results', () => {
     expect(executeButton().title).toContain('• ');
     expect(executeButton().title).toContain('NOPE');
     // a valid node upstream can run
-    fireEvent.click(within(nodeRow('join101')).getByText('Select'));
+    await selectNode('join101');
     expect(executeButton().disabled).toBe(false);
   });
 
@@ -558,7 +565,7 @@ describe('Cube results', () => {
     expect(executeButton().title).toContain(
       'Sources from different databases are not supported yet',
     );
-    fireEvent.click(within(nodeRow('relational101')).getByText('Select'));
+    await selectNode('relational101');
     expect(executeButton().disabled).toBe(false);
   });
 
@@ -581,10 +588,9 @@ describe('Cube results', () => {
     );
     fireEvent.click(within(error).getByText('Details'));
     expect(within(error).getByText(/at line 7/u)).toBeDefined();
-    const [row] = screen.getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
-    expect(within(row as HTMLElement).getByRole('alert').textContent).toBe(
+    expect(await nodeProblems('relational101')).toEqual([
       "The column 'NAME' can't be found in the relation",
-    );
+    ]);
   });
 
   test('Cuts a long first line at 500 characters, and keeps the whole line in its tooltip and under Details', async () => {
@@ -663,14 +669,12 @@ describe('Cube results', () => {
     );
     fireEvent.click(executeButton());
     await screen.findByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR);
-    expect(within(nodeRow('filter101')).getByRole('alert').textContent).toBe(
-      "Can't find column 'X'",
-    );
-    fireEvent.click(within(nodeRow('join101')).getByText('Select'));
+    expect(await nodeProblems('filter101')).toEqual(["Can't find column 'X'"]);
+    await selectNode('join101');
     expect(
       screen.queryByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR),
     ).toBeNull();
-    expect(within(nodeRow('filter101')).queryByRole('alert')).toBeNull();
+    expect(await nodeProblems('filter101')).toEqual([]);
     expect(
       screen.getByText('Execute the query to see its rows.'),
     ).toBeDefined();
@@ -691,7 +695,7 @@ describe('Cube results', () => {
     );
     fireEvent.click(executeButton());
     expect(await within(toolbar()).findByText('executing query')).toBeDefined();
-    fireEvent.click(within(nodeRow('relational102')).getByText('Select'));
+    await selectNode('relational102');
     await act(async () => {
       failRun(
         new CubeEngineError(
@@ -705,8 +709,8 @@ describe('Cube results', () => {
     expect(
       screen.queryByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR),
     ).toBeNull();
-    expect(within(nodeRow('relational101')).queryByRole('alert')).toBeNull();
-    expect(within(nodeRow('relational102')).queryByRole('alert')).toBeNull();
+    expect(await nodeProblems('relational101')).toEqual([]);
+    expect(await nodeProblems('relational102')).toEqual([]);
     // nor the earlier run's rows, as the failed run's
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.RESULT_GRID)).toBeNull();
     expect(within(toolbar()).queryByText(/rows? in/u)).toBeNull();

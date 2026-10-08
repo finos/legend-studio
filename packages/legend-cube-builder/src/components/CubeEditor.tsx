@@ -33,7 +33,7 @@ import { LEGEND_CUBE_TEST_ID } from '../__lib__/LegendCubeTesting.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
 import type { CubeHost } from '../stores/CubeHost.js';
 import { CubeButton } from './CubeButton.js';
-import { CubeNodeList } from './graph/CubeNodeList.js';
+import { CubeCanvas } from './canvas/CubeCanvas.js';
 import { CubeGridRegion } from './grid/CubeGridRegion.js';
 import { CubeShowPureDialog } from './show-pure/CubeShowPureDialog.js';
 import { CubeSourcePicker } from './source-picker/CubeSourcePicker.js';
@@ -42,12 +42,31 @@ import { CubeSpecTransferDialog } from './spec-transfer/CubeSpecTransferDialog.j
 const READ_ONLY_TITLE =
   "This cube was saved by a newer version of Legend Cube, so it can't be changed or exported";
 
+/** The graph never takes more of the window's height than this, so the results stay in view (spec §17.3) */
+const MAX_GRAPH_SHARE_OF_WINDOW = 0.6;
+
+/** The tallest the graph region may be, following the window's height */
+const useMaxGraphHeight = (): number => {
+  const [windowHeight, setWindowHeight] = useState(() => window.innerHeight);
+  useEffect(() => {
+    const onResize = (): void => setWindowHeight(window.innerHeight);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return Math.round(windowHeight * MAX_GRAPH_SHARE_OF_WINDOW);
+};
+
 const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
   const { editorState } = props;
   const { readOnly } = editorState;
+  const { showGraph } = editorState.document.meta.presentation;
   return (
     <div
-      className="flex h-full flex-col bg-[var(--color-bg-panel)]"
+      className={
+        showGraph
+          ? 'flex h-full flex-col bg-[var(--color-bg-panel)]'
+          : 'flex shrink-0 flex-col bg-[var(--color-bg-panel)]'
+      }
       data-testid={LEGEND_CUBE_TEST_ID.GRAPH_REGION}
     >
       <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--color-border-default)] bg-[var(--color-bg-panel-header)] px-2">
@@ -105,6 +124,16 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
         >
           Import (dev)
         </CubeButton>
+        <CubeButton
+          title={
+            showGraph
+              ? 'Hide the graph, leaving more room for the results'
+              : 'Show the graph'
+          }
+          onClick={() => editorState.setShowGraph(!showGraph)}
+        >
+          {showGraph ? 'Hide graph' : 'Show graph'}
+        </CubeButton>
       </div>
       <PanelLoadingIndicator isLoading={editorState.isResolvingSources} />
       {readOnly && (
@@ -115,23 +144,11 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
           {READ_ONLY_TITLE}. You can view and run it.
         </div>
       )}
-      <div className="min-h-0 flex-1 overflow-auto">
-        <CubeNodeList
-          editorState={editorState}
-          emptyState={
-            <div className="flex flex-col items-center gap-2">
-              <span>No tables yet: add a table to start.</span>
-              <CubeButton
-                primary={true}
-                disabled={readOnly}
-                onClick={() => editorState.sourcePicker.open()}
-              >
-                Add a table
-              </CubeButton>
-            </div>
-          }
-        />
-      </div>
+      {showGraph && (
+        <div className="min-h-0 flex-1">
+          <CubeCanvas editorState={editorState} />
+        </div>
+      )}
       <CubeSourcePicker editorState={editorState} />
       <CubeSpecTransferDialog editorState={editorState} />
       <CubeShowPureDialog editorState={editorState} />
@@ -141,8 +158,9 @@ const CubeGraphRegion = observer((props: { editorState: CubeEditorState }) => {
 
 /**
  * The Legend Cube page: the query above, its results below, both always
- * shown (PLAN §7.1). The host gives it the engine, the models and the
- * application store; the page's state lives as long as the page.
+ * shown (PLAN §7.1); hiding the graph leaves its header. The host gives it
+ * the engine, the models and the application store; the page's state lives
+ * as long as the page.
  */
 export const CubeEditor = observer(
   (props: {
@@ -154,21 +172,31 @@ export const CubeEditor = observer(
       () => new CubeEditorState(props.host, props.initialDocument),
     );
     useEffect(() => () => editorState.dispose(), [editorState]);
+    const maxGraphHeight = useMaxGraphHeight();
 
     return (
       <div
         className="legend-cube flex flex-col bg-[var(--color-bg-app)] text-[var(--color-text-primary)]"
         data-testid={LEGEND_CUBE_TEST_ID.EDITOR}
       >
-        <ResizablePanelGroup orientation="horizontal">
-          <ResizablePanel minSize={96}>
+        {editorState.document.meta.presentation.showGraph ? (
+          <ResizablePanelGroup orientation="horizontal">
+            <ResizablePanel minSize={96} maxSize={maxGraphHeight}>
+              <CubeGraphRegion editorState={editorState} />
+            </ResizablePanel>
+            <ResizablePanelSplitter />
+            <ResizablePanel minSize={96}>
+              <CubeGridRegion editorState={editorState} />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <>
             <CubeGraphRegion editorState={editorState} />
-          </ResizablePanel>
-          <ResizablePanelSplitter />
-          <ResizablePanel minSize={96}>
-            <CubeGridRegion editorState={editorState} />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            <div className="min-h-0 flex-1">
+              <CubeGridRegion editorState={editorState} />
+            </div>
+          </>
+        )}
       </div>
     );
   },

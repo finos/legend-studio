@@ -50,6 +50,10 @@ import {
   within,
 } from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  TEST__findCanvasNode,
+  TEST__getCanvasNodeTooltip,
+} from '../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
@@ -144,16 +148,14 @@ const headerButton = (text: string): HTMLButtonElement =>
  */
 const headerStrip = (): HTMLElement =>
   guaranteeNonNullable(headerButton('Import (dev)').parentElement);
+/** The ids of the nodes on the canvas, in the query's order */
 const nodeIds = (): string[] =>
-  screen
-    .queryAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)
-    .map((row) => row.querySelector('.text-sm')?.textContent ?? '');
-const nodeRow = (id: string): HTMLElement =>
-  guaranteeNonNullable(
-    screen
-      .queryAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)
-      .find((row) => row.querySelector('.text-sm')?.textContent === id),
+  Array.from(document.querySelectorAll('.react-flow__node')).map(
+    (node) => node.getAttribute('data-id') ?? '',
   );
+/** The node's errors and warnings, from its tooltip, which ends with its description and id */
+const nodeProblems = async (nodeId: string): Promise<string[]> =>
+  TEST__getCanvasNodeTooltip(await TEST__findCanvasNode(nodeId)).slice(0, -2);
 const executeButton = (): HTMLButtonElement =>
   within(
     screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR),
@@ -309,13 +311,15 @@ describe('Cube spec export and import, on the page', () => {
     await waitFor(() =>
       expect(within(graphRegion()).queryByText('resolving source')).toBeNull(),
     );
-    expect(nodeIds()).toEqual([
-      'relational101',
-      'relational102',
-      'join101',
-      'filter101',
-      'pivot101',
-    ]);
+    await waitFor(() =>
+      expect(nodeIds()).toEqual([
+        'relational101',
+        'relational102',
+        'join101',
+        'filter101',
+        'pivot101',
+      ]),
+    );
     fireEvent.click(headerButton('Export (dev)'));
     dialog = await screen.findByRole('dialog');
     expect(exportedText(dialog)).toBe(spec);
@@ -383,23 +387,25 @@ describe('Cube spec export and import, on the page', () => {
 
   test('Imports a pasted spec in place of the cube, runs nothing, and Undo brings the cube back', async () => {
     const { fake } = await renderPage(ordersDocument());
-    expect(nodeIds()).toEqual(['relational101']);
+    await waitFor(() => expect(nodeIds()).toEqual(['relational101']));
     const dialog = await importText(serializeCubeSpec(sliceDocument()));
     await waitForElementToBeRemoved(dialog);
     expect(within(graphRegion()).getByText('Orders in France')).toBeDefined();
-    expect(nodeIds()).toEqual([
-      'relational101',
-      'relational102',
-      'join101',
-      'filter101',
-    ]);
+    await waitFor(() =>
+      expect(nodeIds()).toEqual([
+        'relational101',
+        'relational102',
+        'join101',
+        'filter101',
+      ]),
+    );
     expect(fake.execute).not.toHaveBeenCalled();
     expect(
       screen.getByText('Execute the query to see its rows.'),
     ).toBeDefined();
 
     fireEvent.click(headerButton('Undo'));
-    expect(nodeIds()).toEqual(['relational101']);
+    await waitFor(() => expect(nodeIds()).toEqual(['relational101']));
   });
 
   test('Shows where a broken spec is broken, keeps the dialog open and the cube as it was', async () => {
@@ -412,7 +418,7 @@ describe('Cube spec export and import, on the page', () => {
     expect(within(dialog).getByRole('alert').textContent).toBe(
       "Can't import the spec: query.nodes[0].table must be a string",
     );
-    expect(nodeIds()).toEqual(['relational101']);
+    await waitFor(() => expect(nodeIds()).toEqual(['relational101']));
     expect(headerButton('Undo').disabled).toBe(true);
   });
 
@@ -444,7 +450,7 @@ describe('Cube spec export and import, on the page', () => {
     await waitFor(() => expect(text.value).toBe(spec));
     fireEvent.click(within(dialog).getByText('Import'));
     await waitForElementToBeRemoved(dialog);
-    expect(nodeIds()).toHaveLength(4);
+    await waitFor(() => expect(nodeIds()).toHaveLength(4));
   });
 
   test('Opens a spec from a newer version read-only, says so, and still selects, runs and shows its Pure', async () => {
@@ -482,13 +488,15 @@ describe('Cube spec export and import, on the page', () => {
     await waitForElementToBeRemoved(pure);
 
     // so does Select, and the cube stays read-only
-    const select = within(nodeRow('join101')).getByText<HTMLButtonElement>(
-      'Select',
+    fireEvent.click(await TEST__findCanvasNode('join101'), { ctrlKey: true });
+    await waitFor(async () =>
+      expect(
+        (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
+      ).toBe('true'),
     );
-    expect(select.disabled).toBe(false);
-    fireEvent.click(select);
-    expect(within(nodeRow('join101')).getByText('(Selected)')).toBeDefined();
-    expect(within(nodeRow('filter101')).getByText('Select')).toBeDefined();
+    expect(
+      (await TEST__findCanvasNode('filter101')).getAttribute('aria-current'),
+    ).toBe('false');
     expect(within(graphRegion()).getByRole('status')).toBe(banner);
     expect(headerButton('Undo').disabled).toBe(true);
     expect(headerButton('Export (dev)').disabled).toBe(true);
@@ -509,9 +517,10 @@ describe('Cube spec export and import, on the page', () => {
     }
     const dialog = await importText(JSON.stringify(spec));
     await waitForElementToBeRemoved(dialog);
-    const row = screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
-    expect((await within(row).findByRole('status')).textContent).toBe(
-      'This table changed since the cube was saved: added SHIP_COUNTRY',
+    await waitFor(async () =>
+      expect(await nodeProblems('relational101')).toEqual([
+        'This table changed since the cube was saved: added SHIP_COUNTRY',
+      ]),
     );
     expect(fake.resolveSchemas).toHaveBeenCalledTimes(1);
     expect(within(graphRegion()).queryByText('resolving source')).toBeNull();
@@ -556,7 +565,7 @@ describe('Cube spec export and import, on the page', () => {
         graphRegion().classList.contains('panel-loading-indicator__container'),
       ).toBe(false),
     );
-    expect(nodeIds()).toEqual(['relational101']);
-    expect(within(nodeRow('relational101')).queryByRole('status')).toBeNull();
+    await waitFor(() => expect(nodeIds()).toEqual(['relational101']));
+    expect(await nodeProblems('relational101')).toEqual([]);
   });
 });

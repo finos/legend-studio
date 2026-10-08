@@ -25,7 +25,13 @@ import {
   RelationalTableSource,
   Schema,
 } from '@finos/legend-cube';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import {
   NORTHWIND_DATABASE,
@@ -34,6 +40,11 @@ import {
   ORDERS_COLUMNS,
   sliceQuery,
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
+import {
+  TEST__findCanvasNode,
+  TEST__getCanvasNodes,
+  TEST__getCanvasNodeTooltip,
+} from '../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
@@ -51,8 +62,9 @@ import { CubeEditor } from '../CubeEditor.js';
 // when the group renders, after this line has run
 const mockPanelGroupTestId = 'legend-cube-test__panel-group';
 
-// legend-art renders ResizablePanelGroup as a bare div under test, dropping
-// its orientation; this one keeps it, so the layout can be read
+// legend-art renders ResizablePanelGroup and ResizablePanel as bare divs under
+// test, dropping their props; these keep the orientation and the largest
+// size, so the layout can be read
 jest.mock('@finos/legend-art', () => ({
   ...jest.requireActual<object>('@finos/legend-art'),
   ResizablePanelGroup: function ResizablePanelGroup(props: {
@@ -67,6 +79,12 @@ jest.mock('@finos/legend-art', () => ({
         {props.children}
       </div>
     );
+  },
+  ResizablePanel: function ResizablePanel(props: {
+    maxSize?: number;
+    children?: React.ReactNode;
+  }) {
+    return <div data-max-size={props.maxSize}>{props.children}</div>;
   },
 }));
 
@@ -118,9 +136,6 @@ const neverAnswers = (fake: FakeCubeEngine): void => {
   );
 };
 
-const rowOf = (rows: HTMLElement[], nodeId: string): HTMLElement | undefined =>
-  rows.find((row) => within(row).queryByText(nodeId) !== null);
-
 const toolbar = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR);
 
@@ -154,6 +169,71 @@ describe('Cube page', () => {
     ]);
   });
 
+  test('Hides the graph down to its header, keeping the rows fresh, and shows it again', async () => {
+    await renderPage(withOrders(), (fake) =>
+      fake.execute.mockResolvedValue({
+        columns: ORDERS_COLUMNS.map((column) => column.name),
+        rows: [ORDERS_COLUMNS.map(() => null)],
+        sql: [],
+        durationMs: 1,
+      }),
+    );
+    fireEvent.click(within(toolbar()).getByText('Execute'));
+    await within(toolbar()).findByText(/rows? in/u);
+    const graph = (): HTMLElement =>
+      screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
+    fireEvent.click(within(graph()).getByText('Hide graph'));
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
+    // the header stays, above the results, outside any resizable group
+    expect(within(graph()).getByText('Add table')).toBeDefined();
+    expect(screen.queryByTestId(mockPanelGroupTestId)).toBeNull();
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_REGION)).toBeDefined();
+    expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+    expect(within(toolbar()).getByText(/rows? in/u)).toBeDefined();
+    // an edit of the cube, so Undo shows the graph again
+    fireEvent.click(within(graph()).getByText('Undo'));
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeDefined();
+    expect(within(graph()).getByText('Hide graph')).toBeDefined();
+    fireEvent.click(within(graph()).getByText('Hide graph'));
+    fireEvent.click(within(graph()).getByText('Show graph'));
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeDefined();
+    expect(within(toolbar()).queryByText(/Stale/u)).toBeNull();
+  });
+
+  test('Opens a cube saved with its graph hidden that way', async () => {
+    await renderPage(
+      new CubeDocument({
+        query: sliceQuery(),
+        meta: { presentation: { showGraph: false, columnWidths: [] } },
+      }),
+    );
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.CANVAS)).toBeNull();
+    expect(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).getByText(
+        'Show graph',
+      ),
+    ).toBeDefined();
+  });
+
+  test('Keeps the graph to at most 60% of the window height, as the window resizes', async () => {
+    const { getByTestId } = await renderPage();
+    const graphPanel = (): HTMLElement | null =>
+      getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION).parentElement;
+    expect(graphPanel()?.getAttribute('data-max-size')).toBe(
+      String(Math.round(window.innerHeight * 0.6)),
+    );
+    const height = window.innerHeight;
+    try {
+      act(() => {
+        window.innerHeight = 1000;
+        window.dispatchEvent(new Event('resize'));
+      });
+      expect(graphPanel()?.getAttribute('data-max-size')).toBe('600');
+    } finally {
+      window.innerHeight = height;
+    }
+  });
+
   test("Marks its root as Legend Cube's, never as Data Cube's", async () => {
     const { baseElement, getByTestId } = await renderPage();
     // `.legend-cube` gives the page its height and width (style/index.scss),
@@ -173,74 +253,55 @@ describe('Cube page', () => {
     expect(within(graph).queryByText('Unsaved Query')).toBeNull();
   });
 
-  test("Lists the query's nodes, with the one Execute runs marked", async () => {
-    const { getAllByTestId } = await renderPage(
+  test("Draws the query's nodes, with the one Execute runs marked", async () => {
+    await renderPage(
       new CubeDocument({ context: CONTEXT, query: sliceQuery() }),
     );
-    const rows = getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
-    expect(rows).toHaveLength(4);
-    const filterRow = rowOf(rows, 'filter101') as HTMLElement;
-    expect(filterRow.getAttribute('aria-current')).toBe('true');
-    expect(within(filterRow).getByText('(Selected)')).toBeDefined();
+    const filter = await TEST__findCanvasNode('filter101');
+    expect(TEST__getCanvasNodes()).toHaveLength(4);
+    expect(filter.getAttribute('aria-current')).toBe('true');
+    const orders = await TEST__findCanvasNode('relational101');
+    expect(orders.getAttribute('aria-current')).toBe('false');
     expect(
-      within(rowOf(rows, 'relational101') as HTMLElement).getByText(
-        'Table "ORDERS" from schema "NORTHWIND"',
-      ),
+      within(orders).getByText('Table "ORDERS" from schema "NORTHWIND"'),
     ).toBeDefined();
   });
 
-  test('Moves the run to another node with Select', async () => {
-    const { getAllByTestId } = await renderPage(
-      new CubeDocument({ query: sliceQuery() }),
-    );
-    const joinRow = rowOf(
-      getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW),
-      'join101',
-    ) as HTMLElement;
-    fireEvent.click(within(joinRow).getByText('Select'));
-    const rows = getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+  test('Moves the run to another node with Ctrl-click', async () => {
+    await renderPage(new CubeDocument({ query: sliceQuery() }));
+    fireEvent.click(await TEST__findCanvasNode('join101'), { ctrlKey: true });
     expect(
-      within(rowOf(rows, 'join101') as HTMLElement).getByText('(Selected)'),
-    ).toBeDefined();
+      (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
+    ).toBe('true');
     expect(
-      within(rowOf(rows, 'filter101') as HTMLElement).getByText('Select'),
-    ).toBeDefined();
+      (await TEST__findCanvasNode('filter101')).getAttribute('aria-current'),
+    ).toBe('false');
   });
 
   test('Undoes the last change from the header, and can undo nothing on a fresh page', async () => {
-    const { getAllByTestId } = await renderPage(
-      new CubeDocument({ query: sliceQuery() }),
-    );
+    await renderPage(new CubeDocument({ query: sliceQuery() }));
     const header = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
     const undo = within(header).getByText<HTMLButtonElement>('Undo');
     expect(undo.disabled).toBe(true);
-    fireEvent.click(
-      within(
-        rowOf(
-          getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW),
-          'join101',
-        ) as HTMLElement,
-      ).getByText('Select'),
-    );
+    fireEvent.click(await TEST__findCanvasNode('join101'), { metaKey: true });
     expect(undo.disabled).toBe(false);
     fireEvent.click(undo);
-    const rows = getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
     expect(
-      within(rowOf(rows, 'filter101') as HTMLElement).getByText('(Selected)'),
-    ).toBeDefined();
+      (await TEST__findCanvasNode('filter101')).getAttribute('aria-current'),
+    ).toBe('true');
     expect(
-      within(rowOf(rows, 'join101') as HTMLElement).getByText('Select'),
-    ).toBeDefined();
+      (await TEST__findCanvasNode('join101')).getAttribute('aria-current'),
+    ).toBe('false');
     expect(undo.disabled).toBe(true);
   });
 
-  test("Shows a node's errors on its row, query-level rules included", async () => {
+  test("Shows a node's errors on it, query-level rules included", async () => {
     const otherDatabase = new RelationalTableSource(
       'relational102',
       { database: 'other::Database', schema: 'NORTHWIND', table: 'ORDERS' },
       { kind: 'resolved', schema: new Schema(ORDERS_COLUMNS) },
     );
-    const { getAllByTestId } = await renderPage(
+    await renderPage(
       new CubeDocument({
         query: new Query(
           [
@@ -252,22 +313,19 @@ describe('Cube page', () => {
         ),
       }),
     );
-    const rows = getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
     expect(
-      within(rowOf(rows, 'relational101') as HTMLElement).queryAllByRole(
-        'alert',
-      ),
-    ).toHaveLength(0);
-    expect(
-      within(rowOf(rows, 'relational102') as HTMLElement).getByRole('alert')
-        .textContent,
-    ).toContain('Sources from different databases are not supported yet');
+      TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('relational101')),
+    ).toEqual(['Table "ORDERS" from schema "NORTHWIND"', 'relational101']);
+    const other = await TEST__findCanvasNode('relational102');
+    expect(other.classList.contains('legend-cube__node--invalid')).toBe(true);
+    expect(TEST__getCanvasNodeTooltip(other)[0]).toContain(
+      'Sources from different databases are not supported yet',
+    );
   });
 
-  test('Shows each of two identical errors on its row', async () => {
-    // two conditions without a value give the same message twice; a React key
-    // warning would throw here, since the tests' console.error throws
-    const { getAllByTestId } = await renderPage(
+  test('Shows two identical errors of a node once', async () => {
+    // two conditions without a value give the same message twice
+    await renderPage(
       new CubeDocument({
         context: CONTEXT,
         query: sliceQuery(
@@ -278,25 +336,23 @@ describe('Cube page', () => {
         ),
       }),
     );
-    const filterRow = rowOf(
-      getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW),
-      'filter101',
-    ) as HTMLElement;
     expect(
-      within(filterRow)
-        .getAllByRole('alert')
-        .map((alert) => alert.textContent),
-    ).toEqual(['Filter value is required.', 'Filter value is required.']);
+      TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('filter101')),
+    ).toEqual([
+      'Filter value is required.',
+      'Filter by ORDER_ID is (blank) and SHIP_CITY is (blank)',
+      'filter101',
+    ]);
   });
 
   test('Adds a second table from the header', async () => {
-    const { getAllByTestId, getByTestId, queryByText } = await renderPage(
+    const { getByTestId, queryByText } = await renderPage(
       withOrders(),
       (fake) => fake.loadModel.mockResolvedValue(TWO_DATABASES),
     );
     // no empty state: the header's button is the only way in
     expect(queryByText(/No tables yet/u)).toBeNull();
-    expect(queryByText('Add a table')).toBeNull();
+    expect(queryByText('add a table')).toBeNull();
     const graph = getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
     fireEvent.click(within(graph).getByText('Add table'));
     const dialog = await screen.findByRole('dialog');
@@ -314,11 +370,11 @@ describe('Cube page', () => {
     const tables = within(dialog).getByRole('list', { name: 'Tables' });
     fireEvent.click(within(tables).getByText('CUSTOMERS'));
     fireEvent.click(within(dialog).getByText('Add'));
-    await waitFor(() =>
-      expect(getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)).toHaveLength(2),
-    );
+    await waitFor(() => expect(TEST__getCanvasNodes()).toHaveLength(2));
     expect(
-      within(graph).getByText('Table "CUSTOMERS" from schema "NORTHWIND"'),
+      within(await TEST__findCanvasNode('relational102', graph)).getByText(
+        'Table "CUSTOMERS" from schema "NORTHWIND"',
+      ),
     ).toBeDefined();
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
@@ -339,18 +395,13 @@ describe('Cube page', () => {
     expect(
       within(graph).getByText<HTMLButtonElement>('Add table').disabled,
     ).toBe(false);
-    const rows = within(graph).getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
-    expect(rows).toHaveLength(4);
-    const select = within(
-      rowOf(rows, 'join101') as HTMLElement,
-    ).getByText<HTMLButtonElement>('Select');
-    expect(select.disabled).toBe(false);
-    fireEvent.click(select);
+    fireEvent.click(await TEST__findCanvasNode('join101', graph), {
+      ctrlKey: true,
+    });
     expect(
-      rowOf(
-        within(graph).getAllByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW),
-        'join101',
-      )?.getAttribute('aria-current'),
+      (await TEST__findCanvasNode('join101', graph)).getAttribute(
+        'aria-current',
+      ),
     ).toBe('true');
     // the picker opens too, and closing it leaves the run going
     fireEvent.click(within(graph).getByText('Add table'));
@@ -367,7 +418,7 @@ describe('Cube page', () => {
     const { getByTestId } = await renderPage(undefined, (fake) =>
       fake.resolveSchemas.mockReturnValueOnce(new Promise(() => undefined)),
     );
-    fireEvent.click(screen.getByText('Add a table'));
+    fireEvent.click(screen.getByText('add a table'));
     const dialog = await screen.findByRole('dialog');
     // the picker only adds tables: the page stays as it is behind it
     expect(getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION)).toBeDefined();

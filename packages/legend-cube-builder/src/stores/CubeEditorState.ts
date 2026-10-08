@@ -50,6 +50,7 @@ import {
 } from '../graph-manager/CubeEngine.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
+import { CubeNodeEditorState } from './CubeNodeEditorState.js';
 import { CubeShowPureState } from './CubeShowPureState.js';
 import { CubeSourcePickerState } from './CubeSourcePickerState.js';
 import { CubeSpecTransferState } from './CubeSpecTransferState.js';
@@ -77,6 +78,7 @@ export class CubeEditorState {
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
   readonly showPure: CubeShowPureState;
+  readonly nodeEditor: CubeNodeEditorState;
 
   document: CubeDocument;
   /** Earlier documents, oldest first */
@@ -119,6 +121,8 @@ export class CubeEditorState {
       reresolveSources: flow,
       applyQuery: action,
       select: action,
+      connect: action,
+      setShowGraph: action,
       setHostIssue: action,
       clearHostIssues: action,
       setRowLimit: action,
@@ -136,6 +140,7 @@ export class CubeEditorState {
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
     this.showPure = new CubeShowPureState(this);
+    this.nodeEditor = new CubeNodeEditorState(this);
   }
 
   /** Each node's schema and errors, query-level rules included, as the emitter sees them */
@@ -157,6 +162,25 @@ export class CubeEditorState {
     );
   }
 
+  /** The source is being typed again by the engine, e.g. after an import */
+  isPendingSource(node: QueryNode): boolean {
+    return this.pendingSources.has(node);
+  }
+
+  /**
+   * The node's errors, each once: its own and those of the query rules, then
+   * the first line of the engine's error on it
+   */
+  getNodeErrors(nodeId: string): readonly string[] {
+    const hostIssue = this.hostIssues.get(nodeId);
+    return [
+      ...new Set([
+        ...(this.analysis.validity.get(nodeId) ?? []),
+        ...(hostIssue ? [hostIssue.firstLine] : []),
+      ]),
+    ];
+  }
+
   get canUndo(): boolean {
     return this.history.length > 0 && !this.readOnly;
   }
@@ -172,13 +196,15 @@ export class CubeEditorState {
 
   /**
    * Opens another cube in place of this one, e.g. an imported spec: one undo
-   * step. Stops any run and any table being added, and drops the last run's
-   * rows and errors, which belong to the cube before. Never runs the cube.
+   * step. Stops any run and any table being added, closes the node editor,
+   * and drops the last run's rows and errors, which belong to the cube
+   * before. Never runs the cube.
    */
   importDocument(next: CubeDocument, readOnly: boolean): void {
     this.pushHistory();
     this.execution.reset();
     this.sourcePicker.close();
+    this.nodeEditor.close();
     this.hostIssues = new Map();
     this.warnings = new Map();
     this.document = next;
@@ -358,6 +384,33 @@ export class CubeEditorState {
   select(nodeId: string): void {
     if (this.document.query.canSelect(nodeId)) {
       this.applyQuery(this.document.query.select(nodeId));
+    }
+  }
+
+  /**
+   * Feeds a node into another, on the port if given, else the first free one.
+   * Does nothing when the query doesn't allow it or the cube is read-only.
+   */
+  connect(sourceId: string, targetId: string, port?: string): void {
+    const { query } = this.document;
+    if (!this.readOnly && query.canConnect(sourceId, targetId, port)) {
+      this.applyQuery(query.connect(sourceId, targetId, port));
+    }
+  }
+
+  /**
+   * Shows or hides the graph, which the cube saves (spec §17.1). An undoable
+   * edit that leaves the query, and so the rows, as they are (M1.8b).
+   */
+  setShowGraph(showGraph: boolean): void {
+    const { meta } = this.document;
+    if (meta.presentation.showGraph !== showGraph) {
+      this.applyDocument(
+        this.document.withMeta({
+          ...meta,
+          presentation: { ...meta.presentation, showGraph },
+        }),
+      );
     }
   }
 

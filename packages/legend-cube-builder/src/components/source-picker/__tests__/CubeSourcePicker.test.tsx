@@ -35,6 +35,10 @@ import {
   northwindTable,
   ORDERS_COLUMNS,
 } from '../../../__test-utils__/CubeNorthwindTestQueries.js';
+import {
+  TEST__findCanvasNode,
+  TEST__getCanvasNodes,
+} from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import {
   TEST__createCubeApplicationStore,
@@ -76,7 +80,7 @@ const renderPage = async (
 
 /** Opens the picker from the empty page and returns the dialog */
 const openPicker = async (): Promise<HTMLElement> => {
-  fireEvent.click(screen.getByText('Add a table'));
+  fireEvent.click(screen.getByText('add a table'));
   return screen.findByRole('dialog');
 };
 
@@ -283,9 +287,9 @@ describe('Cube source picker', () => {
     expect(within(tables).queryByText('"ORDER.LINES"')).toBeNull();
     fireEvent.click(within(tables).getByText('ORDER.LINES'));
     fireEvent.click(within(dialog).getByText('Add'));
-    const row = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    const node = await TEST__findCanvasNode('relational101');
     expect(
-      within(row).getByText('Table "ORDER.LINES" from schema "QUOTED.SCHEMA"'),
+      within(node).getByText('Table "ORDER.LINES" from schema "QUOTED.SCHEMA"'),
     ).toBeDefined();
     expect([...(fake.resolveSchemas.mock.calls[0]?.[1] ?? [])]).toEqual([
       [
@@ -312,11 +316,11 @@ describe('Cube source picker', () => {
     expect(add.disabled).toBe(true);
     expect(isBarLoading(loadingBar(dialog))).toBe(true);
     held.resolve(typed);
-    const row = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    const node = await TEST__findCanvasNode('relational101');
     expect(
-      within(row).getByText('Table "ORDERS" from schema "NORTHWIND"'),
+      within(node).getByText('Table "ORDERS" from schema "NORTHWIND"'),
     ).toBeDefined();
-    expect(within(row).getByText('(Selected)')).toBeDefined();
+    expect(node.getAttribute('aria-current')).toBe('true');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     // adding a table runs nothing: only Execute does
     await act(async () => {
@@ -333,7 +337,7 @@ describe('Cube source picker', () => {
     fireEvent.click(within(tables).getByText('ORDERS'));
     fireEvent.click(within(dialog).getByText('Cancel'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)).toBeNull();
+    expect(TEST__getCanvasNodes()).toHaveLength(0);
     expect(fake.resolveSchemas).not.toHaveBeenCalled();
   });
 
@@ -371,7 +375,7 @@ describe('Cube source picker', () => {
       held.resolve(typed);
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)).toBeNull();
+    expect(TEST__getCanvasNodes()).toHaveLength(0);
     expect(
       within(reopenedTables)
         .getByText('CUSTOMERS')
@@ -391,7 +395,7 @@ describe('Cube source picker', () => {
     ).toBe(false);
     fireEvent.click(within(tables).getByText('ORDERS'));
     fireEvent.click(within(dialog).getByText('Add'));
-    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    await TEST__findCanvasNode('relational101');
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
 
     fireEvent.click(screen.getByText('Add table'));
@@ -467,7 +471,7 @@ describe('Cube source picker', () => {
     expect((await within(dialog).findByRole('alert')).textContent).toBe(
       `The table "NORTHWIND.ORDERS" can't be found`,
     );
-    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW)).toBeNull();
+    expect(TEST__getCanvasNodes()).toHaveLength(0);
   });
 
   test.each([
@@ -556,7 +560,7 @@ describe('Cube source picker: a pasted Pure model', () => {
 
     fireEvent.click(within(tables).getByText('ORDERS'));
     fireEvent.click(within(dialog).getByText('Add'));
-    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_ROW);
+    await TEST__findCanvasNode('relational101');
     expect(fake.resolveSchemas.mock.calls[0]?.[0]).toEqual({
       _type: 'text',
       code: PASTED,
