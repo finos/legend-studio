@@ -33,11 +33,13 @@ export const DISTINCT_PAD_COLUMN = 'cube_d';
 
 /**
  * Emits a distinct as `<input>->distinct()`, over every column: never the
- * column form `distinct(~[…])`, which also projects. On SQL Server, where the
- * engine writes a distinct then a limit as `select top N distinct`, which
- * T-SQL rejects, it is padded so the distinct stays in its own query:
+ * column form `distinct(~[…])`, which also projects. Where the engine's plan
+ * would merge the distinct with a limit after it, it is padded so the
+ * distinct stays in its own query:
  * `->distinct()->extend(~cube_d: x | 1)->select(~[<input columns>])` (PLAN
- * §11.4).
+ * §11.4). SQL Server gets `select top N distinct`, which T-SQL rejects;
+ * Sybase IQ numbers a limit's rows inside the `select distinct`, which then
+ * removes nothing.
  */
 export const emitDistinct = (
   node: Distinct,

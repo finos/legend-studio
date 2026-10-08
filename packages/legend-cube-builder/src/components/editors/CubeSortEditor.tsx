@@ -27,6 +27,7 @@ import {
 } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
+import { CUBE_SORT_COLUMN_DISABLED_REASON } from '../../__lib__/LegendCubeLabels.js';
 import {
   type CubeSortRow,
   CubeSortDraft,
@@ -60,8 +61,12 @@ const CubeSortRowEditor = observer(
       problem,
       readOnly,
     } = props;
-    const isColumnDisabled = (column: SchemaColumn): boolean =>
-      !isSortableType(column.type) || takenColumns.has(column.name);
+    const isColumnDisabled = (column: SchemaColumn): string | undefined =>
+      !isSortableType(column.type)
+        ? CUBE_SORT_COLUMN_DISABLED_REASON.NOT_SORTABLE
+        : takenColumns.has(column.name)
+          ? CUBE_SORT_COLUMN_DISABLED_REASON.TAKEN
+          : undefined;
     return (
       <li className="flex flex-col gap-1 border-b border-[var(--color-border-subtle)] py-1">
         <div className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-1">

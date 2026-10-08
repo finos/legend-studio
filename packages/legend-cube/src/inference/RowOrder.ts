@@ -17,6 +17,7 @@
 import type { Query } from '../graph/Query.js';
 import type { QueryNode } from '../graph/QueryNode.js';
 import { Sort, type SortDirection } from '../nodes/transforms/Sort.js';
+import type { Schema } from '../schema/Schema.js';
 
 /**
  * One key of the order a node's rows come in: a column, as named at that
@@ -74,14 +75,25 @@ export const computeRowOrders = (
   return orders;
 };
 
+/** A node that removes some of a Sort's columns before its order is used */
+export interface SortOrderRemoval {
+  readonly nodeId: string;
+  /** Those columns, as the Sort names them, in its order */
+  readonly columns: readonly string[];
+}
+
 /**
- * How a Sort's order is lost before it is used: the node that loses it, and,
- * when only some of its columns are lost, those columns as the Sort names
- * them, in its order
+ * How a Sort's order is lost before it is used. `nodeId` is the node that
+ * loses it: for a full loss, the first whose rows hold none of the Sort's
+ * keys; for a partial one, the first that loses some. A partial loss also
+ * gives each node that removes some of the Sort's columns (`removals`), and
+ * the columns a node keeps but no longer orders by, as they came after a
+ * removed one (`cutColumns`), each as the Sort names them, in its order.
  */
 export interface SortOrderLoss {
   readonly nodeId: string;
-  readonly droppedColumns?: readonly string[];
+  readonly removals?: readonly SortOrderRemoval[];
+  readonly cutColumns?: readonly string[];
 }
 
 /**
@@ -94,7 +106,10 @@ export interface SortOrderLoss {
  *   whose rows hold none, e.g. a Join, a Restrict that drops every key, or a
  *   later Sort on all the same columns.
  * - A partial loss: some keys are left, but a node that is not a Sort (a
- *   Restrict) removed others first. It names that node and those columns.
+ *   Restrict) lost others first: those whose column its output lacks are
+ *   removed by it; those whose column it keeps come after a removed one, so
+ *   they no longer order the rows. Without `schemas` (the inferred schema of
+ *   each node), every lost key counts as removed.
  *
  * A later Sort on some of the same columns is no loss: the others still break
  * its ties. Where the order becomes unknown (an Unknown node), nothing is
@@ -105,26 +120,27 @@ export const findLostSortOrders = (
   rowOrders: ReadonlyMap<string, RowOrder | undefined> = computeRowOrders(
     query,
   ),
+  schemas?: ReadonlyMap<string, Schema | undefined>,
 ): ReadonlyMap<string, SortOrderLoss> => {
   const losses = new Map<string, SortOrderLoss>();
   query.nodes.forEach((sort) => {
     if (!(sort instanceof Sort)) {
       return;
     }
+    const isOwn = (key: OrderKey): boolean =>
+      key.sortId === sort.id && key.column !== '';
     // the Sort's own named keys, by their place among its keys
     const keysOf = (order: RowOrder): Set<number> =>
-      new Set(
-        order
-          .filter(({ sortId, column }) => sortId === sort.id && column !== '')
-          .map(({ keyIndex }) => keyIndex),
-      );
+      new Set(order.filter(isOwn).map(({ keyIndex }) => keyIndex));
     const start = rowOrders.get(sort.id);
     let held = start && keysOf(start);
     if (!held?.size) {
       return;
     }
-    let dropper: string | undefined;
-    const dropped = new Set<number>();
+    let loser: string | undefined;
+    // the keys each node removes, by node, in chain order
+    const removed = new Map<string, Set<number>>();
+    const cut = new Set<number>();
     let node: QueryNode = sort;
     for (;;) {
       const target = query.getOutputConnection(node.id)?.target;
@@ -144,22 +160,41 @@ export const findLostSortOrders = (
       }
       // a later Sort on the same column replaces the key: no loss
       if (!(next instanceof Sort)) {
+        // the keys' columns as named where they reach the node
+        const reaching = (rowOrders.get(node.id) ?? []).filter(isOwn);
+        const output = schemas?.get(next.id);
         for (const keyIndex of held) {
           if (!after.has(keyIndex)) {
-            dropper ??= next.id;
-            dropped.add(keyIndex);
+            loser ??= next.id;
+            const column = reaching.find(
+              (key) => key.keyIndex === keyIndex,
+            )?.column;
+            if (output && column !== undefined && output.lookup(column)) {
+              cut.add(keyIndex);
+            } else {
+              const byNode = removed.get(next.id) ?? new Set<number>();
+              byNode.add(keyIndex);
+              removed.set(next.id, byNode);
+            }
           }
         }
       }
       held = after;
       node = next;
     }
-    if (dropper !== undefined) {
+    if (loser !== undefined) {
+      // as the Sort names its columns, in its order
+      const columnsOf = (keys: ReadonlySet<number>): string[] =>
+        sort.sorts
+          .filter((_, keyIndex) => keys.has(keyIndex))
+          .map(({ column }) => column);
       losses.set(sort.id, {
-        nodeId: dropper,
-        droppedColumns: sort.sorts
-          .filter((_, keyIndex) => dropped.has(keyIndex))
-          .map(({ column }) => column),
+        nodeId: loser,
+        removals: Array.from(removed, ([nodeId, keys]) => ({
+          nodeId,
+          columns: columnsOf(keys),
+        })),
+        cutColumns: columnsOf(cut),
       });
     }
   });

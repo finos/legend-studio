@@ -17,6 +17,7 @@
 import type { Query } from '../../graph/Query.js';
 import { MESSAGE_DUPLICATE_COLUMNS_BETWEEN_INPUTS } from '../../messages/CubeMessages.js';
 import {
+  foldColumnName,
   isValidColumnName,
   MAX_COLUMN_NAME_LENGTH,
 } from '../../schema/ColumnName.js';
@@ -43,8 +44,8 @@ export interface JoinDuplicateFix {
 /**
  * Plans the fix: each column both inputs have but the join doesn't take as
  * the same key on both sides becomes `c_1` on the Left and `c_2` on the
- * Right, or `c_1_2`, `c_1_3`… when a name is taken in either input or already
- * given by this fix (all Left names first). A name is cut to 128 code points.
+ * Right, or `c_1_2`, `c_1_3`… when a name is taken, in any case, in either
+ * input or already given by this fix (all Left names first). A name is cut to 128 code points.
  * The key lists are rewritten through the same renames, so a shared column
  * that is a key at another position, or crossed keys, still join. Gives
  * `undefined` when nothing is shared, or a name would not be a valid column
@@ -64,17 +65,21 @@ export const planJoinDuplicateFix = (
   if (!duplicates.length) {
     return undefined;
   }
-  const taken = new Set([...leftSchema.names(), ...rightSchema.names()]);
+  // in any case: a database that compares names without case takes `ID_1`
+  // and `id_1` for one column
+  const taken = new Set(
+    [...leftSchema.names(), ...rightSchema.names()].map(foldColumnName),
+  );
   const nameFor = (column: string, side: 1 | 2): string => {
     const named = (suffix: string): string =>
       `${Array.from(column)
         .slice(0, MAX_COLUMN_NAME_LENGTH - Array.from(suffix).length)
         .join('')}${suffix}`;
     let name = named(`_${side}`);
-    for (let count = 2; taken.has(name); count += 1) {
+    for (let count = 2; taken.has(foldColumnName(name)); count += 1) {
       name = named(`_${side}_${count}`);
     }
-    taken.add(name);
+    taken.add(foldColumnName(name));
     return name;
   };
   const left = duplicates.map((from) => ({ from, to: nameFor(from, 1) }));

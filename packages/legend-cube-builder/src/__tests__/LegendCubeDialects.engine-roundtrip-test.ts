@@ -49,14 +49,30 @@ import {
 // in a copy of the fixture model made for this test. Facts about the SQL's
 // structure only, never its text.
 
+/**
+ * Every relational database type the engine plans with a static connection
+ * (Databricks is its Spark dialect). Not DuckDB: its plans fail to serialize
+ * with a static connection (`Match failure` in DevPlanTransformer), before
+ * any SQL, whatever the query.
+ */
 const DATABASE_TYPES = [
+  'H2',
+  'Postgres',
   'SqlServer',
   'Sybase',
   'SybaseIQ',
   'DB2',
   'MemSQL',
   'Spanner',
-  'Postgres',
+  'Snowflake',
+  'Databricks',
+  'Oracle',
+  'Trino',
+  'Presto',
+  'Redshift',
+  'Hive',
+  'BigQuery',
+  'Athena',
 ];
 
 const PLAN_MODEL = {
@@ -116,9 +132,9 @@ const ordersThen = (...nodes: QueryNode[]): Query => {
 };
 
 /**
- * Two keys: with one, Sybase IQ and MemSQL number the rows themselves, but
- * with several the first plans `limit m,-1` and the second numbers by the
- * first key only
+ * Two keys: Sybase IQ (Drop, Slice, Limit) and MemSQL (Drop) number the rows
+ * themselves, but by the first sort key only, so only a Sort on several
+ * columns tells their native form from Cube's
  */
 const byCustomerThenOrder = (): Sort =>
   new Sort('sort101', [
@@ -217,6 +233,43 @@ const SHAPES: [string, () => Query][] = [
     () => ordersThen(byCustomerThenOrder(), new Limit('limit101', 5)),
   ],
   ['a Sort that is run', () => ordersThen(byCustomerThenOrder())],
+  [
+    'a sorted Limit after a Limit',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        new Limit('limit101', 20),
+        new Limit('limit102', 5),
+      ),
+  ],
+  [
+    'a sorted Limit after a Drop',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        new Drop('drop101', 10),
+        new Limit('limit101', 5),
+      ),
+  ],
+  [
+    'a Distinct then a Limit',
+    () =>
+      ordersThen(
+        new Restrict('restrict101', ['SHIP_COUNTRY']),
+        new Distinct('distinct101'),
+        new Limit('limit101', 5),
+      ),
+  ],
+  [
+    'a sorted Distinct then a Limit',
+    () =>
+      ordersThen(
+        new Restrict('restrict101', ['CUSTOMER_ID', 'ORDER_ID']),
+        new Distinct('distinct101'),
+        byCustomerThenOrder(),
+        new Limit('limit101', 5),
+      ),
+  ],
 ];
 
 beforeAll(async () => {
@@ -267,6 +320,36 @@ describe('Database workarounds, as each database plans them', () => {
           'row_number()',
         );
       }
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Numbers the rows of every sorted shape by every key, and never inside a SELECT DISTINCT, on %s',
+    async (databaseType) => {
+      const problems: string[] = [];
+      for (const [name, shape] of SHAPES) {
+        const sql = await planSql(shape(), databaseType);
+        // the engine's numbering, or Cube's: either way by both keys
+        if (name.includes('sorted')) {
+          for (const match of sql.matchAll(
+            /row_number\(\) over \((?<order>[^)]*)\)/gu,
+          )) {
+            if (!BY_CUSTOMER_THEN_ORDER.test(match.groups?.order ?? '')) {
+              problems.push(`${name}: numbered by ${match.groups?.order}`);
+            }
+          }
+        }
+        // window functions run before DISTINCT, which then removes nothing
+        subqueries(sql).forEach((subquery) => {
+          if (
+            subquery.includes('select distinct') &&
+            subquery.includes('row_number(')
+          ) {
+            problems.push(`${name}: rows numbered in a SELECT DISTINCT`);
+          }
+        });
+      }
+      expect(problems).toEqual([]);
     },
   );
 

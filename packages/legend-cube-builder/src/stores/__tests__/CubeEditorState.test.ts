@@ -19,7 +19,9 @@ import {
   Connection,
   CubeDocument,
   DEFAULT_META,
+  ColumnComparisonFilter,
   Filter,
+  FilterOperator,
   Join,
   MESSAGE_SORT_COLUMNS_DROPPED,
   MESSAGE_SORT_ORDER_LOST,
@@ -360,6 +362,46 @@ describe('Sort warnings', () => {
     expect(Object.fromEntries(state.derivedWarnings)).toEqual({
       sort101: [MESSAGE_SORT_COLUMNS_DROPPED(['ORDER_ID'], 'restrict101')],
     });
+  });
+
+  test('Says the Restrict removes only the column it removes, and that a later key it keeps no longer orders the rows', () => {
+    const document = sortedOrdersThen(
+      new Restrict('restrict101', ['CUSTOMER_ID', 'SHIP_CITY']),
+    );
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      document.withQuery(
+        document.query.replace(
+          new Sort('sort101', [
+            { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+            { column: 'ORDER_ID', direction: SortDirection.DESC },
+            { column: 'SHIP_CITY', direction: SortDirection.ASC },
+          ]),
+        ),
+      ),
+    );
+    expect(Object.fromEntries(state.derivedWarnings)).toEqual({
+      sort101: [
+        'Sorting by "ORDER_ID" has no effect: restrict101 removes that column before the order is used.',
+        'Sorting by "SHIP_CITY" has no effect either: it comes after a removed column.',
+      ],
+    });
+  });
+
+  test('Has no warning for a later Sort on one of the columns, then a Filter', () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      sortedOrdersThen(
+        new Sort('sort102', [
+          { column: 'CUSTOMER_ID', direction: SortDirection.DESC },
+        ]),
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('ORDER_ID', FilterOperator.IS_NOT_EMPTY),
+        ),
+      ),
+    );
+    expect(state.derivedWarnings.size).toBe(0);
   });
 
   test('Waits until the Sort and the node that loses its order have no errors', () => {

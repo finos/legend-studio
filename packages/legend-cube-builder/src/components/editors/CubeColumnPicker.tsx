@@ -61,8 +61,8 @@ export const CubeColumnTypeIcon: React.FC<{
  * `CUSTOMER_ID: Varchar(5)?`; the picked column's type shows beside, with
  * its family's icon and its full type in the tooltip. A column the input
  * doesn't have stays shown, so the problem can be seen and fixed. A column
- * the editor can't take here (`isColumnDisabled`) is shown but can't be
- * picked.
+ * the editor can't take here is shown, with the reason `isColumnDisabled`
+ * gives after its type, but can't be picked.
  */
 export const CubeColumnPicker: React.FC<{
   /** What the column is for, e.g. `Left join column 1`: the picker's accessible name */
@@ -74,8 +74,11 @@ export const CubeColumnPicker: React.FC<{
   disabled?: boolean | undefined;
   /** Marks the pick as wrong, e.g. a type that doesn't match */
   invalid?: boolean | undefined;
-  /** Whether a column can't be picked, e.g. a Sort's Variant column, or one another row has */
-  isColumnDisabled?: ((column: SchemaColumn) => boolean) | undefined;
+  /**
+   * Why a column can't be picked, shown after its type, e.g. a Sort's Variant
+   * column, or one another row has; `undefined` when it can be
+   */
+  isColumnDisabled?: ((column: SchemaColumn) => string | undefined) | undefined;
 }> = (props) => {
   const {
     label,
@@ -107,16 +110,19 @@ export const CubeColumnPicker: React.FC<{
             {value ? `${value} (not in the input)` : 'Pick a column'}
           </option>
         )}
-        {schema.columns.map((column) => (
-          <option
-            key={column.name}
-            value={column.name}
-            title={column.type.fullName}
-            disabled={isColumnDisabled?.(column)}
-          >
-            {`${column.name}: ${getColumnTypeLabel(column)}`}
-          </option>
-        ))}
+        {schema.columns.map((column) => {
+          const reason = isColumnDisabled?.(column);
+          return (
+            <option
+              key={column.name}
+              value={column.name}
+              title={column.type.fullName}
+              disabled={reason !== undefined}
+            >
+              {`${column.name}: ${getColumnTypeLabel(column)}${reason === undefined ? '' : ` (${reason})`}`}
+            </option>
+          );
+        })}
       </select>
       {picked && (
         <span

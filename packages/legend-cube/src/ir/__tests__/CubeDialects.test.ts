@@ -84,13 +84,13 @@ const originsOf = (query: Query, databaseType: string): string[] =>
 describe(unitTest('Dialect workarounds'), () => {
   test('Knows the databases that need them, and gives none to any other', () => {
     expect(Object.fromEntries(CUBE_DIALECT_WORKAROUNDS)).toEqual({
-      SqlServer: { drop: true, slice: true, distinct: true },
-      Sybase: { drop: true, slice: true, distinct: false },
-      SybaseIQ: { drop: true, slice: true, distinct: false },
-      DB2: { drop: true, slice: false, distinct: false },
-      MemSQL: { drop: true, slice: false, distinct: false },
+      SqlServer: { drop: true, slice: true, limit: false, distinct: true },
+      Sybase: { drop: true, slice: true, limit: false, distinct: false },
+      SybaseIQ: { drop: true, slice: true, limit: true, distinct: true },
+      DB2: { drop: true, slice: false, limit: false, distinct: false },
+      MemSQL: { drop: true, slice: false, limit: false, distinct: false },
     });
-    const none = { drop: false, slice: false, distinct: false };
+    const none = { drop: false, slice: false, limit: false, distinct: false };
     // Spanner has no window columns, so never row numbers
     ['H2', 'Postgres', 'Snowflake', 'Spanner', 'BigQuery', 'sqlserver'].forEach(
       (databaseType) =>
@@ -102,7 +102,7 @@ describe(unitTest('Dialect workarounds'), () => {
     expect(getDialectWorkarounds('__proto__')).toEqual(none);
   });
 
-  test('Needs the database type only when a Drop, Slice or Distinct runs', () => {
+  test('Needs the database type only when a Drop, Slice, Limit or Distinct runs', () => {
     expect(
       needsDatabaseType(ordersThen([new Drop('drop101', 5)]), 'drop101'),
     ).toBe(true);
@@ -113,9 +113,24 @@ describe(unitTest('Dialect workarounds'), () => {
       ),
     ).toBe(true);
     expect(
+      needsDatabaseType(ordersThen([new Slice('slice101', 0, 5)]), 'slice101'),
+    ).toBe(true);
+    expect(
+      needsDatabaseType(
+        ordersThen([new Slice('slice101', 0, 5), new Filter('filter101')]),
+        'filter101',
+      ),
+    ).toBe(true);
+    expect(
       needsDatabaseType(
         ordersThen([byOrderIdDesc(), new Limit('limit101', 5)]),
         'limit101',
+      ),
+    ).toBe(true);
+    expect(
+      needsDatabaseType(
+        ordersThen([byOrderIdDesc(), new Filter('filter101')]),
+        'filter101',
       ),
     ).toBe(false);
     // a Slice after the node that runs plays no part
@@ -206,6 +221,16 @@ describe(unitTest('Drop and Slice through row numbers'), () => {
     );
   });
 
+  test('Takes another name for the row numbers when the input has one in another case', () => {
+    // SQL Server and MemSQL compare names without case: CUBE_RN takes cube_rn
+    const columns = [...COLUMNS, column('CUBE_RN'), column('Cube_Rn2')];
+    expect(
+      run(ordersThen([new Drop('drop101', 10)], columns), 'SqlServer'),
+    ).toContain(
+      '~[cube_rn3: {p, w, r | $p->rowNumber($r)}])->filter({row | $row.cube_rn3 > 10})',
+    );
+  });
+
   test('Takes another name for the row numbers when the input has a cube_rn', () => {
     const columns = [...COLUMNS, column('cube_rn'), column('cube_rn2')];
     expect(
@@ -226,6 +251,38 @@ describe(unitTest('Drop and Slice through row numbers'), () => {
     const drop = ordersThen([new Drop('drop101', 10)]);
     expect(run(drop)).toContain(`${ORDERS}->drop(10)`);
     expect(run(drop, 'Postgres')).toContain(`${ORDERS}->drop(10)`);
+  });
+
+  test('Takes a Limit after a Sort on several columns by row numbers on Sybase IQ, which plans it by the first key only', () => {
+    const byCountryThenId = new Sort('sort101', [
+      { column: 'SHIP_COUNTRY', direction: SortDirection.ASC },
+      { column: 'ORDER_ID', direction: SortDirection.DESC },
+    ]);
+    const query = ordersThen([byCountryThenId, new Limit('limit101', 5)]);
+    expect(run(query, 'SybaseIQ')).toBe(
+      `{| ${ORDERS}->extend([~SHIP_COUNTRY->ascending(), ~ORDER_ID->descending()]->over(), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter({row | $row.cube_rn <= 5})->select(~[ORDER_ID, SHIP_COUNTRY])->sort([~SHIP_COUNTRY->ascending(), ~ORDER_ID->descending()])->limit(1001)->from(${RUNTIME})}`,
+    );
+    expect(originsOf(query, 'SybaseIQ')).toContain(
+      'lessThanEqual@limit101:rowRange',
+    );
+    expect(
+      originsOf(query, 'SybaseIQ').filter((origin) => origin.endsWith('@-')),
+    ).toEqual([]);
+    // other databases plan it right
+    ['SqlServer', 'Sybase', 'MemSQL', 'H2'].forEach((databaseType) =>
+      expect(run(query, databaseType)).toContain(
+        `${ORDERS}->sort([~SHIP_COUNTRY->ascending(), ~ORDER_ID->descending()])->limit(5)`,
+      ),
+    );
+  });
+
+  test('Keeps a Limit native on Sybase IQ without a Sort, or after a Sort on one column', () => {
+    expect(run(ordersThen([new Limit('limit101', 5)]), 'SybaseIQ')).toBe(
+      `{| ${ORDERS}->limit(5)->limit(1001)->from(${RUNTIME})}`,
+    );
+    expect(
+      run(ordersThen([byOrderIdDesc(), new Limit('limit101', 5)]), 'SybaseIQ'),
+    ).toContain(`${ORDERS}->sort(~ORDER_ID->descending())->limit(5)`);
   });
 
   test('Types the native form: typing knows no database', () => {
@@ -254,9 +311,19 @@ describe(unitTest('Distinct on SQL Server'), () => {
     ]);
   });
 
-  test('Pads only on SQL Server, and never to type', () => {
+  test('Pads on Sybase IQ too, which numbers a later Limit inside the select distinct', () => {
+    const query = ordersThen([
+      new Distinct('distinct101'),
+      new Limit('limit101', 5),
+    ]);
+    expect(run(query, 'SybaseIQ')).toBe(
+      `{| ${ORDERS}->distinct()->extend(~cube_d: x | 1)->select(~[ORDER_ID, SHIP_COUNTRY])->limit(5)->limit(1001)->from(${RUNTIME})}`,
+    );
+  });
+
+  test('Pads only on SQL Server and Sybase IQ, and never to type', () => {
     const query = ordersThen([new Distinct('distinct101')]);
-    ['Sybase', 'SybaseIQ', 'H2', 'DB2'].forEach((databaseType) =>
+    ['Sybase', 'H2', 'DB2', 'MemSQL'].forEach((databaseType) =>
       expect(run(query, databaseType)).toBe(
         `{| ${ORDERS}->distinct()->limit(1001)->from(${RUNTIME})}`,
       ),
@@ -264,6 +331,18 @@ describe(unitTest('Distinct on SQL Server'), () => {
     expect(
       printIR(new QueryEmitter(query).emitTypingLambda('distinct101')),
     ).toBe(`{| ${ORDERS}->distinct()}`);
+  });
+
+  test('Takes another name for the pad when the input has one in another case', () => {
+    expect(
+      run(
+        ordersThen(
+          [new Distinct('distinct101')],
+          [...COLUMNS, column('Cube_D')],
+        ),
+        'SqlServer',
+      ),
+    ).toContain('->distinct()->extend(~cube_d2: x | 1)');
   });
 
   test('Takes another name for the pad when the input has a cube_d', () => {

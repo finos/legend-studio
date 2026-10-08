@@ -199,6 +199,59 @@ describe(unitTest('Join autofix'), () => {
     expect(fixed.getInputIds('join101')).toEqual(['rename102', 'rename103']);
   });
 
+  test('Takes the next free name when c_1 is taken in another case', () => {
+    // a database that compares names without case takes ID_1 for id_1
+    const fixed = fix(
+      joined(
+        [int('ID'), int('id_1'), int('X')],
+        [int('ID'), int('X')],
+        ['X'],
+        ['X'],
+      ),
+    );
+    expect(mappingsOf(fixed, 'rename101')).toEqual(['ID->ID_1_2']);
+    expect(mappingsOf(fixed, 'rename102')).toEqual(['ID->ID_2']);
+  });
+
+  test('Gives all Left names before any Right name', () => {
+    const fixed = fix(
+      joined(
+        [int('ID'), int('A_1'), int('A')],
+        [int('ID'), int('A'), int('A_1')],
+        ['ID'],
+        ['ID'],
+      ),
+    );
+    expect(mappingsOf(fixed, 'rename101')).toEqual(['A_1->A_1_1', 'A->A_1_2']);
+    expect(mappingsOf(fixed, 'rename102')).toEqual(['A_1->A_1_2_2', 'A->A_2']);
+    expect(buildSchemasAndValidity(fixed).validity.get('join101')).toEqual([]);
+  });
+
+  test('Cuts a long name by code points, never through a surrogate pair', () => {
+    const smiles = '\u{1F600}'.repeat(128);
+    const fixed = fix(
+      joined(
+        [int('ID'), int(smiles)],
+        [int('ID'), int(smiles)],
+        ['ID'],
+        ['ID'],
+      ),
+    );
+    expect(mappingsOf(fixed, 'rename101')).toEqual([
+      `${smiles}->${'\u{1F600}'.repeat(126)}_1`,
+    ]);
+    expect(mappingsOf(fixed, 'rename102')).toEqual([
+      `${smiles}->${'\u{1F600}'.repeat(126)}_2`,
+    ]);
+    const mixed = `a${'\u{1F600}'.repeat(127)}`;
+    const cut = fix(
+      joined([int('ID'), int(mixed)], [int('ID'), int(mixed)], ['ID'], ['ID']),
+    );
+    expect(mappingsOf(cut, 'rename101')).toEqual([
+      `${mixed}->a${'\u{1F600}'.repeat(125)}_1`,
+    ]);
+  });
+
   test('Cuts a long name to 128 code points', () => {
     const long = 'x'.repeat(128);
     const fixed = fix(

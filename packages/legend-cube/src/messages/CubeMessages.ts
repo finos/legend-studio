@@ -229,6 +229,12 @@ export const MESSAGE_SORT_COLUMNS_DROPPED = (
     columns.length === 1 ? 'that column' : 'those columns'
   } before the order is used.`;
 
+/** Added by Cube: a Sort's columns a later node keeps, but no longer orders by, as they came after a removed one (PLAN §11.4) */
+export const MESSAGE_SORT_COLUMNS_CUT = (columns: readonly string[]): string =>
+  `Sorting by ${columns.map(quote).join(', ')} has no effect either: ${
+    columns.length === 1 ? 'it comes' : 'they come'
+  } after a removed column.`;
+
 /** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN Appendix B) */
 export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
   `Filter values for ${quote(operator)} cannot contain a backslash (\\) yet.`;

@@ -30,6 +30,7 @@ import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
+import { buildSchemasAndValidity } from '../SchemaInference.js';
 import {
   computeRowOrders,
   findLostSortOrders,
@@ -267,8 +268,34 @@ const byAThenB = (id = 'sort101'): Sort =>
 const byA = (id: string, direction = ASC): Sort =>
   new Sort(id, [{ column: 'A', direction }]);
 
+/** The losses, a lost key told removed or cut by the inferred schemas */
 const lossesOf = (query: Query): Record<string, SortOrderLoss> =>
-  Object.fromEntries(findLostSortOrders(query));
+  Object.fromEntries(
+    findLostSortOrders(
+      query,
+      undefined,
+      buildSchemasAndValidity(query).schemas,
+    ),
+  );
+
+/** A partial loss: the first node that loses keys, the removals by node, and the cut columns */
+const partial = (
+  nodeId: string,
+  removals: [string, string[]][],
+  cutColumns: string[] = [],
+): SortOrderLoss => ({
+  nodeId,
+  removals: removals.map(([id, columns]) => ({ nodeId: id, columns })),
+  cutColumns,
+});
+
+/** Sort101 by A, B, then C, ascending */
+const byABC = (): Sort =>
+  new Sort('sort101', [
+    { column: 'A', direction: ASC },
+    { column: 'B', direction: ASC },
+    { column: 'C', direction: ASC },
+  ]);
 
 /** A join of two chains, each given with what feeds it, on A */
 const joined = (left: QueryNode[], right: QueryNode[]): Query => {
@@ -311,6 +338,18 @@ describe(unitTest('Lost sort orders'), () => {
     [
       'a Limit that takes rows by it before a Restrict drops its keys',
       [new Limit('limit101', 5), new Restrict('restrict101', ['C'])],
+    ],
+    [
+      'a Drop that takes rows by it before a Restrict drops its keys',
+      [new Drop('drop101', 5), new Restrict('restrict101', ['C'])],
+    ],
+    [
+      'a Slice that takes rows by it before a Restrict drops its keys',
+      [new Slice('slice101', 0, 5), new Restrict('restrict101', ['C'])],
+    ],
+    [
+      'a later Sort on one of its two columns, then a Filter',
+      [byA('sort102', DESC), new Filter('filter101')],
     ],
     [
       'a later Sort on another column, which it orders the ties of',
@@ -366,10 +405,74 @@ describe(unitTest('Lost sort orders'), () => {
           ),
         ),
       ).toEqual({
-        sort101: { nodeId: 'restrict101', droppedColumns: ['B'] },
+        sort101: partial('restrict101', [['restrict101', ['B']]]),
       });
     },
   );
+
+  test.each<[string, string[]]>([
+    ['kept in order', ['A', 'C']],
+    ['picked the other way', ['C', 'A']],
+  ])(
+    'Says a Restrict removes only the column it removes, and that a later key it keeps no longer orders the rows (%s)',
+    (_, kept) => {
+      for (const after of [[], [new Limit('limit101', 5)]]) {
+        expect(
+          lossesOf(
+            chain(ABC(), byABC(), new Restrict('restrict101', kept), ...after),
+          ),
+        ).toEqual({
+          sort101: partial('restrict101', [['restrict101', ['B']]], ['C']),
+        });
+      }
+    },
+  );
+
+  test('Names each Restrict with the columns it removes', () => {
+    expect(
+      lossesOf(
+        chain(
+          ABC(),
+          byABC(),
+          new Restrict('restrict101', ['A', 'B']),
+          new Restrict('restrict102', ['A']),
+        ),
+      ),
+    ).toEqual({
+      sort101: partial('restrict101', [
+        ['restrict101', ['C']],
+        ['restrict102', ['B']],
+      ]),
+    });
+  });
+
+  test("Tells a renamed key's removal from its cut by its name where it reaches the Restrict", () => {
+    // B is X when it reaches the Restrict, which removes it and keeps C
+    expect(
+      lossesOf(
+        chain(
+          ABC(),
+          byABC(),
+          new Rename('rename101', [{ from: 'B', to: 'X' }]),
+          new Restrict('restrict101', ['A', 'C']),
+        ),
+      ),
+    ).toEqual({
+      sort101: partial('restrict101', [['restrict101', ['B']]], ['C']),
+    });
+  });
+
+  test('Counts every lost key as removed without the schemas', () => {
+    expect(
+      Object.fromEntries(
+        findLostSortOrders(
+          chain(ABC(), byABC(), new Restrict('restrict101', ['A', 'C'])),
+        ),
+      ),
+    ).toEqual({
+      sort101: partial('restrict101', [['restrict101', ['B', 'C']]]),
+    });
+  });
 
   test('Names a Restrict that drops every key as losing the order', () => {
     expect(
@@ -412,7 +515,7 @@ describe(unitTest('Lost sort orders'), () => {
         ),
       ),
     ).toEqual({
-      sort101: { nodeId: 'restrict101', droppedColumns: ['B', 'A'] },
+      sort101: partial('restrict101', [['restrict101', ['B', 'A']]]),
     });
   });
 

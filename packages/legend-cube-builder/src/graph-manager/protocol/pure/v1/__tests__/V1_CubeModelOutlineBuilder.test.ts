@@ -487,6 +487,12 @@ describe('Cube model outline: database types', () => {
       ['test::Db'],
     ],
     ['a runtime the outline lacks', 'test::MissingRuntime', ['test::Db']],
+    // test::Other has no typed connection in PointerRuntime
+    [
+      'a typed database and an untyped one',
+      'test::PointerRuntime',
+      ['test::Db', 'test::Other'],
+    ],
     // a path from the model, never an object's key
     ['a store named constructor', 'test::PointerRuntime', ['constructor']],
     ['a store named __proto__', 'test::PointerRuntime', ['__proto__']],

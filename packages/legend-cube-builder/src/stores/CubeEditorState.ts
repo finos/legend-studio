@@ -20,6 +20,7 @@ import {
   CubeDocument,
   diffSchemas,
   findLostSortOrders,
+  MESSAGE_SORT_COLUMNS_CUT,
   MESSAGE_SORT_COLUMNS_DROPPED,
   MESSAGE_SORT_ORDER_LOST,
   type ModelContext,
@@ -215,31 +216,39 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * The node's errors, each once: its own and those of the query rules, then
-   * the first line of the engine's error on it
-   */
-  /**
    * Warnings worked out from the query, by node id: a Sort whose order is
    * lost before it is used (PLAN §11.4). Never stored and never errors, so
    * Execute stays enabled; they go as soon as the query no longer loses it.
-   * A loss waits until the Sort and the node that loses its order have no
-   * errors, e.g. a Restrict just added, with no column yet: their own errors
-   * come first.
+   * A partial loss names each node that removes some of the Sort's columns,
+   * then the columns that came after a removed one. A loss waits until the
+   * Sort and every node it names have no errors, e.g. a Restrict just added,
+   * with no column yet: their own errors come first.
    */
   get derivedWarnings(): ReadonlyMap<string, readonly string[]> {
-    const { validity } = this.analysis;
+    const { validity, schemas } = this.analysis;
     const isValid = (nodeId: string): boolean =>
       validity.get(nodeId)?.length === 0;
+    const { query } = this.document;
     return new Map(
-      Array.from(findLostSortOrders(this.document.query))
-        .filter(([sortId, loss]) => isValid(sortId) && isValid(loss.nodeId))
+      Array.from(findLostSortOrders(query, undefined, schemas))
+        .filter(
+          ([sortId, loss]) =>
+            isValid(sortId) &&
+            isValid(loss.nodeId) &&
+            (loss.removals ?? []).every(({ nodeId }) => isValid(nodeId)),
+        )
         .map(([sortId, loss]) => [
           sortId,
-          [
-            loss.droppedColumns
-              ? MESSAGE_SORT_COLUMNS_DROPPED(loss.droppedColumns, loss.nodeId)
-              : MESSAGE_SORT_ORDER_LOST(loss.nodeId),
-          ],
+          loss.removals
+            ? [
+                ...loss.removals.map(({ nodeId, columns }) =>
+                  MESSAGE_SORT_COLUMNS_DROPPED(columns, nodeId),
+                ),
+                ...(loss.cutColumns?.length
+                  ? [MESSAGE_SORT_COLUMNS_CUT(loss.cutColumns)]
+                  : []),
+              ]
+            : [MESSAGE_SORT_ORDER_LOST(loss.nodeId)],
         ]),
     );
   }
@@ -252,6 +261,10 @@ export class CubeEditorState implements CommandRegistrar {
     ];
   }
 
+  /**
+   * The node's errors, each once: its own and those of the query rules, then
+   * the first line of the engine's error on it
+   */
   getNodeErrors(nodeId: string): readonly string[] {
     const hostIssue = this.hostIssues.get(nodeId);
     return [

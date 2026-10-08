@@ -87,4 +87,13 @@ describe('Slice draft', () => {
     expect([draft.startText, draft.stopText]).toEqual(['', '']);
     expect(draft.build()).toBe(slice);
   });
+
+  test('Keeps a saved bound its field cannot hold when its opening text is typed back with spaces', () => {
+    const slice = new Slice('slice101', 1.5, 2.5);
+    const draft = new CubeSliceDraft(slice);
+    draft.setStartText(' 1.5 ');
+    expect(draft.build()).toBe(slice);
+    draft.setStopText(' 2.5 ');
+    expect(draft.build()).toBe(slice);
+  });
 });

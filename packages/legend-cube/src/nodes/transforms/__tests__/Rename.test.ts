@@ -234,4 +234,40 @@ describe(unitTest('Rename'), () => {
       () => new Rename('rename101', mappings as unknown as RenameMapping[]),
     ).toThrow(`A rename's mappings must be a list of {from, to} names`);
   });
+
+  test('Refuses a new name that differs only in case from a column the input keeps', () => {
+    // SQL Server, MemSQL and DuckDB take order_id and ORDER_ID for one column
+    expect(
+      errorsOf(new Rename('rename101', [map('SHIP_COUNTRY', 'order_id')])),
+    ).toEqual([MESSAGE_ALREADY_IN_INPUT_SCHEMA('New column name', 'order_id')]);
+  });
+
+  test("Lets a column take its own name in another case, or a renamed column's", () => {
+    expect(
+      errorsOf(new Rename('rename101', [map('ORDER_ID', 'order_id')])),
+    ).toEqual([]);
+    // CUSTOMER_ID is renamed away, so its name is free in any case
+    expect(
+      errorsOf(
+        new Rename('rename101', [
+          map('CUSTOMER_ID', 'Customer'),
+          map('SHIP_COUNTRY', 'customer_id'),
+        ]),
+      ),
+    ).toEqual([]);
+  });
+
+  test('Refuses two new names that differ only in case', () => {
+    expect(
+      errorsOf(
+        new Rename('rename101', [
+          map('ORDER_ID', 'a'),
+          map('SHIP_COUNTRY', 'A'),
+        ]),
+      ),
+    ).toEqual([
+      MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER('a'),
+      MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER('A'),
+    ]);
+  });
 });

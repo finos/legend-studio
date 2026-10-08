@@ -24,7 +24,7 @@ import {
   PrimitiveType,
   Query,
   SchemaColumn,
-  type Sort,
+  Sort,
   SortDirection,
 } from '@finos/legend-cube';
 import type { DataGridGetContextMenuItemsParams } from '@finos/legend-lego/data-grid';
@@ -282,6 +282,68 @@ describe('Grid quick actions', () => {
     ]);
   });
 
+  test('Does nothing when the query changed after the menu opened', async () => {
+    const { state } = await setUp();
+    // Sort by, from a menu opened before a Filter was added
+    const before = actionsOn(state, 'SHIP_COUNTRY');
+    expect(before.map((action) => action.disabledReason)).toEqual([
+      undefined,
+      undefined,
+    ]);
+    state.applyQuery(
+      state.document.query.add(
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('ORDER_ID', FilterOperator.IS_NOT_EMPTY),
+        ),
+        'relational101',
+      ),
+    );
+    const ids = (): string =>
+      state.document.query.nodes.map(({ id }) => id).join();
+    const afterFilter = ids();
+    before[0]?.apply();
+    expect(ids()).toBe(afterFilter);
+    // Filter by, from a menu opened before a Sort was added
+    state.undo();
+    await flowResult(state.execution.execute());
+    const fresh = actionsOn(state, 'SHIP_COUNTRY');
+    actionsOn(state, 'ORDER_ID')[0]?.apply();
+    const afterSort = ids();
+    fresh[1]?.apply();
+    expect(ids()).toBe(afterSort);
+  });
+
+  test('Filters a null Float cell with Is Empty, with no note on comparing floats', async () => {
+    const { state } = await setUp();
+    const [, filterBy] = actionsOn(state, 'FREIGHT', null);
+    expect(filterBy?.disabledReason).toBeUndefined();
+    expect(filterBy?.hint).toBeUndefined();
+    filterBy?.apply();
+    expect(addedFilter(state).operator).toBe(FilterOperator.IS_EMPTY);
+  });
+
+  test("Adds no node in a read-only cube, or where the query can't take it", async () => {
+    const { state } = await setUp();
+    const before = state.document.query;
+    runInAction(() => {
+      state.readOnly = true;
+    });
+    state.addConfiguredNode(
+      Sort.byColumn('sort101', 'ORDER_ID'),
+      'relational101',
+    );
+    expect(state.document.query === before).toBe(true);
+    expect(state.document.query.getNode('sort101') === undefined).toBe(true);
+    expect(state.history).toHaveLength(0);
+    runInAction(() => {
+      state.readOnly = false;
+    });
+    state.addConfiguredNode(Sort.byColumn('sort101', 'ORDER_ID'), 'missing999');
+    expect(state.document.query === before).toBe(true);
+    expect(state.history).toHaveLength(0);
+  });
+
   test('Offers nothing on a position that is not a column of the rows', async () => {
     const { state } = await setUp();
     expect(getCubeGridQuickActions(state, COLUMNS.length, 'x')).toEqual([]);
@@ -314,6 +376,18 @@ describe('Grid context menu', () => {
     ]);
     const filterBy = items[1];
     expect(typeof filterBy === 'object' && filterBy.disabled).toBe(false);
+  });
+
+  test("Shows an enabled item's note as its tooltip, and none without a note", async () => {
+    const { state } = await setUp();
+    const [, filterBy] = getCubeGridContextMenuItems(state, params('c2'));
+    expect(filterBy).toMatchObject({
+      name: 'Filter by "FREIGHT"',
+      disabled: false,
+      tooltip: FILTER_FLOAT_COMPARISON_HINT,
+    });
+    const [sortBy] = getCubeGridContextMenuItems(state, params('c1'));
+    expect(typeof sortBy === 'object' && 'tooltip' in sortBy).toBe(false);
   });
 
   test('Shows a disabled item with its reason as the tooltip', async () => {

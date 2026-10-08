@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
+import { foldColumnName } from '../schema/ColumnName.js';
 import type { Schema } from '../schema/Schema.js';
 
 /**
  * A name for a column an emitter adds and drops again, e.g. `cube_rn`: the
  * base name, else with a number (`cube_rn2`, `cube_rn3`, …), until no column
- * of the schema has it
+ * of the schema has it in any case (`foldColumnName`): `CUBE_RN` takes
+ * `cube_rn` on a database that compares names without case
  */
 export const getTemporaryColumnName = (
   base: string,
   schema: Schema,
 ): string => {
+  const taken = new Set(schema.names().map(foldColumnName));
   let name = base;
-  for (let index = 2; schema.lookup(name); index += 1) {
+  for (let index = 2; taken.has(foldColumnName(name)); index += 1) {
     name = `${base}${index}`;
   }
   return name;

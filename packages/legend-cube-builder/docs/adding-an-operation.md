@@ -29,8 +29,8 @@ as one undo step (**Cancel** drops it).
 - It changes only the draft. An action on the document, such as Join's Swap Inputs, goes through
   `editorState.nodeEditor`, which applies the draft first.
 - `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
-  `isColumnDisabled` shows a column without letting it be picked, as Sort does for a type that can't be sorted
-  (`isSortableType`) and a column another row has.
+  `isColumnDisabled` gives the reason a column can't be picked, shown after its type, as Sort does for a type that can't
+  be sorted (`isSortableType`) and a column another row has; the column stays shown.
 - A whole-number setting (a size, a row index) is a `CubeIntegerField` over text the draft keeps as typed, read with
   `parseWholeNumberText` (`src/stores/editors/CubeIntegerText.ts`): an optional sign and digits, nothing else, and empty
   text gives `undefined`, which the node reports. Never `Number()` the raw text (it reads `''` as 0, `0x10` as 16 and

@@ -190,8 +190,19 @@ describe('Sort editor', () => {
     expect(option(2, 'ORDER_ID').disabled).toBe(true);
     expect(option(2, 'PAYLOAD').disabled).toBe(true);
     expect(option(2, 'SHIP_COUNTRY').disabled).toBe(false);
+    // each says why
+    expect(option(2, 'PAYLOAD').textContent).toBe(
+      "PAYLOAD: Variant? (can't be sorted)",
+    );
+    expect(option(2, 'ORDER_ID').textContent).toBe(
+      'ORDER_ID: SmallInt (already sorted on)',
+    );
+    expect(option(2, 'SHIP_COUNTRY').textContent).toBe(
+      'SHIP_COUNTRY: Varchar(15)?',
+    );
     // a row keeps its own column
     expect(option(1, 'ORDER_ID').disabled).toBe(false);
+    expect(option(1, 'ORDER_ID').textContent).toBe('ORDER_ID: SmallInt');
   });
 
   test('Marks each saved row with its first problem, as the node judges it', async () => {

@@ -218,4 +218,21 @@ describe('Rename editor', () => {
     expect(button('Add column to rename').disabled).toBe(true);
     expect(button('Apply').disabled).toBe(true);
   });
+
+  test('Judges a filled row after a blank one by its own mapping', async () => {
+    const editorState = await render(ordersRenamed([]));
+    await openRename();
+    fireEvent.click(button('Add column to rename'));
+    pick(2, 'ORDER_ID');
+    type(2, 'SHIP_COUNTRY');
+    expect(name(1).getAttribute('aria-invalid')).toBe('false');
+    expect(name(2).getAttribute('aria-invalid')).toBe('true');
+    expect(name(2).title).toBe(
+      MESSAGE_ALREADY_IN_INPUT_SCHEMA('New column name', 'SHIP_COUNTRY'),
+    );
+    type(2, 'Order Id');
+    expect(name(2).getAttribute('aria-invalid')).toBe('false');
+    fireEvent.click(button('Apply'));
+    expect(stored(editorState)).toEqual([{ from: 'ORDER_ID', to: 'Order Id' }]);
+  });
 });

@@ -44,8 +44,8 @@ export const rowBound = (node: QueryNode, value: number): IR =>
   );
 
 /**
- * Takes rows by their numbers, for a database that can't skip rows (PLAN
- * §11.4): `<input>->extend([<keys>]->over(), ~[cube_rn: {p, w, r |
+ * Takes rows by their numbers, for a database whose engine plan can't take
+ * them right (PLAN §11.4): `<input>->extend([<keys>]->over(), ~[cube_rn: {p, w, r |
  * $p->rowNumber($r)}])->filter({row | <range>})->select(~[<input columns>])`.
  * The rows are numbered from 1 in the input's order, else by the first input
  * column that sorts, ascending; `range` gets the row number to compare. No

@@ -107,6 +107,12 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
   return `This table changed since the cube was saved: ${changes.join('; ')}`;
 };
 
+/** Why the Sort editor's picker doesn't offer a column, after its type */
+export const CUBE_SORT_COLUMN_DISABLED_REASON = {
+  NOT_SORTABLE: "can't be sorted",
+  TAKEN: 'already sorted on',
+};
+
 /** Why the grid's quick actions (spec §12.4) can't be used */
 export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   STALE_ROWS:

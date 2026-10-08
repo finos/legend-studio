@@ -31,7 +31,7 @@ import {
   MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER,
   MESSAGE_NOT_IN_INPUT_SCHEMA,
 } from '../../messages/CubeMessages.js';
-import { isValidColumnName } from '../../schema/ColumnName.js';
+import { foldColumnName, isValidColumnName } from '../../schema/ColumnName.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import type { JsonObject } from '../../utils/Json.js';
 
@@ -55,8 +55,12 @@ const isRenameMapping = (value: unknown): value is RenameMapping =>
  * Appendix A): the old column is named and in the input; the new name is
  * given, is a valid column name (`isValidColumnName`) and differs from the old
  * one; neither name appears in another mapping, so a swap or a chain is
- * refused and the renames can run in any order; and the new name is not a
- * column the input keeps. Exported so an editor can mark each row.
+ * refused and the renames can run in any order; no other mapping gives a new
+ * name that differs from it only in case; and the new name is not a column the
+ * input keeps, in any case either (`foldColumnName`): SQL Server, MemSQL and
+ * DuckDB take `order_id` and `ORDER_ID` for one column. A column's own new
+ * case (`ORDER_ID` to `order_id`) is fine. Exported so an editor can mark
+ * each row.
  */
 export const validateRenameMapping = (
   mappings: readonly RenameMapping[],
@@ -89,7 +93,23 @@ export const validateRenameMapping = (
       errors,
     ) &&
     validate(
-      schema.lookup(to) === undefined,
+      mappings.every(
+        (other, otherIndex) =>
+          otherIndex === index ||
+          other.to === '' ||
+          foldColumnName(other.to) !== foldColumnName(to),
+      ),
+      MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER(to),
+      errors,
+    ) &&
+    validate(
+      !schema
+        .names()
+        .some(
+          (name) =>
+            foldColumnName(name) === foldColumnName(to) &&
+            !mappings.some((other) => other.from === name),
+        ),
       MESSAGE_ALREADY_IN_INPUT_SCHEMA('New column name', to),
       errors,
     )

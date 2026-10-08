@@ -770,6 +770,80 @@ describe('Database workarounds, run on H2', () => {
     expect(numbered.columns).toEqual(native.columns);
   });
 
+  test.each<[string, QueryNode[]]>([
+    [
+      'a Limit after a Sort on two columns',
+      [
+        new Sort('sort101', [
+          { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+          { column: 'ORDER_ID', direction: SortDirection.DESC },
+        ]),
+        new Limit('limit101', 5),
+      ],
+    ],
+    [
+      'a Distinct then a Limit',
+      [
+        new Restrict('restrict101', ['SHIP_COUNTRY']),
+        new Distinct('distinct101'),
+        new Limit('limit101', 5),
+      ],
+    ],
+  ])(
+    'Emits what the engine parses from the printed Pure for %s on Sybase IQ, and types as Cube infers',
+    async (_, nodes) => {
+      const query = await ordersThen(...nodes);
+      const lambda = new QueryEmitter(query).emitExecutionLambda({
+        rowLimit: ROW_LIMIT,
+        runtime: CUBE_NORTHWIND_RUNTIME,
+        databaseType: 'SybaseIQ',
+      });
+      expect(printIR(lambda)).toMatch(/rowNumber|cube_d/u);
+      expect(emittedJson(query, ROW_LIMIT, 'SybaseIQ')).toEqual(
+        await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+      );
+      await TEST__expectEngineTyping(engine, query);
+    },
+  );
+
+  test("Takes a Limit's rows by every key of a Sort on two columns, through row numbers (Sybase IQ)", async () => {
+    // ALFKI has six orders: numbered by CUSTOMER_ID alone, any five would do
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(
+        new Sort('sort101', [
+          { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+          { column: 'ORDER_ID', direction: SortDirection.DESC },
+        ]),
+        new Limit('limit101', 5),
+      ),
+      ROW_LIMIT,
+      'SybaseIQ',
+    );
+    expect(orderIds(TEST__columnValues(result, 'ORDER_ID'))).toEqual([
+      11011, 10952, 10835, 10702, 10692,
+    ]);
+    expect(new Set(TEST__columnValues(result, 'CUSTOMER_ID'))).toEqual(
+      new Set(['ALFKI']),
+    );
+  });
+
+  test('Takes five distinct countries from a padded Distinct then a Limit (Sybase IQ)', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(
+        new Restrict('restrict101', ['SHIP_COUNTRY']),
+        new Distinct('distinct101'),
+        new Limit('limit101', 5),
+      ),
+      ROW_LIMIT,
+      'SybaseIQ',
+    );
+    const countries = TEST__columnValues(result, 'SHIP_COUNTRY');
+    expect(countries).toHaveLength(5);
+    expect(new Set(countries).size).toBe(5);
+  });
+
   test('Keeps one row of each ship city and country, padded', async () => {
     const query = await ordersThen(
       new Restrict('restrict101', ['SHIP_COUNTRY', 'SHIP_CITY']),

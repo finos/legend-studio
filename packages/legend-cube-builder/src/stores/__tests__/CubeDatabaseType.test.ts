@@ -23,6 +23,9 @@ import {
   Limit,
   printIR,
   Query,
+  RelationalTableSource,
+  Schema,
+  Slice,
   type QueryNode,
   Sort,
   SortDirection,
@@ -59,6 +62,26 @@ const outlineOn = (databaseType: string): CubeModelOutline => ({
       path: NORTHWIND_RUNTIME,
       storePaths: [NORTHWIND_DATABASE],
       connections: [{ storePath: NORTHWIND_DATABASE, databaseType }],
+    },
+  ],
+});
+
+const OTHER_DATABASE = 'test::Other';
+
+/** The Northwind outline, its runtime connecting Northwind and another database with these types */
+const outlineOnTwo = (
+  northwindType: string,
+  otherType: string,
+): CubeModelOutline => ({
+  ...FAKE_NORTHWIND_OUTLINE,
+  runtimes: [
+    {
+      path: NORTHWIND_RUNTIME,
+      storePaths: [NORTHWIND_DATABASE, OTHER_DATABASE],
+      connections: [
+        { storePath: NORTHWIND_DATABASE, databaseType: northwindType },
+        { storePath: OTHER_DATABASE, databaseType: otherType },
+      ],
     },
   ],
 });
@@ -168,14 +191,71 @@ describe('Cube execution: the database type', () => {
     expect(state.execution.error).toBeUndefined();
   });
 
-  test('Loads no outline for a query without a Drop, Slice or Distinct', async () => {
+  test('Loads no outline for a query without a Drop, Slice, Limit or Distinct', async () => {
     const { state, fake } = setUp(
-      ordersThen(new Limit('limit101', 5)),
+      ordersThen(
+        new Sort('sort101', [
+          { column: 'ORDER_ID', direction: SortDirection.DESC },
+        ]),
+      ),
       outlineOn('SqlServer'),
     );
     await flowResult(state.execution.execute());
     expect(fake.loadModel).not.toHaveBeenCalled();
-    expect(ranLambda(fake)).toContain('->limit(5)');
+    expect(ranLambda(fake)).toContain(
+      '->sort(~ORDER_ID->descending())->limit(1001)',
+    );
+  });
+
+  test('Runs a Slice through row numbers on a SqlServer runtime', async () => {
+    const { state, fake } = setUp(
+      ordersThen(new Slice('slice101', 10, 20)),
+      outlineOn('SqlServer'),
+    );
+    await flowResult(state.execution.execute());
+    expect(fake.loadModel).toHaveBeenCalled();
+    const ran = ranLambda(fake);
+    expect(ran).toContain('$p->rowNumber($r)');
+    expect(ran).toContain('($row.cube_rn > 10) && ($row.cube_rn <= 20)');
+    expect(ran).not.toContain('->slice(10, 20)');
+  });
+
+  test('Runs a Limit after a Sort on two columns through row numbers on a Sybase IQ runtime', async () => {
+    const { state, fake } = setUp(
+      ordersThen(
+        new Sort('sort101', [
+          { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+          { column: 'ORDER_ID', direction: SortDirection.DESC },
+        ]),
+        new Limit('limit101', 5),
+      ),
+      outlineOn('SybaseIQ'),
+    );
+    await flowResult(state.execution.execute());
+    expect(ranLambda(fake)).toContain('$row.cube_rn <= 5');
+  });
+
+  test('Reads the database type of only the databases the run reads', async () => {
+    // a table of another database, connected as H2, that the run doesn't read
+    const document = sortedDrop();
+    const other = new RelationalTableSource(
+      'relational201',
+      { database: OTHER_DATABASE, schema: 'NORTHWIND', table: 'ORDERS' },
+      { kind: 'resolved', schema: new Schema(ORDERS_COLUMNS) },
+    );
+    const { state, fake } = setUp(
+      document.withQuery(
+        new Query(
+          [...document.query.nodes, other],
+          document.query.connections,
+          'drop101',
+        ),
+      ),
+      outlineOnTwo('SqlServer', 'H2'),
+    );
+    expect(state.execution.canExecute).toBe(true);
+    await flowResult(state.execution.execute());
+    expect(ranLambda(fake)).toContain('$row.cube_rn > 10');
   });
 
   test('Renders Show Pure as Execute runs it', async () => {
@@ -226,9 +306,35 @@ describe('Cube execution: while the outline loads', () => {
     outline.resolve(outlineOn('SqlServer'));
     await run;
     expect(ranLambda(fake)).toContain('$row.cube_rn > 10');
-    expect(state.execution.result?.query).toBe(started);
+    expect(state.execution.result?.query === started).toBe(true);
     // the cube changed: the result is stale
     expect(state.execution.isStale).toBe(true);
+  });
+
+  test('Runs on the database it started with, though the table moves to a database of another type while the outline loads', async () => {
+    const { state, fake } = setUp(
+      sortedDrop(),
+      outlineOnTwo('SqlServer', 'H2'),
+    );
+    const started = state.document.query;
+    const outline = held<CubeModelOutline>();
+    fake.loadModel.mockReturnValueOnce(outline.promise);
+    const run = flowResult(state.execution.execute());
+    state.applyQuery(
+      started.replace(
+        new RelationalTableSource(
+          'relational101',
+          { database: OTHER_DATABASE, schema: 'NORTHWIND', table: 'ORDERS' },
+          { kind: 'resolved', schema: new Schema(ORDERS_COLUMNS) },
+        ),
+      ),
+    );
+    outline.resolve(outlineOnTwo('SqlServer', 'H2'));
+    await run;
+    const ran = ranLambda(fake);
+    expect(ran).toContain('$row.cube_rn > 10');
+    expect(ran).toContain(NORTHWIND_DATABASE);
+    expect(state.execution.result?.query === started).toBe(true);
   });
 
   test('Shows nothing in a Show Pure closed while the outline loads', async () => {

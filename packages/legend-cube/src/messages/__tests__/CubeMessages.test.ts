@@ -170,6 +170,12 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_SORT_COLUMNS_DROPPED(['B', 'C'], 'restrict101')).toBe(
     'Sorting by "B", "C" has no effect: restrict101 removes those columns before the order is used.',
   );
+  expect(MESSAGES.MESSAGE_SORT_COLUMNS_CUT(['C'])).toBe(
+    'Sorting by "C" has no effect either: it comes after a removed column.',
+  );
+  expect(MESSAGES.MESSAGE_SORT_COLUMNS_CUT(['C', 'D'])).toBe(
+    'Sorting by "C", "D" has no effect either: they come after a removed column.',
+  );
 });
 
 test(

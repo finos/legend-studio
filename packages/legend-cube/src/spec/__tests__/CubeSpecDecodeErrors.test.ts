@@ -1225,6 +1225,38 @@ describe(unitTest('Saved spec decode errors'), () => {
       'is required',
     ],
     [
+      // every entry is read before an unknown key keeps the node as an Unknown node
+      'a rename mapping without to after one with an unknown key',
+      withNodes(
+        [
+          {
+            ...RENAME_101,
+            mappings: [{ from: 'A', to: 'B', case: 'upper' }, { from: 'C' }],
+          },
+        ],
+        'rename101',
+      ),
+      'query.nodes[0].mappings[1].to',
+      'is required',
+    ],
+    [
+      'a sort entry without a column after one with an unknown key',
+      withNodes(
+        [
+          {
+            ...SORT_101,
+            sorts: [
+              { column: 'A', direction: 'ASC', nulls: 'first' },
+              { direction: 'ASC' },
+            ],
+          },
+        ],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[1].column',
+      'is required',
+    ],
+    [
       'a restrict without columns',
       withNodes(
         [{ kind: 'restrict', id: 'restrict101', inputs: [null] }],

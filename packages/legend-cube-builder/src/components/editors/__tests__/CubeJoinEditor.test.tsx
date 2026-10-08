@@ -506,6 +506,7 @@ describe('Join editor, renaming the columns both inputs have', () => {
     const editorState = await render(ordersJoinCustomers());
     await openJoin();
     addKeys('SHIP_COUNTRY', 'COUNTRY');
+    expect(editorState.nodeEditor.hasChanges).toBe(true);
     expect(button('Rename them').disabled).toBe(false);
     fireEvent.click(button('Rename them'));
     const join = editorState.document.query.getNode('join101') as Join;
@@ -513,6 +514,12 @@ describe('Join editor, renaming the columns both inputs have', () => {
     expect(join.rightColumns).toEqual(['COUNTRY']);
     expect(editorState.history).toHaveLength(1);
     expect(editorState.analysis.validity.get('join101')).toEqual([]);
+    // the panel follows the new join, with nothing left to apply
+    expect(editorState.nodeEditor.nodeId).toBe('join101');
+    expect(editorState.nodeEditor.draft?.original === join).toBe(true);
+    expect(editorState.nodeEditor.hasChanges).toBe(false);
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeDefined();
   });
 
   test('Rewrites a key it renames, and the panel follows the rewritten join', async () => {
