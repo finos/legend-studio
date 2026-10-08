@@ -44,6 +44,7 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@dagrejs/dagre": "1.1.4",
     "@finos/legend-application": "workspace:*",
     "@finos/legend-art": "workspace:*",
     "@finos/legend-cube": "workspace:*",
@@ -52,9 +53,11 @@
     "@finos/legend-shared": "workspace:*",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
+    "@xyflow/react": "12.4.4",
     "mobx": "6.13.6",
     "mobx-react-lite": "4.1.0",
     "react": "19.0.1",
+    "react-dnd": "16.0.1",
     "react-dom": "19.0.1",
     "serializr": "3.0.3"
   },

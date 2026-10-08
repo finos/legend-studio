@@ -223,8 +223,9 @@ What the repo actually enforces:
       - `execute` (`responseType: 'text'`), returning `{ ok: true, status: 200, text: async () => body }` so the
         lossless reader runs exactly as in the browser.
 - **CSS:**
-  - From M1.8b, with the canvas, the builder's `style/index.scss` starts with
-    `@import url('@xyflow/react/dist/style.css');`.
+  - From M1.8b, the canvas imports `@xyflow/react/dist/style.css` from its `.tsx` file, as Studio's database
+    diagram does, so the stylesheet loads with Cube's lazy chunk and not in Query's global sheet: xyflow 12 and
+    the lineage viewer's reactflow 11 share the `.react-flow__*` class names (decided in M1.8b S13).
   - Legend Query's bootstrap `style/index.scss` imports `@finos/legend-cube-builder/lib/index.css`.
   - Tailwind only scans `../legend-*/src/**/*.tsx`: the package folder must start with `legend-`, and Tailwind
     classes go in `.tsx` files 📄.
@@ -1219,6 +1220,24 @@ history. Domain objects are immutable but not all frozen (only `Query`'s arrays 
 - **Technical (decided without asking):** Query tests use a local fake engine (no `./test` export from the builder
   yet); the core gains small host-free helpers the UI needs (re-reading filter values against a schema, a schema
   diff, the display name of a table, the reason a capture subtree can't emit).
+
+**Settled at the start of M1.8b** (user, 2026-10-07; all on the requirements' recommendation):
+
+- **Palette source item:** "Relational Database Table" opens the source picker when clicked or dropped on empty
+  canvas. It can't be dropped onto a node: palette drops onto nodes use `canAdd`, and sources have no ports. The
+  palette and the context menu stay one list built from the registry.
+- **Removing the last source:** when a Remove leaves the query empty, the same undo entry clears the context (model
+  and runtime), so the next pick starts fresh.
+- **Filter Apply with only blank rows:** an edited tree of untouched blank rows stores no filter. It counts as no
+  change: no undo entry, and the node keeps "Filter cannot be empty."
+- **A side-panel edit whose node changed underneath:** the panel records the key of the node it opened from. If that
+  node is gone or its key changed (Undo, Remove, Import, re-check), the panel closes, discards its buffer and shows
+  a short notice.
+- **Shortcuts while a Cube dialog is open:** Cube's command triggers return false while any Cube dialog is open
+  (picker, Import, Show Pure). Picker and Import results are also re-checked when they are applied.
+- **Join "type unknown" warning:** `CubeOutlineTable` gains `untypedColumns`, filled in `V1_CubeModelOutlineBuilder`
+  (a port and `v1/` change, no core or saved-format change). The Join editor reads the outline of the document's
+  model, loaded through the catalog when needed, once per model.
 
 ---
 
