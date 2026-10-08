@@ -819,8 +819,8 @@ describe('Cube source picker: unexpected failures', () => {
   });
 
   test('Reports a failure to load the model picked again, and stops loading', async () => {
-    const { alertUnhandledError } = await renderWithAlert((fake) =>
-      fake.loadModel
+    const { fake, alertUnhandledError } = await renderWithAlert((engine) =>
+      engine.loadModel
         .mockRejectedValueOnce(
           new CubeEngineError(
             CubeEngineErrorKind.NETWORK,
@@ -834,11 +834,13 @@ describe('Cube source picker: unexpected failures', () => {
       await within(dialog).findByText('The engine is unreachable'),
     ).toBeDefined();
     expect(alertUnhandledError).not.toHaveBeenCalled();
-    // the failed load isn't kept, so picking the model loads it again
-    fireEvent.change(within(dialog).getByLabelText('Model'), {
-      target: { value: 'cube-northwind' },
-    });
+    // the failed load isn't kept, so choosing the model again, after another
+    // choice, loads it again
+    const model = within(dialog).getByLabelText('Model');
+    fireEvent.change(model, { target: { value: 'paste' } });
+    fireEvent.change(model, { target: { value: 'cube-northwind' } });
     await waitFor(() => expect(alertUnhandledError).toHaveBeenCalledTimes(1));
+    expect(fake.loadModel).toHaveBeenCalledTimes(2);
     expect(within(dialog).queryByText('loading model')).toBeNull();
     expect(isBarLoading(loadingBar(dialog))).toBe(false);
   });
