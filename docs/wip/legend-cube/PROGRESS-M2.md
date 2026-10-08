@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                    |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                       |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                        |
-| Step   | M2.1–M2.15 done (every operation, the Sort warning, database workarounds, grid quick actions, docs); M2.16 next (verification and the browser rehearsal) |
-| Tests  | 1824 core, 726 builder (core group), 236 Query, 139 builder engine-roundtrip (after M2.15)                                                               |
+| Item   | State                                                                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                                                     |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                      |
+| Step   | M2.1–M2.16 done (every operation, the Sort warning, database workarounds, grid quick actions, docs, verification and the rehearsal); M2.17 in progress (rebase, the PLAN fold, the PR) |
+| Tests  | 1853 core, 740 builder (core group), 236 Query, 167 builder engine-roundtrip (after M2.16)                                                                                             |
 
 ## Steps
 
@@ -34,8 +34,39 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
 - [x] **M2.14** Grid quick actions: Sort by and Filter by
 - [x] **M2.15** Docs, sample typing on the engine, changeset text
-- [ ] **M2.16** Verification and the browser rehearsal
+- [x] **M2.16** Verification and the browser rehearsal
 - [ ] **M2.17** Rebase on the latest master, fold PLAN §11.4's supersessions in, PR when the user asks
+
+## Commits
+
+Rebased hashes replace these at M2.17's rebase (the next commit records them).
+
+| Step               | Commit      | Subject                                                                           |
+| ------------------ | ----------- | --------------------------------------------------------------------------------- |
+| M2.1               | `2648b456d` | docs: settle Legend Cube M2 (simple unary operations)                             |
+| M2.2, M2.3         | `5d65d0251` | feat: add Limit to Legend Cube                                                    |
+| M2.4               | `39fe06233` | docs: record Legend Cube M2's Limit step and its rebase onto master               |
+| M2.4               | `9e2261496` | test: check Legend Cube's Limit on the engine, and update the guides              |
+| First verification | `0dae7f6fd` | fix: keep a Legend Cube Limit's saved size when its text is typed back            |
+| First verification | `5023fa82f` | docs: record Legend Cube M2's first verification and fix the docs it found wrong  |
+| M2.5               | `6eefe835b` | feat: add Drop to Legend Cube                                                     |
+| M2.6               | `baace76d9` | feat: add Slice to Legend Cube                                                    |
+| M2.7               | `2439cfded` | feat: add Distinct to Legend Cube                                                 |
+| M2.8               | `0da7cc79a` | feat: add Restrict to Legend Cube                                                 |
+| M2.9               | `8d2fbb310` | feat: add Rename to Legend Cube                                                   |
+| M2.10              | `fd06dec5f` | feat: rename the columns a Legend Cube Join's inputs share                        |
+| M2.11              | `7dba00d90` | feat: add Sort to Legend Cube                                                     |
+| M2.12              | `199c2ab8d` | feat: warn on a Legend Cube Sort whose order is lost                              |
+| M2.13              | `f32b537b7` | feat: write Drop, Slice and Distinct for the databases that need it               |
+| M2.13              | `b607ac45a` | feat: run Legend Cube's Drop, Slice and Distinct on the runtime's database        |
+| M2.14              | `9c407d8d6` | feat: add Sort by and Filter by to Legend Cube's result grid                      |
+| M2.15              | `d1c5d9116` | docs: describe Legend Cube's operations and type its samples on the engine        |
+| M2.16              | `69e721cff` | fix: correct what Legend Cube M2's second verification found                      |
+| M2.16              | `93fe21cf2` | fix: take every Sybase IQ Limit and ClickHouse Drop by row numbers in Legend Cube |
+| M2.16, M2.17       | (this one)  | docs: record Legend Cube M2's verification and fold its decisions into the plan   |
+
+Browser checks: M2.4 to M2.14 ran in the app's browser pane on :9002 (Chrome 152, as M2.4 recorded); the M2.16
+rehearsal in Playwright's headless Chromium 149.0.7827.55.
 
 ## Step notes
 
@@ -259,7 +290,7 @@ the name (`getTemporaryColumnName`). New roles `rowNumber` and `rowRange`; every
 braces a column function with several parameters, which Pure doesn't read bare. Engine: written for SqlServer and run
 on H2, every shape parses to the JSON Cube sends and types as Cube infers; sorted descending, a Drop of 825 gives
 10252–10248 and a Slice [10, 15) 11067–11063, unsorted a Slice gives 10258–10262, the columns match the native forms',
-and the padded Distinct of ship cities and countries gives 70 rows. The builder (this commit): the outline's runtimes
+and the padded Distinct of ship cities and countries gives 70 rows. The builder (`b607ac45a`): the outline's runtimes
 gain `connections` (`{storePath, databaseType}`, a list), read from a connection pointer, an embedded relational
 connection and `connectionStores` (shapes probed on the engine), skipping other connections; `getDatabaseType` gives
 the one type of the runtime's connections to the databases a query reads, else none. Execute and Show Pure load the
@@ -302,11 +333,86 @@ the dialect workarounds (core), warnings, `isColumnDisabled` and the Tailwind re
 rule and the plan-only test (testing), and what the model outline now feeds (hosting). Gates: `check:ci` and `lint:ci`
 green; 1824 core, 726 builder (core group), 236 Query and 139 engine-roundtrip tests.
 
+**M2.16, verification and the rehearsal (2026-10-08).** The second verification (`m2-full-verify`, over M2.5–M2.15):
+6 reviewers (nodes, row order and emission, builder, tests, engine, docs) and a skeptic per finding, 41 agents. Of 34
+findings, 33 survived their skeptic and merged into 26 fixes; one (the full-loss wording) was refuted. The bugs: on
+Sybase IQ, a Limit after a Sort on several columns, and a Distinct followed by a Limit, took the wrong rows or kept
+duplicates (the engine's `rewriteSliceAsWindowFunction` numbers a subquery's rows by the first sort key only, and inside
+the `select distinct`); a Rename to a case variant of a kept column, or an autofix name taken in another case, returned wrong data on DuckDB and would fail on SQL Server and MemSQL, which compare names without case; the partial Sort warning named columns the
+Restrict keeps, and a single node for removals by several; temporary columns ignored case. Fixed in `69e721cff`:
+Sybase IQ's Limit and Distinct workarounds, case-insensitive names (`foldColumnName`) for Rename, the autofix and
+temporary columns, the warning's `removals` and `cutColumns` ("Sorting by "C" has no effect either: it comes after a
+removed column."), the Sort picker's reasons ("(can't be sorted)", "(already sorted on)"), tests for 15 proven gaps,
+and a plan-only check of every shape on every database type the engine plans with a static connection. Run before the
+fix, that check failed on Sybase IQ only. A third check (`m2-fix-verify`, 9 agents) over `69e721cff`: 6 low findings,
+all confirmed, and 85 mutant proofs, 83 killed. Fixed in `93fe21cf2`: every Limit on Sybase IQ goes through row numbers
+(the engine also names its numbering column `row_number`, which clashes with an input column of that name), so every
+Limit now waits for the outline (short, cached; recorded in §11.4); ClickHouse's Drop goes through row numbers (after
+a descending key the engine writes `nulls firstoffset m`); `foldColumnName` normalizes (NFKC) and folds through upper
+case (`ß`/`SS`, final sigma, fullwidth letters); the Join's temporary keys fold too; tests for the two surviving mutants,
+each shown to fail with its mutant in an isolated copy. Kept as is: Rename's message order when two rows clash in case
+(the skeptic showed a reorder would make it depend on letter case). DuckDB and Aurora are left out of the plan test
+(their plans fail before any SQL with a static connection); ClickHouse and Composite are in. The engine defects are
+drafted in ISSUES.md for the user to file (SQL Server's `top N distinct`, `rewriteSliceAsWindowFunction`, ClickHouse's
+offset, the HTTP 500 for duplicate columns); the Join's case-only duplicates (M1 code) are an ISSUES entry.
+Rehearsal: `rehearsal-m2.mjs` (evidence `demo/`) re-runs Part B, then on the 19 rows: Sort ORDER_ID descending gives
+11076 down to 10454; Limit 5, Slice [1, 3) and Drop 17 take their rows by the Sort; Restrict keeps the input's order;
+Rename renames in place; Restrict then Distinct gives France once, with the Sort's warning, gone with the Restrict; a
+Sort before the Join warns and names it, one before the Filter doesn't, and a new Sort without a column waits; the
+autofix splices two Renames and the join runs (209 rows); the grid's menu puts Sort by and Filter by first, ag-grid's
+Copy and Export after; export, reload and import give the same rows and spec. Every check passed, the console clean
+but for react-reflex's known `element.ref` warning. M2.14's browser check (on :9002, Chrome 152): right-clicking a
+CUSTOMER_ID cell offers both actions above ag-grid's items; Filter by "HANAR" adds the Filter after the table as the node
+that runs, the rows turn stale and both actions grey out; F9 gives HANAR's 14 orders. Gates: `check:ci` and `lint:ci`
+green; 1853 core, 740 builder (core group), 236 Query and 167 engine-roundtrip tests.
+
+Mutants, by step (M2.16's proofs, each killed in an isolated copy by the test named; the first verification recorded
+M2.1–M2.4's):
+
+- M2.5 Drop: `consumesInputOrder` false (RowOrder "Has only Limit, Drop and Slice take rows by their order"); the
+  native drop without its sort (SortEmitter "Sorts just before a Drop…"); the codec writing no size for the default (CubeSpecEncode "Writes the size of a new drop, the default included").
+- M2.6 Slice: `start <= stop` (Slice "Reports a start equal to the stop"); a cleared bound tested as falsy (CubeSpecEncode
+  "Leaves out each cleared bound on its own"); the draft dropping a saved bound (CubeSliceDraft "Keeps a saved start … while only the stop changes", and "Keeps a saved bound … typed back with spaces" for each bound).
+- M2.7 Distinct: no input order kept (RowOrder "Keeps the order through a Distinct"); the distinct call dropped
+  (DistinctEmitter).
+- M2.8 Restrict: the whole order kept after a dropped key (RowOrder "Keeps the keys before the first one…"); the emitter
+  not checking the input order (RestrictEmitter "Refuses to emit a schema that is not a subsequence…"); picks kept in
+  pick order (CubeRestrictDraft "Keeps the picks in the input's order…").
+- M2.9 Rename: swaps and chains allowed, same name allowed, length in UTF-16 units, backslash allowed, blank rows built
+  (Rename, ColumnName and CubeRenameDraft tests); exact-case collisions, renamed-away names refused, the old name folded
+  (Rename "Refuses a new name that differs only in case…", "Lets a column take its own name in another case…", "Refuses
+  two new names that differ only in case"); a blank row miscounted (CubeRenameEditor "Judges a filled row after a blank
+  one…"); an unknown key read before a malformed later mapping (CubeSpecDecodeErrors).
+- M2.10 autofix: names not reserved, keys not rewritten, the selection moved, the preview wrong (JoinAutofix, Join editor
+  tests); exact-case taken names, UTF-16 cuts, interleaved Left and Right names (JoinAutofix "Takes the next free name when c_1 is taken in another case",
+  "Cuts a long name by code points…", "Gives all Left names before any Right name"); the panel not rebound after "Rename
+  them" (CubeJoinEditor "Applies the edits not yet applied in the same step").
+- M2.11 Sort: the input's keys first (Sort "Orders its rows by its keys, then…"); no capture sort (5 SortEmitter tests, 2 CubeDialects tests);
+  duplicates allowed (Sort "Reports a column twice…"); the draft comparing filtered keys (CubeSortDraft "Keeps a saved key
+  without a column…"); taken columns offered, reasons missing (CubeSortEditor "Doesn't offer a column…"); an unknown key
+  read before a malformed later entry (CubeSpecDecodeErrors).
+- M2.12 Sort warning: a later Sort counted as a loss, an unknown order reported, blank keys reported, invalid nodes not
+  waited for, the canvas without derived warnings (RowOrder, CubeEditorState, CubeSortWarning tests); cut keys counted as
+  removed, removals pinned on the first node, `held` left stale, Drop and Slice not stopping the walk, a renamed key judged
+  by its Sort name, a later remover not waited for, the cut message dropped or pluralized wrong (RowOrder "Says a
+  Restrict removes only…", "Names each Restrict…", "… a later Sort on one of its two columns, then a Filter", "… a Drop
+  (Slice) that takes rows by it…", "Judges a renamed key the Restrict keeps by its new name…"; CubeEditorState "Waits for
+  every node that removes a column…", "Says the Restrict removes only…"; CubeMessages).
+- M2.13 workarounds: Sybase IQ's flags, Limit or Slice missing from `needsDatabaseType`, the Limit emitter ignoring the dialect, a Limit after one key sent through row numbers, `<` for `<=`, exact-case temporary names (CubeDialects tests); a typed and an untyped database read as one type (V1_CubeModelOutlineBuilder "Gives no database type for a typed database and an untyped one…"); every source's database read, the live query's database used after the wait
+  (CubeDatabaseType tests).
+- M2.14 quick actions: the float hint on every family, the two reasons swapped, a string cell trimmed (CubeGridQuickActions
+  and FilterBuilder tests); no check at click time, no hint as the tooltip, the hint on Is Empty, a read-only cube or an
+  unknown node accepted (CubeGridQuickActions "Does nothing when the query changed…", "Shows an enabled item's note…",
+  "Filters a null Float cell…", "Adds no node in a read-only cube…").
+- M2.15 samples: a Rename or Restrict schema that differs from the engine's (CubeSpecCorpus "Types the node
+  operations.cube.json runs as Cube infers it").
+
 ## Open items
 
-| Item          | Notes                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------- |
-| Supersessions | PLAN §11.4's list is applied to the sections it names in one docs commit at the end of M2 (M2.17) |
+| Item          | Notes                                                                                   |
+| ------------- | --------------------------------------------------------------------------------------- |
+| Supersessions | Applied in M2.17 to the sections PLAN §11.4's list names (the list stays as the record) |
+| Engine issues | Four drafts in ISSUES.md, for the user to file; they move to PLAN Appendix B once filed |
 
 ## Known local failures
 

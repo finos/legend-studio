@@ -29,6 +29,17 @@
   operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
   Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
 
+### A Join doesn't see shared columns that differ only in case
+
+- **Found:** M2's second verification (M2.16). M1 Join code, so not fixed in M2.
+- **What:** the Join's duplicate check (`getDuplicateJoinColumns`, `Join.ts`) compares names exactly, so a left `ID`
+  and a right `id` pass. SQL Server, MemSQL and DuckDB take them for one column: the join's SQL fails there, or (DuckDB)
+  returns one column's values for both. M2.16 made Rename, the Join autofix and Cube's temporary columns compare names
+  in any case (`foldColumnName`).
+- **Suggested fix:** fold names in `getDuplicateJoinColumns` and in the Join's output-schema check, so the duplicate
+  rule and its autofix offer `ID_1`/`id_2`. Test: left `[ID, X]`, right `[id, X]` joined on X reports the duplicate,
+  and the autofix makes the join valid.
+
 ## Engine issues to file
 
 Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.
@@ -37,16 +48,64 @@ Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for t
 
 Found in M2's requirements (plan-only, not executed: no SQL Server in reach). On `SqlServer`, the engine writes a
 relation `distinct()` followed by `limit(n)` as `select top n distinct …`
-(`sqlServerExtension.pure:66` writes TOP before DISTINCT); T-SQL needs `select distinct top n …`. Every Cube Distinct
-that runs hits it, since a run ends with `limit(rowLimit + 1)`. H2 accepts the order (the engine's own H2 test expects
-it), and Sybase and Sybase IQ already render `select distinct top`. Cube works around it (M2.13): on SQL Server a
-Distinct is written `->distinct()->extend(~cube_d: x | 1)->select(~[…])`, which plans `select top n … from (select
-distinct …, 1 as "cube_d" …)`. Draft issue for finos/legend-engine:
+(`sqlServerExtension.pure:66` writes TOP before DISTINCT); T-SQL needs `select distinct top n …`. A Cube run hits it
+whenever the engine keeps the DISTINCT in the same SELECT as a TOP: a Distinct at the node that runs (the run ends
+with `limit(rowLimit + 1)`), or one followed by a Filter, a Sort or a Limit. A Rename or Restrict after the Distinct
+moves it into a subquery, which SQL Server accepts. H2 accepts the order (the engine's own H2 test expects it), and
+Sybase and Sybase IQ render `select distinct top` for the run's outermost limit (Sybase IQ gets a Limit inside the
+query wrong another way: see below). Cube works around it (M2.13), padding every Distinct on SQL Server:
+`->distinct()->extend(~cube_d: x | 1)->select(~[…])`, which plans `select top n … from (select distinct …, 1 as
+"cube_d" …)`. Draft issue for finos/legend-engine:
 
 > **SQL Server: `distinct()` followed by `limit()` generates `SELECT TOP n DISTINCT`, which T-SQL rejects.**
 > For `#>{db.S.T}#->distinct()->limit(10)` with a `SqlServer` connection, the plan's SQL is `select top 10 distinct
 …`. SQL Server requires `select distinct top 10 …`. The TOP clause is written before DISTINCT in
 > `sqlServerExtension.pure` (line 66). Sybase and Sybase IQ already write `select distinct top n`.
+
+### `rewriteSliceAsWindowFunction` numbers rows by the first sort key only, and inside a `select distinct`
+
+Found in M2's second verification (M2.16, plans only, engine `93d92b4`). For a `limit`, `drop` or `slice` inside a
+query, Sybase IQ (`sybaseIQExtension.pure:265`), MemSQL (`memSQLExtension.pure:389`) and Spark
+(`sparkSQLExtension.pure:260`) call `rewriteSliceAsWindowFunction` (`extensionDefaults.pure:39`), which numbers the
+rows with `row_number() OVER (Order By <the first ORDER BY key only>)`: with ties on that key (ALFKI has six orders),
+the plan doesn't decide which rows it keeps. The same rewrite copies the select with `distinct` kept
+(`extensionDefaults.pure:67`), so `select distinct X, row_number() …` numbers every row and DISTINCT removes
+nothing. Running the plans' SQL on H2 and SQLite gave the wrong rows ('Argentina' ×5 for five distinct countries).
+The rewrite also names its numbering column `row_number` whatever the input has, so an input column of that name (any
+case) gives two. Cube works around all three (M2.13, M2.16): row numbers of its own for Sybase IQ's Drop, Slice and
+every Limit, and
+MemSQL's Drop, and the padded Distinct on Sybase IQ. Spark (Databricks) planned Cube's shapes right in the M2.16 plan
+test. Draft issue for finos/legend-engine:
+
+> **`rewriteSliceAsWindowFunction` orders by the first sort key only, and keeps DISTINCT.** > `#>{db.S.T}#->sort([~A->ascending(), ~B->descending()])->limit(5)->limit(1001)` on Sybase IQ plans
+> `row_number() OVER (Order By A asc)` for the inner limit, ignoring `B`, so ties on `A` take any rows. MemSQL does
+> the same for `drop()`. And `->distinct()->limit(5)->limit(1001)` on Sybase IQ plans `select distinct X,
+row_number() OVER (…) …`, where the window makes every row distinct. The rewrite (`extensionDefaults.pure`, lines
+> 39 and 67) should order by every sort key and number the rows of the distinct query, not within it. It also names
+> the numbering column `row_number` whatever the input's columns are (line 43).
+
+### ClickHouse: a Drop after a descending sort key writes `nulls firstoffset m`
+
+Found in M2's third check (M2.16, plans only). After a sort whose last key is descending, the engine's ClickHouse SQL
+for a `drop(m)` joins the null ordering and the offset into one word, `… desc nulls firstoffset 10`
+(`clickHouseExtension.pure:252` adds `offset` with no leading space), which ClickHouse can't parse (inferred from the
+SQL; no ClickHouse server was run). Cube writes ClickHouse's Drop through row numbers. Draft issue for
+finos/legend-engine:
+
+> **ClickHouse: `offset` is written with no space after `nulls first`.** > `#>{db.S.T}#->sort(~A->descending())->drop(10)->limit(1001)` on ClickHouse plans `order by … desc nulls
+firstoffset 10`. `clickHouseExtension.pure` line 252 should put a space before `offset`.
+
+### A duplicate column from `rename` or `select` fails with HTTP 500 and no source location
+
+Found in M2's requirements (rename and select probes on `93d92b4`). `#>{db.S.T}#->rename(~ORDER_ID, ~CUSTOMER_ID)`
+and `#>{db.S.T}#->select(~[ORDER_ID, ORDER_ID])` fail with `Compilation error at ??, "The relation contains
+duplicates: [X]"` as an HTTP 500, not a 400 compilation error with a source location, so the error can't be placed on
+a node. Cube's own validation refuses both before they reach the engine (Rename's collision check, Restrict's
+duplicates), so Cube users don't see it. Draft issue for finos/legend-engine:
+
+> **Duplicate columns from `rename`/`select` return HTTP 500 with no source information.** > `->rename(~A, ~B)` where `B` exists, or `->select(~[A, A])`, gives `Compilation error at ??, "The relation contains
+duplicates: [B]"` as a 500. It should be a compilation error (400) with the call's source information, like other
+> typing errors.
 
 ## Test gaps
 
