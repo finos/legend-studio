@@ -1,0 +1,836 @@
+{
+  "description": "The engine relation type of every table of the Cube Northwind fixture (PLAN 6.2.6, Settled before M1.7), recorded from the engine at commit 93d92b4 on 2026-10-06. A local typer must reproduce it exactly. If the engine test comparing with it fails, the engine typing changed: check it, then record it again.",
+  "tables": {
+    "NORTHWIND.CATEGORIES": {
+      "columns": [
+        {
+          "name": "CATEGORY_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "CATEGORY_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "DESCRIPTION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [256],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.CUSTOMERS": {
+      "columns": [
+        {
+          "name": "CUSTOMER_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [5],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "COMPANY_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [40],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "CONTACT_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [30],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "CONTACT_TITLE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [30],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "ADDRESS",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [60],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "CITY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "POSTAL_CODE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "COUNTRY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "PHONE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [24],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "FAX",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [24],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.CUSTOMER_CUSTOMER_DEMO": {
+      "columns": [
+        {
+          "name": "CUSTOMER_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [5],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "CUSTOMER_TYPE_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [5],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "NORTHWIND.CUSTOMER_DEMOGRAPHICS": {
+      "columns": [
+        {
+          "name": "CUSTOMER_TYPE_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [5],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "CUSTOMER_DESC",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [256],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.EMPLOYEES": {
+      "columns": [
+        {
+          "name": "EMPLOYEE_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "LAST_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [20],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "FIRST_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "TITLE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [30],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "TITLE_OF_COURTESY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [25],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "BIRTH_DATE",
+          "type": "StrictDate",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "HIRE_DATE",
+          "type": "StrictDate",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "ADDRESS",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [60],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "CITY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "POSTAL_CODE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "COUNTRY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "HOME_PHONE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [24],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "EXTENSION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [4],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "REPORTS_TO",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "PHOTO_PATH",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [255],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.EMPLOYEE_TERRITORIES": {
+      "columns": [
+        {
+          "name": "EMPLOYEE_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "TERRITORY_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [20],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "NORTHWIND.ORDERS": {
+      "columns": [
+        {
+          "name": "ORDER_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "CUSTOMER_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [5],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "EMPLOYEE_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "ORDER_DATE",
+          "type": "StrictDate",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "REQUIRED_DATE",
+          "type": "StrictDate",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIPPED_DATE",
+          "type": "StrictDate",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_VIA",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "FREIGHT",
+          "type": "meta::pure::precisePrimitives::Double",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [40],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_ADDRESS",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [60],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_CITY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_POSTAL_CODE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SHIP_COUNTRY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.ORDER_DETAILS": {
+      "columns": [
+        {
+          "name": "ORDER_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "PRODUCT_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "UNIT_PRICE",
+          "type": "meta::pure::precisePrimitives::Double",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "QUANTITY",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "DISCOUNT",
+          "type": "meta::pure::precisePrimitives::Double",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "NORTHWIND.PRODUCTS": {
+      "columns": [
+        {
+          "name": "PRODUCT_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "PRODUCT_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [40],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "SUPPLIER_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "CATEGORY_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "QUANTITY_PER_UNIT",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [20],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "UNIT_PRICE",
+          "type": "meta::pure::precisePrimitives::Double",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "UNITS_IN_STOCK",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "UNITS_ON_ORDER",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "REORDER_LEVEL",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "DISCONTINUED",
+          "type": "meta::pure::precisePrimitives::Int",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "NORTHWIND.REGION": {
+      "columns": [
+        {
+          "name": "REGION_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "REGION_DESCRIPTION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [60],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "NORTHWIND.SHIPPERS": {
+      "columns": [
+        {
+          "name": "SHIPPER_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "COMPANY_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [40],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "PHONE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [24],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.SUPPLIERS": {
+      "columns": [
+        {
+          "name": "SUPPLIER_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "COMPANY_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [40],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "CONTACT_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [30],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "CONTACT_TITLE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [30],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "ADDRESS",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [60],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "CITY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "POSTAL_CODE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "COUNTRY",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "PHONE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [24],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "FAX",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [24],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "HOMEPAGE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [256],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "NORTHWIND.TERRITORIES": {
+      "columns": [
+        {
+          "name": "TERRITORY_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [20],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "TERRITORY_DESCRIPTION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [60],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "REGION_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "NORTHWIND.US_STATES": {
+      "columns": [
+        {
+          "name": "STATE_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "STATE_NAME",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [100],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "STATE_ABBR",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [2],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "STATE_REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [50],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.ALLTYPES": {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "meta::pure::precisePrimitives::Int",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "TI",
+          "type": "meta::pure::precisePrimitives::TinyInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "SI",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "BI",
+          "type": "meta::pure::precisePrimitives::BigInt",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "F",
+          "type": "meta::pure::precisePrimitives::Float4",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "D",
+          "type": "meta::pure::precisePrimitives::Double",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "DEC",
+          "type": "meta::pure::precisePrimitives::Numeric",
+          "parameters": [10, 2],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "NUM",
+          "type": "meta::pure::precisePrimitives::Numeric",
+          "parameters": [12, 4],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "DT",
+          "type": "StrictDate",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "TS",
+          "type": "meta::pure::precisePrimitives::Timestamp",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "B",
+          "type": "Boolean",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "VC",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [20],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.\"ORDER.LINES\"": {
+      "columns": [
+        {
+          "name": "LINE_ID",
+          "type": "meta::pure::precisePrimitives::Int",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "RIGHT_COL",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.PROBLEM_BINARY": {
+      "error": "PureExecutionException: Execution error at (resource:/platform_store_relational/functions.pure line:100 column:12), \"Match failure: BinaryObject instanceOf Binary\""
+    },
+    "CUBETEST.PROBLEM_CHAR": {
+      "columns": [
+        {
+          "name": "CODE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [1],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "LABEL",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.PROBLEM_OTHER": {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "meta::pure::precisePrimitives::Int",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "O",
+          "type": "String",
+          "parameters": [],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.PROBLEM_VIEW": {
+      "columns": [
+        {
+          "name": "ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [0],
+          "multiplicity": "[0..1]"
+        },
+        {
+          "name": "VC",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [0],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.EMP_REGION": {
+      "columns": [
+        {
+          "name": "EMPLOYEE_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.CUST_REGION": {
+      "columns": [
+        {
+          "name": "CUSTOMER_ID",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [5],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.CATEGORY_REGION": {
+      "columns": [
+        {
+          "name": "CATEGORY_ID",
+          "type": "meta::pure::precisePrimitives::SmallInt",
+          "parameters": [],
+          "multiplicity": "[1..1]"
+        },
+        {
+          "name": "SHIP_REGION",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[1..1]"
+        }
+      ]
+    },
+    "CUBETEST.KEY_VC15": {
+      "columns": [
+        {
+          "name": "K",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [15],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.KEY_VC2": {
+      "columns": [
+        {
+          "name": "K",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [2],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.KEY_DEC": {
+      "columns": [
+        {
+          "name": "K",
+          "type": "meta::pure::precisePrimitives::Numeric",
+          "parameters": [10, 2],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "CUBETEST.KEY_NUM": {
+      "columns": [
+        {
+          "name": "K",
+          "type": "meta::pure::precisePrimitives::Numeric",
+          "parameters": [12, 4],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    },
+    "default.CUBETEST": {
+      "columns": [
+        {
+          "name": "WRONG_TABLE",
+          "type": "meta::pure::precisePrimitives::Varchar",
+          "parameters": [10],
+          "multiplicity": "[0..1]"
+        }
+      ]
+    }
+  }
+}

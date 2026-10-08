@@ -19,6 +19,12 @@
       "path": "packages/legend-data-cube/tsconfig.build.json"
     },
     {
+      "path": "packages/legend-cube/tsconfig.build.json"
+    },
+    {
+      "path": "packages/legend-cube-builder/tsconfig.build.json"
+    },
+    {
       "path": "packages/legend-art/tsconfig.build.json"
     },
     {

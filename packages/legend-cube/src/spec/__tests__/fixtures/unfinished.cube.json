@@ -1,0 +1,149 @@
+{
+  "formatVersion": 1,
+  "context": {
+    "model": {
+      "_type": "text",
+      "code": "###Relational\nDatabase showcase::northwind::store::NorthwindDatabase\n(\n  Schema NORTHWIND\n  (\n    Table CATEGORIES\n    (\n      CATEGORY_ID SMALLINT PRIMARY KEY,\n      CATEGORY_NAME VARCHAR(15) NOT NULL,\n      DESCRIPTION VARCHAR(256)\n    )\n    Table CUSTOMERS\n    (\n      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,\n      COMPANY_NAME VARCHAR(40) NOT NULL,\n      CONTACT_NAME VARCHAR(30),\n      CONTACT_TITLE VARCHAR(30),\n      ADDRESS VARCHAR(60),\n      CITY VARCHAR(15),\n      REGION VARCHAR(15),\n      POSTAL_CODE VARCHAR(10),\n      COUNTRY VARCHAR(15),\n      PHONE VARCHAR(24),\n      FAX VARCHAR(24)\n    )\n    Table CUSTOMER_CUSTOMER_DEMO\n    (\n      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,\n      CUSTOMER_TYPE_ID VARCHAR(5) PRIMARY KEY\n    )\n    Table CUSTOMER_DEMOGRAPHICS\n    (\n      CUSTOMER_TYPE_ID VARCHAR(5) PRIMARY KEY,\n      CUSTOMER_DESC VARCHAR(256)\n    )\n    Table EMPLOYEES\n    (\n      EMPLOYEE_ID SMALLINT PRIMARY KEY,\n      LAST_NAME VARCHAR(20) NOT NULL,\n      FIRST_NAME VARCHAR(10) NOT NULL,\n      TITLE VARCHAR(30),\n      TITLE_OF_COURTESY VARCHAR(25),\n      BIRTH_DATE DATE,\n      HIRE_DATE DATE,\n      ADDRESS VARCHAR(60),\n      CITY VARCHAR(15),\n      REGION VARCHAR(15),\n      POSTAL_CODE VARCHAR(10),\n      COUNTRY VARCHAR(15),\n      HOME_PHONE VARCHAR(24),\n      EXTENSION VARCHAR(4),\n      REPORTS_TO SMALLINT,\n      PHOTO_PATH VARCHAR(255)\n    )\n    Table EMPLOYEE_TERRITORIES\n    (\n      EMPLOYEE_ID SMALLINT PRIMARY KEY,\n      TERRITORY_ID VARCHAR(20) PRIMARY KEY\n    )\n    Table ORDERS\n    (\n      ORDER_ID SMALLINT PRIMARY KEY,\n      CUSTOMER_ID VARCHAR(5),\n      EMPLOYEE_ID SMALLINT,\n      ORDER_DATE DATE,\n      REQUIRED_DATE DATE,\n      SHIPPED_DATE DATE,\n      SHIP_VIA SMALLINT,\n      FREIGHT REAL,\n      SHIP_NAME VARCHAR(40),\n      SHIP_ADDRESS VARCHAR(60),\n      SHIP_CITY VARCHAR(15),\n      SHIP_REGION VARCHAR(15),\n      SHIP_POSTAL_CODE VARCHAR(10),\n      SHIP_COUNTRY VARCHAR(15)\n    )\n    Table ORDER_DETAILS\n    (\n      ORDER_ID SMALLINT PRIMARY KEY,\n      PRODUCT_ID SMALLINT PRIMARY KEY,\n      UNIT_PRICE REAL NOT NULL,\n      QUANTITY SMALLINT NOT NULL,\n      DISCOUNT REAL NOT NULL\n    )\n    Table PRODUCTS\n    (\n      PRODUCT_ID SMALLINT PRIMARY KEY,\n      PRODUCT_NAME VARCHAR(40) NOT NULL,\n      SUPPLIER_ID SMALLINT,\n      CATEGORY_ID SMALLINT,\n      QUANTITY_PER_UNIT VARCHAR(20),\n      UNIT_PRICE REAL,\n      UNITS_IN_STOCK SMALLINT,\n      UNITS_ON_ORDER SMALLINT,\n      REORDER_LEVEL SMALLINT,\n      DISCONTINUED INTEGER NOT NULL\n    )\n    Table REGION\n    (\n      REGION_ID SMALLINT PRIMARY KEY,\n      REGION_DESCRIPTION VARCHAR(60) NOT NULL\n    )\n    Table SHIPPERS\n    (\n      SHIPPER_ID SMALLINT PRIMARY KEY,\n      COMPANY_NAME VARCHAR(40) NOT NULL,\n      PHONE VARCHAR(24)\n    )\n    Table SUPPLIERS\n    (\n      SUPPLIER_ID SMALLINT PRIMARY KEY,\n      COMPANY_NAME VARCHAR(40) NOT NULL,\n      CONTACT_NAME VARCHAR(30),\n      CONTACT_TITLE VARCHAR(30),\n      ADDRESS VARCHAR(60),\n      CITY VARCHAR(15),\n      REGION VARCHAR(15),\n      POSTAL_CODE VARCHAR(10),\n      COUNTRY VARCHAR(15),\n      PHONE VARCHAR(24),\n      FAX VARCHAR(24),\n      HOMEPAGE VARCHAR(256)\n    )\n    Table TERRITORIES\n    (\n      TERRITORY_ID VARCHAR(20) PRIMARY KEY,\n      TERRITORY_DESCRIPTION VARCHAR(60) NOT NULL,\n      REGION_ID SMALLINT NOT NULL\n    )\n    Table US_STATES\n    (\n      STATE_ID SMALLINT PRIMARY KEY,\n      STATE_NAME VARCHAR(100),\n      STATE_ABBR VARCHAR(2),\n      STATE_REGION VARCHAR(50)\n    )\n  )\n  Schema CUBETEST\n  (\n    Table ALLTYPES\n    (\n      ID INTEGER PRIMARY KEY,\n      TI TINYINT,\n      SI SMALLINT,\n      BI BIGINT,\n      F FLOAT,\n      D DOUBLE,\n      DEC DECIMAL(10, 2),\n      NUM NUMERIC(12, 4),\n      DT DATE,\n      TS TIMESTAMP,\n      B BIT,\n      VC VARCHAR(20)\n    )\n    Table \"ORDER.LINES\"\n    (\n      LINE_ID INTEGER PRIMARY KEY,\n      RIGHT_COL VARCHAR(10)\n    )\n    Table PROBLEM_BINARY\n    (\n      ID INTEGER PRIMARY KEY,\n      PAYLOAD BINARY(8)\n    )\n    Table PROBLEM_CHAR\n    (\n      CODE CHAR(3) PRIMARY KEY,\n      LABEL VARCHAR(10)\n    )\n    Table PROBLEM_OTHER\n    (\n      ID INTEGER PRIMARY KEY,\n      O OTHER\n    )\n    View PROBLEM_VIEW\n    (\n      ID: CUBETEST.ALLTYPES.ID PRIMARY KEY,\n      VC: CUBETEST.ALLTYPES.VC\n    )\n    Table EMP_REGION\n    (\n      EMPLOYEE_ID SMALLINT PRIMARY KEY,\n      REGION VARCHAR(15)\n    )\n    Table CUST_REGION\n    (\n      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,\n      REGION VARCHAR(15)\n    )\n    Table CATEGORY_REGION\n    (\n      CATEGORY_ID SMALLINT PRIMARY KEY,\n      SHIP_REGION VARCHAR(15) NOT NULL\n    )\n    Table KEY_VC15\n    (\n      K VARCHAR(15)\n    )\n    Table KEY_VC2\n    (\n      K VARCHAR(2)\n    )\n    Table KEY_DEC\n    (\n      K DECIMAL(10, 2)\n    )\n    Table KEY_NUM\n    (\n      K NUMERIC(12, 4)\n    )\n  )\n  Table CUBETEST\n  (\n    WRONG_TABLE VARCHAR(10)\n  )\n\n  Join ORDERS_CUSTMERS(NORTHWIND.ORDERS.CUSTOMER_ID = NORTHWIND.CUSTOMERS.CUSTOMER_ID)\n  Join ORDERS_EMPLOYEES(NORTHWIND.ORDERS.EMPLOYEE_ID = NORTHWIND.EMPLOYEES.EMPLOYEE_ID)\n  Join ORDERS_SHIPPERS(NORTHWIND.ORDERS.SHIP_VIA = NORTHWIND.SHIPPERS.SHIPPER_ID)\n  Join ORDERS_ORDER_DETAILS(NORTHWIND.ORDERS.ORDER_ID = NORTHWIND.ORDER_DETAILS.ORDER_ID)\n  Join ORDERS_DETAILS_PRODUCTS(NORTHWIND.ORDER_DETAILS.PRODUCT_ID = NORTHWIND.PRODUCTS.PRODUCT_ID)\n  Join PRODUCTS_CATEGORIES(NORTHWIND.PRODUCTS.CATEGORY_ID = NORTHWIND.CATEGORIES.CATEGORY_ID)\n  Join PRODUCTS_SUPPLIERS(NORTHWIND.PRODUCTS.SUPPLIER_ID = NORTHWIND.SUPPLIERS.SUPPLIER_ID)\n  Join TERRITORIES_REGION(NORTHWIND.TERRITORIES.REGION_ID = NORTHWIND.REGION.REGION_ID)\n  Join EMPLOYEES_EMPLOYEE_TERRITORIES(NORTHWIND.EMPLOYEES.EMPLOYEE_ID = NORTHWIND.EMPLOYEE_TERRITORIES.EMPLOYEE_ID)\n  Join EMPLOYEE_TERRITORIES_TERRITORIES(NORTHWIND.EMPLOYEE_TERRITORIES.TERRITORY_ID = NORTHWIND.TERRITORIES.TERRITORY_ID)\n  Join CUSTOMER_CURSTOMER_DEMO(NORTHWIND.CUSTOMERS.CUSTOMER_ID = NORTHWIND.CUSTOMER_CUSTOMER_DEMO.CUSTOMER_ID)\n  Join CURSTOMER_DEMO_DEMOGRAPHICS(NORTHWIND.CUSTOMER_CUSTOMER_DEMO.CUSTOMER_TYPE_ID = NORTHWIND.CUSTOMER_DEMOGRAPHICS.CUSTOMER_TYPE_ID)\n  Join EMPLOYEE_REPORTS(NORTHWIND.EMPLOYEES.REPORTS_TO = {target}.EMPLOYEE_ID)\n)\n\n\n###Connection\nRelationalDatabaseConnection showcase::northwind::connection::NorthwindConnection\n{\n  store: showcase::northwind::store::NorthwindDatabase;\n  type: H2;\n  specification: LocalH2\n  {\n    testDataSetupSqls: [\n      'call loadNorthwindData()',\n      'drop schema if exists CUBETEST cascade',\n      'create schema CUBETEST',\n      'create table CUBETEST.ALLTYPES (ID INTEGER PRIMARY KEY, TI TINYINT, SI SMALLINT, BI BIGINT, F FLOAT, D DOUBLE, DEC DECIMAL(10,2), NUM NUMERIC(12,4), DT DATE, TS TIMESTAMP, B BIT, VC VARCHAR(20))',\n      'insert into CUBETEST.ALLTYPES values (1, 1, 100, 4, 1.5, 2.5, 12.34, 1.2345, \\'2024-01-02\\', \\'2024-01-02 03:04:05.678\\', true, \\'abc\\')',\n      'insert into CUBETEST.ALLTYPES values (2, 2, 200, 9007199254740993, 2.5, 0.1, 1.25, 2.5, \\'2024-01-03\\', \\'2024-01-02 13:00:00\\', false, \\'xyz\\')',\n      'insert into CUBETEST.ALLTYPES (ID) values (3)',\n      'create table CUBETEST.\"ORDER.LINES\" (LINE_ID INTEGER PRIMARY KEY, RIGHT_COL VARCHAR(10))',\n      'insert into CUBETEST.\"ORDER.LINES\" values (1, \\'right\\')',\n      'drop table if exists PUBLIC.CUBETEST',\n      'create table PUBLIC.CUBETEST (WRONG_TABLE VARCHAR(10))',\n      'insert into PUBLIC.CUBETEST values (\\'wrong\\')',\n      'create table CUBETEST.PROBLEM_BINARY (ID INTEGER PRIMARY KEY, PAYLOAD BINARY(8))',\n      'insert into CUBETEST.PROBLEM_BINARY (ID) values (1)',\n      'create table CUBETEST.PROBLEM_CHAR (CODE CHAR(3) PRIMARY KEY, LABEL VARCHAR(10))',\n      'insert into CUBETEST.PROBLEM_CHAR values (\\'ABC\\', \\'first\\')',\n      'create table CUBETEST.PROBLEM_OTHER (ID INTEGER PRIMARY KEY, O VARCHAR(10))',\n      'insert into CUBETEST.PROBLEM_OTHER values (1, \\'32.38\\')',\n      'create table CUBETEST.EMP_REGION as select EMPLOYEE_ID, REGION from NORTHWIND.EMPLOYEES',\n      'create table CUBETEST.CUST_REGION as select CUSTOMER_ID, REGION from NORTHWIND.CUSTOMERS',\n      'create table CUBETEST.CATEGORY_REGION as select CATEGORY_ID, CATEGORY_NAME as SHIP_REGION from NORTHWIND.CATEGORIES',\n      'create table CUBETEST.KEY_VC15 (K VARCHAR(15))',\n      'insert into CUBETEST.KEY_VC15 values (\\'AB\\'), (\\'ABCDEFGHIJ\\'), (null)',\n      'create table CUBETEST.KEY_VC2 (K VARCHAR(2))',\n      'insert into CUBETEST.KEY_VC2 values (\\'AB\\'), (\\'CD\\'), (null)',\n      'create table CUBETEST.KEY_DEC (K DECIMAL(10,2))',\n      'insert into CUBETEST.KEY_DEC values (1.25), (2.50)',\n      'create table CUBETEST.KEY_NUM (K NUMERIC(12,4))',\n      'insert into CUBETEST.KEY_NUM values (1.2500), (3.0000)'\n    ];\n  };\n  auth: DefaultH2;\n}\n\n\n###Runtime\nRuntime showcase::northwind::mapping::StoreRuntime\n{\n  mappings:\n  [\n  ];\n  connections:\n  [\n    showcase::northwind::store::NorthwindDatabase:\n    [\n      connection_1: showcase::northwind::connection::NorthwindConnection\n    ]\n  ];\n}\n"
+    },
+    "runtime": "showcase::northwind::mapping::StoreRuntime"
+  },
+  "query": {
+    "selected": "join101",
+    "nodes": [
+      {
+        "kind": "relational",
+        "id": "relational101",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "ORDERS",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": true
+          },
+          {
+            "name": "EMPLOYEE_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "ORDER_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "REQUIRED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIPPED_DATE",
+            "type": {
+              "path": "StrictDate"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_VIA",
+            "type": {
+              "path": "meta::pure::precisePrimitives::SmallInt"
+            },
+            "nullable": true
+          },
+          {
+            "name": "FREIGHT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Double"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_NAME",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [40]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_ADDRESS",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [60]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_CITY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_POSTAL_CODE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHIP_COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "join",
+        "id": "join101",
+        "inputs": ["relational101", null],
+        "joinType": "LEFT_OUTER",
+        "leftColumns": [],
+        "rightColumns": []
+      },
+      {
+        "kind": "filter",
+        "id": "filter101",
+        "inputs": ["join101"]
+      },
+      {
+        "kind": "relational",
+        "id": "relational102",
+        "database": "showcase::northwind::store::NorthwindDatabase",
+        "schema": "NORTHWIND",
+        "table": "CUSTOMERS"
+      }
+    ]
+  }
+}

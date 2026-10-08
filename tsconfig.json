@@ -20,6 +20,8 @@
     { "path": "packages/legend-graph" },
     { "path": "packages/legend-query-builder" },
     { "path": "packages/legend-data-cube" },
+    { "path": "packages/legend-cube" },
+    { "path": "packages/legend-cube-builder" },
     { "path": "packages/legend-art" },
     { "path": "packages/legend-code-editor" },
     { "path": "packages/legend-lego" },

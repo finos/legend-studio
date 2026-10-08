@@ -1,0 +1,702 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  buildSchemasAndValidity,
+  createNodeRegistry,
+  CubeDocument,
+  diffSchemas,
+  type ModelContext,
+  type NodeRegistry,
+  type Query,
+  QueryEmitter,
+  type QueryNode,
+  RelationalTableSource,
+  rereadQueryFilterValues,
+  type Schema,
+  type SchemaInferenceResult,
+} from '@finos/legend-cube';
+import type { CommandRegistrar } from '@finos/legend-application';
+import type { GeneratorFn } from '@finos/legend-shared';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
+import { LEGEND_CUBE_COMMAND_KEY } from '../__lib__/LegendCubeCommand.js';
+import {
+  CUBE_EDITOR_CLOSED_REASON,
+  DEFAULT_ROW_LIMIT,
+  getSchemaDriftWarning,
+  getSourceRecheckWarning,
+  LEGEND_CUBE_USER_DATA_KEY,
+  MAX_UNDO_STEPS,
+} from '../__lib__/LegendCubeLabels.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+  type CubeModelOutline,
+} from '../graph-manager/CubeEngine.js';
+import { CubeExecutionState } from './CubeExecutionState.js';
+import type { CubeHost } from './CubeHost.js';
+import { CubeNodeEditorState } from './CubeNodeEditorState.js';
+import { CubeShowPureState } from './CubeShowPureState.js';
+import { CubeSourcePickerState } from './CubeSourcePickerState.js';
+import { CubeSpecTransferState } from './CubeSpecTransferState.js';
+
+/** An engine error placed on a node: its first line shows on the node, its detail in the grid */
+export interface CubeHostIssue {
+  readonly firstLine: string;
+  readonly detail: string;
+}
+
+const isValidRowLimit = (value: number | undefined): value is number =>
+  value !== undefined && Number.isSafeInteger(value) && value >= 1;
+
+/** Focus is where text is typed, so Ctrl+Z is the field's own undo */
+const isTypingText = (): boolean => {
+  const element = document.activeElement;
+  return (
+    element instanceof HTMLInputElement ||
+    element instanceof HTMLTextAreaElement ||
+    (element instanceof HTMLElement && element.isContentEditable)
+  );
+};
+
+/**
+ * The state of one Cube page (PLAN §7.8). The document is immutable: every
+ * edit makes a new one through `applyDocument`, which keeps the previous one
+ * for undo. Domain and port values are held by reference, never observed
+ * deeply.
+ */
+export class CubeEditorState implements CommandRegistrar {
+  readonly host: CubeHost;
+  /** One registry for inference, emission and the saved spec */
+  readonly registry: NodeRegistry;
+  readonly execution: CubeExecutionState;
+  readonly sourcePicker: CubeSourcePickerState;
+  readonly specTransfer: CubeSpecTransferState;
+  readonly showPure: CubeShowPureState;
+  readonly nodeEditor: CubeNodeEditorState;
+
+  document: CubeDocument;
+  /** Earlier documents, oldest first */
+  history: readonly CubeDocument[] = [];
+  /** Engine errors by node id: shown with the node's own errors, never part of inference */
+  hostIssues: ReadonlyMap<string, CubeHostIssue> = new Map();
+  /**
+   * Warnings by node key, e.g. a table that changed since the cube was saved:
+   * shown on the node, never errors, and gone once the node is replaced
+   */
+  warnings: ReadonlyMap<number, readonly string[]> = new Map();
+  /**
+   * The outline of each model the cube used, loaded when an editor needs it,
+   * e.g. for the Join's 'type unknown' warning; by reference, never observed
+   * deeply
+   */
+  private modelOutlines: ReadonlyMap<ModelContext, CubeModelOutline> =
+    new Map();
+  /** Sources sent to the engine to be typed again, until it answers */
+  private pendingSources: ReadonlySet<QueryNode> = new Set();
+  /** The rows a run returns; kept per user, never in the cube */
+  rowLimit: number;
+  /** The palette shows icons only; kept per user, never in the cube */
+  isPaletteCollapsed: boolean;
+  /**
+   * The cube was saved by a newer version of Cube: it can be viewed and run,
+   * but not changed, undone or exported (Settled before M1.8)
+   */
+  readOnly = false;
+  /** Documents in the undo history that were read-only, so undo restores the flag */
+  private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
+  /** Documents an import replaced: undoing back to one opens another cube again */
+  private readonly importedOver = new WeakSet<CubeDocument>();
+
+  constructor(host: CubeHost, document = new CubeDocument()) {
+    makeObservable<CubeEditorState, 'pendingSources' | 'modelOutlines'>(this, {
+      pendingSources: observable.ref,
+      modelOutlines: observable.ref,
+      modelOutline: computed,
+      loadModelOutline: flow,
+      document: observable.ref,
+      history: observable.ref,
+      hostIssues: observable.ref,
+      warnings: observable.ref,
+      isResolvingSources: computed,
+      rowLimit: observable,
+      isPaletteCollapsed: observable,
+      readOnly: observable,
+      analysis: computed,
+      emitter: computed,
+      canUndo: computed,
+      isDialogOpen: computed,
+      applyDocument: action,
+      undo: action,
+      importDocument: action,
+      reresolveSources: flow,
+      refreshSource: flow,
+      applyQuery: action,
+      select: action,
+      connect: action,
+      addNode: action,
+      dropNode: action,
+      removeNode: action,
+      swapInputs: action,
+      setShowGraph: action,
+      setPaletteCollapsed: action,
+      setHostIssue: action,
+      clearHostIssues: action,
+      setRowLimit: action,
+    });
+    this.host = host;
+    this.registry = createNodeRegistry();
+    this.document = document;
+    const storedLimit = host.applicationStore.userDataService.getNumericValue(
+      LEGEND_CUBE_USER_DATA_KEY.ROW_LIMIT,
+    );
+    this.rowLimit = isValidRowLimit(storedLimit)
+      ? storedLimit
+      : DEFAULT_ROW_LIMIT;
+    this.isPaletteCollapsed =
+      host.applicationStore.userDataService.getBooleanValue(
+        LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
+      ) ?? false;
+    this.execution = new CubeExecutionState(this);
+    this.sourcePicker = new CubeSourcePickerState(this);
+    this.specTransfer = new CubeSpecTransferState(this);
+    this.showPure = new CubeShowPureState(this);
+    this.nodeEditor = new CubeNodeEditorState(this);
+  }
+
+  /** Each node's schema and errors, query-level rules included, as the emitter sees them */
+  get analysis(): SchemaInferenceResult {
+    return buildSchemasAndValidity(
+      this.document.query,
+      this.registry.queryRules,
+    );
+  }
+
+  get emitter(): QueryEmitter {
+    return new QueryEmitter(this.document.query, this.registry);
+  }
+
+  /** The cube shown has tables being typed again, after an import */
+  get isResolvingSources(): boolean {
+    return this.document.query.nodes.some((node) =>
+      this.pendingSources.has(node),
+    );
+  }
+
+  /** The source is being typed again by the engine, e.g. after an import */
+  isPendingSource(node: QueryNode): boolean {
+    return this.pendingSources.has(node);
+  }
+
+  /**
+   * The node's errors, each once: its own and those of the query rules, then
+   * the first line of the engine's error on it
+   */
+  getNodeErrors(nodeId: string): readonly string[] {
+    const hostIssue = this.hostIssues.get(nodeId);
+    return [
+      ...new Set([
+        ...(this.analysis.validity.get(nodeId) ?? []),
+        ...(hostIssue ? [hostIssue.firstLine] : []),
+      ]),
+    ];
+  }
+
+  /** The outline of the cube's model, once an editor has loaded it */
+  get modelOutline(): CubeModelOutline | undefined {
+    const model = this.document.context?.model;
+    return model === undefined ? undefined : this.modelOutlines.get(model);
+  }
+
+  /**
+   * Loads the outline of the cube's model, once per model. It only adds
+   * warnings, so a model that fails to load shows none.
+   */
+  *loadModelOutline(): GeneratorFn<void> {
+    const model = this.document.context?.model;
+    if (model === undefined || this.modelOutlines.has(model)) {
+      return;
+    }
+    try {
+      const outline = (yield this.host.modelCatalog.loadOutline(
+        model,
+      )) as CubeModelOutline;
+      this.modelOutlines = new Map([...this.modelOutlines, [model, outline]]);
+    } catch {
+      // no outline, no warning: nothing is blocked on it
+    }
+  }
+
+  /** One of Cube's dialogs is open: the source picker, Import or Export, Show Pure */
+  get isDialogOpen(): boolean {
+    return (
+      this.sourcePicker.isOpen ||
+      this.specTransfer.mode !== undefined ||
+      this.showPure.isOpen
+    );
+  }
+
+  /**
+   * The page's keyboard shortcuts, while it is open (spec §17.12). Each does
+   * nothing when its button can't be used, and nothing while a Cube dialog
+   * is open, since a dialog doesn't stop the app's shortcuts (user's choice,
+   * 2026-10-07). Undo leaves Ctrl+Z to a text field that has the focus.
+   */
+  registerCommands(): void {
+    const { commandService, alertUnhandledError } = this.host.applicationStore;
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.EXECUTE,
+      trigger: () =>
+        !this.isDialogOpen &&
+        this.execution.canExecute &&
+        !this.execution.isRunning,
+      action: () => {
+        flowResult(this.execution.execute()).catch(alertUnhandledError);
+      },
+    });
+    commandService.registerCommand({
+      key: LEGEND_CUBE_COMMAND_KEY.UNDO,
+      trigger: () => !this.isDialogOpen && this.canUndo && !isTypingText(),
+      action: () => this.undo(),
+    });
+  }
+
+  deregisterCommands(): void {
+    Object.values(LEGEND_CUBE_COMMAND_KEY).forEach((key) =>
+      this.host.applicationStore.commandService.deregisterCommand(key),
+    );
+  }
+
+  get canUndo(): boolean {
+    return this.history.length > 0 && !this.readOnly;
+  }
+
+  /** The one way to change the cube; the document before goes to the undo history */
+  applyDocument(next: CubeDocument): void {
+    if (next === this.document) {
+      return;
+    }
+    this.pushHistory();
+    this.replaceDocument(next);
+  }
+
+  /**
+   * Opens another cube in place of this one, e.g. an imported spec: one undo
+   * step. Stops any run and any table being added, closes the node editor
+   * without applying its edits, and drops the last run's rows and errors,
+   * which belong to the cube before. Never runs the cube.
+   */
+  importDocument(next: CubeDocument, readOnly: boolean): void {
+    this.pushHistory();
+    this.importedOver.add(this.document);
+    this.execution.reset();
+    this.sourcePicker.close();
+    this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    this.hostIssues = new Map();
+    // warnings are kept: they are by node key, which the imported nodes don't
+    // share, and Undo brings back the nodes they belong to
+    this.document = next;
+    this.readOnly = readOnly;
+    flowResult(this.reresolveSources()).catch(
+      this.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * Types the cube's tables again, in one engine call, outside the undo
+   * history (PLAN §10.3, Settled before M1.8):
+   * - a table whose columns are the saved ones is left as it is;
+   * - a table that changed takes its new columns, with a warning listing the
+   *   changes;
+   * - a table with saved columns that can't be typed keeps them, with a
+   *   warning; one without them shows the engine's error.
+   *
+   * Then filter values saved as invalid text are read again against the
+   * columns. The answer goes to every document holding the very source
+   * objects that were typed: the cube shown and the undo snapshots taken
+   * meanwhile, so undoing an edit made while the tables were typed keeps
+   * them typed. A source the user changed meanwhile is a new object, and is
+   * left alone.
+   *
+   * `only` types just these sources of the cube shown, e.g. one Refresh. A
+   * table found unchanged loses any earlier warning.
+   */
+  *reresolveSources(
+    only?: readonly RelationalTableSource[],
+  ): GeneratorFn<void> {
+    const { context, query } = this.document;
+    const sources = (only ?? query.nodes).filter(
+      (node): node is RelationalTableSource =>
+        node instanceof RelationalTableSource &&
+        query.getNode(node.id) === node,
+    );
+    if (!context || !sources.length) {
+      return;
+    }
+    this.pendingSources = new Set([...this.pendingSources, ...sources]);
+    let answers: ReadonlyMap<string, Schema | CubeEngineError>;
+    try {
+      answers = (yield this.host.engine.resolveSchemas(
+        context.model,
+        new Map(
+          sources.map((source) => [
+            source.id,
+            [source.database, source.schema, source.table],
+          ]),
+        ),
+      )) as Map<string, Schema | CubeEngineError>;
+    } catch (error) {
+      const failure =
+        error instanceof CubeEngineError
+          ? error
+          : new CubeEngineError(
+              CubeEngineErrorKind.NETWORK,
+              error instanceof Error ? error.message : String(error),
+            );
+      answers = new Map(sources.map((source) => [source.id, failure]));
+    } finally {
+      this.pendingSources = new Set(
+        [...this.pendingSources].filter(
+          (node) => !sources.includes(node as RelationalTableSource),
+        ),
+      );
+    }
+    const warnings = new Map(this.warnings);
+    /** Each typed source, by the object that was sent, and what replaces it */
+    const replacements = new Map<
+      RelationalTableSource,
+      RelationalTableSource
+    >();
+    sources.forEach((source) => {
+      const answer =
+        answers.get(source.id) ??
+        new CubeEngineError(
+          CubeEngineErrorKind.COMPILE,
+          'The engine gave no schema for this table',
+          source.id,
+        );
+      const saved =
+        source.resolution.kind === 'resolved'
+          ? source.resolution.schema
+          : undefined;
+      if (answer instanceof CubeEngineError) {
+        if (saved) {
+          warnings.set(source.key, [getSourceRecheckWarning(answer.firstLine)]);
+        } else if (
+          source.resolution.kind !== 'failed' ||
+          source.resolution.message !== answer.detail
+        ) {
+          // a table that fails as it did before is left as it is
+          replacements.set(
+            source,
+            source.withResolution({ kind: 'failed', message: answer.detail }),
+          );
+        }
+        return;
+      }
+      if (saved?.isIdenticalTo(answer)) {
+        warnings.delete(source.key);
+        return;
+      }
+      const resolved = source.withResolution({
+        kind: 'resolved',
+        schema: answer,
+      });
+      if (saved) {
+        warnings.set(resolved.key, [
+          getSchemaDriftWarning(diffSchemas(saved, answer)),
+        ]);
+      }
+      replacements.set(source, resolved);
+    });
+    this.warnings = warnings;
+    if (!replacements.size) {
+      return;
+    }
+    // documents that shared a query share its checked one, so an undo
+    // between them still finds the query unchanged
+    const checkedQueries = new Map<Query, Query>();
+    const check = (document: CubeDocument): CubeDocument => {
+      let checked = checkedQueries.get(document.query);
+      if (checked === undefined) {
+        let replaced = document.query;
+        replacements.forEach((resolved, source) => {
+          if (replaced.getNode(source.id) === source) {
+            replaced = replaced.replace(resolved);
+          }
+        });
+        checked =
+          replaced === document.query
+            ? replaced
+            : rereadQueryFilterValues(replaced, this.registry.queryRules);
+        checkedQueries.set(document.query, checked);
+      }
+      if (checked === document.query) {
+        return document;
+      }
+      const next = document.withQuery(checked);
+      if (this.readOnlyDocuments.has(document)) {
+        this.readOnlyDocuments.add(next);
+      }
+      if (this.importedOver.has(document)) {
+        this.importedOver.add(next);
+      }
+      return next;
+    };
+    this.history = this.history.map(check);
+    const next = check(this.document);
+    if (next !== this.document) {
+      this.replaceDocument(next);
+    }
+  }
+
+  /**
+   * Types a table again with the engine, from its Source panel (spec §17.6),
+   * as a re-check after an import does: no undo step, nothing changes when
+   * its columns are the same, and a warning lists any change.
+   */
+  *refreshSource(nodeId: string): GeneratorFn<void> {
+    const source = this.document.query.getNode(nodeId);
+    if (source instanceof RelationalTableSource) {
+      yield flowResult(this.reresolveSources([source]));
+    }
+  }
+
+  /**
+   * Restores the document before the last edit; does nothing when there is
+   * no history. A restored query is a new object (PLAN §4.3), so rows that
+   * ran before the edit show as stale. An edit that left the query alone,
+   * such as a rename, keeps it, with its rows and engine errors. Undoing an
+   * import closes the node editor and the picker, as the import did.
+   */
+  undo(): void {
+    const previous = this.history.at(-1);
+    if (!previous || !this.canUndo) {
+      return;
+    }
+    this.history = this.history.slice(0, -1);
+    this.readOnly = this.readOnlyDocuments.has(previous);
+    if (this.importedOver.has(previous)) {
+      // the cube before an import is another cube, as the import was
+      this.sourcePicker.close();
+      this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    }
+    const { query } = this.document;
+    this.replaceDocument(
+      previous.withQuery(
+        previous.query === query ? query : previous.query.clone(),
+      ),
+    );
+  }
+
+  private pushHistory(): void {
+    if (this.readOnly) {
+      this.readOnlyDocuments.add(this.document);
+    }
+    this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
+  }
+
+  /** Engine errors belong to the query they came from, so they are dropped when the query changes */
+  private replaceDocument(next: CubeDocument): void {
+    if (next.query !== this.document.query) {
+      this.hostIssues = new Map();
+      this.execution.clearError();
+    }
+    this.document = next;
+  }
+
+  applyQuery(next: Query): void {
+    this.applyDocument(this.document.withQuery(next));
+  }
+
+  /** Makes a node the capture node, the one Execute runs */
+  select(nodeId: string): void {
+    if (this.document.query.canSelect(nodeId)) {
+      this.applyQuery(this.document.query.select(nodeId));
+    }
+  }
+
+  /**
+   * Feeds a node into another, on the port if given, else the first free one.
+   * Does nothing when the query doesn't allow it or the cube is read-only.
+   */
+  connect(sourceId: string, targetId: string, port?: string): void {
+    const { query } = this.document;
+    if (!this.readOnly && query.canConnect(sourceId, targetId, port)) {
+      this.applyQuery(query.connect(sourceId, targetId, port));
+    }
+  }
+
+  /**
+   * Whether a node of the type can be added: a transform, unconnected or
+   * spliced in after `afterId`, when the query allows it; a source only
+   * unconnected, through the source picker. Never while the cube is read-only.
+   */
+  canAddNode(type: string, afterId?: string): boolean {
+    const definition = this.registry.get(type);
+    if (this.readOnly || !definition) {
+      return false;
+    }
+    if (definition.kind === 'source') {
+      return afterId === undefined;
+    }
+    const { query } = this.document;
+    return query.canAdd(definition.create(query.generateId(type)), afterId);
+  }
+
+  /**
+   * Adds a node of the type, as the palette and the context menu do (spec
+   * §17.4): a transform with its default settings, unconnected or spliced in
+   * after `afterId`; a source opens the source picker, which adds it once
+   * the engine has typed it. Does nothing `canAddNode` refuses.
+   */
+  addNode(type: string, afterId?: string): void {
+    const definition = this.registry.get(type);
+    if (!definition || !this.canAddNode(type, afterId)) {
+      return;
+    }
+    if (definition.kind === 'source') {
+      this.sourcePicker.open();
+      return;
+    }
+    const { query } = this.document;
+    this.applyQuery(
+      query.add(definition.create(query.generateId(type)), afterId),
+    );
+  }
+
+  /** Whether dropping a node on another does anything: connect it, or else move it after it */
+  canDropNode(nodeId: string, targetId: string): boolean {
+    const { query } = this.document;
+    return (
+      !this.readOnly &&
+      (query.canConnect(nodeId, targetId) || query.canMove(nodeId, targetId))
+    );
+  }
+
+  /**
+   * Drops a node on another (spec §17.4): it feeds the target's first free
+   * port if it can, else it moves to after the target
+   */
+  dropNode(nodeId: string, targetId: string): void {
+    if (!this.canDropNode(nodeId, targetId)) {
+      return;
+    }
+    const { query } = this.document;
+    this.applyQuery(
+      query.canConnect(nodeId, targetId)
+        ? query.connect(nodeId, targetId)
+        : query.move(nodeId, targetId),
+    );
+  }
+
+  canRemoveNode(nodeId: string): boolean {
+    return !this.readOnly && this.document.query.canRemove(nodeId);
+  }
+
+  /**
+   * Removes a node, healing the chain around it. Removing the last node also
+   * clears the cube's model and runtime, in the same undo step, so the next
+   * table can come from any model (user's choice, 2026-10-07).
+   */
+  removeNode(nodeId: string): void {
+    if (!this.canRemoveNode(nodeId)) {
+      return;
+    }
+    // the node editor, if it shows the node, closes by itself
+    const query = this.document.query.remove(nodeId);
+    this.applyDocument(
+      query.isEmpty
+        ? this.document.withContext(undefined).withQuery(query)
+        : this.document.withQuery(query),
+    );
+  }
+
+  canSwapInputs(nodeId: string): boolean {
+    return !this.readOnly && this.document.query.canSwapInputs(nodeId);
+  }
+
+  /** Swaps a binary node's two inputs; its settings follow them, e.g. a Join's key columns */
+  swapInputs(nodeId: string): void {
+    if (this.canSwapInputs(nodeId)) {
+      this.applyQuery(this.document.query.swapInputs(nodeId));
+    }
+  }
+
+  /**
+   * Shows or hides the graph, which the cube saves (spec §17.1). An undoable
+   * edit that leaves the query, and so the rows, as they are (M1.8b).
+   */
+  setShowGraph(showGraph: boolean): void {
+    const { meta } = this.document;
+    if (meta.presentation.showGraph !== showGraph) {
+      this.applyDocument(
+        this.document.withMeta({
+          ...meta,
+          presentation: { ...meta.presentation, showGraph },
+        }),
+      );
+    }
+  }
+
+  setHostIssue(nodeId: string, error: CubeEngineError): void {
+    this.hostIssues = new Map([
+      ...this.hostIssues,
+      [nodeId, { firstLine: error.firstLine, detail: error.detail }],
+    ]);
+  }
+
+  clearHostIssues(): void {
+    if (this.hostIssues.size) {
+      this.hostIssues = new Map();
+    }
+  }
+
+  /** Sets and remembers the row limit; a value that isn't a whole number of at least 1 is refused */
+  setRowLimit(value: number): boolean {
+    if (!isValidRowLimit(value)) {
+      return false;
+    }
+    this.rowLimit = value;
+    this.host.applicationStore.userDataService.persistValue(
+      LEGEND_CUBE_USER_DATA_KEY.ROW_LIMIT,
+      value,
+    );
+    return true;
+  }
+
+  /** Collapses or expands the palette, and remembers it for the user */
+  setPaletteCollapsed(collapsed: boolean): void {
+    this.isPaletteCollapsed = collapsed;
+    this.host.applicationStore.userDataService.persistValue(
+      LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
+      collapsed,
+    );
+  }
+
+  /** Stops any run; call when the page closes */
+  dispose(): void {
+    this.execution.stop();
+    this.nodeEditor.dispose();
+  }
+}

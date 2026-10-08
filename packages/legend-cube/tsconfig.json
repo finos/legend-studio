@@ -1,0 +1,13 @@
+{
+  "extends": "@finos/legend-dev-utils/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "lib",
+    "tsBuildInfoFile": "build/dev.tsbuildinfo",
+    "rootDir": "src",
+    // The core is host-free: no DOM library, and only Node's types (which the tests need).
+    // The build config drops Node's types too. See README.md.
+    "lib": ["esnext"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.json"]
+}

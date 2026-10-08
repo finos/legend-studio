@@ -1,0 +1,344 @@
+# Legend Cube — Progress Log
+
+> **What this file is:** the "where are we" ledger for Legend Cube.
+> [PLAN.md](PLAN.md) is the stable plan (what and why). This file tracks status, the last session, the next action
+> and open items, so any new chat can pick up the work cold.
+>
+> **Upkeep:** update it at the end of every working session and whenever a milestone step lands, and commit it with
+> that work. Git history on the branch is the detailed log; this file is the summary.
+
+## How to resume in a new chat
+
+Paste this as the first message:
+
+> We're building Legend Cube in legend-studio on branch `cubeV1`. Read `PLAN.md`, `PROGRESS.md` and `ISSUES.md` in
+> `docs/wip/legend-cube/` first. The spec is `docs/design/WIP-CUBE-SPEC.md` (read sections on demand, not all of it). My local legend-engine
+> runs from IntelliJ on localhost:6300. Then do the "Next action" from PROGRESS.md, and update PROGRESS.md when you
+> finish.
+
+Claude's memory also points to both files, so a new chat in this repo finds them on its own.
+
+## Current state (2026-10-08)
+
+| Item        | State                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch      | `cubeV1`, rebased on finos master `a32e5c0fb` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                                                                                                                                              |
+| Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                                                                                                                                       |
+| Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine). **M1.8a done** (S1–S12) and **M1.8b done** (S13–S21: canvas, palette, drag and drop, context menu, editor panel with Join/Filter/Source editors, shortcuts), both verified, on `cubeV1` and in PR finos/legend-studio#5591 |
+| Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not                                                                                                                             |
+| Plan review | Done 2026-10-05: 4 reviewers, 31 findings. All verified and folded into PLAN.md except one partial rejection (see Session log)                                                                                                                                                                                                                                                              |
+
+## Milestone checklist
+
+See PLAN.md §11 for the deliverables and "done when" of each step.
+
+- [x] **M1.0** Scaffolding: `legend-cube` + `legend-cube-builder` packages, purity guard, `/cube` route (always mounted, no flag: D11)
+- [x] **M1.1** Types and values (precise primitive registry, compatibility, literal validation)
+- [x] **M1.2** Graph and inference (invariants + acyclicity, operations, sentinels, node registry, relational source, Unknown)
+- [x] **M1.3** Join (validation, duplicate rule, §7.11 order, nullability and merged-key rules, FULL OUTER)
+- [x] **M1.4** Filter (tree, operators by family, value validation, builder helpers)
+- [x] **M1.5** IR and emitter (join algorithm, filter emission, typed literals, origins, debug printer)
+- [x] **M1.6** Saved spec v1 codec (round trip, rest preservation, Unknown passthrough)
+- [x] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
+- [x] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
+- [x] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
+- [ ] **M1.9** Slice acceptance (part B, manual) and hardening
+- [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
+- [ ] M2 Rename + Join autofix + simple unary transforms
+- [ ] M3 Entry points, sources modal, depot catalog (user to design entry points and the sources modal first)
+- [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
+- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
+
+## Next action
+
+**M1.7 (thin end-to-end, headless) is done** (2026-10-07). Build: `d653123e5` to `192346e79` (see their messages),
+then the verify fixes in the commit after `8df31aaa3`. 1595 Cube tests green with :6300 up; `check:ci` and
+`lint:ci` green, and both Cube packages lint clean without the ESLint cache.
+
+- Verification `m17-verify` (run `wf_1f966d04-53d`): 33 real issues out of 56 (23 refuted), in
+  `legend-cube-evidence/m17-verify-result.json`. Fixed: lint (2 redundant assertions), column-spec values unstamped
+  (errors in them landed on the wrong node), batch results read through `Object.prototype` (a node id like
+  `__proto__`). The rest were test gaps, now covered: per-key typing failures, abort, every unsupported model kind,
+  lossless request bodies, a deterministic duration, error placement on the stamped node (A.9 typed under another
+  key, plus a stale join key captured downstream), PARSER errors, the outline's flags one by one and near-miss
+  runtimes, Decimal/Number/Float result values, the engine commit logged by Part A. Fix run `m17-fixes` (run
+  `wf_e3a4b9c9-23c`, `legend-cube-evidence/m17-fixes-result.json`): each new test was shown to fail on the mutant
+  its finding named.
+- **Deferred by the user** until after the main end-to-end (Open items): decimal-literal precision, and Show Pure
+  printing numbers as 0.
+- CI risk to watch: CI runs the `engine-roundtrip` group on the docker engine image, whose version may differ from
+  :6300 (parity file, `loadNorthwindData`); not checkable locally (no docker).
+
+**M1.8 (editor state, page, picker, grid; then canvas and editors) has started.** Requirements: `m18-requirements`
+(run `wf_b4b35e14-0fb`), 164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
+that no longer match the code, 19 core/builder gaps and 24 open questions; full result in
+`legend-cube-evidence/m18-requirements-result.json`. The first five steps are the **demo cut**: the user can open
+`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Demo cut built (2026-10-07):** `2115cedfa` S1 host contract and test
+harness (plus the core's `getRelationalDisplayName` export); `be16ae26d` S2 editor and execution state (with an
+engine test: ORDERS gives 830 rows); `30f4366dc` S3 page shell and the Legend Query host, lazy-loaded at
+`/query/cube`; `8bd4b7c0a` S4 source picker; `97e9fa4c2` S5 results grid and execution. `check:ci`, `lint:ci` and
+1905 tests (core, builder, Query) green. Checked in the browser against :6300: the outline, the batch typing call
+(compressed body, CORS from :9001) and execute (830 rows in about 0.6 s; truncation at limit 10) all work.
+Verification `m18-democut-verify` (run `wf_97b39b15-ae7`, `legend-cube-evidence/m18-democut-verify-result.json`):
+74 real out of 86 (6 bugs, 3 unmet requirements, 61 test gaps). The bugs and requirements are fixed in `c5bce0d81`:
+a run's error now belongs to its query (an edit clears it; a run that fails after an edit shows nothing), closing
+the picker drops a pending Add, a cube with a model but no runtime keeps the picked runtime, the grid checks column
+names as well as the count, long one-line errors keep Details, duplicate error keys, loading bars beside the pending
+labels, and Show SQL. The missing tests are committed in `0e535c4e1` (run `m18-democut-tests`, `wf_511e7e31-7cb`,
+the evidence folder's `m18-democut-tests-result.json`; 329 builder, 1404 core, 248 Query and 271 engine-roundtrip tests
+green; `check:ci` and `lint:ci` green). Coverage, honestly:
+
+- Query, editor, state and picker tests were each mutation-checked by an independent verifier. Its follow-ups were
+  done by hand: the Query host test now also checks the client name, the state repair added the outline-by-reference
+  and replaced-capture-node tests, and a grid test pins the run's headers on stale rows (the `R53liveHeaders` mutant).
+- The grid tests were not independently verified, and a few minor mutants survive; both are tracked in
+  [ISSUES.md](ISSUES.md).
+
+**M1.8a S6–S12 built (2026-10-07):**
+
+- `70bbcced1` S6 Undo. A restored query is a new object; undoing a change that left the query alone keeps it (PLAN
+  §7.8).
+- `447b4cdd9` S7 Export/Import spec (dev). A newer-version spec opens read-only; Select still works there (PLAN §7.8).
+- `06bce5cfa` + `c76547830` S8 re-checking tables after an import: drift warnings, saved columns kept on failure,
+  invalid filter values read again. The core gained `diffSchemas`, `rereadFilterValues` and
+  `rereadQueryFilterValues`.
+- `dcaf0efdb` the Show Pure "numbers as 0" fix; `b38027872` S9 Show Pure.
+- `7915d5dce` S10 paste a Pure model. S11 telemetry: none, by decision.
+- `497fd3241` S12 changeset text.
+
+Checks: 1416 core, 382 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green. Part B, the
+M1.8a part, passed by hand on :9001 + :6300: pick Northwind and StoreRuntime, add ORDERS and CUSTOMERS, Execute (830
+rows), Select (stale), Undo, Show Pure (real literals, e.g. `->limit(1001)`), Export, reload, Import, Execute: the
+same 830 rows. F9 came with M1.8b's shortcuts (S20, PLAN §3.5). Importing the slice spec and executing gives the 19 rows.
+
+**M1.8a verified (2026-10-07).** Verification `m18a-verify` (run `wf_e47c016b-840`, evidence
+`m18a-verify-result.json`): 39 real out of 45 (12 bugs, 27 test gaps).
+
+- `8b8b632cd` core: chained Filters are re-read until nothing changes.
+- `69cf8e6be` builder and docs:
+  - re-checking applies by node identity to the cube shown and to undo snapshots, so Undo never brings back an
+    unchecked table, and "resolving source" shows only while the cube shown has a table being typed;
+  - the picker's paste box shows only for the model it loaded;
+  - file reads: a too-large file ends a pending read, and read errors are worded;
+  - three doc fixes.
+- `1fd25a532` the missing tests (run `m18a-tests`, `wf_06e74b7b-a8b`, evidence `m18a-tests-result.json`), each checked
+  against its mutant by an independent verifier.
+
+1419 core, 430 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green.
+
+**Rebased on finos master `a32e5c0fb` (2026-10-07)**, with no conflicts; the backup branch `cubeV1-before-rebase` holds the old tip.
+finos master reverted the security dependency update, so the builder keeps axios 1.16.0. Commit hashes in these docs refer to the `cubeV1` branch history on the fork; master gets the PR squashed. `check:ci`, `lint:ci` and the
+engine-roundtrip group (279) are green, and the whole `yarn test` passes except two suites that fail only locally:
+
+- legend-dev-utils `TypescriptConfigUtils.test.js` runs `tsc -p` on an unquoted path, which breaks on this machine's
+  folder name with a space;
+- legend-manual-tests `RoundtripGrammar.engine-roundtrip-test.ts`: the local engine (93d92b4) writes empty arrays that
+  Studio's serializer leaves out. CI runs it on its own engine image.
+
+**M1.8b (canvas and editors) is done and verified** (2026-10-08), on `cubeV1` itself, so PR
+finos/legend-studio#5591 carries it (user, 2026-10-07: it is on the critical path for the parallel work).
+
+- **Settled at the start of M1.8b** (user, 2026-10-07, all on the recommendation): PLAN §7.8. Two answers were
+  narrowed or extended in the build, both in PLAN: a panel without edits follows its node (§7.4), and blank
+  conditions or key pairs are dropped wherever they are (§7.5, §7.6).
+- **Build:** `3c10563d0` S13 layout and dependencies; `42c881997` S14 canvas; `77baa9359` S15 palette and drag and
+  drop; `aea4fc469` S16 context menu; `fc572b42d` S17 editor panel, Source panel and the editor contract (PLAN §7.4);
+  `ae0839618` S18 Join editor and the outline's untyped columns; `4604a6b56` S19 Filter editor; `1b6acdfda` S20
+  shortcuts (Query's core plugin contributes them); `0682fdf9e` changeset text.
+- **Verification** `m18b-verify` (run `wf_4c3413c3-1d3`, evidence `m18b-verify-result.json`): 5 reviewers, 43
+  distinct findings, 40 confirmed (16 bugs, 3 unmet requirements, 14 test gaps, 7 docs), 3 refuted. Fixed in
+  `b717c4f00` (state: re-check against undo snapshots, refresh of a failing table, warnings across Import, Undo over
+  Import, draft no-ops, the 'type unknown' lookup) and `9dfcfc306` (UI and tests), docs in the commit after.
+- **Dry run of Part B** on :9001 + :6300 (2026-10-08): all eight steps pass, with real drags (palette to canvas,
+  handle to handle), F9 giving 19 rows, Cmd+Z, Show Pure, and Export, reload, Import, F9 giving the same 19 rows.
+  It found what jsdom can't: the canvas fitted before React Flow measured new nodes, the Filter row squeezed its value,
+  the graph header overflowed beside the panel, the minimap covered nodes, and Chrome's date input gives React no
+  Enter (`03e095655`). On macOS, Ctrl-click is the system's right-click, so the capture node is set with Cmd-click
+  (PLAN §11.2 step 6). xyflow's CSS loads only with the Cube page; the lineage viewer itself needs a depot query, so
+  it wasn't seen.
+- **Checks:** 1419 core, 596 builder, 236 Query and 279 engine-roundtrip tests; `check:ci` and `lint:ci` green.
+
+**Next:** push M1.8b to the PR, then M1.9 (Part B by hand as acceptance, READMEs). In parallel sessions: operations
+(each follows the editor contract in PLAN §7.4), test setup, and a DuckDB WASM study; new sources wait on the
+user's design. Decimal precision stays for a later PR (user, 2026-10-07).
+
+- **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
+  "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
+  §7.2, §7.8, §8.7, §11.1 and §11.2).
+- **Settled at the start of M1.8b:** see PLAN §7.8.
+
+## Merge plan (decided by the user, 2026-10-07)
+
+The user wants a first merge so that new sources and new operations can be built in parallel. PLAN §0 D13.
+
+- **Cut: after M1.8a** (S6–S12), then M1.8b joined the same PR before it merged (user, 2026-10-07). The Show Pure
+  "numbers as 0" bug, which S9 made visible, is fixed (`dcaf0efdb`).
+  `/query/cube` has no flag (D11), so the page ships in Query when this merges.
+- **One PR** for the whole branch; the commit history guides the review.
+- **Docs:** PLAN.md and PROGRESS.md moved to `docs/wip/legend-cube/` (2026-10-07), with ISSUES.md beside them to
+  track the known issues for later PRs. LEGEND-GRAPH-ISSUES.md is not included: it moved to the local evidence
+  folder.
+- **Workflows:** S6 onward uses workflows as before (requirements, build, skeptic verification).
+- **Before the PR:** rebase on `origin/master` (15 commits behind on 2026-10-07), rerun
+  `GITHUB_BASE_REF=master yarn check:ci`, and expect the first CI run to be the first time the engine-roundtrip group
+  runs on the docker engine image.
+- **Parallel work after the merge.**
+  - Operations can be built headless: a node class, an emitter, a codec and a `NodeRegistry` entry, plus `v1/`
+    serializer support and engine tests.
+  - An operation's editor follows the editor contract in PLAN §7.4 (a draft, an editor, help text, an icon; a
+    registry test checks each type has them).
+  - New sources wait on the entry-points and sources-modal design (before M3) and on M2.0.
+
+## Open items
+
+| Item                                              | Owner | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Planning evidence                                 | –     | Kept in a local folder outside both repos (not committed), indexed by its `README.md`: investigation reports, runnable harnesses, workflow results. M1.7 and M5 reuse its fixtures and harnesses                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Entry points and the sources modal (D7 follow-up) | User  | Designed before M3                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| legend-graph precise-primitive fix (M2.0, D12)    | User  | Can start any time as its own PR to master, in parallel with the slice. Until M2.0, keep the type seam narrow (PLAN.md §4.1). The verified issue list for a separate session is kept outside the repo, in the local evidence folder (by the user's choice, 2026-10-07)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **To revisit: type tables locally** (2026-10-06)  | User  | The user wants Cube to stop asking the engine for every table's relation type: read the `Database` definition through legend-graph and build the column types from it, and later do the same for data products and ingest. This needs the legend-graph fixes above, and the core depending on legend-graph earlier than D12/M2.0 planned (it breaks the host-free rule, D10 and PLAN §3.3). It changes M1.7's schema resolution (PLAN §6.2.6, which uses the engine's batch endpoint). **Decided 2026-10-06 (user): M1.7 types tables with the engine behind `resolveSchemas` and records the engine's types for every fixture table as a parity test; the local typer replaces that method after the legend-graph fixes (PLAN §6.2.6).** Constraint to keep: local types must match the engine's compiler mapping exactly (a conformance test against the engine), or emitted queries and the grid will disagree. User direction (2026-10-06): data products are typed from their generated artifact (cached relation types), not their definition; Cube sends V1 protocol lambdas, not legend-graph's built (metamodel) lambdas |
+| Known issues                                      | –     | Bugs, test gaps and risks to fix in later PRs: [ISSUES.md](ISSUES.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Push and PR                                       | User  | First PR opened 2026-10-07 from the fork MauricioUyaguari/legend-studio `cubeV1` to finos/legend-studio master                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+
+## Environment (local)
+
+- **Engine:** legend-engine checkout (sibling folder), run from IntelliJ (`org.finos.legend.engine.server.Server`, no
+  arguments, so `userTestConfig.json`).
+  - Port 6300, anonymous auth. CORS allows the Query dev origin.
+  - **No Mongo**, so the engine's query stores don't work locally.
+  - Its depot setting points at `127.0.0.1:6200`, but nothing runs there.
+  - Check with `curl -s localhost:6300/api/server/v1/info`; planning used commit `93d92b4`.
+- **Legend Query dev:** `yarn dev:ts` plus `yarn dev:query` → `http://localhost:9001/query/`. The Cube page is at
+  `http://localhost:9001/query/cube`.
+  - Run `yarn build` at least once first: `dev:ts` doesn't build the stylesheets (`lib/index.css`) that the Query
+    bundle imports.
+- **Northwind:** the engine loads it into H2 through `call loadNorthwindData()` in the connection's
+  `testDataSetupSqls`. The shared grammar is
+  `packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure`. Cube will ship its own corrected
+  fixture (PLAN.md §6.2.4).
+- **Engine-backed tests:** name them `*.engine-roundtrip-test.ts`. They use axios against `http://localhost:6300/api`,
+  because `fetch` is blocked in Jest.
+
+## Key facts a cold start must not miss
+
+Each is verified and detailed in PLAN.md.
+
+- Execution is a relation-function chain built as **protocol JSON**, never Pure text: there are precedence traps, and
+  dotted names are mangled (§8.3).
+- A relation join rejects any shared column name. The emitter renames to temporary names and finishes with a `select`
+  in §7.11 order (§8.4).
+- SQL NULL semantics for joins: `->toOne()` on the left key when both keys are nullable. Verified for INNER, LEFT,
+  RIGHT and FULL, and on Postgres, Snowflake and SQL Server plans (§8.4).
+- The FULL OUTER merged key needs a `cast(@<common ancestor>)` when the key types differ; parameterized types fail to
+  compile without it (§4.7, §8.4).
+- The engine **does not type-check** `==`, `in` or join keys, and **lies about nullability** after outer joins and
+  aggregates. Cube validates and infers both itself (§5.4–5.6, §4.7).
+- Take schemas from `lambdaRelationType` (and its `/batch` form, whose response field is `result`). Studio's wrappers
+  drop type parameters, and its batch wrapper reads `results`, so it throws (§5.1, §8.7).
+- The core (`@finos/legend-cube`) is host-free: relative imports and plain ECMAScript only, so no `console`,
+  `setTimeout`, `structuredClone` or `URL` either. ESLint, `yarn build` and a unit test enforce it (§3.3).
+- Window extend followed by a filter gives wrong rows, and some dialects silently drop the filter. Isolate window
+  nodes with `let` (§8.6, from M5).
+
+## Session log
+
+- **2026-10-05.**
+  - Investigated legend-studio and legend-engine against the live engine (33-agent workflow plus follow-ups).
+  - Wrote PLAN.md; the user answered D1–D8 and approved it.
+  - Rebased onto master (spec landed as `WIP-CUBE-SPEC.md`).
+  - Committed PLAN.md (`50bfa4fe0`).
+  - Verified the two remaining plan inferences live (`toOne()` NULL semantics; FULL merged-key typing) and updated
+    PLAN.md.
+  - Added this file.
+  - Copied the planning evidence to `legend-cube-evidence/` (outside the repos) with a README; smoke-tested the
+    harnesses from there.
+  - Plan review (4 reviewers, 31 findings). Verified the high-severity ones live, then folded them into PLAN.md.
+    Main changes:
+    - lint-compliant builder layout (port in `graph-manager/`, factory outside `v1/`);
+    - FULL merged key nullable if either key is nullable;
+    - Not over a group pushed to the leaves for D4;
+    - `genericType` IR node for casts;
+    - quoted table names keep their quotes;
+    - REAL-column equality caveat;
+    - specified ALLTYPES rows;
+    - discriminating RIGHT/FULL acceptance cases and order-insensitive asserts;
+    - Unknown node per-instance ports;
+    - Execute gated on the capture subtree;
+    - value pipeline keeps invalid text and canonicalizes numbers;
+    - engine-test wiring;
+    - M1.8 split into M1.8a and M1.8b.
+  - **Partially rejected:** blocking joins on `OTHER`-typed columns. They are flagged "type unknown" with an inline
+    warning instead, because the failure is a loud engine error, not silent wrong data, and v1 has no cast to work
+    around a block.
+- **2026-10-05, M1.0.**
+  - The user accepted the departures from the spec's guidance sections (§14.4, §17.7, §17.11) and gave the go-ahead.
+  - Scaffolded `@finos/legend-cube` and `@finos/legend-cube-builder` (0.0.1 each, patch changeset), with root and
+    Query tsconfig references.
+  - The core's host-free guard is stricter than planned; PLAN.md §3.3 describes it as built:
+    - lint allows relative imports only;
+    - the build compiles against the ECMAScript library with no ambient types;
+    - a unit test checks module references and the compile, against bad fixtures too.
+  - A probe file importing `mobx` and reading `window` was rejected by all three guards.
+  - Legend Query: route `/cube`, always mounted; the bootstrap stylesheet imports the builder's CSS. M1.0 first put
+    the route behind a `TEMPORARY__enableLegendCube` option; the user dropped it the same day (D11), with its config
+    test and the dev-only setup changes.
+  - The builder declares only what it uses (core, React, React DOM). Other dependencies, and the `@xyflow/react` CSS
+    import, arrive with the step that first needs them.
+- **2026-10-05, M1.1.**
+  - The user dropped the `TEMPORARY__enableLegendCube` flag first (D11): `/query/cube` is always mounted.
+  - Types (`packages/legend-cube/src/types/`): the registry of 24 primitives; interned `PrimitiveType` and
+    `OpaqueType`, `EnumType` equal by path; `resolveCubeType` never throws (unknown paths and misfitting
+    parameters become opaque); comparison classes and `areCompatibleTypes`; `getLeastCommonAncestor` (needed by
+    FULL joins in M1.3); enum qualification helpers.
+  - Values (`src/values/`): `LiteralValue`, `parseValue` and `checkValue`, both built on one reader, so
+    canonical form, kind and range checks can't drift apart.
+  - Tests: 281 in the core. One table drives `parseValue` and `checkValue` for every accepted and rejected input.
+    Three mutations of the code (UBigInt range, negative zero, date compatibility) were each caught.
+  - PLAN.md §5.4 and §5.6 record what M1.1 settled: StrictTime is its own comparison class; a non-finite FLOAT
+    value is out of range; the abstract `Date` takes a date or a date-time; value problems are structured, and
+    M1.4 adds their messages.
+- **2026-10-05, M1.2.**
+  - Recorded D12 (legend-graph types from M2.0; narrow type seam until then) and that date-time values accept a
+    trailing `Z` or `+0000`.
+  - Schema (`src/schema/`): `SchemaColumn {name, type, nullable}`, `Schema` with unique names, order-sensitive
+    `equals` that ignores nullability, and `isIdenticalTo` for drift detection.
+  - Graph (`src/graph/`): `QueryNode` (with `SourceNode`, `UnaryNode`, `BinaryNode`), `Connection`, and an
+    immutable `Query` with the five spec invariants plus acyclicity and a port invariant, every operation with a
+    total `canX` predicate, `replace`, `clone` and per-type `generateId`.
+  - Inference (`src/inference/`): `buildSchemasAndValidity` with the three sentinels and the query-rule pass; the
+    validation combinators.
+  - Nodes (`src/nodes/`): `RelationalTableSource` with the same-database rule, `UnknownNode` with synthetic ports,
+    and `NodeRegistry`/`createNodeRegistry()`. Messages (`src/messages/`): the full §16 catalogue plus Cube's
+    additions, tested line for line against the spec.
+  - PLAN.md §4.3–4.6 record what M1.2 settled (healing in port order, move selection, nodes that refuse new inputs,
+    rule-error order, describe of failed or quoted sources).
+  - Verification: a 5-agent workflow built a 168-item cited checklist; a 92-agent workflow checked it and hunted
+    bugs, confirming 40 issues (37 test gaps, the `ensureSchemas` shape check, quoted names in `describe()`), all
+    fixed; a 19-agent re-verification found 14 more test gaps and one weak check, all fixed. 453 core tests.
+- **2026-10-05, M1.3 (in progress).**
+  - `Join` (`src/nodes/transforms/Join.ts`): ports `leftTds`/`rightTds`, §7.11 steps 1–5 with the catalogue
+    messages, comparison-class compatibility, the duplicate rule, §7.11 output order, nullability and merged-key
+    rules per join type, FULL OUTER. Exported helpers for the emitter. Registered as "Join Another Input".
+  - `QueryNode.withSwappedInputs()` hook, applied by `Query.swapInputs`: a Join's key columns follow its inputs.
+  - A 4-agent workflow built a 92-item checklist (81 in scope, 11 ambiguities); the code follows its recommendations
+    except two recorded choices (PLAN §4.7). 10 hand mutations, all caught. 543 core tests.
+  - Verification (28 agents, resumed after the usage stop) confirmed 12 issues: one bug (key lists with holes passed
+    the constructor check) and 11 test gaps (exact name matching, partially same-named duplicates, merged-key
+    position for every join type, INNER nullable keys, join type kept by edits and swaps, FULL merged enum values,
+    frozen right list, single-input swap stays incomplete). All fixed; each named mutant now fails a test.
+  - The user confirmed the three M1.3 choices in PLAN §4.7 (swap swaps key columns; both columns of a pair
+    checked; blank names).
+- **2026-10-05, M1.4.**
+  - Filter (`src/filter/`, `src/nodes/transforms/Filter.ts`): the 16 operators with descriptions and negation
+    pairs, availability by family (StrictTime, Variant and unknown types: empty checks only), the comparison / And-Or
+    group / Not tree with values that keep invalid text, validation (column, operator, shape, each value through
+    `checkValue`, with the new messages), the builder helpers (normalize/unwrap at the top level, column- and
+    operator-change resets, negate), descriptions with a redacted form, `describeRedacted()` on every node, and the
+    registry entry "Filter by Column" before Join.
+  - The user confirmed the M1.4 choices (PLAN §4.8 "Settled in M1.4").
+  - Verification: a 4-agent workflow built a 152-item checklist (125 in scope); a 52-agent workflow confirmed 20
+    issues: two bugs (the Filter node accepted any object with `validate`, such as a Join; a row moved between
+    same-family columns kept invalid text that was valid for the new column) and 18 test gaps, all fixed. A
+    22-agent re-verification found 8 more test gaps, all fixed. Repo-wide `check:ci` and `lint:ci` green. 696 core
+    tests.
