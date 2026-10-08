@@ -20,6 +20,7 @@ import {
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
+  encodeFilterRule,
   type Filter,
   type FilterOperator,
   type FilterRule,
@@ -221,12 +222,20 @@ export class CubeFilterDraft extends CubeNodeDraft<Filter> {
   }
 
   build(): Filter {
+    const { original } = this;
     if (!this.touched) {
-      return this.original;
+      return original;
     }
     const pruned = pruneBlankFilterRows(this.tree);
-    return this.original.withFilter(
-      pruned === undefined ? undefined : unwrapFilter(pruned),
-    );
+    const filter = pruned === undefined ? undefined : unwrapFilter(pruned);
+    // a saved group of one rule comes back as the rule: it saves differently
+    // but means the same, so it is no change
+    const isUnchanged =
+      filter === undefined
+        ? original.filter === undefined
+        : original.filter !== undefined &&
+          JSON.stringify(encodeFilterRule(filter)) ===
+            JSON.stringify(encodeFilterRule(unwrapFilter(original.filter)));
+    return isUnchanged ? original : original.withFilter(filter);
   }
 }

@@ -67,6 +67,41 @@ describe('Filter draft', () => {
     expect(built.filter).toBeInstanceOf(ColumnComparisonFilter);
   });
 
+  test('Builds the original when a saved group of one rule is touched and set back, and still builds real changes', () => {
+    const groupOfOne = new Filter(
+      'filter101',
+      new CompositeFilter(CompositeFilterOperator.AND, [france()]),
+    );
+    const draft = new CubeFilterDraft(groupOfOne);
+    // normalized as it was saved: the group itself
+    draft.setGroupOperator(draft.tree.key, CompositeFilterOperator.OR);
+    draft.setGroupOperator(draft.tree.key, CompositeFilterOperator.AND);
+    expect(draft.build()).toBe(groupOfOne);
+    draft.addCondition(draft.tree.key);
+    expect(draft.build()).toBe(groupOfOne);
+    const key = (draft.tree.rules[0] as ColumnComparisonFilter).key;
+    draft.setOperator(key, FilterOperator.NOT_EQUAL);
+    expect(draft.build().filter?.toString()).toBe(
+      'SHIP_COUNTRY is not "France"',
+    );
+  });
+
+  test('Counts dropping a saved blank condition as a change', () => {
+    const withBlank = new Filter(
+      'filter101',
+      new CompositeFilter(CompositeFilterOperator.AND, [
+        france(),
+        new ColumnComparisonFilter(''),
+      ]),
+    );
+    const draft = new CubeFilterDraft(withBlank);
+    draft.setGroupOperator(draft.tree.key, CompositeFilterOperator.OR);
+    draft.setGroupOperator(draft.tree.key, CompositeFilterOperator.AND);
+    const built = draft.build();
+    expect(built).not.toBe(withBlank);
+    expect(built.filter?.toString()).toBe('SHIP_COUNTRY is "France"');
+  });
+
   test('Leaves out blank conditions anywhere, and the groups they leave empty', () => {
     const draft = new CubeFilterDraft(new Filter('filter101', france()));
     draft.addCondition(draft.tree.key);

@@ -47,7 +47,10 @@ export interface CubeOutlineTable {
   readonly isView: boolean;
   readonly columnCount: number;
   readonly flags: readonly CubeTableFlag[];
-  /** The columns typed as a bare String because Cube can't read their type (OTHER or ARRAY), as named in the model */
+  /**
+   * The columns typed as a bare String because Cube can't read their type
+   * (OTHER or ARRAY), unquoted as in the table's schema
+   */
   readonly untypedColumns: readonly string[];
 }
 

@@ -726,3 +726,186 @@ describe("Typing an imported cube's tables again", () => {
     expect(state.isResolvingSources).toBe(false);
   });
 });
+
+describe('Re-checking a table against the undo history', () => {
+  /** ORDERS saved before SHIP_VIA widened, with a Filter whose value only the new type reads */
+  const filteredOldOrders = (): CubeDocument =>
+    new CubeDocument({
+      context: CONTEXT,
+      query: new Query(
+        [
+          ...ordersAndCustomers(OLD_ORDERS_COLUMNS).nodes,
+          new Filter(
+            'filter101',
+            new ColumnComparisonFilter('SHIP_VIA', FilterOperator.EQUAL, {
+              kind: 'invalid',
+              text: '300',
+            }),
+          ),
+        ],
+        [new Connection('relational101', 'filter101', 'tds')],
+        'relational101',
+      ),
+    });
+
+  test('Gives undo snapshots that shared the query one checked query, so undoing an edit that left the query alone keeps the rows', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.execute.mockResolvedValue(ORDERS_RESULT);
+    const state = new CubeEditorState(host, oldOrdersDocument());
+    state.setShowGraph(false);
+    await flowResult(state.refreshSource('relational101'));
+    expect(hasFreshOrders(state)).toBe(true);
+    // compared as booleans: a failed toBe would print the queries' BigInt ranges
+    expect(state.history[0]?.query === state.document.query).toBe(true);
+    await flowResult(state.execution.execute());
+    state.setHostIssue(
+      'relational102',
+      new CubeEngineError(CubeEngineErrorKind.EXECUTION, 'kept'),
+    );
+    state.undo();
+    expect(state.document.meta.presentation.showGraph).toBe(true);
+    expect(state.execution.result).toBeDefined();
+    expect(state.execution.isStale).toBe(false);
+    expect(state.hostIssues.has('relational102')).toBe(true);
+  });
+
+  test('Keeps a Filter panel with edits open when an unrelated edit is undone after its value was read again', async () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      filteredOldOrders(),
+    );
+    state.setShowGraph(false);
+    await flowResult(state.refreshSource('relational101'));
+    const filter = state.document.query.getNode('filter101') as Filter;
+    expect((filter.filter as ColumnComparisonFilter).value).toEqual({
+      kind: 'integer',
+      value: '300',
+    });
+    state.nodeEditor.open('filter101');
+    const draft = state.nodeEditor.draft as unknown as {
+      tree: { rules: { key: number }[] };
+      setValue: (key: number, value: unknown) => void;
+    };
+    draft.setValue(draft.tree.rules[0]?.key ?? 0, {
+      kind: 'integer',
+      value: '3',
+    });
+    expect(state.nodeEditor.hasChanges).toBe(true);
+    state.undo();
+    expect(state.document.query.getNode('filter101') === filter).toBe(true);
+    expect(state.nodeEditor.nodeId).toBe('filter101');
+    expect(state.nodeEditor.notice).toBeUndefined();
+  });
+
+  test('Leaves a table that fails again as it did as it is: same node, same query, rows not stale', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    fake.execute.mockResolvedValue(ORDERS_RESULT);
+    const message = `The table "NORTHWIND.NOPE" can't be found`;
+    const state = new CubeEditorState(
+      host,
+      new CubeDocument({
+        context: CONTEXT,
+        query: new Query(
+          [
+            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+            new RelationalTableSource(
+              'relational102',
+              {
+                database: NORTHWIND_DATABASE,
+                schema: 'NORTHWIND',
+                table: 'NOPE',
+              },
+              { kind: 'failed', message },
+            ),
+          ],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    await flowResult(state.execution.execute());
+    const { query } = state.document;
+    const failed = query.getNode('relational102');
+    await flowResult(state.refreshSource('relational102'));
+    expect(state.document.query === query).toBe(true);
+    expect(state.document.query.getNode('relational102') === failed).toBe(true);
+    expect(state.execution.isStale).toBe(false);
+    // a new failure is still taken
+    fake.resolveSchemas.mockResolvedValueOnce(
+      new Map([
+        [
+          'relational102',
+          new CubeEngineError(CubeEngineErrorKind.COMPILE, 'Another reason'),
+        ],
+      ]),
+    );
+    await flowResult(state.refreshSource('relational102'));
+    expect(nodeOf(state, 'relational102').resolution).toEqual({
+      kind: 'failed',
+      message: 'Another reason',
+    });
+  });
+
+  test("Brings back a table's warning when the import that replaced its cube is undone", async () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      oldOrdersDocument(),
+    );
+    await flowResult(state.refreshSource('relational101'));
+    expect(warningsOf(state, 'relational101')).toEqual([DRIFT_WARNING]);
+    await importAndWait(
+      state,
+      new CubeDocument({ context: CONTEXT, query: ordersAndCustomers() }),
+    );
+    expect(warningsOf(state, 'relational101')).toBeUndefined();
+    state.undo();
+    expect(warningsOf(state, 'relational101')).toEqual([DRIFT_WARNING]);
+  });
+
+  test('Closes the node editor when Undo goes back to the cube before an import, saying so only when it had edits', async () => {
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      new CubeDocument({ context: CONTEXT, query: ordersAndCustomers() }),
+    );
+    await importAndWait(state, filteredOldOrders());
+    state.nodeEditor.open('relational101');
+    state.undo();
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.notice).toBeUndefined();
+
+    await importAndWait(state, filteredOldOrders());
+    state.nodeEditor.open('filter101');
+    const draft = state.nodeEditor.draft as unknown as {
+      tree: { rules: { key: number }[] };
+      setValue: (key: number, value: unknown) => void;
+    };
+    draft.setValue(draft.tree.rules[0]?.key ?? 0, {
+      kind: 'integer',
+      value: '3',
+    });
+    state.undo();
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.notice).toBe(
+      'Another cube was opened, so the editor of filter101 closed without applying its changes.',
+    );
+  });
+
+  test('Still closes the node editor on that Undo when the cube before the import was typed after it', async () => {
+    const { host, fake } = TEST__createCubeHost();
+    const earlier = deferred<Answer>();
+    fake.resolveSchemas.mockReturnValueOnce(earlier.promise);
+    const state = new CubeEditorState(host);
+    importDocument(state, oldOrdersDocument());
+    await importAndWait(
+      state,
+      new CubeDocument({ context: CONTEXT, query: ordersAndCustomers() }),
+    );
+    // the first cube's tables are typed now, in the undo history
+    earlier.resolve(FRESH);
+    await settle();
+    state.nodeEditor.open('relational101');
+    state.undo();
+    expect(hasFreshOrders(state)).toBe(true);
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+  });
+});

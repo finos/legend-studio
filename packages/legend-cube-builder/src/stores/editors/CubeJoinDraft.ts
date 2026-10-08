@@ -15,8 +15,9 @@
  */
 
 import {
-  type Join,
-  type JoinType,
+  getSameNamedJoinKeys,
+  Join,
+  JoinType,
   type Query,
   RelationalTableSource,
   type SchemaInferenceResult,
@@ -38,6 +39,14 @@ let nextPairKey = 1;
 const isSameList = (a: readonly string[], b: readonly string[]): boolean =>
   a.length === b.length && a.every((name, index) => name === b[index]);
 
+/** The key lists pairs build: a pair with no column picked is left out */
+const toKeyLists = (
+  pairs: readonly CubeJoinKeyPair[],
+): [string[], string[]] => {
+  const kept = pairs.filter((pair) => pair.left || pair.right);
+  return [kept.map((pair) => pair.left), kept.map((pair) => pair.right)];
+};
+
 /**
  * The Join editor's draft (spec §17.6): the join type and the key column
  * pairs. A pair with no column picked on either side is left out when built,
@@ -48,6 +57,11 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
   pairs: CubeJoinKeyPair[];
   /** Anything was changed; until then, `build()` gives the original back */
   private touched = false;
+  /**
+   * The key lists the pairs built before any edit, so edits undone by hand
+   * give the original back, even for saved lists of unequal length
+   */
+  private readonly initialKeyLists: [string[], string[]];
 
   constructor(original: Join) {
     super(original);
@@ -75,6 +89,7 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
         right: original.rightColumns[index] ?? '',
       }),
     );
+    this.initialKeyLists = toKeyLists(this.pairs);
   }
 
   setJoinType(joinType: JoinType): void {
@@ -107,14 +122,13 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
   }
 
   build(): Join {
-    const pairs = this.pairs.filter((pair) => pair.left || pair.right);
-    const leftColumns = pairs.map((pair) => pair.left);
-    const rightColumns = pairs.map((pair) => pair.right);
+    const [leftColumns, rightColumns] = toKeyLists(this.pairs);
+    const [initialLeft, initialRight] = this.initialKeyLists;
     const { original } = this;
     return !this.touched ||
       (this.joinType === original.joinType &&
-        isSameList(leftColumns, original.leftColumns) &&
-        isSameList(rightColumns, original.rightColumns))
+        isSameList(leftColumns, initialLeft) &&
+        isSameList(rightColumns, initialRight))
       ? original
       : original.withSettings({
           joinType: this.joinType,
@@ -126,8 +140,10 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
 
 /**
  * The table sources a column of a node's output comes from: followed back
- * through the inputs whose output has the column. A FULL OUTER join's merged
- * key comes from both sides.
+ * through the inputs whose output has the column. A join key of the same name
+ * on both sides comes from the side the join keeps (the left for INNER and
+ * LEFT OUTER, the right for RIGHT OUTER), and from both for FULL OUTER, which
+ * merges them.
  */
 export const findColumnSources = (
   query: Query,
@@ -142,13 +158,21 @@ export const findColumnSources = (
       ? [node]
       : [];
   }
-  return query
-    .getInputIds(nodeId)
-    .flatMap((inputId) =>
-      inputId !== undefined && analysis.schemas.get(inputId)?.lookup(columnName)
-        ? findColumnSources(query, analysis, inputId, columnName)
-        : [],
-    );
+  const inputIds = query.getInputIds(nodeId);
+  const [leftId, rightId] = inputIds;
+  const followed =
+    node instanceof Join &&
+    node.joinType !== JoinType.FULL_OUTER &&
+    getSameNamedJoinKeys(node.leftColumns, node.rightColumns).includes(
+      columnName,
+    )
+      ? [node.joinType === JoinType.RIGHT_OUTER ? rightId : leftId]
+      : inputIds;
+  return followed.flatMap((inputId) =>
+    inputId !== undefined && analysis.schemas.get(inputId)?.lookup(columnName)
+      ? findColumnSources(query, analysis, inputId, columnName)
+      : [],
+  );
 };
 
 /**

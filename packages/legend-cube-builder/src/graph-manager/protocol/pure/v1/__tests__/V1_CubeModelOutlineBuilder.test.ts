@@ -266,6 +266,40 @@ describe('Cube model outline', () => {
     });
   });
 
+  test('Lists an untyped column by its name unquoted, as the engine names it in the schema', () => {
+    const quoted = V1_buildCubeModelOutline({
+      _type: 'data',
+      elements: [
+        {
+          _type: 'relational',
+          package: 'test',
+          name: 'Db',
+          includedStores: [],
+          schemas: [
+            {
+              name: 'S',
+              tables: [
+                {
+                  name: '"T.Q"',
+                  columns: [
+                    column('ID', { _type: 'Integer' }),
+                    column('"MY COL"', { _type: 'Other' }),
+                    column('PLAIN_OTHER', { _type: 'Other' }),
+                  ],
+                },
+              ],
+              views: [],
+            },
+          ],
+        },
+      ],
+    });
+    const [table] = quoted.databases[0]?.schemas[0]?.tables ?? [];
+    // the table keeps its name as stored; only column names are unquoted
+    expect(table?.name).toBe('"T.Q"');
+    expect(table?.untypedColumns).toEqual(['MY COL', 'PLAIN_OTHER']);
+  });
+
   test("Doesn't follow a database's includes", () => {
     expect(outline.databases[1]?.schemas).toEqual([]);
   });

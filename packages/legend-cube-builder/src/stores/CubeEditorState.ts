@@ -125,6 +125,8 @@ export class CubeEditorState implements CommandRegistrar {
   readOnly = false;
   /** Documents in the undo history that were read-only, so undo restores the flag */
   private readonly readOnlyDocuments = new WeakSet<CubeDocument>();
+  /** Documents an import replaced: undoing back to one opens another cube again */
+  private readonly importedOver = new WeakSet<CubeDocument>();
 
   constructor(host: CubeHost, document = new CubeDocument()) {
     makeObservable<CubeEditorState, 'pendingSources' | 'modelOutlines'>(this, {
@@ -306,11 +308,13 @@ export class CubeEditorState implements CommandRegistrar {
    */
   importDocument(next: CubeDocument, readOnly: boolean): void {
     this.pushHistory();
+    this.importedOver.add(this.document);
     this.execution.reset();
     this.sourcePicker.close();
     this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
     this.hostIssues = new Map();
-    this.warnings = new Map();
+    // warnings are kept: they are by node key, which the imported nodes don't
+    // share, and Undo brings back the nodes they belong to
     this.document = next;
     this.readOnly = readOnly;
     flowResult(this.reresolveSources()).catch(
@@ -398,7 +402,11 @@ export class CubeEditorState implements CommandRegistrar {
       if (answer instanceof CubeEngineError) {
         if (saved) {
           warnings.set(source.key, [getSourceRecheckWarning(answer.firstLine)]);
-        } else {
+        } else if (
+          source.resolution.kind !== 'failed' ||
+          source.resolution.message !== answer.detail
+        ) {
+          // a table that fails as it did before is left as it is
           replacements.set(
             source,
             source.withResolution({ kind: 'failed', message: answer.detail }),
@@ -425,21 +433,33 @@ export class CubeEditorState implements CommandRegistrar {
     if (!replacements.size) {
       return;
     }
+    // documents that shared a query share its checked one, so an undo
+    // between them still finds the query unchanged
+    const checkedQueries = new Map<Query, Query>();
     const check = (document: CubeDocument): CubeDocument => {
-      let checked = document.query;
-      replacements.forEach((resolved, source) => {
-        if (checked.getNode(source.id) === source) {
-          checked = checked.replace(resolved);
-        }
-      });
+      let checked = checkedQueries.get(document.query);
+      if (checked === undefined) {
+        let replaced = document.query;
+        replacements.forEach((resolved, source) => {
+          if (replaced.getNode(source.id) === source) {
+            replaced = replaced.replace(resolved);
+          }
+        });
+        checked =
+          replaced === document.query
+            ? replaced
+            : rereadQueryFilterValues(replaced, this.registry.queryRules);
+        checkedQueries.set(document.query, checked);
+      }
       if (checked === document.query) {
         return document;
       }
-      const next = document.withQuery(
-        rereadQueryFilterValues(checked, this.registry.queryRules),
-      );
+      const next = document.withQuery(checked);
       if (this.readOnlyDocuments.has(document)) {
         this.readOnlyDocuments.add(next);
+      }
+      if (this.importedOver.has(document)) {
+        this.importedOver.add(next);
       }
       return next;
     };
@@ -466,7 +486,8 @@ export class CubeEditorState implements CommandRegistrar {
    * Restores the document before the last edit; does nothing when there is
    * no history. A restored query is a new object (PLAN §4.3), so rows that
    * ran before the edit show as stale. An edit that left the query alone,
-   * such as a rename, keeps it, with its rows and engine errors.
+   * such as a rename, keeps it, with its rows and engine errors. Undoing an
+   * import closes the node editor and the picker, as the import did.
    */
   undo(): void {
     const previous = this.history.at(-1);
@@ -475,6 +496,11 @@ export class CubeEditorState implements CommandRegistrar {
     }
     this.history = this.history.slice(0, -1);
     this.readOnly = this.readOnlyDocuments.has(previous);
+    if (this.importedOver.has(previous)) {
+      // the cube before an import is another cube, as the import was
+      this.sourcePicker.close();
+      this.nodeEditor.discard(CUBE_EDITOR_CLOSED_REASON.CUBE_REPLACED);
+    }
     const { query } = this.document;
     this.replaceDocument(
       previous.withQuery(

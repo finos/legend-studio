@@ -18,7 +18,6 @@ import { describe, expect, test } from '@jest/globals';
 import {
   buildSchemasAndValidity,
   Connection,
-  Filter,
   Join,
   JoinType,
   Query,
@@ -102,6 +101,30 @@ describe('Join draft', () => {
     expect(draft.build()).toBe(original);
   });
 
+  test('Builds the original when edits to a join saved with uneven or blank keys are undone by hand', () => {
+    const uneven = new Join('join101', {
+      leftColumns: ['A', 'B'],
+      rightColumns: ['A'],
+      joinType: JoinType.INNER,
+    });
+    const draft = new CubeJoinDraft(uneven);
+    draft.setJoinType(JoinType.LEFT_OUTER);
+    draft.setJoinType(JoinType.INNER);
+    expect(draft.build()).toBe(uneven);
+    const blankPair = new Join('join101', {
+      leftColumns: ['A', ''],
+      rightColumns: ['A', ''],
+      joinType: JoinType.INNER,
+    });
+    const blankDraft = new CubeJoinDraft(blankPair);
+    blankDraft.setJoinType(JoinType.LEFT_OUTER);
+    blankDraft.setJoinType(JoinType.INNER);
+    // a real edit drops the blank pair, but nothing was edited
+    expect(blankDraft.build()).toBe(blankPair);
+    blankDraft.setJoinType(JoinType.FULL_OUTER);
+    expect(blankDraft.build().leftColumns).toEqual(['A']);
+  });
+
   test('Pairs uneven saved key lists by position, the missing side blank', () => {
     const original = new Join('join101', {
       leftColumns: ['A', 'B'],
@@ -119,102 +142,110 @@ describe('Join draft', () => {
 });
 
 describe('Where a column comes from', () => {
-  const query = new Query(
-    [
-      northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
-      northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
-      new Filter('filter101'),
-      new Join('join101', {
-        leftColumns: ['CUSTOMER_ID'],
-        rightColumns: ['CUSTOMER_ID'],
-        joinType: JoinType.FULL_OUTER,
-      }),
-    ],
-    [
-      new Connection('relational101', 'filter101', 'tds'),
-      new Connection('filter101', 'join101', 'leftTds'),
-      new Connection('relational102', 'join101', 'rightTds'),
-    ],
-    'join101',
-  );
-  // the Filter has no rule, so build the analysis from a valid one
+  // ORDERS and CUSTOMERS joined on CUSTOMER_ID, then filtered
   const valid = sliceQuery();
   const analysis = buildSchemasAndValidity(valid);
 
-  test('Follows a column back through the nodes whose output has it', () => {
-    expect(
-      findColumnSources(valid, analysis, 'filter101', 'SHIP_CITY').map(
-        (source) => source.id,
-      ),
-    ).toEqual(['relational101']);
-    expect(
-      findColumnSources(valid, analysis, 'join101', 'COMPANY_NAME').map(
-        (source) => source.id,
-      ),
-    ).toEqual(['relational102']);
-    expect(findColumnSources(valid, analysis, 'join101', 'NOPE')).toEqual([]);
-    expect(findColumnSources(valid, analysis, 'nothing101', 'X')).toEqual([]);
-  });
-
-  test("Finds both sides of a join's merged key", () => {
-    const fullAnalysis = buildSchemasAndValidity(
-      new Query(
-        query.nodes.filter((node) => node.id !== 'filter101'),
-        [
-          new Connection('relational101', 'join101', 'leftTds'),
-          new Connection('relational102', 'join101', 'rightTds'),
-        ],
-        'join101',
-      ),
-    );
-    const full = new Query(
-      query.nodes.filter((node) => node.id !== 'filter101'),
+  /** ORDERS joined with CUSTOMERS on CUSTOMER_ID, with this join type */
+  const joined = (joinType: JoinType): Query =>
+    new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101', {
+          leftColumns: ['CUSTOMER_ID'],
+          rightColumns: ['CUSTOMER_ID'],
+          joinType,
+        }),
+      ],
       [
         new Connection('relational101', 'join101', 'leftTds'),
         new Connection('relational102', 'join101', 'rightTds'),
       ],
       'join101',
     );
+
+  const sourcesOf = (query: Query, nodeId: string, column: string): string[] =>
+    findColumnSources(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((source) => source.id);
+
+  test('Follows a column back through the nodes whose output has it', () => {
+    expect(sourcesOf(valid, 'filter101', 'SHIP_CITY')).toEqual([
+      'relational101',
+    ]);
+    expect(sourcesOf(valid, 'filter101', 'COMPANY_NAME')).toEqual([
+      'relational102',
+    ]);
+    expect(sourcesOf(valid, 'join101', 'NOPE')).toEqual([]);
+    expect(findColumnSources(valid, analysis, 'nothing101', 'X')).toEqual([]);
+  });
+
+  test('Takes a same-named join key from the side the join keeps, and from both when it merges them', () => {
+    expect(sourcesOf(joined(JoinType.INNER), 'join101', 'CUSTOMER_ID')).toEqual(
+      ['relational101'],
+    );
     expect(
-      findColumnSources(full, fullAnalysis, 'join101', 'CUSTOMER_ID').map(
-        (source) => source.id,
-      ),
+      sourcesOf(joined(JoinType.LEFT_OUTER), 'join101', 'CUSTOMER_ID'),
+    ).toEqual(['relational101']);
+    expect(
+      sourcesOf(joined(JoinType.RIGHT_OUTER), 'join101', 'CUSTOMER_ID'),
+    ).toEqual(['relational102']);
+    expect(
+      sourcesOf(joined(JoinType.FULL_OUTER), 'join101', 'CUSTOMER_ID'),
     ).toEqual(['relational101', 'relational102']);
   });
 
-  test("Tells a column Cube typed as a bare String from the model's outline", () => {
+  test("Tells a column Cube typed as a bare String from its own table's entry in the model's outline", () => {
+    const table = (name: string, untypedColumns: string[]) => ({
+      name,
+      isView: false,
+      columnCount: 1,
+      flags: [],
+      untypedColumns,
+    });
     const outline: CubeModelOutline = {
       ...FAKE_NORTHWIND_OUTLINE,
       databases: [
+        // a same-named schema and table in another database, listed first
         {
-          path: NORTHWIND_DATABASE,
+          path: 'other::Database',
           schemas: [
             {
               name: 'NORTHWIND',
+              tables: [table('CUSTOMERS', ['COMPANY_NAME'])],
+            },
+          ],
+        },
+        {
+          path: NORTHWIND_DATABASE,
+          schemas: [
+            // a same-named table in another schema, listed first
+            { name: 'OTHER', tables: [table('CUSTOMERS', ['CITY'])] },
+            {
+              name: 'NORTHWIND',
               tables: [
-                {
-                  name: 'ORDERS',
-                  isView: false,
-                  columnCount: ORDERS_COLUMNS.length,
-                  flags: [],
-                  untypedColumns: ['SHIP_REGION'],
-                },
+                table('ORDERS', ['SHIP_REGION', 'CUSTOMER_ID']),
+                table('CUSTOMERS', ['REGION']),
               ],
             },
           ],
         },
       ],
     };
-    expect(
-      isUntypedColumn(outline, valid, analysis, 'join101', 'SHIP_REGION'),
-    ).toBe(true);
-    expect(
-      isUntypedColumn(outline, valid, analysis, 'join101', 'SHIP_CITY'),
-    ).toBe(false);
-    // CUSTOMERS is not in this outline
-    expect(isUntypedColumn(outline, valid, analysis, 'join101', 'REGION')).toBe(
-      false,
-    );
+    const untyped = (nodeId: string, column: string): boolean =>
+      isUntypedColumn(outline, valid, analysis, nodeId, column);
+    expect(untyped('join101', 'SHIP_REGION')).toBe(true);
+    expect(untyped('join101', 'SHIP_CITY')).toBe(false);
+    // CUSTOMERS' own list, though ORDERS comes first
+    expect(untyped('join101', 'REGION')).toBe(true);
+    // ORDERS' CUSTOMER_ID is untyped, CUSTOMERS' is not
+    expect(untyped('relational102', 'CUSTOMER_ID')).toBe(false);
+    expect(untyped('join101', 'COMPANY_NAME')).toBe(false);
+    expect(untyped('join101', 'CITY')).toBe(false);
     // no outline yet: no warning
     expect(
       isUntypedColumn(undefined, valid, analysis, 'join101', 'SHIP_REGION'),

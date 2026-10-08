@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { getRelationalDisplayName } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   CubeTableFlag,
@@ -73,7 +74,10 @@ const buildTable = (json: unknown): CubeOutlineTable => {
       flags.add(flag);
     }
     if (flag === CubeTableFlag.TYPE_UNKNOWN) {
-      untypedColumns.push(asString(column.name) ?? '');
+      // unquoted, as the engine names the column in the table's schema
+      untypedColumns.push(
+        getRelationalDisplayName(asString(column.name) ?? ''),
+      );
     }
   });
   return {
