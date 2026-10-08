@@ -36,7 +36,8 @@ From the demo-cut test run (`m18-democut-tests`, 2026-10-07). None hides a known
   the session, and the query builder's lineage viewer (reactflow 11) shares its `.react-flow__*` class names. The
   lineage viewer wasn't seen after a visit to `/cube` (it needs a depot query). Check it when one is reachable.
 - **Canvas fitting is checked by hand only.** jsdom measures nothing, so React Flow never reports the nodes measured
-  and the refit after a layout or width change (`CubeCanvas.tsx`) has no jsdom test. M1.9's manual run covers it.
+  and the refit after a layout or size change (`CubeCanvas.tsx`) has no jsdom test. Part B checks it by hand. The M1.9
+  rehearsal found that a height-only change (the splitter above the grid) didn't refit, and that is fixed.
 - **Only Chrome is checked.** The dry run, the demo and the M1.9 acceptance use Chrome, and `03e095655` fixed a
   Chrome-only behaviour of the date input. Firefox and Safari are untested, value entry (Part B step 5) and the spec
   file import (step 8) above all (user, 2026-10-08).
