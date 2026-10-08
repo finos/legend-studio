@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+import type { CubeTableFlag } from './CubeEngine.js';
+
 // Direct connections (PLAN §6.8), in Cube's own terms: what the connection
-// form gives and what the page shows of a saved connection. The connection
-// itself stays opaque JSON outside `protocol/pure/v1/`, which alone reads it
+// form gives, what the page shows of a saved connection, and what reading its
+// database finds. The connection itself stays opaque JSON outside
+// `protocol/pure/v1/`, which alone reads it
 
 /** The databases a direct connection can reach this round */
 export enum CubeDirectDatabaseType {
@@ -50,4 +53,17 @@ export interface CubeConnectionSummary {
   setupSqlCount: number;
   /** The authentication strategy, as the engine names it */
   authenticationKind: string;
+}
+
+/** A table read from a connection's database, for the picker */
+export interface CubeExploredTable {
+  /** As the database stores it, e.g. `ORDER.LINES` */
+  name: string;
+  /** As a table's coordinates store it: always quoted, e.g. `"ORDER.LINES"` */
+  storedName: string;
+  /** The columns Cube can use */
+  columnCount: number;
+  /** The columns left out because the engine can't type them; Cube shows how many */
+  hiddenColumnCount: number;
+  flags: readonly CubeTableFlag[];
 }

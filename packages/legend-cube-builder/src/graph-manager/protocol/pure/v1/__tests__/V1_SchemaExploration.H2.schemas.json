@@ -1,0 +1,34 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "ProbeDb",
+      "package": "cube::direct",
+      "schemas": [
+        {
+          "name": "lower_schema",
+          "tables": [],
+          "tabularFunctions": [],
+          "views": []
+        },
+        {
+          "name": "DBPROBE",
+          "tables": [],
+          "tabularFunctions": [],
+          "views": []
+        },
+        {
+          "name": "INFORMATION_SCHEMA",
+          "tables": [],
+          "tabularFunctions": [],
+          "views": []
+        }
+      ],
+      "stereotypes": []
+    }
+  ]
+}
