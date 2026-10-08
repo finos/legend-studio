@@ -43,6 +43,7 @@ import {
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
@@ -1731,6 +1732,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
           start: 1,
           stop: 3,
         },
+        { kind: 'distinct', id: 'distinct101', inputs: ['slice101'] },
       ],
     },
   };
@@ -1740,7 +1742,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       registry: M1_REGISTRY,
     });
     expect(readOnly).toBe(false);
-    ['drop101', 'limit101', 'slice101'].forEach((id) => {
+    ['drop101', 'limit101', 'slice101', 'distinct101'].forEach((id) => {
       const node = document.query.getNode(id) as UnknownNode;
       expect(node).toBeInstanceOf(UnknownNode);
       expect(node.savedKind).toBe(id.replace('101', ''));
@@ -1749,6 +1751,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       'drop101 -> limit101.in0',
       'limit101 -> slice101.in0',
       'relational101 -> drop101.in0',
+      'slice101 -> distinct101.in0',
     ]);
     expect(JSON.stringify(encodeCubeSpec(document, M1_REGISTRY))).toBe(
       JSON.stringify(LIMITED),
@@ -1757,12 +1760,14 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     expect(document.query.generateId('limit')).not.toBe('limit101');
     expect(document.query.generateId('drop')).not.toBe('drop101');
     expect(document.query.generateId('slice')).not.toBe('slice101');
+    expect(document.query.generateId('distinct')).not.toBe('distinct101');
   });
 
   test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
     const { query } = decodeCubeSpec(LIMITED).document;
     expect(query.getNode('drop101')).toBeInstanceOf(Drop);
     expect(query.getNode('slice101')).toBeInstanceOf(Slice);
+    expect(query.getNode('distinct101')).toBeInstanceOf(Distinct);
     const node = query.getNode('limit101');
     expect(node).toBeInstanceOf(Limit);
     expect((node as Limit).size).toBe(5);

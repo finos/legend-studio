@@ -15,6 +15,7 @@
  */
 
 import {
+  Distinct,
   Drop,
   Filter,
   Join,
@@ -25,6 +26,7 @@ import {
 } from '@finos/legend-cube';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
+import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
 import { CubeRowCountEditor } from './CubeRowCountEditor.js';
@@ -62,6 +64,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
   [Filter.TYPE, CubeFilterEditor],
+  [Distinct.TYPE, CubeDistinctEditor],
   [Join.TYPE, CubeJoinEditor],
   [Drop.TYPE, CubeRowCountEditor],
   [Limit.TYPE, CubeRowCountEditor],

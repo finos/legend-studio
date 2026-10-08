@@ -20,6 +20,7 @@ import {
   AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
+  CompressIcon,
   FilterIcon,
   QuestionSquareIcon,
   TableIcon,
@@ -36,6 +37,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   limit: AlignTopIcon,
   drop: AlignBottomIcon,
   slice: AlignMiddleIcon,
+  distinct: CompressIcon,
 };
 
 /** The markup an icon draws */

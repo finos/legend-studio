@@ -38,6 +38,7 @@ import type { JsonObject } from '../../utils/Json.js';
 import {
   type AnyNodeDefinition,
   createNodeRegistry,
+  DISTINCT_DEFINITION,
   DROP_DEFINITION,
   FILTER_DEFINITION,
   JOIN_DEFINITION,
@@ -53,6 +54,7 @@ import {
   RelationalTableSource,
   type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
+import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
@@ -177,9 +179,10 @@ describe(unitTest('Node registry'), () => {
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order (§7): Filter, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Filter, Distinct, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
       FILTER_DEFINITION,
+      DISTINCT_DEFINITION,
       DROP_DEFINITION,
       LIMIT_DEFINITION,
       SLICE_DEFINITION,
@@ -201,6 +204,17 @@ describe(unitTest('Node registry'), () => {
     expect(filter).toBeInstanceOf(Filter);
     expect(filter.id).toBe('filter101');
     expect(filter.filter).toBeUndefined();
+  });
+
+  test('Creates a distinct, which has nothing to set', () => {
+    expect(DISTINCT_DEFINITION.kind).toBe('transform');
+    expect(DISTINCT_DEFINITION.type).toBe('distinct');
+    expect(DISTINCT_DEFINITION.label).toBe('Distinct Values');
+    expect(DISTINCT_DEFINITION.icon).toBe('distinct');
+    expect(DISTINCT_DEFINITION.beta).toBe(false);
+    const distinct = DISTINCT_DEFINITION.create('distinct101');
+    expect(distinct).toBeInstanceOf(Distinct);
+    expect(distinct.id).toBe('distinct101');
   });
 
   test('Creates a drop of 10 rows', () => {

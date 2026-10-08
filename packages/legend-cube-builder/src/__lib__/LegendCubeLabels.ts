@@ -143,3 +143,7 @@ export const getSourceRecheckWarning = (firstLine: string): string =>
 /** Under the Slice editor's fields: the range counts from 0, and leaves out its stop row (D5) */
 export const SLICE_RANGE_HINT =
   'Rows count from 0: the start row is kept, the stop row is not.';
+
+/** The Distinct editor's text: it has nothing to set (spec §17.6) */
+export const DISTINCT_EDITOR_TEXT =
+  'Keeps one row of each set of identical rows. There is nothing to set.';

@@ -19,6 +19,7 @@ import {
   ColumnComparisonFilter,
   Connection,
   CubeDocument,
+  Distinct,
   Drop,
   Filter,
   FilterOperator,
@@ -407,5 +408,28 @@ describe('Slice on the engine', () => {
     expect(TEST__columnValues(result, 'SHIP_COUNTRY')).toEqual(
       Array(7).fill('France'),
     );
+  });
+});
+
+describe('Distinct on the engine', () => {
+  test('Emits what the engine parses from the printed Pure, and types as Cube infers', async () => {
+    const query = await ordersThen(new Distinct('distinct101'));
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test('Keeps every order, since no two are identical', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Distinct('distinct101')),
+      ROW_LIMIT,
+    );
+    expect(result.rows).toHaveLength(830);
   });
 });

@@ -15,6 +15,7 @@
  */
 
 import {
+  Distinct,
   Drop,
   Filter,
   Join,
@@ -30,6 +31,7 @@ import {
 
 export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [RelationalTableSource.TYPE]: 'Sources data from relational database table.',
+  [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',
   [Drop.TYPE]:
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
   [Filter.TYPE]:

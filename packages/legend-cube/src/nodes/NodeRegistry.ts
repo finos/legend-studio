@@ -23,12 +23,14 @@ import type { QueryRule } from '../inference/SchemaInference.js';
 import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
+import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
+import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
@@ -39,6 +41,7 @@ import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
@@ -119,6 +122,17 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   create: (id) => new Filter(id),
   emit: emitFilter,
   spec: FILTER_CODEC,
+};
+
+export const DISTINCT_DEFINITION: TransformDefinition<Distinct> = {
+  kind: 'transform',
+  type: Distinct.TYPE,
+  label: 'Distinct Values',
+  icon: 'distinct',
+  beta: false,
+  create: (id) => new Distinct(id),
+  emit: emitDistinct,
+  spec: DISTINCT_CODEC,
 };
 
 export const DROP_DEFINITION: TransformDefinition<Drop> = {
@@ -218,6 +232,7 @@ export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     FILTER_DEFINITION,
+    DISTINCT_DEFINITION,
     DROP_DEFINITION,
     LIMIT_DEFINITION,
     SLICE_DEFINITION,

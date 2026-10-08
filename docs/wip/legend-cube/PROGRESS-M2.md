@@ -12,8 +12,8 @@
 | ------ | ---------------------------------------------------------------------------------------- |
 | Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                       |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                        |
-| Step   | M2.1–M2.6 done (Limit, its verification, Drop, Slice); M2.7 next (Distinct)              |
-| Tests  | 1561 core, 629 builder (core group), 236 Query, 82 builder engine-roundtrip (after M2.6) |
+| Step   | M2.1–M2.7 done (Limit, its verification, Drop, Slice, Distinct); M2.8 next (Restrict)    |
+| Tests  | 1571 core, 633 builder (core group), 236 Query, 84 builder engine-roundtrip (after M2.7) |
 
 ## Steps
 
@@ -25,7 +25,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.4** Limit on the engine and in the browser: the contract proven
 - [x] **M2.5** Drop (native)
 - [x] **M2.6** Slice (native)
-- [ ] **M2.7** Distinct
+- [x] **M2.7** Distinct
 - [ ] **M2.8** Restrict
 - [ ] **M2.9** Rename, with the column-name rule and the collision fix
 - [ ] **M2.10** Join rename autofix
@@ -141,6 +141,16 @@ distinct orders, [825, 840) the last 5, and [70, 80) of the 77 French orders 7. 
 "Take rows 2 to 5 (5 excluded)" gives 3 rows (ORDER_IDs 10250–10252, rows 2–4 counting from 0); the editor marks the
 stop and reports the range when the start is set to 5. Gates: `check:ci` and `lint:ci` green; 1561 core, 629 builder (core
 group), 236 Query and 82 engine-roundtrip tests.
+
+**M2.7, Distinct (2026-10-08).** `Distinct` ("Distinct Values") has nothing to set and is always valid; it saves no
+field of its own (a future field that changes rows needs a new kind or a format version, PLAN §11.4) and emits
+`->distinct()` over every column with a new `distinct` role (the SQL Server padding comes with M2.13). The builder
+registers `CubeDistinctEditor`, a description only, and no draft: `CUBE_NODE_TYPES_WITHOUT_SETTINGS` lists it, the
+registry test skips it when asking for a factory, and the panel shows no Apply or Cancel. `CompressIcon`; the builder
+guide says how a transform with nothing to set registers. Engine: its lambda and typing, and ORDERS keeps all 830 rows
+(the counts that show rows removed come with Restrict). Browser on :9002: the panel shows the description with no Apply
+or Cancel, and F9 gives 830 rows. Gates: `check:ci` and `lint:ci` green; 1571 core, 633 builder (core group), 236 Query
+and 84 engine-roundtrip tests.
 
 ## Open items
 

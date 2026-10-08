@@ -19,6 +19,7 @@ import {
   AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
+  CompressIcon,
   clsx,
   FilterIcon,
   QuestionSquareIcon,
@@ -35,6 +36,7 @@ const NODE_ICONS: Readonly<
   limit: AlignTopIcon,
   drop: AlignBottomIcon,
   slice: AlignMiddleIcon,
+  distinct: CompressIcon,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */

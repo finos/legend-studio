@@ -166,6 +166,13 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a filter', withNodes([FILTER_101], 'filter101')],
     ['a limit', withNodes([LIMIT_101], 'limit101')],
     ['a drop', withNodes([DROP_101], 'drop101')],
+    [
+      'a distinct',
+      withNodes(
+        [{ kind: 'distinct', id: 'distinct101', inputs: [null] }],
+        'distinct101',
+      ),
+    ],
     ['a slice', withNodes([SLICE_101], 'slice101')],
     [
       'a slice whose bounds were cleared',
@@ -509,6 +516,12 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...FILTER_101, inputs: [null, null] }], 'filter101'),
       'query.nodes[0].inputs',
       'must list the 1 input(s) of a filter node, in port order',
+    ],
+    [
+      'a distinct without inputs',
+      withNodes([{ kind: 'distinct', id: 'distinct101' }], 'distinct101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a distinct node, in port order',
     ],
     [
       'a slice with two inputs',

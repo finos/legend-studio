@@ -139,6 +139,8 @@ export enum EmitRole {
   DROP = 'drop',
   /** a Slice: its slice call and its two bounds */
   SLICE = 'slice',
+  /** a Distinct: its distinct call */
+  DISTINCT = 'distinct',
   /** the capture node: `limit(rowLimit + 1)` and its literal */
   LIMIT = 'limit',
   /** the capture node: `from(runtime)` */

@@ -1,0 +1,34 @@
+/**
+ * Copyright (c) 2026-present, Goldman Sachs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { Distinct } from '../../nodes/transforms/Distinct.js';
+import { EmitRole, func, type RelationExpr } from '../CubeIR.js';
+import { originOf } from '../EmitContext.js';
+
+/**
+ * Emits a distinct as `<input>->distinct()`, over every column: never the
+ * column form `distinct(~[…])`, which also projects.
+ */
+export const emitDistinct = (
+  node: Distinct,
+  inputs: readonly RelationExpr[],
+): RelationExpr => {
+  const [input] = inputs;
+  if (input === undefined) {
+    throw new Error(`Can't emit distinct "${node.id}": it needs one input`);
+  }
+  return func('distinct', [input], originOf(node.id, EmitRole.DISTINCT));
+};

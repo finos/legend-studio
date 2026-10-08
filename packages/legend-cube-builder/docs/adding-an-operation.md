@@ -17,6 +17,9 @@ as one undo step (**Cancel** drops it).
   otherwise a new node with the same id and `rest`. The panel also treats a node that saves the same as `original`
   as no change.
 - Register a factory in `CUBE_NODE_DRAFT_FACTORIES` (`src/stores/editors/CubeNodeDraftRegistry.ts`).
+- A transform with nothing to set, such as Distinct, has no draft: it registers an editor that only describes it
+  (`CubeDistinctEditor`) and is listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`, which the registry test skips when it
+  asks for a factory. The panel then shows no Apply or Cancel (PLAN §7.4 item 2).
 
 ## 2. An editor
 

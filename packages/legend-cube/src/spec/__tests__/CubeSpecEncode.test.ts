@@ -58,6 +58,7 @@ import {
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
@@ -1568,6 +1569,43 @@ describe(unitTest('Saved spec encoding: limits'), () => {
     );
     expect(encodeCubeSpec(document)).toStrictEqual(
       limitSpec({ size: 5, note: 'top five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: distincts'), () => {
+  test('Writes no field of its own, only its rest', () => {
+    expectEncoded(
+      documentOf([new Distinct('distinct101')], [], 'distinct101'),
+      {
+        formatVersion: 1,
+        query: {
+          selected: 'distinct101',
+          nodes: [{ kind: 'distinct', id: 'distinct101', inputs: [null] }],
+        },
+      },
+    );
+    expectEncoded(
+      documentOf(
+        [new Distinct('distinct101', { columns: ['A'], note: 'later' })],
+        [],
+        'distinct101',
+      ),
+      {
+        formatVersion: 1,
+        query: {
+          selected: 'distinct101',
+          nodes: [
+            {
+              kind: 'distinct',
+              id: 'distinct101',
+              inputs: [null],
+              columns: ['A'],
+              note: 'later',
+            },
+          ],
+        },
+      },
     );
   });
 });

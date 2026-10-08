@@ -47,6 +47,7 @@ import { CubePalette, PALETTE_EMPTY_HINT } from '../CubePalette.js';
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const TABLE = 'Relational Database Table';
 const FILTER = 'Filter by Column';
+const DISTINCT = 'Distinct Values';
 const DROP = 'Drop first <x> rows';
 const LIMIT = 'Take first <x> rows';
 const SLICE = 'Take rows <x> to <y>';
@@ -135,7 +136,7 @@ describe('Cube palette', () => {
         (child) =>
           child.getAttribute('aria-label') ?? child.getAttribute('role'),
       ),
-    ).toEqual([TABLE, 'separator', FILTER, DROP, LIMIT, SLICE, JOIN]);
+    ).toEqual([TABLE, 'separator', FILTER, DISTINCT, DROP, LIMIT, SLICE, JOIN]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();
     expect(paletteItem(FILTER).querySelector('svg')).not.toBeNull();
     expect(within(list).queryByText('BETA')).toBeNull();
