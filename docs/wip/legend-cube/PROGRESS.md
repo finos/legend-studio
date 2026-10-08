@@ -22,7 +22,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 
 | Item        | State                                                                                                                                                                                                                                                                |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch      | `cubeV1`, rebased on master `0665e6f4c` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                             |
+| Branch      | `cubeV1`, rebased on master `a7393c07d` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                             |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                |
 | Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a done** (S1–S12, verified); next the first PR, then M1.8b |
 | Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not      |
@@ -126,8 +126,16 @@ same 830 rows. Pressing F9 waits for M1.8b's shortcuts. Importing the slice spec
 
 1419 core, 430 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green.
 
-**Next:** the first PR (see Merge plan): rebase on `origin/master`, rerun the checks, write the PR description, then
-push and open it when the user says so. Then M1.8b, starting with the six canvas questions.
+**Rebased on master `a7393c07d` (2026-10-07)**, with no conflicts; the backup branch `cubeV1-before-rebase` holds the old tip.
+The builder's axios moved to 1.20.0 with master's security update (`e6b4f2105`). `check:ci`, `lint:ci` and the
+engine-roundtrip group (279) are green, and the whole `yarn test` passes except two suites that fail only locally:
+
+- legend-dev-utils `TypescriptConfigUtils.test.js` runs `tsc -p` on an unquoted path, which breaks on this machine's
+  folder name with a space;
+- legend-manual-tests `RoundtripGrammar.engine-roundtrip-test.ts`: the local engine (93d92b4) writes empty arrays that
+  Studio's serializer leaves out. CI runs it on its own engine image.
+
+**Next:** push `cubeV1` and open the PR when the user says so. Then M1.8b, starting with the six canvas questions.
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
