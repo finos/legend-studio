@@ -462,6 +462,22 @@ describe(unitTest('Lost sort orders'), () => {
     });
   });
 
+  test('Judges a renamed key the Restrict keeps by its new name: cut, not removed', () => {
+    // C is Z when it reaches the Restrict, which keeps it after removing B
+    expect(
+      lossesOf(
+        chain(
+          ABC(),
+          byABC(),
+          new Rename('rename101', [{ from: 'C', to: 'Z' }]),
+          new Restrict('restrict101', ['A', 'Z']),
+        ),
+      ),
+    ).toEqual({
+      sort101: partial('restrict101', [['restrict101', ['B']]], ['C']),
+    });
+  });
+
   test('Counts every lost key as removed without the schemas', () => {
     expect(
       Object.fromEntries(

@@ -388,6 +388,31 @@ describe('Sort warnings', () => {
     });
   });
 
+  test('Waits for every node that removes a column to have no errors', () => {
+    // restrict101 is valid and removes SHIP_CITY; restrict102 asks for it again
+    const document = sortedOrdersThen(
+      new Restrict('restrict101', ['CUSTOMER_ID', 'ORDER_ID']),
+      new Restrict('restrict102', ['CUSTOMER_ID', 'SHIP_CITY']),
+    );
+    const state = new CubeEditorState(
+      TEST__createCubeHost().host,
+      document.withQuery(
+        document.query.replace(
+          new Sort('sort101', [
+            { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+            { column: 'ORDER_ID', direction: SortDirection.DESC },
+            { column: 'SHIP_CITY', direction: SortDirection.ASC },
+          ]),
+        ),
+      ),
+    );
+    expect(state.analysis.validity.get('restrict101')).toEqual([]);
+    expect(state.analysis.validity.get('restrict102')?.length).toBeGreaterThan(
+      0,
+    );
+    expect(state.derivedWarnings.size).toBe(0);
+  });
+
   test('Has no warning for a later Sort on one of the columns, then a Filter', () => {
     const state = new CubeEditorState(
       TEST__createCubeHost().host,

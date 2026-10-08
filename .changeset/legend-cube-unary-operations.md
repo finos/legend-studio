@@ -15,7 +15,8 @@ Legend Cube gains its simple operations:
   ("Take rows <x> to <y>") keeps the rows from a start up to, but not including, a stop, counting from 0. Their sizes
   and bounds are whole-number fields that report a cleared or invalid value instead of falling back to the default.
 - Distinct ("Distinct Values") keeps one row of each set of identical rows.
-- On SQL Server, Sybase, Sybase IQ, DB2 and MemSQL, read from the runtime's connections, Drop and Slice go through row
-  numbers, and on SQL Server a Distinct is padded, as those databases reject the engine's native forms.
+- Read from the runtime's connections, the databases whose engine SQL is rejected or takes the wrong rows get another
+  form: Drop and Slice go through row numbers on SQL Server, Sybase and Sybase IQ, and Drop also on DB2, MemSQL and
+  ClickHouse; on Sybase IQ, so does every Limit; and a Distinct is padded on SQL Server and Sybase IQ.
 - A right-click on a cell of the results offers Sort by and Filter by its column, which add a Sort, or a Filter on the
   cell's value, after the node that ran.

@@ -180,7 +180,7 @@ export class CubeExecutionState {
     this.error = undefined;
     this.editorState.clearHostIssues();
     try {
-      // a Drop, Slice or Distinct is written for the database it runs on
+      // a Drop, Slice, Limit or Distinct is written for the database it runs on
       // (PLAN §11.4), which the model's outline gives: loaded once, waited
       // for only then; the query, model and runtime are the ones captured
       let databaseType: string | undefined;

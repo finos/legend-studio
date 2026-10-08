@@ -51,9 +51,10 @@ import {
 
 /**
  * Every relational database type the engine plans with a static connection
- * (Databricks is its Spark dialect). Not DuckDB: its plans fail to serialize
- * with a static connection (`Match failure` in DevPlanTransformer), before
- * any SQL, whatever the query.
+ * (Databricks is its Spark dialect). Not DuckDB, whose plans fail to
+ * serialize with a static connection (`Match failure` in
+ * DevPlanTransformer), nor Aurora, whose plans fail with an HTTP 500: both
+ * before any SQL, whatever the query.
  */
 const DATABASE_TYPES = [
   'H2',
@@ -73,6 +74,8 @@ const DATABASE_TYPES = [
   'Hive',
   'BigQuery',
   'Athena',
+  'ClickHouse',
+  'Composite',
 ];
 
 const PLAN_MODEL = {
@@ -292,7 +295,7 @@ describe('Database workarounds, as each database plans them', () => {
     },
   );
 
-  test.each(['DB2', 'MemSQL'])(
+  test.each(['DB2', 'MemSQL', 'ClickHouse'])(
     "Takes the rows of a Drop by their numbers in the Sort's order on %s, and plans a Slice the native way",
     async (databaseType) => {
       const drop = await planSql(SHAPES[0]?.[1]() as Query, databaseType);
@@ -338,6 +341,18 @@ describe('Database workarounds, as each database plans them', () => {
               problems.push(`${name}: numbered by ${match.groups?.order}`);
             }
           }
+        }
+        // ClickHouse's engine SQL runs a descending key into the offset
+        if (/[a-z]offset \d/u.test(sql)) {
+          problems.push(`${name}: an offset run into the word before it`);
+        }
+        // Sybase IQ's own limit rewrite numbers by the first key only, in a
+        // column named row_number: Cube's row numbers replace it
+        if (
+          databaseType === 'SybaseIQ' &&
+          sql.includes('limitoffset_via_window_subquery')
+        ) {
+          problems.push(`${name}: the engine's own limit numbering`);
         }
         // window functions run before DISTINCT, which then removes nothing
         subqueries(sql).forEach((subquery) => {

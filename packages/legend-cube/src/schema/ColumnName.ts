@@ -39,6 +39,10 @@ export const isValidColumnName = (name: string): boolean =>
 /**
  * A column name as databases that compare names without case see it (SQL
  * Server, MemSQL, DuckDB): two names that fold the same are one column there,
- * so Cube never gives a column a name that folds to another column's
+ * so Cube never gives a column a name that folds to another column's. Close
+ * to SQL Server's default collations: compatibility forms (fullwidth letters)
+ * normalized, and case folded through upper case, so `ß` meets `SS` and a
+ * final sigma meets `σ`.
  */
-export const foldColumnName = (name: string): string => name.toLowerCase();
+export const foldColumnName = (name: string): string =>
+  name.normalize('NFKC').toUpperCase().toLowerCase();

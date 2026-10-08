@@ -21,6 +21,7 @@ import {
   type Join,
   JoinType,
 } from '../../nodes/transforms/Join.js';
+import { foldColumnName } from '../../schema/ColumnName.js';
 import type { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { isPrimitiveType } from '../../types/CubeType.js';
 import {
@@ -97,13 +98,17 @@ export const emitJoin = (
   const renameLeft =
     joinType === JoinType.RIGHT_OUTER || joinType === JoinType.FULL_OUTER;
   const renameRight = joinType !== JoinType.RIGHT_OUTER;
-  const taken = new Set([...leftSchema.names(), ...rightSchema.names()]);
+  // in any case: a database that compares names without case takes
+  // `ID__CUBE_R` and `ID__cube_r` for one column
+  const taken = new Set(
+    [...leftSchema.names(), ...rightSchema.names()].map(foldColumnName),
+  );
   const temporaryName = (name: string, suffix: string): string => {
     let candidate = `${name}${suffix}`;
-    for (let index = 2; taken.has(candidate); index += 1) {
+    for (let index = 2; taken.has(foldColumnName(candidate)); index += 1) {
       candidate = `${name}${suffix}${index}`;
     }
-    taken.add(candidate);
+    taken.add(foldColumnName(candidate));
     return candidate;
   };
   const leftNames = new Map<string, string>();

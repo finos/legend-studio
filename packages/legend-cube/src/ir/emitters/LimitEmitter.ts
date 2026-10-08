@@ -25,9 +25,9 @@ import { emitSortedInput } from './SortEmitter.js';
 /**
  * Emits a limit as `<input>->limit(<size>)`, the input sorted first by its
  * order when the context gives one (`emitSortedInput`). On a database whose
- * engine plan numbers a limit's rows by the first sort key only (Sybase IQ),
- * a limit after a Sort on several columns goes through row numbers
- * (`emitRowNumberRange`), keeping those up to the size. The size is written
+ * engine plan numbers a limit's rows itself, by the first sort key only and in
+ * a column it always names `row_number` (Sybase IQ), it goes through Cube's
+ * row numbers (`emitRowNumberRange`), keeping those up to the size. The size is written
  * as plain digits: the serializer would also accept a number token such as
  * `1e3`.
  */
@@ -48,9 +48,7 @@ export const emitLimit = (
     );
   }
   const fallback =
-    context &&
-    (context.inputOrder?.length ?? 0) > 1 &&
-    getDialectWorkarounds(context.databaseType).limit
+    context && getDialectWorkarounds(context.databaseType).limit
       ? emitRowNumberRange(node, input, context, (rowNumber) =>
           func(
             'lessThanEqual',

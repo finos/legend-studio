@@ -270,4 +270,20 @@ describe(unitTest('Rename'), () => {
       MESSAGE_NEW_COLUMN_NAME_SAME_AS_OTHER('A'),
     ]);
   });
+
+  test.each<[string, string, string]>([
+    ['ß as SS', 'straße', 'STRASSE'],
+    ['a final sigma', 'οδοσ', 'ΟΔΟΣ'],
+    ['fullwidth letters', 'ORDER_REF', 'ＯＲＤＥＲ_ＲＥＦ'],
+  ])(
+    'Refuses a new name that folds to a column the input keeps: %s',
+    (_, kept, to) => {
+      const schema = new Schema([column('ORDER_ID'), column(kept)]);
+      const errors: string[] = [];
+      new Rename('rename101', [map('ORDER_ID', to)]).validate([schema], errors);
+      expect(errors).toEqual([
+        MESSAGE_ALREADY_IN_INPUT_SCHEMA('New column name', to),
+      ]);
+    },
+  );
 });

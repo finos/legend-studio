@@ -89,6 +89,7 @@ describe(unitTest('Dialect workarounds'), () => {
       SybaseIQ: { drop: true, slice: true, limit: true, distinct: true },
       DB2: { drop: true, slice: false, limit: false, distinct: false },
       MemSQL: { drop: true, slice: false, limit: false, distinct: false },
+      ClickHouse: { drop: true, slice: false, limit: false, distinct: false },
     });
     const none = { drop: false, slice: false, limit: false, distinct: false };
     // Spanner has no window columns, so never row numbers
@@ -276,13 +277,39 @@ describe(unitTest('Drop and Slice through row numbers'), () => {
     );
   });
 
-  test('Keeps a Limit native on Sybase IQ without a Sort, or after a Sort on one column', () => {
+  test('Takes every Limit by row numbers on Sybase IQ: unsorted by the first column that sorts, else by its order', () => {
     expect(run(ordersThen([new Limit('limit101', 5)]), 'SybaseIQ')).toBe(
-      `{| ${ORDERS}->limit(5)->limit(1001)->from(${RUNTIME})}`,
+      `{| ${ORDERS}->extend([~ORDER_ID->ascending()]->over(), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter({row | $row.cube_rn <= 5})->select(~[ORDER_ID, SHIP_COUNTRY])->limit(1001)->from(${RUNTIME})}`,
     );
     expect(
       run(ordersThen([byOrderIdDesc(), new Limit('limit101', 5)]), 'SybaseIQ'),
-    ).toContain(`${ORDERS}->sort(~ORDER_ID->descending())->limit(5)`);
+    ).toContain(
+      `${ORDERS}->extend([~ORDER_ID->descending()]->over(), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter({row | $row.cube_rn <= 5})`,
+    );
+  });
+
+  test('Names its row numbers around a ROW_NUMBER column on Sybase IQ, where the engine would add a second one', () => {
+    const columns = [...COLUMNS, column('ROW_NUMBER')];
+    const sql = run(
+      ordersThen([new Limit('limit101', 5)], columns),
+      'SybaseIQ',
+    );
+    expect(sql).toContain('~[cube_rn: {p, w, r | $p->rowNumber($r)}]');
+    expect(sql).not.toContain('->limit(5)');
+  });
+
+  test('Takes a Drop by row numbers on ClickHouse, whose engine SQL runs a descending key into the offset', () => {
+    expect(
+      run(ordersThen([byOrderIdDesc(), new Drop('drop101', 10)]), 'ClickHouse'),
+    ).toContain(
+      `${ORDERS}->extend([~ORDER_ID->descending()]->over(), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter({row | $row.cube_rn > 10})`,
+    );
+    expect(
+      run(
+        ordersThen([byOrderIdDesc(), new Slice('slice101', 0, 5)]),
+        'ClickHouse',
+      ),
+    ).toContain('->slice(0, 5)');
   });
 
   test('Types the native form: typing knows no database', () => {
@@ -316,8 +343,9 @@ describe(unitTest('Distinct on SQL Server'), () => {
       new Distinct('distinct101'),
       new Limit('limit101', 5),
     ]);
+    // the Limit is numbered too, outside the padded distinct
     expect(run(query, 'SybaseIQ')).toBe(
-      `{| ${ORDERS}->distinct()->extend(~cube_d: x | 1)->select(~[ORDER_ID, SHIP_COUNTRY])->limit(5)->limit(1001)->from(${RUNTIME})}`,
+      `{| ${ORDERS}->distinct()->extend(~cube_d: x | 1)->select(~[ORDER_ID, SHIP_COUNTRY])->extend([~ORDER_ID->ascending()]->over(), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter({row | $row.cube_rn <= 5})->select(~[ORDER_ID, SHIP_COUNTRY])->limit(1001)->from(${RUNTIME})}`,
     );
   });
 
@@ -331,6 +359,19 @@ describe(unitTest('Distinct on SQL Server'), () => {
     expect(
       printIR(new QueryEmitter(query).emitTypingLambda('distinct101')),
     ).toBe(`{| ${ORDERS}->distinct()}`);
+  });
+
+  test('Takes another name for the row numbers when the input has one in another width', () => {
+    // a fullwidth ｃｕｂｅ_ｒｎ is cube_rn to a width-insensitive collation
+    expect(
+      run(
+        ordersThen(
+          [new Drop('drop101', 10)],
+          [...COLUMNS, column('ｃｕｂｅ_ｒｎ')],
+        ),
+        'SqlServer',
+      ),
+    ).toContain('~[cube_rn2: {p, w, r | $p->rowNumber($r)}]');
   });
 
   test('Takes another name for the pad when the input has one in another case', () => {

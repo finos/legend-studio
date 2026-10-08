@@ -27,21 +27,23 @@ import { Slice } from '../nodes/transforms/Slice.js';
  */
 export interface CubeDialectWorkarounds {
   /**
-   * Drop through row numbers: the engine writes `limit m,-1`, which SQL
-   * Server, Sybase, Sybase IQ and DB2 reject, or numbers the rows itself by
-   * the first sort key only (MemSQL)
+   * Drop through row numbers: for a Drop inside a query, the engine writes
+   * `limit m,-1`, which SQL Server, Sybase and DB2 reject, or numbers the
+   * rows itself by the first sort key only (Sybase IQ, MemSQL), or after a
+   * descending key writes `nulls firstoffset m`, one word (ClickHouse)
    */
   readonly drop: boolean;
   /**
-   * Slice through row numbers: the engine writes `limit m,n`, which SQL
-   * Server and Sybase reject, or numbers the rows by the first sort key only
-   * (Sybase IQ)
+   * Slice through row numbers: for a Slice inside a query, the engine writes
+   * `limit m,n`, which SQL Server and Sybase reject, or numbers the rows
+   * itself by the first sort key only (Sybase IQ)
    */
   readonly slice: boolean;
   /**
-   * A Limit after a Sort on several columns through row numbers: in a
-   * subquery, the engine numbers its rows by the first sort key only (Sybase
-   * IQ), so ties on it take any rows
+   * Limit through row numbers: in a subquery, the engine numbers a limit's
+   * rows itself, by the first sort key only, in a column it always names
+   * `row_number` (Sybase IQ), so ties on that key take any rows and an input
+   * column of that name clashes
    */
   readonly limit: boolean;
   /**
@@ -89,6 +91,10 @@ export const CUBE_DIALECT_WORKAROUNDS: ReadonlyMap<
   ],
   [
     'MemSQL',
+    Object.freeze({ drop: true, slice: false, limit: false, distinct: false }),
+  ],
+  [
+    'ClickHouse',
     Object.freeze({ drop: true, slice: false, limit: false, distinct: false }),
   ],
 ]);
