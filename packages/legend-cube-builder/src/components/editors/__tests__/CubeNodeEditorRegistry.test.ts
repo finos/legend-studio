@@ -56,6 +56,8 @@ describe('Node editor registries', () => {
       join: 'Joins two previous data sets using specified columns as join keys.',
       limit:
         'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
+      slice:
+        'Reduces the number of rows in the previous data set, keeping only the rows from position "start" up to, but not including, position "stop", counting from 0.',
       unknown: 'Source or transformation unknown to the application.',
     });
     expect(SELECT_NODE_TOOLTIP).toBe(

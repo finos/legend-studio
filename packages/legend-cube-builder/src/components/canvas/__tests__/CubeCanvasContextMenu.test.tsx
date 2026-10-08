@@ -44,6 +44,7 @@ const TRANSFORMS = [
   'Filter by Column',
   'Drop first <x> rows',
   'Take first <x> rows',
+  'Take rows <x> to <y>',
   'Join Another Input',
 ];
 const PALETTE = ['Relational Database Table', ...TRANSFORMS];

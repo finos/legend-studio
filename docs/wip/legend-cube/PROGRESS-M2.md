@@ -12,8 +12,8 @@
 | ------ | ---------------------------------------------------------------------------------------- |
 | Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                       |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                        |
-| Step   | M2.1–M2.5 done (Limit, its verification, Drop); M2.6 next (Slice)                        |
-| Tests  | 1515 core, 610 builder (core group), 236 Query, 78 builder engine-roundtrip (after M2.5) |
+| Step   | M2.1–M2.6 done (Limit, its verification, Drop, Slice); M2.7 next (Distinct)              |
+| Tests  | 1561 core, 629 builder (core group), 236 Query, 82 builder engine-roundtrip (after M2.6) |
 
 ## Steps
 
@@ -24,7 +24,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.3** Limit in the builder, and registered
 - [x] **M2.4** Limit on the engine and in the browser: the contract proven
 - [x] **M2.5** Drop (native)
-- [ ] **M2.6** Slice (native)
+- [x] **M2.6** Slice (native)
 - [ ] **M2.7** Distinct
 - [ ] **M2.8** Restrict
 - [ ] **M2.9** Rename, with the column-name rule and the collision fix
@@ -128,6 +128,19 @@ the editor, and the engine (its lambda and typing; 825 of 830 dropped leaves 5 d
 result, 70 of the 77 French orders leaves 7). Browser on :9002: an imported ORDERS → "Drop first 10 row(s)" gives 820
 rows from ORDER_ID 10258. Gates: `check:ci` and `lint:ci` green; 1515 core, 610 builder (core group), 236 Query and
 78 engine-roundtrip tests.
+
+**M2.6, Slice (2026-10-08).** `Slice` ("Take rows <x> to <y>"), 0-based `[start, stop)` (D5), takes `(id, start,
+stop)` with no defaults (10 and 20 from `create`) and one edit method, `withRange`; each bound is checked on its own
+("Start row index must be a whole number.", "Stop row index …"), then "Start row index must be less than stop row
+index."; it describes itself as "Take rows 10 to 20 (20 excluded)". `SLICE_CODEC` writes each set bound as a JSON
+number and leaves out a cleared one; `emitSlice` writes the native `->slice(start, stop)` with a new `slice` role (the
+row-number form comes with M2.13). The builder adds `CubeSliceDraft`, which keeps a saved bound while its field holds
+the text it opened with (the lesson of the first verification), `CubeSliceEditor` with the hint "Rows count from 0: the
+start row is kept, the stop row is not.", the corrected help text and `AlignMiddleIcon`. Engine: [10, 15) gives 5
+distinct orders, [825, 840) the last 5, and [70, 80) of the 77 French orders 7. Browser on :9002: an imported ORDERS →
+"Take rows 2 to 5 (5 excluded)" gives 3 rows (ORDER_IDs 10250–10252, rows 2–4 counting from 0); the editor marks the
+stop and reports the range when the start is set to 5. Gates: `check:ci` and `lint:ci` green; 1561 core, 629 builder (core
+group), 236 Query and 82 engine-roundtrip tests.
 
 ## Open items
 

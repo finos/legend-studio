@@ -30,6 +30,7 @@ import {
   type QueryNode,
   QueryEmitter,
   type RelationalTableSource,
+  Slice,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { parseLosslessJSON, stringifyLosslessJSON } from '@finos/legend-shared';
@@ -348,6 +349,58 @@ describe('Drop on the engine', () => {
         }),
       ),
       new Drop('drop101', 70),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(TEST__columnValues(result, 'SHIP_COUNTRY')).toEqual(
+      Array(7).fill('France'),
+    );
+  });
+});
+
+describe('Slice on the engine', () => {
+  test('Emits what the engine parses from the printed Pure, and types as Cube infers', async () => {
+    const query = await ordersThen(new Slice('slice101', 10, 15));
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test('Takes the rows from the start up to, not including, the stop', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Slice('slice101', 10, 15)),
+      ROW_LIMIT,
+    );
+    const ids = orderIds(TEST__columnValues(result, 'ORDER_ID'));
+    expect(ids).toHaveLength(5);
+    expect(new Set(ids).size).toBe(5);
+  });
+
+  test('Takes only the rows there are past the end of its input', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Slice('slice101', 825, 840)),
+      ROW_LIMIT,
+    );
+    expect(result.rows).toHaveLength(5);
+  });
+
+  test('Takes its rows from the rows a filter keeps (77 French orders)', async () => {
+    const query = await ordersThen(
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'France',
+        }),
+      ),
+      new Slice('slice101', 70, 80),
     );
     await TEST__expectEngineTyping(engine, query);
     const result = await TEST__runQuery(engine, query, ROW_LIMIT);

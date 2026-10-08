@@ -139,3 +139,7 @@ export const getEditorClosedNotice = (
 /** The warning on a source with saved columns that the engine couldn't type again */
 export const getSourceRecheckWarning = (firstLine: string): string =>
   `Could not re-check this table, so it keeps its saved columns: ${firstLine}`;
+
+/** Under the Slice editor's fields: the range counts from 0, and leaves out its stop row (D5) */
+export const SLICE_RANGE_HINT =
+  'Rows count from 0: the start row is kept, the stop row is not.';

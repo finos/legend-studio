@@ -20,11 +20,13 @@ import {
   Join,
   Limit,
   RelationalTableSource,
+  Slice,
   UnknownNode,
 } from '@finos/legend-cube';
 
-// The node editor's help text, verbatim from the original (spec §17.9). A
-// new node type adds its entry here.
+// The node editor's help text, verbatim from the original (spec §17.9), but
+// Slice's, which counts rows from 0 and leaves the stop row out (D5, PLAN
+// §11.4). A new node type adds its entry here.
 
 export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [RelationalTableSource.TYPE]: 'Sources data from relational database table.',
@@ -36,6 +38,8 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Joins two previous data sets using specified columns as join keys.',
   [Limit.TYPE]:
     'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
+  [Slice.TYPE]:
+    'Reduces the number of rows in the previous data set, keeping only the rows from position "start" up to, but not including, position "stop", counting from 0.',
   [UnknownNode.TYPE]: 'Source or transformation unknown to the application.',
 };
 

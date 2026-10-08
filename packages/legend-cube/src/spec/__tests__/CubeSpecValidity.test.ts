@@ -33,8 +33,10 @@ import {
   MESSAGE_FILTER_VALUE_OUT_OF_RANGE,
   MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
   MESSAGE_LEFT_JOIN_COLUMNS_EMPTY,
+  MESSAGE_MUST_BE_WHOLE_NUMBER,
   MESSAGE_NOT_IN_INPUT_SCHEMA,
   MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
+  MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP,
 } from '../../messages/CubeMessages.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
@@ -115,6 +117,27 @@ const rowCountSpec = (
 });
 const limitSpec = (size: number | undefined): JsonObject =>
   rowCountSpec('limit', size);
+
+/** A saved spec: `relational101` feeding `slice101`, which has these bounds, each cleared when undefined */
+const sliceSpec = (
+  start: number | undefined,
+  stop: number | undefined,
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'slice101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'slice',
+        id: 'slice101',
+        inputs: ['relational101'],
+        ...(start === undefined ? {} : { start }),
+        ...(stop === undefined ? {} : { stop }),
+      },
+    ],
+  },
+});
 
 /** The saved JSON of `join101`, joining `relational101` to `relational102` on these keys */
 const join = (leftColumns: string[], rightColumns: string[]): JsonObject => ({
@@ -489,6 +512,31 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       rowCountSpec('drop', 10),
       { relational101: [], drop101: [] },
     ],
+    [
+      'a slice whose start is not before its stop',
+      sliceSpec(5, 5),
+      {
+        relational101: [],
+        slice101: [MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP],
+      },
+    ],
+    [
+      'a slice with a cleared stop',
+      sliceSpec(10, undefined),
+      {
+        relational101: [],
+        slice101: [MESSAGE_MUST_BE_WHOLE_NUMBER('Stop row index')],
+      },
+    ],
+    [
+      'a slice with a negative start',
+      sliceSpec(-1, 5),
+      {
+        relational101: [],
+        slice101: [MESSAGE_MUST_BE_WHOLE_NUMBER('Start row index')],
+      },
+    ],
+    ['a valid slice', sliceSpec(0, 5), { relational101: [], slice101: [] }],
   ];
 
   test.each(CONNECTED)(

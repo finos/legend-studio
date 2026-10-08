@@ -44,6 +44,7 @@ import {
   LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
+  SLICE_DEFINITION,
   type TransformDefinition,
 } from '../NodeRegistry.js';
 import {
@@ -56,6 +57,7 @@ import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { Limit } from '../transforms/Limit.js';
+import { Slice } from '../transforms/Slice.js';
 import { UnknownNode } from '../UnknownNode.js';
 
 const COORDINATES = {
@@ -175,11 +177,12 @@ describe(unitTest('Node registry'), () => {
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order (§7): Filter, Drop, Limit, then Join
+    // transforms in the spec's menu order (§7): Filter, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
       FILTER_DEFINITION,
       DROP_DEFINITION,
       LIMIT_DEFINITION,
+      SLICE_DEFINITION,
       JOIN_DEFINITION,
     ]);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
@@ -222,6 +225,18 @@ describe(unitTest('Node registry'), () => {
     expect(limit).toBeInstanceOf(Limit);
     expect(limit.id).toBe('limit101');
     expect(limit.size).toBe(10);
+  });
+
+  test('Creates a slice of rows 10 to 20', () => {
+    expect(SLICE_DEFINITION.kind).toBe('transform');
+    expect(SLICE_DEFINITION.type).toBe('slice');
+    expect(SLICE_DEFINITION.label).toBe('Take rows <x> to <y>');
+    expect(SLICE_DEFINITION.icon).toBe('slice');
+    expect(SLICE_DEFINITION.beta).toBe(false);
+    const slice = SLICE_DEFINITION.create('slice101');
+    expect(slice).toBeInstanceOf(Slice);
+    expect(slice.id).toBe('slice101');
+    expect([slice.start, slice.stop]).toEqual([10, 20]);
   });
 
   test('Describes nodes without user values for logs', () => {

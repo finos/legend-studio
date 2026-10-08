@@ -21,12 +21,14 @@ import {
   Limit,
   RelationalTableSource,
   type Schema,
+  Slice,
 } from '@finos/legend-cube';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
 import { CubeRowCountEditor } from './CubeRowCountEditor.js';
+import { CubeSliceEditor } from './CubeSliceEditor.js';
 import { CubeSourceEditor } from './CubeSourceEditor.js';
 
 /**
@@ -63,4 +65,5 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Join.TYPE, CubeJoinEditor],
   [Drop.TYPE, CubeRowCountEditor],
   [Limit.TYPE, CubeRowCountEditor],
+  [Slice.TYPE, CubeSliceEditor],
 ]);

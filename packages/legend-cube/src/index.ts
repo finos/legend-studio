@@ -45,6 +45,7 @@ export * from './nodes/transforms/Filter.js';
 export * from './nodes/transforms/RowSettings.js';
 export * from './nodes/transforms/Drop.js';
 export * from './nodes/transforms/Limit.js';
+export * from './nodes/transforms/Slice.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 
@@ -56,6 +57,7 @@ export * from './ir/emitters/JoinEmitter.js';
 export * from './ir/emitters/FilterEmitter.js';
 export * from './ir/emitters/DropEmitter.js';
 export * from './ir/emitters/LimitEmitter.js';
+export * from './ir/emitters/SliceEmitter.js';
 export * from './ir/QueryEmitter.js';
 
 export * from './messages/CubeMessages.js';
@@ -69,4 +71,5 @@ export * from './spec/codecs/JoinCodec.js';
 export * from './spec/codecs/FilterCodec.js';
 export * from './spec/codecs/DropCodec.js';
 export * from './spec/codecs/LimitCodec.js';
+export * from './spec/codecs/SliceCodec.js';
 export * from './spec/CubeSpecCodec.js';

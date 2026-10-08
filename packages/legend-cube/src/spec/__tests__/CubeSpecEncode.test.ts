@@ -60,6 +60,7 @@ import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { EnumType, OpaqueType, PrimitiveType } from '../../types/CubeType.js';
@@ -1607,6 +1608,61 @@ describe(unitTest('Saved spec encoding: drops'), () => {
     );
     expect(encodeCubeSpec(document)).toStrictEqual(
       dropSpec({ size: 5, note: 'skip five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: slices'), () => {
+  /** The saved spec of one unconnected slice, `slice101`, with these fields of its own */
+  const sliceSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'slice101',
+      nodes: [{ kind: 'slice', id: 'slice101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Writes the bounds of a new slice, the defaults included, start before stop', () => {
+    expectEncoded(
+      documentOf(
+        [new Slice('slice101', Slice.DEFAULT_START, Slice.DEFAULT_STOP)],
+        [],
+        'slice101',
+      ),
+      sliceSpec({ start: 10, stop: 20 }),
+    );
+  });
+
+  test('Leaves out each cleared bound on its own', () => {
+    expectEncoded(
+      documentOf([new Slice('slice101', undefined, 20)], [], 'slice101'),
+      sliceSpec({ stop: 20 }),
+    );
+    expectEncoded(
+      documentOf([new Slice('slice101', 0, undefined)], [], 'slice101'),
+      sliceSpec({ start: 0 }),
+    );
+    expectEncoded(
+      documentOf([new Slice('slice101', undefined, undefined)], [], 'slice101'),
+      sliceSpec({}),
+    );
+  });
+
+  test('Writes refused bounds as they stand, for validation to report', () => {
+    expectEncoded(
+      documentOf([new Slice('slice101', 5, 3)], [], 'slice101'),
+      sliceSpec({ start: 5, stop: 3 }),
+    );
+  });
+
+  test('Writes the bounds from the node, not from its rest', () => {
+    const document = documentOf(
+      [new Slice('slice101', 1, 2, { start: 99, stop: 100, note: 'page' })],
+      [],
+      'slice101',
+    );
+    expect(encodeCubeSpec(document)).toStrictEqual(
+      sliceSpec({ start: 1, stop: 2, note: 'page' }),
     );
   });
 });

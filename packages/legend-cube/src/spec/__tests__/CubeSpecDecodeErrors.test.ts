@@ -75,6 +75,13 @@ const RELATIONAL_102 = { ...RELATIONAL_101, id: 'relational102' };
 const FILTER_101 = { kind: 'filter', id: 'filter101', inputs: [null] };
 const LIMIT_101 = { kind: 'limit', id: 'limit101', inputs: [null], size: 10 };
 const DROP_101 = { kind: 'drop', id: 'drop101', inputs: [null], size: 10 };
+const SLICE_101 = {
+  kind: 'slice',
+  id: 'slice101',
+  inputs: [null],
+  start: 10,
+  stop: 20,
+};
 const JOIN_101 = {
   kind: 'join',
   id: 'join101',
@@ -159,6 +166,14 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a filter', withNodes([FILTER_101], 'filter101')],
     ['a limit', withNodes([LIMIT_101], 'limit101')],
     ['a drop', withNodes([DROP_101], 'drop101')],
+    ['a slice', withNodes([SLICE_101], 'slice101')],
+    [
+      'a slice whose bounds were cleared',
+      withNodes(
+        [{ kind: 'slice', id: 'slice101', inputs: [null] }],
+        'slice101',
+      ),
+    ],
     [
       'a limit whose size was cleared',
       withNodes(
@@ -494,6 +509,12 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...FILTER_101, inputs: [null, null] }], 'filter101'),
       'query.nodes[0].inputs',
       'must list the 1 input(s) of a filter node, in port order',
+    ],
+    [
+      'a slice with two inputs',
+      withNodes([{ ...SLICE_101, inputs: [null, null] }], 'slice101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a slice node, in port order',
     ],
     [
       'a drop without inputs',
@@ -1043,6 +1064,24 @@ describe(unitTest('Saved spec decode errors'), () => {
       'a limit size that is a list',
       withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
       'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a slice start that is a string',
+      withNodes([{ ...SLICE_101, start: '10' }], 'slice101'),
+      'query.nodes[0].start',
+      'must be a finite number',
+    ],
+    [
+      'a slice stop set to null',
+      withNodes([{ ...SLICE_101, stop: null }], 'slice101'),
+      'query.nodes[0].stop',
+      'must be a finite number',
+    ],
+    [
+      'a slice start that is a list',
+      withNodes([{ ...SLICE_101, start: [20] }], 'slice101'),
+      'query.nodes[0].start',
       'must be a finite number',
     ],
     [

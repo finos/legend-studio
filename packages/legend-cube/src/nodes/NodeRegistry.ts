@@ -26,11 +26,13 @@ import { emitFilter } from '../ir/emitters/FilterEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
+import { emitSlice } from '../ir/emitters/SliceEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
+import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import {
@@ -41,6 +43,7 @@ import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
+import { Slice } from './transforms/Slice.js';
 import { UnknownNode } from './UnknownNode.js';
 
 /** What the palette, the context menu and the saved-spec codec know about a type of node */
@@ -140,6 +143,17 @@ export const LIMIT_DEFINITION: TransformDefinition<Limit> = {
   spec: LIMIT_CODEC,
 };
 
+export const SLICE_DEFINITION: TransformDefinition<Slice> = {
+  kind: 'transform',
+  type: Slice.TYPE,
+  label: 'Take rows <x> to <y>',
+  icon: 'slice',
+  beta: false,
+  create: (id) => new Slice(id, Slice.DEFAULT_START, Slice.DEFAULT_STOP),
+  emit: emitSlice,
+  spec: SLICE_CODEC,
+};
+
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
   kind: 'transform',
   type: Join.TYPE,
@@ -206,5 +220,6 @@ export const createNodeRegistry = (): NodeRegistry =>
     FILTER_DEFINITION,
     DROP_DEFINITION,
     LIMIT_DEFINITION,
+    SLICE_DEFINITION,
     JOIN_DEFINITION,
   ]);

@@ -16,6 +16,7 @@
 
 import {
   AlignBottomIcon,
+  AlignMiddleIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
   clsx,
@@ -33,6 +34,7 @@ const NODE_ICONS: Readonly<
   join: ArrowsJoinIcon,
   limit: AlignTopIcon,
   drop: AlignBottomIcon,
+  slice: AlignMiddleIcon,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */

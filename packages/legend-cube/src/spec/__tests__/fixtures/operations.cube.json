@@ -9,7 +9,7 @@
     "runtime": "showcase::northwind::mapping::StoreRuntime"
   },
   "query": {
-    "selected": "limit101",
+    "selected": "slice101",
     "nodes": [
       {
         "kind": "relational",
@@ -136,6 +136,13 @@
         "id": "limit101",
         "inputs": ["drop101"],
         "size": 10
+      },
+      {
+        "kind": "slice",
+        "id": "slice101",
+        "inputs": ["limit101"],
+        "start": 2,
+        "stop": 5
       }
     ]
   }

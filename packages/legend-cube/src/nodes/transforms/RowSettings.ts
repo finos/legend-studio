@@ -17,6 +17,7 @@
 import { validate } from '../../inference/ValidationUtils.js';
 import {
   BLANK_PLACEHOLDER,
+  MESSAGE_MUST_BE_WHOLE_NUMBER,
   MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
 } from '../../messages/CubeMessages.js';
 
@@ -49,6 +50,18 @@ export const validateSize = (
     MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
     errors,
   );
+
+/** Whether a row index, counted from 0, is a whole number a double holds exactly */
+export const isRowIndex = (index: number | undefined): boolean =>
+  index !== undefined && Number.isSafeInteger(index) && index >= 0;
+
+/** The spec's `validateRange` for one bound (§7.9): a whole number of at least 0 */
+export const validateRowIndex = (
+  index: number | undefined,
+  label: 'Start row index' | 'Stop row index',
+  errors?: string[],
+): boolean =>
+  validate(isRowIndex(index), MESSAGE_MUST_BE_WHOLE_NUMBER(label), errors);
 
 /** A setting as a description shows it: `(blank)` once cleared */
 export const describeRowSetting = (value: number | undefined): string =>
