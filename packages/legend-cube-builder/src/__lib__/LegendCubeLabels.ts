@@ -107,6 +107,18 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
   return `This table changed since the cube was saved: ${changes.join('; ')}`;
 };
 
+/** Why the grid's quick actions (spec §12.4) can't be used */
+export const CUBE_QUICK_ACTION_DISABLED_REASON = {
+  STALE_ROWS:
+    'Execute again: these rows are from an earlier version of the query.',
+  RUNNING: 'Wait for the run to finish.',
+  UNREADABLE_VALUE: "This value can't be used in a filter.",
+  notSortable: (typeName: string): string =>
+    `Values of type ${typeName} can't be sorted.`,
+  notComparable: (typeName: string): string =>
+    `Values of type ${typeName} can't be compared.`,
+};
+
 /** Beside a condition comparing a floating-point column for equality (R133) */
 export const FILTER_FLOAT_COMPARISON_HINT =
   'exact comparison on floating-point columns may not match';

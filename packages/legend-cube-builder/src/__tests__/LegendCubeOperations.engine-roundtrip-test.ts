@@ -59,6 +59,7 @@ import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/
 import { V1_serializeCubeLambda } from '../graph-manager/protocol/pure/v1/V1_CubeLambdaSerializer.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
 import { CubeEditorState } from '../stores/CubeEditorState.js';
+import { getCubeGridQuickActions } from '../stores/CubeGridQuickActions.js';
 import {
   CUBE_NORTHWIND_MODEL,
   CUBE_NORTHWIND_RUNTIME,
@@ -316,6 +317,88 @@ describe('Limit in the editor, on the engine', () => {
     expect(state.execution.error).toBeUndefined();
     expect(state.execution.result?.rows).toHaveLength(3);
     expect(state.execution.result?.limited).toBe(true);
+  });
+});
+
+describe('Grid quick actions, on the engine', () => {
+  /** The page's state on the engine, having run ORDERS (no row limit cut) */
+  const ranOrders = async (): Promise<CubeEditorState> => {
+    const state = new CubeEditorState({
+      applicationStore: TEST__createCubeApplicationStore(),
+      engine,
+      modelCatalog: new LocalModelCatalog(engine),
+    });
+    state.applyDocument(
+      new CubeDocument({
+        context: {
+          model: CUBE_NORTHWIND_MODEL,
+          runtime: CUBE_NORTHWIND_RUNTIME,
+        },
+        query: await ordersThen(),
+      }),
+    );
+    state.setRowLimit(ROW_LIMIT);
+    await flowResult(state.execution.execute());
+    expect(state.execution.error).toBeUndefined();
+    return state;
+  };
+
+  /** The shown values of a column */
+  const shownValues = (state: CubeEditorState, column: string): unknown[] => {
+    const result = state.execution.result;
+    const position = result?.schema.names().indexOf(column) ?? -1;
+    expect(position).toBeGreaterThanOrEqual(0);
+    return (result?.rows ?? []).map((row) => row[position]);
+  };
+
+  /** Applies a quick action on the first shown row whose cell in the column matches, then runs again */
+  const applyAndRun = async (
+    state: CubeEditorState,
+    column: string,
+    index: 0 | 1,
+    matches: (cell: unknown) => boolean,
+  ): Promise<void> => {
+    const result = state.execution.result;
+    const position = result?.schema.names().indexOf(column) ?? -1;
+    const row = result?.rows.find((candidate) => matches(candidate[position]));
+    expect(row).toBeDefined();
+    const action = getCubeGridQuickActions(
+      state,
+      position,
+      row?.[position] ?? null,
+    )[index];
+    expect(action?.disabledReason).toBeUndefined();
+    action?.apply();
+    expect(state.execution.isStale).toBe(true);
+    await flowResult(state.execution.execute());
+    expect(state.execution.error).toBeUndefined();
+  };
+
+  test('Sorts by the clicked column: the rows come back ordered by it', async () => {
+    const state = await ranOrders();
+    // H2 gives ORDERS in ORDER_ID order, which isn't CUSTOMER_ID order
+    await applyAndRun(state, 'CUSTOMER_ID', 0, () => true);
+    const customers = shownValues(state, 'CUSTOMER_ID').filter(
+      (value): value is string => typeof value === 'string',
+    );
+    expect(customers.length).toBeGreaterThan(800);
+    expect(customers).toEqual([...customers].sort());
+  });
+
+  test("Filters on the clicked cell's value: the 77 French orders", async () => {
+    const state = await ranOrders();
+    await applyAndRun(state, 'SHIP_COUNTRY', 1, (cell) => cell === 'France');
+    const countries = shownValues(state, 'SHIP_COUNTRY');
+    expect(countries).toHaveLength(77);
+    expect(new Set(countries)).toEqual(new Set(['France']));
+  });
+
+  test('Filters on a null cell with Is Empty: the 507 orders with no ship region', async () => {
+    const state = await ranOrders();
+    await applyAndRun(state, 'SHIP_REGION', 1, (cell) => cell === null);
+    const regions = shownValues(state, 'SHIP_REGION');
+    expect(regions).toHaveLength(507);
+    expect(new Set(regions)).toEqual(new Set([null]));
   });
 });
 

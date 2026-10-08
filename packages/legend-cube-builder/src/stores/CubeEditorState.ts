@@ -160,6 +160,7 @@ export class CubeEditorState implements CommandRegistrar {
       select: action,
       connect: action,
       addNode: action,
+      addConfiguredNode: action,
       dropNode: action,
       removeNode: action,
       swapInputs: action,
@@ -660,6 +661,20 @@ export class CubeEditorState implements CommandRegistrar {
     this.applyQuery(
       query.add(definition.create(query.generateId(type)), afterId),
     );
+  }
+
+  /**
+   * Adds a node made elsewhere, with its settings, as the grid's quick
+   * actions do (spec §12.4): spliced in after `afterId`, so it becomes the
+   * node that runs when that one did, as one undo step. Does nothing in a
+   * read-only cube, or when the query can't take it.
+   */
+  addConfiguredNode(node: QueryNode, afterId?: string): void {
+    const { query } = this.document;
+    if (this.readOnly || !query.canAdd(node, afterId)) {
+      return;
+    }
+    this.applyQuery(query.add(node, afterId));
   }
 
   /** Whether dropping a node on another does anything: connect it, or else move it after it */

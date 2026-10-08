@@ -17,9 +17,12 @@
 import { describe, expect, test } from '@jest/globals';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { column, enumColumn } from '../../__test-utils__/CubeTestNodes.js';
-import { Schema } from '../../schema/Schema.js';
+import { Schema, SchemaColumn } from '../../schema/Schema.js';
+import { OpaqueType, PrimitiveType } from '../../types/CubeType.js';
+import { Filter } from '../../nodes/transforms/Filter.js';
 import type { LiteralValue } from '../../values/LiteralValue.js';
 import {
+  buildQuickFilterRule,
   changeFilterColumn,
   changeFilterOperator,
   negateFilter,
@@ -593,5 +596,117 @@ describe(unitTest('Reading invalid values again'), () => {
     expect(not.key).toBe((group.rules[1] as NotFilter).key);
     expect((not.rule as ColumnComparisonFilter).value).toEqual(integer('7'));
     expect(reread.validate(SCHEMA)).toBe(true);
+  });
+});
+
+describe(unitTest('Quick filter from a grid cell'), () => {
+  const type = (path: string, params: number[] = []): PrimitiveType =>
+    PrimitiveType.get(path, params);
+  /** The rule's operator and value, or undefined */
+  const quick = (
+    columnType: Parameters<typeof buildQuickFilterRule>[1],
+    cell: Parameters<typeof buildQuickFilterRule>[2],
+  ): [FilterOperator, FilterValue | undefined] | undefined => {
+    const rule = buildQuickFilterRule('C', columnType, cell);
+    expect(rule?.columnName ?? 'C').toBe('C');
+    return rule && [rule.operator, rule.value];
+  };
+
+  test.each<
+    [
+      string,
+      Parameters<typeof buildQuickFilterRule>[1],
+      string | number | boolean,
+      LiteralValue,
+    ]
+  >([
+    ['a string', type(`${PRECISE}Varchar`, [15]), 'France', string('France')],
+    ['an empty string, a value', type('String'), '', string('')],
+    ['a string with spaces, untrimmed', type('String'), ' a ', string(' a ')],
+    ['a boolean', type('Boolean'), true, { kind: 'boolean', value: true }],
+    [
+      'an integer, as exact text',
+      type(`${PRECISE}SmallInt`),
+      '10248',
+      { kind: 'integer', value: '10248' },
+    ],
+    [
+      'an integer past 2^53, still exact',
+      type(`${PRECISE}BigInt`),
+      '9007199254740993',
+      { kind: 'integer', value: '9007199254740993' },
+    ],
+    [
+      'a decimal, as written',
+      type(`${PRECISE}Numeric`, [10, 2]),
+      '12.30',
+      { kind: 'decimal', value: '12.30' },
+    ],
+    [
+      'a float, a number',
+      type(`${PRECISE}Double`),
+      32.38,
+      { kind: 'float', value: '32.38' },
+    ],
+    [
+      'a date',
+      type('StrictDate'),
+      '1996-07-04',
+      { kind: 'strictDate', value: '1996-07-04' },
+    ],
+    [
+      'a timestamp, its +0000 dropped',
+      type(`${PRECISE}Timestamp`),
+      '2024-02-29T13:45:12.123456000+0000',
+      { kind: 'dateTime', value: '2024-02-29T13:45:12.123456000' },
+    ],
+  ])('Filters on %s with Equal', (_, columnType, cell, value) => {
+    expect(quick(columnType, cell)).toEqual([O.EQUAL, value]);
+  });
+
+  test('Filters on an enumeration value only when the enumeration lists it', () => {
+    const region = enumColumn('C', 'test::Region', ['EMEA', 'APAC']).type;
+    expect(quick(region, 'EMEA')).toEqual([
+      O.EQUAL,
+      { kind: 'enum', value: 'EMEA' },
+    ]);
+    expect(quick(region, 'LATAM')).toBeUndefined();
+  });
+
+  test.each<[string, Parameters<typeof buildQuickFilterRule>[1]]>([
+    ['a string', type('String')],
+    ['an integer', type('Integer')],
+    ['a Variant', type('Variant')],
+    ['a StrictTime', type('StrictTime')],
+    ['a type Cube does not know', OpaqueType.get('my::model::Blob')],
+  ])('Filters a null cell of %s with Is Empty', (_, columnType) => {
+    expect(quick(columnType, null)).toEqual([O.IS_EMPTY, undefined]);
+  });
+
+  test.each<
+    [
+      string,
+      Parameters<typeof buildQuickFilterRule>[1],
+      string | number | boolean,
+    ]
+  >([
+    ['a StrictTime, which has no Equal', type('StrictTime'), '10:30:00'],
+    ['a Variant', type('Variant'), '{"a": 1}'],
+    ['a type Cube does not know', OpaqueType.get('my::model::Blob'), 'x'],
+    ['an integer that is not one', type('Integer'), 'abc'],
+    ['a blank number', type('Integer'), ' '],
+  ])('Builds no filter for %s', (_, columnType, cell) => {
+    expect(quick(columnType, cell)).toBeUndefined();
+  });
+
+  test('Builds a rule that a Filter on a schema with the column finds valid', () => {
+    const columnType = type(`${PRECISE}Varchar`, [15]);
+    const rule = buildQuickFilterRule('SHIP_COUNTRY', columnType, 'France');
+    const errors: string[] = [];
+    new Filter('filter101', rule).validate(
+      [new Schema([new SchemaColumn('SHIP_COUNTRY', columnType, true)])],
+      errors,
+    );
+    expect(errors).toEqual([]);
   });
 });

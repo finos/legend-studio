@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                                               |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                                                  |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                   |
-| Step   | M2.1–M2.13 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort, the Sort warning, database workarounds); M2.14 next (grid quick actions) |
-| Tests  | 1802 core, 712 builder (core group), 236 Query, 130 builder engine-roundtrip (after M2.13)                                                                                          |
+| Item   | State                                                                                                                                                                                                    |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                                                                       |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                                        |
+| Step   | M2.1–M2.14 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort, the Sort warning, database workarounds, grid quick actions); M2.15 next (docs, sample typing) |
+| Tests  | 1824 core, 726 builder (core group), 236 Query, 133 builder engine-roundtrip (after M2.14)                                                                                                               |
 
 ## Steps
 
@@ -32,7 +32,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
 - [x] **M2.12** The Sort warning
 - [x] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
-- [ ] **M2.14** Grid quick actions: Sort by and Filter by
+- [x] **M2.14** Grid quick actions: Sort by and Filter by
 - [ ] **M2.15** Docs, sample typing on the engine, changeset text
 - [ ] **M2.16** Verification and the browser rehearsal
 - [ ] **M2.17** Rebase on the latest master, fold PLAN §11.4's supersessions in, PR when the user asks
@@ -275,6 +275,24 @@ fixture's H2 connection, the only change to that file. The SQL Server distinct d
 in ISSUES.md, not filed. No browser check: the fixture runs on H2, and the headless tests cover Execute and Show Pure on
 a SqlServer outline. Gates: `check:ci` and `lint:ci` green; 1802 core, 712 builder (core group), 236 Query and 130
 engine-roundtrip tests.
+
+**M2.14, grid quick actions (2026-10-08).** `buildQuickFilterRule` (core, `FilterBuilder.ts`) reads a cell, a JSON
+scalar as the engine returned it, as a value of its column's type: Equal on it, Is Empty on a null, none for a type
+without Equal (StrictTime, Variant, types Cube doesn't know) or a value that doesn't read (integers and decimals stay
+exact text, strings untrimmed, a timestamp's `+0000` dropped). In the builder, `getCubeGridQuickActions`
+(`stores/CubeGridQuickActions.ts`) gives "Sort by "X"" (`Sort.byColumn`, ascending) and "Filter by "X"", read when the
+menu opens: both disabled on rows from an earlier query, during a run and in a read-only cube, Sort by on a type that
+doesn't sort and Filter by on a value its type can't compare, each with its reason as the tooltip; Filter by on a
+Float column carries the floating-point hint. Applying one adds its node after the node that ran through
+`CubeEditorState.addConfiguredNode`, one undo step that makes it the node that runs, without running it (the rows turn
+stale) or touching the editor panel; Sort by after a Sort adds another, the first then breaking its ties, with no
+warning. The grid's context menu (`getCubeGridContextMenuItems`, passed to `DataGrid` as `getContextMenuItems`)
+puts them first on a cell, then a separator and ag-grid's own items, which stay until M7; outside a cell only
+ag-grid's. Engine: on ORDERS, Sort by CUSTOMER_ID brings the rows back in CUSTOMER_ID order (not H2's), Filter by
+"France" gives the 77 French orders, and Filter by on a null SHIP_REGION gives the 507 with none. No browser check yet:
+the :9002 dev server reached its background time limit and stopped; ag-grid's own menu is checked in the M2.16
+rehearsal once it runs again. Gates: `check:ci` and `lint:ci` green; 1824 core, 726 builder (core group), 236 Query and
+133 engine-roundtrip tests.
 
 ## Open items
 
