@@ -3090,6 +3090,172 @@ export const TEST_DATA__DATAPRODUCT_WITH_OWNER = [
   },
 ];
 
+export const TEST_DATA__DATAPRODUCT_WITH_PROD_OVERRIDE_ALL = [
+  {
+    path: 'x::D',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'defaultAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+              id: 'ap',
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+          id: 'default',
+        },
+      ],
+      name: 'D',
+      package: 'x',
+      prodDataProductOverride: {
+        all: true,
+        dataProducts: [],
+      },
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['x::D'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
+export const TEST_DATA__DATAPRODUCT_WITH_PROD_OVERRIDE_LIST = [
+  {
+    path: 'x::E',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'defaultAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+              id: 'ap',
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+          id: 'default',
+        },
+      ],
+      name: 'E',
+      package: 'x',
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: 'x::F',
+    content: {
+      _type: 'dataProduct',
+      accessPointGroups: [
+        {
+          _type: 'defaultAccessPointGroup',
+          accessPoints: [
+            {
+              _type: 'lakehouseAccessPoint',
+              func: {
+                _type: 'lambda',
+                body: [
+                  {
+                    _type: 'integer',
+                    value: 1,
+                  },
+                ],
+                parameters: [],
+              },
+              id: 'ap',
+              reproducible: false,
+              targetEnvironment: 'Snowflake',
+            },
+          ],
+          id: 'default',
+        },
+      ],
+      name: 'F',
+      package: 'x',
+      prodDataProductOverride: {
+        all: false,
+        dataProducts: [
+          {
+            path: 'x::E',
+          },
+        ],
+      },
+    },
+    classifierPath:
+      'meta::external::catalog::dataProduct::specification::metamodel::DataProduct',
+  },
+  {
+    path: '__internal__::SectionIndex',
+    content: {
+      _type: 'sectionIndex',
+      name: 'SectionIndex',
+      package: '__internal__',
+      sections: [
+        {
+          _type: 'importAware',
+          elements: [],
+          imports: [],
+          parserName: 'Pure',
+        },
+        {
+          _type: 'importAware',
+          elements: ['x::E', 'x::F'],
+          imports: [],
+          parserName: 'DataProduct',
+        },
+      ],
+    },
+    classifierPath: 'meta::pure::metamodel::section::SectionIndex',
+  },
+];
+
 export const TEST_DATA__DATAPRODUCT__SECURE_VIEWS = [
   {
     path: 'x::SecureViewProduct',

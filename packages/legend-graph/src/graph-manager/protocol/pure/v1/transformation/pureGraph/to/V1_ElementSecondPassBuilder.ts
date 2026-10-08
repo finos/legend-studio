@@ -149,6 +149,7 @@ import {
   V1_buildDataProductTestSuite,
   V1_buildNativeModelAccess,
   V1_buildDataProductOwner,
+  V1_buildProdDataProductOverride,
 } from './helpers/V1_DataProductBuilder.js';
 import type { V1_Compute } from '../../../model/packageableElements/compute/V1_Compute.js';
 import {
@@ -847,6 +848,12 @@ export class V1_ElementSecondPassBuilder
       .filter(isNonNullable);
     if (element.owner) {
       dataProduct.owner = V1_buildDataProductOwner(element.owner);
+    }
+    if (element.prodDataProductOverride) {
+      dataProduct.prodDataProductOverride = V1_buildProdDataProductOverride(
+        element.prodDataProductOverride,
+        this.context,
+      );
     }
   }
 

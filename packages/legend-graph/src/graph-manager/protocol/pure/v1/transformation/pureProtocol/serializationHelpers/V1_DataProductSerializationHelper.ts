@@ -58,6 +58,7 @@ import {
   V1_DataProductOwnerType,
   type V1_DataProductOwner,
   V1_SecureView,
+  V1_ProdDataProductOverride,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import {
   UnsupportedOperationError,
@@ -556,6 +557,16 @@ const V1_serializeDataProductOwner = (
   throw new Error(`Unknown V1_DataProductOwner instance`);
 };
 
+export const V1_prodDataProductOverrideModelSchema = createModelSchema(
+  V1_ProdDataProductOverride,
+  {
+    all: primitive(),
+    dataProducts: list(
+      usingModelSchema(V1_packageableElementPointerModelSchema),
+    ),
+  },
+);
+
 export const V1_dataProductModelSchema = (
   plugins: PureProtocolProcessorPlugin[],
 ): ModelSchema<V1_DataProduct> =>
@@ -582,6 +593,9 @@ export const V1_dataProductModelSchema = (
       V1_deserializeDataProductOwner,
     ),
     package: primitive(),
+    prodDataProductOverride: optionalCustomUsingModelSchema(
+      V1_prodDataProductOverrideModelSchema,
+    ),
     sampleValues: optionalCustomList(
       (data: V1_EmbeddedData) => V1_serializeEmbeddedDataType(data, plugins),
       (data) => V1_deserializeEmbeddedDataType(data, plugins),

@@ -43,6 +43,7 @@ import {
   type DataProductOwner,
   AppDirOwner,
   SecureView,
+  ProdDataProductOverride,
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { V1_buildAppDirNode } from './V1_AppDirNodeBuilderHelper.js';
 import {
@@ -71,6 +72,7 @@ import {
   type V1_NativeModelExecutionContext,
   V1_AppDirOwner,
   type V1_DataProductOwner,
+  type V1_ProdDataProductOverride,
 } from '../../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import type { V1_GraphBuilderContext } from '../V1_GraphBuilderContext.js';
 import { V1_buildRawLambdaWithResolvedPaths } from './V1_ValueSpecificationPathResolver.js';
@@ -437,6 +439,18 @@ export const V1_buildDataProductOwner = (
     `Unsupported data product owner type`,
     v1Owner,
   );
+};
+
+export const V1_buildProdDataProductOverride = (
+  v1Override: V1_ProdDataProductOverride,
+  context: V1_GraphBuilderContext,
+): ProdDataProductOverride => {
+  const override = new ProdDataProductOverride();
+  override.all = v1Override.all;
+  override.dataProducts = v1Override.dataProducts.map((pointer) =>
+    context.resolveDataProduct(pointer.path),
+  );
+  return override;
 };
 
 const V1_buildDataProductAccessPointTest = (
