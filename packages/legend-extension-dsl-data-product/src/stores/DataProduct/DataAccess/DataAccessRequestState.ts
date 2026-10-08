@@ -84,6 +84,7 @@ export interface DataAccessRequestState {
   readonly status: DataAccessRequestStatus;
   readonly isInTerminalState: boolean;
   readonly isInProgress: boolean;
+  readonly isInvalidationRequest: boolean;
 
   // Subscription
   readonly subscription: V1_DataSubscription | undefined;

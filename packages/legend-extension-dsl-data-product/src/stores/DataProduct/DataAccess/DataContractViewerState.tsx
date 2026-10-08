@@ -163,6 +163,10 @@ export class DataContractViewerState implements DataAccessRequestState {
     return isContractInTerminalState(this.liteContract);
   }
 
+  get isInvalidationRequest(): boolean {
+    return false;
+  }
+
   get isInProgress(): boolean {
     return (
       this.associatedTasks?.some(

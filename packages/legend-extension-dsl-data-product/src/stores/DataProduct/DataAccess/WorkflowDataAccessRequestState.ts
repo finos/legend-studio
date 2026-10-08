@@ -212,6 +212,14 @@ export class WorkflowDataAccessRequestState implements DataAccessRequestState {
     );
   }
 
+  get isInvalidationRequest(): boolean {
+    const state = this.dataRequestWithWorkflow?.dataRequest.state;
+    return (
+      state === V1_RequestState.INVALIDATED ||
+      state === V1_RequestState.PENDING_INVALIDATION
+    );
+  }
+
   get isInProgress(): boolean {
     // Use workflow server tasks as source of truth if available
     const { privilegeManagerTasks, dataOwnerTasks } = this.workflowTasks;

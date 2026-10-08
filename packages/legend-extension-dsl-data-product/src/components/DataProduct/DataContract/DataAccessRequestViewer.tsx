@@ -941,7 +941,9 @@ export const DataAccessRequestContent = observer(
         {!isLoading && (
           <>
             <div>
-              Access request for{' '}
+              {viewerState.isInvalidationRequest
+                ? 'Invalidating request for'
+                : 'Access request for'}{' '}
               <span className="marketplace-lakehouse-text__emphasis">
                 {accessPointGroup}
               </span>{' '}
