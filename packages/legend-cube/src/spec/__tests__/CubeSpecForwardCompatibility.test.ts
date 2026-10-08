@@ -43,6 +43,7 @@ import {
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema } from '../../schema/Schema.js';
@@ -1710,9 +1711,15 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       nodes: [
         RELATIONAL,
         {
+          kind: 'drop',
+          id: 'drop101',
+          inputs: ['relational101'],
+          size: 10,
+        },
+        {
           kind: 'limit',
           id: 'limit101',
-          inputs: ['relational101'],
+          inputs: ['drop101'],
           size: 5,
           note: 'top five',
         },
@@ -1720,26 +1727,32 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     },
   };
 
-  test('Reads a limit as an Unknown node in a version without it, editable, and re-saves it verbatim', () => {
+  test('Reads M2 operations as Unknown nodes in a version without them, editable, and re-saves them verbatim', () => {
     const { document, readOnly } = decodeCubeSpec(LIMITED, {
       registry: M1_REGISTRY,
     });
     expect(readOnly).toBe(false);
-    const node = document.query.getNode('limit101') as UnknownNode;
-    expect(node).toBeInstanceOf(UnknownNode);
-    expect(node.savedKind).toBe('limit');
-    expect(describeConnections(document.query)).toEqual([
-      'relational101 -> limit101.in0',
+    ['drop101', 'limit101'].forEach((id) => {
+      const node = document.query.getNode(id) as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe(id.replace('101', ''));
+    });
+    expect(describeConnections(document.query).sort()).toEqual([
+      'drop101 -> limit101.in0',
+      'relational101 -> drop101.in0',
     ]);
     expect(JSON.stringify(encodeCubeSpec(document, M1_REGISTRY))).toBe(
       JSON.stringify(LIMITED),
     );
-    // a new limit would not take the saved node's id
+    // a new node would not take a saved node's id
     expect(document.query.generateId('limit')).not.toBe('limit101');
+    expect(document.query.generateId('drop')).not.toBe('drop101');
   });
 
   test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
-    const node = decodeCubeSpec(LIMITED).document.query.getNode('limit101');
+    const { query } = decodeCubeSpec(LIMITED).document;
+    expect(query.getNode('drop101')).toBeInstanceOf(Drop);
+    const node = query.getNode('limit101');
     expect(node).toBeInstanceOf(Limit);
     expect((node as Limit).size).toBe(5);
     expect(node?.rest).toEqual({ note: 'top five' });
@@ -1758,7 +1771,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       JSON.stringify({
         kind: 'limit',
         id: 'limit101',
-        inputs: ['relational101'],
+        inputs: ['drop101'],
         size: 20,
         note: 'top five',
       }),
@@ -1767,7 +1780,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       JSON.stringify({
         kind: 'limit',
         id: 'limit101',
-        inputs: ['relational101'],
+        inputs: ['drop101'],
         note: 'top five',
       }),
     );

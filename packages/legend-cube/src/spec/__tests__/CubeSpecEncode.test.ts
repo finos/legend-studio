@@ -50,6 +50,7 @@ import {
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
 import {
+  DROP_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
@@ -57,6 +58,7 @@ import {
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
@@ -1565,6 +1567,46 @@ describe(unitTest('Saved spec encoding: limits'), () => {
     );
     expect(encodeCubeSpec(document)).toStrictEqual(
       limitSpec({ size: 5, note: 'top five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: drops'), () => {
+  /** The saved spec of one unconnected drop, `drop101`, with these fields of its own */
+  const dropSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'drop101',
+      nodes: [{ kind: 'drop', id: 'drop101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Writes the size of a new drop, the default included', () => {
+    expectEncoded(
+      documentOf([DROP_DEFINITION.create('drop101')], [], 'drop101'),
+      dropSpec({ size: 10 }),
+    );
+  });
+
+  test('Leaves out a cleared size, and writes a refused one as it stands', () => {
+    expectEncoded(
+      documentOf([new Drop('drop101', undefined)], [], 'drop101'),
+      dropSpec({}),
+    );
+    expectEncoded(
+      documentOf([new Drop('drop101', 0)], [], 'drop101'),
+      dropSpec({ size: 0 }),
+    );
+  });
+
+  test('Writes the size from the node, not from its rest', () => {
+    const document = documentOf(
+      [new Drop('drop101', 5, { size: 99, note: 'skip five' })],
+      [],
+      'drop101',
+    );
+    expect(encodeCubeSpec(document)).toStrictEqual(
+      dropSpec({ size: 5, note: 'skip five' }),
     );
   });
 });

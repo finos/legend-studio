@@ -38,6 +38,7 @@ import type { JsonObject } from '../../utils/Json.js';
 import {
   type AnyNodeDefinition,
   createNodeRegistry,
+  DROP_DEFINITION,
   FILTER_DEFINITION,
   JOIN_DEFINITION,
   LIMIT_DEFINITION,
@@ -51,6 +52,7 @@ import {
   RelationalTableSource,
   type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
+import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { Limit } from '../transforms/Limit.js';
@@ -173,9 +175,10 @@ describe(unitTest('Node registry'), () => {
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order (§7): Filter, Limit, then Join
+    // transforms in the spec's menu order (§7): Filter, Drop, Limit, then Join
     expect(registry.transforms).toEqual([
       FILTER_DEFINITION,
+      DROP_DEFINITION,
       LIMIT_DEFINITION,
       JOIN_DEFINITION,
     ]);
@@ -195,6 +198,18 @@ describe(unitTest('Node registry'), () => {
     expect(filter).toBeInstanceOf(Filter);
     expect(filter.id).toBe('filter101');
     expect(filter.filter).toBeUndefined();
+  });
+
+  test('Creates a drop of 10 rows', () => {
+    expect(DROP_DEFINITION.kind).toBe('transform');
+    expect(DROP_DEFINITION.type).toBe('drop');
+    expect(DROP_DEFINITION.label).toBe('Drop first <x> rows');
+    expect(DROP_DEFINITION.icon).toBe('drop');
+    expect(DROP_DEFINITION.beta).toBe(false);
+    const drop = DROP_DEFINITION.create('drop101');
+    expect(drop).toBeInstanceOf(Drop);
+    expect(drop.id).toBe('drop101');
+    expect(drop.size).toBe(10);
   });
 
   test('Creates a limit of 10 rows', () => {

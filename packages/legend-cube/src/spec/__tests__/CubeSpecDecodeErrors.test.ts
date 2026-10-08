@@ -74,6 +74,7 @@ const RELATIONAL_101 = {
 const RELATIONAL_102 = { ...RELATIONAL_101, id: 'relational102' };
 const FILTER_101 = { kind: 'filter', id: 'filter101', inputs: [null] };
 const LIMIT_101 = { kind: 'limit', id: 'limit101', inputs: [null], size: 10 };
+const DROP_101 = { kind: 'drop', id: 'drop101', inputs: [null], size: 10 };
 const JOIN_101 = {
   kind: 'join',
   id: 'join101',
@@ -157,6 +158,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a join', withJoin(JOIN_101)],
     ['a filter', withNodes([FILTER_101], 'filter101')],
     ['a limit', withNodes([LIMIT_101], 'limit101')],
+    ['a drop', withNodes([DROP_101], 'drop101')],
     [
       'a limit whose size was cleared',
       withNodes(
@@ -492,6 +494,12 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...FILTER_101, inputs: [null, null] }], 'filter101'),
       'query.nodes[0].inputs',
       'must list the 1 input(s) of a filter node, in port order',
+    ],
+    [
+      'a drop without inputs',
+      withNodes([{ kind: 'drop', id: 'drop101', size: 10 }], 'drop101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a drop node, in port order',
     ],
     [
       'a limit with two inputs',
@@ -1034,6 +1042,18 @@ describe(unitTest('Saved spec decode errors'), () => {
     [
       'a limit size that is a list',
       withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a drop size that is a string',
+      withNodes([{ ...DROP_101, size: '10' }], 'drop101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a drop size set to null',
+      withNodes([{ ...DROP_101, size: null }], 'drop101'),
       'query.nodes[0].size',
       'must be a finite number',
     ],

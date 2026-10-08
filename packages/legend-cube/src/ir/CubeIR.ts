@@ -135,6 +135,8 @@ export enum EmitRole {
   VALUE = 'value',
   /** a Limit: its limit call and its size (the capture's own limit is `limit`) */
   TAKE = 'take',
+  /** a Drop: its drop call and its size */
+  DROP = 'drop',
   /** the capture node: `limit(rowLimit + 1)` and its literal */
   LIMIT = 'limit',
   /** the capture node: `from(runtime)` */

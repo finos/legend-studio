@@ -94,22 +94,27 @@ const customers = (database: string): JsonObject => ({
   ],
 });
 
-/** A saved spec: `relational101` feeding `limit101`, which has this size, or a cleared one */
-const limitSpec = (size: number | undefined): JsonObject => ({
+/** A saved spec: `relational101` feeding `<kind>101`, which has this size, or a cleared one */
+const rowCountSpec = (
+  kind: 'limit' | 'drop',
+  size: number | undefined,
+): JsonObject => ({
   formatVersion: 1,
   query: {
-    selected: 'limit101',
+    selected: `${kind}101`,
     nodes: [
       RELATIONAL,
       {
-        kind: 'limit',
-        id: 'limit101',
+        kind,
+        id: `${kind}101`,
         inputs: ['relational101'],
         ...(size === undefined ? {} : { size }),
       },
     ],
   },
 });
+const limitSpec = (size: number | undefined): JsonObject =>
+  rowCountSpec('limit', size);
 
 /** The saved JSON of `join101`, joining `relational101` to `relational102` on these keys */
 const join = (leftColumns: string[], rightColumns: string[]): JsonObject => ({
@@ -463,6 +468,27 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       },
     ],
     ['a valid limit', limitSpec(10), { relational101: [], limit101: [] }],
+    [
+      'a cleared drop size',
+      rowCountSpec('drop', undefined),
+      {
+        relational101: [],
+        drop101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a drop of 0 rows',
+      rowCountSpec('drop', 0),
+      {
+        relational101: [],
+        drop101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a valid drop',
+      rowCountSpec('drop', 10),
+      { relational101: [], drop101: [] },
+    ],
   ];
 
   test.each(CONNECTED)(

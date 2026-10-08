@@ -23,10 +23,12 @@ import type { QueryRule } from '../inference/SchemaInference.js';
 import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
+import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
+import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
@@ -35,6 +37,7 @@ import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
@@ -115,6 +118,17 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   spec: FILTER_CODEC,
 };
 
+export const DROP_DEFINITION: TransformDefinition<Drop> = {
+  kind: 'transform',
+  type: Drop.TYPE,
+  label: 'Drop first <x> rows',
+  icon: 'drop',
+  beta: false,
+  create: (id) => new Drop(id, Drop.DEFAULT_SIZE),
+  emit: emitDrop,
+  spec: DROP_CODEC,
+};
+
 export const LIMIT_DEFINITION: TransformDefinition<Limit> = {
   kind: 'transform',
   type: Limit.TYPE,
@@ -190,6 +204,7 @@ export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     FILTER_DEFINITION,
+    DROP_DEFINITION,
     LIMIT_DEFINITION,
     JOIN_DEFINITION,
   ]);

@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                      |
-| ------ | ---------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                         |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                          |
-| Step   | M2.1–M2.4 done (Limit end to end: the contract proven); M2.5 next (Drop)                                   |
-| Tests  | 1477 core, 605 builder (core group), 236 Query, 74 builder engine-roundtrip (after the verification fixes) |
+| Item   | State                                                                                    |
+| ------ | ---------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                       |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                        |
+| Step   | M2.1–M2.5 done (Limit, its verification, Drop); M2.6 next (Slice)                        |
+| Tests  | 1515 core, 610 builder (core group), 236 Query, 78 builder engine-roundtrip (after M2.5) |
 
 ## Steps
 
@@ -23,7 +23,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.2** Limit in the core: node, codec, emitter
 - [x] **M2.3** Limit in the builder, and registered
 - [x] **M2.4** Limit on the engine and in the browser: the contract proven
-- [ ] **M2.5** Drop (native)
+- [x] **M2.5** Drop (native)
 - [ ] **M2.6** Slice (native)
 - [ ] **M2.7** Distinct
 - [ ] **M2.8** Restrict
@@ -119,6 +119,15 @@ result is kept in the local evidence folder.
   changes between queries" is right as written.
 - Gates after the fixes: `check:ci` and `lint:ci` green; 1477 core, 605 builder (core group), 236 Query and 74
   engine-roundtrip tests.
+
+**M2.5, Drop (2026-10-08).** `Drop` ("Drop first <x> rows"), registered before Limit in menu order, shares
+Limit's row settings, draft and editor ("Rows to drop"), with `DROP_CODEC`, `emitDrop` (the native `->drop(n)`, a new
+`drop` role) and `AlignBottomIcon`. The row-number form for SQL Server, Sybase and DB2 comes with M2.13. Tests: the
+node, the emitter, the codec suites (a drop beside the limit in the M1-registry case and in `operations.cube.json`),
+the editor, and the engine (its lambda and typing; 825 of 830 dropped leaves 5 distinct orders, 830 leaves an empty
+result, 70 of the 77 French orders leaves 7). Browser on :9002: an imported ORDERS → "Drop first 10 row(s)" gives 820
+rows from ORDER_ID 10258. Gates: `check:ci` and `lint:ci` green; 1515 core, 610 builder (core group), 236 Query and
+78 engine-roundtrip tests.
 
 ## Open items
 

@@ -19,6 +19,7 @@ import {
   ColumnComparisonFilter,
   Connection,
   CubeDocument,
+  Drop,
   Filter,
   FilterOperator,
   Join,
@@ -300,5 +301,58 @@ describe('Limit in the editor, on the engine', () => {
     expect(state.execution.error).toBeUndefined();
     expect(state.execution.result?.rows).toHaveLength(3);
     expect(state.execution.result?.limited).toBe(true);
+  });
+});
+
+describe('Drop on the engine', () => {
+  test('Emits what the engine parses from the printed Pure, and types as Cube infers', async () => {
+    const query = await ordersThen(new Drop('drop101', 10));
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test('Drops 825 of the 830 orders, and keeps 5 distinct ones', async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Drop('drop101', 825)),
+      ROW_LIMIT,
+    );
+    const ids = orderIds(TEST__columnValues(result, 'ORDER_ID'));
+    expect(ids).toHaveLength(5);
+    expect(new Set(ids).size).toBe(5);
+  });
+
+  test("Drops every row when the size is the input's, and gives an empty result", async () => {
+    const result = await TEST__runQuery(
+      engine,
+      await ordersThen(new Drop('drop101', 830)),
+      ROW_LIMIT,
+    );
+    expect(result.rows).toEqual([]);
+    expect(result.columns).toContain('ORDER_ID');
+  });
+
+  test('Drops from the rows a filter keeps (77 French orders)', async () => {
+    const query = await ordersThen(
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'France',
+        }),
+      ),
+      new Drop('drop101', 70),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(TEST__columnValues(result, 'SHIP_COUNTRY')).toEqual(
+      Array(7).fill('France'),
+    );
   });
 });

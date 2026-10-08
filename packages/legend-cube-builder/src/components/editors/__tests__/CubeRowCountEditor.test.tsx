@@ -18,6 +18,7 @@ import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   Connection,
   CubeDocument,
+  Drop,
   Limit,
   MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
   Query,
@@ -291,5 +292,55 @@ describe('Limit editor, on a saved size the field cannot hold', () => {
     type('1.5');
     act(() => editorState.undo());
     expect(editorState.nodeEditor.notice).toBeUndefined();
+  });
+});
+
+describe('Drop editor', () => {
+  /** ORDERS → drop101, holding this size */
+  const ordersDropped = (size: number | undefined): Query =>
+    new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        new Drop('drop101', size),
+      ],
+      [new Connection('relational101', 'drop101', 'tds')],
+      'drop101',
+    );
+
+  const dropField = (): HTMLInputElement =>
+    within(panel()).getByLabelText<HTMLInputElement>('Rows to drop');
+
+  test('Shares the row-count field: one size, stored on Apply as one undo step', async () => {
+    const editorState = await render(ordersDropped(10));
+    fireEvent.click(await TEST__findCanvasNode('drop101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(within(panel()).getByText('Drop first <x> rows')).toBeDefined();
+    expect(dropField().value).toBe('10');
+    expect(dropField().getAttribute('inputmode')).toBe('numeric');
+    fireEvent.change(dropField(), { target: { value: '0' } });
+    expect(dropField().getAttribute('aria-invalid')).toBe('true');
+    expect(problems()).toEqual([MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER]);
+    fireEvent.change(dropField(), { target: { value: '825' } });
+    fireEvent.click(button('Apply'));
+    expect((editorState.document.query.getNode('drop101') as Drop).size).toBe(
+      825,
+    );
+    expect(editorState.history).toHaveLength(1);
+    await waitFor(async () =>
+      expect(
+        TEST__getCanvasNodeTooltip(await TEST__findCanvasNode('drop101')),
+      ).toContain('Drop first 825 row(s)'),
+    );
+  });
+
+  test('Stores a cleared size cleared, never as the default', async () => {
+    const editorState = await render(ordersDropped(10));
+    fireEvent.click(await TEST__findCanvasNode('drop101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    fireEvent.change(dropField(), { target: { value: '' } });
+    fireEvent.click(button('Apply'));
+    expect(
+      (editorState.document.query.getNode('drop101') as Drop).size,
+    ).toBeUndefined();
   });
 });

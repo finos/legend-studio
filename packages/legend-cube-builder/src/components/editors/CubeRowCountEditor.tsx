@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { isPositiveWholeNumber, Limit } from '@finos/legend-cube';
+import { Drop, isPositiveWholeNumber, Limit } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import { observer } from 'mobx-react-lite';
 import { CubeRowCountDraft } from '../../stores/editors/CubeRowCountDraft.js';
@@ -23,12 +23,13 @@ import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /** The field's label for each node type the editor serves */
 const ROW_COUNT_LABELS: Readonly<Record<string, string>> = {
+  [Drop.TYPE]: 'Rows to drop',
   [Limit.TYPE]: 'Rows to keep',
 };
 
 /**
- * The editor of a node whose one setting is a number of rows, such as a Limit
- * (spec §17.6: one integer field). Clearing the field leaves the size empty,
+ * The editor of a node whose one setting is a number of rows, a Limit or a
+ * Drop (spec §17.6: one integer field). Clearing the field leaves the size empty,
  * which the panel reports; it never falls back to the default.
  */
 export const CubeRowCountEditor = observer((props: CubeNodeEditorProps) => {

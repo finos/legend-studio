@@ -692,6 +692,7 @@ describe(unitTest('Query emission'), () => {
       'column',
       'value',
       'take',
+      'drop',
       'limit',
       'from',
     ]);

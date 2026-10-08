@@ -126,9 +126,15 @@
         ]
       },
       {
+        "kind": "drop",
+        "id": "drop101",
+        "inputs": ["relational101"],
+        "size": 10
+      },
+      {
         "kind": "limit",
         "id": "limit101",
-        "inputs": ["relational101"],
+        "inputs": ["drop101"],
         "size": 10
       }
     ]

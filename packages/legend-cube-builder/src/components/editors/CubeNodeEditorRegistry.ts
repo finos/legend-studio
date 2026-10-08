@@ -15,6 +15,7 @@
  */
 
 import {
+  Drop,
   Filter,
   Join,
   Limit,
@@ -60,5 +61,6 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [RelationalTableSource.TYPE, CubeSourceEditor],
   [Filter.TYPE, CubeFilterEditor],
   [Join.TYPE, CubeJoinEditor],
+  [Drop.TYPE, CubeRowCountEditor],
   [Limit.TYPE, CubeRowCountEditor],
 ]);

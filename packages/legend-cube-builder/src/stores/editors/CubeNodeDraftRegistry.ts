@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Filter, Join, Limit, type QueryNode } from '@finos/legend-cube';
+import { Drop, Filter, Join, Limit, type QueryNode } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
@@ -39,6 +39,7 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
 > = new Map<string, CubeNodeDraftFactory>([
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],
   [Join.TYPE, (node) => new CubeJoinDraft(guaranteeType(node, Join))],
+  [Drop.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Drop))],
   [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
 ]);
 

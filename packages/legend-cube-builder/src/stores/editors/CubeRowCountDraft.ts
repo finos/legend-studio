@@ -19,7 +19,7 @@ import { action, makeObservable, observable } from 'mobx';
 import { parseWholeNumberText } from './CubeIntegerText.js';
 import { CubeNodeDraft } from './CubeNodeDraft.js';
 
-/** A node whose one setting is a number of rows, such as a Limit */
+/** A node whose one setting is a number of rows: a Limit or a Drop */
 export interface CubeRowCountNode<N extends QueryNode> extends QueryNode {
   readonly size: number | undefined;
   withSize(size: number | undefined): N;

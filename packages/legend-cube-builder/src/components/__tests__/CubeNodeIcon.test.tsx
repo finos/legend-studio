@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  AlignBottomIcon,
   AlignTopIcon,
   ArrowsJoinIcon,
   FilterIcon,
@@ -32,6 +33,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   filter: FilterIcon,
   join: ArrowsJoinIcon,
   limit: AlignTopIcon,
+  drop: AlignBottomIcon,
 };
 
 /** The markup an icon draws */
