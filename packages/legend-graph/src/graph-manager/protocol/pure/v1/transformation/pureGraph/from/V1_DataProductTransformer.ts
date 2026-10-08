@@ -343,7 +343,6 @@ export const V1_transformDataProduct = (
         modelGroup.id = metamodelGroup.id;
         modelGroup.title = metamodelGroup.title;
         modelGroup.description = metamodelGroup.description;
-        modelGroup.targets = metamodelGroup.targets;
         modelGroup.stereotypes = metamodelGroup.stereotypes.map(
           V1_transformStereotype,
         );
@@ -396,7 +395,6 @@ export const V1_transformDataProduct = (
       group.id = metamodelGroup.id;
       group.title = metamodelGroup.title;
       group.description = metamodelGroup.description;
-      group.targets = metamodelGroup.targets;
       group.stereotypes = metamodelGroup.stereotypes.map(
         V1_transformStereotype,
       );
