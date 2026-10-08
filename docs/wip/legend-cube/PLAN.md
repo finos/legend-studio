@@ -930,8 +930,8 @@ Adding a source kind means two registrations and nothing else; the graph, infere
 untouched (§6.7's promise). **Not built yet:** the core half exists (`SourceDefinition`), but the builder has no
 `SourceKindAdapter`; it is wired to relational tables. A new source kind today also touches `CubeEditorState`
 (re-checking tables, the picker's opening), `CubeSourcePickerState`, `CubeJoinDraft` (where a column comes from),
-`CubeSourceEditor`, and the port's `resolveSchemas` and `CubeModelOutline`. The seam is built with the first new
-source kind, the direct connection (§6.8; M2.0 no longer gates it):
+`CubeSourceEditor`, and the port's `resolveSchemas` and `CubeModelOutline`. The builder's picker half is built with
+the direct connection, and the core half with data products (§6.8; M2.0 no longer gates either):
 
 - **Core:** a `SourceDefinition` (§4.5), covering coordinates, codec, validate, describe, `emit` (an IR relation
   expression, e.g. an accessor), and the execution requirements it contributes (runtime, and later mapping or
@@ -1161,18 +1161,32 @@ SDLC pointers once their test data becomes LocalH2 setup SQL ✅. Cube copies th
 internals (user, 2026-10-08): questions for the original app's team are about its UI only, in
 [QUESTIONS.md](QUESTIONS.md); checks that need an internal deployment are kept outside the repo.
 
-- **Build order:** the direct connection first (closest to the pasted-model path, testable on a laptop, and it builds
-  the source seam of §6.1 that the others reuse), then Depot databases, then data products, each once its mocks land.
+- **Build order:** the direct connection first (closest to the pasted-model path and testable on a laptop), then Depot
+  databases, then data products, each once its mocks land. The direct connection builds the picker half of the §6.1
+  seam (a dialog with one tab per kind); the core half (a new `SourceDefinition`) comes with data products, the first
+  source that isn't a relational table.
 - **Depot databases, for now:** project → version → Database → table, with a runtime from the same project. A global
   search across projects' Databases comes later as a second mode of the same picker (the open-source Depot only
   matches element paths and doesn't page, so it leans on an internal Depot route; local evidence
   `sources-v2/db-depot.md`).
 - **Direct-connection types:** H2 and DuckDB first, the only ones testable on a laptop (the local engine has no vault
   for credentials). Postgres comes right after, to test a real server database.
-- **Direct connection, saved like the original app:** the source saves the full connection (protocol JSON), the schema
-  and the table. Cube builds the executable model (a Database with the used tables, the connection, a runtime) only
-  when it calls the engine, e.g. by introspecting just those tables with `schemaExploration`. A saved connection
-  holds auth references, never a secret.
+- **Direct connection:** the cube saves the full connection (protocol JSON) once, as its model
+  (`context.model = {_type: <a Cube-owned kind>, connection}`), and each table stays an ordinary relational source
+  (schema and table) on a fixed generated Database path. This amends the first wording, which had the connection saved
+  on each source as in the original app: a cube has one connection anyway, the layout is internal, and Cube never reads
+  the original's saved queries (§1.2). Cube builds the executable model (a Database with the used tables, the
+  connection, a mapping-less runtime) only when it calls the engine, by introspecting just those tables with
+  `schemaExploration`. A saved connection holds auth references, never a secret. The saved format stays at version 1:
+  the change is additive, and an older reader reports the model kind as unsupported.
+- **The direct-connection picker:** the one "Relational Database Table" item opens a dialog with two tabs, "Model" and
+  "Database connection"; a cube's fixed model selects the tab. The form starts with a prefilled H2 sample and has no
+  box for pasting connection JSON. Setup SQL and DuckDB file paths are always offered, as Paste Pure model already
+  allows: the engine accepts them from any client (hosting.md notes the exposure; revisit with Postgres). Once a table
+  is added the connection is fixed until every table is removed (no "Edit connection" until QUESTIONS.md U8 is
+  answered); reopening the dialog lists the connection's schemas at once.
+- **Columns the engine can't type** (it reports them as `Other`: on H2 REAL, TIME, BINARY, CLOB, UUID and arrays; on
+  DuckDB HUGEINT, TIME, BLOB, UUID and arrays) are hidden, and the picker shows "N columns hidden".
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
@@ -2405,7 +2419,7 @@ Also check and record:
 | ---- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | M2.0 | legend-graph types (D12)                   | Fix legend-graph's precise primitives as their own PR to master: resolve by full path as well as short name, fix the `Timestamp` path (now a relational class), deprecate the phantom `Decimal`/`Date`/`Time` precise constants, keep parameters through `getLambdaRelationType`, fix its batch variant. Then rebase `CubeType` on legend-graph's `GenericType`; the core may depend on legend-graph's metamodel (never `V1_*`); update §3.3 and Appendix A (§2.2). Needed when Cube types tables locally; no longer gates M3's sources (user, 2026-10-08, §6.8) |
 | M2   | Simple unary transforms + Join autofix     | Rename (§7.5 + collision fix; regex replaced, see Appendix A), the **Join rename autofix** (collision-free names), Restrict (input order), Sort (+ "Sort only affects output at the sink" warning), Distinct, Limit, Drop, Slice (`[start, stop)`); the database workarounds of §11.4 (row numbers for Drop and Slice on SQL Server, Sybase and Sybase IQ, for Drop on DB2, MemSQL and ClickHouse and for every Limit on Sybase IQ; a padded Distinct on SQL Server and Sybase IQ); grid quick actions (Sort by / Filter by X)                                   |
-| M3   | Entry points, sources modal, depot catalog | D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                                                                                                |
+| M3   | Entry points, sources modal, depot catalog | The direct connection first (§6.8). D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                                                            |
 | M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family), `aggregate()` for global groups; Concat with precise-strict schema equality + widen autofix; a conformance suite comparing local inference with `lambdaRelationType` for every node type                                                                                                                                                                                                                                                                                            |
 | M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas)                                                                                                                                                                                                                                                                                                                                                                                      |
 | M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
