@@ -19,7 +19,7 @@ import type {
   ClassifierPathMapping,
   SubtypeInfo,
 } from '../action/protocol/ProtocolInfo.js';
-import axios, { type AxiosResponse, AxiosError } from 'axios';
+import { type AxiosResponse, AxiosError, create as createAxios } from 'axios';
 import {
   ContentType,
   HttpHeader,
@@ -79,7 +79,7 @@ const getEngineErrorMessage = (data: unknown): string | undefined => {
  * "Request failed with status code 400". The error is still an `AxiosError`, so callers
  * can keep inspecting its `status` and `response`.
  */
-const engineClient = axios.create();
+const engineClient = createAxios();
 engineClient.interceptors.response.use(undefined, (error: unknown) => {
   if (error instanceof AxiosError) {
     const engineMessage = getEngineErrorMessage(error.response?.data);
