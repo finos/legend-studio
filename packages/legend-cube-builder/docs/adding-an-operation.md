@@ -1,0 +1,52 @@
+# Adding an operation: the builder half
+
+Start with the core half, in [`@finos/legend-cube`'s guide](../../legend-cube/docs/adding-an-operation.md): the
+node, its messages, emitter and codec, and its entry in the node registry. The palette, the context menu and the
+canvas read that registry, so the new type shows there with no change here.
+
+The builder adds four pieces, each in a registry keyed by node type. Join and Filter are the examples to follow.
+
+## 1. A draft
+
+The side panel never edits the document: an editor edits a draft, and the panel's **Apply** stores the draft's node
+as one undo step (**Cancel** drops it).
+
+- In `src/stores/editors/Cube<Type>Draft.ts`, extend `CubeNodeDraft<Type>`: observable fields for the settings being
+  edited, actions that change them, and `build()`. `build()` returns `original` itself while nothing was edited, and
+  otherwise a new node with the same id and `rest`. The panel also treats a node that saves the same as `original`
+  as no change.
+- Register a factory in `CUBE_NODE_DRAFT_FACTORIES` (`src/stores/editors/CubeNodeDraftRegistry.ts`).
+
+## 2. An editor
+
+- In `src/components/editors/Cube<Type>Editor.tsx`, an `observer` component taking `CubeNodeEditorProps`:
+  `editorState`, `draft`, `inputSchemas` (the inputs' schemas in port order; the panel shows the editor only once all
+  are there) and `readOnly` (a cube saved by a newer version: show, don't edit).
+- It changes only the draft. An action on the document, such as Join's Swap Inputs, goes through
+  `editorState.nodeEditor`, which applies the draft first.
+- `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
+- Register it in `CUBE_NODE_EDITORS` (`src/components/editors/CubeNodeEditorRegistry.ts`).
+
+## 3. Help text
+
+An entry in `CUBE_NODE_HELP_TEXT` (`src/__lib__/LegendCubeHelpText.ts`), shown in the panel's header. Use the spec's
+text (§17.9) where it has one.
+
+## 4. An icon
+
+Map the icon name of the node's definition to a legend-art icon in `NODE_ICONS` (`src/components/CubeNodeIcon.tsx`).
+
+## Tests
+
+- `src/components/editors/__tests__/CubeNodeEditorRegistry.test.ts` fails for a type missing a piece: it checks every
+  registered type for help text, an icon and an editor, and that each transform's draft gives back its node until
+  edited. Add the new help text to its exact list.
+- Add the new item to the lists in `src/components/palette/__tests__/CubePalette.test.tsx` and
+  `src/components/canvas/__tests__/CubeCanvasContextMenu.test.tsx`.
+- A draft test (`src/stores/editors/__tests__/`) and an editor test (`src/components/editors/__tests__/`), as Join's
+  and Filter's are.
+- An engine test of the operation's lambda (see [Testing](./testing.md)), asserting what it returns, not its text.
+
+The `v1/` adapter (`V1_CubeLambdaSerializer`) needs no change while the operation's emitter uses only IR and literal
+kinds it already writes. A new kind of IR node or literal needs its own case there, with a test in
+`src/graph-manager/protocol/pure/v1/__tests__/`.
