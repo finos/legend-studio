@@ -501,6 +501,21 @@ export class AppDirOwner extends DataProductOwner implements Hashable {
   }
 }
 
+export class ProdDataProductOverride implements Hashable {
+  all = false;
+  dataProducts: PackageableElementReference<DataProduct>[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_PROD_OVERRIDE,
+      this.all.toString(),
+      hashArray(
+        this.dataProducts.map((ref) => ref.valueForSerialization ?? ''),
+      ),
+    ]);
+  }
+}
+
 export class DataProduct extends PackageableElement implements Testable {
   title: string | undefined;
   description: string | undefined;
@@ -513,6 +528,7 @@ export class DataProduct extends PackageableElement implements Testable {
   operationalMetadata: OperationalMetadata | undefined;
   owner: DataProductOwner | undefined;
   tests: DataProductTestSuite[] = [];
+  prodDataProductOverride: ProdDataProductOverride | undefined;
 
   override accept_PackageableElementVisitor<T>(
     visitor: PackageableElementVisitor<T>,
@@ -536,6 +552,7 @@ export class DataProduct extends PackageableElement implements Testable {
       this.operationalMetadata ?? '',
       this.owner ?? '',
       hashArray(this.tests),
+      this.prodDataProductOverride ?? '',
     ]);
   }
 }

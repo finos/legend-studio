@@ -449,6 +449,19 @@ export class V1_AppDirOwner extends V1_DataProductOwner implements Hashable {
   }
 }
 
+export class V1_ProdDataProductOverride implements Hashable {
+  all = false;
+  dataProducts: V1_PackageableElementPointer[] = [];
+
+  get hashCode(): string {
+    return hashArray([
+      CORE_HASH_STRUCTURE.DATA_PRODUCT_PROD_OVERRIDE,
+      this.all.toString(),
+      hashArray(this.dataProducts.map((ptr) => ptr.path)),
+    ]);
+  }
+}
+
 export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   title: string | undefined;
   description: string | undefined;
@@ -463,6 +476,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
   operationalMetadata: V1_DataProductOperationalMetadata | undefined;
   owner: V1_DataProductOwner | undefined;
   testSuites: V1_DataProductTestSuite[] | undefined;
+  prodDataProductOverride: V1_ProdDataProductOverride | undefined;
 
   override get hashCode(): string {
     return hashArray([
@@ -480,6 +494,7 @@ export class V1_DataProduct extends V1_PackageableElement implements Hashable {
       this.operationalMetadata ?? '',
       this.owner ?? '',
       hashArray(this.testSuites ?? []),
+      this.prodDataProductOverride ?? '',
     ]);
   }
 

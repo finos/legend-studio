@@ -103,6 +103,8 @@ import {
   TEST_DATA__DATAPRODUCT_WITH_OWNER,
   TEST_DATA__DATAPRODUCT__TEST_SUITES,
   TEST_DATA__DATAPRODUCT__SECURE_VIEWS,
+  TEST_DATA__DATAPRODUCT_WITH_PROD_OVERRIDE_ALL,
+  TEST_DATA__DATAPRODUCT_WITH_PROD_OVERRIDE_LIST,
 } from './roundtripTestData/TEST_DATA__DataProductRoundtrip.js';
 import {
   TEST_DATA__COMPUTE_SNOWFLAKE,
@@ -355,6 +357,14 @@ describe(unitTest('DSL Data product'), () => {
     ['DSL Data Product with Owner', TEST_DATA__DATAPRODUCT_WITH_OWNER],
     ['DSL Data Product Test Suites', TEST_DATA__DATAPRODUCT__TEST_SUITES],
     ['DSL Data Product Secure Views', TEST_DATA__DATAPRODUCT__SECURE_VIEWS],
+    [
+      'DSL Data Product with Prod Override ALL',
+      TEST_DATA__DATAPRODUCT_WITH_PROD_OVERRIDE_ALL,
+    ],
+    [
+      'DSL Data Product with Prod Override List',
+      TEST_DATA__DATAPRODUCT_WITH_PROD_OVERRIDE_LIST,
+    ],
   ])('%s', async (testName, entities) => {
     await TEST__checkBuildingElementsRoundtrip(entities);
   });

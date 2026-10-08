@@ -60,6 +60,7 @@ import {
   V1_NativeModelExecutionContext,
   V1_AppDirOwner,
   V1_SecureView,
+  V1_ProdDataProductOverride,
 } from '../../../model/packageableElements/dataProduct/V1_DataProduct.js';
 import { V1_initPackageableElement } from './V1_CoreTransformerHelper.js';
 import { V1_transformAppDirNode } from './V1_AppDirNodeTransformerHelper.js';
@@ -430,6 +431,19 @@ export const V1_transformDataProduct = (
     throw new UnsupportedOperationError(
       `Unable to transform data product owner`,
     );
+  }
+
+  if (element.prodDataProductOverride) {
+    const override = new V1_ProdDataProductOverride();
+    override.all = element.prodDataProductOverride.all;
+    override.dataProducts = element.prodDataProductOverride.dataProducts.map(
+      (ref) =>
+        new V1_PackageableElementPointer(
+          undefined,
+          ref.valueForSerialization ?? '',
+        ),
+    );
+    product.prodDataProductOverride = override;
   }
 
   return product;
