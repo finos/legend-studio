@@ -14,22 +14,15 @@
  * limitations under the License.
  */
 
+import { describe, test, expect, jest, beforeEach } from '@jest/globals';
 import {
-  describe,
-  test,
-  expect,
-  jest,
-  beforeAll,
-  afterAll,
-} from '@jest/globals';
-import {
-  cleanup,
+  act,
   getAllByText,
   getByText,
   getByTitle,
   waitFor,
 } from '@testing-library/react';
-import { integrationTest } from '@finos/legend-shared/test';
+import { integrationTest, createSpy } from '@finos/legend-shared/test';
 import {
   TEST__openElementFromExplorerTree,
   TEST__provideMockedEditorStore,
@@ -60,11 +53,9 @@ describe(integrationTest('Database editor'), () => {
     ReturnType<typeof TEST__setUpEditorWithDefaultSDLCData>
   >;
 
-  afterAll(() => {
-    cleanup();
-  });
-
-  beforeAll(async () => {
+  // NOTE: set up per test (not in `beforeAll`) so `jest.retryTimes()` re-renders
+  // the editor on retry; RTL's auto-cleanup empties the DOM after a failed attempt.
+  beforeEach(async () => {
     MockedMonacoEditorInstance.getValue.mockReturnValue('');
     MockedMonacoEditorInstance.getRawOptions.mockReturnValue({
       readOnly: true,
@@ -74,7 +65,24 @@ describe(integrationTest('Database editor'), () => {
       MOCK__editorStore,
       { entities: TEST_DATA__SimpleRelationalEntities },
     );
+    // Opening the database eagerly fires the formula loads (one batched engine
+    // call for the joins in this database). Hold the engine response and settle
+    // it inside `act()`: if the flow completes outside `act()`, React's warning
+    // is thrown by `disallowConsoleError` inside a MobX reaction, which leaves
+    // MobX unable to run any further reactions and the editor stops updating.
+    let resolveFormulas: (formulas: Map<string, string>) => void = () => {};
+    createSpy(
+      MOCK__editorStore.graphManagerState.graphManager,
+      'relationalOperationElementToPureCode',
+    ).mockReturnValue(
+      new Promise((resolve) => {
+        resolveFormulas = resolve;
+      }),
+    );
     await TEST__openElementFromExplorerTree('store::TestDB', renderResult);
+    await act(async () => {
+      resolveFormulas(new Map());
+    });
   });
 
   test(
@@ -116,6 +124,7 @@ describe(integrationTest('Database editor'), () => {
           DatabaseEditorState,
         );
       expect(editorState.selectedTab).toBe(DATABASE_EDITOR_TAB.VIEW);
+      expect(editorState.isLoadingJoinFormulas).toBe(false);
     },
   );
 });

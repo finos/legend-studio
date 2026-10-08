@@ -75,36 +75,51 @@ type ColumnMapping = View['columnMappings'][number];
  * default copy icon, briefly flips to a "Copied!" label after a successful
  * write, then resets. Click stops propagation so the surrounding row's
  * click handler (which usually selects/focuses the row) doesn't fire.
+ *
+ * NOTE: rendered as a `<span role="button">` rather than a `<button>` since
+ * most of the rows it sits in are themselves `<button>`s, and a `<button>`
+ * cannot be nested inside another `<button>`.
  */
 const CopyFormulaButton: React.FC<{ value: string; label?: string }> = ({
   value,
   label = 'Copy',
 }) => {
   const [copied, setCopied] = useState(false);
+  const copy = (): void => {
+    // `navigator.clipboard` may be unavailable in test/insecure contexts;
+    // fall through silently in that case rather than throwing.
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1200);
+      })
+      .catch(() => {
+        /* no-op \u2014 copy failures are non-fatal */
+      });
+  };
   return (
-    <button
-      type="button"
+    <span
+      role="button"
+      tabIndex={0}
       className={clsx('database-diagram__copy-btn', {
         'database-diagram__copy-btn--copied': copied,
       })}
       title={copied ? 'Copied!' : label}
       onClick={(event) => {
         event.stopPropagation();
-        // `navigator.clipboard` may be unavailable in test/insecure contexts;
-        // fall through silently in that case rather than throwing.
-        navigator.clipboard
-          .writeText(value)
-          .then(() => {
-            setCopied(true);
-            window.setTimeout(() => setCopied(false), 1200);
-          })
-          .catch(() => {
-            /* no-op \u2014 copy failures are non-fatal */
-          });
+        copy();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          event.stopPropagation();
+          copy();
+        }
       }}
     >
       <CopyIcon />
-    </button>
+    </span>
   );
 };
 
