@@ -31,10 +31,10 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
 - [x] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
 - [x] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
-- [x] **M1.9** Slice acceptance (part B, manual) and hardening (accepted and signed off 2026-10-08; follow-up PR to open)
-- [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
+- [x] **M1.9** Slice acceptance (part B, manual) and hardening (accepted and signed off 2026-10-08; merged as #5634, `3260216a6`)
+- [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. No longer gates the sources (PLAN §6.8)
 - [ ] M2 Rename + Join autofix + simple unary transforms
-- [ ] M3 Entry points, sources modal, depot catalog (user to design entry points and the sources modal first)
+- [ ] M3 Sources: the direct connection first (H2 and DuckDB; PLAN §6.8), then Depot databases; entry points and the sources modal
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
 
@@ -71,7 +71,8 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 6. ✅ **Part B acceptance, 2026-10-08:** the user ran all of PLAN §11.2 Part B by hand and reported that it passed,
    on `cubeV1` at `4064209a6` (code and tests as at the acceptance head `92afa6f9f`), in Chrome, against the local
    IntelliJ engine (commit `93d92b4`); docker CORS waived. **M1 review sign-off** (PLAN §11.1): the finos approval of
-   #5591 (Yasirmod17, 2026-10-08) and the user's OK on 2026-10-08. Next: the follow-up PR.
+   #5591 (Yasirmod17, 2026-10-08) and the user's OK on 2026-10-08. The follow-up PR, #5634, merged on 2026-10-08 as
+   `3260216a6`.
 
 **In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
 from `cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
