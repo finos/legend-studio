@@ -60,18 +60,7 @@ enum ROUNTRIP_TEST_PHASES {
 const SKIP = Symbol('SKIP GRAMMAR ROUNDTRIP TEST');
 
 const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
-  // TODO: remove these when we can properly handle relational mapping `mainTable` and `primaryKey` in transformers.
-  // See https://github.com/finos/legend-studio/issues/295
-  // See https://github.com/finos/legend-studio/issues/294
-  'STO_Relational-embedded-relational-mapping.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-    ROUNTRIP_TEST_PHASES.CHECK_HASH,
-  ],
   'STO_Relational-nested-embedded-relational-mapping.pure': SKIP,
-  'STO_Relational-relational-mapping-filter.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-    ROUNTRIP_TEST_PHASES.CHECK_HASH,
-  ],
   // Relation function mapping: engine protocol includes extra empty arrays Studio omits
   'STO_Relational-relation-function-mapping.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
@@ -79,19 +68,7 @@ const EXCLUSIONS: { [key: string]: ROUNTRIP_TEST_PHASES[] | typeof SKIP } = {
   'STO_Relational-relation-function-mapping-with-primaryKey.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
-  'STO_Relational-relation-function-mapping-with-enum.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
-  'STO_Relational-relation-function-mapping-with-multiple-enums.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
-  'STO_Relational-relation-function-mapping-with-embedded.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
   'STO_Relational-relation-function-mapping-with-embedded-association.pure': [
-    ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
-  ],
-  'STO_Relational-relation-function-mapping-with-inline-embedded.pure': [
     ROUNTRIP_TEST_PHASES.PROTOCOL_ROUNDTRIP,
   ],
   'STO_Relational-relation-function-mapping-with-inline-embedded-association.pure':

@@ -1,0 +1,139 @@
+###Snowflake
+SnowflakeApp <<model::ActivatorProfile.critical>> {model::ActivatorProfile.owner = 'team-a', doc.doc = 'app with all options'} model::FullOptionsApp
+{
+   applicationName : 'FULL_OPTIONS_APP';
+   function : model::FirmNames():TabularDataSet[1];
+   ownership : Deployment { identifier: '12345'};
+   description : 'A super nice app!';
+   usageRole : 'PRIVATE';
+   permissionScheme : SEQUESTERED;
+   deploymentSchema : 'legend_native_apps_1';
+   activationConfiguration : model::SnowflakeConnection;
+}
+
+'''
+App using the default permission scheme.
+'''
+SnowflakeApp model::DefaultSchemeApp
+{
+   applicationName : 'DEFAULT_SCHEME_APP';
+   function : model::FirmNames(String[1]):TabularDataSet[1];
+   ownership : Deployment { identifier: '12345'};
+   description : 'default permission scheme';
+   permissionScheme : DEFAULT;
+   activationConfiguration : model::SnowflakeConnection;
+}
+
+SnowflakeM2MUdf <<model::ActivatorProfile.critical>> {model::ActivatorProfile.owner = 'team-b'} model::AnnotatedUdf
+{
+   udfName : 'ANNOTATED_UDF';
+   function : model::FirmNameUdf(String[1]):String[1];
+   ownership : Deployment { identifier: '12345'};
+   deploymentSchema : 'UDF_SCHEMA';
+   deploymentStage : 'UDF_SCHEMA.UDF_STAGE';
+   description : 'An annotated M2M UDF';
+   activationConfiguration : model::SnowflakeConnection;
+}
+
+
+###Pure
+Profile model::ActivatorProfile
+{
+  stereotypes: [critical];
+  tags: [owner];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+}
+
+function model::FirmNames(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(model::FirmMapping, model::FirmRuntime)
+}
+
+function model::FirmNames(prefix: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->filter(x|$x.legalName->startsWith($prefix))->project([x|$x.legalName], ['Legal Name'])->from(model::FirmMapping, model::FirmRuntime)
+}
+
+function model::FirmNameUdf(input: String[1]): String[1]
+{
+  model::Firm.all()->graphFetch(#{model::Firm{legalName}}#)->serialize(#{model::Firm{legalName}}#)->from(model::FirmMapping, model::FirmRuntime)
+}
+
+
+###Relational
+Database store::FirmDb
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+)
+
+
+###Mapping
+Mapping model::FirmMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::FirmDb]FirmTable.id
+    )
+    ~mainTable [store::FirmDb]FirmTable
+    legalName: [store::FirmDb]FirmTable.legal_name
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::H2Connection
+{
+  store: store::FirmDb;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection model::SnowflakeConnection
+{
+  store: store::FirmDb;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'test';
+    warehouse: 'test';
+    region: 'test';
+    cloudType: 'test';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'test';
+    privateKeyVaultReference: 'test';
+    passPhraseVaultReference: 'test';
+  };
+}
+
+
+###Runtime
+Runtime model::FirmRuntime
+{
+  mappings:
+  [
+    model::FirmMapping
+  ];
+  connections:
+  [
+    store::FirmDb:
+    [
+      connection_1: model::H2Connection
+    ]
+  ];
+}

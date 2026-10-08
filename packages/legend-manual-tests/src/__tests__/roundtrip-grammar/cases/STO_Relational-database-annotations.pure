@@ -1,0 +1,53 @@
+###Pure
+Profile model::profiles::StoreProfile
+{
+  stereotypes: [sensitive, deprecated, reference];
+  tags: [owner, classification, source];
+}
+
+
+###Relational
+Database <<model::profiles::StoreProfile.reference, equality.Key>> model::store::AnnotatedDatabase
+(
+  '''
+  The product schema.
+  '''
+  Schema <<model::profiles::StoreProfile.reference>> {model::profiles::StoreProfile.owner = 'products'} productSchema
+  (
+    '''
+    One row per product.
+    Keyed by ID.
+    '''
+    Table <<model::profiles::StoreProfile.reference, equality.Key>> {model::profiles::StoreProfile.source = 'upstream', model::profiles::StoreProfile.classification = 'internal'} productTable
+    (
+      '''
+      The product identifier.
+      '''
+      ID INTEGER PRIMARY KEY,
+      NAME <<model::profiles::StoreProfile.sensitive>> VARCHAR(200),
+      CODE {model::profiles::StoreProfile.classification = 'public'} VARCHAR(20) NOT NULL,
+      LEGACY_CODE <<model::profiles::StoreProfile.deprecated>> {doc.doc = 'Use CODE instead'} VARCHAR(20),
+      PRICE DECIMAL(10, 2)
+    )
+
+    '''
+    Products, flattened.
+    '''
+    View <<model::profiles::StoreProfile.reference>> {model::profiles::StoreProfile.owner = 'reporting'} productView
+    (
+      id: productSchema.productTable.ID PRIMARY KEY,
+      name: productSchema.productTable.NAME
+    )
+  )
+
+  Table <<model::profiles::StoreProfile.sensitive>> plainTable
+  (
+    ID INTEGER PRIMARY KEY,
+    VALUE {model::profiles::StoreProfile.source = 'manual'} VARCHAR(100)
+  )
+
+  View {model::profiles::StoreProfile.owner = 'reporting'} plainView
+  (
+    id: plainTable.ID PRIMARY KEY
+  )
+)

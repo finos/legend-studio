@@ -1,0 +1,84 @@
+###Pure
+Class model::Person
+[
+  ageMustBePositive: $this.age > 0,
+  'name Must NotBeBlank': $this.name->isNotEmpty()
+]
+{
+  name: String[1];
+  lastName: String[0..1];
+  age: Integer[1];
+  addresses: model::Address[*];
+}
+
+Class model::Address
+[
+  streetMustNotBeBlank: $this.street->isNotEmpty()
+]
+{
+  addressId: String[1];
+  street: String[1];
+}
+
+
+###Mapping
+Mapping model::PersonMapping
+(
+)
+
+
+###Runtime
+Runtime model::PersonRuntime
+{
+  mappings:
+  [
+    model::PersonMapping
+  ];
+}
+
+
+###DataSpace
+DataSpace model::PersonDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Local_Context';
+      mapping: model::PersonMapping;
+      defaultRuntime: model::PersonRuntime;
+    }
+  ];
+  defaultExecutionContext: 'Local_Context';
+}
+
+
+###DataQualityValidation
+DataQualityValidation model::PersonValidationWithFilter
+{
+   context: fromDataSpace(model::PersonDataSpace, 'Local_Context');
+   validationTree: $[
+      model::Person<ageMustBePositive, 'name Must NotBeBlank'>{
+        lastName,
+        name,
+        age,
+        addresses<streetMustNotBeBlank>{
+          addressId
+        }
+      }
+    ]$;
+   filter: p: model::Person[1]|$p.age >= 18;
+}
+
+DataQualityValidation model::PersonStructuralValidation
+{
+   context: fromMappingAndRuntime(model::PersonMapping, model::PersonRuntime);
+   validationTree: $[
+      model::Person{
+        name,
+        addresses{
+          addressId,
+          street
+        }
+      }
+    ]$;
+}

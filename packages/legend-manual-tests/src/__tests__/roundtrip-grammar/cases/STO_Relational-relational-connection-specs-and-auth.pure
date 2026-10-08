@@ -1,0 +1,212 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::EmbeddedH2Connection
+{
+  store: store::db;
+  type: H2;
+  specification: EmbeddedH2
+  {
+    name: 'myDb';
+    directory: './h2/data';
+    autoServerMode: true;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::EmbeddedH2ConnectionNoAutoServer
+{
+  store: store::db;
+  type: H2;
+  specification: EmbeddedH2
+  {
+    name: 'otherDb';
+    directory: '/tmp/h2';
+    autoServerMode: false;
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection connection::relational::SqlServerDelegatedKerberos
+{
+  store: store::db;
+  type: SqlServer;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1433;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::SqlServerDelegatedKerberosWithPrincipal
+{
+  store: store::db;
+  type: SqlServer;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1433;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'MSSQLSvc/host.example.com@EXAMPLE.COM';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::PostgresUserNamePassword
+{
+  store: store::db;
+  type: Postgres;
+  specification: Static
+  {
+    name: 'myDatabase';
+    host: 'myHost.com';
+    port: 5432;
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::PostgresDelegatedKerberos
+{
+  store: store::db;
+  type: Postgres;
+  timezone: 'UTC';
+  quoteIdentifiers: true;
+  specification: Static
+  {
+    name: 'myDatabase';
+    host: 'myHost.com';
+    port: 5432;
+  };
+  auth: DelegatedKerberos
+  {
+    serverPrincipal: 'postgres/myHost.com@EXAMPLE.COM';
+  };
+  queryTimeOutInSeconds: 60;
+}
+
+RelationalDatabaseConnection connection::relational::H2OAuth
+{
+  store: store::db;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: OAuth
+  {
+    oauthKey: 'cjeib2f84ur';
+    scopeName: 'UserPass';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::SybaseOAuth
+{
+  store: store::db;
+  type: Sybase;
+  specification: Static
+  {
+    name: 'sybaseDb';
+    host: 'sybase.host';
+    port: 5000;
+  };
+  auth: OAuth
+  {
+    oauthKey: 'key';
+    scopeName: 'scope';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::RedshiftConnection
+{
+  store: store::db;
+  type: Redshift;
+  specification: Redshift
+  {
+    host: 'myDBHost';
+    port: 5439;
+    name: 'database1';
+    region: 'us-east-1';
+    clusterID: 'cluster';
+    endpointURL: 'http://www.example.com';
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::RedshiftDelegatedKerberos
+{
+  store: store::db;
+  type: Redshift;
+  specification: Redshift
+  {
+    host: 'otherHost';
+    port: 1234;
+    name: 'database2';
+    region: 'east';
+    clusterID: 'cluster2';
+    endpointURL: 'https://redshift.example.com';
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::SpannerWithProxy
+{
+  store: store::db;
+  type: Spanner;
+  specification: Spanner
+  {
+    projectId: 'spanner-emulator-test-1';
+    instanceId: 'test-instance-1';
+    databaseId: 'test-db';
+    proxyHost: 'localhost';
+    proxyPort: 9010;
+  };
+  auth: GCPApplicationDefaultCredentials;
+}
+
+RelationalDatabaseConnection connection::relational::SpannerDelegatedKerberos
+{
+  store: store::db;
+  type: Spanner;
+  specification: Spanner
+  {
+    projectId: 'spanner-emulator-test-1';
+    instanceId: 'test-instance-1';
+    databaseId: 'test-db';
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::SpannerWorkloadIdentityScopes
+{
+  store: store::db;
+  type: Spanner;
+  specification: Spanner
+  {
+    projectId: 'spanner-emulator-test-1';
+    instanceId: 'test-instance-1';
+    databaseId: 'test-db';
+  };
+  auth: GCPWorkloadIdentityFederation
+  {
+    serviceAccountEmail: 'name';
+    additionalGcpScopes: [
+      'gcpScope',
+      'anotherGcpScope'
+      ];
+  };
+}

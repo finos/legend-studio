@@ -1,0 +1,103 @@
+###Relational
+Database model::store::MilestoningDatabase
+(
+  Schema milestoning
+  (
+    Table ProcessingSnapshotTable
+    (
+      milestoning
+      (
+        processing(PROCESSING_SNAPSHOT_DATE = snapshot_date)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      snapshot_date DATE
+    )
+    Table BusinessSnapshotTable
+    (
+      milestoning
+      (
+        business(BUS_SNAPSHOT_DATE = snapshot_date)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      snapshot_date DATE
+    )
+    Table BusinessThruInclusiveTable
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, THRU_IS_INCLUSIVE = true)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      from_z DATE,
+      thru_z DATE
+    )
+    Table BusinessThruInclusiveInfinityTable
+    (
+      milestoning
+      (
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, THRU_IS_INCLUSIVE = true, INFINITY_DATE = %9999-12-31T00:00:00.0000)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      from_z DATE,
+      thru_z DATE
+    )
+    Table ProcessingNoOptionsTable
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      in_z TIMESTAMP,
+      out_z TIMESTAMP
+    )
+    Table BiTemporalTable
+    (
+      milestoning
+      (
+        processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, OUT_IS_INCLUSIVE = true),
+        business(BUS_FROM = from_z, BUS_THRU = thru_z, THRU_IS_INCLUSIVE = true, INFINITY_DATE = %9999-12-31)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      in_z TIMESTAMP,
+      out_z TIMESTAMP,
+      from_z DATE,
+      thru_z DATE
+    )
+    Table BiTemporalSnapshotTable
+    (
+      milestoning
+      (
+        processing(PROCESSING_SNAPSHOT_DATE = processing_date),
+        business(BUS_SNAPSHOT_DATE = business_date)
+      )
+
+      ID INTEGER PRIMARY KEY,
+      processing_date DATE,
+      business_date DATE
+    )
+  )
+
+  Table BiTemporalMixedTable
+  (
+    milestoning
+    (
+      business(BUS_SNAPSHOT_DATE = business_date),
+      processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z, INFINITY_DATE = %9999-12-31T23:59:59)
+    )
+
+    ID INTEGER PRIMARY KEY,
+    business_date DATE,
+    in_z TIMESTAMP,
+    out_z TIMESTAMP
+  )
+)

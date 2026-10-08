@@ -1,0 +1,136 @@
+###Relational
+Database store::MilestonedDB
+(
+  Table ProductTable
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    CLASSIFICATION_ID INTEGER,
+    FROM_Z DATE,
+    THRU_Z DATE
+  )
+  Table ClassificationTable
+  (
+    milestoning
+    (
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z, THRU_IS_INCLUSIVE = true)
+    )
+
+    ID INTEGER PRIMARY KEY,
+    TYPE VARCHAR(200),
+    FROM_Z DATE,
+    THRU_Z DATE
+  )
+  Table AccountTable
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z)
+    )
+
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    IN_Z TIMESTAMP,
+    OUT_Z TIMESTAMP
+  )
+  Table PositionTable
+  (
+    milestoning
+    (
+      processing(PROCESSING_IN = IN_Z, PROCESSING_OUT = OUT_Z),
+      business(BUS_FROM = FROM_Z, BUS_THRU = THRU_Z)
+    )
+
+    ID INTEGER PRIMARY KEY,
+    ACCOUNT_ID INTEGER,
+    PRODUCT_ID INTEGER,
+    QUANTITY INTEGER,
+    IN_Z TIMESTAMP,
+    OUT_Z TIMESTAMP,
+    FROM_Z DATE,
+    THRU_Z DATE
+  )
+
+  Join ProductClassification(ProductTable.CLASSIFICATION_ID = ClassificationTable.ID)
+  Join PositionAccount(PositionTable.ACCOUNT_ID = AccountTable.ID)
+  Join PositionProduct(PositionTable.PRODUCT_ID = ProductTable.ID)
+)
+
+
+###Pure
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::ProductClassification
+{
+  type: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.businesstemporal>> model::Product
+{
+  name: String[1];
+  classification: model::ProductClassification[0..1];
+  classificationType: String[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> model::Account
+{
+  name: String[1];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> model::Position
+{
+  quantity: Integer[1];
+  account: model::Account[0..1];
+  product: model::Product[0..1];
+  productName: String[0..1];
+}
+
+
+###Mapping
+Mapping mapping::MilestonedMapping
+(
+  *model::ProductClassification[classification]: Relational
+  {
+    ~primaryKey
+    (
+      [store::MilestonedDB]ClassificationTable.ID
+    )
+    ~mainTable [store::MilestonedDB]ClassificationTable
+    type: [store::MilestonedDB]ClassificationTable.TYPE
+  }
+  *model::Product[product]: Relational
+  {
+    ~primaryKey
+    (
+      [store::MilestonedDB]ProductTable.ID
+    )
+    ~mainTable [store::MilestonedDB]ProductTable
+    name: [store::MilestonedDB]ProductTable.NAME,
+    classification[classification]: [store::MilestonedDB]@ProductClassification,
+    classificationType: [store::MilestonedDB]@ProductClassification | [store::MilestonedDB]ClassificationTable.TYPE
+  }
+  *model::Account[account]: Relational
+  {
+    ~primaryKey
+    (
+      [store::MilestonedDB]AccountTable.ID
+    )
+    ~mainTable [store::MilestonedDB]AccountTable
+    name: [store::MilestonedDB]AccountTable.NAME
+  }
+  *model::Position[position]: Relational
+  {
+    ~primaryKey
+    (
+      [store::MilestonedDB]PositionTable.ID
+    )
+    ~mainTable [store::MilestonedDB]PositionTable
+    quantity: [store::MilestonedDB]PositionTable.QUANTITY,
+    account[account]: [store::MilestonedDB]@PositionAccount,
+    product[product]: [store::MilestonedDB]@PositionProduct,
+    productName: [store::MilestonedDB]@PositionProduct | [store::MilestonedDB]ProductTable.NAME
+  }
+)

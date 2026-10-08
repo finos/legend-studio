@@ -1,0 +1,72 @@
+Profile model::Annotations
+{
+  stereotypes: [important, legacy, 'two words'];
+  tags: [owner, 'review status', classification];
+}
+
+Profile model::EmptyProfile
+{
+}
+
+Class <<model::Annotations.important, meta::pure::profiles::temporal.businesstemporal>> {model::Annotations.owner = 'Data Team', model::Annotations.'review status' = 'approved', meta::pure::profiles::doc.doc = 'A firm.'} model::Firm
+{
+  <<meta::pure::profiles::equality.Key, model::Annotations.'two words'>> {model::Annotations.classification = 'public'} legalName: String[1];
+  {model::Annotations.owner = 'Ops\'s team'} employeeCount: Integer[0..1];
+  <<model::Annotations.legacy>> {meta::pure::profiles::doc.doc = 'Upper-cased name.'} upperName() {$this.legalName->toUpper()}: String[1];
+  '''
+  Name with a caller-supplied prefix.
+  Never empty.
+  '''
+  <<model::Annotations.important>> nameWithPrefix(prefix: String[1]) {$prefix + $this.legalName}: String[1];
+}
+
+Class model::Person
+{
+  '''
+  Full name.
+  '''
+  name: String[1];
+}
+
+'''
+The kind of employment.
+Used for payroll classification.
+'''
+Enum <<model::Annotations.important>> {model::Annotations.owner = 'HR'} model::EmploymentType
+{
+  '''
+  Full-time employee.
+  Eligible for benefits.
+  '''
+  FULL_TIME,
+  <<model::Annotations.legacy, model::Annotations.'two words'>> {model::Annotations.classification = 'internal', meta::pure::profiles::doc.todo = 'remove'} CONTRACTOR,
+  {meta::pure::profiles::doc.doc = 'Part-time employee.'} PART_TIME
+}
+
+'''
+Links a firm to its employees.
+Both ends are navigable.
+'''
+Association <<model::Annotations.important>> {model::Annotations.owner = 'Data Team'} model::FirmEmployment
+{
+  <<model::Annotations.legacy>> {model::Annotations.classification = 'public'} employer: model::Firm[0..1];
+  '''
+  Everyone employed by the firm.
+  '''
+  employees: model::Person[*];
+  <<model::Annotations.'two words'>> {model::Annotations.owner = 'HR'} employeesNamed(name: String[1]) {$this.employees->filter(e|$e.name == $name)}: model::Person[*];
+}
+
+'''
+Answers everything.
+Deterministically.
+'''
+function <<model::Annotations.important, meta::pure::profiles::doc.deprecated>> {model::Annotations.owner = 'Core Team', model::Annotations.'review status' = 'pending'} model::answer(): Integer[1]
+{
+  42
+}
+
+function <<model::Annotations.'two words'>> model::greet(name: String[1]): String[1]
+{
+  'Hello ' + $name
+}

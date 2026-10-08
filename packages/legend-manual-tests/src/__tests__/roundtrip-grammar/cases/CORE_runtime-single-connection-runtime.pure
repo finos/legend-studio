@@ -1,0 +1,108 @@
+###Pure
+Class model::Person
+{
+  name: String[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+}
+
+Class model::TargetPerson
+{
+  fullName: String[1];
+}
+
+
+###Mapping
+Mapping mapping::PersonMapping
+(
+  *model::TargetPerson: Pure
+  {
+    ~src model::Person
+    fullName: $src.name
+  }
+)
+
+Mapping mapping::FirmMapping
+(
+)
+
+
+###Connection
+JsonModelConnection connection::PersonJsonConnection
+{
+  class: model::Person;
+  url: 'data:application/json,{"name":"John"}';
+}
+
+JsonModelConnection connection::FirmJsonConnection
+{
+  class: model::Firm;
+  url: 'data:application/json,{"legalName":"Finos"}';
+}
+
+
+###Runtime
+Runtime runtime::EmbeddedConnectionsRuntime
+{
+  mappings:
+  [
+    mapping::PersonMapping,
+    mapping::FirmMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      json_person: connection::PersonJsonConnection,
+      json_firm: connection::FirmJsonConnection,
+      xml_person:
+      #{
+        XmlModelConnection
+        {
+          class: model::Person;
+          url: 'data:application/xml,<person><name>John</name></person>';
+        }
+      }#,
+      json_embedded:
+      #{
+        JsonModelConnection
+        {
+          class: model::Firm;
+          url: 'my_url';
+        }
+      }#,
+      model_chain:
+      #{
+        ModelChainConnection
+        {
+          mappings: [
+            mapping::PersonMapping,
+            mapping::FirmMapping
+          ];
+        }
+      }#
+    ]
+  ];
+}
+
+SingleConnectionRuntime runtime::PersonSingleConnectionRuntime
+{
+  mappings:
+  [
+    mapping::PersonMapping
+  ];
+  connection: connection::PersonJsonConnection;
+}
+
+SingleConnectionRuntime runtime::FirmSingleConnectionRuntime
+{
+  mappings:
+  [
+    mapping::FirmMapping,
+    mapping::PersonMapping
+  ];
+  connection: connection::FirmJsonConnection;
+}

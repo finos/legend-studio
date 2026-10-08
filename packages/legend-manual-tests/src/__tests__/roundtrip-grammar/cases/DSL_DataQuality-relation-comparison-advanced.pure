@@ -1,0 +1,70 @@
+###Relational
+Database store::ReconDb
+(
+  Table SourceTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    AMOUNT INTEGER,
+    QUANTITY INTEGER,
+    ACTIVE BIT,
+    SOURCE_ONLY VARCHAR(200),
+    SRC_HASH VARCHAR(200)
+  )
+  Table TargetTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    AMOUNT INTEGER,
+    QUANTITY INTEGER,
+    ACTIVE BIT,
+    TARGET_ONLY VARCHAR(200),
+    TGT_HASH VARCHAR(200)
+  )
+)
+
+
+###Mapping
+Mapping model::DummyMapping
+(
+)
+
+
+###Runtime
+Runtime model::ReconRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###DataQualityValidation
+DataQualityRelationComparison model::ParameterizedRecon
+{
+   source: name: String[1]|#>{store::ReconDb.SourceTable}#->filter(c|$c.NAME == $name)->from(model::ReconRuntime);
+   target: {name: String[1], minAmount: Integer[1]|#>{store::ReconDb.TargetTable}#->filter(c|($c.NAME == $name) && ($c.AMOUNT >= $minAmount))->from(model::ReconRuntime)};
+   keys: [ID, NAME];
+   columnsToCompare: [AMOUNT];
+   strategy: MD5Hash
+   {
+     sourceHashColumn: SRC_HASH;
+     targetHashColumn: TGT_HASH;
+   };
+}
+
+DataQualityRelationComparison model::WholeRowRecon
+{
+   source: |#>{store::ReconDb.SourceTable}#->select(~[ID, NAME, AMOUNT])->from(model::ReconRuntime);
+   target: |#>{store::ReconDb.TargetTable}#->select(~[ID, NAME, AMOUNT])->from(model::ReconRuntime);
+   strategy: MD5Hash;
+}
+
+DataQualityRelationComparison model::KeysOnlyRecon
+{
+   source: |#>{store::ReconDb.SourceTable}#->from(model::ReconRuntime);
+   target: |#>{store::ReconDb.TargetTable}#->from(model::ReconRuntime);
+   keys: [ID];
+   strategy: MD5Hash;
+}

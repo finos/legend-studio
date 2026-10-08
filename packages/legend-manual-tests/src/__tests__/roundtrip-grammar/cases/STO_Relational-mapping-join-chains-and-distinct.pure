@@ -1,0 +1,102 @@
+###Relational
+Database model::store::TradeDB
+(
+  Schema trading
+  (
+    Table TradeTable
+    (
+      ID INTEGER PRIMARY KEY,
+      ACCOUNT_ID INTEGER,
+      QUANTITY INTEGER,
+      STATUS_CODE VARCHAR(10),
+      PRODUCT_NAME VARCHAR(200)
+    )
+    Table AccountTable
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_ID INTEGER,
+      ACCOUNT_NAME VARCHAR(200),
+      ACTIVE_FLAG VARCHAR(1)
+    )
+    Table FirmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGAL_NAME VARCHAR(200),
+      REGION VARCHAR(20)
+    )
+  )
+
+  Join TradeAccount(trading.TradeTable.ACCOUNT_ID = trading.AccountTable.ID)
+  Join AccountFirm(trading.AccountTable.FIRM_ID = trading.FirmTable.ID)
+
+  Filter ActiveAccountFilter(trading.AccountTable.ACTIVE_FLAG = 'Y')
+)
+
+
+###Pure
+Enum model::domain::TradeStatus
+{
+  OPEN,
+  CLOSED,
+  UNKNOWN
+}
+
+Class model::domain::Trade
+{
+  id: Integer[1];
+  quantity: Integer[1];
+  description: String[0..1];
+  accountName: String[0..1];
+  firmName: String[0..1];
+  firmRegion: String[0..1];
+  status: model::domain::TradeStatus[0..1];
+  sizeBucket: String[0..1];
+}
+
+Class model::domain::ActiveTrade
+{
+  id: Integer[1];
+  accountName: String[0..1];
+}
+
+
+###Mapping
+Mapping model::mapping::TradeMapping
+(
+  *model::domain::Trade[trade]: Relational
+  {
+    ~distinct
+    ~primaryKey
+    (
+      [model::store::TradeDB]trading.TradeTable.ID
+    )
+    ~mainTable [model::store::TradeDB]trading.TradeTable
+    +accountId: Integer[0..1]: [model::store::TradeDB]trading.TradeTable.ACCOUNT_ID,
+    id: [model::store::TradeDB]trading.TradeTable.ID,
+    quantity: [model::store::TradeDB]trading.TradeTable.QUANTITY,
+    description: concat([model::store::TradeDB]trading.TradeTable.PRODUCT_NAME, ' - ', [model::store::TradeDB]trading.TradeTable.STATUS_CODE),
+    accountName: [model::store::TradeDB]@TradeAccount | [model::store::TradeDB]trading.AccountTable.ACCOUNT_NAME,
+    firmName: [model::store::TradeDB]@TradeAccount > (OUTER) [model::store::TradeDB]@AccountFirm | [model::store::TradeDB]trading.FirmTable.LEGAL_NAME,
+    firmRegion: [model::store::TradeDB]@TradeAccount > (INNER) [model::store::TradeDB]@AccountFirm | [model::store::TradeDB]trading.FirmTable.REGION,
+    status: EnumerationMapping TradeStatusMapping: case(equal([model::store::TradeDB]trading.TradeTable.STATUS_CODE, 'OPEN'), 'O', equal([model::store::TradeDB]trading.TradeTable.STATUS_CODE, 'CLOSED'), 'C', 'U'),
+    sizeBucket: if(greaterThan([model::store::TradeDB]trading.TradeTable.QUANTITY, 1000), 'LARGE', sqlNull())
+  }
+  *model::domain::ActiveTrade[activeTrade]: Relational
+  {
+    ~filter [model::store::TradeDB] (INNER) @TradeAccount | [model::store::TradeDB]ActiveAccountFilter
+    ~primaryKey
+    (
+      [model::store::TradeDB]trading.TradeTable.ID
+    )
+    ~mainTable [model::store::TradeDB]trading.TradeTable
+    id: [model::store::TradeDB]trading.TradeTable.ID,
+    accountName: [model::store::TradeDB]@TradeAccount | [model::store::TradeDB]trading.AccountTable.ACCOUNT_NAME
+  }
+
+  model::domain::TradeStatus: EnumerationMapping TradeStatusMapping
+  {
+    OPEN: ['O'],
+    CLOSED: ['C'],
+    UNKNOWN: ['U']
+  }
+)

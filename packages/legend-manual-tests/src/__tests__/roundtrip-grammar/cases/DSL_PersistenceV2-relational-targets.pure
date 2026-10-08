@@ -1,0 +1,432 @@
+###Pure
+Class test::Person
+{
+  name: String[1];
+}
+
+
+###Relational
+Database test::TestDatabase
+(
+  Schema schemaA
+  (
+    Table TableB
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100)
+    )
+  )
+
+  Table TableA
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    AUDIT_TS TIMESTAMP
+  )
+  Table TableC
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    AUDIT_TS TIMESTAMP
+  )
+  Table TableD
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100)
+  )
+  Table UnitemporalDateTimeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP
+  )
+  Table UnitemporalBatchIdTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    BATCH_IN INTEGER PRIMARY KEY,
+    BATCH_OUT INTEGER
+  )
+  Table BitemporalBatchIdAndDateTimeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    BATCH_IN INTEGER PRIMARY KEY,
+    BATCH_OUT INTEGER,
+    IN_Z TIMESTAMP,
+    OUT_Z TIMESTAMP,
+    FROM_Z TIMESTAMP PRIMARY KEY,
+    THRU_Z TIMESTAMP
+  )
+  Table BitemporalDateTimeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    IN_Z TIMESTAMP PRIMARY KEY,
+    OUT_Z TIMESTAMP,
+    FROM_Z TIMESTAMP PRIMARY KEY,
+    THRU_Z TIMESTAMP
+  )
+)
+
+
+###Mapping
+Mapping test::Mapping
+(
+)
+
+
+###Service
+Service test::Service
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::Person[1]|$src.name;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::Mapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
+###Persistence
+Persistence test::NontemporalPersistence
+{
+  doc: 'Non-temporal relational targets.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: DELETED;
+          deleteValues: ['Y', '1', 'true'];
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: TableA;
+      database: test::TestDatabase;
+      temporality: None
+      {
+        auditing: DateTime
+        {
+          dateTimeName: AUDIT_TS;
+        }
+        updatesHandling: AppendOnly
+        {
+          appendStrategy: AllowDuplicates;
+        }
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: VERSION;
+      }
+    }
+    ->
+    Relational
+    #{
+      table: schemaA.TableB;
+      database: test::TestDatabase;
+      temporality: None
+      {
+        auditing: None;
+        updatesHandling: Overwrite;
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID, NAME
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: None;
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: TableC;
+      database: test::TestDatabase;
+      temporality: None
+      {
+        auditing: DateTime
+        {
+          dateTimeName: AUDIT_TS;
+        }
+        updatesHandling: AppendOnly
+        {
+          appendStrategy: FailOnDuplicates;
+        }
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: None;
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: TableD;
+      database: test::TestDatabase;
+      temporality: None
+      {
+        auditing: None;
+        updatesHandling: AppendOnly
+        {
+          appendStrategy: FilterDuplicates;
+        }
+      }
+    }#
+  ];
+  notifier:
+  {
+    notifyees:
+    [
+      PagerDuty
+      {
+        url: 'https://events.pagerduty.com/integration/nontemporal';
+      }
+    ];
+  }
+  tests:
+  [
+
+  ]
+}
+
+Persistence test::UnitemporalPersistence
+{
+  doc: 'Unitemporal relational targets.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: DELETED;
+          deleteValues: ['Y'];
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: UnitemporalDateTimeTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: DateTime
+        {
+          dateTimeIn: IN_Z;
+          dateTimeOut: OUT_Z;
+        }
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: VERSION;
+      }
+    }
+    ->
+    Relational
+    #{
+      table: UnitemporalBatchIdTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#
+  ];
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'unitemporal@example.com';
+      }
+    ];
+  }
+  tests:
+  [
+
+  ]
+}
+
+Persistence test::BitemporalPersistence
+{
+  doc: 'Bitemporal relational targets.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: DELETED;
+          deleteValues: ['Y', '1', 'true'];
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: BitemporalBatchIdAndDateTimeTable;
+      database: test::TestDatabase;
+      temporality: Bitemporal
+      {
+        processingDimension: BatchIdAndDateTime
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+          dateTimeIn: IN_Z;
+          dateTimeOut: OUT_Z;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: FROM_Z;
+          dateTimeEnd: THRU_Z;
+          sourceFields: StartAndEnd
+          {
+            startField: SOURCE_FROM;
+            endField: SOURCE_THRU;
+          }
+        }
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: None;
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: BitemporalDateTimeTable;
+      database: test::TestDatabase;
+      temporality: Bitemporal
+      {
+        processingDimension: DateTime
+        {
+          dateTimeIn: IN_Z;
+          dateTimeOut: OUT_Z;
+        }
+        sourceDerivedDimension: DateTime
+        {
+          dateTimeStart: FROM_Z;
+          dateTimeEnd: THRU_Z;
+          sourceFields: Start
+          {
+            startField: SOURCE_FROM;
+          }
+        }
+      }
+    }#
+  ];
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'bitemporal@example.com';
+      }
+    ];
+  }
+  tests:
+  [
+
+  ]
+}

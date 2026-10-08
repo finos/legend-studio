@@ -1,0 +1,57 @@
+Enum model::Status
+{
+  ACTIVE,
+  INACTIVE
+}
+
+Class model::Account
+[
+  $this.balance >= 0,
+  $this.id->length() > 0,
+  validStatus: ($this.status == model::Status.ACTIVE) || $this.closedDate->isNotEmpty(),
+  'name-not-empty': $this.name->isNotEmpty(),
+  limitCheck
+  (
+    ~function: $this.balance <= $this.limit
+    ~enforcementLevel: Warn
+  ),
+  externalCheck
+  (
+    ~externalId: 'EXT-001'
+    ~function: $this.id->startsWith('ACC')
+  ),
+  messageCheck
+  (
+    ~function: $this.limit > 0
+    ~message: 'Limit for ' + $this.id + ' must be positive'
+  ),
+  fullCheck
+  (
+    ~externalId: 'EXT-002'
+    ~function: if($this.status == model::Status.INACTIVE, |$this.balance == 0, |true)
+    ~enforcementLevel: Error
+    ~message: 'Inactive account ' + $this.id + ' has a non-zero balance'
+  )
+]
+{
+  id: String[1];
+  name: String[0..1];
+  balance: Float[1];
+  limit: Float[1];
+  status: model::Status[1];
+  closedDate: StrictDate[0..1];
+}
+
+Class model::SavingsAccount extends model::Account
+[
+  $this.rate > 0.0,
+  rateCap
+  (
+    ~function: $this.rate < 0.2
+    ~enforcementLevel: Warn
+    ~message: 'Rate looks too high'
+  )
+]
+{
+  rate: Float[1];
+}

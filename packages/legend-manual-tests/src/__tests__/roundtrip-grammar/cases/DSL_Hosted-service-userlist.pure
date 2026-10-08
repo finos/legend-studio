@@ -1,0 +1,104 @@
+###HostedService
+HostedService <<model::ServiceProfile.critical>> {model::ServiceProfile.owner = 'team-a', doc.doc = 'user list owned'} model::UserListService
+{
+   pattern : '/firms/{prefix}';
+   ownership : UserList { users: [
+    'user1',
+    'user2'
+    ] };
+   function : model::FirmNames(String[1]):TabularDataSet[1];
+   documentation : 'Hosted service owned by a user list';
+   autoActivateUpdates : true;
+}
+
+'''
+Single user hosted service.
+'''
+HostedService model::SingleUserService
+{
+   pattern : '/firms';
+   ownership : UserList { users: [
+    'user1'
+    ] };
+   function : model::FirmNames():TabularDataSet[1];
+   documentation : '';
+   autoActivateUpdates : false;
+}
+
+
+###Pure
+Profile model::ServiceProfile
+{
+  stereotypes: [critical];
+  tags: [owner];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+}
+
+function model::FirmNames(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(model::FirmMapping, model::FirmRuntime)
+}
+
+function model::FirmNames(prefix: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->filter(x|$x.legalName->startsWith($prefix))->project([x|$x.legalName], ['Legal Name'])->from(model::FirmMapping, model::FirmRuntime)
+}
+
+
+###Relational
+Database store::FirmDb
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+)
+
+
+###Mapping
+Mapping model::FirmMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::FirmDb]FirmTable.id
+    )
+    ~mainTable [store::FirmDb]FirmTable
+    legalName: [store::FirmDb]FirmTable.legal_name
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::H2Connection
+{
+  store: store::FirmDb;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime model::FirmRuntime
+{
+  mappings:
+  [
+    model::FirmMapping
+  ];
+  connections:
+  [
+    store::FirmDb:
+    [
+      connection_1: model::H2Connection
+    ]
+  ];
+}

@@ -1,0 +1,97 @@
+###ExternalFormat
+SchemaSet test::schema::OrgSchemaSet
+{
+  format: JSON;
+  schemas: [
+    {
+      id: Person;
+      location: 'test/model/Person.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "test::model::Person",\n  "type": "object",\n  "properties": {\n    "name": {\n      "type": "string"\n    }\n  },\n  "required": [\n    "name"\n  ]\n}';
+    },
+    {
+      id: Firm;
+      location: 'test/model/Firm.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "test::model::Firm",\n  "type": "object",\n  "properties": {\n    "legalName": {\n      "type": "string"\n    }\n  },\n  "required": [\n    "legalName"\n  ]\n}';
+    },
+    {
+      location: 'test/model/Address.json';
+      content: '{\n  "$schema": "http://json-schema.org/draft-07/schema#",\n  "title": "test::model::Address",\n  "type": "object",\n  "properties": {\n    "street": {\n      "type": "string"\n    }\n  }\n}';
+    }
+  ];
+}
+
+Binding test::binding::PersonBinding
+{
+  schemaSet: test::schema::OrgSchemaSet;
+  schemaId: Person;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::Person,
+    test::model::Firm,
+    test::model::Address
+  ];
+}
+
+Binding test::binding::FirmBinding
+{
+  schemaSet: test::schema::OrgSchemaSet;
+  schemaId: Firm;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::Firm,
+    test::model::Person,
+    test::model::Address,
+    test::model::AuditInfo
+  ];
+  modelExcludes: [
+    test::model::AuditInfo
+  ];
+}
+
+Binding test::binding::SchemalessBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::Person,
+    test::model::Firm,
+    test::model::Address,
+    test::model::AuditInfo
+  ];
+  modelExcludes: [
+    test::model::Firm,
+    test::model::AuditInfo
+  ];
+}
+
+Binding test::binding::SchemaSetOnlyBinding
+{
+  schemaSet: test::schema::OrgSchemaSet;
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::Person,
+    test::model::Firm,
+    test::model::Address
+  ];
+}
+
+
+###Pure
+Class test::model::Person
+{
+  name: String[1];
+}
+
+Class test::model::Firm
+{
+  legalName: String[1];
+}
+
+Class test::model::Address
+{
+  street: String[0..1];
+}
+
+Class test::model::AuditInfo
+{
+  createdBy: String[1];
+}

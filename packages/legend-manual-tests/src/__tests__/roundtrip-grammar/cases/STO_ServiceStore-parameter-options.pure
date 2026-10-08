@@ -1,0 +1,141 @@
+###ServiceStore
+ServiceStore test::store::ParameterOptionsStore
+(
+  Service QuotedParamService
+  (
+    path : '/quoted/{person id}';
+    method : GET;
+    parameters :
+    (
+      "abc.xyz" : String ( location = query ),
+      "person id" : String ( location = path, required = true ),
+      "x-request-id" : String ( location = header, required = false )
+    );
+    response : test::model::Person <- test::store::PersonBinding;
+    security : [];
+  )
+  Service ListParamService
+  (
+    path : '/list';
+    method : GET;
+    parameters :
+    (
+      names : [String] ( location = query, style = form, explode = false ),
+      ids : [Integer] ( location = header, style = simple, explode = true, required = true ),
+      types : [String] ( location = query, style = form, explode = true, enum = test::model::PersonType ),
+      scores : [Float] ( location = query, style = pipeDelimited, explode = false, allowReserved = true ),
+      flags : [Boolean] ( location = query, style = spaceDelimited, explode = false, allowReserved = false, required = false ),
+      kind : String ( location = query, enum = test::model::PersonType, allowReserved = true, required = true )
+    );
+    response : [test::model::Person <- test::store::PersonBinding];
+    security : [];
+  )
+  Service ListBodyService
+  (
+    path : '/listBody';
+    requestBody : [test::model::PersonSearch <- test::store::PersonBinding];
+    method : POST;
+    parameters :
+    (
+      dryRun : Boolean ( location = query )
+    );
+    response : [test::model::Person <- test::store::PersonBinding];
+    security : [];
+  )
+  Service PrimitiveBodyService
+  (
+    path : '/primitiveBody';
+    requestBody : String;
+    method : POST;
+    parameters :
+    (
+      version : Integer ( location = query )
+    );
+    response : [test::model::Person <- test::store::PersonBinding];
+    security : [];
+  )
+  ServiceGroup Outer
+  (
+    path : '/outer';
+
+    Service OuterService
+    (
+      path : '/outerService';
+      method : GET;
+      parameters :
+      (
+        "outer-param" : String ( location = header, required = true )
+      );
+      response : [test::model::Person <- test::store::PersonBinding];
+      security : [];
+    )
+    ServiceGroup Middle
+    (
+      path : '/middle';
+
+      Service MiddleService
+      (
+        path : '/middleService/{id}';
+        method : GET;
+        parameters :
+        (
+          id : Integer ( location = path )
+        );
+        response : [test::model::Person <- test::store::PersonBinding];
+        security : [];
+      )
+      ServiceGroup Inner
+      (
+        path : '/inner';
+
+        Service InnerService
+        (
+          path : '/innerService';
+          requestBody : test::model::PersonSearch <- test::store::PersonBinding;
+          method : POST;
+          parameters :
+          (
+            "page.size" : Integer ( location = query )
+          );
+          response : [test::model::Person <- test::store::PersonBinding];
+          security : [];
+        )
+      )
+    )
+  )
+  ServiceGroup EmptyGroup
+  (
+    path : '/empty';
+
+  )
+)
+
+
+###ExternalFormat
+Binding test::store::PersonBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::Person,
+    test::model::PersonSearch
+  ];
+}
+
+
+###Pure
+Enum test::model::PersonType
+{
+  EMPLOYEE,
+  CONTRACTOR
+}
+
+Class test::model::Person
+{
+  name: String[1];
+  type: test::model::PersonType[0..1];
+}
+
+Class test::model::PersonSearch
+{
+  names: String[*];
+}

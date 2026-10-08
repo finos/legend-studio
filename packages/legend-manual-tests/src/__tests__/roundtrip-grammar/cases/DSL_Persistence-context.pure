@@ -1,0 +1,218 @@
+###Pure
+Class test::Person
+{
+  name: String[1];
+}
+
+Class test::ServiceResult
+{
+  Name: String[1];
+}
+
+
+###Relational
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100)
+  )
+)
+
+
+###Mapping
+Mapping test::Mapping
+(
+  *test::Person: Relational
+  {
+    ~primaryKey
+    (
+      [test::TestDatabase]personTable.ID
+    )
+    ~mainTable [test::TestDatabase]personTable
+    name: [test::TestDatabase]personTable.NAME
+  }
+)
+
+
+###Service
+Service test::Service
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::Person.all()->project([x|$x.name], ['Name']);
+    mapping: test::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::Mapping
+      ];
+      connections:
+      [
+        test::TestDatabase:
+        [
+          connection1: test::ServiceConnection
+        ]
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
+###Connection
+RelationalDatabaseConnection test::ServiceConnection
+{
+  store: test::TestDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection test::SinkConnection
+{
+  store: test::TestDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+
+
+###Persistence
+PersistenceContext test::AwsGluePersistenceContext
+{
+  persistence: test::TestPersistence;
+  platform: AwsGlue
+  #{
+    dataProcessingUnits: 10;
+  }#;
+  serviceParameters:
+  [
+    con1=test::ServiceConnection,
+    con2=
+    #{
+      RelationalDatabaseConnection
+      {
+        store: test::TestDatabase;
+        type: H2;
+        specification: LocalH2
+        {
+        };
+        auth: DefaultH2;
+      }
+    }#
+  ];
+  sinkConnection: test::SinkConnection;
+}
+
+PersistenceContext test::DefaultPersistenceContext
+{
+  persistence: test::TestPersistence;
+  serviceParameters:
+  [
+    con2=
+    #{
+      RelationalDatabaseConnection
+      {
+        store: test::TestDatabase;
+        type: H2;
+        specification: LocalH2
+        {
+        };
+        auth: DefaultH2;
+      }
+    }#,
+    con1=test::ServiceConnection
+  ];
+  sinkConnection:
+  #{
+    RelationalDatabaseConnection
+    {
+      store: test::TestDatabase;
+      type: H2;
+      specification: LocalH2
+      {
+      };
+      auth: DefaultH2;
+    }
+  }#;
+}
+
+Persistence test::TestPersistence
+{
+  doc: 'This is test documentation.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        Name
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: NoOp;
+        }
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: None
+      {
+        auditing: None;
+        updatesHandling: Overwrite;
+      }
+    }#
+  ];
+  persister: Batch
+  {
+    sink: Relational
+    {
+      database: test::TestDatabase;
+    }
+    ingestMode: AppendOnly
+    {
+      auditing: None;
+      filterDuplicates: false;
+    }
+    targetShape: Flat
+    {
+      modelClass: test::ServiceResult;
+      targetName: 'TestDataset1';
+    }
+  }
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'team@example.com';
+      }
+    ];
+  }
+  tests:
+  [
+
+  ]
+}

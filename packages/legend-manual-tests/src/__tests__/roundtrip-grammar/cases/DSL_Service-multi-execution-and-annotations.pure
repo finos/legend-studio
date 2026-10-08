@@ -1,0 +1,192 @@
+###Service
+Service <<test::profile::ServiceProfile.critical>> {test::profile::ServiceProfile.team = 'data-platform', test::profile::ServiceProfile.tier = 'gold'} test::service::MultiExecutionService
+{
+  pattern: '/multi/{env}';
+  title: 'Multi Execution Service';
+  owners:
+  [
+    'owner1',
+    'owner2'
+  ];
+  documentation: 'Service with multiple keyed executions';
+  autoActivateUpdates: false;
+  execution: Multi
+  {
+    query: env: String[1]|test::model::Person.all()->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#);
+    key: 'env';
+    executions['QA']:
+    {
+      mapping: test::mapping::PersonMapping;
+      runtime: test::runtime::PersonRuntime;
+    }
+    executions['PROD']:
+    {
+      mapping: test::mapping::PersonMapping;
+      runtime: test::runtime::PersonRuntime;
+    }
+  }
+  testSuites:
+  [
+    suite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '{"fullName":"John Doe"}';
+            }#
+        ]
+      ]
+      tests:
+      [
+        qaOnly:
+        {
+          parameters:
+          [
+            env = 'QA'
+          ]
+          keys:
+          [
+            'QA'
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"name":"John Doe"}';
+                  }#;
+              }#
+          ]
+        },
+        prodWithParameters:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            env = 'PROD'
+          ]
+          keys:
+          [
+            'PROD'
+          ];
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"name":"John Doe"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'An annotated single execution service'} test::service::AnnotatedSingleService
+{
+  pattern: '/annotated';
+  title: 'Annotated Service';
+  ownership: UserList { users: ['user1', 'user2', 'user3'] };
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Person.all()->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#);
+    mapping: test::mapping::PersonMapping;
+    runtime: test::runtime::PersonRuntime;
+  }
+  testSuites:
+  [
+
+  ]
+  mcpServer: personMcpServer;
+}
+
+'''
+A documented service.
+Uses an inline from() query.
+'''
+Service <<test::profile::ServiceProfile.internal>> test::service::DocumentedInlineService
+{
+  pattern: '/documented';
+  ownership: DID { identifier: '' };
+  documentation: 'inline query';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |test::model::Person.all()->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#)->from(test::mapping::PersonMapping, test::runtime::PersonRuntime);
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
+###Pure
+Profile test::profile::ServiceProfile
+{
+  stereotypes: [critical, internal];
+  tags: [team, tier];
+}
+
+Class test::model::Person
+{
+  name: String[1];
+}
+
+Class test::model::_Person
+{
+  fullName: String[1];
+}
+
+
+###Mapping
+Mapping test::mapping::PersonMapping
+(
+  *test::model::Person: Pure
+  {
+    ~src test::model::_Person
+    name: $src.fullName
+  }
+)
+
+
+###Connection
+JsonModelConnection test::connection::PersonConnection
+{
+  class: test::model::_Person;
+  url: 'executor:default';
+}
+
+
+###Runtime
+Runtime test::runtime::PersonRuntime
+{
+  mappings:
+  [
+    test::mapping::PersonMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: test::connection::PersonConnection
+    ]
+  ];
+}

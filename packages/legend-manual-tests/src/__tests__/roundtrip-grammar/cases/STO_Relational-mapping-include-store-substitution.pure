@@ -1,0 +1,70 @@
+###Relational
+Database store::BaseDB
+(
+  Table PersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(200),
+    LAST_NAME VARCHAR(200),
+    FIRM_ID INTEGER
+  )
+)
+
+Database store::ExtendedDB
+(
+  include store::BaseDB
+
+  Table FirmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGAL_NAME VARCHAR(200)
+  )
+
+  Join FirmPerson(FirmTable.ID = [store::BaseDB]PersonTable.FIRM_ID)
+)
+
+
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+
+
+###Mapping
+Mapping mapping::BaseMapping
+(
+  *model::Person[person]: Relational
+  {
+    ~primaryKey
+    (
+      [store::BaseDB]PersonTable.ID
+    )
+    ~mainTable [store::BaseDB]PersonTable
+    firstName: [store::BaseDB]PersonTable.FIRST_NAME,
+    lastName: [store::BaseDB]PersonTable.LAST_NAME
+  }
+)
+
+Mapping mapping::ExtendedMapping
+(
+  include mapping mapping::BaseMapping[store::BaseDB->store::ExtendedDB]
+
+  *model::Firm[firm]: Relational
+  {
+    ~primaryKey
+    (
+      [store::ExtendedDB]FirmTable.ID
+    )
+    ~mainTable [store::ExtendedDB]FirmTable
+    legalName: [store::ExtendedDB]FirmTable.LEGAL_NAME,
+    employees[person]: [store::ExtendedDB]@FirmPerson
+  }
+)

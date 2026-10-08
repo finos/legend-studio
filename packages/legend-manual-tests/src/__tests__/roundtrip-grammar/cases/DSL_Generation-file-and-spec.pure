@@ -1,0 +1,81 @@
+###Pure
+Profile model::GenerationProfile
+{
+  stereotypes: [generated];
+  tags: [alias];
+}
+
+Enum model::Status
+{
+  ACTIVE,
+  INACTIVE
+}
+
+Class model::Address
+{
+  street: String[1];
+  zipCode: Integer[0..1];
+}
+
+Class model::Person
+{
+  name: String[1];
+  status: model::Status[1];
+  addresses: model::Address[*];
+}
+
+Class model::other::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+
+
+###FileGeneration
+Avro model::generation::AvroGeneration
+{
+  scopeElements: [model::Person, model::other];
+  generationOutputPath: 'avro/output';
+  includeNamespace: true;
+  includeSuperTypes: false;
+  propertyProfile: ['model::GenerationProfile'];
+  namespaceOverride: {
+    key1: 'org.example.one';
+    key2: 'org.example.two';
+  };
+}
+
+Protobuf model::generation::ProtobufGeneration
+{
+  scopeElements: [model::Person, model::Address, model::Status];
+  generationOutputPath: 'protobuf/output';
+  version: 3;
+}
+
+JsonSchema model::generation::JSONSchemaGeneration
+{
+  scopeElements: [model];
+  useConstraints: true;
+  includeAllRelatedTypes: false;
+  'schema Specification': 'DRAFT_07';
+  generator.version: 'v1';
+}
+
+JsonSchema model::generation::EmptyJSONSchemaGeneration
+{
+}
+
+
+###GenerationSpecification
+GenerationSpecification model::generation::MyGenerationSpecification
+{
+  fileGenerations: [
+    model::generation::AvroGeneration,
+    model::generation::ProtobufGeneration,
+    model::generation::JSONSchemaGeneration
+  ];
+}
+
+GenerationSpecification model::generation::EmptyGenerationSpecification
+{
+}
