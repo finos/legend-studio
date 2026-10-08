@@ -75,7 +75,8 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 
 **In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
 from `cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
-WASM study; new sources wait on the user's design. Decimal precision stays for a later PR (user, 2026-10-07).
+WASM study (low priority, research first: PLAN §12.2 item 9); new sources wait on the user's design. Decimal precision
+stays for a later PR (user, 2026-10-07).
 
 ## Milestone notes
 

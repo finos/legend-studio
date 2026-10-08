@@ -2275,6 +2275,12 @@ and sources modal are designed. M3 can run in parallel if desired.
    no pushdown, or a plan error.
 7. **Engine image pinning for CI:** keep `:snapshot` (the repo norm) or pin a digest?
 8. **Window frames:** keep the running default (D5) or add explicit frame controls in M5?
+9. **Running queries in the browser with DuckDB WASM** (user, 2026-10-08, low priority, no milestone yet): Cube emits a
+   Pure lambda and the engine runs it (D9). Running in the browser needs either a second emitter, from the Cube IR
+   (§8.3) to DuckDB SQL, or the engine's SQL plan run locally. Either way, precise types, NULL rules and join semantics
+   must match what this plan verified on the engine, and the data must reach the browser somehow. Data Cube already
+   uses `@duckdb/duckdb-wasm` (1.31.0), which is the precedent to study. First step: a research note with the options
+   and a recommendation, no code.
 
 ---
 
