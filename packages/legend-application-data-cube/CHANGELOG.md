@@ -1,5 +1,11 @@
 # @finos/legend-application-data-cube
 
+## 0.7.111
+
+### Patch Changes
+
+- [#5594](https://github.com/finos/legend-studio/pull/5594) [`e953063`](https://github.com/finos/legend-studio/commit/e9530637f73ade30f7658b172aeedb482256ddc0) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Fix loading local files and Iceberg tables with `TINYINT` columns in Data Cube: the DuckDB type was matched as `TININT`, so such tables failed with "failed to find matching relational data type".
+
 ## 0.7.110
 
 ## 0.7.109

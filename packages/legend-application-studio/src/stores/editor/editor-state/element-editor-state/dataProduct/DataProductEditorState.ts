@@ -30,6 +30,7 @@ import {
   AccessPoint,
   AccessPointGroup,
   CodeCompletionResult,
+  CompilationError,
   DataElement,
   DataElementReference,
   DataProduct,
@@ -136,7 +137,18 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
   readonly editorStore: EditorStore;
   readonly val: LakehouseAccessPointState;
   lambdaRelationColumns: string[] | undefined;
+  /**
+   * The engine's error message for this access point's lambda, when the engine
+   * answered that it could not compute the lambda's relation type.
+   */
+  lambdaRelationTypeError: string | undefined;
   isUpdatingRelationColumns = false;
+  /**
+   * Hash of the lambda the engine last answered for, with either its relation
+   * columns or an error for this lambda. A failure that is not an answer for
+   * this lambda (network, whole-batch failure) must leave it unset, so the next
+   * update asks the engine again.
+   */
   lastComputedLambdaHash: string | undefined;
   lastComputedLambdaString: string | undefined;
 
@@ -149,14 +161,20 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
 
     makeObservable(this, {
       lambdaRelationColumns: observable,
+      lambdaRelationTypeError: observable,
       isUpdatingRelationColumns: observable,
       setLambdaRelationColumns: action,
+      setLambdaRelationTypeError: action,
       updateLambdaRelationColumns: flow,
     });
   }
 
   setLambdaRelationColumns(columns: string[] | undefined): void {
     this.lambdaRelationColumns = columns;
+  }
+
+  setLambdaRelationTypeError(message: string | undefined): void {
+    this.lambdaRelationTypeError = message;
   }
 
   setIsUpdatingRelationColumns(value: boolean): void {
@@ -174,6 +192,7 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
     }
 
     this.setIsUpdatingRelationColumns(true);
+    this.setLambdaRelationTypeError(undefined);
     try {
       const relationType =
         (yield this.editorStore.graphManagerState.graphManager.getLambdaRelationType(
@@ -183,10 +202,22 @@ export class AccessPointLambdaEditorState extends LambdaEditorState {
       this.setLambdaRelationColumns(
         relationType.columns.map((column) => column.name),
       );
-    } catch {
-      this.setLambdaRelationColumns(undefined);
-    } finally {
       this.lastComputedLambdaHash = lambdaHash;
+    } catch (error) {
+      assertErrorThrown(error);
+      this.setLambdaRelationColumns(undefined);
+      if (error instanceof CompilationError) {
+        // the engine compiled this lambda and answered with an error for it
+        this.setLambdaRelationTypeError(error.message);
+        this.lastComputedLambdaHash = lambdaHash;
+      } else {
+        this.editorStore.applicationStore.logService.error(
+          LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+          `Can't get relation type for access point '${this.val.accessPoint.id}'`,
+          error,
+        );
+      }
+    } finally {
       this.setIsUpdatingRelationColumns(false);
     }
   }
@@ -363,7 +394,10 @@ export class LakehouseAccessPointState extends AccessPointState {
     const lambdaColumns = this.lambdaState.lambdaRelationColumns;
 
     if (lambdaColumns === undefined) {
-      return `Fix compiler errors and make sure AccessPoint ${this.accessPoint.id} returns a Relation type`;
+      const engineError = this.lambdaState.lambdaRelationTypeError;
+      return `Fix compiler errors and make sure AccessPoint ${this.accessPoint.id} returns a Relation type${
+        engineError ? `. Engine error: ${engineError}` : ''
+      }`;
     }
 
     return `Sample values columns must match: [${lambdaColumns.join(', ')}]`;
@@ -931,9 +965,10 @@ export class DataProductEditorState extends ElementEditorState {
     if (entries.length === 0) {
       return;
     }
-    entries.forEach((entry) =>
-      entry.apState.lambdaState.setIsUpdatingRelationColumns(true),
-    );
+    entries.forEach((entry) => {
+      entry.apState.lambdaState.setIsUpdatingRelationColumns(true);
+      entry.apState.lambdaState.setLambdaRelationTypeError(undefined);
+    });
     try {
       const lambdas = new Map<string, RawLambda>(
         entries.map((entry) => [
@@ -941,28 +976,51 @@ export class DataProductEditorState extends ElementEditorState {
           entry.apState.accessPoint.func,
         ]),
       );
-      const { results } =
+      const { results, errors } =
         (yield this.editorStore.graphManagerState.graphManager.getBatchLambdasRelationType(
           lambdas,
           this.editorStore.graphManagerState.graph,
         )) as BatchLambdasRelationTypeResult;
       entries.forEach((entry) => {
+        const lambdaState = entry.apState.lambdaState;
         const relationType = results.get(entry.apState.uuid);
-        entry.apState.lambdaState.setLambdaRelationColumns(
-          relationType
-            ? relationType.columns.map((column) => column.name)
-            : undefined,
-        );
+        const engineError = errors.get(entry.apState.uuid);
+        if (relationType) {
+          lambdaState.setLambdaRelationColumns(
+            relationType.columns.map((column) => column.name),
+          );
+          lambdaState.lastComputedLambdaHash = entry.hash;
+        } else if (engineError) {
+          // the engine answered with an error for this lambda
+          lambdaState.setLambdaRelationColumns(undefined);
+          lambdaState.setLambdaRelationTypeError(engineError.message);
+          lambdaState.lastComputedLambdaHash = entry.hash;
+        } else {
+          // the engine did not answer for this lambda: leave the hash unset so
+          // the next update asks again
+          lambdaState.setLambdaRelationColumns(undefined);
+          this.editorStore.applicationStore.logService.error(
+            LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+            `Engine returned neither a relation type nor an error for access point '${entry.apState.accessPoint.id}'`,
+          );
+        }
       });
-    } catch {
+    } catch (error) {
+      assertErrorThrown(error);
+      // the whole batch failed, so no access point got an answer: leave their
+      // hashes unset so the next update asks again
+      this.editorStore.applicationStore.logService.error(
+        LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_MANAGER_FAILURE),
+        `Can't get relation types for access points`,
+        error,
+      );
       entries.forEach((entry) =>
         entry.apState.lambdaState.setLambdaRelationColumns(undefined),
       );
     } finally {
-      entries.forEach((entry) => {
-        entry.apState.lambdaState.lastComputedLambdaHash = entry.hash;
-        entry.apState.lambdaState.setIsUpdatingRelationColumns(false);
-      });
+      entries.forEach((entry) =>
+        entry.apState.lambdaState.setIsUpdatingRelationColumns(false),
+      );
     }
   }
 

@@ -55,6 +55,11 @@ export class Property implements AbstractProperty, AnnotatedElement, Hashable {
       this.name,
       this.multiplicity,
       this.genericType.ownerReference.valueForSerialization ?? '',
+      // NOTE: type variable values (e.g. the `200` in `Varchar(200)`) are only hashed
+      // when present so the hash of every other property stays unchanged
+      this.genericType.value.typeVariableValues?.length
+        ? hashArray(this.genericType.value.typeVariableValues)
+        : undefined,
       this.aggregation ?? '',
       this.defaultValue ?? '',
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),

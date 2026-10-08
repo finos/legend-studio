@@ -121,6 +121,7 @@ import {
   TEST_DATA__AVAILABILITY_NOTIFICATION_VARIANTS,
 } from './roundtripTestData/TEST_DATA__AvailabilityRoundtrip.js';
 import { TEST_DATA__Function_genericType } from './roundtripTestData/TEST_DATA__Function-generictype.js';
+import { TEST_DATA__PrecisePrimitiveRoundtrip } from './roundtripTestData/TEST_DATA__PrecisePrimitiveRoundtrip.js';
 import {
   TEST_DATA__INGEST_DEFINITION,
   TEST_DATA__INGEST_DEFINITION__TEST_SUITES,
@@ -447,6 +448,17 @@ describe(unitTest('Function Generic Type'), () => {
       await TEST__checkBuildingElementsRoundtrip(entities);
     },
   );
+});
+
+describe(unitTest('Precise primitive type parameters'), () => {
+  test.each([
+    [
+      'Class properties, derived property and function return type with type parameters',
+      TEST_DATA__PrecisePrimitiveRoundtrip,
+    ],
+  ])('%s', async (testName, entities) => {
+    await TEST__checkBuildingElementsRoundtrip(entities);
+  });
 });
 
 describe(unitTest('Ingest definition'), () => {

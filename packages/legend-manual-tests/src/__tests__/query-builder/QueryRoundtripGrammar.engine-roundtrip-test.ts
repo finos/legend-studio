@@ -234,6 +234,12 @@ const TEST_CASES: QueryTestCase[] = [
     queryGrammar:
       "|#>{showcase::northwind::store::NorthwindDatabase.NORTHWIND.CUSTOMERS}#->project(~['Customer Id':x|$x.CUSTOMER_ID, 'Contact Name':x|$x.CONTACT_NAME, Region:x|$x.REGION])->filter(row|$row.'Contact Name'->isEmpty() || !$row.Region->isEmpty())",
   },
+  {
+    testName: '[Accessor] Store Accessor on columns with quoted names',
+    model: 'QuotedColumns',
+    queryGrammar:
+      "|#>{test::QuotedColumnDatabase.PEOPLE.PERSON}#->filter(x|$x.'first name' == 'John')->project(~[Id:x|$x.ID, 'First Name':x|$x.'first name', 'Last Name':x|$x.'last name'])->filter(row|$row.'Last Name' == 'Doe')",
+  },
 
   {
     testName:
@@ -241,6 +247,13 @@ const TEST_CASES: QueryTestCase[] = [
     model: 'Milestoning',
     queryGrammar:
       "{businessDate: Date[1], processingDate: Date[1]|my::Person.all($businessDate)->project([x|$x.biTemporal($processingDate, $x.date).firmID], ['Bi Temporal/Firm ID'])}",
+  },
+  {
+    testName:
+      '[Parameters] Precise primitive parameter with type variable values',
+    model: 'Northwind',
+    queryGrammar:
+      "v: Varchar(10)[1]|showcase::northwind::model::crm::Customer.all()->filter(x|$x.companyName == $v)->project(~['Company Name':x|$x.companyName])",
   },
 ];
 
@@ -366,4 +379,32 @@ describe('Query Builder Grammar roundtrip test', () => {
       );
     },
   );
+});
+
+describe('Lambda parameter grammar roundtrip (value specification)', () => {
+  test.each([
+    'v: Varchar(10)[1]|$v',
+    'n: Numeric(10,2)[0..1]|$n',
+    'r: meta::pure::metamodel::relation::Relation<(a:Integer)>[1]|$r',
+    'r: meta::pure::metamodel::relation::Relation<(a:Integer, b:Varchar(10)[1])>[1]|$r',
+  ])('%s', async (lambdaGrammar) => {
+    const graphManagerState = guaranteeNonNullable(
+      globalGraphManagerStates.get('Northwind'),
+      `Northwind model not found`,
+    );
+    const valueSpecification =
+      graphManagerState.graphManager.buildValueSpecification(
+        await ENGINE_TEST_SUPPORT__grammarToJSON_valueSpecification(
+          lambdaGrammar,
+        ),
+        graphManagerState.graph,
+      );
+    const returnedLambda =
+      await ENGINE_TEST_SUPPORT__JSONToGrammar_valueSpecification(
+        graphManagerState.graphManager.serializeValueSpecification(
+          valueSpecification,
+        ),
+      );
+    expect(returnedLambda).toBe(lambdaGrammar);
+  });
 });

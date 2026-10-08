@@ -164,6 +164,12 @@ export class DataProductViewerState extends BaseViewerState<
       results: new Map(),
       errors: new Map(),
     });
+  /**
+   * Why the whole batch relation type call failed, if it did. The promise above
+   * still resolves (with empty maps) so it never goes unhandled; access points
+   * read this to explain why the engine has no relation type for them.
+   */
+  batchRelationTypeError: Error | undefined;
 
   readonly fetchingDataProductArtifactState = ActionState.create();
   readonly fetchingBatchRelationTypeState = ActionState.create();
@@ -612,10 +618,12 @@ export class DataProductViewerState extends BaseViewerState<
       });
     });
     this.fetchingBatchRelationTypeState.inProgress();
+    this.batchRelationTypeError = undefined;
     try {
       const entitlementsOrigin = this.entitlementsDataProductDetails?.origin;
       const model = guaranteeNonNullable(
         this.getAccessPointModel(this.projectGAV, entitlementsOrigin),
+        `Can't resolve the data product model to compute access point relation types`,
       );
       const response = await this.engineServerClient.batchLambdasRelationType(
         V1_BatchLambdaRelationTypeInput.serialization.toJson(
@@ -628,7 +636,12 @@ export class DataProductViewerState extends BaseViewerState<
       return V1_buildBatchLambdaRelationTypeResult(response);
     } catch (error) {
       assertErrorThrown(error);
-      return { results: new Map() };
+      this.applicationStore.logService.error(
+        LogEvent.create('data-product.batchRelationType.failure'),
+        `Can't fetch access point relation types from engine: ${error.message}`,
+      );
+      this.batchRelationTypeError = error;
+      return { results: new Map(), errors: new Map() };
     } finally {
       this.fetchingBatchRelationTypeState.complete();
     }

@@ -52,6 +52,11 @@ export class V1_DerivedProperty implements Hashable {
       this.returnGenericType.rawType instanceof V1_PackageableType
         ? this.returnGenericType.rawType.fullPath
         : '',
+      // NOTE: type variable values (e.g. the `200` in `Varchar(200)`) are only hashed
+      // when present so the hash of every other property stays unchanged
+      this.returnGenericType.typeVariableValues.length
+        ? hashArray(this.returnGenericType.typeVariableValues)
+        : undefined,
       hashArray(this.stereotypes),
       hashArray(this.taggedValues),
       hashRawLambda(this.parameters, this.body),

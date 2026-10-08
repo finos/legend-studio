@@ -84,6 +84,7 @@ import {
 } from '../../../helpers/V1_DomainHelper.js';
 import { V1_PackageableElementPointer } from '../../../model/packageableElements/V1_PackageableElement.js';
 import type { GenericType } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericType.js';
+import type { GenericTypeReference } from '../../../../../../../graph/metamodel/pure/packageableElements/domain/GenericTypeReference.js';
 import { V1_GenericType } from '../../../model/packageableElements/type/V1_GenericType.js';
 import type { V1_Type } from '../../../model/packageableElements/type/V1_Type.js';
 import { RelationType } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
@@ -295,15 +296,33 @@ const transformConstraint = (
   return constraint;
 };
 
+/**
+ * Transforms the generic type of a property or derived property.
+ *
+ * The raw type is serialized with its input spelling (e.g. a class referenced
+ * through a section import stays short), unlike `V1_createGenericType()` which
+ * uses the full path. The type variable values, e.g. the `200` in `Varchar(200)`,
+ * are kept so that the engine can compile the element.
+ *
+ * NOTE: type arguments are not serialized here, as they are not built either.
+ */
+const V1_transformPropertyGenericType = (
+  genericType: GenericTypeReference,
+): V1_GenericType =>
+  V1_createGenericTypeWithElementPath(
+    genericType.ownerReference.valueForSerialization ?? '',
+    genericType.value.typeVariableValues?.map((value) =>
+      V1_transformRootValueSpecification(value),
+    ),
+  );
+
 const transformProperty = (element: Property): V1_Property => {
   const property = new V1_Property();
   property.name = element.name;
   property.multiplicity = V1_transformMultiplicity(element.multiplicity);
   property.stereotypes = element.stereotypes.map(V1_transformStereotype);
   property.taggedValues = element.taggedValues.map(V1_transformTaggedValue);
-  property.genericType = V1_createGenericTypeWithElementPath(
-    element.genericType.ownerReference.valueForSerialization ?? '',
-  );
+  property.genericType = V1_transformPropertyGenericType(element.genericType);
   property.aggregation = element.aggregation;
   if (element.defaultValue) {
     const defaultVal = new V1_DefaultValue();
@@ -324,8 +343,8 @@ const transformDerivedProperty = (
   derivedProperty.returnMultiplicity = V1_transformMultiplicity(
     element.multiplicity,
   );
-  derivedProperty.returnGenericType = V1_createGenericTypeWithElementPath(
-    element.genericType.ownerReference.valueForSerialization ?? '',
+  derivedProperty.returnGenericType = V1_transformPropertyGenericType(
+    element.genericType,
   );
 
   derivedProperty.stereotypes = element.stereotypes.map(V1_transformStereotype);

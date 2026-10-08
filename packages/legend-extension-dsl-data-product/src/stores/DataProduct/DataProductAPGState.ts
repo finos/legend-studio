@@ -23,16 +23,17 @@ import {
   type V1_DataSubscriptionTarget,
   type V1_LiteDataContract,
   type V1_LiteDataContractWithUserStatus,
+  type V1_LiteDataRequestsResponse,
   type V1_User,
   V1_ContractUserStatusResponseModelSchema,
   V1_CreateSubscriptionInput,
   V1_CreateSubscriptionInputModelSchema,
   V1_DataContract,
   V1_DataContractApprovedUsersResponseModelSchema,
-  V1_dataRequestModelSchema,
   V1_dataSubscriptionModelSchema,
   V1_DataSubscriptionResponseModelSchema,
   V1_deserializeDataContractResponse,
+  V1_deserializeDataRequestsResponse,
   V1_deserializeDataRequestsWithWorkflowResponse,
   V1_EnrichedUserApprovalStatus,
   V1_deserializeOrgMembersResponse,
@@ -382,7 +383,38 @@ export class DataProductAPGState {
       const users =
         deserialize(V1_DataContractApprovedUsersResponseModelSchema, raw)
           .approvedUsers ?? [];
-      this.setApprovedWorkforceUsers(users.map((u) => u.name));
+      const approvedUserNames = new Set(users.map((u) => u.name));
+
+      // Also surface users whose access came from a completed data request
+      // (rather than a data contract), via the completed-requests approved
+      // users endpoint.
+      const rawRequestsResponse =
+        (yield lakehouseContractServerClient.getDataRequestsForDataProduct(
+          details.dataProduct.name,
+          details.deploymentId,
+          token,
+        )) as PlainObject<V1_LiteDataRequestsResponse>;
+      const plugins =
+        this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
+      const completedRequestIds = V1_deserializeDataRequestsResponse(
+        rawRequestsResponse,
+        plugins,
+      )
+        .filter((request) => request.state === V1_RequestState.COMPLETED)
+        .map((request) => request.guid);
+
+      if (completedRequestIds.length > 0) {
+        const rawApprovedUsersByRequestId =
+          (yield lakehouseContractServerClient.getApprovedUsersForCompletedDataRequests(
+            completedRequestIds,
+            token,
+          )) as Record<string, { name: string }[]>;
+        Object.values(rawApprovedUsersByRequestId)
+          .flat()
+          .forEach((user) => approvedUserNames.add(user.name));
+      }
+
+      this.setApprovedWorkforceUsers(Array.from(approvedUserNames));
     } catch (error) {
       assertErrorThrown(error);
       this.applicationStore.notificationService.notifyError(
@@ -602,17 +634,15 @@ export class DataProductAPGState {
 
       const rawResponse =
         await lakehouseContractServerClient.getDataRequestsForDataProduct(
-          'ACCESS_POINT_GROUP',
           entitlementsDataProductDetails.dataProduct.name,
           entitlementsDataProductDetails.deploymentId,
           token,
         );
       const plugins =
         this.dataProductViewerState.graphManagerState.pluginManager.getPureProtocolProcessorPlugins();
-      const rawDataRequests: PlainObject[] =
-        (rawResponse as { dataRequests?: PlainObject[] }).dataRequests ?? [];
-      const dataRequests = rawDataRequests.map((raw) =>
-        deserialize(V1_dataRequestModelSchema(plugins), raw),
+      const dataRequests = V1_deserializeDataRequestsResponse(
+        rawResponse,
+        plugins,
       );
 
       if (dataRequests.length === 0) {

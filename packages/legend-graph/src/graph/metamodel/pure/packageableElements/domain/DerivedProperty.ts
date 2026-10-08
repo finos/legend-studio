@@ -70,6 +70,11 @@ export class DerivedProperty
       this.name,
       this.multiplicity,
       this.genericType.ownerReference.valueForSerialization ?? '',
+      // NOTE: type variable values (e.g. the `200` in `Varchar(200)`) are only hashed
+      // when present so the hash of every other property stays unchanged
+      this.genericType.value.typeVariableValues?.length
+        ? hashArray(this.genericType.value.typeVariableValues)
+        : undefined,
       hashArray(this.stereotypes.map((val) => val.pointerHashCode)),
       hashArray(this.taggedValues),
       hashRawLambda(this.parameters, this.body),

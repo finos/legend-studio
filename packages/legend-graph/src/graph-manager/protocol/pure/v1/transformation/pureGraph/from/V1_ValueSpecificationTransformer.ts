@@ -94,6 +94,7 @@ import { V1_ColSpecArray } from '../../../model/valueSpecification/raw/classInst
 import { V1_ColSpec } from '../../../model/valueSpecification/raw/classInstance/relation/V1_ColSpec.js';
 import { RelationColumn } from '../../../../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import { V1_createGenericTypeWithElementPath } from '../../../helpers/V1_DomainHelper.js';
+import { V1_createGenericType } from './V1_DomainTransformer.js';
 import {
   type Accessor,
   type AccessorInstanceValue,
@@ -230,9 +231,10 @@ class V1_ValueSpecificationTransformer
         valueSpecification.multiplicity.upperBound,
       );
       _variable.multiplicity = multiplicity;
-      _variable.genericType = V1_createGenericTypeWithElementPath(
-        genericType.value.rawType.path,
-      );
+      // NOTE: like before, the raw type is serialized with its full path; this also keeps
+      // the type arguments (e.g. the relation type in `Relation<(a:Integer)>`) and the
+      // type variable values (e.g. the `10` in `Varchar(10)`)
+      _variable.genericType = V1_createGenericType(genericType.value);
     }
     return _variable;
   }
@@ -515,7 +517,7 @@ class V1_ValueSpecificationTransformer
       colProtocol.function1 = guaranteeType(fun1, V1_Lambda);
     }
     if (fun2) {
-      colProtocol.function2 = guaranteeType(fun1, V1_Lambda);
+      colProtocol.function2 = guaranteeType(fun2, V1_Lambda);
     }
     classInstance.value = colProtocol;
     return classInstance;

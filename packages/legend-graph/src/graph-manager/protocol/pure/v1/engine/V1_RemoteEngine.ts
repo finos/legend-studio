@@ -46,6 +46,7 @@ import {
   type V1_LambdaReturnTypeResult,
   V1_BatchLambdaRelationTypeInput,
   V1_LambdaReturnTypeInput,
+  V1_buildBatchLambdaRelationTypeResult,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import {
@@ -59,7 +60,6 @@ import { V1_GenerationConfigurationDescription } from './generation/V1_Generatio
 import { V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
 import { V1_ParserError } from './grammar/V1_ParserError.js';
 import { V1_CompilationError } from './compilation/V1_CompilationError.js';
-import { V1_EngineError } from './V1_EngineError.js';
 import type { V1_RawRelationalOperationElement } from '../model/packageableElements/store/relational/model/V1_RawRelationalOperationElement.js';
 import type { RawRelationalOperationElement } from '../../../../../graph/metamodel/pure/packageableElements/store/relational/model/RawRelationalOperationElement.js';
 import { V1_GraphTransformerContextBuilder } from '../transformation/pureGraph/from/V1_GraphTransformerContext.js';
@@ -186,6 +186,24 @@ import {
 import { V1_DevMetadataPushRequest } from './dev-metadata/V1_DevMetadataPushRequest.js';
 import { DeployProjectResponse } from '../../../../action/dev-metadata/DeployProjectResponse.js';
 import { Multiplicity } from '../../../../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
+
+const buildRelationTypeMetadata = (
+  relationType: V1_RelationType,
+): RelationTypeMetadata => {
+  const metadata = new RelationTypeMetadata();
+  metadata.columns = relationType.columns.map(
+    (column) =>
+      new RelationTypeColumnMetadata(
+        V1_getGenericTypeFullPath(column.genericType),
+        column.name,
+        new Multiplicity(
+          column.multiplicity.lowerBound,
+          column.multiplicity.upperBound,
+        ),
+      ),
+  );
+  return metadata;
+};
 
 class V1_RemoteEngineConfig extends TEMPORARY__AbstractEngineConfig {
   private engine: V1_RemoteEngine;
@@ -779,58 +797,63 @@ export class V1_RemoteEngine implements V1_GraphManagerEngine {
   async getLambdaRelationTypeFromRawInput(
     rawInput: V1_LambdaReturnTypeInput,
   ): Promise<RelationTypeMetadata> {
-    const result = deserialize(
-      V1_relationTypeModelSchema,
-      (await this.engineServerClient.lambdaRelationType(
-        V1_LambdaReturnTypeInput.serialization.toJson(rawInput),
-      )) as unknown as PlainObject<V1_RelationType>,
-    );
-    const relationType = new RelationTypeMetadata();
-    relationType.columns = result.columns.map(
-      (column) =>
-        new RelationTypeColumnMetadata(
-          V1_getGenericTypeFullPath(column.genericType),
-          column.name,
-          new Multiplicity(
-            column.multiplicity.lowerBound,
-            column.multiplicity.upperBound,
-          ),
+    try {
+      return buildRelationTypeMetadata(
+        deserialize(
+          V1_relationTypeModelSchema,
+          (await this.engineServerClient.lambdaRelationType(
+            V1_LambdaReturnTypeInput.serialization.toJson(rawInput),
+          )) as unknown as PlainObject<V1_RelationType>,
         ),
-    );
-    return relationType;
+      );
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
+          ),
+        );
+      }
+      throw error;
+    }
   }
 
   async getBatchLambdasRelationTypeFromRawInput(
     rawInput: V1_BatchLambdaRelationTypeInput,
   ): Promise<BatchLambdasRelationTypeResult> {
-    const response = await this.engineServerClient.batchLambdasRelationType(
-      V1_BatchLambdaRelationTypeInput.serialization.toJson(rawInput),
-    );
-    const results = new Map<string, RelationTypeMetadata>();
-    const errors = new Map<string, EngineError>();
-    Object.entries(response.results).forEach(([key, columns]) => {
-      const relationType = deserialize(V1_relationTypeModelSchema, columns);
-      const meta = new RelationTypeMetadata();
-      meta.columns = relationType.columns.map(
-        (column) =>
-          new RelationTypeColumnMetadata(
-            V1_getGenericTypeFullPath(column.genericType),
-            column.name,
-            new Multiplicity(
-              column.multiplicity.lowerBound,
-              column.multiplicity.upperBound,
-            ),
+    try {
+      const response = V1_buildBatchLambdaRelationTypeResult(
+        await this.engineServerClient.batchLambdasRelationType(
+          V1_BatchLambdaRelationTypeInput.serialization.toJson(rawInput),
+        ),
+      );
+      const results = new Map<string, RelationTypeMetadata>();
+      response.results.forEach((relationType, key) =>
+        results.set(key, buildRelationTypeMetadata(relationType)),
+      );
+      const errors = new Map<string, EngineError>();
+      response.errors?.forEach((engineError, key) =>
+        errors.set(key, V1_buildEngineError(engineError)),
+      );
+      return { results, errors };
+    } catch (error) {
+      assertErrorThrown(error);
+      if (
+        error instanceof NetworkClientError &&
+        error.response.status === HttpStatus.BAD_REQUEST
+      ) {
+        throw V1_buildCompilationError(
+          V1_CompilationError.serialization.fromJson(
+            error.payload as PlainObject<V1_CompilationError>,
           ),
-      );
-      results.set(key, meta);
-    });
-    Object.entries(response.errors).forEach(([key, error]) => {
-      errors.set(
-        key,
-        V1_buildEngineError(V1_EngineError.serialization.fromJson(error)),
-      );
-    });
-    return { results, errors };
+        );
+      }
+      throw error;
+    }
   }
 
   async getCodeCompletion(
