@@ -219,7 +219,7 @@ What the repo actually enforces:
     - Engine tests drive the real `V1_LegendCubeEngine`. They spy its `V1_EngineServerClient` methods and route
       them to Cube-local axios helpers in `legend-cube-builder/src/__test-utils__/`, with `axios` as a devDependency
       as in legend-graph. The precedent is
-      [LegendDataCubeStoreTestUtils.tsx:470-503](../../../packages/legend-application-data-cube/src/components/__test-utils__/LegendDataCubeStoreTestUtils.tsx:470).
+      [LegendDataCubeStoreTestUtils.tsx:470-503](../../../packages/legend-application-data-cube/src/components/__test-utils__/LegendDataCubeStoreTestUtils.tsx#L470).
     - Cube-local helpers are needed because `EngineTestSupport` has no `/lambdaRelationType/batch` helper, and its
       `execute` helper returns already-parsed JSON. That would bypass the lossless result reader M1.7 must test.
     - The helpers cover:
@@ -249,8 +249,8 @@ What the repo actually enforces:
 
 - **Route:**
   - `CUBE: '/cube'` is in `LEGEND_QUERY_ROUTE_PATTERN`
-    ([LegendQueryNavigation.ts:69](../../../packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts:69)) and
-    mounted in [LegendQueryWebApplication.tsx](../../../packages/legend-application-query/src/components/LegendQueryWebApplication.tsx:142)
+    ([LegendQueryNavigation.ts:69](../../../packages/legend-application-query/src/__lib__/LegendQueryNavigation.ts#L69)) and
+    mounted in [LegendQueryWebApplication.tsx](../../../packages/legend-application-query/src/components/LegendQueryWebApplication.tsx#L142)
     since M1.0. M1.8a only swaps the route element for a Query-side wrapper that builds the host, loaded lazily
     (Settled before M1.8).
   - Query's `baseUrl` is `/query/`, so the URL is **`/query/cube`** 📄.
@@ -274,7 +274,7 @@ What the repo actually enforces:
   `LegendQueryCubeHost`. It implements `CubeHost` (defined in the builder) from Query's application store:
 
   - engine server client config (Query's `engineServerUrl`, as at
-    [QueryEditorStore.ts:631](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts:631));
+    [QueryEditorStore.ts:631](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L631));
   - notifications and alerts;
   - telemetry;
   - the bundled model catalog.
@@ -303,7 +303,7 @@ manager.
 
 ### 3.7 Housekeeping found along the way (separate, optional)
 
-- [AGENTS.md:120](../../../AGENTS.md:120) says DataCube consumes metamodel only, but `legend-data-cube` uses `V1_*` throughout,
+- [AGENTS.md:120](../../../AGENTS.md#L120) says DataCube consumes metamodel only, but `legend-data-cube` uses `V1_*` throughout,
   outside `v1/` folders 📄. Cube follows the stricter rule: V1 symbols appear only under
   `legend-cube-builder/src/graph-manager/protocol/pure/v1/`, as `legend-query-builder` does. AGENTS.md should be
   clarified separately. **Test exception** (user, 2026-10-08): the engine-backed tests in
@@ -681,25 +681,25 @@ RelationalCompilerExtension.java:1005-1100`) ✅:
 - **The execution result builder is lossy:** it drops parameters, and `relationalType` reads `VARCHAR(1024)` for
   every `Varchar` ✅. **Schemas must come from `lambdaRelationType`.**
 - **Studio** 📄:
-  - [MetaModelConst.ts:64-82](../../../packages/legend-graph/src/graph/MetaModelConst.ts:64): `PRECISE_PRIMITIVE_TYPE` lists
+  - [MetaModelConst.ts:64-82](../../../packages/legend-graph/src/graph/MetaModelConst.ts#L64): `PRECISE_PRIMITIVE_TYPE` lists
     paths the engine does not have (`precisePrimitives::Date`, `::Time`, `::Decimal`) and a wrong `Timestamp`.
   - `PrecisePrimitiveType` extends `DataType` and is indexed by short name; there are three disagreeing
     precise→standard maps.
-  - [V1_RemoteEngine.ts:779-801](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts:779):
+  - [V1_RemoteEngine.ts:779-801](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_RemoteEngine.ts#L779):
     `getLambdaRelationType` drops `typeVariableValues`. Its batch variant reads `results`, but the engine returns
     `result`, so it throws ✅
-    ([V1_LambdaReturnType.ts:87-90](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.ts:87)).
+    ([V1_LambdaReturnType.ts:87-90](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/compilation/V1_LambdaReturnType.ts#L87)).
   - Client-side table typing
-    ([STO_Relational_Helper.ts:222-263](../../../packages/legend-graph/src/graph/helpers/STO_Relational_Helper.ts:222))
+    ([STO_Relational_Helper.ts:222-263](../../../packages/legend-graph/src/graph/helpers/STO_Relational_Helper.ts#L222))
     disagrees with the engine.
   - The query builder normalizes precise types to standard ones for operators and editors.
   - Data Cube keeps only a path string and hard-codes `Varchar(16777216)`
-    ([DataCubeQueryBuilderUtils.ts:284](../../../packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts:284)).
+    ([DataCubeQueryBuilderUtils.ts:284](../../../packages/legend-data-cube/src/stores/core/DataCubeQueryBuilderUtils.ts#L284)).
   - **What works:** `V1_relationTypeModelSchema`
-    ([V1_TypeSerializationHelper.ts:128](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.ts:128))
+    ([V1_TypeSerializationHelper.ts:128](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.ts#L128))
     keeps the parameters ✅. `V1_buildRelationTypeFromV1RelationType` even works against an empty `PureModel` ✅.
   - **Literals:** JS `JSON.parse` corrupts large Integer and Decimal values. `parseLosslessJSON` /
-    `stringifyLosslessJSON` exist in [FormatterUtils.ts:201](../../../packages/legend-shared/src/format/FormatterUtils.ts:201).
+    `stringifyLosslessJSON` exist in [FormatterUtils.ts:201](../../../packages/legend-shared/src/format/FormatterUtils.ts#L201).
 
 ### 5.2 Decision: the domain models precise primitives itself (D10)
 
@@ -916,7 +916,7 @@ interface ModelContext extends JsonObject {
 1. Take Pure grammar text: a bundled fixture or a pasted model. Picking one copies its text into the cube as
    `{_type: 'text', code}` (§6.2.2).
 2. Parse it once per load with `grammarToJSON_model`
-   ([V1_EngineServerClient.ts:405](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts:405)).
+   ([V1_EngineServerClient.ts:405](../../../packages/legend-graph/src/graph-manager/protocol/pure/v1/engine/V1_EngineServerClient.ts#L405)).
    The result is a model-context JSON (`{_type:'data', elements}`).
 3. Read `Database` elements (schemas → tables) and `PackageableRuntime` elements from it, in the `v1/` seam.
 4. Send the cube's saved `text` context with every typing and execution call. Inline `data` and `text` contexts
@@ -951,8 +951,8 @@ interface ModelContext extends JsonObject {
     - **ID 2:** `BI` 9007199254740993 (above 2^53, to exercise lossless reading), `DEC` 1.25, `D` 0.1,
       `TS` `2024-01-02 13:00:00`, `B` false, `VC` `'xyz'`; every other column populated.
     - **ID 3:** every nullable column NULL.
-  - The scratch fixtures behind the type findings (`ops/types.pure`, `precise/model.pure`, kept in
-    `legend-cube-evidence/`) had different rows. These rows are **new** and get verified in M1.7.
+  - The scratch fixtures behind the type findings (`ops/types.pure`, `precise/model.pure`, kept outside the repo) had
+    different rows. These rows are **new** and get verified in M1.7.
 - **More `CUBETEST` tables** (Settled before M1.7, user 2026-10-06). The slice has only Source, Join and Filter
   nodes, so some Part A cases need tables shaped for them. All are created after `call loadNorthwindData()`, since
   some copy Northwind columns, and all live in `NorthwindDatabase` (one database per query):
@@ -965,7 +965,7 @@ interface ModelContext extends JsonObject {
     raw tables breaks Cube's duplicate rule on ADDRESS, CITY, POSTAL_CODE, COUNTRY), `CATEGORY_REGION(CATEGORY_ID,
 SHIP_REGION NOT NULL)` copied from `CATEGORY_NAME` for the one-nullable-key FULL join (A.4), and key pairs
     `VARCHAR(15)`/`VARCHAR(2)` and `DECIMAL(10,2)`/`NUMERIC(12,4)` for the parameter-only FULL casts (§8.4).
-  - Verified on the engine (2026-10-06, `legend-cube-evidence/m17-probes/fixture-probe.mjs`) ✅: every table types
+  - Verified on the engine (2026-10-06, with a probe script kept outside the repo) ✅: every table types
     in one batch call except `PROBLEM_BINARY`, which fails alone; `CHAR(3)` types as `Varchar(1)`, `OTHER` as
     `String`, the view's columns as `Varchar(0)`; the dotted table's Pure-text path silently reads the decoy, and
     its unquoted path fails with "Can't find table"; `EMP_REGION ⋈ CUST_REGION` gives 15 / 19 / 103 / 107 rows;
@@ -1249,8 +1249,8 @@ Import goes through `importDocument`, which pushes history and replaces the docu
 nodes the imported cube doesn't share), then re-checks the sources. Domain objects are immutable but not all frozen (only `Query`'s arrays are), so they are held as
 `observable.ref` and MobX never observes them deeply.
 
-**Settled before M1.8** (user, 2026-10-07; requirements `m18-requirements`, run `wf_b4b35e14-0fb`, kept in
-`legend-cube-evidence/m18-requirements-result.json`). The canvas questions are asked at the start of M1.8b.
+**Settled before M1.8** (user, 2026-10-07; requirements `m18-requirements`). The canvas questions are asked at the
+start of M1.8b.
 
 - **Before the canvas (M1.8a):** the graph region shows an interim read-only list of the query's nodes (`describe()`,
   errors, host issues, a capture marker) with a **Select** action. The canvas replaces it in M1.8b.
@@ -1631,10 +1631,9 @@ interface CubeEngine {
 - **Graph-manager wrappers are bypassed** for typing on purpose: they drop parameters and the batch wrapper throws
   (D8). A tracer service must be set on the client, or every call throws 📄.
 
-**Settled before M1.7** (user, 2026-10-06; requirements `m17-requirements`, run `wf_7f344217-230`, kept in
-`legend-cube-evidence/m17-requirements-result.json`). Engine facts probed the same day (`m17-probes/`): a table with
-a `BINARY` column fails **alone** in the batch call, the other keys still type ✅; `compilation/compile` accepts a
-`text` context ✅; `execute` returns each column's type in `builder.columns` ✅.
+**Settled before M1.7** (user, 2026-10-06; requirements `m17-requirements`). Engine facts probed the same day
+(`m17-probes/`): a table with a `BINARY` column fails **alone** in the batch call, the other keys still type ✅;
+`compilation/compile` accepts a `text` context ✅; `execute` returns each column's type in `builder.columns` ✅.
 
 - **Fixture:** the extra `CUBETEST` tables of §6.2.4.
 - **Date/DateTime casts:** a shape check now, the end-to-end check in M6 (§8.4).
@@ -1977,10 +1976,10 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
 
 Findings: engine `legend-engine-application-query`, Studio
 [Query.ts](../../../packages/legend-graph/src/graph-manager/action/query/Query.ts),
-[QueryEditorStore.ts:556-585](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts:556).
+[QueryEditorStore.ts:556-585](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L556).
 
 - **`content` must be Pure-lambda text.** Legend Query re-parses it on load
-  ([QueryEditorStore.ts:2662](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts:2662)).
+  ([QueryEditorStore.ts:2662](../../../packages/legend-application-query/src/stores/QueryEditorStore.ts#L2662)).
 - **Project coordinates and an execution context are mandatory.** An explicit context needs a mapping, which a
   `#>{}#` lambda does not have.
 - **One owner.** **No optimistic concurrency:** the client's version is ignored 📄✅.
@@ -2382,7 +2381,7 @@ Legacy TDS: `…/core_relational/relational/tds/tds.pure:30-86`, `tdsExtension.p
 H2 portability manifest: `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT/src/main/resources/pct-manifests/relational-h2/RelationFunctions_manifest.json`.
 
 **Engine types:** `RelationalCompilerExtension.java:933-1100` (path in §5.1); precise primitives in
-`~/.m2/repository/org/finos/legend/pure/legend-pure-m3-precisePrimitives/5.105.0/` (`platform_precise_primitives/precisePrimitives.pure`).
+the `legend-pure-m3-precisePrimitives` 5.105.0 jar (`platform_precise_primitives/precisePrimitives.pure`).
 
 **Engine endpoints:**
 

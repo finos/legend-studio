@@ -2,21 +2,10 @@
 
 > **What this file is:** the "where are we" ledger for Legend Cube.
 > [PLAN.md](PLAN.md) is the stable plan (what and why). This file tracks status, the last session, the next action
-> and open items, so any new chat can pick up the work cold.
+> and open items, so anyone can pick up the work cold.
 >
 > **Upkeep:** update it at the end of every working session and whenever a milestone step lands, and commit it with
 > that work. Git history on the branch is the detailed log; this file is the summary.
-
-## How to resume in a new chat
-
-Paste this as the first message:
-
-> We're building Legend Cube in legend-studio on branch `cubeV1`. Read `PLAN.md`, `PROGRESS.md` and `ISSUES.md` in
-> `docs/wip/legend-cube/` first. The spec is `docs/design/WIP-CUBE-SPEC.md` (read sections on demand, not all of it). My local legend-engine
-> runs from IntelliJ on localhost:6300. Then do the "Next action" from PROGRESS.md, and update PROGRESS.md when you
-> finish.
-
-Claude's memory also points to both files, so a new chat in this repo finds them on its own.
 
 ## Current state (2026-10-08)
 
@@ -55,8 +44,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 `engine-roundtrip` group on CI's docker engine (engine commit `00108b70638b`, 279 tests).
 
 **M1.9 (slice acceptance and hardening) has started** (2026-10-08). Requirements: `m19-requirements` (5 readers, a
-merge, a critic and a finalize step), 108 items, a 21-step build order and 13 decisions; full result in
-`legend-cube-evidence/m19-requirements-result.json`. The user's decisions are in PLAN §11.1 "Settled at the start of
+merge, a critic and a finalize step), 108 items, a 21-step build order and 13 decisions; the full result is kept in
+the local evidence folder. The user's decisions are in PLAN §11.1 "Settled at the start of
 M1.9": M1.9 lands as a follow-up PR after #5591 merges (nothing more is pushed to #5591); an agent rehearsal of Part
 B, then the user runs it by hand; no e2e; short READMEs with how-to guides in `docs/`; the `V1_*` imports of the
 engine-backed tests are allowed.
@@ -82,34 +71,34 @@ WASM study; new sources wait on the user's design. Decimal precision stays for a
 then the verify fixes in the commit after `8df31aaa3`. 1595 Cube tests green with :6300 up; `check:ci` and
 `lint:ci` green, and both Cube packages lint clean without the ESLint cache.
 
-- Verification `m17-verify` (run `wf_1f966d04-53d`): 33 real issues out of 56 (23 refuted), in
-  `legend-cube-evidence/m17-verify-result.json`. Fixed: lint (2 redundant assertions), column-spec values unstamped
+- Verification `m17-verify`: 33 real issues out of 56 (23 refuted), kept in the local evidence folder. Fixed:
+  lint (2 redundant assertions), column-spec values unstamped
   (errors in them landed on the wrong node), batch results read through `Object.prototype` (a node id like
   `__proto__`). The rest were test gaps, now covered: per-key typing failures, abort, every unsupported model kind,
   lossless request bodies, a deterministic duration, error placement on the stamped node (A.9 typed under another
   key, plus a stale join key captured downstream), PARSER errors, the outline's flags one by one and near-miss
-  runtimes, Decimal/Number/Float result values, the engine commit logged by Part A. Fix run `m17-fixes` (run
-  `wf_e3a4b9c9-23c`, `legend-cube-evidence/m17-fixes-result.json`): each new test was shown to fail on the mutant
+  runtimes, Decimal/Number/Float result values, the engine commit logged by Part A. Fix run `m17-fixes`: each new
+  test was shown to fail on the mutant
   its finding named.
 - **Deferred by the user** until after the main end-to-end: decimal-literal precision (still deferred, ISSUES.md).
   Show Pure printing numbers as 0 was fixed later (`dcaf0efdb`).
 
-**M1.8 (editor state, page, picker, grid; then canvas and editors) has started.** Requirements: `m18-requirements`
-(run `wf_b4b35e14-0fb`), 164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
-that no longer match the code, 19 core/builder gaps and 24 open questions; full result in
-`legend-cube-evidence/m18-requirements-result.json`. The first five steps are the **demo cut**: the user can open
+**M1.8 (editor state, page, picker, grid; then canvas and editors) has started.** Requirements: `m18-requirements`,
+164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
+that no longer match the code, 19 core/builder gaps and 24 open questions; the full result
+is kept in the local evidence folder. The first five steps are the **demo cut**: the user can open
 `/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Demo cut built (2026-10-07):** `2115cedfa` S1 host contract and test
 harness (plus the core's `getRelationalDisplayName` export); `be16ae26d` S2 editor and execution state (with an
 engine test: ORDERS gives 830 rows); `30f4366dc` S3 page shell and the Legend Query host, lazy-loaded at
 `/query/cube`; `8bd4b7c0a` S4 source picker; `97e9fa4c2` S5 results grid and execution. `check:ci`, `lint:ci` and
 1905 tests (core, builder, Query) green. Checked in the browser against :6300: the outline, the batch typing call
 (compressed body, CORS from :9001) and execute (830 rows in about 0.6 s; truncation at limit 10) all work.
-Verification `m18-democut-verify` (run `wf_97b39b15-ae7`, `legend-cube-evidence/m18-democut-verify-result.json`):
+Verification `m18-democut-verify`:
 74 real out of 86 (6 bugs, 3 unmet requirements, 61 test gaps). The bugs and requirements are fixed in `c5bce0d81`:
 a run's error now belongs to its query (an edit clears it; a run that fails after an edit shows nothing), closing
 the picker drops a pending Add, a cube with a model but no runtime keeps the picked runtime, the grid checks column
 names as well as the count, long one-line errors keep Details, duplicate error keys, loading bars beside the pending
-labels, and Show SQL. The missing tests are committed in `0e535c4e1` (run `m18-democut-tests`, `wf_511e7e31-7cb`,
+labels, and Show SQL. The missing tests are committed in `0e535c4e1` (run `m18-democut-tests`,
 the evidence folder's `m18-democut-tests-result.json`; 329 builder, 1404 core, 248 Query and 271 engine-roundtrip tests
 green; `check:ci` and `lint:ci` green). Coverage, honestly:
 
@@ -136,7 +125,7 @@ M1.8a part, passed by hand on :9001 + :6300: pick Northwind and StoreRuntime, ad
 rows), Select (stale), Undo, Show Pure (real literals, e.g. `->limit(1001)`), Export, reload, Import, Execute: the
 same 830 rows. F9 came with M1.8b's shortcuts (S20, PLAN §3.5). Importing the slice spec and executing gives the 19 rows.
 
-**M1.8a verified (2026-10-07).** Verification `m18a-verify` (run `wf_e47c016b-840`, evidence
+**M1.8a verified (2026-10-07).** Verification `m18a-verify` (evidence
 `m18a-verify-result.json`): 39 real out of 45 (12 bugs, 27 test gaps).
 
 - `8b8b632cd` core: chained Filters are re-read until nothing changes.
@@ -146,7 +135,7 @@ same 830 rows. F9 came with M1.8b's shortcuts (S20, PLAN §3.5). Importing the s
   - the picker's paste box shows only for the model it loaded;
   - file reads: a too-large file ends a pending read, and read errors are worded;
   - three doc fixes.
-- `1fd25a532` the missing tests (run `m18a-tests`, `wf_06e74b7b-a8b`, evidence `m18a-tests-result.json`), each checked
+- `1fd25a532` the missing tests (run `m18a-tests`, evidence `m18a-tests-result.json`), each checked
   against its mutant by an independent verifier.
 
 1419 core, 430 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green.
@@ -170,7 +159,7 @@ finos/legend-studio#5591 carries it (user, 2026-10-07: it is on the critical pat
   drop; `aea4fc469` S16 context menu; `fc572b42d` S17 editor panel, Source panel and the editor contract (PLAN §7.4);
   `ae0839618` S18 Join editor and the outline's untyped columns; `4604a6b56` S19 Filter editor; `1b6acdfda` S20
   shortcuts (Query's core plugin contributes them); `0682fdf9e` changeset text.
-- **Verification** `m18b-verify` (run `wf_4c3413c3-1d3`, evidence `m18b-verify-result.json`): 5 reviewers, 43
+- **Verification** `m18b-verify` (evidence `m18b-verify-result.json`): 5 reviewers, 43
   distinct findings, 40 confirmed (16 bugs, 3 unmet requirements, 14 test gaps, 7 docs), 3 refuted. Fixed in
   `b717c4f00` (state: re-check against undo snapshots, refresh of a failing table, warnings across Import, Undo over
   Import, draft no-ops, the 'type unknown' lookup) and `9dfcfc306` (UI and tests), docs in the commit after.
@@ -229,25 +218,6 @@ The user wants a first merge so that new sources and new operations can be built
 | Push and PR                                       | User  | First PR (#5591) opened 2026-10-07 from the fork MauricioUyaguari/legend-studio `cubeV1` to finos/legend-studio master. Approved by Yasirmod17 on 2026-10-08 on `b1c73b640`, all 21 CI checks green (`engine-roundtrip` included); the merge waits on an incident. M1.9 goes in a follow-up PR                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
-## Environment (local)
-
-- **Engine:** legend-engine checkout (sibling folder), run from IntelliJ (`org.finos.legend.engine.server.Server`, no
-  arguments, so `userTestConfig.json`).
-  - Port 6300, anonymous auth. CORS allows the Query dev origin.
-  - **No Mongo**, so the engine's query stores don't work locally.
-  - Its depot setting points at `127.0.0.1:6200`, but nothing runs there.
-  - Check with `curl -s localhost:6300/api/server/v1/info`; planning used commit `93d92b4`.
-- **Legend Query dev:** `yarn dev:ts` plus `yarn dev:query` → `http://localhost:9001/query/`. The Cube page is at
-  `http://localhost:9001/query/cube`.
-  - Run `yarn build` at least once first: `dev:ts` doesn't build the stylesheets (`lib/index.css`) that the Query
-    bundle imports.
-- **Northwind:** the engine loads it into H2 through `call loadNorthwindData()` in the connection's
-  `testDataSetupSqls`. The shared grammar is
-  `packages/legend-manual-tests/src/__tests__/query-builder/model/Northwind.pure`. Cube will ship its own corrected
-  fixture (PLAN.md §6.2.4).
-- **Engine-backed tests:** name them `*.engine-roundtrip-test.ts`. They use axios against `http://localhost:6300/api`,
-  because `fetch` is blocked in Jest.
-
 ## Key facts a cold start must not miss
 
 Each is verified and detailed in PLAN.md.
@@ -279,7 +249,7 @@ Each is verified and detailed in PLAN.md.
   - Verified the two remaining plan inferences live (`toOne()` NULL semantics; FULL merged-key typing) and updated
     PLAN.md.
   - Added this file.
-  - Copied the planning evidence to `legend-cube-evidence/` (outside the repos) with a README; smoke-tested the
+  - Copied the planning evidence to a local folder outside the repos with a README; smoke-tested the
     harnesses from there.
   - Plan review (4 reviewers, 31 findings). Verified the high-severity ones live, then folded them into PLAN.md.
     Main changes:
