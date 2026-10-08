@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                           |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                              |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                               |
-| Step   | M2.1–M2.12 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort, the Sort warning); M2.13 next (database workarounds) |
-| Tests  | 1789 core, 694 builder (core group), 236 Query, 106 builder engine-roundtrip (after M2.12)                                                                      |
+| Item   | State                                                                                                                                                                               |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                                                                                                  |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                   |
+| Step   | M2.1–M2.13 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename, the Join autofix, Sort, the Sort warning, database workarounds); M2.14 next (grid quick actions) |
+| Tests  | 1802 core, 712 builder (core group), 236 Query, 130 builder engine-roundtrip (after M2.13)                                                                                          |
 
 ## Steps
 
@@ -31,7 +31,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.10** Join rename autofix
 - [x] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
 - [x] **M2.12** The Sort warning
-- [ ] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
+- [x] **M2.13** Database workarounds (row numbers for Drop and Slice, padded Distinct on SQL Server)
 - [ ] **M2.14** Grid quick actions: Sort by and Filter by
 - [ ] **M2.15** Docs, sample typing on the engine, changeset text
 - [ ] **M2.16** Verification and the browser rehearsal
@@ -244,6 +244,37 @@ The pins for "Sorts cannot be empty." (spec §7.1) and "Sort column "X" of type 
 warning; keeping LAST_NAME warns on the Sort, on the canvas and in its panel, that FIRST_NAME is removed; Execute stays
 enabled and returns the 9 last names in order. Gates: `check:ci` and `lint:ci` green; 1789 core, 694 builder (core
 group), 236 Query and 106 engine-roundtrip tests.
+
+**M2.13, database workarounds (2026-10-08).** Two commits. The core (`f32b537b7`): `CUBE_DIALECT_WORKAROUNDS`
+(`ir/CubeDialects.ts`, a `Map`: SqlServer drop, slice and distinct; Sybase and SybaseIQ drop and slice; DB2 and MemSQL
+drop), read only through `getDialectWorkarounds` (none for an unknown type, `constructor` included), and
+`needsDatabaseType` (a Drop, Slice or Distinct at or above the node). `ExecutionOptions`, `EmitContext` and
+`emitRelation`'s options gain an optional `databaseType`; typing never gets one. On those databases Drop and Slice go
+through `emitRowNumberRange`: `->extend([<keys>]->over(), ~[cube_rn: {p, w, r | $p->rowNumber($r)}])->filter({row |
+<range>})->select(~[<input columns>])`, numbered in the input's order (the Sort's keys, `sortKey` on the Sort), else by
+the first column that sorts (on the node, `rowNumber`), with no sort written before it (SQL Server rejects an ORDER BY
+in a derived table); the native form when no column sorts. On SQL Server a Distinct is padded:
+`->distinct()->extend(~cube_d: x | 1)->select(~[…])`. Temporary columns take `cube_rn2`, `cube_d2`… when the input has
+the name (`getTemporaryColumnName`). New roles `rowNumber` and `rowRange`; every part has an origin. The debug printer
+braces a column function with several parameters, which Pure doesn't read bare. Engine: written for SqlServer and run
+on H2, every shape parses to the JSON Cube sends and types as Cube infers; sorted descending, a Drop of 825 gives
+10252–10248 and a Slice [10, 15) 11067–11063, unsorted a Slice gives 10258–10262, the columns match the native forms',
+and the padded Distinct of ship cities and countries gives 70 rows. The builder (this commit): the outline's runtimes
+gain `connections` (`{storePath, databaseType}`, a list), read from a connection pointer, an embedded relational
+connection and `connectionStores` (shapes probed on the engine), skipping other connections; `getDatabaseType` gives
+the one type of the runtime's connections to the databases a query reads, else none. Execute and Show Pure load the
+outline only when `needsDatabaseType`, after the run (or render) has started, and emit from what they captured before
+the wait: Stop during the load runs nothing, a second F9 is ignored, an edit during the load doesn't change the run,
+and a Show Pure closed during the load shows nothing; an outline that fails to load gives the native forms. Plan-only
+test (`LegendCubeDialects.engine-roundtrip-test.ts`, a test-only model with a static connection per type): on SqlServer,
+Sybase and SybaseIQ, Drop and Slice are numbered by both keys of a two-key Sort and never use `limit m,n`; on DB2 and
+MemSQL, Drop is; Spanner and Postgres stay native; no SqlServer plan has `top N distinct` or an ORDER BY in a subquery
+without TOP or OFFSET. Run once without the workarounds, every workaround check failed (SybaseIQ and MemSQL number the
+rows themselves for one key, wrongly for two: hence the two-key Sort). The Part A test's outline expectation gains the
+fixture's H2 connection, the only change to that file. The SQL Server distinct defect is drafted for finos/legend-engine
+in ISSUES.md, not filed. No browser check: the fixture runs on H2, and the headless tests cover Execute and Show Pure on
+a SqlServer outline. Gates: `check:ci` and `lint:ci` green; 1802 core, 712 builder (core group), 236 Query and 130
+engine-roundtrip tests.
 
 ## Open items
 

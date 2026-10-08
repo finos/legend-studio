@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import { needsDatabaseType } from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
-import { action, flow, makeObservable, observable } from 'mobx';
+import { action, flow, flowResult, makeObservable, observable } from 'mobx';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -50,11 +51,18 @@ export class CubeShowPureState {
     this.editorState = editorState;
   }
 
-  /** Opens the dialog and renders the query; does nothing when Execute can't run */
+  /**
+   * Opens the dialog and renders the query, written for the database it runs
+   * on, as Execute writes it; does nothing when Execute can't run
+   */
   *open(): GeneratorFn<void> {
     const { execution, document, emitter, rowLimit, host } = this.editorState;
-    const runtime = document.context?.runtime;
-    if (!execution.canExecute || runtime === undefined) {
+    const { query, context } = document;
+    const runtime = context?.runtime;
+    const model = context?.model;
+    // checked by canExecute
+    const captureId = query.selected as string;
+    if (!execution.canExecute || runtime === undefined || model === undefined) {
       return;
     }
     const request = ++this.request;
@@ -63,8 +71,22 @@ export class CubeShowPureState {
     this.error = undefined;
     this.isRendering = true;
     try {
+      let databaseType: string | undefined;
+      if (needsDatabaseType(query, captureId)) {
+        yield flowResult(this.editorState.loadModelOutline(model));
+        // closed, or opened again, while the outline loaded
+        if (request !== this.request) {
+          return;
+        }
+        databaseType = this.editorState.getRunDatabaseType(
+          query,
+          captureId,
+          model,
+          runtime,
+        );
+      }
       const text = (yield host.engine.renderPure(
-        emitter.emitExecutionLambda({ rowLimit, runtime }),
+        emitter.emitExecutionLambda({ rowLimit, runtime, databaseType }),
       )) as string;
       if (request === this.request) {
         this.text = text;

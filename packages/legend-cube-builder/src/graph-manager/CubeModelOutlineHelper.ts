@@ -30,3 +30,29 @@ export const getRuntimesForDatabase = (
   outline.runtimes.filter((runtime) =>
     runtime.storePaths.includes(databasePath),
   );
+
+/**
+ * The database type a query on these databases runs on with the runtime, for
+ * the operations some databases take another way (PLAN §11.4): the type of
+ * the runtime's connections to them. None when the runtime isn't in the
+ * outline, a database has no typed connection, or the databases' types
+ * differ: the native forms are written then.
+ */
+export const getDatabaseType = (
+  outline: CubeModelOutline,
+  runtimePath: string,
+  databasePaths: readonly string[],
+): string | undefined => {
+  const runtime = outline.runtimes.find(({ path }) => path === runtimePath);
+  const types = new Set<string>();
+  for (const databasePath of new Set(databasePaths)) {
+    const databaseTypes = (runtime?.connections ?? [])
+      .filter(({ storePath }) => storePath === databasePath)
+      .map(({ databaseType }) => databaseType);
+    if (!databaseTypes.length) {
+      return undefined;
+    }
+    databaseTypes.forEach((databaseType) => types.add(databaseType));
+  }
+  return types.size === 1 ? [...types][0] : undefined;
+};

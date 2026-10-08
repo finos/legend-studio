@@ -56,6 +56,7 @@ import {
   CubeEngineErrorKind,
   type CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
+import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
@@ -263,15 +264,53 @@ export class CubeEditorState implements CommandRegistrar {
   /** The outline of the cube's model, once an editor has loaded it */
   get modelOutline(): CubeModelOutline | undefined {
     const model = this.document.context?.model;
-    return model === undefined ? undefined : this.modelOutlines.get(model);
+    return model === undefined ? undefined : this.getModelOutline(model);
+  }
+
+  /** The outline of a model, once loaded */
+  getModelOutline(model: ModelContext): CubeModelOutline | undefined {
+    return this.modelOutlines.get(model);
   }
 
   /**
-   * Loads the outline of the cube's model, once per model. It only adds
-   * warnings, so a model that fails to load shows none.
+   * The database type a run of the query up to the node needs, with the
+   * model's runtime (PLAN §11.4), from the model's outline once it is loaded
+   * (`loadModelOutline`): the type of the runtime's connections to the
+   * databases the node reads. None without an outline, which writes every
+   * operation the native way.
    */
-  *loadModelOutline(): GeneratorFn<void> {
-    const model = this.document.context?.model;
+  getRunDatabaseType(
+    query: Query,
+    nodeId: string,
+    model: ModelContext,
+    runtime: string,
+  ): string | undefined {
+    const outline = this.getModelOutline(model);
+    if (!outline) {
+      return undefined;
+    }
+    const databases = new Set<string>();
+    const visit = (id: string): void => {
+      const node = query.getNode(id);
+      if (node instanceof RelationalTableSource) {
+        databases.add(node.database);
+      }
+      query
+        .getInputIds(id)
+        .forEach((inputId) => inputId !== undefined && visit(inputId));
+    };
+    visit(nodeId);
+    return getDatabaseType(outline, runtime, [...databases]);
+  }
+
+  /**
+   * Loads the outline of a model, the cube's by default, once per model. It
+   * only adds warnings and database types, so a model that fails to load
+   * shows none and runs every operation the native way.
+   */
+  *loadModelOutline(
+    model: ModelContext | undefined = this.document.context?.model,
+  ): GeneratorFn<void> {
     if (model === undefined || this.modelOutlines.has(model)) {
       return;
     }

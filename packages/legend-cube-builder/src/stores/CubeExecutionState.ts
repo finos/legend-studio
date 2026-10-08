@@ -14,9 +14,21 @@
  * limitations under the License.
  */
 
-import { isSchemasError, type Query, type Schema } from '@finos/legend-cube';
+import {
+  isSchemasError,
+  needsDatabaseType,
+  type Query,
+  type Schema,
+} from '@finos/legend-cube';
 import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
-import { action, computed, flow, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   CubeEngineError,
   CubeEngineErrorKind,
@@ -162,12 +174,33 @@ export class CubeExecutionState {
     if (!model || !runtime || !schema) {
       return;
     }
-    const lambda = emitter.emitExecutionLambda({ rowLimit, runtime });
+    // the run starts before any wait, so Stop works and a second F9 is ignored
     const controller = new AbortController();
     this.runController = controller;
     this.error = undefined;
     this.editorState.clearHostIssues();
     try {
+      // a Drop, Slice or Distinct is written for the database it runs on
+      // (PLAN §11.4), which the model's outline gives: loaded once, waited
+      // for only then; the query, model and runtime are the ones captured
+      let databaseType: string | undefined;
+      if (needsDatabaseType(query, captureId)) {
+        yield flowResult(this.editorState.loadModelOutline(model));
+        if (this.runController !== controller || controller.signal.aborted) {
+          return;
+        }
+        databaseType = this.editorState.getRunDatabaseType(
+          query,
+          captureId,
+          model,
+          runtime,
+        );
+      }
+      const lambda = emitter.emitExecutionLambda({
+        rowLimit,
+        runtime,
+        databaseType,
+      });
       const response = (yield host.engine.execute(model, lambda, {
         abortController: controller,
       })) as CubeResult;

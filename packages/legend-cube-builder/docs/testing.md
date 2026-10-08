@@ -66,6 +66,15 @@ would serve it.
 - `src/__tests__/LegendCubeOperations.engine-roundtrip-test.ts` checks each operation: its lambda as the engine parses
   the printed Pure, its typing against Cube's inferred schema, and its rows. Its helpers are in
   `src/__test-utils__/CubeOperationsTestUtils.ts`; they take any `CubeEngine` and import no `V1_*` class.
+- **Sort descending in order tests.** H2 scans ORDERS in ascending `ORDER_ID` order, so a test that sorts ascending,
+  or numbers rows by `ORDER_ID`, passes without the sort; the operations tests sort descending, with a control test
+  pinning H2's own order.
+- **Database workarounds** (PLAN §11.4) are checked two ways. The operations tests write them for `SqlServer` and run
+  them on the fixture's H2, which takes both forms, so their rows can be compared with the native forms'.
+  `src/__tests__/LegendCubeDialects.engine-roundtrip-test.ts` plans them, never running anything, on a test-only copy
+  of the fixture model with a static connection per database type (`CUBE_ENGINE_TEST__generatePlanSql`), and checks
+  facts about the SQL: row numbers in the Sort's order, no `limit m,n`, no `top N distinct`. A check that should catch
+  a missing workaround must fail without it: run it once with the workaround off before relying on it.
 - `src/__tests__/CubeNorthwindRelationTypes.json` records the engine's relation type for every table of the bundled
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.

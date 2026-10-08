@@ -76,6 +76,14 @@ input's order as `context.inputOrder`, and its emitter wraps its input with `emi
 (`src/ir/emitters/SortEmitter.ts`), as Limit's does; the run sorts by the capture node's order before its row limit.
 Typing lambdas carry no sort. A direct call with no context, as in an emitter's own tests, sorts nothing.
 
+Databases (PLAN §11.4): a run is written for the database it runs on, `context.databaseType` (the engine's
+`DatabaseType` name, e.g. `SqlServer`), which only runs get. An operation that some database rejects in its native form
+gets a flag in `CUBE_DIALECT_WORKAROUNDS` (`src/ir/CubeDialects.ts`, a `Map`: the type comes from the model) and reads
+`getDialectWorkarounds(context.databaseType)` in its emitter, as Drop, Slice and Distinct do; add its type to
+`needsDatabaseType` too, so the builder loads the model's connections before such a run. Without a type, or for an
+unknown one, write the native form. A column an emitter adds and drops again takes `getTemporaryColumnName`
+(`src/ir/TemporaryColumns.ts`), so it never takes an input column's name.
+
 ## 4. Its codec
 
 A `NodeSpecCodec` in `src/spec/codecs/<Type>Codec.ts`:
