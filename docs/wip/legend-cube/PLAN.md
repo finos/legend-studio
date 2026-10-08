@@ -1215,7 +1215,7 @@ history. Domain objects are immutable but not all frozen (only `Query`'s arrays 
   fix-up UI in M1.8.
 - **Show Pure:** its own dialog with Copy, showing the engine's rendering of what Execute runs, row limit and
   literals included (e.g. `->limit(1001)`). `renderPure` sends the lambda as lossless text (the "numbers as 0" bug,
-  fixed in `469bb5458`).
+  fixed in `dcaf0efdb`).
 - **Technical (decided without asking):** Query tests use a local fake engine (no `./test` export from the builder
   yet); the core gains small host-free helpers the UI needs (re-reading filter values against a schema, a schema
   diff, the display name of a table, the reason a capture subtree can't emit).

@@ -22,7 +22,7 @@ Claude's memory also points to both files, so a new chat in this repo finds them
 
 | Item        | State                                                                                                                                                                                                                                                                |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch      | `cubeV1`, rebased on master `a7393c07d` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                             |
+| Branch      | `cubeV1`, rebased on finos master `a32e5c0fb` (the spec landed there as `docs/design/WIP-CUBE-SPEC.md`, #5589)                                                                                                                                                       |
 | Plan        | `PLAN.md`, **approved** by the user on 2026-10-05, with its departures from the spec's guidance sections (Appendix A)                                                                                                                                                |
 | Code        | **M1.0–M1.7 done** (scaffolding; types and values; graph and inference; join; filter; IR and emitter; saved spec codec; headless end-to-end against the engine), committed on `cubeV1`, not pushed. **M1.8a done** (S1–S12, verified); next the first PR, then M1.8b |
 | Decisions   | PLAN.md §0, D1–D12. D7 is final: route `/cube` in Legend Query (URL `/query/cube`); packages `@finos/legend-cube` (host-free core) and `@finos/legend-cube-builder` (UI + adapter); `legend-application-query` depends on them, `legend-query-builder` does not      |
@@ -51,8 +51,8 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 
 ## Next action
 
-**M1.7 (thin end-to-end, headless) is done** (2026-10-07). Build: `683f38619` to `0221d4df5` (see their messages),
-then the verify fixes in the commit after `f52cfdc39`. 1595 Cube tests green with :6300 up; `check:ci` and
+**M1.7 (thin end-to-end, headless) is done** (2026-10-07). Build: `d653123e5` to `192346e79` (see their messages),
+then the verify fixes in the commit after `8df31aaa3`. 1595 Cube tests green with :6300 up; `check:ci` and
 `lint:ci` green, and both Cube packages lint clean without the ESLint cache.
 
 - Verification `m17-verify` (run `wf_1f966d04-53d`): 33 real issues out of 56 (23 refuted), in
@@ -73,18 +73,18 @@ then the verify fixes in the commit after `f52cfdc39`. 1595 Cube tests green wit
 (run `wf_b4b35e14-0fb`), 164 items, a 21-step build order (S1–S12 are M1.8a, S13–S21 M1.8b), 13 plan statements
 that no longer match the code, 19 core/builder gaps and 24 open questions; full result in
 `legend-cube-evidence/m18-requirements-result.json`. The first five steps are the **demo cut**: the user can open
-`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Demo cut built (2026-10-07):** `10e0a9b6e` S1 host contract and test
-harness (plus the core's `getRelationalDisplayName` export); `abb556c15` S2 editor and execution state (with an
-engine test: ORDERS gives 830 rows); `cd9882a70` S3 page shell and the Legend Query host, lazy-loaded at
-`/query/cube`; `7c96d8bdb` S4 source picker; `8444d7e42` S5 results grid and execution. `check:ci`, `lint:ci` and
+`/query/cube`, pick Northwind, a runtime and tables, execute and see the engine's rows. **Demo cut built (2026-10-07):** `2115cedfa` S1 host contract and test
+harness (plus the core's `getRelationalDisplayName` export); `be16ae26d` S2 editor and execution state (with an
+engine test: ORDERS gives 830 rows); `30f4366dc` S3 page shell and the Legend Query host, lazy-loaded at
+`/query/cube`; `8bd4b7c0a` S4 source picker; `97e9fa4c2` S5 results grid and execution. `check:ci`, `lint:ci` and
 1905 tests (core, builder, Query) green. Checked in the browser against :6300: the outline, the batch typing call
 (compressed body, CORS from :9001) and execute (830 rows in about 0.6 s; truncation at limit 10) all work.
 Verification `m18-democut-verify` (run `wf_97b39b15-ae7`, `legend-cube-evidence/m18-democut-verify-result.json`):
-74 real out of 86 (6 bugs, 3 unmet requirements, 61 test gaps). The bugs and requirements are fixed in `0b0fe82dc`:
+74 real out of 86 (6 bugs, 3 unmet requirements, 61 test gaps). The bugs and requirements are fixed in `c5bce0d81`:
 a run's error now belongs to its query (an edit clears it; a run that fails after an edit shows nothing), closing
 the picker drops a pending Add, a cube with a model but no runtime keeps the picked runtime, the grid checks column
 names as well as the count, long one-line errors keep Details, duplicate error keys, loading bars beside the pending
-labels, and Show SQL. The missing tests are committed in `caf705d2b` (run `m18-democut-tests`, `wf_511e7e31-7cb`,
+labels, and Show SQL. The missing tests are committed in `0e535c4e1` (run `m18-democut-tests`, `wf_511e7e31-7cb`,
 the evidence folder's `m18-democut-tests-result.json`; 329 builder, 1404 core, 248 Query and 271 engine-roundtrip tests
 green; `check:ci` and `lint:ci` green). Coverage, honestly:
 
@@ -96,15 +96,15 @@ green; `check:ci` and `lint:ci` green). Coverage, honestly:
 
 **M1.8a S6–S12 built (2026-10-07):**
 
-- `8af239b6a` S6 Undo. A restored query is a new object; undoing a change that left the query alone keeps it (PLAN
+- `70bbcced1` S6 Undo. A restored query is a new object; undoing a change that left the query alone keeps it (PLAN
   §7.8).
-- `30ee5a0ae` S7 Export/Import spec (dev). A newer-version spec opens read-only; Select still works there (PLAN §7.8).
-- `e9732d989` + `6747f3f40` S8 re-checking tables after an import: drift warnings, saved columns kept on failure,
+- `447b4cdd9` S7 Export/Import spec (dev). A newer-version spec opens read-only; Select still works there (PLAN §7.8).
+- `06bce5cfa` + `c76547830` S8 re-checking tables after an import: drift warnings, saved columns kept on failure,
   invalid filter values read again. The core gained `diffSchemas`, `rereadFilterValues` and
   `rereadQueryFilterValues`.
-- `469bb5458` the Show Pure "numbers as 0" fix; `596c1ff52` S9 Show Pure.
-- `bfc6874a5` S10 paste a Pure model. S11 telemetry: none, by decision.
-- `b6b371d04` S12 changeset text.
+- `dcaf0efdb` the Show Pure "numbers as 0" fix; `b38027872` S9 Show Pure.
+- `7915d5dce` S10 paste a Pure model. S11 telemetry: none, by decision.
+- `497fd3241` S12 changeset text.
 
 Checks: 1416 core, 382 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green. Part B, the
 M1.8a part, passed by hand on :9001 + :6300: pick Northwind and StoreRuntime, add ORDERS and CUSTOMERS, Execute (830
@@ -114,20 +114,20 @@ same 830 rows. Pressing F9 waits for M1.8b's shortcuts. Importing the slice spec
 **M1.8a verified (2026-10-07).** Verification `m18a-verify` (run `wf_e47c016b-840`, evidence
 `m18a-verify-result.json`): 39 real out of 45 (12 bugs, 27 test gaps).
 
-- `39a99bc09` core: chained Filters are re-read until nothing changes.
-- `d18dd8061` builder and docs:
+- `8b8b632cd` core: chained Filters are re-read until nothing changes.
+- `69cf8e6be` builder and docs:
   - re-checking applies by node identity to the cube shown and to undo snapshots, so Undo never brings back an
     unchecked table, and "resolving source" shows only while the cube shown has a table being typed;
   - the picker's paste box shows only for the model it loaded;
   - file reads: a too-large file ends a pending read, and read errors are worded;
   - three doc fixes.
-- `20ed30994` the missing tests (run `m18a-tests`, `wf_06e74b7b-a8b`, evidence `m18a-tests-result.json`), each checked
+- `1fd25a532` the missing tests (run `m18a-tests`, `wf_06e74b7b-a8b`, evidence `m18a-tests-result.json`), each checked
   against its mutant by an independent verifier.
 
 1419 core, 430 builder, 248 Query and 271 engine-roundtrip tests; `check:ci` and `lint:ci` green.
 
-**Rebased on master `a7393c07d` (2026-10-07)**, with no conflicts; the backup branch `cubeV1-before-rebase` holds the old tip.
-The builder's axios moved to 1.20.0 with master's security update (`e6b4f2105`). `check:ci`, `lint:ci` and the
+**Rebased on finos master `a32e5c0fb` (2026-10-07)**, with no conflicts; the backup branch `cubeV1-before-rebase` holds the old tip.
+finos master reverted the security dependency update, so the builder keeps axios 1.16.0. Commit hashes in these docs refer to the `cubeV1` branch history on the fork; master gets the PR squashed. `check:ci`, `lint:ci` and the
 engine-roundtrip group (279) are green, and the whole `yarn test` passes except two suites that fail only locally:
 
 - legend-dev-utils `TypescriptConfigUtils.test.js` runs `tsc -p` on an unquoted path, which breaks on this machine's
@@ -135,7 +135,7 @@ engine-roundtrip group (279) are green, and the whole `yarn test` passes except 
 - legend-manual-tests `RoundtripGrammar.engine-roundtrip-test.ts`: the local engine (93d92b4) writes empty arrays that
   Studio's serializer leaves out. CI runs it on its own engine image.
 
-**Next:** push `cubeV1` and open the PR when the user says so. Then M1.8b, starting with the six canvas questions.
+**Next:** the PR is open; after it merges, M1.8b (canvas and editors) on a new branch, with operations, test setup and a DuckDB WASM study in parallel sessions. Decimal precision stays for a later PR (user, 2026-10-07). Then M1.8b, starting with the six canvas questions.
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
@@ -148,7 +148,7 @@ engine-roundtrip group (279) are green, and the whole `yarn test` passes except 
 
 The user wants a first merge so that new sources and new operations can be built in parallel. PLAN §0 D13.
 
-- **Cut: after M1.8a** (S6–S12). The Show Pure "numbers as 0" bug, which S9 made visible, is fixed (`469bb5458`).
+- **Cut: after M1.8a** (S6–S12). The Show Pure "numbers as 0" bug, which S9 made visible, is fixed (`dcaf0efdb`).
   `/query/cube` has no flag (D11), so the page ships in Query when this merges.
 - **One PR** for the whole branch; the commit history guides the review.
 - **Docs:** PLAN.md and PROGRESS.md moved to `docs/wip/legend-cube/` (2026-10-07), with ISSUES.md beside them to
@@ -174,7 +174,7 @@ The user wants a first merge so that new sources and new operations can be built
 | legend-graph precise-primitive fix (M2.0, D12)    | User  | Can start any time as its own PR to master, in parallel with the slice. Until M2.0, keep the type seam narrow (PLAN.md §4.1). The verified issue list for a separate session is kept outside the repo, in the local evidence folder (by the user's choice, 2026-10-07)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | **To revisit: type tables locally** (2026-10-06)  | User  | The user wants Cube to stop asking the engine for every table's relation type: read the `Database` definition through legend-graph and build the column types from it, and later do the same for data products and ingest. This needs the legend-graph fixes above, and the core depending on legend-graph earlier than D12/M2.0 planned (it breaks the host-free rule, D10 and PLAN §3.3). It changes M1.7's schema resolution (PLAN §6.2.6, which uses the engine's batch endpoint). **Decided 2026-10-06 (user): M1.7 types tables with the engine behind `resolveSchemas` and records the engine's types for every fixture table as a parity test; the local typer replaces that method after the legend-graph fixes (PLAN §6.2.6).** Constraint to keep: local types must match the engine's compiler mapping exactly (a conformance test against the engine), or emitted queries and the grid will disagree. User direction (2026-10-06): data products are typed from their generated artifact (cached relation types), not their definition; Cube sends V1 protocol lambdas, not legend-graph's built (metamodel) lambdas |
 | Known issues                                      | –     | Bugs, test gaps and risks to fix in later PRs: [ISSUES.md](ISSUES.md)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| Push and PR                                       | User  | `cubeV1` is local only. The first PR is planned after M1.8a (see Merge plan). Push and open it when the user asks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Push and PR                                       | User  | First PR opened 2026-10-07 from the fork MauricioUyaguari/legend-studio `cubeV1` to finos/legend-studio master                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | Upstream defects (PLAN.md Appendix B)             | –     | Non-blocking (D8); write up as separate studio PRs and engine issues when convenient                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
 ## Environment (local)
@@ -223,7 +223,7 @@ Each is verified and detailed in PLAN.md.
   - Investigated legend-studio and legend-engine against the live engine (33-agent workflow plus follow-ups).
   - Wrote PLAN.md; the user answered D1–D8 and approved it.
   - Rebased onto master (spec landed as `WIP-CUBE-SPEC.md`).
-  - Committed PLAN.md (`baeab7d0a`).
+  - Committed PLAN.md (`50bfa4fe0`).
   - Verified the two remaining plan inferences live (`toOne()` NULL semantics; FULL merged-key typing) and updated
     PLAN.md.
   - Added this file.
