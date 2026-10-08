@@ -2026,6 +2026,38 @@ Ordering note: M1.7 runs before M1.8 on purpose, as §20 says ("prove the engine
 canvas"). If the canvas misbehaves, it is the canvas. Layout determinism needs no separate test: inputs are sorted
 before layout, so it holds by construction.
 
+**Settled at the start of M1.9** (user, 2026-10-08). PR #5591 was approved on `b1c73b640` and waits only on an
+incident on legend-studio's side.
+
+- **Where M1.9 lands:** a follow-up PR. M1.9 is built on `cubeV1` and nothing more is pushed to #5591. After #5591 is
+  squash-merged, the M1.9 commits move onto master (`git rebase --onto origin/master <merged head>`) and the
+  follow-up PR adds a patch changeset for each library package it touches. #5591's description is edited only with
+  wording the user approves.
+- **Acceptance and sign-off:** first a rehearsal of Part B in a real browser on the final head (with the canvas-fit
+  and console checks), fixing what it finds; then the user runs Part B by hand, including the physical keys (Cmd-click,
+  F9, Cmd+Z). "M1 review sign-off" is the finos approval of #5591 plus the user's dated OK, both recorded in
+  PROGRESS.
+- **E2E:** none for now, and none planned as a follow-up. Part B by hand stays the only browser check, and canvas fit
+  stays a manual check (§11.2 Part B).
+- **READMEs:** short, in the repo's library shape. The how-to guides (adding an operation, testing, hosting) live in
+  each package's `docs/` folder, linked from the README, as `legend-query-builder` does. M1.9 writes them; the
+  operations work keeps them current.
+- **Test gaps:** the two small ones (an empty schema seen from the page, unexpected rejections in the picker) are
+  closed, and the two that existing tests already cover leave ISSUES. Independent checking of the grid tests and
+  Part A's extras stay in ISSUES.
+- **`V1_*` in engine-backed tests:** allowed (user: "we can use V1 outside"). The engine-roundtrip tests in
+  `legend-cube-builder/src/__tests__/` need both the `v1/` adapter and `stores/`, which the import-hierarchy lint rule
+  keeps apart, so they import `V1_*` from there. Product code keeps the rule (§3.7).
+- **Public API:** the builder drops exports nothing outside it uses. The core keeps its `export *`, with a README note
+  that the API is unstable before 1.0.
+- **Docs trim:** session-only content leaves PLAN and PROGRESS before merge (the resume prompt, local paths, workflow
+  run ids), and `path:line` links become links GitHub can follow, after the READMEs take over the setup.
+- **Browsers:** Chrome only, with its version recorded. Firefox and Safari are listed in ISSUES as untested.
+- **Docker CORS:** waived. There is no docker locally; the acceptance record says it is unchecked.
+- **Draft format marker:** the core README says the saved format is a draft until M8, and the "(dev)" labels on
+  Export and Import are its marker in the UI (§10.3).
+- **Undo after a run:** the rows stay marked stale, as §7.8 settles: a restored query is a new object.
+
 ### 11.2 Slice acceptance test
 
 **Part A: automated** (`legend-cube-builder/src/__tests__/LegendCubeNorthwind.engine-roundtrip-test.ts`)

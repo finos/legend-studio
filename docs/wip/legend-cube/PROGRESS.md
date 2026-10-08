@@ -167,9 +167,30 @@ checking 19 rows after both runs. The video and the script are in the evidence f
 executed query leaves the rows marked stale (as §7.8 says: a restored query is a new object), and opening the editor
 panel logs React 19's `element.ref` warning from `react-reflex` (legend-art's resizable panels), not from Cube.
 
-**Next:** M1.9 (Part B by hand as acceptance, READMEs, the e2e decision). In parallel sessions: operations
-(each follows the editor contract in PLAN §7.4), test setup, and a DuckDB WASM study; new sources wait on the
-user's design. Decimal precision stays for a later PR (user, 2026-10-07).
+**PR #5591 approved** by Yasirmod17 on 2026-10-08 (on `b1c73b640`); all 21 CI checks pass, including the
+`engine-roundtrip` group on CI's docker engine (engine commit `00108b70638b`, 279 tests).
+
+**M1.9 (slice acceptance and hardening) has started** (2026-10-08). Requirements: `m19-requirements` (5 readers, a
+merge, a critic and a finalize step), 108 items, a 21-step build order and 13 decisions; full result in
+`legend-cube-evidence/m19-requirements-result.json`. The user's decisions are in PLAN §11.1 "Settled at the start of
+M1.9": M1.9 lands as a follow-up PR after #5591 merges (nothing more is pushed to #5591); an agent rehearsal of Part
+B, then the user runs it by hand; no e2e; short READMEs with how-to guides in `docs/`; the `V1_*` imports of the
+engine-backed tests are allowed.
+
+M1.9 build order (requirements B1–B19, without the e2e and the optional steps):
+
+1. Docs drift and ISSUES upkeep; record the `V1_*` test exception.
+2. Rewrite PLAN §11.2 so a person can follow Part B (the UI's labels, Inner join, canvas-fit, watermark and console
+   checks).
+3. Small code fixes; the two picker test gaps; trim the builder's unused exports.
+4. The core and builder READMEs and their `docs/` guides; the docs trim.
+5. Rehearsal in a browser (fixing the canvas refit after a height-only change if it shows), a skeptic verification
+   of M1.9's diff, the final gates.
+6. The user's Part B run, the acceptance record and the sign-off.
+
+**In parallel:** operations can start now in their own session, on a branch from `b1c73b640` (the PR head), not from
+`cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
+WASM study; new sources wait on the user's design. Decimal precision stays for a later PR (user, 2026-10-07).
 
 - **The user settled every M1.8a question on 2026-10-07**, all on the recommendation; recorded in PLAN §7.8
   "Settled before M1.8" (with the plan statements that no longer matched the code corrected in §3.5, §4.3, §6.2.7,
