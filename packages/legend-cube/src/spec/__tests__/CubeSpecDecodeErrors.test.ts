@@ -75,6 +75,12 @@ const RELATIONAL_102 = { ...RELATIONAL_101, id: 'relational102' };
 const FILTER_101 = { kind: 'filter', id: 'filter101', inputs: [null] };
 const LIMIT_101 = { kind: 'limit', id: 'limit101', inputs: [null], size: 10 };
 const DROP_101 = { kind: 'drop', id: 'drop101', inputs: [null], size: 10 };
+const RENAME_101 = {
+  kind: 'rename',
+  id: 'rename101',
+  inputs: [null],
+  mappings: [{ from: 'SHIP_COUNTRY', to: 'Ship Country' }],
+};
 const RESTRICT_101 = {
   kind: 'restrict',
   id: 'restrict101',
@@ -173,6 +179,14 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['a limit', withNodes([LIMIT_101], 'limit101')],
     ['a drop', withNodes([DROP_101], 'drop101')],
     ['a restrict', withNodes([RESTRICT_101], 'restrict101')],
+    ['a rename', withNodes([RENAME_101], 'rename101')],
+    [
+      'a rename with blank names',
+      withNodes(
+        [{ ...RENAME_101, mappings: [{ from: '', to: '' }] }],
+        'rename101',
+      ),
+    ],
     [
       'a distinct',
       withNodes(
@@ -1085,6 +1099,52 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
       'query.nodes[0].size',
       'must be a finite number',
+    ],
+    [
+      'a rename without mappings',
+      withNodes(
+        [{ kind: 'rename', id: 'rename101', inputs: [null] }],
+        'rename101',
+      ),
+      'query.nodes[0].mappings',
+      'is required',
+    ],
+    [
+      'rename mappings that are not a list',
+      withNodes([{ ...RENAME_101, mappings: { from: 'A' } }], 'rename101'),
+      'query.nodes[0].mappings',
+      'must be a list',
+    ],
+    [
+      'a rename mapping that is a string',
+      withNodes([{ ...RENAME_101, mappings: ['A'] }], 'rename101'),
+      'query.nodes[0].mappings[0]',
+      'must be an object',
+    ],
+    [
+      'a rename mapping without to',
+      withNodes([{ ...RENAME_101, mappings: [{ from: 'A' }] }], 'rename101'),
+      'query.nodes[0].mappings[0].to',
+      'is required',
+    ],
+    [
+      'a rename mapping whose from is a number',
+      withNodes(
+        [{ ...RENAME_101, mappings: [{ from: 1, to: 'B' }] }],
+        'rename101',
+      ),
+      'query.nodes[0].mappings[0].from',
+      'must be a string',
+    ],
+    [
+      // malformed fields are decode errors even when a mapping has an unknown key
+      'a rename mapping with an unknown key and no from',
+      withNodes(
+        [{ ...RENAME_101, mappings: [{ to: 'B', case: 'upper' }] }],
+        'rename101',
+      ),
+      'query.nodes[0].mappings[0].from',
+      'is required',
     ],
     [
       'a restrict without columns',

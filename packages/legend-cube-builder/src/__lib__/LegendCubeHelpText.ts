@@ -21,6 +21,7 @@ import {
   Join,
   Limit,
   RelationalTableSource,
+  Rename,
   Restrict,
   Slice,
   UnknownNode,
@@ -41,6 +42,8 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Joins two previous data sets using specified columns as join keys.',
   [Limit.TYPE]:
     'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
+  [Rename.TYPE]:
+    'Renames specified columns in the previous data set to new names.',
   [Restrict.TYPE]: 'Restricts outgoing data set to the specified columns only.',
   [Slice.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only the rows from position "start" up to, but not including, position "stop", counting from 0.',

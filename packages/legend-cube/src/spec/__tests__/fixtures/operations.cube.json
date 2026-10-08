@@ -9,7 +9,7 @@
     "runtime": "showcase::northwind::mapping::StoreRuntime"
   },
   "query": {
-    "selected": "restrict101",
+    "selected": "rename101",
     "nodes": [
       {
         "kind": "relational",
@@ -154,6 +154,17 @@
         "id": "restrict101",
         "inputs": ["distinct101"],
         "columns": ["ORDER_ID", "SHIP_COUNTRY"]
+      },
+      {
+        "kind": "rename",
+        "id": "rename101",
+        "inputs": ["restrict101"],
+        "mappings": [
+          {
+            "from": "SHIP_COUNTRY",
+            "to": "Ship Country"
+          }
+        ]
       }
     ]
   }

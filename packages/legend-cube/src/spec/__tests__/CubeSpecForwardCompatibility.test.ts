@@ -46,6 +46,7 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Rename } from '../../nodes/transforms/Rename.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -1740,6 +1741,12 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
           inputs: ['distinct101'],
           columns: ['COUNTRY'],
         },
+        {
+          kind: 'rename',
+          id: 'rename101',
+          inputs: ['restrict101'],
+          mappings: [{ from: 'COUNTRY', to: 'Country' }],
+        },
       ],
     },
   };
@@ -1749,18 +1756,24 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
       registry: M1_REGISTRY,
     });
     expect(readOnly).toBe(false);
-    ['drop101', 'limit101', 'slice101', 'distinct101', 'restrict101'].forEach(
-      (id) => {
-        const node = document.query.getNode(id) as UnknownNode;
-        expect(node).toBeInstanceOf(UnknownNode);
-        expect(node.savedKind).toBe(id.replace('101', ''));
-      },
-    );
+    [
+      'drop101',
+      'limit101',
+      'slice101',
+      'distinct101',
+      'restrict101',
+      'rename101',
+    ].forEach((id) => {
+      const node = document.query.getNode(id) as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe(id.replace('101', ''));
+    });
     expect(describeConnections(document.query).sort()).toEqual([
       'distinct101 -> restrict101.in0',
       'drop101 -> limit101.in0',
       'limit101 -> slice101.in0',
       'relational101 -> drop101.in0',
+      'restrict101 -> rename101.in0',
       'slice101 -> distinct101.in0',
     ]);
     expect(JSON.stringify(encodeCubeSpec(document, M1_REGISTRY))).toBe(
@@ -1772,6 +1785,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     expect(document.query.generateId('slice')).not.toBe('slice101');
     expect(document.query.generateId('distinct')).not.toBe('distinct101');
     expect(document.query.generateId('restrict')).not.toBe('restrict101');
+    expect(document.query.generateId('rename')).not.toBe('rename101');
   });
 
   test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
@@ -1780,11 +1794,39 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
     expect(query.getNode('slice101')).toBeInstanceOf(Slice);
     expect(query.getNode('distinct101')).toBeInstanceOf(Distinct);
     expect(query.getNode('restrict101')).toBeInstanceOf(Restrict);
+    expect(query.getNode('rename101')).toBeInstanceOf(Rename);
     const node = query.getNode('limit101');
     expect(node).toBeInstanceOf(Limit);
     expect((node as Limit).size).toBe(5);
     expect(node?.rest).toEqual({ note: 'top five' });
     expect(reSave(LIMITED)).toBe(JSON.stringify(LIMITED));
+  });
+
+  test('Keeps a rename whose mapping has a key this version does not know as an Unknown node, re-saved verbatim', () => {
+    // ignoring such a key could change the rows (PLAN §11.4)
+    const json = {
+      formatVersion: 1,
+      query: {
+        selected: 'rename101',
+        nodes: [
+          RELATIONAL,
+          {
+            kind: 'rename',
+            id: 'rename101',
+            inputs: ['relational101'],
+            mappings: [{ from: 'COUNTRY', to: 'Country', case: 'upper' }],
+          },
+        ],
+      },
+    };
+    const { document } = decodeCubeSpec(json);
+    const node = document.query.getNode('rename101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('rename');
+    expect(describeConnections(document.query)).toEqual([
+      'relational101 -> rename101.in0',
+    ]);
+    expect(reSave(json)).toBe(JSON.stringify(json));
   });
 
   test('Keeps the unknown keys of a limit whose size changes or is cleared', () => {

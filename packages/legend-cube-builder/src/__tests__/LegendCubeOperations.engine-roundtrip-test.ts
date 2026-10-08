@@ -31,6 +31,7 @@ import {
   type QueryNode,
   QueryEmitter,
   type RelationalTableSource,
+  Rename,
   Restrict,
   Slice,
 } from '@finos/legend-cube';
@@ -472,4 +473,45 @@ describe('Restrict on the engine', () => {
       );
     },
   );
+});
+
+describe('Rename on the engine', () => {
+  test.each(['Ship Country', 'ship-country', 'país', "it's"])(
+    'Renames a column to %j, as the engine parses the printed Pure and types it',
+    async (to) => {
+      const query = await ordersThen(
+        new Rename('rename101', [{ from: 'SHIP_COUNTRY', to }]),
+      );
+      const lambda = new QueryEmitter(query).emitExecutionLambda({
+        rowLimit: ROW_LIMIT,
+        runtime: CUBE_NORTHWIND_RUNTIME,
+      });
+      expect(emittedJson(query)).toEqual(
+        await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+      );
+      await TEST__expectEngineTyping(engine, query);
+    },
+  );
+
+  test('Filters on a renamed column, which keeps its place', async () => {
+    const query = await ordersThen(
+      new Rename('rename101', [
+        { from: 'SHIP_COUNTRY', to: 'Ship Country' },
+        { from: 'ORDER_ID', to: 'Order' },
+      ]),
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('Ship Country', FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'France',
+        }),
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(77);
+    expect(result.columns.indexOf('Ship Country')).toBe(13);
+    expect(result.columns.indexOf('Order')).toBe(0);
+    expect(result.columns).not.toContain('SHIP_COUNTRY');
+  });
 });

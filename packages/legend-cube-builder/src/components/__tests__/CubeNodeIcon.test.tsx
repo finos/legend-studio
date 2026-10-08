@@ -23,6 +23,7 @@ import {
   CompressIcon,
   DataCubeIcon,
   FilterIcon,
+  PencilIcon,
   QuestionSquareIcon,
   TableIcon,
 } from '@finos/legend-art';
@@ -40,6 +41,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   slice: AlignMiddleIcon,
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
+  rename: PencilIcon,
 };
 
 /** The markup an icon draws */

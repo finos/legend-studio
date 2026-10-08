@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                         |
-| ------ | --------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                            |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                             |
-| Step   | M2.1–M2.8 done (Limit, its verification, Drop, Slice, Distinct, Restrict); M2.9 next (Rename) |
-| Tests  | 1599 core, 646 builder (core group), 236 Query, 88 builder engine-roundtrip (after M2.8)      |
+| Item   | State                                                                                                            |
+| ------ | ---------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-ops`, on master `3260216a6` (#5634, M1.9, merged 2026-10-08)                                               |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                |
+| Step   | M2.1–M2.9 done (Limit, its verification, Drop, Slice, Distinct, Restrict, Rename); M2.10 next (the Join autofix) |
+| Tests  | 1673 core, 662 builder (core group), 236 Query, 93 builder engine-roundtrip (after M2.9)                         |
 
 ## Steps
 
@@ -27,7 +27,7 @@ See PLAN §11.4 for each step's deliverable.
 - [x] **M2.6** Slice (native)
 - [x] **M2.7** Distinct
 - [x] **M2.8** Restrict
-- [ ] **M2.9** Rename, with the column-name rule and the collision fix
+- [x] **M2.9** Rename, with the column-name rule and the collision fix
 - [ ] **M2.10** Join rename autofix
 - [ ] **M2.11** Sort, the row-order module, and the ORDER BY where the order is used
 - [ ] **M2.12** The Sort warning
@@ -164,6 +164,23 @@ it the ship countries give 21 rows, countries and cities 70, employees and shipp
 headers are ORDER_ID, SHIP_COUNTRY for a restrict picked the other way round; the editor lists the 14 columns with two
 ticked. Gates: `check:ci` and `lint:ci` green; 1599 core, 646 builder (core group), 236 Query and 88 engine-roundtrip
 tests.
+
+**M2.9, Rename (2026-10-08).** The column-name rule, `isValidColumnName` (`schema/ColumnName.ts`: not empty, trimmed, no
+`"`, no `\`, no control character, at most 128 code points). `Rename` ("Rename Columns") checks "Column renames cannot
+be empty.", then each mapping stopping at its first problem (`validateRenameMapping`, exported): the old column named
+and in the input, a new name given, valid and different, neither name in another mapping (no swaps or chains), and the
+collision fix, "New column name "X" is already present in the input schema."; its output renames in place.
+`RENAME_CODEC` writes `{mappings: [{from, to}]}` exactly, and an unknown key on a mapping keeps the node as an Unknown
+node (the reader's `readItems` and `hasOnlyKeys`, moved from FilterCodec, are shared). `emitRename` chains one
+`->rename(~old, ~'new')` per mapping and checks the names against the inferred schema. The builder adds
+`CubeRenameDraft` (one blank row to start; untouched rows left out; names never trimmed) and `CubeRenameEditor`
+(rows of a picked old column and a typed name, each marked with its first problem, the rule shown below, scrolling on
+its own), the help text, `PencilIcon`, and `findColumnOrigins`, which traces a column through a Rename to its table's
+name for it, so the Join's "type unknown" warning follows renamed keys. Engine: names with a space, a hyphen, a
+non-ASCII letter and a quote parse and type as Cube infers, and a France filter on a renamed column keeps 77 rows
+with the renamed columns in place. Browser on :9002: an imported rename runs (830 rows); typing ORDER_ID as the new name
+marks the row with the collision message. Gates: `check:ci` and `lint:ci` green; 1673 core, 662 builder (core group),
+236 Query and 93 engine-roundtrip tests.
 
 ## Open items
 

@@ -147,3 +147,7 @@ export const SLICE_RANGE_HINT =
 /** The Distinct editor's text: it has nothing to set (spec §17.6) */
 export const DISTINCT_EDITOR_TEXT =
   'Keeps one row of each set of identical rows. There is nothing to set.';
+
+/** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
+export const COLUMN_NAME_RULES_HINT =
+  'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';

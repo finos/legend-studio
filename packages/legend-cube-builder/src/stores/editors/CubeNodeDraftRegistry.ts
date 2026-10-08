@@ -21,6 +21,7 @@ import {
   Join,
   Limit,
   type QueryNode,
+  Rename,
   Restrict,
   Slice,
 } from '@finos/legend-cube';
@@ -29,6 +30,7 @@ import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
+import { CubeRenameDraft } from './CubeRenameDraft.js';
 import { CubeRestrictDraft } from './CubeRestrictDraft.js';
 import { CubeRowCountDraft } from './CubeRowCountDraft.js';
 import { CubeSliceDraft } from './CubeSliceDraft.js';
@@ -53,6 +55,7 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
     Restrict.TYPE,
     (node) => new CubeRestrictDraft(guaranteeType(node, Restrict)),
   ],
+  [Rename.TYPE, (node) => new CubeRenameDraft(guaranteeType(node, Rename))],
   [Join.TYPE, (node) => new CubeJoinDraft(guaranteeType(node, Join))],
   [Drop.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Drop))],
   [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],

@@ -21,6 +21,7 @@ import {
   Join,
   Limit,
   RelationalTableSource,
+  Rename,
   Restrict,
   type Schema,
   Slice,
@@ -30,6 +31,7 @@ import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
+import { CubeRenameEditor } from './CubeRenameEditor.js';
 import { CubeRestrictEditor } from './CubeRestrictEditor.js';
 import { CubeRowCountEditor } from './CubeRowCountEditor.js';
 import { CubeSliceEditor } from './CubeSliceEditor.js';
@@ -67,6 +69,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [RelationalTableSource.TYPE, CubeSourceEditor],
   [Filter.TYPE, CubeFilterEditor],
   [Restrict.TYPE, CubeRestrictEditor],
+  [Rename.TYPE, CubeRenameEditor],
   [Distinct.TYPE, CubeDistinctEditor],
   [Join.TYPE, CubeJoinEditor],
   [Drop.TYPE, CubeRowCountEditor],

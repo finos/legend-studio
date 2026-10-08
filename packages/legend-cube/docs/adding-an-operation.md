@@ -36,6 +36,11 @@ JavaScript default: a default parameter also replaces an explicit `undefined`, a
 `create(id)`. A node never holds NaN or an infinity, which a saved spec can't write: the constructor refuses them, as it
 refuses any setting of the wrong shape. Limit (`src/nodes/transforms/Limit.ts`, with `RowSettings.ts`) is the example.
 
+An operation that gives a column a name, as Rename does, checks it with `isValidColumnName`
+(`src/schema/ColumnName.ts`: not empty, no space at either end, no `"`, no `\`, no control character, at most 128
+code points) and refuses a name a column of its output already has (`MESSAGE_ALREADY_IN_INPUT_SCHEMA`). Export the
+check of one item, as `validateRenameMapping` is, so an editor can mark each row with the node's own messages.
+
 ## 2. Its messages
 
 Every message of the spec's catalogue (§16) is already a constant in `src/messages/CubeMessages.ts`, including those

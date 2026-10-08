@@ -25,6 +25,7 @@ import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
   ERR_SCHEMAS,
+  MESSAGE_ALREADY_IN_INPUT_SCHEMA,
   MESSAGE_CANNOT_BE_EMPTY,
   MESSAGE_CANNOT_HAVE_DUPLICATES,
   MESSAGE_COMPOSITE_FILTER_EMPTY,
@@ -36,6 +37,7 @@ import {
   MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
   MESSAGE_LEFT_JOIN_COLUMNS_EMPTY,
   MESSAGE_MUST_BE_WHOLE_NUMBER,
+  MESSAGE_NEW_COLUMN_NAME_INVALID,
   MESSAGE_NOT_IN_INPUT_SCHEMA,
   MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
   MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP,
@@ -119,6 +121,23 @@ const rowCountSpec = (
 });
 const limitSpec = (size: number | undefined): JsonObject =>
   rowCountSpec('limit', size);
+
+/** A saved spec: `relational101` feeding `rename101`, which has these mappings */
+const renameSpec = (mappings: { from: string; to: string }[]): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'rename101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'rename',
+        id: 'rename101',
+        inputs: ['relational101'],
+        mappings,
+      },
+    ],
+  },
+});
 
 /** A saved spec: `relational101` feeding `restrict101`, which keeps these columns */
 const restrictSpec = (columns: string[]): JsonObject => ({
@@ -581,6 +600,34 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       'a valid restrict, picked out of order',
       restrictSpec(['COUNTRY', 'QTY']),
       { relational101: [], restrict101: [] },
+    ],
+    [
+      'a rename onto a column the input keeps',
+      renameSpec([{ from: 'QTY', to: 'COUNTRY' }]),
+      {
+        relational101: [],
+        rename101: [
+          MESSAGE_ALREADY_IN_INPUT_SCHEMA('New column name', 'COUNTRY'),
+        ],
+      },
+    ],
+    [
+      'a rename to a name with a double quote',
+      renameSpec([{ from: 'QTY', to: 'a"b' }]),
+      { relational101: [], rename101: [MESSAGE_NEW_COLUMN_NAME_INVALID] },
+    ],
+    [
+      'a rename with no mapping',
+      renameSpec([]),
+      {
+        relational101: [],
+        rename101: [MESSAGE_CANNOT_BE_EMPTY('Column renames')],
+      },
+    ],
+    [
+      'a valid rename',
+      renameSpec([{ from: 'QTY', to: 'Quantity' }]),
+      { relational101: [], rename101: [] },
     ],
   ];
 

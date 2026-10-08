@@ -43,6 +43,7 @@ const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const TRANSFORMS = [
   'Filter by Column',
   'Restrict Columns',
+  'Rename Columns',
   'Distinct Values',
   'Drop first <x> rows',
   'Take first <x> rows',

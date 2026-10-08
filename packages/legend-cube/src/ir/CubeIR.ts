@@ -105,7 +105,7 @@ export type IRWithOrigin = Extract<IR, { readonly origin?: Origin }>;
 export enum EmitRole {
   /** a source's store accessor */
   ACCESSOR = 'accessor',
-  /** a Join: a rename to a temporary name */
+  /** a Join's rename to a temporary name, and a Rename's renames */
   RENAME = 'rename',
   /** a Join: the join call and its join kind */
   JOIN = 'join',

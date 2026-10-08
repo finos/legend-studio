@@ -176,5 +176,11 @@ test(
     expect(/^[\x20-\x7E]+$/u.test(MESSAGES.MESSAGE_FILTER_UNSUPPORTED)).toBe(
       true,
     );
+    // Rename's (§7.5) is built from the generic "<Label> cannot be empty."
+    const rename = specSection('### 7.5 Rename', '### 7.6 Distinct');
+    expect(MESSAGES.MESSAGE_CANNOT_BE_EMPTY('Column renames')).toBe(
+      'Column renames cannot be empty.',
+    );
+    expect(rename).toContain('"Column renames cannot be empty."');
   },
 );

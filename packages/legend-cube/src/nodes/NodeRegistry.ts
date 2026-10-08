@@ -27,6 +27,7 @@ import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
+import { emitRename } from '../ir/emitters/RenameEmitter.js';
 import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
@@ -35,6 +36,7 @@ import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
+import { RENAME_CODEC } from '../spec/codecs/RenameCodec.js';
 import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
@@ -48,6 +50,7 @@ import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
+import { Rename } from './transforms/Rename.js';
 import { Restrict } from './transforms/Restrict.js';
 import { Slice } from './transforms/Slice.js';
 import { UnknownNode } from './UnknownNode.js';
@@ -136,6 +139,17 @@ export const RESTRICT_DEFINITION: TransformDefinition<Restrict> = {
   create: (id) => new Restrict(id),
   emit: emitRestrict,
   spec: RESTRICT_CODEC,
+};
+
+export const RENAME_DEFINITION: TransformDefinition<Rename> = {
+  kind: 'transform',
+  type: Rename.TYPE,
+  label: 'Rename Columns',
+  icon: 'rename',
+  beta: false,
+  create: (id) => new Rename(id),
+  emit: emitRename,
+  spec: RENAME_CODEC,
 };
 
 export const DISTINCT_DEFINITION: TransformDefinition<Distinct> = {
@@ -247,6 +261,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,
+    RENAME_DEFINITION,
     DISTINCT_DEFINITION,
     DROP_DEFINITION,
     LIMIT_DEFINITION,

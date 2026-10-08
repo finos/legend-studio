@@ -61,6 +61,7 @@ import { Join, JoinType } from '../../nodes/transforms/Join.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
+import { Rename } from '../../nodes/transforms/Rename.js';
 import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -1570,6 +1571,64 @@ describe(unitTest('Saved spec encoding: limits'), () => {
     );
     expect(encodeCubeSpec(document)).toStrictEqual(
       limitSpec({ size: 5, note: 'top five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: renames'), () => {
+  /** The saved spec of one unconnected rename, `rename101`, with these fields of its own */
+  const renameSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'rename101',
+      nodes: [{ kind: 'rename', id: 'rename101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Always writes its mappings, an empty list included', () => {
+    expectEncoded(
+      documentOf([new Rename('rename101')], [], 'rename101'),
+      renameSpec({ mappings: [] }),
+    );
+  });
+
+  test('Writes each mapping as from, then to, names kept exactly, untrimmed', () => {
+    expectEncoded(
+      documentOf(
+        [
+          new Rename('rename101', [
+            { from: 'SHIP_COUNTRY', to: ' Ship "Country" ' },
+            { from: '', to: '' },
+          ]),
+        ],
+        [],
+        'rename101',
+      ),
+      renameSpec({
+        mappings: [
+          { from: 'SHIP_COUNTRY', to: ' Ship "Country" ' },
+          { from: '', to: '' },
+        ],
+      }),
+    );
+  });
+
+  test('Writes the mappings from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        documentOf(
+          [
+            new Rename('rename101', [{ from: 'A', to: 'B' }], {
+              mappings: [],
+              note: 'n',
+            }),
+          ],
+          [],
+          'rename101',
+        ),
+      ),
+    ).toStrictEqual(
+      renameSpec({ mappings: [{ from: 'A', to: 'B' }], note: 'n' }),
     );
   });
 });

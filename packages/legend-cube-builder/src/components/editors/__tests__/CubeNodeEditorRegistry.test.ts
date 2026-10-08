@@ -60,6 +60,8 @@ describe('Node editor registries', () => {
       join: 'Joins two previous data sets using specified columns as join keys.',
       limit:
         'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',
+      rename:
+        'Renames specified columns in the previous data set to new names.',
       restrict: 'Restricts outgoing data set to the specified columns only.',
       slice:
         'Reduces the number of rows in the previous data set, keeping only the rows from position "start" up to, but not including, position "stop", counting from 0.',

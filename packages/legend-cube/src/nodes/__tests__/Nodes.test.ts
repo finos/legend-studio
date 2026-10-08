@@ -45,6 +45,7 @@ import {
   LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
+  RENAME_DEFINITION,
   RESTRICT_DEFINITION,
   SLICE_DEFINITION,
   type TransformDefinition,
@@ -60,6 +61,7 @@ import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { Limit } from '../transforms/Limit.js';
+import { Rename } from '../transforms/Rename.js';
 import { Restrict } from '../transforms/Restrict.js';
 import { Slice } from '../transforms/Slice.js';
 import { UnknownNode } from '../UnknownNode.js';
@@ -181,10 +183,11 @@ describe(unitTest('Node registry'), () => {
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order (§7): Filter, Restrict, Distinct, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
       FILTER_DEFINITION,
       RESTRICT_DEFINITION,
+      RENAME_DEFINITION,
       DISTINCT_DEFINITION,
       DROP_DEFINITION,
       LIMIT_DEFINITION,
@@ -219,6 +222,18 @@ describe(unitTest('Node registry'), () => {
     expect(restrict).toBeInstanceOf(Restrict);
     expect(restrict.id).toBe('restrict101');
     expect(restrict.columns).toEqual([]);
+  });
+
+  test('Creates a rename with no mapping yet', () => {
+    expect(RENAME_DEFINITION.kind).toBe('transform');
+    expect(RENAME_DEFINITION.type).toBe('rename');
+    expect(RENAME_DEFINITION.label).toBe('Rename Columns');
+    expect(RENAME_DEFINITION.icon).toBe('rename');
+    expect(RENAME_DEFINITION.beta).toBe(false);
+    const rename = RENAME_DEFINITION.create('rename101');
+    expect(rename).toBeInstanceOf(Rename);
+    expect(rename.id).toBe('rename101');
+    expect(rename.mappings).toEqual([]);
   });
 
   test('Creates a distinct, which has nothing to set', () => {

@@ -48,6 +48,7 @@ const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const TABLE = 'Relational Database Table';
 const FILTER = 'Filter by Column';
 const RESTRICT = 'Restrict Columns';
+const RENAME = 'Rename Columns';
 const DISTINCT = 'Distinct Values';
 const DROP = 'Drop first <x> rows';
 const LIMIT = 'Take first <x> rows';
@@ -142,6 +143,7 @@ describe('Cube palette', () => {
       'separator',
       FILTER,
       RESTRICT,
+      RENAME,
       DISTINCT,
       DROP,
       LIMIT,

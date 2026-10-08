@@ -23,6 +23,7 @@ import {
   DataCubeIcon,
   clsx,
   FilterIcon,
+  PencilIcon,
   QuestionSquareIcon,
   TableIcon,
 } from '@finos/legend-art';
@@ -39,6 +40,7 @@ const NODE_ICONS: Readonly<
   slice: AlignMiddleIcon,
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
+  rename: PencilIcon,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */

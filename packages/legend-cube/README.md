@@ -6,7 +6,7 @@ schema inference and validation, the transforms, filters, the Cube IR and its em
 
 The UI, the stores and the Legend engine adapter live in [`@finos/legend-cube-builder`](../legend-cube-builder).
 
-**Status:** work in progress, version 0.0.x. It has relational tables, Join, Filter, Restrict, Distinct, Drop, Limit and Slice. The API is not
+**Status:** work in progress, version 0.0.x. It has relational tables, Join, Filter, Restrict, Rename, Distinct, Drop, Limit and Slice. The API is not
 stable before 1.0: `src/index.ts` re-exports whole modules.
 
 ## How it fits together
@@ -22,19 +22,19 @@ stable before 1.0: `src/index.ts` re-exports whole modules.
 - **Node types:** `createNodeRegistry()` lists them, in palette order. The palette, the context menu and the codec
   all read it.
 
-| Folder       | Holds                                                                                                                                                            |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `types/`     | `CubeType`, the registry of precise primitive types, type families, compatibility                                                                                |
-| `values/`    | literal values, read and checked per type                                                                                                                        |
-| `schema/`    | `Schema` and `SchemaColumn`, schema diffs                                                                                                                        |
-| `graph/`     | `QueryNode` and its base classes, `Connection`, `Query`, `CubeDocument`                                                                                          |
-| `inference/` | schema inference, which marks incomplete and upstream-invalid nodes; validation helpers                                                                          |
-| `nodes/`     | the node registry; `sources/` (relational table), `transforms/` (Join, Filter, Restrict, Distinct, Drop, Limit, Slice, and the row settings they share), Unknown |
-| `filter/`    | the filter tree, operators by type family, helpers that build filters                                                                                            |
-| `messages/`  | the validation messages, including `ERR_INCOMPLETE` and `ERR_SCHEMAS` for incomplete and upstream-invalid nodes                                                  |
-| `ir/`        | the Cube IR, an emitter per node type (`emitters/`), the debug printer                                                                                           |
-| `spec/`      | the saved-spec codec, a codec per node type (`codecs/`), migrations                                                                                              |
-| `utils/`     | assertions and JSON helpers                                                                                                                                      |
+| Folder       | Holds                                                                                                                                                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `types/`     | `CubeType`, the registry of precise primitive types, type families, compatibility                                                                                        |
+| `values/`    | literal values, read and checked per type                                                                                                                                |
+| `schema/`    | `Schema` and `SchemaColumn`, schema diffs                                                                                                                                |
+| `graph/`     | `QueryNode` and its base classes, `Connection`, `Query`, `CubeDocument`                                                                                                  |
+| `inference/` | schema inference, which marks incomplete and upstream-invalid nodes; validation helpers                                                                                  |
+| `nodes/`     | the node registry; `sources/` (relational table), `transforms/` (Join, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, and the row settings they share), Unknown |
+| `filter/`    | the filter tree, operators by type family, helpers that build filters                                                                                                    |
+| `messages/`  | the validation messages, including `ERR_INCOMPLETE` and `ERR_SCHEMAS` for incomplete and upstream-invalid nodes                                                          |
+| `ir/`        | the Cube IR, an emitter per node type (`emitters/`), the debug printer                                                                                                   |
+| `spec/`      | the saved-spec codec, a codec per node type (`codecs/`), migrations                                                                                                      |
+| `utils/`     | assertions and JSON helpers                                                                                                                                              |
 
 ## Saved spec
 

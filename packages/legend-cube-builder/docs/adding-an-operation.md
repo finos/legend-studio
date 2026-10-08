@@ -53,11 +53,12 @@ Map the icon name of the node's definition to a legend-art icon in `NODE_ICONS` 
 
 ## Columns that change name
 
-The Join editor warns when a join key's column has no type in the model, tracing the column back to its table with
-`findColumnSources` (`src/stores/editors/CubeJoinDraft.ts`). It knows Join, and takes every other node to pass its
-input's columns through under the same name. If the new transform's output columns aren't its inputs' under the same
-name (a rename, a computed column), teach `findColumnSources` how they map back, or the warning goes missing or shows
-on the wrong column.
+The Join editor warns when a join key's column has no type in the model, tracing the column back to its table and the
+table's own name for it with `findColumnOrigins` (`src/stores/editors/CubeJoinDraft.ts`). It requires each node's
+output to have the column, maps a Rename's new name back to its old one, and follows a Join's same-named keys to the
+side the join keeps. Every other node is taken to pass its input's columns through under the same name. If a new
+transform's output columns aren't its inputs' under the same name (a computed column, say), teach `findColumnOrigins`
+how they map back, or the warning goes missing or shows on the wrong column.
 
 ## Tests
 

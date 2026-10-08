@@ -25,6 +25,7 @@ export * from './values/ValueEntry.js';
 
 export * from './schema/Schema.js';
 export * from './schema/SchemaDiff.js';
+export * from './schema/ColumnName.js';
 
 export * from './graph/Connection.js';
 export * from './graph/QueryNode.js';
@@ -47,6 +48,7 @@ export * from './nodes/transforms/Distinct.js';
 export * from './nodes/transforms/Drop.js';
 export * from './nodes/transforms/Limit.js';
 export * from './nodes/transforms/Restrict.js';
+export * from './nodes/transforms/Rename.js';
 export * from './nodes/transforms/Slice.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
@@ -61,6 +63,7 @@ export * from './ir/emitters/DistinctEmitter.js';
 export * from './ir/emitters/DropEmitter.js';
 export * from './ir/emitters/LimitEmitter.js';
 export * from './ir/emitters/RestrictEmitter.js';
+export * from './ir/emitters/RenameEmitter.js';
 export * from './ir/emitters/SliceEmitter.js';
 export * from './ir/QueryEmitter.js';
 
@@ -77,5 +80,6 @@ export * from './spec/codecs/DistinctCodec.js';
 export * from './spec/codecs/DropCodec.js';
 export * from './spec/codecs/LimitCodec.js';
 export * from './spec/codecs/RestrictCodec.js';
+export * from './spec/codecs/RenameCodec.js';
 export * from './spec/codecs/SliceCodec.js';
 export * from './spec/CubeSpecCodec.js';

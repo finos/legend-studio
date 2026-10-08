@@ -131,6 +131,27 @@ export const readOptionalFiniteNumber = (
     : fail(pathTo(path, key), 'must be a finite number');
 };
 
+/** A list of objects the object must have, e.g. a rename's mappings */
+export const readItems = (
+  object: JsonObject,
+  key: string,
+  path: string,
+): JsonObject[] => {
+  const at = pathTo(path, key);
+  if (object[key] === undefined) {
+    return fail(at, 'is required');
+  }
+  return readArray(object[key], at).map((item, index) =>
+    readObject(item, pathTo(at, index)),
+  );
+};
+
+/** Whether the object has no key but these */
+export const hasOnlyKeys = (
+  json: JsonObject,
+  keys: readonly string[],
+): boolean => Object.keys(json).every((key) => keys.includes(key));
+
 export const readStringList = (
   object: JsonObject,
   key: string,

@@ -36,7 +36,7 @@ import {
 } from '../../utils/Json.js';
 import type { LiteralKind } from '../../values/LiteralValue.js';
 import type { NodeSpecCodec } from '../NodeSpecCodec.js';
-import { fail, pathTo } from '../SpecReader.js';
+import { fail, hasOnlyKeys, pathTo } from '../SpecReader.js';
 
 /** The group operators as saved, which are lowercase unlike the code's */
 const GROUP_OPS: Readonly<Record<CompositeFilterOperator, string>> =
@@ -56,9 +56,6 @@ const STRING_LITERAL_KINDS: readonly LiteralKind[] = [
   'dateTime',
   'enum',
 ];
-
-const hasOnlyKeys = (json: JsonObject, keys: readonly string[]): boolean =>
-  Object.keys(json).every((key) => keys.includes(key));
 
 // ---------------------------------------- encode ----------------------------------------
 
