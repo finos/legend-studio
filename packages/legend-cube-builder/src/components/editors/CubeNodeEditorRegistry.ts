@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import { Join, RelationalTableSource, type Schema } from '@finos/legend-cube';
+import {
+  Filter,
+  Join,
+  RelationalTableSource,
+  type Schema,
+} from '@finos/legend-cube';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
+import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
 import { CubeSourceEditor } from './CubeSourceEditor.js';
 
@@ -48,5 +54,6 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   React.FC<CubeNodeEditorProps>
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
+  [Filter.TYPE, CubeFilterEditor],
   [Join.TYPE, CubeJoinEditor],
 ]);

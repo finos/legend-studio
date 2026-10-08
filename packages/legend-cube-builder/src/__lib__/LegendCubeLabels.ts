@@ -107,6 +107,14 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
   return `This table changed since the cube was saved: ${changes.join('; ')}`;
 };
 
+/** Beside a condition comparing a floating-point column for equality (R133) */
+export const FILTER_FLOAT_COMPARISON_HINT =
+  'exact comparison on floating-point columns may not match';
+
+/** The Filter editor's note on NULLs (D4): negated conditions keep them */
+export const FILTER_NULL_NOTE =
+  'A negated condition (is not, does not contain, is not in list of, Not) also keeps the rows where its column is empty (NULL).';
+
 /** Why the node editor closed without applying its edits */
 export enum CUBE_EDITOR_CLOSED_REASON {
   NODE_CHANGED = 'nodeChanged',

@@ -1171,8 +1171,12 @@ name, beta). A new icon name maps to an icon in `components/CubeNodeIcon.tsx`.
 - Paired rows of (left column from the left schema, right column from the right schema), with type labels. An
   incompatible pair is marked inline using the domain's compatibility check.
 - Add or remove rows. The add button is disabled once every column is used (§17.6).
-- A Swap Inputs button.
+- A Swap Inputs button. It applies the panel's edits and swaps, as one undo step (M1.8b S18).
 - When the duplicate-column error fires, the panel lists the offending names. The autofix comes in M2.
+- A pair with no column picked on either side is not stored, as a Filter's blank rows aren't (M1.8b S18).
+- A key on a column Cube typed as a bare String (OTHER or ARRAY) shows "type unknown" and is not blocked. The editor
+  traces the column back to its table and reads the table's `untypedColumns` in the model outline, which it loads
+  when it opens.
 
 ### 7.6 Filter editor
 
@@ -1183,11 +1187,18 @@ The §8.5 tree builder:
 - Value widgets per family (§5.6/§17.7), with multi-value entry for In/NotIn. Values are validated inline and stay
   marked as invalid in both display and edit modes.
 - Unsupported constructs render "This filter is not supported yet." (§8.5).
+- Blank conditions (no column, no value) are dropped wherever they are when the filter is stored, with the groups
+  they leave empty. This extends the user's choice for a tree of only blank rows (M1.8b S19): an added row left
+  untouched never becomes an error.
+- A date-time input that leaves out zero seconds gets `:00` added, since a date-time literal needs its seconds
+  (§5.6).
 
 ### 7.7 Source panel
 
 Shows the coordinates read-only, the resolved schema as a table (name, type label, nullable), and **Refresh**, which
-re-resolves the schema. A refresh that changes the schema shows a warning listing the drift.
+re-resolves the schema. A refresh that changes the schema shows a warning listing the drift. Refresh reuses the
+import re-check (`reresolveSources` with one source): no undo step, the same node when the columns are the same, and
+an earlier warning on that table cleared once it re-checks clean (M1.8b S17).
 
 ### 7.8 State (builder, MobX)
 
