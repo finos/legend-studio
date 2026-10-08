@@ -1,0 +1,98 @@
+###Service
+Service test::service::LegacyMultiTestService
+{
+  pattern: '/legacyMulti';
+  owners:
+  [
+    'owner1'
+  ];
+  documentation: 'Multi execution service with legacy multi test';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |test::model::Person.all()->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#);
+    key: 'env';
+    executions['QA']:
+    {
+      mapping: test::mapping::PersonMapping;
+      runtime: test::runtime::PersonRuntime;
+    }
+    executions['PROD']:
+    {
+      mapping: test::mapping::PersonMapping;
+      runtime: test::runtime::PersonRuntime;
+    }
+  }
+  testSuites:
+  [
+
+  ]
+  test: Multi
+  {
+    tests['QA']:
+    {
+      data: '{"fullName":"John Doe"}';
+      asserts:
+      [
+        { [], res: meta::pure::mapping::Result<Any|*>[1]|$res.values->toOne()->toString() == '{"name":"John Doe"}' }
+      ];
+    }
+    tests['PROD']:
+    {
+      data: '{"fullName":"Jane Doe"}';
+      asserts:
+      [
+        { ['a', 1, list([1,2])], res: meta::pure::mapping::Result<Any|*>[1]|$res.values->size() == 1 },
+        { [], res: meta::pure::mapping::Result<Any|*>[1]|true }
+      ];
+    }
+  }
+}
+
+
+###Pure
+Class test::model::Person
+{
+  name: String[1];
+}
+
+Class test::model::_Person
+{
+  fullName: String[1];
+}
+
+
+###Mapping
+Mapping test::mapping::PersonMapping
+(
+  *test::model::Person: Pure
+  {
+    ~src test::model::_Person
+    name: $src.fullName
+  }
+)
+
+
+###Connection
+JsonModelConnection test::connection::PersonConnection
+{
+  class: test::model::_Person;
+  url: 'executor:default';
+}
+
+
+###Runtime
+Runtime test::runtime::PersonRuntime
+{
+  mappings:
+  [
+    test::mapping::PersonMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: test::connection::PersonConnection
+    ]
+  ];
+}

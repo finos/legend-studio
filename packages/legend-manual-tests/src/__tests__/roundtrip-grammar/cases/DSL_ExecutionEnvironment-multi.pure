@@ -1,0 +1,237 @@
+###Service
+Service test::service::NestedEnvService
+{
+  pattern: '/nested/{env}';
+  owners:
+  [
+    'owner1'
+  ];
+  documentation: 'Uses a nested execution environment';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: env: String[1]|test::model::Person.all()->from(test::env::NestedEnvironment->get($env, 'uatAbc'))->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#);
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service test::service::SimpleEnvService
+{
+  pattern: '/simple/{env}';
+  owners:
+  [
+    'owner1'
+  ];
+  documentation: 'Uses a flat execution environment';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: env: String[1]|test::model::Person.all()->from(test::env::FlatEnvironment->get($env))->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#);
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+Service test::service::RuntimeComponentsEnvService
+{
+  pattern: '/components/{env}';
+  owners:
+  [
+    'owner1'
+  ];
+  documentation: 'Uses an execution environment with runtime components';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: {env: String[1], data: String[1]|test::model::Person.all()->from(test::env::FlatEnvironment->getWithRuntime($env, $data))->graphFetch(#{test::model::Person{name}}#)->serialize(#{test::model::Person{name}}#)};
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+ExecutionEnvironment test::env::NestedEnvironment
+{
+  executions:
+  [
+    UAT:
+    [
+      uatAbc:
+      {
+        mapping: test::mapping::PersonMapping;
+        runtime: test::runtime::PersonRuntime;
+      },
+      uatXyz:
+      {
+        mapping: test::mapping::PersonMapping2;
+        runtime: test::runtime::PersonRuntime2;
+      }
+    ],
+    PROD:
+    [
+      prodAbc:
+      {
+        mapping: test::mapping::PersonMapping;
+        runtime: test::runtime::PersonRuntime;
+      },
+      prodXyz:
+      {
+        mapping: test::mapping::PersonMapping2;
+        runtime:
+        #{
+          connections:
+          [
+            ModelStore:
+            [
+              id1: test::connection::PersonConnection,
+              id2:
+              #{
+                JsonModelConnection
+                {
+                  class: test::model::_Person;
+                  url: 'executor:default';
+                }
+              }#
+            ]
+          ];
+        }#;
+      }
+    ],
+    DEV:
+    [
+      devEast:
+      {
+        mapping: test::mapping::PersonMapping;
+        runtimeComponents:
+        {
+          class: test::model::_Person;
+          binding: test::binding::PersonBinding;
+          runtime: test::runtime::PersonRuntime;
+        }
+      }
+    ]
+  ];
+}
+
+ExecutionEnvironment test::env::FlatEnvironment
+{
+  executions:
+  [
+    DEV:
+    {
+      mapping: test::mapping::PersonMapping;
+      runtime:
+      #{
+        mappings:
+        [
+          test::mapping::PersonMapping
+        ];
+        connections:
+        [
+          ModelStore:
+          [
+            connection_1: test::connection::PersonConnection
+          ]
+        ];
+      }#;
+    },
+    PROD:
+    {
+      mapping: test::mapping::PersonMapping2;
+      runtimeComponents:
+      {
+        class: test::model::_Person;
+        binding: test::binding::PersonBinding;
+        runtime: test::runtime::PersonRuntime2;
+      }
+    }
+  ];
+}
+
+
+###ExternalFormat
+Binding test::binding::PersonBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::_Person
+  ];
+}
+
+
+###Pure
+Class test::model::Person
+{
+  name: String[1];
+}
+
+Class test::model::_Person
+{
+  fullName: String[1];
+}
+
+
+###Mapping
+Mapping test::mapping::PersonMapping
+(
+  *test::model::Person: Pure
+  {
+    ~src test::model::_Person
+    name: $src.fullName
+  }
+)
+
+Mapping test::mapping::PersonMapping2
+(
+  *test::model::Person: Pure
+  {
+    ~src test::model::_Person
+    name: $src.fullName->toUpper()
+  }
+)
+
+
+###Connection
+JsonModelConnection test::connection::PersonConnection
+{
+  class: test::model::_Person;
+  url: 'executor:default';
+}
+
+
+###Runtime
+Runtime test::runtime::PersonRuntime
+{
+  mappings:
+  [
+    test::mapping::PersonMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: test::connection::PersonConnection
+    ]
+  ];
+}
+
+Runtime test::runtime::PersonRuntime2
+{
+  mappings:
+  [
+    test::mapping::PersonMapping2
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: test::connection::PersonConnection
+    ]
+  ];
+}

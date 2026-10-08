@@ -1,0 +1,105 @@
+###MemSql
+MemSqlFunction <<model::ActivatorProfile.critical>> {model::ActivatorProfile.owner = 'data-team'} model::FirmMemSqlFunction
+{
+   functionName : 'firm_function';
+   function : model::Firm_QueryFunction():TabularDataSet[1];
+   ownership : Deployment { identifier: 'testDeployment' };
+   description : 'Firm names exposed as a MemSQL function';
+   activationConfiguration : model::MemSqlConnection;
+}
+
+MemSqlFunction <<equality.Key>> {doc.doc = 'parameterized'} model::FirmMemSqlFunctionWithParam
+{
+   functionName : 'firm_function_with_param';
+   function : model::Firm_QueryFunction(String[1]):TabularDataSet[1];
+   ownership : Deployment { identifier: 'testDeployment' };
+   activationConfiguration : model::MemSqlConnection;
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+)
+
+
+###Pure
+Profile model::ActivatorProfile
+{
+  stereotypes: [critical];
+  tags: [owner];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  id: Integer[1];
+}
+
+function model::Firm_QueryFunction(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(execution::RelationalMapping, execution::TestRuntime)
+}
+
+function model::Firm_QueryFunction(name: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->filter(x|$x.legalName == $name)->project([x|$x.legalName], ['Legal Name'])->from(execution::RelationalMapping, execution::TestRuntime)
+}
+
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    id: [store::TestDB]FirmTable.id
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MemSqlConnection
+{
+  store: store::TestDB;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'memsql_db';
+    host: 'memsql_host';
+    port: 3306;
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'base';
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'password';
+  };
+}
+
+
+###Runtime
+Runtime execution::TestRuntime
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MemSqlConnection
+    ]
+  ];
+}

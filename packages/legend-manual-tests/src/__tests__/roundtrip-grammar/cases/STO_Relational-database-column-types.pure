@@ -1,0 +1,53 @@
+###Relational
+Database model::store::ColumnTypesDatabase
+(
+  Schema "my schema"
+  (
+    Table "my table"
+    (
+      ID INTEGER PRIMARY KEY,
+      "this is a col" VARCHAR(100) NOT NULL,
+      "another col" INTEGER
+    )
+  )
+
+  Table AllTypesTable
+  (
+    ID INTEGER PRIMARY KEY,
+    CODE CHAR(3) NOT NULL,
+    NAME VARCHAR(200) NOT NULL,
+    BIG_COL BIGINT NOT NULL,
+    SMALL_COL SMALLINT,
+    TINY_COL TINYINT,
+    NUMERIC_COL NUMERIC(10, 2),
+    DECIMAL_COL DECIMAL(18, 6) NOT NULL,
+    FLOAT_COL FLOAT,
+    DOUBLE_COL DOUBLE,
+    REAL_COL REAL,
+    DATE_COL DATE NOT NULL,
+    TIMESTAMP_COL TIMESTAMP,
+    BINARY_COL BINARY(16),
+    VARBINARY_COL VARBINARY(256),
+    BIT_COL BIT NOT NULL,
+    OTHER_COL OTHER,
+    "quoted col" VARCHAR(50)
+  )
+  Table CompositeKeyTable
+  (
+    KEY_A INTEGER PRIMARY KEY,
+    KEY_B VARCHAR(10) PRIMARY KEY,
+    VALUE_COL DECIMAL(10, 0) NOT NULL
+  )
+
+  View AllTypesView
+  (
+    id: AllTypesTable.ID PRIMARY KEY,
+    quotedCol: AllTypesTable."quoted col",
+    decimalCol: AllTypesTable.DECIMAL_COL
+  )
+  View QuotedView
+  (
+    id: "my schema"."my table".ID PRIMARY KEY,
+    quotedCol: "my schema"."my table"."this is a col"
+  )
+)

@@ -1,0 +1,76 @@
+###Relational
+Database store::TradeDb
+(
+  Table TradeTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200),
+    AMOUNT INTEGER,
+    TRADE_DATE DATE
+  )
+)
+
+
+###Mapping
+Mapping model::DummyMapping
+(
+)
+
+
+###Runtime
+Runtime model::TradeRuntime
+{
+  mappings:
+  [
+    model::DummyMapping
+  ];
+}
+
+
+###DataQualityValidation
+DataQualityRelationValidation model::AggregateValidation
+{
+   query: |#>{store::TradeDb.TradeTable}#->filter(c|$c.NAME == 'ok')->from(model::TradeRuntime);
+   validations: [
+   {
+     name: 'notEmpty';
+     description: 'relation must not be empty';
+     assertion: rel|$rel->assertRelationNotEmpty();
+     type: AGGREGATE;
+    },
+   {
+     name: 'nameNotError';
+     description: 'row level check';
+     assertion: row|$row.NAME != 'error';
+     type: ROW_LEVEL;
+    },
+   {
+     name: 'untyped';
+     assertion: rel|$rel->assertRelationNotEmpty();
+    }
+   ];
+}
+
+DataQualityRelationValidation model::SingleParameterValidation
+{
+   query: name: String[1]|#>{store::TradeDb.TradeTable}#->filter(c|$c.NAME == $name)->from(model::TradeRuntime);
+   validations: [
+   {
+     name: 'parameterized';
+     description: 'assertion using the query parameter';
+     assertion: {name: String[1], rel|$rel->assertRelationNotEmpty()};
+    }
+   ];
+}
+
+DataQualityRelationValidation model::MultiParameterValidation
+{
+   query: {name: String[1], businessDate: Date[1]|#>{store::TradeDb.TradeTable}#->filter(c|($c.NAME == $name) && ($c.TRADE_DATE == $businessDate))->from(model::TradeRuntime)};
+   validations: [
+   {
+     name: 'parameterizedAggregate';
+     assertion: {businessDate: Date[1], rel|$rel->assertRelationNotEmpty()};
+     type: AGGREGATE;
+    }
+   ];
+}

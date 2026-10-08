@@ -1,0 +1,139 @@
+###Pure
+Class model::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+function model::FirmNames(prefix: String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->filter(x|$x.name->startsWith($prefix))->project([x|$x.id, x|$x.name], ['Id', 'Name'])->from(model::FirmMapping, model::FirmRuntime)
+}
+
+function model::AllFirms(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name'])->from(model::FirmMapping, model::FirmRuntime)
+}
+
+
+###Mapping
+Mapping model::FirmMapping
+(
+)
+
+
+###Runtime
+Runtime model::FirmRuntime
+{
+  mappings:
+  [
+    model::FirmMapping
+  ];
+}
+
+
+###Data
+Data data::FirmData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"id":1,"name":"Alice"}]';
+  }#
+}
+
+
+###DataSpace
+DataSpace other::FirmTestDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Test';
+      mapping: model::FirmMapping;
+      defaultRuntime: model::FirmRuntime;
+      testData:
+        Reference
+        #{
+          data::FirmData
+        }#;
+    }
+  ];
+  defaultExecutionContext: 'Test';
+}
+
+DataSpace model::FirmDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      title: 'Main context';
+      description: 'context with referenced test data';
+      mapping: model::FirmMapping;
+      defaultRuntime: model::FirmRuntime;
+      testData:
+        Reference
+        #{
+          data::FirmData
+        }#;
+    },
+    {
+      name: 'Context 2';
+      mapping: model::FirmMapping;
+      defaultRuntime: model::FirmRuntime;
+      testData:
+        DataspaceTestData
+        #{
+          other::FirmTestDataSpace
+        }#;
+    }
+  ];
+  defaultExecutionContext: 'Context 1';
+  title: 'Firm data space';
+  description: 'executables pointing at functions and templates';
+  executables:
+  [
+    {
+      id: fn_with_param;
+      title: 'Firm names by prefix';
+      description: 'function executable with a parameter';
+      executable: model::FirmNames(String[1]):TabularDataSet[1];
+      executionContextKey: 'Context 2';
+    },
+    {
+      id: 2;
+      title: 'All firms';
+      executable: model::AllFirms():TabularDataSet[1];
+      executionContextKey: 'Context 1';
+      sampleValues: Relation
+        #{
+          Id, Name
+          1 , Alice;
+        }#;
+    },
+    {
+      id: 3;
+      title: 'Template TDS';
+      description: 'template with TDS sample values';
+      query: |model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name']);
+      executionContextKey: 'Context 1';
+      sampleValues: Relation
+        #{
+          Id, Name
+          1 , Alice
+          2 , Bob;
+        }#;
+    },
+    {
+      id: 4;
+      title: 'Template relation';
+      query: |model::Firm.all()->project(~[Id:x|$x.id, Name:x|$x.name]);
+      sampleValues: Relation
+        #{
+          Id, Name
+          10, A;
+        }#;
+    }
+  ];
+}

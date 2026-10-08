@@ -1,0 +1,100 @@
+###Relational
+Database store::RegionalDB
+(
+  Schema emea
+  (
+    Table PersonTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      FIRM_ID INTEGER
+    )
+    Table FirmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGAL_NAME VARCHAR(200)
+    )
+  )
+  Schema apac
+  (
+    Table PersonTable
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(200),
+      FIRM_ID INTEGER
+    )
+    Table FirmTable
+    (
+      ID INTEGER PRIMARY KEY,
+      LEGAL_NAME VARCHAR(200)
+    )
+  )
+
+  Join EmeaPersonFirm(emea.PersonTable.FIRM_ID = emea.FirmTable.ID)
+  Join ApacPersonFirm(apac.PersonTable.FIRM_ID = apac.FirmTable.ID)
+)
+
+
+###Pure
+Class model::Firm
+{
+  legalName: String[1];
+}
+
+Class model::Person
+{
+  name: String[1];
+  firm: model::Firm[0..1];
+}
+
+
+###Mapping
+Mapping mapping::RegionalUnionMapping
+(
+  *model::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(person_emea,person_apac)
+  }
+  model::Person[person_emea]: Relational
+  {
+    ~primaryKey
+    (
+      [store::RegionalDB]emea.PersonTable.ID
+    )
+    ~mainTable [store::RegionalDB]emea.PersonTable
+    name: [store::RegionalDB]emea.PersonTable.NAME,
+    firm[firm_emea]: [store::RegionalDB]@EmeaPersonFirm
+  }
+  model::Person[person_apac]: Relational
+  {
+    ~primaryKey
+    (
+      [store::RegionalDB]apac.PersonTable.ID
+    )
+    ~mainTable [store::RegionalDB]apac.PersonTable
+    name: [store::RegionalDB]apac.PersonTable.NAME,
+    firm[firm_apac]: [store::RegionalDB]@ApacPersonFirm
+  }
+  *model::Firm: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_emea,firm_apac)
+  }
+  model::Firm[firm_emea]: Relational
+  {
+    ~primaryKey
+    (
+      [store::RegionalDB]emea.FirmTable.ID
+    )
+    ~mainTable [store::RegionalDB]emea.FirmTable
+    legalName: [store::RegionalDB]emea.FirmTable.LEGAL_NAME
+  }
+  model::Firm[firm_apac]: Relational
+  {
+    ~primaryKey
+    (
+      [store::RegionalDB]apac.FirmTable.ID
+    )
+    ~mainTable [store::RegionalDB]apac.FirmTable
+    legalName: [store::RegionalDB]apac.FirmTable.LEGAL_NAME
+  }
+)

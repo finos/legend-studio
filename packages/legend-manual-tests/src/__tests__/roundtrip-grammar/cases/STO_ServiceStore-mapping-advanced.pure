@@ -1,0 +1,299 @@
+###Data
+Data test::data::EmployeesData
+{
+  ServiceStore
+  #{
+    [
+      {
+        request:
+        {
+          method: GET;
+          url: '/employees/all';
+        };
+        response:
+        {
+          body:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"kerberos":"abc","employeeId":"1","firmName":"FirmA"}]';
+            }#;
+        };
+      }
+    ]
+  }#
+}
+
+
+###ServiceStore
+ServiceStore test::store::EmployeeStore
+(
+  Service AllEmployees
+  (
+    path : '/employees/all';
+    method : GET;
+    parameters :
+    (
+      includeInactive : Boolean ( location = query, required = false )
+    );
+    response : [test::model::Employee <- test::store::EmployeeBinding];
+    security : [];
+  )
+  Service EmployeeById
+  (
+    path : '/employees/{id}';
+    method : GET;
+    parameters :
+    (
+      id : String ( location = path )
+    );
+    response : [test::model::Employee <- test::store::EmployeeBinding];
+    security : [];
+  )
+  Service EmployeeByKerberos
+  (
+    path : '/employees/byKerberos';
+    method : GET;
+    parameters :
+    (
+      "employee.kerberos" : String ( location = query ),
+      "x-firm" : String ( location = header )
+    );
+    response : [test::model::Employee <- test::store::EmployeeBinding];
+    security : [];
+  )
+  Service EmployeesByIds
+  (
+    path : '/employees/byIds';
+    method : GET;
+    parameters :
+    (
+      ids : [String] ( location = query, style = form, explode = true ),
+      limit : Integer ( location = query )
+    );
+    response : [test::model::Employee <- test::store::EmployeeBinding];
+    security : [];
+  )
+  Service FirmWrapper
+  (
+    path : '/firmWrapper';
+    method : GET;
+    parameters :
+    (
+      region : String ( location = query )
+    );
+    response : [test::model::FirmResponse <- test::store::EmployeeBinding];
+    security : [];
+  )
+  ServiceGroup Firms
+  (
+    path : '/firms';
+
+    ServiceGroup Search
+    (
+      path : '/search';
+
+      Service FirmSearch
+      (
+        path : '/byName';
+        requestBody : test::model::FirmSearch <- test::store::EmployeeBinding;
+        method : POST;
+        parameters :
+        (
+          page : Integer ( location = query )
+        );
+        response : [test::model::FirmResponse <- test::store::EmployeeBinding];
+        security : [];
+      )
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding test::store::EmployeeBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    test::model::Employee,
+    test::model::Firm,
+    test::model::FirmResponse,
+    test::model::FirmSearch
+  ];
+}
+
+
+###Pure
+Class test::model::Employee
+{
+  kerberos: String[1];
+  employeeId: String[1];
+  firmName: String[0..1];
+}
+
+Class test::model::Firm
+{
+  name: String[1];
+  size: Integer[0..1];
+}
+
+Class test::model::FirmResponse
+{
+  firms: test::model::Firm[*];
+  total: Integer[1];
+}
+
+Class test::model::FirmSearch
+{
+  names: String[*];
+  minSize: Integer[0..1];
+}
+
+
+###Mapping
+Mapping test::mapping::EmployeeMapping
+(
+  *test::model::Employee[employee_set]: ServiceStore
+  {
+    ~service [test::store::EmployeeStore] AllEmployees
+    ~service [test::store::EmployeeStore] EmployeeById
+    (
+      ~request
+      (
+        parameters
+        (
+          id = $this.employeeId
+        )
+      )
+    )
+    ~service [test::store::EmployeeStore] EmployeeByKerberos
+    (
+      ~request
+      (
+        parameters
+        (
+          "employee.kerberos" = $this.kerberos,
+          "x-firm" = 'FirmA'
+        )
+      )
+    )
+    ~service [test::store::EmployeeStore] EmployeesByIds
+    (
+      ~request
+      (
+        parameters
+        (
+          ids = ['1', '2', '3'],
+          limit = 10
+        )
+      )
+    )
+  }
+  *test::model::Firm[firm_set]: ServiceStore
+  {
+    +firmSize : Integer[0..1];
+    +searchName : String[1];
+
+    ~service [test::store::EmployeeStore] FirmWrapper
+    (
+      ~path $service.response.firms
+    )
+    ~service [test::store::EmployeeStore] Firms.Search.FirmSearch
+    (
+      ~path $service.response.firms
+      ~request
+      (
+        parameters
+        (
+          page = 1
+        )
+        body = ^test::model::FirmSearch(names=[$this.searchName, $this.name] , minSize=$this.firmSize)
+      )
+    )
+  }
+
+  testSuites:
+  [
+    employeeSuite:
+    {
+      function: |test::model::Employee.all()->graphFetch(#{test::model::Employee{kerberos,employeeId,firmName}}#)->serialize(#{test::model::Employee{kerberos,employeeId,firmName}}#);
+      tests:
+      [
+        allEmployees:
+        {
+          doc: 'all employees from the service store';
+          data:
+          [
+            test::store::EmployeeStore:
+              Reference
+              #{
+                test::data::EmployeesData
+              }#
+          ];
+          asserts:
+          [
+            matches:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"kerberos":"abc","employeeId":"1","firmName":"FirmA"}';
+                  }#;
+              }#
+          ];
+        },
+        inlineData:
+        {
+          data:
+          [
+            test::store::EmployeeStore:
+              ServiceStore
+              #{
+                [
+                  {
+                    request:
+                    {
+                      method: GET;
+                      url: '/employees/all';
+                    };
+                    response:
+                    {
+                      body:
+                        ExternalFormat
+                        #{
+                          contentType: 'application/json';
+                          data: '[]';
+                        }#;
+                    };
+                  }
+                ]
+              }#
+          ];
+          asserts:
+          [
+            empty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
+
+
+###Connection
+ServiceStoreConnection test::connection::EmployeeConnection
+{
+  store: test::store::EmployeeStore;
+  baseUrl: 'http://localhost:9999/api';
+}

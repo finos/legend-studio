@@ -1,0 +1,97 @@
+###Diagram
+Diagram test::diagram::'Options Diagram'
+{
+  classView 'person view'
+  {
+    class: test::model::Person;
+    position: (-120.5,-40.0);
+    rectangle: (150.25,80.0);
+    hideProperties: true;
+    hideTaggedValue: true;
+    hideStereotype: true;
+  }
+  classView firm_view
+  {
+    class: test::model::'Legal Firm';
+    position: (300.0,-0.5);
+    rectangle: (120.0,44.0);
+  }
+  classView 3c4b6e3a-8a8d-4f0e-9a0e-2b8f4d6e7a10
+  {
+    class: test::model::Employee;
+    position: (-300.0,200.0);
+    rectangle: (100.0,30.0);
+    hideStereotype: true;
+  }
+  classView partnerView
+  {
+    class: test::model::Partner;
+    position: (0.0,0.0);
+    rectangle: (100.0,30.0);
+    hideTaggedValue: true;
+  }
+  propertyView
+  {
+    property: test::model::Employment.manager;
+    source: 'person view';
+    target: 3c4b6e3a-8a8d-4f0e-9a0e-2b8f4d6e7a10;
+    points: [(-45.375,0.0),(-250.0,215.0)];
+  }
+  propertyView
+  {
+    property: test::model::Employment.reports;
+    source: 3c4b6e3a-8a8d-4f0e-9a0e-2b8f4d6e7a10;
+    target: 'person view';
+    points: [(-250.0,215.0),(-250.0,500.0),(-45.375,500.0),(-45.375,0.0)];
+  }
+  propertyView
+  {
+    property: test::model::'Legal Firm'.'managing partner';
+    source: firm_view;
+    target: partnerView;
+    points: [(360.0,21.5),(-1.0E-4,2.5E10),(50.0,15.0)];
+  }
+  generalizationView
+  {
+    source: 3c4b6e3a-8a8d-4f0e-9a0e-2b8f4d6e7a10;
+    target: 'person view';
+    points: [(-250.0,215.0),(-45.375,0.0)];
+  }
+  generalizationView
+  {
+    source: partnerView;
+    target: 3c4b6e3a-8a8d-4f0e-9a0e-2b8f4d6e7a10;
+    points: [(50.0,15.0),(-250.0,215.0)];
+  }
+}
+
+Diagram test::diagram::EmptyDiagram
+{
+}
+
+
+###Pure
+Class <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.doc = 'a person'} test::model::Person
+{
+  name: String[1];
+}
+
+Class test::model::'Legal Firm'
+{
+  'managing partner': test::model::Partner[0..1];
+}
+
+Class test::model::Employee extends test::model::Person
+{
+  employeeId: String[1];
+}
+
+Class test::model::Partner extends test::model::Employee
+{
+}
+
+Association test::model::Employment
+{
+  manager: test::model::Employee[0..1];
+  reports: test::model::Person[*];
+}

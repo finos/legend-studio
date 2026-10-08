@@ -1,0 +1,84 @@
+Enum model::DayCount
+{
+  '30_360',
+  '30_ACT',
+  ACT_360
+}
+
+Enum model::RatingGrade
+{
+  AAA,
+  'BB+',
+  'Not Rated'
+}
+
+Class model::Identifiable
+{
+  id: String[1];
+}
+
+Class model::Auditable
+{
+  createdBy: String[0..1];
+  tags: String[*];
+}
+
+Class model::Schedule
+{
+  frequency: Integer[1] = 12;
+}
+
+Class model::QuarterlySchedule extends model::Schedule
+{
+}
+
+Class model::Instrument extends model::Identifiable, model::Auditable
+{
+  dayCount: model::DayCount[1] = model::DayCount.'30_360';
+  rating: model::RatingGrade[0..1];
+  schedule: model::Schedule[1] = ^model::Schedule();
+  notional: Float[1] = 1000000.5;
+  active: Boolean[1] = true;
+  currencies: String[1..*] = ['USD', 'EUR'];
+  dayCounts: model::DayCount[1..*] = [model::DayCount.'30_360', model::DayCount.ACT_360];
+  schedules: model::Schedule[1..3] = [^model::Schedule(), ^model::QuarterlySchedule(frequency=4)];
+  'issuer name': String[1];
+  cusipPair: String[2];
+  isinCodes: String[1..2];
+  legs: Integer[2..*];
+  'maturity in years'() {5}: Integer[1];
+  notionalIn(fx: Float[1]) {$this.notional * $fx}: Float[1];
+  scaledNotional(factor: Float[1], offset: Float[1]) {($this.notional * $factor) + $offset}: Float[1];
+  label() {
+    let prefix = $this.id + ':';
+    let suffix = $this.'issuer name';
+    $prefix + $suffix;
+  }: String[1];
+  filteredTags(prefix: String[1], limit: Integer[1]) {
+    let matching = $this.tags->filter(t|$t->startsWith($prefix));
+    $matching->take($limit);
+  }: String[*];
+}
+
+Class model::Portfolio extends model::Identifiable
+{
+  name: String[1];
+}
+
+Class model::Trader
+{
+  name: String[1];
+}
+
+Association model::PortfolioHoldings
+{
+  (shared) portfolios: model::Portfolio[*];
+  (composite) instruments: model::Instrument[1..*];
+  activeInstruments() {$this.instruments->filter(i|$i.active)}: model::Instrument[*];
+}
+
+Association model::PortfolioManagement
+{
+  (none) managers: model::Trader[1..2];
+  managedPortfolios: model::Portfolio[*];
+}

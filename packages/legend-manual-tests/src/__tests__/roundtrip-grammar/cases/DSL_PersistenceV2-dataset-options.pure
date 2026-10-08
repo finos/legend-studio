@@ -1,0 +1,426 @@
+###Pure
+Class test::Person
+{
+  name: String[1];
+  region: String[1];
+  version: Integer[1];
+  isDeleted: String[1];
+}
+
+Class test::model::Firm
+{
+  employees: test::Person[1..*];
+  legalName: String[1];
+}
+
+
+###Relational
+Database test::TestDatabase
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(100),
+    REGION VARCHAR(100),
+    BATCH_IN INTEGER PRIMARY KEY,
+    BATCH_OUT INTEGER
+  )
+)
+
+
+###Mapping
+Mapping test::Mapping
+(
+)
+
+
+###Service
+Service test::Service
+{
+  pattern: 'test';
+  documentation: 'test';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: src: test::Person[1]|$src.name;
+    mapping: test::Mapping;
+    runtime:
+    #{
+      mappings:
+      [
+        test::Mapping
+      ];
+    }#;
+  }
+  testSuites:
+  [
+
+  ]
+}
+
+
+###Persistence
+Persistence test::TdsDatasetOptionsPersistence
+{
+  doc: 'TDS dataset options.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    TDS
+    {
+      keys:
+      [
+        ID, NAME
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: FieldBased
+        {
+          partitionFields:
+          [
+            REGION, NAME
+          ];
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: VERSION;
+      }
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: DeleteTargetData;
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#,
+    TDS
+    {
+      keys:
+      [
+        ID
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: None;
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#
+  ];
+  notifier:
+  {
+    notifyees:
+    [
+      Email
+      {
+        address: 'team@example.com';
+      },
+      Email
+      {
+        address: 'oncall@example.com';
+      }
+    ];
+  }
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"ID":1, "NAME":"ANDY", "REGION":"EMEA"}]';
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"ID":1, "NAME":"ANDY", "REGION":"EMEA", "BATCH_IN":1, "BATCH_OUT":999999999}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+    }
+  ]
+}
+
+Persistence test::GraphFetchDatasetOptionsPersistence
+{
+  doc: 'Graph fetch dataset options.';
+  trigger: Manual;
+  service: test::Service;
+  serviceOutputTargets:
+  [
+    #/test::model::Firm/employees#
+    {
+      keys:
+      [
+        #/test::model::Firm/employees/name#
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: FieldBased
+        {
+          partitionFields:
+          [
+            #/test::model::Firm/employees/region#
+          ];
+        }
+      }
+      deduplication: MaxVersion
+      {
+        versionField: #/test::model::Firm/employees/version#;
+      }
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#,
+    #/test::model::Firm/employees#
+    {
+      keys:
+      [
+        #/test::model::Firm/employees/name#, #/test::model::Firm/employees/region#
+      ]
+      datasetType: Delta
+      {
+        actionIndicator: DeleteIndicator
+        {
+          deleteField: #/test::model::Firm/employees/isDeleted#;
+          deleteValues: ['Yes', 'true'];
+        }
+      }
+      deduplication: AnyVersion;
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#,
+    #/test::model::Firm/employees#
+    {
+      keys:
+      [
+        #/test::model::Firm/employees/name#
+      ]
+      datasetType: Snapshot
+      {
+        partitioning: None
+        {
+          emptyDatasetHandling: DeleteTargetData;
+        }
+      }
+      deduplication: None;
+    }
+    ->
+    Relational
+    #{
+      table: personTable;
+      database: test::TestDatabase;
+      temporality: Unitemporal
+      {
+        processingDimension: BatchId
+        {
+          batchIdIn: BATCH_IN;
+          batchIdOut: BATCH_OUT;
+        }
+      }
+    }#
+  ];
+  notifier:
+  {
+    notifyees:
+    [
+      PagerDuty
+      {
+        url: 'https://events.pagerduty.com/integration/test';
+      }
+    ];
+  }
+  tests:
+  [
+    test1:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"name":"ANDY", "region":"EMEA", "version":1, "isDeleted":"false"}]';
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"ANDY", "region":"EMEA", "BATCH_IN":1, "BATCH_OUT":999999999}]';
+                  }#;
+              }#
+          ]
+        },
+        testBatch2:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[]';
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: false;
+      graphFetchPath: #/test::model::Firm/employees#;
+    },
+    test2:
+    {
+      testBatches:
+      [
+        testBatch1:
+        {
+          data:
+          {
+            connection:
+            {
+              ExternalFormat
+              #{
+                contentType: 'application/json';
+                data: '[{"name":"BRAD", "region":"APAC", "version":2, "isDeleted":"false"}]';
+              }#
+            }
+          }
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"BRAD", "region":"APAC", "BATCH_IN":1, "BATCH_OUT":999999999}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+      isTestDataFromServiceOutput: true;
+      graphFetchPath: #/test::model::Firm/employees#;
+    }
+  ]
+}

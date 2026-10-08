@@ -1,0 +1,29 @@
+###Text
+Text test::text::MarkdownText
+{
+  type: markdown;
+  content: '# Title\n\n- item 1\n- item 2\n\n```pure\nClass test::A {}\n```\n';
+}
+
+Text test::text::HtmlText
+{
+  type: HTML;
+  content: '<div class="note"><p>Inside <b>div</b></p></div>';
+}
+
+Text test::text::StringText
+{
+  type: STRING;
+  content: 'it\'s a "plain" string with a tab\t, a backslash \\ and a newline\nend';
+}
+
+Text test::text::UntypedText
+{
+  content: 'no type specified';
+}
+
+Text test::text::EmptyText
+{
+  type: markdown;
+  content: '';
+}

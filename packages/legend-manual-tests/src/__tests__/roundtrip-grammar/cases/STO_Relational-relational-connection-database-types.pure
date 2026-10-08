@@ -1,0 +1,158 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::DB2Static
+{
+  store: store::db;
+  type: DB2;
+  specification: Static
+  {
+    name: 'db2Db';
+    host: 'db2.host';
+    port: 50000;
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'base/';
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::SybaseIQStatic
+{
+  store: store::db;
+  type: SybaseIQ;
+  specification: Static
+  {
+    name: 'iqDb';
+    host: 'iq.host';
+    port: 2638;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::MemSQLStatic
+{
+  store: store::db;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'memDb';
+    host: 'mem.host';
+    port: 3306;
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+}
+
+RelationalDatabaseConnection connection::relational::HiveStatic
+{
+  store: store::db;
+  type: Hive;
+  specification: Static
+  {
+    name: 'hiveDb';
+    host: 'hive.host';
+    port: 10000;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::PrestoStatic
+{
+  store: store::db;
+  type: Presto;
+  specification: Static
+  {
+    name: 'prestoDb';
+    host: 'presto.host';
+    port: 8080;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::CompositeStatic
+{
+  store: store::db;
+  type: Composite;
+  specification: Static
+  {
+    name: 'compositeDb';
+    host: 'composite.host';
+    port: 9401;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::ClickHouseStatic
+{
+  store: store::db;
+  type: ClickHouse;
+  specification: Static
+  {
+    name: 'clickhouseDb';
+    host: 'clickhouse.host';
+    port: 8123;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::OracleStatic
+{
+  store: store::db;
+  type: Oracle;
+  specification: Static
+  {
+    name: 'oracleDb';
+    host: 'oracle.host';
+    port: 1521;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::AthenaStatic
+{
+  store: store::db;
+  type: Athena;
+  specification: Static
+  {
+    name: 'athenaDb';
+    host: 'athena.host';
+    port: 443;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::AuroraStatic
+{
+  store: store::db;
+  type: Aurora;
+  specification: Static
+  {
+    name: 'auroraDb';
+    host: 'aurora.host';
+    port: 3306;
+  };
+  auth: DelegatedKerberos;
+}
+
+RelationalDatabaseConnection connection::relational::DuckDBStatic
+{
+  store: store::db;
+  type: DuckDB;
+  specification: Static
+  {
+    name: 'duckdbDb';
+    host: 'duckdb.host';
+    port: 0;
+  };
+  auth: DelegatedKerberos;
+}

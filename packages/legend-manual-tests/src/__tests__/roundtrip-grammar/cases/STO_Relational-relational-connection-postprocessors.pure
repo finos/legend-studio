@@ -1,0 +1,172 @@
+###Relational
+Database store::db
+(
+)
+
+
+###Connection
+RelationalDatabaseConnection connection::relational::SingleMapperPostProcessor
+{
+  store: store::db;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'testCSV';
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'a'; to: 'A'; schemaFrom: 'b'; schemaTo: 'B';},
+        schema {from: 'c'; to: 'C';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection connection::relational::TableMapperWithinSameSchema
+{
+  store: store::db;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'a'; to: 'A'; schemaFrom: 'B'; schemaTo: 'B';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection connection::relational::MultipleMapperPostProcessors
+{
+  store: store::db;
+  type: SqlServer;
+  timezone: 'US/Arizona';
+  quoteIdentifiers: false;
+  specification: Static
+  {
+    name: 'name';
+    host: 'host';
+    port: 1433;
+  };
+  auth: DelegatedKerberos;
+  queryTimeOutInSeconds: 300;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        table {from: 'a'; to: 'A'; schemaFrom: 'b'; schemaTo: 'B';},
+        schema {from: 'c'; to: 'C';}
+      ];
+    },
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'c'; to: 'C';},
+        table {from: 'a'; to: 'A'; schemaFrom: 'b'; schemaTo: 'B';}
+      ];
+    }
+  ];
+  queryGenerationConfigs: [
+    GenerationFeaturesConfig
+    {
+      enabled: ['REMOVE_UNION_OR_JOINS'];
+      disabled: [];
+    }
+  ];
+}
+
+RelationalDatabaseConnection connection::relational::SchemaMappersOnly
+{
+  store: store::db;
+  type: Postgres;
+  specification: Static
+  {
+    name: 'myDatabase';
+    host: 'myHost.com';
+    port: 5432;
+  };
+  auth: UserNamePassword
+  {
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'pwd';
+  };
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'default'; to: 'public';},
+        schema {from: 'stage'; to: 'stage_v2';}
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection connection::relational::EmptyMappers
+{
+  store: store::db;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+
+      ];
+    }
+  ];
+}
+
+RelationalDatabaseConnection connection::relational::SnowflakeLocalMode
+{
+  store: store::db;
+  type: Snowflake;
+  mode: local;
+}
+
+RelationalDatabaseConnection connection::relational::SnowflakeLocalModeWithOptions
+{
+  store: store::db;
+  type: Snowflake;
+  timezone: 'America/New_York';
+  quoteIdentifiers: true;
+  mode: local;
+  queryTimeOutInSeconds: 120;
+  postProcessors:
+  [
+    mapper
+    {
+      mappers:
+      [
+        schema {from: 'PUBLIC'; to: 'DEV';}
+      ];
+    }
+  ];
+  queryGenerationConfigs: [
+    GenerationFeaturesConfig
+    {
+      enabled: [];
+      disabled: ['REMOVE_UNION_OR_JOINS'];
+    }
+  ];
+}

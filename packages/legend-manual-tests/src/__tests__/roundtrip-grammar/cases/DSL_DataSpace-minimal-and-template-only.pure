@@ -1,0 +1,89 @@
+###DataSpace
+DataSpace model::MinimalDataSpace
+{
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Only executable';
+      query: src: model::Firm[1]|$src.id;
+    }
+  ];
+}
+
+'''
+Template-only data space.
+
+Each template binds its own mapping and runtime.
+'''
+DataSpace model::TemplateOnlyDataSpace
+{
+  title: 'template queries only';
+  description: 'no execution contexts, templates bind their own mapping and runtime';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'Template with from';
+      description: 'template query using from';
+      query: |model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name'])->from(model::FirmMapping, model::FirmRuntime);
+    },
+    {
+      id: lambda_param;
+      title: 'Template with parameter';
+      query: src: model::Firm[1]|$src.name;
+    },
+    {
+      id: 3;
+      title: 'Template graph fetch';
+      query: |model::Firm.all()->graphFetch(#{model::Firm{id,name}}#)->from(model::FirmMapping, model::FirmRuntime);
+    }
+  ];
+}
+
+DataSpace model::MultiContextNoDefaultDataSpace
+{
+  executionContexts:
+  [
+    {
+      name: 'Context 1';
+      mapping: model::FirmMapping;
+      defaultRuntime: model::FirmRuntime;
+    },
+    {
+      name: 'Context 2';
+      title: 'Second context';
+      mapping: model::FirmMapping;
+      defaultRuntime: model::FirmRuntime;
+    }
+  ];
+  title: 'two contexts, no default';
+  supportInfo: Email {
+    documentationUrl: 'https://example.org/docs';
+    address: 'support@test.org';
+  };
+}
+
+
+###Pure
+Class model::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+
+
+###Mapping
+Mapping model::FirmMapping
+(
+)
+
+
+###Runtime
+Runtime model::FirmRuntime
+{
+  mappings:
+  [
+    model::FirmMapping
+  ];
+}

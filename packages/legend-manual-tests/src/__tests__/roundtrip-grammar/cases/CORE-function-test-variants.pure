@@ -1,0 +1,104 @@
+###Data
+Data data::PersonData
+{
+  Relation
+  #{
+    default.PersonTable:
+        id, firstName, lastName
+        1 , John     , Doe
+        2 , Nicole   , Smith;
+  }#
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+)
+
+
+###Pure
+function model::Describe(name: String[1], age: Integer[1], active: Boolean[1], score: Float[1]): String[1]
+{
+  $name + ' is ' + $age->toString() + if($active, |' and active', |' and inactive') + ' with score ' + $score->toString()
+}
+{
+  testActive 'An active person is described as active' | Describe('John',30,true,1.5) => 'John is 30 and active with score 1.5';
+  testInactive | Describe('Nicole',25,false,2.0) => 'Nicole is 25 and inactive with score 2.0';
+
+  AgeSuite
+  (
+    testYoung 'Young people are still described' | Describe('Tim',5,true,0.5) => 'Tim is 5 and active with score 0.5';
+    testOld 'Old people are described too' | Describe('Ann',99,false,10.25) => 'Ann is 99 and inactive with score 10.25';
+  )
+}
+
+function model::Add(a: Integer[1], b: Integer[1]): Integer[1]
+{
+  $a + $b
+}
+{
+  testPositive 'Adds two positive numbers' | Add(1,2) => 3;
+  testNegative | Add(-1,-2) => -3;
+}
+
+function model::PersonRelation(): meta::pure::metamodel::relation::Relation<(id:Integer, firstName:String)>[1]
+{
+  #>{store::TestDB.PersonTable}#->select(~[id, firstName])
+}
+{
+  store::TestDB: data::PersonData;
+  testAll 'Returns every person' | PersonRelation() => Relation
+  #{
+    id, firstName
+    1 , John
+    2 , Nicole;
+  }#;
+
+  InlineDataSuite
+  (
+    store::TestDB:
+        Relation
+        #{
+          default.PersonTable:
+              id, firstName, lastName
+              3 , Tim      , Smith;
+        }#;
+    testInline 'Uses inline relational data' | PersonRelation() => Relation
+    #{
+      id, firstName
+      3 , Tim;
+    }#;
+    testEmpty | PersonRelation() => Relation
+    #{
+      id, firstName;
+    }#;
+  )
+
+  ReferenceDataSuite
+  (
+    store::TestDB: data::PersonData;
+    testJson 'JSON assertion against referenced data' | PersonRelation() => (JSON) '[{"id":1,"firstName":"John"},{"id":2,"firstName":"Nicole"}]';
+  )
+}
+
+function model::Greet(name: String[1]): String[1]
+{
+  'Hello ' + $name
+}
+{
+  ModelStore: (JSON) '{"name":"John"}';
+  testModelStore 'Model store data at the default suite level' | Greet('John') => 'Hello John';
+
+  XmlSuite
+  (
+    ModelStore: (XML) '<person><name>Nicole</name></person>';
+    testXml | Greet('Nicole') => (XML) '<greeting>Hello Nicole</greeting>';
+  )
+}
