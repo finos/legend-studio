@@ -77,11 +77,16 @@ export class CubeSourcePickerState {
     );
   }
 
-  /** The tab the cube's fixed context belongs to; the Model tab takes any no other tab claims */
+  /**
+   * The tab the cube's fixed context belongs to, which the host may not
+   * serve; the Model tab takes any context no tab claims
+   */
   get fixedTab(): CubeSourcePickerTab | undefined {
     const { context } = this.editorState.document;
     return context
-      ? (this.tabs.find((tab) => tab.ownsContext(context)) ?? this.modelTab)
+      ? ([this.directTab, this.dataProductTab].find((tab) =>
+          tab.ownsContext(context),
+        ) ?? this.modelTab)
       : undefined;
   }
 
@@ -110,9 +115,14 @@ export class CubeSourcePickerState {
       : (tableTabs.find((tab) => tab === this.activeTab) ?? this.modelTab);
   }
 
-  /** A cube with a fixed context takes sources from its own tab only */
+  /**
+   * A cube with a fixed context takes sources from its own tab only, and
+   * none when the host doesn't serve that tab
+   */
   isTabEnabled(tab: CubeSourcePickerTab): boolean {
-    return this.fixedTab === undefined || tab === this.fixedTab;
+    return (
+      tab.isAvailable && (this.fixedTab === undefined || tab === this.fixedTab)
+    );
   }
 
   get canConfirm(): boolean {
@@ -128,18 +138,20 @@ export class CubeSourcePickerState {
       return;
     }
     this.isOpen = true;
+    const fixedTab = this.fixedTab?.isAvailable ? this.fixedTab : undefined;
     const tab =
-      this.fixedTab ??
+      fixedTab ??
       this.tabs.find((candidate) => candidate.key === tabKey) ??
       this.activeTab;
     this.activeTabKey = tab.key;
     tab.open();
   }
 
-  /** Switches to an enabled tab */
+  /** Switches to an enabled tab; the tab left drops what it was waiting for */
   selectTab(tabKey: CubeSourcePickerTabKey): void {
     const tab = this.tabs.find((candidate) => candidate.key === tabKey);
     if (tab && this.isTabEnabled(tab) && tab !== this.activeTab) {
+      this.activeTab.close();
       this.activeTabKey = tab.key;
       tab.open();
     }
@@ -161,7 +173,8 @@ export class CubeSourcePickerState {
     }
     const added = (yield flowResult(tab.confirm())) as boolean;
     if (added) {
-      this.isOpen = false;
+      // every tab drops what it was still waiting for
+      this.close();
     }
   }
 }

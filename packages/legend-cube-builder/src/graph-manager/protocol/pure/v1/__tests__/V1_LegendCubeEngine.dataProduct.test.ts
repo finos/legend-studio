@@ -80,6 +80,7 @@ const RESULT = `{"builder": {"_type":"tdsBuilder","columns":[{"name":"ORDER_ID",
 
 const setUp = (
   lakehouseEnvironment?: CubeLakehouseEnvironment,
+  getRememberedWarehouse?: () => string | undefined,
 ): {
   engine: V1_LegendCubeEngine;
   run: jest.Mock;
@@ -89,7 +90,7 @@ const setUp = (
   const engine = new V1_LegendCubeEngine(
     { baseUrl: 'http://localhost:6300/api' },
     new TracerService(),
-    { lakehouseEnvironment },
+    { lakehouseEnvironment, getRememberedWarehouse },
   );
   const run = jest.spyOn(engine.client, 'runQuery').mockResolvedValue({
     ok: true,
@@ -108,9 +109,18 @@ const setUp = (
   };
 };
 
-const environmentOf = (name: string): CubeLakehouseEnvironment => ({
-  resolveEnvironment: jest.fn(async () => Promise.resolve(name)),
-});
+/** A viewer's environment, and the mock that resolves it */
+const environmentOf = (
+  name: string,
+): {
+  environment: CubeLakehouseEnvironment;
+  resolveEnvironment: jest.Mock<CubeLakehouseEnvironment['resolveEnvironment']>;
+} => {
+  const resolveEnvironment = jest.fn<
+    CubeLakehouseEnvironment['resolveEnvironment']
+  >(async () => Promise.resolve(name));
+  return { environment: { resolveEnvironment }, resolveEnvironment };
+};
 
 const sentBody = (call: unknown[]): PlainObject =>
   JSON.parse(call[0] as string) as PlainObject;
@@ -127,7 +137,9 @@ describe('Legend Cube engine: data product cubes', () => {
   });
 
   test('Refuses a model it cannot run, naming the problem, for every call', async () => {
-    const { engine, run, batch } = setUp(environmentOf('sales-env'));
+    const { engine, run, batch } = setUp(
+      environmentOf('sales-env').environment,
+    );
     const model = {
       ...MODEL,
       environmentType: 'DEVELOPMENT',
@@ -158,11 +170,11 @@ describe('Legend Cube engine: data product cubes', () => {
   });
 
   test("Runs on the project at its saved version with a lakehouse runtime in the viewer's environment and the cube's warehouse", async () => {
-    const environment = environmentOf('sales-env');
+    const { environment, resolveEnvironment } = environmentOf('sales-env');
     const { engine, run } = setUp(environment);
     const result = await engine.execute(MODEL, runOf(ACCESSOR));
     expect(result.rows).toHaveLength(1);
-    expect(environment.resolveEnvironment).toHaveBeenCalledWith({
+    expect(resolveEnvironment).toHaveBeenCalledWith({
       ...PROJECT,
       warehouse: 'SALES_WH',
     });
@@ -177,8 +189,26 @@ describe('Legend Cube engine: data product cubes', () => {
     expect(JSON.stringify(body.function)).toContain('"type":"P"');
   });
 
+  test("Runs a cube saved without a warehouse on the viewer's remembered one", async () => {
+    const { engine, run } = setUp(
+      environmentOf('sales-env').environment,
+      () => 'MY_WH',
+    );
+    await engine.execute(createCubeDataProductModel(PROJECT), runOf(ACCESSOR));
+    await engine.execute(MODEL, runOf(ACCESSOR));
+    const warehouseOf = (call: unknown[]): unknown =>
+      (
+        (sentBody(call).model as { contexts: PlainObject[] }).contexts[1] as {
+          elements: { runtimeValue: PlainObject }[];
+        }
+      ).elements[0]?.runtimeValue.warehouse;
+    expect(warehouseOf(run.mock.calls[0] as unknown[])).toBe('MY_WH');
+    // a cube's own warehouse wins
+    expect(warehouseOf(run.mock.calls[1] as unknown[])).toBe('SALES_WH');
+  });
+
   test('Runs a cube saved without a warehouse on the default one', async () => {
-    const { engine, run } = setUp(environmentOf('sales-env'));
+    const { engine, run } = setUp(environmentOf('sales-env').environment);
     await engine.execute(createCubeDataProductModel(PROJECT), runOf(ACCESSOR));
     const body = sentBody(run.mock.calls[0] as unknown[]);
     const [, data] = (body.model as { contexts: PlainObject[] }).contexts as [
@@ -218,7 +248,7 @@ describe('Legend Cube engine: data product cubes', () => {
 
   test('Keeps database tables and data products apart, refusing a mix before any call', async () => {
     const table = storeAccessor(['test::Db', 'S', 'T']);
-    const environment = environmentOf('sales-env');
+    const { environment, resolveEnvironment } = environmentOf('sales-env');
     const { engine, run, batch } = setUp(environment);
     await expect(engine.execute(MODEL, runOf(table))).rejects.toMatchObject({
       kind: CubeEngineErrorKind.EXECUTION,
@@ -240,11 +270,11 @@ describe('Legend Cube engine: data product cubes', () => {
     });
     expect(run).not.toHaveBeenCalled();
     expect(batch).not.toHaveBeenCalled();
-    expect(environment.resolveEnvironment).not.toHaveBeenCalled();
+    expect(resolveEnvironment).not.toHaveBeenCalled();
   });
 
   test('Types on the project alone, with no runtime or environment', async () => {
-    const environment = environmentOf('sales-env');
+    const { environment, resolveEnvironment } = environmentOf('sales-env');
     const { engine, batch } = setUp(environment);
     await engine.typeLambdas(
       MODEL,
@@ -256,7 +286,7 @@ describe('Legend Cube engine: data product cubes', () => {
         warehouse: 'SALES_WH',
       }),
     );
-    expect(environment.resolveEnvironment).not.toHaveBeenCalled();
+    expect(resolveEnvironment).not.toHaveBeenCalled();
   });
 
   test('Has no tables to resolve on a data product cube', async () => {

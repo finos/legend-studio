@@ -22,13 +22,7 @@ import { FilterOperator } from '../../filter/FilterOperator.js';
 import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
-import {
-  DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
-  FILTER_DEFINITION,
-  JOIN_DEFINITION,
-  NodeRegistry,
-  RELATIONAL_TABLE_SOURCE_DEFINITION,
-} from '../../nodes/NodeRegistry.js';
+import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { DataProductAccessPointSource } from '../../nodes/sources/DataProductAccessPointSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join } from '../../nodes/transforms/Join.js';
@@ -37,15 +31,9 @@ import { printIR } from '../IRPrinter.js';
 import { QueryEmitter } from '../QueryEmitter.js';
 
 // Data product access points (PLAN §6.8) emit as their accessor; everything
-// downstream emits as it does over database tables. The source isn't in the
-// default registry yet, so these pass one with it
+// downstream emits as it does over database tables
 
-const REGISTRY = new NodeRegistry([
-  RELATIONAL_TABLE_SOURCE_DEFINITION,
-  DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
-  FILTER_DEFINITION,
-  JOIN_DEFINITION,
-]);
+const REGISTRY = createNodeRegistry();
 
 const RUNTIME = 'cube::dataProduct::Runtime';
 

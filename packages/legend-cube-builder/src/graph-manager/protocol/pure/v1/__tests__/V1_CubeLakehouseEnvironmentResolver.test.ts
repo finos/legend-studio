@@ -35,6 +35,7 @@ const PROJECT: CubeDataProductProject = {
 
 const setUp = (
   answer: () => Promise<unknown>,
+  getPreferredEnvironment?: () => string | undefined,
 ): {
   resolver: V1_CubeLakehouseEnvironmentResolver;
   getUserEntitlementEnvs: jest.Mock;
@@ -51,6 +52,7 @@ const setUp = (
       client,
       () => `token-${++token}`,
       () => 'viewer',
+      getPreferredEnvironment,
     ),
     getUserEntitlementEnvs: getUserEntitlementEnvs as unknown as jest.Mock,
   };
@@ -79,6 +81,21 @@ describe("The viewer's lakehouse environment", () => {
     ).toBe('sales-env-pp');
     expect(getUserEntitlementEnvs).toHaveBeenCalledTimes(1);
     expect(getUserEntitlementEnvs).toHaveBeenCalledWith('viewer', 'token-1');
+  });
+
+  test('Uses the environment the host remembers for the viewer first, with no entitlements call', async () => {
+    const { resolver, getUserEntitlementEnvs } = setUp(
+      async () => ({ users: [{ lakehouseEnvironment: 'sales-env' }] }),
+      () => 'chosen-env',
+    );
+    expect(await resolver.resolveEnvironment(PROJECT)).toBe('chosen-env');
+    expect(
+      await resolver.resolveEnvironment({
+        ...PROJECT,
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+      }),
+    ).toBe('chosen-env-pp');
+    expect(getUserEntitlementEnvs).not.toHaveBeenCalled();
   });
 
   test('Says how to fix a viewer without an environment', async () => {

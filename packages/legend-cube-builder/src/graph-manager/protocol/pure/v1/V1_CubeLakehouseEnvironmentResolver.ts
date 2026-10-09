@@ -28,10 +28,11 @@ import { CubeEngineError, CubeEngineErrorKind } from '../../../CubeEngine.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
 
 // The viewer's lakehouse environment, as Legend Query resolves it
-// (QueryEditorStore.resolveLakehouseEnvAndWarehouse): the first environment
-// the viewer's entitlements name, read once per page visit, with the
-// production-parallel realm for a production-parallel deployment or a
-// snapshot version
+// (QueryEditorStore.resolveLakehouseEnvAndWarehouse): the environment the
+// host remembers for the viewer, else the first one the viewer's
+// entitlements name, read once per page visit. Query adds the
+// production-parallel realm for a snapshot version; Cube adds it for a
+// production-parallel deployment too, as Data Cube does
 
 export const V1_CUBE_NO_LAKEHOUSE_ENVIRONMENT =
   'Unable to resolve lakehouse user environment. Please ensure your lakehouse entitlements are configured.';
@@ -45,6 +46,7 @@ export class V1_CubeLakehouseEnvironmentResolver
   private readonly contractServerClient: LakehouseContractServerClient;
   private readonly getAccessToken: () => string | undefined;
   private readonly getCurrentUser: () => string;
+  private readonly getPreferredEnvironment: () => string | undefined;
   /** The viewer's environment, read on the first run of the page visit */
   private userEnvironment: Promise<string> | undefined;
 
@@ -52,13 +54,19 @@ export class V1_CubeLakehouseEnvironmentResolver
     contractServerClient: LakehouseContractServerClient,
     getAccessToken: () => string | undefined,
     getCurrentUser: () => string,
+    getPreferredEnvironment: () => string | undefined = () => undefined,
   ) {
     this.contractServerClient = contractServerClient;
     this.getAccessToken = getAccessToken;
     this.getCurrentUser = getCurrentUser;
+    this.getPreferredEnvironment = getPreferredEnvironment;
   }
 
   private readUserEnvironment(): Promise<string> {
+    const preferred = this.getPreferredEnvironment();
+    if (preferred) {
+      return Promise.resolve(preferred);
+    }
     this.userEnvironment ??= (async () => {
       let response: V1_EntitlementsUserEnvResponse;
       try {
@@ -72,7 +80,7 @@ export class V1_CubeLakehouseEnvironmentResolver
           `${V1_CUBE_NO_LAKEHOUSE_ENVIRONMENT}\n${error instanceof Error ? error.message : String(error)}`,
         );
       }
-      const environment = (response.users ?? [])
+      const environment = response.users
         .map((user) => user.lakehouseEnvironment)
         .find((name) => typeof name === 'string' && name.length > 0);
       if (!environment) {

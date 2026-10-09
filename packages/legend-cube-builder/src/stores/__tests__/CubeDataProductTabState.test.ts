@@ -348,9 +348,7 @@ describe('Data product tab', () => {
     await settle();
     expect(tab.description?.candidate).toBe(returns);
     late.resolve(
-      (await dataProducts.catalog.describe(
-        orders as NonNullable<typeof orders>,
-      )) as CubeDataProductDescription,
+      await dataProducts.catalog.describe(orders as NonNullable<typeof orders>),
     );
     await settle();
     expect(tab.description?.candidate).toBe(returns);
@@ -360,13 +358,75 @@ describe('Data product tab', () => {
     tab.selectCandidate(orders);
     state.sourcePicker.close();
     closed.resolve(
-      (await dataProducts.catalog.describe(
-        orders as NonNullable<typeof orders>,
-      )) as CubeDataProductDescription,
+      await dataProducts.catalog.describe(orders as NonNullable<typeof orders>),
     );
     await settle();
     expect(tab.description).toBeUndefined();
     expect(tab.isDescribing).toBe(false);
+  });
+
+  test("Doesn't leave a product stuck without its access points after a close mid-load or a failure", async () => {
+    const { state, dataProducts } = setUp();
+    let tab = await openTab(state);
+    const [orders] = tab.visibleCandidates;
+    const held = deferred<CubeDataProductDescription>();
+    dataProducts.describe.mockReturnValueOnce(held.promise);
+    tab.selectCandidate(orders);
+    state.sourcePicker.close();
+    expect(tab.candidate).toBeUndefined();
+    tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    expect(tab.description).toBeDefined();
+
+    // a failed read is read again on picking the product again
+    tab.selectCandidate(undefined);
+    dataProducts.describe.mockRejectedValueOnce(new Error('Depot unavailable'));
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    expect(tab.error).toEqual({ message: 'Depot unavailable' });
+    expect(tab.description).toBeUndefined();
+    tab.selectCandidate(tab.candidate);
+    await settle();
+    expect(tab.description).toBeDefined();
+  });
+
+  test("Keeps a cube to its deployment class: the same version deployed to the other class isn't offered", async () => {
+    const { state } = setUp(
+      new CubeDocument().withContext({
+        model: createCubeDataProductModel({
+          groupId: 'com.example.sales',
+          artifactId: 'orders-products',
+          versionId: '1.4.0',
+          environmentType: PRODUCTION_PARALLEL,
+        }),
+        runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+      }),
+    );
+    const tab = await openTab(state);
+    expect(tab.environmentType).toBe(PRODUCTION_PARALLEL);
+    expect(
+      tab.visibleCandidates.map((candidate) => candidate.environmentType),
+    ).toEqual([PRODUCTION_PARALLEL]);
+  });
+
+  test("Starts an emptied cube on the viewer's warehouse, not the previous cube's", async () => {
+    const { state } = setUp(
+      new CubeDocument().withContext({
+        model: createCubeDataProductModel({
+          groupId: 'com.example.sales',
+          artifactId: 'orders-products',
+          versionId: '1.4.0',
+          environmentType: PRODUCTION,
+          warehouse: 'CUBE_WH',
+        }),
+        runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+      }),
+    );
+    let tab = await openTab(state);
+    expect(tab.warehouse).toBe('CUBE_WH');
+    state.sourcePicker.close();
+    state.importDocument(new CubeDocument(), false);
+    tab = await openTab(state);
+    expect(tab.warehouse).toBe(CUBE_DEFAULT_CONSUMER_WAREHOUSE);
   });
 
   test('Shows a failed listing in the tab, and lists again', async () => {

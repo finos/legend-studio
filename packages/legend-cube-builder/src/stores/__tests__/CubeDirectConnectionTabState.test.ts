@@ -386,6 +386,19 @@ describe('Database connection tab', () => {
     expect(nodeIds(state)).toEqual([]);
   });
 
+  test("Lists a schema's tables again on reopening when the dialog closed while they were listing", async () => {
+    const { tab, connections } = setUp();
+    connections.listSchemas.mockResolvedValueOnce(['A', SCHEMA]);
+    await testConnection(tab);
+    connections.listTables.mockReturnValueOnce(new Promise(() => undefined));
+    tab.selectSchema(SCHEMA);
+    tab.close();
+    expect(tab.schemaTables).toBeUndefined();
+    tab.open();
+    await settle();
+    expect(tab.tables).toEqual(FAKE_DIRECT_TABLES);
+  });
+
   test("Doesn't let a table Cube can't read be added", async () => {
     const { tab, connections } = setUp();
     connections.listTables.mockResolvedValueOnce([

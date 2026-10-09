@@ -22,18 +22,11 @@ import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import { MESSAGE_TABLE_AFTER_DATA_PRODUCT } from '../../messages/CubeMessages.js';
 import {
-  DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
-  DISTINCT_DEFINITION,
-  DROP_DEFINITION,
+  createNodeRegistry,
   FILTER_DEFINITION,
   JOIN_DEFINITION,
-  LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
-  RENAME_DEFINITION,
-  RESTRICT_DEFINITION,
-  SLICE_DEFINITION,
-  SORT_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
 import type { DataProductAccessPointSource } from '../../nodes/sources/DataProductAccessPointSource.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
@@ -61,20 +54,8 @@ const textOf = (file: string): string =>
   readFileSync(join(FIXTURES, file), 'utf-8');
 const read = (file: string): JsonObject => JSON.parse(textOf(file));
 
-/** Today's node kinds, with the data product source, which isn't registered yet */
-const REGISTRY = new NodeRegistry([
-  RELATIONAL_TABLE_SOURCE_DEFINITION,
-  DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
-  SORT_DEFINITION,
-  FILTER_DEFINITION,
-  RESTRICT_DEFINITION,
-  RENAME_DEFINITION,
-  DISTINCT_DEFINITION,
-  DROP_DEFINITION,
-  LIMIT_DEFINITION,
-  SLICE_DEFINITION,
-  JOIN_DEFINITION,
-]);
+/** Today's node kinds */
+const REGISTRY = createNodeRegistry();
 
 /** The node kinds of 0.0.2, the first release, which has no data products */
 const RELEASE_0_0_2_REGISTRY = new NodeRegistry([
@@ -287,7 +268,7 @@ describe(unitTest('Saved specs of data product cubes'), () => {
     expect(again.rest).toBe(source?.rest);
   });
 
-  test('Saves a concrete version, a snapshot one verbatim, and never a moving alias or an environment name', () => {
+  test('Has samples of concrete versions, a snapshot one included, and no moving alias or environment name', () => {
     FILES.forEach((file) => {
       const text = textOf(file);
       expect(text).not.toMatch(/"(?:latest|HEAD|master-SNAPSHOT)"/u);

@@ -28,9 +28,9 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
-import { LEGEND_CUBE_USER_DATA_KEY } from '../../__lib__/LegendCubeLabels.js';
 import {
   createCubeDataProductModel,
+  getEffectiveCubeWarehouse,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
   type CubeDataProductProject,
@@ -45,6 +45,10 @@ import type {
   CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
+import {
+  getCubeRememberedWarehouse,
+  rememberCubeWarehouse,
+} from '../CubeDataProductWarehouse.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import {
   type CubeSourcePickerTab,
@@ -72,14 +76,15 @@ export const CUBE_DATA_PRODUCT_TAB_MESSAGE = {
     'The cube changed while the access point was being added; pick it again.',
 } as const;
 
-/** Whether a product is deployed from the project and version given */
+/** Whether a product is deployed from the project and version given, in its class */
 const isFromProject = (
   candidate: CubeDataProductCandidate,
   project: CubeDataProductProject,
 ): boolean =>
   candidate.groupId === project.groupId &&
   candidate.artifactId === project.artifactId &&
-  candidate.versionId === project.versionId;
+  candidate.versionId === project.versionId &&
+  candidate.environmentType === project.environmentType;
 
 /**
  * The source dialog's Data product tab (PLAN §6.8), as Data Cube's selection
@@ -113,6 +118,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   error: CubeDataProductTabError | undefined;
 
   /** Each counts its calls: a new call or closing the dialog drops a late answer */
+  /** The warehouse field shows a cube's own, not one the viewer typed */
+  private warehouseFromProject = false;
   private listRequest = 0;
   private describeRequest = 0;
   private confirmRequest = 0;
@@ -233,8 +240,12 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     this.search = search;
   }
 
+  /** Picks a product and reads its access points; picking it again reads them again after a failure */
   selectCandidate(candidate: CubeDataProductCandidate | undefined): void {
-    if (candidate === this.candidate) {
+    if (
+      candidate === this.candidate &&
+      (candidate === undefined || this.description || this.isDescribing)
+    ) {
       return;
     }
     this.resetCandidate();
@@ -265,17 +276,24 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
    */
   open(): void {
     const project = this.fixedProject;
+    const remembered = getCubeRememberedWarehouse(
+      this.editorState.host.applicationStore.userDataService,
+    );
+    this.error = undefined;
     if (project) {
-      this.environmentType = project.environmentType;
-      this.warehouse = project.warehouse ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+      if (this.environmentType !== project.environmentType) {
+        this.environmentType = project.environmentType;
+        this.resetCandidate();
+      }
+      this.warehouse = getEffectiveCubeWarehouse(project, remembered);
+      this.warehouseFromProject = true;
       if (this.candidate && !isFromProject(this.candidate, project)) {
         this.resetCandidate();
       }
-    } else if (!this.candidate) {
-      this.warehouse =
-        this.editorState.host.applicationStore.userDataService.getStringValue(
-          LEGEND_CUBE_USER_DATA_KEY.DATA_PRODUCT_WAREHOUSE,
-        ) ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+    } else if (this.warehouseFromProject || !this.candidate) {
+      // a new cube starts on the viewer's warehouse, not a previous cube's
+      this.warehouse = remembered ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+      this.warehouseFromProject = false;
     }
     if (
       this.candidates === undefined ||
@@ -291,11 +309,15 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   close(): void {
     this.listRequest++;
-    this.describeRequest++;
     this.confirmRequest++;
     this.isListing = false;
-    this.isDescribing = false;
     this.isAdding = false;
+    // a product whose access points haven't arrived would show none
+    if (this.candidate && !this.description) {
+      this.resetCandidate();
+    }
+    this.describeRequest++;
+    this.isDescribing = false;
   }
 
   /** Lists the class's deployed products */
@@ -423,8 +445,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
               .withQuery(query),
       );
       if (!project) {
-        editorState.host.applicationStore.userDataService.persistValue(
-          LEGEND_CUBE_USER_DATA_KEY.DATA_PRODUCT_WAREHOUSE,
+        rememberCubeWarehouse(
+          editorState.host.applicationStore.userDataService,
           warehouse,
         );
       }

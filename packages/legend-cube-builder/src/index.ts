@@ -36,6 +36,7 @@ export {
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';
 export type { CubeLakehouseEnvironment } from './graph-manager/CubeLakehouseEnvironment.js';
 export type { CubeHost } from './stores/CubeHost.js';
+export { getCubeRememberedWarehouse } from './stores/CubeDataProductWarehouse.js';
 export {
   BUNDLED_MODELS,
   type BundledModel,

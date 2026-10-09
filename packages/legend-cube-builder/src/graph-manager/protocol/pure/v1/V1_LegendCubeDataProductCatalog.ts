@@ -26,7 +26,7 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
-import { type PlainObject, isNonNullable } from '@finos/legend-shared';
+import { isNonNullable } from '@finos/legend-shared';
 import { StoredFileGeneration } from '@finos/legend-storage';
 import {
   type CubeDataProductProject,
@@ -77,7 +77,7 @@ const toCandidate = (
     !origin.artifact ||
     !origin.version ||
     !row.fullPath ||
-    row.lakehouseEnvironment?.type?.toUpperCase() !== environmentType
+    row.lakehouseEnvironment?.type.toUpperCase() !== environmentType
   ) {
     return undefined;
   }
@@ -91,7 +91,7 @@ const toCandidate = (
     artifactId: origin.artifact,
     versionId: origin.version,
     environmentType,
-    producerEnvironmentName: row.lakehouseEnvironment?.producerEnvironmentName,
+    producerEnvironmentName: row.lakehouseEnvironment.producerEnvironmentName,
   });
 };
 
@@ -191,12 +191,12 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
   private async readDefinition(
     candidate: CubeDataProductCandidate,
   ): Promise<unknown> {
-    const entity = (await this.depotServerClient.getVersionEntity(
+    const entity = await this.depotServerClient.getVersionEntity(
       candidate.groupId,
       candidate.artifactId,
       candidate.versionId,
       candidate.dataProductPath,
-    )) as PlainObject;
+    );
     return entity.content;
   }
 

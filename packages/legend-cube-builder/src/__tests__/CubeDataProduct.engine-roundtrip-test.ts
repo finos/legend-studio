@@ -97,13 +97,40 @@ const ORDER_ROWS = (
   )[0]?.relationElement as { rows: { values: string[] }[] }
 ).rows.map(({ values: [region, id, amount] }) => [id, region, amount] as const);
 
-/** A column of a relation type as Pure writes it, e.g. `REGION:meta::pure::precisePrimitives::Varchar(200)[0..1]` */
-const pureColumnOf = (schema: Schema, index: number): string => {
-  const column = schema.columns[index];
-  if (!column) {
-    throw new Error(`No column ${index}`);
-  }
-  return `${column.name}:${column.type.fullName}[${column.nullable ? '0..1' : '1'}]`;
+interface RawRelationColumn {
+  name: string;
+  genericType: {
+    rawType: { fullPath: string };
+    typeVariableValues?: { value: number }[];
+  };
+  multiplicity: { lowerBound: number };
+}
+
+/**
+ * The relation type an access point's deployed artifact declares, as Pure
+ * writes it, read from the fixture's JSON itself rather than through Cube,
+ * e.g. `REGION:meta::pure::precisePrimitives::Varchar(200)[0..1]`
+ */
+const declaredTypeOf = (group: string, accessPoint: string): string => {
+  const implementation = (
+    (V1_TEST__ORDERS_ARTIFACT.accessPointGroups as PlainObject[]).find(
+      (each) => each.id === group,
+    )?.accessPointImplementations as PlainObject[]
+  ).find((each) => each.id === accessPoint) as {
+    lambdaGenericType: {
+      typeArguments: { rawType: { columns: RawRelationColumn[] } }[];
+    };
+  };
+  const [relation] = implementation.lambdaGenericType.typeArguments;
+  return (relation?.rawType.columns ?? [])
+    .map(({ name, genericType, multiplicity }) => {
+      const params = (genericType.typeVariableValues ?? []).map(
+        ({ value }) => value,
+      );
+      const type = `${genericType.rawType.fullPath}${params.length ? `(${params.join(',')})` : ''}`;
+      return `${name}:${type}[${multiplicity.lowerBound === 0 ? '0..1' : '1'}]`;
+    })
+    .join(', ');
 };
 
 const functionPathOf = (group: string, accessPoint: string): string =>
@@ -122,18 +149,14 @@ const MODEL: ModelContext = createTextModel(
     ')',
     '',
     '###Pure',
-    ...STANDINS.map(({ group, accessPoint, table }) => {
-      const schema = artifactSchemaOf(group, accessPoint);
-      const columns = schema.columns
-        .map((_, index) => pureColumnOf(schema, index))
-        .join(', ');
-      return [
-        `function ${functionPathOf(group, accessPoint)}(): meta::pure::metamodel::relation::Relation<(${columns})>[1]`,
+    ...STANDINS.map(({ group, accessPoint, table }) =>
+      [
+        `function ${functionPathOf(group, accessPoint)}(): meta::pure::metamodel::relation::Relation<(${declaredTypeOf(group, accessPoint)})>[1]`,
         '{',
         `  #>{${DATABASE}.${SCHEMA}.${table}}#`,
         '}',
-      ].join('\n');
-    }),
+      ].join('\n'),
+    ),
     '',
     '###Connection',
     'RelationalDatabaseConnection cube::standin::Connection',
@@ -165,7 +188,7 @@ const MODEL: ModelContext = createTextModel(
 );
 
 describe('Data product stand-ins, on the engine', () => {
-  test("Types each stand-in as Cube reads its access point's deployed artifact", async () => {
+  test("Types each stand-in, declared with the artifact's types, as Cube reads them from the artifact", async () => {
     const { engine } = V1_createEngineBackedCubeEngine();
     const typed = await engine.typeLambdas(
       MODEL,
@@ -178,6 +201,26 @@ describe('Data product stand-ins, on the engine', () => {
     );
     STANDINS.forEach(({ group, accessPoint }, index) => {
       const schema = typed.get(`dataProductAccessPoint10${index + 1}`);
+      expect(schema).toBeInstanceOf(Schema);
+      expect(
+        (schema as Schema).isIdenticalTo(artifactSchemaOf(group, accessPoint)),
+      ).toBe(true);
+    });
+  });
+
+  test('Types the tables behind the stand-ins as the artifact declares, parameters and nullability included', async () => {
+    const { engine } = V1_createEngineBackedCubeEngine();
+    const typed = await engine.resolveSchemas(
+      MODEL,
+      new Map(
+        STANDINS.map(({ table }, index) => [
+          `relational10${index + 1}`,
+          [DATABASE, SCHEMA, table] as const,
+        ]),
+      ),
+    );
+    STANDINS.forEach(({ group, accessPoint }, index) => {
+      const schema = typed.get(`relational10${index + 1}`);
       expect(schema).toBeInstanceOf(Schema);
       expect(
         (schema as Schema).isIdenticalTo(artifactSchemaOf(group, accessPoint)),

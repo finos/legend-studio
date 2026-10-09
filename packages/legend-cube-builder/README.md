@@ -41,6 +41,11 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
 - `CubeEditor`, the page, and `CubeHost`, what a host gives it;
 - the engine port, everything in `CubeEngine.ts` (`CubeEngine`, `CubeEngineError`, `CubeEngineErrorKind`,
   `CubeResult`, `CubeModelOutline`, …), with `buildCubeEngine` and `CubeEngineConfig`;
+- the connection explorer port, everything in `CubeConnectionExplorer.ts`, with `buildCubeConnectionExplorer`;
+- data products: everything in `CubeDataProduct.ts` (the model kind, its runtime path, the environment types, the
+  warehouse rule) and `CubeDataProductCatalog.ts` (the catalog port and its classes), with
+  `buildCubeDataProductCatalog`, `buildCubeLakehouseEnvironment`, `CubeLakehouseServices`, `CubeLakehouseEnvironment`
+  and `getCubeRememberedWarehouse`;
 - `LocalModelCatalog` and `BUNDLED_MODELS`;
 - `LEGEND_CUBE_COMMAND_CONFIG` and `LEGEND_CUBE_COMMAND_KEY`, the page's shortcuts;
 - `LEGEND_CUBE_TEST_ID`;

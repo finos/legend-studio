@@ -360,4 +360,65 @@ describe('The Database a query runs on', () => {
       ['S', 'T"1'],
     ]);
   });
+
+  test('Takes a name wrapped in quotes as quoted by the engine only when it holds a space or a colon, as the engine quotes', () => {
+    const column = (name: string): PlainObject => ({
+      name,
+      nullable: true,
+      type: { _type: 'Integer' },
+    });
+    const response = {
+      elements: [
+        {
+          schemas: [
+            {
+              name: 'S',
+              tables: [
+                // a table whose stored name has quotes of its own, and its twin
+                { name: '"X"', columns: [column('A')] },
+                { name: 'X', columns: [column('B')] },
+                {
+                  name: 'Y',
+                  columns: [
+                    // the engine's quoting of `MY COL`
+                    column('"MY COL"'),
+                    // a column whose stored name is `"c"`, and its twin `c`
+                    column('"c"'),
+                    column('c'),
+                  ],
+                },
+                { name: 'BACK\\SLASH', columns: [column('A')] },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    expect(
+      V1_readExploredTables(response, 'S').map((table) => [
+        table.name,
+        table.columnCount,
+        table.hiddenColumnCount,
+      ]),
+    ).toEqual([
+      ['X', 1, 0],
+      ['Y', 2, 1],
+    ]);
+    const { database, missing } = V1_buildExploredDatabase(response, [
+      ['S', 'Y'],
+      ['S', 'X'],
+      ['S', '"X"'],
+    ]);
+    const [schema] = database.schemas as PlainObject[];
+    expect(
+      (schema?.tables as PlainObject[]).map((table) => [
+        table.name,
+        (table.columns as PlainObject[]).map((each) => each.name),
+      ]),
+    ).toEqual([
+      ['"Y"', ['"MY COL"', '"c"']],
+      ['"X"', ['"B"']],
+    ]);
+    expect(missing).toEqual([['S', '"X"']]);
+  });
 });

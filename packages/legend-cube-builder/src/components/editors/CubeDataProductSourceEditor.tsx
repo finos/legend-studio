@@ -22,6 +22,7 @@ import {
   getCubeDataProductProject,
   getEffectiveCubeWarehouse,
 } from '../../graph-manager/CubeDataProduct.js';
+import { getCubeRememberedWarehouse } from '../../stores/CubeDataProductWarehouse.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
@@ -59,7 +60,12 @@ export const CubeDataProductSourceEditor = observer(
               </dd>
               <dt className="text-[var(--color-text-secondary)]">Warehouse</dt>
               <dd className="min-w-0 break-all">
-                {getEffectiveCubeWarehouse(project, undefined)}
+                {getEffectiveCubeWarehouse(
+                  project,
+                  getCubeRememberedWarehouse(
+                    editorState.host.applicationStore.userDataService,
+                  ),
+                )}
               </dd>
             </>
           )}

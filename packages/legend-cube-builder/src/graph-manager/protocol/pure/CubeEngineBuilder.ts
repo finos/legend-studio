@@ -42,6 +42,8 @@ export const buildCubeEngine = (
   options?: {
     /** Data product cubes run only with one */
     lakehouseEnvironment?: CubeLakehouseEnvironment | undefined;
+    /** The warehouse the viewer last picked, for a data product cube without its own */
+    getRememberedWarehouse?: (() => string | undefined) | undefined;
   },
 ): CubeEngine => new V1_LegendCubeEngine(config, tracerService, options);
 
@@ -62,6 +64,8 @@ export interface CubeLakehouseServices {
   readonly getAccessToken: () => string | undefined;
   /** The viewer, whose lakehouse environment data product runs use */
   readonly getCurrentUser: () => string;
+  /** The environment the host remembers for the viewer, used before their entitlements' first one */
+  readonly getPreferredEnvironment?: (() => string | undefined) | undefined;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -82,4 +86,5 @@ export const buildCubeLakehouseEnvironment = (
     services.contractServerClient,
     services.getAccessToken,
     services.getCurrentUser,
+    services.getPreferredEnvironment,
   );

@@ -24,6 +24,11 @@ import {
 import { flowResult } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
+  createCubeDataProductModel,
+  CUBE_DATA_PRODUCT_RUNTIME_PATH,
+  CubeDataProductEnvironmentType,
+} from '../../graph-manager/CubeDataProduct.js';
+import {
   createCubeDirectModel,
   CUBE_DIRECT_RUNTIME_PATH,
 } from '../../graph-manager/CubeDirectConnection.js';
@@ -199,6 +204,59 @@ describe('Source dialog tabs', () => {
     // a stale tab key, e.g. kept from before an import
     picker.activeTabKey = DIRECT_CONNECTION;
     expect(picker.canConfirm).toBe(false);
+  });
+
+  test('Drops what a tab was waiting for when the user leaves it, or once another tab adds a source', async () => {
+    // the fake engine's Northwind schemas, so the Model tab can add ORDERS
+    const { host, connections, dataProducts } = TEST__createCubeHost();
+    const state = new CubeEditorState(host);
+    const picker = state.sourcePicker;
+    picker.open(DIRECT_CONNECTION);
+    const held = new Promise<readonly string[]>(() => undefined);
+    connections.listSchemas.mockReturnValueOnce(held);
+    flowResult(picker.directTab.testConnection()).catch(() => undefined);
+    expect(picker.directTab.isTesting).toBe(true);
+    picker.selectTab(MODEL);
+    expect(picker.directTab.isTesting).toBe(false);
+
+    // the Model tab adds a table: every tab drops its pending work
+    picker.selectTab(DATA_PRODUCT);
+    await settle();
+    dataProducts.describe.mockReturnValueOnce(new Promise(() => undefined));
+    picker.dataProductTab.selectCandidate(
+      picker.dataProductTab.visibleCandidates[0],
+    );
+    expect(picker.dataProductTab.isDescribing).toBe(true);
+    picker.activeTabKey = MODEL;
+    picker.modelTab.open();
+    await settle();
+    picker.modelTab.selectSchema('NORTHWIND');
+    picker.modelTab.selectTable('ORDERS');
+    await flowResult(picker.confirm());
+    expect(picker.isOpen).toBe(false);
+    expect(picker.dataProductTab.isDescribing).toBe(false);
+  });
+
+  test("Offers nothing on a cube whose kind the host doesn't serve", () => {
+    const { host } = TEST__createCubeHost();
+    const state = new CubeEditorState(
+      { ...host, dataProductCatalog: undefined },
+      new CubeDocument().withContext({
+        model: createCubeDataProductModel({
+          groupId: 'com.example.sales',
+          artifactId: 'orders-products',
+          versionId: '1.4.0',
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        }),
+        runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+      }),
+    );
+    expect(tabsOf(state)).toEqual([
+      [MODEL, false],
+      [DIRECT_CONNECTION, false],
+    ]);
+    expect(state.canAddNode('relational')).toBe(false);
+    expect(state.canAddNode('dataProductAccessPoint')).toBe(false);
   });
 
   test('Opens nothing on a read-only cube', () => {

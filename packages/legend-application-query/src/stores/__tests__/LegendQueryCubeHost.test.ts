@@ -32,8 +32,10 @@ import {
 import { LegendQueryPluginManager } from '../../application/LegendQueryPluginManager.js';
 import {
   buildLegendQueryCubeEngineConfig,
+  buildLegendQueryCubeLakehouseServices,
   LegendQueryCubeHost,
 } from '../cube/LegendQueryCubeHost.js';
+import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import { TEST__getTestLegendQueryApplicationConfig } from '../__test-utils__/LegendQueryApplicationTestUtils.js';
 
 const OUTLINE: CubeModelOutline = { databases: [], runtimes: [] };
@@ -168,6 +170,24 @@ describe('Legend Query as the Cube host', () => {
       ),
     ).toBe(true);
     expect(trace).toHaveBeenCalled();
+  });
+
+  test('Prefers the lakehouse environment Query remembers for the viewer', () => {
+    const applicationStore = createApplicationStore({
+      lakehouse: { url: 'https://lakehouse.test' },
+    });
+    const services = guaranteeNonNullable(
+      buildLegendQueryCubeLakehouseServices(applicationStore),
+    );
+    expect(services.getPreferredEnvironment?.()).toBeUndefined();
+    LegendQueryUserDataHelper.persistLakehouseUserInfo(
+      applicationStore.userDataService,
+      { env: 'chosen-env', snowflakeWarehouse: undefined },
+    );
+    expect(services.getPreferredEnvironment?.()).toBe('chosen-env');
+    expect(
+      buildLegendQueryCubeLakehouseServices(createApplicationStore()),
+    ).toBeUndefined();
   });
 
   test('Gives the page the connection explorer it is given', () => {

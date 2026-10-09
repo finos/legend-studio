@@ -15,6 +15,7 @@
  */
 
 import {
+  DataProductAccessPointSource,
   buildSchemasAndValidity,
   createNodeRegistry,
   CubeDocument,
@@ -639,11 +640,15 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
-  /** The kinds of source the host serves: a source without its dialog tab isn't offered */
+  /**
+   * The kinds of source the host serves: data products only with a catalog.
+   * The cube's kind may still disable one (`canAddNode`)
+   */
   get offeredSources(): readonly SourceDefinition[] {
     return this.registry.sources.filter(
       (definition) =>
-        this.sourcePicker.tabForSourceType(definition.type) !== undefined,
+        definition.type !== DataProductAccessPointSource.TYPE ||
+        this.sourcePicker.dataProductTab.isAvailable,
     );
   }
 

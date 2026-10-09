@@ -347,6 +347,15 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
       flowResult(this.testConnection()).catch(
         this.editorState.host.applicationStore.alertUnhandledError,
       );
+    } else if (
+      this.schemaName !== undefined &&
+      this.schemaTables === undefined &&
+      !this.isListing
+    ) {
+      // the dialog closed while the schema's tables were listing
+      flowResult(this.listTables(this.schemaName)).catch(
+        this.editorState.host.applicationStore.alertUnhandledError,
+      );
     }
   }
 

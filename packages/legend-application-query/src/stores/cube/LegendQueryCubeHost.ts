@@ -19,6 +19,7 @@ import {
   buildCubeDataProductCatalog,
   buildCubeEngine,
   buildCubeLakehouseEnvironment,
+  getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
   type CubeDataProductCatalog,
   type CubeEngine,
@@ -29,6 +30,7 @@ import {
 } from '@finos/legend-cube-builder';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import type { LegendQueryApplicationConfig } from '../../application/LegendQueryApplicationConfig.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
 
@@ -68,6 +70,11 @@ export const buildLegendQueryCubeLakehouseServices = (
     depotServerClient,
     getAccessToken: () => applicationStore.getAccessToken(),
     getCurrentUser: () => applicationStore.identityService.currentUser,
+    // the environment Query remembers for the viewer, as Query's editor uses it
+    getPreferredEnvironment: () =>
+      LegendQueryUserDataHelper.getLakehouseUserInfo(
+        applicationStore.userDataService,
+      )?.env,
   };
 };
 
@@ -99,6 +106,8 @@ export class LegendQueryCubeHost implements CubeHost {
         lakehouseEnvironment: lakehouse
           ? buildCubeLakehouseEnvironment(lakehouse)
           : undefined,
+        getRememberedWarehouse: () =>
+          getCubeRememberedWarehouse(applicationStore.userDataService),
       });
     this.dataProductCatalog = lakehouse
       ? buildCubeDataProductCatalog(lakehouse)

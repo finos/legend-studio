@@ -36,6 +36,10 @@ export enum LEGEND_CUBE_USER_DATA_KEY {
 
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
 /** Why a cube's edits are disabled: it was saved by a newer version (Settled before M1.8) */
+/** Why a source is disabled on a cube: it reads database tables or data products, never both (PLAN §6.8) */
+export const OTHER_SOURCE_KIND_TITLE =
+  "This cube's sources are of another kind: a cube reads database tables or data products, never both";
+
 export const READ_ONLY_CUBE_TITLE =
   "This cube was saved by a newer version of Legend Cube, so it can't be changed or exported";
 /** How a SQL NULL shows in the grid, distinct from an empty string */

@@ -139,7 +139,8 @@ export class DataProductAccessPointSource extends SourceNode {
 
   /** The data product's element name: the last segment of its path */
   get dataProductName(): string {
-    return this.dataProduct.slice(this.dataProduct.lastIndexOf('::') + 2);
+    const index = this.dataProduct.lastIndexOf('::');
+    return index < 0 ? this.dataProduct : this.dataProduct.slice(index + 2);
   }
 
   /** A new source, with the same id and coordinates, and this resolution */

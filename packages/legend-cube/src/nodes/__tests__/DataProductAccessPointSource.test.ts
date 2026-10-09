@@ -76,6 +76,13 @@ describe(unitTest('Data product access point source'), () => {
       deploymentId: node.deploymentId,
     }).toEqual(COORDINATES);
     expect(node.dataProductName).toBe('OrdersProduct');
+    // a product in no package
+    expect(
+      new DataProductAccessPointSource('dataProductAccessPoint102', {
+        ...COORDINATES,
+        dataProduct: 'OrdersProduct',
+      }).dataProductName,
+    ).toBe('OrdersProduct');
   });
 
   test.each(Object.keys(COORDINATES))(

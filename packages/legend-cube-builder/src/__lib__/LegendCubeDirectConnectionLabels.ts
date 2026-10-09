@@ -55,7 +55,7 @@ export const CUBE_DIRECT_HELP_TEXT = {
   DUCKDB_PATH:
     "A DuckDB file on the engine's host; leave it empty for an in-memory database.",
   FIXED_CONNECTION:
-    "All of the cube's tables come from this connection: to use another one, remove them first.",
+    "All of the cube's tables come from this connection: to use another one, remove every node from the cube first.",
 } as const;
 
 export const CUBE_DIRECT_DATASOURCE_LABELS: Readonly<

@@ -85,8 +85,25 @@ export const V1_unquoteCubeName = (name: string): string =>
 /** A name as a Database stores it; Pure can't quote a name holding a quote */
 export const V1_quoteCubeName = (name: string): string => `"${name}"`;
 
-/** A name Cube can write in Pure: one holding a double quote can't be */
-const isWritable = (name: string): boolean => !name.includes('"');
+/**
+ * A name as the database stores it, from the engine's answer: the engine
+ * quotes only a name holding a space or a colon (SchemaExportation's
+ * escapeString), so other quotes are the name's own
+ */
+const readEngineName = (name: string): string =>
+  name.length >= 2 &&
+  name.startsWith('"') &&
+  name.endsWith('"') &&
+  /[ :]/u.test(name.slice(1, -1))
+    ? name.slice(1, -1)
+    : name;
+
+/**
+ * A name Cube can use: Pure can't write one holding a double quote, and the
+ * engine reads a backslash in a name as its pattern escape
+ */
+const isWritable = (name: string): boolean =>
+  !name.includes('"') && !name.includes('\\');
 
 const isSystemSchema = (name: string): boolean =>
   SYSTEM_SCHEMAS.includes(name.toLowerCase());
@@ -160,18 +177,18 @@ const tablesOf = (schema: PlainObject): Map<string, PlainObject> =>
   new Map(
     asList(schema.tables)
       .map(asObject)
-      .map((table) => [V1_unquoteCubeName(asString(table.name)), table]),
+      .map((table) => [readEngineName(asString(table.name)), table]),
   );
 
 /** A schema of the answer, by name as the database stores it */
 const findSchema = (response: unknown, name: string): PlainObject | undefined =>
   schemasOf(response).find(
-    (schema) => V1_unquoteCubeName(asString(schema.name)) === name,
+    (schema) => readEngineName(asString(schema.name)) === name,
   );
 
 const isHidden = (column: PlainObject): boolean =>
   asString(asObject(column.type)._type) === OTHER_TYPE ||
-  !isWritable(V1_unquoteCubeName(asString(column.name)));
+  !isWritable(readEngineName(asString(column.name)));
 
 const describeTable = (name: string, table: PlainObject): CubeExploredTable => {
   const columns = asList(table.columns).map(asObject);
@@ -195,7 +212,7 @@ export const V1_readExploredSchemaNames = (
   response: unknown,
 ): readonly string[] =>
   schemasOf(response)
-    .map((schema) => V1_unquoteCubeName(asString(schema.name)))
+    .map((schema) => readEngineName(asString(schema.name)))
     .filter((name) => isWritable(name) && !isSystemSchema(name));
 
 /** A schema's tables, for the picker; views are offered as tables */
@@ -217,17 +234,17 @@ const buildTable = (name: string, table: PlainObject): PlainObject => {
     .map(asObject)
     .filter((column) => !isHidden(column));
   const columnNames = new Set(
-    columns.map((column) => V1_unquoteCubeName(asString(column.name))),
+    columns.map((column) => readEngineName(asString(column.name))),
   );
   return {
     ...table,
     name: V1_quoteCubeName(name),
     columns: columns.map((column) => ({
       ...column,
-      name: V1_quoteCubeName(V1_unquoteCubeName(asString(column.name))),
+      name: V1_quoteCubeName(readEngineName(asString(column.name))),
     })),
     primaryKey: asList(table.primaryKey)
-      .map((key) => V1_unquoteCubeName(asString(key)))
+      .map((key) => readEngineName(asString(key)))
       .filter((key) => columnNames.has(key))
       .map(V1_quoteCubeName),
   };
@@ -306,6 +323,10 @@ const EXPLORATION_FAILURES: readonly [RegExp, string][] = [
   [
     /Maximum number of tables/u,
     'The database has too many tables to read at once',
+  ],
+  [
+    /must not end with escape character|LIKE ESCAPE/u,
+    "A schema or table name ends with a backslash, which Cube can't read",
   ],
   [
     /SQLException|SQL statement|Parser Error/u,

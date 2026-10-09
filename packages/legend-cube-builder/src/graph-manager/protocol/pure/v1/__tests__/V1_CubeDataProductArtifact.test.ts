@@ -213,7 +213,8 @@ describe("A deployed data product's access points", () => {
       tables: Record<
         string,
         {
-          columns: {
+          // a table the engine couldn't type has an error instead
+          columns?: {
             name: string;
             type: string;
             parameters: number[];
@@ -224,7 +225,7 @@ describe("A deployed data product's access points", () => {
     };
     const typed = Object.entries(tables).filter(([, { columns }]) => columns);
     expect(typed.length).toBeGreaterThan(10);
-    typed.forEach(([table, { columns }]) => {
+    typed.forEach(([table, { columns = [] }]) => {
       const relationColumns = columns.map((column) =>
         V1_TEST__relationColumn(
           column.name,

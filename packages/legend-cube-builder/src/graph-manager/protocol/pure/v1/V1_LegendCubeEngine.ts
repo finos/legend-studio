@@ -190,16 +190,23 @@ export class V1_LegendCubeEngine implements CubeEngine {
 
   /** The viewer's lakehouse environment, which data product runs need */
   private readonly lakehouseEnvironment: CubeLakehouseEnvironment | undefined;
+  /** The warehouse the viewer last picked, for a data product cube without its own */
+  private readonly getRememberedWarehouse: () => string | undefined;
 
   constructor(
     config: V1_CubeEngineConfig,
     tracerService: TracerService,
-    options?: { lakehouseEnvironment?: CubeLakehouseEnvironment | undefined },
+    options?: {
+      lakehouseEnvironment?: CubeLakehouseEnvironment | undefined;
+      getRememberedWarehouse?: (() => string | undefined) | undefined;
+    },
   ) {
     this.client = new V1_EngineServerClient(config);
     // every call throws without one
     this.client.setTracerService(tracerService);
     this.lakehouseEnvironment = options?.lakehouseEnvironment;
+    this.getRememberedWarehouse =
+      options?.getRememberedWarehouse ?? (() => undefined);
   }
 
   /** A data product model's project, or an unsupported-model error naming its problems */
@@ -726,7 +733,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
     return V1_buildCubeDataProductExecutionContext(
       project,
       environment,
-      getEffectiveCubeWarehouse(project, undefined),
+      getEffectiveCubeWarehouse(project, this.getRememberedWarehouse()),
     );
   }
 
