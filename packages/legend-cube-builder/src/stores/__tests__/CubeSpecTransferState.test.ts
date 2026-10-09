@@ -351,13 +351,13 @@ describe('Cube spec export and import', () => {
     picker.open();
     expect(picker.isOpen).toBe(true);
     await settle();
-    expect(picker.isLoadingModel).toBe(false);
-    picker.selectTable('ORDERS');
+    expect(picker.modelTab.isLoadingModel).toBe(false);
+    picker.modelTab.selectTable('ORDERS');
     expect(picker.canConfirm).toBe(true);
     const answer = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(answer.promise);
     const adding = flowResult(picker.confirm());
-    expect(picker.isResolving).toBe(true);
+    expect(picker.modelTab.isResolving).toBe(true);
 
     // a cube with no model, as the one before: only closing the picker drops the Add
     importSpecText(
@@ -365,14 +365,14 @@ describe('Cube spec export and import', () => {
       serializeCubeSpec(new CubeDocument({ name: 'Imported' })),
     );
     expect(picker.isOpen).toBe(false);
-    expect(picker.isResolving).toBe(false);
+    expect(picker.modelTab.isResolving).toBe(false);
     answer.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await adding;
     expect(state.document.name).toBe('Imported');
     expect(nodeIds(state)).toEqual([]);
     expect(state.history).toHaveLength(1);
     expect(picker.isOpen).toBe(false);
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBeUndefined();
   });
 
   test('Keeps saying the tables are being typed while those of a newer import are, when the answer for the cube before comes first', async () => {

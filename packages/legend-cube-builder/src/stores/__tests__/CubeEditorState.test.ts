@@ -245,8 +245,10 @@ describe('Cube editor state', () => {
 
   test('Holds the model outline its source picker loaded by reference, never observed deeply', async () => {
     const state = new CubeEditorState(TEST__createCubeHost().host);
-    await flowResult(state.sourcePicker.selectModel(CUBE_NORTHWIND_MODEL));
-    const { outline } = state.sourcePicker;
+    await flowResult(
+      state.sourcePicker.modelTab.selectModel(CUBE_NORTHWIND_MODEL),
+    );
+    const { outline } = state.sourcePicker.modelTab;
     expect(outline).toBeDefined();
     // the very outline the engine answered, as the model catalog keeps it
     expect(outline === FAKE_NORTHWIND_OUTLINE).toBe(true);

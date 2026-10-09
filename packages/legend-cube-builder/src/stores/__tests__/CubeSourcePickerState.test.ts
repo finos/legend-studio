@@ -93,7 +93,7 @@ const setUp = (
 const waitForOutline = async (state: CubeEditorState): Promise<void> => {
   for (
     let tries = 0;
-    tries < 10 && state.sourcePicker.isLoadingModel;
+    tries < 10 && state.sourcePicker.modelTab.isLoadingModel;
     tries++
   ) {
     await Promise.resolve();
@@ -112,8 +112,8 @@ const pick = async (
   table: string,
 ): Promise<void> => {
   const picker = state.sourcePicker;
-  picker.selectSchema(schema);
-  picker.selectTable(table);
+  picker.modelTab.selectSchema(schema);
+  picker.modelTab.selectTable(table);
   await flowResult(picker.confirm());
 };
 
@@ -153,11 +153,11 @@ describe('Cube source picker: choosing a table', () => {
     await openPicker(state);
     const picker = state.sourcePicker;
     expect(fake.loadModel).toHaveBeenCalledWith(CUBE_NORTHWIND_MODEL);
-    expect(picker.model).toBe(CUBE_NORTHWIND_MODEL);
-    expect(picker.databasePath).toBe(NORTHWIND_DATABASE);
-    expect(picker.runtimePath).toBe(NORTHWIND_RUNTIME);
-    expect(picker.schemaName).toBe('NORTHWIND');
-    expect(picker.tables.map((table) => table.name)).toEqual([
+    expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_MODEL);
+    expect(picker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
+    expect(picker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
+    expect(picker.modelTab.schemaName).toBe('NORTHWIND');
+    expect(picker.modelTab.tables.map((table) => table.name)).toEqual([
       'ORDERS',
       'CUSTOMERS',
     ]);
@@ -175,10 +175,10 @@ describe('Cube source picker: choosing a table', () => {
     };
     const { state } = setUp({ outline });
     await openPicker(state);
-    expect(state.sourcePicker.runtimes.map((runtime) => runtime.path)).toEqual([
-      'test::Exact',
-    ]);
-    expect(state.sourcePicker.runtimePath).toBe('test::Exact');
+    expect(
+      state.sourcePicker.modelTab.runtimes.map((runtime) => runtime.path),
+    ).toEqual(['test::Exact']);
+    expect(state.sourcePicker.modelTab.runtimePath).toBe('test::Exact');
   });
 
   test('Asks for the runtime when the database has several, and the schema when there are several', async () => {
@@ -199,20 +199,20 @@ describe('Cube source picker: choosing a table', () => {
     };
     const { state } = setUp({ outline });
     await openPicker(state);
-    expect(state.sourcePicker.runtimePath).toBeUndefined();
-    expect(state.sourcePicker.schemaName).toBeUndefined();
+    expect(state.sourcePicker.modelTab.runtimePath).toBeUndefined();
+    expect(state.sourcePicker.modelTab.schemaName).toBeUndefined();
   });
 
   test('Keeps Add disabled until a runtime is chosen, when the database has several', async () => {
     const { state } = setUp({ outline: TWO_DATABASES });
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectDatabase('test::DbB');
-    picker.selectSchema('S1');
-    picker.selectTable('ORDERS');
-    expect(picker.runtimePath).toBeUndefined();
+    picker.modelTab.selectDatabase('test::DbB');
+    picker.modelTab.selectSchema('S1');
+    picker.modelTab.selectTable('ORDERS');
+    expect(picker.modelTab.runtimePath).toBeUndefined();
     expect(picker.canConfirm).toBe(false);
-    picker.selectRuntime('test::RB1');
+    picker.modelTab.selectRuntime('test::RB1');
     expect(picker.canConfirm).toBe(true);
   });
 
@@ -220,27 +220,27 @@ describe('Cube source picker: choosing a table', () => {
     const { state } = setUp({ outline: TWO_DATABASES });
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectDatabase('test::DbA');
-    expect(picker.runtimePath).toBe('test::RA');
-    picker.selectSchema('S1');
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectDatabase('test::DbA');
+    expect(picker.modelTab.runtimePath).toBe('test::RA');
+    picker.modelTab.selectSchema('S1');
+    picker.modelTab.selectTable('ORDERS');
     expect(picker.canConfirm).toBe(true);
     // DbB has an S1.ORDERS too, but not DbA's runtime
-    picker.selectDatabase('test::DbB');
-    expect(picker.runtimePath).toBeUndefined();
-    expect(picker.schemaName).toBeUndefined();
-    expect(picker.tableName).toBeUndefined();
+    picker.modelTab.selectDatabase('test::DbB');
+    expect(picker.modelTab.runtimePath).toBeUndefined();
+    expect(picker.modelTab.schemaName).toBeUndefined();
+    expect(picker.modelTab.tableName).toBeUndefined();
     expect(picker.canConfirm).toBe(false);
 
-    picker.selectRuntime('test::RB1');
-    picker.selectSchema('S1');
-    picker.setTableSearch('ord');
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectRuntime('test::RB1');
+    picker.modelTab.selectSchema('S1');
+    picker.modelTab.setTableSearch('ord');
+    picker.modelTab.selectTable('ORDERS');
     expect(picker.canConfirm).toBe(true);
     // S2 has a table of the same name, which the user hasn't picked
-    picker.selectSchema('S2');
-    expect(picker.tableName).toBeUndefined();
-    expect(picker.tableSearch).toBe('');
+    picker.modelTab.selectSchema('S2');
+    expect(picker.modelTab.tableName).toBeUndefined();
+    expect(picker.modelTab.tableSearch).toBe('');
     expect(picker.canConfirm).toBe(false);
   });
 
@@ -248,28 +248,30 @@ describe('Cube source picker: choosing a table', () => {
     const { state, fake } = setUp({ outline: TWO_DATABASES });
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectDatabase('test::DbB');
-    picker.selectRuntime('test::RB2');
-    picker.selectSchema('S1');
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectDatabase('test::DbB');
+    picker.modelTab.selectRuntime('test::RB2');
+    picker.modelTab.selectSchema('S1');
+    picker.modelTab.selectTable('ORDERS');
     expect(picker.canConfirm).toBe(true);
     const held = deferred<CubeModelOutline>();
     fake.loadModel.mockReturnValueOnce(held.promise);
     const loading = flowResult(
-      picker.selectModel(createTextModel('###Pure\nClass my::Other {}')),
+      picker.modelTab.selectModel(
+        createTextModel('###Pure\nClass my::Other {}'),
+      ),
     );
-    expect(picker.isLoadingModel).toBe(true);
+    expect(picker.modelTab.isLoadingModel).toBe(true);
     expect([
-      picker.databasePath,
-      picker.runtimePath,
-      picker.schemaName,
-      picker.tableName,
+      picker.modelTab.databasePath,
+      picker.modelTab.runtimePath,
+      picker.modelTab.schemaName,
+      picker.modelTab.tableName,
     ]).toEqual([undefined, undefined, undefined, undefined]);
     expect(picker.canConfirm).toBe(false);
     held.resolve(TWO_DATABASES);
     await loading;
     // two databases: nothing is picked for the user
-    expect(picker.databasePath).toBeUndefined();
+    expect(picker.modelTab.databasePath).toBeUndefined();
     expect(picker.canConfirm).toBe(false);
   });
 
@@ -297,24 +299,26 @@ describe('Cube source picker: choosing a table', () => {
     const { state } = setUp({ outline });
     await openPicker(state);
     const picker = state.sourcePicker;
-    expect(picker.tables.map(({ name }) => name)).toEqual([
+    expect(picker.modelTab.tables.map(({ name }) => name)).toEqual([
       'PROBLEM_BINARY',
       'PROBLEM_CHAR',
       'PROBLEM_OTHER',
       '"ORDER.LINES"',
     ]);
-    picker.selectTable('PROBLEM_BINARY');
+    picker.modelTab.selectTable('PROBLEM_BINARY');
     expect(picker.canConfirm).toBe(false);
     // a length or a type Cube doesn't know is flagged, not blocked
-    picker.selectTable('PROBLEM_CHAR');
+    picker.modelTab.selectTable('PROBLEM_CHAR');
     expect(picker.canConfirm).toBe(true);
-    picker.selectTable('PROBLEM_OTHER');
+    picker.modelTab.selectTable('PROBLEM_OTHER');
     expect(picker.canConfirm).toBe(true);
     // a quoted name is searched as it shows, without its quotes
-    picker.setTableSearch('order.l');
-    expect(picker.tables.map(({ name }) => name)).toEqual(['"ORDER.LINES"']);
-    picker.setTableSearch('"order');
-    expect(picker.tables.map(({ name }) => name)).toEqual([]);
+    picker.modelTab.setTableSearch('order.l');
+    expect(picker.modelTab.tables.map(({ name }) => name)).toEqual([
+      '"ORDER.LINES"',
+    ]);
+    picker.modelTab.setTableSearch('"order');
+    expect(picker.modelTab.tables.map(({ name }) => name)).toEqual([]);
   });
 
   test("Adds a table with the engine's schema: the first sets the model and runtime and is the one Execute runs", async () => {
@@ -387,7 +391,7 @@ describe('Cube source picker: choosing a table', () => {
     });
     await openPicker(state);
     await pick(state, '"MY SCHEMA"', '"ORDER.LINES"');
-    expect(state.sourcePicker.error).toBeUndefined();
+    expect(state.sourcePicker.modelTab.error).toBeUndefined();
     expect([...(fake.resolveSchemas.mock.calls[0]?.[1] ?? [])]).toEqual([
       ['relational101', [NORTHWIND_DATABASE, '"MY SCHEMA"', '"ORDER.LINES"']],
     ]);
@@ -410,8 +414,8 @@ describe('Cube source picker: a cube that already has a model', () => {
     );
     await openPicker(state);
     expect(fake.loadModel).toHaveBeenCalledWith(pasted);
-    expect(state.sourcePicker.model).toBe(pasted);
-    expect(state.sourcePicker.runtimePath).toBe(NORTHWIND_RUNTIME);
+    expect(state.sourcePicker.modelTab.model).toBe(pasted);
+    expect(state.sourcePicker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
   });
 
   test("Offers only the cube's runtime, so a cube opened again takes a second table though its database has others", async () => {
@@ -424,18 +428,18 @@ describe('Cube source picker: a cube that already has a model', () => {
     };
     const { state, host } = setUp({ outline });
     await openPicker(state);
-    expect(state.sourcePicker.runtimePath).toBeUndefined();
-    state.sourcePicker.selectRuntime(NORTHWIND_RUNTIME);
+    expect(state.sourcePicker.modelTab.runtimePath).toBeUndefined();
+    state.sourcePicker.modelTab.selectRuntime(NORTHWIND_RUNTIME);
     await pick(state, 'NORTHWIND', 'ORDERS');
     // the cube opened again, e.g. imported: no earlier choice is left
     const again = new CubeEditorState(host, state.document);
     await openPicker(again);
     const picker = again.sourcePicker;
-    expect(picker.runtimes.map(({ path }) => path)).toEqual([
+    expect(picker.modelTab.runtimes.map(({ path }) => path)).toEqual([
       NORTHWIND_RUNTIME,
     ]);
-    expect(picker.runtimePath).toBe(NORTHWIND_RUNTIME);
-    picker.selectTable('CUSTOMERS');
+    expect(picker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
+    picker.modelTab.selectTable('CUSTOMERS');
     expect(picker.canConfirm).toBe(true);
     await flowResult(picker.confirm());
     expect(nodeIds(again)).toEqual(['relational101', 'relational102']);
@@ -456,20 +460,19 @@ describe('Cube source picker: a cube that already has a model', () => {
     };
     const { state, host } = setUp({ outline });
     await openPicker(state);
-    expect(state.sourcePicker.databases.map(({ path }) => path)).toEqual([
-      NORTHWIND_DATABASE,
-      OTHER_DATABASE,
-    ]);
-    state.sourcePicker.selectDatabase(NORTHWIND_DATABASE);
+    expect(
+      state.sourcePicker.modelTab.databases.map(({ path }) => path),
+    ).toEqual([NORTHWIND_DATABASE, OTHER_DATABASE]);
+    state.sourcePicker.modelTab.selectDatabase(NORTHWIND_DATABASE);
     await pick(state, 'NORTHWIND', 'ORDERS');
     const again = new CubeEditorState(host, state.document);
     await openPicker(again);
     const picker = again.sourcePicker;
-    expect(picker.databases.map(({ path }) => path)).toEqual([
+    expect(picker.modelTab.databases.map(({ path }) => path)).toEqual([
       NORTHWIND_DATABASE,
     ]);
-    expect(picker.databasePath).toBe(NORTHWIND_DATABASE);
-    picker.selectTable('CUSTOMERS');
+    expect(picker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
+    picker.modelTab.selectTable('CUSTOMERS');
     expect(picker.canConfirm).toBe(true);
   });
 
@@ -492,11 +495,11 @@ describe('Cube source picker: a cube that already has a model', () => {
     );
     await openPicker(state);
     const picker = state.sourcePicker;
-    expect(picker.databases.map(({ path }) => path)).toEqual([
+    expect(picker.modelTab.databases.map(({ path }) => path)).toEqual([
       NORTHWIND_DATABASE,
     ]);
-    expect(picker.databasePath).toBe(NORTHWIND_DATABASE);
-    expect(picker.runtimePath).toBe(NORTHWIND_RUNTIME);
+    expect(picker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
+    expect(picker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
   });
 
   test('A cube saved with a model but no runtime takes the runtime picked with its first table, and keeps the rest of its context', async () => {
@@ -507,7 +510,7 @@ describe('Cube source picker: a cube that already has a model', () => {
       }),
     );
     await openPicker(state);
-    expect(state.sourcePicker.runtimePath).toBe(NORTHWIND_RUNTIME);
+    expect(state.sourcePicker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
     await pick(state, 'NORTHWIND', 'ORDERS');
     const { context } = state.document;
     expect(context?.runtime).toBe(NORTHWIND_RUNTIME);
@@ -531,10 +534,10 @@ describe('Cube source picker: a cube that already has a model', () => {
       ),
     );
     await openPicker(state);
-    expect(state.sourcePicker.error).toBe(
+    expect(state.sourcePicker.modelTab.error).toBe(
       `This cube's model kind "pointer" isn't supported yet.`,
     );
-    expect(state.sourcePicker.databases).toEqual([]);
+    expect(state.sourcePicker.modelTab.databases).toEqual([]);
   });
 });
 
@@ -543,7 +546,7 @@ describe('Cube source picker: while a table is typed', () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectTable('ORDERS');
     const held = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(held.promise);
     const first = flowResult(picker.confirm());
@@ -553,25 +556,25 @@ describe('Cube source picker: while a table is typed', () => {
     held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await Promise.all([first, second]);
     expect(nodeIds(state)).toEqual(['relational101']);
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBeUndefined();
   });
 
   test('Closing the dialog drops the table: its late answer adds nothing', async () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectTable('ORDERS');
     const held = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(held.promise);
     const confirming = flowResult(picker.confirm());
     picker.close();
-    expect(picker.isResolving).toBe(false);
+    expect(picker.modelTab.isResolving).toBe(false);
     held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await confirming;
     expect(nodeIds(state)).toEqual([]);
     expect(state.document.context).toBeUndefined();
     expect(state.history.length).toBe(0);
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBeUndefined();
     expect(picker.isOpen).toBe(false);
   });
 
@@ -579,59 +582,59 @@ describe('Cube source picker: while a table is typed', () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectTable('ORDERS');
     const held = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(held.promise);
     const confirming = flowResult(picker.confirm());
     picker.close();
     await openPicker(state);
-    expect(picker.isResolving).toBe(false);
-    picker.selectTable('CUSTOMERS');
+    expect(picker.modelTab.isResolving).toBe(false);
+    picker.modelTab.selectTable('CUSTOMERS');
     expect(picker.canConfirm).toBe(true);
     held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await confirming;
     expect(picker.isOpen).toBe(true);
-    expect(picker.tableName).toBe('CUSTOMERS');
+    expect(picker.modelTab.tableName).toBe('CUSTOMERS');
     expect(nodeIds(state)).toEqual([]);
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBeUndefined();
   });
 
   test('A late failure shows no error in the reopened dialog', async () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectTable('ORDERS');
     const held = deferred<ResolvedSchemas>();
     // handled here too, so a rejection no call took can't end the run
     held.promise.catch(() => undefined);
     fake.resolveSchemas.mockReturnValueOnce(held.promise);
     const confirming = flowResult(picker.confirm());
-    expect(picker.isResolving).toBe(true);
+    expect(picker.modelTab.isResolving).toBe(true);
     picker.close();
     await openPicker(state);
     held.reject(new Error('The engine could not be reached'));
     await confirming;
     expect(picker.isOpen).toBe(true);
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBeUndefined();
   });
 
   test('A late answer does not end the Add that followed it', async () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectTable('ORDERS');
     const late = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(late.promise);
     const cancelled = flowResult(picker.confirm());
     picker.close();
     await openPicker(state);
-    picker.selectTable('CUSTOMERS');
+    picker.modelTab.selectTable('CUSTOMERS');
     const current = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(current.promise);
     const confirming = flowResult(picker.confirm());
     late.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await cancelled;
-    expect(picker.isResolving).toBe(true);
+    expect(picker.modelTab.isResolving).toBe(true);
     expect(picker.canConfirm).toBe(false);
     current.resolve(
       new Map([['relational101', new Schema(CUSTOMERS_COLUMNS)]]),
@@ -642,7 +645,7 @@ describe('Cube source picker: while a table is typed', () => {
         (node) => (node as RelationalTableSource).table,
       ),
     ).toEqual(['CUSTOMERS']);
-    expect(picker.isResolving).toBe(false);
+    expect(picker.modelTab.isResolving).toBe(false);
     expect(picker.isOpen).toBe(false);
   });
 
@@ -660,22 +663,22 @@ describe('Cube source picker: while a table is typed', () => {
     const { state, fake } = setUp({ outline });
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.selectDatabase(NORTHWIND_DATABASE);
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectDatabase(NORTHWIND_DATABASE);
+    picker.modelTab.selectTable('ORDERS');
     const held = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(held.promise);
     const confirming = flowResult(picker.confirm());
     // the Database step stays open while the table is typed
-    picker.selectDatabase(OTHER_DATABASE);
+    picker.modelTab.selectDatabase(OTHER_DATABASE);
     held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await confirming;
     expect(nodeIds(state)).toEqual(['relational101']);
-    expect(picker.databasePath).toBe(OTHER_DATABASE);
+    expect(picker.modelTab.databasePath).toBe(OTHER_DATABASE);
     await openPicker(state);
-    expect(picker.databasePath).toBe(NORTHWIND_DATABASE);
-    expect(picker.runtimePath).toBe(NORTHWIND_RUNTIME);
-    expect(picker.schemaName).toBe('NORTHWIND');
-    expect(picker.tables.map(({ name }) => name)).toEqual([
+    expect(picker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
+    expect(picker.modelTab.runtimePath).toBe(NORTHWIND_RUNTIME);
+    expect(picker.modelTab.schemaName).toBe('NORTHWIND');
+    expect(picker.modelTab.tables.map(({ name }) => name)).toEqual([
       'ORDERS',
       'CUSTOMERS',
     ]);
@@ -692,12 +695,12 @@ describe('Cube source picker: failures', () => {
       ),
     );
     await openPicker(state);
-    expect(state.sourcePicker.error).toBe('Unexpected token');
+    expect(state.sourcePicker.modelTab.error).toBe('Unexpected token');
     state.sourcePicker.close();
     await openPicker(state);
     expect(fake.loadModel).toHaveBeenCalledTimes(2);
-    expect(state.sourcePicker.error).toBeUndefined();
-    expect(state.sourcePicker.databasePath).toBe(NORTHWIND_DATABASE);
+    expect(state.sourcePicker.modelTab.error).toBeUndefined();
+    expect(state.sourcePicker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
   });
 
   test('Reopening the picker while the model loads parses it once', async () => {
@@ -705,20 +708,20 @@ describe('Cube source picker: failures', () => {
     const held = deferred<CubeModelOutline>();
     fake.loadModel.mockReturnValueOnce(held.promise);
     state.sourcePicker.open();
-    expect(state.sourcePicker.isLoadingModel).toBe(true);
+    expect(state.sourcePicker.modelTab.isLoadingModel).toBe(true);
     state.sourcePicker.close();
     state.sourcePicker.open();
     held.resolve(FAKE_NORTHWIND_OUTLINE);
     await waitForOutline(state);
     expect(fake.loadModel).toHaveBeenCalledTimes(1);
-    expect(state.sourcePicker.databasePath).toBe(NORTHWIND_DATABASE);
+    expect(state.sourcePicker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
   });
 
   test("Shows the engine's error for a table it can't type, and adds nothing", async () => {
     const { state } = setUp({ schemas: new Map() });
     await openPicker(state);
     await pick(state, 'NORTHWIND', 'ORDERS');
-    expect(state.sourcePicker.error).toBe(
+    expect(state.sourcePicker.modelTab.error).toBe(
       `The table "NORTHWIND.ORDERS" can't be found`,
     );
     expect(state.sourcePicker.isOpen).toBe(true);
@@ -732,10 +735,10 @@ describe('Cube source picker: failures', () => {
     const held = deferred<ResolvedSchemas>();
     fake.resolveSchemas.mockReturnValueOnce(held.promise);
     const picker = state.sourcePicker;
-    picker.selectSchema('NORTHWIND');
-    picker.selectTable('ORDERS');
+    picker.modelTab.selectSchema('NORTHWIND');
+    picker.modelTab.selectTable('ORDERS');
     const confirming = flowResult(picker.confirm());
-    expect(picker.isResolving).toBe(true);
+    expect(picker.modelTab.isResolving).toBe(true);
     // e.g. an import, while the engine answered
     state.applyDocument(
       new CubeDocument({
@@ -744,8 +747,8 @@ describe('Cube source picker: failures', () => {
     );
     held.resolve(new Map([['relational101', new Schema(ORDERS_COLUMNS)]]));
     await confirming;
-    expect(picker.isResolving).toBe(false);
-    expect(picker.error).toContain('The cube changed');
+    expect(picker.modelTab.isResolving).toBe(false);
+    expect(picker.modelTab.error).toContain('The cube changed');
     expect(state.document.query.nodes).toEqual([]);
   });
 });
@@ -758,12 +761,12 @@ describe('Cube source picker: a pasted model', () => {
     // the bundled model loads first, as the only one
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.startPastingModel();
-    picker.setPastedModelText(PASTED);
-    await flowResult(picker.loadPastedModel());
+    picker.modelTab.startPastingModel();
+    picker.modelTab.setPastedModelText(PASTED);
+    await flowResult(picker.modelTab.loadPastedModel());
     expect(fake.loadModel).toHaveBeenLastCalledWith(createTextModel(PASTED));
     await pick(state, 'NORTHWIND', 'ORDERS');
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBeUndefined();
     expect(nodeIds(state)).toEqual(['relational101']);
     // the text itself, not the bundled model nor a missing one
     expect(state.document.context).toEqual({
@@ -779,44 +782,44 @@ describe('Cube source picker: a pasted model', () => {
     fake.loadModel.mockReturnValueOnce(held.promise);
     const picker = state.sourcePicker;
     picker.open();
-    expect(picker.isLoadingModel).toBe(true);
-    picker.startPastingModel();
-    expect(picker.isPastingModel).toBe(true);
-    expect(picker.model).toBeUndefined();
+    expect(picker.modelTab.isLoadingModel).toBe(true);
+    picker.modelTab.startPastingModel();
+    expect(picker.modelTab.isPastingModel).toBe(true);
+    expect(picker.modelTab.model).toBeUndefined();
     // nothing is loading any more, so Load model can be pressed
-    expect(picker.isLoadingModel).toBe(false);
+    expect(picker.modelTab.isLoadingModel).toBe(false);
 
     held.resolve(FAKE_NORTHWIND_OUTLINE);
     await nextMacrotask();
-    expect(picker.isPastingModel).toBe(true);
-    expect(picker.model).toBeUndefined();
-    expect(picker.outline).toBeUndefined();
-    expect(picker.isLoadingModel).toBe(false);
-    expect(picker.databasePath).toBeUndefined();
+    expect(picker.modelTab.isPastingModel).toBe(true);
+    expect(picker.modelTab.model).toBeUndefined();
+    expect(picker.modelTab.outline).toBeUndefined();
+    expect(picker.modelTab.isLoadingModel).toBe(false);
+    expect(picker.modelTab.databasePath).toBeUndefined();
     expect(picker.canConfirm).toBe(false);
 
-    picker.setPastedModelText(PASTED);
-    await flowResult(picker.loadPastedModel());
+    picker.modelTab.setPastedModelText(PASTED);
+    await flowResult(picker.modelTab.loadPastedModel());
     expect(fake.loadModel).toHaveBeenLastCalledWith(createTextModel(PASTED));
-    expect(picker.model).toEqual(createTextModel(PASTED));
-    expect(picker.isPastingModel).toBe(true);
-    expect(picker.databasePath).toBe(NORTHWIND_DATABASE);
+    expect(picker.modelTab.model).toEqual(createTextModel(PASTED));
+    expect(picker.modelTab.isPastingModel).toBe(true);
+    expect(picker.modelTab.databasePath).toBe(NORTHWIND_DATABASE);
   });
 
   test('Choosing to paste, then closing before Load model, keeps the text box on reopening and loads no model', async () => {
     const { state, fake } = setUp();
     await openPicker(state);
     const picker = state.sourcePicker;
-    picker.startPastingModel();
-    picker.setPastedModelText(PASTED);
+    picker.modelTab.startPastingModel();
+    picker.modelTab.setPastedModelText(PASTED);
     picker.close();
     await openPicker(state);
     expect(picker.isOpen).toBe(true);
-    expect(picker.isPastingModel).toBe(true);
-    expect(picker.pastedModelText).toBe(PASTED);
-    expect(picker.model).toBeUndefined();
-    expect(picker.outline).toBeUndefined();
-    expect(picker.isLoadingModel).toBe(false);
+    expect(picker.modelTab.isPastingModel).toBe(true);
+    expect(picker.modelTab.pastedModelText).toBe(PASTED);
+    expect(picker.modelTab.model).toBeUndefined();
+    expect(picker.modelTab.outline).toBeUndefined();
+    expect(picker.modelTab.isLoadingModel).toBe(false);
     expect(fake.loadModel).toHaveBeenCalledTimes(1);
   });
 
@@ -830,20 +833,22 @@ describe('Cube source picker: a pasted model', () => {
     );
     await openPicker(state);
     const picker = state.sourcePicker;
-    expect(picker.error).toBe('Unexpected token');
-    picker.startPastingModel();
-    expect(picker.error).toBeUndefined();
+    expect(picker.modelTab.error).toBe('Unexpected token');
+    picker.modelTab.startPastingModel();
+    expect(picker.modelTab.error).toBeUndefined();
   });
 
   test("Stops offering the pasted text once the cube's own model is loaded, e.g. an imported cube's", async () => {
     const state = new CubeEditorState(TEST__createCubeHost().host);
     const picker = state.sourcePicker;
     picker.open();
-    await flowResult(picker.selectModel(CUBE_NORTHWIND_MODEL));
-    picker.startPastingModel();
-    picker.setPastedModelText('###Relational\nDatabase my::Pasted ( )');
-    await flowResult(picker.loadPastedModel());
-    expect(picker.isPastingModel).toBe(true);
+    await flowResult(picker.modelTab.selectModel(CUBE_NORTHWIND_MODEL));
+    picker.modelTab.startPastingModel();
+    picker.modelTab.setPastedModelText(
+      '###Relational\nDatabase my::Pasted ( )',
+    );
+    await flowResult(picker.modelTab.loadPastedModel());
+    expect(picker.modelTab.isPastingModel).toBe(true);
     picker.close();
 
     // a cube on a copy of Northwind, as an import decodes it
@@ -855,14 +860,14 @@ describe('Cube source picker: a pasted model', () => {
       false,
     );
     picker.open();
-    await flowResult(picker.selectModel(copy));
-    expect(picker.isPastingModel).toBe(false);
+    await flowResult(picker.modelTab.selectModel(copy));
+    expect(picker.modelTab.isPastingModel).toBe(false);
     picker.close();
 
     // back on a cube with no model, the bundled model is offered again
     state.undo();
     picker.open();
-    expect(picker.isPastingModel).toBe(false);
-    expect(picker.model).toBe(CUBE_NORTHWIND_MODEL);
+    expect(picker.modelTab.isPastingModel).toBe(false);
+    expect(picker.modelTab.model).toBe(CUBE_NORTHWIND_MODEL);
   });
 });

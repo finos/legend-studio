@@ -15,6 +15,7 @@
  */
 
 import {
+  type CubeContext,
   getRelationalDisplayName,
   type ModelContext,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
@@ -53,6 +54,10 @@ import {
   CubeTableFlag,
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import {
+  type CubeSourcePickerTab,
+  CubeSourcePickerTabKey,
+} from './CubeSourcePickerTab.js';
 
 /** An error as the tab shows it: its first line, with the rest on demand (R48) */
 export interface CubeDirectConnectionError {
@@ -110,7 +115,9 @@ export const isExploredTableSelectable = (table: CubeExploredTable): boolean =>
  * here (D8): its schemas are listed when the dialog opens. Any edit, or
  * closing the dialog, drops the answers still on their way.
  */
-export class CubeDirectConnectionTabState {
+export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
+  readonly key = CubeSourcePickerTabKey.DIRECT_CONNECTION;
+  readonly label = 'Database connection';
   readonly editorState: CubeEditorState;
 
   databaseType = CubeDirectDatabaseType.H2;
@@ -152,7 +159,9 @@ export class CubeDirectConnectionTabState {
       isResolving: observable,
       error: observable.ref,
       fixedConnection: computed,
+      isAvailable: computed,
       isOffered: computed,
+      isBusy: computed,
       setupSqls: computed,
       formProblem: computed,
       // kept while unobserved too: the tab compares connections by identity
@@ -186,13 +195,26 @@ export class CubeDirectConnectionTabState {
     return model ? getCubeDirectConnection(model) : undefined;
   }
 
+  /** Hosts without a connection explorer have no database connections */
+  get isAvailable(): boolean {
+    return this.explorer !== undefined;
+  }
+
   /** The tab is for an empty cube or a direct one, never a cube on a model (R11) */
   get isOffered(): boolean {
     return (
-      this.explorer !== undefined &&
+      this.isAvailable &&
       (this.editorState.document.context === undefined ||
         this.fixedConnection !== undefined)
     );
+  }
+
+  get isBusy(): boolean {
+    return this.isTesting || this.isListing || this.isResolving;
+  }
+
+  ownsContext(context: CubeContext): boolean {
+    return getCubeDirectConnection(context.model) !== undefined;
   }
 
   get setupSqls(): readonly string[] {

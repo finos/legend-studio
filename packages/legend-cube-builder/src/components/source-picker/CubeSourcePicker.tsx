@@ -24,58 +24,19 @@ import {
   ModalHeader,
   PanelLoadingIndicator,
 } from '@finos/legend-art';
-import { getRelationalDisplayName } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import { useId } from 'react';
-import {
-  CUBE_PENDING_LABEL,
-  CUBE_TABLE_FLAG_LABELS,
-} from '../../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
-import { isTableSelectable } from '../../stores/CubeSourcePickerState.js';
-import { CubeButton } from '../CubeButton.js';
-
-/** One step of the picker: a labelled list of choices, read-only when the cube fixes it */
-const CubePickerStep: React.FC<{
-  label: string;
-  value: string | undefined;
-  options: readonly { value: string; label: string }[];
-  disabled?: boolean;
-  onChange: (value: string | undefined) => void;
-}> = ({ label, value, options, disabled, onChange }) => {
-  const id = useId();
-  return (
-    <div className="flex items-center gap-2">
-      <label className="w-20 shrink-0 text-base" htmlFor={id}>
-        {label}
-      </label>
-      <select
-        id={id}
-        className="h-7 min-w-0 flex-1 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)] disabled:text-[var(--color-text-secondary)]"
-        value={value ?? ''}
-        disabled={Boolean(disabled) || !options.length}
-        onChange={(event) => onChange(event.target.value || undefined)}
-      >
-        {value === undefined && <option value="">Choose…</option>}
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
+import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
+import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
+import { CubeInlineModelTab } from './CubeInlineModelTab.js';
 
 /**
- * Adds a table to the cube (PLAN §6.2.7): a minimal dialog, which M3
- * redesigns. The table lands with its schema; the first one fixes the cube's
- * model and runtime.
+ * Adds a source to the cube (PLAN §6.1, §6.2.7, §6.8): a tab per way to find
+ * one, shown when the host offers more than one. The source lands with its
+ * schema; the first one fixes the cube's context, and with it the only tab
+ * enabled.
  */
-/** The Model option that offers a text box for Pure text */
-const PASTE_MODEL_OPTION = 'paste';
-
 export const CubeSourcePicker = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
@@ -83,13 +44,7 @@ export const CubeSourcePicker = observer(
     const { applicationStore } = editorState.host;
     const darkMode =
       !applicationStore.layoutService.TEMPORARY__isLightColorThemeEnabled;
-    const isFixed = picker.fixedContext !== undefined;
-    const fixedModelLabel =
-      picker.models.find(
-        (model) =>
-          JSON.stringify(model.model) ===
-          JSON.stringify(picker.fixedContext?.model),
-      )?.label ?? "The cube's model";
+    const { activeTab, tabs } = picker;
     const confirm = (): void => {
       flowResult(picker.confirm()).catch(applicationStore.alertUnhandledError);
     };
@@ -98,186 +53,44 @@ export const CubeSourcePicker = observer(
       <Dialog open={picker.isOpen} onClose={() => picker.close()}>
         <Modal darkMode={darkMode} className="w-[640px] max-w-full">
           <ModalHeader>
-            <div className="modal__title">Add a table</div>
+            <div className="modal__title">Add a source</div>
           </ModalHeader>
-          <PanelLoadingIndicator
-            isLoading={picker.isLoadingModel || picker.isResolving}
-          />
+          <PanelLoadingIndicator isLoading={activeTab.isBusy} />
           <ModalBody>
-            <div className="flex flex-col gap-2">
-              <CubePickerStep
-                label="Model"
-                value={
-                  isFixed
-                    ? 'fixed'
-                    : picker.isPastingModel
-                      ? PASTE_MODEL_OPTION
-                      : picker.models.find(
-                          (model) => model.model === picker.model,
-                        )?.id
-                }
-                options={
-                  isFixed
-                    ? [{ value: 'fixed', label: fixedModelLabel }]
-                    : [
-                        ...picker.models.map((model) => ({
-                          value: model.id,
-                          label: model.label,
-                        })),
-                        {
-                          value: PASTE_MODEL_OPTION,
-                          label: 'Paste Pure model…',
-                        },
-                      ]
-                }
-                disabled={isFixed}
-                onChange={(id) => {
-                  if (id === PASTE_MODEL_OPTION) {
-                    picker.startPastingModel();
-                    return;
-                  }
-                  const model = picker.models.find(
-                    (candidate) => candidate.id === id,
-                  );
-                  if (model) {
-                    flowResult(picker.selectModel(model.model)).catch(
-                      applicationStore.alertUnhandledError,
-                    );
-                  }
-                }}
-              />
-              {picker.isPastingModel && !isFixed && (
-                <div className="flex flex-col gap-1">
-                  <textarea
-                    className="h-40 w-full resize-y rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] p-1 font-mono text-sm text-[var(--color-text-primary)]"
-                    aria-label="Pure model"
-                    placeholder={
-                      '###Relational\nDatabase my::Database ( … )\n\n###Runtime\nRuntime my::Runtime { … }'
-                    }
-                    spellCheck={false}
-                    value={picker.pastedModelText}
-                    onChange={(event) =>
-                      picker.setPastedModelText(event.target.value)
-                    }
-                  />
-                  <div className="flex items-center gap-2">
-                    <CubeButton
-                      disabled={
-                        !picker.pastedModelText.trim() || picker.isLoadingModel
-                      }
-                      onClick={() => {
-                        flowResult(picker.loadPastedModel()).catch(
-                          applicationStore.alertUnhandledError,
-                        );
-                      }}
+            {tabs.length > 1 && (
+              <div
+                className="mb-2 flex gap-1 border-b border-[var(--color-border-subtle)]"
+                role="tablist"
+                aria-label="Source kinds"
+              >
+                {tabs.map((tab) => {
+                  const isActive = tab === activeTab;
+                  return (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      disabled={!picker.isTabEnabled(tab)}
+                      className={clsx(
+                        '-mb-px border-b-2 px-2 py-1 text-base enabled:cursor-pointer disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]',
+                        isActive
+                          ? 'border-[var(--color-accent)] text-[var(--color-text-primary)]'
+                          : 'border-transparent text-[var(--color-text-secondary)] enabled:hover:text-[var(--color-text-primary)]',
+                      )}
+                      onClick={() => picker.selectTab(tab.key)}
                     >
-                      Load model
-                    </CubeButton>
-                    <span className="text-sm text-[var(--color-text-muted)]">
-                      The cube keeps the model&apos;s text, which counts towards
-                      the 1 MiB a cube spec can hold.
-                    </span>
-                  </div>
-                </div>
-              )}
-              {picker.isLoadingModel && (
-                <div className="text-base text-[var(--color-text-secondary)]">
-                  {CUBE_PENDING_LABEL.LOADING_MODEL}
-                </div>
-              )}
-              <CubePickerStep
-                label="Database"
-                value={picker.databasePath}
-                options={picker.databases.map((database) => ({
-                  value: database.path,
-                  label: database.path,
-                }))}
-                disabled={picker.fixedDatabasePath !== undefined}
-                onChange={(path) => picker.selectDatabase(path)}
-              />
-              <CubePickerStep
-                label="Runtime"
-                value={picker.runtimePath}
-                options={picker.runtimes.map((runtime) => ({
-                  value: runtime.path,
-                  label: runtime.path,
-                }))}
-                disabled={picker.fixedContext?.runtime !== undefined}
-                onChange={(path) => picker.selectRuntime(path)}
-              />
-              <CubePickerStep
-                label="Schema"
-                value={picker.schemaName}
-                options={picker.schemas.map((schema) => ({
-                  value: schema.name,
-                  label: getRelationalDisplayName(schema.name),
-                }))}
-                onChange={(name) => picker.selectSchema(name)}
-              />
-              {picker.schemaName !== undefined && (
-                <div className="flex flex-col gap-1">
-                  <input
-                    className="h-7 rounded-sm border border-[var(--color-border-default)] bg-[var(--color-bg-input)] px-1 text-base text-[var(--color-text-primary)]"
-                    placeholder="Search tables"
-                    aria-label="Search tables"
-                    value={picker.tableSearch}
-                    onChange={(event) =>
-                      picker.setTableSearch(event.target.value)
-                    }
-                  />
-                  <ul
-                    className="h-56 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
-                    aria-label="Tables"
-                  >
-                    {picker.tables.map((table) => {
-                      const selectable = isTableSelectable(table);
-                      const isPicked = picker.tableName === table.name;
-                      return (
-                        <li key={table.name}>
-                          <button
-                            type="button"
-                            className={clsx(
-                              'flex w-full items-center gap-2 px-2 py-1 text-left text-base enabled:hover:bg-[var(--color-bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]',
-                              { 'bg-[var(--color-bg-selected)]': isPicked },
-                            )}
-                            aria-pressed={isPicked}
-                            disabled={!selectable}
-                            onClick={() => picker.selectTable(table.name)}
-                          >
-                            <span className="min-w-0 flex-1 truncate">
-                              {getRelationalDisplayName(table.name)}
-                            </span>
-                            {table.flags.map((flag) => (
-                              <span
-                                key={flag}
-                                className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-sm text-[var(--color-status-warn)]"
-                                title={CUBE_TABLE_FLAG_LABELS[flag].description}
-                              >
-                                {CUBE_TABLE_FLAG_LABELS[flag].label}
-                              </span>
-                            ))}
-                            <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                              {table.columnCount} columns
-                            </span>
-                          </button>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              )}
-              {picker.isResolving && (
-                <div className="text-base text-[var(--color-text-secondary)]">
-                  {CUBE_PENDING_LABEL.RESOLVING_SOURCE}
-                </div>
-              )}
-              {picker.error !== undefined && (
-                <div
-                  className="text-base text-[var(--color-status-error)]"
-                  role="alert"
-                >
-                  {picker.error}
-                </div>
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            <div role={tabs.length > 1 ? 'tabpanel' : undefined}>
+              {activeTab.key === CubeSourcePickerTabKey.DIRECT_CONNECTION ? (
+                <CubeDirectConnectionTab tab={picker.directTab} />
+              ) : (
+                <CubeInlineModelTab tab={picker.modelTab} />
               )}
             </div>
           </ModalBody>
