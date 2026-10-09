@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Branch | `cube-m4` merged on 2026-10-09 as #5649 (`d847e6721`, squashed); the follow-ups are on `cube-m4-followup`, from that merge           |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                    |
-| Step   | M4.1–M4.16 done (M4.1–M4.13 and M4.16 merged in #5649; M4.14 and M4.15 on the follow-up PR); M4.17, PLAN's folding, next             |
-| Tests  | 2486 core, 1162 builder (core group), 245 Query, 415 builder engine-roundtrip (after the dates warning, on finos master `4f5aab13d`) |
+| Item   | State                                                                                                                      |
+| ------ | -------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4` merged on 2026-10-09 as #5649 (`d847e6721`, squashed); the follow-ups are on `cube-m4-followup`, from that merge |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                          |
+| Step   | M4.1–M4.17 done (M4.1–M4.13 and M4.16 merged in #5649; M4.14, M4.15 and M4.17 on the follow-up PR, #5653)                  |
+| Tests  | 2486 core, 1163 builder (core group), 245 Query, 435 builder engine-roundtrip (after M4.15, on `d847e6721`)                |
 
 ## Steps
 
@@ -35,7 +35,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.14** Docs and changeset
 - [x] **M4.15** Verification and the browser rehearsal
 - [x] **M4.16** A demo video of M4's features, as for M1 and M2 (PLAN §11.3)
-- [ ] **M4.17** Rebase on the latest master, fold PLAN §11.5's supersessions in, PR when the user asks
+- [x] **M4.17** Rebase on the latest master, fold PLAN §11.5's supersessions in, PR when the user asks
 
 ## Commits
 
@@ -66,7 +66,8 @@ the squash merge; the follow-up PR's are its own.
 | Merge      | `d847e6721` | feat: add Legend Cube's Group and Concat (M4) (#5649), the above squashed   |
 | Merge docs | `04e2054c2` | docs: record Legend Cube M4's merge                                         |
 | M4.14      | `b10539a23` | docs: cover Legend Cube's Group and Concat in its guides                    |
-| M4.15      | (this one)  | test: close the gaps M4's verification found in Legend Cube                 |
+| M4.15      | `3b3b3fb23` | test: close the gaps M4's verification found in Legend Cube                 |
+| M4.17      | (this one)  | docs: fold Legend Cube M4's changes into its plan                           |
 
 ## Step notes
 
@@ -332,6 +333,14 @@ PLAN records the long auto-name decision (shown invalid, never cut) and the suit
 draft covers Group's auto-names. The new tests fail without what they cover (isolated copies). Rehearsal:
 `demo/rehearsal-m4.mjs`, M2's with only the grid menu's order changed and 3 palette and menu checks added, 57/57; the
 demo's 19 checks pass again.
+
+**M4.17, PLAN's folding (2026-10-09).** §11.5's supersessions are applied to the sections they name (D5, §4 to §4.11,
+§5.7, §5.8, §7.2, §7.4, §8.8, §8.9, §9, §10.3, §11.3's M4 row, §12.1, §12.2 item 3, Appendix A's rows and Appendix
+B), each fact checked against the code; the list stays in §11.5 as the record. Not applied: Appendix B's 'M4's ISSUES
+drafts once filed' (the user files them), and §11.2's one-way nullability (M1's acceptance test, kept). Left for a
+small later change: §8.8's Sort row and §12.2 item 2 still name only a Join, a Restrict and a later Sort as losing a
+Sort's order, while §4.4 now adds Group and Concat (the Sort cell is its table's widest). M4 is done; the follow-up
+PR is #5653.
 
 ## Open items
 

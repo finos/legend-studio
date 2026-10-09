@@ -18,7 +18,7 @@
 | D2  | The slice runs **locally** against a **Cube-owned Northwind fixture sent as an inline model** (no depot). Entry points and the sources modal get expanded later, once designed. v1 scope: one model, one Database element, one runtime per query.                                                                                                                                                                                                        | user (default)                     |
 | D3  | **ag-grid Enterprise license is available** in every deployment. Use `@finos/legend-lego/data-grid` (enterprise modules).                                                                                                                                                                                                                                                                                                                                | user                               |
 | D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (made explicit by the emitter, §8.4: the engine does it only for columns it types `[0..1]`; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                                  | user (default; wording 2026-10-06) |
-| D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected (widen autofix later).                                                                                                                   | user (default)                     |
+| D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected, a type next to its ancestor too (the engine accepts it ✅); Convert types casts within numbers, strings or dates (M4, §11.5 Q5).        | user (default)                     |
 | D6  | Post-slice source order: services → Pure functions → data products → ingest (data products and ingest moved to M3, §6.7–6.8). Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                              | user (default)                     |
 | D7  | Route **`/cube`** inside Legend Query (URL `/query/cube`), hard-wired in the Query router. New module(s) `legend-cube` / `legend-cube-builder` (§3). Further entry points, the sources modal and the final look are revisited in M3.                                                                                                                                                                                                                     | user + recommendation              |
 | D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                                                                                                                                          | user (default)                     |
@@ -319,7 +319,9 @@ manager.
 
 Everything in this section is host-free and test-driven. Spec sections are cited where behaviour is kept **verbatim**.
 M2's unary operations (§11.4) are folded in: the column-name rule in §4.2, row order in §4.4, the nodes in §4.5, the
-Join autofix in §4.7, the grid's Filter by rule in §4.8 and the new messages in §4.11.
+Join autofix in §4.7, the grid's Filter by rule in §4.8 and the new messages in §4.11. M4's Group and Concat (§11.5)
+are folded in the same way: output names and converted types in §4.2, port labels in §4.3, row order in §4.4 and the
+nodes in §4.5.
 
 ### 4.1 Types
 
@@ -382,16 +384,16 @@ class OpaqueType extends CubeType {
   - `equals` is order-sensitive and compares names and types. Nullability is ignored, matching the engine's
     `concatenate` ✅.
   - Concat's output (M4) is therefore schema1 with `nullable = nullable1 || nullable2` per column, as the engine
-    merges it ✅.
+    merges it ✅. With Convert types, a column whose types differ takes their least common ancestor (§11.5 Q5).
   - **New:** a schema asserts unique column names, because the engine rejects duplicates everywhere ✅.
   - Source schema **drift detection** compares name, type **and** nullability, not `equals`.
 - **Column names** (M2, `schema/ColumnName.ts`; why in §11.4): `isValidColumnName` replaces spec §7.5's
   `/^[A-Za-z0-9_ ]{1,100}$/u` (Appendix A). A name is not empty, is trimmed, has no `"`, no `\` and no control
-  character, and has at most 128 code points (`MAX_COLUMN_NAME_LENGTH`). Rename and the Join autofix (§4.7) use it;
-  Group and Extend will. `foldColumnName` (NFKC, then case folded through upper case, so `ß` meets `SS` and fullwidth letters meet
-  ASCII) is close to how SQL Server, MemSQL and DuckDB compare names, so Cube never
-  gives a column a name that folds to another column's: a Rename's new names, the autofix's names and the temporary
-  columns (`cube_rn`, `cube_d`) are all checked folded.
+  character, and has at most 128 code points (`MAX_COLUMN_NAME_LENGTH`). Rename and the Join autofix (§4.7) use it,
+  and so do Group's output names (M4); Extend will. `foldColumnName` (NFKC, then case folded through upper case, so
+  `ß` meets `SS` and fullwidth letters meet ASCII) is close to how SQL Server, MemSQL and DuckDB compare names, so Cube
+  never gives a column a name that folds to another column's: a Rename's new names, the autofix's names, Group's
+  output names and the temporary columns (`cube_rn`, `cube_d`, and Convert types' `cube_cast`) are all checked folded.
 
 ### 4.3 Query graph
 
@@ -403,7 +405,7 @@ five invariants, every operation and every `canX` predicate), plus the following
 | **Acyclicity invariant (6)**         | §5.1 says cycles are impossible. They aren't: `connect(F1,F2)` then `connect(F2,F1)` satisfies invariant 3 📄. `canConnect` and `connect(…, port)` reject a target that is the source or upstream of it. `canMove` is **unchanged** from §4.4: move isolates the node first, so it cannot create a cycle, and a stricter rule would forbid moves the spec allows. The constructor asserts the graph is acyclic; `visit()` keeps an in-progress set. |
 | **`connect(source, target, port?)`** | The canvas lets users drop on a specific Left or Right handle. With no port, behaviour is spec's "first free port".                                                                                                                                                                                                                                                                                                                                 |
 | **Per-type `generateId`**            | §4.4's global max cannot produce Appendix C's ids (`join101` + `filter101`) 📄. Take `max(100, ids of nodes of that type) + 1`; the collision fallback is unchanged.                                                                                                                                                                                                                                                                                |
-| **Port labels in metadata**          | §17.3 pitfall 4. Join's `portLabels` getter, `['Left', 'Right']` (inherited from `BinaryNode`).                                                                                                                                                                                                                                                                                                                                                     |
+| **Port labels in metadata**          | §17.3 pitfall 4. Join's `portLabels` getter, `['Left', 'Right']` (inherited from `BinaryNode`); Concat's `['First', 'Second']` (M4, §11.5 Q8).                                                                                                                                                                                                                                                                                                      |
 
 Settled in M1.2 (spec §4.4 leaves these open or assumes unary nodes):
 
@@ -446,21 +448,21 @@ Settled in M1.2 (spec §4.4 leaves these open or assumes unary nodes):
   - **Row order.** A `RowOrder` lists `OrderKey {column, direction, sortId, keyIndex}`, most significant first: the
     column as named at that node, and the Sort that declared the key with its place among that Sort's keys. It is `[]`
     when nothing orders the rows and `undefined` when that can't be known. `computeRowOrders(query)` gives every node's
-    order from its inputs' through `outputOrder` (§4.5): a source and a Join give `[]`; Filter, Distinct, Limit, Drop
-    and Slice pass their input's on; Rename renames its keys; Restrict keeps the longest prefix whose columns it keeps;
-    Sort puts its own keys first, then the input's keys on its other columns; an Unknown node gives `undefined`, which
-    the nodes that pass an order on carry down. When running a query, the emitter hands a node that `consumesInputOrder`
-    (Limit, Drop, Slice) its input's order, written as a sort just before it or in the row numbers' `over()` (§8), and
-    sorts the capture by its own before the run's limit; typing lambdas carry no order. Orders are derived, never
-    stored.
-  - **Lost orders.** `findLostSortOrders(query, rowOrders?, schemas?)` follows each Sort's order down its chain to the
-    first node that consumes it, or to the chain's end, and maps the Sort's id to the loss, if any. A full loss names
-    the first node whose rows hold none of its keys, e.g. a Join, a Restrict that drops the Sort's first key, or a later
-    Sort on all the same columns. A partial loss names the first node that loses some keys, and gives the nodes
-    (Restricts) that removed some (`removals`) and the kept columns that no longer order the rows, as they came after a
-    removed one (`cutColumns`, which needs `schemas`). A later Sort on some of the same columns is no loss, and nothing
-    is reported where the order becomes unknown. The builder shows losses as warnings (§4.11), never validation errors,
-    so Execute stays enabled.
+    order from its inputs' through `outputOrder` (§4.5): a source, a Join, a Group and a Concat give `[]`; Filter,
+    Distinct, Limit, Drop and Slice pass their input's on; Rename renames its keys; Restrict keeps the longest prefix
+    whose columns it keeps; Sort puts its own keys first, then the input's keys on its other columns; an Unknown node
+    gives `undefined`, which the nodes that pass an order on carry down. When running a query, the emitter hands a node
+    that `consumesInputOrder` (Limit, Drop, Slice) its input's order, written as a sort just before it or in the row
+    numbers' `over()` (§8), and sorts the capture by its own before the run's limit; typing lambdas carry no order.
+    Orders are derived, never stored.
+  - **Lost orders.** `findLostSortOrders(query, rowOrders?, schemas?)` follows each Sort's order down its chain to
+    the first node that consumes it, or to the chain's end, and maps the Sort's id to the loss, if any. A full loss
+    names the first node whose rows hold none of its keys, e.g. a Join, a Group, a Concat (on either input), a Restrict
+    that drops the Sort's first key, or a later Sort on all the same columns. A partial loss names the first node that
+    loses some keys, and gives the nodes (Restricts) that removed some (`removals`) and the kept columns that no longer
+    order the rows, as they came after a removed one (`cutColumns`, which needs `schemas`). A later Sort on some of the
+    same columns is no loss, and nothing is reported where the order becomes unknown. The builder shows losses as
+    warnings (§4.11), never validation errors, so Execute stays enabled.
 
 ### 4.5 Node contracts and registry
 
@@ -523,6 +525,24 @@ and sizes are not values.
 - **Slice** (`slice`, spec §7.9): `start` and `stop`, the same way (10 and 20 from `create`), edited together with
   `withRange`. Both bounds are reported before `start < stop` is checked. The range is `[start, stop)`, counting from 0
   (D5): `Take rows 10 to 20 (20 excluded)`, or `Take rows 10 to (blank)` when the stop is cleared.
+
+As built in M4 (§11.5): Group, a `UnaryNode`, and Concat, a plain `BinaryNode` on `tds1` and `tds2`, in spec menu
+order (Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join). Neither keeps a row order
+(§4.4). Validation, messages and saved shapes are in §11.5.
+
+- **Group** (`group`, label `Group by Column`, spec §7.2): `columns` (the keys, in stored order) and
+  `aggregations: {column, function, name}[]`, the column left out for Count rows. The aggregation model
+  (`Aggregation.ts`, §5.7, reused by M5's Partition) gives each type's functions, result types and nullability. Keys
+  must be unique, named, in the input and groupable (not VARIANT or OPAQUE, `isSortableType`); then at least one
+  aggregation, each checked (`validateColumnAggregation`). The schema is the keys, then one column per aggregation.
+  `describe()`: `Group by "a", "b"`, or `Aggregate all rows` with no keys.
+- **Concat** (`concat`, label `Concatenate Another Input`, spec §7.10): ports labelled First and Second, and one
+  setting, `widenTypes` (Convert types, Q5), false by default. Columns match by position: the same count, the same names
+  in the same case, and equal types, or with Convert types a least common ancestor within numbers, strings or dates
+  (`getConcatConvertedType`); nullability is never compared. The schema is the first input's names and types (the
+  ancestor where converted), nullable where either input's is. Autofixes (`ConcatAutofix.ts`, Q6): a Rename before
+  the second input, a Restrict before the wider one. `describe()`: `Concatenate additional input`, plus
+  `, converting types` with the setting on.
 
 ### 4.6 Relational table source (`type: 'relational'`)
 
@@ -711,6 +731,8 @@ still cannot execute.
   - `Sort column "<c>" of type <T> cannot be sorted.` (M2). Two other checks M2 adds use the catalogue's generic
     templates: `Sort columns cannot have duplicates.` and, for Rename's collision fix,
     `New column name "<c>" is already present in the input schema.`
+  - Group's and Concat's (M4), e.g. `Group column "<c>" of type <T> cannot be grouped.` and Concat's precise messages
+    after the catalogue's `Both input schemas must be identical.`: listed in §11.5.
 - **New warnings** (M2, §4.4), derived and never validation errors; `<node>` is a node's id:
   - `This sort has no effect: <node> does not keep the row order. A sort only orders the query's output, or the rows a later Drop, Limit or Slice takes.`
   - `Sorting by "<c>", … has no effect: <node> removes that column (those columns) before the order is used.`
@@ -902,8 +924,12 @@ Measured with `lambdaRelationType` ✅:
 | Min / Max                         | Integer            | Float        | Number       | StrictDate | DateTime  | Varchar(n) | Boolean | Enum    |
 | Rank, DenseRank (window)          | Integer            |              |              |            |           |            |         |         |
 
-- **Nullability:** every aggregate output except Count is nullable, even though the engine reports `[1]` ✅.
-- **§10.1 availability:** keep the spec's rows. Min/Max on String and Boolean, and DistinctCount/DistinctValue on
+- **Count rows** (M4, §11.5 Q1): Cube's aggregation with no column, `x|1 : y|$y->count()`, typed Integer.
+- **Nullability:** Count, DistinctCount and Count rows are not nullable; every other aggregate output is. The engine
+  types Min, Max and DistinctValue `[0..1]` but Sum and Average `[1]` ✅, though an all-null group's Sum is null ✅, so
+  the conformance suite declares Sum and Average as columns where Cube is wider (§11.5 Q7).
+- **§10.1 availability:** keep the spec's rows; DECIMAL counts as numeric (the spec doesn't name it), and VARIANT and
+  OPAQUE offer Count only (M4). Min/Max on String and Boolean, and DistinctCount/DistinctValue on
   enums, can be added later (the engine supports them ✅).
 - **Extend:** §9.2's local table is wrong against the engine ✅. Extend types come from the engine, typed against
   **only the input schema**: a typed `{t: Relation<(cols)>[1] | $t->extend(~c: λ)}` lambda over an **empty** model
@@ -915,7 +941,7 @@ Measured with `lambdaRelationType` ✅:
 | Where            | Form                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Lambda (slice)   | Mostly not written: accessors carry the types. **Literals are typed by column family**: INTEGER → `{_type:'integer'}`, FLOAT → `float`, DECIMAL/NUMBER → `decimal`, STRICT_DATE → `strictDate`, DATETIME → `dateTime`, ENUM → `EnumPath.VALUE`. Serialized losslessly. **One explicit type:** `->cast(@<common ancestor>)` on a FULL merged key whose types differ (§8.4 step 5), written as a `genericTypeInstance` (§8.3). |
-| Lambda (later)   | Further casts only where Cube widens types. The Concat autofix uses a real conversion (`toString()`), not `cast` (§8.8). Pure text uses full paths with parameters, e.g. `meta::pure::precisePrimitives::Varchar(15)`.                                                                                                                                                                                                       |
+| Lambda (from M4) | Further casts only where Cube widens types: Concat's Convert types writes a type-only `->cast(@<T>)` within numbers, strings or dates, with no SQL cast ✅ (`toString()` across families, later; §8.8, §11.5 Q5). Pure text uses full paths with parameters, e.g. `meta::pure::precisePrimitives::Varchar(15)`.                                                                                                              |
 | Engine responses | `rawType.fullPath` + `typeVariableValues` → `CubeType`; `multiplicity.lowerBound == 0` → `nullable` (but see §4.7 for joins).                                                                                                                                                                                                                                                                                                |
 | Saved spec       | Source schema snapshots `{name, type:{path, params?}, nullable}`; literal values `{kind, value}` (numbers as strings, booleans as JSON booleans), text that is not a valid value `{kind: 'invalid', text}`.                                                                                                                                                                                                                  |
 | UI               | Short name with parameters (`Varchar(5)`, `Numeric(10,2)`, `SmallInt`) and a nullable marker. A family icon. The full path in a tooltip.                                                                                                                                                                                                                                                                                     |
@@ -1299,7 +1325,8 @@ A resizable **side panel** on the right holds the node editor. A panel replaces 
   - Zoom, pan, minimap and fit-view come from xyflow (fixes pitfall 5).
 - **Binary ports:** one target handle per `node.ports` entry: Join's `leftTds` (upper) and `rightTds` (lower); a
   plain `BinaryNode` has `tds1`/`tds2`. Edges into binary nodes carry
-  **visible** "Left"/"Right" labels (fixes pitfall 4). Dagre does not guarantee Left sits above Right, so crossing
+  **visible** port labels from the node's `portLabels` (fixes pitfall 4): "Left"/"Right" for a Join, "First"/"Second"
+  for a Concat (M4, §11.5 Q8). Dagre does not guarantee Left sits above Right, so crossing
   edges are acceptable 📄.
 - **Node states:**
 
@@ -1374,7 +1401,8 @@ All gestures from §17.4 are kept:
    - `editorState`, for reads such as the model outline.
 
    Its edits go to its draft. A button that must change the document calls a `CubeNodeEditorState` method that
-   applies the draft first and then rebinds to the new node, as `nodeEditor.swapInputs()` does: calling
+   applies the draft first and then rebinds to the new node, as `nodeEditor.swapInputs()` and the Join and Concat
+   autofixes (`renameDuplicateColumns`, `renameConcatInput`, `restrictConcatInput`) do: calling
    `editorState.applyQuery` (or `editorState.swapInputs`) directly replaces the node under unapplied edits, so the
    panel closes and drops them. A source, which has no draft, may call an `editorState` flow that stays outside the
    undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, and owns Apply
@@ -1386,6 +1414,10 @@ All gestures from §17.4 are kept:
 
 The palette, the context menu and the canvas need nothing more: they read the core `NodeRegistry` (label, icon
 name, beta).
+
+M4's Group and Concat editors follow this contract (§11.5, Builder): Group's has the keys' multi-select and rows of
+aggregation column, function and output name; Concat's states the requirement, compares the inputs column by column,
+shows the autofix buttons when they apply, and its draft holds Convert types.
 
 ### 7.5 Join editor
 
@@ -1881,14 +1913,14 @@ DB2, SQL Server, Databricks, DuckDB, Oracle and Trino unless noted.
 | **Filter**     | `->filter({row \| …})`                                                                                                                                                                                                          | H2, PCT                                                                                                                                                            | §8.4 table                                                                                                                                                                                                                                                            |
 | **Join**       | rename temps → `->join(R, JoinKind.X, {l,r \| …})` → (FULL: coalesce extend) → `->select(~[…])`                                                                                                                                 | H2 all 4 kinds; FULL native on 9 databases, emulated on H2                                                                                                         | Engine rejects any duplicate name ✅ (hence the algorithm); `->toOne()` for SQL NULL semantics                                                                                                                                                                        |
 | Sort           | Nothing where it stands; `->sort(~a->ascending())`, or `->sort([~a->ascending(), ~b->descending()])` for several keys, just before each Limit, Drop or Slice that takes rows by the order and before the capture's limit (§8.4) | H2, PCT                                                                                                                                                            | Written where the order is used, as an ORDER BY in a subquery is lost (SQL Server rejects one without TOP). A Join, a Restrict that drops sort keys or a later Sort on all the same columns loses the order: a derived warning (`findLostSortOrders`), never an error |
-| Group          | `->groupBy(~[k…], ~[n: x \| $x.c : y \| $y->agg()])`; no keys → `->aggregate(~[…])`                                                                                                                                             | H2, PCT                                                                                                                                                            | `groupBy(~[], …)` throws NPE ✅; no aggregations → NPE (spec requires ≥ 1 anyway)                                                                                                                                                                                     |
+| Group          | `->groupBy(~[k…], ~[n: x \| $x.c : y \| $y->agg()])`, keys as listed; Count rows `n: x \| 1 : y \| $y->count()`; no keys → `->aggregate(~[…])` (M4, §11.5)                                                                      | H2, PCT                                                                                                                                                            | `groupBy(~[], …)` throws NPE ✅; no aggregations → NPE (spec requires ≥ 1 anyway)                                                                                                                                                                                     |
 | Restrict       | `->select(~[…])` listed **in input-schema order**                                                                                                                                                                               | H2, PCT                                                                                                                                                            | `select` keeps the order you list ✅                                                                                                                                                                                                                                  |
 | Rename         | one `->rename(~old, ~'new')` per mapping                                                                                                                                                                                        | H2, PCT                                                                                                                                                            | Array form returns 500 ✅                                                                                                                                                                                                                                             |
 | Distinct       | `->distinct()`, over every column (never `distinct(~[…])`, which also projects)                                                                                                                                                 | H2, PCT                                                                                                                                                            | Padded on SQL Server and Sybase IQ (database workarounds below)                                                                                                                                                                                                       |
 | Drop           | `->drop(n)`, after `->sort(<input order>)` when the input has a row order                                                                                                                                                       | H2; **fails PCT on SQL Server and DB2** (`limit m,-1`); Sybase emits the same SQL (no PCT module); Sybase IQ and MemSQL number the rows by the first sort key only | Row numbers on SQL Server, Sybase, Sybase IQ, DB2 and MemSQL (database workarounds below)                                                                                                                                                                             |
 | Limit          | `->limit(n)`, after `->sort(<input order>)` when the input has a row order                                                                                                                                                      | H2, PCT; Sybase IQ numbers the rows by the first sort key only                                                                                                     | Row numbers on Sybase IQ after a Sort on several columns (database workarounds below)                                                                                                                                                                                 |
 | Slice          | `->slice(start, stop)`, range `[start, stop)` (D5), after `->sort(<input order>)` when the input has a row order                                                                                                                | H2; **fails PCT on SQL Server** (`limit m,n`); DB2 passes; Sybase emits `limit m,n` (no PCT module); Sybase IQ numbers the rows by the first sort key only         | Row numbers on SQL Server, Sybase and Sybase IQ (database workarounds below)                                                                                                                                                                                          |
-| Concat         | `->concatenate(R)`                                                                                                                                                                                                              | H2, PCT (`UNION ALL`)                                                                                                                                              | Names, order **and precise types** must match exactly ✅. Column-count mismatch is not caught (NPE at execution) ✅ → Cube validates. Widen autofix uses a real conversion (`toString()`), not `cast`                                                                 |
+| Concat         | `<first>->concatenate(<second>)`; with Convert types, an input first casts its differing columns: `->extend(~[cube_cast: x \| $x.c->cast(@T)])->select(~[…])->rename(~cube_cast, ~c)`                                           | H2, PCT (`UNION ALL`)                                                                                                                                              | Names and order must match ✅; precise types too (D5), though the engine takes a type next to its ancestor ✅. A count mismatch compiles, typed as the shorter relation, and fails at execution (NPE) ✅ → Cube validates. Convert types: §11.5 Q5                    |
 | Difference     | **No relation function.** Rename `x→x_1`/`x_2`, keys → temps; `join(FULL)`; `extend` (keys `coalesce`; `x_valueDifference: x_1->coalesce(0)->toFloat() - x_2->coalesce(0)->toFloat()`); `select` in §7.12 order                 | Emulation H2 ✅                                                                                                                                                    | **Gap:** legacy `columnValueDifference` is TDS-only and differs from §7.12. Spec semantics kept (D5)                                                                                                                                                                  |
 | Partition      | `->extend(over(~[p…], [~s->ascending()]), ~[n: {p,w,r \| $r.c} : y \| $y->agg()])`; ranks in a separate `extend` with `{p,w,r \| $p->rank($w,$r)}`; `let`-isolated (§8.6)                                                       | H2, PCT for ranking with ORDER BY and `size()`                                                                                                                     | **Gap:** window `count()` loses its OVER clause → emit `size()` ✅. Rank without a sort fails → validation. No partition → `over([sorts])`; neither → `over([])`                                                                                                      |
 | Extend         | `->extend(~[n: row \| <expr>])`, expression as `raw` IR from `grammarToJSON_valueSpecification`                                                                                                                                 | H2                                                                                                                                                                 | Type from engine typing over an empty model (§5.7)                                                                                                                                                                                                                    |
@@ -1940,6 +1972,7 @@ database, an unknown type and a model whose outline fails to load keep the nativ
 | DistinctCount          | `$y->distinct()->count()`              | `$y->distinct()->size()`                  | Window form not covered by PCT; likely fails on Postgres, SQL Server, Databricks, Trino 💭 → fallback: `groupBy` + join back |
 | DistinctValue          | `$y->uniqueValueOnly()`                | same                                      | SQL `case when count(distinct x)=1 then max(x) end`                                                                          |
 | Sum, Average, Min, Max | `sum()`, `average()`, `min()`, `max()` | same                                      | Never emit `1.0*`: the engine already does for `average` ✅                                                                  |
+| Count rows (M4)        | `x \| 1 : y \| $y->count()`            | not yet (M5)                              | Every row, null or not (`count(1)` ✅); answers §12.2 item 3 (§11.5 Q1)                                                      |
 | Rank, DenseRank        | –                                      | `$p->rank($w,$r)`, `$p->denseRank($w,$r)` | Need ≥ 1 sort ✅; never emit a frame with ranking ✅                                                                         |
 
 **Window functions beyond the spec** (available later): `rowNumber`, `ntile`, `percentRank`,
@@ -1968,7 +2001,8 @@ database, an unknown type and a model whose outline fails to load keep the nativ
 | Exact comparison on 32-bit REAL columns                                                                              | Inline hint (§5.5); tests avoid it  |
 | Windowed DistinctCount portability                                                                                   | `groupBy` + join                    |
 | Engine ignores join/filter value types                                                                               | Cube validation                     |
-| Outer-join and aggregate multiplicity                                                                                | Cube infers nullability             |
+| Outer-join multiplicity; Sum and Average typed `[1]` ✅ (M4)                                                         | Cube infers nullability             |
+| `concatenate` of different column counts typed as the shorter relation ✅ (M4)                                       | Cube validation (§8.8)              |
 | `CHAR`/`BINARY`/view typing                                                                                          | Picker flags                        |
 | `#P`/`#I` not in the open-source engine                                                                              | Mocks (D6)                          |
 
@@ -1997,12 +2031,19 @@ Every engine defect is listed in Appendix B.
   ag-grid's own items (`getCubeGridContextMenuItems`); outside a cell, only ag-grid's. Sort by adds an ascending Sort
   on the column, Filter by an Equal on the clicked value (IsEmpty on a null cell; a timestamp's trailing `+0000`
   dropped). The node goes after the selected node, as one undo step that selects it. Nothing runs: the rows turn
-  stale. Group by comes with Group (M4).
+  stale. Group by joins them in M4 (below).
 - **When they can be used** (`getCubeGridQuickActions`, read when the menu opens): only while the rows shown are from
   the current query, no run is in progress and the cube can be changed (not read-only). Sort by is also disabled on a
   type that can't be sorted (`isSortableType`); Filter by on a non-null value whose column type has no Equal, or that
   doesn't read as one of that type. A disabled item gives its reason as its tooltip; Filter by's Equal on a Float
   column carries the floating-point hint.
+
+**M4 (§11.5):**
+
+- **"Group by "X""**, between Sort by and Filter by: a Group with the key `[X]` and Count rows (spec §7.2's default is
+  Count of X), named `Count Rows`, or `Count Rows 2`, `Count Rows 3`… when that folds to an input column's name. It is
+  added and enabled as the others are, and also disabled on a type that can't be grouped (VARIANT, OPAQUE). It changes
+  the schema, so later nodes may turn invalid (visible, undoable).
 
 **Later (M7):**
 
@@ -2150,6 +2191,12 @@ value}`. **Negations are stored as negated operators** (`NotEqual`, `NotIn`, …
   column name becomes a key; `distinct` nothing of its own; `limit` and `drop` `{size}`; `slice` `{start, stop}`,
   counting rows from 0 with `stop` excluded. Names are kept exactly (untrimmed, blanks and repeats included) for
   validation to judge. Sizes and indexes are JSON numbers, not strings: they are settings, not values.
+- **M4's transforms** (§11.5; sample `operations.cube.json`): `group` stores
+  `{columns, aggregations: [{column, function, name}]}`, both lists always written, with no `column` for Count rows
+  (`{function: 'CountRows', name}`). Every output name is stored: one left out is read as its auto-name and written
+  back with it (Q3). An unknown, empty or window-only function is kept as text, invalid, and saved again unchanged
+  (Q4). `concat` stores `{widenTypes}` (Convert types), always written, `false` included, so the key ships with the
+  kind: a missing one is a decode error.
 - **Schema snapshots** on sources make offline inference possible on load (§1: no server round trip for editing).
   On load the host re-resolves the schema and diffs it. Drift becomes a node warning, and the fresh schema wins.
 - **Forward compatibility:**
@@ -2196,8 +2243,9 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
     rule or value) becomes an **unsupported rule** that keeps its JSON, is re-saved verbatim and is invalid with
     "This filter is not supported yet."; the rest of the filter stays editable;
   - a known node whose settings can't be read (e.g. `joinType: 'CROSS'`; from M2 an unknown sort direction, or an
-    unknown key on a sort entry or rename mapping) becomes an **Unknown node** that keeps its JSON, its kind and its
-    inputs. An empty direction is still a decode error, as an empty `joinType` is;
+    unknown key on a sort entry or rename mapping; from M4 an unknown key on an aggregation, or a `widenTypes` that
+    isn't true or false) becomes an **Unknown node** that keeps its JSON, its kind and its inputs. An
+    empty direction is still a decode error, as an empty `joinType` is;
   - a missing or wrongly typed required field (no `database`, a non-array `leftColumns`, a non-boolean `nullable`,
     a known field set to `null`; unknown keys and an Unknown node's JSON keep their nulls) and a model that is not an
     object with a non-empty string `_type` are still **decode errors**. A model of a `_type` the builder can't run is
@@ -2205,8 +2253,9 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
 - **Unknown keys are kept on every object**: top level, `context`, `query`, nodes, snapshot columns and
   types, `meta`, `presentation`, width items. Rules and values are the exception above (unsupported), since ignoring
   a key such as `caseInsensitive` would change the rows; so are sort entries and rename mappings (an Unknown node,
-  M2). A future key that would change the rows on a node with no list (e.g. Distinct gaining `columns`) needs a new
-  kind or a format version, since an older reader would keep it in `rest` and ignore it (M2, §11.4). A snapshot column's unknown keys (on the column or its
+  M2), and aggregations (M4). A future key that would change the rows on a node with no list (e.g. Distinct gaining
+  `columns`) needs a new kind or a format version, since an older reader would keep it in `rest` and ignore it (M2,
+  §11.4). A snapshot column's unknown keys (on the column or its
   type) live on the source node by column name; when the host re-resolves the source they stay with the columns that
   still exist.
 - **The model is the engine's model context** as plain JSON (§6.2.2): `{_type: 'text', code}` in the slice,
@@ -2217,8 +2266,9 @@ context, after reviewing the samples; the rest are defaults shown with the sampl
   anything absent or at its default is left out (`name`, `context` before the first source, `runtime`,
   `selected` on an empty query, `schemaSnapshot` when not resolved, `filter`, `value`, `params`, `meta`,
   `presentation`, `showGraph` when true, empty `columnWidths`); `inputs` (with `null`), `joinType` and the key
-  lists are always written, as are M2's `sorts`, `columns` and `mappings`, empty ones too. A clearable setting (a
-  Limit's or Drop's `size`, a Slice's `start` and `stop`) is the exception to "at its default is left out" (M2,
+  lists are always written, as are M2's `sorts`, `columns` and `mappings` and M4's `columns`, `aggregations` and
+  `widenTypes`, empty lists and `false` too. A clearable setting (a Limit's or Drop's `size`, a Slice's `start` and
+  `stop`) is the exception to "at its default is left out" (M2,
   §11.4): it is written whenever set, its default included, and left out only when cleared, never as `null` (a decode
   error), so it reads back cleared and the panel counts clearing a default as an edit. An enumeration column's type
   is `{path, values: [...]}`. Spec JSON is always produced
@@ -2578,7 +2628,7 @@ console errors.
 | M2.0 | legend-graph types (D12)                   | Fix legend-graph's precise primitives as their own PR to master: resolve by full path as well as short name, fix the `Timestamp` path (now a relational class), deprecate the phantom `Decimal`/`Date`/`Time` precise constants, keep parameters through `getLambdaRelationType`, fix its batch variant. Then rebase `CubeType` on legend-graph's `GenericType`; the core may depend on legend-graph's metamodel (never `V1_*`); update §3.3 and Appendix A (§2.2). Needed when Cube types tables locally; no longer gates M3's sources (user, 2026-10-08, §6.8) |
 | M2   | Simple unary transforms + Join autofix     | Rename (§7.5 + collision fix; regex replaced, see Appendix A), the **Join rename autofix** (collision-free names), Restrict (input order), Sort (+ "Sort only affects output at the sink" warning), Distinct, Limit, Drop, Slice (`[start, stop)`); the database workarounds of §11.4 (row numbers for Drop and Slice on SQL Server, Sybase and Sybase IQ, for Drop on DB2, MemSQL and ClickHouse and for every Limit on Sybase IQ; a padded Distinct on SQL Server and Sybase IQ); grid quick actions (Sort by / Filter by X)                                   |
 | M3   | Entry points, sources modal, depot catalog | The direct connection first, then data products (§6.8, moved up from M9). D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                      |
-| M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family), `aggregate()` for global groups; Concat with precise-strict schema equality + widen autofix; a conformance suite comparing local inference with `lambdaRelationType` for every node type                                                                                                                                                                                                                                                                                            |
+| M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family) and Count rows, `aggregate()` for global groups, the grid's Group by; Concat with precise-strict schema equality, Convert types (a type-only cast within numbers, strings or dates) and the Rename and Restrict autofixes; a conformance suite comparing local inference with `lambdaRelationType` for every node type, exact on nullability but for each case's declared wider columns (§11.5)                                                                                      |
 | M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas)                                                                                                                                                                                                                                                                                                                                                                                      |
 | M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
 | M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -2858,7 +2908,9 @@ This subsection overrides the sections it names until they are updated (see "Sup
 | `CountRows`      | Count Rows     | no column                                       | Integer                                              | no       | `count()` on `x\|1`   |
 
 DECIMAL counts as numeric (spec §10.1 doesn't name it); `1.0 *` is never emitted. The auto-name is
-`<column> <Shown as>` (`ORDER_ID Count`), or `Count Rows`. Nullability decides rows: `FilterEmitter` guards a negation
+`<column> <Shown as>` (`ORDER_ID Count`), or `Count Rows`; one over 128 code points (from a column of 114 for Distinct
+Count and Distinct Value, 121 for Average, 123 for Count, 125 for Sum, Min and Max) is shown invalid, never cut, the
+editor's note naming the limit (settled in M4.5). Nullability decides rows: `FilterEmitter` guards a negation
 with `isEmpty` only on a nullable column (`FilterEmitter.ts:211`), and the engine types Sum and Average `[1]` ✅.
 
 **Group** (`group`, label `Group by Column`), a `UnaryNode`:
@@ -2932,9 +2984,10 @@ the open-source engine doesn't read (§6.8; its stand-in test checks its types).
 `TEST__expectEngineTyping` stays one-way for M2's tests; both use `TEST__typingDifferences` (`CubeOperationsTestUtils.ts`). The engine is created
 inside the test, never in `beforeAll`; the suite runs against the moving CI engine image, so its failure message says
 the engine's typing may have changed. Cases: the ALLTYPES families and FREIGHT, Filter, the four Joins, the Join
-autofix, every M2 operation, every aggregation × family, keys listed in a non-input order, a global aggregate, a Group
-of a Group, a Group after a LEFT join, Concats of equal, nullable-mixed and widened schemas, never a count mismatch
-(typed as the shorter relation ✅).
+autofix, every M2 operation, every aggregation × family (ALLTYPES' families, and the ones Convert types gives: Number,
+Date and the abstract Integer, Float, Decimal and String, added in M4.15), keys listed in a non-input order, a global
+aggregate, a Group of a Group, a Group after a LEFT join, Concats of equal, nullable-mixed and widened schemas, the
+Concat autofixes, never a count mismatch (typed as the shorter relation ✅).
 
 **Databases.** Every Group and Concat shape plans on 11 database types 💭, so no `CUBE_DIALECT_WORKAROUNDS` entry and
 `WORKAROUND_TYPES` unchanged (`CubeDialects.ts:110-139`); `needsDatabaseType` already walks every input. The plan-only
@@ -3014,7 +3067,7 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
   editor without settings carries Concat's autofix buttons (M4.12) before M4.13 gives it a draft; whether
   `CubeColumnPicker` keeps a stored order; a nameless saved aggregation with no auto-name (an unknown or empty function, or a column function without a column) is read as an empty name, written back as `name: ""` and invalid, its empty name reported once its function and column are valid (settled in M4.4); VARIANT, OPAQUE and enum rows (none in the fixture); the PCT manifests; Rank and DenseRank against Q4 (M5: `validateColumnAggregation` then takes the functions each use allows, so Rank stays unknown in a Group); copying Q2 and Q3 to QUESTIONS.md U12, which exists only on `cubeV1` and `cube-direct`.
 
-**Supersessions** (applied in M4.17; kept as the record of what M4 changed):
+**Supersessions** (applied in M4.17 to the sections they change; kept here as the record of what M4 changed):
 
 - D5: clarified by Q5. §4: Group and Concat entries; §4.2: a widened Concat column takes the ancestor type. §7.2:
   Concat's ports read First and Second; §7.4: the Group and Concat editors.
@@ -3048,7 +3101,7 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
 | Engine semantics drift: 55 relational, compiler or relation commits in 30 days; CI uses the moving `:snapshot` image ✅           | Golden tests break, or semantics change silently | Assert semantics (rows, types), not SQL text; log the engine commit per run; keep the window-regression and dialect harnesses as tests; pin the image digest if churn hurts |
 | The engine does not type-check `==`, `in` or join keys ✅                                                                         | Runtime database errors or silent coercion       | Mandatory Cube validation (§5.4, §5.6) with negative acceptance cases                                                                                                       |
 | Window extend + filter gives wrong rows; QUALIFY silently dropped on 5 dialects ✅                                                | Wrong numbers in production                      | `let` isolation from M5 onward; the dialect harness; file engine issues                                                                                                     |
-| Engine multiplicities are wrong for outer joins and aggregates ✅                                                                 | Wrong operator offers, wrong grid nulls          | Cube infers nullability; conformance allows Cube ⊇ engine only                                                                                                              |
+| Engine multiplicities are wrong for outer joins, and for Sum and Average ✅                                                       | Wrong operator offers, wrong grid nulls          | Cube infers nullability; the conformance suite is exact on nullability but for each case's declared wider columns (§11.5 Q7)                                                |
 | Engine typing bugs: `CHAR(n)`→`Varchar(1)`, `BINARY` 500, views `Varchar(0)`, `OTHER`→`String` with numbers, CLOB invalid JSON ✅ | Bad types, crashes                               | Picker flags; no length validation; the Cube fixture avoids them; a 200 with an unparseable body is treated as an error                                                     |
 | Studio library defects (batch `result`/`results` until #5593, lossy relation-type metadata, transformer bugs) ✅📄                | Cube built on broken APIs                        | Cube's own `v1/` seam (D8); upstream PRs separately                                                                                                                         |
 | The AGENTS.md V1 rule vs repo reality 📄                                                                                          | Review friction                                  | V1 symbols only under `legend-cube-builder/src/graph-manager/protocol/pure/v1/`, engine-backed tests excepted (§3.7); propose an AGENTS.md clarification                    |
@@ -3074,7 +3127,8 @@ open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
    or Slice that takes rows by it, and before the capture's limit. It warns only when the order is lost (a Join, a
    Restrict that drops sort keys, a later Sort on all the same columns); the warning is derived, never a validation
    error, so Execute stays enabled.
-3. **Count rows:** add an explicit "Count rows" aggregation alongside the non-null Count?
+3. **Count rows:** answered in M4 (§11.5 Q1). Cube adds a Count rows aggregation with no column alongside the
+   non-null Count: `x|1 : y|$y->count()`, saved as `{function: 'CountRows', name}`. The grid's Group by adds it.
 4. **Views and tables with `BINARY` columns** in the picker. v1 default (§6.2.6): views hidden; `BINARY` tables shown as "unavailable" and not selectable. Revisit with the M3 sources modal.
 5. **SNAPSHOT versions** in the depot picker: allow, at a recompile on every call, or resolve to a concrete version?
 6. **Multiple databases or runtimes per query:** when, and with what engine support? Today it is a two-step plan with
@@ -3113,11 +3167,12 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 | §6.2–6.7             | Superseded       | §6 of this plan                                                                                                                                                                                                                                                                                             |
 | §7.0, `V1:` lines    | Replaced         | Saved shapes (§10.3) + emission table (§8.8)                                                                                                                                                                                                                                                                |
 | §7.1 (M2)            | Extended         | Cube adds `Sort column "<c>" of type <type> cannot be sorted.` (VARIANT, OPAQUE), then `Sort columns cannot have duplicates.` One `isSortableType` also serves the editor's picker, the grid's Sort by and the row-number fallback's default key. The direction messages are unreachable                    |
+| §7.2 (M4)            | Extended         | The grid's Group by adds Count rows, not Count of X; no keys reads `Aggregate all rows`; VARIANT and OPAQUE keys are refused (`… cannot be grouped.`); keys keep the stored order, which the engine follows ✅ (§11.5)                                                                                      |
 | §7.4                 | Kept + labels    | Emit `select` in input order; the editor stores picks in input order too. The spec names no labels: Cube's messages use `Columns` (empty, duplicates) and `Column` (unnamed, not in the input) (M2)                                                                                                         |
 | §7.5 (M2)            | Fixed            | `isValidColumnName` replaces the regex: non-empty, trimmed, no `"`, `\` or control characters, ≤ 128 code points 💭. Spaces, hyphens, `'` and unicode work; `"` breaks at execution, `\` later references ✅. New names may not equal untouched input columns or each other, in any case (`foldColumnName`) |
 | §7.7–7.9 (M2)        | Changed          | No `arguments.length` trick: no JS defaults, so an explicit `undefined` stays cleared and invalid, saved and loaded too (§10.3); the defaults (10; 10 and 20) live only in the registry's `create(id)`. Size 0, Drop 0 and an empty Slice stay invalid, though the engine takes them (M2)                   |
 | §7.9, §17.9          | Changed (D5)     | `[start, stop)`; help-text copy fixed (counting from 0). The canvas reads `Take rows 10 to 20 (20 excluded)`, or `Take rows 10 to (blank)` without a stop; the palette label stays `Take rows <x> to <y>` (M2, §11.4)                                                                                       |
-| §7.10 (M4)           | Extended         | Precise-strict equality; reject with a precise message; widen autofix through real conversions                                                                                                                                                                                                              |
+| §7.10 (M4)           | Extended         | Precise-strict equality, a type next to its ancestor too; Cube's precise messages after the spec's; ports First and Second; a setting where the spec says "no state": Convert types, a type-only cast within numbers, strings or dates, not real conversions; Rename and Restrict autofixes (§11.5)         |
 | §7.11                | Kept + extended  | FULL OUTER; nullability and merged-key rules (§4.7); step 4 per §5.4. Autofix (M2): `c_1`/`c_2`, then `c_<side>_2`… when taken in any case, ≤ 128 code points; the key lists rewritten through the renames; offered only when the duplicate rule is the join's only error                                   |
 | §7.12 (M6)           | Kept, emulated   | Semantics as the spec; join and null rules written down                                                                                                                                                                                                                                                     |
 | §7.13 (M5)           | Extended         | Rank/DenseRank need ≥ 1 sort; Count emitted as `size()`; running default frame (D5)                                                                                                                                                                                                                         |
@@ -3128,16 +3183,20 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 | §8.2, §8.3 (M1.5)    | **Restricted**   | A StartsWith/EndsWith/Contains value (or a negation's) may not contain `\`: the engine does not escape it in LIKE patterns, so the rows would be wrong (§8.4, Appendix B). Temporary; lifted when the engine is fixed. User OK 2026-10-06 (option a: refuse, not pre-escape)                                |
 | §8.4                 | Replaced         | Emission (§8.4 of this plan) + saved filter shape (§10.3). NULL behaviour documented (D4)                                                                                                                                                                                                                   |
 | §9 (M6)              | Replaced         | Pure expressions stored as JSON (+ display text); typed by the engine; §9.2 table becomes help only, with Pure names                                                                                                                                                                                        |
+| §10 (M4)             | Extended         | Count rows, an aggregation with no column (§12.2 item 3); DECIMAL counts as numeric; VARIANT and OPAQUE offer Count only; an unknown, empty or window-only function is kept on the Group, invalid, and saved again unchanged (§11.5 Q4)                                                                     |
 | §10.1                | Kept (for now)   | Per-family view; extend later (Min/Max on strings etc.)                                                                                                                                                                                                                                                     |
-| §10.2                | **Replaced**     | §5.7 measured table; every aggregate except Count is nullable                                                                                                                                                                                                                                               |
+| §10.2                | **Replaced**     | §5.7 measured table; Count, DistinctCount and Count rows are not nullable, every other aggregate is (M4)                                                                                                                                                                                                    |
+| §10.3 (M4)           | Changed          | Output names are always stored: the editor fills in the auto-name and follows column and function changes until the user edits it; a saved aggregation with no name gets it on read. Count rows' auto-name is `Count Rows` (§11.5 Q3)                                                                       |
 | §11.1                | Idea kept        | `CubeEngine` port (§8.7)                                                                                                                                                                                                                                                                                    |
 | §11.2–11.3           | Superseded       | –                                                                                                                                                                                                                                                                                                           |
 | §11.4                | Superseded       | Host HTTP client; keep "truncate and show trace link" behaviour via host                                                                                                                                                                                                                                    |
 | §12–13               | Idea kept        | §9 of this plan; lambda-derived drill-down; `limit + 1`; typed group keys; §21 fixes                                                                                                                                                                                                                        |
-| §12.4 (M2)           | Changed          | Client-side grid (spec: server-side mode only): Sort by and Filter by first, then ag-grid's items until M7; no icons; Group by in M4, Drilldown in M7. They add a node after the selected one, never run, and are disabled on stale rows, during a run, read-only, or on a type or value they can't use     |
+| §12.4 (M2, M4)       | Changed          | Client-side grid (spec: server-side mode only): Sort by, Group by (M4, §9) and Filter by, then ag-grid's items until M7; no icons; Drilldown in M7. They add a node after the selected one, never run, and are disabled on stale rows, during a run, read-only, or on a type or value they can't use        |
 | §14, §15             | Superseded / out | §10; publishing out of scope. §14.4 "Save disabled while invalid": Export spec is allowed for invalid queries; server Save gating decided in M8 (§10.3)                                                                                                                                                     |
 | §16                  | Kept + additions | §4.11                                                                                                                                                                                                                                                                                                       |
-| §17                  | Guidance         | §7; panel instead of popover; visible Left/Right; xyflow + dagre; deep links as path params (M3/M8). §17.11: Execute needs only the capture subtree to be valid (§10.3). §17.7: uncoercible text is kept as an invalid value with a type message (§4.9), and STRING values are not trimmed                  |
+| §17                  | Guidance         | §7; panel instead of popover; visible Left/Right, First/Second; xyflow + dagre; deep links as path params (M3/M8). §17.11: Execute needs only the capture subtree to be valid (§10.3). §17.7: uncoercible text is kept as an invalid value with a type message (§4.9), and STRING values are not trimmed    |
+| §17.6 (M4)           | Changed          | Group keys stored in input order, as Restrict's; 'Add aggregation' never disabled (a column can be aggregated several ways); Concat's editor, "Nothing" in the spec, has a comparison table, the autofix buttons and Convert types (§11.5)                                                                  |
+| §17.9 (M4)           | Changed          | Concat's help text: "Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types." (§11.5 Q8)                                                                                      |
 | §19.1–19.3           | Superseded       | §3 (two packages), §8 (relation functions, not `meta::pure::tds::*`)                                                                                                                                                                                                                                        |
 | §20                  | Idea kept        | §11 (headless first; join and filter in M1; persistence last)                                                                                                                                                                                                                                               |
 | Appendix C.4         | Replaced         | §8.5 lambda + relation type; §11.2 acceptance                                                                                                                                                                                                                                                               |
@@ -3177,10 +3236,12 @@ The user accepted the departures from the spec's guidance sections (§14.4, §17
 - `CHAR(n)` → `Varchar(1)` (`RelationalCompilerExtension.java:1030`).
 - `BINARY`/`VARBINARY` give a "Match failure" that kills the table accessor.
 - View columns are typed `Varchar(0)`.
-- Outer joins don't widen multiplicity; aggregates are reported `[1]` but can be null. A consequence: `not(…)` on a
-  column NULL-padded by an outer join is rendered without its NULL branch and drops those rows, so Cube guards every
-  negation of a nullable column with `isEmpty` (§8.4).
-- NPEs: `groupBy(~[], …)`, `groupBy` with no aggregations, `concatenate` with a column-count mismatch.
+- Outer joins don't widen multiplicity; Sum and Average are reported `[1]` but can be null (an all-null group's Sum ✅;
+  Count, DistinctCount and Count rows are rightly `[1]`, Min, Max and DistinctValue `[0..1]`, M4). A consequence:
+  `not(…)` on a column NULL-padded by an outer join is rendered without its NULL branch and drops those rows, so Cube
+  guards every negation of a nullable column with `isEmpty` (§8.4).
+- NPEs: `groupBy(~[], …)`, `groupBy` with no aggregations, `concatenate` with a column-count mismatch, which compiles,
+  typed as the shorter relation ✅, and fails only at execution (M4).
 - `rank` without ORDER BY compiles. Mixing FuncColSpec and AggColSpec in one `extend` throws a ClassCastException.
   `if()` drops type parameters ("Wrong type variables count").
 - A duplicate column from `rename` (to a name the relation has) or `select(~[A, A])` fails as an HTTP 500,
