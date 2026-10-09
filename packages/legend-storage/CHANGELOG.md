@@ -1,5 +1,11 @@
 # @finos/legend-storage
 
+## 3.0.154
+
+### Patch Changes
+
+- [#5639](https://github.com/finos/legend-studio/pull/5639) [`2389939`](https://github.com/finos/legend-studio/commit/23899390fd68c22c8a120e9280c73d03411b4955) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated project package versions
+
 ## 3.0.153
 
 ## 3.0.152

@@ -1,5 +1,15 @@
 # @finos/legend-shared
 
+## 11.0.32
+
+### Patch Changes
+
+- [#5620](https://github.com/finos/legend-studio/pull/5620) [`1983edd`](https://github.com/finos/legend-studio/commit/1983edd0739f4cafd40adf51716c83a7c8db7ee9) ([@OmGupta-GS2038](https://github.com/OmGupta-GS2038)) - Add `readSSEStream` to `@finos/legend-shared`: a protocol-agnostic helper that turns a `fetch` response body into a sequence of Server-Sent Event `data:` payloads (blank-line event framing, CRLF normalization, partial-tail carry-over, `[DONE]`/keep-alive skipping), leaving payload parsing entirely to the caller.
+
+  Add `@finos/legend-lego/sse-chat`: `ThinkingStepsPanel`, a presentation-only, pre-classified progress stepper (with `SSEThinkingStep`/`SSEThinkingStepStatus` types) for any chat surface whose backend streams structured progress events over SSE.
+
+- [#5639](https://github.com/finos/legend-studio/pull/5639) [`2389939`](https://github.com/finos/legend-studio/commit/23899390fd68c22c8a120e9280c73d03411b4955) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated project package versions
+
 ## 11.0.31
 
 ## 11.0.30

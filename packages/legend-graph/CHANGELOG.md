@@ -1,5 +1,13 @@
 # @finos/legend-graph
 
+## 32.7.5
+
+### Patch Changes
+
+- [#5632](https://github.com/finos/legend-studio/pull/5632) [`cef3773`](https://github.com/finos/legend-studio/commit/cef3773810f421baea52a73f31a92456e166baa7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Include the engine's error message (e.g. the compilation or parser error) in errors thrown by the engine test support helpers, instead of only the HTTP status.
+
+- [#5642](https://github.com/finos/legend-studio/pull/5642) [`d36aefb`](https://github.com/finos/legend-studio/commit/d36aefbfcb7ba7edd74e0c6a19810092598b76c6) ([@kelly-thai](https://github.com/kelly-thai)) - Adding ProdDataProductOverride property to studio roundtrip
+
 ## 32.7.4
 
 ### Patch Changes

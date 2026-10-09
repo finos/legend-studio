@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-diagram-studio
 
+## 0.0.100
+
+### Patch Changes
+
+- [#5643](https://github.com/finos/legend-studio/pull/5643) [`d1c3f3a`](https://github.com/finos/legend-studio/commit/d1c3f3ae6d2cf4e05dc798460d4253543cdd1cb7) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Allow the view, pan, and zoom tools in the diagram editor toolbar to be used in read-only mode (e.g. when viewing a project), since they only change how the diagram is displayed.
+
 ## 0.0.99
 
 ## 0.0.98

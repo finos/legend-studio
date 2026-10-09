@@ -1,5 +1,11 @@
 # @finos/stylelint-config-legend-studio
 
+## 3.0.61
+
+### Patch Changes
+
+- [#5639](https://github.com/finos/legend-studio/pull/5639) [`2389939`](https://github.com/finos/legend-studio/commit/23899390fd68c22c8a120e9280c73d03411b4955) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated project package versions
+
 ## 3.0.60
 
 ## 3.0.59

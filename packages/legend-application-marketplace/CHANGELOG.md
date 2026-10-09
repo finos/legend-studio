@@ -1,5 +1,11 @@
 # @finos/legend-application-marketplace
 
+## 0.5.5
+
+### Patch Changes
+
+- [#5636](https://github.com/finos/legend-studio/pull/5636) [`104a011`](https://github.com/finos/legend-studio/commit/104a0112d46a315420c91900c893da00cc7455cb) ([@deekshith98](https://github.com/deekshith98)) - Marketplace: home page and DataSpaces tab search/autosuggest now query DataSpaces only, drop the stale Lakehouse Access "NEW" badge, and refresh both tabs' intro banners to reflect the split. The DataSpaces tab's banner now links directly to the Lakehouse Access tab, its result count reads "DataSpaces", and "Dataspaces" capitalization is unified to "DataSpaces" throughout. The legacy dataspace URL moves from `/dataProduct/legacy` to `/dataspace`, with the old path redirecting so existing links keep working — including Legend Query's "Open Data Space" button, which now points directly at the new `/dataspace` URL.
+
 ## 0.5.4
 
 ### Patch Changes
