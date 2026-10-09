@@ -33,7 +33,6 @@ import { runInAction } from 'mobx';
 import {
   TerminalResult,
   RecommendationSource,
-  SortOrder,
   type CartItem,
 } from '@finos/legend-server-marketplace';
 import type { LegendMarketplaceBaseStore } from '../../../stores/LegendMarketplaceBaseStore.js';
@@ -943,74 +942,18 @@ describe('RecommendedAddOnsModal - multi-source content', () => {
   });
 });
 
-// ─── Search functionality (terminal type – server-side search) ─────────────────
+// ─── Search functionality (terminal type – client-side search) ─────────────────
 
-describe('RecommendedAddOnsModal - server-side search (terminal type)', () => {
-  test('triggers searchVendorAddons when Enter is pressed with a search term', async () => {
+describe('RecommendedAddOnsModal - search (terminal type)', () => {
+  test('filters items by search term in client-side search (terminal flow)', async () => {
     const terminal = makeTerminal();
-    const addon = makeAddOn({ id: 10 });
-    const searchSpy = createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'searchVendorAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [],
-      total_count: 0,
-      page: 1,
-      page_size: 300,
-    });
+    const addon = makeAddOn({ id: 10, productName: 'Search Result Addon' });
+    const otherAddon = makeAddOn({ id: 11, productName: 'Other Addon' });
 
     render(
       <RecommendedAddOnsModal
         terminal={terminal}
-        recommendedItems={[addon]}
-        message=""
-        showModal={true}
-        setShowModal={jest.fn()}
-      />,
-    );
-
-    const input = screen.getByPlaceholderText('Search by Add-On name...');
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'Test' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
-    });
-
-    await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalledWith(
-        MOCK__baseStore.cartStore.cartUser,
-        terminal.providerName,
-        expect.objectContaining({
-          page: 1,
-          page_size: 300,
-          search: 'Test',
-        }),
-        expect.anything(),
-      );
-    });
-  });
-
-  test('shows search results after searching (terminal type)', async () => {
-    const terminal = makeTerminal();
-    const addon = makeAddOn({ id: 10 });
-    const searchResult = makeAddOn({
-      id: 20,
-      productName: 'Search Result Addon',
-    });
-
-    createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'searchVendorAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [searchResult],
-      total_count: 1,
-      page: 1,
-      page_size: 300,
-    });
-
-    render(
-      <RecommendedAddOnsModal
-        terminal={terminal}
-        recommendedItems={[addon]}
+        recommendedItems={[addon, otherAddon]}
         message=""
         showModal={true}
         setShowModal={jest.fn()}
@@ -1020,27 +963,17 @@ describe('RecommendedAddOnsModal - server-side search (terminal type)', () => {
     const input = screen.getByPlaceholderText('Search by Add-On name...');
     await act(async () => {
       fireEvent.change(input, { target: { value: 'Search Result' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
     });
 
     await waitFor(() => {
       expect(screen.getByText('Search Result Addon')).toBeDefined();
+      expect(screen.queryByText('Other Addon')).toBeNull();
     });
   });
 
   test('shows "No items match" when search returns empty', async () => {
     const terminal = makeTerminal();
     const addon = makeAddOn({ id: 10 });
-
-    createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'searchVendorAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [],
-      total_count: 0,
-      page: 1,
-      page_size: 300,
-    });
 
     render(
       <RecommendedAddOnsModal
@@ -1055,7 +988,6 @@ describe('RecommendedAddOnsModal - server-side search (terminal type)', () => {
     const input = screen.getByPlaceholderText('Search by Add-On name...');
     await act(async () => {
       fireEvent.change(input, { target: { value: 'ZZZ' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
     });
 
     await waitFor(() => {
@@ -1069,18 +1001,6 @@ describe('RecommendedAddOnsModal - server-side search (terminal type)', () => {
     const terminal = makeTerminal();
     const addon = makeAddOn({ id: 10, productName: 'Original Addon' });
 
-    createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'searchVendorAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [
-        makeAddOn({ id: 20, productName: 'Search Result Addon' }),
-      ],
-      total_count: 1,
-      page: 1,
-      page_size: 300,
-    });
-
     render(
       <RecommendedAddOnsModal
         terminal={terminal}
@@ -1093,12 +1013,11 @@ describe('RecommendedAddOnsModal - server-side search (terminal type)', () => {
 
     const input = screen.getByPlaceholderText('Search by Add-On name...');
     await act(async () => {
-      fireEvent.change(input, { target: { value: 'x' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
+      fireEvent.change(input, { target: { value: 'ZZZ' } });
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Search Result Addon')).toBeDefined();
+      expect(screen.queryByText('Original Addon')).toBeNull();
     });
 
     // Clear input
@@ -1953,51 +1872,6 @@ describe('RecommendedAddOnsModal - Action filter status branches', () => {
   });
 });
 
-// ─── triggerSearch AbortError handling ────────────────────────────────────────
-
-describe('RecommendedAddOnsModal - triggerSearch AbortError handling', () => {
-  test('silently ignores an AbortError from a superseded search request', async () => {
-    const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
-    const addon = makeAddOn({ id: 10, productName: 'Addon Alpha' });
-
-    const abortError = new Error('The operation was aborted');
-    abortError.name = 'AbortError';
-    const searchSpy = createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'searchVendorAddons',
-    ).mockRejectedValue(abortError);
-    const logSpy = createSpy(
-      MOCK__baseStore.applicationStore.logService,
-      'error',
-    );
-
-    render(
-      <RecommendedAddOnsModal
-        terminal={terminal}
-        recommendedItems={[addon]}
-        message=""
-        showModal={true}
-        setShowModal={jest.fn()}
-      />,
-    );
-
-    const input = screen.getByPlaceholderText('Search by Add-On name...');
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'Alpha' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
-    });
-
-    await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalled();
-    });
-
-    // AbortError is swallowed silently: nothing gets logged and the original
-    // items remain displayed (search results are left untouched).
-    expect(logSpy).not.toHaveBeenCalled();
-    expect(screen.getByText('Addon Alpha')).toBeDefined();
-  });
-});
-
 // ─── MultiSourceContent empty state ───────────────────────────────────────────
 
 describe('RecommendedAddOnsModal - MultiSourceContent empty state', () => {
@@ -2082,66 +1956,6 @@ describe('RecommendedAddOnsModal - handleAssociateTerminal unexpected rejection'
       expect(alertSpy).toHaveBeenCalledWith(expect.any(Error));
       expect(setShowModal).not.toHaveBeenCalledWith(false);
     });
-  });
-});
-
-// ─── handleSortChange re-triggering an active server-side search ─────────────
-
-describe('RecommendedAddOnsModal - sort change with active server search', () => {
-  test('re-triggers the server-side vendor add-on search with the new sort order', async () => {
-    const terminal = makeTerminal({ productName: 'Bloomberg Terminal' });
-    const addon = makeAddOn({ id: 10, productName: 'Addon Alpha' });
-
-    const searchSpy = createSpy(
-      MOCK__baseStore.marketplaceServerClient,
-      'searchVendorAddons',
-    ).mockResolvedValue({
-      marketplace_addons: [],
-      total_count: 0,
-      page: 1,
-      page_size: 300,
-    });
-
-    render(
-      <RecommendedAddOnsModal
-        terminal={terminal}
-        recommendedItems={[addon]}
-        message=""
-        showModal={true}
-        setShowModal={jest.fn()}
-      />,
-    );
-
-    const input = screen.getByPlaceholderText('Search by Add-On name...');
-    await act(async () => {
-      fireEvent.change(input, { target: { value: 'Alpha' } });
-      fireEvent.keyDown(input, { key: 'Enter' });
-    });
-
-    await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalledTimes(1);
-    });
-
-    // Change the sort order while a server search is active; this should
-    // re-trigger the server-side search with the new sort order applied.
-    const comboboxes = screen.getAllByRole('combobox');
-    await act(async () => {
-      fireEvent.mouseDown(comboboxes[0] as HTMLElement);
-    });
-    const lowToHighOption = await screen.findByText('Low to High');
-    await act(async () => {
-      fireEvent.click(lowToHighOption);
-    });
-
-    await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalledTimes(2);
-    });
-    expect(searchSpy).toHaveBeenLastCalledWith(
-      expect.anything(),
-      expect.anything(),
-      expect.objectContaining({ sort_by_price: SortOrder.ASC }),
-      expect.anything(),
-    );
   });
 });
 
