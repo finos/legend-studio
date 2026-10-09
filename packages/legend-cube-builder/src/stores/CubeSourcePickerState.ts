@@ -131,14 +131,15 @@ export class CubeSourcePickerState {
 
   /**
    * Opens the dialog on the cube's own tab, else the tab asked for, else the
-   * one open last. Does nothing while the cube is read-only.
+   * one open last. Does nothing while the cube is read-only, or when the
+   * host doesn't serve the cube's kind of source, so no tab could add one.
    */
   open(tabKey?: CubeSourcePickerTabKey): void {
-    if (this.editorState.readOnly) {
+    const { fixedTab } = this;
+    if (this.editorState.readOnly || (fixedTab && !fixedTab.isAvailable)) {
       return;
     }
     this.isOpen = true;
-    const fixedTab = this.fixedTab?.isAvailable ? this.fixedTab : undefined;
     const tab =
       fixedTab ??
       this.tabs.find((candidate) => candidate.key === tabKey) ??

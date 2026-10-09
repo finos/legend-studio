@@ -257,6 +257,9 @@ describe('Source dialog tabs', () => {
     ]);
     expect(state.canAddNode('relational')).toBe(false);
     expect(state.canAddNode('dataProductAccessPoint')).toBe(false);
+    // the toolbar's Add table opens nothing either
+    state.sourcePicker.open();
+    expect(state.sourcePicker.isOpen).toBe(false);
   });
 
   test('Opens nothing on a read-only cube', () => {
