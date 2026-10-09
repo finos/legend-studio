@@ -16,6 +16,8 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  buildSchemasAndValidity,
+  createNodeRegistry,
   decodeCubeSpec,
   QueryEmitter,
   RelationalTableSource,
@@ -24,7 +26,11 @@ import {
 import { readdirSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { CUBE_ENGINE_TEST__compile } from '../__test-utils__/CubeEngineTestSupport.js';
-import { TEST__expectEngineTyping } from '../__test-utils__/CubeOperationsTestUtils.js';
+import {
+  TEST__emittableNodes,
+  TEST__engineSchemas,
+  TEST__typingDifferences,
+} from '../__test-utils__/CubeOperationsTestUtils.js';
 import { getRuntimesForDatabase } from '../graph-manager/CubeModelOutlineHelper.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
@@ -35,8 +41,8 @@ import {
 
 // The core's sample specs (PLAN §10.3) are real cubes: their model is the
 // Cube Northwind fixture, it compiles, each saved schema is what the engine
-// gives the table now (PLAN §6.2.4), and the node each runs types on the
-// engine as Cube infers it
+// gives the table now (PLAN §6.2.4), and every node of each that can run types
+// on the engine as Cube infers it
 
 const FIXTURES = resolve(
   __dirname,
@@ -133,12 +139,25 @@ describe('Saved spec samples, on the engine', () => {
   });
 
   test.each(RUNNABLE)(
-    'Types the node %s runs as Cube infers it',
+    'Types every node %s can run as Cube infers it',
     async (file) => {
-      await TEST__expectEngineTyping(
-        engine,
-        decodeCubeSpec(read(file)).document.query,
+      const { query } = decodeCubeSpec(read(file)).document;
+      const targets = TEST__emittableNodes(file, query);
+      expect(targets.map(({ nodeId }) => nodeId)).toContain(query.selected);
+      const typed = await TEST__engineSchemas(engine, targets);
+      const { schemas } = buildSchemasAndValidity(
+        query,
+        createNodeRegistry().queryRules,
       );
+      // one-way: the samples hold outer joins, whose padded columns the
+      // engine misreports (PLAN §4.7)
+      expect(
+        targets.flatMap(({ key, nodeId }) =>
+          TEST__typingDifferences(key, schemas.get(nodeId), typed.get(key), {
+            oneWay: true,
+          }),
+        ),
+      ).toEqual([]);
     },
   );
 });

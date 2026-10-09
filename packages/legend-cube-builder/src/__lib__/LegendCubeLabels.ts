@@ -135,6 +135,8 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   UNREADABLE_VALUE: "This value can't be used in a filter.",
   notSortable: (typeName: string): string =>
     `Values of type ${typeName} can't be sorted.`,
+  notGroupable: (typeName: string): string =>
+    `Values of type ${typeName} can't be grouped.`,
   notComparable: (typeName: string): string =>
     `Values of type ${typeName} can't be compared.`,
 };
@@ -142,6 +144,10 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
 /** Beside a condition comparing a floating-point column for equality (R133) */
 export const FILTER_FLOAT_COMPARISON_HINT =
   'exact comparison on floating-point columns may not match';
+
+/** The Filter and Join editors' warning on a column that can hold both dates and timestamps (PLAN §11.5) */
+export const DATE_OR_TIMESTAMP_WARNING =
+  'this column can hold both dates and timestamps, as Convert types made it a Date: a date reads as midnight, so it matches a timestamp only at midnight';
 
 /** The Filter editor's note on NULLs (D4): negated conditions keep them */
 export const FILTER_NULL_NOTE =
@@ -179,6 +185,51 @@ export const SLICE_RANGE_HINT =
 /** The Distinct editor's text: it has nothing to set (spec §17.6) */
 export const DISTINCT_EDITOR_TEXT =
   'Keeps one row of each set of identical rows. There is nothing to set.';
+
+/** The Concat editor's text: what Concat requires of its inputs (PLAN §11.5) */
+export const CONCAT_EDITOR_TEXT =
+  'Gives the rows of both inputs, keeping duplicates, in no particular order. Both must have the same columns, matched by position: the same names, in the same order, with the same types.';
+
+/** What the Concat editor's Convert types setting does (PLAN §11.5, Q5) */
+export const CONCAT_CONVERT_TYPES_HINT =
+  'Converts types that differ within numbers, strings or dates to the type they share, e.g. Varchar(15) and Varchar(40) to String.';
+
+/** What the Concat editor says when Convert types would make its inputs match (PLAN §11.5, Q5) */
+export const CONCAT_CONVERT_FIX_TEXT =
+  'The types differ, but converting them to the type they share makes the inputs match:';
+export const CONCAT_CONVERT_FIX_TITLE = 'Tick Convert types; Apply stores it';
+
+/** What the Concat editor's Rename autofix says it will do (PLAN §11.5, Q6) */
+export const CONCAT_RENAME_FIX_TEXT =
+  "The second input's columns can take the first input's names:";
+export const CONCAT_RENAME_FIX_TITLE =
+  "Add a Rename before the second input that gives these columns the first input's names, as one step to undo";
+
+/** What the Concat editor's Restrict autofix says it will do, for the input it drops columns from (PLAN §11.5, Q6) */
+export const getConcatRestrictFixText = (
+  input: string,
+  other: string,
+): string =>
+  `The ${input} input has columns the ${other} doesn't, which can be dropped:`;
+export const getConcatRestrictFixTitle = (
+  input: string,
+  other: string,
+): string =>
+  `Add a Restrict before the ${input} input that keeps only the ${other} input's columns, as one step to undo`;
+
+/** The Concat editor's warning on columns whose real type Cube doesn't know (PLAN §8.7) */
+export const getConcatUntypedWarning = (columns: readonly string[]): string =>
+  `${CUBE_TABLE_FLAG_LABELS[CubeTableFlag.TYPE_UNKNOWN].label}: Cube doesn't know the real type of ${columns.join(', ')}, so the database may not combine the inputs' values`;
+
+/** Why the Group editor can't take a column as a key (PLAN §11.5) */
+export const CUBE_GROUP_COLUMN_DISABLED_REASON = "can't be grouped";
+
+/** What the Group editor says about its aggregations (PLAN §11.5; Count counts non-empty values, D4) */
+export const GROUP_EDITOR_NOTES = [
+  'Count counts the values that are not empty; Count Rows counts every row.',
+  'Distinct Value is the value when the group has exactly one distinct value that is not empty, and empty otherwise.',
+  'With no group column, the result is one row, even when there are no rows.',
+];
 
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =

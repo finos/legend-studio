@@ -48,6 +48,7 @@ import { CubePalette, PALETTE_EMPTY_HINT } from '../CubePalette.js';
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 const TABLE = 'Relational Database Table';
 const SORT = 'Sort by Column';
+const GROUP = 'Group by Column';
 const FILTER = 'Filter by Column';
 const RESTRICT = 'Restrict Columns';
 const RENAME = 'Rename Columns';
@@ -55,6 +56,7 @@ const DISTINCT = 'Distinct Values';
 const DROP = 'Drop first <x> rows';
 const LIMIT = 'Take first <x> rows';
 const SLICE = 'Take rows <x> to <y>';
+const CONCAT = 'Concatenate Another Input';
 const JOIN = 'Join Another Input';
 
 const render = async (
@@ -145,6 +147,7 @@ describe('Cube palette', () => {
       'Data Product (BETA)',
       'separator',
       SORT,
+      GROUP,
       FILTER,
       RESTRICT,
       RENAME,
@@ -152,6 +155,7 @@ describe('Cube palette', () => {
       DROP,
       LIMIT,
       SLICE,
+      CONCAT,
       JOIN,
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();

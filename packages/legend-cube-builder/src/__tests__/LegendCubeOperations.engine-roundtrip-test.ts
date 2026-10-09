@@ -16,15 +16,22 @@
 
 import { beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  type ColumnAggregation,
   ColumnComparisonFilter,
+  Concat,
   Connection,
   CubeDocument,
   Distinct,
   Drop,
   buildSchemasAndValidity,
+  canRenameConcatInput,
   createNodeRegistry,
   Filter,
   FilterOperator,
+  getAvailableAggregations,
+  Group,
+  NotFilter,
   fixJoinDuplicates,
   Join,
   JoinType,
@@ -35,6 +42,7 @@ import {
   QueryEmitter,
   type RelationalTableSource,
   Rename,
+  renameConcatInput,
   Restrict,
   Slice,
   Sort,
@@ -51,6 +59,7 @@ import {
   TEST__chainOf,
   TEST__columnValues,
   TEST__expectEngineTyping,
+  TEST__inferredSchema,
   TEST__northwindTable,
   TEST__resolveSources,
   TEST__runQuery,
@@ -355,7 +364,7 @@ describe('Grid quick actions, on the engine', () => {
   const applyAndRun = async (
     state: CubeEditorState,
     column: string,
-    index: 0 | 1,
+    index: 0 | 1 | 2,
     matches: (cell: unknown) => boolean,
   ): Promise<void> => {
     const result = state.execution.result;
@@ -387,7 +396,7 @@ describe('Grid quick actions, on the engine', () => {
 
   test("Filters on the clicked cell's value: the 77 French orders", async () => {
     const state = await ranOrders();
-    await applyAndRun(state, 'SHIP_COUNTRY', 1, (cell) => cell === 'France');
+    await applyAndRun(state, 'SHIP_COUNTRY', 2, (cell) => cell === 'France');
     const countries = shownValues(state, 'SHIP_COUNTRY');
     expect(countries).toHaveLength(77);
     expect(new Set(countries)).toEqual(new Set(['France']));
@@ -395,10 +404,25 @@ describe('Grid quick actions, on the engine', () => {
 
   test('Filters on a null cell with Is Empty: the 507 orders with no ship region', async () => {
     const state = await ranOrders();
-    await applyAndRun(state, 'SHIP_REGION', 1, (cell) => cell === null);
+    await applyAndRun(state, 'SHIP_REGION', 2, (cell) => cell === null);
     const regions = shownValues(state, 'SHIP_REGION');
     expect(regions).toHaveLength(507);
     expect(new Set(regions)).toEqual(new Set([null]));
+  });
+  test('Groups by the clicked column: one row per country, counting the 830 orders', async () => {
+    const state = await ranOrders();
+    await applyAndRun(state, 'SHIP_COUNTRY', 1, () => true);
+    expect(state.execution.result?.schema.names()).toEqual([
+      'SHIP_COUNTRY',
+      'Count Rows',
+    ]);
+    expect(shownValues(state, 'SHIP_COUNTRY')).toHaveLength(21);
+    expect(
+      shownValues(state, 'Count Rows').reduce<number>(
+        (total, count) => total + Number(count),
+        0,
+      ),
+    ).toBe(830);
   });
 });
 
@@ -1022,5 +1046,764 @@ describe('Join autofix on the engine', () => {
     expect(
       buildSchemasAndValidity(query).schemas.get('join101')?.names(),
     ).toContain('UNIT_PRICE_1_2');
+  });
+});
+
+describe('Group on the engine', () => {
+  const { COUNT, DISTINCT_VALUE, SUM, MAX, COUNT_ROWS } = AggregationFunction;
+  const aggregation = (
+    fn: AggregationFunction,
+    column: string | undefined,
+    name: string,
+  ): ColumnAggregation => ({ column, function: fn, name });
+
+  /** CUBETEST.ALLTYPES, resolved: three rows, ID 3 empty but for its key */
+  const alltypes = async (): Promise<RelationalTableSource> => {
+    const [resolved] = await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', 'ALLTYPES', 'CUBETEST'),
+    ]);
+    return resolved as RelationalTableSource;
+  };
+
+  test('Groups the 830 orders by SHIP_COUNTRY into 21 groups, through a Cube-emitted function2', async () => {
+    const query = await ordersThen(
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY'],
+        [aggregation(COUNT_ROWS, undefined, 'orders')],
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.columns).toEqual(['SHIP_COUNTRY', 'orders']);
+    expect(result.rows).toHaveLength(21);
+    expect(
+      orderIds(TEST__columnValues(result, 'orders')).reduce((a, b) => a + b, 0),
+    ).toBe(830);
+    expect(new Set(TEST__columnValues(result, 'SHIP_COUNTRY')).size).toBe(21);
+  });
+
+  test('Aggregates all the rows into one, with no group column', async () => {
+    const query = await ordersThen(
+      new Group('group101', [], [aggregation(COUNT_ROWS, undefined, 'orders')]),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(1);
+    expect(orderIds(TEST__columnValues(result, 'orders'))).toEqual([830]);
+  });
+
+  test("Counts the 507 orders with no SHIP_REGION in Count rows, and none of them in the region's Count", async () => {
+    const query = await ordersThen(
+      new Group(
+        'group101',
+        ['SHIP_REGION'],
+        [
+          aggregation(COUNT, 'SHIP_REGION', 'regions'),
+          aggregation(COUNT_ROWS, undefined, 'orders'),
+        ],
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const index = TEST__columnValues(result, 'SHIP_REGION').indexOf(null);
+    expect(index).toBeGreaterThanOrEqual(0);
+    expect(Number(TEST__columnValues(result, 'regions')[index])).toBe(0);
+    expect(Number(TEST__columnValues(result, 'orders')[index])).toBe(507);
+  });
+
+  test('Gives every function each ALLTYPES column offers, as its values work out over the three rows', async () => {
+    const table = await alltypes();
+    const schema =
+      table.resolution.kind === 'resolved'
+        ? table.resolution.schema
+        : undefined;
+    const query = TEST__chainOf([
+      table,
+      new Group(
+        'group101',
+        [],
+        [
+          aggregation(COUNT_ROWS, undefined, 'Count Rows'),
+          ...(schema?.columns ?? []).flatMap((column) =>
+            getAvailableAggregations(column.type).map((fn) =>
+              aggregation(fn, column.name, `${column.name}_${fn}`),
+            ),
+          ),
+        ],
+      ),
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const value = (name: string): unknown =>
+      TEST__columnValues(result, name)[0];
+    expect(result.rows).toHaveLength(1);
+    // counts: ID has three values, every other column two (ID 3 is empty)
+    expect(Number(value('Count Rows'))).toBe(3);
+    expect(Number(value('ID_Count'))).toBe(3);
+    expect(Number(value('ID_DistinctCount'))).toBe(3);
+    ['TI', 'SI', 'BI', 'F', 'D', 'DEC', 'NUM', 'DT', 'TS', 'B', 'VC'].forEach(
+      (column) => {
+        expect([column, Number(value(`${column}_Count`))]).toEqual([column, 2]);
+        expect([column, Number(value(`${column}_DistinctCount`))]).toEqual([
+          column,
+          2,
+        ]);
+        // two distinct values: no single one
+        expect([column, value(`${column}_DistinctValue`)]).toEqual([
+          column,
+          null,
+        ]);
+      },
+    );
+    // sums and averages of numbers, the big integer's sum exact
+    expect(value('TI_Sum')).toBe('3');
+    expect(value('SI_Sum')).toBe('300');
+    expect(value('BI_Sum')).toBe('9007199254740997');
+    expect(value('ID_Sum')).toBe('6');
+    expect(value('F_Sum')).toBe(4);
+    expect(value('D_Sum')).toBe(2.6);
+    expect(value('DEC_Sum')).toBe('13.59');
+    expect(value('NUM_Sum')).toBe('3.7345');
+    expect(value('TI_Average')).toBe(1.5);
+    expect(value('SI_Average')).toBe(150);
+    expect(value('DEC_Average')).toBe(6.795);
+    // smallest and largest, dates and timestamps included
+    expect([value('BI_Min'), value('BI_Max')]).toEqual([
+      '4',
+      '9007199254740993',
+    ]);
+    expect([value('D_Min'), value('D_Max')]).toEqual([0.1, 2.5]);
+    expect([value('NUM_Min'), value('NUM_Max')]).toEqual(['1.2345', '2.5000']);
+    expect([value('DT_Min'), value('DT_Max')]).toEqual([
+      '2024-01-02',
+      '2024-01-03',
+    ]);
+    expect([value('TS_Min'), value('TS_Max')]).toEqual([
+      '2024-01-02T03:04:05.678000000+0000',
+      '2024-01-02T13:00:00.000000000+0000',
+    ]);
+  });
+
+  test("Gives a group's one distinct value, and nothing for a group with none", async () => {
+    const query = TEST__chainOf([
+      await alltypes(),
+      new Group(
+        'group101',
+        ['ID'],
+        [aggregation(DISTINCT_VALUE, 'VC', 'text')],
+      ),
+    ]);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    const byId = new Map(
+      TEST__columnValues(result, 'ID').map((id, index) => [
+        Number(id),
+        TEST__columnValues(result, 'text')[index],
+      ]),
+    );
+    expect(Object.fromEntries(byId)).toEqual({ 1: 'abc', 2: 'xyz', 3: null });
+  });
+
+  test('Gives one row over no rows: counts of 0, then nothing', async () => {
+    const query = await ordersThen(
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('SHIP_COUNTRY', FilterOperator.EQUAL, {
+          kind: 'string',
+          value: 'Nowhere',
+        }),
+      ),
+      new Group(
+        'group101',
+        [],
+        [
+          aggregation(COUNT_ROWS, undefined, 'orders'),
+          aggregation(COUNT, 'ORDER_ID', 'ids'),
+          aggregation(SUM, 'FREIGHT', 'freight total'),
+          aggregation(MAX, 'ORDER_DATE', 'last'),
+        ],
+      ),
+    );
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(1);
+    expect(
+      result.rows[0]?.map((cell) => (cell === null ? null : Number(cell))),
+    ).toEqual([0, 0, null, null]);
+  });
+
+  test("Keeps a group whose Sum is empty in a negated filter on the Sum, as the Sum's nullability says", async () => {
+    // ID 3's Sum of SI is empty: Cube marks the Sum nullable, so the negation
+    // keeps it (the engine types it as never empty)
+    const query = TEST__chainOf([
+      await alltypes(),
+      new Group('group101', ['ID'], [aggregation(SUM, 'SI', 'total')]),
+      new Filter(
+        'filter101',
+        new NotFilter(
+          new ColumnComparisonFilter('total', FilterOperator.EQUAL, {
+            kind: 'integer',
+            value: '100',
+          }),
+        ),
+      ),
+    ]);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(orderIds(TEST__columnValues(result, 'ID')).sort()).toEqual([2, 3]);
+  });
+});
+
+describe('Concat on the engine', () => {
+  const COMPANY_CITY_COUNTRY = ['COMPANY_NAME', 'CITY', 'COUNTRY'];
+
+  /** Two tables of one schema, resolved, as relational101 and relational102 */
+  const tables = async (
+    first: string,
+    second: string,
+    schema?: string,
+  ): Promise<[RelationalTableSource, RelationalTableSource]> =>
+    (await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', first, schema),
+      TEST__northwindTable('relational102', second, schema),
+    ])) as [RelationalTableSource, RelationalTableSource];
+
+  /**
+   * Each input with the nodes after it, concatenated by concat101 (its
+   * First and Second), converting types or not, then the nodes after it,
+   * captured at the last
+   */
+  const concatOfWith = (
+    widenTypes: boolean,
+    first: QueryNode[],
+    second: QueryNode[],
+    ...after: QueryNode[]
+  ): Query => {
+    const concat = new Concat('concat101', widenTypes);
+    const chain = (nodes: readonly QueryNode[]): Connection[] =>
+      nodes
+        .slice(1)
+        .map(
+          (node, index) =>
+            new Connection(
+              (nodes[index] as QueryNode).id,
+              node.id,
+              node.ports[0] as string,
+            ),
+        );
+    const nodes: QueryNode[] = [concat, ...after];
+    return new Query(
+      [...first, ...second, ...nodes],
+      [
+        ...chain(first),
+        ...chain(second),
+        new Connection((first.at(-1) as QueryNode).id, concat.id, 'tds1'),
+        new Connection((second.at(-1) as QueryNode).id, concat.id, 'tds2'),
+        ...chain(nodes),
+      ],
+      nodes.at(-1)?.id,
+    );
+  };
+
+  /** Types must match */
+  const concatOf = (
+    first: QueryNode[],
+    second: QueryNode[],
+    ...after: QueryNode[]
+  ): Query => concatOfWith(false, first, second, ...after);
+
+  /** Convert types (PLAN §11.5, Q5): differing types cast to the type both are */
+  const convertingConcatOf = (
+    first: QueryNode[],
+    second: QueryNode[],
+    ...after: QueryNode[]
+  ): Query => concatOfWith(true, first, second, ...after);
+
+  /** CUSTOMERS and SUPPLIERS, each restricted to COMPANY_NAME, CITY and COUNTRY, concatenated */
+  const companies = async (...after: QueryNode[]): Promise<Query> => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    return concatOf(
+      [customers, new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+      [suppliers, new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+      ...after,
+    );
+  };
+
+  /** The values of one column of a table, run alone */
+  const tableValues = async (
+    table: string,
+    column: string,
+    schema?: string,
+  ): Promise<unknown[]> => {
+    const [source] = await TEST__resolveSources(engine, [
+      TEST__northwindTable('relational101', table, schema),
+    ]);
+    return TEST__columnValues(
+      await TEST__runQuery(
+        engine,
+        TEST__chainOf([
+          source as RelationalTableSource,
+          new Restrict('restrict101', [column]),
+        ]),
+        ROW_LIMIT,
+      ),
+      column,
+    );
+  };
+
+  const sorted = (values: readonly unknown[]): string[] =>
+    values.map((value) => String(value)).sort();
+
+  test('Emits what the engine parses from the printed Pure, and types as Cube infers', async () => {
+    const query = await companies();
+    const lambda = new QueryEmitter(query).emitExecutionLambda({
+      rowLimit: ROW_LIMIT,
+      runtime: CUBE_NORTHWIND_RUNTIME,
+    });
+    expect(printIR(lambda)).toContain('->concatenate(');
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printIR(lambda)),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test('Gives the 91 customers and the 29 suppliers: 120 rows', async () => {
+    const result = await TEST__runQuery(engine, await companies(), ROW_LIMIT);
+    expect(result.columns).toEqual(COMPANY_CITY_COUNTRY);
+    expect(result.rows).toHaveLength(120);
+    expect(sorted(TEST__columnValues(result, 'COMPANY_NAME'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'COMPANY_NAME')),
+        ...(await tableValues('SUPPLIERS', 'COMPANY_NAME')),
+      ]),
+    );
+  });
+
+  test('Gives the same rows with its inputs swapped', async () => {
+    const query = await companies();
+    const swapped = query.swapInputs('concat101');
+    expect(swapped === query).toBe(false);
+    const [rows, swappedRows] = [
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      await TEST__runQuery(engine, swapped, ROW_LIMIT),
+    ];
+    expect(sorted(TEST__columnValues(swappedRows, 'COMPANY_NAME'))).toEqual(
+      sorted(TEST__columnValues(rows, 'COMPANY_NAME')),
+    );
+  });
+
+  test('Keeps the rows both inputs share: CUSTOMERS with itself gives each customer twice', async () => {
+    const [first, second] = await tables('CUSTOMERS', 'CUSTOMERS');
+    const query = concatOf(
+      [first, new Restrict('restrict101', ['CUSTOMER_ID'])],
+      [second, new Restrict('restrict102', ['CUSTOMER_ID'])],
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const ids = TEST__columnValues(
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      'CUSTOMER_ID',
+    );
+    expect(ids).toHaveLength(182);
+    const once = await tableValues('CUSTOMERS', 'CUSTOMER_ID');
+    expect(sorted(ids)).toEqual(sorted([...once, ...once]));
+  });
+
+  test('Removes the countries both inputs have with a Distinct after it', async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = concatOf(
+      [customers, new Restrict('restrict101', ['COUNTRY'])],
+      [suppliers, new Restrict('restrict102', ['COUNTRY'])],
+      new Distinct('distinct101'),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const countries = TEST__columnValues(
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      'COUNTRY',
+    );
+    expect(sorted(countries)).toEqual(
+      sorted([
+        ...new Set([
+          ...(await tableValues('CUSTOMERS', 'COUNTRY')),
+          ...(await tableValues('SUPPLIERS', 'COUNTRY')),
+        ]),
+      ]),
+    );
+  });
+
+  test("Takes a Limit inside its first input by that input's Sort: the last 3 customers and the 29 suppliers", async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = concatOf(
+      [
+        customers,
+        new Restrict('restrict101', COMPANY_CITY_COUNTRY),
+        new Sort('sort101', [
+          { column: 'COMPANY_NAME', direction: SortDirection.DESC },
+        ]),
+        new Limit('limit101', 3),
+      ],
+      [suppliers, new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const names = TEST__columnValues(
+      await TEST__runQuery(engine, query, ROW_LIMIT),
+      'COMPANY_NAME',
+    );
+    expect(names).toHaveLength(32);
+    const lastCustomers = sorted(
+      await tableValues('CUSTOMERS', 'COMPANY_NAME'),
+    ).slice(-3);
+    expect(sorted(names)).toEqual(
+      sorted([
+        ...lastCustomers,
+        ...(await tableValues('SUPPLIERS', 'COMPANY_NAME')),
+      ]),
+    );
+  });
+
+  test('Makes a column nullable when one input has it nullable: 830 orders and 91 customers', async () => {
+    const [ordersTable, customers] = await tables('ORDERS', 'CUSTOMERS');
+    const query = concatOf(
+      [ordersTable, new Restrict('restrict101', ['CUSTOMER_ID', 'SHIP_NAME'])],
+      [
+        customers,
+        new Restrict('restrict102', ['CUSTOMER_ID', 'COMPANY_NAME']),
+        new Rename('rename102', [{ from: 'COMPANY_NAME', to: 'SHIP_NAME' }]),
+      ],
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const { schemas } = buildSchemasAndValidity(
+      query,
+      createNodeRegistry().queryRules,
+    );
+    expect(
+      schemas
+        .get('concat101')
+        ?.columns.map(({ name, nullable }) => [name, nullable]),
+    ).toEqual([
+      ['CUSTOMER_ID', true],
+      ['SHIP_NAME', true],
+    ]);
+    expect((await TEST__runQuery(engine, query, ROW_LIMIT)).rows).toHaveLength(
+      921,
+    );
+  });
+
+  test("Runs after its Rename autofix, each supplier's REGION under CITY", async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = concatOf(
+      [customers, new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+      [
+        suppliers,
+        new Restrict('restrict102', ['COMPANY_NAME', 'REGION', 'COUNTRY']),
+      ],
+    );
+    const { schemas } = buildSchemasAndValidity(
+      query,
+      createNodeRegistry().queryRules,
+    );
+    const fixed = renameConcatInput(
+      query,
+      'concat101',
+      schemas.get('restrict101'),
+      schemas.get('restrict102'),
+    );
+    await TEST__expectEngineTyping(engine, fixed);
+    const result = await TEST__runQuery(engine, fixed, ROW_LIMIT);
+    expect(result.rows).toHaveLength(120);
+    const names = TEST__columnValues(result, 'COMPANY_NAME');
+    // a supplier whose REGION is LA, and whose CITY is New Orleans
+    expect(
+      TEST__columnValues(result, 'CITY')[
+        names.indexOf('New Orleans Cajun Delights')
+      ],
+    ).toBe('LA');
+  });
+
+  test('Counts the rows of both inputs in a Group after it', async () => {
+    const query = await companies(
+      new Group(
+        'group101',
+        ['COUNTRY'],
+        [
+          {
+            column: undefined,
+            function: AggregationFunction.COUNT_ROWS,
+            name: 'companies',
+          },
+        ],
+      ),
+    );
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(
+      orderIds(TEST__columnValues(result, 'companies')).reduce(
+        (a, b) => a + b,
+        0,
+      ),
+    ).toBe(120);
+  });
+
+  // Convert types (M4.13, PLAN §11.5, Q5): a differing type is cast to the
+  // type both inputs are, a type-only cast: H2 unions the columns' own SQL
+  // types
+
+  const CUBETEST = 'CUBETEST';
+
+  /**
+   * The columns, listed in their table's order, each renamed to the name at
+   * its position in `names` (a Restrict, then a Rename when a name changes),
+   * the nodes' ids ending in the suffix
+   */
+  const keptAs = (
+    suffix: string,
+    columns: readonly string[],
+    names: readonly string[],
+  ): QueryNode[] => {
+    const mappings = columns.flatMap((from, index) => {
+      const to = names[index] as string;
+      return from === to ? [] : [{ from, to }];
+    });
+    return [
+      new Restrict(`restrict${suffix}`, columns),
+      ...(mappings.length ? [new Rename(`rename${suffix}`, mappings)] : []),
+    ];
+  };
+
+  /** ALLTYPES twice, the first's columns and the second's, each kept under the names */
+  const alltypesInputs = async (
+    first: readonly string[],
+    second: readonly string[],
+    names: readonly string[],
+  ): Promise<[QueryNode[], QueryNode[]]> => {
+    const [one, two] = await tables('ALLTYPES', 'ALLTYPES', CUBETEST);
+    return [
+      [one, ...keptAs('101', first, names)],
+      [two, ...keptAs('102', second, names)],
+    ];
+  };
+
+  /** ALLTYPES' columns concatenated with others of its own, converting types */
+  const convertedAlltypes = async (
+    first: readonly string[],
+    second: readonly string[],
+    names: readonly string[],
+  ): Promise<Query> =>
+    convertingConcatOf(...(await alltypesInputs(first, second, names)));
+
+  /** Cube's columns of concat101: `<name> <type>`, `?` when nullable */
+  const concatColumns = (query: Query): string[] =>
+    TEST__inferredSchema(query, 'concat101').columns.map(
+      ({ name, type, nullable }) =>
+        `${name} ${type.displayName}${nullable ? '?' : ''}`,
+    );
+
+  /** The values of one column of the query's result */
+  const valuesOf = async (query: Query, column: string): Promise<unknown[]> =>
+    TEST__columnValues(await TEST__runQuery(engine, query, ROW_LIMIT), column);
+
+  /** The values of one ALLTYPES column, run alone */
+  const alltypesValues = (column: string): Promise<unknown[]> =>
+    tableValues('ALLTYPES', column, CUBETEST);
+
+  /** Each row of the query's result, as text, sorted */
+  const sortedRows = async (query: Query): Promise<string[]> =>
+    (await TEST__runQuery(engine, query, ROW_LIMIT)).rows
+      .map((row) => JSON.stringify(row))
+      .sort();
+
+  /** Numbers as numbers, whether H2 gives them as text or not, sorted */
+  const sortedNumbers = (values: readonly unknown[]): string[] =>
+    values
+      .map((value) => (value === null ? 'null' : String(Number(value))))
+      .sort();
+
+  test('Emits what the engine parses from the printed Pure when it converts types, and types as Cube infers', async () => {
+    const query = await convertedAlltypes(
+      ['TI', 'DT', 'VC'],
+      ['SI', 'TS', 'VC'],
+      ['N', 'WHEN', 'CUBE_CAST'],
+    );
+    const printed = printIR(
+      new QueryEmitter(query).emitExecutionLambda({
+        rowLimit: ROW_LIMIT,
+        runtime: CUBE_NORTHWIND_RUNTIME,
+      }),
+    );
+    // in both inputs, the temporary names avoiding CUBE_CAST, in any case
+    expect(
+      printed.split(
+        '->extend(~[cube_cast2: x | $x.N->cast(@Integer), cube_cast3: x | $x.WHEN->cast(@Date)])->select(~[cube_cast2, cube_cast3, CUBE_CAST])->rename(~cube_cast2, ~N)->rename(~cube_cast3, ~WHEN)',
+      ),
+    ).toHaveLength(3);
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printed),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test("Converts TinyInt and SmallInt to Integer: ALLTYPES' TI with its SI gives 6 rows, both columns' values", async () => {
+    const query = await convertedAlltypes(['TI'], ['SI'], ['TI']);
+    expect(concatColumns(query)).toEqual(['TI Integer?']);
+    await TEST__expectEngineTyping(engine, query);
+    const values = await valuesOf(query, 'TI');
+    expect(values).toHaveLength(6);
+    expect(sorted(values)).toEqual(
+      sorted([
+        ...(await alltypesValues('TI')),
+        ...(await alltypesValues('SI')),
+      ]),
+    );
+  });
+
+  test("Converts two Varchar lengths to String: CUSTOMERS' CITY with SUPPLIERS' CONTACT_NAME gives the 120 rows of both", async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = convertingConcatOf(
+      [customers, new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      [
+        suppliers,
+        ...keptAs(
+          '102',
+          ['COMPANY_NAME', 'CONTACT_NAME'],
+          ['COMPANY_NAME', 'CITY'],
+        ),
+      ],
+    );
+    expect(concatColumns(query)).toEqual([
+      'COMPANY_NAME Varchar(40)',
+      'CITY String?',
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(120);
+    expect(sorted(TEST__columnValues(result, 'CITY'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'CITY')),
+        ...(await tableValues('SUPPLIERS', 'CONTACT_NAME')),
+      ]),
+    );
+    expect(sorted(TEST__columnValues(result, 'COMPANY_NAME'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'COMPANY_NAME')),
+        ...(await tableValues('SUPPLIERS', 'COMPANY_NAME')),
+      ]),
+    );
+  });
+
+  test('Converts a StrictDate and a Timestamp to Date: H2 gives the dates as midnight timestamps, the timestamps as they are', async () => {
+    const query = await convertedAlltypes(['DT'], ['TS'], ['WHEN']);
+    expect(concatColumns(query)).toEqual(['WHEN Date?']);
+    await TEST__expectEngineTyping(engine, query);
+    // run alone, DT gives dates; in the union, which has no SQL cast, H2
+    // takes the TIMESTAMP of the two SQL types
+    const dates = await alltypesValues('DT');
+    expect(sorted(dates)).toEqual(['2024-01-02', '2024-01-03', 'null']);
+    expect(sorted(await valuesOf(query, 'WHEN'))).toEqual(
+      sorted([
+        ...dates.map((date) =>
+          date === null ? null : `${String(date)}T00:00:00.000000000+0000`,
+        ),
+        ...(await alltypesValues('TS')),
+      ]),
+    );
+  });
+
+  test('Converts numbers to the type both are, each value kept: Number, Float and Decimal', async () => {
+    const converted = async (
+      first: string,
+      second: string,
+      type: string,
+    ): Promise<unknown[]> => {
+      const query = await convertedAlltypes([first], [second], [first]);
+      expect(concatColumns(query)).toEqual([`${first} ${type}`]);
+      await TEST__expectEngineTyping(engine, query);
+      return valuesOf(query, first);
+    };
+    // Int with Float4: H2 gives each value as text, an integer as 1.0
+    expect(sortedNumbers(await converted('ID', 'F', 'Number?'))).toEqual(
+      sortedNumbers([
+        ...(await alltypesValues('ID')),
+        ...(await alltypesValues('F')),
+      ]),
+    );
+    // BigInt with Double: the big integer exact
+    const bigAndDouble = await converted('BI', 'D', 'Number?');
+    expect(bigAndDouble).toContain('9007199254740993');
+    expect(sortedNumbers(bigAndDouble)).toEqual(
+      sortedNumbers([
+        ...(await alltypesValues('BI')),
+        ...(await alltypesValues('D')),
+      ]),
+    );
+    // Float4 with Double
+    expect(sortedNumbers(await converted('F', 'D', 'Float?'))).toEqual(
+      sortedNumbers([
+        ...(await alltypesValues('F')),
+        ...(await alltypesValues('D')),
+      ]),
+    );
+    // two Numeric precisions: each value with its own scale, 12.34 and 2.5000
+    expect(sorted(await converted('DEC', 'NUM', 'Decimal?'))).toEqual(
+      sorted([
+        ...(await alltypesValues('DEC')),
+        ...(await alltypesValues('NUM')),
+      ]),
+    );
+  });
+
+  test("Keeps each row's values together beside a column named CUBE_CAST, the converted columns cast under other names", async () => {
+    const [first, second] = await alltypesInputs(
+      ['TI', 'SI', 'VC'],
+      ['SI', 'BI', 'VC'],
+      ['A', 'B', 'CUBE_CAST'],
+    );
+    const query = convertingConcatOf(first, second);
+    expect(concatColumns(query)).toEqual([
+      'A Integer?',
+      'B Integer?',
+      'CUBE_CAST Varchar(20)?',
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    expect(await sortedRows(query)).toEqual(
+      [
+        ...(await sortedRows(TEST__chainOf(first))),
+        ...(await sortedRows(TEST__chainOf(second))),
+      ].sort(),
+    );
+  });
+
+  test('Runs after its Rename autofix, offered once it converts types: CONTACT_NAME under CITY', async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const inputs: [QueryNode[], QueryNode[]] = [
+      [customers, new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      [
+        suppliers,
+        new Restrict('restrict102', ['COMPANY_NAME', 'CONTACT_NAME']),
+      ],
+    ];
+    const { schemas } = buildSchemasAndValidity(
+      concatOf(...inputs),
+      createNodeRegistry().queryRules,
+    );
+    const [first, second] = [
+      schemas.get('restrict101'),
+      schemas.get('restrict102'),
+    ];
+    // Varchar(15) and Varchar(30) must match unless it converts types
+    expect(
+      canRenameConcatInput(concatOf(...inputs), 'concat101', first, second),
+    ).toBe(false);
+    const fixed = renameConcatInput(
+      convertingConcatOf(...inputs),
+      'concat101',
+      first,
+      second,
+    );
+    await TEST__expectEngineTyping(engine, fixed);
+    const result = await TEST__runQuery(engine, fixed, ROW_LIMIT);
+    expect(result.rows).toHaveLength(120);
+    expect(sorted(TEST__columnValues(result, 'CITY'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'CITY')),
+        ...(await tableValues('SUPPLIERS', 'CONTACT_NAME')),
+      ]),
+    );
   });
 });

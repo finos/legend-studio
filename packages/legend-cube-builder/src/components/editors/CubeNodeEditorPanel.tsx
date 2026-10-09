@@ -177,7 +177,7 @@ export const CubeNodeEditorPanel = observer(
           )}
           {problems.length > 0 && (
             <div
-              className="mt-3 border-t border-[var(--color-border-subtle)] pt-2 text-base text-[var(--color-status-error)]"
+              className="mt-3 break-words border-t border-[var(--color-border-subtle)] pt-2 text-base text-[var(--color-status-error)]"
               role="alert"
               aria-label="Problems"
             >

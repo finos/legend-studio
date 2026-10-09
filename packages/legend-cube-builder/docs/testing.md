@@ -66,6 +66,12 @@ would serve it.
 - `src/__tests__/LegendCubeOperations.engine-roundtrip-test.ts` checks each operation: its lambda as the engine parses
   the printed Pure, its typing against Cube's inferred schema, and its rows. Its helpers are in
   `src/__test-utils__/CubeOperationsTestUtils.ts`; they take any `CubeEngine` and import no `V1_*` class.
+- `src/__tests__/CubeInferenceConformance.engine-roundtrip-test.ts` holds Cube's inference to the engine's (PLAN
+  §11.5): it types every node of every case in one batch and compares names, positions, precise types with their
+  parameters, and nullability exactly (`TEST__typingDifferences`). Where the engine misreports nullability (an outer
+  join's padded columns, the FULL merged key), a case lists the columns in `widerNullable`, and Cube must say nullable
+  there. Every registered node type needs a case, or the coverage test fails. The saved-spec samples are typed the
+  same way, node by node, but one-way (`CubeSpecCorpus.engine-roundtrip-test.ts`).
 - **Sort descending in order tests.** H2 scans ORDERS in ascending `ORDER_ID` order, so a test that sorts ascending,
   or numbers rows by `ORDER_ID`, passes without the sort; the operations tests sort descending, with a control test
   pinning H2's own order.

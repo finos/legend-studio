@@ -37,12 +37,14 @@ import { RELATIONAL_TABLE_SOURCE_CODEC } from '../../spec/codecs/RelationalTable
 import type { JsonObject } from '../../utils/Json.js';
 import {
   type AnyNodeDefinition,
+  CONCAT_DEFINITION,
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   INGEST_DATASET_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
   DROP_DEFINITION,
   FILTER_DEFINITION,
+  GROUP_DEFINITION,
   JOIN_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
@@ -59,9 +61,11 @@ import {
   RelationalTableSource,
   type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
+import { Concat } from '../transforms/Concat.js';
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
+import { Group } from '../transforms/Group.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { Limit } from '../transforms/Limit.js';
 import { Rename } from '../transforms/Rename.js';
@@ -199,9 +203,10 @@ describe(unitTest('Node registry'), () => {
     expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
     expect(ingest?.label).toBe('Ingest Dataset');
     expect(ingest?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, then Join
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
+      GROUP_DEFINITION,
       FILTER_DEFINITION,
       RESTRICT_DEFINITION,
       RENAME_DEFINITION,
@@ -209,11 +214,14 @@ describe(unitTest('Node registry'), () => {
       DROP_DEFINITION,
       LIMIT_DEFINITION,
       SLICE_DEFINITION,
+      CONCAT_DEFINITION,
       JOIN_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
+    expect(registry.get('group')).toBe(GROUP_DEFINITION);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
+    expect(registry.get('concat')).toBe(CONCAT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     // the relational sources' database rule, and the one-kind rule once
     expect(registry.queryRules).toHaveLength(2);
@@ -229,6 +237,31 @@ describe(unitTest('Node registry'), () => {
     expect(sort).toBeInstanceOf(Sort);
     expect(sort.id).toBe('sort101');
     expect(sort.sorts).toEqual([]);
+  });
+
+  test('Creates a group with no key and no aggregation yet', () => {
+    expect(GROUP_DEFINITION.kind).toBe('transform');
+    expect(GROUP_DEFINITION.type).toBe('group');
+    expect(GROUP_DEFINITION.label).toBe('Group by Column');
+    expect(GROUP_DEFINITION.icon).toBe('group');
+    expect(GROUP_DEFINITION.beta).toBe(false);
+    const group = GROUP_DEFINITION.create('group101');
+    expect(group).toBeInstanceOf(Group);
+    expect(group.id).toBe('group101');
+    expect(group.columns).toEqual([]);
+    expect(group.aggregations).toEqual([]);
+  });
+
+  test('Creates a concat that converts no types', () => {
+    expect(CONCAT_DEFINITION.kind).toBe('transform');
+    expect(CONCAT_DEFINITION.type).toBe('concat');
+    expect(CONCAT_DEFINITION.label).toBe('Concatenate Another Input');
+    expect(CONCAT_DEFINITION.icon).toBe('concat');
+    expect(CONCAT_DEFINITION.beta).toBe(false);
+    const concat = CONCAT_DEFINITION.create('concat101');
+    expect(concat).toBeInstanceOf(Concat);
+    expect(concat.id).toBe('concat101');
+    expect(concat.widenTypes).toBe(false);
   });
 
   test('Creates a filter with no filter yet', () => {

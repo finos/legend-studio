@@ -23,7 +23,9 @@ import type { QueryRule } from '../inference/SchemaInference.js';
 import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
+import { emitConcat } from '../ir/emitters/ConcatEmitter.js';
 import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
+import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
 import { emitLimit } from '../ir/emitters/LimitEmitter.js';
@@ -35,7 +37,9 @@ import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceE
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { emitIngestDatasetSource } from '../ir/emitters/IngestDatasetSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
+import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
+import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
 import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
@@ -54,9 +58,11 @@ import {
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
 import { sourcesAreOneKind } from './sources/SourceKinds.js';
+import { Concat } from './transforms/Concat.js';
 import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
+import { Group } from './transforms/Group.js';
 import { Join } from './transforms/Join.js';
 import { Limit } from './transforms/Limit.js';
 import { Rename } from './transforms/Rename.js';
@@ -172,6 +178,18 @@ export const SORT_DEFINITION: TransformDefinition<Sort> = {
   spec: SORT_CODEC,
 };
 
+/** Group (spec §7.2, PLAN §11.5) */
+export const GROUP_DEFINITION: TransformDefinition<Group> = {
+  kind: 'transform',
+  type: Group.TYPE,
+  label: 'Group by Column',
+  icon: 'group',
+  beta: false,
+  create: (id) => new Group(id),
+  emit: emitGroup,
+  spec: GROUP_CODEC,
+};
+
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   kind: 'transform',
   type: Filter.TYPE,
@@ -249,6 +267,18 @@ export const SLICE_DEFINITION: TransformDefinition<Slice> = {
   spec: SLICE_CODEC,
 };
 
+/** Concat (spec §7.10, PLAN §11.5) */
+export const CONCAT_DEFINITION: TransformDefinition<Concat> = {
+  kind: 'transform',
+  type: Concat.TYPE,
+  label: 'Concatenate Another Input',
+  icon: 'concat',
+  beta: false,
+  create: (id) => new Concat(id),
+  emit: emitConcat,
+  spec: CONCAT_CODEC,
+};
+
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
   kind: 'transform',
   type: Join.TYPE,
@@ -315,6 +345,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     INGEST_DATASET_SOURCE_DEFINITION,
     SORT_DEFINITION,
+    GROUP_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,
     RENAME_DEFINITION,
@@ -322,5 +353,6 @@ export const createNodeRegistry = (): NodeRegistry =>
     DROP_DEFINITION,
     LIMIT_DEFINITION,
     SLICE_DEFINITION,
+    CONCAT_DEFINITION,
     JOIN_DEFINITION,
   ]);

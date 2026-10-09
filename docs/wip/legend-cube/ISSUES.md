@@ -127,6 +127,65 @@ Title: Duplicate columns from rename/select return HTTP 500 with no source infor
 compilation error (400) with the call's source information, like other typing errors.
 ```
 
+### A GROUP BY written by the alias, which a column of the subquery can shadow
+
+Found in M4's requirements and pinned in M4.8 (plans only, engine `93d92b4`). After `rename(~SHIP_COUNTRY, ~X)` and
+`rename(~SHIP_CITY, ~SHIP_COUNTRY)`, a `groupBy(~[SHIP_COUNTRY], …)` selects `"orders_0"."SHIP_CITY" as "SHIP_COUNTRY"`
+from a subquery that still has the table's `SHIP_COUNTRY` column. Ten database types are written `GROUP BY` the
+expression or the position, which is right; nine (H2, Sybase IQ, MemSQL, Spanner, Redshift, Hive, BigQuery, ClickHouse,
+Composite) are written `GROUP BY "SHIP_COUNTRY"`, which a database that looks the name up in the subquery first reads
+as the country: MySQL-style MemSQL may then group by country with arbitrary cities, and Postgres-style Redshift or
+Hive fail. H2 reads the alias and gives the 70 cities ✅; the others are inferred from their documented rules, never
+run. `LegendCubeDialects.engine-roundtrip-test.ts` pins each database's form. Cube has no workaround: a `select` before
+the group doesn't change the SQL (the engine folds it in); grouping by a temporary key would. Draft issue for
+finos/legend-engine:
+
+```text
+Title: groupBy after a rename writes GROUP BY the alias, which a column of the subquery can shadow
+
+`#>{db.S.ORDERS}#->rename(~SHIP_COUNTRY, ~X)->rename(~SHIP_CITY, ~SHIP_COUNTRY)
+->groupBy(~[SHIP_COUNTRY], ~[n: x|$x.ORDER_ID : y|$y->count()])` selects
+`"orders_0"."SHIP_CITY" as "SHIP_COUNTRY"` from a subquery that still has the table's
+`SHIP_COUNTRY`, then writes `group by "SHIP_COUNTRY"` on H2, Sybase IQ, MemSQL, Spanner,
+Redshift, Hive, BigQuery and ClickHouse. A database that resolves GROUP BY names against the
+FROM clause first groups by the other column. SQL Server, DB2, Oracle and Trino write the
+expression and Postgres and Snowflake the position, which are unambiguous; every dialect
+could do the same.
+```
+
+### Distinct Value of a Boolean writes `max()` over a bit or boolean
+
+Found in M4's requirements (plans only). `uniqueValueOnly()` is written
+`case when count(distinct(x)) = 1 then max(x) else null end`; on a Boolean column that is `max()` over a `bit`
+(SQL Server, Sybase), which they reject, or over a `boolean` (Postgres), which has no `max`. MemSQL and Oracle convert
+the Boolean to text first. Cube offers Distinct Value on Boolean, as the spec does (PLAN §11.5), so such a Group plans
+but would fail on those databases (inferred, not run). Draft issue for finos/legend-engine:
+
+```text
+Title: uniqueValueOnly() over a Boolean writes max() that SQL Server, Sybase and Postgres reject
+
+`->groupBy(~[K], ~[u: x|$x.B : y|$y->uniqueValueOnly()])` with a Boolean `B` is written
+`case when count(distinct("t_0".B)) = 1 then max("t_0".B) else null end`. SQL Server and
+Sybase reject MAX over bit, and Postgres has no max(boolean). MemSQL and Oracle already
+convert the Boolean to text before max; SQL Server, Sybase and Postgres could do the same,
+or use bool_or / a cast to integer.
+```
+
+### SQL Server sums an `int` column as `int`
+
+Found in M4's requirements (plans only). `sum()` over an `int` column is written `sum(x)`, which SQL Server types as
+`int`: a sum past 2,147,483,647 fails with an arithmetic overflow. The engine and Cube type it `Integer` (PLAN §5.7),
+whose range is a Java long. Inferred from SQL Server's typing rules, not run. Draft issue for finos/legend-engine:
+
+```text
+Title: SQL Server: sum() over an int column overflows past 2^31
+
+`->groupBy(~[K], ~[s: x|$x.I : y|$y->sum()])` with an `int` column `I` is written
+`sum("t_0".I)` on SQL Server, which returns int and fails with an arithmetic overflow once
+the sum passes 2,147,483,647, though Pure types the result as Integer (a long). Writing
+`sum(cast("t_0".I as bigint))` on SQL Server would match the Pure type.
+```
+
 ## Direct connections and data products
 
 ### The engine's schema exploration mistypes some columns

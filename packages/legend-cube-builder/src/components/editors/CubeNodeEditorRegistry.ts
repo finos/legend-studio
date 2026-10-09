@@ -15,11 +15,13 @@
  */
 
 import {
+  Concat,
   DataProductAccessPointSource,
   IngestDatasetSource,
   Distinct,
   Drop,
   Filter,
+  Group,
   Join,
   Limit,
   RelationalTableSource,
@@ -31,10 +33,12 @@ import {
 } from '@finos/legend-cube';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
+import { CubeConcatEditor } from './CubeConcatEditor.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
 import { CubeIngestSourceEditor } from './CubeIngestSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
+import { CubeGroupEditor } from './CubeGroupEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
 import { CubeRenameEditor } from './CubeRenameEditor.js';
 import { CubeRestrictEditor } from './CubeRestrictEditor.js';
@@ -76,6 +80,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [IngestDatasetSource.TYPE, CubeIngestSourceEditor],
   [Sort.TYPE, CubeSortEditor],
+  [Group.TYPE, CubeGroupEditor],
   [Filter.TYPE, CubeFilterEditor],
   [Restrict.TYPE, CubeRestrictEditor],
   [Rename.TYPE, CubeRenameEditor],
@@ -84,4 +89,5 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [Drop.TYPE, CubeRowCountEditor],
   [Limit.TYPE, CubeRowCountEditor],
   [Slice.TYPE, CubeSliceEditor],
+  [Concat.TYPE, CubeConcatEditor],
 ]);

@@ -16,13 +16,16 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
   ColumnComparisonFilter,
   CubeDocument,
   Filter,
   FilterOperator,
+  type Group,
   OpaqueType,
   PrimitiveType,
   Query,
+  Schema,
   SchemaColumn,
   Sort,
   SortDirection,
@@ -47,7 +50,10 @@ import type {
 } from '../../graph-manager/CubeEngine.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
-import { getCubeGridQuickActions } from '../CubeGridQuickActions.js';
+import {
+  getCubeGridQuickActions,
+  getGroupByCountName,
+} from '../CubeGridQuickActions.js';
 
 const P = 'meta::pure::precisePrimitives::';
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
@@ -133,18 +139,21 @@ beforeEach(() => {
 });
 
 describe('Grid quick actions', () => {
-  test('Offers Sort by and Filter by on a cell of fresh rows', async () => {
+  test('Offers Sort by, Group by and Filter by on a cell of fresh rows', async () => {
     const { state } = await setUp();
     const actions = actionsOn(state, 'SHIP_COUNTRY');
     expect(actions.map((action) => action.label)).toEqual([
       'Sort by "SHIP_COUNTRY"',
+      'Group by "SHIP_COUNTRY"',
       'Filter by "SHIP_COUNTRY"',
     ]);
     expect(actions.map((action) => action.disabledReason)).toEqual([
       undefined,
       undefined,
+      undefined,
     ]);
     expect(actions.map((action) => action.hint)).toEqual([
+      undefined,
       undefined,
       undefined,
     ]);
@@ -177,9 +186,85 @@ describe('Grid quick actions', () => {
     expect(state.derivedWarnings.size).toBe(0);
   });
 
+  test('Groups by the column after the node that ran, counting every row, as one undo step that runs nothing', async () => {
+    const { state, fake } = await setUp();
+    actionsOn(state, 'SHIP_COUNTRY')[1]?.apply();
+    const { query } = state.document;
+    expect(query.selected).toBe('group101');
+    const group = query.getNode('group101') as Group;
+    expect(group.columns).toEqual(['SHIP_COUNTRY']);
+    expect(group.aggregations).toEqual([
+      {
+        column: undefined,
+        function: AggregationFunction.COUNT_ROWS,
+        name: 'Count Rows',
+      },
+    ]);
+    expect(query.getInputIds('group101')).toEqual(['relational101']);
+    expect(state.analysis.validity.get('group101')).toEqual([]);
+    expect(state.history).toHaveLength(1);
+    expect(fake.execute).toHaveBeenCalledTimes(1);
+    expect(state.execution.isStale).toBe(true);
+    expect(state.nodeEditor.node).toBeUndefined();
+  });
+
+  test("Can't group by a type that can't be compared", async () => {
+    const { state } = await setUp();
+    expect(reasons(state, 'PAYLOAD')[1]).toBe(
+      CUBE_QUICK_ACTION_DISABLED_REASON.notGroupable('Variant'),
+    );
+    actionsOn(state, 'PAYLOAD')[1]?.apply();
+    expect(state.document.query.getNode('group101')).toBeUndefined();
+    expect(state.history).toHaveLength(0);
+  });
+
+  test('Splices the Group before a node after the one that ran, which then sees its columns', async () => {
+    const { state } = await setUp();
+    // a Filter after the table, while the table is the node that ran
+    state.applyQuery(
+      state.document.query.add(
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('ORDER_ID', FilterOperator.IS_NOT_EMPTY),
+        ),
+        'relational101',
+      ),
+    );
+    state.applyQuery(state.document.query.select('relational101'));
+    await flowResult(state.execution.execute());
+    actionsOn(state, 'SHIP_COUNTRY')[1]?.apply();
+    const { query } = state.document;
+    expect(query.getInputIds('group101')).toEqual(['relational101']);
+    expect(query.getInputIds('filter101')).toEqual(['group101']);
+    // the Filter's column is gone after the Group: visible, and undone in one step
+    expect(state.analysis.validity.get('filter101')?.length).toBeGreaterThan(0);
+    state.undo();
+    expect(state.document.query.getNode('group101')).toBeUndefined();
+    expect(state.document.query.getInputIds('filter101')).toEqual([
+      'relational101',
+    ]);
+  });
+
+  test('Names the Count rows of a Group by after the free name: Count Rows, then with a number', () => {
+    const schema = (...names: string[]): Schema =>
+      new Schema(
+        names.map(
+          (name) => new SchemaColumn(name, PrimitiveType.get('Integer'), false),
+        ),
+      );
+    expect(getGroupByCountName(schema('SHIP_COUNTRY'))).toBe('Count Rows');
+    // a Group of a Group: in any case
+    expect(getGroupByCountName(schema('SHIP_COUNTRY', 'count rows'))).toBe(
+      'Count Rows 2',
+    );
+    expect(getGroupByCountName(schema('Count Rows', 'COUNT ROWS 2', 'x'))).toBe(
+      'Count Rows 3',
+    );
+  });
+
   test("Filters on the cell's value, read as the column's type", async () => {
     const { state } = await setUp();
-    actionsOn(state, 'SHIP_COUNTRY')[1]?.apply();
+    actionsOn(state, 'SHIP_COUNTRY')[2]?.apply();
     expect(addedFilter(state).value).toEqual({
       kind: 'string',
       value: 'France',
@@ -202,20 +287,20 @@ describe('Grid quick actions', () => {
     ],
   ])('Reads a %s cell exactly', async (column, cell, value) => {
     const { state } = await setUp();
-    actionsOn(state, column, cell)[1]?.apply();
+    actionsOn(state, column, cell)[2]?.apply();
     expect(addedFilter(state).value).toEqual(value);
   });
 
   test('Filters a null cell with Is Empty, whatever its type', async () => {
     const { state } = await setUp();
-    expect(reasons(state, 'PAYLOAD', null)[1]).toBeUndefined();
-    actionsOn(state, 'PAYLOAD', null)[1]?.apply();
+    expect(reasons(state, 'PAYLOAD', null)[2]).toBeUndefined();
+    actionsOn(state, 'PAYLOAD', null)[2]?.apply();
     expect(addedFilter(state).operator).toBe(FilterOperator.IS_EMPTY);
   });
 
   test('Notes that comparing floating-point values may not match, and still filters', async () => {
     const { state } = await setUp();
-    const [, filterBy] = actionsOn(state, 'FREIGHT');
+    const [, , filterBy] = actionsOn(state, 'FREIGHT');
     expect(filterBy?.disabledReason).toBeUndefined();
     expect(filterBy?.hint).toBe(FILTER_FLOAT_COMPARISON_HINT);
   });
@@ -224,14 +309,17 @@ describe('Grid quick actions', () => {
     const { state } = await setUp();
     expect(reasons(state, 'PAYLOAD')).toEqual([
       CUBE_QUICK_ACTION_DISABLED_REASON.notSortable('Variant'),
+      CUBE_QUICK_ACTION_DISABLED_REASON.notGroupable('Variant'),
       CUBE_QUICK_ACTION_DISABLED_REASON.notComparable('Variant'),
     ]);
     expect(reasons(state, 'BLOB')).toEqual([
       CUBE_QUICK_ACTION_DISABLED_REASON.notSortable('Blob'),
+      CUBE_QUICK_ACTION_DISABLED_REASON.notGroupable('Blob'),
       CUBE_QUICK_ACTION_DISABLED_REASON.notComparable('Blob'),
     ]);
     // a value that doesn't read as the column's type
     expect(reasons(state, 'TOTAL', 'abc')).toEqual([
+      undefined,
       undefined,
       CUBE_QUICK_ACTION_DISABLED_REASON.UNREADABLE_VALUE,
     ]);
@@ -252,6 +340,7 @@ describe('Grid quick actions', () => {
     expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
       CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS,
       CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS,
+      CUBE_QUICK_ACTION_DISABLED_REASON.STALE_ROWS,
     ]);
     // a disabled action does nothing
     actionsOn(state, 'SHIP_COUNTRY')[0]?.apply();
@@ -270,6 +359,7 @@ describe('Grid quick actions', () => {
     expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
       CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING,
       CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING,
+      CUBE_QUICK_ACTION_DISABLED_REASON.RUNNING,
     ]);
     finish(RESULT);
     await run;
@@ -277,6 +367,7 @@ describe('Grid quick actions', () => {
       state.readOnly = true;
     });
     expect(reasons(state, 'SHIP_COUNTRY')).toEqual([
+      READ_ONLY_CUBE_TITLE,
       READ_ONLY_CUBE_TITLE,
       READ_ONLY_CUBE_TITLE,
     ]);
@@ -287,6 +378,7 @@ describe('Grid quick actions', () => {
     // Sort by, from a menu opened before a Filter was added
     const before = actionsOn(state, 'SHIP_COUNTRY');
     expect(before.map((action) => action.disabledReason)).toEqual([
+      undefined,
       undefined,
       undefined,
     ]);
@@ -310,13 +402,13 @@ describe('Grid quick actions', () => {
     const fresh = actionsOn(state, 'SHIP_COUNTRY');
     actionsOn(state, 'ORDER_ID')[0]?.apply();
     const afterSort = ids();
-    fresh[1]?.apply();
+    fresh[2]?.apply();
     expect(ids()).toBe(afterSort);
   });
 
   test('Filters a null Float cell with Is Empty, with no note on comparing floats', async () => {
     const { state } = await setUp();
-    const [, filterBy] = actionsOn(state, 'FREIGHT', null);
+    const [, , filterBy] = actionsOn(state, 'FREIGHT', null);
     expect(filterBy?.disabledReason).toBeUndefined();
     expect(filterBy?.hint).toBeUndefined();
     filterBy?.apply();
@@ -369,18 +461,19 @@ describe('Grid context menu', () => {
       items.map((item) => (typeof item === 'string' ? item : item.name)),
     ).toEqual([
       'Sort by "SHIP_COUNTRY"',
+      'Group by "SHIP_COUNTRY"',
       'Filter by "SHIP_COUNTRY"',
       'separator',
       'copy',
       'export',
     ]);
-    const filterBy = items[1];
+    const filterBy = items[2];
     expect(typeof filterBy === 'object' && filterBy.disabled).toBe(false);
   });
 
   test("Shows an enabled item's note as its tooltip, and none without a note", async () => {
     const { state } = await setUp();
-    const [, filterBy] = getCubeGridContextMenuItems(state, params('c2'));
+    const [, , filterBy] = getCubeGridContextMenuItems(state, params('c2'));
     expect(filterBy).toMatchObject({
       name: 'Filter by "FREIGHT"',
       disabled: false,

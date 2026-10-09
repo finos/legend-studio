@@ -31,6 +31,7 @@ import {
   observable,
 } from 'mobx';
 import {
+  CUBE_CSV_MESSAGE,
   CUBE_DIRECT_MESSAGE,
   CUBE_DIRECT_SAMPLE_SETUP_SQL,
 } from '../../__lib__/LegendCubeDirectConnectionLabels.js';
@@ -54,6 +55,11 @@ import {
   CubeTableFlag,
 } from '../../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import {
+  buildCubeCsvTable,
+  CUBE_CSV_SCHEMA,
+  CubeCsvError,
+} from './CubeCsvSetupSql.js';
 import {
   type CubeSourcePickerTab,
   CubeSourcePickerTabKey,
@@ -103,6 +109,17 @@ export const splitCubeSetupSql = (text: string): string[] => {
   return statements;
 };
 
+/** A file's text, read with a FileReader */
+const readFileText = (file: Blob): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () =>
+      resolve(typeof reader.result === 'string' ? reader.result : '');
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("The file can't be read"));
+    reader.readAsText(file);
+  });
+
 /** Whether a table can be picked: a table with a column Cube can't read can't */
 export const isExploredTableSelectable = (table: CubeExploredTable): boolean =>
   !table.flags.includes(CubeTableFlag.UNAVAILABLE);
@@ -136,6 +153,12 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
   isListing = false;
   isResolving = false;
   error: CubeDirectConnectionError | undefined;
+  /** DuckDB only: a CSV to add to the setup SQL as a table, pasted or read from a file */
+  csvText = '';
+  /** The CSV's table name: a chosen file's name, or what the viewer types */
+  csvTableName = '';
+  /** What the last CSV did: the table it added, or why it couldn't */
+  csvNote: { readonly message: string; readonly isError: boolean } | undefined;
 
   /** The connection the schemas were listed from */
   private testedConnection: CubeDirectConnection | undefined;
@@ -143,6 +166,7 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
   private testRequest = 0;
   private listRequest = 0;
   private confirmRequest = 0;
+  private csvFileRequest = 0;
 
   constructor(editorState: CubeEditorState) {
     makeObservable(this, {
@@ -158,6 +182,9 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
       isListing: observable,
       isResolving: observable,
       error: observable.ref,
+      csvText: observable,
+      csvTableName: observable,
+      csvNote: observable.ref,
       fixedConnection: computed,
       isAvailable: computed,
       isOffered: computed,
@@ -170,12 +197,17 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
       tables: computed,
       canTest: computed,
       canConfirm: computed,
+      canAddCsv: computed,
       setDatabaseType: action,
       setSetupSqlText: action,
       setDuckDbPath: action,
       selectSchema: action,
       selectTable: action,
       setTableSearch: action,
+      setCsvText: action,
+      setCsvTableName: action,
+      addCsv: action,
+      loadCsvFile: flow,
       open: action,
       close: action,
       testConnection: flow,
@@ -286,6 +318,83 @@ export class CubeDirectConnectionTabState implements CubeSourcePickerTab {
       table !== undefined &&
       isExploredTableSelectable(table)
     );
+  }
+
+  /** A CSV is loaded into an in-memory DuckDB database, before the cube has a connection */
+  get canAddCsv(): boolean {
+    return (
+      !this.fixedConnection &&
+      this.databaseType === CubeDirectDatabaseType.DUCKDB &&
+      this.csvText.trim() !== ''
+    );
+  }
+
+  setCsvText(text: string): void {
+    this.csvText = text;
+    this.csvNote = undefined;
+  }
+
+  setCsvTableName(name: string): void {
+    this.csvTableName = name;
+    this.csvNote = undefined;
+  }
+
+  /** Reads a chosen file as the CSV, its name (without extension) as the table's */
+  *loadCsvFile(file: File): GeneratorFn<void> {
+    const request = ++this.csvFileRequest;
+    try {
+      const text = (yield readFileText(file)) as string;
+      if (request !== this.csvFileRequest) {
+        return;
+      }
+      this.csvText = text;
+      this.csvTableName = file.name.replace(/\.[^.]*$/u, '');
+      this.csvNote = undefined;
+    } catch {
+      if (request === this.csvFileRequest) {
+        this.csvNote = {
+          message: CUBE_CSV_MESSAGE.UNREADABLE_FILE(file.name),
+          isError: true,
+        };
+      }
+    }
+  }
+
+  /**
+   * Adds the CSV to the setup SQL as a table: in place of the sample setup
+   * SQL the form starts with, after any other. Says why when it can't.
+   */
+  addCsv(): boolean {
+    if (!this.canAddCsv) {
+      return false;
+    }
+    try {
+      const table = buildCubeCsvTable(this.csvText, this.csvTableName);
+      const existing = this.setupSqlText.trim();
+      this.setSetupSqlText(
+        existing === '' || existing === CUBE_DIRECT_SAMPLE_SETUP_SQL
+          ? table.sql
+          : `${existing}\n${table.sql}`,
+      );
+      this.csvFileRequest++;
+      this.csvText = '';
+      this.csvTableName = '';
+      this.csvNote = {
+        message: CUBE_CSV_MESSAGE.ADDED(
+          `${CUBE_CSV_SCHEMA}.${table.table}`,
+          table.rowCount,
+          table.columns.length,
+        ),
+        isError: false,
+      };
+      return true;
+    } catch (error) {
+      if (!(error instanceof CubeCsvError)) {
+        throw error;
+      }
+      this.csvNote = { message: error.message, isError: true };
+      return false;
+    }
   }
 
   setDatabaseType(databaseType: CubeDirectDatabaseType): void {

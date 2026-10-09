@@ -15,11 +15,13 @@
  */
 
 import {
+  Concat,
   DataProductAccessPointSource,
   IngestDatasetSource,
   Distinct,
   Drop,
   Filter,
+  Group,
   Join,
   Limit,
   RelationalTableSource,
@@ -32,7 +34,8 @@ import {
 
 // The node editor's help text, verbatim from the original (spec §17.9), but
 // Slice's, which counts rows from 0 and leaves the stop row out (D5, PLAN
-// §11.4). A new node type adds its entry here.
+// §11.4), and Concat's, which matches columns by position (PLAN §11.5, Q8).
+// A new node type adds its entry here.
 
 export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [RelationalTableSource.TYPE]: 'Sources data from relational database table.',
@@ -42,11 +45,15 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   /** Added by Cube: the original has no ingest data set source (PLAN §6.7) */
   [IngestDatasetSource.TYPE]:
     'Sources data from a data set of a deployed ingest definition.',
+  [Concat.TYPE]:
+    'Combines the rows of the two previous data sets, keeping duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the same types.',
   [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',
   [Drop.TYPE]:
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
   [Filter.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
+  [Group.TYPE]:
+    'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
   [Join.TYPE]:
     'Joins two previous data sets using specified columns as join keys.',
   [Limit.TYPE]:

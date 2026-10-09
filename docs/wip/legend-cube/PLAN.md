@@ -1210,6 +1210,11 @@ internals (user, 2026-10-08): questions for the original app's team are about it
   allows: the engine accepts them from any client (hosting.md notes the exposure; revisit with Postgres). Once a table
   is added the connection is fixed until every table is removed (no "Edit connection" until QUESTIONS.md U8 is
   answered); reopening the dialog lists the connection's schemas at once.
+- **A CSV as a table (user, 2026-10-09):** on DuckDB, the tab takes a pasted CSV or a chosen file and writes it into the
+  setup SQL as a table of the `csv` schema (create, then the rows as inserts), which the viewer can edit before
+  testing the connection. Each column's type is guessed from its values; names are made safe for DuckDB. Up to 10,000
+  rows: the cube saves them with its connection, and every connection inserts them again (about 120 ms for 10,000 rows
+  on the local engine). No file reaches the engine's host.
 - **Columns the engine can't type** (it reports them as `Other`: on H2 REAL, TIME, BINARY, CLOB, UUID and arrays; on
   DuckDB HUGEINT, TIME, BLOB, UUID and arrays) are hidden, and the picker shows "N columns hidden".
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
@@ -2498,6 +2503,10 @@ Direct connection:
    `drop schema if exists s cascade; create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
    with `;`), **Test connection**, add `t` and press **F9**: 1 row.
 5. **Export (dev)** and **Import (dev)** the H2 cube: the same graph comes back, and **F9** gives the same rows.
+6. On a new cube, choose **DuckDB**, open **Load a CSV**, paste `id,city` / `1,Paris` / `2,Lima` (three lines), name
+   the table `cities` and click **Add to setup SQL**: the setup SQL now creates `csv.cities`, and the tab says "Added
+   table csv.cities: 2 rows, 2 columns". **Test connection**, pick schema `csv`, add `cities` and press **F9**: 2 rows.
+   Choosing a `.csv` file fills the box and the table name the same way.
 
 Data products:
 
@@ -2549,9 +2558,15 @@ errors.
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points
 and sources modal are designed. M3 can run in parallel if desired.
 
+**Every milestone that changes the UI ends with a demo video** of its new features (user, 2026-10-09), made as M1's
+and M2's were: a Playwright script in the evidence folder's `demo/` (e.g. `demo-m2.mjs`) drives the dev server against
+a local engine, with a caption per step and a screenshot per key moment; reviewers check each frame against its
+caption, and every claim in a caption must be visible on screen; the video goes to the user and onto the milestone's
+PR. Its step comes after the milestone's verification and rehearsal, before the rebase and PR.
+
 ### 11.4 M2: simple unary operations
 
-M2 is built on the branch `cube-ops`, on master since #5634 (M1.9) merged as `3260216a6`. Its status is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
+M2 was built on the branch `cube-ops`, on master since #5634 (M1.9) merged as `3260216a6`, and merged on 2026-10-09 as #5644 (`0335b3f5f`). Its status is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
 critic and a finalize step), 140 checklist items, a 17-step build order and 5 questions; the full result is kept in the
 local evidence folder. The engine facts below were probed on the local engine (`93d92b4`) at compile and plan time ✅.
 
@@ -2734,6 +2749,261 @@ This subsection overrides the sections it names until they are updated (see "Sup
 - PROGRESS.md's "In parallel" note: M1.9 merged (#5634, `3260216a6`); M2 runs on `cube-ops` from master, with its
   status in PROGRESS-M2.md. (`cubeV1` now holds the DuckDB WASM note, `81cf0d80c`, and two later docs commits of its
   own session.)
+
+### 11.5 M4: Group and Concat
+
+M4 is built on the branch `cube-m4`, from master `d1c3f3ae6` after M2 merged as #5644 (`0335b3f5f`); its first
+commit, `8c1d3f74e`, records that merge. Its status is in [PROGRESS-M4.md](PROGRESS-M4.md). Requirements:
+`m4-requirements` (three readers, for Group, Concat and the cross-cutting work, and a synthesizer that merged them and
+checked their claims): 52 checklist items, 16 steps and 8 questions, the full result kept in the local evidence folder
+(`m4-requirements-result.json`). Engine facts were probed on the local engine (`93d92b4`): ✅ only where the
+synthesizer re-ran the probe, 💭 where only a plan was made or a reader reported it.
+
+This subsection overrides the sections it names until they are updated (see "Supersessions" at its end).
+
+**Settled at the start of M4** (user, 2026-10-09, all on the requirements' recommendation):
+
+1. **Count rows** (answers §12.2 item 3): an aggregation with no column, `x|1 : y|$y->count()` (`count(1)` ✅), saved
+   as `{function: 'CountRows', name}`; the grid's `Group by "X"` adds it by default. Count of a column keeps D4's
+   meaning (non-empty values, not nullable).
+2. **Group keys:** a multi-select (spec §17.6) that stores new picks in the input's order, as Restrict does; a loaded
+   order is kept until the user changes the picks.
+3. **Output names are always stored.** The editor fills in the auto-name and follows column and function changes until
+   the user edits it; a saved aggregation with no name gets the auto-name on read and is written back with it.
+4. **An unknown, empty or window-only function** keeps the Group, holding the text: invalid with the spec's
+   `… is unknown.` or `… cannot be empty.`, saved again unchanged, editable; Rank and DenseRank count as unknown in
+   M4. (M2's empty sort direction is a decode error, but an invalid Group can't run, so no rows change.)
+5. **Concat types: strict, as D5 says** (a type next to its own ancestor too, though the engine accepts it ✅), plus a
+   saved setting that widens differing types within a family (numbers, strings or dates, broader than `TypeFamily`) by a
+   type-only cast to their least common ancestor. The type message offers **Convert types**, which turns it on. Across
+   families (`toOne()->toString()`) is later.
+6. **Concat autofixes, as separate buttons that say what they do:** a Rename before the second input (a different or
+   case-only name at a position, never a permutation), and a Restrict before the wider input (its extra columns, when
+   the other's names are an in-order subsequence), naming the columns it drops.
+7. **Conformance nullability is exact,** but each case declares the columns where Cube may be wider (outer-join
+   padding, the FULL merged key, Sum and Average) and asserts only that Cube says nullable there. Replaces §12.1's
+   one-way rule.
+8. **Concat wording:** ports `First` and `Second`; help text "Combines the rows of the two previous data sets, keeping
+   duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the
+   same types."
+
+9. **The alias shadow** (user, 2026-10-09, after M4.8): after renames that reuse a column's old name, nine database
+   types are written `GROUP BY` the alias that a column of the subquery shadows; Cube doesn't work around it. The
+   engine issue is drafted in ISSUES.md and `LegendCubeDialects.engine-roundtrip-test.ts` pins each database's form.
+
+**Decided without asking** (from the requirements, for review):
+
+- Output names: the spec's rules (§10.3), compared folded (`foldColumnName`), plus `isValidColumnName` (a `"` fails at
+  execution 💭).
+- VARIANT and OPAQUE are refused as Group keys (`isSortableType`, `TypeCompatibility.ts:77`) and offered Count only.
+- DistinctValue stays offered on Boolean (spec §10.1); its `max(bit)` on SQL Server, Sybase and Postgres (💭) goes to
+  ISSUES.
+- No keys emits `aggregate()` and reads `Aggregate all rows`; no aggregations is refused, never emitted (both NPEs ✅).
+- 'Add aggregation' is never disabled (spec §17.6 disables it once every column is used; a column can be aggregated
+  several ways). 'Group by "X"' splices after the selected node (spec §12.4).
+- Concat matches columns by position; the spec's generic message comes first, then Cube's precise ones; the editor is
+  a column-by-column comparison table; swapping inputs stays allowed, with no button.
+- No `CubeDialects` change: the plan-only facts are pinned in `LegendCubeDialects.engine-roundtrip-test.ts`.
+  `CubeSpecCorpus` types every node of every sample (still one-way). One patch changeset for both packages.
+- Corrections to the readers, kept as build rules: `CUBETEST.ALLTYPES` has three rows, ID 3 empty but for its key, and
+  no `I` or `VCNN` column (`CubeNorthwindModel.ts:43-46`), so expected values are worked out on it, not taken from
+  `test::TypesDb` (only BI's Sum, 9007199254740997, carries over). `ORDERS.FREIGHT` is `Double` in the Cube fixture
+  (`CubeNorthwindRelationTypes.json:289-291`; REAL in the DDL, `CubeNorthwindModel.ts:156`). Count rows has Q1's saved
+  shape, never `{aggregation: 'CountRows'}`. `findColumnOrigins` (`CubeJoinDraft.ts:156`) maps DistinctValue, Min and
+  Max outputs to their column, so the Join's "type unknown" warning still sees them. Keys keep the stored order, which
+  the engine follows ✅. The Concat setting's key ships with the kind, written with its default.
+
+**Aggregations** (`src/nodes/transforms/Aggregation.ts`, reused by M5's Partition). `ColumnAggregation` is
+`{column, function, name}`; `getAvailableAggregations(type)` serves validation, the editor and the quick action.
+
+| Function (saved) | Shown as       | Offered on                                      | Result type                                          | Nullable | Reduce                |
+| ---------------- | -------------- | ----------------------------------------------- | ---------------------------------------------------- | -------- | --------------------- |
+| `Count`          | Count          | every type                                      | Integer                                              | no       | `count()`             |
+| `DistinctCount`  | Distinct Count | every type but enumerations, VARIANT and OPAQUE | Integer                                              | no       | `distinct()->count()` |
+| `DistinctValue`  | Distinct Value | as Distinct Count                               | the input's precise type                             | yes      | `uniqueValueOnly()`   |
+| `Sum`            | Sum            | INTEGER, FLOAT, DECIMAL, NUMBER                 | Integer, Float, else Number                          | yes      | `sum()`               |
+| `Average`        | Average        | INTEGER, FLOAT, DECIMAL, NUMBER                 | Float                                                | yes      | `average()`           |
+| `Min`, `Max`     | Min, Max       | those, and DATE, STRICT_DATE, DATETIME          | as Sum; StrictDate; DateTime for Timestamp, DateTime | yes      | `min()`, `max()`      |
+| `CountRows`      | Count Rows     | no column                                       | Integer                                              | no       | `count()` on `x\|1`   |
+
+DECIMAL counts as numeric (spec §10.1 doesn't name it); `1.0 *` is never emitted. The auto-name is
+`<column> <Shown as>` (`ORDER_ID Count`), or `Count Rows`. Nullability decides rows: `FilterEmitter` guards a negation
+with `isEmpty` only on a nullable column (`FilterEmitter.ts:211`), and the engine types Sum and Average `[1]` ✅.
+
+**Group** (`group`, label `Group by Column`), a `UnaryNode`:
+
+- Holds `columns` (the keys, in stored order) and `aggregations`; the constructor refuses only wrong shapes. Schema:
+  `undefined` unless valid, else the keys as the input has them, in stored order, then one column per aggregation.
+- Validation, in order: `Group columns cannot have duplicates.`, `Group column does not have a name.`,
+  `Group column "X" is not present in the input schema.`, Cube's `Group column "X" of type <T> cannot be grouped.`;
+  then `Aggregations cannot be empty.`; then every row (`validateColumnAggregation`, exported): function empty or
+  unknown, a column on Count rows (`… does not allow column.`), the column present (label `Aggregation column`),
+  `… is incompatible with column "<c>".`, name empty, Cube's `Aggregation output name is not valid column name.`,
+  `… cannot be the same as input column name.` (folded), and two names equal when folded
+  (`… is already present in the output schema.`). The engine fails on duplicates with a 500 and no location (two
+  outputs ✅, a key twice 💭), so Cube refuses them first.
+- Saved: `{columns, aggregations: [{column, function, name}]}`, both lists always written; Count rows has no `column`;
+  a non-string field is a decode error; an unknown key on an entry makes an Unknown node (it could change the rows);
+  functions per Q4, names per Q3.
+- Emitted: `->groupBy(~[k…], ~[n: x|$x.c : y|$y-><reduce>])`, or `->aggregate(~[…])` with no keys, through a new
+  aggregation colSpec constructor (`colSpec(name, fn1)` can't set `fn2`, `CubeIR.ts:202-203`; the serializer already
+  writes `function2`, `V1_CubeLambdaSerializer.ts:158`), with new roles `group` and `aggregation`.
+- Row order: none, so no sort is written before it. A Sort before it gets M2's full-loss warning naming the Group by
+  its id ("This sort has no effect: group101 does not keep the row order. …", `MESSAGE_SORT_ORDER_LOST`,
+  `CubeMessages.ts:220`); after Sort → Restrict → Group the full loss replaces the partial one.
+  `describe()`: `Group by "a", "b"`.
+
+**The grid's 'Group by "X"'**, between Sort by and Filter by: keys `[X]` and Count rows (its name suffixed if it folds
+to an input column's), added after the node that ran as one undo step that selects it, never run; disabled for M2's
+shared reasons and on a type that can't be grouped (a new `LegendCubeLabels` reason). It changes the schema, so later
+nodes may turn invalid (visible, undoable).
+
+**Concat** (`concat`, label `Concatenate Another Input`), a plain `BinaryNode` on the default ports
+(`QueryNode.ts:156-172`), with `portLabels` First and Second:
+
+- Validation, in order: a missing input (ERR_INCOMPLETE); the same column count (the engine doesn't check it ✅); the
+  same name at each position, case-sensitive; equal types at each position, or with Convert types a least common
+  ancestor (`getLeastCommonAncestor`, `TypeCompatibility.ts:128`; the registry's roots Number, String, Date and
+  Boolean have no parent, so there is none across them). Nullability is never compared.
+- Messages: `Both input schemas must be identical.` (`CubeMessages.ts:123`), then Cube's, for every differing position
+  (settled in M4.9): `The first input has <n1> columns and the second <n2>.` (`1 column` when n1 is 1),
+  `Column <i> is "<a>" in the first input and "<b>" in the second: columns are matched by position.`,
+  `The inputs have the same columns in a different order: columns are matched by position.`,
+  `Column "<c>" is <T1> in the first input and <T2> in the second.` (short names, or paths when both share one, as
+  two enumerations `a::Region` and `b::Region` can); with Convert types, for types it can't convert (settled in M4.13):
+  `Column "<c>" is <T1> in the first input and <T2> in the second, which can't be converted to one type.`
+- Schema: the first input's names and types (the ancestor where widened), `nullable1 || nullable2` ✅.
+- Convert types (built in M4.13, `getConcatConvertedType`): Varchar lengths give String, SmallInt and Int Integer, Int
+  and Float4 Number, two Numeric precisions Decimal, StrictDate and Timestamp Date; never across numbers, strings and
+  dates, nor VARIANT, OPAQUE or two enumerations. Emitted on each input that needs it as
+  `->extend(~[cube_cast: x|$x.<c>->cast(@<T>), cube_cast2: …])->select(~[…])->rename(~cube_cast, ~<c>)…`, the
+  temporaries avoiding the input's names in any case, with no SQL cast ✅ (`@String`, `@Integer`, `@Number`,
+  `@Float`, `@Decimal`, `@Date` and `@DateTime` type and run on H2 ✅); never a relation-level cast, which the engine
+  doesn't check 💭. H2 shows a StrictDate unioned with a Timestamp as midnight timestamps ✅ (Join refuses that pair
+  as keys), and the converted Date then compares with a StrictDate or a Timestamp downstream (the older rule for an
+  abstract Date), so a Join or Filter on it matches only midnight ✅: the Join and Filter editors warn (user,
+  2026-10-09; `isDateOrTimestampType`, `DATE_OR_TIMESTAMP_WARNING`). The
+  editor never offers Convert types for a column whose real type Cube doesn't know (the database may fail to
+  convert it ✅).
+- Autofixes in a core `ConcatAutofix.ts` (as `JoinAutofix.ts`): one query change and one undo step each, the selection
+  kept, the panel's edits applied first; the Rename is refused when a new name folds to an untouched column.
+- Saved: `{kind: 'concat', id, inputs, widenTypes}` (settled in M4.9), always written, `false` included; a missing key
+  is a decode error, and a value that isn't true or false makes an Unknown node.
+- Emitted: `<first>->concatenate(<second>)`, role `concat`, asserting both inputs' column count and names. Row order:
+  none (a Sort on either input gets the full-loss warning). `describe()`: `Concatenate additional input`, plus
+  `, converting types` with the setting on.
+
+**Conformance suite** (`CubeInferenceConformance.engine-roundtrip-test.ts`): every node of every case that
+`QueryEmitter.canEmit` accepts, Cube's schema against the engine's type of `emitTypingLambda(nodeId)`, in one
+`typeLambdas` batch: names in position, `type.fullName`, nullability exact but for each case's `widerNullable` columns
+(Q7). A guard fails when a type `createNodeRegistry()` registers has no case, but a data product's access point, which
+the open-source engine doesn't read (§6.8; its stand-in test checks its types).
+`TEST__expectEngineTyping` stays one-way for M2's tests; both use `TEST__typingDifferences` (`CubeOperationsTestUtils.ts`). The engine is created
+inside the test, never in `beforeAll`; the suite runs against the moving CI engine image, so its failure message says
+the engine's typing may have changed. Cases: the ALLTYPES families and FREIGHT, Filter, the four Joins, the Join
+autofix, every M2 operation, every aggregation × family, keys listed in a non-input order, a global aggregate, a Group
+of a Group, a Group after a LEFT join, Concats of equal, nullable-mixed and widened schemas, never a count mismatch
+(typed as the shorter relation ✅).
+
+**Databases.** Every Group and Concat shape plans on 11 database types 💭, so no `CUBE_DIALECT_WORKAROUNDS` entry and
+`WORKAROUND_TYPES` unchanged (`CubeDialects.ts:110-139`); `needsDatabaseType` already walks every input. The plan-only
+test pins `count(distinct …)`, `avg(1.0 * …)`, `count(1)`, HAVING after a Group, Cube's row numbers for Sybase IQ's
+Limit after a Group, the GROUP BY target after two Renames, no ORDER BY in a derived table under a GROUP BY on SQL
+Server and Sybase, a Distinct before a Group kept as a `select distinct` subquery, one UNION ALL per Concat with each
+input's ORDER BY in its own derived table with its TOP, LIMIT or FETCH, and a Limit after a Concat wrapping the whole
+union. ISSUES drafts: that alias shadow, `max(bit)` for a Boolean DistinctValue, SQL Server's `SUM(int)` overflow.
+
+**Builder.** Menu order Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, Concat, Join (spec §7.0);
+a type is registered, sampled in `operations.cube.json` and given conformance cases in the step that adds its editor,
+help text and icon. Both editors work in either host (§12.2 item 1).
+
+- Group: "Group columns" (Q2; VARIANT and OPAQUE disabled), then rows "Aggregation column <n>", "Aggregation function
+  <n>" (a native select) and "Aggregation output name <n>", each with its messages; one blank row to start, a row
+  with no column left out unless it is Count rows, Count set when a column is picked first. Notes: Count counts
+  non-empty values; Distinct Value is the one distinct non-empty value, else empty; no keys gives one row, even over
+  no rows. Help text spec §17.9's; icon `DataCubeIcon.TableGroupBy` (`DataCubeIcon.tsx:152`).
+- Concat: the requirement in words, a comparison table (each position's names, types and nullable markers, differences
+  marked), the "type unknown" warning, the autofix buttons when they apply, and from M4.13 a `CubeConcatDraft` with
+  the Convert types checkbox and the target types (until then in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`,
+  `CubeNodeDraftRegistry.ts:73`). Help text per Q8; icon `LayerGroupIcon` (`Icon.ts:579`).
+
+**Engine facts** (probes under `m4-requirements/`, on the shared Northwind model that the evidence folder's `nw.mjs`
+loads (`nw_pmcd_resp.json`: FREIGHT is OTHER and there is no CUBETEST schema), unless `test::TypesDb` is named; none ran
+on the Cube fixture, which copies that model with corrections that don't touch these columns):
+
+| Fact                                                                                                                                                                                                                                                               |     | Probe                                                             |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --- | ----------------------------------------------------------------- |
+| Count, DistinctCount, Sum, Average and Count rows are typed `[1]`; Min, Max and DistinctValue `[0..1]`; SmallInt's Sum is Integer, Average Float, Varchar(15)'s Max stays Varchar(15); keys come out in the order listed; a key filter after a Group is HAVING     | ✅  | `synth/r1-group-types.out`, `r2.out`                              |
+| The null SHIP_REGION group: Count 0, Count rows 507; an aggregate over no rows gives one row (0, 0, null, 0)                                                                                                                                                       | ✅  | `synth/r5.out`, `r3.out`                                          |
+| No keys: an NPE (500, no location). On `test::TypesDb`: no aggregations is an NPE too; two outputs with one name give a 500 "at ??"; an all-null group's Sum is null though typed `[1]`, and a negated filter on it drops the group without Cube's `isEmpty` guard | ✅  | `synth/r4.out`, `s1-types.out`                                    |
+| A Concat count mismatch compiles, typed as the shorter relation, and fails at execution                                                                                                                                                                            | ✅  | `synth/c1.out`                                                    |
+| Concat ORs nullability, accepts a type next to its ancestor (SmallInt with Integer gives Integer), refuses siblings and another order (a located 400)                                                                                                              | ✅  | `synth/c2.out`, `c3.out`, `c5.out`, `c6.out`                      |
+| A type-only `cast(@String)` lets two Varchar lengths concatenate, with no SQL cast, on H2                                                                                                                                                                          | ✅  | `synth/w1.out`                                                    |
+| Result types for every family and a Group of a Group; Sum and Average refused on dates, strings, Booleans and enums                                                                                                                                                | 💭  | `group/t1-types.out`, `t4-second-level.out`                       |
+| Every shape plans on H2, Postgres, SqlServer, Sybase, SybaseIQ, DB2, MemSQL, Snowflake, Databricks, ClickHouse and Oracle                                                                                                                                          | 💭  | `group/p1`–`p5`, `cross-cutting/s1`–`s8`, `concat/d1`–`d9`        |
+| After two Renames, MemSQL, SybaseIQ and ClickHouse group by the real column the alias shadows; a Boolean DistinctValue is `max(B)`                                                                                                                                 | 💭  | `group/n1-alias.out`, `p3-boolean.out`                            |
+| `cast(@String)` on a number fails on H2; a relation-level cast is unchecked; a LEFT-join padded key is typed `[1]`, through a Group too                                                                                                                            | 💭  | `concat/widen1.out`, `relcast2.out`, `cross-cutting/nw_types.out` |
+
+**Steps:**
+
+| Step  | Deliverable                                                                                                                                                                                                            | Done when                                                                       |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| M4.1  | This subsection and PROGRESS-M4.md (docs only)                                                                                                                                                                         | Committed                                                                       |
+| M4.2  | The conformance suite on M2's node types; `CubeSpecCorpus` types every node                                                                                                                                            | Passes with only the declared exceptions; a removed case fails the guard        |
+| M4.3  | The aggregation model (core) and Cube's messages                                                                                                                                                                       | Every family × function cell and message tested                                 |
+| M4.4  | Group in the core: node, emitter, codec (Q3, Q4), row order; not registered                                                                                                                                            | `printIR` shows `groupBy`, `aggregate` and Count rows                           |
+| M4.5  | Group in the builder, registered after Sort; `findColumnOrigins`; a sample; Group conformance cases                                                                                                                    | Builder, registry and conformance tests pass                                    |
+| M4.6  | Group on the engine (the first Cube-emitted `function2`, ALLTYPES, 21 countries, 830 rows, the 507, BI's Sum, a zero-row aggregate giving one row, a negated filter on a Sum keeping ALLTYPES ID 3) and in the browser | Engine tests pass; a Group built, run and saved in the browser                  |
+| M4.7  | The grid's 'Group by "X"'                                                                                                                                                                                              | Enabled, disabled and splice cases tested                                       |
+| M4.8  | Group around the databases: plan-only facts, ISSUES drafts                                                                                                                                                             | The plan-only test passes on every database type                                |
+| M4.9  | Concat in the core: validation, messages, emitter, codec with the setting's key, row order; not registered                                                                                                             | Every message checked exactly                                                   |
+| M4.10 | Concat in the builder, registered between Slice and Join; a sample; Concat conformance cases                                                                                                                           | Builder, registry and conformance tests pass                                    |
+| M4.11 | Concat on the engine (CUSTOMERS and SUPPLIERS give 120 rows; a Distinct after; a Limit inside) and plan-only UNION ALL facts                                                                                           | Engine and plan-only tests pass                                                 |
+| M4.12 | The Rename and Restrict autofixes and their buttons                                                                                                                                                                    | Each fix turns a Concat valid, or isn't offered                                 |
+| M4.13 | Convert types: target types, schema, casts, the draft's checkbox; engine tests on ALLTYPES and Varchar lengths                                                                                                         | Widened Concats type as Cube infers, run on H2 and plan everywhere              |
+| M4.14 | Both adding-an-operation guides, testing.md's conformance section, README lists, ISSUES drafts, one patch changeset                                                                                                    | `yarn check:ci` passes                                                          |
+| M4.15 | Verification (reviewers and a skeptic per finding) and an evidence-folder browser rehearsal                                                                                                                            | Every finding fixed or recorded; the rehearsal passes                           |
+| M4.16 | A demo video of M4's features (§11.3): Group and its editor, the grid's Group by, Concat, its autofixes and Convert types, with captions; key frames checked against their captions                                    | The video plays every M4 feature, each caption true on screen; sent to the user |
+| M4.17 | Rebase after agreeing the landing order with cube-direct; fold the supersessions below; PR when the user asks                                                                                                          | The plan consistent; the PR open on the user's word                             |
+
+**Landing order (user, 2026-10-09).** The PR is marked ready for review after M4.13, with the changeset (M4.14's) and
+its description updated and every gate green; M4.14's guides, M4.15, M4.16 and M4.17's folding follow as fixes on the
+open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
+
+**Risks and open gaps:**
+
+- Every non-H2 database fact is a plan 💭, and DuckDB not even that (its plans fail with a static connection; cube-direct
+  makes it reachable). Widening relies on each database's UNION coercing within a family: only two Varchar lengths ran,
+  on H2 ✅; numbers and dates are untested (StrictDate with Timestamp on H2 is reader-reported 💭).
+- Cube's validation and the emitter's assertion are the only guards against a Concat count mismatch ✅. Untyped OTHER
+  columns pass the type check: a warning only, as for Join. Exact nullability may expose M2 mismatches (hence M4.2
+  first).
+- Open: ALLTYPES' expected values (M4.6); where engine errors land (the `aggregation` role, the Concat); how §7.4's
+  editor without settings carries Concat's autofix buttons (M4.12) before M4.13 gives it a draft; whether
+  `CubeColumnPicker` keeps a stored order; a nameless saved aggregation with no auto-name (an unknown or empty function, or a column function without a column) is read as an empty name, written back as `name: ""` and invalid, its empty name reported once its function and column are valid (settled in M4.4); VARIANT, OPAQUE and enum rows (none in the fixture); the PCT manifests; Rank and DenseRank against Q4 (M5: `validateColumnAggregation` then takes the functions each use allows, so Rank stays unknown in a Group); copying Q2 and Q3 to QUESTIONS.md U12, which exists only on `cubeV1` and `cube-direct`.
+
+**Supersessions** (applied in M4.17; kept as the record of what M4 changed):
+
+- D5: clarified by Q5. §4: Group and Concat entries; §4.2: a widened Concat column takes the ancestor type. §7.2:
+  Concat's ports read First and Second; §7.4: the Group and Concat editors.
+- §5.7: Count rows; Count, DistinctCount and Count rows are not nullable, the rest are, and Sum and Average are the
+  suite's declared exceptions (Q7); DECIMAL is numeric; VARIANT and OPAQUE offer Count only.
+- §5.8 "Lambda (later)" and §8.8's Concat row: widening is a type-only `cast` within a family (`toString()` across
+  families, later); the engine accepts a type next to its ancestor ✅, so strictness is D5's choice; a count mismatch
+  is typed as the shorter relation ✅. §8.8's Group row and aggregations table gain Count rows.
+- §8.9 and Appendix B: only Count, DistinctCount, Sum, Average and Count rows are typed `[1]` ✅; `concatenate`'s
+  shorter typing; M4's ISSUES drafts once filed.
+- §9 and Appendix A §12.4: Group by comes in M4 and adds Count rows (spec §7.2: Count of X).
+- §10.3: the Group and Concat shapes, Q3's name on read, Q4's kept functions, Concat's key shipped with the kind.
+- §11.3's M4 row: Convert types instead of a widen autofix, the Rename and Restrict autofixes, Count rows, Group by,
+  and a suite exact on nullability with declared exceptions. §12.1: "conformance allows Cube ⊇ engine only" gives
+  way to Q7. §12.2 item 3: answered (Q1).
+- Appendix A: §7.2 (Count rows by default, `Aggregate all rows`, VARIANT and OPAQUE keys, key order); §7.10 (Convert
+  types by a type-only cast, not "real conversions"; First and Second; Cube's messages; the autofixes; a setting where
+  the spec says "no state"); §10 (Count rows, DECIMAL, VARIANT and OPAQUE, unknown functions kept); §10.2 (DistinctCount
+  and Count rows not nullable either); §10.3 (names always stored); §17 (Concat's ports read First and Second, beside
+  Join's Left and Right); §17.6 (keys in input order, 'Add aggregation' never disabled, a Concat editor where the spec
+  says "Nothing"); §17.9 (Concat's help text).
 
 ---
 

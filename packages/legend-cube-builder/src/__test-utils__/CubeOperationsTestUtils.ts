@@ -145,6 +145,89 @@ export const TEST__inferredSchema = (
   return schema as Schema;
 };
 
+/** A node of a query to type with the engine, under a key of its own */
+export interface TEST__TypingTarget {
+  key: string;
+  query: Query;
+  nodeId: string;
+}
+
+/**
+ * Every node of the query that can be emitted, keyed `<prefix>/<node id>`, in
+ * the query's node order
+ */
+export const TEST__emittableNodes = (
+  prefix: string,
+  query: Query,
+): TEST__TypingTarget[] => {
+  const emitter = new QueryEmitter(query);
+  return query.nodes
+    .filter((node) => emitter.canEmit(node.id))
+    .map((node) => ({ key: `${prefix}/${node.id}`, query, nodeId: node.id }));
+};
+
+/** The engine's schema of each target, in one engine call */
+export const TEST__engineSchemas = async (
+  engine: CubeEngine,
+  targets: readonly TEST__TypingTarget[],
+): Promise<Map<string, Schema | Error>> =>
+  engine.typeLambdas(
+    CUBE_NORTHWIND_MODEL,
+    new Map(
+      targets.map(({ key, query, nodeId }) => [
+        key,
+        new QueryEmitter(query).emitTypingLambda(nodeId),
+      ]),
+    ),
+  );
+
+/**
+ * How Cube's schema of a node differs from the engine's, one line per
+ * difference: names, positions and types with their parameters must be the
+ * same. Nullability must be the same too, except on the columns in
+ * `widerNullable`, where the engine misreports it (outer-join padding, the
+ * FULL merged key: PLAN §4.7, §11.5) and Cube must say nullable. With
+ * `oneWay`, Cube may be wider on any column.
+ */
+export const TEST__typingDifferences = (
+  key: string,
+  cube: Schema | undefined,
+  engineSchema: Schema | Error | undefined,
+  options: {
+    widerNullable?: readonly string[] | undefined;
+    oneWay?: boolean | undefined;
+  } = {},
+): string[] => {
+  if (!cube) {
+    return [`${key}: Cube infers no schema`];
+  }
+  if (!(engineSchema instanceof Schema)) {
+    return [`${key}: the engine gives no schema (${engineSchema?.message})`];
+  }
+  const describe = (schema: Schema): string[] =>
+    schema.columns.map((column) => `${column.name}: ${column.type.fullName}`);
+  if (describe(cube).join() !== describe(engineSchema).join()) {
+    return [
+      `${key}: columns [${describe(cube).join(', ')}], the engine's [${describe(engineSchema).join(', ')}]`,
+    ];
+  }
+  const wider = new Set(options.widerNullable ?? []);
+  return cube.columns.flatMap((column, index) => {
+    const engineNullable = engineSchema.columns[index]?.nullable === true;
+    if (wider.has(column.name)) {
+      return column.nullable
+        ? []
+        : [`${key}: ${column.name} should be nullable`];
+    }
+    return column.nullable === engineNullable ||
+      (options.oneWay && column.nullable)
+      ? []
+      : [
+          `${key}: ${column.name} is ${column.nullable ? '' : 'not '}nullable, the engine's ${engineNullable ? '' : 'not '}nullable`,
+        ];
+  });
+};
+
 /**
  * The engine types the node as Cube infers it: the same names, in the same
  * order, of the same types and parameters. Cube's nullability may only be
@@ -155,23 +238,15 @@ export const TEST__expectEngineTyping = async (
   query: Query,
   nodeId = query.selected ?? '',
 ): Promise<void> => {
-  const cube = TEST__inferredSchema(query, nodeId);
-  const typed = (
-    await engine.typeLambdas(
-      CUBE_NORTHWIND_MODEL,
-      new Map([[nodeId, new QueryEmitter(query).emitTypingLambda(nodeId)]]),
-    )
-  ).get(nodeId);
-  expect(typed).toBeInstanceOf(Schema);
-  const engineSchema = typed as Schema;
+  const typed = await TEST__engineSchemas(engine, [
+    { key: nodeId, query, nodeId },
+  ]);
   expect(
-    cube.columns.map((column) => [column.name, column.type.fullName]),
-  ).toEqual(
-    engineSchema.columns.map((column) => [column.name, column.type.fullName]),
-  );
-  cube.columns.forEach((column, index) => {
-    if (engineSchema.columns[index]?.nullable) {
-      expect([column.name, column.nullable]).toEqual([column.name, true]);
-    }
-  });
+    TEST__typingDifferences(
+      nodeId,
+      TEST__inferredSchema(query, nodeId),
+      typed.get(nodeId),
+      { oneWay: true },
+    ),
+  ).toEqual([]);
 };

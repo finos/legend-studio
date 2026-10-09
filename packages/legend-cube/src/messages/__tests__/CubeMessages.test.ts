@@ -172,6 +172,12 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_FILTER_VALUE_BACKSLASH('starts with')).toBe(
     'Filter values for "starts with" cannot contain a backslash (\\) yet.',
   );
+  expect(MESSAGES.MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID).toBe(
+    'Aggregation output name is not valid column name.',
+  );
+  expect(
+    MESSAGES.MESSAGE_GROUP_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
+  ).toBe('Group column "PAYLOAD" of type Variant cannot be grouped.');
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );
@@ -189,6 +195,45 @@ test(unitTest('Messages added by Cube'), () => {
   );
   expect(MESSAGES.MESSAGE_SORT_COLUMNS_CUT(['C', 'D'])).toBe(
     'Sorting by "C", "D" has no effect either: they come after a removed column.',
+  );
+  // Concat's, each after the spec's MESSAGE_INPUT_SCHEMAS_DIFFER (PLAN §11.5)
+  expect(MESSAGES.MESSAGE_CONCAT_COLUMN_COUNT(1, 2)).toBe(
+    'The first input has 1 column and the second 2.',
+  );
+  expect(MESSAGES.MESSAGE_CONCAT_COLUMN_COUNT(2, 1)).toBe(
+    'The first input has 2 columns and the second 1.',
+  );
+  expect(MESSAGES.MESSAGE_CONCAT_COLUMN_COUNT(3, 2)).toBe(
+    'The first input has 3 columns and the second 2.',
+  );
+  expect(MESSAGES.MESSAGE_CONCAT_COLUMN_COUNT(0, 1)).toBe(
+    'The first input has 0 columns and the second 1.',
+  );
+  expect(MESSAGES.MESSAGE_CONCAT_COLUMN_NAME(2, 'CITY', 'TOWN')).toBe(
+    'Column 2 is "CITY" in the first input and "TOWN" in the second: columns are matched by position.',
+  );
+  expect(MESSAGES.MESSAGE_CONCAT_COLUMN_ORDER).toBe(
+    'The inputs have the same columns in a different order: columns are matched by position.',
+  );
+  expect(
+    MESSAGES.MESSAGE_CONCAT_COLUMN_TYPE('CITY', 'Varchar(15)', 'Varchar(40)'),
+  ).toBe(
+    'Column "CITY" is Varchar(15) in the first input and Varchar(40) in the second.',
+  );
+  // a Concat that converts types (PLAN §11.5, Q5)
+  expect(
+    MESSAGES.MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE('ID', 'Int', 'Varchar(15)'),
+  ).toBe(
+    `Column "ID" is Int in the first input and Varchar(15) in the second, which can't be converted to one type.`,
+  );
+  expect(
+    MESSAGES.MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE(
+      'REGION',
+      'a::Region',
+      'b::Region',
+    ),
+  ).toBe(
+    `Column "REGION" is a::Region in the first input and b::Region in the second, which can't be converted to one type.`,
   );
 });
 
