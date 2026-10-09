@@ -868,6 +868,55 @@ describe(unitTest('createAccessorFromPackageableElement — Database'), () => {
     ).toBe(PrimitiveType.BOOLEAN);
   });
 
+  test('looks a table up only in the requested schema', async () => {
+    const db = createTestDatabase('test::MyDB', [
+      {
+        name: 'schema1',
+        tables: [
+          {
+            name: 'T',
+            columns: [{ name: 'A', type: new VarChar(10) }],
+          },
+          {
+            name: 'ONLY_IN_1',
+            columns: [{ name: 'X', type: new VarChar(10) }],
+          },
+        ],
+      },
+      {
+        name: 'schema2',
+        tables: [
+          {
+            name: 'T',
+            columns: [
+              { name: 'B', type: new RelationalInteger() },
+              { name: 'C', type: new RelationalInteger() },
+            ],
+          },
+        ],
+      },
+    ]);
+
+    const accessor = guaranteeNonNullable(
+      await createAccessorFromPackageableElement(db, {
+        schemaName: 'schema2',
+        tableName: 'T',
+      }),
+    );
+    expect(accessor.schema).toBe('schema2');
+    expect(accessor.relationType.columns.map((column) => column.name)).toEqual([
+      'B',
+      'C',
+    ]);
+    // no fallback to a table of that name in another schema
+    expect(
+      await createAccessorFromPackageableElement(db, {
+        schemaName: 'schema2',
+        tableName: 'ONLY_IN_1',
+      }),
+    ).toBeUndefined();
+  });
+
   test('strips the surrounding quotes from quoted column names, like the engine', async () => {
     const db = createTestDatabase('test::MyDB', [
       {

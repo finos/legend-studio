@@ -130,6 +130,7 @@ import {
 import {
   AccessorInstanceValue,
   DataProductAccessor,
+  RelationalStoreAccessor,
 } from '../../../../../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import {
   DataProduct,
@@ -137,7 +138,10 @@ import {
 } from '../../../../../../../../graph/metamodel/pure/dataProduct/DataProduct.js';
 import { Database } from '../../../../../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
 import { IngestDefinition } from '../../../../../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
-import { V1_createAccessorFromPackageableElementWithNonFunctionSources } from '../../../../helpers/V1_AccessorHelper.js';
+import {
+  V1_createAccessorFromPackageableElementWithNonFunctionSources,
+  V1_resolveRelationalStoreAccessorPath,
+} from '../../../../helpers/V1_AccessorHelper.js';
 
 const buildPrimtiveInstanceValue = (
   type: PRIMITIVE_TYPE,
@@ -562,14 +566,13 @@ export class V1_ValueSpecificationBuilder
           valueSpecification.value,
           V1_RelationStoreAccessor,
         );
-        const dbPath = guaranteeNonNullable(protocol.path[0]);
-        const schemaName = protocol.path[1];
-        const tableName = protocol.path[2];
+        const { databasePath, schemaName, tableName, hasExplicitSchema } =
+          V1_resolveRelationalStoreAccessorPath(protocol.path);
         const db = guaranteeType(
-          this.context.resolveElement(dbPath, false).value,
+          this.context.resolveElement(databasePath, false).value,
           Database,
         );
-        const accessor = guaranteeNonNullable(
+        const accessor = guaranteeType(
           V1_createAccessorFromPackageableElementWithNonFunctionSources(
             db,
             this.context,
@@ -578,8 +581,11 @@ export class V1_ValueSpecificationBuilder
               tableName,
             },
           ),
-          `Can't build accessor for database '${dbPath}'`,
+          RelationalStoreAccessor,
+          `Can't find table '${tableName}' in schema '${schemaName}' and database '${databasePath}'`,
         );
+        // keep `#>{db.TABLE}#` as written rather than adding `default`
+        accessor.hasExplicitSchema = hasExplicitSchema;
         const accessorInstanceValue = new AccessorInstanceValue();
         accessorInstanceValue.values = [accessor];
         accessorInstanceValue.genericType = GenericTypeExplicitReference.create(

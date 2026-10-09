@@ -498,6 +498,102 @@ export const TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabase_With
     parameters: [],
   };
 
+// `#>{database::TestDatabase.TEST0}#`: the default schema, written without it
+export const TEST_DATA__QueryBuilder_Accessors_SimpleProjectionWithDatabaseDefaultSchema =
+  {
+    _type: 'lambda',
+    body: [
+      {
+        _type: 'func',
+        function: 'from',
+        parameters: [
+          {
+            _type: 'func',
+            function: 'project',
+            parameters: [
+              {
+                _type: 'classInstance',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                type: '>',
+                value: {
+                  path: ['database::TestDatabase', 'TEST0'],
+                },
+              },
+              {
+                _type: 'classInstance',
+                multiplicity: {
+                  lowerBound: 1,
+                  upperBound: 1,
+                },
+                type: 'colSpecArray',
+                value: {
+                  colSpecs: [
+                    {
+                      function1: {
+                        _type: 'lambda',
+                        body: [
+                          {
+                            _type: 'property',
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                            property: 'FIRSTNAME',
+                          },
+                        ],
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                        ],
+                      },
+                      name: 'Firstname',
+                    },
+                    {
+                      function1: {
+                        _type: 'lambda',
+                        body: [
+                          {
+                            _type: 'property',
+                            parameters: [
+                              {
+                                _type: 'var',
+                                name: 'x',
+                              },
+                            ],
+                            property: 'LASTNAME',
+                          },
+                        ],
+                        parameters: [
+                          {
+                            _type: 'var',
+                            name: 'x',
+                          },
+                        ],
+                      },
+                      name: 'Lastname',
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+          {
+            _type: 'packageableElementPtr',
+            fullPath: 'runtime::LakehouseRuntime',
+          },
+        ],
+      },
+    ],
+    parameters: [],
+  };
+
 export const TEST_DATA__QueryBuilder_Accessors_SimpleSelectOnIngest = {
   _type: 'lambda',
   body: [

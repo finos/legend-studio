@@ -51,11 +51,13 @@ import { V1_PackageableType } from '../model/packageableElements/type/V1_Package
 import {
   LogEvent,
   LogService,
+  assertTrue,
   returnUndefOnError,
   type PlainObject,
 } from '@finos/legend-shared';
 import {
   CORE_PURE_PATH,
+  DEFAULT_DATABASE_SCHEMA_NAME,
   ELEMENT_PATH_DELIMITER,
   MILESTONE_INGEST_COLUMNS,
   PRECISE_PRIMITIVE_TYPE,
@@ -453,11 +455,86 @@ export const V1_buildRelationTypeFromAccessPointImplementation = (
   );
 };
 
+const countDoubleQuotes = (value: string): number =>
+  value.split('"').length - 1;
+
+/**
+ * The engine's grammar splits `#>{...}#` on every `.`, even inside a quoted
+ * name, so `#>{db.S."a.b"}#` arrives as `['db', 'S', '"a', 'b"']`. A piece
+ * with an unclosed quote is never a whole name: join it with the pieces that
+ * follow until the quote closes. A quote that never closes leaves the path
+ * unchanged.
+ */
+const rejoinQuotedAccessorPathSegments = (path: string[]): string[] => {
+  const segments: string[] = [];
+  let pending: string | undefined;
+  for (const segment of path) {
+    pending = pending === undefined ? segment : `${pending}.${segment}`;
+    if (countDoubleQuotes(pending) % 2 === 0) {
+      segments.push(pending);
+      pending = undefined;
+    }
+  }
+  return pending === undefined ? segments : path;
+};
+
+export interface V1_RelationalStoreAccessorPath {
+  databasePath: string;
+  schemaName: string;
+  tableName: string;
+  /**
+   * `false` for `#>{db.TABLE}#`, which names no schema and means the default
+   * schema.
+   */
+  hasExplicitSchema: boolean;
+}
+
+/**
+ * Reads the path of a relational store accessor the way the engine does:
+ * `#>{db.schema.TABLE}#` is table `TABLE` in `schema`, and `#>{db.TABLE}#` is
+ * table `TABLE` in the default schema. A path with no table, or with more than
+ * three parts, is rejected. Pieces split inside a quoted name are joined back
+ * first.
+ */
+export const V1_resolveRelationalStoreAccessorPath = (
+  path: string[],
+): V1_RelationalStoreAccessorPath => {
+  const segments = rejoinQuotedAccessorPathSegments(path);
+  assertTrue(
+    segments.length >= 2,
+    'Error in the accessor definition. Please provide a table.',
+  );
+  assertTrue(
+    segments.length <= 3,
+    `RelationStoreAccessor path must be of the form 'db.table' or 'db.schema.table' (got ${segments.length} segments: '${path.join('.')}')`,
+  );
+  const [databasePath, second, third] = segments as [
+    string,
+    string,
+    string | undefined,
+  ];
+  return third === undefined
+    ? {
+        databasePath,
+        schemaName: DEFAULT_DATABASE_SCHEMA_NAME,
+        tableName: second,
+        hasExplicitSchema: false,
+      }
+    : {
+        databasePath,
+        schemaName: second,
+        tableName: third,
+        hasExplicitSchema: true,
+      };
+};
+
 /**
  * Creates an appropriate Accessor from a packageable element.
  *
  * For IngestDefinition: requires `datasetName` to identify the dataset.
- * For Database: requires `schemaName` and `tableName` to identify the table.
+ * For Database: `schemaName` and `tableName` identify the table, which is
+ * looked up only in that schema. With only `tableName`, the first table of
+ * that name in any schema is used; with neither, the first table.
  */
 export const V1_createAccessorFromPackageableElementWithNonFunctionSources = (
   element: AccessorOwner,
@@ -500,14 +577,14 @@ export const V1_createAccessorFromPackageableElementWithNonFunctionSources = (
     const tableName = options?.tableName;
     let table: Table | undefined;
     if (schemaName && tableName) {
-      const schema = element.schemas.find((s) => s.name === schemaName);
-      if (!schema) {
-        return undefined;
-      }
-      table = schema.tables.find((t) => t.name === tableName);
+      // never fall back to a table of the same name in another schema
+      table = element.schemas
+        .find((s) => s.name === schemaName)
+        ?.tables.find((t) => t.name === tableName);
+    } else {
+      const tables = element.schemas.map((e) => e.tables).flat();
+      table = tableName ? tables.find((t) => t.name === tableName) : tables[0];
     }
-    const tables = element.schemas.map((e) => e.tables).flat();
-    table = tableName ? tables.find((t) => t.name === tableName) : tables[0];
     if (!table) {
       return undefined;
     }

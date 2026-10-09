@@ -433,9 +433,10 @@ import {
   V1_MetadatProject,
 } from './engine/dev-metadata/V1_DevMetadataPushRequest.js';
 import type { MetadataRequestOptions } from '../../../action/dev-metadata/MetadataRequestOptions.js';
-import type {
-  Accessor,
-  DataProductAccessor,
+import {
+  type Accessor,
+  type DataProductAccessor,
+  RelationalStoreAccessor,
 } from '../../../../graph/metamodel/pure/packageableElements/relation/Accessor.js';
 import { IngestDefinition } from '../../../../graph/metamodel/pure/packageableElements/ingest/IngestDefinition.js';
 import { Database } from '../../../../graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
@@ -443,6 +444,7 @@ import {
   V1_createAccessorFromPackageableElement,
   V1_buildDataProductAccessor,
   V1_resolveAccessorsFromRawLambda,
+  V1_resolveRelationalStoreAccessorPath,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
   V1_buildResolvedRelationTypeFromV1RelationType,
@@ -2392,10 +2394,25 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
           });
         }
         if (v1Accessor instanceof V1_RelationStoreAccessor) {
-          return this.createAccessorFromPackageableElement(element, graph, {
-            schemaName: v1Accessor.path[1],
-            tableName: v1Accessor.path[2],
-          });
+          // best effort: skip an accessor whose path is malformed
+          const accessorPath = returnUndefOnError(() =>
+            V1_resolveRelationalStoreAccessorPath(v1Accessor.path),
+          );
+          if (!accessorPath) {
+            return undefined;
+          }
+          const accessor = await this.createAccessorFromPackageableElement(
+            element,
+            graph,
+            {
+              schemaName: accessorPath.schemaName,
+              tableName: accessorPath.tableName,
+            },
+          );
+          if (accessor instanceof RelationalStoreAccessor) {
+            accessor.hasExplicitSchema = accessorPath.hasExplicitSchema;
+          }
+          return accessor;
         }
         return undefined;
       }),
