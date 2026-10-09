@@ -18,8 +18,8 @@ import type { Schema } from '@finos/legend-cube';
 import {
   type V1_EntitlementsDataProductLite,
   type V1_EntitlementsLakehouseEnvironmentType,
+  V1_EntitlementsDataProductLiteModelSchema,
   V1_SdlcDeploymentDataProductOrigin,
-  V1_entitlementsDataProductLiteResponseToDataProductLite,
 } from '@finos/legend-graph';
 import {
   type DepotServerClient,
@@ -28,6 +28,7 @@ import {
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { isNonNullable, type PlainObject } from '@finos/legend-shared';
 import { StoredFileGeneration } from '@finos/legend-storage';
+import { deserialize } from 'serializr';
 import {
   type CubeDataProductProject,
   CubeDataProductEnvironmentType,
@@ -113,13 +114,39 @@ const toCandidate = (
     deploymentId: String(row.deploymentId),
     dataProductPath: row.fullPath,
     title: row.title ?? row.id,
-    description: row.description,
+    // a wire null is no description
+    description: row.description ?? undefined,
     groupId: origin.group,
     artifactId: origin.artifact,
     versionId: origin.version,
     environmentType,
     producerEnvironmentName: row.lakehouseEnvironment.producerEnvironmentName,
   });
+};
+
+/** A lite row read on its own: one that can't be read is dropped, never failing the list */
+const toLiteCandidate = (
+  row: PlainObject,
+  environmentType: CubeDataProductEnvironmentType,
+): CubeDataProductCandidate | undefined => {
+  try {
+    return toCandidate(
+      deserialize(V1_EntitlementsDataProductLiteModelSchema, row),
+      environmentType,
+    );
+  } catch {
+    return undefined;
+  }
+};
+
+/** The cursor's deployment, a number or a string of digits; none for anything else, null and '' included */
+const toCursorDeploymentId = (value: unknown): number | undefined => {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : undefined;
+  }
+  return typeof value === 'string' && /^\d+$/u.test(value)
+    ? Number(value)
+    : undefined;
 };
 
 export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
@@ -184,10 +211,10 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
       }
       const last = metadata.lastValuesMap;
       const id = isPlainObject(last) ? last.id : undefined;
-      const deploymentId = isPlainObject(last)
-        ? Number(last.deployment_id)
-        : Number.NaN;
-      if (typeof id !== 'string' || !id || !Number.isFinite(deploymentId)) {
+      const deploymentId = toCursorDeploymentId(
+        isPlainObject(last) ? last.deployment_id : undefined,
+      );
+      if (typeof id !== 'string' || !id || deploymentId === undefined) {
         throw new Error(V1_CUBE_DATA_PRODUCT_LIST_ERROR.NO_CURSOR);
       }
       if (cursor?.id === id && cursor.deploymentId === deploymentId) {
@@ -220,10 +247,8 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     list = (async () => {
       signal?.addEventListener('abort', forget, { once: true });
       try {
-        return V1_entitlementsDataProductLiteResponseToDataProductLite({
-          dataProducts: await this.readLiteRows(environmentType, signal),
-        })
-          .map((row) => toCandidate(row, environmentType))
+        return (await this.readLiteRows(environmentType, signal))
+          .map((row) => toLiteCandidate(row, environmentType))
           .filter(isNonNullable);
       } finally {
         signal?.removeEventListener('abort', forget);

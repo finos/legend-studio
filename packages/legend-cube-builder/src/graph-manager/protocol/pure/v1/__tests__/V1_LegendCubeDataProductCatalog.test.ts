@@ -172,6 +172,48 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
     );
   });
 
+  test('Drops a row it cannot read, and lists the others', async () => {
+    const { catalog, lite } = setUp();
+    lite.mockImplementationOnce(async () =>
+      litePage([
+        liteRow('ORDERS_PRODUCT', 'PRODUCTION'),
+        // a deployment that is no primitive fails its row's deserializer
+        {
+          ...liteRow('OBJECT_DEPLOYMENT_PRODUCT', 'PRODUCTION'),
+          deploymentId: {},
+        },
+        // a class of null fails the class check
+        {
+          ...liteRow('NULL_CLASS_PRODUCT', 'PRODUCTION'),
+          lakehouseEnvironment: {
+            producerEnvironmentName: 'sales-producer',
+            type: null,
+          },
+        },
+      ]),
+    );
+    expect(
+      (await catalog.search({ text: '', environmentType: PRODUCTION })).map(
+        (product) => product.id,
+      ),
+    ).toEqual(['ORDERS_PRODUCT']);
+  });
+
+  test('Lists a product the lakehouse gives a null description as having none', async () => {
+    const { catalog, lite } = setUp();
+    lite.mockImplementationOnce(async () =>
+      litePage([
+        { ...liteRow('ORDERS_PRODUCT', 'PRODUCTION'), description: null },
+      ]),
+    );
+    const [orders] = await catalog.search({
+      text: '',
+      environmentType: PRODUCTION,
+    });
+    expect(orders?.id).toBe('ORDERS_PRODUCT');
+    expect(orders?.description).toBeUndefined();
+  });
+
   test('Lists again after a failed listing', async () => {
     const { catalog, lite } = setUp();
     lite.mockImplementationOnce(async () => {
@@ -326,6 +368,40 @@ describe('Paging the lite list', () => {
       V1_CUBE_DATA_PRODUCT_LIST_ERROR.NO_CURSOR,
     );
     expect(lite).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([null, '', ' ', 'abc', true])(
+    'Stops with an error, and asks no further page, when the next page starts at the deployment %p',
+    async (deploymentId) => {
+      const { catalog, lite } = setUp();
+      lite.mockImplementationOnce(async () =>
+        litePage(PAGE_ONE, {
+          id: 'ORDERS_PRODUCT',
+          deployment_id: deploymentId,
+        }),
+      );
+      expect(await listFailure(catalog)).toContain(
+        V1_CUBE_DATA_PRODUCT_LIST_ERROR.NO_CURSOR,
+      );
+      expect(lite).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  test('Follows a cursor whose deployment is a string of digits', async () => {
+    const { catalog, lite } = setUp();
+    lite
+      .mockImplementationOnce(async () =>
+        litePage(PAGE_ONE, { id: 'ORDERS_PRODUCT', deployment_id: '1234' }),
+      )
+      .mockImplementationOnce(async () => litePage(PAGE_TWO));
+    await catalog.search({ text: '', environmentType: PRODUCTION });
+    expect(lite).toHaveBeenLastCalledWith(
+      1000,
+      'PRODUCTION',
+      'ORDERS_PRODUCT',
+      1234,
+      'token',
+    );
   });
 
   test('Stops with an error on a repeated cursor, and asks no further page', async () => {
