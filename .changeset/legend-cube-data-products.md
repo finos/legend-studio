@@ -4,4 +4,4 @@
 '@finos/legend-application-query': patch
 ---
 
-Legend Cube: read a data product's access points.
+Legend Cube: add the access points of deployed data products as a source, in beta (production and production-parallel deployments).

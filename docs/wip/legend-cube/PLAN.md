@@ -1180,8 +1180,13 @@ internals (user, 2026-10-08): questions for the original app's team are about it
   connection, a mapping-less runtime) only when it calls the engine, by introspecting just those tables with
   `schemaExploration`. A saved connection holds auth references, never a secret. The saved format stays at version 1:
   the change is additive, and an older reader reports the model kind as unsupported.
-- **The direct-connection picker:** the one "Relational Database Table" item opens a dialog with two tabs, "Model" and
-  "Database connection"; a cube's fixed model selects the tab. The form starts with a prefilled H2 sample and has no
+- **The source dialog (DP-3, user, 2026-10-09):** two palette items, "Relational Database Table" and "Data Product"
+  (beta), open one "Add a source" dialog with three tabs, "Model", "Database connection" and "Data product", each item
+  on its own tab; a cube's fixed model selects the tab and disables the others. A host without a connection explorer
+  or a data product catalog shows neither that tab nor, for data products, the palette item. Each tab implements one
+  small interface (`CubeSourcePickerTab`: availability, busy state, Add, open and close, and whether a cube's fixed
+  context is its own).
+- **The direct-connection tab:** The form starts with a prefilled H2 sample and has no
   box for pasting connection JSON. Setup SQL and DuckDB file paths are always offered, as Paste Pure model already
   allows: the engine accepts them from any client (hosting.md notes the exposure; revisit with Postgres). Once a table
   is added the connection is fixed until every table is removed (no "Edit connection" until QUESTIONS.md U8 is
@@ -1192,8 +1197,33 @@ internals (user, 2026-10-08): questions for the original app's team are about it
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
 - **Data product list:** the marketplace search service when Query is configured for it (a new config field and the
-  marketplace client), falling back to the lakehouse contract server's lite list.
-- **Warehouse:** the default consumer warehouse, shown and editable; a user's change is used and remembered.
+  marketplace client), falling back to the lakehouse contract server's lite list. The first version uses the lite
+  list only, as Legend Query does; search is a follow-up.
+- **Warehouse (DP-2, user, 2026-10-09):** the cube's saved warehouse wins, else the viewer's remembered one, else the
+  default consumer warehouse (`LAKEHOUSE_CONSUMER_DEFAULT_WH`). The first Add saves the warehouse into the cube and
+  remembers it for the viewer's next cubes. Editing a saved cube's warehouse is a follow-up.
+- **Data products (user, 2026-10-09):**
+  - **Saved shape (DP-1):** a Cube-owned model kind, `context.model = {_type: 'cubeDataProduct', groupId, artifactId,
+versionId, environmentType, warehouse?}`, and the fixed runtime path `cube::dataProduct::Runtime`. Each source
+    saves its data product, access point group, access point, the catalog's product id and the deployment id. The
+    engine adapter builds, per run, `combination[SDLC pointer at the saved version, a model holding only a
+LakehouseRuntime at the fixed path]` with the viewer's environment and the warehouse.
+  - **Selection (DP-5):** as Data Cube's: a Mode select (Production, Production (parallel)), then a deployed data
+    product, then one of its access points, then the warehouse. No development deployments in this phase; a saved
+    development cube is refused by name.
+  - **Access points:** Lakehouse access points without parameters can be added; parameterized, function, model-group
+    and undeployed ones are listed disabled with the reason. Columns come from the deployed artifact's
+    `lambdaGenericType`, with no engine call.
+  - **One project per cube:** once a cube has a data product source, the tab offers only that project's products at
+    that version, and reopens on the cube's data product with its access points shown. Joining access points of one
+    project, often two of the same data product, is the demo's case; cross-project joins aren't needed.
+  - **Redeploys (DP-4):** nothing this round; a cube stays on its saved version.
+  - **The environment:** resolved as Legend Query does (`resolveLakehouseEnvAndWarehouse`): the viewer's first
+    entitlement environment, with the production-parallel realm for production-parallel or snapshot versions.
+  - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
+    inside an internal deployment. Follow-ups, each with its tests: marketplace search with paging guards and stale
+    answers, sample rows, access badges, marketplace links, re-checking saved sources, warehouse edits and staleness,
+    error polish, the stand-in engine checks against the test-setup mocks, and their verify workflow.
 - **Compute elements:** deferred.
 - **M2.0 no longer gates the sources:** depot Databases are typed by the engine through the pointer and data products by
   their deployed artifact, so neither needs legend-graph's precise types. M2.0 stays a separate legend-graph PR, needed
@@ -2413,6 +2443,41 @@ Also check and record:
   (Appendix B), so an error logged while a run's grid loads shows only as Verbose. Expected: React 19's "Accessing element.ref was removed"
   from `react-reflex` when the editor panel opens or a splitter moves (Appendix B), and the Query ServiceWorker's
   "fetching the script" errors. Anything else is recorded.
+
+**Part B2: sources, manual, in the UI** (the direct connection and data products, §6.8)
+
+Prerequisites: as Part B. Data products also need a Query configured with a lakehouse and a depot that serve deployed
+data products (an internal deployment); without a lakehouse the page shows no Data Product item.
+
+Direct connection:
+
+1. Open the dialog from the palette's **Relational Database Table**, and click the **Database connection** tab. The
+   form starts on H2 with a sample setup SQL. Click **Test connection**: schema `CUBE_SAMPLE` is chosen, and its
+   tables list CUSTOMERS (3 columns) and ORDERS (4 columns).
+2. Add **ORDERS**; open the dialog again (it reopens on the Database connection tab, with the Model and Data product
+   tabs disabled) and add **CUSTOMERS**. Click ORDERS: the Source panel shows the connection's summary ("H2: an H2
+   database in the engine's H2 server, 6 setup statements, authentication h2Default"), never its setup SQL.
+3. Join them on `CUSTOMER_ID` (Inner) and press **F9**: 4 rows.
+4. On a new cube (reload), choose **DuckDB**, leave the file empty (in memory), give setup SQL such as
+   `create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
+   with `;`), **Test connection**, add `t` and press **F9**: 1 row.
+5. **Export (dev)** and **Import (dev)** the H2 cube: the same graph comes back, and **F9** gives the same rows.
+
+Data products:
+
+1. The palette shows **Data Product** with a BETA badge. Click it: the dialog opens on the **Data product** tab, Mode
+   **Production**. The deployed products list; search narrows it.
+2. Pick a product: its access points show by group. A parameterized one is disabled and says why. The warehouse
+   reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the one you last used); change it if needed.
+3. Add an access point. Open the dialog again: it opens on the same product with its access points shown, the Mode
+   and warehouse are fixed, and only that project's products at that version are listed. Add a second access point of
+   the same product.
+4. Join the two on a shared key and press **F9**: rows come back. **Show Pure** shows two `#P{…}#` accessors and
+   `->from(cube::dataProduct::Runtime)`.
+5. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
+6. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, and **F9** gives the same rows.
+
+Record the deployment, the products and access points used, and any console errors.
 
 ### 11.3 After the slice (recommended order, outline)
 

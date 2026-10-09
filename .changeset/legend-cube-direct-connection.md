@@ -4,4 +4,4 @@
 '@finos/legend-application-query': patch
 ---
 
-Legend Cube: read a database through a direct connection (H2 and DuckDB first).
+Legend Cube: add tables from a direct database connection (H2 and DuckDB) through a tabbed "Add a source" dialog.

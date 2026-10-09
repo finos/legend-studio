@@ -7,8 +7,9 @@ It holds the page (the canvas, the palette, the side-panel editors, the source p
 stores, the engine port with its `v1/` adapter, and the bundled model catalog. Legend Query hosts the page at
 `/query/cube`.
 
-**Status:** work in progress, version 0.0.x. This version has relational tables, Join, Sort, Filter, Restrict, Rename, Distinct, Drop, Limit and Slice, with one model, one
-runtime and one database per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
+**Status:** work in progress, version 0.0.x. This version has relational tables (from a model or a direct connection to H2
+or DuckDB), the access points of deployed data products (beta), Join, Sort, Filter, Restrict, Rename, Distinct, Drop,
+Limit and Slice, with one model, one runtime and one database or data product project per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
 the Cube store exists. A pasted model is kept in the cube. Nothing links to the page yet, there is no redo, and Cube sends no telemetry.
 
 ## Layout
@@ -17,13 +18,14 @@ the Cube store exists. A pasted model is kept in the cube. Nothing links to the 
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/components/`                     | the page, `CubeEditor`, and its parts: `canvas/`, `palette/`, `editors/`, `source-picker/`, `grid/`, `show-pure/`, `spec-transfer/`                     |
 | `src/stores/`                         | the MobX state of the page, its parts and the side panel; `editors/` (node drafts); `LocalModelCatalog` and `fixtures/` (the bundled model); `CubeHost` |
-| `src/graph-manager/`                  | the engine port (`CubeEngine.ts`) and `buildCubeEngine`                                                                                                 |
+| `src/graph-manager/`                  | the engine port (`CubeEngine.ts`), the connection explorer and data product catalog ports, and their builders                                           |
 | `src/graph-manager/protocol/pure/v1/` | the engine adapter, `V1_LegendCubeEngine`: the lambda serializer, the result and relation-type readers, the error mapping                               |
 | `src/__lib__/`                        | labels, help text, the command config and test ids                                                                                                      |
 | `src/__test-utils__/`                 | the fake engine and the helpers of the tests                                                                                                            |
 | `style/`                              | the stylesheet, built to `lib/index.css`                                                                                                                |
 
-It depends on `@finos/legend-cube`, legend-graph, legend-application, legend-art, legend-lego and legend-shared, never
+It depends on `@finos/legend-cube`, legend-graph, legend-application, legend-art, legend-lego, legend-shared, and the
+depot, lakehouse and storage clients, never
 on an application package (`legend-application-*`) or on legend-query-builder.
 
 **The V1 rule:** `V1_*` protocol code lives under `src/graph-manager/protocol/pure/v1/`. The one product file outside
@@ -49,12 +51,18 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
 The node-type registries (drafts, editors, help text and icons) are internal: there is no plugin API for node types
 yet.
 
-## New source kinds
+## Sources
 
-Adding a kind of source (beyond relational tables) is not a registration yet. The builder is wired to relational
-tables in `CubeEditorState` (re-checking tables, opening the picker), `CubeSourcePickerState`, `CubeJoinDraft`,
-`CubeSourceEditor`, and the port's `resolveSchemas` and `CubeModelOutline`. New sources wait on the design of the
-sources dialog.
+A cube reads relational tables (from a model, or from a database through a direct connection) or the access points of
+deployed data products (beta), never both (PLAN §6.8). The "Add a source" dialog has a tab per way to find a source,
+each implementing `CubeSourcePickerTab` (`src/stores/source-picker/`): Model, Database connection and Data product. A
+host offers the last two by giving the page a `connectionExplorer` and a `dataProductCatalog` (see
+[hosting](./docs/hosting.md)).
+
+A new kind of source needs, in the core, a `SourceDefinition` (node, codec, emitter and its query rules) and, in the
+builder, a tab, a Source panel editor, help text and an icon, and its branch in the engine's implementation, which
+builds the model each call runs on from the cube's saved model kind (`src/graph-manager/CubeDirectConnection.ts` and
+`CubeDataProduct.ts` are the two examples).
 
 ## Documentation
 
