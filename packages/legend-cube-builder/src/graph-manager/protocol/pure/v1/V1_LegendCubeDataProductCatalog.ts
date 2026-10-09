@@ -26,6 +26,13 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import {
+  type MarketplaceServerClient,
+  DataProductSearchResult,
+  LakehouseDataProductSearchResultDetails,
+  LakehouseSDLCDataProductSearchResultOrigin,
+  SearchType,
+} from '@finos/legend-server-marketplace';
 import { isNonNullable, type PlainObject } from '@finos/legend-shared';
 import { StoredFileGeneration } from '@finos/legend-storage';
 import { deserialize } from 'serializr';
@@ -54,7 +61,9 @@ import {
 // product's deployed artifact (getGenerationFilesByType) and its definition
 // at the deployed version, from the depot. Cube pages the lite list itself
 // (PLAN §6.8): the client's own loop never ends on a page that says more
-// follow without saying where, or on a repeated cursor, and can't be stopped
+// follow without saying where, or on a repeated cursor, and can't be stopped.
+// Given the marketplace's search API, a search runs there instead, as the
+// marketplace's Lakehouse Access search does, and the list is never read
 
 /** The generation type of a data product's artifact */
 const DATA_PRODUCT_GENERATION_TYPE = 'dataProduct';
@@ -69,6 +78,8 @@ const ENVIRONMENT_TYPES = [
 const LITE_PAGE_SIZE = 1000;
 /** Past this many pages a list is taken to be stuck */
 const LITE_PAGE_CAP = 50;
+/** The products one marketplace search gives: its first page, of this size */
+const SEARCH_PAGE_SIZE = 100;
 
 export const V1_CUBE_DATA_PRODUCT_LIST_ERROR = {
   UNREADABLE_PAGE: "The lakehouse's answer isn't a page of data products",
@@ -76,6 +87,10 @@ export const V1_CUBE_DATA_PRODUCT_LIST_ERROR = {
     'The lakehouse said more data products follow, but not where the next page starts',
   REPEATED_CURSOR: 'The lakehouse sent the same page of data products twice',
   TOO_MANY_PAGES: `The lakehouse's data product list runs past ${LITE_PAGE_CAP} pages`,
+} as const;
+
+export const V1_CUBE_DATA_PRODUCT_SEARCH_ERROR = {
+  UNREADABLE_PAGE: "The marketplace's answer isn't a page of search results",
 } as const;
 
 const toMessage = (error: unknown): string =>
@@ -139,6 +154,62 @@ const toLiteCandidate = (
   }
 };
 
+/**
+ * A search row as Cube lists it, the same candidate as its lite row's: none
+ * for a DataSpace, an error, an ad hoc or incomplete one, or another class's
+ */
+const toSearchCandidate = (
+  result: DataProductSearchResult,
+  environmentType: CubeDataProductEnvironmentType,
+): CubeDataProductCandidate | undefined => {
+  const details = result.dataProductDetails;
+  if (!(details instanceof LakehouseDataProductSearchResultDetails)) {
+    return undefined;
+  }
+  const { origin } = details;
+  const deploymentId: unknown = details.deploymentId;
+  if (
+    !(origin instanceof LakehouseSDLCDataProductSearchResultOrigin) ||
+    !origin.groupId ||
+    !origin.artifactId ||
+    !origin.versionId ||
+    !origin.path ||
+    !details.dataProductId ||
+    deploymentId === undefined ||
+    deploymentId === null ||
+    details.producerEnvironmentType?.toUpperCase() !== environmentType
+  ) {
+    return undefined;
+  }
+  return new CubeDataProductCandidate({
+    id: details.dataProductId,
+    deploymentId: String(deploymentId),
+    dataProductPath: origin.path,
+    title: result.dataProductTitle ?? details.dataProductId,
+    description: result.dataProductDescription ?? undefined,
+    groupId: origin.groupId,
+    artifactId: origin.artifactId,
+    versionId: origin.versionId,
+    environmentType,
+    producerEnvironmentName: details.producerEnvironmentName,
+  });
+};
+
+/** A search row read on its own: one that can't be read, e.g. of an unknown type, is dropped, never failing the page */
+const toSearchRowCandidate = (
+  row: PlainObject,
+  environmentType: CubeDataProductEnvironmentType,
+): CubeDataProductCandidate | undefined => {
+  try {
+    return toSearchCandidate(
+      DataProductSearchResult.serialization.fromJson(row),
+      environmentType,
+    );
+  } catch {
+    return undefined;
+  }
+};
+
 /** The cursor's deployment, a number or a string of digits; none for anything else, null and '' included */
 const toCursorDeploymentId = (value: unknown): number | undefined => {
   if (typeof value === 'number') {
@@ -154,6 +225,8 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
   private readonly contractServerClient: LakehouseContractServerClient;
   private readonly depotServerClient: DepotServerClient;
   private readonly getAccessToken: () => string | undefined;
+  /** The marketplace's search API; with it, searches run there */
+  private readonly marketplaceServerClient: MarketplaceServerClient | undefined;
   /** Each class's list, read once per page visit */
   private readonly lists = new Map<
     CubeDataProductEnvironmentType,
@@ -169,10 +242,20 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     contractServerClient: LakehouseContractServerClient,
     depotServerClient: DepotServerClient,
     getAccessToken: () => string | undefined,
+    marketplaceServerClient?: MarketplaceServerClient | undefined,
   ) {
     this.contractServerClient = contractServerClient;
     this.depotServerClient = depotServerClient;
     this.getAccessToken = getAccessToken;
+    this.marketplaceServerClient = marketplaceServerClient;
+  }
+
+  get searchesOnServer(): boolean {
+    return this.marketplaceServerClient !== undefined;
+  }
+
+  get searchLimit(): number | undefined {
+    return this.searchesOnServer ? SEARCH_PAGE_SIZE : undefined;
   }
 
   /**
@@ -268,6 +351,54 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     return list;
   }
 
+  /**
+   * The products the marketplace matches, in its order: the first page of a
+   * full text search in the class. A failed search fails; it never falls
+   * back to the lakehouse's list
+   */
+  private async searchMarketplace(
+    marketplaceServerClient: MarketplaceServerClient,
+    search: {
+      text: string;
+      environmentType: CubeDataProductEnvironmentType;
+    },
+    signal: AbortSignal | undefined,
+  ): Promise<readonly CubeDataProductCandidate[]> {
+    const { environmentType } = search;
+    try {
+      const response: unknown =
+        await marketplaceServerClient.lakehouseAccessSearch(
+          search.text.trim(),
+          environmentType as unknown as V1_EntitlementsLakehouseEnvironmentType,
+          {
+            searchType: SearchType.FULL_TEXT,
+            pageSize: SEARCH_PAGE_SIZE,
+            pageNumber: 1,
+            // every deployment, as the lite list gives, none hidden as a duplicate
+            showAll: true,
+            ...(signal ? { signal } : {}),
+          },
+        );
+      // a 200 carrying an error is no page
+      const results = isPlainObject(response) ? response.results : undefined;
+      if (!Array.isArray(results)) {
+        throw new Error(V1_CUBE_DATA_PRODUCT_SEARCH_ERROR.UNREADABLE_PAGE);
+      }
+      return results
+        .filter(isPlainObject)
+        .map((row) => toSearchRowCandidate(row, environmentType))
+        .filter(isNonNullable);
+    } catch (error) {
+      if (signal?.aborted) {
+        throw error;
+      }
+      throw new CubeEngineError(
+        CubeEngineErrorKind.NETWORK,
+        `Cube couldn't search the data products\n${toMessage(error)}`,
+      );
+    }
+  }
+
   async search(
     search: {
       text: string;
@@ -275,6 +406,13 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     },
     signal?: AbortSignal,
   ): Promise<readonly CubeDataProductCandidate[]> {
+    if (this.marketplaceServerClient) {
+      return this.searchMarketplace(
+        this.marketplaceServerClient,
+        search,
+        signal,
+      );
+    }
     const text = search.text.trim().toLowerCase();
     return (await this.listOf(search.environmentType, signal)).filter(
       (candidate) =>

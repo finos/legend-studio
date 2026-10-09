@@ -16,6 +16,7 @@
 
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import type { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import type { TracerService } from '@finos/legend-shared';
 import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
 import type { CubeDataProductCatalog } from '../../CubeDataProductCatalog.js';
@@ -66,6 +67,8 @@ export interface CubeLakehouseServices {
   readonly getCurrentUser: () => string;
   /** The environment the host remembers for the viewer, used before their entitlements' first one */
   readonly getPreferredEnvironment?: (() => string | undefined) | undefined;
+  /** The marketplace's search API: with it, the source dialog searches there, never reading the lakehouse's whole list */
+  readonly marketplaceServerClient?: MarketplaceServerClient | undefined;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -76,6 +79,7 @@ export const buildCubeDataProductCatalog = (
     services.contractServerClient,
     services.depotServerClient,
     services.getAccessToken,
+    services.marketplaceServerClient,
   );
 
 /** The viewer's lakehouse environment, which the engine needs to run data product cubes */

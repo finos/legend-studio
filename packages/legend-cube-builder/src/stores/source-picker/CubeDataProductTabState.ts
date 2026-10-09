@@ -19,7 +19,11 @@ import {
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DataProductAccessPointSource,
 } from '@finos/legend-cube';
-import { assertErrorThrown, type GeneratorFn } from '@finos/legend-shared';
+import {
+  assertErrorThrown,
+  debounce,
+  type GeneratorFn,
+} from '@finos/legend-shared';
 import {
   action,
   computed,
@@ -38,11 +42,11 @@ import {
   getCubeDataProductProject,
   isCubeDataProductModel,
 } from '../../graph-manager/CubeDataProduct.js';
-import type {
-  CubeAccessPoint,
+import {
+  type CubeAccessPoint,
   CubeDataProductCandidate,
-  CubeDataProductCatalog,
-  CubeDataProductDescription,
+  type CubeDataProductCatalog,
+  type CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
 import {
@@ -74,7 +78,11 @@ const toError = (error: unknown): CubeDataProductTabError => {
 export const CUBE_DATA_PRODUCT_TAB_MESSAGE = {
   CUBE_CHANGED:
     'The cube changed while the access point was being added; pick it again.',
+  TRUNCATED: 'Too many matching items; list truncated.',
 } as const;
+
+/** How long typing pauses before the text is searched on a server */
+const SEARCH_DELAY_MS = 300;
 
 /** Whether a product is deployed from the project and version given, in its class */
 const isFromProject = (
@@ -94,7 +102,9 @@ const isFromProject = (
  * engine. The first access point saves the product's project, its version,
  * the class and the warehouse as the cube's model; after that the tab offers
  * only that project's products, at that version, and reopens on the cube's
- * data product, already expanded.
+ * data product, already expanded. A catalog that searches on a server is
+ * searched as the viewer types, and a cube with no search shows its own
+ * products, which a page of the server's matches may miss.
  */
 export class CubeDataProductTabState implements CubeSourcePickerTab {
   readonly key = CubeSourcePickerTabKey.DATA_PRODUCT;
@@ -107,6 +117,10 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   candidates: readonly CubeDataProductCandidate[] | undefined;
   /** The class the products were listed for */
   private listedEnvironmentType: CubeDataProductEnvironmentType | undefined;
+  /** The text the products were searched for on a server; '' for a whole list */
+  private listedText: string | undefined;
+  /** What the cube's own products listed were built from; none for a catalog's list */
+  private listedOwnKey: string | undefined;
   candidate: CubeDataProductCandidate | undefined;
   description: CubeDataProductDescription | undefined;
   /** The picked access point, by group and id */
@@ -115,6 +129,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   isListing = false;
   isDescribing = false;
   isAdding = false;
+  /** Why the products couldn't be listed, with its own retry */
+  listError: CubeDataProductTabError | undefined;
+  /** Why a product couldn't be read or its access point added */
   error: CubeDataProductTabError | undefined;
 
   /** The warehouse field shows a cube's own, not one the viewer typed */
@@ -125,13 +142,24 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   private listRequest = 0;
   private describeRequest = 0;
   private confirmRequest = 0;
+  /** Searches the typed text on the server once typing pauses */
+  private readonly searchSoon = debounce((): void => {
+    flowResult(this.listCandidates()).catch(
+      this.editorState.host.applicationStore.alertUnhandledError,
+    );
+  }, SEARCH_DELAY_MS);
 
   constructor(editorState: CubeEditorState) {
-    makeObservable<CubeDataProductTabState, 'listedEnvironmentType'>(this, {
+    makeObservable<
+      CubeDataProductTabState,
+      'listedEnvironmentType' | 'listedText' | 'listedOwnKey'
+    >(this, {
       environmentType: observable,
       search: observable,
       candidates: observable.ref,
       listedEnvironmentType: observable,
+      listedText: observable,
+      listedOwnKey: observable,
       candidate: observable.ref,
       description: observable.ref,
       accessPointKey: observable.ref,
@@ -139,10 +167,13 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       isListing: observable,
       isDescribing: observable,
       isAdding: observable,
+      listError: observable.ref,
       error: observable.ref,
       isAvailable: computed,
+      searchesOnServer: computed,
       fixedProject: computed,
       visibleCandidates: computed,
+      isTruncated: computed,
       accessPoint: computed,
       isBusy: computed,
       canConfirm: computed,
@@ -153,6 +184,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       setWarehouse: action,
       open: action,
       close: action,
+      retryListing: action,
       listCandidates: flow,
       describeCandidate: flow,
       confirm: flow,
@@ -167,6 +199,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   /** Hosts without a data product catalog have no data products */
   get isAvailable(): boolean {
     return this.catalog !== undefined;
+  }
+
+  /** Whether the catalog searches the text on a server, rather than the tab filtering its list */
+  get searchesOnServer(): boolean {
+    return this.catalog?.searchesOnServer === true;
   }
 
   ownsContext(context: CubeContext): boolean {
@@ -187,17 +224,32 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     )?.dataProduct;
   }
 
-  /** The listed products matching the search, from the cube's project once it has one */
+  /**
+   * The listed products matching the search, from the cube's project once it
+   * has one; a server's matches as it gave them
+   */
   get visibleCandidates(): readonly CubeDataProductCandidate[] {
     const search = this.search.trim().toLowerCase();
     const project = this.fixedProject;
+    const { searchesOnServer } = this;
     return (this.candidates ?? []).filter(
       (candidate) =>
         (!project || isFromProject(candidate, project)) &&
-        [candidate.title, candidate.id, candidate.description ?? '']
-          .join('\n')
-          .toLowerCase()
-          .includes(search),
+        (searchesOnServer ||
+          [candidate.title, candidate.id, candidate.description ?? '']
+            .join('\n')
+            .toLowerCase()
+            .includes(search)),
+    );
+  }
+
+  /** Whether a server's matches may be cut short: as many as one search gives */
+  get isTruncated(): boolean {
+    const limit = this.catalog?.searchLimit;
+    return (
+      this.searchesOnServer &&
+      limit !== undefined &&
+      (this.candidates?.length ?? 0) >= limit
     );
   }
 
@@ -232,14 +284,19 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
     this.environmentType = environmentType;
     this.resetCandidate();
+    this.error = undefined;
     this.candidates = undefined;
     flowResult(this.listCandidates()).catch(
       this.editorState.host.applicationStore.alertUnhandledError,
     );
   }
 
+  /** Filters the listed products; searching on a server, searches again once typing pauses */
   setSearch(search: string): void {
     this.search = search;
+    if (this.searchesOnServer) {
+      this.searchSoon();
+    }
   }
 
   /** Picks a product and reads its access points; picking it again reads them again after a failure */
@@ -299,7 +356,10 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
     if (
       this.candidates === undefined ||
-      this.listedEnvironmentType !== this.environmentType
+      this.listedEnvironmentType !== this.environmentType ||
+      (this.searchesOnServer &&
+        (this.listedText !== this.search.trim() ||
+          this.listedOwnKey !== this.getOwnProductsKey()))
     ) {
       flowResult(this.listCandidates()).catch(
         this.editorState.host.applicationStore.alertUnhandledError,
@@ -310,6 +370,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   }
 
   close(): void {
+    this.searchSoon.cancel();
     this.listAbort?.abort();
     this.listAbort = undefined;
     this.listRequest++;
@@ -324,22 +385,46 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     this.isDescribing = false;
   }
 
-  /** Lists the class's deployed products */
+  /** Lists the products again after a failed listing */
+  retryListing(): void {
+    flowResult(this.listCandidates()).catch(
+      this.editorState.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * Lists the class's deployed products; searching on a server, the ones
+   * matching the search, or a cube's own when there is no search
+   */
   *listCandidates(): GeneratorFn<void> {
     const { catalog } = this;
     if (!catalog) {
       return;
     }
+    // this listing replaces one the typing would start
+    this.searchSoon.cancel();
     const environmentType = this.environmentType;
+    const text = this.searchesOnServer ? this.search.trim() : '';
     const request = ++this.listRequest;
     this.listAbort?.abort();
+    this.listAbort = undefined;
+    this.listError = undefined;
+    const ownKey = this.getOwnProductsKey();
+    if (ownKey !== undefined) {
+      this.isListing = false;
+      this.candidates = this.getOwnProducts();
+      this.listedEnvironmentType = environmentType;
+      this.listedText = text;
+      this.listedOwnKey = ownKey;
+      this.expandCubeDataProduct();
+      return;
+    }
     const abort = new AbortController();
     this.listAbort = abort;
     this.isListing = true;
-    this.error = undefined;
     try {
       const candidates = (yield catalog.search(
-        { text: '', environmentType },
+        { text, environmentType },
         abort.signal,
       )) as readonly CubeDataProductCandidate[];
       if (request !== this.listRequest) {
@@ -347,10 +432,12 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       }
       this.candidates = candidates;
       this.listedEnvironmentType = environmentType;
+      this.listedText = text;
+      this.listedOwnKey = undefined;
       this.expandCubeDataProduct();
     } catch (error) {
       if (request === this.listRequest) {
-        this.error = toError(error);
+        this.listError = toError(error);
       }
     } finally {
       if (request === this.listRequest) {
@@ -471,6 +558,65 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
         this.isAdding = false;
       }
     }
+  }
+
+  /**
+   * The cube's own products, from its sources, at the cube's project; none
+   * on a cube without one. The picked product stays the one picked
+   */
+  private getOwnProducts(): CubeDataProductCandidate[] {
+    const project = this.fixedProject;
+    if (!project) {
+      return [];
+    }
+    const picked = this.candidate;
+    const products = new Map<string, CubeDataProductCandidate>();
+    this.editorState.document.query.nodes.forEach((node) => {
+      if (
+        node instanceof DataProductAccessPointSource &&
+        !products.has(node.dataProduct)
+      ) {
+        products.set(
+          node.dataProduct,
+          picked?.dataProductPath === node.dataProduct &&
+            isFromProject(picked, project)
+            ? picked
+            : new CubeDataProductCandidate({
+                id: node.dataProductId,
+                deploymentId: node.deploymentId,
+                dataProductPath: node.dataProduct,
+                title: node.dataProductId,
+                groupId: project.groupId,
+                artifactId: project.artifactId,
+                versionId: project.versionId,
+                environmentType: project.environmentType,
+              }),
+        );
+      }
+    });
+    return [...products.values()];
+  }
+
+  /**
+   * What the tab lists the cube's own products from, when it does: searching
+   * on a server, on a cube with sources and no search. None otherwise
+   */
+  private getOwnProductsKey(): string | undefined {
+    if (!this.searchesOnServer || this.search.trim()) {
+      return undefined;
+    }
+    const products = this.getOwnProducts();
+    return products.length
+      ? JSON.stringify(
+          products.map((product) => [
+            product.groupId,
+            product.artifactId,
+            product.versionId,
+            product.environmentType,
+            product.dataProductPath,
+          ]),
+        )
+      : undefined;
   }
 
   /** On a cube with a data product, picks that product from the list, expanded */

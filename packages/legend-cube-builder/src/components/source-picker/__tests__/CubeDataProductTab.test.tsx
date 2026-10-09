@@ -23,10 +23,15 @@ import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtil
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import {
+  createFakeCubeDataProductCatalog,
+  FAKE_DATA_PRODUCT_CANDIDATES,
+} from '../../../__test-utils__/FakeCubeDataProductCatalog.js';
+import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CubeDataProductEnvironmentType,
   createCubeDataProductModel,
 } from '../../../graph-manager/CubeDataProduct.js';
+import type { CubeDataProductCandidate } from '../../../graph-manager/CubeDataProductCatalog.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
@@ -132,6 +137,50 @@ describe('Data product tab', () => {
       within(dialog).getByRole<HTMLButtonElement>('tab', { name: 'Model' })
         .disabled,
     ).toBe(true);
+  });
+
+  test('Shows a failed listing with a Retry, which lists again', async () => {
+    const { dataProducts } = await renderPage();
+    dataProducts.search.mockRejectedValueOnce(
+      new Error('Lakehouse unavailable'),
+    );
+    fireEvent.click(paletteItem('Data Product'));
+    const dialog = await screen.findByRole('dialog');
+    const alert = await within(dialog).findByRole('alert');
+    expect(within(alert).getByText('Lakehouse unavailable')).toBeDefined();
+    fireEvent.click(within(alert).getByRole('button', { name: 'Retry' }));
+    expect(await within(dialog).findByText('Orders Product')).toBeDefined();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(dataProducts.search).toHaveBeenCalledTimes(2);
+  });
+
+  test('Says it searches on a host that searches on a server, and when the matches may be cut short', async () => {
+    const searching = createFakeCubeDataProductCatalog(undefined, {
+      searchesOnServer: true,
+      searchLimit: 2,
+    });
+    let answer!: (candidates: readonly CubeDataProductCandidate[]) => void;
+    searching.search.mockReturnValueOnce(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    await renderPage((host) => ({
+      ...host,
+      dataProductCatalog: searching.catalog,
+    }));
+    fireEvent.click(paletteItem('Data Product'));
+    const dialog = await screen.findByRole('dialog');
+    expect(
+      await within(dialog).findByText('searching data products'),
+    ).toBeDefined();
+    answer(FAKE_DATA_PRODUCT_CANDIDATES.slice(0, 2));
+    expect(
+      await within(dialog).findByText(
+        'Too many matching items; list truncated.',
+      ),
+    ).toBeDefined();
+    expect(within(dialog).queryByText('searching data products')).toBeNull();
   });
 
   test('Has no Data Product item or tab on a host without a catalog', async () => {

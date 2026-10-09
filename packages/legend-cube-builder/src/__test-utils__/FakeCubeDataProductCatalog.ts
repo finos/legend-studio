@@ -134,9 +134,14 @@ export interface FakeCubeDataProductCatalog {
   >;
 }
 
-/** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
+/**
+ * A fresh fake: build one per test, since jest.fn keeps its calls across
+ * tests. One that searches on a server answers with its matches, as the
+ * lakehouse's list is answered
+ */
 export const createFakeCubeDataProductCatalog = (
   candidates: readonly CubeDataProductCandidate[] = FAKE_DATA_PRODUCT_CANDIDATES,
+  options?: { searchesOnServer?: boolean; searchLimit?: number },
 ): FakeCubeDataProductCatalog => {
   const search = jest.fn<CubeDataProductCatalog['search']>(
     async ({ text, environmentType }) =>
@@ -178,6 +183,8 @@ export const createFakeCubeDataProductCatalog = (
   return {
     catalog: {
       environmentTypes: [PRODUCTION, PRODUCTION_PARALLEL],
+      searchesOnServer: options?.searchesOnServer,
+      searchLimit: options?.searchLimit,
       search,
       describe,
       resolveSchemas,

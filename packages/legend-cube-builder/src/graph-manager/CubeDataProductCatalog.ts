@@ -163,7 +163,19 @@ export interface CubeDataProductCatalog {
   /** The deployment classes the host lists, the default first */
   readonly environmentTypes: readonly CubeDataProductEnvironmentType[];
 
-  /** The deployed products of a class whose title, id or description holds the text */
+  /**
+   * Whether `search` matches and ranks the text on a server. Otherwise the
+   * text is matched on the client, over the class's whole list
+   */
+  readonly searchesOnServer?: boolean | undefined;
+
+  /** The most products one server search gives: an answer this long may be cut short */
+  readonly searchLimit?: number | undefined;
+
+  /**
+   * The deployed products of a class whose title, id or description holds
+   * the text, or, searching on a server, the ones it matches, in its order
+   */
   search(
     search: {
       text: string;

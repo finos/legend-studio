@@ -172,6 +172,75 @@ describe('Legend Query as the Cube host', () => {
     expect(trace).toHaveBeenCalled();
   });
 
+  test("Searches data products on Query's marketplace server, traced by Query's tracer, when Query has one beside its lakehouse", async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () =>
+        Promise.reject(new Error('No server in tests')),
+      );
+    const applicationStore = createApplicationStore({
+      lakehouse: { url: 'https://lakehouse.test' },
+      marketplace: {
+        url: 'https://marketplace-app.test',
+        productionParallelUrl: 'https://marketplace-parallel-app.test',
+        serverUrl: 'https://marketplace.test',
+      },
+    });
+    expect(applicationStore.config.marketplaceServerUrl).toBe(
+      'https://marketplace.test',
+    );
+    const trace = jest.spyOn(applicationStore.tracerService, 'createTrace');
+    const catalog = guaranteeNonNullable(
+      new LegendQueryCubeHost(applicationStore).dataProductCatalog,
+    );
+    expect(catalog.searchesOnServer).toBe(true);
+    await expect(
+      catalog.search({
+        text: 'orders',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
+    ).rejects.toThrow("Cube couldn't search the data products");
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const url = String(guaranteeNonNullable(fetchSpy.mock.calls[0])[0]);
+    expect(url).toMatch(
+      /^https:\/\/marketplace\.test\/v1\/search\/lakehouseAccess\/PRODUCTION\?query=orders&/u,
+    );
+    expect(trace).toHaveBeenCalledTimes(1);
+    expect(trace.mock.calls[0]?.[2]).toBe(url);
+  });
+
+  test("Lists data products from Query's lakehouse when Query has no marketplace server, its marketplace application being no server", () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    const marketplace = {
+      url: 'https://marketplace-app.test',
+      productionParallelUrl: 'https://marketplace-parallel-app.test',
+    };
+    const applicationStore = createApplicationStore({ lakehouse, marketplace });
+    expect(applicationStore.config.marketplaceApplicationUrl).toBe(
+      'https://marketplace-app.test',
+    );
+    expect(applicationStore.config.marketplaceServerUrl).toBeUndefined();
+    expect(
+      new LegendQueryCubeHost(applicationStore).dataProductCatalog
+        ?.searchesOnServer,
+    ).toBe(false);
+    expect(
+      new LegendQueryCubeHost(createApplicationStore({ lakehouse }))
+        .dataProductCatalog?.searchesOnServer,
+    ).toBe(false);
+    // a marketplace server alone offers no data products
+    expect(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          marketplace: {
+            ...marketplace,
+            serverUrl: 'https://marketplace.test',
+          },
+        }),
+      ).dataProductCatalog,
+    ).toBeUndefined();
+  });
+
   test('Prefers the lakehouse environment Query remembers for the viewer', () => {
     const applicationStore = createApplicationStore({
       lakehouse: { url: 'https://lakehouse.test' },

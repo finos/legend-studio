@@ -158,6 +158,8 @@ export interface LegendQueryApplicationConfigurationData
   marketplace?: {
     url: string;
     productionParallelUrl: string;
+    /** The marketplace server, whose search Legend Cube's data product tab uses */
+    serverUrl?: string;
   };
   lakehouse?: {
     url: string;
@@ -180,6 +182,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly dataCubeApplicationUrl?: string;
   readonly marketplaceApplicationUrl?: string;
   readonly marketplaceProductionParallelUrl?: string;
+  readonly marketplaceServerUrl?: string;
   readonly lakehouseContractUrl?: string;
   readonly legendAIUrl?: string;
   readonly legendAIAgentUrl?: string;
@@ -259,6 +262,11 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
         LegendApplicationConfig.resolveAbsoluteUrl(
           input.configData.marketplace.productionParallelUrl,
         );
+    }
+    if (input.configData.marketplace?.serverUrl) {
+      this.marketplaceServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.marketplace.serverUrl,
+      );
     }
 
     // lakehouse

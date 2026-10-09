@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  jest,
+  test,
+} from '@jest/globals';
 import {
   Connection,
   CubeDocument,
@@ -27,8 +34,10 @@ import { flowResult } from 'mobx';
 import { LEGEND_CUBE_USER_DATA_KEY } from '../../__lib__/LegendCubeLabels.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
+  createFakeCubeDataProductCatalog,
   FAKE_CUSTOMERS_SCHEMA,
   FAKE_DAILY_ORDERS_SCHEMA,
+  FAKE_DATA_PRODUCT_CANDIDATES,
 } from '../../__test-utils__/FakeCubeDataProductCatalog.js';
 import {
   createCubeDataProductModel,
@@ -473,15 +482,305 @@ describe('Data product tab', () => {
     expect(tab.isListing).toBe(false);
   });
 
-  test('Shows a failed listing in the tab, and lists again', async () => {
+  test('Shows a failed listing in the tab, with its own retry, which lists again', async () => {
     const { state, dataProducts } = setUp();
     dataProducts.search.mockRejectedValueOnce(
       new Error('Lakehouse unavailable'),
     );
     const tab = await openTab(state);
-    expect(tab.error).toEqual({ message: 'Lakehouse unavailable' });
-    await flowResult(tab.listCandidates());
+    expect(tab.listError).toEqual({ message: 'Lakehouse unavailable' });
     expect(tab.error).toBeUndefined();
+    tab.retryListing();
+    await settle();
+    expect(tab.listError).toBeUndefined();
     expect(tab.visibleCandidates).toHaveLength(2);
+    expect(dataProducts.search).toHaveBeenCalledTimes(2);
+  });
+
+  test("Drops a product's failed read on another mode, with the product", async () => {
+    const { state, dataProducts } = setUp();
+    const tab = await openTab(state);
+    dataProducts.describe.mockRejectedValueOnce(new Error('Depot unavailable'));
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    expect(tab.error).toEqual({ message: 'Depot unavailable' });
+    tab.setEnvironmentType(PRODUCTION_PARALLEL);
+    await settle();
+    expect(tab.candidate).toBeUndefined();
+    expect(tab.error).toBeUndefined();
+  });
+
+  test("Never says a lakehouse's list is cut short", async () => {
+    const { host } = TEST__createCubeHost();
+    const dataProducts = createFakeCubeDataProductCatalog(undefined, {
+      searchLimit: 1,
+    });
+    const state = new CubeEditorState({
+      ...host,
+      dataProductCatalog: dataProducts.catalog,
+    });
+    const tab = await openTab(state);
+    expect(tab.visibleCandidates).toHaveLength(2);
+    expect(tab.isTruncated).toBe(false);
+  });
+});
+
+describe('Data product tab, searching on a server', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  const [ORDERS, RETURNS] = FAKE_DATA_PRODUCT_CANDIDATES as [
+    CubeDataProductCandidate,
+    CubeDataProductCandidate,
+  ];
+
+  /** A host whose catalog searches on a server */
+  const setUpSearch = (
+    searchLimit?: number,
+  ): ReturnType<typeof setUp> & {
+    dataProducts: ReturnType<typeof createFakeCubeDataProductCatalog>;
+  } => {
+    const created = TEST__createCubeHost();
+    const dataProducts = createFakeCubeDataProductCatalog(undefined, {
+      searchesOnServer: true,
+      ...(searchLimit === undefined ? {} : { searchLimit }),
+    });
+    const host = { ...created.host, dataProductCatalog: dataProducts.catalog };
+    return {
+      ...created,
+      host,
+      dataProducts,
+      state: new CubeEditorState(host),
+    };
+  };
+
+  /** Types in the search box, and lets the typing pause */
+  const type = async (
+    tab: CubeEditorState['sourcePicker']['dataProductTab'],
+    text: string,
+  ): Promise<void> => {
+    tab.setSearch(text);
+    jest.advanceTimersByTime(300);
+    await settle();
+  };
+
+  test("Searches as the viewer types, once typing pauses, and shows only the latest search's matches, in the server's order", async () => {
+    const { state, dataProducts } = setUpSearch();
+    const tab = await openTab(state);
+    const searchOf = (call: number) => dataProducts.search.mock.calls[call];
+    expect(searchOf(0)?.[0]).toEqual({ text: '', environmentType: PRODUCTION });
+    const first = deferred<readonly CubeDataProductCandidate[]>();
+    const second = deferred<readonly CubeDataProductCandidate[]>();
+    dataProducts.search
+      .mockReturnValueOnce(first.promise)
+      .mockReturnValueOnce(second.promise);
+    tab.setSearch('a');
+    jest.advanceTimersByTime(299);
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(1);
+    expect(searchOf(1)?.[0]).toEqual({
+      text: 'a',
+      environmentType: PRODUCTION,
+    });
+    tab.setSearch('ab ');
+    jest.advanceTimersByTime(300);
+    expect(searchOf(2)?.[0]).toEqual({
+      text: 'ab',
+      environmentType: PRODUCTION,
+    });
+    expect(searchOf(1)?.[1]?.aborted).toBe(true);
+    // the server's match for 'ab' is kept, though its title doesn't hold it
+    second.resolve([RETURNS]);
+    await settle();
+    first.resolve([ORDERS]);
+    await settle();
+    expect(tab.visibleCandidates).toEqual([RETURNS]);
+    expect(dataProducts.search).toHaveBeenCalledTimes(3);
+  });
+
+  test("Keeps the search text on another mode, searching it there, and drops the previous mode's late answer", async () => {
+    const { state, dataProducts } = setUpSearch();
+    const tab = await openTab(state);
+    const late = deferred<readonly CubeDataProductCandidate[]>();
+    dataProducts.search.mockReturnValueOnce(late.promise);
+    await type(tab, 'orders');
+    // typed, and the mode changed before the typing paused
+    tab.setSearch('orders ');
+    tab.setEnvironmentType(PRODUCTION_PARALLEL);
+    jest.advanceTimersByTime(300);
+    await settle();
+    expect(dataProducts.search).toHaveBeenCalledTimes(3);
+    expect(dataProducts.search.mock.calls[2]?.[0]).toEqual({
+      text: 'orders',
+      environmentType: PRODUCTION_PARALLEL,
+    });
+    late.resolve([ORDERS]);
+    await settle();
+    expect(tab.search).toBe('orders ');
+    expect(
+      tab.visibleCandidates.map((candidate) => candidate.environmentType),
+    ).toEqual([PRODUCTION_PARALLEL]);
+  });
+
+  test('Searches nothing typed as the dialog closed, takes no answer after it closed, and searches the typed text on reopening', async () => {
+    const { state, dataProducts } = setUpSearch();
+    let tab = await openTab(state);
+    const held = deferred<readonly CubeDataProductCandidate[]>();
+    dataProducts.search.mockReturnValueOnce(held.promise);
+    await type(tab, 'ord');
+    tab.setSearch('orde');
+    state.sourcePicker.close();
+    jest.advanceTimersByTime(300);
+    await settle();
+    expect(dataProducts.search).toHaveBeenCalledTimes(2);
+    held.resolve([]);
+    await settle();
+    expect(tab.visibleCandidates).toEqual([ORDERS, RETURNS]);
+    expect(tab.listError).toBeUndefined();
+    tab = await openTab(state);
+    expect(dataProducts.search).toHaveBeenCalledTimes(3);
+    expect(dataProducts.search.mock.calls[2]?.[0]).toEqual({
+      text: 'orde',
+      environmentType: PRODUCTION,
+    });
+    expect(tab.visibleCandidates).toEqual([ORDERS]);
+  });
+
+  test('Shows a failed search in the tab, and searches the same text again on retry, leaving the other tabs alone', async () => {
+    const { state, dataProducts } = setUpSearch();
+    const tab = await openTab(state);
+    dataProducts.search.mockRejectedValueOnce(
+      new Error('Marketplace unavailable'),
+    );
+    await type(tab, 'ord');
+    expect(tab.listError).toEqual({ message: 'Marketplace unavailable' });
+    expect(tab.error).toBeUndefined();
+    expect(state.sourcePicker.modelTab.error).toBeUndefined();
+    expect(state.sourcePicker.directTab.error).toBeUndefined();
+    tab.retryListing();
+    await settle();
+    expect(dataProducts.search).toHaveBeenCalledTimes(3);
+    expect(dataProducts.search.mock.calls[2]?.[0]).toEqual({
+      text: 'ord',
+      environmentType: PRODUCTION,
+    });
+    expect(tab.listError).toBeUndefined();
+    expect(tab.visibleCandidates).toEqual([ORDERS]);
+  });
+
+  test("Reopens a data product cube on its own product, expanded, with no search, and keeps a search to the cube's project", async () => {
+    const { state, dataProducts } = setUpSearch();
+    let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+
+    // a new page on the saved cube
+    const reopened = new CubeEditorState(state.host, state.document);
+    dataProducts.search.mockClear();
+    dataProducts.describe.mockClear();
+    tab = await openTab(reopened);
+    expect(dataProducts.search).not.toHaveBeenCalled();
+    expect(dataProducts.describe).toHaveBeenCalledTimes(1);
+    expect(tab.candidate).toMatchObject({
+      id: 'ORDERS_PRODUCT',
+      deploymentId: 'deployment-orders_product',
+      dataProductPath: 'sales::products::OrdersProduct',
+      groupId: 'com.example.sales',
+      artifactId: 'orders-products',
+      versionId: '1.4.0',
+      environmentType: PRODUCTION,
+    });
+    expect(tab.description?.groups).toHaveLength(2);
+    // the snapshot-version product the server matches is from another version
+    await type(tab, 'returns');
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+    expect(tab.visibleCandidates).toEqual([]);
+    // reopening on the same search searches nothing again
+    reopened.sourcePicker.close();
+    tab = await openTab(reopened);
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+    await type(tab, '');
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+    expect(tab.visibleCandidates.map((candidate) => candidate.id)).toEqual([
+      'ORDERS_PRODUCT',
+    ]);
+  });
+
+  test("Keeps a cube's own product picked and expanded on reopening, and searches the server again for a new cube", async () => {
+    const { state, dataProducts } = setUpSearch();
+    let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    tab = await openTab(state);
+    expect(dataProducts.search).toHaveBeenCalledTimes(1);
+    expect(tab.visibleCandidates).toHaveLength(1);
+    expect(tab.visibleCandidates[0]).toBe(tab.candidate);
+    expect(tab.description).toBeDefined();
+    state.sourcePicker.close();
+    state.importDocument(new CubeDocument(), false);
+    tab = await openTab(state);
+    expect(dataProducts.search).toHaveBeenCalledTimes(2);
+    expect(dataProducts.search.mock.calls[1]?.[0]).toEqual({
+      text: '',
+      environmentType: PRODUCTION,
+    });
+    expect(tab.visibleCandidates).toEqual([ORDERS, RETURNS]);
+  });
+
+  test("Reopens on another data product cube's own product, after a cube's own were listed", async () => {
+    const { state, dataProducts } = setUpSearch();
+    let tab = await openTab(state);
+    await pickProduct(tab, 'RETURNS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    const returnsCube = state.document;
+    state.importDocument(new CubeDocument(), false);
+    tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+
+    // the orders cube on a new page, on its own product
+    const reopened = new CubeEditorState(state.host, state.document);
+    tab = await openTab(reopened);
+    expect(tab.candidate?.id).toBe('ORDERS_PRODUCT');
+    reopened.sourcePicker.close();
+    reopened.importDocument(returnsCube, false);
+    dataProducts.search.mockClear();
+    dataProducts.describe.mockClear();
+    tab = await openTab(reopened);
+    expect(dataProducts.search).not.toHaveBeenCalled();
+    expect(tab.candidate?.id).toBe('RETURNS_PRODUCT');
+    expect(tab.description).toBeDefined();
+    expect(dataProducts.describe).toHaveBeenCalledTimes(1);
+  });
+
+  test("Reopens on a data product cube's own product when the server's matches listed before miss it", async () => {
+    const { state, dataProducts } = setUpSearch();
+    const built = new CubeEditorState(state.host);
+    const builtTab = await openTab(built);
+    await pickProduct(builtTab, 'ORDERS_PRODUCT');
+    await add(built, 'core', 'daily_orders');
+    dataProducts.search.mockResolvedValueOnce([RETURNS]);
+    await openTab(state);
+    state.sourcePicker.close();
+    state.importDocument(built.document, false);
+    dataProducts.search.mockClear();
+    const tab = await openTab(state);
+    expect(dataProducts.search).not.toHaveBeenCalled();
+    expect(tab.candidate?.id).toBe('ORDERS_PRODUCT');
+    expect(tab.description).toBeDefined();
+  });
+
+  test("Says a server's matches may be cut short when it gives as many as one search gives", async () => {
+    const { state } = setUpSearch(2);
+    const tab = await openTab(state);
+    expect(tab.visibleCandidates).toHaveLength(2);
+    expect(tab.isTruncated).toBe(true);
+    await type(tab, 'returns');
+    expect(tab.visibleCandidates).toHaveLength(1);
+    expect(tab.isTruncated).toBe(false);
   });
 });

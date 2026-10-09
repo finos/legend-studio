@@ -19,7 +19,12 @@ import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
 import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
-import type { CubeDataProductTabState } from '../../stores/source-picker/CubeDataProductTabState.js';
+import {
+  type CubeDataProductTabError,
+  type CubeDataProductTabState,
+  CUBE_DATA_PRODUCT_TAB_MESSAGE,
+} from '../../stores/source-picker/CubeDataProductTabState.js';
+import { CubeButton } from '../CubeButton.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
 const INPUT_CLASS =
@@ -35,6 +40,26 @@ const ENVIRONMENT_TYPE_LABELS: Readonly<
   [CubeDataProductEnvironmentType.PRODUCTION]: 'Production',
   [CubeDataProductEnvironmentType.PRODUCTION_PARALLEL]: 'Production (parallel)',
 };
+
+/** An error as the tab shows it: its first line, the rest on demand, and an action when it has one */
+const CubeDataProductTabAlert: React.FC<{
+  error: CubeDataProductTabError;
+  children?: React.ReactNode;
+}> = ({ error, children }) => (
+  <div
+    className="flex flex-col gap-1 text-base text-[var(--color-status-error)]"
+    role="alert"
+  >
+    <span>{error.message}</span>
+    {error.detail !== undefined && (
+      <details className="text-sm">
+        <summary className="cursor-pointer">Details</summary>
+        <pre className="whitespace-pre-wrap break-words">{error.detail}</pre>
+      </details>
+    )}
+    {children}
+  </div>
+);
 
 /**
  * The source dialog's Data product tab (PLAN §6.8), as Data Cube's selection
@@ -76,8 +101,17 @@ export const CubeDataProductTab = observer(
         />
         {tab.isListing && (
           <div className="text-base text-[var(--color-text-secondary)]">
-            listing data products
+            {tab.searchesOnServer
+              ? 'searching data products'
+              : 'listing data products'}
           </div>
+        )}
+        {tab.listError !== undefined && (
+          <CubeDataProductTabAlert error={tab.listError}>
+            <div>
+              <CubeButton onClick={() => tab.retryListing()}>Retry</CubeButton>
+            </div>
+          </CubeDataProductTabAlert>
         )}
         <ul
           className="max-h-40 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
@@ -107,6 +141,11 @@ export const CubeDataProductTab = observer(
             );
           })}
         </ul>
+        {tab.isTruncated && (
+          <span className="text-sm text-[var(--color-text-muted)]">
+            {CUBE_DATA_PRODUCT_TAB_MESSAGE.TRUNCATED}
+          </span>
+        )}
         {tab.isDescribing && (
           <div className="text-base text-[var(--color-text-secondary)]">
             loading access points
@@ -177,20 +216,7 @@ export const CubeDataProductTab = observer(
           </div>
         )}
         {tab.error !== undefined && (
-          <div
-            className="flex flex-col gap-1 text-base text-[var(--color-status-error)]"
-            role="alert"
-          >
-            <span>{tab.error.message}</span>
-            {tab.error.detail !== undefined && (
-              <details className="text-sm">
-                <summary className="cursor-pointer">Details</summary>
-                <pre className="whitespace-pre-wrap break-words">
-                  {tab.error.detail}
-                </pre>
-              </details>
-            )}
-          </div>
+          <CubeDataProductTabAlert error={tab.error} />
         )}
       </div>
     );
