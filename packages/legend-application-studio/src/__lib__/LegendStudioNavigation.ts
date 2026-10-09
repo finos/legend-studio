@@ -363,3 +363,7 @@ export const EXTERNAL_APPLICATION_NAVIGATION__generateUrlWithEditorConfig = (
   editorConfig: string,
 ): string =>
   `${base}?${LEGEND_STUDIO_QUERY_PARAMS.EDITOR_CONFIG}=${encodeURIComponent(editorConfig)}`;
+
+export const EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataSpaceViewUrl =
+  (marketplaceApplicationUrl: string, gavPath: string): string =>
+    `${marketplaceApplicationUrl}dataProduct/legacy/${gavPath}`;

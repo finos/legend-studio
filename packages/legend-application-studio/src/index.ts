@@ -24,6 +24,7 @@ export {
   generateReviewRoute,
   generateViewProjectRoute,
   generateViewVersionRoute,
+  EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataSpaceViewUrl,
 } from './__lib__/LegendStudioNavigation.js';
 export * from './__lib__/LegendStudioTesting.js';
 export * from './__lib__/LegendStudioApplicationNavigationContext.js';

@@ -23,6 +23,7 @@ import {
   DataSpaceWikiBadges,
 } from './DataSpaceDescription.js';
 import { DataSpaceLakehouseAccess } from './DataSpaceLakehouseAccess.js';
+import { RelatedDataSpaces } from './DataSpaceRelatedDataSpaces.js';
 import { useEffect } from 'react';
 import { ModelsDocumentation } from '@finos/legend-lego/model-documentation';
 import { DiagramViewer } from '@finos/legend-extension-dsl-diagram';
@@ -105,6 +106,7 @@ export const DataSpaceWiki = observer(
         />
         <DataSpaceQuickStart dataSpaceViewerState={dataSpaceViewerState} />
         <DataSpaceDataAccess dataSpaceViewerState={dataSpaceViewerState} />
+        <RelatedDataSpaces dataSpaceViewerState={dataSpaceViewerState} />
       </div>
     );
   },

@@ -20,6 +20,13 @@ export * from '../__lib__/shared/DSL_DataSpace_LegendNavigation.js';
 export * from '../__lib__/DSL_DataSpace_LegendApplicationCommand.js';
 export { DSL_DataSpace_LegendApplicationPlugin } from './DSL_DataSpace_LegendApplicationPlugin.js';
 export { DataSpaceViewer } from './DataSpaceViewer.js';
+export {
+  encodeRelatedDataSpaceGAV,
+  parseRelatedDataSpaceGAV,
+  parseRelatedDataSpaceGAVs,
+  splitRelatedDataSpaceEntries,
+  type DataSpaceWikiRelatedDataSpace,
+} from '../stores/DataSpaceViewerNavigation.js';
 export * from '../stores/DSL_DataSpace_LegendApplicationPlugin_Extension.js';
 export { DataSpaceViewerState } from '../stores/DataSpaceViewerState.js';
 export {

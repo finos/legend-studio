@@ -321,6 +321,8 @@ export const observe_DataSpace = skipObserved(
       diagrams: observable,
       supportInfo: observable,
       operationalMetadata: observable,
+      stereotypes: observable,
+      taggedValues: observable,
       _elementHashCode: override,
     });
 

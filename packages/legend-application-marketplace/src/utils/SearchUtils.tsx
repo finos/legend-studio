@@ -33,6 +33,7 @@ import {
   generateLakehouseDataProductPath,
   generateLegacyDataProductPath,
   generateSdlcDataProductPath,
+  TEMP_LEGACY_DATA_SPACE_PATH_PREFIX,
 } from '../__lib__/LegendMarketplaceNavigation.js';
 import {
   type V1_EntitlementsDataProductDetails,
@@ -78,7 +79,7 @@ const hasNonLegacyDataProductLink = (link: string | undefined): boolean => {
     const url = new URL(link);
     return (
       url.pathname.startsWith('/dataProduct/') &&
-      !url.pathname.startsWith('/dataProduct/legacy/')
+      !url.pathname.startsWith(TEMP_LEGACY_DATA_SPACE_PATH_PREFIX)
     );
   } catch {
     return false;

@@ -17,6 +17,7 @@
 import {
   EditorExtensionState,
   queryClass,
+  EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataSpaceViewUrl,
   type EditorStore,
 } from '@finos/legend-application-studio';
 import {
@@ -145,6 +146,7 @@ export class DataSpacePreviewState extends EditorExtensionState {
         artifactId,
         versionId,
         analysisResult,
+        this.editorStore.depotServerClient,
         {
           retrieveGraphData: () =>
             new InMemoryGraphData(this.editorStore.graphManagerState.graph),
@@ -162,6 +164,23 @@ export class DataSpacePreviewState extends EditorExtensionState {
             this.editorStore.applicationStore.notificationService.notifyWarning(
               'This feature is not supported in preview mode',
             );
+          },
+          viewDataSpace: (gavPath: string): void => {
+            if (
+              this.editorStore.applicationStore.config.marketplaceApplicationUrl
+            ) {
+              this.editorStore.applicationStore.navigationService.navigator.visitAddress(
+                EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataSpaceViewUrl(
+                  this.editorStore.applicationStore.config
+                    .marketplaceApplicationUrl,
+                  gavPath,
+                ),
+              );
+            } else {
+              this.editorStore.applicationStore.notificationService.notifyWarning(
+                'Marketplace application URL is not configured',
+              );
+            }
           },
           queryClass: (_class: Class): void => {
             queryClass(_class, this.editorStore).catch(

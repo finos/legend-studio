@@ -76,18 +76,6 @@
         font-weight: 500;
         color: var(--color-text-on-accent);
       }
-
-      &__verified-badge {
-        @include flexCenter;
-
-        margin-left: 1rem;
-        width: 3rem;
-
-        svg {
-          font-size: 2.4rem;
-          color: var(--color-text-on-accent);
-        }
-      }
     }
 
     &__actions-group {
@@ -577,16 +565,16 @@
   &__badge {
     @include flexVCenter;
 
-    gap: 0.65rem;
-    height: 2.55rem;
-    padding: 0 1.1rem;
-    border-radius: 1.275rem;
-    font-size: 1.25rem;
+    gap: 0.6rem;
+    height: 2.4rem;
+    padding: 0 1rem;
+    border-radius: 1.2rem;
+    font-size: 1.2rem;
     font-weight: 500;
     user-select: none;
 
     svg {
-      font-size: 1.475rem;
+      font-size: 1.4rem;
     }
 
     &__label {
@@ -612,25 +600,46 @@
   &__related-data-spaces {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.8rem;
+    gap: 0.9rem;
 
     &__item {
       @include flexVCenter;
 
-      height: 2.4rem;
-      padding: 0 1rem;
+      height: 3.6rem;
+      padding: 0 1.8rem;
       border: none;
-      border-radius: 1.2rem;
-      background: var(--color-bg-tag);
-      color: var(--color-text-muted);
+      border-radius: 0.5rem;
+      background: var(--color-blue-200);
+      color: var(--color-text-on-accent);
       font-family: inherit;
-      font-size: 1.2rem;
-      line-height: 1;
+      font-size: 1.3rem;
+      line-height: 1.4;
       user-select: none;
       cursor: pointer;
+      max-width: 100%;
 
       &:hover {
-        background: var(--color-dark-shade-100);
+        background: var(--color-blue-150);
+      }
+
+      &:disabled {
+        background: var(--color-dark-grey-200);
+        cursor: not-allowed;
+
+        &:hover {
+          background: var(--color-dark-grey-200);
+        }
+
+        .data-space__viewer__wiki__related-data-spaces__item__label {
+          color: var(--color-dark-grey-400);
+        }
+      }
+
+      &__label {
+        @include ellipsisTextOverflow;
+
+        color: var(--color-text-on-accent);
+        font-weight: 500;
       }
     }
   }

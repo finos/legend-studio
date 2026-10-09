@@ -79,6 +79,7 @@ import {
   generateLakehouseDataProductPath,
   generateContractPagePath,
   generatePermitDataAccessRequestPagePath,
+  TEMP_LEGACY_DATA_SPACE_PATH_PREFIX,
 } from '../../__lib__/LegendMarketplaceNavigation.js';
 import {
   DataSpaceViewerState,
@@ -863,6 +864,7 @@ export class LegendMarketplaceProductViewerStore {
           artifactId,
           versionId,
           analysisResult,
+          this.marketplaceBaseStore.depotServerClient,
           {
             retrieveGraphData: () =>
               new GraphDataWithOrigin(
@@ -1005,6 +1007,13 @@ export class LegendMarketplaceProductViewerStore {
                     extractElementNameFromPath(dataProductPath).toUpperCase(),
                     deploymentId,
                   ),
+                ),
+              );
+            },
+            viewDataSpace: (gavPath: string): void => {
+              this.marketplaceBaseStore.applicationStore.navigationService.navigator.visitAddress(
+                this.marketplaceBaseStore.applicationStore.navigationService.navigator.generateAddress(
+                  `${TEMP_LEGACY_DATA_SPACE_PATH_PREFIX}${gavPath}`,
                 ),
               );
             },

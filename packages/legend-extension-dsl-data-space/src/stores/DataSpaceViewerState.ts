@@ -24,19 +24,27 @@ import {
   type GraphData,
   type GraphManagerState,
   type PackageableRuntime,
+  extractElementNameFromPath,
 } from '@finos/legend-graph';
-import { action, computed, flowResult, makeObservable, observable } from 'mobx';
+import {
+  action,
+  computed,
+  flow,
+  flowResult,
+  makeObservable,
+  observable,
+} from 'mobx';
 import {
   type DataSpaceAnalysisResult,
   type DataSpaceExecutionContextAnalysisResult,
   DataproductReferenceMetadata,
   LakehouseDataProductExecutableAccessorInfo,
 } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
-import { isSnapshotVersion } from '@finos/legend-server-depot';
 import {
-  PURE_DATA_SPACE_INFO_PROFILE_PATH,
-  PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
-} from '../graph-manager/DSL_DataSpace_PureGraphManagerPlugin.js';
+  isSnapshotVersion,
+  resolveVersion,
+  type DepotServerClient,
+} from '@finos/legend-server-depot';
 import { DataSpaceViewerModelsDocumentationState } from './DataSpaceModelsDocumentationState.js';
 import { DataSpaceViewerDiagramViewerState } from './DataSpaceViewerDiagramViewerState.js';
 import {
@@ -44,8 +52,10 @@ import {
   DataSpaceLayoutState,
 } from './DataSpaceLayoutState.js';
 import {
+  type DataSpaceWikiRelatedDataSpace,
   DATA_SPACE_VIEWER_ACTIVITY_MODE,
   generateAnchorForActivity,
+  parseRelatedDataSpaceGAVs,
 } from './DataSpaceViewerNavigation.js';
 import { DataAccessState } from '@finos/legend-query-builder';
 import {
@@ -63,6 +73,14 @@ import {
   type DataSpaceQualityResult,
 } from './DataSpaceQualityState.js';
 import { BaseViewerState } from '@finos/legend-extension-dsl-data-product';
+import {
+  type GeneratorFn,
+  ActionState,
+  assertErrorThrown,
+  guaranteeNonNullable,
+  isString,
+} from '@finos/legend-shared';
+import { type Entity } from '@finos/legend-storage';
 
 export class DataSpaceViewerState extends BaseViewerState<
   DataSpaceAnalysisResult,
@@ -85,12 +103,14 @@ export class DataSpaceViewerState extends BaseViewerState<
   readonly viewDataProduct?:
     | ((dataProductPath: string, deploymentId: number) => void)
     | undefined;
+  readonly viewDataSpace?: ((gavPath: string) => void) | undefined;
   readonly mappingProviderAccessConfig?:
     | DataSpaceMappingProviderAccessConfig
     | undefined;
   readonly fetchDataSpaceQuality?:
     | (() => Promise<DataSpaceQualityResult>)
     | undefined;
+  readonly depotServerClient?: DepotServerClient | undefined;
 
   readonly diagramViewerState: DataSpaceViewerDiagramViewerState;
   readonly modelsDocumentationState: DataSpaceViewerModelsDocumentationState;
@@ -114,6 +134,9 @@ export class DataSpaceViewerState extends BaseViewerState<
    */
   dataProductAccessStates = new Map<string, DataSpaceDataProductAccessState>();
 
+  relatedDataSpaces: DataSpaceWikiRelatedDataSpace[] = [];
+  readonly fetchRelatedDataSpaceTitlesState = ActionState.create();
+
   constructor(
     applicationStore: GenericLegendApplicationStore,
     graphManagerState: GraphManagerState,
@@ -121,6 +144,7 @@ export class DataSpaceViewerState extends BaseViewerState<
     artifactId: string,
     versionId: string,
     dataSpaceAnalysisResult: DataSpaceAnalysisResult,
+    depotServerClient: DepotServerClient | undefined,
     actions: {
       retrieveGraphData: () => GraphData;
       queryDataSpace: (executionContextKey: string | undefined) => void;
@@ -135,6 +159,7 @@ export class DataSpaceViewerState extends BaseViewerState<
       viewDataProduct?:
         | ((dataProductPath: string, deploymentId: number) => void)
         | undefined;
+      viewDataSpace?: ((gavPath: string) => void) | undefined;
       mappingProviderAccessConfig?:
         | DataSpaceMappingProviderAccessConfig
         | undefined;
@@ -162,14 +187,15 @@ export class DataSpaceViewerState extends BaseViewerState<
       currentMappingProviderAccessState: computed,
       executableStates: observable,
       legendAIConfig: observable,
-      isVerified: computed,
       isDataAccessAvailable: computed,
       referencedDataProductPaths: computed,
+      relatedDataSpaces: observable,
       setCurrentActivity: action,
       setCurrentExecutionContext: action,
       setCurrentRuntime: action,
       refreshCurrentMappingProviderAccessState: action,
       refreshDataProductAccessState: action,
+      fetchRelatedDataSpaceTitles: flow,
     });
 
     this.graphManagerState = graphManagerState;
@@ -188,8 +214,10 @@ export class DataSpaceViewerState extends BaseViewerState<
     this.openServiceQuery = actions.openServiceQuery;
     this.onQuickStartTabChange = actions.onQuickStartTabChange;
     this.viewDataProduct = actions.viewDataProduct;
+    this.viewDataSpace = actions.viewDataSpace;
     this.mappingProviderAccessConfig = actions.mappingProviderAccessConfig;
     this.fetchDataSpaceQuality = actions.fetchDataSpaceQuality;
+    this.depotServerClient = depotServerClient;
 
     this.currentExecutionContext =
       dataSpaceAnalysisResult.defaultExecutionContext ??
@@ -238,16 +266,6 @@ export class DataSpaceViewerState extends BaseViewerState<
     return DATA_SPACE_WIKI_PAGE_SECTIONS.filter(
       (section) =>
         section !== DATA_SPACE_VIEWER_ACTIVITY_MODE.DATASPACE_LAKEHOUSE_ACCESS,
-    );
-  }
-
-  get isVerified(): boolean {
-    return Boolean(
-      this.dataSpaceAnalysisResult.stereotypes.find(
-        (stereotype) =>
-          stereotype.profile === PURE_DATA_SPACE_INFO_PROFILE_PATH &&
-          stereotype.value === PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
-      ),
     );
   }
 
@@ -388,6 +406,50 @@ export class DataSpaceViewerState extends BaseViewerState<
       }
     }
     return paths;
+  }
+
+  *fetchRelatedDataSpaceTitles(): GeneratorFn<void> {
+    if (!this.fetchRelatedDataSpaceTitlesState.isInInitialState) {
+      return;
+    }
+    const relatedDataSpaces = (
+      this.dataSpaceAnalysisResult.info?.relatedDataSpaces ?? []
+    ).flatMap((entry) => parseRelatedDataSpaceGAVs(entry));
+    this.fetchRelatedDataSpaceTitlesState.inProgress();
+    if (!this.depotServerClient) {
+      this.relatedDataSpaces = relatedDataSpaces;
+      this.fetchRelatedDataSpaceTitlesState.pass();
+      return;
+    }
+    const depotServerClient = this.depotServerClient;
+    const results = (yield Promise.allSettled(
+      relatedDataSpaces.map(async (relatedDataSpace) => {
+        const entity = await depotServerClient.getVersionEntity(
+          relatedDataSpace.groupId,
+          relatedDataSpace.artifactId,
+          resolveVersion(relatedDataSpace.versionId),
+          relatedDataSpace.path,
+        );
+        const content = entity.content as Entity['content'];
+        return {
+          ...relatedDataSpace,
+          name: isString(content.title) ? content.title : relatedDataSpace.name,
+        };
+      }),
+    )) as PromiseSettledResult<DataSpaceWikiRelatedDataSpace>[];
+    this.relatedDataSpaces = results.map((result, idx) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      }
+      const relatedDataSpace = guaranteeNonNullable(relatedDataSpaces[idx]);
+      assertErrorThrown(result.reason);
+      return {
+        ...relatedDataSpace,
+        name: extractElementNameFromPath(relatedDataSpace.path),
+        isInvalid: true,
+      };
+    });
+    this.fetchRelatedDataSpaceTitlesState.pass();
   }
 
   /**

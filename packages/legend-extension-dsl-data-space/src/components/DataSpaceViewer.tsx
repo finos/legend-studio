@@ -23,7 +23,6 @@ import {
   MenuContentItem,
   MoreVerticalIcon,
   PlayIcon,
-  VerifiedIcon,
   clsx,
 } from '@finos/legend-art';
 import { LegendAIChatToggle } from '@finos/legend-lego/legend-ai';
@@ -83,14 +82,6 @@ const DataSpaceHeader = observer(
             <div className="data-space__viewer__header__title__label">
               {analysisResult.displayName}
             </div>
-            {dataSpaceViewerState.isVerified && (
-              <div
-                className="data-space__viewer__header__title__verified-badge"
-                title="Verified Data Space"
-              >
-                <VerifiedIcon />
-              </div>
-            )}
           </div>
           <div className="data-space__viewer__header__actions-group">
             <DataSpaceQualityEmote

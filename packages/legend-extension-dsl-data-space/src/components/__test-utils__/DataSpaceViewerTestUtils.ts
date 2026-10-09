@@ -34,6 +34,7 @@ import {
   V1_RemoteEngine,
 } from '@finos/legend-graph';
 import { TEST__getTestGraphManagerState } from '@finos/legend-graph/test';
+import { type DepotServerClient } from '@finos/legend-server-depot';
 import {
   type V1_DataSpaceAnalysisResult,
   DSL_DataSpace_GraphManagerPreset,
@@ -109,7 +110,9 @@ export type TEST__DataSpaceViewerActionOverrides = {
   viewDataProduct?:
     | ((dataProductPath: string, deploymentId: number) => void)
     | undefined;
+  viewDataSpace?: ((gavPath: string) => void) | undefined;
   fetchDataSpaceQuality?: (() => Promise<DataSpaceQualityResult>) | undefined;
+  depotServerClient?: DepotServerClient | undefined;
 };
 
 /**
@@ -171,6 +174,7 @@ export const TEST__getDataSpaceViewerState = async (
     TEST_DATA_SPACE_ARTIFACT_ID,
     TEST_DATA_SPACE_VERSION_ID,
     dataSpaceAnalysisResult,
+    overrides?.depotServerClient,
     {
       retrieveGraphData: (): GraphData => ({}) as unknown as GraphData,
       queryDataSpace: () => undefined,
@@ -179,6 +183,7 @@ export const TEST__getDataSpaceViewerState = async (
       queryClass: () => undefined,
       openServiceQuery: () => undefined,
       viewDataProduct: overrides?.viewDataProduct,
+      viewDataSpace: overrides?.viewDataSpace,
       fetchDataSpaceQuality: overrides?.fetchDataSpaceQuality,
     },
   );

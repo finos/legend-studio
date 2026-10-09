@@ -15,6 +15,9 @@
  */
 
 import { NAVIGATION_ZONE_SEPARATOR } from '@finos/legend-application';
+import { extractElementNameFromPath } from '@finos/legend-graph';
+import { LATEST_VERSION_ALIAS } from '@finos/legend-server-depot';
+import { isNonNullable } from '@finos/legend-shared';
 import type { DataSpaceExecutableAnalysisResult } from '../graph-manager/action/analytics/DataSpaceAnalysis.js';
 import type { DiagramAnalysisResult } from '@finos/legend-extension-dsl-diagram';
 
@@ -26,6 +29,7 @@ export enum DATA_SPACE_VIEWER_ACTIVITY_MODE {
   QUICK_START = 'quick-start',
   EXECUTION_CONTEXT = 'execution-context',
   DATA_ACCESS = 'data-access',
+  RELATED_DATA_SPACES = 'related-data-spaces',
 
   DATA_STORES = 'data-stores', // TODO: with test-data, also let user call TDS query on top of these
   DATA_AVAILABILITY = 'data-availability',
@@ -61,3 +65,72 @@ export const generateAnchorForDiagram = (
     DATA_SPACE_VIEWER_ACTIVITY_MODE.DIAGRAM_VIEWER,
     generateAnchorChunk(diagram.title),
   ].join(NAVIGATION_ZONE_SEPARATOR);
+
+const RELATED_DATA_SPACE_GAV_COORDINATE_SEPARATOR = ':';
+const RELATED_DATA_SPACE_GAV_PATH_SEPARATOR = '|';
+const RELATED_DATA_SPACE_ENTRY_SEPARATOR = ',';
+
+export type DataSpaceWikiRelatedDataSpace = {
+  name: string;
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  path: string;
+  isInvalid?: boolean | undefined;
+};
+
+export const encodeRelatedDataSpaceGAV = (entry: {
+  groupId: string;
+  artifactId: string;
+  versionId: string;
+  path: string;
+}): string =>
+  `${[entry.groupId, entry.artifactId, entry.versionId].join(
+    RELATED_DATA_SPACE_GAV_COORDINATE_SEPARATOR,
+  )}${RELATED_DATA_SPACE_GAV_PATH_SEPARATOR}${entry.path}`;
+
+export const generateRelatedDataSpaceRedirectPath = (
+  relatedDataSpace: DataSpaceWikiRelatedDataSpace,
+): string =>
+  `${relatedDataSpace.groupId}:${relatedDataSpace.artifactId}:${LATEST_VERSION_ALIAS}/${relatedDataSpace.path}`;
+
+export const parseRelatedDataSpaceGAV = (
+  value: string,
+): DataSpaceWikiRelatedDataSpace | undefined => {
+  const separatorIdx = value.indexOf(RELATED_DATA_SPACE_GAV_PATH_SEPARATOR);
+  if (separatorIdx === -1) {
+    return undefined;
+  }
+  const gavPart = value.slice(0, separatorIdx);
+  const path = value.slice(separatorIdx + 1);
+  const coordinates = gavPart.split(
+    RELATED_DATA_SPACE_GAV_COORDINATE_SEPARATOR,
+  );
+  if (coordinates.length !== 3) {
+    return undefined;
+  }
+  const [groupId, artifactId, versionId] = coordinates;
+  if (!groupId || !artifactId || !versionId || !path) {
+    return undefined;
+  }
+  return {
+    name: extractElementNameFromPath(path),
+    groupId,
+    artifactId,
+    versionId,
+    path,
+  };
+};
+
+export const splitRelatedDataSpaceEntries = (value: string): string[] =>
+  value
+    .split(RELATED_DATA_SPACE_ENTRY_SEPARATOR)
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+export const parseRelatedDataSpaceGAVs = (
+  value: string,
+): DataSpaceWikiRelatedDataSpace[] =>
+  splitRelatedDataSpaceEntries(value)
+    .map((entry) => parseRelatedDataSpaceGAV(entry))
+    .filter(isNonNullable);

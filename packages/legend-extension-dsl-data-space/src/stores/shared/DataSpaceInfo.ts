@@ -17,6 +17,7 @@
 import {
   SNAPSHOT_VERSION_ALIAS,
   type StoredEntity,
+  type StoredSummaryEntity,
 } from '@finos/legend-server-depot';
 import { isString } from '@finos/legend-shared';
 import {
@@ -67,4 +68,19 @@ export const extractDataSpaceInfo = (
     isString(storedEntity.entity.content.defaultExecutionContext)
       ? storedEntity.entity.content.defaultExecutionContext
       : undefined,
+  );
+
+export const extractDataSpaceInfoFromSummary = (
+  storedSummaryEntity: StoredSummaryEntity,
+): ResolvedDataSpaceEntityWithOrigin =>
+  new ResolvedDataSpaceEntityWithOrigin(
+    {
+      groupId: storedSummaryEntity.groupId,
+      artifactId: storedSummaryEntity.artifactId,
+      versionId: storedSummaryEntity.versionId,
+    },
+    undefined,
+    extractEntityNameFromPath(storedSummaryEntity.path),
+    storedSummaryEntity.path,
+    undefined,
   );

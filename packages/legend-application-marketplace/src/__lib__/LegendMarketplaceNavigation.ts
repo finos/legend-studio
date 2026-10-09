@@ -138,6 +138,8 @@ export const LEGEND_MARKETPLACE_ROUTE_PATTERN = Object.freeze({
   DEPRECATED_LAKEHOUSE_SDLC_PRODUCT: `/lakehouse/dataProduct/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.GAV}/:${LEGEND_MARKETPLACE_ROUTE_PATTERN_TOKEN.DATA_PRODUCT_PATH}`,
 });
 
+export const TEMP_LEGACY_DATA_SPACE_PATH_PREFIX = '/dataProduct/legacy/';
+
 export const generateMcpServerRoute = (mcpServerName: string): string =>
   generatePath(LEGEND_MARKETPLACE_ROUTE_PATTERN.MCP_SERVER, {
     mcpServerName: encodeURIComponent(mcpServerName),
