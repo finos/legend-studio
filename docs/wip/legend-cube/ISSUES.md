@@ -244,7 +244,7 @@ deployment (PLAN §11.2 Part B2).
   user-id environments, are left out. The tab counts the definitions it doesn't show.
 - **Materialized views** (a data set whose source is a function) are listed disabled.
 - **A data set re-checked on import** keeps its saved columns, with a warning, when its definition can't be read again
-  (e.g. no longer deployed); the run then fails as the lakehouse answers.
+  (e.g. no longer deployed).
 
 ## Test gaps
 
