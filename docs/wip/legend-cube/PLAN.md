@@ -19,7 +19,7 @@
 | D3  | **ag-grid Enterprise license is available** in every deployment. Use `@finos/legend-lego/data-grid` (enterprise modules).                                                                                                                                                                                                                                                                                                                                | user                               |
 | D4  | NULL semantics: **joins use SQL semantics** (NULL keys never match); **negated filters include NULL rows** (made explicit by the emitter, §8.4: the engine does it only for columns it types `[0..1]`; documented in the UI); **Count = non-null count** of the column.                                                                                                                                                                                  | user (default; wording 2026-10-06) |
 | D5  | Engine-driven changes to authoritative sections are accepted: Slice is `[start, stop)`; Join gains **FULL OUTER (in the slice)**; window aggregates with a sort use the SQL default (running) until frames exist; Difference keeps spec semantics (emulated); Concat across different precise types is rejected (widen autofix later).                                                                                                                   | user (default)                     |
-| D6  | Post-slice source order: services → Pure functions → data products → ingest. Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                                                                               | user (default)                     |
+| D6  | Post-slice source order: services → Pure functions → data products → ingest (data products and ingest moved to M3, §6.7–6.8). Data products and ingest are built against mocks until a lakehouse-enabled engine is available. Services snapshot their converted lambda and check for drift.                                                                                                                                                              | user (default)                     |
 | D7  | Route **`/cube`** inside Legend Query (URL `/query/cube`), hard-wired in the Query router. New module(s) `legend-cube` / `legend-cube-builder` (§3). Further entry points, the sources modal and the final look are revisited in M3.                                                                                                                                                                                                                     | user + recommendation              |
 | D8  | Cube **works around** Studio and engine defects in its own code and depends on none of them being fixed. Upstream fixes are separate, non-blocking PRs and issues (Appendix B).                                                                                                                                                                                                                                                                          | user (default)                     |
 | D9  | Execution is a **Pure relation-function chain** over store accessors (`#>{db.schema.table}#`), built as **protocol JSON** (never Pure text). Legend SQL is only a possible future "SQL source" node.                                                                                                                                                                                                                                                     | recommendation (§8.1)              |
@@ -1142,13 +1142,31 @@ single SQL statement ✅. Its type comes from the declared signature, and it has
 **Unknowns:** the meaning of access-point `parameters` (always sent empty today), environment and entitlement
 resolution, and which access modes Cube exposes.
 
-### 6.7 Ingest (M9, outline)
+### 6.7 Ingest data sets (M3, settled by the user, 2026-10-09)
 
-- **Accessor:** `#I{ingestPath.dataset}#`, with the same lakehouse constraints.
-- **Schema:** from the definition plus milestoning columns. Studio's helper drops sizes, so prefer an engine call.
+Ingest definitions became a source in M3, built before Depot databases (they rebase onto it). Requirements: the local
+evidence `ingest-requirements` (four rounds of answers recorded there). Cube copies Data Cube's Lakehouse Producer
+source for now; the user plans to improve it later.
 
-**Unknowns:** consumer vs producer environment, the meaning of the `metadata` flag, and whether end users should see
-ingest datasets directly.
+- **Picking (an "Ingest" tab of its own, with an "Ingest Dataset" BETA palette item):** Mode (Production or Production
+  (parallel)), then the environment (the viewer's entitled one, shown read-only and never saved), then a producer
+  deployment (numeric deployment ids only; the viewer's own user-id environments are left out for now), then one of its
+  deployed definitions, then a data set. Only definitions deployed from SDLC (`alloy-git:<group>~<artifact>~<path>`
+  URNs) are listed; ad hoc ones (`rest-api:` URNs) are not supported. Everyone can add data sets: the lakehouse refuses
+  a run the viewer may not make, and Cube shows that error.
+- **The definition:** read from the ingest server by URN, its details route first, then the grammar route parsed by the
+  engine, as Data Cube does. No project version is looked up now (the SDLC pointer is a later improvement).
+- **Schema:** each data set's declared columns, with their type parameters and nullability, then the LAKE\_\* columns its
+  write mode adds, as legend-graph types them for Legend Query; no engine call. Materialized views, many-valued columns
+  and types Cube doesn't know are listed disabled with the reason.
+- **Accessor and run:** `#I{definition.dataSet}#` (`metadata: false`), run on a model of the definitions the cube reads
+  plus a LakehouseRuntime at `cube::ingest::Runtime`. Its environment is the one of the ingest server that served the
+  definition; the warehouse follows the data product rule (§6.8).
+- **Saved:** a Cube-owned model kind `cubeIngest` (the class, the producer deployment, the warehouse); each source
+  saves the definition's URN, its path and the data set. Never a server URL. One cube reads one kind of source (tables,
+  data products or ingest data sets) and one producer deployment.
+- **Config:** Legend Query's optional `lakehouse.platformUrl` (the key Data Cube and Marketplace use); the ingest
+  servers are found through it.
 
 ### 6.8 The next sources: settled so far (user, 2026-10-08)
 
@@ -2524,7 +2542,7 @@ errors.
 | M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
 | M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                        |
 | M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| M9   | More sources                               | Services → Pure functions → ingest (`#I` against mocks), with parameter forms (§17.6); data products moved to M3 (§6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| M9   | More sources                               | Services → Pure functions, with parameter forms (§17.6); data products and ingest moved to M3 (§6.7–6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points

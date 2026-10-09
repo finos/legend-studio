@@ -43,10 +43,11 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     (DP22), which wait for the local lakehouse, marketplace and depot mocks; and the data product half of the demo
     video (the direct connection's half was recorded on 2026-10-09; the data product tab needs the mocks or an internal
     deployment).
-  - Next: Depot databases (PLAN §6.3, §6.8), starting with their requirements and the local mock depot. Ingest
-    definitions as a source are being specified alongside (user, 2026-10-09; PLAN places ingest in M9, §6.7).
+  - Next: ingest data sets (PLAN §6.7; user, 2026-10-09: before Depot databases), on branch `cube-ingest`, then Depot
+    databases (PLAN §6.3, §6.8; their requirements are answered: released versions only, no dependency Databases),
+    starting with the local mock depot.
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
-- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
+- [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions; data products and ingest moved to M3)
 
 ## Next action
 
