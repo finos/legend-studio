@@ -15,7 +15,9 @@
  */
 
 import {
+  AggregationFunction,
   getSameNamedJoinKeys,
+  Group,
   Join,
   JoinType,
   type Query,
@@ -139,6 +141,33 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
   }
 }
 
+/** The aggregations whose output is one of their column's values, so typed as it (PLAN §11.5) */
+const VALUE_AGGREGATIONS: readonly string[] = [
+  AggregationFunction.DISTINCT_VALUE,
+  AggregationFunction.MIN,
+  AggregationFunction.MAX,
+];
+
+/**
+ * The input column a Group's output column comes from: a key by its name, a
+ * Distinct Value, Min or Max by its aggregated column; a count, a sum or an
+ * average is no column's value, so it comes from none
+ */
+const groupInputName = (
+  group: Group,
+  columnName: string,
+): string | undefined => {
+  if (group.columns.includes(columnName)) {
+    return columnName;
+  }
+  const aggregation = group.aggregations.find(
+    ({ name }) => name === columnName,
+  );
+  return aggregation && VALUE_AGGREGATIONS.includes(aggregation.function)
+    ? aggregation.column
+    : undefined;
+};
+
 /** Where a column of a node's output comes from: a table, and the column's name in it */
 export interface CubeColumnOrigin {
   readonly source: RelationalTableSource;
@@ -150,8 +179,10 @@ export interface CubeColumnOrigin {
  * through the inputs whose output has it, and through a Rename to its old
  * name. A join key of the same name on both sides comes from the side the
  * join keeps (the left for INNER and LEFT OUTER, the right for RIGHT OUTER),
- * and from both for FULL OUTER, which merges them. A column the node's output
- * doesn't have, e.g. one a Restrict dropped, comes from nowhere.
+ * and from both for FULL OUTER, which merges them. A Group's key comes from
+ * its column, and a Distinct Value, Min or Max from the column it aggregates.
+ * A column the node's output doesn't have, e.g. one a Restrict dropped, or a
+ * Group's count, sum or average, comes from nowhere.
  */
 export const findColumnOrigins = (
   query: Query,
@@ -174,7 +205,12 @@ export const findColumnOrigins = (
   const inputName =
     node instanceof Rename
       ? (node.mappings.find(({ to }) => to === columnName)?.from ?? columnName)
-      : columnName;
+      : node instanceof Group
+        ? groupInputName(node, columnName)
+        : columnName;
+  if (inputName === undefined) {
+    return [];
+  }
   const followed =
     node instanceof Join &&
     node.joinType !== JoinType.FULL_OUTER &&

@@ -115,7 +115,7 @@ export type IRWithOrigin = Extract<IR, { readonly origin?: Origin }>;
 export enum EmitRole {
   /** a source's store accessor */
   ACCESSOR = 'accessor',
-  /** a Join's rename to a temporary name, and a Rename's renames */
+  /** a Join's rename to a temporary name, a Rename's renames, and a Concat's rename of a converted column back to its name */
   RENAME = 'rename',
   /** a Join: the join call and its join kind */
   JOIN = 'join',
@@ -131,7 +131,7 @@ export enum EmitRole {
   MERGE_KEY = 'mergeKey',
   /** a FULL Join: `coalesce` of the two keys */
   COALESCE = 'coalesce',
-  /** a FULL Join: `cast` of the merged key to the keys' common type */
+  /** a FULL Join: `cast` of the merged key to the keys' common type; a Concat that converts types: `cast` of a column to the type both inputs share */
   CAST = 'cast',
   /** a select: a Join's last, a Restrict's, and the one that drops a temporary column */
   SELECT = 'select',
@@ -151,6 +151,14 @@ export enum EmitRole {
   SLICE = 'slice',
   /** a Distinct: its distinct call, and on SQL Server the column that pads it */
   DISTINCT = 'distinct',
+  /** a Group: its groupBy call, or with no key its aggregate call */
+  GROUP = 'group',
+  /** a Group: an aggregation's column read or `1` (Count rows), and its reduce */
+  AGGREGATION = 'aggregation',
+  /** a Concat: its concatenate call */
+  CONCAT = 'concat',
+  /** a Concat that converts types: the extend of an input's converted columns, and the column each reads */
+  CONVERT = 'convert',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
   SORT = 'sort',
   /** a Sort: one of its keys, wherever the order is written */
@@ -211,6 +219,14 @@ export const collection = (values: readonly IR[]): IR => ({
 /** `~name`, or with a function, `~name: x | …` */
 export const colSpec = (name: string, fn1?: IR): IR =>
   fn1 ? { k: 'colSpec', name, fn1 } : { k: 'colSpec', name };
+
+/** `~name: x | … : y | …`, an aggregation: what each row gives, then how the group's values reduce */
+export const aggregationColSpec = (name: string, fn1: IR, fn2: IR): IR => ({
+  k: 'colSpec',
+  name,
+  fn1,
+  fn2,
+});
 
 export const colSpecArray = (specs: readonly IR[]): IR => ({
   k: 'colSpecArray',

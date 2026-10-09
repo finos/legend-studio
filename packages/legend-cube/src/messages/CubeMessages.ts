@@ -131,6 +131,41 @@ export const MESSAGE_DIFFERENCE_COLUMN_NOT_NUMERIC = (name: string): string =>
 export const MESSAGE_INPUT_SCHEMAS_DIFFER =
   'Both input schemas must be identical.';
 
+/** Added by Cube: the column counts a Concat's inputs differ in, after MESSAGE_INPUT_SCHEMAS_DIFFER (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_COUNT = (
+  first: number,
+  second: number,
+): string =>
+  `The first input has ${first} ${first === 1 ? 'column' : 'columns'} and the second ${second}.`;
+
+/** Added by Cube: a position where a Concat's inputs name their columns differently (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_NAME = (
+  position: number,
+  first: string,
+  second: string,
+): string =>
+  `Column ${position} is ${quote(first)} in the first input and ${quote(second)} in the second: columns are matched by position.`;
+
+/** Added by Cube: a Concat's inputs have the same columns in another order (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_ORDER =
+  'The inputs have the same columns in a different order: columns are matched by position.';
+
+/** Added by Cube: a column a Concat's inputs give different types (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_TYPE = (
+  column: string,
+  firstType: string,
+  secondType: string,
+): string =>
+  `Column ${quote(column)} is ${firstType} in the first input and ${secondType} in the second.`;
+
+/** Added by Cube: a column whose types a Concat that converts types can't convert to one type (PLAN §11.5, Q5) */
+export const MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE = (
+  column: string,
+  firstType: string,
+  secondType: string,
+): string =>
+  `Column ${quote(column)} is ${firstType} in the first input and ${secondType} in the second, which can't be converted to one type.`;
+
 // ---------------------------------------- Aggregations / sorts ----------------------------------------
 
 export const MESSAGE_AGGREGATION_FUNCTION_EMPTY =
@@ -158,6 +193,10 @@ export const MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN = (
   name: string,
 ): string =>
   `Aggregation output name ${quote(name)} cannot be the same as input column name.`;
+
+/** Added by Cube: an output name follows the column-name rule (PLAN §11.4, §11.5) */
+export const MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID =
+  'Aggregation output name is not valid column name.';
 
 export const MESSAGE_SORT_DIRECTION_EMPTY = 'Sort direction cannot be empty.';
 
@@ -212,6 +251,13 @@ export const MESSAGE_FILTER_VALUE_OUT_OF_RANGE = (
   value: string,
   type: string,
 ): string => `Filter value ${quote(value)} is out of range for ${type}.`;
+
+/** Added by Cube: VARIANT and a type Cube doesn't know can't be compared, so not grouped either (PLAN §11.5) */
+export const MESSAGE_GROUP_COLUMN_NOT_GROUPABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Group column ${quote(column)} of type ${typeName} cannot be grouped.`;
 
 /** Added by Cube: Variant and unknown types can't be compared, so not sorted either (PLAN §11.4) */
 export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (

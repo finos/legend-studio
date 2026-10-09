@@ -16,18 +16,26 @@
 
 import { beforeAll, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
+  type ColumnAggregation,
+  ColumnComparisonFilter,
+  Concat,
   Connection,
   Distinct,
   Drop,
+  Filter,
+  FilterOperator,
+  Group,
   Limit,
+  printIR,
   Query,
-  type QueryNode,
   QueryEmitter,
+  type QueryNode,
+  Rename,
   Restrict,
   Slice,
   Sort,
   SortDirection,
-  printIR,
 } from '@finos/legend-cube';
 import { stringifyLosslessJSON } from '@finos/legend-shared';
 import {
@@ -202,6 +210,101 @@ const subqueries = (sql: string): string[] => {
   return found;
 };
 
+/**
+ * ORDERS through the first nodes and a second ORDERS through the second,
+ * concatenated by concat101 (its First and Second), converting types or not,
+ * then the nodes after it, the last captured
+ */
+const concatThenWith = (
+  widenTypes: boolean,
+  first: readonly QueryNode[],
+  second: readonly QueryNode[],
+  ...after: QueryNode[]
+): Query => {
+  const arms = [
+    [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), ...first],
+    [northwindTable('relational102', 'ORDERS', ORDERS_COLUMNS), ...second],
+  ];
+  const concat = new Concat('concat101', widenTypes);
+  const chain = (nodes: readonly QueryNode[]): Connection[] =>
+    nodes
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection(
+            (nodes[index] as QueryNode).id,
+            node.id,
+            node.ports[0] as string,
+          ),
+      );
+  const nodes = [concat, ...after];
+  return new Query(
+    [...arms.flat(), ...nodes],
+    [
+      ...arms.flatMap(chain),
+      ...arms.map(
+        (arm, side) =>
+          new Connection(
+            (arm.at(-1) as QueryNode).id,
+            concat.id,
+            concat.ports[side] as string,
+          ),
+      ),
+      ...chain(nodes),
+    ],
+    nodes.at(-1)?.id,
+  );
+};
+
+/** Types must match */
+const concatThen = (
+  first: readonly QueryNode[],
+  second: readonly QueryNode[],
+  ...after: QueryNode[]
+): Query => concatThenWith(false, first, second, ...after);
+
+/** CUSTOMER_ID and ORDER_ID, the keys `byCustomerThenOrder` sorts by */
+const customerAndOrder = (id: string): Restrict =>
+  new Restrict(id, ['CUSTOMER_ID', 'ORDER_ID']);
+
+/** The second input's sort, by the same keys under another id */
+const byCustomerThenOrder2 = (): Sort =>
+  new Sort('sort102', [
+    { column: 'CUSTOMER_ID', direction: SortDirection.ASC },
+    { column: 'ORDER_ID', direction: SortDirection.DESC },
+  ]);
+
+const aggregation = (
+  fn: AggregationFunction,
+  column: string | undefined,
+  name: string,
+): ColumnAggregation => ({ column, function: fn, name });
+
+/** A Group by SHIP_COUNTRY counting its rows */
+const countriesGroup = (): Group =>
+  new Group(
+    'group101',
+    ['SHIP_COUNTRY'],
+    [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+  );
+
+/** A Group by SHIP_COUNTRY with a reduce of each kind */
+const everyReduceGroup = (): Group =>
+  new Group(
+    'group101',
+    ['SHIP_COUNTRY'],
+    [
+      aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n'),
+      aggregation(
+        AggregationFunction.DISTINCT_COUNT,
+        'CUSTOMER_ID',
+        'customers',
+      ),
+      aggregation(AggregationFunction.AVERAGE, 'ORDER_ID', 'average'),
+      aggregation(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'region'),
+    ],
+  );
+
 const SHAPES: [string, () => Query][] = [
   [
     'a sorted Drop',
@@ -271,6 +374,129 @@ const SHAPES: [string, () => Query][] = [
         new Distinct('distinct101'),
         byCustomerThenOrder(),
         new Limit('limit101', 5),
+      ),
+  ],
+  ['a Group with every reduce', () => ordersThen(everyReduceGroup())],
+  [
+    'a Group of all the rows',
+    () =>
+      ordersThen(
+        new Group(
+          'group101',
+          [],
+          [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+        ),
+      ),
+  ],
+  [
+    'a Group after a sorted Limit',
+    () =>
+      ordersThen(
+        byCustomerThenOrder(),
+        new Limit('limit101', 50),
+        countriesGroup(),
+      ),
+  ],
+  [
+    'a Limit after a Group',
+    () => ordersThen(countriesGroup(), new Limit('limit101', 5)),
+  ],
+  [
+    'a Distinct before a Group',
+    () =>
+      ordersThen(
+        new Restrict('restrict101', ['SHIP_CITY', 'SHIP_COUNTRY']),
+        new Distinct('distinct101'),
+        countriesGroup(),
+      ),
+  ],
+  [
+    'a Filter after a Group',
+    () =>
+      ordersThen(
+        countriesGroup(),
+        new Filter(
+          'filter101',
+          new ColumnComparisonFilter('n', FilterOperator.GREATER_THAN, {
+            kind: 'integer',
+            value: '5',
+          }),
+        ),
+      ),
+  ],
+  [
+    'a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+      ),
+  ],
+  [
+    'a Concat of sorted Limits',
+    () =>
+      concatThen(
+        [
+          customerAndOrder('restrict101'),
+          byCustomerThenOrder(),
+          new Limit('limit101', 5),
+        ],
+        [
+          customerAndOrder('restrict102'),
+          byCustomerThenOrder2(),
+          new Limit('limit102', 5),
+        ],
+      ),
+  ],
+  [
+    'a Concat of a sorted Drop',
+    () =>
+      concatThen(
+        [
+          customerAndOrder('restrict101'),
+          byCustomerThenOrder(),
+          new Drop('drop101', 10),
+        ],
+        [customerAndOrder('restrict102')],
+      ),
+  ],
+  [
+    'a Limit after a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+        new Limit('limit101', 5),
+      ),
+  ],
+  [
+    'a Group after a Concat',
+    () =>
+      concatThen(
+        [customerAndOrder('restrict101')],
+        [customerAndOrder('restrict102')],
+        new Group(
+          'group101',
+          ['CUSTOMER_ID'],
+          [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+        ),
+      ),
+  ],
+  [
+    // Convert types (M4.13, PLAN §11.5, Q5): SmallInt with Double gives
+    // Number, Varchar(40) with Varchar(15) String, cast in both inputs
+    'a Concat that converts types',
+    () =>
+      concatThenWith(
+        true,
+        [new Restrict('restrict101', ['ORDER_ID', 'SHIP_NAME'])],
+        [
+          new Restrict('restrict102', ['FREIGHT', 'SHIP_CITY']),
+          new Rename('rename102', [
+            { from: 'FREIGHT', to: 'ORDER_ID' },
+            { from: 'SHIP_CITY', to: 'SHIP_NAME' },
+          ]),
+        ],
       ),
   ],
 ];
@@ -378,6 +604,235 @@ describe('Database workarounds, as each database plans them', () => {
           expect(subquery).toMatch(/\btop\b|\boffset\b/u);
         }
       });
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    "Writes a Group's reduces as count(distinct …), avg(1.0 * …), count(1) and a case for Distinct Value, on %s",
+    async (databaseType) => {
+      const sql = await planSql(
+        (
+          SHAPES.find(
+            ([label]) => label === 'a Group with every reduce',
+          )?.[1] as () => Query
+        )(),
+        databaseType,
+      );
+      expect(sql).toContain('count(distinct');
+      expect(sql).toContain('avg(1.0 *');
+      expect(sql).toContain('count(1)');
+      expect(sql).toMatch(/case when count\(distinct/u);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Turns a Filter after a Group into HAVING, its aggregate inlined, on %s',
+    async (databaseType) => {
+      expect(
+        await planSql(
+          (
+            SHAPES.find(
+              ([label]) => label === 'a Filter after a Group',
+            )?.[1] as () => Query
+          )(),
+          databaseType,
+        ),
+      ).toMatch(/having count\(1\) > 5/u);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Keeps a Distinct before a Group as a select distinct subquery, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        (
+          SHAPES.find(
+            ([label]) => label === 'a Distinct before a Group',
+          )?.[1] as () => Query
+        )(),
+        databaseType,
+      );
+      expect(
+        subqueries(sql).some((subquery) =>
+          subquery.includes('select distinct'),
+        ),
+      ).toBe(true);
+    },
+  );
+
+  test.each(['SqlServer', 'Sybase'])(
+    'Writes no ORDER BY in a subquery under a GROUP BY without its own TOP, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        (
+          SHAPES.find(
+            ([label]) => label === 'a Group after a sorted Limit',
+          )?.[1] as () => Query
+        )(),
+        databaseType,
+      );
+      subqueries(sql).forEach((subquery) => {
+        if (subquery.includes('order by')) {
+          expect(subquery).toMatch(/\btop\b|\boffset\b/u);
+        }
+      });
+    },
+  );
+
+  test("Takes a Limit after a Group by Cube's row numbers on Sybase IQ, never its own", async () => {
+    const sql = await planSql(
+      (
+        SHAPES.find(
+          ([label]) => label === 'a Limit after a Group',
+        )?.[1] as () => Query
+      )(),
+      'SybaseIQ',
+    );
+    expect(sql).toContain('row_number()');
+    expect(sql).not.toContain('limitoffset_via_window_subquery');
+  });
+
+  // After SHIP_COUNTRY is renamed away and SHIP_CITY renamed to SHIP_COUNTRY, a
+  // Group by SHIP_COUNTRY must group by the cities. Some databases are written
+  // GROUP BY the alias while the subquery still has the table's SHIP_COUNTRY
+  // column (ISSUES: the alias shadow); which read it as the column is
+  // inferred, never run. Pinned so a change in the engine shows.
+  const GROUP_BY_AFTER_TWO_RENAMES: Readonly<Record<string, string>> = {
+    H2: 'alias',
+    Postgres: 'position',
+    SqlServer: 'expression',
+    Sybase: 'expression',
+    SybaseIQ: 'alias',
+    DB2: 'expression',
+    MemSQL: 'alias',
+    Spanner: 'alias',
+    Snowflake: 'position',
+    Databricks: 'expression',
+    Oracle: 'expression',
+    Trino: 'expression',
+    Presto: 'expression',
+    Redshift: 'alias',
+    Hive: 'alias',
+    BigQuery: 'alias',
+    Athena: 'expression',
+    ClickHouse: 'alias',
+    Composite: 'alias',
+  };
+
+  test.each(DATABASE_TYPES)(
+    'Groups after two Renames as the engine writes it for %s: by the expression, the position or the alias',
+    async (databaseType) => {
+      const sql = await planSql(
+        ordersThen(
+          new Rename('rename101', [{ from: 'SHIP_COUNTRY', to: 'X' }]),
+          new Rename('rename102', [{ from: 'SHIP_CITY', to: 'SHIP_COUNTRY' }]),
+          new Group(
+            'group101',
+            ['SHIP_COUNTRY'],
+            [aggregation(AggregationFunction.COUNT, 'ORDER_ID', 'n')],
+          ),
+        ),
+        databaseType,
+      );
+      const target =
+        /group by (?<target>[^ ]+)/u.exec(sql)?.groups?.target ?? '';
+      const kind =
+        target === '1'
+          ? 'position'
+          : /ship_city/u.test(target)
+            ? 'expression'
+            : /ship_country/u.test(target)
+              ? 'alias'
+              : target;
+      expect([databaseType, kind]).toEqual([
+        databaseType,
+        GROUP_BY_AFTER_TWO_RENAMES[databaseType],
+      ]);
+    },
+  );
+  /** Five rows, as each database takes them: TOP, LIMIT, FETCH FIRST, or Cube's row numbers on Sybase IQ */
+  const FIVE_ROWS =
+    /\btop 5\b|\blimit 5\b|fetch first 5 rows only|cube_rn["`]? <= 5/gu;
+
+  const shapeNamed = (label: string): Query =>
+    (SHAPES.find(([name]) => name === label)?.[1] as () => Query)();
+
+  /** The subquery that concatenates, without the subqueries inside it */
+  const unionOf = (sql: string): string | undefined =>
+    subqueries(sql).find((subquery) => subquery.includes('union all'));
+
+  test.each(DATABASE_TYPES)(
+    'Writes a Concat as one UNION ALL of its two inputs, on %s',
+    async (databaseType) => {
+      const sql = await planSql(shapeNamed('a Concat'), databaseType);
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(sql).toContain('union all');
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    "Keeps each input's Sort and Limit in a subquery of its own, under the UNION ALL, on %s",
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Concat of sorted Limits'),
+        databaseType,
+      );
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(sql.match(FIVE_ROWS)).toHaveLength(2);
+      // an ORDER BY only beside its own five rows, never on the union
+      subqueries(sql).forEach((subquery) => {
+        if (subquery.includes('order by')) {
+          expect(subquery).toMatch(FIVE_ROWS);
+        }
+      });
+      expect(unionOf(sql)).not.toContain('order by');
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Takes the rows of a Limit after a Concat from the whole union, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Limit after a Concat'),
+        databaseType,
+      );
+      expect(sql.match(FIVE_ROWS)).toHaveLength(1);
+      expect(unionOf(sql)).not.toMatch(FIVE_ROWS);
+    },
+  );
+
+  test.each(DATABASE_TYPES)(
+    'Groups the rows of both inputs after a Concat, outside the union, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Group after a Concat'),
+        databaseType,
+      );
+      expect(sql).toContain('group by');
+      expect(unionOf(sql)).not.toContain('group by');
+    },
+  );
+
+  /**
+   * The databases whose SQL casts a column of a Concat that converts types:
+   * none, as the casts are type-only (PLAN §11.5, Q5). Pinned so a change in
+   * the engine shows.
+   */
+  const CASTS_A_CONVERTED_COLUMN: readonly string[] = [];
+
+  test.each(DATABASE_TYPES)(
+    'Writes a Concat that converts types as one UNION ALL of its two inputs, with no SQL cast, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Concat that converts types'),
+        databaseType,
+      );
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(sql).toContain('union all');
+      expect([databaseType, /\bcast\s*\(/u.test(sql)]).toEqual([
+        databaseType,
+        CASTS_A_CONVERTED_COLUMN.includes(databaseType),
+      ]);
     },
   );
 });

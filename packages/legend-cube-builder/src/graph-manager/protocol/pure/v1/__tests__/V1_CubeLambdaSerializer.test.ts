@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  aggregationColSpec,
   colSpec,
   colSpecArray,
   collection,
@@ -347,6 +348,72 @@ describe('Cube lambda serializer: shapes', () => {
       _type: 'classInstance',
       type: 'colSpecArray',
       value: { colSpecs: [{ name: 'A' }, total] },
+    });
+  });
+
+  test("Writes a Group's aggregation column spec with both its functions, in the groupBy's aggregation list", () => {
+    expect(
+      bodyOf(
+        func('groupBy', [
+          storeAccessor(['db::Db', 'S', 'T']),
+          colSpecArray([colSpec('K')]),
+          colSpecArray([
+            aggregationColSpec(
+              'n',
+              lambda(['x'], [columnAccess('x', 'C')]),
+              lambda(['y'], [func('count', [variable('y')])]),
+            ),
+          ]),
+        ]),
+      ),
+    ).toEqual({
+      _type: 'func',
+      function: 'groupBy',
+      parameters: [
+        {
+          _type: 'classInstance',
+          type: '>',
+          value: { path: ['db::Db', 'S', 'T'] },
+        },
+        {
+          _type: 'classInstance',
+          type: 'colSpecArray',
+          value: { colSpecs: [{ name: 'K' }] },
+        },
+        {
+          _type: 'classInstance',
+          type: 'colSpecArray',
+          value: {
+            colSpecs: [
+              {
+                name: 'n',
+                function1: {
+                  _type: 'lambda',
+                  parameters: [{ _type: 'var', name: 'x' }],
+                  body: [
+                    {
+                      _type: 'property',
+                      property: 'C',
+                      parameters: [{ _type: 'var', name: 'x' }],
+                    },
+                  ],
+                },
+                function2: {
+                  _type: 'lambda',
+                  parameters: [{ _type: 'var', name: 'y' }],
+                  body: [
+                    {
+                      _type: 'func',
+                      function: 'count',
+                      parameters: [{ _type: 'var', name: 'y' }],
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        },
+      ],
     });
   });
 

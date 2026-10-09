@@ -16,13 +16,17 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
+import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
 import type { QueryNode } from '../../graph/QueryNode.js';
+import { AggregationFunction } from '../../nodes/transforms/Aggregation.js';
+import { Concat } from '../../nodes/transforms/Concat.js';
 import { Distinct } from '../../nodes/transforms/Distinct.js';
 import { Drop } from '../../nodes/transforms/Drop.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
+import { Group } from '../../nodes/transforms/Group.js';
 import { Join } from '../../nodes/transforms/Join.js';
 import { Limit } from '../../nodes/transforms/Limit.js';
 import { Rename } from '../../nodes/transforms/Rename.js';
@@ -135,6 +139,7 @@ describe(unitTest('Row order'), () => {
         new Drop('drop101', 5),
         new Slice('slice101', 0, 5),
         new Join('join101'),
+        new Concat('concat101'),
         new UnknownNode('pivot101', 1),
       ]
         .filter((node) => node.consumesInputOrder)
@@ -224,6 +229,47 @@ describe(unitTest('Row order'), () => {
       'join101',
     );
     expect(orderOf(query, 'join101')).toEqual([]);
+  });
+
+  test('Gives a Concat no order, even with both inputs sorted the same way', () => {
+    const query = new Query(
+      [
+        orders('relational101'),
+        byCountryThenId('sort101'),
+        orders('relational102'),
+        byCountryThenId('sort102'),
+        new Concat('concat101'),
+      ],
+      [
+        new Connection('relational101', 'sort101', 'tds'),
+        new Connection('relational102', 'sort102', 'tds'),
+        new Connection('sort101', 'concat101', 'tds1'),
+        new Connection('sort102', 'concat101', 'tds2'),
+      ],
+      'concat101',
+    );
+    expect(orderOf(query, 'sort101')).toEqual(COUNTRY_THEN_ID);
+    expect(orderOf(query, 'concat101')).toEqual([]);
+  });
+
+  test('Gives a Group no order, even with its input sorted', () => {
+    const query = chain(
+      orders(),
+      byCountryThenId(),
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY', 'ORDER_ID'],
+        [
+          {
+            column: undefined,
+            function: AggregationFunction.COUNT_ROWS,
+            name: 'Count Rows',
+          },
+        ],
+      ),
+    );
+    expect(orderOf(query, 'sort101')).toEqual(COUNTRY_THEN_ID);
+    expect(orderOf(query, 'group101')).toEqual([]);
   });
 
   test('Leaves the order unknown at an Unknown node and after it, until a Sort', () => {
@@ -322,6 +368,56 @@ const joined = (left: QueryNode[], right: QueryNode[]): Query => {
   );
 };
 
+/** A concat of two chains, each given with what feeds it: the first on tds1, the second on tds2 */
+const concatenated = (first: QueryNode[], second: QueryNode[]): Query => {
+  const connect = (nodes: QueryNode[]): Connection[] =>
+    nodes
+      .slice(1)
+      .map(
+        (node, index) =>
+          new Connection((nodes[index] as QueryNode).id, node.id, 'tds'),
+      );
+  return new Query(
+    [...first, ...second, new Concat('concat101')],
+    [
+      ...connect(first),
+      ...connect(second),
+      new Connection((first.at(-1) as QueryNode).id, 'concat101', 'tds1'),
+      new Connection((second.at(-1) as QueryNode).id, 'concat101', 'tds2'),
+    ],
+    'concat101',
+  );
+};
+
+/** The Concat's errors, with the query rules of the registry that has Concat */
+const concatErrorsOf = (query: Query): readonly string[] | undefined =>
+  buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity.get(
+    'concat101',
+  );
+
+/** Group101 by A, counting rows: valid on any input with A */
+const groupByA = (): Group =>
+  new Group(
+    'group101',
+    ['A'],
+    [
+      {
+        column: undefined,
+        function: AggregationFunction.COUNT_ROWS,
+        name: 'Count Rows',
+      },
+    ],
+  );
+
+/** A node's errors, with the query rules of the registry that has Group */
+const errorsOf = (
+  query: Query,
+  nodeId: string,
+): readonly string[] | undefined =>
+  buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity.get(
+    nodeId,
+  );
+
 describe(unitTest('Lost sort orders'), () => {
   test.each<[string, QueryNode[]]>([
     ['a Sort at the end of its chain', []],
@@ -381,6 +477,72 @@ describe(unitTest('Lost sort orders'), () => {
       sort101: { nodeId: 'join101' },
       sort102: { nodeId: 'join101' },
     });
+  });
+
+  test.each<[string, QueryNode[], QueryNode[]]>([
+    ['its first input (tds1)', [ABC(), byAThenB()], [ABC('relational102')]],
+    [
+      'its second input (tds2)',
+      [ABC()],
+      [ABC('relational102'), byAThenB('sort101')],
+    ],
+  ])(
+    'Names a Concat after a Sort on %s as losing the order',
+    (_, first, second) => {
+      const query = concatenated(first, second);
+      expect(concatErrorsOf(query)).toEqual([]);
+      expect(lossesOf(query)).toEqual({ sort101: { nodeId: 'concat101' } });
+    },
+  );
+
+  test('Names the Concat for a Sort on each of its inputs', () => {
+    const query = concatenated(
+      [ABC(), byAThenB()],
+      [ABC('relational102'), byA('sort102')],
+    );
+    expect(concatErrorsOf(query)).toEqual([]);
+    expect(lossesOf(query)).toEqual({
+      sort101: { nodeId: 'concat101' },
+      sort102: { nodeId: 'concat101' },
+    });
+  });
+
+  test.each<[string, QueryNode[], QueryNode[]]>([
+    [
+      'its first input (tds1)',
+      [ABC(), byAThenB(), new Limit('limit101', 5)],
+      [ABC('relational102')],
+    ],
+    [
+      'its second input (tds2)',
+      [ABC()],
+      [ABC('relational102'), byAThenB('sort101'), new Limit('limit101', 5)],
+    ],
+  ])(
+    "Reports nothing for a Sort that a Limit in %s takes rows by, the Limit's input keeping its order",
+    (_, first, second) => {
+      const query = concatenated(first, second);
+      expect(concatErrorsOf(query)).toEqual([]);
+      expect(lossesOf(query)).toEqual({});
+      // the order the emitter writes as a sort just before the Limit
+      expect(orderOf(query, 'limit101')).toEqual([
+        key('A', ASC, 'sort101', 0),
+        key('B', ASC, 'sort101', 1),
+      ]);
+      expect(orderOf(query, 'concat101')).toEqual([]);
+    },
+  );
+
+  test('Reports nothing for a Sort after a Concat, which orders the output', () => {
+    const concat = concatenated([ABC()], [ABC('relational102')]);
+    const query = new Query(
+      [...concat.nodes, byA('sort101', DESC)],
+      [...concat.connections, new Connection('concat101', 'sort101', 'tds')],
+      'sort101',
+    );
+    expect(concatErrorsOf(query)).toEqual([]);
+    expect(lossesOf(query)).toEqual({});
+    expect(orderOf(query, 'sort101')).toEqual([key('A', DESC, 'sort101', 0)]);
   });
 
   test('Names a later Sort on all the same columns, whose order replaces it', () => {
@@ -509,6 +671,29 @@ describe(unitTest('Lost sort orders'), () => {
         ),
       ),
     ).toEqual({ sort101: { nodeId: 'join101' } });
+  });
+
+  test.each<[string, QueryNode[]]>([
+    ['at the end of the chain', []],
+    ['before a Limit', [new Limit('limit101', 5)]],
+  ])('Names a Group after it as losing the order, %s', (_, after) => {
+    const query = chain(ABC(), byAThenB(), groupByA(), ...after);
+    expect(errorsOf(query, 'group101')).toEqual([]);
+    expect(lossesOf(query)).toEqual({ sort101: { nodeId: 'group101' } });
+  });
+
+  test("Names a Group after a Restrict that dropped some of the keys: the Group's full loss, not the Restrict's partial one", () => {
+    const restricted = [
+      ABC(),
+      byAThenB(),
+      new Restrict('restrict101', ['A', 'C']),
+    ];
+    expect(lossesOf(chain(...restricted))).toEqual({
+      sort101: partial('restrict101', [['restrict101', ['B']]]),
+    });
+    const query = chain(...restricted, groupByA());
+    expect(errorsOf(query, 'group101')).toEqual([]);
+    expect(lossesOf(query)).toEqual({ sort101: { nodeId: 'group101' } });
   });
 
   test('Names the columns as the Sort names them, in its order, through a Rename', () => {

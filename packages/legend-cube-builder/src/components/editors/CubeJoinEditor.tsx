@@ -18,6 +18,7 @@ import { TimesIcon } from '@finos/legend-art';
 import {
   areCompatibleTypes,
   getDuplicateJoinColumns,
+  isDateOrTimestampType,
   isJoinType,
   JOIN_TYPE_LABELS,
   JOIN_TYPES,
@@ -30,6 +31,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import {
   CUBE_TABLE_FLAG_LABELS,
+  DATE_OR_TIMESTAMP_WARNING,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { CubeTableFlag } from '../../graph-manager/CubeEngine.js';
@@ -71,6 +73,12 @@ const CubeJoinKeyRow = observer(
       (rightId !== undefined &&
         Boolean(pair.right) &&
         isUntypedColumn(modelOutline, query, analysis, rightId, pair.right));
+    // a converted Date (Convert types): its dates match timestamps only at midnight
+    const isDateOrTimestamp =
+      !isIncompatible &&
+      [leftType, rightType].some(
+        (type) => type !== undefined && isDateOrTimestampType(type),
+      );
     const position = index + 1;
     return (
       <li className="flex flex-col gap-1 border-b border-[var(--color-border-subtle)] py-1">
@@ -105,6 +113,11 @@ const CubeJoinKeyRow = observer(
         {isIncompatible && (
           <div className="text-sm text-[var(--color-status-error)]">
             {`${leftType.displayName} and ${rightType.displayName} can't be compared`}
+          </div>
+        )}
+        {isDateOrTimestamp && (
+          <div className="text-sm text-[var(--color-status-warn)]">
+            {DATE_OR_TIMESTAMP_WARNING}
           </div>
         )}
         {isUntyped && (

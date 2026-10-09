@@ -19,6 +19,7 @@ import {
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
+  Concat,
   Connection,
   CubeDocument,
   EnumType,
@@ -38,7 +39,10 @@ import {
   screen,
   within,
 } from '@testing-library/react';
-import { FILTER_FLOAT_COMPARISON_HINT } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  DATE_OR_TIMESTAMP_WARNING,
+  FILTER_FLOAT_COMPARISON_HINT,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -258,6 +262,47 @@ describe('Filter editor', () => {
     pickOperator(condition(0), FilterOperator.GREATER_THAN);
     expect(
       within(condition(0)).queryByText(FILTER_FLOAT_COMPARISON_HINT),
+    ).toBeNull();
+  });
+
+  test('Warns that a column Convert types made a Date matches timestamps only at midnight, when it is compared', async () => {
+    const dates = (id: string, path: string) =>
+      northwindTable(id, 'ORDERS', [
+        new SchemaColumn('WHEN', PrimitiveType.get(path), true),
+        new SchemaColumn('DAY', PrimitiveType.get('StrictDate'), true),
+      ]);
+    await render(
+      new Query(
+        [
+          dates('relational101', 'StrictDate'),
+          dates('relational102', `${P}Timestamp`),
+          new Concat('concat101', true),
+          new Filter('filter101'),
+        ],
+        [
+          new Connection('relational101', 'concat101', 'tds1'),
+          new Connection('relational102', 'concat101', 'tds2'),
+          new Connection('concat101', 'filter101', 'tds'),
+        ],
+        'filter101',
+      ),
+    );
+    fireEvent.click(button('Add condition'));
+    pickColumn(condition(0), 'WHEN');
+    pickOperator(condition(0), FilterOperator.EQUAL);
+    expect(
+      within(condition(0)).getByText(DATE_OR_TIMESTAMP_WARNING),
+    ).toBeDefined();
+    // no value to compare
+    pickOperator(condition(0), FilterOperator.IS_EMPTY);
+    expect(
+      within(condition(0)).queryByText(DATE_OR_TIMESTAMP_WARNING),
+    ).toBeNull();
+    // a StrictDate column
+    pickColumn(condition(0), 'DAY');
+    pickOperator(condition(0), FilterOperator.EQUAL);
+    expect(
+      within(condition(0)).queryByText(DATE_OR_TIMESTAMP_WARNING),
     ).toBeNull();
   });
 

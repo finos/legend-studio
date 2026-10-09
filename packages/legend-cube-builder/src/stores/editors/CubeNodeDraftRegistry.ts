@@ -15,9 +15,11 @@
  */
 
 import {
+  Concat,
   Distinct,
   Drop,
   Filter,
+  Group,
   Join,
   Limit,
   type QueryNode,
@@ -28,7 +30,9 @@ import {
 } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { CubeConcatDraft } from './CubeConcatDraft.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
+import { CubeGroupDraft } from './CubeGroupDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
 import { CubeRenameDraft } from './CubeRenameDraft.js';
@@ -53,6 +57,7 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   CubeNodeDraftFactory
 > = new Map<string, CubeNodeDraftFactory>([
   [Sort.TYPE, (node) => new CubeSortDraft(guaranteeType(node, Sort))],
+  [Group.TYPE, (node) => new CubeGroupDraft(guaranteeType(node, Group))],
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],
   [
     Restrict.TYPE,
@@ -63,6 +68,7 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   [Drop.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Drop))],
   [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
   [Slice.TYPE, (node) => new CubeSliceDraft(guaranteeType(node, Slice))],
+  [Concat.TYPE, (node) => new CubeConcatDraft(guaranteeType(node, Concat))],
 ]);
 
 /**
