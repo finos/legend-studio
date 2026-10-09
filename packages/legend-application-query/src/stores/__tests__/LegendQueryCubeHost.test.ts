@@ -18,6 +18,8 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { ApplicationStore } from '@finos/legend-application';
 import {
   BUNDLED_MODELS,
+  CubeDataProductCandidate,
+  CubeDataProductEnvironmentType,
   type CubeConnectionExplorer,
   CubeDirectDatabaseType,
   type CubeEngine,
@@ -105,6 +107,67 @@ describe('Legend Query as the Cube host', () => {
     const host = new LegendQueryCubeHost(createApplicationStore());
     expect(Object.keys(host.engine)).not.toHaveLength(0);
     expect(typeof host.engine.execute).toBe('function');
+  });
+
+  test('Offers data products only when Query has a lakehouse', () => {
+    expect(
+      new LegendQueryCubeHost(createApplicationStore()).dataProductCatalog,
+    ).toBeUndefined();
+    expect(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          lakehouse: { url: 'https://lakehouse.test' },
+        }),
+      ).dataProductCatalog,
+    ).toBeDefined();
+  });
+
+  test("Lists data products from Query's lakehouse, and reads them from Query's depot, traced by Query's tracer", async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () =>
+        Promise.reject(new Error('No server in tests')),
+      );
+    const applicationStore = createApplicationStore({
+      lakehouse: { url: 'https://lakehouse.test' },
+      depot: { url: 'https://depot.test' },
+    });
+    const trace = jest.spyOn(applicationStore.tracerService, 'createTrace');
+    const catalog = guaranteeNonNullable(
+      new LegendQueryCubeHost(applicationStore).dataProductCatalog,
+    );
+    await expect(
+      catalog.search({
+        text: '',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
+    ).rejects.toThrow("Cube couldn't list the data products");
+    expect(String(guaranteeNonNullable(fetchSpy.mock.calls[0])[0])).toMatch(
+      /^https:\/\/lakehouse\.test\/.*dataproducts\/lite/u,
+    );
+    await expect(
+      catalog.describe(
+        new CubeDataProductCandidate({
+          id: 'ORDERS_PRODUCT',
+          deploymentId: '1',
+          dataProductPath: 'sales::products::OrdersProduct',
+          title: 'Orders',
+          groupId: 'com.example.sales',
+          artifactId: 'orders-products',
+          versionId: '1.4.0',
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        }),
+      ),
+    ).rejects.toThrow("Cube couldn't read the data product");
+    const urls = fetchSpy.mock.calls.map(([url]) => String(url));
+    expect(
+      urls.some((url) =>
+        url.startsWith(
+          'https://depot.test/generations/com.example.sales/orders-products/1.4.0/types/dataProduct',
+        ),
+      ),
+    ).toBe(true);
+    expect(trace).toHaveBeenCalled();
   });
 
   test('Gives the page the connection explorer it is given', () => {

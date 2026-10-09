@@ -44,18 +44,18 @@ export class V1_CubeLakehouseEnvironmentResolver
 {
   private readonly contractServerClient: LakehouseContractServerClient;
   private readonly getAccessToken: () => string | undefined;
-  private readonly currentUser: string;
+  private readonly getCurrentUser: () => string;
   /** The viewer's environment, read on the first run of the page visit */
   private userEnvironment: Promise<string> | undefined;
 
   constructor(
     contractServerClient: LakehouseContractServerClient,
     getAccessToken: () => string | undefined,
-    currentUser: string,
+    getCurrentUser: () => string,
   ) {
     this.contractServerClient = contractServerClient;
     this.getAccessToken = getAccessToken;
-    this.currentUser = currentUser;
+    this.getCurrentUser = getCurrentUser;
   }
 
   private readUserEnvironment(): Promise<string> {
@@ -63,7 +63,7 @@ export class V1_CubeLakehouseEnvironmentResolver
       let response: V1_EntitlementsUserEnvResponse;
       try {
         response = await this.contractServerClient.getUserEntitlementEnvs(
-          this.currentUser,
+          this.getCurrentUser(),
           this.getAccessToken(),
         );
       } catch (error) {

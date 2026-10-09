@@ -50,7 +50,7 @@ const setUp = (
     resolver: new V1_CubeLakehouseEnvironmentResolver(
       client,
       () => `token-${++token}`,
-      'viewer',
+      () => 'viewer',
     ),
     getUserEntitlementEnvs: getUserEntitlementEnvs as unknown as jest.Mock,
   };

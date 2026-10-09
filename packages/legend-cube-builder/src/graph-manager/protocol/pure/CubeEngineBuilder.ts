@@ -61,7 +61,7 @@ export interface CubeLakehouseServices {
   readonly depotServerClient: DepotServerClient;
   readonly getAccessToken: () => string | undefined;
   /** The viewer, whose lakehouse environment data product runs use */
-  readonly currentUser: string;
+  readonly getCurrentUser: () => string;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -81,5 +81,5 @@ export const buildCubeLakehouseEnvironment = (
   new V1_CubeLakehouseEnvironmentResolver(
     services.contractServerClient,
     services.getAccessToken,
-    services.currentUser,
+    services.getCurrentUser,
   );
