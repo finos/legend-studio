@@ -57,10 +57,14 @@ query wrong another way: see below). Cube works around it (M2.13), padding every
 `->distinct()->extend(~cube_d: x | 1)->select(~[…])`, which plans `select top n … from (select distinct …, 1 as
 "cube_d" …)`. Draft issue for finos/legend-engine:
 
-> **SQL Server: `distinct()` followed by `limit()` generates `SELECT TOP n DISTINCT`, which T-SQL rejects.**
-> For `#>{db.S.T}#->distinct()->limit(10)` with a `SqlServer` connection, the plan's SQL is `select top 10 distinct
-…`. SQL Server requires `select distinct top 10 …`. The TOP clause is written before DISTINCT in
-> `sqlServerExtension.pure` (line 66). Sybase and Sybase IQ already write `select distinct top n`.
+```text
+Title: SQL Server: distinct() followed by limit() generates SELECT TOP n DISTINCT, which T-SQL rejects
+
+For `#>{db.S.T}#->distinct()->limit(10)` with a `SqlServer` connection, the plan's SQL is
+`select top 10 distinct …`. SQL Server requires `select distinct top 10 …`. The TOP clause is written
+before DISTINCT in `sqlServerExtension.pure` (line 66). Sybase and Sybase IQ already write
+`select distinct top n`.
+```
 
 ### `rewriteSliceAsWindowFunction` numbers rows by the first sort key only, and inside a `select distinct`
 
@@ -73,16 +77,23 @@ the plan doesn't decide which rows it keeps. The same rewrite copies the select 
 nothing. Running the plans' SQL on H2 and SQLite gave the wrong rows ('Argentina' ×5 for five distinct countries).
 The rewrite also names its numbering column `row_number` whatever the input has, so an input column of that name (any
 case) gives two. Cube works around all three (M2.13, M2.16): row numbers of its own for Sybase IQ's Drop, Slice and
-every Limit, and
-MemSQL's Drop, and the padded Distinct on Sybase IQ. Spark (Databricks) planned Cube's shapes right in the M2.16 plan
-test. Draft issue for finos/legend-engine:
+every Limit, and for MemSQL's Drop, and the padded Distinct on Sybase IQ. Spark SQL's extension calls the rewrite
+too, but no connection can choose it (the protocol's `DatabaseType` has no SparkSQL); Databricks has its own
+extension, which doesn't, and planned Cube's shapes right in the M2.16 plan test. Draft issue for
+finos/legend-engine:
 
-> **`rewriteSliceAsWindowFunction` orders by the first sort key only, and keeps DISTINCT.** > `#>{db.S.T}#->sort([~A->ascending(), ~B->descending()])->limit(5)->limit(1001)` on Sybase IQ plans
-> `row_number() OVER (Order By A asc)` for the inner limit, ignoring `B`, so ties on `A` take any rows. MemSQL does
-> the same for `drop()`. And `->distinct()->limit(5)->limit(1001)` on Sybase IQ plans `select distinct X,
-row_number() OVER (…) …`, where the window makes every row distinct. The rewrite (`extensionDefaults.pure`, lines
-> 39 and 67) should order by every sort key and number the rows of the distinct query, not within it. It also names
-> the numbering column `row_number` whatever the input's columns are (line 43).
+```text
+Title: rewriteSliceAsWindowFunction orders by the first sort key only, and keeps DISTINCT
+
+`#>{db.S.T}#->sort([~A->ascending(), ~B->descending()])->limit(5)->limit(1001)` on Sybase IQ plans
+`row_number() OVER (Order By A asc)` for the inner limit, ignoring `B`, so ties on `A` take any rows.
+MemSQL does the same for `drop()`. And `->distinct()->limit(5)->limit(1001)` on Sybase IQ plans
+`select distinct X, row_number() OVER (…) …`, where the window makes every row distinct.
+
+The rewrite (`extensionDefaults.pure`, lines 39 and 67) should order by every sort key and number the
+rows of the distinct query, not within it. It also names the numbering column `row_number` whatever
+the input's columns are (line 43).
+```
 
 ### ClickHouse: a Drop after a descending sort key writes `nulls firstoffset m`
 
@@ -92,8 +103,13 @@ for a `drop(m)` joins the null ordering and the offset into one word, `… desc 
 SQL; no ClickHouse server was run). Cube writes ClickHouse's Drop through row numbers. Draft issue for
 finos/legend-engine:
 
-> **ClickHouse: `offset` is written with no space after `nulls first`.** > `#>{db.S.T}#->sort(~A->descending())->drop(10)->limit(1001)` on ClickHouse plans `order by … desc nulls
-firstoffset 10`. `clickHouseExtension.pure` line 252 should put a space before `offset`.
+```text
+Title: ClickHouse: offset is written with no space after "nulls first"
+
+`#>{db.S.T}#->sort(~A->descending())->drop(10)->limit(1001)` on ClickHouse plans
+`order by … desc nulls firstoffset 10`. `clickHouseExtension.pure` line 252 should put a space
+before `offset`.
+```
 
 ### A duplicate column from `rename` or `select` fails with HTTP 500 and no source location
 
@@ -103,9 +119,13 @@ duplicates: [X]"` as an HTTP 500, not a 400 compilation error with a source loca
 a node. Cube's own validation refuses both before they reach the engine (Rename's collision check, Restrict's
 duplicates), so Cube users don't see it. Draft issue for finos/legend-engine:
 
-> **Duplicate columns from `rename`/`select` return HTTP 500 with no source information.** > `->rename(~A, ~B)` where `B` exists, or `->select(~[A, A])`, gives `Compilation error at ??, "The relation contains
-duplicates: [B]"` as a 500. It should be a compilation error (400) with the call's source information, like other
-> typing errors.
+```text
+Title: Duplicate columns from rename/select return HTTP 500 with no source information
+
+`->rename(~A, ~B)` where `B` exists, or `->select(~[A, A])`, gives
+`Compilation error at ??, "The relation contains duplicates: [B]"` as a 500. It should be a
+compilation error (400) with the call's source information, like other typing errors.
+```
 
 ## Test gaps
 
