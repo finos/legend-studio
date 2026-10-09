@@ -19,6 +19,7 @@ import type { PlainObject } from '@finos/legend-shared';
 import {
   CubeTableFlag,
   type CubeModelOutline,
+  type CubeOutlineConnection,
   type CubeOutlineDatabase,
   type CubeOutlineRuntime,
   type CubeOutlineSchema,
@@ -32,6 +33,9 @@ import {
 
 const DATABASE_TYPE = 'relational';
 const RUNTIME_TYPE = 'runtime';
+const CONNECTION_TYPE = 'connection';
+const CONNECTION_POINTER_TYPE = 'connectionPointer';
+const RELATIONAL_CONNECTION_TYPE = 'RelationalDatabaseConnection';
 /** The only runtime value whose store keys Cube can read; others are hidden */
 const ENGINE_RUNTIME_TYPE = 'engineRuntime';
 
@@ -117,8 +121,34 @@ const buildDatabase = (element: PlainObject): CubeOutlineDatabase => ({
   schemas: asList(element.schemas).map(buildSchema),
 });
 
+/** The database type of a relational connection value: its `type`, else its `databaseType` */
+const getRelationalDatabaseType = (value: PlainObject): string | undefined =>
+  value._type === RELATIONAL_CONNECTION_TYPE
+    ? (asString(value.type) ?? asString(value.databaseType))
+    : undefined;
+
+/**
+ * The database type of a runtime's connection, embedded or a pointer to a
+ * connection element (`connectionTypes`, by path); none for one that isn't
+ * relational
+ */
+const getConnectionDatabaseType = (
+  json: unknown,
+  connectionTypes: ReadonlyMap<string, string>,
+): string | undefined => {
+  const connection = asObject(json);
+  if (connection._type === CONNECTION_POINTER_TYPE) {
+    const path = asString(connection.connection);
+    return path === undefined ? undefined : connectionTypes.get(path);
+  }
+  return getRelationalDatabaseType(connection);
+};
+
 /** The stores a runtime's connections are keyed by, in both syntaxes; none when it can't be read */
-const buildRuntime = (element: PlainObject): CubeOutlineRuntime | undefined => {
+const buildRuntime = (
+  element: PlainObject,
+  connectionTypes: ReadonlyMap<string, string>,
+): CubeOutlineRuntime | undefined => {
   const value = asObject(element.runtimeValue);
   if (value._type !== ENGINE_RUNTIME_TYPE) {
     return undefined;
@@ -135,7 +165,51 @@ const buildRuntime = (element: PlainObject): CubeOutlineRuntime | undefined => {
       ),
     ),
   ].filter((path): path is string => path !== undefined);
-  return { path: elementPath(element), storePaths: [...new Set(storePaths)] };
+  const connections: CubeOutlineConnection[] = [];
+  const addConnection = (
+    storePath: string | undefined,
+    databaseType: string | undefined,
+  ): void => {
+    if (
+      storePath !== undefined &&
+      databaseType !== undefined &&
+      !connections.some(
+        (connection) =>
+          connection.storePath === storePath &&
+          connection.databaseType === databaseType,
+      )
+    ) {
+      connections.push({ storePath, databaseType });
+    }
+  };
+  asList(value.connections).forEach((json) => {
+    const storeConnections = asObject(json);
+    const storePath = asString(asObject(storeConnections.store).path);
+    asList(storeConnections.storeConnections).forEach((identified) =>
+      addConnection(
+        storePath,
+        getConnectionDatabaseType(
+          asObject(identified).connection,
+          connectionTypes,
+        ),
+      ),
+    );
+  });
+  asList(value.connectionStores).forEach((json) => {
+    const connectionStore = asObject(json);
+    const databaseType = getConnectionDatabaseType(
+      connectionStore.connectionPointer,
+      connectionTypes,
+    );
+    asList(connectionStore.storePointers).forEach((pointer) =>
+      addConnection(asString(asObject(pointer).path), databaseType),
+    );
+  });
+  return {
+    path: elementPath(element),
+    storePaths: [...new Set(storePaths)],
+    connections,
+  };
 };
 
 /** The outline of a parsed model: its Database elements and its readable runtimes, in model order */
@@ -143,13 +217,25 @@ export const V1_buildCubeModelOutline = (
   modelData: PlainObject,
 ): CubeModelOutline => {
   const elements = asList(modelData.elements).map(asObject);
+  // the database type of each relational connection element, by path
+  const connectionTypes = new Map<string, string>();
+  elements
+    .filter((element) => element._type === CONNECTION_TYPE)
+    .forEach((element) => {
+      const databaseType = getRelationalDatabaseType(
+        asObject(element.connectionValue),
+      );
+      if (databaseType !== undefined) {
+        connectionTypes.set(elementPath(element), databaseType);
+      }
+    });
   return {
     databases: elements
       .filter((element) => element._type === DATABASE_TYPE)
       .map(buildDatabase),
     runtimes: elements
       .filter((element) => element._type === RUNTIME_TYPE)
-      .map(buildRuntime)
+      .map((element) => buildRuntime(element, connectionTypes))
       .filter(
         (runtime): runtime is CubeOutlineRuntime => runtime !== undefined,
       ),

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { QuestionCircleIcon, TimesIcon } from '@finos/legend-art';
+import { QuestionCircleIcon, TimesIcon, WarningIcon } from '@finos/legend-art';
 import {
   isIncompleteError,
   isSchemasError,
@@ -80,6 +80,7 @@ export const CubeNodeEditorPanel = observer(
       isEditable && !inputProblems.length
         ? validateEdited(edited, inputSchemas)
         : [];
+    const warnings = editorState.getNodeWarnings(node);
     return (
       <div
         className="flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-panel)]"
@@ -143,6 +144,16 @@ export const CubeNodeEditorPanel = observer(
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-auto p-2">
+          {warnings.map((warning) => (
+            <div
+              key={warning}
+              className="mb-2 flex gap-1 text-sm text-[var(--color-status-warn)]"
+              role="status"
+            >
+              <WarningIcon className="mt-0.5 shrink-0" aria-hidden={true} />
+              <span>{warning}</span>
+            </div>
+          ))}
           {inputProblems.length ? (
             <div
               className="text-base text-[var(--color-status-warn)]"

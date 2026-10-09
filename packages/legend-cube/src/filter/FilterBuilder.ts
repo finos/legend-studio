@@ -23,6 +23,7 @@ import {
   getDefaultOperator,
   getFilterValueShape,
   getNegatedOperator,
+  isOperatorAvailable,
 } from './FilterOperator.js';
 import {
   ColumnComparisonFilter,
@@ -202,4 +203,30 @@ export const negateFilter = (rule: FilterRule): FilterRule => {
     }
   }
   return new NotFilter(rule);
+};
+
+/**
+ * The filter of the grid's "Filter by" quick action (spec §12.4, §8.5): Equal
+ * on the clicked cell's value, read as a value of the column's type, or Is
+ * Empty on a null cell. `undefined` when the type has no Equal (StrictTime,
+ * Variant and types Cube doesn't know) or the value doesn't read as one of
+ * the type. The cell is a JSON scalar as the engine returned it: a string is
+ * taken exactly (an integer or decimal stays exact text, a string isn't
+ * trimmed), a number through `String()`, and a timestamp loses its `+0000`.
+ */
+export const buildQuickFilterRule = (
+  column: string,
+  type: CubeType,
+  cell: string | number | boolean | null,
+): ColumnComparisonFilter | undefined => {
+  if (cell === null) {
+    return new ColumnComparisonFilter(column, FilterOperator.IS_EMPTY);
+  }
+  if (!isOperatorAvailable(FilterOperator.EQUAL, type)) {
+    return undefined;
+  }
+  const value = parseValue(String(cell), type);
+  return value === undefined || value.kind === 'invalid'
+    ? undefined
+    : new ColumnComparisonFilter(column, FilterOperator.EQUAL, value);
 };

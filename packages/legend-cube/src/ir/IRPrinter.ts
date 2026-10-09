@@ -131,10 +131,16 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
     isInfix(node) || isNot(node) || isNegativeNumber(node)
       ? `(${print(node)})`
       : print(node);
-  // a lambda as a column function: `x | body`
+  // a lambda's parameters and body, `x | body`, without braces
+  const lambdaText = (node: Extract<IR, { k: 'lambda' }>): string =>
+    `${node.params.join(', ')} | ${statements(node.body)}`;
+  // a lambda as a column function: `x | body`, braced with several
+  // parameters, which Pure doesn't read bare: `{p, w, r | body}`
   const bareLambda = (node: IR): string =>
     node.k === 'lambda'
-      ? `${node.params.join(', ')} | ${statements(node.body)}`
+      ? node.params.length > 1
+        ? `{${lambdaText(node)}}`
+        : lambdaText(node)
       : print(node);
   const colSpecBody = (node: IR): string =>
     node.k === 'colSpec'
@@ -161,7 +167,7 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return `$${ir.name}`;
     case 'lambda':
       return ir.params.length
-        ? `{${bareLambda(ir)}}`
+        ? `{${lambdaText(ir)}}`
         : `{| ${statements(ir.body)}}`;
     case 'literal':
       return options.redactLiterals ? '?' : printLiteral(ir.value);

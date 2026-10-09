@@ -50,12 +50,21 @@ import {
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
 import {
+  DROP_DEFINITION,
+  LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Distinct } from '../../nodes/transforms/Distinct.js';
+import { Drop } from '../../nodes/transforms/Drop.js';
+import { Limit } from '../../nodes/transforms/Limit.js';
+import { Rename } from '../../nodes/transforms/Rename.js';
+import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
+import { Restrict } from '../../nodes/transforms/Restrict.js';
+import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
 import { EnumType, OpaqueType, PrimitiveType } from '../../types/CubeType.js';
@@ -1512,6 +1521,356 @@ describe(unitTest('Saved spec encoding: filters'), () => {
           operator: spelling,
         })),
       }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: limits'), () => {
+  /** The saved spec of one unconnected limit, `limit101`, with these fields of its own */
+  const limitSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'limit101',
+      nodes: [{ kind: 'limit', id: 'limit101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Writes the size of a new limit, the default included', () => {
+    expectEncoded(
+      documentOf([LIMIT_DEFINITION.create('limit101')], [], 'limit101'),
+      limitSpec({ size: 10 }),
+    );
+  });
+
+  test('Leaves out a cleared size, so it reads back cleared, never as the default', () => {
+    const document = documentOf(
+      [new Limit('limit101', undefined)],
+      [],
+      'limit101',
+    );
+    expectEncoded(document, limitSpec({}));
+    const decoded = decodeCubeSpec(encodeCubeSpec(document)).document;
+    expect((decoded.query.getNode('limit101') as Limit).size).toBeUndefined();
+  });
+
+  test.each([0, -3, 1.5, 2 ** 60])(
+    'Writes the size %s as it stands, for validation to report',
+    (size) => {
+      expectEncoded(
+        documentOf([new Limit('limit101', size)], [], 'limit101'),
+        limitSpec({ size }),
+      );
+    },
+  );
+
+  test('Writes the size from the node, not from its rest', () => {
+    // R113
+    const document = documentOf(
+      [new Limit('limit101', 5, { size: 99, kind: 'drop', note: 'top five' })],
+      [],
+      'limit101',
+    );
+    expect(encodeCubeSpec(document)).toStrictEqual(
+      limitSpec({ size: 5, note: 'top five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: sorts'), () => {
+  /** The saved spec of one unconnected sort, `sort101`, with these fields of its own */
+  const sortSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'sort101',
+      nodes: [{ kind: 'sort', id: 'sort101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Always writes its keys, an empty list included', () => {
+    expectEncoded(
+      documentOf([new Sort('sort101')], [], 'sort101'),
+      sortSpec({ sorts: [] }),
+    );
+  });
+
+  test('Writes each key as column, then direction, in order, blanks and repeats kept', () => {
+    expectEncoded(
+      documentOf(
+        [
+          new Sort('sort101', [
+            { column: 'SHIP_COUNTRY', direction: SortDirection.DESC },
+            { column: '', direction: SortDirection.ASC },
+            { column: 'SHIP_COUNTRY', direction: SortDirection.ASC },
+          ]),
+        ],
+        [],
+        'sort101',
+      ),
+      sortSpec({
+        sorts: [
+          { column: 'SHIP_COUNTRY', direction: 'DESC' },
+          { column: '', direction: 'ASC' },
+          { column: 'SHIP_COUNTRY', direction: 'ASC' },
+        ],
+      }),
+    );
+  });
+
+  test('Writes the keys from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        documentOf(
+          [
+            new Sort(
+              'sort101',
+              [{ column: 'A', direction: SortDirection.ASC }],
+              { sorts: [], note: 'n' },
+            ),
+          ],
+          [],
+          'sort101',
+        ),
+      ),
+    ).toStrictEqual(
+      sortSpec({ sorts: [{ column: 'A', direction: 'ASC' }], note: 'n' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: renames'), () => {
+  /** The saved spec of one unconnected rename, `rename101`, with these fields of its own */
+  const renameSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'rename101',
+      nodes: [{ kind: 'rename', id: 'rename101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Always writes its mappings, an empty list included', () => {
+    expectEncoded(
+      documentOf([new Rename('rename101')], [], 'rename101'),
+      renameSpec({ mappings: [] }),
+    );
+  });
+
+  test('Writes each mapping as from, then to, names kept exactly, untrimmed', () => {
+    expectEncoded(
+      documentOf(
+        [
+          new Rename('rename101', [
+            { from: 'SHIP_COUNTRY', to: ' Ship "Country" ' },
+            { from: '', to: '' },
+          ]),
+        ],
+        [],
+        'rename101',
+      ),
+      renameSpec({
+        mappings: [
+          { from: 'SHIP_COUNTRY', to: ' Ship "Country" ' },
+          { from: '', to: '' },
+        ],
+      }),
+    );
+  });
+
+  test('Writes the mappings from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        documentOf(
+          [
+            new Rename('rename101', [{ from: 'A', to: 'B' }], {
+              mappings: [],
+              note: 'n',
+            }),
+          ],
+          [],
+          'rename101',
+        ),
+      ),
+    ).toStrictEqual(
+      renameSpec({ mappings: [{ from: 'A', to: 'B' }], note: 'n' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: restricts'), () => {
+  /** The saved spec of one unconnected restrict, `restrict101`, with these fields of its own */
+  const restrictSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'restrict101',
+      nodes: [{ kind: 'restrict', id: 'restrict101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Always writes its columns, an empty list included', () => {
+    expectEncoded(
+      documentOf([new Restrict('restrict101')], [], 'restrict101'),
+      restrictSpec({ columns: [] }),
+    );
+  });
+
+  test('Writes the columns exactly as held: order, repeats and blanks kept', () => {
+    expectEncoded(
+      documentOf(
+        [
+          new Restrict('restrict101', [
+            'SHIP_COUNTRY',
+            'ORDER_ID',
+            'ORDER_ID',
+            '',
+          ]),
+        ],
+        [],
+        'restrict101',
+      ),
+      restrictSpec({ columns: ['SHIP_COUNTRY', 'ORDER_ID', 'ORDER_ID', ''] }),
+    );
+  });
+
+  test('Writes the columns from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        documentOf(
+          [new Restrict('restrict101', ['A'], { columns: ['Z'], note: 'n' })],
+          [],
+          'restrict101',
+        ),
+      ),
+    ).toStrictEqual(restrictSpec({ columns: ['A'], note: 'n' }));
+  });
+});
+
+describe(unitTest('Saved spec encoding: distincts'), () => {
+  test('Writes no field of its own, only its rest', () => {
+    expectEncoded(
+      documentOf([new Distinct('distinct101')], [], 'distinct101'),
+      {
+        formatVersion: 1,
+        query: {
+          selected: 'distinct101',
+          nodes: [{ kind: 'distinct', id: 'distinct101', inputs: [null] }],
+        },
+      },
+    );
+    expectEncoded(
+      documentOf(
+        [new Distinct('distinct101', { columns: ['A'], note: 'later' })],
+        [],
+        'distinct101',
+      ),
+      {
+        formatVersion: 1,
+        query: {
+          selected: 'distinct101',
+          nodes: [
+            {
+              kind: 'distinct',
+              id: 'distinct101',
+              inputs: [null],
+              columns: ['A'],
+              note: 'later',
+            },
+          ],
+        },
+      },
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: drops'), () => {
+  /** The saved spec of one unconnected drop, `drop101`, with these fields of its own */
+  const dropSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'drop101',
+      nodes: [{ kind: 'drop', id: 'drop101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Writes the size of a new drop, the default included', () => {
+    expectEncoded(
+      documentOf([DROP_DEFINITION.create('drop101')], [], 'drop101'),
+      dropSpec({ size: 10 }),
+    );
+  });
+
+  test('Leaves out a cleared size, and writes a refused one as it stands', () => {
+    expectEncoded(
+      documentOf([new Drop('drop101', undefined)], [], 'drop101'),
+      dropSpec({}),
+    );
+    expectEncoded(
+      documentOf([new Drop('drop101', 0)], [], 'drop101'),
+      dropSpec({ size: 0 }),
+    );
+  });
+
+  test('Writes the size from the node, not from its rest', () => {
+    const document = documentOf(
+      [new Drop('drop101', 5, { size: 99, note: 'skip five' })],
+      [],
+      'drop101',
+    );
+    expect(encodeCubeSpec(document)).toStrictEqual(
+      dropSpec({ size: 5, note: 'skip five' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: slices'), () => {
+  /** The saved spec of one unconnected slice, `slice101`, with these fields of its own */
+  const sliceSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'slice101',
+      nodes: [{ kind: 'slice', id: 'slice101', inputs: [null], ...own }],
+    },
+  });
+
+  test('Writes the bounds of a new slice, the defaults included, start before stop', () => {
+    expectEncoded(
+      documentOf(
+        [new Slice('slice101', Slice.DEFAULT_START, Slice.DEFAULT_STOP)],
+        [],
+        'slice101',
+      ),
+      sliceSpec({ start: 10, stop: 20 }),
+    );
+  });
+
+  test('Leaves out each cleared bound on its own', () => {
+    expectEncoded(
+      documentOf([new Slice('slice101', undefined, 20)], [], 'slice101'),
+      sliceSpec({ stop: 20 }),
+    );
+    expectEncoded(
+      documentOf([new Slice('slice101', 0, undefined)], [], 'slice101'),
+      sliceSpec({ start: 0 }),
+    );
+    expectEncoded(
+      documentOf([new Slice('slice101', undefined, undefined)], [], 'slice101'),
+      sliceSpec({}),
+    );
+  });
+
+  test('Writes refused bounds as they stand, for validation to report', () => {
+    expectEncoded(
+      documentOf([new Slice('slice101', 5, 3)], [], 'slice101'),
+      sliceSpec({ start: 5, stop: 3 }),
+    );
+  });
+
+  test('Writes the bounds from the node, not from its rest', () => {
+    const document = documentOf(
+      [new Slice('slice101', 1, 2, { start: 99, stop: 100, note: 'page' })],
+      [],
+      'slice101',
+    );
+    expect(encodeCubeSpec(document)).toStrictEqual(
+      sliceSpec({ start: 1, stop: 2, note: 'page' }),
     );
   });
 });

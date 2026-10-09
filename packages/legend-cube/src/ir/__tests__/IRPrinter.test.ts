@@ -201,6 +201,24 @@ describe(unitTest('IR printer'), () => {
     expect(printIR(lambda([], [integer('1'), integer('2')]))).toBe('{| 1; 2;}');
   });
 
+  test('Braces a column function with several parameters, which Pure does not read bare', () => {
+    const rowNumber = colSpec(
+      'cube_rn',
+      lambda(
+        ['p', 'w', 'r'],
+        [func('rowNumber', [variable('p'), variable('r')])],
+      ),
+    );
+    expect(printIR(colSpecArray([rowNumber]))).toBe(
+      '~[cube_rn: {p, w, r | $p->rowNumber($r)}]',
+    );
+    expect(printIR(rowNumber)).toBe('~cube_rn: {p, w, r | $p->rowNumber($r)}');
+    // one parameter stays bare
+    expect(printIR(colSpec('cube_d', lambda(['x'], [integer('1')])))).toBe(
+      '~cube_d: x | 1',
+    );
+  });
+
   test('Ends every statement of a column function with more than one with a semicolon', () => {
     const twoStatements = colSpec(
       'a',

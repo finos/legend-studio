@@ -17,12 +17,14 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
   decodeCubeSpec,
+  QueryEmitter,
   RelationalTableSource,
   Schema,
 } from '@finos/legend-cube';
 import { readdirSync, readFileSync } from 'fs';
 import { join, resolve } from 'path';
 import { CUBE_ENGINE_TEST__compile } from '../__test-utils__/CubeEngineTestSupport.js';
+import { TEST__expectEngineTyping } from '../__test-utils__/CubeOperationsTestUtils.js';
 import { getRuntimesForDatabase } from '../graph-manager/CubeModelOutlineHelper.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 import type { V1_LegendCubeEngine } from '../graph-manager/protocol/pure/v1/V1_LegendCubeEngine.js';
@@ -32,8 +34,9 @@ import {
 } from '../stores/fixtures/CubeNorthwindModel.js';
 
 // The core's sample specs (PLAN §10.3) are real cubes: their model is the
-// Cube Northwind fixture, it compiles, and each saved schema is what the
-// engine gives the table now (PLAN §6.2.4)
+// Cube Northwind fixture, it compiles, each saved schema is what the engine
+// gives the table now (PLAN §6.2.4), and the node each runs types on the
+// engine as Cube infers it
 
 const FIXTURES = resolve(
   __dirname,
@@ -54,7 +57,7 @@ beforeEach(() => {
 
 describe('Saved spec samples, on the engine', () => {
   test('Has the samples', () => {
-    expect(FILES.length).toBeGreaterThanOrEqual(7);
+    expect(FILES.length).toBeGreaterThanOrEqual(9);
   });
 
   test('Compiles the model the samples hold', async () => {
@@ -105,6 +108,37 @@ describe('Saved spec samples, on the engine', () => {
           );
         }
       });
+    },
+  );
+
+  // the samples whose node that runs can be emitted: every node up to it valid
+  const RUNNABLE = FILES.filter((file) => {
+    const { query } = decodeCubeSpec(read(file)).document;
+    return (
+      query.selected !== undefined &&
+      new QueryEmitter(query).canEmit(query.selected)
+    );
+  });
+
+  test('Finds the samples whose node that runs can be emitted', () => {
+    expect(RUNNABLE).toEqual(
+      expect.arrayContaining([
+        'full-join.cube.json',
+        'join-autofix.cube.json',
+        'left-join-negations.cube.json',
+        'operations.cube.json',
+        'slice.cube.json',
+      ]),
+    );
+  });
+
+  test.each(RUNNABLE)(
+    'Types the node %s runs as Cube infers it',
+    async (file) => {
+      await TEST__expectEngineTyping(
+        engine,
+        decodeCubeSpec(read(file)).document.query,
+      );
     },
   );
 });

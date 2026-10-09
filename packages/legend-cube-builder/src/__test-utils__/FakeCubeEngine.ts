@@ -62,7 +62,13 @@ export const FAKE_NORTHWIND_OUTLINE: CubeModelOutline = {
       ],
     },
   ],
-  runtimes: [{ path: NORTHWIND_RUNTIME, storePaths: [NORTHWIND_DATABASE] }],
+  runtimes: [
+    {
+      path: NORTHWIND_RUNTIME,
+      storePaths: [NORTHWIND_DATABASE],
+      connections: [{ storePath: NORTHWIND_DATABASE, databaseType: 'H2' }],
+    },
+  ],
 };
 
 /** The schemas the fake gives, keyed by `<schema>.<table>` as the outline names them */

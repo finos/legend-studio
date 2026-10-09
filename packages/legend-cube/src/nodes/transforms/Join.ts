@@ -35,7 +35,7 @@ import {
   areCompatibleTypes,
   getLeastCommonAncestor,
 } from '../../types/TypeCompatibility.js';
-import { assertUnreachable } from '../../utils/AssertionUtils.js';
+import { assertUnreachable, isStringList } from '../../utils/AssertionUtils.js';
 import type { JsonObject } from '../../utils/Json.js';
 
 export enum JoinType {
@@ -80,10 +80,6 @@ export interface JoinSettings {
 }
 
 // `Array.from` turns holes into `undefined`, which `every` would skip
-const isStringArray = (value: unknown): value is readonly string[] =>
-  Array.isArray(value) &&
-  Array.from(value as unknown[]).every((item) => typeof item === 'string');
-
 /**
  * The names `n` with `leftColumns[i] === rightColumns[i] === n`: the
  * positionally identical keys, each once, in key order. Such a key is one
@@ -300,7 +296,7 @@ export class Join extends BinaryNode {
       rightColumns = [],
       joinType = JoinType.LEFT_OUTER,
     } = settings;
-    if (!isStringArray(leftColumns) || !isStringArray(rightColumns)) {
+    if (!isStringList(leftColumns) || !isStringList(rightColumns)) {
       throw new Error(`Join columns must be lists of column names`);
     }
     if (!isJoinType(joinType)) {

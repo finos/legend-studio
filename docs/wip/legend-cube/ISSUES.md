@@ -18,6 +18,115 @@
 - **Suggested fix:** in `V1_CubeLambdaSerializer`, write a decimal literal's value as a JSON string (the engine's
   `CDecimal` reads it with `new BigDecimal`). Verify it on the engine and add an engine-roundtrip test.
 
+### The row limit accepts hexadecimal and exponent text
+
+- **Found:** M2's requirements and its first verification (2026-10-08). M1 page code, so not fixed in M2's Limit
+  step.
+- **What:** the grid toolbar's row limit is checked with `Number(text.trim())` (`getRowLimitError` in
+  `LegendCubeLabels.ts`) and set with `Number(draft.trim())` (`CubeGridRegion.tsx`), so `0x10` sets 16, `1e3` 1000,
+  `0b11` 3 and `1.0` 1, where a user typing them likely meant something else.
+- **Suggested fix:** read the text once with `parseWholeNumberText` (`stores/editors/CubeIntegerText.ts`, which the
+  operations' size fields use), refuse `undefined` or a value below 1, and pass the parsed number to `setRowLimit`.
+  Test: each of those texts gives "The row limit must be a whole number of at least 1." and leaves the limit unchanged.
+
+### A Join doesn't see shared columns that differ only in case
+
+- **Found:** M2's second verification (M2.16). M1 Join code, so not fixed in M2.
+- **What:** the Join's duplicate check (`getDuplicateJoinColumns`, `Join.ts`) compares names exactly, so a left `ID`
+  and a right `id` pass. SQL Server, MemSQL and DuckDB take them for one column: the join's SQL fails there, or (DuckDB)
+  returns one column's values for both. M2.16 made Rename, the Join autofix and Cube's temporary columns compare names
+  in any case (`foldColumnName`).
+- **Suggested fix:** fold names in `getDuplicateJoinColumns` and in the Join's output-schema check, so the duplicate
+  rule and its autofix offer `ID_1`/`id_2`. Test: left `[ID, X]`, right `[id, X]` joined on X reports the duplicate,
+  and the autofix makes the join valid.
+
+## Engine issues to file
+
+Upstream defects move to PLAN.md Appendix B once filed (M2.17). These wait for the user's go-ahead to post.
+
+### SQL Server: `distinct()` then `limit()` renders `select top N distinct`
+
+Found in M2's requirements (plan-only, not executed: no SQL Server in reach). On `SqlServer`, the engine writes a
+relation `distinct()` followed by `limit(n)` as `select top n distinct …`
+(`sqlServerExtension.pure:66` writes TOP before DISTINCT); T-SQL needs `select distinct top n …`. A Cube run hits it
+whenever the engine keeps the DISTINCT in the same SELECT as a TOP: a Distinct at the node that runs (the run ends
+with `limit(rowLimit + 1)`), or one followed by a Filter, a Sort or a Limit. A Rename or Restrict after the Distinct
+moves it into a subquery, which SQL Server accepts. H2 accepts the order (the engine's own H2 test expects it), and
+Sybase and Sybase IQ render `select distinct top` for the run's outermost limit (Sybase IQ gets a Limit inside the
+query wrong another way: see below). Cube works around it (M2.13), padding every Distinct on SQL Server:
+`->distinct()->extend(~cube_d: x | 1)->select(~[…])`, which plans `select top n … from (select distinct …, 1 as
+"cube_d" …)`. Draft issue for finos/legend-engine:
+
+```text
+Title: SQL Server: distinct() followed by limit() generates SELECT TOP n DISTINCT, which T-SQL rejects
+
+For `#>{db.S.T}#->distinct()->limit(10)` with a `SqlServer` connection, the plan's SQL is
+`select top 10 distinct …`. SQL Server requires `select distinct top 10 …`. The TOP clause is written
+before DISTINCT in `sqlServerExtension.pure` (line 66). Sybase and Sybase IQ already write
+`select distinct top n`.
+```
+
+### `rewriteSliceAsWindowFunction` numbers rows by the first sort key only, and inside a `select distinct`
+
+Found in M2's second verification (M2.16, plans only, engine `93d92b4`). For a `limit`, `drop` or `slice` inside a
+query, Sybase IQ (`sybaseIQExtension.pure:265`), MemSQL (`memSQLExtension.pure:389`) and Spark
+(`sparkSQLExtension.pure:260`) call `rewriteSliceAsWindowFunction` (`extensionDefaults.pure:39`), which numbers the
+rows with `row_number() OVER (Order By <the first ORDER BY key only>)`: with ties on that key (ALFKI has six orders),
+the plan doesn't decide which rows it keeps. The same rewrite copies the select with `distinct` kept
+(`extensionDefaults.pure:67`), so `select distinct X, row_number() …` numbers every row and DISTINCT removes
+nothing. Running the plans' SQL on H2 and SQLite gave the wrong rows ('Argentina' ×5 for five distinct countries).
+The rewrite also names its numbering column `row_number` whatever the input has, so an input column of that name (any
+case) gives two. Cube works around all three (M2.13, M2.16): row numbers of its own for Sybase IQ's Drop, Slice and
+every Limit, and for MemSQL's Drop, and the padded Distinct on Sybase IQ. Spark SQL's extension calls the rewrite
+too, but no connection can choose it (the protocol's `DatabaseType` has no SparkSQL); Databricks has its own
+extension, which doesn't, and planned Cube's shapes right in the M2.16 plan test. Draft issue for
+finos/legend-engine:
+
+```text
+Title: rewriteSliceAsWindowFunction orders by the first sort key only, and keeps DISTINCT
+
+`#>{db.S.T}#->sort([~A->ascending(), ~B->descending()])->limit(5)->limit(1001)` on Sybase IQ plans
+`row_number() OVER (Order By A asc)` for the inner limit, ignoring `B`, so ties on `A` take any rows.
+MemSQL does the same for `drop()`. And `->distinct()->limit(5)->limit(1001)` on Sybase IQ plans
+`select distinct X, row_number() OVER (…) …`, where the window makes every row distinct.
+
+The rewrite (`extensionDefaults.pure`, lines 39 and 67) should order by every sort key and number the
+rows of the distinct query, not within it. It also names the numbering column `row_number` whatever
+the input's columns are (line 43).
+```
+
+### ClickHouse: a Drop after a descending sort key writes `nulls firstoffset m`
+
+Found in M2's third check (M2.16, plans only). After a sort whose last key is descending, the engine's ClickHouse SQL
+for a `drop(m)` joins the null ordering and the offset into one word, `… desc nulls firstoffset 10`
+(`clickHouseExtension.pure:252` adds `offset` with no leading space), which ClickHouse can't parse (inferred from the
+SQL; no ClickHouse server was run). Cube writes ClickHouse's Drop through row numbers. Draft issue for
+finos/legend-engine:
+
+```text
+Title: ClickHouse: offset is written with no space after "nulls first"
+
+`#>{db.S.T}#->sort(~A->descending())->drop(10)->limit(1001)` on ClickHouse plans
+`order by … desc nulls firstoffset 10`. `clickHouseExtension.pure` line 252 should put a space
+before `offset`.
+```
+
+### A duplicate column from `rename` or `select` fails with HTTP 500 and no source location
+
+Found in M2's requirements (rename and select probes on `93d92b4`). `#>{db.S.T}#->rename(~ORDER_ID, ~CUSTOMER_ID)`
+and `#>{db.S.T}#->select(~[ORDER_ID, ORDER_ID])` fail with `Compilation error at ??, "The relation contains
+duplicates: [X]"` as an HTTP 500, not a 400 compilation error with a source location, so the error can't be placed on
+a node. Cube's own validation refuses both before they reach the engine (Rename's collision check, Restrict's
+duplicates), so Cube users don't see it. Draft issue for finos/legend-engine:
+
+```text
+Title: Duplicate columns from rename/select return HTTP 500 with no source information
+
+`->rename(~A, ~B)` where `B` exists, or `->select(~[A, A])`, gives
+`Compilation error at ??, "The relation contains duplicates: [B]"` as a 500. It should be a
+compilation error (400) with the call's source information, like other typing errors.
+```
+
 ## Test gaps
 
 None hides a known bug.
@@ -42,3 +151,12 @@ None hides a known bug.
 - **Only Chrome is checked.** The dry run, the demo and the M1.9 acceptance use Chrome, and `03e095655` fixed a
   Chrome-only behaviour of the date input. Firefox and Safari are untested, value entry (Part B step 5) and the spec
   file import (step 8) above all (user, 2026-10-08).
+- **A page laid out at zero width stays empty.** Found in M2.4's browser check: when the Cube page first renders in a
+  container with no width (the app's browser pane opening), react-reflex warns "Found ReflexContainer with width=0" and
+  the graph and grid region keeps zero width, even after the window grows, until the page reloads. Not seen in a
+  normal browser tab. Suggested check: whether `CubeEditor`'s resizable layout should re-measure on a resize, or
+  render only once its container has a size.
+- **Long column names on Postgres (💭, not probed).** A Rename (M2.9) accepts new names of up to 128 code points
+  (PLAN §11.4), but Postgres cuts identifiers at 63 bytes, so two long names could collide or be cut once a Postgres
+  runtime is in use. Suggested check: plan a rename to a name of 64 bytes or more on Postgres, and lower the cap per
+  database if needed.

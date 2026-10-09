@@ -19,15 +19,58 @@ import {
   DataGrid,
   type DataGridCellRendererParams,
   type DataGridColumnDefinition,
+  type DataGridDefaultMenuItem,
+  type DataGridGetContextMenuItemsParams,
+  type DataGridMenuItemDef,
 } from '@finos/legend-lego/data-grid';
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { NULL_CELL_TEXT } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
+import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeExecutionResult } from '../../stores/CubeExecutionState.js';
+import { getCubeGridQuickActions } from '../../stores/CubeGridQuickActions.js';
 import { compareCellValues, isNumericFamily } from './CubeGridValues.js';
 
 type CubeRow = readonly CubeResultValue[];
+
+/** A column's id in the grid: its position, as `c<position>` */
+const COLUMN_ID_PREFIX = 'c';
+
+/**
+ * The grid's context menu (spec §12.4): on a cell, its quick actions, then
+ * ag-grid's own items, which M7 curates; elsewhere ag-grid's only. Read when
+ * the menu opens, so it reflects the cube and the run as they are then.
+ */
+export const getCubeGridContextMenuItems = (
+  editorState: CubeEditorState,
+  params: DataGridGetContextMenuItemsParams<CubeRow>,
+): (DataGridDefaultMenuItem | DataGridMenuItemDef<CubeRow>)[] => {
+  const defaultItems = params.defaultItems ?? [];
+  const colId = params.column?.getColId();
+  if (!colId?.startsWith(COLUMN_ID_PREFIX)) {
+    return defaultItems;
+  }
+  const position = Number(colId.slice(COLUMN_ID_PREFIX.length));
+  const cell = params.node?.data?.[position] ?? null;
+  const actions = getCubeGridQuickActions(editorState, position, cell);
+  if (!actions.length) {
+    return defaultItems;
+  }
+  return [
+    ...actions.map((quickAction): DataGridMenuItemDef<CubeRow> => {
+      const tooltip = quickAction.disabledReason ?? quickAction.hint;
+      return {
+        name: quickAction.label,
+        disabled: quickAction.disabledReason !== undefined,
+        ...(tooltip === undefined ? {} : { tooltip }),
+        action: () => quickAction.apply(),
+      };
+    }),
+    'separator',
+    ...defaultItems,
+  ];
+};
 
 const CubeCell: React.FC<
   DataGridCellRendererParams<CubeRow, CubeResultValue>
@@ -41,17 +84,27 @@ const CubeCell: React.FC<
 /**
  * The rows of a run (PLAN §9): columns from Cube's own schema of the capture
  * node, by position, so any column name works. Numbers are right-aligned and
- * shown and sorted exactly as the engine wrote them.
+ * shown and sorted exactly as the engine wrote them. A cell's context menu
+ * offers the quick actions (`getCubeGridContextMenuItems`).
  */
 export const CubeResultGrid = memo(
-  (props: { result: CubeExecutionResult; darkMode: boolean }) => {
-    const { result, darkMode } = props;
+  (props: {
+    editorState: CubeEditorState;
+    result: CubeExecutionResult;
+    darkMode: boolean;
+  }) => {
+    const { editorState, result, darkMode } = props;
+    const getContextMenuItems = useCallback(
+      (params: DataGridGetContextMenuItemsParams<CubeRow>) =>
+        getCubeGridContextMenuItems(editorState, params),
+      [editorState],
+    );
     const columnDefs = useMemo(
       (): DataGridColumnDefinition<CubeRow, CubeResultValue>[] =>
         result.schema.columns.map((column, position) => {
           const numeric = isNumericFamily(column.type.family);
           return {
-            colId: `c${position}`,
+            colId: `${COLUMN_ID_PREFIX}${position}`,
             headerName: column.name,
             headerTooltip: `${column.type.displayName}${column.nullable ? '?' : ''} (${column.type.fullName})`,
             valueGetter: (params) => params.data?.[position] ?? null,
@@ -76,6 +129,7 @@ export const CubeResultGrid = memo(
           columnDefs={columnDefs}
           suppressFieldDotNotation={true}
           tooltipShowDelay={500}
+          getContextMenuItems={getContextMenuItems}
         />
       </div>
     );

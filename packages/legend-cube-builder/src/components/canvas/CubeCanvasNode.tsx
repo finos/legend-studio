@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { clsx, ContextMenu } from '@finos/legend-art';
+import { clsx, ContextMenu, WarningIcon } from '@finos/legend-art';
 import { Handle, type NodeProps, Position } from '@xyflow/react';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
@@ -113,6 +113,7 @@ export const CubeCanvasNode = observer(
               'legend-cube__node--resolving animate-pulse': status.isResolving,
               'legend-cube__node--engine-error bg-[var(--color-status-error-bg)]':
                 status.hasEngineError,
+              'legend-cube__node--warning': status.hasWarnings,
               'legend-cube__node--drop-target outline-dashed outline-2 outline-[var(--color-accent)]':
                 isDropTarget,
             },
@@ -128,6 +129,13 @@ export const CubeCanvasNode = observer(
           <span className="line-clamp-2 min-w-0 break-words leading-tight">
             {node.describe()}
           </span>
+          {status.hasWarnings && (
+            // the warning's text is in the node's tooltip
+            <WarningIcon
+              className="ml-auto shrink-0 text-[var(--color-status-warn)]"
+              aria-hidden={true}
+            />
+          )}
         </div>
         <Handle
           id={CUBE_OUTPUT_HANDLE_ID}

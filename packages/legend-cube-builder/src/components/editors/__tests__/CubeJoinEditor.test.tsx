@@ -266,7 +266,7 @@ describe('Join editor', () => {
       )
         .getAllByRole('listitem')
         .map((item) => item.textContent),
-    ).toEqual(['UNIT_PRICE']);
+    ).toEqual(['UNIT_PRICE → UNIT_PRICE_1 (Left), UNIT_PRICE_2 (Right)']);
     // joining on it too clears it
     addKeys('UNIT_PRICE', 'UNIT_PRICE');
     expect(
@@ -461,5 +461,144 @@ describe('Join editor', () => {
     const number = typeLabel('Left join column 1');
     expect(number.title).toBe('meta::pure::precisePrimitives::SmallInt');
     expect(number.querySelector('svg')?.innerHTML).not.toBe(textIcon);
+  });
+});
+
+describe('Join editor, renaming the columns both inputs have', () => {
+  // ORDERS and CUSTOMERS both have CUSTOMER_ID
+  const sharedColumns = (): HTMLElement =>
+    within(panel()).getByRole('list', { name: 'Columns in both inputs' });
+
+  test('Puts a Rename before each input, as one undo step, and the join turns valid', async () => {
+    const editorState = await render(
+      ordersJoinCustomers(['SHIP_COUNTRY'], ['COUNTRY']),
+    );
+    const before = editorState.document.query;
+    await openJoin();
+    expect(problems()).toEqual([
+      'Duplicate column names between inputs are not supported if they are not part of the join columns: "CUSTOMER_ID"',
+    ]);
+    expect(within(sharedColumns()).getByRole('listitem').textContent).toBe(
+      'CUSTOMER_ID → CUSTOMER_ID_1 (Left), CUSTOMER_ID_2 (Right)',
+    );
+    fireEvent.click(button('Rename them'));
+    const { query } = editorState.document;
+    expect(query.getInputIds('join101')).toEqual(['rename101', 'rename102']);
+    expect(query.getInputIds('rename101')).toEqual(['relational101']);
+    expect(query.getInputIds('rename102')).toEqual(['relational102']);
+    expect(editorState.analysis.validity.get('join101')).toEqual([]);
+    expect(editorState.history).toHaveLength(1);
+    // the panel goes on, on the join, with nothing to apply and nothing shared
+    expect(editorState.nodeEditor.nodeId).toBe('join101');
+    expect(editorState.nodeEditor.hasChanges).toBe(false);
+    expect(
+      within(panel()).queryByRole('list', { name: 'Columns in both inputs' }),
+    ).toBeNull();
+    expect(problems()).toEqual([]);
+    act(() => editorState.undo());
+    expect(editorState.document.query === before).toBe(false);
+    expect(editorState.document.query.nodes.map((node) => node.id)).toEqual(
+      before.nodes.map((node) => node.id),
+    );
+  });
+
+  test('Applies the edits not yet applied in the same step', async () => {
+    const editorState = await render(ordersJoinCustomers());
+    await openJoin();
+    addKeys('SHIP_COUNTRY', 'COUNTRY');
+    expect(editorState.nodeEditor.hasChanges).toBe(true);
+    expect(button('Rename them').disabled).toBe(false);
+    fireEvent.click(button('Rename them'));
+    const join = editorState.document.query.getNode('join101') as Join;
+    expect(join.leftColumns).toEqual(['SHIP_COUNTRY']);
+    expect(join.rightColumns).toEqual(['COUNTRY']);
+    expect(editorState.history).toHaveLength(1);
+    expect(editorState.analysis.validity.get('join101')).toEqual([]);
+    // the panel follows the new join, with nothing left to apply
+    expect(editorState.nodeEditor.nodeId).toBe('join101');
+    expect(editorState.nodeEditor.draft?.original === join).toBe(true);
+    expect(editorState.nodeEditor.hasChanges).toBe(false);
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeDefined();
+  });
+
+  test('Rewrites a key it renames, and the panel follows the rewritten join', async () => {
+    const editorState = await render(
+      ordersJoinCustomers(['CUSTOMER_ID'], ['COUNTRY']),
+    );
+    await openJoin();
+    fireEvent.click(button('Rename them'));
+    const join = editorState.document.query.getNode('join101') as Join;
+    expect(join.leftColumns).toEqual(['CUSTOMER_ID_1']);
+    expect(join.rightColumns).toEqual(['COUNTRY']);
+    expect(editorState.nodeEditor.draft?.original).toBe(join);
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(editorState.analysis.validity.get('join101')).toEqual([]);
+  });
+
+  test('Keeps the node Execute runs selected', async () => {
+    const editorState = await render(
+      ordersJoinCustomers(['SHIP_COUNTRY'], ['COUNTRY']),
+    );
+    act(() => editorState.select('relational101'));
+    await openJoin();
+    fireEvent.click(button('Rename them'));
+    expect(editorState.document.query.selected).toBe('relational101');
+  });
+
+  test('Is disabled while the join has another problem', async () => {
+    await render(ordersJoinCustomers(['SHIP_COUNTRY'], ['NOPE']));
+    await openJoin();
+    expect(button('Rename them').disabled).toBe(true);
+  });
+
+  test('Is disabled in a read-only cube', async () => {
+    const editorState = await render(new Query());
+    await TEST__importDocument(
+      editorState,
+      new CubeDocument({
+        context: CONTEXT,
+        query: ordersJoinCustomers(['SHIP_COUNTRY'], ['COUNTRY']),
+      }),
+      true,
+    );
+    await openJoin();
+    expect(button('Rename them').disabled).toBe(true);
+  });
+
+  test('Still warns about an untyped key once it is renamed', async () => {
+    const editorState = await render(
+      ordersJoinCustomers(['CUSTOMER_ID'], ['COUNTRY']),
+      (fake) =>
+        fake.loadModel.mockResolvedValue({
+          ...FAKE_NORTHWIND_OUTLINE,
+          databases: [
+            {
+              path: NORTHWIND_DATABASE,
+              schemas: [
+                {
+                  name: 'NORTHWIND',
+                  tables: [
+                    {
+                      name: 'ORDERS',
+                      isView: false,
+                      columnCount: ORDERS_COLUMNS.length,
+                      flags: [],
+                      untypedColumns: ['CUSTOMER_ID'],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+    );
+    await openJoin();
+    expect(await within(panel()).findByText(/^type unknown: /u)).toBeDefined();
+    fireEvent.click(button('Rename them'));
+    expect(
+      (editorState.document.query.getNode('join101') as Join).leftColumns,
+    ).toEqual(['CUSTOMER_ID_1']);
+    expect(await within(panel()).findByText(/^type unknown: /u)).toBeDefined();
   });
 });

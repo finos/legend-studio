@@ -14,12 +14,28 @@
  * limitations under the License.
  */
 
-import { Filter, Join, type QueryNode } from '@finos/legend-cube';
+import {
+  Distinct,
+  Drop,
+  Filter,
+  Join,
+  Limit,
+  type QueryNode,
+  Rename,
+  Restrict,
+  Slice,
+  Sort,
+} from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
 import { type CubeNodeDraft, CubeReadOnlyNodeDraft } from './CubeNodeDraft.js';
+import { CubeRenameDraft } from './CubeRenameDraft.js';
+import { CubeRestrictDraft } from './CubeRestrictDraft.js';
+import { CubeRowCountDraft } from './CubeRowCountDraft.js';
+import { CubeSliceDraft } from './CubeSliceDraft.js';
+import { CubeSortDraft } from './CubeSortDraft.js';
 
 /** Makes the draft of a node of one type */
 export type CubeNodeDraftFactory = (
@@ -36,9 +52,27 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   string,
   CubeNodeDraftFactory
 > = new Map<string, CubeNodeDraftFactory>([
+  [Sort.TYPE, (node) => new CubeSortDraft(guaranteeType(node, Sort))],
   [Filter.TYPE, (node) => new CubeFilterDraft(guaranteeType(node, Filter))],
+  [
+    Restrict.TYPE,
+    (node) => new CubeRestrictDraft(guaranteeType(node, Restrict)),
+  ],
+  [Rename.TYPE, (node) => new CubeRenameDraft(guaranteeType(node, Rename))],
   [Join.TYPE, (node) => new CubeJoinDraft(guaranteeType(node, Join))],
+  [Drop.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Drop))],
+  [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
+  [Slice.TYPE, (node) => new CubeSliceDraft(guaranteeType(node, Slice))],
 ]);
+
+/**
+ * The transforms with nothing to set (spec §17.6: Distinct is "description
+ * only"): an editor in `CUBE_NODE_EDITORS` and no draft factory, so the panel
+ * shows no Apply or Cancel (PLAN §7.4 item 2)
+ */
+export const CUBE_NODE_TYPES_WITHOUT_SETTINGS: readonly string[] = [
+  Distinct.TYPE,
+];
 
 /** The node's draft; a node with nothing to edit gets a read-only one */
 export const createCubeNodeDraft = (

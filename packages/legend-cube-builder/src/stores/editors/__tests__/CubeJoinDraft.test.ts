@@ -21,6 +21,8 @@ import {
   Join,
   JoinType,
   Query,
+  Rename,
+  Restrict,
 } from '@finos/legend-cube';
 import {
   CUSTOMERS_COLUMNS,
@@ -33,6 +35,7 @@ import { FAKE_NORTHWIND_OUTLINE } from '../../../__test-utils__/FakeCubeEngine.j
 import type { CubeModelOutline } from '../../../graph-manager/CubeEngine.js';
 import {
   CubeJoinDraft,
+  findColumnOrigins,
   findColumnSources,
   isUntypedColumn,
 } from '../CubeJoinDraft.js';
@@ -197,6 +200,84 @@ describe('Where a column comes from', () => {
     expect(
       sourcesOf(joined(JoinType.FULL_OUTER), 'join101', 'CUSTOMER_ID'),
     ).toEqual(['relational101', 'relational102']);
+  });
+
+  /** ORDERS, then this node, captured at it */
+  const ordersThen = (node: Rename | Restrict): Query =>
+    new Query(
+      [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), node],
+      [new Connection('relational101', node.id, 'tds')],
+      node.id,
+    );
+
+  test("Follows a renamed column back to its table's name for it", () => {
+    const query = ordersThen(
+      new Rename('rename101', [{ from: 'SHIP_REGION', to: 'Region' }]),
+    );
+    const renamedAnalysis = buildSchemasAndValidity(query);
+    expect(
+      findColumnOrigins(query, renamedAnalysis, 'rename101', 'Region').map(
+        ({ source, column }) => [source.id, column],
+      ),
+    ).toEqual([['relational101', 'SHIP_REGION']]);
+    expect(sourcesOf(query, 'rename101', 'Region')).toEqual(['relational101']);
+    // the old name is gone from the rename's output
+    expect(sourcesOf(query, 'rename101', 'SHIP_REGION')).toEqual([]);
+    // a column the rename leaves alone keeps its name
+    expect(
+      findColumnOrigins(query, renamedAnalysis, 'rename101', 'SHIP_CITY').map(
+        ({ column }) => column,
+      ),
+    ).toEqual(['SHIP_CITY']);
+  });
+
+  test('Finds no table for a column a Restrict dropped', () => {
+    const query = ordersThen(new Restrict('restrict101', ['ORDER_ID']));
+    expect(sourcesOf(query, 'restrict101', 'SHIP_CITY')).toEqual([]);
+    expect(sourcesOf(query, 'restrict101', 'ORDER_ID')).toEqual([
+      'relational101',
+    ]);
+  });
+
+  test("Tells a renamed column Cube typed as a bare String by its table's name for it", () => {
+    const query = ordersThen(
+      new Rename('rename101', [{ from: 'SHIP_REGION', to: 'Region' }]),
+    );
+    const outline: CubeModelOutline = {
+      ...FAKE_NORTHWIND_OUTLINE,
+      databases: [
+        {
+          path: NORTHWIND_DATABASE,
+          schemas: [
+            {
+              name: 'NORTHWIND',
+              tables: [
+                {
+                  name: 'ORDERS',
+                  isView: false,
+                  columnCount: 1,
+                  flags: [],
+                  untypedColumns: ['SHIP_REGION'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const renamedAnalysis = buildSchemasAndValidity(query);
+    expect(
+      isUntypedColumn(outline, query, renamedAnalysis, 'rename101', 'Region'),
+    ).toBe(true);
+    expect(
+      isUntypedColumn(
+        outline,
+        query,
+        renamedAnalysis,
+        'rename101',
+        'SHIP_CITY',
+      ),
+    ).toBe(false);
   });
 
   test("Tells a column Cube typed as a bare String from its own table's entry in the model's outline", () => {

@@ -19,6 +19,10 @@ import {
   createNodeRegistry,
   CubeDocument,
   diffSchemas,
+  findLostSortOrders,
+  MESSAGE_SORT_COLUMNS_CUT,
+  MESSAGE_SORT_COLUMNS_DROPPED,
+  MESSAGE_SORT_ORDER_LOST,
   type ModelContext,
   type NodeRegistry,
   type Query,
@@ -53,6 +57,7 @@ import {
   CubeEngineErrorKind,
   type CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
+import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
@@ -138,6 +143,7 @@ export class CubeEditorState implements CommandRegistrar {
       history: observable.ref,
       hostIssues: observable.ref,
       warnings: observable.ref,
+      derivedWarnings: computed,
       isResolvingSources: computed,
       rowLimit: observable,
       isPaletteCollapsed: observable,
@@ -155,6 +161,7 @@ export class CubeEditorState implements CommandRegistrar {
       select: action,
       connect: action,
       addNode: action,
+      addConfiguredNode: action,
       dropNode: action,
       removeNode: action,
       swapInputs: action,
@@ -209,6 +216,52 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
+   * Warnings worked out from the query, by node id: a Sort whose order is
+   * lost before it is used (PLAN §11.4). Never stored and never errors, so
+   * Execute stays enabled; they go as soon as the query no longer loses it.
+   * A partial loss names each node that removes some of the Sort's columns,
+   * then the columns that came after a removed one. A loss waits until the
+   * Sort and every node it names have no errors, e.g. a Restrict just added,
+   * with no column yet: their own errors come first.
+   */
+  get derivedWarnings(): ReadonlyMap<string, readonly string[]> {
+    const { validity, schemas } = this.analysis;
+    const isValid = (nodeId: string): boolean =>
+      validity.get(nodeId)?.length === 0;
+    const { query } = this.document;
+    return new Map(
+      Array.from(findLostSortOrders(query, undefined, schemas))
+        .filter(
+          ([sortId, loss]) =>
+            isValid(sortId) &&
+            isValid(loss.nodeId) &&
+            (loss.removals ?? []).every(({ nodeId }) => isValid(nodeId)),
+        )
+        .map(([sortId, loss]) => [
+          sortId,
+          loss.removals
+            ? [
+                ...loss.removals.map(({ nodeId, columns }) =>
+                  MESSAGE_SORT_COLUMNS_DROPPED(columns, nodeId),
+                ),
+                ...(loss.cutColumns?.length
+                  ? [MESSAGE_SORT_COLUMNS_CUT(loss.cutColumns)]
+                  : []),
+              ]
+            : [MESSAGE_SORT_ORDER_LOST(loss.nodeId)],
+        ]),
+    );
+  }
+
+  /** A node's warnings: the stored ones (by key), then the derived ones (by id) */
+  getNodeWarnings(node: QueryNode): readonly string[] {
+    return [
+      ...(this.warnings.get(node.key) ?? []),
+      ...(this.derivedWarnings.get(node.id) ?? []),
+    ];
+  }
+
+  /**
    * The node's errors, each once: its own and those of the query rules, then
    * the first line of the engine's error on it
    */
@@ -225,15 +278,53 @@ export class CubeEditorState implements CommandRegistrar {
   /** The outline of the cube's model, once an editor has loaded it */
   get modelOutline(): CubeModelOutline | undefined {
     const model = this.document.context?.model;
-    return model === undefined ? undefined : this.modelOutlines.get(model);
+    return model === undefined ? undefined : this.getModelOutline(model);
+  }
+
+  /** The outline of a model, once loaded */
+  getModelOutline(model: ModelContext): CubeModelOutline | undefined {
+    return this.modelOutlines.get(model);
   }
 
   /**
-   * Loads the outline of the cube's model, once per model. It only adds
-   * warnings, so a model that fails to load shows none.
+   * The database type a run of the query up to the node needs, with the
+   * model's runtime (PLAN §11.4), from the model's outline once it is loaded
+   * (`loadModelOutline`): the type of the runtime's connections to the
+   * databases the node reads. None without an outline, which writes every
+   * operation the native way.
    */
-  *loadModelOutline(): GeneratorFn<void> {
-    const model = this.document.context?.model;
+  getRunDatabaseType(
+    query: Query,
+    nodeId: string,
+    model: ModelContext,
+    runtime: string,
+  ): string | undefined {
+    const outline = this.getModelOutline(model);
+    if (!outline) {
+      return undefined;
+    }
+    const databases = new Set<string>();
+    const visit = (id: string): void => {
+      const node = query.getNode(id);
+      if (node instanceof RelationalTableSource) {
+        databases.add(node.database);
+      }
+      query
+        .getInputIds(id)
+        .forEach((inputId) => inputId !== undefined && visit(inputId));
+    };
+    visit(nodeId);
+    return getDatabaseType(outline, runtime, [...databases]);
+  }
+
+  /**
+   * Loads the outline of a model, the cube's by default, once per model. It
+   * only adds warnings and database types, so a model that fails to load
+   * shows none and runs every operation the native way.
+   */
+  *loadModelOutline(
+    model: ModelContext | undefined = this.document.context?.model,
+  ): GeneratorFn<void> {
     if (model === undefined || this.modelOutlines.has(model)) {
       return;
     }
@@ -583,6 +674,20 @@ export class CubeEditorState implements CommandRegistrar {
     this.applyQuery(
       query.add(definition.create(query.generateId(type)), afterId),
     );
+  }
+
+  /**
+   * Adds a node made elsewhere, with its settings, as the grid's quick
+   * actions do (spec §12.4): spliced in after `afterId`, so it becomes the
+   * node that runs when that one did, as one undo step. Does nothing in a
+   * read-only cube, or when the query can't take it.
+   */
+  addConfiguredNode(node: QueryNode, afterId?: string): void {
+    const { query } = this.document;
+    if (this.readOnly || !query.canAdd(node, afterId)) {
+      return;
+    }
+    this.applyQuery(query.add(node, afterId));
   }
 
   /** Whether dropping a node on another does anything: connect it, or else move it after it */

@@ -259,6 +259,7 @@ export const CubeGridRegion = observer(
           ) : execution.result ? (
             <CubeResultGrid
               key={execution.result.id}
+              editorState={editorState}
               result={execution.result}
               darkMode={darkMode}
             />

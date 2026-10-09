@@ -135,3 +135,38 @@ export const CUBE_ENGINE_TEST__execute = async (
     text: async () => response.data,
   };
 };
+
+/**
+ * Generates the execution plan of a query, never running it, and gives the
+ * SQL of its nodes, outermost first; a body given as text (with lossless
+ * numbers) is sent as it is
+ */
+export const CUBE_ENGINE_TEST__generatePlanSql = async (
+  input: object | string,
+): Promise<string[]> => {
+  const { data } = await axios.post<unknown, AxiosResponse<string>>(
+    `${PURE_API}/execution/generatePlan`,
+    input,
+    {
+      headers: JSON_HEADERS,
+      responseType: 'text',
+      transformResponse: (text: string) => text,
+    },
+  );
+  const sql: string[] = [];
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+    } else if (node && typeof node === 'object') {
+      Object.entries(node).forEach(([key, value]) => {
+        if (key === 'sqlQuery' && typeof value === 'string') {
+          sql.push(value);
+        } else {
+          visit(value);
+        }
+      });
+    }
+  };
+  visit(parseLosslessJSON(data));
+  return sql;
+};

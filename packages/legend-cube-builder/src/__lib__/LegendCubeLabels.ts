@@ -107,6 +107,24 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
   return `This table changed since the cube was saved: ${changes.join('; ')}`;
 };
 
+/** Why the Sort editor's picker doesn't offer a column, after its type */
+export const CUBE_SORT_COLUMN_DISABLED_REASON = {
+  NOT_SORTABLE: "can't be sorted",
+  TAKEN: 'already sorted on',
+};
+
+/** Why the grid's quick actions (spec §12.4) can't be used */
+export const CUBE_QUICK_ACTION_DISABLED_REASON = {
+  STALE_ROWS:
+    'Execute again: these rows are from an earlier version of the query.',
+  RUNNING: 'Wait for the run to finish.',
+  UNREADABLE_VALUE: "This value can't be used in a filter.",
+  notSortable: (typeName: string): string =>
+    `Values of type ${typeName} can't be sorted.`,
+  notComparable: (typeName: string): string =>
+    `Values of type ${typeName} can't be compared.`,
+};
+
 /** Beside a condition comparing a floating-point column for equality (R133) */
 export const FILTER_FLOAT_COMPARISON_HINT =
   'exact comparison on floating-point columns may not match';
@@ -139,3 +157,15 @@ export const getEditorClosedNotice = (
 /** The warning on a source with saved columns that the engine couldn't type again */
 export const getSourceRecheckWarning = (firstLine: string): string =>
   `Could not re-check this table, so it keeps its saved columns: ${firstLine}`;
+
+/** Under the Slice editor's fields: the range counts from 0, and leaves out its stop row (D5) */
+export const SLICE_RANGE_HINT =
+  'Rows count from 0: the start row is kept, the stop row is not.';
+
+/** The Distinct editor's text: it has nothing to set (spec §17.6) */
+export const DISTINCT_EDITOR_TEXT =
+  'Keeps one row of each set of identical rows. There is nothing to set.';
+
+/** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
+export const COLUMN_NAME_RULES_HINT =
+  'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';

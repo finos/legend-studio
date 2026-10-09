@@ -39,14 +39,20 @@ import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindMode
 import { CubeCanvas } from '../CubeCanvas.js';
 
 const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
-const ITEMS = [
-  'Relational Database Table',
+/** The palette's transforms, in menu order */
+const TRANSFORMS = [
+  'Sort by Column',
   'Filter by Column',
+  'Restrict Columns',
+  'Rename Columns',
+  'Distinct Values',
+  'Drop first <x> rows',
+  'Take first <x> rows',
+  'Take rows <x> to <y>',
   'Join Another Input',
-  'Select',
-  'Remove',
-  'Swap Inputs',
 ];
+const PALETTE = ['Relational Database Table', ...TRANSFORMS];
+const ITEMS = [...PALETTE, 'Select', 'Remove', 'Swap Inputs'];
 
 const render = async (document?: CubeDocument): Promise<CubeEditorState> => {
   const { host } = TEST__createCubeHost();
@@ -101,25 +107,21 @@ describe('Canvas context menu', () => {
     let items = await openMenu(await TEST__findCanvasNode('join101'));
     expect([...items.keys()]).toEqual(ITEMS);
     // a table can't go after a node; a Join can be selected, removed and swapped
-    expect(enabledItems(items)).toEqual(ITEMS.slice(1));
+    expect(enabledItems(items)).toEqual([
+      ...TRANSFORMS,
+      'Select',
+      'Remove',
+      'Swap Inputs',
+    ]);
     await closeMenu();
 
     // the node Execute runs, with one input
     items = await openMenu(await TEST__findCanvasNode('filter101'));
-    expect(enabledItems(items)).toEqual([
-      'Filter by Column',
-      'Join Another Input',
-      'Remove',
-    ]);
+    expect(enabledItems(items)).toEqual([...TRANSFORMS, 'Remove']);
     await closeMenu();
 
     items = await openMenu(await TEST__findCanvasNode('relational101'));
-    expect(enabledItems(items)).toEqual([
-      'Filter by Column',
-      'Join Another Input',
-      'Select',
-      'Remove',
-    ]);
+    expect(enabledItems(items)).toEqual([...TRANSFORMS, 'Select', 'Remove']);
   });
 
   test('Offers only the palette around the nodes and on an empty canvas', async () => {
@@ -127,12 +129,12 @@ describe('Canvas context menu', () => {
     await TEST__findCanvasNode('join101');
     let items = await openMenu(canvasPane());
     expect([...items.keys()]).toEqual(ITEMS);
-    expect(enabledItems(items)).toEqual(ITEMS.slice(0, 3));
+    expect(enabledItems(items)).toEqual(PALETTE);
     await closeMenu();
 
     act(() => editorState.importDocument(new CubeDocument(), false));
     items = await openMenu(screen.getByText(/No tables yet/u));
-    expect(enabledItems(items)).toEqual(ITEMS.slice(0, 3));
+    expect(enabledItems(items)).toEqual(PALETTE);
   });
 
   test('Removes a node, as one undoable edit, without opening its editor', async () => {

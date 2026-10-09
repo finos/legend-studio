@@ -64,10 +64,24 @@ export interface CubeOutlineDatabase {
   readonly schemas: readonly CubeOutlineSchema[];
 }
 
+/** A relational connection of a runtime, for the operations some databases take another way (PLAN §11.4) */
+export interface CubeOutlineConnection {
+  /** The store it is keyed by */
+  readonly storePath: string;
+  /** The engine's name for its database type, e.g. `H2` or `SqlServer` */
+  readonly databaseType: string;
+}
+
 export interface CubeOutlineRuntime {
   readonly path: string;
   /** The stores its connections are keyed by, exactly; includes are not followed (PLAN §6.2.5) */
   readonly storePaths: readonly string[];
+  /**
+   * Its relational connections that name a database type, a list rather
+   * than a record keyed by a store path from the model; optional, as an
+   * outline from before M2 has none
+   */
+  readonly connections?: readonly CubeOutlineConnection[];
 }
 
 /** What a model offers the source picker: its databases and runtimes, as plain data */

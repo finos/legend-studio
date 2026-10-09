@@ -205,6 +205,36 @@ export const MESSAGE_FILTER_VALUE_OUT_OF_RANGE = (
   type: string,
 ): string => `Filter value ${quote(value)} is out of range for ${type}.`;
 
+/** Added by Cube: Variant and unknown types can't be compared, so not sorted either (PLAN §11.4) */
+export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Sort column ${quote(column)} of type ${typeName} cannot be sorted.`;
+
+/**
+ * Added by Cube: a Sort whose order is lost before it is used, as a Join loses
+ * it; a warning, never a validation error (PLAN §11.4). The node is named by
+ * its id, which its tooltip and editor show.
+ */
+export const MESSAGE_SORT_ORDER_LOST = (nodeId: string): string =>
+  `This sort has no effect: ${nodeId} does not keep the row order. A sort only orders the query's output, or the rows a later Drop, Limit or Slice takes.`;
+
+/** Added by Cube: a Sort some of whose columns a later Restrict removes before the order is used (PLAN §11.4) */
+export const MESSAGE_SORT_COLUMNS_DROPPED = (
+  columns: readonly string[],
+  nodeId: string,
+): string =>
+  `Sorting by ${columns.map(quote).join(', ')} has no effect: ${nodeId} removes ${
+    columns.length === 1 ? 'that column' : 'those columns'
+  } before the order is used.`;
+
+/** Added by Cube: a Sort's columns a later node keeps, but no longer orders by, as they came after a removed one (PLAN §11.4) */
+export const MESSAGE_SORT_COLUMNS_CUT = (columns: readonly string[]): string =>
+  `Sorting by ${columns.map(quote).join(', ')} has no effect either: ${
+    columns.length === 1 ? 'it comes' : 'they come'
+  } after a removed column.`;
+
 /** Added by Cube: the engine does not escape `\` in `LIKE` patterns yet (PLAN Appendix B) */
 export const MESSAGE_FILTER_VALUE_BACKSLASH = (operator: string): string =>
   `Filter values for ${quote(operator)} cannot contain a backslash (\\) yet.`;

@@ -25,6 +25,7 @@ export * from './values/ValueEntry.js';
 
 export * from './schema/Schema.js';
 export * from './schema/SchemaDiff.js';
+export * from './schema/ColumnName.js';
 
 export * from './graph/Connection.js';
 export * from './graph/QueryNode.js';
@@ -33,6 +34,7 @@ export * from './graph/CubeDocument.js';
 
 export * from './inference/ValidationUtils.js';
 export * from './inference/SchemaInference.js';
+export * from './inference/RowOrder.js';
 
 export * from './nodes/sources/RelationalTableSource.js';
 export * from './filter/FilterOperator.js';
@@ -41,7 +43,16 @@ export * from './filter/FilterBuilder.js';
 export * from './filter/QueryFilterValues.js';
 
 export * from './nodes/transforms/Join.js';
+export * from './nodes/transforms/JoinAutofix.js';
 export * from './nodes/transforms/Filter.js';
+export * from './nodes/transforms/RowSettings.js';
+export * from './nodes/transforms/Distinct.js';
+export * from './nodes/transforms/Drop.js';
+export * from './nodes/transforms/Limit.js';
+export * from './nodes/transforms/Restrict.js';
+export * from './nodes/transforms/Rename.js';
+export * from './nodes/transforms/Slice.js';
+export * from './nodes/transforms/Sort.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 
@@ -51,6 +62,16 @@ export * from './ir/IRPrinter.js';
 export * from './ir/emitters/RelationalTableSourceEmitter.js';
 export * from './ir/emitters/JoinEmitter.js';
 export * from './ir/emitters/FilterEmitter.js';
+export * from './ir/emitters/DistinctEmitter.js';
+export * from './ir/emitters/DropEmitter.js';
+export * from './ir/emitters/LimitEmitter.js';
+export * from './ir/emitters/RestrictEmitter.js';
+export * from './ir/emitters/RenameEmitter.js';
+export * from './ir/emitters/SliceEmitter.js';
+export * from './ir/emitters/SortEmitter.js';
+export * from './ir/emitters/RowNumberEmitter.js';
+export * from './ir/CubeDialects.js';
+export * from './ir/TemporaryColumns.js';
 export * from './ir/QueryEmitter.js';
 
 export * from './messages/CubeMessages.js';
@@ -62,4 +83,11 @@ export * from './spec/codecs/SchemaSnapshotCodec.js';
 export * from './spec/codecs/RelationalTableSourceCodec.js';
 export * from './spec/codecs/JoinCodec.js';
 export * from './spec/codecs/FilterCodec.js';
+export * from './spec/codecs/DistinctCodec.js';
+export * from './spec/codecs/DropCodec.js';
+export * from './spec/codecs/LimitCodec.js';
+export * from './spec/codecs/RestrictCodec.js';
+export * from './spec/codecs/RenameCodec.js';
+export * from './spec/codecs/SliceCodec.js';
+export * from './spec/codecs/SortCodec.js';
 export * from './spec/CubeSpecCodec.js';

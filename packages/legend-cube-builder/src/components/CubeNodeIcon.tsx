@@ -15,10 +15,17 @@
  */
 
 import {
+  AlignBottomIcon,
+  AlignMiddleIcon,
+  AlignTopIcon,
   ArrowsJoinIcon,
+  CompressIcon,
+  DataCubeIcon,
   clsx,
   FilterIcon,
+  PencilIcon,
   QuestionSquareIcon,
+  SortIcon,
   TableIcon,
 } from '@finos/legend-art';
 
@@ -29,6 +36,13 @@ const NODE_ICONS: Readonly<
   table: TableIcon,
   filter: FilterIcon,
   join: ArrowsJoinIcon,
+  limit: AlignTopIcon,
+  drop: AlignBottomIcon,
+  slice: AlignMiddleIcon,
+  distinct: CompressIcon,
+  restrict: DataCubeIcon.TableColumns,
+  rename: PencilIcon,
+  sort: SortIcon,
 };
 
 /** Whether a node definition's icon name maps to an icon, rather than the question mark */
@@ -41,7 +55,10 @@ export const CubeNodeIcon: React.FC<{
   className?: string;
 }> = (props) => {
   const { icon, className } = props;
+  // an own key only: a name such as `constructor` must not reach Object's
   const Icon =
-    (icon === undefined ? undefined : NODE_ICONS[icon]) ?? QuestionSquareIcon;
+    icon !== undefined && hasCubeNodeIcon(icon)
+      ? (NODE_ICONS[icon] ?? QuestionSquareIcon)
+      : QuestionSquareIcon;
   return <Icon className={clsx(className)} />;
 };

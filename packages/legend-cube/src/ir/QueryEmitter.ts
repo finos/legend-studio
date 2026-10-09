@@ -15,6 +15,7 @@
  */
 
 import type { Query } from '../graph/Query.js';
+import { computeRowOrders, type RowOrder } from '../inference/RowOrder.js';
 import {
   buildSchemasAndValidity,
   type SchemaInferenceResult,
@@ -35,6 +36,7 @@ import {
   type RelationExpr,
 } from './CubeIR.js';
 import { originOf } from './EmitContext.js';
+import { emitRowOrder } from './emitters/SortEmitter.js';
 
 export interface ExecutionOptions {
   /**
@@ -44,6 +46,24 @@ export interface ExecutionOptions {
   readonly rowLimit: number;
   /** The path of the runtime to run the query with */
   readonly runtime: string;
+  /**
+   * The engine's name for the type of the database it runs on, e.g.
+   * `SqlServer`, for the operations some write another way
+   * (`getDialectWorkarounds`); without one, every operation is written the
+   * native way
+   */
+  readonly databaseType?: string | undefined;
+}
+
+export interface RelationOptions {
+  /**
+   * Whether to write the rows' order where it is used, as a sort just before
+   * each Limit, Drop or Slice that takes rows by it (PLAN §11.4): for running
+   * the relation. Typing needs no sort, so by default none is written.
+   */
+  readonly withRowOrder?: boolean;
+  /** The database type to write the relation for (`ExecutionOptions.databaseType`); typing needs none */
+  readonly databaseType?: string | undefined;
 }
 
 /**
@@ -55,11 +75,13 @@ export class QueryEmitter {
   readonly query: Query;
   private readonly registry: NodeRegistry;
   private readonly inference: SchemaInferenceResult;
+  private readonly rowOrders: ReadonlyMap<string, RowOrder | undefined>;
 
   constructor(query: Query, registry: NodeRegistry = createNodeRegistry()) {
     this.query = query;
     this.registry = registry;
     this.inference = buildSchemasAndValidity(query, registry.queryRules);
+    this.rowOrders = computeRowOrders(query);
   }
 
   /**
@@ -75,12 +97,12 @@ export class QueryEmitter {
    * `from`, e.g. for typing the node with the engine. The node must be one
    * `canEmit` accepts.
    */
-  emitRelation(nodeId: string): RelationExpr {
+  emitRelation(nodeId: string, options: RelationOptions = {}): RelationExpr {
     const error = this.findEmitError(nodeId, new Set());
     if (error) {
       throw new Error(error);
     }
-    return this.emitNode(nodeId);
+    return this.emitNode(nodeId, options);
   }
 
   /** The lambda that types a node with the engine: `{| <relation>}` */
@@ -90,10 +112,12 @@ export class QueryEmitter {
 
   /**
    * The lambda that runs the query up to its capture node (the selected
-   * node): `{| <relation>->limit(rowLimit + 1)->from(runtime)}`.
+   * node): `{| <relation>->limit(rowLimit + 1)->from(runtime)}`. The relation
+   * is written with its rows' order where it is used, and the capture's own
+   * order, if any, as a sort before the limit, so the rows shown are in it.
    */
   emitExecutionLambda(options: ExecutionOptions): IR {
-    const { rowLimit, runtime } = options;
+    const { rowLimit, runtime, databaseType } = options;
     if (!Number.isSafeInteger(rowLimit) || rowLimit < 1) {
       throw new Error(
         `The row limit must be a whole number of at least 1, but got ${rowLimit}`,
@@ -106,11 +130,24 @@ export class QueryEmitter {
     if (captureId === undefined) {
       throw new Error(`An empty query can't run`);
     }
+    const relation = this.emitRelation(captureId, {
+      withRowOrder: true,
+      databaseType,
+    });
+    const order = this.rowOrders.get(captureId);
+    const sorted = order?.length
+      ? emitRowOrder(
+          relation,
+          order,
+          this.schemaOf(captureId),
+          originOf(captureId, EmitRole.CAPTURE_SORT),
+        )
+      : relation;
     const limitOrigin = originOf(captureId, EmitRole.LIMIT);
     const limited = func(
       'limit',
       [
-        this.emitRelation(captureId),
+        sorted,
         literal(
           { kind: 'integer', value: String(BigInt(rowLimit) + 1n) },
           limitOrigin,
@@ -162,20 +199,29 @@ export class QueryEmitter {
     return undefined;
   }
 
-  private emitNode(nodeId: string): RelationExpr {
+  private emitNode(nodeId: string, options: RelationOptions): RelationExpr {
+    const { withRowOrder, databaseType } = options;
     const node = this.query.getNode(nodeId);
     const definition = node && this.registry.get(node.type);
     if (!node || !definition) {
       throw new Error(`Can't emit node "${nodeId}"`);
     }
     const inputIds = this.query.getInputIds(nodeId) as readonly string[];
+    const [inputId] = inputIds;
+    // only a node that takes rows by their order gets it (a unary one)
+    const inputOrder =
+      withRowOrder && node.consumesInputOrder && inputId !== undefined
+        ? this.rowOrders.get(inputId)
+        : undefined;
     // the definition is the one registered for the node's type
     return (definition as TransformDefinition).emit(
       node,
-      inputIds.map((inputId) => this.emitNode(inputId)),
+      inputIds.map((id) => this.emitNode(id, options)),
       {
-        inputSchemas: inputIds.map((inputId) => this.schemaOf(inputId)),
+        inputSchemas: inputIds.map((id) => this.schemaOf(id)),
         schema: this.schemaOf(nodeId),
+        ...(inputOrder ? { inputOrder } : {}),
+        ...(databaseType === undefined ? {} : { databaseType }),
       },
     );
   }

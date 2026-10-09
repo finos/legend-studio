@@ -73,9 +73,11 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
    IntelliJ engine (commit `93d92b4`); docker CORS waived. **M1 review sign-off** (PLAN §11.1): the finos approval of
    #5591 (Yasirmod17, 2026-10-08) and the user's OK on 2026-10-08. Next: the follow-up PR.
 
-**In parallel:** operations can start now in their own session, on a branch from master (`fbde4379f` or later), not
-from `cubeV1`, which collects M1.9; each follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB
-WASM study; new sources wait on the user's design. Decimal precision stays for a later PR (user, 2026-10-07).
+**In parallel:** M1.9 merged on 2026-10-08 as #5634 (`3260216a6`). M2, the simple unary operations, runs on
+`cube-ops`, a branch from master, with its status in [PROGRESS-M2.md](PROGRESS-M2.md) and its decisions in PLAN §11.4;
+each operation follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB WASM study (low
+priority, research first: PLAN §12.2 item 9); new sources wait on the user's design. Decimal precision stays for a
+later PR (user, 2026-10-07).
 
 ## Milestone notes
 

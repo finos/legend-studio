@@ -117,6 +117,8 @@ export interface CubeCanvasNodeStatus {
   readonly isResolving: boolean;
   /** The last run failed on it */
   readonly hasEngineError: boolean;
+  /** It has a warning, stored (a table that changed) or derived (a lost sort order) */
+  readonly hasWarnings: boolean;
   /** Its errors, then its warnings, its description and its id, one a line */
   readonly tooltip: string;
 }
@@ -128,7 +130,7 @@ export const getCubeCanvasNodeStatus = (
   const ownErrors = editorState.analysis.validity.get(node.id);
   // the tooltip adds the engine's error; the states keep it apart
   const errors = editorState.getNodeErrors(node.id);
-  const warnings = editorState.warnings.get(node.key) ?? [];
+  const warnings = editorState.getNodeWarnings(node);
   return {
     isCapture: editorState.document.query.selected === node.id,
     isInvalid: (ownErrors ?? []).some(
@@ -139,6 +141,7 @@ export const getCubeCanvasNodeStatus = (
     ),
     isResolving: editorState.isPendingSource(node),
     hasEngineError: editorState.hostIssues.has(node.id),
+    hasWarnings: warnings.length > 0,
     tooltip: [
       ...(ownErrors ? [] : [MISSING_VALIDITY_TOOLTIP]),
       ...errors,

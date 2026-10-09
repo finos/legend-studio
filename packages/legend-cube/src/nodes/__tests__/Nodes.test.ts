@@ -38,10 +38,17 @@ import type { JsonObject } from '../../utils/Json.js';
 import {
   type AnyNodeDefinition,
   createNodeRegistry,
+  DISTINCT_DEFINITION,
+  DROP_DEFINITION,
   FILTER_DEFINITION,
   JOIN_DEFINITION,
+  LIMIT_DEFINITION,
   NodeRegistry,
   RELATIONAL_TABLE_SOURCE_DEFINITION,
+  RENAME_DEFINITION,
+  RESTRICT_DEFINITION,
+  SLICE_DEFINITION,
+  SORT_DEFINITION,
   type TransformDefinition,
 } from '../NodeRegistry.js';
 import {
@@ -50,8 +57,15 @@ import {
   RelationalTableSource,
   type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
+import { Distinct } from '../transforms/Distinct.js';
+import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
 import { Join, JoinType } from '../transforms/Join.js';
+import { Limit } from '../transforms/Limit.js';
+import { Rename } from '../transforms/Rename.js';
+import { Restrict } from '../transforms/Restrict.js';
+import { Slice } from '../transforms/Slice.js';
+import { Sort } from '../transforms/Sort.js';
 import { UnknownNode } from '../UnknownNode.js';
 
 const COORDINATES = {
@@ -164,18 +178,42 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table source, the filter and the join by default', () => {
+  test('Has the relational table source and the transforms, in menu order, by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
     expect(definition?.label).toBe('Relational Database Table');
     expect(definition?.beta).toBe(false);
     expect(registry.sources.map((d) => d.type)).toEqual(['relational']);
-    // transforms in the spec's menu order: Filter comes before Join
-    expect(registry.transforms).toEqual([FILTER_DEFINITION, JOIN_DEFINITION]);
+    // transforms in the spec's menu order (§7): Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
+    expect(registry.transforms).toEqual([
+      SORT_DEFINITION,
+      FILTER_DEFINITION,
+      RESTRICT_DEFINITION,
+      RENAME_DEFINITION,
+      DISTINCT_DEFINITION,
+      DROP_DEFINITION,
+      LIMIT_DEFINITION,
+      SLICE_DEFINITION,
+      JOIN_DEFINITION,
+    ]);
+    expect(registry.get('sort')).toBe(SORT_DEFINITION);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
+    expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
     expect(registry.queryRules).toHaveLength(1);
+  });
+
+  test('Creates a sort with no key yet', () => {
+    expect(SORT_DEFINITION.kind).toBe('transform');
+    expect(SORT_DEFINITION.type).toBe('sort');
+    expect(SORT_DEFINITION.label).toBe('Sort by Column');
+    expect(SORT_DEFINITION.icon).toBe('sort');
+    expect(SORT_DEFINITION.beta).toBe(false);
+    const sort = SORT_DEFINITION.create('sort101');
+    expect(sort).toBeInstanceOf(Sort);
+    expect(sort.id).toBe('sort101');
+    expect(sort.sorts).toEqual([]);
   });
 
   test('Creates a filter with no filter yet', () => {
@@ -188,6 +226,77 @@ describe(unitTest('Node registry'), () => {
     expect(filter).toBeInstanceOf(Filter);
     expect(filter.id).toBe('filter101');
     expect(filter.filter).toBeUndefined();
+  });
+
+  test('Creates a restrict with no column yet', () => {
+    expect(RESTRICT_DEFINITION.kind).toBe('transform');
+    expect(RESTRICT_DEFINITION.type).toBe('restrict');
+    expect(RESTRICT_DEFINITION.label).toBe('Restrict Columns');
+    expect(RESTRICT_DEFINITION.icon).toBe('restrict');
+    expect(RESTRICT_DEFINITION.beta).toBe(false);
+    const restrict = RESTRICT_DEFINITION.create('restrict101');
+    expect(restrict).toBeInstanceOf(Restrict);
+    expect(restrict.id).toBe('restrict101');
+    expect(restrict.columns).toEqual([]);
+  });
+
+  test('Creates a rename with no mapping yet', () => {
+    expect(RENAME_DEFINITION.kind).toBe('transform');
+    expect(RENAME_DEFINITION.type).toBe('rename');
+    expect(RENAME_DEFINITION.label).toBe('Rename Columns');
+    expect(RENAME_DEFINITION.icon).toBe('rename');
+    expect(RENAME_DEFINITION.beta).toBe(false);
+    const rename = RENAME_DEFINITION.create('rename101');
+    expect(rename).toBeInstanceOf(Rename);
+    expect(rename.id).toBe('rename101');
+    expect(rename.mappings).toEqual([]);
+  });
+
+  test('Creates a distinct, which has nothing to set', () => {
+    expect(DISTINCT_DEFINITION.kind).toBe('transform');
+    expect(DISTINCT_DEFINITION.type).toBe('distinct');
+    expect(DISTINCT_DEFINITION.label).toBe('Distinct Values');
+    expect(DISTINCT_DEFINITION.icon).toBe('distinct');
+    expect(DISTINCT_DEFINITION.beta).toBe(false);
+    const distinct = DISTINCT_DEFINITION.create('distinct101');
+    expect(distinct).toBeInstanceOf(Distinct);
+    expect(distinct.id).toBe('distinct101');
+  });
+
+  test('Creates a drop of 10 rows', () => {
+    expect(DROP_DEFINITION.kind).toBe('transform');
+    expect(DROP_DEFINITION.type).toBe('drop');
+    expect(DROP_DEFINITION.label).toBe('Drop first <x> rows');
+    expect(DROP_DEFINITION.icon).toBe('drop');
+    expect(DROP_DEFINITION.beta).toBe(false);
+    const drop = DROP_DEFINITION.create('drop101');
+    expect(drop).toBeInstanceOf(Drop);
+    expect(drop.id).toBe('drop101');
+    expect(drop.size).toBe(10);
+  });
+
+  test('Creates a limit of 10 rows', () => {
+    expect(LIMIT_DEFINITION.kind).toBe('transform');
+    expect(LIMIT_DEFINITION.type).toBe('limit');
+    expect(LIMIT_DEFINITION.label).toBe('Take first <x> rows');
+    expect(LIMIT_DEFINITION.icon).toBe('limit');
+    expect(LIMIT_DEFINITION.beta).toBe(false);
+    const limit = LIMIT_DEFINITION.create('limit101');
+    expect(limit).toBeInstanceOf(Limit);
+    expect(limit.id).toBe('limit101');
+    expect(limit.size).toBe(10);
+  });
+
+  test('Creates a slice of rows 10 to 20', () => {
+    expect(SLICE_DEFINITION.kind).toBe('transform');
+    expect(SLICE_DEFINITION.type).toBe('slice');
+    expect(SLICE_DEFINITION.label).toBe('Take rows <x> to <y>');
+    expect(SLICE_DEFINITION.icon).toBe('slice');
+    expect(SLICE_DEFINITION.beta).toBe(false);
+    const slice = SLICE_DEFINITION.create('slice101');
+    expect(slice).toBeInstanceOf(Slice);
+    expect(slice.id).toBe('slice101');
+    expect([slice.start, slice.stop]).toEqual([10, 20]);
   });
 
   test('Describes nodes without user values for logs', () => {

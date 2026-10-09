@@ -33,10 +33,23 @@ import { Query } from '../../graph/Query.js';
 import { UNRESOLVED } from '../../graph/QueryNode.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import { QueryEmitter } from '../../ir/QueryEmitter.js';
-import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
+import {
+  createNodeRegistry,
+  FILTER_DEFINITION,
+  JOIN_DEFINITION,
+  NodeRegistry,
+  RELATIONAL_TABLE_SOURCE_DEFINITION,
+} from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
+import { Distinct } from '../../nodes/transforms/Distinct.js';
+import { Drop } from '../../nodes/transforms/Drop.js';
+import { Limit } from '../../nodes/transforms/Limit.js';
+import { Rename } from '../../nodes/transforms/Rename.js';
+import { Sort } from '../../nodes/transforms/Sort.js';
+import { Restrict } from '../../nodes/transforms/Restrict.js';
+import { Slice } from '../../nodes/transforms/Slice.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import { Schema } from '../../schema/Schema.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
@@ -1683,6 +1696,207 @@ describe(unitTest('Saved spec: unknown keys through edits'), () => {
         schema: 'NORTHWIND',
         table: 'ORDERS',
         owner: 'ops',
+      }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec: operations added since a version'), () => {
+  /** The registry of the version before M2: no operation but Filter and Join */
+  const M1_REGISTRY = new NodeRegistry([
+    RELATIONAL_TABLE_SOURCE_DEFINITION,
+    FILTER_DEFINITION,
+    JOIN_DEFINITION,
+  ]);
+
+  const LIMITED = {
+    formatVersion: 1,
+    query: {
+      selected: 'limit101',
+      nodes: [
+        RELATIONAL,
+        {
+          kind: 'sort',
+          id: 'sort101',
+          inputs: ['relational101'],
+          sorts: [{ column: 'COUNTRY', direction: 'DESC' }],
+        },
+        {
+          kind: 'drop',
+          id: 'drop101',
+          inputs: ['sort101'],
+          size: 10,
+        },
+        {
+          kind: 'limit',
+          id: 'limit101',
+          inputs: ['drop101'],
+          size: 5,
+          note: 'top five',
+        },
+        {
+          kind: 'slice',
+          id: 'slice101',
+          inputs: ['limit101'],
+          start: 1,
+          stop: 3,
+        },
+        { kind: 'distinct', id: 'distinct101', inputs: ['slice101'] },
+        {
+          kind: 'restrict',
+          id: 'restrict101',
+          inputs: ['distinct101'],
+          columns: ['COUNTRY'],
+        },
+        {
+          kind: 'rename',
+          id: 'rename101',
+          inputs: ['restrict101'],
+          mappings: [{ from: 'COUNTRY', to: 'Country' }],
+        },
+      ],
+    },
+  };
+
+  test('Reads M2 operations as Unknown nodes in a version without them, editable, and re-saves them verbatim', () => {
+    const { document, readOnly } = decodeCubeSpec(LIMITED, {
+      registry: M1_REGISTRY,
+    });
+    expect(readOnly).toBe(false);
+    [
+      'sort101',
+      'drop101',
+      'limit101',
+      'slice101',
+      'distinct101',
+      'restrict101',
+      'rename101',
+    ].forEach((id) => {
+      const node = document.query.getNode(id) as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe(id.replace('101', ''));
+    });
+    expect(describeConnections(document.query).sort()).toEqual([
+      'distinct101 -> restrict101.in0',
+      'drop101 -> limit101.in0',
+      'limit101 -> slice101.in0',
+      'relational101 -> sort101.in0',
+      'restrict101 -> rename101.in0',
+      'slice101 -> distinct101.in0',
+      'sort101 -> drop101.in0',
+    ]);
+    expect(JSON.stringify(encodeCubeSpec(document, M1_REGISTRY))).toBe(
+      JSON.stringify(LIMITED),
+    );
+    // a new node would not take a saved node's id
+    expect(document.query.generateId('limit')).not.toBe('limit101');
+    expect(document.query.generateId('drop')).not.toBe('drop101');
+    expect(document.query.generateId('slice')).not.toBe('slice101');
+    expect(document.query.generateId('distinct')).not.toBe('distinct101');
+    expect(document.query.generateId('restrict')).not.toBe('restrict101');
+    expect(document.query.generateId('rename')).not.toBe('rename101');
+    expect(document.query.generateId('sort')).not.toBe('sort101');
+  });
+
+  test('Reads a limit as a Limit in this version, its unknown keys kept', () => {
+    const { query } = decodeCubeSpec(LIMITED).document;
+    expect(query.getNode('sort101')).toBeInstanceOf(Sort);
+    expect(query.getNode('drop101')).toBeInstanceOf(Drop);
+    expect(query.getNode('slice101')).toBeInstanceOf(Slice);
+    expect(query.getNode('distinct101')).toBeInstanceOf(Distinct);
+    expect(query.getNode('restrict101')).toBeInstanceOf(Restrict);
+    expect(query.getNode('rename101')).toBeInstanceOf(Rename);
+    const node = query.getNode('limit101');
+    expect(node).toBeInstanceOf(Limit);
+    expect((node as Limit).size).toBe(5);
+    expect(node?.rest).toEqual({ note: 'top five' });
+    expect(reSave(LIMITED)).toBe(JSON.stringify(LIMITED));
+  });
+
+  test('Keeps a rename whose mapping has a key this version does not know as an Unknown node, re-saved verbatim', () => {
+    // ignoring such a key could change the rows (PLAN §11.4)
+    const json = {
+      formatVersion: 1,
+      query: {
+        selected: 'rename101',
+        nodes: [
+          RELATIONAL,
+          {
+            kind: 'rename',
+            id: 'rename101',
+            inputs: ['relational101'],
+            mappings: [{ from: 'COUNTRY', to: 'Country', case: 'upper' }],
+          },
+        ],
+      },
+    };
+    const { document } = decodeCubeSpec(json);
+    const node = document.query.getNode('rename101') as UnknownNode;
+    expect(node).toBeInstanceOf(UnknownNode);
+    expect(node.savedKind).toBe('rename');
+    expect(describeConnections(document.query)).toEqual([
+      'relational101 -> rename101.in0',
+    ]);
+    expect(reSave(json)).toBe(JSON.stringify(json));
+  });
+
+  test.each<[string, JsonObject[]]>([
+    ['a direction', [{ column: 'COUNTRY', direction: 'RANDOM' }]],
+    [
+      'a key on an entry',
+      [
+        { column: 'ID', direction: 'ASC' },
+        { column: 'COUNTRY', direction: 'DESC', nulls: 'first' },
+      ],
+    ],
+  ])(
+    'Keeps a sort with %s this version does not know as an Unknown node, re-saved verbatim',
+    (_, sorts) => {
+      // ignoring either could change the rows (PLAN §11.4)
+      const json = {
+        formatVersion: 1,
+        query: {
+          selected: 'sort101',
+          nodes: [
+            RELATIONAL,
+            { kind: 'sort', id: 'sort101', inputs: ['relational101'], sorts },
+          ],
+        },
+      };
+      const { document } = decodeCubeSpec(json);
+      const node = document.query.getNode('sort101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('sort');
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> sort101.in0',
+      ]);
+      expect(reSave(json)).toBe(JSON.stringify(json));
+    },
+  );
+
+  test('Keeps the unknown keys of a limit whose size changes or is cleared', () => {
+    const document = decodeCubeSpec(LIMITED).document;
+    const limit = document.query.getNode('limit101') as Limit;
+    const saved = (edited: Limit): JsonValue | undefined =>
+      savedNode(
+        encodeCubeSpec(document.withQuery(document.query.replace(edited))),
+        'limit101',
+      );
+    expect(JSON.stringify(saved(limit.withSize(20)))).toBe(
+      JSON.stringify({
+        kind: 'limit',
+        id: 'limit101',
+        inputs: ['drop101'],
+        size: 20,
+        note: 'top five',
+      }),
+    );
+    expect(JSON.stringify(saved(limit.withSize(undefined)))).toBe(
+      JSON.stringify({
+        kind: 'limit',
+        id: 'limit101',
+        inputs: ['drop101'],
+        note: 'top five',
       }),
     );
   });

@@ -21,13 +21,17 @@ import {
   isJoinType,
   JOIN_TYPE_LABELS,
   JOIN_TYPES,
+  planJoinDuplicateFix,
   type Schema,
 } from '@finos/legend-cube';
 import { guaranteeType, noop } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { CUBE_TABLE_FLAG_LABELS } from '../../__lib__/LegendCubeLabels.js';
+import {
+  CUBE_TABLE_FLAG_LABELS,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { CubeTableFlag } from '../../graph-manager/CubeEngine.js';
 import {
   type CubeJoinKeyPair,
@@ -137,6 +141,10 @@ export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
     edited.leftColumns,
     edited.rightColumns,
   );
+  // the names the autofix would give, to show beside each shared column
+  const fix = duplicates.length
+    ? planJoinDuplicateFix(edited, leftSchema, rightSchema)
+    : undefined;
   const canAddPair =
     !readOnly &&
     draft.pairs.length <
@@ -211,12 +219,27 @@ export const CubeJoinEditor = observer((props: CubeNodeEditorProps) => {
             both:
           </div>
           <ul aria-label="Columns in both inputs">
-            {duplicates.map((name) => (
+            {duplicates.map((name, index) => (
               <li key={name} className="font-mono">
-                {name}
+                {fix
+                  ? `${name} → ${fix.left[index]?.to} (Left), ${fix.right[index]?.to} (Right)`
+                  : name}
               </li>
             ))}
           </ul>
+          <div className="mt-1">
+            <CubeButton
+              title={
+                readOnly
+                  ? READ_ONLY_CUBE_TITLE
+                  : 'Add a Rename before each input that gives these columns new names. Applies your changes too, as one step to undo.'
+              }
+              disabled={!editorState.nodeEditor.canRenameDuplicateColumns}
+              onClick={() => editorState.nodeEditor.renameDuplicateColumns()}
+            >
+              Rename them
+            </CubeButton>
+          </div>
         </div>
       )}
     </div>

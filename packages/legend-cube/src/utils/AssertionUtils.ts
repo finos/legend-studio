@@ -21,3 +21,11 @@
 export const assertUnreachable = (value: never): never => {
   throw new Error(`Unexpected value: ${String(value)}`);
 };
+
+/**
+ * Whether a value is a list of strings with no hole. Settings decoded from a
+ * saved spec arrive as `unknown`, so constructors check their shape anyway.
+ */
+export const isStringList = (value: unknown): value is readonly string[] =>
+  Array.isArray(value) &&
+  Array.from(value as unknown[]).every((item) => typeof item === 'string');

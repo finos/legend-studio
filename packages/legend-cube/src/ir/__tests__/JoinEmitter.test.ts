@@ -436,6 +436,28 @@ describe(unitTest('Join emission'), () => {
     );
   });
 
+  test('Picks temporary names that no column has in any case', () => {
+    // a database that compares names without case takes ID__CUBE_R for id__cube_r
+    expect(
+      emit(
+        [int('id'), column('ID__CUBE_R')],
+        [int('id')],
+        ['id'],
+        ['id'],
+        JoinType.INNER,
+      ),
+    ).toContain(`${R}->rename(~id, ~id__cube_r2)`);
+    expect(
+      emit(
+        [int('id')],
+        [int('id'), column('Id__Cube_L')],
+        ['id'],
+        ['id'],
+        JoinType.FULL_OUTER,
+      ),
+    ).toContain(`${L}->rename(~id, ~id__cube_l2)`);
+  });
+
   // the same pair of keys twice: one rename, one merge, two comparisons
   test.each<[JoinType, string]>([
     [

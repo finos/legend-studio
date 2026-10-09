@@ -20,7 +20,10 @@ import {
   type CubeModelOutline,
   type CubeOutlineTable,
 } from '../../../../CubeEngine.js';
-import { getRuntimesForDatabase } from '../../../../CubeModelOutlineHelper.js';
+import {
+  getDatabaseType,
+  getRuntimesForDatabase,
+} from '../../../../CubeModelOutlineHelper.js';
 import { V1_buildCubeModelOutline } from '../V1_CubeModelOutlineBuilder.js';
 
 // A parsed model, shaped as the engine's grammarToJson/model gives it
@@ -305,7 +308,10 @@ describe('Cube model outline', () => {
   });
 
   test("Reads a runtime's stores from both syntaxes, and hides runtimes it can't read", () => {
-    expect(outline.runtimes).toEqual([
+    // these runtimes' connections name no database type
+    expect(
+      outline.runtimes.map(({ path, storePaths }) => ({ path, storePaths })),
+    ).toEqual([
       { path: 'test::ConnectionsRuntime', storePaths: ['test::Db'] },
       {
         path: 'test::ConnectionStoresRuntime',
@@ -317,6 +323,9 @@ describe('Cube model outline', () => {
       { path: 'test::OtherCaseRuntime', storePaths: ['test::DB'] },
       { path: 'outer::test::NestedRuntime', storePaths: ['outer::test::Db'] },
     ]);
+    outline.runtimes.forEach((runtime) =>
+      expect(runtime.connections).toEqual([]),
+    );
   });
 
   test('Offers only the runtimes keyed by exactly the database, not through an include', () => {
@@ -349,5 +358,158 @@ describe('Cube model outline', () => {
       databases: [],
       runtimes: [],
     });
+  });
+});
+
+describe('Cube model outline: database types', () => {
+  // shaped as the engine's grammarToJson gives them (probed on 93d92b4)
+  const connection = (name: string, connectionValue: object): object => ({
+    _type: 'connection',
+    package: 'test',
+    name,
+    connectionValue,
+  });
+  const relational = (type: string, typeKey = 'type'): object => ({
+    _type: 'RelationalDatabaseConnection',
+    [typeKey]: type,
+    element: 'test::Db',
+  });
+  const pointer = (path: string): object => ({
+    _type: 'connectionPointer',
+    connection: path,
+  });
+  const runtime = (name: string, runtimeValue: object): object => ({
+    _type: 'runtime',
+    package: 'test',
+    name,
+    runtimeValue: {
+      _type: 'engineRuntime',
+      mappings: [],
+      connections: [],
+      connectionStores: [],
+      ...runtimeValue,
+    },
+  });
+  const storeConnections = (
+    storePath: string,
+    ...connections: object[]
+  ): object => ({
+    store: { path: storePath, type: 'STORE' },
+    storeConnections: connections.map((value, index) => ({
+      id: `connection_${index + 1}`,
+      connection: value,
+    })),
+  });
+  const outline = V1_buildCubeModelOutline({
+    _type: 'data',
+    elements: [
+      connection('H2Connection', relational('H2')),
+      connection('JsonConnection', {
+        _type: 'JsonModelConnection',
+        class: 'test::Person',
+      }),
+      runtime('PointerRuntime', {
+        connections: [
+          storeConnections('test::Db', pointer('test::H2Connection')),
+        ],
+      }),
+      runtime('EmbeddedRuntime', {
+        connections: [
+          storeConnections('test::Db', relational('SqlServer')),
+          // an older protocol names it databaseType only
+          storeConnections('test::Other', relational('Sybase', 'databaseType')),
+        ],
+      }),
+      runtime('ConnectionStoresRuntime', {
+        connectionStores: [
+          {
+            connectionPointer: pointer('test::H2Connection'),
+            storePointers: [{ path: 'test::Db' }, { path: 'test::Other' }],
+          },
+        ],
+      }),
+      runtime('NonRelationalRuntime', {
+        connections: [
+          storeConnections('test::Db', pointer('test::JsonConnection')),
+          storeConnections('test::Other', pointer('test::MissingConnection')),
+        ],
+      }),
+      runtime('MixedRuntime', {
+        connections: [
+          storeConnections('test::Db', relational('H2')),
+          storeConnections('test::Other', relational('Postgres')),
+        ],
+      }),
+    ],
+  });
+  const connectionsOf = (path: string): unknown =>
+    outline.runtimes.find((entry) => entry.path === path)?.connections;
+
+  test("Reads a runtime's connections to stores: by a pointer, embedded, and in connectionStores", () => {
+    expect(connectionsOf('test::PointerRuntime')).toEqual([
+      { storePath: 'test::Db', databaseType: 'H2' },
+    ]);
+    expect(connectionsOf('test::EmbeddedRuntime')).toEqual([
+      { storePath: 'test::Db', databaseType: 'SqlServer' },
+      { storePath: 'test::Other', databaseType: 'Sybase' },
+    ]);
+    expect(connectionsOf('test::ConnectionStoresRuntime')).toEqual([
+      { storePath: 'test::Db', databaseType: 'H2' },
+      { storePath: 'test::Other', databaseType: 'H2' },
+    ]);
+  });
+
+  test('Skips connections that are not relational, or that point at nothing', () => {
+    expect(connectionsOf('test::NonRelationalRuntime')).toEqual([]);
+  });
+
+  test('Gives the database type of the databases a query reads, when the runtime connects them all with one type', () => {
+    expect(
+      getDatabaseType(outline, 'test::EmbeddedRuntime', ['test::Db']),
+    ).toBe('SqlServer');
+    expect(
+      getDatabaseType(outline, 'test::ConnectionStoresRuntime', [
+        'test::Db',
+        'test::Other',
+      ]),
+    ).toBe('H2');
+  });
+
+  test.each<[string, string, string[]]>([
+    [
+      'databases of different types',
+      'test::MixedRuntime',
+      ['test::Db', 'test::Other'],
+    ],
+    [
+      'a database without a typed connection',
+      'test::NonRelationalRuntime',
+      ['test::Db'],
+    ],
+    ['a runtime the outline lacks', 'test::MissingRuntime', ['test::Db']],
+    // test::Other has no typed connection in PointerRuntime
+    [
+      'a typed database and an untyped one',
+      'test::PointerRuntime',
+      ['test::Db', 'test::Other'],
+    ],
+    // a path from the model, never an object's key
+    ['a store named constructor', 'test::PointerRuntime', ['constructor']],
+    ['a store named __proto__', 'test::PointerRuntime', ['__proto__']],
+  ])(
+    'Gives no database type for %s, for the native forms',
+    (_, runtimePath, databases) => {
+      expect(getDatabaseType(outline, runtimePath, databases)).toBeUndefined();
+    },
+  );
+
+  test('Gives no database type in an outline from before the connections were read', () => {
+    const older: CubeModelOutline = {
+      databases: [],
+      runtimes: [{ path: 'test::Runtime', storePaths: ['test::Db'] }],
+    };
+    expect(
+      getDatabaseType(older, 'test::Runtime', ['test::Db']),
+    ).toBeUndefined();
   });
 });

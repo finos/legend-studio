@@ -461,8 +461,13 @@ describe('A.1 Resolve', () => {
       PROBLEM_OTHER: ['typeUnknown'],
       PROBLEM_VIEW: 'view',
     });
+    // with its connection's database type, for the workarounds of PLAN §11.4
     expect(outline.runtimes).toEqual([
-      { path: RUNTIME, storePaths: [DATABASE] },
+      {
+        path: RUNTIME,
+        storePaths: [DATABASE],
+        connections: [{ storePath: DATABASE, databaseType: 'H2' }],
+      },
     ]);
   });
 });

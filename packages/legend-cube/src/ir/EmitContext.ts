@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { RowOrder } from '../inference/RowOrder.js';
 import type { Schema } from '../schema/Schema.js';
 import type { EmitRole, Origin } from './CubeIR.js';
 
@@ -23,6 +24,18 @@ export interface EmitContext {
   readonly inputSchemas: readonly Schema[];
   /** The node's own output schema */
   readonly schema: Schema;
+  /**
+   * The order of the node's input rows, given only to a node that takes rows
+   * by it (`consumesInputOrder`) and only when the relation is emitted to run
+   * (PLAN §11.4): typing needs no sort
+   */
+  readonly inputOrder?: RowOrder | undefined;
+  /**
+   * The engine's name for the database the query runs on, e.g. `SqlServer`,
+   * given only when the relation is emitted to run: some take some
+   * operations another way (`getDialectWorkarounds`)
+   */
+  readonly databaseType?: string | undefined;
 }
 
 /** The origin of an IR node emitted for a query node */

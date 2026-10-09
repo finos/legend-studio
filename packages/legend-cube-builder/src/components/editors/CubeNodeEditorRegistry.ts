@@ -15,15 +15,28 @@
  */
 
 import {
+  Distinct,
+  Drop,
   Filter,
   Join,
+  Limit,
   RelationalTableSource,
+  Rename,
+  Restrict,
   type Schema,
+  Slice,
+  Sort,
 } from '@finos/legend-cube';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
+import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
+import { CubeRenameEditor } from './CubeRenameEditor.js';
+import { CubeRestrictEditor } from './CubeRestrictEditor.js';
+import { CubeRowCountEditor } from './CubeRowCountEditor.js';
+import { CubeSliceEditor } from './CubeSliceEditor.js';
+import { CubeSortEditor } from './CubeSortEditor.js';
 import { CubeSourceEditor } from './CubeSourceEditor.js';
 
 /**
@@ -56,6 +69,13 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   React.FC<CubeNodeEditorProps>
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
+  [Sort.TYPE, CubeSortEditor],
   [Filter.TYPE, CubeFilterEditor],
+  [Restrict.TYPE, CubeRestrictEditor],
+  [Rename.TYPE, CubeRenameEditor],
+  [Distinct.TYPE, CubeDistinctEditor],
   [Join.TYPE, CubeJoinEditor],
+  [Drop.TYPE, CubeRowCountEditor],
+  [Limit.TYPE, CubeRowCountEditor],
+  [Slice.TYPE, CubeSliceEditor],
 ]);

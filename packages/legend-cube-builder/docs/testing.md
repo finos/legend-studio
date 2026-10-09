@@ -38,6 +38,10 @@ What jsdom can't do:
 Drag and drop goes through react-dnd's HTML5 backend: fire `dragStart`, `dragEnter`, `dragOver`, `drop` and
 `dragEnd` on the elements.
 
+**Proving a test.** To show a new test fails without the code it covers, change the code in a copy of the package
+outside the checkout, never in place: a running `yarn dev:ts` rebuilds `lib/` from the changed file, and the dev server
+would serve it.
+
 ## Engine tests
 
 - **The engine:** a local legend-engine, or the repo's docker compose
@@ -53,8 +57,24 @@ Drag and drop goes through react-dnd's HTML5 backend: fire `dragStart`, `dragEnt
 - **Assert meaning, not text.** The CI engine image changes with every engine merge, so assert row counts, the set of
   keys returned, types and nullability, not SQL or Pure formatting, and never an engine answer that is a known
   defect.
+- **Rows come back in the database's order** unless a Sort reaches the node that runs, and H2's order changes between
+  queries, so compare counts and sets, never positions, without a Sort. Facts of the Cube Northwind data a test may
+  rely on: ORDERS has 830 orders, `ORDER_ID` running from 10248 to 11077 with no gap. Avoid comparing or sorting on its
+  32-bit `REAL` columns (`FREIGHT`, `UNIT_PRICE`, `DISCOUNT`), where exact equality silently matches nothing.
 - `src/__tests__/LegendCubeNorthwind.engine-roundtrip-test.ts` is the slice's automated acceptance (PLAN §11.2 Part
   A). It logs the engine's commit.
+- `src/__tests__/LegendCubeOperations.engine-roundtrip-test.ts` checks each operation: its lambda as the engine parses
+  the printed Pure, its typing against Cube's inferred schema, and its rows. Its helpers are in
+  `src/__test-utils__/CubeOperationsTestUtils.ts`; they take any `CubeEngine` and import no `V1_*` class.
+- **Sort descending in order tests.** H2 scans ORDERS in ascending `ORDER_ID` order, so a test that sorts ascending,
+  or numbers rows by `ORDER_ID`, passes without the sort; the operations tests sort descending, with a control test
+  pinning H2's own order.
+- **Database workarounds** (PLAN §11.4) are checked two ways. The operations tests write them for `SqlServer` and run
+  them on the fixture's H2, which takes both forms, so their rows can be compared with the native forms'.
+  `src/__tests__/LegendCubeDialects.engine-roundtrip-test.ts` plans them, never running anything, on a test-only copy
+  of the fixture model with a static connection per database type (`CUBE_ENGINE_TEST__generatePlanSql`), and checks
+  facts about the SQL: row numbers in the Sort's order, no `limit m,n`, no `top N distinct`. A check that should catch
+  a missing workaround must fail without it: run it once with the workaround off before relying on it.
 - `src/__tests__/CubeNorthwindRelationTypes.json` records the engine's relation type for every table of the bundled
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.

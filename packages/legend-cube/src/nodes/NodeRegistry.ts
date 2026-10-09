@@ -23,18 +23,39 @@ import type { QueryRule } from '../inference/SchemaInference.js';
 import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
+import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
+import { emitDrop } from '../ir/emitters/DropEmitter.js';
 import { emitJoin } from '../ir/emitters/JoinEmitter.js';
+import { emitLimit } from '../ir/emitters/LimitEmitter.js';
+import { emitRename } from '../ir/emitters/RenameEmitter.js';
+import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
+import { emitSlice } from '../ir/emitters/SliceEmitter.js';
+import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
+import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
+import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
 import { JOIN_CODEC } from '../spec/codecs/JoinCodec.js';
+import { LIMIT_CODEC } from '../spec/codecs/LimitCodec.js';
+import { RENAME_CODEC } from '../spec/codecs/RenameCodec.js';
+import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
+import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
+import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { Distinct } from './transforms/Distinct.js';
+import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
 import { Join } from './transforms/Join.js';
+import { Limit } from './transforms/Limit.js';
+import { Rename } from './transforms/Rename.js';
+import { Restrict } from './transforms/Restrict.js';
+import { Slice } from './transforms/Slice.js';
+import { Sort } from './transforms/Sort.js';
 import { UnknownNode } from './UnknownNode.js';
 
 /** What the palette, the context menu and the saved-spec codec know about a type of node */
@@ -101,6 +122,17 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     spec: RELATIONAL_TABLE_SOURCE_CODEC,
   };
 
+export const SORT_DEFINITION: TransformDefinition<Sort> = {
+  kind: 'transform',
+  type: Sort.TYPE,
+  label: 'Sort by Column',
+  icon: 'sort',
+  beta: false,
+  create: (id) => new Sort(id),
+  emit: emitSort,
+  spec: SORT_CODEC,
+};
+
 export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   kind: 'transform',
   type: Filter.TYPE,
@@ -110,6 +142,72 @@ export const FILTER_DEFINITION: TransformDefinition<Filter> = {
   create: (id) => new Filter(id),
   emit: emitFilter,
   spec: FILTER_CODEC,
+};
+
+export const RESTRICT_DEFINITION: TransformDefinition<Restrict> = {
+  kind: 'transform',
+  type: Restrict.TYPE,
+  label: 'Restrict Columns',
+  icon: 'restrict',
+  beta: false,
+  create: (id) => new Restrict(id),
+  emit: emitRestrict,
+  spec: RESTRICT_CODEC,
+};
+
+export const RENAME_DEFINITION: TransformDefinition<Rename> = {
+  kind: 'transform',
+  type: Rename.TYPE,
+  label: 'Rename Columns',
+  icon: 'rename',
+  beta: false,
+  create: (id) => new Rename(id),
+  emit: emitRename,
+  spec: RENAME_CODEC,
+};
+
+export const DISTINCT_DEFINITION: TransformDefinition<Distinct> = {
+  kind: 'transform',
+  type: Distinct.TYPE,
+  label: 'Distinct Values',
+  icon: 'distinct',
+  beta: false,
+  create: (id) => new Distinct(id),
+  emit: emitDistinct,
+  spec: DISTINCT_CODEC,
+};
+
+export const DROP_DEFINITION: TransformDefinition<Drop> = {
+  kind: 'transform',
+  type: Drop.TYPE,
+  label: 'Drop first <x> rows',
+  icon: 'drop',
+  beta: false,
+  create: (id) => new Drop(id, Drop.DEFAULT_SIZE),
+  emit: emitDrop,
+  spec: DROP_CODEC,
+};
+
+export const LIMIT_DEFINITION: TransformDefinition<Limit> = {
+  kind: 'transform',
+  type: Limit.TYPE,
+  label: 'Take first <x> rows',
+  icon: 'limit',
+  beta: false,
+  create: (id) => new Limit(id, Limit.DEFAULT_SIZE),
+  emit: emitLimit,
+  spec: LIMIT_CODEC,
+};
+
+export const SLICE_DEFINITION: TransformDefinition<Slice> = {
+  kind: 'transform',
+  type: Slice.TYPE,
+  label: 'Take rows <x> to <y>',
+  icon: 'slice',
+  beta: false,
+  create: (id) => new Slice(id, Slice.DEFAULT_START, Slice.DEFAULT_STOP),
+  emit: emitSlice,
+  spec: SLICE_CODEC,
 };
 
 export const JOIN_DEFINITION: TransformDefinition<Join> = {
@@ -175,6 +273,13 @@ export class NodeRegistry {
 export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
+    SORT_DEFINITION,
     FILTER_DEFINITION,
+    RESTRICT_DEFINITION,
+    RENAME_DEFINITION,
+    DISTINCT_DEFINITION,
+    DROP_DEFINITION,
+    LIMIT_DEFINITION,
+    SLICE_DEFINITION,
     JOIN_DEFINITION,
   ]);

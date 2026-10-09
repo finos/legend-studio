@@ -25,6 +25,9 @@ import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
   ERR_SCHEMAS,
+  MESSAGE_ALREADY_IN_INPUT_SCHEMA,
+  MESSAGE_CANNOT_BE_EMPTY,
+  MESSAGE_CANNOT_HAVE_DUPLICATES,
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_DIFFERENT_DATABASES,
   MESSAGE_FILTER_EMPTY,
@@ -33,7 +36,11 @@ import {
   MESSAGE_FILTER_VALUE_OUT_OF_RANGE,
   MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
   MESSAGE_LEFT_JOIN_COLUMNS_EMPTY,
+  MESSAGE_MUST_BE_WHOLE_NUMBER,
+  MESSAGE_NEW_COLUMN_NAME_INVALID,
   MESSAGE_NOT_IN_INPUT_SCHEMA,
+  MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER,
+  MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP,
 } from '../../messages/CubeMessages.js';
 import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
@@ -91,6 +98,97 @@ const customers = (database: string): JsonObject => ({
     { name: 'CODE', type: { path: 'String' }, nullable: false },
     { name: 'CITY', type: { path: 'String' }, nullable: true },
   ],
+});
+
+/** A saved spec: `relational101` feeding `<kind>101`, which has this size, or a cleared one */
+const rowCountSpec = (
+  kind: 'limit' | 'drop',
+  size: number | undefined,
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: `${kind}101`,
+    nodes: [
+      RELATIONAL,
+      {
+        kind,
+        id: `${kind}101`,
+        inputs: ['relational101'],
+        ...(size === undefined ? {} : { size }),
+      },
+    ],
+  },
+});
+const limitSpec = (size: number | undefined): JsonObject =>
+  rowCountSpec('limit', size);
+
+/** A saved spec: `relational101` feeding `sort101`, which has these keys */
+const sortSpec = (
+  sorts: { column: string; direction: string }[],
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'sort101',
+    nodes: [
+      RELATIONAL,
+      { kind: 'sort', id: 'sort101', inputs: ['relational101'], sorts },
+    ],
+  },
+});
+
+/** A saved spec: `relational101` feeding `rename101`, which has these mappings */
+const renameSpec = (mappings: { from: string; to: string }[]): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'rename101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'rename',
+        id: 'rename101',
+        inputs: ['relational101'],
+        mappings,
+      },
+    ],
+  },
+});
+
+/** A saved spec: `relational101` feeding `restrict101`, which keeps these columns */
+const restrictSpec = (columns: string[]): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'restrict101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'restrict',
+        id: 'restrict101',
+        inputs: ['relational101'],
+        columns,
+      },
+    ],
+  },
+});
+
+/** A saved spec: `relational101` feeding `slice101`, which has these bounds, each cleared when undefined */
+const sliceSpec = (
+  start: number | undefined,
+  stop: number | undefined,
+): JsonObject => ({
+  formatVersion: 1,
+  query: {
+    selected: 'slice101',
+    nodes: [
+      RELATIONAL,
+      {
+        kind: 'slice',
+        id: 'slice101',
+        inputs: ['relational101'],
+        ...(start === undefined ? {} : { start }),
+        ...(stop === undefined ? {} : { stop }),
+      },
+    ],
+  },
 });
 
 /** The saved JSON of `join101`, joining `relational101` to `relational102` on these keys */
@@ -411,6 +509,163 @@ describe(unitTest('Saved spec validity: connected nodes'), () => {
       'an empty filter',
       filterSpec(undefined),
       { relational101: [], filter101: [MESSAGE_FILTER_EMPTY] },
+    ],
+    [
+      'a cleared limit size',
+      limitSpec(undefined),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a limit of 0 rows',
+      limitSpec(0),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a negative limit size',
+      limitSpec(-1),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a fractional limit size',
+      limitSpec(1.5),
+      {
+        relational101: [],
+        limit101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    ['a valid limit', limitSpec(10), { relational101: [], limit101: [] }],
+    [
+      'a cleared drop size',
+      rowCountSpec('drop', undefined),
+      {
+        relational101: [],
+        drop101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a drop of 0 rows',
+      rowCountSpec('drop', 0),
+      {
+        relational101: [],
+        drop101: [MESSAGE_SIZE_MUST_BE_POSITIVE_WHOLE_NUMBER],
+      },
+    ],
+    [
+      'a valid drop',
+      rowCountSpec('drop', 10),
+      { relational101: [], drop101: [] },
+    ],
+    [
+      'a slice whose start is not before its stop',
+      sliceSpec(5, 5),
+      {
+        relational101: [],
+        slice101: [MESSAGE_START_ROW_INDEX_MUST_BE_LESS_THAN_STOP],
+      },
+    ],
+    [
+      'a slice with a cleared stop',
+      sliceSpec(10, undefined),
+      {
+        relational101: [],
+        slice101: [MESSAGE_MUST_BE_WHOLE_NUMBER('Stop row index')],
+      },
+    ],
+    [
+      'a slice with a negative start',
+      sliceSpec(-1, 5),
+      {
+        relational101: [],
+        slice101: [MESSAGE_MUST_BE_WHOLE_NUMBER('Start row index')],
+      },
+    ],
+    ['a valid slice', sliceSpec(0, 5), { relational101: [], slice101: [] }],
+    [
+      'a restrict with no column',
+      restrictSpec([]),
+      { relational101: [], restrict101: [MESSAGE_CANNOT_BE_EMPTY('Columns')] },
+    ],
+    [
+      'a restrict with a column twice',
+      restrictSpec(['QTY', 'QTY']),
+      {
+        relational101: [],
+        restrict101: [MESSAGE_CANNOT_HAVE_DUPLICATES('Columns')],
+      },
+    ],
+    [
+      'a restrict on a column the input does not have',
+      restrictSpec(['QTY', 'SHIPPER']),
+      {
+        relational101: [],
+        restrict101: [MESSAGE_NOT_IN_INPUT_SCHEMA('Column', 'SHIPPER')],
+      },
+    ],
+    [
+      'a valid restrict, picked out of order',
+      restrictSpec(['COUNTRY', 'QTY']),
+      { relational101: [], restrict101: [] },
+    ],
+    [
+      'a sort with no key',
+      sortSpec([]),
+      { relational101: [], sort101: [MESSAGE_CANNOT_BE_EMPTY('Sorts')] },
+    ],
+    [
+      'a sort on a column twice',
+      sortSpec([
+        { column: 'QTY', direction: 'ASC' },
+        { column: 'QTY', direction: 'DESC' },
+      ]),
+      {
+        relational101: [],
+        sort101: [MESSAGE_CANNOT_HAVE_DUPLICATES('Sort columns')],
+      },
+    ],
+    [
+      'a valid sort, an enumeration among its keys',
+      sortSpec([
+        { column: 'REGION', direction: 'DESC' },
+        { column: 'QTY', direction: 'ASC' },
+      ]),
+      { relational101: [], sort101: [] },
+    ],
+    [
+      'a rename onto a column the input keeps',
+      renameSpec([{ from: 'QTY', to: 'COUNTRY' }]),
+      {
+        relational101: [],
+        rename101: [
+          MESSAGE_ALREADY_IN_INPUT_SCHEMA('New column name', 'COUNTRY'),
+        ],
+      },
+    ],
+    [
+      'a rename to a name with a double quote',
+      renameSpec([{ from: 'QTY', to: 'a"b' }]),
+      { relational101: [], rename101: [MESSAGE_NEW_COLUMN_NAME_INVALID] },
+    ],
+    [
+      'a rename with no mapping',
+      renameSpec([]),
+      {
+        relational101: [],
+        rename101: [MESSAGE_CANNOT_BE_EMPTY('Column renames')],
+      },
+    ],
+    [
+      'a valid rename',
+      renameSpec([{ from: 'QTY', to: 'Quantity' }]),
+      { relational101: [], rename101: [] },
     ],
   ];
 

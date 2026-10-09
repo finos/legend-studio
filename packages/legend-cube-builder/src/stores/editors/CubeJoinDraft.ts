@@ -20,6 +20,7 @@ import {
   JoinType,
   type Query,
   RelationalTableSource,
+  Rename,
   type SchemaInferenceResult,
 } from '@finos/legend-cube';
 import { action, makeObservable, observable } from 'mobx';
@@ -138,28 +139,42 @@ export class CubeJoinDraft extends CubeNodeDraft<Join> {
   }
 }
 
+/** Where a column of a node's output comes from: a table, and the column's name in it */
+export interface CubeColumnOrigin {
+  readonly source: RelationalTableSource;
+  readonly column: string;
+}
+
 /**
- * The table sources a column of a node's output comes from: followed back
- * through the inputs whose output has the column. A join key of the same name
- * on both sides comes from the side the join keeps (the left for INNER and
- * LEFT OUTER, the right for RIGHT OUTER), and from both for FULL OUTER, which
- * merges them.
+ * The table columns a column of a node's output comes from: followed back
+ * through the inputs whose output has it, and through a Rename to its old
+ * name. A join key of the same name on both sides comes from the side the
+ * join keeps (the left for INNER and LEFT OUTER, the right for RIGHT OUTER),
+ * and from both for FULL OUTER, which merges them. A column the node's output
+ * doesn't have, e.g. one a Restrict dropped, comes from nowhere.
  */
-export const findColumnSources = (
+export const findColumnOrigins = (
   query: Query,
   analysis: SchemaInferenceResult,
   nodeId: string,
   columnName: string,
-): RelationalTableSource[] => {
+): CubeColumnOrigin[] => {
   const node = query.getNode(nodeId);
   if (node instanceof RelationalTableSource) {
     return node.resolution.kind === 'resolved' &&
       node.resolution.schema.lookup(columnName)
-      ? [node]
+      ? [{ source: node, column: columnName }]
       : [];
+  }
+  if (!node || !analysis.schemas.get(nodeId)?.lookup(columnName)) {
+    return [];
   }
   const inputIds = query.getInputIds(nodeId);
   const [leftId, rightId] = inputIds;
+  const inputName =
+    node instanceof Rename
+      ? (node.mappings.find(({ to }) => to === columnName)?.from ?? columnName)
+      : columnName;
   const followed =
     node instanceof Join &&
     node.joinType !== JoinType.FULL_OUTER &&
@@ -169,11 +184,22 @@ export const findColumnSources = (
       ? [node.joinType === JoinType.RIGHT_OUTER ? rightId : leftId]
       : inputIds;
   return followed.flatMap((inputId) =>
-    inputId !== undefined && analysis.schemas.get(inputId)?.lookup(columnName)
-      ? findColumnSources(query, analysis, inputId, columnName)
+    inputId !== undefined && analysis.schemas.get(inputId)?.lookup(inputName)
+      ? findColumnOrigins(query, analysis, inputId, inputName)
       : [],
   );
 };
+
+/** The table sources a column of a node's output comes from (`findColumnOrigins`) */
+export const findColumnSources = (
+  query: Query,
+  analysis: SchemaInferenceResult,
+  nodeId: string,
+  columnName: string,
+): RelationalTableSource[] =>
+  findColumnOrigins(query, analysis, nodeId, columnName).map(
+    ({ source }) => source,
+  );
 
 /**
  * Whether the column of the node's output comes from a table column whose
@@ -188,10 +214,11 @@ export const isUntypedColumn = (
   columnName: string,
 ): boolean =>
   outline !== undefined &&
-  findColumnSources(query, analysis, nodeId, columnName).some((source) =>
-    outline.databases
-      .find((database) => database.path === source.database)
-      ?.schemas.find((schema) => schema.name === source.schema)
-      ?.tables.find((table) => table.name === source.table)
-      ?.untypedColumns.includes(columnName),
+  findColumnOrigins(query, analysis, nodeId, columnName).some(
+    ({ source, column }) =>
+      outline.databases
+        .find((database) => database.path === source.database)
+        ?.schemas.find((schema) => schema.name === source.schema)
+        ?.tables.find((table) => table.name === source.table)
+        ?.untypedColumns.includes(column),
   );

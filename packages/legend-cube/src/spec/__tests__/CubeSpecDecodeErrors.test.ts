@@ -73,6 +73,33 @@ const RELATIONAL_101 = {
 };
 const RELATIONAL_102 = { ...RELATIONAL_101, id: 'relational102' };
 const FILTER_101 = { kind: 'filter', id: 'filter101', inputs: [null] };
+const LIMIT_101 = { kind: 'limit', id: 'limit101', inputs: [null], size: 10 };
+const DROP_101 = { kind: 'drop', id: 'drop101', inputs: [null], size: 10 };
+const RENAME_101 = {
+  kind: 'rename',
+  id: 'rename101',
+  inputs: [null],
+  mappings: [{ from: 'SHIP_COUNTRY', to: 'Ship Country' }],
+};
+const SORT_101 = {
+  kind: 'sort',
+  id: 'sort101',
+  inputs: [null],
+  sorts: [{ column: 'ORDER_ID', direction: 'DESC' }],
+};
+const RESTRICT_101 = {
+  kind: 'restrict',
+  id: 'restrict101',
+  inputs: [null],
+  columns: ['ORDER_ID'],
+};
+const SLICE_101 = {
+  kind: 'slice',
+  id: 'slice101',
+  inputs: [null],
+  start: 10,
+  stop: 20,
+};
 const JOIN_101 = {
   kind: 'join',
   id: 'join101',
@@ -155,6 +182,50 @@ describe(unitTest('Saved spec decode errors'), () => {
     ['an enumeration type', withType({ path: 'my::Region', values: ['EMEA'] })],
     ['a join', withJoin(JOIN_101)],
     ['a filter', withNodes([FILTER_101], 'filter101')],
+    ['a limit', withNodes([LIMIT_101], 'limit101')],
+    ['a drop', withNodes([DROP_101], 'drop101')],
+    ['a restrict', withNodes([RESTRICT_101], 'restrict101')],
+    ['a sort', withNodes([SORT_101], 'sort101')],
+    [
+      'a sort with a blank column and no keys',
+      withNodes(
+        [
+          { ...SORT_101, sorts: [{ column: '', direction: 'ASC' }] },
+          { ...SORT_101, id: 'sort102', sorts: [] },
+        ],
+        'sort101',
+      ),
+    ],
+    ['a rename', withNodes([RENAME_101], 'rename101')],
+    [
+      'a rename with blank names',
+      withNodes(
+        [{ ...RENAME_101, mappings: [{ from: '', to: '' }] }],
+        'rename101',
+      ),
+    ],
+    [
+      'a distinct',
+      withNodes(
+        [{ kind: 'distinct', id: 'distinct101', inputs: [null] }],
+        'distinct101',
+      ),
+    ],
+    ['a slice', withNodes([SLICE_101], 'slice101')],
+    [
+      'a slice whose bounds were cleared',
+      withNodes(
+        [{ kind: 'slice', id: 'slice101', inputs: [null] }],
+        'slice101',
+      ),
+    ],
+    [
+      'a limit whose size was cleared',
+      withNodes(
+        [{ kind: 'limit', id: 'limit101', inputs: [null] }],
+        'limit101',
+      ),
+    ],
     ['a text model', withModel(TEXT_MODEL)],
     ['a pointer model', withModel(POINTER_MODEL)],
     // the host decides which kinds it can run (PLAN §6.2.2)
@@ -483,6 +554,30 @@ describe(unitTest('Saved spec decode errors'), () => {
       withNodes([{ ...FILTER_101, inputs: [null, null] }], 'filter101'),
       'query.nodes[0].inputs',
       'must list the 1 input(s) of a filter node, in port order',
+    ],
+    [
+      'a distinct without inputs',
+      withNodes([{ kind: 'distinct', id: 'distinct101' }], 'distinct101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a distinct node, in port order',
+    ],
+    [
+      'a slice with two inputs',
+      withNodes([{ ...SLICE_101, inputs: [null, null] }], 'slice101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a slice node, in port order',
+    ],
+    [
+      'a drop without inputs',
+      withNodes([{ kind: 'drop', id: 'drop101', size: 10 }], 'drop101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a drop node, in port order',
+    ],
+    [
+      'a limit with two inputs',
+      withNodes([{ ...LIMIT_101, inputs: [null, null] }], 'limit101'),
+      'query.nodes[0].inputs',
+      'must list the 1 input(s) of a limit node, in port order',
     ],
     [
       'a join without inputs',
@@ -997,6 +1092,227 @@ describe(unitTest('Saved spec decode errors'), () => {
       'query.nodes[0].filter',
       'must not be null',
     ],
+    // a cleared size is left out, never written as null (PLAN §11.4)
+    [
+      'a limit size set to null',
+      withNodes([{ ...LIMIT_101, size: null }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is a string',
+      withNodes([{ ...LIMIT_101, size: '10' }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is a boolean',
+      withNodes([{ ...LIMIT_101, size: true }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is a list',
+      withNodes([{ ...LIMIT_101, size: [10] }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a sort without sorts',
+      withNodes([{ kind: 'sort', id: 'sort101', inputs: [null] }], 'sort101'),
+      'query.nodes[0].sorts',
+      'is required',
+    ],
+    [
+      'sorts that are not a list',
+      withNodes([{ ...SORT_101, sorts: { column: 'A' } }], 'sort101'),
+      'query.nodes[0].sorts',
+      'must be a list',
+    ],
+    [
+      'a sort entry that is a column name',
+      withNodes([{ ...SORT_101, sorts: ['ORDER_ID'] }], 'sort101'),
+      'query.nodes[0].sorts[0]',
+      'must be an object',
+    ],
+    [
+      'a sort entry without a direction',
+      withNodes([{ ...SORT_101, sorts: [{ column: 'A' }] }], 'sort101'),
+      'query.nodes[0].sorts[0].direction',
+      'is required',
+    ],
+    [
+      // as an empty joinType: a direction the user can't have picked
+      'a sort entry with an empty direction',
+      withNodes(
+        [{ ...SORT_101, sorts: [{ column: 'A', direction: '' }] }],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[0].direction',
+      'must not be empty',
+    ],
+    [
+      'a sort entry whose column is a number',
+      withNodes(
+        [{ ...SORT_101, sorts: [{ column: 1, direction: 'ASC' }] }],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[0].column',
+      'must be a string',
+    ],
+    [
+      // malformed fields are decode errors even after an unknown direction or key
+      'a sort entry without a column after one with an unknown direction',
+      withNodes(
+        [
+          {
+            ...SORT_101,
+            sorts: [
+              { column: 'A', direction: 'RANDOM' },
+              { direction: 'ASC', nulls: 'first' },
+            ],
+          },
+        ],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[1].column',
+      'is required',
+    ],
+    [
+      'a rename without mappings',
+      withNodes(
+        [{ kind: 'rename', id: 'rename101', inputs: [null] }],
+        'rename101',
+      ),
+      'query.nodes[0].mappings',
+      'is required',
+    ],
+    [
+      'rename mappings that are not a list',
+      withNodes([{ ...RENAME_101, mappings: { from: 'A' } }], 'rename101'),
+      'query.nodes[0].mappings',
+      'must be a list',
+    ],
+    [
+      'a rename mapping that is a string',
+      withNodes([{ ...RENAME_101, mappings: ['A'] }], 'rename101'),
+      'query.nodes[0].mappings[0]',
+      'must be an object',
+    ],
+    [
+      'a rename mapping without to',
+      withNodes([{ ...RENAME_101, mappings: [{ from: 'A' }] }], 'rename101'),
+      'query.nodes[0].mappings[0].to',
+      'is required',
+    ],
+    [
+      'a rename mapping whose from is a number',
+      withNodes(
+        [{ ...RENAME_101, mappings: [{ from: 1, to: 'B' }] }],
+        'rename101',
+      ),
+      'query.nodes[0].mappings[0].from',
+      'must be a string',
+    ],
+    [
+      // malformed fields are decode errors even when a mapping has an unknown key
+      'a rename mapping with an unknown key and no from',
+      withNodes(
+        [{ ...RENAME_101, mappings: [{ to: 'B', case: 'upper' }] }],
+        'rename101',
+      ),
+      'query.nodes[0].mappings[0].from',
+      'is required',
+    ],
+    [
+      // every entry is read before an unknown key keeps the node as an Unknown node
+      'a rename mapping without to after one with an unknown key',
+      withNodes(
+        [
+          {
+            ...RENAME_101,
+            mappings: [{ from: 'A', to: 'B', case: 'upper' }, { from: 'C' }],
+          },
+        ],
+        'rename101',
+      ),
+      'query.nodes[0].mappings[1].to',
+      'is required',
+    ],
+    [
+      'a sort entry without a column after one with an unknown key',
+      withNodes(
+        [
+          {
+            ...SORT_101,
+            sorts: [
+              { column: 'A', direction: 'ASC', nulls: 'first' },
+              { direction: 'ASC' },
+            ],
+          },
+        ],
+        'sort101',
+      ),
+      'query.nodes[0].sorts[1].column',
+      'is required',
+    ],
+    [
+      'a restrict without columns',
+      withNodes(
+        [{ kind: 'restrict', id: 'restrict101', inputs: [null] }],
+        'restrict101',
+      ),
+      'query.nodes[0].columns',
+      'is required',
+    ],
+    [
+      'restrict columns that are not a list',
+      withNodes([{ ...RESTRICT_101, columns: 'ORDER_ID' }], 'restrict101'),
+      'query.nodes[0].columns',
+      'must be a list',
+    ],
+    [
+      'a restrict column that is a number',
+      withNodes([{ ...RESTRICT_101, columns: ['ORDER_ID', 7] }], 'restrict101'),
+      'query.nodes[0].columns[1]',
+      'must be a string',
+    ],
+    [
+      'a slice start that is a string',
+      withNodes([{ ...SLICE_101, start: '10' }], 'slice101'),
+      'query.nodes[0].start',
+      'must be a finite number',
+    ],
+    [
+      'a slice stop set to null',
+      withNodes([{ ...SLICE_101, stop: null }], 'slice101'),
+      'query.nodes[0].stop',
+      'must be a finite number',
+    ],
+    [
+      'a slice start that is a list',
+      withNodes([{ ...SLICE_101, start: [20] }], 'slice101'),
+      'query.nodes[0].start',
+      'must be a finite number',
+    ],
+    [
+      'a drop size that is a string',
+      withNodes([{ ...DROP_101, size: '10' }], 'drop101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a drop size set to null',
+      withNodes([{ ...DROP_101, size: null }], 'drop101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
+    [
+      'a limit size that is an object',
+      withNodes([{ ...LIMIT_101, size: { value: 10 } }], 'limit101'),
+      'query.nodes[0].size',
+      'must be a finite number',
+    ],
   ])('Refuses %s', (_, json, path, detail) => {
     expect(failureOf(json)).toEqual([path, detail]);
   });
@@ -1336,6 +1652,36 @@ describe(unitTest('Saved spec text'), () => {
       `${TYPE}.params[0]`,
       'must be a finite number',
     ]);
+  });
+
+  test("Refuses a limit size past the double range, which can't be saved back", () => {
+    const text = JSON.stringify(withNodes([LIMIT_101], 'limit101')).replace(
+      '"size":10',
+      '"size":1e400',
+    );
+    const error = decodeErrorOf(() => parseCubeSpec(text));
+    expect([error.path, error.detail]).toEqual([
+      'query.nodes[0].size',
+      'must be a finite number',
+    ]);
+  });
+
+  test('Reads a limit size written in any JSON number form, and -0 as 0', () => {
+    const sizeOf = (token: string): unknown => {
+      const text = JSON.stringify(withNodes([LIMIT_101], 'limit101')).replace(
+        '"size":10',
+        `"size":${token}`,
+      );
+      const node = parseCubeSpec(text).document.query.getNode('limit101');
+      return (node as unknown as { size: unknown }).size;
+    };
+    expect(sizeOf('1e3')).toBe(1000);
+    expect(sizeOf('10.0')).toBe(10);
+    expect(Object.is(sizeOf('-0'), 0)).toBe(true);
+    // read as written, for validation to report
+    expect(sizeOf('1.5')).toBe(1.5);
+    expect(sizeOf('-3')).toBe(-3);
+    expect(sizeOf('1152921504606846976')).toBe(2 ** 60);
   });
 
   test('Refuses text over the cap before parsing it', () => {
