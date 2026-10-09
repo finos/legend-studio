@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                                                  |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644                     |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                      |
-| Step   | M4.1–M4.13 done (Group and Concat complete, Convert types included); the PR is marked ready; M4.14's guides, M4.15, M4.16 and M4.17's folding follow on the open PR (user, 2026-10-09) |
-| Tests  | 2486 core, 1162 builder (core group), 245 Query, 415 builder engine-roundtrip (after the dates warning, on finos master `4f5aab13d`)                                                   |
+| Item   | State                                                                                                                                |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Branch | `cube-m4` merged on 2026-10-09 as #5649 (`d847e6721`, squashed); the follow-ups are on `cube-m4-followup`, from that merge           |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                    |
+| Step   | M4.1–M4.13 and M4.16 done and merged (#5649); M4.14's guides, M4.15 and M4.17 on the follow-up PR                                    |
+| Tests  | 2486 core, 1162 builder (core group), 245 Query, 415 builder engine-roundtrip (after the dates warning, on finos master `4f5aab13d`) |
 
 ## Steps
 
@@ -34,12 +34,13 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.13** Concat's Convert types setting
 - [ ] **M4.14** Docs and changeset
 - [ ] **M4.15** Verification and the browser rehearsal
-- [ ] **M4.16** A demo video of M4's features, as for M1 and M2 (PLAN §11.3)
+- [x] **M4.16** A demo video of M4's features, as for M1 and M2 (PLAN §11.3)
 - [ ] **M4.17** Rebase on the latest master, fold PLAN §11.5's supersessions in, PR when the user asks
 
 ## Commits
 
-Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the hashes are the rebased ones.
+Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the hashes are the rebased ones, before
+the squash merge; the follow-up PR's are its own.
 
 | Step       | Commit      | Subject                                                                     |
 | ---------- | ----------- | --------------------------------------------------------------------------- |
@@ -61,7 +62,9 @@ Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the 
 | M4.12      | `f277ee542` | feat: add Concat's Rename and Restrict autofixes to Legend Cube             |
 | M4.13      | `6c1bc9ba1` | feat: add Concat's Convert types setting to Legend Cube                     |
 | Rebase     | (none)      | rebased on finos master `4f5aab13d` (#5652, #5651): 17 commits unchanged    |
-| Dates      | (this one)  | feat: warn about Legend Cube's converted dates in Join and Filter           |
+| Dates      | `c81223a4f` | feat: warn about Legend Cube's converted dates in Join and Filter           |
+| Merge      | `d847e6721` | feat: add Legend Cube's Group and Concat (M4) (#5649), the above squashed   |
+| Merge docs | (this one)  | docs: record Legend Cube M4's merge                                         |
 
 ## Step notes
 
@@ -296,6 +299,14 @@ either side, and the Filter editor on a condition that compares one with a value
 
 **After M4.13 (user, 2026-10-09):** the PR is marked ready for review once the changeset and description are updated
 and every gate is green; M4.15's verification, M4.16's video and later checks follow as fixes on the open PR.
+
+**Merge and the demo video (2026-10-09).** #5649 was approved and squash-merged on 2026-10-09 as `d847e6721`. M4.16's
+video, `legend-cube-m4-group-concat.webm` (3:12), was sent to the user to attach to #5649: evidence
+`demo/demo-m4.mjs`, its cubes from `demo/demo-m4-specs.mjs` (`m4-specs/`), against the :9002 dev server and the
+engine. Seven scenes (the grid's Group by, 21 countries adding up to 830; the Group editor's Sum and Max; a Concat added
+from a node's menu and wired, First and Second on the canvas; "Rename them", 120 rows; "Drop them"; Convert types, 120
+rows; the date warning, the midnight row only), 19 checks as it runs, each key frame checked against its caption. Two
+captions were reworded after a take: no claim of Concat's row order, and no value named that isn't on screen.
 
 ## Open items
 

@@ -2999,7 +2999,8 @@ on the Cube fixture, which copies that model with corrections that don't touch t
 
 **Landing order (user, 2026-10-09).** The PR is marked ready for review after M4.13, with the changeset (M4.14's) and
 its description updated and every gate green; M4.14's guides, M4.15, M4.16 and M4.17's folding follow as fixes on the
-open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
+open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10. M4 merged on 2026-10-09 as #5649
+(`d847e6721`), with M4.16's video; M4.14's guides, M4.15 and M4.17 follow in their own PR.
 
 **Risks and open gaps:**
 
