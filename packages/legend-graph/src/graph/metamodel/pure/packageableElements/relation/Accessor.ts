@@ -22,6 +22,7 @@ import type { Database } from '../store/relational/model/Database.js';
 import { InstanceValue } from '../../valueSpecification/InstanceValue.js';
 import { Multiplicity } from '../domain/Multiplicity.js';
 import { CORE_HASH_STRUCTURE } from '../../../../Core_HashUtils.js';
+import { DEFAULT_DATABASE_SCHEMA_NAME } from '../../../../MetaModelConst.js';
 import type { ValueSpecificationVisitor } from '../../valueSpecification/ValueSpecification.js';
 
 export type AccessorOwner = DataProduct | IngestDefinition | Database;
@@ -103,6 +104,23 @@ export class IngestionAccessor extends Accessor {
 
 export class RelationalStoreAccessor extends Accessor implements Hashable {
   declare parentElement: Database;
+
+  /**
+   * Whether the path names the schema. `#>{db.TABLE}#` means table `TABLE`
+   * in the default schema, as `#>{db.default.TABLE}#` does; this is `false`
+   * for the first spelling, so that `path` keeps it as written.
+   */
+  hasExplicitSchema = true;
+
+  override get path(): string[] {
+    if (
+      !this.hasExplicitSchema &&
+      this.schema === DEFAULT_DATABASE_SCHEMA_NAME
+    ) {
+      return [this.accessorOwner, this.accessor];
+    }
+    return super.path;
+  }
 
   override get accessorOwnerLabel(): string {
     return 'Relational Database';
