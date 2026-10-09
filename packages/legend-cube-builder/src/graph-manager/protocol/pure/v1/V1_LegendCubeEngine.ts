@@ -265,14 +265,21 @@ export class V1_LegendCubeEngine implements CubeEngine {
 
   async loadModel(model: ModelContext): Promise<CubeModelOutline> {
     if (model._type === CUBE_DIRECT_MODEL_TYPE) {
-      this.directConnectionOf(model);
-      // its tables are listed through the connection explorer
+      const connection = this.directConnectionOf(model);
+      // its tables are listed through the connection explorer; its one
+      // connection gives the database type operations are written for
       return {
         databases: [],
         runtimes: [
           {
             path: CUBE_DIRECT_RUNTIME_PATH,
             storePaths: [CUBE_DIRECT_DATABASE_PATH],
+            connections: [
+              {
+                storePath: CUBE_DIRECT_DATABASE_PATH,
+                databaseType: connection.databaseType as string,
+              },
+            ],
           },
         ],
       };

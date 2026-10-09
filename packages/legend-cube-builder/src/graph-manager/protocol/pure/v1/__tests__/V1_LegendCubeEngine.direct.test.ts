@@ -235,7 +235,7 @@ const executionOn = (path: AccessorPath): IR =>
   ).emitExecutionLambda({ rowLimit: 10, runtime: CUBE_DIRECT_RUNTIME_PATH });
 
 describe('Legend Cube engine: direct connections', () => {
-  test('Outlines the model with its one runtime, without calling the engine: its tables are listed through the connection', async () => {
+  test("Outlines the model with its one runtime and its connection's database type, without calling the engine: its tables are listed through the connection", async () => {
     const engine = newEngine();
     const { explore, batch, run } = mockClient(engine);
     const parse = jest.spyOn(engine.client, 'grammarToJSON_model');
@@ -245,6 +245,9 @@ describe('Legend Cube engine: direct connections', () => {
         {
           path: CUBE_DIRECT_RUNTIME_PATH,
           storePaths: [CUBE_DIRECT_DATABASE_PATH],
+          connections: [
+            { storePath: CUBE_DIRECT_DATABASE_PATH, databaseType: 'H2' },
+          ],
         },
       ],
     });
