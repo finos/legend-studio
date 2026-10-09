@@ -345,7 +345,13 @@ const DiagramEditorToolPanel = observer(
         relationshipMode: DIAGRAM_RELATIONSHIP_EDIT_MODE,
       ): (() => void) =>
       (): void => {
-        if (!isReadOnly) {
+        // NOTE: view, pan, and zoom tools only change how the diagram is displayed
+        // so they remain available in read-only mode; only editing tools are blocked
+        if (
+          !isReadOnly ||
+          (editMode !== DIAGRAM_INTERACTION_MODE.ADD_CLASS &&
+            editMode !== DIAGRAM_INTERACTION_MODE.ADD_RELATIONSHIP)
+        ) {
           renderer.changeMode(editMode, relationshipMode);
         }
       };
