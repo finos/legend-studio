@@ -241,7 +241,10 @@ export const CubeCanvas = observer(
                 No tables yet:{' '}
                 <button
                   className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
-                  disabled={editorState.readOnly}
+                  title={editorState.sourcePicker.disabledReason}
+                  disabled={
+                    editorState.sourcePicker.disabledReason !== undefined
+                  }
                   onClick={() => editorState.sourcePicker.open()}
                 >
                   add a table

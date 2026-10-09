@@ -27,6 +27,10 @@ import {
   makeObservable,
   observable,
 } from 'mobx';
+import {
+  READ_ONLY_CUBE_TITLE,
+  UNSERVED_SOURCE_KIND_TITLE,
+} from '../__lib__/LegendCubeLabels.js';
 import type { CubeEditorState } from './CubeEditorState.js';
 import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
@@ -58,6 +62,7 @@ export class CubeSourcePickerState {
       tabs: computed,
       fixedTab: computed,
       activeTab: computed,
+      disabledReason: computed,
       canConfirm: computed,
       open: action,
       selectTab: action,
@@ -125,20 +130,33 @@ export class CubeSourcePickerState {
     );
   }
 
+  /**
+   * Why the dialog can't open, else undefined: the cube is read-only, or the
+   * host doesn't serve the cube's kind of source, so no tab could add one
+   */
+  get disabledReason(): string | undefined {
+    if (this.editorState.readOnly) {
+      return READ_ONLY_CUBE_TITLE;
+    }
+    const { fixedTab } = this;
+    return fixedTab && !fixedTab.isAvailable
+      ? UNSERVED_SOURCE_KIND_TITLE
+      : undefined;
+  }
+
   get canConfirm(): boolean {
     return this.activeTab.canConfirm && this.isTabEnabled(this.activeTab);
   }
 
   /**
    * Opens the dialog on the cube's own tab, else the tab asked for, else the
-   * one open last. Does nothing while the cube is read-only, or when the
-   * host doesn't serve the cube's kind of source, so no tab could add one.
+   * one open last. Does nothing while it can't open (`disabledReason`).
    */
   open(tabKey?: CubeSourcePickerTabKey): void {
-    const { fixedTab } = this;
-    if (this.editorState.readOnly || (fixedTab && !fixedTab.isAvailable)) {
+    if (this.disabledReason !== undefined) {
       return;
     }
+    const { fixedTab } = this;
     this.isOpen = true;
     const tab =
       fixedTab ??

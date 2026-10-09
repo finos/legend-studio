@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-import type { V1_EntitlementsUserEnvResponse } from '@finos/legend-graph';
+import {
+  V1_EntitlementsLakehouseEnvironmentType,
+  type V1_EntitlementsUserEnvResponse,
+} from '@finos/legend-graph';
 import {
   decorateEnvWithRealm,
+  getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName,
   type LakehouseContractServerClient,
   LakehouseEnvironmentType,
 } from '@finos/legend-server-lakehouse';
@@ -32,13 +36,35 @@ import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment
 // host remembers for the viewer, else the first one the viewer's
 // entitlements name, read once per page visit. Query adds the
 // production-parallel realm for a snapshot version; Cube adds it for a
-// production-parallel deployment too, as Data Cube does
+// production-parallel deployment too, as Data Cube does. Query may
+// remember an environment with a realm already on it (its runtime dialog
+// saves the runtime's environment as it is), so Cube drops that realm first:
+// a production deployment never runs in the production-parallel realm
 
 export const V1_CUBE_NO_LAKEHOUSE_ENVIRONMENT =
   'Unable to resolve lakehouse user environment. Please ensure your lakehouse entitlements are configured.';
 
 const isSnapshotVersion = (versionId: string): boolean =>
   versionId.endsWith('-SNAPSHOT');
+
+/** The environment without a realm, which `decorateEnvWithRealm` would add */
+const withoutRealm = (environment: string): string => {
+  switch (
+    getEntitlementsLakehouseEnvironmentTypeCompatibleWithEnvName(environment)
+  ) {
+    case V1_EntitlementsLakehouseEnvironmentType.DEVELOPMENT:
+      return environment.slice(
+        `${LakehouseEnvironmentType.DEVELOPMENT}-`.length,
+      );
+    case V1_EntitlementsLakehouseEnvironmentType.PRODUCTION_PARALLEL:
+      return environment.slice(
+        0,
+        -`-${LakehouseEnvironmentType.PRODUCTION_PARALLEL}`.length,
+      );
+    default:
+      return environment;
+  }
+};
 
 export class V1_CubeLakehouseEnvironmentResolver
   implements CubeLakehouseEnvironment
@@ -99,7 +125,7 @@ export class V1_CubeLakehouseEnvironmentResolver
   }
 
   async resolveEnvironment(project: CubeDataProductProject): Promise<string> {
-    const environment = await this.readUserEnvironment();
+    const environment = withoutRealm(await this.readUserEnvironment());
     return project.environmentType ===
       CubeDataProductEnvironmentType.PRODUCTION_PARALLEL ||
       isSnapshotVersion(project.versionId)

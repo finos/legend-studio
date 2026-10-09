@@ -22,6 +22,10 @@ import {
   SchemaColumn,
 } from '@finos/legend-cube';
 import { flowResult } from 'mobx';
+import {
+  READ_ONLY_CUBE_TITLE,
+  UNSERVED_SOURCE_KIND_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
   createCubeDataProductModel,
@@ -257,7 +261,8 @@ describe('Source dialog tabs', () => {
     ]);
     expect(state.canAddNode('relational')).toBe(false);
     expect(state.canAddNode('dataProductAccessPoint')).toBe(false);
-    // the toolbar's Add table opens nothing either
+    // the toolbar's Add table is disabled, says why, and opens nothing
+    expect(state.sourcePicker.disabledReason).toBe(UNSERVED_SOURCE_KIND_TITLE);
     state.sourcePicker.open();
     expect(state.sourcePicker.isOpen).toBe(false);
   });
@@ -265,6 +270,7 @@ describe('Source dialog tabs', () => {
   test('Opens nothing on a read-only cube', () => {
     const { state } = setUp();
     state.importDocument(new CubeDocument(), true);
+    expect(state.sourcePicker.disabledReason).toBe(READ_ONLY_CUBE_TITLE);
     state.sourcePicker.open(DIRECT_CONNECTION);
     expect(state.sourcePicker.isOpen).toBe(false);
   });

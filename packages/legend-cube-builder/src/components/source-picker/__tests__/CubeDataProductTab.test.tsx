@@ -15,11 +15,18 @@
  */
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
+import { CubeDocument } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { UNSERVED_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
+import {
+  CUBE_DATA_PRODUCT_RUNTIME_PATH,
+  CubeDataProductEnvironmentType,
+  createCubeDataProductModel,
+} from '../../../graph-manager/CubeDataProduct.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
@@ -135,5 +142,34 @@ describe('Data product tab', () => {
     expect(
       within(dialog).queryByRole('tab', { name: 'Data product' }),
     ).toBeNull();
+  });
+
+  test('Disables Add table, saying why, on a data product cube a host without a catalog opens', async () => {
+    const created = TEST__createCubeHost();
+    const host = { ...created.host, dataProductCatalog: undefined };
+    // imported with its context and no source yet
+    const document = new CubeDocument().withContext({
+      model: createCubeDataProductModel({
+        groupId: 'com.example.sales',
+        artifactId: 'orders-products',
+        versionId: '1.4.0',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
+      runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
+    });
+    await TEST__renderInCubeApplication(
+      <CubeEditor host={host} initialDocument={document} />,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    [
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Add table' }),
+      screen.getByRole<HTMLButtonElement>('button', { name: 'add a table' }),
+    ].forEach((control) => {
+      expect(control.disabled).toBe(true);
+      expect(control.title).toBe(UNSERVED_SOURCE_KIND_TITLE);
+      fireEvent.click(control);
+    });
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

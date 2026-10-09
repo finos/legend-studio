@@ -98,6 +98,29 @@ describe("The viewer's lakehouse environment", () => {
     expect(getUserEntitlementEnvs).not.toHaveBeenCalled();
   });
 
+  test.each(['chosen-env-pp', 'dev-chosen-env'])(
+    "Drops the realm the host remembered with the environment (%s), so the cube's class decides it",
+    async (remembered) => {
+      const { resolver } = setUp(
+        async () => ({ users: [] }),
+        () => remembered,
+      );
+      expect(await resolver.resolveEnvironment(PROJECT)).toBe('chosen-env');
+      expect(
+        await resolver.resolveEnvironment({
+          ...PROJECT,
+          environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+        }),
+      ).toBe('chosen-env-pp');
+      expect(
+        await resolver.resolveEnvironment({
+          ...PROJECT,
+          versionId: 'feature-returns-SNAPSHOT',
+        }),
+      ).toBe('chosen-env-pp');
+    },
+  );
+
   test('Says how to fix a viewer without an environment', async () => {
     const { resolver } = setUp(async () => ({ users: [] }));
     await expect(resolver.resolveEnvironment(PROJECT)).rejects.toMatchObject({

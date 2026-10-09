@@ -1221,6 +1221,8 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
   - **The environment:** as Legend Query resolves it (`resolveLakehouseEnvAndWarehouse`): the environment Query
     remembers for the viewer, else the viewer's first entitlement environment. Query adds the production-parallel
     realm (`-pp`) for a snapshot version; Cube also adds it for a production-parallel deployment, as Data Cube does.
+    Query's runtime dialog can remember an environment with a realm already on it, so Cube drops that realm first
+    and lets the cube's class decide: a production deployment never runs in the production-parallel realm.
   - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
     inside an internal deployment. Follow-ups, each with its tests: marketplace search with paging guards and stale
     answers, sample rows, access badges, marketplace links, re-checking saved sources, warehouse edits and staleness,

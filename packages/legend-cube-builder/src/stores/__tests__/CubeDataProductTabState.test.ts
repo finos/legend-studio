@@ -36,7 +36,11 @@ import {
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
   CubeDataProductEnvironmentType,
 } from '../../graph-manager/CubeDataProduct.js';
-import type { CubeDataProductDescription } from '../../graph-manager/CubeDataProductCatalog.js';
+import type {
+  CubeDataProductCandidate,
+  CubeDataProductDescription,
+} from '../../graph-manager/CubeDataProductCatalog.js';
+import { rememberCubeWarehouse } from '../CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
@@ -390,7 +394,15 @@ describe('Data product tab', () => {
   });
 
   test("Keeps a cube to its deployment class: the same version deployed to the other class isn't offered", async () => {
-    const { state } = setUp(
+    // Production's products are listed on an empty cube first
+    const { state, dataProducts } = setUp();
+    let tab = await openTab(state);
+    expect(
+      tab.visibleCandidates.find(({ id }) => id === 'ORDERS_PRODUCT')
+        ?.versionId,
+    ).toBe('1.4.0');
+    state.sourcePicker.close();
+    state.importDocument(
       new CubeDocument().withContext({
         model: createCubeDataProductModel({
           groupId: 'com.example.sales',
@@ -400,33 +412,44 @@ describe('Data product tab', () => {
         }),
         runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
       }),
+      false,
     );
-    const tab = await openTab(state);
+    // while the cube's class is listed, Production's list is still loaded
+    const held = deferred<readonly CubeDataProductCandidate[]>();
+    const search = dataProducts.search.getMockImplementation();
+    dataProducts.search.mockReturnValueOnce(held.promise);
+    tab = await openTab(state);
     expect(tab.environmentType).toBe(PRODUCTION_PARALLEL);
+    expect(tab.isListing).toBe(true);
+    expect(tab.visibleCandidates).toEqual([]);
+    held.resolve(
+      await (search as NonNullable<typeof search>)({
+        text: '',
+        environmentType: PRODUCTION_PARALLEL,
+      }),
+    );
+    await settle();
     expect(
       tab.visibleCandidates.map((candidate) => candidate.environmentType),
     ).toEqual([PRODUCTION_PARALLEL]);
   });
 
   test("Starts an emptied cube on the viewer's warehouse, not the previous cube's", async () => {
-    const { state } = setUp(
-      new CubeDocument().withContext({
-        model: createCubeDataProductModel({
-          groupId: 'com.example.sales',
-          artifactId: 'orders-products',
-          versionId: '1.4.0',
-          environmentType: PRODUCTION,
-          warehouse: 'CUBE_WH',
-        }),
-        runtime: CUBE_DATA_PRODUCT_RUNTIME_PATH,
-      }),
-    );
+    const { state, host } = setUp();
     let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    tab.setWarehouse('CUBE_WH');
+    await add(state, 'core', 'daily_orders');
+    rememberCubeWarehouse(host.applicationStore.userDataService, 'VIEWER_WH');
+    // the cube opens on its own warehouse and its product, which stays picked
+    tab = await openTab(state);
     expect(tab.warehouse).toBe('CUBE_WH');
+    expect(tab.description).toBeDefined();
     state.sourcePicker.close();
+    expect(tab.candidate?.id).toBe('ORDERS_PRODUCT');
     state.importDocument(new CubeDocument(), false);
     tab = await openTab(state);
-    expect(tab.warehouse).toBe(CUBE_DEFAULT_CONSUMER_WAREHOUSE);
+    expect(tab.warehouse).toBe('VIEWER_WH');
   });
 
   test('Shows a failed listing in the tab, and lists again', async () => {
