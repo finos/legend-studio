@@ -137,22 +137,33 @@ export interface FakeCubeDataProductCatalog {
 /**
  * A fresh fake: build one per test, since jest.fn keeps its calls across
  * tests. One that searches on a server answers with its matches, as the
- * lakehouse's list is answered
+ * lakehouse's list is answered, but read anew on each search, as a server's
+ * answer is
  */
 export const createFakeCubeDataProductCatalog = (
   candidates: readonly CubeDataProductCandidate[] = FAKE_DATA_PRODUCT_CANDIDATES,
-  options?: { searchesOnServer?: boolean; searchLimit?: number },
+  options?: {
+    searchesOnServer?: boolean;
+    searchLimit?: number;
+    isCutShort?: CubeDataProductCatalog['isCutShort'];
+  },
 ): FakeCubeDataProductCatalog => {
   const search = jest.fn<CubeDataProductCatalog['search']>(
     async ({ text, environmentType }) =>
       Promise.resolve(
-        candidates.filter(
-          (product) =>
-            product.environmentType === environmentType &&
-            `${product.title} ${product.id}`
-              .toLowerCase()
-              .includes(text.trim().toLowerCase()),
-        ),
+        candidates
+          .filter(
+            (product) =>
+              product.environmentType === environmentType &&
+              `${product.title} ${product.id}`
+                .toLowerCase()
+                .includes(text.trim().toLowerCase()),
+          )
+          .map((product) =>
+            options?.searchesOnServer
+              ? new CubeDataProductCandidate({ ...product })
+              : product,
+          ),
       ),
   );
   const describe = jest.fn<CubeDataProductCatalog['describe']>(
@@ -185,6 +196,7 @@ export const createFakeCubeDataProductCatalog = (
       environmentTypes: [PRODUCTION, PRODUCTION_PARALLEL],
       searchesOnServer: options?.searchesOnServer,
       searchLimit: options?.searchLimit,
+      isCutShort: options?.isCutShort,
       search,
       describe,
       resolveSchemas,

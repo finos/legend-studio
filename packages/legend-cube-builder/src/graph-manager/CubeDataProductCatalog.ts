@@ -173,6 +173,15 @@ export interface CubeDataProductCatalog {
   readonly searchLimit?: number | undefined;
 
   /**
+   * Whether an answer `search` gave leaves out matches the server has, as
+   * its page says, counting rows the catalog dropped. Without it, an answer
+   * as long as `searchLimit` is taken to be cut short
+   */
+  readonly isCutShort?:
+    | ((answer: readonly CubeDataProductCandidate[]) => boolean)
+    | undefined;
+
+  /**
    * The deployed products of a class whose title, id or description holds
    * the text, or, searching on a server, the ones it matches, in its order
    */

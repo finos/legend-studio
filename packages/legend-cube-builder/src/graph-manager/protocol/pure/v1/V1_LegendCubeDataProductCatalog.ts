@@ -237,6 +237,10 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     string,
     Promise<CubeDataProductDescription>
   >();
+  /** The search answers whose page leaves out matches */
+  private readonly cutShortAnswers = new WeakSet<
+    readonly CubeDataProductCandidate[]
+  >();
 
   constructor(
     contractServerClient: LakehouseContractServerClient,
@@ -256,6 +260,10 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
 
   get searchLimit(): number | undefined {
     return this.searchesOnServer ? SEARCH_PAGE_SIZE : undefined;
+  }
+
+  isCutShort(answer: readonly CubeDataProductCandidate[]): boolean {
+    return this.cutShortAnswers.has(answer);
   }
 
   /**
@@ -321,24 +329,34 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     if (cached) {
       return cached;
     }
-    let list: Promise<readonly CubeDataProductCandidate[]> | undefined;
+    const list = this.readList(environmentType, signal);
     const forget = (): void => {
       if (this.lists.get(environmentType) === list) {
         this.lists.delete(environmentType);
       }
     };
-    list = (async () => {
-      signal?.addEventListener('abort', forget, { once: true });
-      try {
-        return (await this.readLiteRows(environmentType, signal))
-          .map((row) => toLiteCandidate(row, environmentType))
-          .filter(isNonNullable);
-      } finally {
-        signal?.removeEventListener('abort', forget);
-      }
-    })().catch((error: unknown) => {
-      // read again on the next search
+    const stopWatching = (): void =>
+      signal?.removeEventListener('abort', forget);
+    signal?.addEventListener('abort', forget, { once: true });
+    // a failed list is read again on the next search: forgotten before its failure is seen
+    list.then(stopWatching, () => {
       forget();
+      stopWatching();
+    });
+    this.lists.set(environmentType, list);
+    return list;
+  }
+
+  /** The class's list, along its pages; a stopped one fails with why it was stopped */
+  private async readList(
+    environmentType: CubeDataProductEnvironmentType,
+    signal: AbortSignal | undefined,
+  ): Promise<readonly CubeDataProductCandidate[]> {
+    try {
+      return (await this.readLiteRows(environmentType, signal))
+        .map((row) => toLiteCandidate(row, environmentType))
+        .filter(isNonNullable);
+    } catch (error) {
       if (signal?.aborted) {
         throw error;
       }
@@ -346,9 +364,7 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
         CubeEngineErrorKind.NETWORK,
         `Cube couldn't list the data products\n${toMessage(error)}`,
       );
-    });
-    this.lists.set(environmentType, list);
-    return list;
+    }
   }
 
   /**
@@ -384,10 +400,22 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
       if (!Array.isArray(results)) {
         throw new Error(V1_CUBE_DATA_PRODUCT_SEARCH_ERROR.UNREADABLE_PAGE);
       }
-      return results
+      const answer = results
         .filter(isPlainObject)
         .map((row) => toSearchRowCandidate(row, environmentType))
         .filter(isNonNullable);
+      // counted before any row is dropped: a full page, or fewer rows than the matches
+      const metadata = (response as PlainObject).metadata;
+      const totalCount = isPlainObject(metadata)
+        ? metadata.total_count
+        : undefined;
+      if (
+        results.length >= SEARCH_PAGE_SIZE ||
+        (typeof totalCount === 'number' && totalCount > results.length)
+      ) {
+        this.cutShortAnswers.add(answer);
+      }
+      return answer;
     } catch (error) {
       if (signal?.aborted) {
         throw error;

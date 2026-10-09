@@ -34,7 +34,10 @@ interface CubeHost {
   class from the lakehouse's lite list and reads a product's access points from its deployed artifact and definition in
   the depot. Pass `buildCubeLakehouseEnvironment(services)` to `buildCubeEngine` as `lakehouseEnvironment`, so data
   product cubes run in the viewer's lakehouse environment. `services` holds the host's lakehouse contract and depot
-  clients, its token getter and the viewer's id; Legend Query builds them only when its `lakehouse` is configured.
+  clients, its token getter and the viewer's id; Legend Query builds them only when its `lakehouse` is configured. With
+  the optional `marketplaceServerClient`, the catalog's `search` runs the marketplace's Lakehouse Access full-text
+  search instead, one page of 100 matches, never reading the lite list, and its optional `isCutShort` says whether an
+  answer leaves out matches; Legend Query passes a client only when `marketplace.serverUrl` is also set.
 
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
 lives as long as the page; Legend Query makes a new host on each visit.

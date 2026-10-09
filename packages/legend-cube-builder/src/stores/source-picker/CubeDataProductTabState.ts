@@ -94,6 +94,19 @@ const isFromProject = (
   candidate.versionId === project.versionId &&
   candidate.environmentType === project.environmentType;
 
+/** Whether two candidates are the same deployed product, at the same version and class */
+const isSameProduct = (
+  candidate: CubeDataProductCandidate,
+  other: CubeDataProductCandidate,
+): boolean =>
+  candidate.id === other.id &&
+  candidate.deploymentId === other.deploymentId &&
+  candidate.dataProductPath === other.dataProductPath &&
+  candidate.groupId === other.groupId &&
+  candidate.artifactId === other.artifactId &&
+  candidate.versionId === other.versionId &&
+  candidate.environmentType === other.environmentType;
+
 /**
  * The source dialog's Data product tab (PLAN §6.8), as Data Cube's selection
  * goes: a deployment class, then a deployed data product, then one of its
@@ -121,6 +134,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   private listedText: string | undefined;
   /** What the cube's own products listed were built from; none for a catalog's list */
   private listedOwnKey: string | undefined;
+  /** Whether the server's matches listed leave out some */
+  private listedCutShort = false;
   candidate: CubeDataProductCandidate | undefined;
   description: CubeDataProductDescription | undefined;
   /** The picked access point, by group and id */
@@ -152,7 +167,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   constructor(editorState: CubeEditorState) {
     makeObservable<
       CubeDataProductTabState,
-      'listedEnvironmentType' | 'listedText' | 'listedOwnKey'
+      'listedEnvironmentType' | 'listedText' | 'listedOwnKey' | 'listedCutShort'
     >(this, {
       environmentType: observable,
       search: observable,
@@ -160,6 +175,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       listedEnvironmentType: observable,
       listedText: observable,
       listedOwnKey: observable,
+      listedCutShort: observable,
       candidate: observable.ref,
       description: observable.ref,
       accessPointKey: observable.ref,
@@ -243,14 +259,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     );
   }
 
-  /** Whether a server's matches may be cut short: as many as one search gives */
+  /** Whether a server's matches listed may be cut short */
   get isTruncated(): boolean {
-    const limit = this.catalog?.searchLimit;
-    return (
-      this.searchesOnServer &&
-      limit !== undefined &&
-      (this.candidates?.length ?? 0) >= limit
-    );
+    return this.listedCutShort;
   }
 
   get accessPoint(): CubeAccessPoint | undefined {
@@ -286,6 +297,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     this.resetCandidate();
     this.error = undefined;
     this.candidates = undefined;
+    this.listedCutShort = false;
     flowResult(this.listCandidates()).catch(
       this.editorState.host.applicationStore.alertUnhandledError,
     );
@@ -416,6 +428,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       this.listedEnvironmentType = environmentType;
       this.listedText = text;
       this.listedOwnKey = ownKey;
+      this.listedCutShort = false;
       this.expandCubeDataProduct();
       return;
     }
@@ -430,10 +443,18 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       if (request !== this.listRequest) {
         return;
       }
-      this.candidates = candidates;
+      // a server's answer is read anew each time: the picked product stays the one picked
+      const picked = this.candidate;
+      this.candidates = picked
+        ? candidates.map((each) =>
+            isSameProduct(each, picked) ? picked : each,
+          )
+        : candidates;
       this.listedEnvironmentType = environmentType;
       this.listedText = text;
       this.listedOwnKey = undefined;
+      this.listedCutShort =
+        this.searchesOnServer && this.isCutShort(candidates);
       this.expandCubeDataProduct();
     } catch (error) {
       if (request === this.listRequest) {
@@ -617,6 +638,16 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
           ]),
         )
       : undefined;
+  }
+
+  /** Whether the catalog's answer leaves out matches, as it says, else as long as one search gives */
+  private isCutShort(answer: readonly CubeDataProductCandidate[]): boolean {
+    const { catalog } = this;
+    if (catalog?.isCutShort) {
+      return catalog.isCutShort(answer);
+    }
+    const limit = catalog?.searchLimit;
+    return limit !== undefined && answer.length >= limit;
   }
 
   /** On a cube with a data product, picks that product from the list, expanded */

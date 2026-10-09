@@ -34,8 +34,10 @@ import {
   V1_TEST__LITE_PAGE_ORDERS,
   V1_TEST__SEARCH_PAGE,
   V1_TEST__SEARCH_PAGE_KNOWN_SHAPES,
+  V1_TEST__SEARCH_ROW_CASED,
   V1_TEST__SEARCH_ROW_ORDERS,
   V1_TEST__searchPage,
+  V1_TEST__UNLISTED_SEARCH_ROWS,
   V1_TEST__UNREADABLE_SEARCH_ROWS,
 } from '../__test-utils__/V1_CubeDataProductSearchFixtures.js';
 import {
@@ -201,6 +203,43 @@ describe('Data product catalog, searching the marketplace', () => {
         await catalog.search({ text: 'orders', environmentType: PRODUCTION })
       ).map((product) => product.id),
     ).toEqual(['ORDERS_PRODUCT', 'CASED_PRODUCT']);
+  });
+
+  test('Says an answer is cut short when its page is full or says more match, counting the rows it drops, and never a lite answer', async () => {
+    const { catalog, liteCatalog, marketplace } = setUp();
+    const search = answerSearch(marketplace, async () => V1_TEST__SEARCH_PAGE);
+    const searchOrders = async () =>
+      catalog.search({ text: 'orders', environmentType: PRODUCTION });
+    // a short page, with every match
+    expect(catalog.isCutShort(await searchOrders())).toBe(false);
+    // a full page, some of whose rows aren't listed
+    search.mockImplementation(async () =>
+      V1_TEST__searchPage([
+        ...Array.from(
+          { length: 100 - V1_TEST__UNLISTED_SEARCH_ROWS.length },
+          () => V1_TEST__SEARCH_ROW_ORDERS,
+        ),
+        ...V1_TEST__UNLISTED_SEARCH_ROWS,
+      ]),
+    );
+    const full = await searchOrders();
+    expect(full.length).toBeLessThan(100);
+    expect(catalog.isCutShort(full)).toBe(true);
+    // fewer rows than the page says match
+    search.mockImplementation(async () =>
+      V1_TEST__searchPage(
+        [V1_TEST__SEARCH_ROW_ORDERS, V1_TEST__SEARCH_ROW_CASED],
+        500,
+      ),
+    );
+    const partial = await searchOrders();
+    expect(partial).toHaveLength(2);
+    expect(catalog.isCutShort(partial)).toBe(true);
+    expect(
+      liteCatalog.isCutShort(
+        await liteCatalog.search({ text: '', environmentType: PRODUCTION }),
+      ),
+    ).toBe(false);
   });
 
   test("Takes an answer that is no page as an error, and a failed search as one, never falling back to the lakehouse's list", async () => {

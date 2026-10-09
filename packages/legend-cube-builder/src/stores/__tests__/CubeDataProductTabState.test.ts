@@ -540,14 +540,17 @@ describe('Data product tab, searching on a server', () => {
 
   /** A host whose catalog searches on a server */
   const setUpSearch = (
-    searchLimit?: number,
+    options?: Omit<
+      NonNullable<Parameters<typeof createFakeCubeDataProductCatalog>[1]>,
+      'searchesOnServer'
+    >,
   ): ReturnType<typeof setUp> & {
     dataProducts: ReturnType<typeof createFakeCubeDataProductCatalog>;
   } => {
     const created = TEST__createCubeHost();
     const dataProducts = createFakeCubeDataProductCatalog(undefined, {
+      ...options,
       searchesOnServer: true,
-      ...(searchLimit === undefined ? {} : { searchLimit }),
     });
     const host = { ...created.host, dataProductCatalog: dataProducts.catalog };
     return {
@@ -774,12 +777,58 @@ describe('Data product tab, searching on a server', () => {
     expect(tab.description).toBeDefined();
   });
 
+  test("Keeps the picked product picked, with its access point, when a new search's answer lists it again", async () => {
+    const { state, dataProducts } = setUpSearch();
+    const tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    tab.selectAccessPoint('core', 'daily_orders');
+    const picked = tab.candidate;
+    await type(tab, 'orders');
+    const row = tab.visibleCandidates.find(
+      (candidate) => candidate.id === 'ORDERS_PRODUCT',
+    );
+    expect(row).toBe(picked);
+    tab.selectCandidate(row);
+    await settle();
+    expect(tab.candidate).toBe(picked);
+    expect(tab.accessPointKey).toEqual({ group: 'core', id: 'daily_orders' });
+    expect(tab.description).toBeDefined();
+    expect(dataProducts.describe).toHaveBeenCalledTimes(1);
+  });
+
   test("Says a server's matches may be cut short when it gives as many as one search gives", async () => {
-    const { state } = setUpSearch(2);
+    const { state } = setUpSearch({ searchLimit: 2 });
     const tab = await openTab(state);
     expect(tab.visibleCandidates).toHaveLength(2);
     expect(tab.isTruncated).toBe(true);
     await type(tab, 'returns');
+    expect(tab.visibleCandidates).toHaveLength(1);
+    expect(tab.isTruncated).toBe(false);
+  });
+
+  test("Says a server's matches may be cut short when the catalog says so, though fewer are listed than one search gives", async () => {
+    const { state } = setUpSearch({
+      searchLimit: 100,
+      isCutShort: (answer) => answer.length > 1,
+    });
+    const tab = await openTab(state);
+    expect(tab.visibleCandidates).toHaveLength(2);
+    expect(tab.isTruncated).toBe(true);
+    // not while another mode's matches are searched
+    tab.setEnvironmentType(PRODUCTION_PARALLEL);
+    expect(tab.isTruncated).toBe(false);
+    tab.setEnvironmentType(PRODUCTION);
+    await settle();
+    expect(tab.isTruncated).toBe(true);
+    await type(tab, 'returns');
+    expect(tab.visibleCandidates).toHaveLength(1);
+    expect(tab.isTruncated).toBe(false);
+    await type(tab, '');
+    expect(tab.isTruncated).toBe(true);
+    // nor on a cube's own products
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    await openTab(state);
     expect(tab.visibleCandidates).toHaveLength(1);
     expect(tab.isTruncated).toBe(false);
   });
