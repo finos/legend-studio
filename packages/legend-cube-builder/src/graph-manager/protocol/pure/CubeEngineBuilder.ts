@@ -15,7 +15,12 @@
  */
 
 import type { DepotServerClient } from '@finos/legend-server-depot';
-import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import { V1_EngineServerClient } from '@finos/legend-graph';
+import type {
+  LakehouseContractServerClient,
+  LakehouseIngestServerClient,
+  LakehousePlatformServerClient,
+} from '@finos/legend-server-lakehouse';
 import type { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import type { TracerService } from '@finos/legend-shared';
 import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
@@ -24,10 +29,12 @@ import type {
   CubeMarketplaceLinkTarget,
 } from '../../CubeDataProductCatalog.js';
 import type { CubeEngine } from '../../CubeEngine.js';
+import type { CubeIngestCatalog } from '../../CubeIngestCatalog.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
 import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnvironmentResolver.js';
 import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
 import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCatalog.js';
+import { V1_LegendCubeIngestCatalog } from './v1/V1_LegendCubeIngestCatalog.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -48,8 +55,19 @@ export const buildCubeEngine = (
     lakehouseEnvironment?: CubeLakehouseEnvironment | undefined;
     /** The warehouse the viewer last picked, for a data product cube without its own */
     getRememberedWarehouse?: (() => string | undefined) | undefined;
+    /** Ingest cubes run only with one, built by `buildCubeIngestCatalog` */
+    ingestCatalog?: CubeIngestCatalog | undefined;
   },
-): CubeEngine => new V1_LegendCubeEngine(config, tracerService, options);
+): CubeEngine =>
+  new V1_LegendCubeEngine(config, tracerService, {
+    lakehouseEnvironment: options?.lakehouseEnvironment,
+    getRememberedWarehouse: options?.getRememberedWarehouse,
+    // the catalog reads the definitions the engine types and runs on
+    ingestDefinitions:
+      options?.ingestCatalog instanceof V1_LegendCubeIngestCatalog
+        ? options.ingestCatalog
+        : undefined,
+  });
 
 /**
  * The connection explorer of a host that offers direct connections (PLAN
@@ -83,6 +101,10 @@ export interface CubeLakehouseServices {
   readonly enterpriseStereotype?:
     | { readonly profile: string; readonly value: string }
     | undefined;
+  /** The lakehouse platform, whose ingest environments the Ingest tab reads (PLAN §6.7) */
+  readonly platformServerClient?: LakehousePlatformServerClient | undefined;
+  /** A client for the ingest servers the platform names: each call names its server */
+  readonly ingestServerClient?: LakehouseIngestServerClient | undefined;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -111,3 +133,35 @@ export const buildCubeLakehouseEnvironment = (
     services.getCurrentUser,
     services.getPreferredEnvironment,
   );
+
+/**
+ * The deployed ingest definitions of a host with a lakehouse platform (PLAN
+ * §6.7), or none without one. It parses definitions with the engine Cube
+ * uses; pass it to `buildCubeEngine` too, so ingest cubes run
+ */
+export const buildCubeIngestCatalog = (
+  config: CubeEngineConfig,
+  tracerService: TracerService,
+  services: CubeLakehouseServices,
+): CubeIngestCatalog | undefined => {
+  const { platformServerClient, ingestServerClient } = services;
+  if (!platformServerClient || !ingestServerClient) {
+    return undefined;
+  }
+  const engineClient = new V1_EngineServerClient(config);
+  // every call throws without one
+  engineClient.setTracerService(tracerService);
+  const environment = new V1_CubeLakehouseEnvironmentResolver(
+    services.contractServerClient,
+    services.getAccessToken,
+    services.getCurrentUser,
+    services.getPreferredEnvironment,
+  );
+  return new V1_LegendCubeIngestCatalog(
+    platformServerClient,
+    ingestServerClient,
+    () => environment.resolveBaseEnvironment(),
+    (code) => engineClient.grammarToJSON_model(code),
+    services.getAccessToken,
+  );
+};
