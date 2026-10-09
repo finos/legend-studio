@@ -39,6 +39,7 @@ import {
   type AnyNodeDefinition,
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
+  INGEST_DATASET_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
   DROP_DEFINITION,
   FILTER_DEFINITION,
@@ -179,7 +180,7 @@ describe(unitTest('Unknown node'), () => {
 });
 
 describe(unitTest('Node registry'), () => {
-  test('Has the relational table and data product sources and the transforms, in menu order, by default', () => {
+  test('Has the relational table, data product and ingest data set sources and the transforms, in menu order, by default', () => {
     const registry = createNodeRegistry();
     const definition = registry.get('relational');
     expect(definition).toBe(RELATIONAL_TABLE_SOURCE_DEFINITION);
@@ -188,11 +189,16 @@ describe(unitTest('Node registry'), () => {
     expect(registry.sources.map((d) => d.type)).toEqual([
       'relational',
       'dataProductAccessPoint',
+      'ingestDataset',
     ]);
     const dataProduct = registry.get('dataProductAccessPoint');
     expect(dataProduct).toBe(DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION);
     expect(dataProduct?.label).toBe('Data Product');
     expect(dataProduct?.beta).toBe(true);
+    const ingest = registry.get('ingestDataset');
+    expect(ingest).toBe(INGEST_DATASET_SOURCE_DEFINITION);
+    expect(ingest?.label).toBe('Ingest Dataset');
+    expect(ingest?.beta).toBe(true);
     // transforms in the spec's menu order (§7): Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,

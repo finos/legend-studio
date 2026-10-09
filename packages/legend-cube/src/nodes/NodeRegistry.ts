@@ -146,10 +146,7 @@ export const DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION: SourceDefinition<DataP
     spec: DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC,
   };
 
-/**
- * A data set of a deployed ingest definition, in beta. Not in
- * createNodeRegistry until the source dialog has its Ingest tab
- */
+/** A data set of a deployed ingest definition (PLAN §6.7), in beta */
 export const INGEST_DATASET_SOURCE_DEFINITION: SourceDefinition<IngestDatasetSource> =
   {
     kind: 'source',
@@ -316,6 +313,7 @@ export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
+    INGEST_DATASET_SOURCE_DEFINITION,
     SORT_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,

@@ -22,6 +22,7 @@ import {
   ArrowsJoinIcon,
   CompressIcon,
   DataCubeIcon,
+  DatabaseImportIcon,
   FilterIcon,
   PackageIcon,
   PencilIcon,
@@ -37,6 +38,7 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   table: TableIcon,
   dataProduct: PackageIcon,
+  ingest: DatabaseImportIcon,
   filter: FilterIcon,
   join: ArrowsJoinIcon,
   limit: AlignTopIcon,

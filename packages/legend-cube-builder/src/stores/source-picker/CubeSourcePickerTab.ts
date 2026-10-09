@@ -21,6 +21,7 @@ export enum CubeSourcePickerTabKey {
   MODEL = 'model',
   DIRECT_CONNECTION = 'directConnection',
   DATA_PRODUCT = 'dataProduct',
+  INGEST = 'ingest',
 }
 
 /**

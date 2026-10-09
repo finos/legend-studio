@@ -55,6 +55,8 @@ describe('Node editor registries', () => {
       relational: 'Sources data from relational database table.',
       dataProductAccessPoint:
         'Sources data from an access point of a deployed data product.',
+      ingestDataset:
+        'Sources data from a data set of a deployed ingest definition.',
       distinct: 'Removes duplicate rows from the previous data set.',
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
       filter:

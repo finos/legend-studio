@@ -20,7 +20,6 @@ import {
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   FILTER_DEFINITION,
-  INGEST_DATASET_SOURCE_DEFINITION,
   JOIN_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
@@ -36,15 +35,8 @@ import { CubeSpecDecodeError } from '../SpecReader.js';
 // cube's model, which the core keeps whole, is the host's (its shape here is
 // only an example)
 
-/** The node kinds with ingest data sets, which the default registry doesn't have yet */
-const REGISTRY = new NodeRegistry([
-  RELATIONAL_TABLE_SOURCE_DEFINITION,
-  DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
-  INGEST_DATASET_SOURCE_DEFINITION,
-  FILTER_DEFINITION,
-  LIMIT_DEFINITION,
-  JOIN_DEFINITION,
-]);
+/** Today's node kinds */
+const REGISTRY = createNodeRegistry();
 
 const URN =
   'urn:lakehouse:prod:ingest:definition:alloy-git:com.example~sales~sales::ingest::OrdersIngest';
@@ -149,7 +141,14 @@ describe(unitTest('Saved specs of ingest cubes'), () => {
   );
 
   test('Keeps every data set, as saved, for a version without ingest data sets', () => {
-    const older = createNodeRegistry();
+    // the node kinds before ingest data sets
+    const older = new NodeRegistry([
+      RELATIONAL_TABLE_SOURCE_DEFINITION,
+      DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
+      FILTER_DEFINITION,
+      LIMIT_DEFINITION,
+      JOIN_DEFINITION,
+    ]);
     const { document } = decodeCubeSpec(SPEC, { registry: older });
     const kept = document.query.nodes.filter(
       (node) =>

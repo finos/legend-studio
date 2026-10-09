@@ -21,6 +21,7 @@ import {
   ArrowsJoinIcon,
   CompressIcon,
   DataCubeIcon,
+  DatabaseImportIcon,
   clsx,
   FilterIcon,
   PackageIcon,
@@ -36,6 +37,7 @@ const NODE_ICONS: Readonly<
 > = {
   table: TableIcon,
   dataProduct: PackageIcon,
+  ingest: DatabaseImportIcon,
   filter: FilterIcon,
   join: ArrowsJoinIcon,
   limit: AlignTopIcon,

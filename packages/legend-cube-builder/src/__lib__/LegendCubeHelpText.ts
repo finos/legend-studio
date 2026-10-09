@@ -16,6 +16,7 @@
 
 import {
   DataProductAccessPointSource,
+  IngestDatasetSource,
   Distinct,
   Drop,
   Filter,
@@ -38,6 +39,9 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   /** Added by Cube: the original has no data product source (PLAN §6.8) */
   [DataProductAccessPointSource.TYPE]:
     'Sources data from an access point of a deployed data product.',
+  /** Added by Cube: the original has no ingest data set source (PLAN §6.7) */
+  [IngestDatasetSource.TYPE]:
+    'Sources data from a data set of a deployed ingest definition.',
   [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',
   [Drop.TYPE]:
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
