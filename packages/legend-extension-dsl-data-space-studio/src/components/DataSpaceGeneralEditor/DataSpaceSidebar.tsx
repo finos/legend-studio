@@ -15,13 +15,20 @@
  */
 
 import { observer } from 'mobx-react-lite';
-import { clsx, HomeIcon, PlayIcon, SitemapIcon } from '@finos/legend-art';
+import {
+  clsx,
+  HomeIcon,
+  PlayIcon,
+  QuestionCircleIcon,
+  SitemapIcon,
+} from '@finos/legend-art';
 import { DATA_SPACE_TAB } from '../../stores/DataSpaceEditorState.js';
 
 const SIDEBAR_TABS = [
   { tab: DATA_SPACE_TAB.HOME, icon: <HomeIcon /> },
   { tab: DATA_SPACE_TAB.EXECUTION_CONTEXTS, icon: <SitemapIcon /> },
   { tab: DATA_SPACE_TAB.EXECUTABLES, icon: <PlayIcon /> },
+  { tab: DATA_SPACE_TAB.INFO, icon: <QuestionCircleIcon /> },
 ];
 
 export const DataSpaceSidebar = observer(

@@ -1,0 +1,39 @@
+{
+  "defaultExecutionContext": "default",
+  "description": "Sample DataSpace referencing a related dataspace via the DataSpaceInfo profile.",
+  "diagrams": [],
+  "elementDocs": [],
+  "elements": [],
+  "executables": [],
+  "executionContexts": [
+    {
+      "compatibleRuntimes": ["my::runtime::TestRuntime"],
+      "datasets": [],
+      "defaultRuntime": "my::runtime::TestRuntime",
+      "mapping": "my::mapping::TestMapping",
+      "name": "default"
+    }
+  ],
+  "info": {
+    "relatedDataSpaces": [
+      "com.gs.vdp:vendor-data-programmatic-news:3.0.0|ProgrammaticNews::dataspace::ProgrammaticNewsDataspace"
+    ]
+  },
+  "mappingToMappingCoverageResult": {},
+  "model": {
+    "_type": "data",
+    "elements": []
+  },
+  "name": "TestDataspace",
+  "package": "my::dataspace",
+  "path": "my::dataspace::TestDataspace",
+  "stereotypes": [],
+  "taggedValues": [
+    {
+      "profile": "meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo",
+      "tag": "relatedDataSpaces",
+      "value": "com.gs.vdp:vendor-data-programmatic-news:3.0.0|ProgrammaticNews::dataspace::ProgrammaticNewsDataspace"
+    }
+  ],
+  "title": "Test Sample DataSpace"
+}

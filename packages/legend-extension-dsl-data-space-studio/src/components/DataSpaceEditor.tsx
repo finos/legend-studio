@@ -21,6 +21,7 @@ import { DataSpaceEditorState } from '../stores/DataSpaceEditorState.js';
 import { DataSpaceGeneralEditor } from './DataSpaceGeneralEditor/DataSpaceGeneralEditor.js';
 import { DataSpacePreviewState } from '../stores/DataSpacePreviewState.js';
 import { flowResult } from 'mobx';
+import { useEffect } from 'react';
 import { isStubbed_PackageableElement } from '@finos/legend-graph';
 import { resolveExecutionContextMapping } from '@finos/legend-extension-dsl-data-space/graph';
 import { DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY } from '../__lib__/DSL_DataSpace_LegendStudioDocumentation.js';
@@ -69,6 +70,12 @@ export const DataSpaceEditor = observer(() => {
   useApplicationNavigationContext(
     DSL_DATA_SPACE_LEGEND_STUDIO_APPLICATION_NAVIGATION_CONTEXT_KEY.DATA_SPACE_EDITOR,
   );
+
+  useEffect(() => {
+    flowResult(dataSpaceState.loadRelatedDataSpaces()).catch(
+      editorStore.applicationStore.alertUnhandledError,
+    );
+  }, [dataSpaceState, editorStore]);
 
   return (
     <Panel className="dataSpace-editor">

@@ -15,10 +15,21 @@
  */
 
 import { describe, expect, jest, test } from '@jest/globals';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { ApplicationStoreProvider } from '@finos/legend-application';
 import { integrationTest } from '@finos/legend-shared/test';
-import type { PlainObject } from '@finos/legend-shared';
+import {
+  type PlainObject,
+  HttpStatus,
+  NetworkClientError,
+} from '@finos/legend-shared';
+import { type DepotServerClient } from '@finos/legend-server-depot';
 import { DataSpaceViewer } from '../DataSpaceViewer.js';
 import { DATA_SPACE_VIEWER_ACTIVITY_MODE } from '../../stores/DataSpaceViewerNavigation.js';
 import {
@@ -30,6 +41,7 @@ import type { V1_DataSpaceAnalysisResult } from '../../graph-manager/index.js';
 import TEST_DATA__mappingProviderNoRuntime from './TEST_DATA__DataSpaceViewer__MappingProviderNoRuntime.json' with { type: 'json' };
 import TEST_DATA__noExecutionContexts from './TEST_DATA__DataSpaceViewer__NoExecutionContexts.json' with { type: 'json' };
 import TEST_DATA__relationExecutable from './TEST_DATA__DataSpaceViewer__RelationExecutable.json' with { type: 'json' };
+import TEST_DATA__relatedDataSpaces from './TEST_DATA__DataSpaceViewer__RelatedDataSpaces.json' with { type: 'json' };
 
 (global as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
   jest.fn().mockImplementation(() => ({
@@ -147,5 +159,136 @@ describe(integrationTest('DataSpaceViewer'), () => {
     );
 
     expect(screen.queryByText(/AI Readiness Badge:/)).toBeNull();
+  });
+
+  test('parses an encoded relatedDataSpaces entry and navigates to the Marketplace legacy DataProduct URL on click', async () => {
+    const viewDataSpace = jest.fn();
+    const setup = await renderDataSpaceViewer(
+      TEST_DATA__relatedDataSpaces as PlainObject<V1_DataSpaceAnalysisResult>,
+      { viewDataSpace },
+    );
+    await act(async () => {
+      setup.viewerState.setCurrentActivity(
+        DATA_SPACE_VIEWER_ACTIVITY_MODE.RELATED_DATA_SPACES,
+      );
+    });
+
+    const button = screen.getByRole('button', {
+      name: 'ProgrammaticNewsDataspace',
+    });
+    expect(button).toBeDefined();
+
+    fireEvent.click(button);
+
+    expect(viewDataSpace).toHaveBeenCalledTimes(1);
+    expect(viewDataSpace).toHaveBeenCalledWith(
+      'com.gs.vdp:vendor-data-programmatic-news:latest/ProgrammaticNews::dataspace::ProgrammaticNewsDataspace',
+    );
+  });
+
+  test('renders the resolved DataSpace title (not the path name) for a related DataSpace', async () => {
+    const getVersionEntity = jest
+      .fn<DepotServerClient['getVersionEntity']>()
+      .mockResolvedValue({
+        path: 'ProgrammaticNews::dataspace::ProgrammaticNewsDataspace',
+        content: { title: 'Programmatic News' },
+      });
+    const depotServerClient = {
+      getVersionEntity,
+    } as unknown as DepotServerClient;
+    const setup = await renderDataSpaceViewer(
+      TEST_DATA__relatedDataSpaces as PlainObject<V1_DataSpaceAnalysisResult>,
+      { depotServerClient },
+    );
+    await act(async () => {
+      setup.viewerState.setCurrentActivity(
+        DATA_SPACE_VIEWER_ACTIVITY_MODE.RELATED_DATA_SPACES,
+      );
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Programmatic News' }),
+      ).toBeDefined(),
+    );
+    expect(getVersionEntity).toHaveBeenCalledWith(
+      'com.gs.vdp',
+      'vendor-data-programmatic-news',
+      '3.0.0',
+      'ProgrammaticNews::dataspace::ProgrammaticNewsDataspace',
+    );
+    expect(
+      screen.queryByRole('button', { name: 'ProgrammaticNewsDataspace' }),
+    ).toBeNull();
+  });
+
+  test('falls back to the path when a related DataSpace has no title', async () => {
+    const getVersionEntity = jest
+      .fn<DepotServerClient['getVersionEntity']>()
+      .mockResolvedValue({
+        path: 'ProgrammaticNews::dataspace::ProgrammaticNewsDataspace',
+        content: {},
+      });
+    const depotServerClient = {
+      getVersionEntity,
+    } as unknown as DepotServerClient;
+    const setup = await renderDataSpaceViewer(
+      TEST_DATA__relatedDataSpaces as PlainObject<V1_DataSpaceAnalysisResult>,
+      { depotServerClient },
+    );
+    await act(async () => {
+      setup.viewerState.setCurrentActivity(
+        DATA_SPACE_VIEWER_ACTIVITY_MODE.RELATED_DATA_SPACES,
+      );
+    });
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', {
+          name: 'ProgrammaticNewsDataspace',
+        }),
+      ).toBeDefined(),
+    );
+  });
+
+  test('renders an unresolvable related DataSpace as a disabled button without warning', async () => {
+    const getVersionEntity = jest
+      .fn<DepotServerClient['getVersionEntity']>()
+      .mockRejectedValue(
+        new NetworkClientError(
+          { status: HttpStatus.NOT_FOUND } as Response,
+          undefined,
+        ),
+      );
+    const depotServerClient = {
+      getVersionEntity,
+    } as unknown as DepotServerClient;
+    const setup = await TEST__getDataSpaceViewerState(
+      TEST_DATA__relatedDataSpaces as PlainObject<V1_DataSpaceAnalysisResult>,
+      { depotServerClient },
+    );
+    const notifyWarning = jest.spyOn(
+      setup.applicationStore.notificationService,
+      'notifyWarning',
+    );
+    await act(async () => {
+      render(
+        <ApplicationStoreProvider store={setup.applicationStore}>
+          <DataSpaceViewer dataSpaceViewerState={setup.viewerState} />
+        </ApplicationStoreProvider>,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    await act(async () => {
+      setup.viewerState.setCurrentActivity(
+        DATA_SPACE_VIEWER_ACTIVITY_MODE.RELATED_DATA_SPACES,
+      );
+    });
+
+    const button = await waitFor(() =>
+      screen.getByRole('button', { name: 'ProgrammaticNewsDataspace' }),
+    );
+    expect(button).toHaveProperty('disabled', true);
+    expect(notifyWarning).not.toHaveBeenCalled();
   });
 });

@@ -19,11 +19,13 @@ import { unitTest } from '@finos/legend-shared/test';
 import {
   ResolvedDataSpaceEntityWithOrigin,
   extractDataSpaceInfo,
+  extractDataSpaceInfoFromSummary,
 } from '../DataSpaceInfo.js';
 import { DepotEntityWithOrigin } from '@finos/legend-storage';
 import {
   SNAPSHOT_VERSION_ALIAS,
   type StoredEntity,
+  type StoredSummaryEntity,
 } from '@finos/legend-server-depot';
 import { DATA_SPACE_ELEMENT_CLASSIFIER_PATH } from '../../../graph-manager/protocol/pure/DSL_DataSpace_PureProtocolProcessorPlugin.js';
 
@@ -307,5 +309,71 @@ describe(unitTest('extractDataSpaceInfo'), () => {
     expect(result.classifierPath).toBe(
       'meta::pure::metamodel::dataSpace::DataSpace',
     );
+  });
+});
+
+describe(unitTest('extractDataSpaceInfoFromSummary'), () => {
+  test('should extract DataSpace info from StoredSummaryEntity', () => {
+    const storedSummaryEntity: StoredSummaryEntity = {
+      groupId: 'com.example.group',
+      artifactId: 'my-artifact',
+      versionId: '1.0.0',
+      path: 'model::domain::MyDataSpace',
+      classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+    };
+
+    const result = extractDataSpaceInfoFromSummary(storedSummaryEntity);
+
+    expect(result).toBeInstanceOf(ResolvedDataSpaceEntityWithOrigin);
+    expect(result.origin?.groupId).toBe('com.example.group');
+    expect(result.origin?.artifactId).toBe('my-artifact');
+    expect(result.origin?.versionId).toBe('1.0.0');
+    expect(result.name).toBe('MyDataSpace');
+    expect(result.path).toBe('model::domain::MyDataSpace');
+    expect(result.classifierPath).toBe(DATA_SPACE_ELEMENT_CLASSIFIER_PATH);
+  });
+
+  test('should leave title and defaultExecutionContext undefined', () => {
+    const storedSummaryEntity: StoredSummaryEntity = {
+      groupId: 'com.example',
+      artifactId: 'artifact',
+      versionId: '1.0.0',
+      path: 'model::MyDataSpace',
+      classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+    };
+
+    const result = extractDataSpaceInfoFromSummary(storedSummaryEntity);
+
+    expect(result.title).toBeUndefined();
+    expect(result.defaultExecutionContext).toBeUndefined();
+  });
+
+  test('should use the stored versionId', () => {
+    const storedSummaryEntity: StoredSummaryEntity = {
+      groupId: 'com.example',
+      artifactId: 'artifact',
+      versionId: '2.3.4',
+      path: 'model::MyDataSpace',
+      classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+    };
+
+    const result = extractDataSpaceInfoFromSummary(storedSummaryEntity);
+
+    expect(result.origin?.versionId).toBe('2.3.4');
+  });
+
+  test('should extract entity name from nested path', () => {
+    const storedSummaryEntity: StoredSummaryEntity = {
+      groupId: 'com.example',
+      artifactId: 'artifact',
+      versionId: '1.0.0',
+      path: 'model::complex::nested::path::EntityName',
+      classifierPath: 'meta::pure::metamodel::dataSpace::DataSpace',
+    };
+
+    const result = extractDataSpaceInfoFromSummary(storedSummaryEntity);
+
+    expect(result.name).toBe('EntityName');
+    expect(result.path).toBe('model::complex::nested::path::EntityName');
   });
 });

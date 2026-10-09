@@ -25,6 +25,7 @@ import { DataSpaceSidebar } from './DataSpaceSidebar.js';
 import { DataSpaceHomeTab } from './DataSpaceHomeTab.js';
 import { DataSpaceExecutionContextEditor } from '../DataSpaceExecutionContextEditor.js';
 import { DataspaceExecutablesSection } from './DataSpaceExecutablesSection.js';
+import { DataSpaceInfoTab } from './DataSpaceInfoTab.js';
 
 export const DataSpaceGeneralEditor = observer(() => {
   const editorStore = useEditorStore();
@@ -37,6 +38,8 @@ export const DataSpaceGeneralEditor = observer(() => {
         return <DataSpaceExecutionContextEditor />;
       case DATA_SPACE_TAB.EXECUTABLES:
         return <DataspaceExecutablesSection />;
+      case DATA_SPACE_TAB.INFO:
+        return <DataSpaceInfoTab />;
       case DATA_SPACE_TAB.HOME:
       default:
         return <DataSpaceHomeTab />;

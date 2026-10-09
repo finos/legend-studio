@@ -20,6 +20,14 @@ export * from '../graph/metamodel/pure/model/packageableElements/mapping/DSL_Dat
 export * from '../graph/DSL_DataSpace_MetaModelConst.js';
 export * from './DSL_DataSpaceAnalyticsHelper.js';
 export * from './DSL_DataSpace_GraphManagerPreset.js';
+export {
+  PURE_DATA_SPACE_INFO_PROFILE_PATH,
+  PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE,
+  PURE_DATA_SPACE_INFO_PROFILE_IN_DEVELOPMENT_STEREOTYPE,
+  PURE_DATA_SPACE_INFO_PROFILE_EXTERNAL_STEREOTYPE,
+  PURE_DATA_SPACE_INFO_PROFILE_RELATED_DATA_SPACES_TAG,
+  PURE_DATA_SPACE_INFO_PROFILE_DEPRECATION_NOTICE_TAG,
+} from './DSL_DataSpace_PureGraphManagerPlugin.js';
 
 export { V1_DataSpaceAnalysisResult } from './protocol/pure/v1/engine/analytics/V1_DataSpaceAnalysis.js';
 
@@ -53,4 +61,7 @@ export {
   V1_DataSpace,
   V1_DataSpaceMappingProvider,
 } from '../graph-manager/protocol/pure/v1/model/packageableElements/dataSpace/V1_DSL_DataSpace_DataSpace.js';
-export { V1_deserializeDataSpace } from '../graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';
+export {
+  V1_deserializeDataSpace,
+  V1_serializeDataSpace,
+} from '../graph-manager/protocol/pure/v1/transformation/pureProtocol/V1_DSL_DataSpace_ProtocolHelper.js';

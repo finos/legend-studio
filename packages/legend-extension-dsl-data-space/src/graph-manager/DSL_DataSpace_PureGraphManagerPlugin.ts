@@ -31,6 +31,13 @@ export const PURE_ENTERPRISE_PROFILE_TAXONOMY_NODE_STEREOTYPE = 'taxonomyNodes';
 export const PURE_DATA_SPACE_INFO_PROFILE_PATH =
   'meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo';
 export const PURE_DATA_SPACE_INFO_PROFILE_VERIFIED_STEREOTYPE = 'Verified';
+export const PURE_DATA_SPACE_INFO_PROFILE_IN_DEVELOPMENT_STEREOTYPE =
+  'InDevelopment';
+export const PURE_DATA_SPACE_INFO_PROFILE_EXTERNAL_STEREOTYPE = 'External';
+export const PURE_DATA_SPACE_INFO_PROFILE_RELATED_DATA_SPACES_TAG =
+  'relatedDataSpaces';
+export const PURE_DATA_SPACE_INFO_PROFILE_DEPRECATION_NOTICE_TAG =
+  'deprecationNotice';
 export const PURE_POWERBI_ARTIFACT_GENERATION_PROFILE_PATH =
   'meta::external::powerbi::profiles::PowerBIArtifactGeneration';
 

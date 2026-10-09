@@ -206,6 +206,7 @@ export class DataSpaceAdvancedSearchState {
         artifactId,
         versionId,
         analysisResult,
+        this.depotServerClient,
         {
           retrieveGraphData: () =>
             new GraphDataWithOrigin(

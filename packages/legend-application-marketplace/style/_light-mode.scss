@@ -2237,6 +2237,30 @@
       color: var(--color-hclight-white);
     }
 
+    &__wiki__related-data-spaces__item {
+      background: var(--color-hclight-blue-60);
+
+      &:hover {
+        background: var(--color-hclight-blue-70);
+      }
+
+      &:disabled {
+        background: var(--color-hclight-grey-30);
+
+        &:hover {
+          background: var(--color-hclight-grey-30);
+        }
+
+        .data-space__viewer__wiki__related-data-spaces__item__label {
+          color: var(--color-hclight-grey-50);
+        }
+      }
+    }
+
+    &__wiki__related-data-spaces__item__label {
+      color: var(--color-hclight-white);
+    }
+
     &__header__actions {
       background: var(--color-hclight-white);
       border-color: var(--color-hclight-blue-50);
