@@ -45,14 +45,12 @@ import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
 import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProductAccessPointSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
-import {
-  DataProductAccessPointSource,
-  sourcesAreOneKind,
-} from './sources/DataProductAccessPointSource.js';
+import { DataProductAccessPointSource } from './sources/DataProductAccessPointSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { sourcesAreOneKind } from './sources/SourceKinds.js';
 import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';

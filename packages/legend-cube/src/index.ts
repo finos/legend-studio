@@ -39,6 +39,7 @@ export * from './inference/RowOrder.js';
 export * from './nodes/sources/RelationalTableSource.js';
 export * from './nodes/sources/DataProductAccessPointSource.js';
 export * from './nodes/sources/ResolvableSource.js';
+export * from './nodes/sources/SourceKinds.js';
 export * from './filter/FilterOperator.js';
 export * from './filter/FilterTree.js';
 export * from './filter/FilterBuilder.js';
