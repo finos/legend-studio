@@ -40,6 +40,7 @@ const column = (name: string, path: string, params: number[] = []) =>
 /** The orders product's daily access point */
 export const FAKE_DAILY_ORDERS_SCHEMA = new Schema([
   column('ORDER_ID', 'meta::pure::precisePrimitives::BigInt'),
+  column('CUSTOMER_ID', 'meta::pure::precisePrimitives::Varchar', [10]),
   column('REGION', 'meta::pure::precisePrimitives::Varchar', [20]),
   column('AMOUNT', 'meta::pure::precisePrimitives::Numeric', [10, 2]),
 ]);
@@ -94,7 +95,7 @@ export const fakeDescriptionOf = (
           id: 'daily_orders',
           title: 'Daily orders',
           schema: FAKE_DAILY_ORDERS_SCHEMA,
-          sampleRows: [['1', 'EMEA', '12.34']],
+          sampleRows: [['1', 'ALFKI', 'EMEA', '12.34']],
         }),
         new CubeAccessPoint({
           id: 'orders_as_of',

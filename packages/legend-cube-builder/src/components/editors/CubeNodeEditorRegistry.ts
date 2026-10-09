@@ -15,6 +15,7 @@
  */
 
 import {
+  DataProductAccessPointSource,
   Distinct,
   Drop,
   Filter,
@@ -29,6 +30,7 @@ import {
 } from '@finos/legend-cube';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
+import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
@@ -69,6 +71,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   React.FC<CubeNodeEditorProps>
 > = new Map<string, React.FC<CubeNodeEditorProps>>([
   [RelationalTableSource.TYPE, CubeSourceEditor],
+  [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [Sort.TYPE, CubeSortEditor],
   [Filter.TYPE, CubeFilterEditor],
   [Restrict.TYPE, CubeRestrictEditor],

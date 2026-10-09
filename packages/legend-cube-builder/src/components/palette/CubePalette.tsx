@@ -145,7 +145,7 @@ export const CubePalette = observer(
           role="group"
           aria-label="Palette"
         >
-          {registry.sources.map((definition) => (
+          {editorState.offeredSources.map((definition) => (
             <CubePaletteItem
               key={definition.type}
               editorState={editorState}

@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+import {
+  DataProductAccessPointSource,
+  RelationalTableSource,
+} from '@finos/legend-cube';
 import type { GeneratorFn } from '@finos/legend-shared';
 import {
   action,
@@ -24,6 +28,7 @@ import {
   observable,
 } from 'mobx';
 import type { CubeEditorState } from './CubeEditorState.js';
+import { CubeDataProductTabState } from './source-picker/CubeDataProductTabState.js';
 import { CubeDirectConnectionTabState } from './source-picker/CubeDirectConnectionTabState.js';
 import { CubeInlineModelTabState } from './source-picker/CubeInlineModelTabState.js';
 import {
@@ -41,6 +46,7 @@ export class CubeSourcePickerState {
   readonly editorState: CubeEditorState;
   readonly modelTab: CubeInlineModelTabState;
   readonly directTab: CubeDirectConnectionTabState;
+  readonly dataProductTab: CubeDataProductTabState;
 
   isOpen = false;
   activeTabKey = CubeSourcePickerTabKey.MODEL;
@@ -61,11 +67,14 @@ export class CubeSourcePickerState {
     this.editorState = editorState;
     this.modelTab = new CubeInlineModelTabState(editorState);
     this.directTab = new CubeDirectConnectionTabState(editorState);
+    this.dataProductTab = new CubeDataProductTabState(editorState);
   }
 
   /** The tabs the host serves, in order */
   get tabs(): readonly CubeSourcePickerTab[] {
-    return [this.modelTab, this.directTab].filter((tab) => tab.isAvailable);
+    return [this.modelTab, this.directTab, this.dataProductTab].filter(
+      (tab) => tab.isAvailable,
+    );
   }
 
   /** The tab the cube's fixed context belongs to; the Model tab takes any no other tab claims */
@@ -80,6 +89,25 @@ export class CubeSourcePickerState {
     return (
       this.tabs.find((tab) => tab.key === this.activeTabKey) ?? this.modelTab
     );
+  }
+
+  /**
+   * The tab a palette item opens (DP-3): a data product's for a data
+   * product, otherwise the table tab the cube uses, else the table tab open
+   * last, else the Model tab
+   */
+  tabForSourceType(type: string): CubeSourcePickerTab | undefined {
+    if (type === DataProductAccessPointSource.TYPE) {
+      return this.dataProductTab.isAvailable ? this.dataProductTab : undefined;
+    }
+    if (type !== RelationalTableSource.TYPE) {
+      return undefined;
+    }
+    const tableTabs = this.tabs.filter((tab) => tab !== this.dataProductTab);
+    const { fixedTab } = this;
+    return fixedTab
+      ? tableTabs.find((tab) => tab === fixedTab)
+      : (tableTabs.find((tab) => tab === this.activeTab) ?? this.modelTab);
   }
 
   /** A cube with a fixed context takes sources from its own tab only */
@@ -122,6 +150,7 @@ export class CubeSourcePickerState {
     this.isOpen = false;
     this.modelTab.close();
     this.directTab.close();
+    this.dataProductTab.close();
   }
 
   /** Adds the open tab's source, then closes the dialog */

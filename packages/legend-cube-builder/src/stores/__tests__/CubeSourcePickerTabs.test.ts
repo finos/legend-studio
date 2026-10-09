@@ -31,7 +31,7 @@ import { CubeEditorState } from '../CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
-const { MODEL, DIRECT_CONNECTION } = CubeSourcePickerTabKey;
+const { MODEL, DIRECT_CONNECTION, DATA_PRODUCT } = CubeSourcePickerTabKey;
 
 const setUp = (
   document?: CubeDocument,
@@ -75,6 +75,7 @@ describe('Source dialog tabs', () => {
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
       [DIRECT_CONNECTION, true],
+      [DATA_PRODUCT, true],
     ]);
     picker.open();
     expect(picker.activeTab.key).toBe(MODEL);
@@ -96,7 +97,10 @@ describe('Source dialog tabs', () => {
       ...host,
       connectionExplorer: undefined,
     });
-    expect(tabsOf(state)).toEqual([[MODEL, true]]);
+    expect(tabsOf(state)).toEqual([
+      [MODEL, true],
+      [DATA_PRODUCT, true],
+    ]);
     state.sourcePicker.open(DIRECT_CONNECTION);
     expect(state.sourcePicker.activeTab.key).toBe(MODEL);
   });
@@ -109,6 +113,7 @@ describe('Source dialog tabs', () => {
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
       [DIRECT_CONNECTION, false],
+      [DATA_PRODUCT, false],
     ]);
     picker.open(DIRECT_CONNECTION);
     expect(picker.activeTab.key).toBe(MODEL);
@@ -125,6 +130,7 @@ describe('Source dialog tabs', () => {
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
       [DIRECT_CONNECTION, false],
+      [DATA_PRODUCT, false],
     ]);
   });
 
@@ -134,6 +140,7 @@ describe('Source dialog tabs', () => {
     expect(tabsOf(state)).toEqual([
       [MODEL, false],
       [DIRECT_CONNECTION, true],
+      [DATA_PRODUCT, false],
     ]);
     picker.open(MODEL);
     expect(picker.activeTab.key).toBe(DIRECT_CONNECTION);
@@ -161,6 +168,7 @@ describe('Source dialog tabs', () => {
     expect(tabsOf(state)).toEqual([
       [MODEL, false],
       [DIRECT_CONNECTION, true],
+      [DATA_PRODUCT, false],
     ]);
 
     // a table the engine can't type keeps the dialog open, with the error
@@ -179,6 +187,7 @@ describe('Source dialog tabs', () => {
     expect(tabsOf(state)).toEqual([
       [MODEL, true],
       [DIRECT_CONNECTION, true],
+      [DATA_PRODUCT, true],
     ]);
   });
 

@@ -28,6 +28,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeSourcePickerTabKey } from '../../stores/source-picker/CubeSourcePickerTab.js';
+import { CubeDataProductTab } from './CubeDataProductTab.js';
 import { CubeDirectConnectionTab } from './CubeDirectConnectionTab.js';
 import { CubeInlineModelTab } from './CubeInlineModelTab.js';
 
@@ -89,6 +90,8 @@ export const CubeSourcePicker = observer(
             <div role={tabs.length > 1 ? 'tabpanel' : undefined}>
               {activeTab.key === CubeSourcePickerTabKey.DIRECT_CONNECTION ? (
                 <CubeDirectConnectionTab tab={picker.directTab} />
+              ) : activeTab.key === CubeSourcePickerTabKey.DATA_PRODUCT ? (
+                <CubeDataProductTab tab={picker.dataProductTab} />
               ) : (
                 <CubeInlineModelTab tab={picker.modelTab} />
               )}

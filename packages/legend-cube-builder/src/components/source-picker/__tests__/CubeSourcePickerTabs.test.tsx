@@ -82,6 +82,7 @@ describe('Source dialog', () => {
     expect(tabStates(dialog)).toEqual([
       ['Model', true, false],
       ['Database connection', false, false],
+      ['Data product', false, false],
     ]);
     expect(within(dialog).getByLabelText('Model')).toBeDefined();
     fireEvent.click(
@@ -90,6 +91,7 @@ describe('Source dialog', () => {
     expect(tabStates(dialog)).toEqual([
       ['Model', false, false],
       ['Database connection', true, false],
+      ['Data product', false, false],
     ]);
     expect(within(dialog).getByLabelText('Setup SQL')).toBeDefined();
     expect(within(dialog).queryByLabelText('Model')).toBeNull();
@@ -129,11 +131,16 @@ describe('Source dialog', () => {
     expect(tabStates(dialog)).toEqual([
       ['Model', false, true],
       ['Database connection', true, false],
+      ['Data product', false, true],
     ]);
   });
 
   test('Shows no tabs when the host offers only models', async () => {
-    await renderPage((host) => ({ ...host, connectionExplorer: undefined }));
+    await renderPage((host) => ({
+      ...host,
+      connectionExplorer: undefined,
+      dataProductCatalog: undefined,
+    }));
     const dialog = await openDialog();
     expect(within(dialog).queryByRole('tablist')).toBeNull();
     expect(within(dialog).getByLabelText('Model')).toBeDefined();

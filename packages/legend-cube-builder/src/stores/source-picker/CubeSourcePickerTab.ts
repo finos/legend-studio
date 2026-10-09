@@ -20,6 +20,7 @@ import type { GeneratorFn } from '@finos/legend-shared';
 export enum CubeSourcePickerTabKey {
   MODEL = 'model',
   DIRECT_CONNECTION = 'directConnection',
+  DATA_PRODUCT = 'dataProduct',
 }
 
 /**

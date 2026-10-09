@@ -141,6 +141,7 @@ describe('Cube palette', () => {
       ),
     ).toEqual([
       TABLE,
+      'Data Product (BETA)',
       'separator',
       SORT,
       FILTER,
@@ -154,7 +155,11 @@ describe('Cube palette', () => {
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();
     expect(paletteItem(FILTER).querySelector('svg')).not.toBeNull();
-    expect(within(list).queryByText('BETA')).toBeNull();
+    // only the data product source is in beta
+    expect(within(list).getAllByText('BETA')).toHaveLength(1);
+    expect(
+      within(paletteItem('Data Product (BETA)')).getByText('BETA'),
+    ).toBeDefined();
   });
 
   test('Marks a node type in beta', async () => {

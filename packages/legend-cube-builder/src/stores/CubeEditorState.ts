@@ -32,6 +32,7 @@ import {
   rereadQueryFilterValues,
   type Schema,
   type SchemaInferenceResult,
+  type SourceDefinition,
 } from '@finos/legend-cube';
 import type { CommandRegistrar } from '@finos/legend-application';
 import type { GeneratorFn } from '@finos/legend-shared';
@@ -638,6 +639,14 @@ export class CubeEditorState implements CommandRegistrar {
     }
   }
 
+  /** The kinds of source the host serves: a source without its dialog tab isn't offered */
+  get offeredSources(): readonly SourceDefinition[] {
+    return this.registry.sources.filter(
+      (definition) =>
+        this.sourcePicker.tabForSourceType(definition.type) !== undefined,
+    );
+  }
+
   /**
    * Whether a node of the type can be added: a transform, unconnected or
    * spliced in after `afterId`, when the query allows it; a source only
@@ -649,7 +658,13 @@ export class CubeEditorState implements CommandRegistrar {
       return false;
     }
     if (definition.kind === 'source') {
-      return afterId === undefined;
+      // through its tab, which the cube's kind may disable (PLAN §6.8)
+      const tab = this.sourcePicker.tabForSourceType(type);
+      return (
+        afterId === undefined &&
+        tab !== undefined &&
+        this.sourcePicker.isTabEnabled(tab)
+      );
     }
     const { query } = this.document;
     return query.canAdd(definition.create(query.generateId(type)), afterId);
@@ -667,7 +682,7 @@ export class CubeEditorState implements CommandRegistrar {
       return;
     }
     if (definition.kind === 'source') {
-      this.sourcePicker.open();
+      this.sourcePicker.open(this.sourcePicker.tabForSourceType(type)?.key);
       return;
     }
     const { query } = this.document;

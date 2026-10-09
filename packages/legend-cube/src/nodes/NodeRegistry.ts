@@ -128,11 +128,7 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     spec: RELATIONAL_TABLE_SOURCE_CODEC,
   };
 
-/**
- * A data product's access point (PLAN §6.8). Not in `createNodeRegistry()`
- * until its source dialog tab exists: registering a source adds it to the
- * palette and the context menu
- */
+/** A data product's access point (PLAN §6.8), in beta */
 export const DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION: SourceDefinition<DataProductAccessPointSource> =
   {
     kind: 'source',
@@ -300,6 +296,7 @@ export class NodeRegistry {
 export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
+    DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     SORT_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,

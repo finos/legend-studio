@@ -23,6 +23,7 @@ import {
   DataCubeIcon,
   clsx,
   FilterIcon,
+  PackageIcon,
   PencilIcon,
   QuestionSquareIcon,
   SortIcon,
@@ -34,6 +35,7 @@ const NODE_ICONS: Readonly<
   Record<string, React.FC<{ className?: string; title?: string }>>
 > = {
   table: TableIcon,
+  dataProduct: PackageIcon,
   filter: FilterIcon,
   join: ArrowsJoinIcon,
   limit: AlignTopIcon,

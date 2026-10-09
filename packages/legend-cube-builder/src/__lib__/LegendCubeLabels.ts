@@ -30,6 +30,8 @@ export const MAX_UNDO_STEPS = 100;
 export enum LEGEND_CUBE_USER_DATA_KEY {
   ROW_LIMIT = 'legend-cube.row-limit',
   PALETTE_COLLAPSED = 'legend-cube.palette-collapsed',
+  /** The warehouse the viewer last picked for a data product cube (PLAN §6.8) */
+  DATA_PRODUCT_WAREHOUSE = 'legend-cube.data-product-warehouse',
 }
 
 export const UNSAVED_CUBE_NAME = 'Unsaved Query';
