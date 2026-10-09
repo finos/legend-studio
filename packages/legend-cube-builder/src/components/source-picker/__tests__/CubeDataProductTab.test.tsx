@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { CubeDocument } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProductLabels.js';
 import { UNSERVED_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import {
+  createFakeCubeDataProductCatalog,
+  FAKE_DATA_PRODUCT_CANDIDATES,
+} from '../../../__test-utils__/FakeCubeDataProductCatalog.js';
+import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CubeDataProductEnvironmentType,
   createCubeDataProductModel,
 } from '../../../graph-manager/CubeDataProduct.js';
+import type { CubeDataProductCandidate } from '../../../graph-manager/CubeDataProductCatalog.js';
 import type { CubeHost } from '../../../stores/CubeHost.js';
 import { CubeEditor } from '../../CubeEditor.js';
 
@@ -72,6 +78,10 @@ describe('Data product tab', () => {
         .getAllByRole('option')
         .map((option) => option.textContent),
     ).toEqual(['Production', 'Production (parallel)']);
+    // a new cube has no project to keep to
+    expect(
+      within(dialog).queryByRole('radiogroup', { name: 'Data products shown' }),
+    ).toBeNull();
     const products = within(dialog).getByRole('list', {
       name: 'Data products',
     });
@@ -127,11 +137,171 @@ describe('Data product tab', () => {
         "All of the cube's data products come from com.example.sales:orders-products:1.4.0.",
       ),
     ).toBeDefined();
+    // other versions show, greyed, under Search all
+    const shown = within(dialog).getByRole('radiogroup', {
+      name: 'Data products shown',
+    });
+    expect(
+      within(shown).getByLabelText<HTMLInputElement>('In this project').checked,
+    ).toBe(true);
+    expect(
+      within(
+        within(dialog).getByRole('list', { name: 'Data products' }),
+      ).queryByText('Returns Product'),
+    ).toBeNull();
+    fireEvent.click(within(shown).getByLabelText('Search all'));
+    expect(
+      within(dialog)
+        .getByText('Deployed from version feature-returns-SNAPSHOT')
+        .closest('button')?.disabled,
+    ).toBe(true);
     // the cube's tables tabs are disabled
     expect(
       within(dialog).getByRole<HTMLButtonElement>('tab', { name: 'Model' })
         .disabled,
     ).toBe(true);
+  });
+
+  test('Shows a failed listing with a Retry, which lists again', async () => {
+    const { dataProducts } = await renderPage();
+    dataProducts.search.mockRejectedValueOnce(
+      new Error('Lakehouse unavailable'),
+    );
+    fireEvent.click(paletteItem('Data Product'));
+    const dialog = await screen.findByRole('dialog');
+    const alert = await within(dialog).findByRole('alert');
+    expect(within(alert).getByText('Lakehouse unavailable')).toBeDefined();
+    fireEvent.click(within(alert).getByRole('button', { name: 'Retry' }));
+    expect(await within(dialog).findByText('Orders Product')).toBeDefined();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(dataProducts.search).toHaveBeenCalledTimes(2);
+  });
+
+  test('Says it searches on a host that searches on a server, and when the matches may be cut short', async () => {
+    const searching = createFakeCubeDataProductCatalog(undefined, {
+      searchesOnServer: true,
+      searchLimit: 2,
+    });
+    let answer!: (candidates: readonly CubeDataProductCandidate[]) => void;
+    searching.search.mockReturnValueOnce(
+      new Promise((resolve) => {
+        answer = resolve;
+      }),
+    );
+    await renderPage((host) => ({
+      ...host,
+      dataProductCatalog: searching.catalog,
+    }));
+    fireEvent.click(paletteItem('Data Product'));
+    const dialog = await screen.findByRole('dialog');
+    expect(
+      await within(dialog).findByText('searching data products'),
+    ).toBeDefined();
+    answer(FAKE_DATA_PRODUCT_CANDIDATES.slice(0, 2));
+    expect(
+      await within(dialog).findByText(
+        'Too many matching items; list truncated.',
+      ),
+    ).toBeDefined();
+    expect(within(dialog).queryByText('searching data products')).toBeNull();
+  });
+
+  test('Previews a picked access point from its artifact alone: description, typed columns, sample rows, and its page in the marketplace', async () => {
+    const { fake, dataProducts } = await renderPage();
+    const dialog = await openFromPalette();
+    fireEvent.click(within(dialog).getByText('Orders Product'));
+    const accessPoints = await within(dialog).findByRole('list', {
+      name: 'Access points',
+    });
+    expect(
+      within(dialog).queryByRole('region', { name: 'Access point preview' }),
+    ).toBeNull();
+    fireEvent.click(within(accessPoints).getByText('Daily orders'));
+    let preview = within(dialog).getByRole('region', {
+      name: 'Access point preview',
+    });
+    expect(within(preview).getByText('One row per order')).not.toBeNull();
+    const columns = within(preview).getByRole('table', { name: 'Columns' });
+    expect(within(columns).getByText('Varchar(10)')).not.toBeNull();
+    expect(within(columns).getByText('Numeric(10,2)')).not.toBeNull();
+    const samples = within(preview).getByRole('table', { name: 'Sample rows' });
+    expect(within(samples).getByText('ALFKI')).not.toBeNull();
+    expect(
+      within(preview).getByRole<HTMLAnchorElement>('link', {
+        name: 'Open in Marketplace',
+      }).href,
+    ).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/deployment-orders_product#core',
+    );
+    // one with no description nor sample rows, on a host with no marketplace
+    dataProducts.getMarketplaceLink.mockReturnValue(undefined);
+    fireEvent.click(within(accessPoints).getByText('customers'));
+    preview = within(dialog).getByRole('region', {
+      name: 'Access point preview',
+    });
+    expect(within(preview).getByText('No description')).not.toBeNull();
+    expect(
+      within(preview).getByText('No sample rows in the deployed artifact'),
+    ).not.toBeNull();
+    expect(
+      within(preview).queryByRole('link', { name: 'Open in Marketplace' }),
+    ).toBeNull();
+    expect(fake.execute).not.toHaveBeenCalled();
+    expect(fake.typeLambdas).not.toHaveBeenCalled();
+  });
+
+  test("Shows the viewer's access to each group, linking a group without it to its page in the marketplace", async () => {
+    const { dataProducts, host } = await renderPage();
+    let dialog = await openFromPalette();
+    fireEvent.click(within(dialog).getByText('Orders Product'));
+    const core = await within(dialog).findByRole('list', {
+      name: 'Access points of Core',
+    });
+    expect(
+      await within(core.parentElement as HTMLElement).findByText('Entitled'),
+    ).not.toBeNull();
+    const reference = within(dialog).getByRole('list', {
+      name: 'Access points of Reference',
+    });
+    expect(
+      within(
+        reference.parentElement as HTMLElement,
+      ).getByRole<HTMLAnchorElement>('link', { name: 'Request access' }).href,
+    ).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/deployment-orders_product#reference',
+    );
+
+    // access that can't be read shows nothing, and Add still works
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    dataProducts.getAccess.mockRejectedValue(new Error('Forbidden'));
+    const alert = jest.spyOn(host.applicationStore, 'alertUnhandledError');
+    dialog = await openFromPalette();
+    fireEvent.click(within(dialog).getByText('Returns Product'));
+    fireEvent.click(await within(dialog).findByText('Daily orders'));
+    await waitFor(() =>
+      expect(dataProducts.getAccess).toHaveBeenCalledTimes(2),
+    );
+    expect(within(dialog).queryByText('Entitled')).toBeNull();
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    expect(alert).not.toHaveBeenCalled();
+    expect(
+      within(dialog).getByRole<HTMLButtonElement>('button', { name: 'Add' })
+        .disabled,
+    ).toBe(false);
+  });
+
+  test('Says when the picked product is at a moving SNAPSHOT version', async () => {
+    await renderPage();
+    const dialog = await openFromPalette();
+    expect(within(dialog).queryByText(CUBE_SNAPSHOT_VERSION_LABEL)).toBeNull();
+    fireEvent.click(within(dialog).getByText('Returns Product'));
+    expect(
+      await within(dialog).findByText(CUBE_SNAPSHOT_VERSION_LABEL),
+    ).not.toBeNull();
+    fireEvent.click(within(dialog).getByText('Orders Product'));
+    expect(await within(dialog).findByText('Daily orders')).not.toBeNull();
+    expect(within(dialog).queryByText(CUBE_SNAPSHOT_VERSION_LABEL)).toBeNull();
   });
 
   test('Has no Data Product item or tab on a host without a catalog', async () => {

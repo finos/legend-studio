@@ -20,6 +20,7 @@ import { CubeDataProductEnvironmentType } from '../graph-manager/CubeDataProduct
 import {
   CubeAccessPoint,
   CubeAccessPointGroup,
+  CubeAccessPointGroupAccess,
   type CubeDataProductCatalog,
   CubeDataProductCandidate,
   CubeDataProductDescription,
@@ -94,6 +95,7 @@ export const fakeDescriptionOf = (
         new CubeAccessPoint({
           id: 'daily_orders',
           title: 'Daily orders',
+          description: 'One row per order',
           schema: FAKE_DAILY_ORDERS_SCHEMA,
           sampleRows: [['1', 'ALFKI', 'EMEA', '12.34']],
         }),
@@ -132,22 +134,41 @@ export interface FakeCubeDataProductCatalog {
   readonly getMarketplaceLink: jest.Mock<
     CubeDataProductCatalog['getMarketplaceLink']
   >;
+  readonly getAccess: jest.Mock<
+    NonNullable<CubeDataProductCatalog['getAccess']>
+  >;
 }
 
-/** A fresh fake: build one per test, since jest.fn keeps its calls across tests */
+/**
+ * A fresh fake: build one per test, since jest.fn keeps its calls across
+ * tests. One that searches on a server answers with its matches, as the
+ * lakehouse's list is answered, but read anew on each search, as a server's
+ * answer is
+ */
 export const createFakeCubeDataProductCatalog = (
   candidates: readonly CubeDataProductCandidate[] = FAKE_DATA_PRODUCT_CANDIDATES,
+  options?: {
+    searchesOnServer?: boolean;
+    searchLimit?: number;
+    isCutShort?: CubeDataProductCatalog['isCutShort'];
+  },
 ): FakeCubeDataProductCatalog => {
   const search = jest.fn<CubeDataProductCatalog['search']>(
     async ({ text, environmentType }) =>
       Promise.resolve(
-        candidates.filter(
-          (product) =>
-            product.environmentType === environmentType &&
-            `${product.title} ${product.id}`
-              .toLowerCase()
-              .includes(text.trim().toLowerCase()),
-        ),
+        candidates
+          .filter(
+            (product) =>
+              product.environmentType === environmentType &&
+              `${product.title} ${product.id}`
+                .toLowerCase()
+                .includes(text.trim().toLowerCase()),
+          )
+          .map((product) =>
+            options?.searchesOnServer
+              ? new CubeDataProductCandidate({ ...product })
+              : product,
+          ),
       ),
   );
   const describe = jest.fn<CubeDataProductCatalog['describe']>(
@@ -173,19 +194,34 @@ export const createFakeCubeDataProductCatalog = (
     CubeDataProductCatalog['getMarketplaceLink']
   >(
     (target) =>
-      `https://marketplace.test/dataProduct/deployed/${target.dataProductId}/${target.deploymentId}`,
+      `https://marketplace.test/dataProduct/deployed/${target.dataProductId}/${target.deploymentId}${target.accessPointGroup ? `#${target.accessPointGroup}` : ''}`,
+  );
+  // the viewer is entitled to the core group, and has never asked for the reference one
+  const getAccess = jest.fn<NonNullable<CubeDataProductCatalog['getAccess']>>(
+    async () =>
+      Promise.resolve(
+        new Map([
+          ['core', CubeAccessPointGroupAccess.APPROVED],
+          ['reference', CubeAccessPointGroupAccess.NO_ACCESS],
+        ]),
+      ),
   );
   return {
     catalog: {
       environmentTypes: [PRODUCTION, PRODUCTION_PARALLEL],
+      searchesOnServer: options?.searchesOnServer,
+      searchLimit: options?.searchLimit,
+      isCutShort: options?.isCutShort,
       search,
       describe,
       resolveSchemas,
       getMarketplaceLink,
+      getAccess,
     },
     search,
     describe,
     resolveSchemas,
     getMarketplaceLink,
+    getAccess,
   };
 };

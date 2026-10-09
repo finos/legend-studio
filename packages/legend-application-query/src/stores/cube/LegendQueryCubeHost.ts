@@ -19,6 +19,7 @@ import {
   buildCubeDataProductCatalog,
   buildCubeEngine,
   buildCubeLakehouseEnvironment,
+  CubeDataProductEnvironmentType,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
   type CubeDataProductCatalog,
@@ -30,6 +31,8 @@ import {
 } from '@finos/legend-cube-builder';
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl } from '../../__lib__/LegendQueryNavigation.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import type { LegendQueryApplicationConfig } from '../../application/LegendQueryApplicationConfig.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
@@ -48,7 +51,8 @@ export const buildLegendQueryCubeEngineConfig = (
 /**
  * What Cube needs to read and run data products (PLAN §6.8), with Query's
  * lakehouse and depot, configured as Query's own: none when Query has no
- * lakehouse, so an open-source deployment without one offers no data products
+ * lakehouse, so an open-source deployment without one offers no data
+ * products. With a marketplace server too, its search is used
  */
 export const buildLegendQueryCubeLakehouseServices = (
   applicationStore: LegendQueryApplicationStore,
@@ -65,9 +69,19 @@ export const buildLegendQueryCubeLakehouseServices = (
     serverUrl: config.depotServerUrl,
   });
   depotServerClient.setTracerService(tracerService);
+  let marketplaceServerClient: MarketplaceServerClient | undefined;
+  if (config.marketplaceServerUrl) {
+    marketplaceServerClient = new MarketplaceServerClient({
+      serverUrl: config.marketplaceServerUrl,
+      // the client only stores it, never reading it, and Cube calls no subscription route
+      subscriptionUrl: '',
+    });
+    marketplaceServerClient.setTracerService(tracerService);
+  }
   return {
     contractServerClient,
     depotServerClient,
+    marketplaceServerClient,
     getAccessToken: () => applicationStore.getAccessToken(),
     getCurrentUser: () => applicationStore.identityService.currentUser,
     // the environment Query remembers for the viewer, as Query's editor uses it
@@ -75,6 +89,30 @@ export const buildLegendQueryCubeLakehouseServices = (
       LegendQueryUserDataHelper.getLakehouseUserInfo(
         applicationStore.userDataService,
       )?.env,
+    // the stereotype Studio and Marketplace mark groups open to everyone with
+    enterpriseStereotype: config.options.dataProductConfig?.publicStereotype
+      ? {
+          profile: config.options.dataProductConfig.publicStereotype.profile,
+          value: config.options.dataProductConfig.publicStereotype.stereotype,
+        }
+      : undefined,
+    // the marketplace of the deployment's class, where its deployment is;
+    // Query's own links choose by a SNAPSHOT version instead
+    getMarketplaceLink: (target) => {
+      const marketplaceUrl =
+        target.environmentType ===
+        CubeDataProductEnvironmentType.PRODUCTION_PARALLEL
+          ? config.marketplaceProductionParallelUrl
+          : config.marketplaceApplicationUrl;
+      return marketplaceUrl
+        ? EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl(
+            marketplaceUrl,
+            target.dataProductId,
+            target.deploymentId,
+            target.accessPointGroup,
+          )
+        : undefined;
+    },
   };
 };
 

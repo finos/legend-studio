@@ -80,6 +80,19 @@ export const createCubeDataProductModel = (
 export const isCubeDataProductModel = (model: ModelContext): boolean =>
   model._type === CUBE_DATA_PRODUCT_MODEL_TYPE;
 
+/** Whether a version moves: a SNAPSHOT's data and columns may change under a cube */
+export const isCubeSnapshotVersion = (versionId: string): boolean =>
+  versionId.endsWith('-SNAPSHOT');
+
+/**
+ * The model with another warehouse; every other key is kept, including ones
+ * a later version saved, which a cube keeps as they are
+ */
+export const withCubeDataProductWarehouse = (
+  model: ModelContext,
+  warehouse: string,
+): ModelContext => ({ ...model, warehouse });
+
 /**
  * Why Cube can't run a data product model, in words a user can act on; none
  * when it can. A saved model is checked before every use: it may have been

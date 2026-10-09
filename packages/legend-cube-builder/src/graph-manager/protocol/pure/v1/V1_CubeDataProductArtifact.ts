@@ -143,6 +143,25 @@ const readSampleRows = (
     });
 };
 
+/** The stereotype a host's marketplace marks groups open to everyone with */
+export interface V1_CubeEnterpriseStereotype {
+  readonly profile: string;
+  readonly value: string;
+}
+
+/** Whether a group's definition carries the host's enterprise stereotype */
+const isEnterpriseGroup = (
+  group: PlainObject,
+  stereotype: V1_CubeEnterpriseStereotype | undefined,
+): boolean =>
+  stereotype !== undefined &&
+  asList(group.stereotypes)
+    .map(asObject)
+    .some(
+      (each) =>
+        each.profile === stereotype.profile && each.value === stereotype.value,
+    );
+
 /**
  * A product's access points by group, as its definition lists them. One is
  * pickable when it is a Lakehouse access point without parameters, outside
@@ -152,6 +171,7 @@ export const V1_readCubeDataProductDescription = (
   candidate: CubeDataProductCandidate,
   artifact: unknown,
   definition: unknown,
+  enterpriseStereotype?: V1_CubeEnterpriseStereotype | undefined,
 ): CubeDataProductDescription => {
   const implementations = readImplementations(artifact);
   const hasDefinition = Boolean(asObject(definition).accessPointGroups);
@@ -171,6 +191,7 @@ export const V1_readCubeDataProductDescription = (
       return new CubeAccessPointGroup({
         id: groupId,
         title: asString(group.title),
+        isEnterprise: isEnterpriseGroup(group, enterpriseStereotype),
         accessPoints: asList(group.accessPoints)
           .map(asObject)
           .filter((point) => asString(point.id))

@@ -145,15 +145,20 @@ The open-source engine rejects every data product construct (`#P`, a LakehouseRu
 warehouse), so data product runs are tested with fakes and, on the engine, with stand-in functions only. The first
 real run is in an internal deployment (Part B2).
 
-### Saved data product sources aren't checked again
+### Re-checking saved data product sources
 
-A data product cube opens on its saved column snapshots; Refresh and the re-check on import don't read the artifact
-again yet (a planned follow-up). A redeployed product doesn't change a cube, which stays on its saved version.
+An import and Refresh read a data product cube's access points again from the deployed artifact at the cube's saved
+version. An import uses the artifact this page visit already read, and Refresh reads it again, so a SNAPSHOT version
+redeployed meanwhile shows on Refresh. A redeployed product never moves a cube to another version.
 
-### The lite list is read whole
+### Listing data products
 
-The data product list reads the lakehouse's lite list through `getAllLiteDataProducts`, as Legend Query does, which
-pages until the server says it's done and takes no abort signal. Paging guards and marketplace search are follow-ups.
+- **The lite list:** Cube pages the lakehouse's lite list itself and stops on a page that isn't one, a missing or
+  repeated cursor, or past 50 pages. The lakehouse client takes no abort signal, so closing the dialog stops further
+  pages but not the page already asked for.
+- **Marketplace search** (when Query's `marketplace.serverUrl` is set) reads one page of 100 matches. On a cube whose
+  data products are fixed to one project, a typed search keeps that page's rows from the project, so it can show few of
+  them; the cube's own products show when the search is empty.
 
 ## Test gaps
 

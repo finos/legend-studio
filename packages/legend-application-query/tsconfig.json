@@ -21,6 +21,7 @@
     { "path": "../legend-art" },
     { "path": "../legend-code-editor" },
     { "path": "../legend-lego" },
-    { "path": "../legend-server-lakehouse" }
+    { "path": "../legend-server-lakehouse" },
+    { "path": "../legend-server-marketplace" }
   ]
 }

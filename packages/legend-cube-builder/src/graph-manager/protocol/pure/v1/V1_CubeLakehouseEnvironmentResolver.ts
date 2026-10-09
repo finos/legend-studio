@@ -27,6 +27,7 @@ import {
 import {
   type CubeDataProductProject,
   CubeDataProductEnvironmentType,
+  isCubeSnapshotVersion,
 } from '../../../CubeDataProduct.js';
 import { CubeEngineError, CubeEngineErrorKind } from '../../../CubeEngine.js';
 import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
@@ -43,9 +44,6 @@ import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment
 
 export const V1_CUBE_NO_LAKEHOUSE_ENVIRONMENT =
   'Unable to resolve lakehouse user environment. Please ensure your lakehouse entitlements are configured.';
-
-const isSnapshotVersion = (versionId: string): boolean =>
-  versionId.endsWith('-SNAPSHOT');
 
 /** The environment without a realm, which `decorateEnvWithRealm` would add */
 const withoutRealm = (environment: string): string => {
@@ -128,7 +126,7 @@ export class V1_CubeLakehouseEnvironmentResolver
     const environment = withoutRealm(await this.readUserEnvironment());
     return project.environmentType ===
       CubeDataProductEnvironmentType.PRODUCTION_PARALLEL ||
-      isSnapshotVersion(project.versionId)
+      isCubeSnapshotVersion(project.versionId)
       ? decorateEnvWithRealm(
           environment,
           LakehouseEnvironmentType.PRODUCTION_PARALLEL,

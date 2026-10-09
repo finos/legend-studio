@@ -55,11 +55,19 @@ import {
   MAX_UNDO_STEPS,
 } from '../__lib__/LegendCubeLabels.js';
 import {
+  CUBE_DATA_PRODUCT_RECHECK_MESSAGE,
+  getAccessPointDriftWarning,
+  getAccessPointRecheckWarning,
+} from '../__lib__/LegendCubeDataProductLabels.js';
+import { isCubeDataProductModel } from '../graph-manager/CubeDataProduct.js';
+import {
   CubeEngineError,
   CubeEngineErrorKind,
   type CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
+import { recheckCubeDataProductSources } from './CubeDataProductRecheck.js';
+import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
@@ -86,6 +94,9 @@ const isTypingText = (): boolean => {
   );
 };
 
+/** A source Cube types again to see drift: a table, or a data product's access point */
+type RecheckedSource = RelationalTableSource | DataProductAccessPointSource;
+
 /**
  * The state of one Cube page (PLAN §7.8). The document is immutable: every
  * edit makes a new one through `applyDocument`, which keeps the previous one
@@ -97,6 +108,8 @@ export class CubeEditorState implements CommandRegistrar {
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
   readonly execution: CubeExecutionState;
+  /** Where a data product cube runs: its class and warehouse */
+  readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
   readonly showPure: CubeShowPureState;
@@ -187,6 +200,7 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
+    this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
     this.showPure = new CubeShowPureState(this);
@@ -416,8 +430,10 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Types the cube's tables again, in one engine call, outside the undo
-   * history (PLAN §10.3, Settled before M1.8):
+   * Types the cube's sources again, outside the undo history (PLAN §10.3,
+   * Settled before M1.8): its tables in one engine call, a data product
+   * cube's access points through the catalog, from the deployed artifact at
+   * the cube's version (PLAN §6.8). Warnings name the kind of source:
    * - a table whose columns are the saved ones is left as it is;
    * - a table that changed takes its new columns, with a warning listing the
    *   changes;
@@ -432,60 +448,93 @@ export class CubeEditorState implements CommandRegistrar {
    * left alone.
    *
    * `only` types just these sources of the cube shown, e.g. one Refresh. A
-   * table found unchanged loses any earlier warning.
+   * table found unchanged loses any earlier warning. `fresh` reads a data
+   * product's artifact again rather than what this page visit read.
    */
   *reresolveSources(
-    only?: readonly RelationalTableSource[],
+    only?: readonly RecheckedSource[],
+    fresh = false,
   ): GeneratorFn<void> {
     const { context, query } = this.document;
-    const sources = (only ?? query.nodes).filter(
-      (node): node is RelationalTableSource =>
-        node instanceof RelationalTableSource &&
-        query.getNode(node.id) === node,
+    if (!context) {
+      return;
+    }
+    const kept = (only ?? query.nodes).filter(
+      (node) => query.getNode(node.id) === node,
     );
-    if (!context || !sources.length) {
+    const tables = kept.filter(
+      (node): node is RelationalTableSource =>
+        node instanceof RelationalTableSource,
+    );
+    // an access point on a cube of tables is the no-mix rule's to flag
+    const accessPoints = isCubeDataProductModel(context.model)
+      ? kept.filter(
+          (node): node is DataProductAccessPointSource =>
+            node instanceof DataProductAccessPointSource,
+        )
+      : [];
+    const sources: readonly RecheckedSource[] = [...tables, ...accessPoints];
+    if (!sources.length) {
       return;
     }
     this.pendingSources = new Set([...this.pendingSources, ...sources]);
     let answers: ReadonlyMap<string, Schema | CubeEngineError>;
     try {
-      answers = (yield this.host.engine.resolveSchemas(
-        context.model,
-        new Map(
-          sources.map((source) => [
-            source.id,
-            [source.database, source.schema, source.table],
-          ]),
-        ),
-      )) as Map<string, Schema | CubeEngineError>;
-    } catch (error) {
-      const failure =
-        error instanceof CubeEngineError
-          ? error
-          : new CubeEngineError(
-              CubeEngineErrorKind.NETWORK,
-              error instanceof Error ? error.message : String(error),
-            );
-      answers = new Map(sources.map((source) => [source.id, failure]));
+      const [tableAnswers, accessPointAnswers] = (yield Promise.all([
+        tables.length
+          ? this.host.engine
+              .resolveSchemas(
+                context.model,
+                new Map(
+                  tables.map((source) => [
+                    source.id,
+                    [source.database, source.schema, source.table],
+                  ]),
+                ),
+              )
+              .catch((error: unknown) => {
+                const failure =
+                  error instanceof CubeEngineError
+                    ? error
+                    : new CubeEngineError(
+                        CubeEngineErrorKind.NETWORK,
+                        error instanceof Error ? error.message : String(error),
+                      );
+                return new Map(tables.map((source) => [source.id, failure]));
+              })
+          : new Map(),
+        accessPoints.length
+          ? recheckCubeDataProductSources(
+              this.host.dataProductCatalog,
+              context.model,
+              accessPoints,
+              fresh,
+            )
+          : new Map(),
+      ])) as ReadonlyMap<string, Schema | CubeEngineError>[];
+      answers = new Map([
+        ...(tableAnswers ?? []),
+        ...(accessPointAnswers ?? []),
+      ]);
     } finally {
       this.pendingSources = new Set(
         [...this.pendingSources].filter(
-          (node) => !sources.includes(node as RelationalTableSource),
+          (node) => !sources.includes(node as RecheckedSource),
         ),
       );
     }
     const warnings = new Map(this.warnings);
     /** Each typed source, by the object that was sent, and what replaces it */
-    const replacements = new Map<
-      RelationalTableSource,
-      RelationalTableSource
-    >();
+    const replacements = new Map<RecheckedSource, RecheckedSource>();
     sources.forEach((source) => {
+      const isAccessPoint = source instanceof DataProductAccessPointSource;
       const answer =
         answers.get(source.id) ??
         new CubeEngineError(
           CubeEngineErrorKind.COMPILE,
-          'The engine gave no schema for this table',
+          isAccessPoint
+            ? CUBE_DATA_PRODUCT_RECHECK_MESSAGE.NO_ANSWER
+            : 'The engine gave no schema for this table',
           source.id,
         );
       const saved =
@@ -494,7 +543,11 @@ export class CubeEditorState implements CommandRegistrar {
           : undefined;
       if (answer instanceof CubeEngineError) {
         if (saved) {
-          warnings.set(source.key, [getSourceRecheckWarning(answer.firstLine)]);
+          warnings.set(source.key, [
+            isAccessPoint
+              ? getAccessPointRecheckWarning(answer.firstLine)
+              : getSourceRecheckWarning(answer.firstLine),
+          ]);
         } else if (
           source.resolution.kind !== 'failed' ||
           source.resolution.message !== answer.detail
@@ -516,8 +569,11 @@ export class CubeEditorState implements CommandRegistrar {
         schema: answer,
       });
       if (saved) {
+        const diff = diffSchemas(saved, answer);
         warnings.set(resolved.key, [
-          getSchemaDriftWarning(diffSchemas(saved, answer)),
+          isAccessPoint
+            ? getAccessPointDriftWarning(diff)
+            : getSchemaDriftWarning(diff),
         ]);
       }
       replacements.set(source, resolved);
@@ -564,22 +620,29 @@ export class CubeEditorState implements CommandRegistrar {
   }
 
   /**
-   * Types a table again with the engine, from its Source panel (spec §17.6),
-   * as a re-check after an import does: no undo step, nothing changes when
-   * its columns are the same, and a warning lists any change.
+   * Types a source again, from its Source panel (spec §17.6), as a re-check
+   * after an import does: a table with the engine, an access point through
+   * the catalog. No undo step, nothing changes when its columns are the
+   * same, and a warning lists any change.
    */
   *refreshSource(nodeId: string): GeneratorFn<void> {
     const source = this.document.query.getNode(nodeId);
-    if (source instanceof RelationalTableSource) {
-      yield flowResult(this.reresolveSources([source]));
+    if (
+      source instanceof RelationalTableSource ||
+      source instanceof DataProductAccessPointSource
+    ) {
+      // a Refresh reads the deployed artifact again
+      yield flowResult(this.reresolveSources([source], true));
     }
   }
 
   /**
    * Restores the document before the last edit; does nothing when there is
    * no history. A restored query is a new object (PLAN §4.3), so rows that
-   * ran before the edit show as stale. An edit that left the query alone,
-   * such as a rename, keeps it, with its rows and engine errors. Undoing an
+   * ran before the edit show as stale. An edit that left the query and the
+   * context alone, such as a rename, keeps them, with the rows and engine
+   * errors; undoing a warehouse edit brings back the context the rows ran
+   * with. Undoing an
    * import closes the node editor and the picker, as the import did.
    */
   undo(): void {
@@ -609,9 +672,16 @@ export class CubeEditorState implements CommandRegistrar {
     this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
   }
 
-  /** Engine errors belong to the query they came from, so they are dropped when the query changes */
+  /**
+   * Engine errors belong to the query and the context they came from, so
+   * they are dropped when either changes, e.g. a data product cube's
+   * warehouse
+   */
   private replaceDocument(next: CubeDocument): void {
-    if (next.query !== this.document.query) {
+    if (
+      next.query !== this.document.query ||
+      next.context !== this.document.context
+    ) {
       this.hostIssues = new Map();
       this.execution.clearError();
     }

@@ -16,9 +16,13 @@
 
 import type { DepotServerClient } from '@finos/legend-server-depot';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
+import type { MarketplaceServerClient } from '@finos/legend-server-marketplace';
 import type { TracerService } from '@finos/legend-shared';
 import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
-import type { CubeDataProductCatalog } from '../../CubeDataProductCatalog.js';
+import type {
+  CubeDataProductCatalog,
+  CubeMarketplaceLinkTarget,
+} from '../../CubeDataProductCatalog.js';
 import type { CubeEngine } from '../../CubeEngine.js';
 import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
 import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnvironmentResolver.js';
@@ -66,6 +70,19 @@ export interface CubeLakehouseServices {
   readonly getCurrentUser: () => string;
   /** The environment the host remembers for the viewer, used before their entitlements' first one */
   readonly getPreferredEnvironment?: (() => string | undefined) | undefined;
+  /** The marketplace's search API: with it, the source dialog searches there, never reading the lakehouse's whole list */
+  readonly marketplaceServerClient?: MarketplaceServerClient | undefined;
+  /** A deployed data product's page in the host's marketplace; none when the host has no marketplace */
+  readonly getMarketplaceLink?:
+    | ((target: CubeMarketplaceLinkTarget) => string | undefined)
+    | undefined;
+  /**
+   * The stereotype the host's marketplace marks access point groups open to
+   * everyone with; without it, a group with no contract shows no access
+   */
+  readonly enterpriseStereotype?:
+    | { readonly profile: string; readonly value: string }
+    | undefined;
 }
 
 /** The deployed data products of a host with a lakehouse and a depot */
@@ -76,6 +93,12 @@ export const buildCubeDataProductCatalog = (
     services.contractServerClient,
     services.depotServerClient,
     services.getAccessToken,
+    {
+      marketplaceServerClient: services.marketplaceServerClient,
+      marketplaceLink: services.getMarketplaceLink,
+      getCurrentUser: services.getCurrentUser,
+      enterpriseStereotype: services.enterpriseStereotype,
+    },
   );
 
 /** The viewer's lakehouse environment, which the engine needs to run data product cubes */

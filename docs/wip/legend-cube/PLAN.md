@@ -1196,12 +1196,14 @@ internals (user, 2026-10-08): questions for the original app's team are about it
 - **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
   depot project that means the same project at the same version, since the engine keeps the first of two definitions.
 - **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
-- **Data product list:** the marketplace search service when Query is configured for it (a new config field and the
-  marketplace client), falling back to the lakehouse contract server's lite list. The first version uses the lite
-  list only, as Legend Query does; search is a follow-up.
+- **Data product list:** the marketplace's search when Query names its server (`marketplace.serverUrl`, the same
+  server Legend Marketplace's own `marketplace.url` names; user, 2026-10-09), else the lakehouse contract server's lite
+  list, which Cube pages itself with guards. A failed search shows its error with Retry and never falls back to the
+  lite list.
 - **Warehouse (DP-2, user, 2026-10-09):** the cube's saved warehouse wins, else the viewer's remembered one, else the
   default consumer warehouse (`LAKEHOUSE_CONSUMER_DEFAULT_WH`). The first Add saves the warehouse into the cube and
-  remembers it for the viewer's next cubes. Editing a saved cube's warehouse is a follow-up.
+  remembers it for the viewer's next cubes. A saved cube's warehouse is edited in its Source panel, as one undo step,
+  and remembered too (#5652).
 - **Data products (user, 2026-10-09):**
   - **Saved shape (DP-1):** a Cube-owned model kind, `context.model = {_type: 'cubeDataProduct', groupId, artifactId,
 versionId, environmentType, warehouse?}`, and the fixed runtime path `cube::dataProduct::Runtime`. Each source
@@ -1224,9 +1226,10 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
     Query's runtime dialog can remember an environment with a realm already on it, so Cube drops that realm first
     and lets the cube's class decide: a production deployment never runs in the production-parallel realm.
   - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
-    inside an internal deployment. Follow-ups, each with its tests: marketplace search with paging guards and stale
-    answers, sample rows, access badges, marketplace links, re-checking saved sources, warehouse edits and staleness,
-    error polish, the stand-in engine checks against the test-setup mocks, and their verify workflow.
+    inside an internal deployment. Follow-ups, each with its tests (#5652): marketplace search with paging guards and
+    stale answers (done), warehouse edits and staleness (done), re-checking saved sources (done), error polish (done),
+    sample rows and marketplace links (done), access badges (done), an "In this project" / "Search all" view (done),
+    the stand-in engine checks against the test-setup mocks, and their verify workflow.
 - **Compute elements:** deferred.
 - **M2.0 no longer gates the sources:** depot Databases are typed by the engine through the pointer and data products by
   their deployed artifact, so neither needs legend-graph's precise types. M2.0 stays a separate legend-graph PR, needed
@@ -1446,7 +1449,9 @@ start of M1.8b.
   ("could not re-check this table: …"). Schema drift shows as a non-blocking warning listing the changed columns. The
   answer applies, by node identity, to the cube shown and to the undo snapshots taken while it was pending, so Undo
   never brings back an unchecked table; "resolving source" shows while the cube shown holds a table being typed
-  (`m18a-verify` fix, 2026-10-07).
+  (`m18a-verify` fix, 2026-10-07). A data product cube's access points are re-checked the same way, through the
+  catalog against the deployed artifact at the cube's saved version, with no engine call; their warnings name the
+  access point (DP14, 2026-10-09).
 - **Newer-version spec:** opens read-only with a banner. View, Execute and Show Pure work; edits, the picker, Undo
   and Export are disabled. Select (choosing the node to run) still works, and Import replaces the cube (S7, 2026-10-07).
 - **Spec without a model or runtime:** opens editable with Execute disabled and a tooltip naming what is missing; no
@@ -2738,8 +2743,8 @@ This subsection overrides the sections it names until they are updated (see "Sup
    uses `@duckdb/duckdb-wasm` (1.31.0), which is the precedent to study. First step: a research note with the options
    and a recommendation, no code.
 10. **The next sources, still open** (2026-10-08; settled parts in §6.8): versions (recommended: `latest` resolved to a
-    concrete version at pick time, since the engine caches `latest`; SNAPSHOT opt-in, item 5), and access badges for
-    data products the viewer isn't entitled to.
+    concrete version at pick time, since the engine caches `latest`; SNAPSHOT opt-in, item 5). Access badges for data
+    products are settled in §6.8 (#5652).
 
 Questions about the original app's UI that the spec leaves open are in [QUESTIONS.md](QUESTIONS.md).
 

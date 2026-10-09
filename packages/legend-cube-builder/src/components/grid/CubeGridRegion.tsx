@@ -19,6 +19,7 @@ import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { EXECUTE_SHORTCUT_LABEL } from '../../__lib__/LegendCubeCommand.js';
+import { getCubeWarehouseErrorHint } from '../../__lib__/LegendCubeDataProductLabels.js';
 import {
   CUBE_PENDING_LABEL,
   formatDisabledReasons,
@@ -27,6 +28,10 @@ import {
   ROW_LIMIT_WARNING_THRESHOLD,
 } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
+import {
+  CubeDataProductRunErrorKind,
+  type CubeDataProductRuntimeState,
+} from '../../stores/CubeDataProductRuntimeState.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeResultGrid } from './CubeResultGrid.js';
@@ -132,7 +137,7 @@ const CubeGridToolbar = observer(
         {execution.isStale && (
           <span
             className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-base text-[var(--color-status-warn)]"
-            title="The query or the row limit changed since this run"
+            title="The query, the warehouse or the row limit changed since this run"
           >
             Stale: execute again to refresh
           </span>
@@ -194,6 +199,42 @@ const CubeSqlPanel = observer((props: { editorState: CubeEditorState }) => {
   );
 });
 
+/**
+ * On a data product cube, what to do about a run refused for its warehouse,
+ * or for lack of access to the data: links to ask for it in the marketplace
+ */
+const CubeDataProductRunErrorHelp = observer(
+  (props: { runtime: CubeDataProductRuntimeState }) => {
+    const { runtime } = props;
+    if (runtime.runErrorKind === CubeDataProductRunErrorKind.WAREHOUSE) {
+      return (
+        <div className="mt-1 text-[var(--color-text-secondary)]">
+          {getCubeWarehouseErrorHint(
+            runtime.effectiveWarehouse ?? '',
+            runtime.canEditWarehouse,
+          )}
+        </div>
+      );
+    }
+    const links = runtime.accessRequestLinks;
+    return links.length ? (
+      <div className="mt-1 flex flex-wrap gap-x-3">
+        {links.map((link) => (
+          <a
+            key={link.key}
+            className="text-[var(--color-accent)] underline"
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    ) : null;
+  },
+);
+
 const CubeExecutionError = observer(
   (props: { editorState: CubeEditorState }) => {
     const error = props.editorState.execution.error;
@@ -226,6 +267,9 @@ const CubeExecutionError = observer(
             </pre>
           </details>
         )}
+        <CubeDataProductRunErrorHelp
+          runtime={props.editorState.dataProductRuntime}
+        />
       </div>
     );
   },

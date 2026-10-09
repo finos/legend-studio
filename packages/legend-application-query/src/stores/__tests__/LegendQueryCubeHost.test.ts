@@ -172,6 +172,142 @@ describe('Legend Query as the Cube host', () => {
     expect(trace).toHaveBeenCalled();
   });
 
+  test("Searches data products on Query's marketplace server, traced by Query's tracer, when Query has one beside its lakehouse", async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () =>
+        Promise.reject(new Error('No server in tests')),
+      );
+    const applicationStore = createApplicationStore({
+      lakehouse: { url: 'https://lakehouse.test' },
+      marketplace: {
+        url: 'https://marketplace-app.test',
+        productionParallelUrl: 'https://marketplace-parallel-app.test',
+        serverUrl: 'https://marketplace.test',
+      },
+    });
+    expect(applicationStore.config.marketplaceServerUrl).toBe(
+      'https://marketplace.test',
+    );
+    const trace = jest.spyOn(applicationStore.tracerService, 'createTrace');
+    const catalog = guaranteeNonNullable(
+      new LegendQueryCubeHost(applicationStore).dataProductCatalog,
+    );
+    expect(catalog.searchesOnServer).toBe(true);
+    await expect(
+      catalog.search({
+        text: 'orders',
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      }),
+    ).rejects.toThrow("Cube couldn't search the data products");
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const url = String(guaranteeNonNullable(fetchSpy.mock.calls[0])[0]);
+    expect(url).toMatch(
+      /^https:\/\/marketplace\.test\/v1\/search\/lakehouseAccess\/PRODUCTION\?query=orders&/u,
+    );
+    expect(trace).toHaveBeenCalledTimes(1);
+    expect(trace.mock.calls[0]?.[2]).toBe(url);
+  });
+
+  test("Lists data products from Query's lakehouse when Query has no marketplace server, its marketplace application being no server", () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    const marketplace = {
+      url: 'https://marketplace-app.test',
+      productionParallelUrl: 'https://marketplace-parallel-app.test',
+    };
+    const applicationStore = createApplicationStore({ lakehouse, marketplace });
+    expect(applicationStore.config.marketplaceApplicationUrl).toBe(
+      'https://marketplace-app.test',
+    );
+    expect(applicationStore.config.marketplaceServerUrl).toBeUndefined();
+    expect(
+      new LegendQueryCubeHost(applicationStore).dataProductCatalog
+        ?.searchesOnServer,
+    ).toBe(false);
+    expect(
+      new LegendQueryCubeHost(createApplicationStore({ lakehouse }))
+        .dataProductCatalog?.searchesOnServer,
+    ).toBe(false);
+    // a marketplace server alone offers no data products
+    expect(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          marketplace: {
+            ...marketplace,
+            serverUrl: 'https://marketplace.test',
+          },
+        }),
+      ).dataProductCatalog,
+    ).toBeUndefined();
+  });
+
+  test("Links data products to Query's marketplace of the deployment's class", () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    const target = {
+      dataProductId: 'ORDERS_PRODUCT',
+      deploymentId: '1234',
+      environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      accessPointGroup: 'Core Group',
+    };
+    const catalog = guaranteeNonNullable(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          lakehouse,
+          marketplace: {
+            url: 'https://marketplace.test',
+            productionParallelUrl: 'https://marketplace-parallel.test',
+          },
+        }),
+      ).dataProductCatalog,
+    );
+    expect(catalog.getMarketplaceLink(target)).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/1234#apg-core-group',
+    );
+    expect(
+      catalog.getMarketplaceLink({
+        ...target,
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+        accessPointGroup: undefined,
+      }),
+    ).toBe(
+      'https://marketplace-parallel.test/dataProduct/deployed/ORDERS_PRODUCT/1234',
+    );
+    // without a marketplace, no link
+    expect(
+      guaranteeNonNullable(
+        new LegendQueryCubeHost(createApplicationStore({ lakehouse }))
+          .dataProductCatalog,
+      ).getMarketplaceLink(target),
+    ).toBeUndefined();
+  });
+
+  test('Marks the groups open to everyone as Studio and Marketplace configure them', () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    const applicationStore = createApplicationStore({
+      lakehouse,
+      extensions: {
+        core: {
+          dataProductConfig: {
+            classifications: ['ignored by Query'],
+            publicStereotype: {
+              profile: 'meta::pure::profiles::access',
+              stereotype: 'enterprise',
+            },
+          },
+        },
+      },
+    });
+    expect(
+      buildLegendQueryCubeLakehouseServices(applicationStore)
+        ?.enterpriseStereotype,
+    ).toEqual({ profile: 'meta::pure::profiles::access', value: 'enterprise' });
+    expect(
+      buildLegendQueryCubeLakehouseServices(
+        createApplicationStore({ lakehouse }),
+      )?.enterpriseStereotype,
+    ).toBeUndefined();
+  });
+
   test('Prefers the lakehouse environment Query remembers for the viewer', () => {
     const applicationStore = createApplicationStore({
       lakehouse: { url: 'https://lakehouse.test' },

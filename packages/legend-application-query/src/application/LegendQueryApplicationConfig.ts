@@ -26,6 +26,7 @@ import {
   LegendApplicationConfig,
   type LegendApplicationConfigurationInput,
   type LegendApplicationConfigurationData,
+  StereotypeConfig,
 } from '@finos/legend-application';
 import {
   createModelSchema,
@@ -64,6 +65,23 @@ export class ServiceRegistrationEnvironmentConfig {
       executionUrl: primitive(),
       managementUrl: primitive(),
       modes: list(primitive()),
+    }),
+  );
+}
+
+/**
+ * Data products, as Legend Studio and Legend Marketplace configure them:
+ * Query reads only the stereotype that marks access point groups open to
+ * everyone in the organization, which Legend Cube's access badges use
+ */
+export class LegendQueryDataProductConfig {
+  publicStereotype: StereotypeConfig | undefined;
+
+  static readonly serialization = new SerializationFactory(
+    createModelSchema(LegendQueryDataProductConfig, {
+      publicStereotype: optional(
+        usingModelSchema(StereotypeConfig.serialization.schema),
+      ),
     }),
   );
 }
@@ -108,6 +126,9 @@ class LegendQueryApplicationCoreOptions {
    */
   enableOauthFlow = false;
 
+  /** Data products, as Studio and Marketplace configure them (`options.dataProductConfig`) */
+  dataProductConfig: LegendQueryDataProductConfig | undefined;
+
   private static readonly serialization = new SerializationFactory(
     createModelSchema(LegendQueryApplicationCoreOptions, {
       TEMPORARY__serviceRegistrationConfig: list(
@@ -122,6 +143,9 @@ class LegendQueryApplicationCoreOptions {
         usingModelSchema(LegendQueryOIDCConfiguration.serialization.schema),
       ),
       enableOauthFlow: optional(primitive()),
+      dataProductConfig: optional(
+        usingModelSchema(LegendQueryDataProductConfig.serialization.schema),
+      ),
     }),
   );
 
@@ -158,6 +182,11 @@ export interface LegendQueryApplicationConfigurationData
   marketplace?: {
     url: string;
     productionParallelUrl: string;
+    /**
+     * The marketplace server, whose search Legend Cube's data product tab
+     * uses: the URL Legend Marketplace's own config names `marketplace.url`
+     */
+    serverUrl?: string;
   };
   lakehouse?: {
     url: string;
@@ -180,6 +209,7 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
   readonly dataCubeApplicationUrl?: string;
   readonly marketplaceApplicationUrl?: string;
   readonly marketplaceProductionParallelUrl?: string;
+  readonly marketplaceServerUrl?: string;
   readonly lakehouseContractUrl?: string;
   readonly legendAIUrl?: string;
   readonly legendAIAgentUrl?: string;
@@ -259,6 +289,11 @@ export class LegendQueryApplicationConfig extends LegendApplicationConfig {
         LegendApplicationConfig.resolveAbsoluteUrl(
           input.configData.marketplace.productionParallelUrl,
         );
+    }
+    if (input.configData.marketplace?.serverUrl) {
+      this.marketplaceServerUrl = LegendApplicationConfig.resolveAbsoluteUrl(
+        input.configData.marketplace.serverUrl,
+      );
     }
 
     // lakehouse

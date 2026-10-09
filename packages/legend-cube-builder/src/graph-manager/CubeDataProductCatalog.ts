@@ -15,9 +15,10 @@
  */
 
 import type { Schema } from '@finos/legend-cube';
-import type {
-  CubeDataProductEnvironmentType,
-  CubeDataProductProject,
+import {
+  type CubeDataProductEnvironmentType,
+  type CubeDataProductProject,
+  isCubeSnapshotVersion,
 } from './CubeDataProduct.js';
 import type { CubeEngineError, CubeResultValue, NodeId } from './CubeEngine.js';
 
@@ -71,7 +72,7 @@ export class CubeDataProductCandidate {
 
   /** Whether it was deployed from a moving version, whose data may change under a cube */
   get isSnapshot(): boolean {
-    return this.versionId.endsWith('-SNAPSHOT');
+    return isCubeSnapshotVersion(this.versionId);
   }
 }
 
@@ -112,16 +113,35 @@ export class CubeAccessPointGroup {
   readonly id: string;
   readonly title: string | undefined;
   readonly accessPoints: readonly CubeAccessPoint[];
+  /** Open to everyone in the organization, as the host's marketplace marks such groups */
+  readonly isEnterprise: boolean;
 
   constructor(fields: {
     id: string;
     title?: string | undefined;
     accessPoints: readonly CubeAccessPoint[];
+    isEnterprise?: boolean | undefined;
   }) {
     this.id = fields.id;
     this.title = fields.title;
     this.accessPoints = fields.accessPoints;
+    this.isEnterprise = fields.isEnterprise ?? false;
   }
+}
+
+/**
+ * The viewer's access to an access point group, as the marketplace shows
+ * it: open to everyone, granted, on its way through approval, refused, or
+ * never asked for
+ */
+export enum CubeAccessPointGroupAccess {
+  ENTERPRISE = 'ENTERPRISE',
+  APPROVED = 'APPROVED',
+  SUBMITTED_FOR_APPROVALS = 'SUBMITTED_FOR_APPROVALS',
+  PENDING_MANAGER_APPROVAL = 'PENDING_MANAGER_APPROVAL',
+  PENDING_DATA_OWNER_APPROVAL = 'PENDING_DATA_OWNER_APPROVAL',
+  DENIED = 'DENIED',
+  NO_ACCESS = 'NO_ACCESS',
 }
 
 /** A deployed product's access points, by group */
@@ -163,7 +183,28 @@ export interface CubeDataProductCatalog {
   /** The deployment classes the host lists, the default first */
   readonly environmentTypes: readonly CubeDataProductEnvironmentType[];
 
-  /** The deployed products of a class whose title, id or description holds the text */
+  /**
+   * Whether `search` matches and ranks the text on a server. Otherwise the
+   * text is matched on the client, over the class's whole list
+   */
+  readonly searchesOnServer?: boolean | undefined;
+
+  /** The most products one server search gives: an answer this long may be cut short */
+  readonly searchLimit?: number | undefined;
+
+  /**
+   * Whether an answer `search` gave leaves out matches the server has, as
+   * its page says, counting rows the catalog dropped. Without it, an answer
+   * as long as `searchLimit` is taken to be cut short
+   */
+  readonly isCutShort?:
+    | ((answer: readonly CubeDataProductCandidate[]) => boolean)
+    | undefined;
+
+  /**
+   * The deployed products of a class whose title, id or description holds
+   * the text, or, searching on a server, the ones it matches, in its order
+   */
   search(
     search: {
       text: string;
@@ -178,12 +219,27 @@ export interface CubeDataProductCatalog {
     signal?: AbortSignal,
   ): Promise<CubeDataProductDescription>;
 
-  /** The schema of each saved source, from the artifact at the cube's version: one entry per key, failures included */
+  /**
+   * The schema of each saved source, from the artifact at the cube's
+   * version: one entry per key, failures included. `fresh` reads the
+   * artifact again rather than what this page visit read, e.g. on Refresh
+   */
   resolveSchemas(
     project: CubeDataProductProject,
     sources: ReadonlyMap<NodeId, CubeAccessPointLocation>,
+    options?: { readonly fresh?: boolean | undefined },
   ): Promise<Map<NodeId, Schema | CubeEngineError>>;
 
   /** The product's page in the marketplace, or none when the host has no marketplace */
   getMarketplaceLink(target: CubeMarketplaceLinkTarget): string | undefined;
+
+  /**
+   * The viewer's access to each of the product's access point groups, by
+   * group id; a group it can't tell has no entry. Optional: a host without
+   * it shows no access
+   */
+  getAccess?(
+    candidate: CubeDataProductCandidate,
+    signal?: AbortSignal,
+  ): Promise<ReadonlyMap<string, CubeAccessPointGroupAccess>>;
 }

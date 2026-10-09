@@ -97,8 +97,8 @@ const listColumns = (columns: readonly SchemaColumn[]): string =>
 export const formatDisabledReasons = (reasons: readonly string[]): string =>
   reasons.map((reason) => `• ${reason}`).join('\n');
 
-/** The warning on a source whose table changed since the cube was saved; the table's new columns are used */
-export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
+/** A source's changes since the cube was saved, as its drift warning lists them */
+export const getSchemaChangeList = (diff: SchemaDiff): string => {
   const changes = [
     ...(diff.added.length ? [`added ${listColumns(diff.added)}`] : []),
     ...(diff.removed.length ? [`removed ${listColumns(diff.removed)}`] : []),
@@ -114,8 +114,12 @@ export const getSchemaDriftWarning = (diff: SchemaDiff): string => {
       : []),
     ...(diff.reordered ? ['reordered its columns'] : []),
   ];
-  return `This table changed since the cube was saved: ${changes.join('; ')}`;
+  return changes.join('; ');
 };
+
+/** The warning on a source whose table changed since the cube was saved; the table's new columns are used */
+export const getSchemaDriftWarning = (diff: SchemaDiff): string =>
+  `This table changed since the cube was saved: ${getSchemaChangeList(diff)}`;
 
 /** Why the Sort editor's picker doesn't offer a column, after its type */
 export const CUBE_SORT_COLUMN_DISABLED_REASON = {
