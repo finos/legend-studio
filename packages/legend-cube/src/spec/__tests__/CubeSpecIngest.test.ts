@@ -28,7 +28,7 @@ import {
 } from '../../nodes/NodeRegistry.js';
 import { IngestDatasetSource } from '../../nodes/sources/IngestDatasetSource.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
-import type { JsonObject } from '../../utils/Json.js';
+import type { JsonObject, JsonValue } from '../../utils/Json.js';
 import { decodeCubeSpec, encodeCubeSpec } from '../CubeSpecCodec.js';
 import { CubeSpecDecodeError } from '../SpecReader.js';
 
@@ -90,13 +90,17 @@ const SPEC: JsonObject = {
   },
 };
 
-const withFirstNode = (fields: JsonObject): JsonObject => {
+/** The spec with its first node's field set, or removed when there is no value */
+const withFirstNodeField = (key: string, value?: JsonValue): JsonObject => {
   const query = SPEC.query as { nodes: JsonObject[] };
   const [first, ...others] = query.nodes;
-  return {
-    ...SPEC,
-    query: { ...query, nodes: [{ ...first, ...fields }, ...others] },
-  };
+  const node: Record<string, JsonValue> = { ...first };
+  if (value === undefined) {
+    delete node[key];
+  } else {
+    node[key] = value;
+  }
+  return { ...SPEC, query: { ...query, nodes: [node, ...others] } };
 };
 
 describe(unitTest('Saved specs of ingest cubes'), () => {
@@ -136,7 +140,7 @@ describe(unitTest('Saved specs of ingest cubes'), () => {
     (key) => {
       [undefined, 12].forEach((value) =>
         expect(() =>
-          decodeCubeSpec(withFirstNode({ [key]: value }), {
+          decodeCubeSpec(withFirstNodeField(key, value), {
             registry: REGISTRY,
           }),
         ).toThrow(CubeSpecDecodeError),
