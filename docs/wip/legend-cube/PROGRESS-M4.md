@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                  |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge    |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                      |
-| Step   | M4.1–M4.6 done (decisions; conformance; aggregations; Group in the core, the builder, on the engine and in the browser); **M4.7 next** |
-| Tests  | 2070 core, 801 builder (core group), 236 Query, 176 builder engine-roundtrip (after M4.6)                                              |
+| Item   | State                                                                                                                                                       |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge                         |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                           |
+| Step   | M4.1–M4.7 done (decisions; conformance; aggregations; Group in the core, the builder, on the engine and in the browser; the grid's Group by); **M4.8 next** |
+| Tests  | 2070 core, 805 builder (core group), 236 Query, 177 builder engine-roundtrip (after M4.7)                                                                   |
 
 ## Steps
 
@@ -25,7 +25,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.4** Group in the core
 - [x] **M4.5** Group in the builder, and registered
 - [x] **M4.6** Group on the engine and in the browser
-- [ ] **M4.7** The grid's 'Group by "X"'
+- [x] **M4.7** The grid's 'Group by "X"'
 - [ ] **M4.8** Group around the databases
 - [ ] **M4.9** Concat in the core
 - [ ] **M4.10** Concat in the builder, and registered
@@ -50,7 +50,8 @@ Filled in as steps land.
 | M4.4       | `eefb1dfb5` | feat: add Group to Legend Cube's core                                       |
 | Video rule | `1f7c21c13` | docs: end every Legend Cube milestone that changes the UI with a demo video |
 | M4.5       | `8165c6598` | feat: add Group by Column to Legend Cube's builder                          |
-| M4.6       | (this one)  | test: run Legend Cube's Group on the engine and in the browser              |
+| M4.6       | `84c9f999c` | test: run Legend Cube's Group on the engine and in the browser              |
+| M4.7       | (this one)  | feat: add Group by to Legend Cube's grid quick actions                      |
 
 ## Step notes
 
@@ -163,6 +164,16 @@ Apply, F9 giving 7 cities adding up to the 19 orders, and the spec saving the Gr
 clean. It caught a layout gap: the row controls didn't fit the panel side by side (once the Query deployment's
 Tailwind CSS was rebuilt for the new classes), so each aggregation now takes two lines, its column, then its function,
 name and remove button.
+
+**M4.7, the grid's Group by (2026-10-09).** `getCubeGridQuickActions` offers `Group by "X"` between Sort by and
+Filter by: a Group keyed on the cell's column with Count rows (Q1), added after the node that ran as one undo step
+that selects it, never run. It is disabled for M2's shared reasons (stale rows, a run, a read-only cube) and on a type
+that can't be compared (`notGroupable`). The Count rows name is `Count Rows`, or `Count Rows 2`, 3, … when an input
+column already has it in any case (`getGroupByCountName`; a Group of a Group). Spliced before a downstream node, it
+can leave that node invalid, visibly and undone in one step. Tests: the store (Group by added as described, disabled on
+Variant, the splice and its undo, the free name), the context menu's order, and on the engine 21 countries adding up
+to the 830 orders. The existing tests that picked Filter by second now pick it third; the M2 rehearsal script's menu
+check (evidence `demo/rehearsal-m2.mjs`, check j) expects Filter by second and needs the same change before reuse.
 
 ## Open items
 

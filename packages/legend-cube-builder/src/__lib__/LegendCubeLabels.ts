@@ -135,6 +135,8 @@ export const CUBE_QUICK_ACTION_DISABLED_REASON = {
   UNREADABLE_VALUE: "This value can't be used in a filter.",
   notSortable: (typeName: string): string =>
     `Values of type ${typeName} can't be sorted.`,
+  notGroupable: (typeName: string): string =>
+    `Values of type ${typeName} can't be grouped.`,
   notComparable: (typeName: string): string =>
     `Values of type ${typeName} can't be compared.`,
 };

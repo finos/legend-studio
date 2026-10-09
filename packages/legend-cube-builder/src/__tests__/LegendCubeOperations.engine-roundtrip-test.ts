@@ -360,7 +360,7 @@ describe('Grid quick actions, on the engine', () => {
   const applyAndRun = async (
     state: CubeEditorState,
     column: string,
-    index: 0 | 1,
+    index: 0 | 1 | 2,
     matches: (cell: unknown) => boolean,
   ): Promise<void> => {
     const result = state.execution.result;
@@ -392,7 +392,7 @@ describe('Grid quick actions, on the engine', () => {
 
   test("Filters on the clicked cell's value: the 77 French orders", async () => {
     const state = await ranOrders();
-    await applyAndRun(state, 'SHIP_COUNTRY', 1, (cell) => cell === 'France');
+    await applyAndRun(state, 'SHIP_COUNTRY', 2, (cell) => cell === 'France');
     const countries = shownValues(state, 'SHIP_COUNTRY');
     expect(countries).toHaveLength(77);
     expect(new Set(countries)).toEqual(new Set(['France']));
@@ -400,10 +400,25 @@ describe('Grid quick actions, on the engine', () => {
 
   test('Filters on a null cell with Is Empty: the 507 orders with no ship region', async () => {
     const state = await ranOrders();
-    await applyAndRun(state, 'SHIP_REGION', 1, (cell) => cell === null);
+    await applyAndRun(state, 'SHIP_REGION', 2, (cell) => cell === null);
     const regions = shownValues(state, 'SHIP_REGION');
     expect(regions).toHaveLength(507);
     expect(new Set(regions)).toEqual(new Set([null]));
+  });
+  test('Groups by the clicked column: one row per country, counting the 830 orders', async () => {
+    const state = await ranOrders();
+    await applyAndRun(state, 'SHIP_COUNTRY', 1, () => true);
+    expect(state.execution.result?.schema.names()).toEqual([
+      'SHIP_COUNTRY',
+      'Count Rows',
+    ]);
+    expect(shownValues(state, 'SHIP_COUNTRY')).toHaveLength(21);
+    expect(
+      shownValues(state, 'Count Rows').reduce<number>(
+        (total, count) => total + Number(count),
+        0,
+      ),
+    ).toBe(830);
   });
 });
 

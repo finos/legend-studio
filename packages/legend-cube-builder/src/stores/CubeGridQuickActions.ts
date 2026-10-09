@@ -15,11 +15,16 @@
  */
 
 import {
+  AggregationFunction,
   buildQuickFilterRule,
   FilterOperator,
   Filter,
+  foldColumnName,
+  getAggregationAutoName,
+  Group,
   isOperatorAvailable,
   isSortableType,
+  type Schema,
   Sort,
   TypeFamily,
 } from '@finos/legend-cube';
@@ -30,6 +35,24 @@ import {
 } from '../__lib__/LegendCubeLabels.js';
 import type { CubeResultValue } from '../graph-manager/CubeEngine.js';
 import type { CubeEditorState } from './CubeEditorState.js';
+
+/**
+ * The name of a Group by's Count rows: `Count Rows`, or with a number after it
+ * when an input column already has that name in any case, e.g. on a Group of
+ * a Group (PLAN §11.5)
+ */
+export const getGroupByCountName = (schema: Schema): string => {
+  const base = getAggregationAutoName(
+    AggregationFunction.COUNT_ROWS,
+    undefined,
+  ) as string;
+  const taken = new Set(schema.names().map(foldColumnName));
+  let name = base;
+  for (let suffix = 2; taken.has(foldColumnName(name)); suffix += 1) {
+    name = `${base} ${suffix}`;
+  }
+  return name;
+};
 
 /** One of the grid's quick actions on a cell (spec §12.4) */
 export interface CubeGridQuickAction {
@@ -44,12 +67,13 @@ export interface CubeGridQuickAction {
 }
 
 /**
- * The quick actions on a cell of the shown rows (spec §12.4, PLAN §11.4):
- * "Sort by" adds an ascending Sort on the cell's column, and "Filter by" an
- * Equal on its value (Is Empty on a null), after the node that runs, which
- * they replace as the node that runs. Both need the rows to be from the
- * current query, no run in flight, and a cube that can change; "Sort by" a
- * type that sorts, and "Filter by" a value its column's type can compare.
+ * The quick actions on a cell of the shown rows (spec §12.4, PLAN §11.4 and
+ * §11.5): "Sort by" adds an ascending Sort on the cell's column, "Group by" a
+ * Group by it with Count rows, and "Filter by" an Equal on its value (Is
+ * Empty on a null), after the node that runs, which they replace as the node
+ * that runs. All need the rows to be from the current query, no run in
+ * flight, and a cube that can change; "Sort by" and "Group by" a type that
+ * compares, and "Filter by" a value its column's type can compare.
  * Read when the menu opens; `[]` when the position is not a column of the
  * shown rows.
  */
@@ -82,6 +106,11 @@ export const getCubeGridQuickActions = (
     (isSortableType(column.type)
       ? undefined
       : CUBE_QUICK_ACTION_DISABLED_REASON.notSortable(typeName));
+  const groupReason =
+    blocked ??
+    (isSortableType(column.type)
+      ? undefined
+      : CUBE_QUICK_ACTION_DISABLED_REASON.notGroupable(typeName));
   const filterReason =
     blocked ??
     (rule
@@ -99,6 +128,29 @@ export const getCubeGridQuickActions = (
         if (sortReason === undefined && editorState.document.query === query) {
           editorState.addConfiguredNode(
             Sort.byColumn(query.generateId(Sort.TYPE), column.name),
+            afterId,
+          );
+        }
+      },
+    },
+    {
+      label: `Group by "${column.name}"`,
+      disabledReason: groupReason,
+      hint: undefined,
+      apply: () => {
+        if (groupReason === undefined && editorState.document.query === query) {
+          editorState.addConfiguredNode(
+            new Group(
+              query.generateId(Group.TYPE),
+              [column.name],
+              [
+                {
+                  column: undefined,
+                  function: AggregationFunction.COUNT_ROWS,
+                  name: getGroupByCountName(result.schema),
+                },
+              ],
+            ),
             afterId,
           );
         }
