@@ -228,8 +228,30 @@ export type BatchLambdasRelationTypeResult = {
   errors: Map<string, EngineError>;
 };
 
+/**
+ * A relation column whose type isn't in the graph, for example an enum that
+ * isn't loaded. The relation type still has the column, typed `Any`.
+ */
+export type UnresolvedRelationColumn = {
+  name: string;
+  /**
+   * The column's type path as the engine sent it, for example `my::Color`.
+   */
+  typePath: string;
+};
+
+export type ResolvedRelationTypeResult = {
+  relationType: RelationType;
+  unresolvedColumns: UnresolvedRelationColumn[];
+};
+
 export type BatchLambdasResolvedRelationTypeResult = {
   results: Map<string, RelationType>;
+  /**
+   * Per key in `results`, the columns typed `Any` because their type isn't
+   * in the graph. A key with no such column has no entry.
+   */
+  unresolvedColumns: Map<string, UnresolvedRelationColumn[]>;
   errors: Map<string, EngineError>;
 };
 
@@ -472,16 +494,18 @@ export abstract class AbstractPureGraphManager {
   /**
    * Like {@link getLambdaRelationType}, but returns the relation type with
    * each column's type resolved against `graph`, keeping what the metadata
-   * drops: type parameters (`Varchar(5)`), type arguments, description,
-   * stereotypes and tagged values.
+   * drops: type parameters (`Varchar(5)`), type arguments, stereotypes and
+   * tagged values.
    *
-   * Throws if a column type can't be resolved in `graph`.
+   * A column whose type isn't in `graph` (for example an enum that isn't
+   * loaded) is typed `Any` and listed in `unresolvedColumns`, so callers can
+   * warn, instead of failing the whole relation type.
    */
   async getLambdaResolvedRelationType(
     lambda: RawLambda,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): Promise<RelationType> {
+  ): Promise<ResolvedRelationTypeResult> {
     throw new UnsupportedOperationError(
       `Can't get resolved lambda relation type: not supported by this graph manager`,
     );
@@ -510,9 +534,10 @@ export abstract class AbstractPureGraphManager {
 
   /**
    * Batch version of {@link getLambdaResolvedRelationType}. A lambda the
-   * engine can't type, or whose relation type can't be resolved in `graph`,
-   * gets an entry in `errors` instead of `results`; the other lambdas are
-   * unaffected.
+   * engine can't type gets an entry in `errors` instead of `results`; the
+   * other lambdas are unaffected. Columns whose type isn't in `graph` are
+   * typed `Any` and listed in `unresolvedColumns`, as in
+   * {@link getLambdaResolvedRelationType}.
    */
   async getBatchLambdasResolvedRelationType(
     lambdas: Map<string, RawLambda>,

@@ -46,6 +46,7 @@ import type { RelationColumn } from '../../../../../graph/metamodel/pure/package
 import { PrecisePrimitiveType } from '../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
 import { PrimitiveInstanceValue } from '../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
 import { CompilationError } from '../../../../action/EngineError.js';
+import { CORE_PURE_PATH } from '../../../../../graph/MetaModelConst.js';
 
 const TEST_DATA__entities: Entity[] = [
   {
@@ -112,6 +113,19 @@ const UNRESOLVABLE_RELATION_TYPE: PlainObject<V1_RelationType> = {
   _type: 'relationType',
   columns: [
     {
+      name: 'NAME',
+      genericType: {
+        multiplicityArguments: [],
+        rawType: {
+          _type: 'packageableType',
+          fullPath: 'meta::pure::precisePrimitives::Varchar',
+        },
+        typeArguments: [],
+        typeVariableValues: [{ _type: 'integer', value: 9 }],
+      },
+      multiplicity: { lowerBound: 1, upperBound: 1 },
+    },
+    {
       name: 'MISSING',
       genericType: {
         multiplicityArguments: [],
@@ -119,7 +133,7 @@ const UNRESOLVABLE_RELATION_TYPE: PlainObject<V1_RelationType> = {
         typeArguments: [],
         typeVariableValues: [],
       },
-      multiplicity: { lowerBound: 1, upperBound: 1 },
+      multiplicity: { lowerBound: 0, upperBound: 1 },
     },
   ],
 };
@@ -206,6 +220,24 @@ const expectLosslessColumns = (columns: RelationColumn[]): void => {
   expect(color.multiplicity.upperBound).toBe(1);
 };
 
+// `NAME` keeps its type; `MISSING`, whose type isn't in the graph, is typed
+// `Any` and keeps its multiplicity
+const expectUnresolvedColumnTypedAny = (columns: RelationColumn[]): void => {
+  expect(columns.map((column) => column.name)).toEqual(['NAME', 'MISSING']);
+
+  const nameType = guaranteeNonNullable(columns[0]).genericType.value;
+  expect(nameType.rawType).toBe(PrecisePrimitiveType.VARCHAR);
+  expect(
+    guaranteeType(nameType.typeVariableValues?.[0], PrimitiveInstanceValue)
+      .values,
+  ).toEqual([9]);
+
+  const missing = guaranteeNonNullable(columns[1]);
+  expect(missing.genericType.value.rawType.path).toBe(CORE_PURE_PATH.ANY);
+  expect(missing.multiplicity.lowerBound).toBe(0);
+  expect(missing.multiplicity.upperBound).toBe(1);
+};
+
 beforeAll(async () => {
   await TEST__buildGraphWithEntities(graphManagerState, TEST_DATA__entities);
 });
@@ -220,7 +252,7 @@ describe(unitTest('getLambdaResolvedRelationType'), () => {
       .spyOn(getEngineServerClient(), 'lambdaRelationType')
       .mockResolvedValue(ENGINE_RELATION_TYPE);
 
-    const relationType =
+    const { relationType, unresolvedColumns } =
       await graphManagerState.graphManager.getLambdaResolvedRelationType(
         lambda,
         graphManagerState.graph,
@@ -228,19 +260,24 @@ describe(unitTest('getLambdaResolvedRelationType'), () => {
 
     expect(spy).toHaveBeenCalledTimes(1);
     expectLosslessColumns(relationType.columns);
+    expect(unresolvedColumns).toEqual([]);
   });
 
-  test('fails when a column type is not in the graph', async () => {
+  test('types a column whose type is not in the graph as Any and reports it', async () => {
     jest
       .spyOn(getEngineServerClient(), 'lambdaRelationType')
       .mockResolvedValue(UNRESOLVABLE_RELATION_TYPE);
 
-    await expect(
-      graphManagerState.graphManager.getLambdaResolvedRelationType(
+    const { relationType, unresolvedColumns } =
+      await graphManagerState.graphManager.getLambdaResolvedRelationType(
         lambda,
         graphManagerState.graph,
-      ),
-    ).rejects.toThrow('my::Missing');
+      );
+
+    expectUnresolvedColumnTypedAny(relationType.columns);
+    expect(unresolvedColumns).toEqual([
+      { name: 'MISSING', typePath: 'my::Missing' },
+    ]);
   });
 
   test('a 400 from the engine becomes a CompilationError', async () => {
@@ -270,7 +307,7 @@ describe(unitTest('getBatchLambdasResolvedRelationType'), () => {
       .spyOn(getEngineServerClient(), 'batchLambdasRelationType')
       .mockResolvedValue(ENGINE_BATCH_RESPONSE);
 
-    const { results, errors } =
+    const { results, unresolvedColumns, errors } =
       await graphManagerState.graphManager.getBatchLambdasResolvedRelationType(
         new Map([
           ['ok', lambda],
@@ -281,10 +318,17 @@ describe(unitTest('getBatchLambdasResolvedRelationType'), () => {
       );
 
     expect(spy).toHaveBeenCalledTimes(1);
-    expect(Array.from(results.keys())).toEqual(['ok']);
+    expect(Array.from(results.keys()).sort()).toEqual(['ok', 'unresolvable']);
     expectLosslessColumns(guaranteeNonNullable(results.get('ok')).columns);
+    // a column whose type isn't in the graph doesn't fail its key
+    expectUnresolvedColumnTypedAny(
+      guaranteeNonNullable(results.get('unresolvable')).columns,
+    );
+    expect(Array.from(unresolvedColumns.entries())).toEqual([
+      ['unresolvable', [{ name: 'MISSING', typePath: 'my::Missing' }]],
+    ]);
 
-    expect(Array.from(errors.keys()).sort()).toEqual(['bad', 'unresolvable']);
+    expect(Array.from(errors.keys())).toEqual(['bad']);
     // the engine error keeps its source information
     const engineError = guaranteeNonNullable(errors.get('bad'));
     expect(engineError.message).toBe(
@@ -292,10 +336,6 @@ describe(unitTest('getBatchLambdasResolvedRelationType'), () => {
     );
     expect(engineError.sourceInformation?.startColumn).toBe(2);
     expect(engineError.sourceInformation?.endColumn).toBe(66);
-    // a relation type that can't be resolved in the graph fails only its key
-    expect(guaranteeNonNullable(errors.get('unresolvable')).message).toContain(
-      'my::Missing',
-    );
   });
 
   test('a 400 from the engine becomes a CompilationError', async () => {

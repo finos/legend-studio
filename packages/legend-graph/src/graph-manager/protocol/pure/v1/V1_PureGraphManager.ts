@@ -351,6 +351,8 @@ import type {
   BatchLambdasRelationTypeResult,
   BatchLambdasResolvedRelationTypeResult,
   LambdasReturnTypeResult,
+  ResolvedRelationTypeResult,
+  UnresolvedRelationColumn,
 } from '../../../AbstractPureGraphManager.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_SnowflakeM2MUdf } from './model/packageableElements/function/V1_SnowflakeM2MUdf.js';
@@ -443,6 +445,7 @@ import {
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
+  V1_buildResolvedRelationTypeFromV1RelationType,
 } from './helpers/V1_AccessorHelper.js';
 import {
   V1_DataProductAccessor,
@@ -2181,8 +2184,8 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     lambda: RawLambda,
     graph: PureModel,
     options?: { keepSourceInformation?: boolean },
-  ): Promise<RelationType> {
-    return V1_buildRelationTypeFromV1RelationType(
+  ): Promise<ResolvedRelationTypeResult> {
+    return V1_buildResolvedRelationTypeFromV1RelationType(
       await this.engine.getLambdaV1RelationType(
         this.buildLambdaReturnTypeInput(lambda, graph, options),
       ),
@@ -2199,24 +2202,29 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
       this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
     );
     const results = new Map<string, RelationType>();
+    const unresolvedColumns = new Map<string, UnresolvedRelationColumn[]>();
     const errors = new Map<string, EngineError>();
     response.errors?.forEach((engineError, key) =>
       errors.set(key, V1_buildEngineError(engineError)),
     );
     response.results.forEach((v1RelationType, key) => {
       try {
-        results.set(
-          key,
-          V1_buildRelationTypeFromV1RelationType(v1RelationType, graph),
+        const resolved = V1_buildResolvedRelationTypeFromV1RelationType(
+          v1RelationType,
+          graph,
         );
+        results.set(key, resolved.relationType);
+        if (resolved.unresolvedColumns.length) {
+          unresolvedColumns.set(key, resolved.unresolvedColumns);
+        }
       } catch (error) {
         assertErrorThrown(error);
-        // a relation type we can't resolve fails only its own lambda, like an
+        // a relation type we can't build fails only its own lambda, like an
         // engine error, so the other lambdas still get their relation type
         errors.set(key, new EngineError(error.message));
       }
     });
-    return { results, errors };
+    return { results, unresolvedColumns, errors };
   }
 
   getCodeComplete(
