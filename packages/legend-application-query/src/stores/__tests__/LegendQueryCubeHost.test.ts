@@ -18,6 +18,8 @@ import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { ApplicationStore } from '@finos/legend-application';
 import {
   BUNDLED_MODELS,
+  type CubeConnectionExplorer,
+  CubeDirectDatabaseType,
   type CubeEngine,
   type CubeModelOutline,
 } from '@finos/legend-cube-builder';
@@ -103,6 +105,43 @@ describe('Legend Query as the Cube host', () => {
     const host = new LegendQueryCubeHost(createApplicationStore());
     expect(Object.keys(host.engine)).not.toHaveLength(0);
     expect(typeof host.engine.execute).toBe('function');
+  });
+
+  test('Gives the page the connection explorer it is given', () => {
+    const explorer = {} as CubeConnectionExplorer;
+    const host = new LegendQueryCubeHost(
+      createApplicationStore(),
+      undefined,
+      explorer,
+    );
+    expect(host.connectionExplorer).toBe(explorer);
+  });
+
+  test("Builds a connection explorer that reads databases through Query's engine server, traced by Query's tracer", async () => {
+    const fetchSpy = jest
+      .spyOn(globalThis, 'fetch')
+      .mockImplementation(async () =>
+        Promise.reject(new Error('No engine server in tests')),
+      );
+    const applicationStore = createApplicationStore({
+      engine: { url: 'https://explorer-engine.test' },
+    });
+    const trace = jest.spyOn(applicationStore.tracerService, 'createTrace');
+    const { connectionExplorer } = new LegendQueryCubeHost(applicationStore);
+    const connection = connectionExplorer.buildConnection({
+      databaseType: CubeDirectDatabaseType.H2,
+      setupSqls: ['create schema CUBE_DIRECT'],
+    });
+    await expect(connectionExplorer.listSchemas(connection)).rejects.toThrow(
+      'No engine server in tests',
+    );
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+    const url = String(guaranteeNonNullable(fetchSpy.mock.calls[0])[0]);
+    expect(url).toMatch(
+      /^https:\/\/explorer-engine\.test\/pure\/v1\/utilities\/database\/schemaExploration/u,
+    );
+    expect(trace).toHaveBeenCalledTimes(1);
+    expect(trace.mock.calls[0]?.[2]).toBe(url);
   });
 
   test("Builds an engine that calls Query's engine server, compressed, in Query's auth mode and traced by Query's tracer", async () => {

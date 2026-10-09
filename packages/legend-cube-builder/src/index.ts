@@ -21,9 +21,11 @@ export {
 export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
 export { CubeEditor } from './components/CubeEditor.js';
 
+export * from './graph-manager/CubeConnectionExplorer.js';
 export * from './graph-manager/CubeEngine.js';
 export { getRuntimesForDatabase } from './graph-manager/CubeModelOutlineHelper.js';
 export {
+  buildCubeConnectionExplorer,
   buildCubeEngine,
   type CubeEngineConfig,
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';

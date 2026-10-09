@@ -15,6 +15,7 @@
  */
 
 import type { GenericLegendApplicationStore } from '@finos/legend-application';
+import type { CubeConnectionExplorer } from '../graph-manager/CubeConnectionExplorer.js';
 import type { CubeEngine } from '../graph-manager/CubeEngine.js';
 import type { LocalModelCatalog } from './LocalModelCatalog.js';
 
@@ -29,4 +30,9 @@ export interface CubeHost {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly engine: CubeEngine;
   readonly modelCatalog: LocalModelCatalog;
+  /**
+   * Reads the databases behind direct connections (PLAN §6.8); without one,
+   * the source picker offers no database connection
+   */
+  readonly connectionExplorer?: CubeConnectionExplorer | undefined;
 }

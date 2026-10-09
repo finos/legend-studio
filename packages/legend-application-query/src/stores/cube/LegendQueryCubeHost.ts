@@ -15,7 +15,9 @@
  */
 
 import {
+  buildCubeConnectionExplorer,
   buildCubeEngine,
+  type CubeConnectionExplorer,
   type CubeEngine,
   type CubeEngineConfig,
   type CubeHost,
@@ -37,25 +39,29 @@ export const buildLegendQueryCubeEngineConfig = (
 
 /**
  * Legend Query as the host of the Cube page (PLAN §3.5): Query's engine and
- * application store, and the bundled models. One per visit to the page.
+ * application store, the bundled models, and direct database connections
+ * read through Query's engine (PLAN §6.8). One per visit to the page.
  */
 export class LegendQueryCubeHost implements CubeHost {
   readonly applicationStore: LegendQueryApplicationStore;
   readonly engine: CubeEngine;
   readonly modelCatalog: LocalModelCatalog;
+  readonly connectionExplorer: CubeConnectionExplorer;
 
-  /** Tests give an engine; otherwise it is built from Query's config */
+  /** Tests give an engine and an explorer; otherwise each is built from Query's config */
   constructor(
     applicationStore: LegendQueryApplicationStore,
     engine?: CubeEngine,
+    connectionExplorer?: CubeConnectionExplorer,
   ) {
     this.applicationStore = applicationStore;
+    const config = buildLegendQueryCubeEngineConfig(applicationStore.config);
     this.engine =
-      engine ??
-      buildCubeEngine(
-        buildLegendQueryCubeEngineConfig(applicationStore.config),
-        applicationStore.tracerService,
-      );
+      engine ?? buildCubeEngine(config, applicationStore.tracerService);
     this.modelCatalog = new LocalModelCatalog(this.engine);
+    // its own client, configured as the engine's
+    this.connectionExplorer =
+      connectionExplorer ??
+      buildCubeConnectionExplorer(config, applicationStore.tracerService);
   }
 }
