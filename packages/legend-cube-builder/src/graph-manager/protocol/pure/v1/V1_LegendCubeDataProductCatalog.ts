@@ -26,7 +26,7 @@ import {
   StoreProjectData,
 } from '@finos/legend-server-depot';
 import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
-import { isNonNullable } from '@finos/legend-shared';
+import { isNonNullable, type PlainObject } from '@finos/legend-shared';
 import { StoredFileGeneration } from '@finos/legend-storage';
 import {
   type CubeDataProductProject,
@@ -51,7 +51,9 @@ import {
 // The deployed data products, as Legend Query lists and reads them: the
 // lakehouse's lite list per class (DataProductSelectorState), then a
 // product's deployed artifact (getGenerationFilesByType) and its definition
-// at the deployed version, from the depot
+// at the deployed version, from the depot. Cube pages the lite list itself
+// (PLAN §6.8): the client's own loop never ends on a page that says more
+// follow without saying where, or on a repeated cursor, and can't be stopped
 
 /** The generation type of a data product's artifact */
 const DATA_PRODUCT_GENERATION_TYPE = 'dataProduct';
@@ -62,8 +64,33 @@ const ENVIRONMENT_TYPES = [
   CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
 ];
 
+/** The lite list's page size, as the lakehouse client's own loop uses */
+const LITE_PAGE_SIZE = 1000;
+/** Past this many pages a list is taken to be stuck */
+const LITE_PAGE_CAP = 50;
+
+export const V1_CUBE_DATA_PRODUCT_LIST_ERROR = {
+  UNREADABLE_PAGE: "The lakehouse's answer isn't a page of data products",
+  NO_CURSOR:
+    'The lakehouse said more data products follow, but not where the next page starts',
+  REPEATED_CURSOR: 'The lakehouse sent the same page of data products twice',
+  TOO_MANY_PAGES: `The lakehouse's data product list runs past ${LITE_PAGE_CAP} pages`,
+} as const;
+
 const toMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
+
+const isPlainObject = (value: unknown): value is PlainObject =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** Stops a list between pages once its search is dropped */
+const throwIfAborted = (signal: AbortSignal | undefined): void => {
+  if (signal?.aborted) {
+    throw signal.reason instanceof Error
+      ? signal.reason
+      : new Error('The data product list was stopped');
+  }
+};
 
 /** A lite row as Cube lists it; none for an ad hoc or incomplete one */
 const toCandidate = (
@@ -121,43 +148,115 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     this.getAccessToken = getAccessToken;
   }
 
+  /**
+   * The class's lite rows, page by page along the lakehouse's cursor. Stops
+   * with an error on a page that isn't one, on a missing or repeated cursor,
+   * or past the page cap, and between pages once the search is dropped.
+   */
+  private async readLiteRows(
+    environmentType: CubeDataProductEnvironmentType,
+    signal: AbortSignal | undefined,
+  ): Promise<PlainObject[]> {
+    const rows: PlainObject[] = [];
+    let cursor: { id: string; deploymentId: number } | undefined;
+    for (let page = 1; page <= LITE_PAGE_CAP; page++) {
+      throwIfAborted(signal);
+      const response: unknown =
+        await this.contractServerClient.getDataProductsLitePaginated(
+          LITE_PAGE_SIZE,
+          environmentType as unknown as V1_EntitlementsLakehouseEnvironmentType,
+          cursor?.id,
+          cursor?.deploymentId,
+          this.getAccessToken(),
+        );
+      // a 200 carrying an error is no page
+      const list = isPlainObject(response)
+        ? response.liteDataProductsResponse
+        : undefined;
+      const products = isPlainObject(list) ? list.dataProducts : undefined;
+      if (!Array.isArray(products)) {
+        throw new Error(V1_CUBE_DATA_PRODUCT_LIST_ERROR.UNREADABLE_PAGE);
+      }
+      rows.push(...products.filter(isPlainObject));
+      const metadata = (response as PlainObject).paginationMetadataRecord;
+      if (!isPlainObject(metadata) || metadata.hasNextPage !== true) {
+        return rows;
+      }
+      const last = metadata.lastValuesMap;
+      const id = isPlainObject(last) ? last.id : undefined;
+      const deploymentId = isPlainObject(last)
+        ? Number(last.deployment_id)
+        : Number.NaN;
+      if (typeof id !== 'string' || !id || !Number.isFinite(deploymentId)) {
+        throw new Error(V1_CUBE_DATA_PRODUCT_LIST_ERROR.NO_CURSOR);
+      }
+      if (cursor?.id === id && cursor.deploymentId === deploymentId) {
+        throw new Error(V1_CUBE_DATA_PRODUCT_LIST_ERROR.REPEATED_CURSOR);
+      }
+      cursor = { id, deploymentId };
+    }
+    throw new Error(V1_CUBE_DATA_PRODUCT_LIST_ERROR.TOO_MANY_PAGES);
+  }
+
+  /**
+   * The class's list, read once per page visit. A list whose search is
+   * dropped while it pages is forgotten at once, so the next search reads it
+   * again rather than waiting on the stopped one.
+   */
   private listOf(
     environmentType: CubeDataProductEnvironmentType,
+    signal: AbortSignal | undefined,
   ): Promise<readonly CubeDataProductCandidate[]> {
-    let list = this.lists.get(environmentType);
-    if (!list) {
-      list = (async () =>
-        V1_entitlementsDataProductLiteResponseToDataProductLite(
-          await this.contractServerClient.getAllLiteDataProducts(
-            environmentType as unknown as V1_EntitlementsLakehouseEnvironmentType,
-            undefined,
-            this.getAccessToken(),
-          ),
-        )
-          .map((row) => toCandidate(row, environmentType))
-          .filter(isNonNullable))().catch((error: unknown) => {
-        // read again on the next search
-        this.lists.delete(environmentType);
-        throw new CubeEngineError(
-          CubeEngineErrorKind.NETWORK,
-          `Cube couldn't list the data products\n${toMessage(error)}`,
-        );
-      });
-      this.lists.set(environmentType, list);
+    const cached = this.lists.get(environmentType);
+    if (cached) {
+      return cached;
     }
+    let list: Promise<readonly CubeDataProductCandidate[]> | undefined;
+    const forget = (): void => {
+      if (this.lists.get(environmentType) === list) {
+        this.lists.delete(environmentType);
+      }
+    };
+    list = (async () => {
+      signal?.addEventListener('abort', forget, { once: true });
+      try {
+        return V1_entitlementsDataProductLiteResponseToDataProductLite({
+          dataProducts: await this.readLiteRows(environmentType, signal),
+        })
+          .map((row) => toCandidate(row, environmentType))
+          .filter(isNonNullable);
+      } finally {
+        signal?.removeEventListener('abort', forget);
+      }
+    })().catch((error: unknown) => {
+      // read again on the next search
+      forget();
+      if (signal?.aborted) {
+        throw error;
+      }
+      throw new CubeEngineError(
+        CubeEngineErrorKind.NETWORK,
+        `Cube couldn't list the data products\n${toMessage(error)}`,
+      );
+    });
+    this.lists.set(environmentType, list);
     return list;
   }
 
-  async search(search: {
-    text: string;
-    environmentType: CubeDataProductEnvironmentType;
-  }): Promise<readonly CubeDataProductCandidate[]> {
+  async search(
+    search: {
+      text: string;
+      environmentType: CubeDataProductEnvironmentType;
+    },
+    signal?: AbortSignal,
+  ): Promise<readonly CubeDataProductCandidate[]> {
     const text = search.text.trim().toLowerCase();
-    return (await this.listOf(search.environmentType)).filter((candidate) =>
-      [candidate.title, candidate.id, candidate.description ?? '']
-        .join('\n')
-        .toLowerCase()
-        .includes(text),
+    return (await this.listOf(search.environmentType, signal)).filter(
+      (candidate) =>
+        [candidate.title, candidate.id, candidate.description ?? '']
+          .join('\n')
+          .toLowerCase()
+          .includes(text),
     );
   }
 

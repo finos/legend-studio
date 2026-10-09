@@ -25,7 +25,10 @@ import {
   V1_TEST__ORDERS_ARTIFACT,
   V1_TEST__ORDERS_DEFINITION,
 } from '../__test-utils__/V1_CubeDataProductFixtures.js';
-import { V1_LegendCubeDataProductCatalog } from '../V1_LegendCubeDataProductCatalog.js';
+import {
+  V1_CUBE_DATA_PRODUCT_LIST_ERROR,
+  V1_LegendCubeDataProductCatalog,
+} from '../V1_LegendCubeDataProductCatalog.js';
 
 const { PRODUCTION, PRODUCTION_PARALLEL } = CubeDataProductEnvironmentType;
 
@@ -50,7 +53,17 @@ const liteRow = (
   lakehouseEnvironment: { producerEnvironmentName: 'sales-producer', type },
 });
 
-const setUp = (): {
+/** A page of the lite list; with a cursor, more pages follow */
+const litePage = (rows: PlainObject[], next?: PlainObject): PlainObject => ({
+  liteDataProductsResponse: { dataProducts: rows },
+  paginationMetadataRecord: next
+    ? { hasNextPage: true, lastValuesMap: next, size: rows.length }
+    : { hasNextPage: false, size: rows.length },
+});
+
+const setUp = (
+  getAccessToken: () => string | undefined = () => 'token',
+): {
   catalog: V1_LegendCubeDataProductCatalog;
   lite: jest.Mock;
   generations: jest.Mock;
@@ -61,9 +74,9 @@ const setUp = (): {
   });
   const depot = new DepotServerClient({ serverUrl: 'http://depot.test' });
   const lite = jest
-    .spyOn(contract, 'getAllLiteDataProducts')
-    .mockImplementation((async (environmentType: string) => ({
-      dataProducts: [
+    .spyOn(contract, 'getDataProductsLitePaginated')
+    .mockImplementation((async (_size: number, environmentType: string) =>
+      litePage([
         liteRow('ORDERS_PRODUCT', environmentType),
         // 'Production' casing, as some deployments send it
         liteRow('CASED_PRODUCT', 'Production'),
@@ -73,8 +86,7 @@ const setUp = (): {
         }),
         liteRow('NO_PATH_PRODUCT', environmentType, undefined, ''),
         liteRow('NO_ORIGIN_PRODUCT', environmentType, null),
-      ],
-    })) as never);
+      ])) as never);
   const generations = jest
     .spyOn(depot, 'getGenerationFilesByType')
     .mockImplementation((async () => [
@@ -102,7 +114,7 @@ const setUp = (): {
     catalog: new V1_LegendCubeDataProductCatalog(
       contract,
       depot,
-      () => 'token',
+      getAccessToken,
     ),
     lite: lite as unknown as jest.Mock,
     generations: generations as unknown as jest.Mock,
@@ -142,11 +154,19 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
       ).map((product) => product.id),
     ).toEqual(['CASED_PRODUCT']);
     expect(lite).toHaveBeenCalledTimes(1);
-    expect(lite).toHaveBeenCalledWith('PRODUCTION', undefined, 'token');
+    expect(lite).toHaveBeenCalledWith(
+      1000,
+      'PRODUCTION',
+      undefined,
+      undefined,
+      'token',
+    );
     await catalog.search({ text: '', environmentType: PRODUCTION_PARALLEL });
     expect(lite).toHaveBeenCalledTimes(2);
     expect(lite).toHaveBeenLastCalledWith(
+      1000,
       'PRODUCTION_PARALLEL',
+      undefined,
       undefined,
       'token',
     );
@@ -255,5 +275,126 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
     expect((failure as CubeEngineError).detail).toContain(
       'has no deployed artifact at com.example.sales:orders-products:1.4.0',
     );
+  });
+});
+
+describe('Paging the lite list', () => {
+  const PAGE_ONE = [liteRow('ORDERS_PRODUCT', 'PRODUCTION')];
+  const PAGE_TWO = [liteRow('RETURNS_PRODUCT', 'PRODUCTION')];
+  const CURSOR = { id: 'ORDERS_PRODUCT', deployment_id: 1234 };
+
+  const listFailure = async (
+    catalog: V1_LegendCubeDataProductCatalog,
+  ): Promise<string> => {
+    const failure = await catalog
+      .search({ text: '', environmentType: PRODUCTION })
+      .catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(CubeEngineError);
+    return (failure as CubeEngineError).detail;
+  };
+
+  test("Follows the lakehouse's cursor until the last page, and keeps every page's rows", async () => {
+    const { catalog, lite } = setUp();
+    lite
+      .mockImplementationOnce(async () => litePage(PAGE_ONE, CURSOR))
+      .mockImplementationOnce(async () => litePage(PAGE_TWO));
+    const products = await catalog.search({
+      text: '',
+      environmentType: PRODUCTION,
+    });
+    expect(products.map((product) => product.id)).toEqual([
+      'ORDERS_PRODUCT',
+      'RETURNS_PRODUCT',
+    ]);
+    expect(lite).toHaveBeenCalledTimes(2);
+    expect(lite).toHaveBeenLastCalledWith(
+      1000,
+      'PRODUCTION',
+      'ORDERS_PRODUCT',
+      1234,
+      'token',
+    );
+  });
+
+  test('Stops with an error, and asks no further page, when more pages are said to follow but not where', async () => {
+    const { catalog, lite } = setUp();
+    lite.mockImplementationOnce(async () => ({
+      ...litePage(PAGE_ONE),
+      paginationMetadataRecord: { hasNextPage: true, size: 1 },
+    }));
+    expect(await listFailure(catalog)).toContain(
+      V1_CUBE_DATA_PRODUCT_LIST_ERROR.NO_CURSOR,
+    );
+    expect(lite).toHaveBeenCalledTimes(1);
+  });
+
+  test('Stops with an error on a repeated cursor, and asks no further page', async () => {
+    const { catalog, lite } = setUp();
+    lite.mockImplementation(async () => litePage(PAGE_ONE, CURSOR));
+    expect(await listFailure(catalog)).toContain(
+      V1_CUBE_DATA_PRODUCT_LIST_ERROR.REPEATED_CURSOR,
+    );
+    expect(lite).toHaveBeenCalledTimes(2);
+  });
+
+  test('Stops with an error past its page cap, however the cursor moves', async () => {
+    const { catalog, lite } = setUp();
+    let page = 0;
+    lite.mockImplementation(async () =>
+      litePage(PAGE_ONE, { id: `PRODUCT_${++page}`, deployment_id: page }),
+    );
+    expect(await listFailure(catalog)).toContain(
+      V1_CUBE_DATA_PRODUCT_LIST_ERROR.TOO_MANY_PAGES,
+    );
+    expect(lite).toHaveBeenCalledTimes(50);
+  });
+
+  test('Takes an answer that is no page, such as a 200 carrying an error, as an error', async () => {
+    const { catalog, lite } = setUp();
+    lite.mockImplementationOnce(async () => ({
+      errorMessage: 'Entitlements unavailable',
+    }));
+    expect(await listFailure(catalog)).toContain(
+      V1_CUBE_DATA_PRODUCT_LIST_ERROR.UNREADABLE_PAGE,
+    );
+  });
+
+  test('Stops between pages once its search is dropped, and lists afresh on the next search', async () => {
+    const { catalog, lite } = setUp();
+    let release!: () => void;
+    lite.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          release = () => resolve(litePage(PAGE_ONE, CURSOR));
+        }),
+    );
+    const abort = new AbortController();
+    const dropped = catalog
+      .search({ text: '', environmentType: PRODUCTION }, abort.signal)
+      .catch((error: unknown) => error);
+    abort.abort();
+    // a new search doesn't wait on the stopped one
+    lite.mockImplementationOnce(async () => litePage(PAGE_TWO));
+    expect(
+      (await catalog.search({ text: '', environmentType: PRODUCTION })).map(
+        (product) => product.id,
+      ),
+    ).toEqual(['RETURNS_PRODUCT']);
+    release();
+    expect(await dropped).toBeInstanceOf(Error);
+    expect(lite).toHaveBeenCalledTimes(2);
+  });
+
+  test('Asks for the access token on every page', async () => {
+    let token = 0;
+    const { catalog, lite } = setUp(() => `token-${++token}`);
+    lite
+      .mockImplementationOnce(async () => litePage(PAGE_ONE, CURSOR))
+      .mockImplementationOnce(async () => litePage(PAGE_TWO));
+    await catalog.search({ text: '', environmentType: PRODUCTION });
+    expect(lite.mock.calls.map((call) => call[4])).toEqual([
+      'token-1',
+      'token-2',
+    ]);
   });
 });

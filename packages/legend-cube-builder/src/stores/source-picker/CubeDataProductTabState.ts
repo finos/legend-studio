@@ -117,9 +117,11 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   isAdding = false;
   error: CubeDataProductTabError | undefined;
 
-  /** Each counts its calls: a new call or closing the dialog drops a late answer */
   /** The warehouse field shows a cube's own, not one the viewer typed */
   private warehouseFromProject = false;
+  /** Stops the listing under way: a new listing or closing the dialog drops it */
+  private listAbort: AbortController | undefined;
+  /** Each counts its calls: a new call or closing the dialog drops a late answer */
   private listRequest = 0;
   private describeRequest = 0;
   private confirmRequest = 0;
@@ -308,6 +310,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   }
 
   close(): void {
+    this.listAbort?.abort();
+    this.listAbort = undefined;
     this.listRequest++;
     this.confirmRequest++;
     this.isListing = false;
@@ -328,13 +332,16 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     }
     const environmentType = this.environmentType;
     const request = ++this.listRequest;
+    this.listAbort?.abort();
+    const abort = new AbortController();
+    this.listAbort = abort;
     this.isListing = true;
     this.error = undefined;
     try {
-      const candidates = (yield catalog.search({
-        text: '',
-        environmentType,
-      })) as readonly CubeDataProductCandidate[];
+      const candidates = (yield catalog.search(
+        { text: '', environmentType },
+        abort.signal,
+      )) as readonly CubeDataProductCandidate[];
       if (request !== this.listRequest) {
         return;
       }
@@ -348,6 +355,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     } finally {
       if (request === this.listRequest) {
         this.isListing = false;
+        this.listAbort = undefined;
       }
     }
   }

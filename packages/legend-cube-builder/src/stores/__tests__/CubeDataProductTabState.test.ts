@@ -452,6 +452,27 @@ describe('Data product tab', () => {
     expect(tab.warehouse).toBe('VIEWER_WH');
   });
 
+  test('Stops the listing under way on another mode or on closing the dialog', async () => {
+    const { state, dataProducts } = setUp();
+    const held = deferred<readonly CubeDataProductCandidate[]>();
+    dataProducts.search.mockReturnValueOnce(held.promise);
+    const tab = await openTab(state);
+    const signalOf = (call: number): AbortSignal | undefined =>
+      dataProducts.search.mock.calls[call]?.[1];
+    expect(signalOf(0)?.aborted).toBe(false);
+    dataProducts.search.mockReturnValueOnce(held.promise);
+    tab.setEnvironmentType(PRODUCTION_PARALLEL);
+    expect(signalOf(0)?.aborted).toBe(true);
+    expect(signalOf(1)?.aborted).toBe(false);
+    state.sourcePicker.close();
+    expect(signalOf(1)?.aborted).toBe(true);
+    // a late answer changes nothing
+    held.resolve([]);
+    await settle();
+    expect(tab.candidates).toBeUndefined();
+    expect(tab.isListing).toBe(false);
+  });
+
   test('Shows a failed listing in the tab, and lists again', async () => {
     const { state, dataProducts } = setUp();
     dataProducts.search.mockRejectedValueOnce(
