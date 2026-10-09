@@ -1,0 +1,220 @@
+###Data
+'''
+Sample firm payload.
+Used by the documented activators.
+'''
+Data <<model::DocProfile.reference>> {model::DocProfile.owner = 'Data Team'} model::data::FirmData
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '{"legalName":"Acme"}';
+  }#
+}
+
+'''
+Plain text data.
+'''
+Data model::data::TextData
+{
+  ExternalFormat
+  #{
+    contentType: 'text/plain';
+    data: 'hello';
+  }#
+}
+
+
+###MemSql
+'''
+Firm names as a MemSQL function.
+Deployed nightly.
+'''
+MemSqlFunction <<model::DocProfile.reference>> {model::DocProfile.owner = 'data-team'} model::FirmMemSqlFunction
+{
+   functionName : 'firm_function';
+   function : model::firmNames():TabularDataSet[1];
+   ownership : Deployment { identifier: 'testDeployment' };
+   description : 'Firm names exposed as a MemSQL function';
+   activationConfiguration : model::MemSqlConnection;
+}
+
+
+###Snowflake
+'''
+Firm details as an M2M UDF.
+'''
+SnowflakeM2MUdf <<model::DocProfile.reference>> model::FirmUdf
+{
+   udfName : 'M2MUDF';
+   function : model::firmDetails(String[1]):String[1];
+   ownership : Deployment { identifier: '1234'};
+   deploymentSchema : 'UDF_SCHEMA';
+   deploymentStage : 'UDF_SCHEMA.DEMO';
+   description : 'A documented M2M Udf';
+   activationConfiguration : model::SnowflakeConnection;
+}
+
+
+###Relational
+Database model::store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+)
+
+
+###Pure
+Profile model::DocProfile
+{
+  stereotypes: [reference];
+  tags: [owner];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  id: Integer[1];
+}
+
+Class model::Firms
+{
+  firms: model::Firm[*];
+}
+
+Class {meta::pure::profiles::doc.doc = 'First line\nSecond line, escaped'} model::EscapedDoc
+{
+  {meta::pure::profiles::doc.doc = 'Has \'\'\' inside'} quoted: String[1];
+  {meta::pure::profiles::doc.doc = ''} empty: String[1];
+}
+
+'''
+Firm names.
+
+Usage:
+  model::firmNames()
+    ->from(...)
+
+Matches \d+ and C:\temp\file, 'quoted' and "double".
+'''
+function <<meta::pure::profiles::doc.deprecated>> {meta::pure::profiles::doc.todo = 'replace with a relation function', model::DocProfile.owner = 'Core Team'} model::firmNames(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Firm.all()->project([x|$x.legalName], ['Legal Name'])->from(model::RelationalMapping, model::TestRuntime)
+}
+
+function {meta::pure::profiles::doc.doc = 'First doc', meta::pure::profiles::doc.doc = 'Second doc'} model::firmDetails(input: String[1]): String[1]
+{
+  model::Firms.all()->graphFetch(#{model::Firms{firms{legalName}}}#)->serialize(#{model::Firms{firms{legalName}}}#)->from(model::M2MMapping, model::M2MRuntime)
+}
+
+
+###Mapping
+Mapping model::RelationalMapping
+(
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [model::store::TestDB]FirmTable.id
+    )
+    ~mainTable [model::store::TestDB]FirmTable
+    legalName: [model::store::TestDB]FirmTable.legal_name,
+    id: [model::store::TestDB]FirmTable.id
+  }
+)
+
+Mapping model::M2MMapping
+(
+  *model::Firms: Pure
+  {
+    ~src model::Firms
+    firms: $src.firms
+  }
+  *model::Firm: Pure
+  {
+    ~src model::Firm
+    legalName: $src.legalName,
+    id: $src.id
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MemSqlConnection
+{
+  store: model::store::TestDB;
+  type: MemSQL;
+  specification: Static
+  {
+    name: 'memsql_db';
+    host: 'memsql_host';
+    port: 3306;
+  };
+  auth: UserNamePassword
+  {
+    baseVaultReference: 'base';
+    userNameVaultReference: 'user';
+    passwordVaultReference: 'password';
+  };
+}
+
+RelationalDatabaseConnection model::SnowflakeConnection
+{
+  store: model::store::TestDB;
+  type: Snowflake;
+  specification: Snowflake
+  {
+    name: 'test';
+    account: 'test';
+    warehouse: 'test';
+    region: 'test';
+    cloudType: 'test';
+  };
+  auth: SnowflakePublic
+  {
+    publicUserName: 'test';
+    privateKeyVaultReference: 'test';
+    passPhraseVaultReference: 'test';
+  };
+}
+
+JsonModelConnection model::FirmsConnection
+{
+  class: model::Firms;
+  url: 'data:application/json,${input}';
+}
+
+
+###Runtime
+Runtime model::TestRuntime
+{
+  mappings:
+  [
+    model::RelationalMapping
+  ];
+  connections:
+  [
+    model::store::TestDB:
+    [
+      connection_1: model::MemSqlConnection
+    ]
+  ];
+}
+
+Runtime model::M2MRuntime
+{
+  mappings:
+  [
+    model::M2MMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1: model::FirmsConnection
+    ]
+  ];
+}

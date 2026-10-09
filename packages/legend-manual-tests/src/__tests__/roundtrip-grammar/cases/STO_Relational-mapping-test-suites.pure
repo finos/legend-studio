@@ -1,0 +1,305 @@
+###Data
+Data data::RelationalData
+{
+  Relational
+  #{
+    default.PersonTable:
+      'id,firm_id,firstName,lastName,employeeType\n'+
+      '1,1,John,Doe,FTO\n'+
+      '2,1,Nicole,Smith,FTC\n'+
+      '3,2,Time,Smith,FTE\n';
+
+    default.FirmTable:
+      'id,legal_name\n'+
+      '1,Finos\n'+
+      '2,Apple\n';
+  }#
+}
+
+Data data::RelationData
+{
+  Relation
+  #{
+    default.PersonTable:
+        id, firm_id, firstName, lastName, employeeType
+        1 , 1      , John     , Doe     , FTO
+        2 , 1      , Nicole   , Smith   , FTC;
+
+    default.FirmTable:
+        id, legal_name
+        1 , Finos;
+  }#
+}
+
+
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200),
+    employeeType VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+Database store::AuditDB
+(
+  Schema audit
+  (
+    Table AuditTable
+    (
+      id INTEGER PRIMARY KEY,
+      action VARCHAR(20)
+    )
+  )
+)
+
+
+###Pure
+Enum model::EmployeeType
+{
+  CONTRACT,
+  FULL_TIME
+}
+
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  employeeType: model::EmployeeType[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [store::TestDB]PersonTable.employeeType
+  }
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson
+  }
+
+  model::EmployeeType: EnumerationMapping EmployeeTypeMapping
+  {
+    CONTRACT: ['FTC', 'FTO'],
+    FULL_TIME: ['FTE']
+  }
+
+  testSuites:
+  [
+    FirmTDSSuite:
+    {
+      function: |model::Firm.all()->project([x: model::Firm[1]|$x.employees.firstName, x: model::Firm[1]|$x.employees.lastName, x: model::Firm[1]|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
+      tests:
+      [
+        InlineData:
+        {
+          doc: 'Inline relational CSV test data';
+          data:
+          [
+            store::TestDB:
+              Relational
+              #{
+                default.PersonTable:
+                  'id,firm_id,firstName,lastName,employeeType\n'+
+                  '1,1,John,Doe,FTO\n'+
+                  '2,1,Nicole,"Smith, Jr",FTC\n';
+
+                default.FirmTable:
+                  'id,legal_name\n'+
+                  '1,Finos\n';
+              }#,
+            store::AuditDB:
+              Relational
+              #{
+                audit.AuditTable:
+                  'id,action\n'+
+                  '1,READ\n';
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith, Jr","Legal Name":"Finos"}]';
+                  }#;
+              }#
+          ];
+        },
+        ReferenceData:
+        {
+          doc: 'Relational test data referenced from a Data element';
+          data:
+          [
+            store::TestDB:
+              Reference
+              #{
+                data::RelationalData
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    PersonGraphFetchSuite:
+    {
+      function: |model::Person.all()->graphFetch(#{model::Person{firstName,lastName,employeeType}}#)->serialize(#{model::Person{firstName,lastName,employeeType}}#);
+      tests:
+      [
+        EnumMapping:
+        {
+          data:
+          [
+            store::TestDB:
+              Relational
+              #{
+                default.PersonTable:
+                  'id,firm_id,firstName,lastName,employeeType\n'+
+                  '1,1,John,Doe,FTE\n';
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firstName":"John","lastName":"Doe","employeeType":"FULL_TIME"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    PersonRelationSuite:
+    {
+      function: |model::Person.all()->project(~[firstName:x|$x.firstName, lastName:x|$x.lastName]);
+      tests:
+      [
+        InlineRelationData:
+        {
+          doc: 'Inline Relation test data';
+          data:
+          [
+            store::TestDB:
+              Relation
+              #{
+                default.PersonTable:
+                    id, firm_id, firstName, lastName, employeeType
+                    1 , 1      , John     , Doe     , FTO;
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              Relation
+              #{
+                  firstName, lastName
+                  John     , Doe;
+              }#
+          ];
+        },
+        ReferencedRelationData:
+        {
+          data:
+          [
+            store::TestDB:
+              Reference
+              #{
+                data::RelationData
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              Relation
+              #{
+                  firstName, lastName
+                  John     , Doe
+                  Nicole   , Smith;
+              }#
+          ];
+        }
+      ];
+    },
+    PersonCountSuite:
+    {
+      function: |model::Person.all()->map(x: model::Person[1]|$x.firstName)->joinStrings(',');
+      tests:
+      [
+        EqualToValue:
+        {
+          data:
+          [
+            store::TestDB:
+              Reference
+              #{
+                data::RelationalData
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              EqualTo
+              #{
+                expected:
+                  'John,Nicole,Time';
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

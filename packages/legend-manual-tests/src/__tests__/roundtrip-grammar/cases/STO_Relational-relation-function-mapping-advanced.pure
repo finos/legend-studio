@@ -1,0 +1,173 @@
+###Relational
+Database my::testDB
+(
+  Table personTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    AGE INTEGER NOT NULL,
+    GENDER VARCHAR(1),
+    FIRMID INTEGER NOT NULL,
+    STREET VARCHAR(200),
+    CITY VARCHAR(100)
+  )
+  Table contractorTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    AGE INTEGER NOT NULL,
+    GENDER VARCHAR(1),
+    FIRMID INTEGER NOT NULL,
+    STREET VARCHAR(200),
+    CITY VARCHAR(100)
+  )
+  Table internTable
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRSTNAME VARCHAR(100) NOT NULL,
+    AGE INTEGER NOT NULL,
+    FIRMID INTEGER NOT NULL
+  )
+  Table firmTable
+  (
+    ID INTEGER PRIMARY KEY,
+    LEGALNAME VARCHAR(100) NOT NULL
+  )
+)
+
+
+###Pure
+Enum my::Gender
+{
+  MALE,
+  FEMALE
+}
+
+Class my::Address
+{
+  street: String[0..1];
+  city: String[0..1];
+}
+
+Class my::Firm
+{
+  id: Integer[1];
+  legalName: String[1];
+}
+
+Class my::Person
+{
+  firstName: String[1];
+  age: Integer[1];
+  ageBucket: String[0..1];
+  gender: my::Gender[0..1];
+  firmId: Integer[1];
+  firmName: String[0..1];
+  address: my::Address[0..1];
+}
+
+Class my::Employee extends my::Person
+{
+  employeeId: Integer[0..1];
+}
+
+Association my::Firm_Person
+{
+  firm: my::Firm[1];
+  staff: my::Person[*];
+}
+
+function my::personFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.personTable}#
+}
+
+function my::firmFunction(): meta::pure::metamodel::relation::Relation<meta::pure::metamodel::type::Any>[1]
+{
+  #>{my::testDB.firmTable}#->select(~[ID, LEGALNAME])
+}
+
+function my::typedEmployeeFunction(): meta::pure::metamodel::relation::Relation<(ID:Integer[1], FIRSTNAME:String[1], AGE:Integer[1], FIRMID:Integer[1])>[1]
+{
+  #>{my::testDB.personTable}#->select(~[ID, FIRSTNAME, AGE, FIRMID])
+}
+
+
+###Mapping
+Mapping my::baseMapping
+(
+  *my::Firm[firm]: Relation
+  {
+    ~func my::firmFunction():Relation<Any>[1]
+    id: ID,
+    legalName: LEGALNAME
+  }
+)
+
+Mapping my::advancedMapping
+(
+  include mapping my::baseMapping
+
+  *my::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(employees,contractors,interns)
+  }
+  my::Person[employees]: Relation
+  {
+    ~func my::personFunction():Relation<Any>[1]
+    ~primaryKey: ID
+    firstName: FIRSTNAME,
+    age: AGE,
+    ageBucket: if($row.AGE > 65, |'senior', |'other'),
+    gender: EnumerationMapping genderMapping : $row.GENDER,
+    firmId: FIRMID,
+    address
+    (
+      street: $row.STREET,
+      city: CITY,
+      +postalCity: String[0..1]: $row.CITY->map(c|$c->toUpper())
+    )
+  }
+  my::Person[contractors]: Relation
+  {
+    ~src #>{my::testDB.contractorTable}#->filter(c|$c.AGE > 18)->join(#>{my::testDB.firmTable}#->rename(~ID, ~FIRM_ID), meta::pure::functions::relation::JoinKind.LEFT, {c, f|$c.FIRMID == $f.FIRM_ID})
+    firstName: FIRSTNAME,
+    age: AGE,
+    gender: EnumerationMapping genderMapping : GENDER,
+    firmId: FIRMID,
+    firmName: LEGALNAME,
+    address () Inline [contractorAddress]
+  }
+  my::Person[interns]: Relational
+  {
+    ~primaryKey
+    (
+      [my::testDB]internTable.ID
+    )
+    ~mainTable [my::testDB]internTable
+    firstName: [my::testDB]internTable.FIRSTNAME,
+    age: [my::testDB]internTable.AGE,
+    firmId: [my::testDB]internTable.FIRMID
+  }
+  my::Address[contractorAddress]: Relation
+  {
+    ~src #>{my::testDB.contractorTable}#->select(~[ID, STREET, CITY])
+    street: STREET,
+    city: CITY
+  }
+  *my::Employee[employee]: Relation
+  {
+    ~src my::typedEmployeeFunction()
+  }
+
+  my::Firm_Person: ModelJoin
+  {
+    {firm: my::Firm[1], staff: my::Person[1]|$firm.id == $staff.firmId}
+  }
+
+  my::Gender: EnumerationMapping genderMapping
+  {
+    MALE: ['M'],
+    FEMALE: ['F']
+  }
+)

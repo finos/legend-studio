@@ -1,0 +1,95 @@
+###Data
+Data data::SingleSchemaData
+{
+  Relational
+  #{
+    mySchema.MyTable:
+      'id,firstName,lastName,age\n'+
+      '1,John,Doe,30\n'+
+      '2,Nicole,Smith,25\n'+
+      '3,Nick,Smith,40\n';
+
+    mySchema.MyTable2:
+      'id,name\n'+
+      '1,John\n'+
+      '2,Jack\n';
+  }#
+}
+
+Data <<meta::pure::profiles::typemodifiers.abstract, data::DataProfile.sample>> {meta::pure::profiles::doc.doc = 'Tables spread across several schemas', data::DataProfile.owner = 'team-a'} data::MultiSchemaData
+{
+  Relational
+  #{
+    default.FirmTable:
+      'id,legal_name\n'+
+      '1,Finos\n';
+
+    mySchema.MyTable:
+      'id,firstName,lastName,age\n'+
+      '1,John,Doe,30\n';
+
+    otherSchema.OtherTable:
+      'id,code\n'+
+      '1,A\n'+
+      '2,B\n'+
+      '3,"C, quoted"\n';
+  }#
+}
+
+Data {meta::pure::profiles::doc.doc = 'Relation data in non-default schemas'} data::MultiSchemaRelationData
+{
+  Relation
+  #{
+    mySchema.MyTable:
+        id, firstName, lastName, age
+        1 , John     , Doe     , 30;
+
+    otherSchema.OtherTable:
+        id, code
+        1 , A
+        2 , B;
+  }#
+}
+
+
+###Relational
+Database store::SchemaDB
+(
+  Schema mySchema
+  (
+    Table MyTable
+    (
+      id INTEGER PRIMARY KEY,
+      firstName VARCHAR(200),
+      lastName VARCHAR(200),
+      age INTEGER
+    )
+    Table MyTable2
+    (
+      id INTEGER PRIMARY KEY,
+      name VARCHAR(200)
+    )
+  )
+  Schema otherSchema
+  (
+    Table OtherTable
+    (
+      id INTEGER PRIMARY KEY,
+      code VARCHAR(10)
+    )
+  )
+
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+)
+
+
+###Pure
+Profile data::DataProfile
+{
+  stereotypes: [sample];
+  tags: [owner];
+}

@@ -36,10 +36,11 @@ Service model::ModelToModelMappingService
   ]
   test: Single
   {
-    data: '';
+    data: '{"employees":[{"firstName":"John","lastName":"Doe"}],"type":"corp","legalName":"Acme"}';
     asserts:
     [
-      { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->toString()->equalJsonStrings('') }
+      { [], res: meta::pure::mapping::Result<Any|*>[1]|$res.values->toOne()->toString()->equalJsonStrings('{"name":"Acme","type":"CORP","employees":[{"fullName":"John"}]}') },
+      { ['a', 1, list([1,2])], res: meta::pure::mapping::Result<Any|*>[1]|$res.values->size() == 1 }
     ];
   }
 }

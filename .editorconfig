@@ -17,3 +17,8 @@ trim_trailing_whitespace = true
 [*.md]
 insert_final_newline = false
 trim_trailing_whitespace = false
+
+# Roundtrip cases must match the engine's composed grammar byte for byte,
+# which can include trailing whitespace
+[packages/legend-manual-tests/src/__tests__/roundtrip-grammar/cases/*.pure]
+trim_trailing_whitespace = false

@@ -1,22 +1,35 @@
-import other::*;
+###Pure
+Enum other::FirmType
+{
+  LLC,
+  CORP
+}
 
 Class other::Person
 {
   name: String[1];
-  firm: Firm[1];
-  address: Address[0..1];
+  firm: other::Firm[1];
+  address: other::Address[0..1];
 }
 
 Class other::Firm
 {
   legalName: String[1];
-  employees: Person[1];
-  address: Address[1];
+  type: other::FirmType[0..1];
+  employees: other::Person[1];
+  address: other::Address[1];
 }
 
 Class other::Address
 {
   line1: String[1];
+  location: other::Location[0..1];
+}
+
+Class other::Location
+{
+  city: String[1];
+  country: String[0..1];
 }
 
 
@@ -29,7 +42,10 @@ Database mapping::db
     name VARCHAR(200),
     firmId INTEGER,
     legalName VARCHAR(200),
-    address VARCHAR(200)
+    firmType VARCHAR(10),
+    address VARCHAR(200),
+    city VARCHAR(100),
+    countryId INTEGER
   )
   Table employeeFirmDenormTable2
   (
@@ -37,34 +53,80 @@ Database mapping::db
     name VARCHAR(200),
     firmId INTEGER,
     legalName VARCHAR(200),
-    address VARCHAR(200)
+    address VARCHAR(200),
+    city VARCHAR(100)
   )
+  Table countryTable
+  (
+    id INTEGER PRIMARY KEY,
+    name VARCHAR(100)
+  )
+
+  Join denormToCountry(employeeFirmDenormTable.countryId = countryTable.id)
+  Join denormToDenorm2(employeeFirmDenormTable.firmId = employeeFirmDenormTable2.firmId)
 )
 
 
 ###Mapping
-import other::*;
-import mapping::*;
 Mapping mappingPackage::myMapping
 (
-  Person: Relational
+  *other::Person[person]: Relational
   {
-    name: [db]employeeFirmDenormTable.name,
+    ~primaryKey
+    (
+      [mapping::db]employeeFirmDenormTable.id
+    )
+    ~mainTable [mapping::db]employeeFirmDenormTable
+    name: [mapping::db]employeeFirmDenormTable.name,
     firm
     (
-      ~primaryKey (
-        [db]employeeFirmDenormTable.id
-      )
-      ~mainTable [db]employeeFirmDenormTable
-      legalName: [db]employeeFirmDenormTable.legalName,
+      legalName: [mapping::db]employeeFirmDenormTable.legalName,
+      type: EnumerationMapping firmTypeMapping: [mapping::db]employeeFirmDenormTable.firmType,
+      employees[colleague]: [mapping::db]@denormToDenorm2,
       address
       (
-        line1: [db]employeeFirmDenormTable.address
+        line1: [mapping::db]employeeFirmDenormTable.address,
+        location
+        (
+          city: [mapping::db]employeeFirmDenormTable.city,
+          country: [mapping::db]@denormToCountry | [mapping::db]countryTable.name
+        )
       )
     ),
     address
     (
-      line1: [db]employeeFirmDenormTable.address
+      line1: [mapping::db]employeeFirmDenormTable.address,
+      location
+      (
+        city: [mapping::db]employeeFirmDenormTable.city
+      )
     )
+  }
+  other::Person[colleague]: Relational
+  {
+    ~primaryKey
+    (
+      [mapping::db]employeeFirmDenormTable2.id
+    )
+    ~mainTable [mapping::db]employeeFirmDenormTable2
+    name: [mapping::db]employeeFirmDenormTable2.name,
+    firm
+    (
+      legalName: [mapping::db]employeeFirmDenormTable2.legalName,
+      address
+      (
+        line1: [mapping::db]employeeFirmDenormTable2.address,
+        location
+        (
+          city: [mapping::db]employeeFirmDenormTable2.city
+        )
+      )
+    )
+  }
+
+  other::FirmType: EnumerationMapping firmTypeMapping
+  {
+    LLC: ['LLC'],
+    CORP: ['CORP', 'INC']
   }
 )

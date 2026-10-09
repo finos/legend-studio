@@ -1,0 +1,154 @@
+###Relational
+Database store::TestDB
+(
+  Table FirmTable
+  (
+    id INTEGER PRIMARY KEY,
+    legal_name VARCHAR(200)
+  )
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firm_id INTEGER,
+    firstName VARCHAR(200),
+    lastName VARCHAR(200)
+  )
+
+  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
+)
+
+
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+}
+
+Class model::Firm
+{
+  legalName: String[1];
+  employees: model::Person[*];
+}
+
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName,
+    lastName: [store::TestDB]PersonTable.lastName
+  }
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]FirmTable.id
+    )
+    ~mainTable [store::TestDB]FirmTable
+    legalName: [store::TestDB]FirmTable.legal_name,
+    employees[model_Person]: [store::TestDB]@FirmPerson
+  }
+
+  MappingTests
+  [
+    sqlTest
+    (
+      query: |model::Person.all()->project([x: model::Person[1]|$x.firstName, x: model::Person[1]|$x.lastName], ['First Name', 'Last Name']);
+      data:
+      [
+        <Relational, SQL, store::TestDB, 
+          'Drop table if exists PersonTable;\n'+
+          'Create Table PersonTable(id INT, firm_id INT, firstName VARCHAR(200), lastName VARCHAR(200));\n'+
+          'Insert into PersonTable (id, firm_id, firstName, lastName) values (1, 1, \'John\', \'Doe\;\');\n'+
+          'Insert into PersonTable (id, firm_id, firstName, lastName) values (2, 1, \'Nicole\', \'Smith\');\n'
+        >
+      ];
+      assert: '[{"values":["John","Doe;"]},{"values":["Nicole","Smith"]}]';
+    ),
+    csvTest
+    (
+      query: |model::Firm.all()->graphFetchChecked(#{model::Firm{legalName,employees{firstName,lastName}}}#)->serialize(#{model::Firm{legalName,employees{firstName,lastName}}}#);
+      data:
+      [
+        <Relational, CSV, store::TestDB, 
+          'default\n'+
+          'PersonTable\n'+
+          'id,firm_id,firstName,lastName\n'+
+          '1,1,John,Doe\n'+
+          '2,1,Nicole,Smith\n'+
+          '-----\n'+
+          'default\n'+
+          'FirmTable\n'+
+          'id,legal_name\n'+
+          '1,Finos\n'+
+          '\n\n\n'
+        >
+      ];
+      assert: '{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\"id\":1,\"legal_name\":\"Finos\"}"},"value":{"legalName":"Finos"}},"value":{"legalName":"Finos","employees":[{"firstName":"John","lastName":"Doe"},{"firstName":"Nicole","lastName":"Smith"}]}}';
+    ),
+    multiInputTest
+    (
+      query: |model::Firm.all()->project([x: model::Firm[1]|$x.legalName], ['Legal Name']);
+      data:
+      [
+        <Relational, SQL, store::TestDB, 
+          'Drop table if exists FirmTable;\n'+
+          'Create Table FirmTable(id INT, legal_name VARCHAR(200));\n'+
+          'Insert into FirmTable (id, legal_name) values (1, \'Finos\');\n'
+        >,
+        <Relational, CSV, store::TestDB, 
+          'default\n'+
+          'PersonTable\n'+
+          'id,firm_id,firstName,lastName\n'+
+          '1,1,John,Doe\n'+
+          '\n\n\n'
+        >
+      ];
+      assert: '[{"values":["Finos"]}]';
+    )
+  ]
+
+  testSuites:
+  [
+    FirmSuite:
+    {
+      function: |model::Firm.all()->project([x: model::Firm[1]|$x.legalName], ['Legal Name']);
+      tests:
+      [
+        test1:
+        {
+          data:
+          [
+            store::TestDB:
+              Relational
+              #{
+                default.FirmTable:
+                  'id,legal_name\n'+
+                  '1,Finos\n';
+              }#
+          ];
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Legal Name":"Finos"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

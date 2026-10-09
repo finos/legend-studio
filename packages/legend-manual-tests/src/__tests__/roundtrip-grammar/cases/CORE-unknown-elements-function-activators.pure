@@ -1,0 +1,94 @@
+###Pure
+Profile model::ActivatorProfile
+{
+  stereotypes: [deployable];
+  tags: [owner];
+}
+
+function model::greet(name: String[1]): String[1]
+{
+  'Hello ' + $name
+}
+
+function model::answer(): Integer[1]
+{
+  42
+}
+
+
+###Relational
+Database model::store::DB
+(
+  Table PersonTable
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+
+
+###Connection
+RelationalDatabaseConnection model::connection::BigQueryConnection
+{
+  store: model::store::DB;
+  type: BigQuery;
+  specification: BigQuery
+  {
+    projectId: 'proj1';
+    defaultDataset: 'dataset1';
+  };
+  auth: GCPApplicationDefaultCredentials;
+}
+
+
+###BigQuery
+BigQueryFunction model::MinimalBigQueryFunction
+{
+   functionName : 'MinimalFunction';
+   function : model::answer():Integer[1];
+   ownership : Deployment { identifier: 'minimalOwnership' };
+}
+
+BigQueryFunction <<model::ActivatorProfile.deployable>> {model::ActivatorProfile.owner = 'Data Team'} model::FullBigQueryFunction
+{
+   functionName : 'FullFunction';
+   function : model::greet(String[1]):String[1];
+   ownership : Deployment { identifier: 'fullOwnership' };
+   description : 'A documented BigQuery function';
+   activationConfiguration : model::connection::BigQueryConnection;
+}
+
+'''
+A documented BigQuery function.
+Kept as an unknown element by Studio.
+'''
+BigQueryFunction model::DocumentedBigQueryFunction
+{
+   functionName : 'DocumentedFunction';
+   function : model::answer():Integer[1];
+   ownership : Deployment { identifier: 'documentedOwnership' };
+}
+
+
+###FunctionJar
+FunctionJar model::MinimalFunctionJar
+{
+   ownership : Deployment { identifier: '17' };
+   function : model::answer():Integer[1];
+}
+
+FunctionJar <<model::ActivatorProfile.deployable>> {model::ActivatorProfile.owner = 'Jar Team'} model::FullFunctionJar
+{
+   ownership : Deployment { identifier: '18' };
+   function : model::greet(String[1]):String[1];
+   documentation : 'My jar';
+}
+
+'''
+A documented function jar.
+'''
+FunctionJar {model::ActivatorProfile.owner = 'Jar Team'} model::DocumentedFunctionJar
+{
+   ownership : Deployment { identifier: '19' };
+   function : model::answer():Integer[1];
+}
