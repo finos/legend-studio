@@ -1154,8 +1154,9 @@ source for now; the user plans to improve it later.
   deployed definitions, then a data set. Only definitions deployed from SDLC (`alloy-git:<group>~<artifact>~<path>`
   URNs) are listed; ad hoc ones (`rest-api:` URNs) are not supported. Everyone can add data sets: the lakehouse refuses
   a run the viewer may not make, and Cube shows that error.
-- **The definition:** read from the ingest server by URN, its details route first, then the grammar route parsed by the
-  engine, as Data Cube does. No project version is looked up now (the SDLC pointer is a later improvement).
+- **The definition:** read from the ingest server by URN through its grammar route, then parsed by the engine, as Data
+  Cube does (user, 2026-10-09). No project version is looked up now. TODO: read the definition from Depot instead, at
+  the project version it was deployed from, which also gives the SDLC pointer (a later improvement).
 - **Schema:** each data set's declared columns, with their type parameters and nullability, then the LAKE\_\* columns its
   write mode adds, as legend-graph types them for Legend Query; no engine call. Materialized views, many-valued columns
   and types Cube doesn't know are listed disabled with the reason.
