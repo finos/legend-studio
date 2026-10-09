@@ -15,9 +15,10 @@
  */
 
 import type { Schema } from '@finos/legend-cube';
-import type {
-  CubeDataProductEnvironmentType,
-  CubeDataProductProject,
+import {
+  type CubeDataProductEnvironmentType,
+  type CubeDataProductProject,
+  isCubeSnapshotVersion,
 } from './CubeDataProduct.js';
 import type { CubeEngineError, CubeResultValue, NodeId } from './CubeEngine.js';
 
@@ -71,7 +72,7 @@ export class CubeDataProductCandidate {
 
   /** Whether it was deployed from a moving version, whose data may change under a cube */
   get isSnapshot(): boolean {
-    return this.versionId.endsWith('-SNAPSHOT');
+    return isCubeSnapshotVersion(this.versionId);
   }
 }
 

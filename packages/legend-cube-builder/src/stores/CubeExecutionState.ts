@@ -15,6 +15,7 @@
  */
 
 import {
+  type CubeContext,
   isSchemasError,
   needsDatabaseType,
   type Query,
@@ -43,6 +44,8 @@ export interface CubeExecutionResult {
   readonly id: number;
   /** The query that ran: results are stale once the document holds another */
   readonly query: Query;
+  /** The context it ran in: results are stale once the document holds another, e.g. another warehouse */
+  readonly context: CubeContext | undefined;
   /** The capture node's schema when the run started; the grid's columns, by position */
   readonly schema: Schema;
   /** At most `rowLimit` rows */
@@ -120,12 +123,13 @@ export class CubeExecutionState {
     return this.runController !== undefined;
   }
 
-  /** The shown result no longer matches the query or the row limit; it is kept until the next run */
+  /** The shown result no longer matches the query, the context or the row limit; it is kept until the next run */
   get isStale(): boolean {
     return (
       this.result !== undefined &&
       !this.isRunning &&
       (this.result.query !== this.editorState.document.query ||
+        this.result.context !== this.editorState.document.context ||
         this.result.rowLimit !== this.editorState.rowLimit)
     );
   }
@@ -229,6 +233,7 @@ export class CubeExecutionState {
       this.result = {
         id: ++this.runCount,
         query,
+        context,
         schema,
         rows: limited ? response.rows.slice(0, rowLimit) : response.rows,
         rowLimit,
@@ -252,9 +257,13 @@ export class CubeExecutionState {
             );
       // the rows of an earlier run are never shown as this run's
       this.result = undefined;
-      // an error belongs to the query it came from: one that changed while
-      // the run was in flight drops it, as an edit after the run would
-      if (this.editorState.document.query === query) {
+      // an error belongs to the query and the context it came from: one
+      // that changed while the run was in flight drops it, as an edit after
+      // the run would
+      if (
+        this.editorState.document.query === query &&
+        this.editorState.document.context === context
+      ) {
         this.error = engineError;
         this.editorState.setHostIssue(
           engineError.nodeId ?? captureId,

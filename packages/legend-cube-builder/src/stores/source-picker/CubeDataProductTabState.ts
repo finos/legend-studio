@@ -35,6 +35,7 @@ import {
 import {
   createCubeDataProductModel,
   getEffectiveCubeWarehouse,
+  isCubeSnapshotVersion,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
   type CubeDataProductProject,
@@ -49,10 +50,6 @@ import {
   type CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { CubeEngineError } from '../../graph-manager/CubeEngine.js';
-import {
-  getCubeRememberedWarehouse,
-  rememberCubeWarehouse,
-} from '../CubeDataProductWarehouse.js';
 import type { CubeEditorState } from '../CubeEditorState.js';
 import {
   type CubeSourcePickerTab,
@@ -188,6 +185,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       isAvailable: computed,
       searchesOnServer: computed,
       fixedProject: computed,
+      isSnapshot: computed,
       visibleCandidates: computed,
       isTruncated: computed,
       accessPoint: computed,
@@ -230,6 +228,14 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
   get fixedProject(): CubeDataProductProject | undefined {
     const model = this.editorState.document.context?.model;
     return model ? getCubeDataProductProject(model) : undefined;
+  }
+
+  /** Whether the cube's project, or else the picked product, is at a moving SNAPSHOT version */
+  get isSnapshot(): boolean {
+    const project = this.fixedProject;
+    return project
+      ? isCubeSnapshotVersion(project.versionId)
+      : this.candidate?.isSnapshot === true;
   }
 
   /** The cube's first data product, which the tab reopens on */
@@ -281,6 +287,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     const { context } = this.editorState.document;
     return (
       this.isAvailable &&
+      !this.editorState.readOnly &&
       !this.isBusy &&
       (context === undefined || this.fixedProject !== undefined) &&
       this.candidate !== undefined &&
@@ -347,23 +354,25 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
    */
   open(): void {
     const project = this.fixedProject;
-    const remembered = getCubeRememberedWarehouse(
-      this.editorState.host.applicationStore.userDataService,
-    );
+    const runtime = this.editorState.dataProductRuntime;
     this.error = undefined;
     if (project) {
       if (this.environmentType !== project.environmentType) {
         this.environmentType = project.environmentType;
         this.resetCandidate();
       }
-      this.warehouse = getEffectiveCubeWarehouse(project, remembered);
+      this.warehouse = getEffectiveCubeWarehouse(
+        project,
+        runtime.rememberedWarehouse,
+      );
       this.warehouseFromProject = true;
       if (this.candidate && !isFromProject(this.candidate, project)) {
         this.resetCandidate();
       }
     } else if (this.warehouseFromProject || !this.candidate) {
       // a new cube starts on the viewer's warehouse, not a previous cube's
-      this.warehouse = remembered ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
+      this.warehouse =
+        runtime.rememberedWarehouse ?? CUBE_DEFAULT_CONSUMER_WAREHOUSE;
       this.warehouseFromProject = false;
     }
     if (
@@ -561,10 +570,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
               .withQuery(query),
       );
       if (!project) {
-        rememberCubeWarehouse(
-          editorState.host.applicationStore.userDataService,
-          warehouse,
-        );
+        editorState.dataProductRuntime.remember(warehouse);
       }
       // the product stays expanded, to add another of its access points
       this.accessPointKey = undefined;

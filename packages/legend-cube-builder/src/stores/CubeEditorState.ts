@@ -60,6 +60,7 @@ import {
   type CubeModelOutline,
 } from '../graph-manager/CubeEngine.js';
 import { getDatabaseType } from '../graph-manager/CubeModelOutlineHelper.js';
+import { CubeDataProductRuntimeState } from './CubeDataProductRuntimeState.js';
 import { CubeExecutionState } from './CubeExecutionState.js';
 import type { CubeHost } from './CubeHost.js';
 import { CubeNodeEditorState } from './CubeNodeEditorState.js';
@@ -97,6 +98,8 @@ export class CubeEditorState implements CommandRegistrar {
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
   readonly execution: CubeExecutionState;
+  /** Where a data product cube runs: its class and warehouse */
+  readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
   readonly showPure: CubeShowPureState;
@@ -187,6 +190,7 @@ export class CubeEditorState implements CommandRegistrar {
         LEGEND_CUBE_USER_DATA_KEY.PALETTE_COLLAPSED,
       ) ?? false;
     this.execution = new CubeExecutionState(this);
+    this.dataProductRuntime = new CubeDataProductRuntimeState(this);
     this.sourcePicker = new CubeSourcePickerState(this);
     this.specTransfer = new CubeSpecTransferState(this);
     this.showPure = new CubeShowPureState(this);
@@ -578,8 +582,10 @@ export class CubeEditorState implements CommandRegistrar {
   /**
    * Restores the document before the last edit; does nothing when there is
    * no history. A restored query is a new object (PLAN §4.3), so rows that
-   * ran before the edit show as stale. An edit that left the query alone,
-   * such as a rename, keeps it, with its rows and engine errors. Undoing an
+   * ran before the edit show as stale. An edit that left the query and the
+   * context alone, such as a rename, keeps them, with the rows and engine
+   * errors; undoing a warehouse edit brings back the context the rows ran
+   * with. Undoing an
    * import closes the node editor and the picker, as the import did.
    */
   undo(): void {
@@ -609,9 +615,16 @@ export class CubeEditorState implements CommandRegistrar {
     this.history = [...this.history, this.document].slice(-MAX_UNDO_STEPS);
   }
 
-  /** Engine errors belong to the query they came from, so they are dropped when the query changes */
+  /**
+   * Engine errors belong to the query and the context they came from, so
+   * they are dropped when either changes, e.g. a data product cube's
+   * warehouse
+   */
   private replaceDocument(next: CubeDocument): void {
-    if (next.query !== this.document.query) {
+    if (
+      next.query !== this.document.query ||
+      next.context !== this.document.context
+    ) {
       this.hostIssues = new Map();
       this.execution.clearError();
     }

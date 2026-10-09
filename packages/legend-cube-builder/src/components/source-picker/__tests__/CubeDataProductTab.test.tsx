@@ -17,6 +17,7 @@
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import { CubeDocument } from '@finos/legend-cube';
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProductLabels.js';
 import { UNSERVED_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
@@ -181,6 +182,19 @@ describe('Data product tab', () => {
       ),
     ).toBeDefined();
     expect(within(dialog).queryByText('searching data products')).toBeNull();
+  });
+
+  test('Says when the picked product is at a moving SNAPSHOT version', async () => {
+    await renderPage();
+    const dialog = await openFromPalette();
+    expect(within(dialog).queryByText(CUBE_SNAPSHOT_VERSION_LABEL)).toBeNull();
+    fireEvent.click(within(dialog).getByText('Returns Product'));
+    expect(
+      await within(dialog).findByText(CUBE_SNAPSHOT_VERSION_LABEL),
+    ).not.toBeNull();
+    fireEvent.click(within(dialog).getByText('Orders Product'));
+    expect(await within(dialog).findByText('Daily orders')).not.toBeNull();
+    expect(within(dialog).queryByText(CUBE_SNAPSHOT_VERSION_LABEL)).toBeNull();
   });
 
   test('Has no Data Product item or tab on a host without a catalog', async () => {

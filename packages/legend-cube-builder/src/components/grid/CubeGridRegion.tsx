@@ -132,7 +132,7 @@ const CubeGridToolbar = observer(
         {execution.isStale && (
           <span
             className="rounded-sm bg-[var(--color-status-warn-bg)] px-1 text-base text-[var(--color-status-warn)]"
-            title="The query or the row limit changed since this run"
+            title="The query, the warehouse or the row limit changed since this run"
           >
             Stale: execute again to refresh
           </span>

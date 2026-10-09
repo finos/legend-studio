@@ -17,8 +17,15 @@
 import { clsx } from '@finos/legend-art';
 import { observer } from 'mobx-react-lite';
 import { useId } from 'react';
-import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
-import { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
+import {
+  CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS,
+  CUBE_SNAPSHOT_VERSION_LABEL,
+} from '../../__lib__/LegendCubeDataProductLabels.js';
+import {
+  CUBE_PENDING_LABEL,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
+import type { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
 import {
   type CubeDataProductTabError,
   type CubeDataProductTabState,
@@ -32,14 +39,6 @@ const INPUT_CLASS =
 
 const LIST_ITEM_CLASS =
   'flex w-full items-center gap-2 px-2 py-1 text-left text-base enabled:hover:bg-[var(--color-bg-hover)] disabled:cursor-not-allowed disabled:text-[var(--color-text-disabled)]';
-
-/** The classes' labels, as Data Cube shows them */
-const ENVIRONMENT_TYPE_LABELS: Readonly<
-  Record<CubeDataProductEnvironmentType, string>
-> = {
-  [CubeDataProductEnvironmentType.PRODUCTION]: 'Production',
-  [CubeDataProductEnvironmentType.PRODUCTION_PARALLEL]: 'Production (parallel)',
-};
 
 /** An error as the tab shows it: its first line, the rest on demand, and an action when it has one */
 const CubeDataProductTabAlert: React.FC<{
@@ -78,7 +77,7 @@ export const CubeDataProductTab = observer(
           value={tab.environmentType}
           options={(tab.catalog?.environmentTypes ?? []).map((type) => ({
             value: type,
-            label: ENVIRONMENT_TYPE_LABELS[type],
+            label: CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS[type],
           }))}
           disabled={project !== undefined}
           onChange={(value) => {
@@ -90,6 +89,11 @@ export const CubeDataProductTab = observer(
         {project && (
           <span className="text-sm text-[var(--color-text-muted)]">
             {`All of the cube's data products come from ${project.groupId}:${project.artifactId}:${project.versionId}.`}
+          </span>
+        )}
+        {tab.isSnapshot && (
+          <span className="text-sm text-[var(--color-status-warn)]">
+            {CUBE_SNAPSHOT_VERSION_LABEL}
           </span>
         )}
         <input
@@ -205,7 +209,8 @@ export const CubeDataProductTab = observer(
             id={warehouseId}
             className={clsx(INPUT_CLASS, 'min-w-0 flex-1')}
             spellCheck={false}
-            disabled={project !== undefined}
+            disabled={project !== undefined || tab.editorState.readOnly}
+            title={tab.editorState.readOnly ? READ_ONLY_CUBE_TITLE : undefined}
             value={tab.warehouse}
             onChange={(event) => tab.setWarehouse(event.target.value)}
           />
