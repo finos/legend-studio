@@ -212,6 +212,21 @@ test(unitTest('Messages added by Cube'), () => {
   ).toBe(
     'Column "CITY" is Varchar(15) in the first input and Varchar(40) in the second.',
   );
+  // a Concat that converts types (PLAN §11.5, Q5)
+  expect(
+    MESSAGES.MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE('ID', 'Int', 'Varchar(15)'),
+  ).toBe(
+    `Column "ID" is Int in the first input and Varchar(15) in the second, which can't be converted to one type.`,
+  );
+  expect(
+    MESSAGES.MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE(
+      'REGION',
+      'a::Region',
+      'b::Region',
+    ),
+  ).toBe(
+    `Column "REGION" is a::Region in the first input and b::Region in the second, which can't be converted to one type.`,
+  );
 });
 
 test(

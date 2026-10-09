@@ -19,11 +19,14 @@ import { ensureSchemas } from '../../inference/ValidationUtils.js';
 import {
   MESSAGE_CONCAT_COLUMN_COUNT,
   MESSAGE_CONCAT_COLUMN_NAME,
+  MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE,
   MESSAGE_CONCAT_COLUMN_ORDER,
   MESSAGE_CONCAT_COLUMN_TYPE,
   MESSAGE_INPUT_SCHEMAS_DIFFER,
 } from '../../messages/CubeMessages.js';
 import { Schema, SchemaColumn } from '../../schema/Schema.js';
+import type { CubeType } from '../../types/CubeType.js';
+import { getLeastCommonAncestor } from '../../types/TypeCompatibility.js';
 import type { JsonObject } from '../../utils/Json.js';
 
 /** How the canvas and the messages call a Concat's inputs (PLAN §11.5, Q8) */
@@ -40,17 +43,35 @@ const isSameSet = (a: readonly string[], b: readonly string[]): boolean =>
   [...a].sort().every((name, index) => name === [...b].sort()[index]);
 
 /**
+ * The type a Concat that converts types gives a column of these two types
+ * (PLAN §11.5, Q5): the type itself when they are equal, else the most
+ * specific type both are (`getLeastCommonAncestor`): String for two Varchar
+ * lengths, Integer for SmallInt and Int, Number for Int and Float4, Decimal
+ * for two Numeric precisions, Date for StrictDate and Timestamp. `undefined`
+ * across numbers, strings and dates, which share no type, and for two
+ * enumerations or opaque types, which share none either.
+ */
+export const getConcatConvertedType = (
+  first: CubeType,
+  second: CubeType,
+): CubeType | undefined =>
+  first.equals(second) ? first : getLeastCommonAncestor(first, second);
+
+/**
  * Checks that a Concat's two inputs have the same columns, matched by
  * position (spec §7.10, PLAN §11.5): the same count, which the engine doesn't
  * check; then the same name at each position, in the same case, a reordering
- * told apart; then the same precise type at each position, named by its
- * short name, or its path when both share one. Nullability is never compared. The spec's message comes first, then Cube's for every
- * position that differs.
+ * told apart; then the same precise type at each position, or, converting
+ * types (Q5), types `getConcatConvertedType` gives one type. A type is named
+ * by its short name, or its path when both share one. Nullability is never
+ * compared. The spec's message comes first, then Cube's for every position
+ * that differs.
  */
 export const validateConcatSchemas = (
   first: Schema,
   second: Schema,
   errors?: string[],
+  widenTypes = false,
 ): boolean => {
   const problems: string[] = [];
   const firstNames = first.names();
@@ -73,14 +94,19 @@ export const validateConcatSchemas = (
   } else {
     first.columns.forEach((column, index) => {
       const other = second.columns[index] as SchemaColumn;
-      if (!column.type.equals(other.type)) {
+      if (
+        !column.type.equals(other.type) &&
+        !(widenTypes && getConcatConvertedType(column.type, other.type))
+      ) {
         // two enumerations or opaque types can share a short name
         const named =
           column.type.displayName === other.type.displayName
             ? 'fullName'
             : 'displayName';
         problems.push(
-          MESSAGE_CONCAT_COLUMN_TYPE(
+          (widenTypes
+            ? MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE
+            : MESSAGE_CONCAT_COLUMN_TYPE)(
             column.name,
             column.type[named],
             other.type[named],
@@ -99,15 +125,15 @@ export const validateConcatSchemas = (
  * Gives the rows of its first input, then those of its second, keeping
  * duplicates, in no particular order (spec §7.10, `UNION ALL`). Both must have
  * the same columns, matched by position. The output has the first input's
- * names and types; a column is nullable when either input's is. Its
- * `widenTypes` setting, which converts differing types within a family to
- * the type they share (Q5), is kept and saved; the conversion comes in M4.13,
- * so until then types must match.
+ * names and types; a column is nullable when either input's is. With its
+ * `widenTypes` setting, Convert types (Q5), types that differ within numbers,
+ * strings or dates are converted to the type they share
+ * (`getConcatConvertedType`), which the output has.
  */
 export class Concat extends BinaryNode {
   static readonly TYPE = 'concat';
 
-  /** Whether differing types within a family are converted to the type they share (Q5) */
+  /** Whether differing types within numbers, strings or dates are converted to the type they share (Q5) */
   readonly widenTypes: boolean;
 
   /** By default, types must match */
@@ -132,19 +158,20 @@ export class Concat extends BinaryNode {
     return new Concat(this.id, widenTypes, this.rest);
   }
 
-  /** The two inputs' columns match (`validateConcatSchemas`) */
+  /** The two inputs' columns match (`validateConcatSchemas`), converting types with the setting */
   validate(inputSchemas: readonly Schema[], errors?: string[]): boolean {
     // `ensureSchemas` has checked there is one schema per port
     const [first, second] = ensureSchemas(inputSchemas, this.ports) as [
       Schema,
       Schema,
     ];
-    return validateConcatSchemas(first, second, errors);
+    return validateConcatSchemas(first, second, errors, this.widenTypes);
   }
 
   /**
-   * The first input's names and types, each column nullable when either
-   * input's is; `undefined` when the inputs don't match
+   * The first input's names and types, converted where they differ, each
+   * column nullable when either input's is; `undefined` when the inputs don't
+   * match
    */
   override schematize(inputSchemas: readonly Schema[]): Schema | undefined {
     if (!this.validate(inputSchemas)) {
@@ -152,14 +179,14 @@ export class Concat extends BinaryNode {
     }
     const [first, second] = inputSchemas as [Schema, Schema];
     return new Schema(
-      first.columns.map(
-        (column, index) =>
-          new SchemaColumn(
-            column.name,
-            column.type,
-            column.nullable || (second.columns[index]?.nullable ?? false),
-          ),
-      ),
+      first.columns.map((column, index) => {
+        const other = second.columns[index] as SchemaColumn;
+        return new SchemaColumn(
+          column.name,
+          getConcatConvertedType(column.type, other.type) ?? column.type,
+          column.nullable || other.nullable,
+        );
+      }),
     );
   }
 

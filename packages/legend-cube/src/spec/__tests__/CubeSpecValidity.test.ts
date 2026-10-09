@@ -40,6 +40,7 @@ import {
   MESSAGE_COMPOSITE_FILTER_EMPTY,
   MESSAGE_CONCAT_COLUMN_COUNT,
   MESSAGE_CONCAT_COLUMN_NAME,
+  MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE,
   MESSAGE_CONCAT_COLUMN_ORDER,
   MESSAGE_CONCAT_COLUMN_TYPE,
   MESSAGE_DIFFERENT_DATABASES,
@@ -1059,8 +1060,10 @@ describe(unitTest('Saved spec validity: concats'), () => {
 
   // PLAN §11.5: matched by position; the count first, then the names, then
   // the types, each only once the one before matches; nullability never
-  // compared. The spec's message first, then Cube's for every position.
-  const CONCATS: [string, JsonObject[], JsonObject[], string[]][] = [
+  // compared. The spec's message first, then Cube's for every position. Each
+  // case's errors, then its errors with widenTypes on (Convert types, Q5),
+  // when they differ.
+  const CONCATS: [string, JsonObject[], JsonObject[], string[], string[]?][] = [
     ['the same columns', ORDERS, ORDERS, []],
     [
       'columns that differ only in nullability',
@@ -1150,6 +1153,8 @@ describe(unitTest('Saved spec validity: concats'), () => {
         MESSAGE_CONCAT_COLUMN_TYPE('ORDER_ID', 'Integer', 'SmallInt'),
         MESSAGE_CONCAT_COLUMN_TYPE('SHIP_CITY', 'Varchar(15)', 'Varchar(40)'),
       ],
+      // converted to Integer and String
+      [],
     ],
     [
       // strict, though the engine accepts it (PLAN §11.5, Q5)
@@ -1160,6 +1165,8 @@ describe(unitTest('Saved spec validity: concats'), () => {
         MESSAGE_INPUT_SCHEMAS_DIFFER,
         MESSAGE_CONCAT_COLUMN_TYPE('SHIP_CITY', 'Varchar(15)', 'String'),
       ],
+      // converted to String
+      [],
     ],
     [
       'a type with other parameters',
@@ -1169,6 +1176,8 @@ describe(unitTest('Saved spec validity: concats'), () => {
         MESSAGE_INPUT_SCHEMAS_DIFFER,
         MESSAGE_CONCAT_COLUMN_TYPE('FREIGHT', 'Numeric(10,2)', 'Numeric(12,2)'),
       ],
+      // converted to Decimal
+      [],
     ],
     [
       'names and types that differ',
@@ -1181,6 +1190,63 @@ describe(unitTest('Saved spec validity: concats'), () => {
       [
         MESSAGE_INPUT_SCHEMAS_DIFFER,
         MESSAGE_CONCAT_COLUMN_NAME(2, 'SHIP_CITY', 'CITY'),
+      ],
+    ],
+    [
+      'types of different families',
+      ORDERS,
+      [snapshotColumn('ORDER_ID', varchar(15), false), SHIP_CITY, FREIGHT],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_TYPE('ORDER_ID', 'Integer', 'Varchar(15)'),
+      ],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE(
+          'ORDER_ID',
+          'Integer',
+          'Varchar(15)',
+        ),
+      ],
+    ],
+    [
+      "types that convert and types that don't",
+      ORDERS,
+      [
+        ORDER_ID,
+        snapshotColumn('SHIP_CITY', varchar(40)),
+        snapshotColumn('FREIGHT', { path: 'StrictDate' }),
+      ],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_TYPE('SHIP_CITY', 'Varchar(15)', 'Varchar(40)'),
+        MESSAGE_CONCAT_COLUMN_TYPE('FREIGHT', 'Numeric(10,2)', 'StrictDate'),
+      ],
+      // only the Numeric and the StrictDate
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE(
+          'FREIGHT',
+          'Numeric(10,2)',
+          'StrictDate',
+        ),
+      ],
+    ],
+    [
+      'two enumerations with one short name',
+      [snapshotColumn('REGION', { path: 'a::Region', values: ['EMEA'] })],
+      [snapshotColumn('REGION', { path: 'b::Region', values: ['EMEA'] })],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_TYPE('REGION', 'a::Region', 'b::Region'),
+      ],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE(
+          'REGION',
+          'a::Region',
+          'b::Region',
+        ),
       ],
     ],
   ];
@@ -1197,15 +1263,17 @@ describe(unitTest('Saved spec validity: concats'), () => {
   );
 
   test.each(CONCATS)(
-    'Reports a concat of %s alike with widenTypes on, which converts no type until M4.13',
-    (_, first, second, errors) => {
-      // PLAN §11.5: the setting is kept and saved; its conversion comes later
-      expect(
-        concatErrorsOf(concatSpec(first, second, { widenTypes: true })),
-      ).toStrictEqual({
+    'Reads a document with a concat of %s that converts types, and reports what it still lacks through inference',
+    (_, first, second, errors, converting = errors) => {
+      // PLAN §11.5, Q5: types that differ within numbers, strings or dates
+      // are converted; the count and the names are checked as before
+      const json = concatSpec(first, second, { widenTypes: true });
+      const { query } = decodeCubeSpec(json, { registry: REGISTRY }).document;
+      expect((query.getNode('concat101') as Concat).widenTypes).toBe(true);
+      expect(concatErrorsOf(json)).toStrictEqual({
         relational101: [],
         relational102: [],
-        concat101: errors,
+        concat101: converting,
       });
     },
   );
@@ -1238,6 +1306,23 @@ describe(unitTest('Saved spec validity: concats'), () => {
       DIFFER,
       'Column "SHIP_CITY" is Varchar(15) in the first input and Varchar(40) in the second.',
     ]);
+    // converting types
+    expect(
+      concatErrorsOf(
+        concatSpec(
+          ORDERS,
+          [
+            ORDER_ID,
+            snapshotColumn('SHIP_CITY', varchar(40)),
+            snapshotColumn('FREIGHT', { path: 'StrictDate' }),
+          ],
+          { widenTypes: true },
+        ),
+      ).concat101,
+    ).toStrictEqual([
+      DIFFER,
+      `Column "FREIGHT" is Numeric(10,2) in the first input and StrictDate in the second, which can't be converted to one type.`,
+    ]);
   });
 
   test("Gives a valid concat the first input's columns, each nullable when either input's is", () => {
@@ -1261,6 +1346,36 @@ describe(unitTest('Saved spec validity: concats'), () => {
       'ORDER_ID Integer',
       'SHIP_CITY Varchar(15)?',
       'FREIGHT Numeric(10,2)?',
+    ]);
+  });
+
+  test("Gives a valid concat that converts types the type both inputs share where theirs differ, each nullable when either input's is", () => {
+    const first = [ORDER_ID, SHIP_CITY, { ...FREIGHT, nullable: false }];
+    const second = [
+      snapshotColumn('ORDER_ID', { path: `${PRECISE}SmallInt` }, false),
+      snapshotColumn('SHIP_CITY', varchar(40), false),
+      snapshotColumn('FREIGHT', numeric(12, 4)),
+    ];
+    const { query } = decodeCubeSpec(
+      concatSpec(first, second, { widenTypes: true }),
+      { registry: REGISTRY },
+    ).document;
+    const { schemas, validity } = buildSchemasAndValidity(query);
+    expect(validity.get('concat101')).toEqual([]);
+    expect(
+      schemas
+        .get('concat101')
+        ?.columns.map(
+          ({ name, type, nullable }) =>
+            `${name} ${type.displayName}${nullable ? '?' : ''}`,
+        ),
+    ).toEqual(['ORDER_ID Integer', 'SHIP_CITY String?', 'FREIGHT Decimal?']);
+    // the same inputs, without the setting, are invalid
+    expect(concatErrorsOf(concatSpec(first, second)).concat101).toStrictEqual([
+      MESSAGE_INPUT_SCHEMAS_DIFFER,
+      MESSAGE_CONCAT_COLUMN_TYPE('ORDER_ID', 'Integer', 'SmallInt'),
+      MESSAGE_CONCAT_COLUMN_TYPE('SHIP_CITY', 'Varchar(15)', 'Varchar(40)'),
+      MESSAGE_CONCAT_COLUMN_TYPE('FREIGHT', 'Numeric(10,2)', 'Numeric(12,4)'),
     ]);
   });
 

@@ -1329,9 +1329,9 @@ All gestures from §17.4 are kept:
      replaced node, so keys made in it (e.g. filter rows) stay stable while the user edits.
 2. Register its factory in `CUBE_NODE_DRAFT_FACTORIES` (`stores/editors/CubeNodeDraftRegistry.ts`). A type with
    nothing to edit registers an editor but no factory: it gets a read-only draft, and no Apply or Cancel. That is a
-   source, and from M2 a transform with nothing to set (Distinct, whose editor is a description only, spec §17.6;
-   from M4 Concat, until its Convert types setting), which is also listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS` so
-   the registry test (item 6) doesn't ask it for a factory.
+   source, and from M2 a transform with nothing to set (Distinct, whose editor is a description only, spec §17.6),
+   which is also listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS` so the registry test (item 6) doesn't ask it for a
+   factory.
 3. `components/editors/Cube<Type>Editor.tsx`: an observer component taking `CubeNodeEditorProps`, registered in
    `CUBE_NODE_EDITORS` (`components/editors/CubeNodeEditorRegistry.ts`). It gets:
 
@@ -1345,9 +1345,8 @@ All gestures from §17.4 are kept:
    applies the draft first and then rebinds to the new node, as `nodeEditor.swapInputs()` does: calling
    `editorState.applyQuery` (or `editorState.swapInputs`) directly replaces the node under unapplied edits, so the
    panel closes and drops them. A source, which has no draft, may call an `editorState` flow that stays outside the
-   undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, for a type with
-   a factory or one in `CUBE_NODE_TYPES_WITHOUT_SETTINGS` (from M4: a Concat whose inputs don't match), never for a
-   source, and owns Apply and Cancel.
+   undo history (Refresh). The panel lists the edited node's problems (`node.validate`) under it, and owns Apply
+   and Cancel.
 
 4. The help text, in `CUBE_NODE_HELP_TEXT` (`__lib__/LegendCubeHelpText.ts`).
 5. Its icon name, mapped to an icon in `NODE_ICONS` (`components/CubeNodeIcon.tsx`).
@@ -2820,13 +2819,20 @@ nodes may turn invalid (visible, undoable).
   `Column <i> is "<a>" in the first input and "<b>" in the second: columns are matched by position.`,
   `The inputs have the same columns in a different order: columns are matched by position.`,
   `Column "<c>" is <T1> in the first input and <T2> in the second.` (short names, or paths when both share one, as
-  two enumerations `a::Region` and `b::Region` can)
+  two enumerations `a::Region` and `b::Region` can); with Convert types, for types it can't convert (settled in M4.13):
+  `Column "<c>" is <T1> in the first input and <T2> in the second, which can't be converted to one type.`
 - Schema: the first input's names and types (the ancestor where widened), `nullable1 || nullable2` ✅.
-- Convert types: Varchar lengths give String, SmallInt and Int Integer, Int and Float4 Number, StrictDate and Timestamp
-  Date; never VARIANT, OPAQUE or two enumerations. Emitted on the input that needs it as
-  `->extend(~<tmp>: x|$x.<c>->cast(@<T>))->select(~[…])->rename(~<tmp>, ~<c>)` (`getTemporaryColumnName`), with no
-  SQL cast ✅; never a relation-level cast, which the engine doesn't check 💭. H2 shows a StrictDate unioned with a
-  Timestamp as midnight timestamps 💭 (Join refuses that pair as keys).
+- Convert types (built in M4.13, `getConcatConvertedType`): Varchar lengths give String, SmallInt and Int Integer, Int
+  and Float4 Number, two Numeric precisions Decimal, StrictDate and Timestamp Date; never across numbers, strings and
+  dates, nor VARIANT, OPAQUE or two enumerations. Emitted on each input that needs it as
+  `->extend(~[cube_cast: x|$x.<c>->cast(@<T>), cube_cast2: …])->select(~[…])->rename(~cube_cast, ~<c>)…`, the
+  temporaries avoiding the input's names in any case, with no SQL cast ✅ (`@String`, `@Integer`, `@Number`,
+  `@Float`, `@Decimal`, `@Date` and `@DateTime` type and run on H2 ✅); never a relation-level cast, which the engine
+  doesn't check 💭. H2 shows a StrictDate unioned with a Timestamp as midnight timestamps ✅ (Join refuses that pair
+  as keys), and the converted Date then compares with a StrictDate or a Timestamp downstream (the older rule for an
+  abstract Date), so a Join or Filter on it matches only midnight ✅: open, a warning or a PLAN rule (user). The
+  editor never offers Convert types for a column whose real type Cube doesn't know (the database may fail to
+  convert it ✅).
 - Autofixes in a core `ConcatAutofix.ts` (as `JoinAutofix.ts`): one query change and one undo step each, the selection
   kept, the panel's edits applied first; the Rename is refused when a new name folds to an untouched column.
 - Saved: `{kind: 'concat', id, inputs, widenTypes}` (settled in M4.9), always written, `false` included; a missing key
@@ -2907,6 +2913,10 @@ on the Cube fixture, which copies that model with corrections that don't touch t
 | M4.15 | Verification (reviewers and a skeptic per finding) and an evidence-folder browser rehearsal                                                                                                                            | Every finding fixed or recorded; the rehearsal passes                           |
 | M4.16 | A demo video of M4's features (§11.3): Group and its editor, the grid's Group by, Concat, its autofixes and Convert types, with captions; key frames checked against their captions                                    | The video plays every M4 feature, each caption true on screen; sent to the user |
 | M4.17 | Rebase after agreeing the landing order with cube-direct; fold the supersessions below; PR when the user asks                                                                                                          | The plan consistent; the PR open on the user's word                             |
+
+**Landing order (user, 2026-10-09).** The PR is marked ready for review after M4.13, with the changeset (M4.14's) and
+its description updated and every gate green; M4.14's guides, M4.15, M4.16 and M4.17's folding follow as fixes on the
+open PR. cube-direct landed first (#5641), and M4 was rebased on it after M4.10.
 
 **Risks and open gaps:**
 

@@ -30,10 +30,7 @@ import {
 import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
-import {
-  CUBE_NODE_DRAFT_FACTORIES,
-  CUBE_NODE_TYPES_WITHOUT_SETTINGS,
-} from '../../stores/editors/CubeNodeDraftRegistry.js';
+import { CUBE_NODE_DRAFT_FACTORIES } from '../../stores/editors/CubeNodeDraftRegistry.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeNodeIcon } from '../CubeNodeIcon.js';
 import { CUBE_NODE_EDITORS } from './CubeNodeEditorRegistry.js';
@@ -79,10 +76,8 @@ export const CubeNodeEditorPanel = observer(
       .filter((schema): schema is Schema => schema !== undefined);
     const Editor = CUBE_NODE_EDITORS.get(node.type);
     const isEditable = CUBE_NODE_DRAFT_FACTORIES.has(node.type);
-    // a transform with nothing to set can still have problems, e.g. a Concat's inputs that don't match
     const problems =
-      (isEditable || CUBE_NODE_TYPES_WITHOUT_SETTINGS.includes(node.type)) &&
-      !inputProblems.length
+      isEditable && !inputProblems.length
         ? validateEdited(edited, inputSchemas)
         : [];
     const warnings = editorState.getNodeWarnings(node);

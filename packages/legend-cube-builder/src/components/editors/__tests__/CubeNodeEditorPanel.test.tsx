@@ -457,7 +457,7 @@ describe('Node editor panel', () => {
     );
   });
 
-  test('Lists the problems of a transform with nothing to set, with no Apply or Cancel', async () => {
+  test('Lists the problems of a Concat, whose Convert types setting gives it Apply and Cancel', async () => {
     // ORDERS then CUSTOMERS, concatenated: 14 columns against 11
     const editorState = await render(
       new CubeDocument({
@@ -485,8 +485,14 @@ describe('Node editor panel', () => {
       'The first input has 14 columns and the second 11.',
     ]);
     expect(editorState.analysis.validity.get('concat101')).toEqual(problems);
-    expect(within(editor).queryByRole('button', { name: 'Apply' })).toBeNull();
-    expect(within(editor).queryByRole('button', { name: 'Cancel' })).toBeNull();
+    // nothing to apply until the setting changes
+    expect(
+      within(editor).getByRole<HTMLButtonElement>('button', { name: 'Apply' })
+        .disabled,
+    ).toBe(true);
+    expect(
+      within(editor).getByRole('button', { name: 'Cancel' }),
+    ).toBeDefined();
     // closing stores nothing
     fireEvent.click(
       within(editor).getByRole('button', { name: 'Close the editor' }),
@@ -495,8 +501,8 @@ describe('Node editor panel', () => {
     expect(editorState.history).toHaveLength(0);
   });
 
-  test('Lists no problems for a Distinct, which has nothing to set and is always valid', async () => {
-    await render(
+  test('Shows no Apply or Cancel and no problems for a Distinct, which has nothing to set and is always valid', async () => {
+    const editorState = await render(
       new CubeDocument({
         context: CONTEXT,
         query: new Query(
@@ -512,6 +518,10 @@ describe('Node editor panel', () => {
     const editor = await openPanel('distinct101');
     expect(within(editor).getByText('Distinct Values')).toBeDefined();
     expect(within(editor).queryByRole('alert')).toBeNull();
+    expect(editorState.analysis.validity.get('distinct101')).toEqual([]);
+    expect(within(editor).queryByRole('button', { name: 'Apply' })).toBeNull();
+    expect(within(editor).queryByRole('button', { name: 'Cancel' })).toBeNull();
+    expect(editorState.nodeEditor.hasChanges).toBe(false);
   });
 
   test('Shows a table that failed to resolve once, in its editor, never as a Problem', async () => {

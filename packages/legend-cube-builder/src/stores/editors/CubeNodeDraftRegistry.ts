@@ -30,6 +30,7 @@ import {
 } from '@finos/legend-cube';
 import { guaranteeType } from '@finos/legend-shared';
 import type { CubeEditorState } from '../CubeEditorState.js';
+import { CubeConcatDraft } from './CubeConcatDraft.js';
 import { CubeFilterDraft } from './CubeFilterDraft.js';
 import { CubeGroupDraft } from './CubeGroupDraft.js';
 import { CubeJoinDraft } from './CubeJoinDraft.js';
@@ -67,17 +68,16 @@ export const CUBE_NODE_DRAFT_FACTORIES: ReadonlyMap<
   [Drop.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Drop))],
   [Limit.TYPE, (node) => new CubeRowCountDraft(guaranteeType(node, Limit))],
   [Slice.TYPE, (node) => new CubeSliceDraft(guaranteeType(node, Slice))],
+  [Concat.TYPE, (node) => new CubeConcatDraft(guaranteeType(node, Concat))],
 ]);
 
 /**
  * The transforms with nothing to set (spec §17.6: Distinct is "description
- * only"; Concat until its Convert types setting, PLAN §11.5): an editor in
- * `CUBE_NODE_EDITORS` and no draft factory, so the panel shows no Apply or
- * Cancel (PLAN §7.4 item 2)
+ * only"): an editor in `CUBE_NODE_EDITORS` and no draft factory, so the panel
+ * shows no Apply or Cancel (PLAN §7.4 item 2)
  */
 export const CUBE_NODE_TYPES_WITHOUT_SETTINGS: readonly string[] = [
   Distinct.TYPE,
-  Concat.TYPE,
 ];
 
 /** The node's draft; a node with nothing to edit gets a read-only one */

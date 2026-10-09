@@ -44,6 +44,7 @@ const P = 'meta::pure::precisePrimitives::';
 const int = (name: string, nullable = false): SchemaColumn =>
   column(name, `${P}Int`, nullable);
 const bigInt = (name: string): SchemaColumn => column(name, `${P}BigInt`);
+const string = (name: string): SchemaColumn => column(name, 'String');
 const varchar = (name: string, length: number): SchemaColumn =>
   column(name, `${P}Varchar`, false, [length]);
 
@@ -56,23 +57,36 @@ const pairsOf = (
   mappings: readonly RenameMapping[] | undefined,
 ): string[] | undefined => mappings?.map(({ from, to }) => `${from}->${to}`);
 
-/** The rename plan, checked to make the Concat valid when a Rename applies it to the second input */
-const renamePlan = (first: Schema, second: Schema): string[] | undefined => {
-  const mappings = planConcatRename(first, second);
+/**
+ * The rename plan, with the Concat's setting, checked to make the Concat
+ * valid when a Rename applies it to the second input
+ */
+const renamePlan = (
+  first: Schema,
+  second: Schema,
+  widenTypes = false,
+): string[] | undefined => {
+  const mappings = planConcatRename(first, second, widenTypes);
   if (mappings) {
     const renamed = new Rename('rename', mappings).schematize([second]);
     expect(renamed).toBeDefined();
-    expect(validateConcatSchemas(first, renamed as Schema)).toBe(true);
+    expect(
+      validateConcatSchemas(first, renamed as Schema, undefined, widenTypes),
+    ).toBe(true);
   }
   return pairsOf(mappings);
 };
 
-/** The restrict plan, checked to make the Concat valid when a Restrict applies it to the input it names */
+/**
+ * The restrict plan, with the Concat's setting, checked to make the Concat
+ * valid when a Restrict applies it to the input it names
+ */
 const restrictPlan = (
   first: Schema,
   second: Schema,
+  widenTypes = false,
 ): ReturnType<typeof planConcatRestrict> => {
-  const fix = planConcatRestrict(first, second);
+  const fix = planConcatRestrict(first, second, widenTypes);
   if (fix) {
     const restrict = new Restrict('restrict', fix.columns);
     const kept = restrict.schematize([fix.input === 0 ? first : second]);
@@ -81,6 +95,8 @@ const restrictPlan = (
       validateConcatSchemas(
         fix.input === 0 ? (kept as Schema) : first,
         fix.input === 0 ? second : (kept as Schema),
+        undefined,
+        widenTypes,
       ),
     ).toBe(true);
   }
@@ -299,6 +315,132 @@ describe(unitTest('Concat autofix: the Restrict plan'), () => {
     ],
   ])('Plans nothing for %s', (_, first, second) => {
     expect(planConcatRestrict(first, second)).toBeUndefined();
+  });
+});
+
+// PLAN §11.5, Q5 and Q6: a plan is offered when the Concat is valid after
+// it, so with Convert types on, types that convert don't stop it
+describe(unitTest('Concat autofix: the plans, converting types'), () => {
+  test.each<[string, Schema, Schema, string[]]>([
+    [
+      'a type that differs at a renamed position',
+      new Schema([int('A'), int('B')]),
+      new Schema([int('A'), bigInt('X')]),
+      ['X->B'],
+    ],
+    [
+      'a type that differs at another position',
+      new Schema([int('A'), int('B')]),
+      new Schema([bigInt('A'), int('X')]),
+      ['X->B'],
+    ],
+    [
+      'a Varchar length that differs at a renamed position',
+      new Schema([int('A'), varchar('B', 5)]),
+      new Schema([int('A'), varchar('X', 15)]),
+      ['X->B'],
+    ],
+    [
+      'a Varchar and String at a renamed position',
+      new Schema([int('A'), varchar('B', 5)]),
+      new Schema([int('A'), string('X')]),
+      ['X->B'],
+    ],
+  ])(
+    'Plans a Rename for %s only when the Concat converts types',
+    (_, first, second, pairs) => {
+      expect(planConcatRename(first, second)).toBeUndefined();
+      expect(planConcatRename(first, second, false)).toBeUndefined();
+      expect(renamePlan(first, second, true)).toEqual(pairs);
+    },
+  );
+
+  test('Plans the same Rename for equal types whatever the setting', () => {
+    expect(renamePlan(ints('A', 'B', 'C'), ints('A', 'X', 'C'), true)).toEqual([
+      'X->B',
+    ]);
+    expect(renamePlan(ints('ID', 'CITY'), ints('id', 'TOWN'), true)).toEqual([
+      'id->ID',
+      'TOWN->CITY',
+    ]);
+  });
+
+  test.each<[string, Schema, Schema]>([
+    [
+      "a type that can't be converted at a renamed position",
+      new Schema([int('A'), int('B')]),
+      new Schema([int('A'), string('X')]),
+    ],
+    [
+      "a type that can't be converted at another position",
+      new Schema([int('A'), int('B')]),
+      new Schema([string('A'), int('X')]),
+    ],
+    ['the same columns swapped', ints('A', 'B'), ints('B', 'A')],
+    [
+      'a new name that folds to a column the second input keeps',
+      ints('A', 'a'),
+      ints('X', 'a'),
+    ],
+    ['a second input with more columns', ints('A', 'B'), ints('A', 'X', 'C')],
+  ])('Plans no Rename for %s, converting types', (_, first, second) => {
+    expect(planConcatRename(first, second, true)).toBeUndefined();
+  });
+
+  test.each<[string, Schema, Schema, ReturnType<typeof planConcatRestrict>]>([
+    [
+      'a type that differs on a kept column',
+      new Schema([bigInt('A')]),
+      new Schema([int('A'), int('B')]),
+      { input: 1, columns: ['A'], dropped: ['B'] },
+    ],
+    [
+      'a Varchar length that differs on a kept column',
+      new Schema([int('A'), varchar('B', 5), int('C')]),
+      new Schema([int('A'), varchar('B', 15)]),
+      { input: 0, columns: ['A', 'B'], dropped: ['C'] },
+    ],
+    [
+      'String and a Varchar on a kept column',
+      new Schema([string('A')]),
+      new Schema([varchar('A', 15), int('B')]),
+      { input: 1, columns: ['A'], dropped: ['B'] },
+    ],
+  ])(
+    'Plans a Restrict for %s only when the Concat converts types',
+    (_, first, second, fix) => {
+      expect(planConcatRestrict(first, second)).toBeUndefined();
+      expect(planConcatRestrict(first, second, false)).toBeUndefined();
+      expect(restrictPlan(first, second, true)).toEqual(fix);
+    },
+  );
+
+  test('Plans the same Restrict for equal types whatever the setting', () => {
+    expect(
+      restrictPlan(ints('A', 'C'), ints('A', 'B', 'C', 'D'), true),
+    ).toEqual({ input: 1, columns: ['A', 'C'], dropped: ['B', 'D'] });
+  });
+
+  test("Plans no Restrict when a kept column's type can't be converted, whatever the dropped columns' types", () => {
+    expect(
+      planConcatRestrict(
+        new Schema([string('A')]),
+        new Schema([int('A'), int('B')]),
+        true,
+      ),
+    ).toBeUndefined();
+    // a dropped column's type is never compared
+    expect(
+      restrictPlan(
+        new Schema([int('A'), string('B')]),
+        new Schema([bigInt('A')]),
+        true,
+      ),
+    ).toEqual({ input: 0, columns: ['A'], dropped: ['B'] });
+    // nor are the names of columns in another order
+    expect(
+      planConcatRestrict(ints('B', 'A'), ints('A', 'B', 'C'), true),
+    ).toBeUndefined();
   });
 });
 
@@ -721,5 +863,164 @@ test(
     expect(() => restrict(renamed)).toThrow(
       new Error(`Can't restrict the columns of concat "concat101"`),
     );
+  },
+);
+
+describe(
+  unitTest("Concat autofix: the query, with the concat's setting"),
+  () => {
+    /** A Concat that converts types (Convert types, PLAN §11.5, Q5) */
+    const converting = (): Concat => new Concat('concat101', true);
+
+    /** Each column of the node's schema as `name type` */
+    const typesOf = (query: Query, nodeId: string): string[] | undefined =>
+      infer(query)
+        .schemas.get(nodeId)
+        ?.columns.map((c) => `${c.name} ${c.type.displayName}`);
+
+    test('Offers and applies a Rename that only Convert types makes valid', () => {
+      const first = new Schema([int('A'), varchar('B', 5)]);
+      const second = new Schema([int('A'), varchar('X', 15)]);
+      const strict = wired(first, second);
+      expect(
+        canRenameConcatInput(strict, 'concat101', ...inputSchemas(strict)),
+      ).toBe(false);
+      expect(() => rename(strict)).toThrow(
+        new Error(`Can't rename the columns of concat "concat101"`),
+      );
+
+      const query = wired(first, second, 'concat101', converting());
+      expect(
+        canRenameConcatInput(query, 'concat101', ...inputSchemas(query)),
+      ).toBe(true);
+      const fixed = rename(query);
+      expect(feeds(fixed, 'concat101')).toEqual([
+        'relational101>tds1',
+        'rename101>tds2',
+      ]);
+      expect(pairsOf((fixed.getNode('rename101') as Rename).mappings)).toEqual([
+        'X->B',
+      ]);
+      // the concat kept, with its setting
+      expect(fixed.getNode('concat101') === query.getNode('concat101')).toBe(
+        true,
+      );
+      const { validity } = infer(fixed);
+      expect(validity.get('rename101')).toEqual([]);
+      expect(validity.get('concat101')).toEqual([]);
+      expect(validity.get('filter101')).toEqual([]);
+      expect(typesOf(fixed, 'concat101')).toEqual(['A Int', 'B String']);
+      expect(fixed.validate(validity)).toBe(true);
+    });
+
+    test('Offers and applies a Restrict that only Convert types makes valid', () => {
+      const first = new Schema([int('A'), varchar('B', 5), int('C')]);
+      const second = new Schema([bigInt('A'), varchar('B', 15)]);
+      const strict = wired(first, second);
+      expect(
+        canRestrictConcatInput(strict, 'concat101', ...inputSchemas(strict)),
+      ).toBe(false);
+      expect(() => restrict(strict)).toThrow(
+        new Error(`Can't restrict the columns of concat "concat101"`),
+      );
+
+      const query = wired(first, second, 'concat101', converting());
+      expect(
+        canRestrictConcatInput(query, 'concat101', ...inputSchemas(query)),
+      ).toBe(true);
+      const fixed = restrict(query);
+      expect(feeds(fixed, 'concat101')).toEqual([
+        'relational102>tds2',
+        'restrict101>tds1',
+      ]);
+      expect((fixed.getNode('restrict101') as Restrict).columns).toEqual([
+        'A',
+        'B',
+      ]);
+      expect(fixed.getNode('concat101') === query.getNode('concat101')).toBe(
+        true,
+      );
+      const { validity } = infer(fixed);
+      expect(validity.get('restrict101')).toEqual([]);
+      expect(validity.get('concat101')).toEqual([]);
+      expect(typesOf(fixed, 'concat101')).toEqual(['A Integer', 'B String']);
+      expect(fixed.validate(validity)).toBe(true);
+    });
+
+    test("Reads the setting from the query's concat, for the schemas the caller gives", () => {
+      // an editor asks with its inputs' schemas: the answer follows the concat
+      // the query holds, turned off here
+      const first = new Schema([int('A'), varchar('B', 5)]);
+      const second = new Schema([int('A'), varchar('X', 15)]);
+      const query = wired(first, second, 'concat101', converting());
+      expect(canRenameConcatInput(query, 'concat101', first, second)).toBe(
+        true,
+      );
+      const off = query.replace(converting().withWidenTypes(false));
+      expect((off.getNode('concat101') as Concat).widenTypes).toBe(false);
+      expect(canRenameConcatInput(off, 'concat101', first, second)).toBe(false);
+      expect(() => renameConcatInput(off, 'concat101', first, second)).toThrow(
+        new Error(`Can't rename the columns of concat "concat101"`),
+      );
+      // and turned back on
+      const on = off.replace(
+        (off.getNode('concat101') as Concat).withWidenTypes(true),
+      );
+      expect(canRenameConcatInput(on, 'concat101', first, second)).toBe(true);
+      expect(
+        pairsOf(
+          (
+            renameConcatInput(on, 'concat101', first, second).getNode(
+              'rename101',
+            ) as Rename
+          ).mappings,
+        ),
+      ).toEqual(['X->B']);
+
+      const wide = new Schema([int('A'), varchar('B', 5), int('C')]);
+      const narrow = new Schema([int('A'), varchar('B', 15)]);
+      const widening = wired(wide, narrow, 'concat101', converting());
+      expect(canRestrictConcatInput(widening, 'concat101', wide, narrow)).toBe(
+        true,
+      );
+      const strict = widening.replace(new Concat('concat101'));
+      expect(canRestrictConcatInput(strict, 'concat101', wide, narrow)).toBe(
+        false,
+      );
+      expect(() =>
+        restrictConcatInput(strict, 'concat101', wide, narrow),
+      ).toThrow(new Error(`Can't restrict the columns of concat "concat101"`));
+    });
+
+    test("Refuses both fixes when a type can't be converted, converting types", () => {
+      const renamed = wired(
+        new Schema([int('A'), int('B')]),
+        new Schema([int('A'), string('X')]),
+        'concat101',
+        converting(),
+      );
+      expect(
+        canRenameConcatInput(renamed, 'concat101', ...inputSchemas(renamed)),
+      ).toBe(false);
+      expect(() => rename(renamed)).toThrow(
+        new Error(`Can't rename the columns of concat "concat101"`),
+      );
+      const restricted = wired(
+        new Schema([string('A')]),
+        new Schema([int('A'), int('B')]),
+        'concat101',
+        converting(),
+      );
+      expect(
+        canRestrictConcatInput(
+          restricted,
+          'concat101',
+          ...inputSchemas(restricted),
+        ),
+      ).toBe(false);
+      expect(() => restrict(restricted)).toThrow(
+        new Error(`Can't restrict the columns of concat "concat101"`),
+      );
+    });
   },
 );

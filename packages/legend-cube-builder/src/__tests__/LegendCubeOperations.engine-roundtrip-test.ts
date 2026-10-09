@@ -25,6 +25,7 @@ import {
   Distinct,
   Drop,
   buildSchemasAndValidity,
+  canRenameConcatInput,
   createNodeRegistry,
   Filter,
   FilterOperator,
@@ -58,6 +59,7 @@ import {
   TEST__chainOf,
   TEST__columnValues,
   TEST__expectEngineTyping,
+  TEST__inferredSchema,
   TEST__northwindTable,
   TEST__resolveSources,
   TEST__runQuery,
@@ -1253,26 +1255,29 @@ describe('Group on the engine', () => {
 describe('Concat on the engine', () => {
   const COMPANY_CITY_COUNTRY = ['COMPANY_NAME', 'CITY', 'COUNTRY'];
 
-  /** Two tables, resolved, as relational101 and relational102 */
+  /** Two tables of one schema, resolved, as relational101 and relational102 */
   const tables = async (
     first: string,
     second: string,
+    schema?: string,
   ): Promise<[RelationalTableSource, RelationalTableSource]> =>
     (await TEST__resolveSources(engine, [
-      TEST__northwindTable('relational101', first),
-      TEST__northwindTable('relational102', second),
+      TEST__northwindTable('relational101', first, schema),
+      TEST__northwindTable('relational102', second, schema),
     ])) as [RelationalTableSource, RelationalTableSource];
 
   /**
    * Each input with the nodes after it, concatenated by concat101 (its
-   * First and Second), then the nodes after it, captured at the last
+   * First and Second), converting types or not, then the nodes after it,
+   * captured at the last
    */
-  const concatOf = (
+  const concatOfWith = (
+    widenTypes: boolean,
     first: QueryNode[],
     second: QueryNode[],
     ...after: QueryNode[]
   ): Query => {
-    const concat = new Concat('concat101');
+    const concat = new Concat('concat101', widenTypes);
     const chain = (nodes: readonly QueryNode[]): Connection[] =>
       nodes
         .slice(1)
@@ -1298,6 +1303,20 @@ describe('Concat on the engine', () => {
     );
   };
 
+  /** Types must match */
+  const concatOf = (
+    first: QueryNode[],
+    second: QueryNode[],
+    ...after: QueryNode[]
+  ): Query => concatOfWith(false, first, second, ...after);
+
+  /** Convert types (PLAN §11.5, Q5): differing types cast to the type both are */
+  const convertingConcatOf = (
+    first: QueryNode[],
+    second: QueryNode[],
+    ...after: QueryNode[]
+  ): Query => concatOfWith(true, first, second, ...after);
+
   /** CUSTOMERS and SUPPLIERS, each restricted to COMPANY_NAME, CITY and COUNTRY, concatenated */
   const companies = async (...after: QueryNode[]): Promise<Query> => {
     const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
@@ -1312,9 +1331,10 @@ describe('Concat on the engine', () => {
   const tableValues = async (
     table: string,
     column: string,
+    schema?: string,
   ): Promise<unknown[]> => {
     const [source] = await TEST__resolveSources(engine, [
-      TEST__northwindTable('relational101', table),
+      TEST__northwindTable('relational101', table, schema),
     ]);
     return TEST__columnValues(
       await TEST__runQuery(
@@ -1519,5 +1539,271 @@ describe('Concat on the engine', () => {
         0,
       ),
     ).toBe(120);
+  });
+
+  // Convert types (M4.13, PLAN §11.5, Q5): a differing type is cast to the
+  // type both inputs are, a type-only cast: H2 unions the columns' own SQL
+  // types
+
+  const CUBETEST = 'CUBETEST';
+
+  /**
+   * The columns, listed in their table's order, each renamed to the name at
+   * its position in `names` (a Restrict, then a Rename when a name changes),
+   * the nodes' ids ending in the suffix
+   */
+  const keptAs = (
+    suffix: string,
+    columns: readonly string[],
+    names: readonly string[],
+  ): QueryNode[] => {
+    const mappings = columns.flatMap((from, index) => {
+      const to = names[index] as string;
+      return from === to ? [] : [{ from, to }];
+    });
+    return [
+      new Restrict(`restrict${suffix}`, columns),
+      ...(mappings.length ? [new Rename(`rename${suffix}`, mappings)] : []),
+    ];
+  };
+
+  /** ALLTYPES twice, the first's columns and the second's, each kept under the names */
+  const alltypesInputs = async (
+    first: readonly string[],
+    second: readonly string[],
+    names: readonly string[],
+  ): Promise<[QueryNode[], QueryNode[]]> => {
+    const [one, two] = await tables('ALLTYPES', 'ALLTYPES', CUBETEST);
+    return [
+      [one, ...keptAs('101', first, names)],
+      [two, ...keptAs('102', second, names)],
+    ];
+  };
+
+  /** ALLTYPES' columns concatenated with others of its own, converting types */
+  const convertedAlltypes = async (
+    first: readonly string[],
+    second: readonly string[],
+    names: readonly string[],
+  ): Promise<Query> =>
+    convertingConcatOf(...(await alltypesInputs(first, second, names)));
+
+  /** Cube's columns of concat101: `<name> <type>`, `?` when nullable */
+  const concatColumns = (query: Query): string[] =>
+    TEST__inferredSchema(query, 'concat101').columns.map(
+      ({ name, type, nullable }) =>
+        `${name} ${type.displayName}${nullable ? '?' : ''}`,
+    );
+
+  /** The values of one column of the query's result */
+  const valuesOf = async (query: Query, column: string): Promise<unknown[]> =>
+    TEST__columnValues(await TEST__runQuery(engine, query, ROW_LIMIT), column);
+
+  /** The values of one ALLTYPES column, run alone */
+  const alltypesValues = (column: string): Promise<unknown[]> =>
+    tableValues('ALLTYPES', column, CUBETEST);
+
+  /** Each row of the query's result, as text, sorted */
+  const sortedRows = async (query: Query): Promise<string[]> =>
+    (await TEST__runQuery(engine, query, ROW_LIMIT)).rows
+      .map((row) => JSON.stringify(row))
+      .sort();
+
+  /** Numbers as numbers, whether H2 gives them as text or not, sorted */
+  const sortedNumbers = (values: readonly unknown[]): string[] =>
+    values
+      .map((value) => (value === null ? 'null' : String(Number(value))))
+      .sort();
+
+  test('Emits what the engine parses from the printed Pure when it converts types, and types as Cube infers', async () => {
+    const query = await convertedAlltypes(
+      ['TI', 'DT', 'VC'],
+      ['SI', 'TS', 'VC'],
+      ['N', 'WHEN', 'CUBE_CAST'],
+    );
+    const printed = printIR(
+      new QueryEmitter(query).emitExecutionLambda({
+        rowLimit: ROW_LIMIT,
+        runtime: CUBE_NORTHWIND_RUNTIME,
+      }),
+    );
+    // in both inputs, the temporary names avoiding CUBE_CAST, in any case
+    expect(
+      printed.split(
+        '->extend(~[cube_cast2: x | $x.N->cast(@Integer), cube_cast3: x | $x.WHEN->cast(@Date)])->select(~[cube_cast2, cube_cast3, CUBE_CAST])->rename(~cube_cast2, ~N)->rename(~cube_cast3, ~WHEN)',
+      ),
+    ).toHaveLength(3);
+    expect(emittedJson(query)).toEqual(
+      await CUBE_ENGINE_TEST__grammarToJson_lambda(printed),
+    );
+    await TEST__expectEngineTyping(engine, query);
+  });
+
+  test("Converts TinyInt and SmallInt to Integer: ALLTYPES' TI with its SI gives 6 rows, both columns' values", async () => {
+    const query = await convertedAlltypes(['TI'], ['SI'], ['TI']);
+    expect(concatColumns(query)).toEqual(['TI Integer?']);
+    await TEST__expectEngineTyping(engine, query);
+    const values = await valuesOf(query, 'TI');
+    expect(values).toHaveLength(6);
+    expect(sorted(values)).toEqual(
+      sorted([
+        ...(await alltypesValues('TI')),
+        ...(await alltypesValues('SI')),
+      ]),
+    );
+  });
+
+  test("Converts two Varchar lengths to String: CUSTOMERS' CITY with SUPPLIERS' CONTACT_NAME gives the 120 rows of both", async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = convertingConcatOf(
+      [customers, new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      [
+        suppliers,
+        ...keptAs(
+          '102',
+          ['COMPANY_NAME', 'CONTACT_NAME'],
+          ['COMPANY_NAME', 'CITY'],
+        ),
+      ],
+    );
+    expect(concatColumns(query)).toEqual([
+      'COMPANY_NAME Varchar(40)',
+      'CITY String?',
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    const result = await TEST__runQuery(engine, query, ROW_LIMIT);
+    expect(result.rows).toHaveLength(120);
+    expect(sorted(TEST__columnValues(result, 'CITY'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'CITY')),
+        ...(await tableValues('SUPPLIERS', 'CONTACT_NAME')),
+      ]),
+    );
+    expect(sorted(TEST__columnValues(result, 'COMPANY_NAME'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'COMPANY_NAME')),
+        ...(await tableValues('SUPPLIERS', 'COMPANY_NAME')),
+      ]),
+    );
+  });
+
+  test('Converts a StrictDate and a Timestamp to Date: H2 gives the dates as midnight timestamps, the timestamps as they are', async () => {
+    const query = await convertedAlltypes(['DT'], ['TS'], ['WHEN']);
+    expect(concatColumns(query)).toEqual(['WHEN Date?']);
+    await TEST__expectEngineTyping(engine, query);
+    // run alone, DT gives dates; in the union, which has no SQL cast, H2
+    // takes the TIMESTAMP of the two SQL types
+    const dates = await alltypesValues('DT');
+    expect(sorted(dates)).toEqual(['2024-01-02', '2024-01-03', 'null']);
+    expect(sorted(await valuesOf(query, 'WHEN'))).toEqual(
+      sorted([
+        ...dates.map((date) =>
+          date === null ? null : `${String(date)}T00:00:00.000000000+0000`,
+        ),
+        ...(await alltypesValues('TS')),
+      ]),
+    );
+  });
+
+  test('Converts numbers to the type both are, each value kept: Number, Float and Decimal', async () => {
+    const converted = async (
+      first: string,
+      second: string,
+      type: string,
+    ): Promise<unknown[]> => {
+      const query = await convertedAlltypes([first], [second], [first]);
+      expect(concatColumns(query)).toEqual([`${first} ${type}`]);
+      await TEST__expectEngineTyping(engine, query);
+      return valuesOf(query, first);
+    };
+    // Int with Float4: H2 gives each value as text, an integer as 1.0
+    expect(sortedNumbers(await converted('ID', 'F', 'Number?'))).toEqual(
+      sortedNumbers([
+        ...(await alltypesValues('ID')),
+        ...(await alltypesValues('F')),
+      ]),
+    );
+    // BigInt with Double: the big integer exact
+    const bigAndDouble = await converted('BI', 'D', 'Number?');
+    expect(bigAndDouble).toContain('9007199254740993');
+    expect(sortedNumbers(bigAndDouble)).toEqual(
+      sortedNumbers([
+        ...(await alltypesValues('BI')),
+        ...(await alltypesValues('D')),
+      ]),
+    );
+    // Float4 with Double
+    expect(sortedNumbers(await converted('F', 'D', 'Float?'))).toEqual(
+      sortedNumbers([
+        ...(await alltypesValues('F')),
+        ...(await alltypesValues('D')),
+      ]),
+    );
+    // two Numeric precisions: each value with its own scale, 12.34 and 2.5000
+    expect(sorted(await converted('DEC', 'NUM', 'Decimal?'))).toEqual(
+      sorted([
+        ...(await alltypesValues('DEC')),
+        ...(await alltypesValues('NUM')),
+      ]),
+    );
+  });
+
+  test("Keeps each row's values together beside a column named CUBE_CAST, the converted columns cast under other names", async () => {
+    const [first, second] = await alltypesInputs(
+      ['TI', 'SI', 'VC'],
+      ['SI', 'BI', 'VC'],
+      ['A', 'B', 'CUBE_CAST'],
+    );
+    const query = convertingConcatOf(first, second);
+    expect(concatColumns(query)).toEqual([
+      'A Integer?',
+      'B Integer?',
+      'CUBE_CAST Varchar(20)?',
+    ]);
+    await TEST__expectEngineTyping(engine, query);
+    expect(await sortedRows(query)).toEqual(
+      [
+        ...(await sortedRows(TEST__chainOf(first))),
+        ...(await sortedRows(TEST__chainOf(second))),
+      ].sort(),
+    );
+  });
+
+  test('Runs after its Rename autofix, offered once it converts types: CONTACT_NAME under CITY', async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const inputs: [QueryNode[], QueryNode[]] = [
+      [customers, new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      [
+        suppliers,
+        new Restrict('restrict102', ['COMPANY_NAME', 'CONTACT_NAME']),
+      ],
+    ];
+    const { schemas } = buildSchemasAndValidity(
+      concatOf(...inputs),
+      createNodeRegistry().queryRules,
+    );
+    const [first, second] = [
+      schemas.get('restrict101'),
+      schemas.get('restrict102'),
+    ];
+    // Varchar(15) and Varchar(30) must match unless it converts types
+    expect(
+      canRenameConcatInput(concatOf(...inputs), 'concat101', first, second),
+    ).toBe(false);
+    const fixed = renameConcatInput(
+      convertingConcatOf(...inputs),
+      'concat101',
+      first,
+      second,
+    );
+    await TEST__expectEngineTyping(engine, fixed);
+    const result = await TEST__runQuery(engine, fixed, ROW_LIMIT);
+    expect(result.rows).toHaveLength(120);
+    expect(sorted(TEST__columnValues(result, 'CITY'))).toEqual(
+      sorted([
+        ...(await tableValues('CUSTOMERS', 'CITY')),
+        ...(await tableValues('SUPPLIERS', 'CONTACT_NAME')),
+      ]),
+    );
   });
 });

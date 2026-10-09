@@ -186,6 +186,15 @@ export const DISTINCT_EDITOR_TEXT =
 export const CONCAT_EDITOR_TEXT =
   'Gives the rows of both inputs, keeping duplicates, in no particular order. Both must have the same columns, matched by position: the same names, in the same order, with the same types.';
 
+/** What the Concat editor's Convert types setting does (PLAN §11.5, Q5) */
+export const CONCAT_CONVERT_TYPES_HINT =
+  'Converts types that differ within numbers, strings or dates to the type they share, e.g. Varchar(15) and Varchar(40) to String.';
+
+/** What the Concat editor says when Convert types would make its inputs match (PLAN §11.5, Q5) */
+export const CONCAT_CONVERT_FIX_TEXT =
+  'The types differ, but converting them to the type they share makes the inputs match:';
+export const CONCAT_CONVERT_FIX_TITLE = 'Tick Convert types; Apply stores it';
+
 /** What the Concat editor's Rename autofix says it will do (PLAN §11.5, Q6) */
 export const CONCAT_RENAME_FIX_TEXT =
   "The second input's columns can take the first input's names:";

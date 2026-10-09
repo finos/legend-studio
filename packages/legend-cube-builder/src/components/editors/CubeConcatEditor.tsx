@@ -17,16 +17,21 @@
 import { clsx } from '@finos/legend-art';
 import {
   CONCAT_PORT_LABELS,
+  getConcatConvertedType,
   planConcatRename,
   planConcatRestrict,
   type Schema,
   type SchemaColumn,
+  validateConcatSchemas,
 } from '@finos/legend-cube';
-import { noop } from '@finos/legend-shared';
+import { guaranteeType, noop } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import {
+  CONCAT_CONVERT_FIX_TEXT,
+  CONCAT_CONVERT_FIX_TITLE,
+  CONCAT_CONVERT_TYPES_HINT,
   CONCAT_EDITOR_TEXT,
   CONCAT_RENAME_FIX_TEXT,
   CONCAT_RENAME_FIX_TITLE,
@@ -38,6 +43,7 @@ import {
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { CubeTableFlag } from '../../graph-manager/CubeEngine.js';
+import { CubeConcatDraft } from '../../stores/editors/CubeConcatDraft.js';
 import { isUntypedColumn } from '../../stores/editors/CubeJoinDraft.js';
 import { CubeButton } from '../CubeButton.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -59,13 +65,18 @@ const typeLabel = (
     ? `${column.type.fullName}${column.nullable ? '?' : ''}`
     : getColumnTypeLabel(column);
 
-/** One input's column at a position, its name and type marked where they differ from the other input's */
+/**
+ * One input's column at a position, its name and type marked where they
+ * differ from the other input's; converting types, a type converted to the
+ * one both share is shown with it, not marked
+ */
 const CubeConcatCell = (props: {
   column: SchemaColumn | undefined;
   other: SchemaColumn | undefined;
   otherLabel: string;
+  widenTypes: boolean;
 }) => {
-  const { column, other, otherLabel } = props;
+  const { column, other, otherLabel, widenTypes } = props;
   if (!column) {
     return (
       <td
@@ -78,6 +89,11 @@ const CubeConcatCell = (props: {
   }
   const isOtherName = other !== undefined && column.name !== other.name;
   const isOtherType = other !== undefined && !column.type.equals(other.type);
+  const converted =
+    isOtherType && widenTypes && !isOtherName
+      ? getConcatConvertedType(column.type, other.type)
+      : undefined;
+  const isTypeProblem = isOtherType && !converted;
   return (
     <td className="min-w-0 px-1 py-0.5">
       <div
@@ -96,17 +112,19 @@ const CubeConcatCell = (props: {
       <div
         className={clsx(
           'truncate text-sm',
-          isOtherType
+          isTypeProblem
             ? 'text-[var(--color-status-error)]'
             : 'text-[var(--color-text-muted)]',
         )}
         title={
           isOtherType
-            ? `The ${otherLabel.toLowerCase()} input has ${typeLabel(other, column)} here`
+            ? `The ${otherLabel.toLowerCase()} input has ${typeLabel(other, column)} here${converted ? `: both are converted to ${converted.displayName}` : ''}`
             : undefined
         }
       >
-        {typeLabel(column, other)}
+        {converted
+          ? `${typeLabel(column, other)} → ${converted.displayName}`
+          : typeLabel(column, other)}
       </div>
     </td>
   );
@@ -158,13 +176,17 @@ const CubeConcatFix = (props: {
  * is shown, never compared. When an M2 node spliced in before an input makes
  * it valid, a button adds it (Q6): a Rename that gives the second input's
  * columns the first input's names, or a Restrict that drops the columns only
- * the wider input has. A column whose real type Cube doesn't know is warned
- * about. Concat has nothing to set until Convert types (M4.13); the panel
- * lists its problems.
+ * the wider input has. Its one setting, Convert types (Q5), converts types
+ * that differ within numbers, strings or dates to the type they share, shown
+ * in the table; when it would make the inputs match, the editor offers it. A
+ * column whose real type Cube doesn't know is warned about. The panel lists
+ * the problems.
  */
 export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
-  const { editorState, draft, inputSchemas, readOnly } = props;
+  const { editorState, inputSchemas, readOnly } = props;
   const { nodeEditor } = editorState;
+  const draft = guaranteeType(props.draft, CubeConcatDraft);
+  const { widenTypes } = draft;
   const [first, second] = inputSchemas as [Schema, Schema];
   const [firstLabel, secondLabel] = CONCAT_PORT_LABELS as [string, string];
   const { query } = editorState.document;
@@ -178,36 +200,76 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
     { length: Math.max(first.columns.length, second.columns.length) },
     (_, index) => index,
   );
-  const rename = planConcatRename(first, second);
-  const restrict = planConcatRestrict(first, second);
-  const [restricted, other] = (
+  // the fixes the store would make, with the setting as the panel has it
+  const rename = planConcatRename(first, second, widenTypes);
+  const restrict = planConcatRestrict(first, second, widenTypes);
+  const [restrictedInput, otherInput] = (
     restrict?.input === 1
       ? [secondLabel, firstLabel]
       : [firstLabel, secondLabel]
   ).map((label) => label.toLowerCase()) as [string, string];
-  // each column of either input whose real type Cube doesn't know, once
-  const untyped = [first, second].flatMap((schema, side) => {
+  // each column of either input whose real type Cube doesn't know
+  const untypedNames = [first, second].map((schema, side) => {
     const inputId = inputIds[side];
-    const label = side ? secondLabel : firstLabel;
-    return inputId === undefined
-      ? []
-      : schema.columns
-          .filter((column) =>
-            isUntypedColumn(
-              modelOutline,
-              query,
-              analysis,
-              inputId,
-              column.name,
+    return new Set(
+      inputId === undefined
+        ? []
+        : schema
+            .names()
+            .filter((name) =>
+              isUntypedColumn(modelOutline, query, analysis, inputId, name),
             ),
-          )
-          .map((column) => `${column.name} (${label.toLowerCase()} input)`);
+    );
+  }) as [Set<string>, Set<string>];
+  const untyped = [first, second].flatMap((schema, side) =>
+    schema
+      .names()
+      .filter((name) => untypedNames[side]?.has(name))
+      .map(
+        (name) =>
+          `${name} (${(side ? secondLabel : firstLabel).toLowerCase()} input)`,
+      ),
+  );
+  // each type that differs, which converting types would make match; never
+  // offered for a column whose real type Cube doesn't know, which the
+  // database may not convert
+  const converts = first.columns.flatMap((column, index) => {
+    const other = second.columns[index];
+    const converted = other && getConcatConvertedType(column.type, other.type);
+    return other && converted && !column.type.equals(other.type)
+      ? [{ column, other, converted }]
+      : [];
   });
+  const conversions =
+    !widenTypes &&
+    !validateConcatSchemas(first, second) &&
+    validateConcatSchemas(first, second, undefined, true) &&
+    converts.every(
+      ({ column, other }) =>
+        !untypedNames[0].has(column.name) && !untypedNames[1].has(other.name),
+    )
+      ? converts.map(
+          ({ column, other, converted }) =>
+            `${column.name}: ${column.type.displayName} and ${other.type.displayName} → ${converted.displayName}`,
+        )
+      : [];
   return (
     <div className="flex flex-col gap-2 text-base">
       <div className="text-[var(--color-text-secondary)]">
         {CONCAT_EDITOR_TEXT}
       </div>
+      <label
+        className="flex items-center gap-2"
+        title={CONCAT_CONVERT_TYPES_HINT}
+      >
+        <input
+          type="checkbox"
+          checked={widenTypes}
+          disabled={readOnly}
+          onChange={(event) => draft.setWidenTypes(event.target.checked)}
+        />
+        Convert types
+      </label>
       <table
         aria-label="Columns by position"
         className="w-full table-fixed border-collapse"
@@ -235,16 +297,30 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
                 column={first.columns[index]}
                 other={second.columns[index]}
                 otherLabel={secondLabel}
+                widenTypes={widenTypes}
               />
               <CubeConcatCell
                 column={second.columns[index]}
                 other={first.columns[index]}
                 otherLabel={firstLabel}
+                widenTypes={widenTypes}
               />
             </tr>
           ))}
         </tbody>
       </table>
+      {conversions.length > 0 && (
+        <CubeConcatFix
+          text={CONCAT_CONVERT_FIX_TEXT}
+          label="Types to convert"
+          changes={conversions}
+          button="Convert types"
+          title={CONCAT_CONVERT_FIX_TITLE}
+          readOnly={readOnly}
+          disabled={readOnly}
+          onFix={() => draft.setWidenTypes(true)}
+        />
+      )}
       {rename && (
         <CubeConcatFix
           text={CONCAT_RENAME_FIX_TEXT}
@@ -259,11 +335,11 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
       )}
       {restrict && (
         <CubeConcatFix
-          text={getConcatRestrictFixText(restricted, other)}
+          text={getConcatRestrictFixText(restrictedInput, otherInput)}
           label="Columns to drop"
           changes={restrict.dropped}
           button="Drop them"
-          title={getConcatRestrictFixTitle(restricted, other)}
+          title={getConcatRestrictFixTitle(restrictedInput, otherInput)}
           readOnly={readOnly}
           disabled={!nodeEditor.canRestrictConcatInput}
           onFix={() => nodeEditor.restrictConcatInput()}

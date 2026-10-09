@@ -16,7 +16,11 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
-import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
+import {
+  column,
+  enumColumn,
+  resolvedTable,
+} from '../../__test-utils__/CubeTestNodes.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -28,11 +32,15 @@ import { Restrict } from '../../nodes/transforms/Restrict.js';
 import { Sort, SortDirection } from '../../nodes/transforms/Sort.js';
 import { Schema, type SchemaColumn } from '../../schema/Schema.js';
 import { storeAccessor } from '../CubeIR.js';
-import { emitConcat } from '../emitters/ConcatEmitter.js';
+import {
+  CONCAT_CONVERTED_COLUMN_BASE,
+  emitConcat,
+} from '../emitters/ConcatEmitter.js';
 import { printIR } from '../IRPrinter.js';
 import { QueryEmitter, type RelationOptions } from '../QueryEmitter.js';
 
 const RUNTIME = 'test::Runtime';
+const P = 'meta::pure::precisePrimitives::';
 const ORDERS = '#>{test::Northwind.NORTHWIND.ORDERS}#';
 const ARCHIVE = '#>{test::Northwind.NORTHWIND.ARCHIVE}#';
 const HISTORY = '#>{test::Northwind.NORTHWIND.HISTORY}#';
@@ -357,20 +365,45 @@ describe(unitTest('Concat emission'), () => {
   });
 
   // types of different families, which no conversion makes match
-  test("Doesn't emit a Concat whose inputs have different types, whether or not it converts them", () => {
-    const freight = [...COLUMNS.slice(0, 3), column('FREIGHT', 'String')];
-    [new Concat('concat101'), new Concat('concat101', true)].forEach(
-      (concat) => {
-        const emitter = emitterOf(
-          concatOf([orders()], [archive(freight)], [], concat),
-        );
-        expect(emitter.canEmit('concat101')).toBe(false);
-        expect(() => emitter.emitRelation('concat101')).toThrow(
-          new Error(
-            `Can't emit node "concat101": it is invalid (Both input schemas must be identical. Column "FREIGHT" is Float in the first input and String in the second.)`,
-          ),
-        );
-      },
+  test.each<[string, Concat, string]>([
+    [
+      'when it converts no types',
+      new Concat('concat101'),
+      `Column "FREIGHT" is Float in the first input and String in the second.`,
+    ],
+    [
+      'when it converts types',
+      new Concat('concat101', true),
+      `Column "FREIGHT" is Float in the first input and String in the second, which can't be converted to one type.`,
+    ],
+  ])(
+    "Doesn't emit a Concat whose inputs have types of different families, %s",
+    (_, concat, message) => {
+      const freight = [...COLUMNS.slice(0, 3), column('FREIGHT', 'String')];
+      const emitter = emitterOf(
+        concatOf([orders()], [archive(freight)], [], concat),
+      );
+      expect(emitter.canEmit('concat101')).toBe(false);
+      expect(() => emitter.emitRelation('concat101')).toThrow(
+        new Error(
+          `Can't emit node "concat101": it is invalid (Both input schemas must be identical. ${message})`,
+        ),
+      );
+    },
+  );
+
+  test("Doesn't emit a Concat whose inputs' types convert when it converts no types", () => {
+    const emitter = emitterOf(
+      concatOf(
+        [orders()],
+        [archive([column('ORDER_ID', `${P}SmallInt`), ...COLUMNS.slice(1)])],
+      ),
+    );
+    expect(emitter.canEmit('concat101')).toBe(false);
+    expect(() => emitter.emitRelation('concat101')).toThrow(
+      new Error(
+        `Can't emit node "concat101": it is invalid (Both input schemas must be identical. Column "ORDER_ID" is Integer in the first input and SmallInt in the second.)`,
+      ),
     );
   });
 
@@ -480,4 +513,353 @@ describe(unitTest('Concat emission'), () => {
       `{| ${ORDERS}->concatenate(${ARCHIVE})->sort(~ORDER_ID->descending())->limit(1001)->from(${RUNTIME})}`,
     );
   });
+});
+
+describe(unitTest('Concat emission, converting types'), () => {
+  /** A Concat that converts types (Convert types, PLAN §11.5, Q5) */
+  const converting = (): Concat => new Concat('concat101', true);
+
+  /** ORDERS and ARCHIVE of these columns, concatenated by a Concat that converts types */
+  const convertingOf = (first: SchemaColumn[], second: SchemaColumn[]): Query =>
+    concatOf([orders(first)], [archive(second)], [], converting());
+
+  /** COLUMNS, with ORDER_ID a SmallInt */
+  const SMALL_ORDER_IDS = [
+    column('ORDER_ID', `${P}SmallInt`),
+    ...COLUMNS.slice(1),
+  ];
+
+  test('Names its temporary columns cube_cast, cube_cast2 and so on', () => {
+    expect(CONCAT_CONVERTED_COLUMN_BASE).toBe('cube_cast');
+  });
+
+  test("Converts only the input whose types differ from the node's, emitting the other as it is", () => {
+    // ORDER_ID is Integer in the node's schema, which ORDERS has
+    const query = convertingOf(COLUMNS, SMALL_ORDER_IDS);
+    const relation = emitterOf(query).emitRelation('concat101');
+    expect(printIR(relation)).toBe(
+      `${ORDERS}->concatenate(${ARCHIVE}->extend(~[cube_cast: x | $x.ORDER_ID->cast(@Integer)])->select(~[cube_cast, CUSTOMER_ID, SHIP_COUNTRY, FREIGHT])->rename(~cube_cast, ~ORDER_ID))`,
+    );
+    expect(listOrigins(relation)).toEqual([
+      'concatenate@concat101:concat',
+      `${ORDERS}@relational101:accessor`,
+      'rename@concat101:rename',
+      'select@concat101:select',
+      'extend@concat101:convert',
+      `${ARCHIVE}@relational102:accessor`,
+      'cast@concat101:cast',
+      '.ORDER_ID@concat101:convert',
+    ]);
+    // the first input converted, the second as it is
+    expect(print(convertingOf(SMALL_ORDER_IDS, COLUMNS))).toBe(
+      `${ORDERS}->extend(~[cube_cast: x | $x.ORDER_ID->cast(@Integer)])->select(~[cube_cast, CUSTOMER_ID, SHIP_COUNTRY, FREIGHT])->rename(~cube_cast, ~ORDER_ID)->concatenate(${ARCHIVE})`,
+    );
+  });
+
+  test('Converts each input that needs it with its own casts, several columns in one extend', () => {
+    // the node's schema: ORDER_ID Integer, SHIP_COUNTRY String, FREIGHT Float
+    const query = convertingOf(
+      [
+        column('ORDER_ID', `${P}SmallInt`),
+        column('CUSTOMER_ID', 'String'),
+        column('SHIP_COUNTRY', `${P}Varchar`, false, [15]),
+        column('FREIGHT', 'Float'),
+      ],
+      [
+        column('ORDER_ID'),
+        column('CUSTOMER_ID', 'String'),
+        column('SHIP_COUNTRY', `${P}Varchar`, true, [30]),
+        column('FREIGHT', `${P}Double`),
+      ],
+    );
+    const relation = emitterOf(query).emitRelation('concat101');
+    expect(printIR(relation)).toBe(
+      `${ORDERS}->extend(~[cube_cast: x | $x.ORDER_ID->cast(@Integer), cube_cast2: x | $x.SHIP_COUNTRY->cast(@String)])->select(~[cube_cast, CUSTOMER_ID, cube_cast2, FREIGHT])->rename(~cube_cast, ~ORDER_ID)->rename(~cube_cast2, ~SHIP_COUNTRY)` +
+        `->concatenate(${ARCHIVE}->extend(~[cube_cast: x | $x.SHIP_COUNTRY->cast(@String), cube_cast2: x | $x.FREIGHT->cast(@Float)])->select(~[ORDER_ID, CUSTOMER_ID, cube_cast, cube_cast2])->rename(~cube_cast, ~SHIP_COUNTRY)->rename(~cube_cast2, ~FREIGHT))`,
+    );
+    expect(listOrigins(relation)).toEqual([
+      'concatenate@concat101:concat',
+      'rename@concat101:rename',
+      'rename@concat101:rename',
+      'select@concat101:select',
+      'extend@concat101:convert',
+      `${ORDERS}@relational101:accessor`,
+      'cast@concat101:cast',
+      '.ORDER_ID@concat101:convert',
+      'cast@concat101:cast',
+      '.SHIP_COUNTRY@concat101:convert',
+      'rename@concat101:rename',
+      'rename@concat101:rename',
+      'select@concat101:select',
+      'extend@concat101:convert',
+      `${ARCHIVE}@relational102:accessor`,
+      'cast@concat101:cast',
+      '.SHIP_COUNTRY@concat101:convert',
+      'cast@concat101:cast',
+      '.FREIGHT@concat101:convert',
+    ]);
+  });
+
+  /** The input, its column C cast to the type: an input of ORDER_ID and C */
+  const castC = (input: string, target: string): string =>
+    `${input}->extend(~[cube_cast: x | $x.C->cast(@${target})])->select(~[ORDER_ID, cube_cast])->rename(~cube_cast, ~C)`;
+
+  test.each<[string, SchemaColumn, SchemaColumn, string, string]>([
+    [
+      'String for two Varchar lengths',
+      column('C', `${P}Varchar`, false, [15]),
+      column('C', `${P}Varchar`, false, [30]),
+      castC(ORDERS, 'String'),
+      castC(ARCHIVE, 'String'),
+    ],
+    [
+      'Integer for SmallInt and Int',
+      column('C', `${P}SmallInt`),
+      column('C', `${P}Int`),
+      castC(ORDERS, 'Integer'),
+      castC(ARCHIVE, 'Integer'),
+    ],
+    [
+      'Number for Int and Float4',
+      column('C', `${P}Int`),
+      column('C', `${P}Float4`),
+      castC(ORDERS, 'Number'),
+      castC(ARCHIVE, 'Number'),
+    ],
+    [
+      'Float for Float4 and Double',
+      column('C', `${P}Float4`),
+      column('C', `${P}Double`),
+      castC(ORDERS, 'Float'),
+      castC(ARCHIVE, 'Float'),
+    ],
+    [
+      // Decimal's path is its short name, as Integer's and String's are
+      'Decimal for two Numeric precisions',
+      column('C', `${P}Numeric`, false, [10, 2]),
+      column('C', `${P}Numeric`, false, [12, 4]),
+      castC(ORDERS, 'Decimal'),
+      castC(ARCHIVE, 'Decimal'),
+    ],
+    [
+      'Date for StrictDate and Timestamp',
+      column('C', 'StrictDate'),
+      column('C', `${P}Timestamp`),
+      castC(ORDERS, 'Date'),
+      castC(ARCHIVE, 'Date'),
+    ],
+    [
+      'String for a Varchar and String, only the Varchar cast',
+      column('C', `${P}Varchar`, false, [15]),
+      column('C', 'String'),
+      castC(ORDERS, 'String'),
+      ARCHIVE,
+    ],
+    [
+      'Integer for Integer and BigInt, only the BigInt cast',
+      column('C', 'Integer'),
+      column('C', `${P}BigInt`),
+      ORDERS,
+      castC(ARCHIVE, 'Integer'),
+    ],
+    [
+      'DateTime for DateTime and Timestamp, only the Timestamp cast',
+      column('C', 'DateTime'),
+      column('C', `${P}Timestamp`),
+      ORDERS,
+      castC(ARCHIVE, 'DateTime'),
+    ],
+  ])(
+    'Casts to %s by its path, with no parameters',
+    (_, firstColumn, secondColumn, first, second) => {
+      expect(
+        print(
+          convertingOf(
+            [column('ORDER_ID'), firstColumn],
+            [column('ORDER_ID'), secondColumn],
+          ),
+        ),
+      ).toBe(`${first}->concatenate(${second})`);
+    },
+  );
+
+  test.each<[string, SchemaColumn, SchemaColumn, string]>([
+    [
+      'a Varchar length',
+      column('C', `${P}Varchar`, false, [15]),
+      column('C', `${P}Varchar`, false, [40]),
+      `@${P}Varchar(40)`,
+    ],
+    [
+      'a Numeric precision and scale',
+      column('C', `${P}Numeric`, false, [10, 2]),
+      column('C', `${P}Numeric`, false, [12, 4]),
+      `@${P}Numeric(12, 4)`,
+    ],
+  ])(
+    "Keeps the parameters of a precise type in the node's schema: %s",
+    (_, firstColumn, secondColumn, target) => {
+      // emitted alone, for the schema it is given: inference gives no such
+      // schema, a precise type being no other's ancestor
+      const schema = new Schema([column('ORDER_ID'), secondColumn]);
+      expect(
+        printIR(
+          emitConcat(converting(), [ORDERS_ACCESSOR, ARCHIVE_ACCESSOR], {
+            inputSchemas: [
+              new Schema([column('ORDER_ID'), firstColumn]),
+              schema,
+            ],
+            schema,
+          }),
+        ),
+      ).toBe(
+        `${ORDERS}->extend(~[cube_cast: x | $x.C->cast(${target})])->select(~[ORDER_ID, cube_cast])->rename(~cube_cast, ~C)->concatenate(${ARCHIVE})`,
+      );
+    },
+  );
+
+  test('Gives a temporary column a name the input has in no case', () => {
+    // CUBE_CAST is cube_cast to a database that compares names without case
+    expect(
+      print(
+        convertingOf(
+          [column('CUBE_CAST'), column('C', `${P}Varchar`, false, [15])],
+          [column('CUBE_CAST'), column('C', `${P}Varchar`, false, [30])],
+        ),
+      ),
+    ).toBe(
+      `${ORDERS}->extend(~[cube_cast2: x | $x.C->cast(@String)])->select(~[CUBE_CAST, cube_cast2])->rename(~cube_cast2, ~C)` +
+        `->concatenate(${ARCHIVE}->extend(~[cube_cast2: x | $x.C->cast(@String)])->select(~[CUBE_CAST, cube_cast2])->rename(~cube_cast2, ~C))`,
+    );
+    // a converted column of the base name, and a name taken between two casts
+    expect(
+      print(
+        convertingOf(
+          [
+            column('cube_cast', `${P}Varchar`, false, [15]),
+            column('Cube_Cast2'),
+            column('B', `${P}SmallInt`),
+          ],
+          [
+            column('cube_cast', 'String'),
+            column('Cube_Cast2'),
+            column('B', 'Integer'),
+          ],
+        ),
+      ),
+    ).toBe(
+      `${ORDERS}->extend(~[cube_cast3: x | $x.cube_cast->cast(@String), cube_cast4: x | $x.B->cast(@Integer)])->select(~[cube_cast3, Cube_Cast2, cube_cast4])->rename(~cube_cast3, ~cube_cast)->rename(~cube_cast4, ~B)->concatenate(${ARCHIVE})`,
+    );
+  });
+
+  test("Emits an input as it is whose types are the node's, whatever its nullability or its enumeration's values", () => {
+    expect(
+      print(
+        convertingOf(
+          [
+            column('ORDER_ID'),
+            enumColumn('REGION', 'test::Region', ['EMEA', 'APAC']),
+            column('CITY', `${P}Varchar`, true, [15]),
+          ],
+          [
+            column('ORDER_ID', 'Integer', true),
+            enumColumn('REGION', 'test::Region', ['EMEA']),
+            column('CITY', `${P}Varchar`, false, [15]),
+          ],
+        ),
+      ),
+    ).toBe(`${ORDERS}->concatenate(${ARCHIVE})`);
+  });
+
+  test('Converts an input after its own sort and limit, which keep their place', () => {
+    const query = concatOf(
+      [orders()],
+      [
+        archive(SMALL_ORDER_IDS),
+        byOrderIdDesc('sort102'),
+        new Limit('limit102', 5),
+      ],
+      [],
+      converting(),
+    );
+    expect(print(query, { withRowOrder: true })).toBe(
+      `${ORDERS}->concatenate(${ARCHIVE}->sort(~ORDER_ID->descending())->limit(5)->extend(~[cube_cast: x | $x.ORDER_ID->cast(@Integer)])->select(~[cube_cast, CUSTOMER_ID, SHIP_COUNTRY, FREIGHT])->rename(~cube_cast, ~ORDER_ID))`,
+    );
+  });
+
+  test('Sorts the rows of a Sort after it by the converted column to run it', () => {
+    expect(
+      printIR(
+        emitterOf(
+          concatOf(
+            [orders()],
+            [archive(SMALL_ORDER_IDS)],
+            [byOrderIdDesc('sort101')],
+            converting(),
+          ),
+        ).emitExecutionLambda({ rowLimit: 1000, runtime: RUNTIME }),
+      ),
+    ).toBe(
+      `{| ${ORDERS}->concatenate(${ARCHIVE}->extend(~[cube_cast: x | $x.ORDER_ID->cast(@Integer)])->select(~[cube_cast, CUSTOMER_ID, SHIP_COUNTRY, FREIGHT])->rename(~cube_cast, ~ORDER_ID))->sort(~ORDER_ID->descending())->limit(1001)->from(${RUNTIME})}`,
+    );
+  });
+
+  test('Gives a Concat after it the converted types, which it needs no cast for', () => {
+    const query = new Query(
+      [
+        orders(SMALL_ORDER_IDS),
+        archive(),
+        converting(),
+        history(),
+        new Concat('concat102'),
+      ],
+      [
+        new Connection('relational101', 'concat101', 'tds1'),
+        new Connection('relational102', 'concat101', 'tds2'),
+        new Connection('concat101', 'concat102', 'tds1'),
+        new Connection('relational103', 'concat102', 'tds2'),
+      ],
+      'concat102',
+    );
+    expect(print(query)).toBe(
+      `${ORDERS}->extend(~[cube_cast: x | $x.ORDER_ID->cast(@Integer)])->select(~[cube_cast, CUSTOMER_ID, SHIP_COUNTRY, FREIGHT])->rename(~cube_cast, ~ORDER_ID)->concatenate(${ARCHIVE})->concatenate(${HISTORY})`,
+    );
+  });
+
+  test.each<[string, Schema, Schema, string]>([
+    [
+      'the first input names a column differently',
+      new Schema([
+        column('ORDER_ID', `${P}SmallInt`),
+        column('COUNTRY', `${P}Varchar`, false, [15]),
+      ]),
+      SCHEMA,
+      'Concat "concat101" input 1 has ORDER_ID, COUNTRY, but its schema is ORDER_ID, SHIP_COUNTRY',
+    ],
+    [
+      'the second input has a column fewer',
+      SCHEMA,
+      new Schema([column('ORDER_ID', `${P}SmallInt`)]),
+      'Concat "concat101" input 2 has ORDER_ID, but its schema is ORDER_ID, SHIP_COUNTRY',
+    ],
+    [
+      'the second input names a column in another case',
+      SCHEMA,
+      new Schema([
+        column('order_id', `${P}SmallInt`),
+        column('SHIP_COUNTRY', `${P}Varchar`, false, [15]),
+      ]),
+      'Concat "concat101" input 2 has order_id, SHIP_COUNTRY, but its schema is ORDER_ID, SHIP_COUNTRY',
+    ],
+  ])(
+    "Still refuses to emit inputs whose names don't come out as the node's schema, converting types: %s",
+    (_, first, second, message) => {
+      expect(() =>
+        emitConcat(converting(), [ORDERS_ACCESSOR, ARCHIVE_ACCESSOR], {
+          inputSchemas: [first, second],
+          schema: SCHEMA,
+        }),
+      ).toThrow(new Error(message));
+    },
+  );
 });

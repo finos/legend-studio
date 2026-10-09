@@ -33,11 +33,13 @@ import { Restrict } from './Restrict.js';
  * count, or no name differs, or a renamed column's name is the name of
  * another column of the first input (the same columns in another order:
  * renaming would move values silently), or the Rename itself isn't valid, or
- * the Concat still isn't (its types differ).
+ * the Concat still isn't (its types differ, or can't be converted when it
+ * converts types).
  */
 export const planConcatRename = (
   first: Schema,
   second: Schema,
+  widenTypes = false,
 ): RenameMapping[] | undefined => {
   const firstNames = first.names();
   const secondNames = second.names();
@@ -62,7 +64,7 @@ export const planConcatRename = (
   const renamed = rename.validate([second])
     ? rename.schematize([second])
     : undefined;
-  return renamed && validateConcatSchemas(first, renamed)
+  return renamed && validateConcatSchemas(first, renamed, undefined, widenTypes)
     ? mappings
     : undefined;
 };
@@ -96,11 +98,13 @@ const isInOrderIn = (
  * other input's columns, when those are all in it, by name and in the same
  * order. `undefined` when the inputs have as many columns, or the narrower
  * input has none, or its names aren't in the wider one in order, or the
- * Concat still isn't valid after it (its types differ).
+ * Concat still isn't valid after it (its types differ, or can't be converted
+ * when it converts types).
  */
 export const planConcatRestrict = (
   first: Schema,
   second: Schema,
+  widenTypes = false,
 ): ConcatRestrictFix | undefined => {
   const [firstNames, secondNames] = [first.names(), second.names()];
   if (firstNames.length === secondNames.length) {
@@ -121,6 +125,8 @@ export const planConcatRestrict = (
     !validateConcatSchemas(
       isFirstWider ? kept : first,
       isFirstWider ? second : kept,
+      undefined,
+      widenTypes,
     )
   ) {
     return undefined;
@@ -132,16 +138,24 @@ export const planConcatRestrict = (
   };
 };
 
-/** The ids of the concat's inputs, when it is a concat with both */
+/** A concat of a query, and the ids of its inputs */
+interface ConcatInputs {
+  readonly concat: Concat;
+  readonly firstId: string;
+  readonly secondId: string;
+}
+
+/** The concat and the ids of its inputs, when it is a concat with both */
 const concatInputs = (
   query: Query,
   concatId: string,
-): { firstId: string; secondId: string } | undefined => {
+): ConcatInputs | undefined => {
+  const concat = query.getNode(concatId);
   const [firstId, secondId] = query.getInputIds(concatId);
-  return query.getNode(concatId) instanceof Concat &&
+  return concat instanceof Concat &&
     firstId !== undefined &&
     secondId !== undefined
-    ? { firstId, secondId }
+    ? { concat, firstId, secondId }
     : undefined;
 };
 
@@ -154,21 +168,58 @@ const spliced = (query: Query, node: QueryNode, inputId: string): Query => {
     : fixed;
 };
 
+/** The Rename plan for the query's concat, with its setting, when it has both inputs */
+const planRename = (
+  query: Query,
+  concatId: string,
+  first: Schema | undefined,
+  second: Schema | undefined,
+):
+  | {
+      inputs: ConcatInputs;
+      mappings: RenameMapping[];
+    }
+  | undefined => {
+  const inputs = concatInputs(query, concatId);
+  const mappings =
+    inputs && first && second
+      ? planConcatRename(first, second, inputs.concat.widenTypes)
+      : undefined;
+  return inputs && mappings ? { inputs, mappings } : undefined;
+};
+
+/** The Restrict plan for the query's concat, with its setting, when it has both inputs */
+const planRestrict = (
+  query: Query,
+  concatId: string,
+  first: Schema | undefined,
+  second: Schema | undefined,
+):
+  | {
+      inputs: ConcatInputs;
+      fix: ConcatRestrictFix;
+    }
+  | undefined => {
+  const inputs = concatInputs(query, concatId);
+  const fix =
+    inputs && first && second
+      ? planConcatRestrict(first, second, inputs.concat.widenTypes)
+      : undefined;
+  return inputs && fix ? { inputs, fix } : undefined;
+};
+
 /**
  * Whether the concat can be fixed by a Rename before its second input
- * (`planConcatRename`). The schemas are its inputs', given by the caller, so
- * an editor can ask about the concat it is editing.
+ * (`planConcatRename`, with the concat's setting). The schemas are its
+ * inputs', given by the caller, so an editor can ask about the concat it is
+ * editing.
  */
 export const canRenameConcatInput = (
   query: Query,
   concatId: string,
   first: Schema | undefined,
   second: Schema | undefined,
-): boolean =>
-  concatInputs(query, concatId) !== undefined &&
-  first !== undefined &&
-  second !== undefined &&
-  planConcatRename(first, second) !== undefined;
+): boolean => planRename(query, concatId, first, second) !== undefined;
 
 /**
  * Fixes the concat as one change of the query: a Rename spliced in before its
@@ -181,33 +232,28 @@ export const renameConcatInput = (
   first: Schema | undefined,
   second: Schema | undefined,
 ): Query => {
-  const inputs = concatInputs(query, concatId);
-  const mappings =
-    first && second ? planConcatRename(first, second) : undefined;
-  if (!inputs || !mappings) {
+  const planned = planRename(query, concatId, first, second);
+  if (!planned) {
     throw new Error(`Can't rename the columns of concat "${concatId}"`);
   }
   return spliced(
     query,
-    new Rename(query.generateId(Rename.TYPE), mappings),
-    inputs.secondId,
+    new Rename(query.generateId(Rename.TYPE), planned.mappings),
+    planned.inputs.secondId,
   );
 };
 
 /**
  * Whether the concat can be fixed by a Restrict before its wider input
- * (`planConcatRestrict`). The schemas are its inputs', given by the caller.
+ * (`planConcatRestrict`, with the concat's setting). The schemas are its
+ * inputs', given by the caller.
  */
 export const canRestrictConcatInput = (
   query: Query,
   concatId: string,
   first: Schema | undefined,
   second: Schema | undefined,
-): boolean =>
-  concatInputs(query, concatId) !== undefined &&
-  first !== undefined &&
-  second !== undefined &&
-  planConcatRestrict(first, second) !== undefined;
+): boolean => planRestrict(query, concatId, first, second) !== undefined;
 
 /**
  * Fixes the concat as one change of the query: a Restrict spliced in before
@@ -221,11 +267,11 @@ export const restrictConcatInput = (
   first: Schema | undefined,
   second: Schema | undefined,
 ): Query => {
-  const inputs = concatInputs(query, concatId);
-  const fix = first && second ? planConcatRestrict(first, second) : undefined;
-  if (!inputs || !fix) {
+  const planned = planRestrict(query, concatId, first, second);
+  if (!planned) {
     throw new Error(`Can't restrict the columns of concat "${concatId}"`);
   }
+  const { inputs, fix } = planned;
   return spliced(
     query,
     new Restrict(query.generateId(Restrict.TYPE), fix.columns),

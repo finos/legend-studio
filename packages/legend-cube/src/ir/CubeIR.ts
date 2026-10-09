@@ -115,7 +115,7 @@ export type IRWithOrigin = Extract<IR, { readonly origin?: Origin }>;
 export enum EmitRole {
   /** a source's store accessor */
   ACCESSOR = 'accessor',
-  /** a Join's rename to a temporary name, and a Rename's renames */
+  /** a Join's rename to a temporary name, a Rename's renames, and a Concat's rename of a converted column back to its name */
   RENAME = 'rename',
   /** a Join: the join call and its join kind */
   JOIN = 'join',
@@ -131,7 +131,7 @@ export enum EmitRole {
   MERGE_KEY = 'mergeKey',
   /** a FULL Join: `coalesce` of the two keys */
   COALESCE = 'coalesce',
-  /** a FULL Join: `cast` of the merged key to the keys' common type */
+  /** a FULL Join: `cast` of the merged key to the keys' common type; a Concat that converts types: `cast` of a column to the type both inputs share */
   CAST = 'cast',
   /** a select: a Join's last, a Restrict's, and the one that drops a temporary column */
   SELECT = 'select',
@@ -157,6 +157,8 @@ export enum EmitRole {
   AGGREGATION = 'aggregation',
   /** a Concat: its concatenate call */
   CONCAT = 'concat',
+  /** a Concat that converts types: the extend of an input's converted columns, and the column each reads */
+  CONVERT = 'convert',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
   SORT = 'sort',
   /** a Sort: one of its keys, wherever the order is written */

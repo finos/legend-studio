@@ -212,10 +212,11 @@ const subqueries = (sql: string): string[] => {
 
 /**
  * ORDERS through the first nodes and a second ORDERS through the second,
- * concatenated by concat101 (its First and Second), then the nodes after it,
- * the last captured
+ * concatenated by concat101 (its First and Second), converting types or not,
+ * then the nodes after it, the last captured
  */
-const concatThen = (
+const concatThenWith = (
+  widenTypes: boolean,
   first: readonly QueryNode[],
   second: readonly QueryNode[],
   ...after: QueryNode[]
@@ -224,7 +225,7 @@ const concatThen = (
     [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), ...first],
     [northwindTable('relational102', 'ORDERS', ORDERS_COLUMNS), ...second],
   ];
-  const concat = new Concat('concat101');
+  const concat = new Concat('concat101', widenTypes);
   const chain = (nodes: readonly QueryNode[]): Connection[] =>
     nodes
       .slice(1)
@@ -254,6 +255,13 @@ const concatThen = (
     nodes.at(-1)?.id,
   );
 };
+
+/** Types must match */
+const concatThen = (
+  first: readonly QueryNode[],
+  second: readonly QueryNode[],
+  ...after: QueryNode[]
+): Query => concatThenWith(false, first, second, ...after);
 
 /** CUSTOMER_ID and ORDER_ID, the keys `byCustomerThenOrder` sorts by */
 const customerAndOrder = (id: string): Restrict =>
@@ -472,6 +480,23 @@ const SHAPES: [string, () => Query][] = [
           ['CUSTOMER_ID'],
           [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
         ),
+      ),
+  ],
+  [
+    // Convert types (M4.13, PLAN §11.5, Q5): SmallInt with Double gives
+    // Number, Varchar(40) with Varchar(15) String, cast in both inputs
+    'a Concat that converts types',
+    () =>
+      concatThenWith(
+        true,
+        [new Restrict('restrict101', ['ORDER_ID', 'SHIP_NAME'])],
+        [
+          new Restrict('restrict102', ['FREIGHT', 'SHIP_CITY']),
+          new Rename('rename102', [
+            { from: 'FREIGHT', to: 'ORDER_ID' },
+            { from: 'SHIP_CITY', to: 'SHIP_NAME' },
+          ]),
+        ],
       ),
   ],
 ];
@@ -785,6 +810,29 @@ describe('Database workarounds, as each database plans them', () => {
       );
       expect(sql).toContain('group by');
       expect(unionOf(sql)).not.toContain('group by');
+    },
+  );
+
+  /**
+   * The databases whose SQL casts a column of a Concat that converts types:
+   * none, as the casts are type-only (PLAN §11.5, Q5). Pinned so a change in
+   * the engine shows.
+   */
+  const CASTS_A_CONVERTED_COLUMN: readonly string[] = [];
+
+  test.each(DATABASE_TYPES)(
+    'Writes a Concat that converts types as one UNION ALL of its two inputs, with no SQL cast, on %s',
+    async (databaseType) => {
+      const sql = await planSql(
+        shapeNamed('a Concat that converts types'),
+        databaseType,
+      );
+      expect(sql.match(/\bunion\b/gu)).toEqual(['union']);
+      expect(sql).toContain('union all');
+      expect([databaseType, /\bcast\s*\(/u.test(sql)]).toEqual([
+        databaseType,
+        CASTS_A_CONVERTED_COLUMN.includes(databaseType),
+      ]);
     },
   );
 });

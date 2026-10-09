@@ -158,6 +158,14 @@ export const MESSAGE_CONCAT_COLUMN_TYPE = (
 ): string =>
   `Column ${quote(column)} is ${firstType} in the first input and ${secondType} in the second.`;
 
+/** Added by Cube: a column whose types a Concat that converts types can't convert to one type (PLAN §11.5, Q5) */
+export const MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE = (
+  column: string,
+  firstType: string,
+  secondType: string,
+): string =>
+  `Column ${quote(column)} is ${firstType} in the first input and ${secondType} in the second, which can't be converted to one type.`;
+
 // ---------------------------------------- Aggregations / sorts ----------------------------------------
 
 export const MESSAGE_AGGREGATION_FUNCTION_EMPTY =

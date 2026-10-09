@@ -81,6 +81,11 @@ interface ConformanceCase {
    * must say are nullable
    */
   widerNullable?: Readonly<Record<string, readonly string[]>>;
+  /**
+   * A Convert types case (M4.13): concat101's columns as Cube converts them,
+   * `<name> <type>`, `?` when nullable, so a case that stops converting shows
+   */
+  converted?: string;
 }
 
 const source = (
@@ -154,17 +159,18 @@ const armConnections = (arm: readonly QueryNode[]): Connection[] =>
 
 /**
  * relational101 through the first nodes and relational102 through the second,
- * concatenated by concat101 (its First and Second), then the nodes after it,
- * each feeding the next, captured at the last
+ * concatenated by concat101 (its First and Second), converting types or not,
+ * then the nodes after it, each feeding the next, captured at the last
  */
-const concatenated =
+const concatenatedWith =
+  (widenTypes: boolean) =>
   (
     first: readonly QueryNode[],
     second: readonly QueryNode[],
     ...after: QueryNode[]
   ) =>
   (sources: ReadonlyMap<string, RelationalTableSource>): Query => {
-    const concat = new Concat('concat101');
+    const concat = new Concat('concat101', widenTypes);
     const arms = [
       [source(sources, 'relational101'), ...first],
       [source(sources, 'relational102'), ...second],
@@ -187,6 +193,15 @@ const concatenated =
       nodes.at(-1)?.id,
     );
   };
+
+/** Types must match */
+const concatenated = concatenatedWith(false);
+
+/**
+ * Convert types (PLAN §11.5, Q5): a type that differs is cast, in either
+ * input, to the type both are
+ */
+const converting = concatenatedWith(true);
 
 /**
  * The registered types the open-source engine can't type, so with no case: a
@@ -230,6 +245,28 @@ const customerShipNames = (suffix: string): QueryNode[] => [
 ];
 const ordersByIdDesc = (): Sort =>
   new Sort('sort101', [{ column: 'ORDER_ID', direction: DESC }]);
+
+const ALLTYPES_SECOND: CaseTable = ['relational102', 'ALLTYPES', 'CUBETEST'];
+/**
+ * The columns, listed in their table's order, each renamed to the name at its
+ * position in `names` (a Restrict, then a Rename when a name changes), the
+ * nodes' ids ending in the suffix
+ */
+const keptAs = (
+  suffix: string,
+  columns: readonly string[],
+  names: readonly string[],
+): QueryNode[] => {
+  const mappings = columns.flatMap((from, index) => {
+    const to = names[index] as string;
+    return from === to ? [] : [{ from, to }];
+  });
+  return [
+    new Restrict(`restrict${suffix}`, columns),
+    ...(mappings.length ? [new Rename(`rename${suffix}`, mappings)] : []),
+  ];
+};
+const NUMBERED = ['N1', 'N2', 'N3'];
 
 /** The aggregations whose outputs the engine types as never null, though a group of empty values gives none (PLAN §5.7) */
 const NULLABLE_ONLY_TO_CUBE: readonly string[] = [
@@ -708,6 +745,236 @@ const CASES: readonly ConformanceCase[] = [
       );
     },
   },
+  // Convert types (M4.13, Q5): each differing type cast, in the input that
+  // has it, to the type both are, with no SQL cast
+  {
+    // the same columns: nothing to convert, the inputs as they are
+    name: 'concat-convert-same-types',
+    converted:
+      'COMPANY_NAME Varchar(40), CITY Varchar(15)?, COUNTRY Varchar(15)?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+      [new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+    ),
+  },
+  {
+    // two Varchar lengths give String, cast in both inputs; COMPANY_NAME, of
+    // one type in both, is left as it is
+    name: 'concat-convert-varchar-lengths',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      keptAs('102', ['COMPANY_NAME', 'CONTACT_NAME'], ['COMPANY_NAME', 'CITY']),
+    ),
+  },
+  {
+    // never empty in either input: String, not nullable
+    name: 'concat-convert-never-empty',
+    converted: 'CUSTOMER_ID String',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', ['CUSTOMER_ID'])],
+      keptAs('102', ['COMPANY_NAME'], ['CUSTOMER_ID']),
+    ),
+  },
+  {
+    // integer widths give Integer: Int with TinyInt (N1 nullable from the
+    // second input only), TinyInt with SmallInt, SmallInt with BigInt
+    name: 'concat-convert-integers',
+    converted: 'N1 Integer?, N2 Integer?, N3 Integer?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['ID', 'TI', 'SI'], NUMBERED),
+      keptAs('102', ['TI', 'SI', 'BI'], NUMBERED),
+    ),
+  },
+  {
+    // N1 nullable from the first input only
+    name: 'concat-convert-integers-reversed',
+    converted: 'N1 Integer?, N2 Integer?, N3 Integer?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['TI', 'SI', 'BI'], NUMBERED),
+      keptAs('102', ['ID', 'TI', 'SI'], NUMBERED),
+    ),
+  },
+  {
+    // an integer with a float, a float with a decimal: Number
+    name: 'concat-convert-numbers',
+    converted: 'P Number?, Q Number?, R Number?, S Number?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['ID', 'BI', 'F', 'D'], ['P', 'Q', 'R', 'S']),
+      keptAs('102', ['F', 'D', 'DEC', 'NUM'], ['P', 'Q', 'R', 'S']),
+    ),
+  },
+  {
+    // Float4 with Double: Float; two Numeric precisions: Decimal
+    name: 'concat-convert-floats-and-decimals',
+    converted: 'X Float?, Y Decimal?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['F', 'DEC'], ['X', 'Y']),
+      keptAs('102', ['D', 'NUM'], ['X', 'Y']),
+    ),
+  },
+  {
+    // StrictDate with Timestamp: Date
+    name: 'concat-convert-dates',
+    converted: 'WHEN Date?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['DT'], ['WHEN']),
+      keptAs('102', ['TS'], ['WHEN']),
+    ),
+  },
+  {
+    // StrictDate with DateTime (a Max of a Timestamp), Timestamp with
+    // StrictDate (a Min): Date
+    name: 'concat-convert-dates-of-a-group',
+    converted: 'WHEN Date?, AT Date?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(keptAs('101', ['DT', 'TS'], ['WHEN', 'AT']), [
+      new Group(
+        'group102',
+        [],
+        [
+          aggregation(AggregationFunction.MAX, 'TS', 'WHEN'),
+          aggregation(AggregationFunction.MIN, 'DT', 'AT'),
+        ],
+      ),
+    ]),
+  },
+  {
+    // a type next to its own ancestor, cast in the second input only: Integer
+    // (a Count) with SmallInt, DateTime (a Max of a Timestamp) with Timestamp;
+    // ID, an Int in both, left as it is
+    name: 'concat-convert-in-one-input',
+    converted: 'ID Int, N Integer?, LAST DateTime?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      [
+        new Group(
+          'group101',
+          ['ID'],
+          [
+            aggregation(AggregationFunction.COUNT_ROWS, undefined, 'N'),
+            aggregation(AggregationFunction.MAX, 'TS', 'LAST'),
+          ],
+        ),
+      ],
+      keptAs('102', ['ID', 'SI', 'TS'], ['ID', 'N', 'LAST']),
+    ),
+  },
+  {
+    // the temporary columns' names avoid the input's in any case: a column
+    // CUBE_CAST, left as it is, and two cast before it
+    name: 'concat-convert-temporary-names',
+    converted: 'A Integer?, B Integer?, CUBE_CAST Varchar(20)?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['TI', 'SI', 'VC'], ['A', 'B', 'CUBE_CAST']),
+      keptAs('102', ['SI', 'BI', 'VC'], ['A', 'B', 'CUBE_CAST']),
+    ),
+  },
+  {
+    // and the names of the columns cast themselves
+    name: 'concat-convert-columns-named-as-temporaries',
+    converted: 'cube_cast Integer?, cube_cast2 Integer?',
+    tables: [ALLTYPES, ALLTYPES_SECOND],
+    build: converting(
+      keptAs('101', ['TI', 'SI'], ['cube_cast', 'cube_cast2']),
+      keptAs('102', ['SI', 'BI'], ['cube_cast', 'cube_cast2']),
+    ),
+  },
+  {
+    // a Concat that converts types, of one that does: ORDERS' SHIP_CITY, a
+    // Varchar(15), cast to concat101's String in its input only
+    name: 'concat-convert-of-a-concat',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS, ['relational103', 'ORDERS']],
+    build: (sources) => {
+      const inner = converting(
+        [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+        keptAs(
+          '102',
+          ['COMPANY_NAME', 'CONTACT_NAME'],
+          ['COMPANY_NAME', 'CITY'],
+        ),
+      )(sources);
+      const orders = [
+        source(sources, 'relational103'),
+        ...keptAs('103', ['SHIP_NAME', 'SHIP_CITY'], ['COMPANY_NAME', 'CITY']),
+      ];
+      const outer = new Concat('concat102', true);
+      return new Query(
+        [...inner.nodes, ...orders, outer],
+        [
+          ...inner.connections,
+          ...armConnections(orders),
+          new Connection('concat101', outer.id, outer.ports[0] as string),
+          new Connection(
+            (orders.at(-1) as QueryNode).id,
+            outer.id,
+            outer.ports[1] as string,
+          ),
+        ],
+        outer.id,
+      );
+    },
+  },
+  {
+    // the String a Filter, a Group and a Sort after it see
+    name: 'concat-convert-then-operations',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: converting(
+      [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+      keptAs('102', ['COMPANY_NAME', 'CONTACT_NAME'], ['COMPANY_NAME', 'CITY']),
+      new Filter(
+        'filter101',
+        new ColumnComparisonFilter('CITY', FilterOperator.IS_NOT_EMPTY),
+      ),
+      new Group(
+        'group101',
+        ['CITY'],
+        [aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n')],
+      ),
+      new Sort('sort101', [{ column: 'CITY', direction: ASC }]),
+    ),
+  },
+  {
+    // M4.12's Rename, offered once the types convert: CONTACT_NAME as CITY
+    name: 'concat-convert-autofix-rename',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: (sources) =>
+      withConcatFix(renameConcatInput)(
+        converting(
+          [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+          [new Restrict('restrict102', ['COMPANY_NAME', 'CONTACT_NAME'])],
+        )(sources),
+      ),
+  },
+  {
+    // and M4.12's Restrict, dropping SUPPLIER_ID
+    name: 'concat-convert-autofix-restrict',
+    converted: 'COMPANY_NAME Varchar(40), CITY String?',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: (sources) =>
+      withConcatFix(restrictConcatInput)(
+        converting(
+          [new Restrict('restrict101', ['COMPANY_NAME', 'CITY'])],
+          keptAs(
+            '102',
+            ['SUPPLIER_ID', 'COMPANY_NAME', 'CONTACT_NAME'],
+            ['SUPPLIER_ID', 'COMPANY_NAME', 'CITY'],
+          ),
+        )(sources),
+      ),
+  },
 ];
 
 /** Every case's tables, not resolved: enough to see the node types */
@@ -818,5 +1085,46 @@ describe('Cube inference against the engine', () => {
         });
       }),
     ).toEqual([]);
+  });
+
+  test('Gives every case whose Concat converts types the types it names', async () => {
+    const resolved = await resolveAll();
+    const registry = createNodeRegistry();
+    const columnsOf = (schema: Schema | undefined): string | undefined =>
+      schema?.columns
+        .map(
+          ({ name, type, nullable }) =>
+            `${name} ${type.displayName}${nullable ? '?' : ''}`,
+        )
+        .join(', ');
+    expect(
+      Object.fromEntries(
+        CASES.flatMap((conformanceCase) => {
+          const query = conformanceCase.build(
+            resolved.get(conformanceCase.name) ?? new Map(),
+          );
+          const concat = query.getNode('concat101');
+          return concat instanceof Concat && concat.widenTypes
+            ? [
+                [
+                  conformanceCase.name,
+                  columnsOf(
+                    buildSchemasAndValidity(
+                      query,
+                      registry.queryRules,
+                    ).schemas.get(concat.id),
+                  ),
+                ],
+              ]
+            : [];
+        }),
+      ),
+    ).toEqual(
+      Object.fromEntries(
+        CASES.flatMap(({ name, converted }) =>
+          converted === undefined ? [] : [[name, converted]],
+        ),
+      ),
+    );
   });
 });

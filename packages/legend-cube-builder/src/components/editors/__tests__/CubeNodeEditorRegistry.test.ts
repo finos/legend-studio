@@ -15,13 +15,14 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { createNodeRegistry, UnknownNode } from '@finos/legend-cube';
+import { Concat, createNodeRegistry, UnknownNode } from '@finos/legend-cube';
 import {
   CUBE_NODE_HELP_TEXT,
   SELECT_NODE_TOOLTIP,
 } from '../../../__lib__/LegendCubeHelpText.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import { CubeConcatDraft } from '../../../stores/editors/CubeConcatDraft.js';
 import {
   CUBE_NODE_DRAFT_FACTORIES,
   CUBE_NODE_TYPES_WITHOUT_SETTINGS,
@@ -102,11 +103,22 @@ describe('Node editor registries', () => {
   );
 
   test('Has no draft for a transform with nothing to set, only an editor', () => {
-    expect(CUBE_NODE_TYPES_WITHOUT_SETTINGS).toEqual(['distinct', 'concat']);
+    expect(CUBE_NODE_TYPES_WITHOUT_SETTINGS).toEqual(['distinct']);
     CUBE_NODE_TYPES_WITHOUT_SETTINGS.forEach((type) => {
       expect(registry.get(type)?.kind).toBe('transform');
       expect(CUBE_NODE_DRAFT_FACTORIES.has(type)).toBe(false);
       expect(CUBE_NODE_EDITORS.has(type)).toBe(true);
+    });
+  });
+
+  test('Gives a Concat a draft of its Convert types setting (PLAN §11.5, Q5)', () => {
+    const state = new CubeEditorState(TEST__createCubeHost().host);
+    [false, true].forEach((widenTypes) => {
+      const concat = new Concat('concat101', widenTypes);
+      const draft = CUBE_NODE_DRAFT_FACTORIES.get(Concat.TYPE)?.(concat, state);
+      expect(draft).toBeInstanceOf(CubeConcatDraft);
+      expect((draft as CubeConcatDraft).original).toBe(concat);
+      expect((draft as CubeConcatDraft).widenTypes).toBe(widenTypes);
     });
   });
 

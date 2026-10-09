@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                                                             |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644                                |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                                 |
-| Step   | M4.1–M4.12 done (Group complete; Concat in the core, the builder, on the engine and the databases, its autofixes); **M4.13 next** (Convert types), then the PR is marked ready (user, 2026-10-09) |
-| Tests  | 2345 core, 1026 builder (core group), 241 Query, 387 builder engine-roundtrip (after M4.12)                                                                                                       |
+| Item   | State                                                                                                                                                                                  |
+| ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644                     |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                      |
+| Step   | M4.1–M4.13 done (Group and Concat complete, Convert types included); the PR is marked ready; M4.14's guides, M4.15, M4.16 and M4.17's folding follow on the open PR (user, 2026-10-09) |
+| Tests  | 2485 core, 1061 builder (core group), 241 Query, 415 builder engine-roundtrip (after M4.13)                                                                                            |
 
 ## Steps
 
@@ -31,7 +31,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.10** Concat in the builder, and registered
 - [x] **M4.11** Concat on the engine and around the databases
 - [x] **M4.12** Concat's Rename and Restrict autofixes
-- [ ] **M4.13** Concat's Convert types setting
+- [x] **M4.13** Concat's Convert types setting
 - [ ] **M4.14** Docs and changeset
 - [ ] **M4.15** Verification and the browser rehearsal
 - [ ] **M4.16** A demo video of M4's features, as for M1 and M2 (PLAN §11.3)
@@ -58,7 +58,8 @@ Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the 
 | Rebase     | `ccadc49b4` | test: leave data product sources out of Legend Cube's conformance guard     |
 | Rebase     | `8ae0cadff` | docs: record Legend Cube M4's rebase on master                              |
 | M4.11      | `a997a5cc1` | test: run Legend Cube's Concat on the engine and plan it on each database   |
-| M4.12      | (this one)  | feat: add Concat's Rename and Restrict autofixes to Legend Cube             |
+| M4.12      | `f277ee542` | feat: add Concat's Rename and Restrict autofixes to Legend Cube             |
+| M4.13      | (this one)  | feat: add Concat's Convert types setting to Legend Cube                     |
 
 ## Step notes
 
@@ -265,6 +266,24 @@ core (67), the store (21), the editor (12). Mutants: 65, 53 killed; of the 12 su
 that Rename, Restrict or the validity check repeat, and buttons whose disabled state matches read-only whenever the
 editor shows), S04 (the store passing the schemas swapped) is killed by a new test, and S03 and S08 (the fix not made
 from the panel's edits) can't be seen until Concat has a draft (M4.13).
+
+**M4.13, Convert types (2026-10-09).** `getConcatConvertedType` (`Concat.ts`): a type itself, else the least common
+ancestor (String for Varchar lengths, Integer for SmallInt and Int, Number for Int and Float4, Decimal for two Numeric
+precisions, Date for StrictDate and Timestamp), never across numbers, strings and dates, enumerations or opaque types.
+With `widenTypes`, validation accepts such types and reports the others with `MESSAGE_CONCAT_COLUMN_NOT_CONVERTIBLE`;
+the schema has the converted types. The emitter casts each input's differing columns, type-only:
+`->extend(~[cube_cast: x|$x.<c>->cast(@<T>), …])->select(~[…])->rename(~cube_cast, ~<c>)…` (roles `convert`, `cast`,
+`select`, `rename`). The autofixes plan with the Concat's setting. Builder: `CubeConcatDraft` (Convert types, so Concat
+now has Apply and Cancel; M4.10's widening of the panel's Problems is reverted, no transform without settings having
+any), the editor's checkbox, converted types shown in the table ('Varchar(15)? → String'), and an offer to tick it when
+that makes the inputs match, never for an untyped column (H2 failed converting one, review). Engine: 16 conformance
+cases, every converted type exact; runs on H2 (TinyInt and SmallInt, Varchar lengths, StrictDate and Timestamp as
+midnight timestamps, Int with Float4, BigInt with Double kept exact, a row's values kept together beside a column named
+CUBE_CAST, the Rename autofix once it converts); all 19 database types plan it as one UNION ALL with no SQL cast.
+Browser (:9002): Varchar(15) and Varchar(30) to String, applied, 120 rows. Tests by workflow `m413-tests-verify` (run
+`wf_0ffa5a38-3f1`, 5 agents). Review: the untyped offer (fixed and pinned), PLAN's bullet (updated), and a converted
+Date comparing as timestamps downstream (open, for the user). Mutants: 78, 74 killed; 3 equivalent, E02e (converted
+types shown where names differ) killed by a new test, as is the untyped offer's guard.
 
 **After M4.13 (user, 2026-10-09):** the PR is marked ready for review once the changeset and description are updated
 and every gate is green; M4.15's verification, M4.16's video and later checks follow as fixes on the open PR.

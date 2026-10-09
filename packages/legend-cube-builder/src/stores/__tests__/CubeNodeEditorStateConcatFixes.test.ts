@@ -26,6 +26,7 @@ import {
   Restrict,
   SchemaColumn,
 } from '@finos/legend-cube';
+import { guaranteeType } from '@finos/legend-shared';
 import { runInAction } from 'mobx';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
@@ -36,6 +37,7 @@ import {
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeEditorState } from '../CubeEditorState.js';
+import { CubeConcatDraft } from '../editors/CubeConcatDraft.js';
 
 // The node editor's Concat autofixes (PLAN §11.5, Q6; requirement C-17): a
 // Rename before the second input, or a Restrict before the wider one, each
@@ -80,12 +82,13 @@ const ordersAs = (renames: [string, string][]): QueryNode[] =>
       .map(([from, to]) => ({ from, to })),
   );
 
-/** concat101 of the two inputs, on its First and Second, captured at the concat */
+/** concat101 of the two inputs, on its First and Second, captured at the concat, converting types when asked */
 const concatOf = (
   first: readonly QueryNode[],
   second: readonly QueryNode[],
+  widenTypes = false,
 ): Query => {
-  const concat = new Concat('concat101');
+  const concat = new Concat('concat101', widenTypes);
   return new Query(
     [...first, ...second, concat],
     [first, second].flatMap((nodes, side) =>
@@ -576,5 +579,172 @@ describe('The node editor, offering no fix for a concat', () => {
       (state.document.query.getNode('concat101') as Concat).widenTypes,
     ).toBe(true);
     expect(state.history).toHaveLength(2);
+  });
+});
+
+describe('The node editor, fixing a concat with Convert types ticked in the panel', () => {
+  // A fix is made from the query with the panel's edits applied (PLAN §11.5,
+  // Q6), so a fix valid only once the panel's Convert types is ticked (Q5)
+  // is offered then, and stores the setting with it
+
+  const CONTACT_CITY_COUNTRY = ['CONTACT_NAME', 'CITY', 'COUNTRY'];
+
+  /**
+   * CONTACT_NAME is Varchar(30) in the first input, and the second input's
+   * SHIP_NAME, a Varchar(40), is at its position: a Rename leaves the types
+   * differing, which only converting types allows
+   */
+  const shipNameUnrenamed = (widenTypes = false): Query =>
+    concatOf(
+      customers(CONTACT_CITY_COUNTRY),
+      ordersAs([
+        ['SHIP_NAME', 'SHIP_NAME'],
+        ['SHIP_CITY', 'CITY'],
+        ['SHIP_COUNTRY', 'COUNTRY'],
+      ]),
+      widenTypes,
+    );
+
+  /**
+   * The second input has ORDER_ID before the first input's columns, its
+   * CONTACT_NAME a Varchar(40) where the first's is a Varchar(30): a Restrict
+   * leaves the types differing, which only converting types allows
+   */
+  const orderIdToo = (widenTypes = false): Query =>
+    concatOf(
+      customers(CONTACT_CITY_COUNTRY),
+      ordersAs([
+        ['ORDER_ID', 'ORDER_ID'],
+        ['SHIP_NAME', 'CONTACT_NAME'],
+        ['SHIP_CITY', 'CITY'],
+        ['SHIP_COUNTRY', 'COUNTRY'],
+      ]),
+      widenTypes,
+    );
+
+  const draftOf = (state: CubeEditorState): CubeConcatDraft =>
+    guaranteeType(state.nodeEditor.draft, CubeConcatDraft);
+
+  const storedConcat = (state: CubeEditorState): Concat =>
+    state.document.query.getNode('concat101') as Concat;
+
+  test('Offers the Rename only once Convert types is ticked, and stores both as one undo step', () => {
+    const state = openConcat(shipNameUnrenamed());
+    expect(state.nodeEditor.canRenameConcatInput).toBe(false);
+    draftOf(state).setWidenTypes(true);
+    expect(state.nodeEditor.hasChanges).toBe(true);
+    expect(state.nodeEditor.canRenameConcatInput).toBe(true);
+    expect(state.nodeEditor.canRestrictConcatInput).toBe(false);
+    // offering it changes nothing
+    expect(state.history).toHaveLength(0);
+    expect(storedConcat(state).widenTypes).toBe(false);
+    const before = state.document.query;
+    state.nodeEditor.renameConcatInput();
+    const { query } = state.document;
+    // the concat as the panel had it, and the Rename before its second input
+    expect(storedConcat(state).widenTypes).toBe(true);
+    expect(query.nodes).toHaveLength(before.nodes.length + 1);
+    expect(query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'rename103',
+    ]);
+    expect(query.getInputIds('rename103')).toEqual(['rename102']);
+    expect((query.getNode('rename103') as Rename).mappings).toEqual([
+      { from: 'SHIP_NAME', to: 'CONTACT_NAME' },
+    ]);
+    expect(
+      before.nodes
+        .filter((node) => node.id !== 'concat101')
+        .every((node) => query.getNode(node.id) === node),
+    ).toBe(true);
+    expect(state.analysis.validity.get('concat101')).toEqual([]);
+    const schema = state.analysis.schemas.get('concat101');
+    expect(schema?.names()).toEqual(CONTACT_CITY_COUNTRY);
+    expect(schema?.columns[0]?.type.fullName).toBe('String');
+    // one undo step, the cube before it
+    expect(state.history).toHaveLength(1);
+    expect(state.history.at(-1)?.query === before).toBe(true);
+    expect(query.selected).toBe('concat101');
+    // the panel goes on, on the stored concat, its setting ticked, nothing to apply
+    expectPanelOnConcat(state);
+    expect(draftOf(state).widenTypes).toBe(true);
+    expect(state.nodeEditor.canRenameConcatInput).toBe(false);
+    // Undo takes both out, the panel following
+    state.undo();
+    expect(state.document.query.getNode('rename103')).toBeUndefined();
+    expect(storedConcat(state).widenTypes).toBe(false);
+    expectPanelOnConcat(state);
+    expect(draftOf(state).widenTypes).toBe(false);
+    expect(state.nodeEditor.canRenameConcatInput).toBe(false);
+  });
+
+  test('Offers the Restrict only once Convert types is ticked, and stores both as one undo step', () => {
+    const state = openConcat(orderIdToo());
+    expect(state.nodeEditor.canRestrictConcatInput).toBe(false);
+    draftOf(state).setWidenTypes(true);
+    expect(state.nodeEditor.canRestrictConcatInput).toBe(true);
+    expect(state.nodeEditor.canRenameConcatInput).toBe(false);
+    expect(state.history).toHaveLength(0);
+    const before = state.document.query;
+    state.nodeEditor.restrictConcatInput();
+    const { query } = state.document;
+    expect(storedConcat(state).widenTypes).toBe(true);
+    expect(query.nodes).toHaveLength(before.nodes.length + 1);
+    expect(query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'restrict103',
+    ]);
+    expect(query.getInputIds('restrict103')).toEqual(['rename102']);
+    expect((query.getNode('restrict103') as Restrict).columns).toEqual(
+      CONTACT_CITY_COUNTRY,
+    );
+    expect(state.analysis.validity.get('concat101')).toEqual([]);
+    expect(state.history).toHaveLength(1);
+    expect(state.history.at(-1)?.query === before).toBe(true);
+    expectPanelOnConcat(state);
+    expect(draftOf(state).widenTypes).toBe(true);
+    expect(state.nodeEditor.canRestrictConcatInput).toBe(false);
+    state.undo();
+    expect(state.document.query.getNode('restrict103')).toBeUndefined();
+    expect(storedConcat(state).widenTypes).toBe(false);
+    expectPanelOnConcat(state);
+    expect(state.nodeEditor.canRestrictConcatInput).toBe(false);
+  });
+
+  test.each([
+    { fix: 'Rename', query: shipNameUnrenamed },
+    { fix: 'Restrict', query: orderIdToo },
+  ])(
+    'Withdraws the $fix a stored Convert types allows once the panel unticks it',
+    ({ query }) => {
+      const state = openConcat(query(true));
+      const { nodeEditor } = state;
+      const canFix = (): boolean =>
+        nodeEditor.canRenameConcatInput || nodeEditor.canRestrictConcatInput;
+      expect(state.analysis.validity.get('concat101')).toHaveLength(2);
+      expect(canFix()).toBe(true);
+      draftOf(state).setWidenTypes(false);
+      expect(nodeEditor.hasChanges).toBe(true);
+      expectNoFix(state);
+      // ticked back, it is offered again
+      draftOf(state).setWidenTypes(true);
+      expect(nodeEditor.hasChanges).toBe(false);
+      expect(canFix()).toBe(true);
+    },
+  );
+
+  test('Makes a fix the stored setting allows without changing the setting', () => {
+    const state = openConcat(shipNameUnrenamed(true));
+    const concat = storedConcat(state);
+    expect(state.nodeEditor.hasChanges).toBe(false);
+    state.nodeEditor.renameConcatInput();
+    // the concat is the very one stored, as the panel had nothing to apply
+    expect(storedConcat(state) === concat).toBe(true);
+    expect(state.document.query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'rename103',
+    ]);
+    expect(state.history).toHaveLength(1);
+    expectPanelOnConcat(state);
   });
 });
