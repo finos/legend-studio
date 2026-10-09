@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-cube",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Legend Cube core: the host-free domain model of the Legend Cube query builder",
   "keywords": [
     "legend",

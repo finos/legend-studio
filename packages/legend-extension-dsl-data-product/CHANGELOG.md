@@ -1,5 +1,11 @@
 # @finos/legend-extension-dsl-data-product
 
+## 0.1.5
+
+### Patch Changes
+
+- [#5635](https://github.com/finos/legend-studio/pull/5635) [`8e9cc0e`](https://github.com/finos/legend-studio/commit/8e9cc0ece7e55589e82c4ac7719b8bf27d1bf83d) ([@TharunRajeev](https://github.com/TharunRajeev)) - Modified Request Viewer header for Invalidation Requests.
+
 ## 0.1.4
 
 ### Patch Changes

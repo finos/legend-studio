@@ -1,5 +1,11 @@
 # @finos/legend-application-studio
 
+## 28.21.50
+
+### Patch Changes
+
+- [#5639](https://github.com/finos/legend-studio/pull/5639) [`2389939`](https://github.com/finos/legend-studio/commit/23899390fd68c22c8a120e9280c73d03411b4955) ([@MauricioUyaguari](https://github.com/MauricioUyaguari)) - Updated project package versions
+
 ## 28.21.49
 
 ### Patch Changes

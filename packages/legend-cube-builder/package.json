@@ -1,6 +1,6 @@
 {
   "name": "@finos/legend-cube-builder",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Legend Cube builder: the canvas UI and the Legend engine adapter of the Legend Cube query builder",
   "keywords": [
     "legend",
