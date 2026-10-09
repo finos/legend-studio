@@ -65,7 +65,7 @@ describe("A data product access point's warnings", () => {
 
   test('Offers another warehouse only where the warehouse can be changed', () => {
     expect(getCubeWarehouseErrorHint('SALES_WH', true)).toBe(
-      "The run couldn't use the warehouse SALES_WH. Pick another one in a data product source's panel.",
+      "The run couldn't use the warehouse SALES_WH. Pick another one in a source's panel.",
     );
     expect(getCubeWarehouseErrorHint('SALES_WH', false)).toBe(
       "The run couldn't use the warehouse SALES_WH.",

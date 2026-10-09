@@ -19,6 +19,7 @@ import {
   Connection,
   CubeDocument,
   type DataProductAccessPointSource,
+  IngestDatasetSource,
   Join,
   type ModelContext,
   Query,
@@ -32,6 +33,12 @@ import {
 } from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
+  createFakeCubeIngestCatalog,
+  FAKE_INGEST_ORDERS,
+  FAKE_INGEST_TRADES_SCHEMA,
+  fakeIngestUrnOf,
+} from '../../__test-utils__/FakeCubeIngestCatalog.js';
+import {
   createCubeDataProductModel,
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CUBE_DEFAULT_CONSUMER_WAREHOUSE,
@@ -42,6 +49,10 @@ import {
   CubeEngineErrorKind,
   type CubeResult,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  createCubeIngestModel,
+  CUBE_INGEST_RUNTIME_PATH,
+} from '../../graph-manager/CubeIngest.js';
 import {
   classifyCubeDataProductRunError,
   CubeDataProductRunErrorKind,
@@ -113,6 +124,45 @@ const deferred = <T>(): {
     reject = onReject;
   });
   return { promise, reject };
+};
+
+/** An ingest cube of one data set, TRADES, on its own warehouse if given */
+const ingestCubeOf = (warehouse?: string): CubeDocument =>
+  new CubeDocument({
+    context: {
+      model: createCubeIngestModel({
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        producerDeploymentId: '1234',
+        warehouse,
+      }),
+      runtime: CUBE_INGEST_RUNTIME_PATH,
+    },
+    query: new Query(
+      [
+        new IngestDatasetSource(
+          'ingestDataset101',
+          {
+            ingestDefinitionUrn: fakeIngestUrnOf(FAKE_INGEST_ORDERS),
+            ingestDefinition: FAKE_INGEST_ORDERS,
+            dataSet: 'TRADES',
+          },
+          { kind: 'resolved', schema: FAKE_INGEST_TRADES_SCHEMA },
+        ),
+      ],
+      [],
+      'ingestDataset101',
+    ),
+  });
+
+const setUpIngestCube = (
+  warehouse?: string,
+): ReturnType<typeof TEST__createCubeHost> & { state: CubeEditorState } => {
+  const created = TEST__createCubeHost();
+  const state = new CubeEditorState(
+    { ...created.host, ingestCatalog: createFakeCubeIngestCatalog().catalog },
+    ingestCubeOf(warehouse),
+  );
+  return { ...created, state };
 };
 
 beforeEach(() => {
@@ -471,6 +521,74 @@ describe("A data product cube's warehouse", () => {
     ).toEqual(['Request access']);
     // no marketplace, no link
     dataProducts.getMarketplaceLink.mockReturnValue(undefined);
+    expect(state.dataProductRuntime.accessRequestLinks).toEqual([]);
+  });
+});
+
+describe("An ingest cube's warehouse", () => {
+  test("Is the cube's own, else the one the viewer last picked, else the default, and is edited as one undo step that keeps the rest of the model", () => {
+    const { state } = setUpIngestCube();
+    const runtime = state.dataProductRuntime;
+    expect(runtime.effectiveWarehouse).toBe(CUBE_DEFAULT_CONSUMER_WAREHOUSE);
+    runtime.remember('VIEWER_WH');
+    expect(runtime.effectiveWarehouse).toBe('VIEWER_WH');
+    expect(runtime.canEditWarehouse).toBe(true);
+    expect(runtime.setWarehouse(' NEW_WH ')).toBe(true);
+    expect(state.document.context).toEqual({
+      model: createCubeIngestModel({
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+        producerDeploymentId: '1234',
+        warehouse: 'NEW_WH',
+      }),
+      runtime: CUBE_INGEST_RUNTIME_PATH,
+    });
+    expect(state.history).toHaveLength(1);
+    expect(rememberedIn(state)).toBe('NEW_WH');
+    expect(runtime.setWarehouse('NEW_WH')).toBe(false);
+    // the project, its version and the marketplace are a data product cube's
+    expect(runtime.project).toBeUndefined();
+    expect(runtime.isSnapshot).toBe(false);
+  });
+
+  test('Marks rows stale when Undo brings back the cube without a warehouse of its own, which now runs on the newer remembered one', async () => {
+    const { state, fake } = setUpIngestCube();
+    state.dataProductRuntime.remember('VIEWER_WH');
+    fake.execute.mockResolvedValueOnce(answerFor(state));
+    await flowResult(state.execution.execute());
+    expect(state.execution.result?.warehouse).toBe('VIEWER_WH');
+    expect(state.execution.isStale).toBe(false);
+    state.dataProductRuntime.setWarehouse('NEW_WH');
+    expect(state.execution.isStale).toBe(true);
+    state.undo();
+    expect(state.document.context?.model.warehouse).toBeUndefined();
+    expect(state.dataProductRuntime.effectiveWarehouse).toBe('NEW_WH');
+    expect(state.execution.isStale).toBe(true);
+  });
+
+  test('Reads a run refused for its warehouse, which offers no access request', async () => {
+    const { state, fake } = setUpIngestCube('CUBE_WH');
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'SQL compilation error:\nNo active warehouse selected in the current session',
+        'ingestDataset101',
+      ),
+    );
+    await flowResult(state.execution.execute());
+    expect(state.dataProductRuntime.runErrorKind).toBe(
+      CubeDataProductRunErrorKind.WAREHOUSE,
+    );
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Insufficient privileges to operate on table TRADES',
+        'ingestDataset101',
+      ),
+    );
+    await flowResult(state.execution.execute());
+    expect(state.dataProductRuntime.runErrorKind).toBe(
+      CubeDataProductRunErrorKind.ENTITLEMENT,
+    );
     expect(state.dataProductRuntime.accessRequestLinks).toEqual([]);
   });
 });

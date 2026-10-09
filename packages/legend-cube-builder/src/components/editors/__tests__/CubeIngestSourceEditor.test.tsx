@@ -25,7 +25,15 @@ import {
   SchemaColumn,
 } from '@finos/legend-cube';
 import { guaranteeNonNullable } from '@finos/legend-shared';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
+import { flowResult } from 'mobx';
+import { getCubeWarehouseErrorHint } from '../../../__lib__/LegendCubeDataProductLabels.js';
 import { getDataSetDriftWarning } from '../../../__lib__/LegendCubeIngestLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
@@ -39,11 +47,18 @@ import {
 } from '../../../__test-utils__/FakeCubeIngestCatalog.js';
 import { CubeDataProductEnvironmentType } from '../../../graph-manager/CubeDataProduct.js';
 import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../../graph-manager/CubeEngine.js';
+import {
   createCubeIngestModel,
+  CUBE_INGEST_MODEL_TYPE,
   CUBE_INGEST_RUNTIME_PATH,
 } from '../../../graph-manager/CubeIngest.js';
+import { getCubeRememberedWarehouse } from '../../../stores/CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
+import { CubeGridRegion } from '../../grid/CubeGridRegion.js';
 import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 /** An ingest cube of one data set, TRADES, saved with an older column */
@@ -79,6 +94,12 @@ const ingestCube = (): CubeDocument =>
     ),
   });
 
+const panel = (): HTMLElement =>
+  screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+
+const warehouseInput = (): HTMLInputElement =>
+  within(panel()).getByLabelText<HTMLInputElement>('Warehouse');
+
 beforeEach(() => {
   localStorage.clear();
 });
@@ -110,7 +131,9 @@ describe("An ingest data set's panel", () => {
     expect(within(panel).getByText('TRADES')).toBeTruthy();
     expect(within(panel).getByText('Production')).toBeTruthy();
     expect(within(panel).getByText('Deployment 1234')).toBeTruthy();
-    expect(within(panel).getByText('CUBE_WH')).toBeTruthy();
+    expect(
+      within(panel).getByLabelText<HTMLInputElement>('Warehouse').value,
+    ).toBe('CUBE_WH');
     // its saved columns, one fewer than the deployed definition declares
     expect(within(panel).getAllByRole('row')).toHaveLength(2);
     fireEvent.click(within(panel).getByRole('button', { name: 'Refresh' }));
@@ -148,5 +171,60 @@ describe("An ingest data set's panel", () => {
         ),
       ),
     ]);
+  });
+
+  test('Runs the cube on a warehouse typed and applied, as one undo step, and says beside it when the warehouse refused the run', async () => {
+    const created = TEST__createCubeHost();
+    const { host, fake } = created;
+    const ingest = createFakeCubeIngestCatalog();
+    const editorState = new CubeEditorState(
+      { ...host, ingestCatalog: ingest.catalog },
+      ingestCube(),
+    );
+    await TEST__renderInCubeApplication(
+      <div style={{ display: 'flex' }}>
+        <div style={{ width: 800, height: 400 }}>
+          <CubeCanvas editorState={editorState} />
+        </div>
+        <CubeNodeEditorPanel editorState={editorState} />
+        <CubeGridRegion editorState={editorState} />
+      </div>,
+      host.applicationStore,
+      LEGEND_CUBE_TEST_ID.CANVAS,
+    );
+    fireEvent.click(await TEST__findCanvasNode('ingestDataset101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'SQL compilation error:\nNo active warehouse selected in the current session',
+        'ingestDataset101',
+      ),
+    );
+    await act(() => flowResult(editorState.execution.execute()));
+    const hint = getCubeWarehouseErrorHint('CUBE_WH', true);
+    expect(within(panel()).getByText(hint)).toBeTruthy();
+    expect(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR)).getByText(
+        hint,
+      ),
+    ).toBeTruthy();
+    fireEvent.change(warehouseInput(), { target: { value: ' NEW_WH ' } });
+    fireEvent.keyDown(warehouseInput(), { key: 'Enter' });
+    expect(editorState.document.context?.model).toEqual({
+      _type: CUBE_INGEST_MODEL_TYPE,
+      environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      producerDeploymentId: '1234',
+      warehouse: 'NEW_WH',
+    });
+    expect(editorState.history).toHaveLength(1);
+    expect(
+      getCubeRememberedWarehouse(host.applicationStore.userDataService),
+    ).toBe('NEW_WH');
+    expect(within(panel()).queryByText(hint)).toBeNull();
+    act(() => editorState.undo());
+    expect(await within(panel()).findByDisplayValue('CUBE_WH')).toBe(
+      warehouseInput(),
+    );
   });
 });

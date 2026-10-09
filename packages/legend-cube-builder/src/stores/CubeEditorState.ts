@@ -119,7 +119,7 @@ export class CubeEditorState implements CommandRegistrar {
   /** One registry for inference, emission and the saved spec */
   readonly registry: NodeRegistry;
   readonly execution: CubeExecutionState;
-  /** Where a data product cube runs: its class and warehouse */
+  /** Where a lakehouse cube runs, a data product's or an ingest one's: its class and warehouse */
   readonly dataProductRuntime: CubeDataProductRuntimeState;
   readonly sourcePicker: CubeSourcePickerState;
   readonly specTransfer: CubeSpecTransferState;
