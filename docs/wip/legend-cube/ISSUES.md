@@ -134,6 +134,15 @@ compilation error (400) with the call's source information, like other typing er
 On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`. Cube keeps the
 engine's types (precision isn't enforced in Cube), and no test asserts them. An engine issue to file.
 
+### The source dialog's lists show no hover, and hide the picked row under the pointer
+
+Found while recording the sources demo (2026-10-09), on Legend Query's light theme. The lists of the "Add a source"
+dialog's tabs (tables in the Model and Database connection tabs, products and access points in the Data product tab)
+paint a hovered row with `--color-bg-hover`, which is the dialog body's own grey (`#edf0f1`), so hovering shows
+nothing. The hover style also wins over the picked row's `--color-bg-selected` (`#def3ff`), so the row just clicked
+looks unpicked until the pointer leaves it. Suggested fix: apply the hover background only to rows that aren't picked,
+and give hover a color that differs from the dialog body. Low; no behavior is wrong.
+
 ### Engine errors can echo setup SQL
 
 A failed exploration's message may quote the connection's setup SQL. Cube shows the first line and the rest on demand,

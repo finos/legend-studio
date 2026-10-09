@@ -40,7 +40,9 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
     (PLAN §6.8) merged the same day as #5652 (`4f5aab13d`).
   - Left for these two sources: Part B2 (PLAN §11.2), the manual check of both, run by the user in an internal
     deployment, with Query's two optional data product keys set (hosting.md); the mock-backed data product tests
-    (DP22), which wait for the local lakehouse, marketplace and depot mocks; and a demo video.
+    (DP22), which wait for the local lakehouse, marketplace and depot mocks; and the data product half of the demo
+    video (the direct connection's half was recorded on 2026-10-09; the data product tab needs the mocks or an internal
+    deployment).
   - Next: Depot databases (PLAN §6.3, §6.8), starting with their requirements and the local mock depot. Ingest
     definitions as a source are being specified alongside (user, 2026-10-09; PLAN places ingest in M9, §6.7).
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
