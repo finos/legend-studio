@@ -33,8 +33,9 @@ interface CubeHost {
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
 lives as long as the page; Legend Query makes a new host on each visit.
 
-**The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an in-memory H2 database
-through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't run.
+**The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an
+in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
+run.
 
 ## Shortcuts
 
