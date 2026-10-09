@@ -5,7 +5,9 @@ node, its messages, emitter and codec, and its entry in the node registry. The p
 canvas read that registry, so the new type shows there with no change here.
 
 The builder adds four pieces: a draft, an editor and help text, in registries keyed by node type, and an icon, keyed by
-the icon name the node's definition gives. Join and Filter are the examples to follow.
+the icon name the node's definition gives. Join and Filter are the examples to follow; Group for an editor of rows
+(`CubeGroupEditor`, `CubeGroupDraft`), and Concat for a two-input editor with fixes and one setting
+(`CubeConcatEditor`, `CubeConcatDraft`).
 
 ## 1. A draft
 
@@ -19,7 +21,9 @@ as one undo step (**Cancel** drops it).
 - Register a factory in `CUBE_NODE_DRAFT_FACTORIES` (`src/stores/editors/CubeNodeDraftRegistry.ts`).
 - A transform with nothing to set, such as Distinct, has no draft: it registers an editor that only describes it
   (`CubeDistinctEditor`) and is listed in `CUBE_NODE_TYPES_WITHOUT_SETTINGS`, which the registry test skips when it
-  asks for a factory. The panel then shows no Apply or Cancel (PLAN §7.4 item 2).
+  asks for a factory. The panel then shows no Apply or Cancel, and no Problems list (PLAN §7.4 item 2): every
+  transform that can be invalid has a draft. When such a transform gains a setting, as Concat did with Convert types,
+  give it a draft and take it off the list.
 
 ## 2. An editor
 
@@ -27,7 +31,10 @@ as one undo step (**Cancel** drops it).
   `editorState`, `draft`, `inputSchemas` (the inputs' schemas in port order; the panel shows the editor only once all
   are there) and `readOnly` (a cube saved by a newer version: show, don't edit).
 - It changes only the draft. An action on the document, such as Join's Swap Inputs, goes through
-  `editorState.nodeEditor`, which applies the draft first.
+  `editorState.nodeEditor`, which applies the draft first. A fix that adds nodes, as Join's "Rename them" and Concat's
+  "Rename them" and "Drop them" do, is a `can…` getter and an action there, made from the core's fix on the query with
+  the draft applied (`queryWithEdits`), as one undo step, the panel staying on the node. The editor shows the fix's
+  changes from the core's plan, given the draft's settings, so the editor and the store agree on what it offers.
 - `CubeColumnPicker` picks a column from a schema, and `CubeValueEditor` takes a value as a column's type wants it.
   `isColumnDisabled` gives the reason a column can't be picked, shown after its type, as Sort does for a type that can't
   be sorted (`isSortableType`) and a column another row has; the column stays shown.
@@ -65,14 +72,22 @@ changed, is stored in `CubeEditorState.warnings`, by node key. `getNodeWarnings(
 node (`legend-cube__node--warning`) and lists them in its tooltip after its errors, and the panel shows each one as a
 `role="status"` line above the editor. A derived warning waits until the nodes it names have no errors of their own.
 
+Some warnings belong to one control, not to the node, and the editor shows them under it in the warning colour: Join's
+'type unknown' on a key whose column the model can't type, Concat's on any such column, and the Join and Filter
+editors' warning on a Date that Convert types made from dates and timestamps (`isDateOrTimestampType`), whose dates
+match timestamps only at midnight. An editor must not offer a change it warns about, as Concat's never offers Convert
+types for a column whose real type Cube doesn't know.
+
 ## Columns that change name
 
 The Join editor warns when a join key's column has no type in the model, tracing the column back to its table and the
 table's own name for it with `findColumnOrigins` (`src/stores/editors/CubeJoinDraft.ts`). It requires each node's
 output to have the column, maps a Rename's new name back to its old one, and follows a Join's same-named keys to the
-side the join keeps. Every other node is taken to pass its input's columns through under the same name. If a new
-transform's output columns aren't its inputs' under the same name (a computed column, say), teach `findColumnOrigins`
-how they map back, or the warning goes missing or shows on the wrong column.
+side the join keeps. A Group's keys and its Distinct Value, Min and Max outputs map back to their columns, and its
+counts, sums and averages to none; a Concat's columns come from both inputs under the same name. Every other node is
+taken to pass its input's columns through under the same name. If a new transform's output columns aren't its inputs'
+under the same name (a computed column, say), teach `findColumnOrigins` how they map back, or the warning goes missing
+or shows on the wrong column.
 
 ## Tests
 
@@ -88,6 +103,9 @@ how they map back, or the warning goes missing or shows on the wrong column.
   schema, and what it returns, not its text.
 - A case of the new node type in `src/__tests__/CubeInferenceConformance.engine-roundtrip-test.ts`, whose coverage
   test fails until there is one: the engine must type every node of the case as Cube infers it.
+- If its SQL can differ by database, its shapes at the end of `SHAPES` in
+  `src/__tests__/LegendCubeDialects.engine-roundtrip-test.ts` (earlier tests index the first ones by position), so the
+  checks every shape gets cover it, and a test of the facts its plans must keep on every database type.
 
 The `v1/` adapter (`V1_CubeLambdaSerializer`) needs no change while the operation's emitter uses only IR and literal
 kinds it already writes. A new kind of IR node or literal needs its own case there, with a test in

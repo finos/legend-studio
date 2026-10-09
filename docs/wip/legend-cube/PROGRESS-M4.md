@@ -12,7 +12,7 @@
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Branch | `cube-m4` merged on 2026-10-09 as #5649 (`d847e6721`, squashed); the follow-ups are on `cube-m4-followup`, from that merge           |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                    |
-| Step   | M4.1–M4.13 and M4.16 done and merged (#5649); M4.14's guides, M4.15 and M4.17 on the follow-up PR                                    |
+| Step   | M4.1–M4.14 and M4.16 done (M4.1–M4.13 and M4.16 merged in #5649); M4.15 and M4.17 next, on the follow-up PR                          |
 | Tests  | 2486 core, 1162 builder (core group), 245 Query, 415 builder engine-roundtrip (after the dates warning, on finos master `4f5aab13d`) |
 
 ## Steps
@@ -32,7 +32,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.11** Concat on the engine and around the databases
 - [x] **M4.12** Concat's Rename and Restrict autofixes
 - [x] **M4.13** Concat's Convert types setting
-- [ ] **M4.14** Docs and changeset
+- [x] **M4.14** Docs and changeset
 - [ ] **M4.15** Verification and the browser rehearsal
 - [x] **M4.16** A demo video of M4's features, as for M1 and M2 (PLAN §11.3)
 - [ ] **M4.17** Rebase on the latest master, fold PLAN §11.5's supersessions in, PR when the user asks
@@ -64,7 +64,8 @@ the squash merge; the follow-up PR's are its own.
 | Rebase     | (none)      | rebased on finos master `4f5aab13d` (#5652, #5651): 17 commits unchanged    |
 | Dates      | `c81223a4f` | feat: warn about Legend Cube's converted dates in Join and Filter           |
 | Merge      | `d847e6721` | feat: add Legend Cube's Group and Concat (M4) (#5649), the above squashed   |
-| Merge docs | (this one)  | docs: record Legend Cube M4's merge                                         |
+| Merge docs | `04e2054c2` | docs: record Legend Cube M4's merge                                         |
+| M4.14      | (this one)  | docs: cover Legend Cube's Group and Concat in its guides                    |
 
 ## Step notes
 
@@ -307,6 +308,15 @@ engine. Seven scenes (the grid's Group by, 21 countries adding up to 830; the Gr
 from a node's menu and wired, First and Second on the canvas; "Rename them", 120 rows; "Drop them"; Convert types, 120
 rows; the date warning, the midnight row only), 19 checks as it runs, each key frame checked against its caption. Two
 captions were reworded after a take: no claim of Concat's row order, and no value named that isn't on screen.
+
+**M4.14, the guides (2026-10-09).** The core guide names Group and Concat as examples; covers `BinaryNode`'s default
+ports and own port labels, a setting passed to the shared validation, the autofix pattern (plan, `can…`, fix, offered
+only when the fixed node is valid by its own checks), several temporary columns at once, type-only casts, and a
+boolean setting always written; and gives the menu order. The builder guide covers a transform that gains a draft,
+fixes as node-editor actions on the query with the draft applied, warnings that belong to one control, Group's and
+Concat's columns in `findColumnOrigins`, and dialect shapes. `testing.md` covers the conformance exemption and
+`converted`, the data a test may rely on, and the Group and Concat plan facts. Both READMEs list Group and Concat. A
+patch changeset for both packages.
 
 ## Open items
 

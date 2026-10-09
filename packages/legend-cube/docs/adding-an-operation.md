@@ -6,7 +6,9 @@ the codec find the type through the registry, and the query graph and inference 
 The UI half (a draft, an editor, help text and an icon) is in
 [`@finos/legend-cube-builder`'s guide](../../legend-cube-builder/docs/adding-an-operation.md).
 
-Join (`src/nodes/transforms/Join.ts`) and Filter (`Filter.ts`) are the examples to follow.
+Join (`src/nodes/transforms/Join.ts`) and Filter (`Filter.ts`) are the examples to follow; Group (`Group.ts`) for a
+node whose settings are rows, and Concat (`Concat.ts`) for a plain two-input node with a setting that changes its
+output types.
 
 ## 1. The node
 
@@ -15,7 +17,9 @@ A class in `src/nodes/transforms/<Type>.ts`, extending:
 - `UnaryNode` for one input (port `tds`). Its default `schematize` returns the input schema without validating; to
   get `undefined` for an invalid node, as the contract below says, override it as Filter does
   (`this.validate(inputSchemas) ? inputSchemas[0] : undefined`).
-- `BinaryNode` for two inputs, labelled Left and Right on the canvas (Join names its ports `leftTds` and `rightTds`).
+- `BinaryNode` for two inputs, on ports `tds1` and `tds2` unless it names its own (Join's are `leftTds` and
+  `rightTds`), labelled Left and Right on the canvas unless it overrides `portLabels` (Concat's are First and Second,
+  `CONCAT_PORT_LABELS`); its messages and editor then name the inputs the same way ("the first input").
 
 It has:
 
@@ -52,7 +56,15 @@ check of one item, as `validateRenameMapping` is, so an editor can mark each row
 A helper that changes several nodes at once, as the Join autofix does (`src/nodes/transforms/JoinAutofix.ts`), lives
 next to its node, not on `Query`, and composes Query operations into one returned query: generate each new id from the
 query that already holds the previous new node (`generateId` twice on the same query gives the same id), and restore
-the selection if an `add` moved it. The caller applies the result as one undo step.
+the selection if an `add` moved it. The caller applies the result as one undo step. Write it as a plan, a `can…` and a
+fix, each taking the input schemas from the caller, so an editor can ask about the node with its edits applied. Offer
+a fix only when the node is valid after it: build the node it adds, check it with that node's own `validate` and
+`schematize`, then check the fixed node with its own settings (`ConcatAutofix.ts` does, for a Rename or a Restrict
+before one of Concat's inputs).
+
+A setting that changes the output's types, as Concat's Convert types does (`widenTypes`), is passed to the shared
+validation (`validateConcatSchemas(first, second, errors, widenTypes)`), so the editor, the autofixes and inference
+judge the node the same way.
 
 ## 2. Its messages
 
@@ -82,7 +94,10 @@ gets a flag in `CUBE_DIALECT_WORKAROUNDS` (`src/ir/CubeDialects.ts`, a `Map`: th
 `getDialectWorkarounds(context.databaseType)` in its emitter, as Drop, Slice, Limit and Distinct do; add its type to
 `needsDatabaseType` too, so the builder loads the model's connections before such a run. Without a type, or for an
 unknown one, write the native form. A column an emitter adds and drops again takes `getTemporaryColumnName`
-(`src/ir/TemporaryColumns.ts`), so it never takes an input column's name.
+(`src/ir/TemporaryColumns.ts`), so it never takes an input column's name; several at once take one name after another
+under the same rule (names compared folded), as Concat's `cube_cast`, `cube_cast2`, … do. A type the output must have
+that its input hasn't is a type-only `cast(@<T>)` in an `extend`, which the engine writes as no SQL cast; never a
+relation-level cast, which the engine doesn't check (`ConcatEmitter.ts`).
 
 ## 4. Its codec
 
@@ -97,7 +112,8 @@ Literal values typed by a column are `{kind, value}`, with numbers as strings. A
 are JSON numbers, read with `readOptionalFiniteNumber`, which keeps any finite number for validation to judge. A
 setting is written whenever the node has one, its default included, and left out only when cleared, never written as
 `null`: so a cleared setting reads back cleared, and the editor panel, which compares encodings, counts clearing a
-default as an edit (PLAN §11.4).
+default as an edit (PLAN §11.4). A true-or-false setting, such as Concat's `widenTypes`, is always written, `false`
+included: a missing key is a `CubeSpecDecodeError`, and a value that isn't a boolean is `UnreadableContent`.
 
 After an import types the sources again, only Filter's invalid values are read again (`rereadQueryFilterValues` in
 `src/filter/QueryFilterValues.ts`). An operation that holds values typed by a column needs its own case there.
@@ -106,7 +122,8 @@ After an import types the sources again, only Filter's invalid values are read a
 
 A `TransformDefinition` in `src/nodes/NodeRegistry.ts`: `kind: 'transform'`, `type`, `label` (the palette's text),
 `icon` (an icon name the builder maps), `beta`, `create(id)` (a new node with default settings), `emit` and `spec`.
-Add it to `createNodeRegistry()` in menu order, and export the new modules from `src/index.ts`.
+Add it to `createNodeRegistry()` in menu order (Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice,
+Concat, Join; spec §7.0), and export the new modules from `src/index.ts`.
 
 ## Tests
 
@@ -132,7 +149,8 @@ Add it to `createNodeRegistry()` in menu order, and export the new modules from 
   every file and checks the text comes out the same. Give it the Cube Northwind model and runtime exactly, as the
   other samples have (start from `slice.cube.json`): the builder's `CubeSpecCorpus` engine test requires them, loads
   the model on the engine, and checks each file's table snapshots against it; a new file raises its 'Has the samples'
-  count. The operation's own lambda is checked on the engine by a builder test (see its guide).
+  count. The operation's own lambda is checked on the engine by a builder test (see its guide), and every registered
+  type needs a case in the builder's conformance suite, which types each node on the engine.
 
 No change is needed in the builder's `v1/` adapter while the emitter uses only IR and literal kinds the adapter
 already writes. A new kind of IR node or literal needs its own case there.
