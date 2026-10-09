@@ -1,0 +1,146 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "DuckDb",
+      "package": "cube::direct",
+      "schemas": [
+        {
+          "name": "dbprobe",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "lowerCol",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "\"Mixed Case\"",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "order_id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "customer_id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 0
+                  }
+                },
+                {
+                  "name": "freight",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Float"
+                  }
+                },
+                {
+                  "name": "amount",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Decimal",
+                    "precision": 0,
+                    "scale": 0
+                  }
+                },
+                {
+                  "name": "big",
+                  "nullable": true,
+                  "type": {
+                    "_type": "BigInt"
+                  }
+                },
+                {
+                  "name": "huge",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "flag",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Bit"
+                  }
+                },
+                {
+                  "name": "order_date",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Date"
+                  }
+                },
+                {
+                  "name": "shipped_at",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Timestamp"
+                  }
+                },
+                {
+                  "name": "ship_time",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "notes",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 0
+                  }
+                },
+                {
+                  "name": "bin",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "id",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "tags",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "orders",
+              "primaryKey": ["order_id"]
+            }
+          ],
+          "tabularFunctions": [],
+          "views": []
+        }
+      ],
+      "stereotypes": []
+    }
+  ]
+}

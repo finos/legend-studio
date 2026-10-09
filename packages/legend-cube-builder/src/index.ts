@@ -21,13 +21,22 @@ export {
 export { LEGEND_CUBE_TEST_ID } from './__lib__/LegendCubeTesting.js';
 export { CubeEditor } from './components/CubeEditor.js';
 
+export * from './graph-manager/CubeConnectionExplorer.js';
+export * from './graph-manager/CubeDataProduct.js';
+export * from './graph-manager/CubeDataProductCatalog.js';
 export * from './graph-manager/CubeEngine.js';
 export { getRuntimesForDatabase } from './graph-manager/CubeModelOutlineHelper.js';
 export {
+  buildCubeConnectionExplorer,
+  buildCubeDataProductCatalog,
   buildCubeEngine,
+  buildCubeLakehouseEnvironment,
   type CubeEngineConfig,
+  type CubeLakehouseServices,
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';
+export type { CubeLakehouseEnvironment } from './graph-manager/CubeLakehouseEnvironment.js';
 export type { CubeHost } from './stores/CubeHost.js';
+export { getCubeRememberedWarehouse } from './stores/CubeDataProductWarehouse.js';
 export {
   BUNDLED_MODELS,
   type BundledModel,

@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "name": "Daily orders, not checked yet",
+  "context": {
+    "model": {
+      "_type": "cubeDataProduct",
+      "groupId": "com.example.sales",
+      "artifactId": "orders-products",
+      "versionId": "1.4.0",
+      "environmentType": "PRODUCTION",
+      "warehouse": "CUBE_SAMPLE_WH"
+    },
+    "runtime": "cube::dataProduct::Runtime"
+  },
+  "query": {
+    "selected": "dataProductAccessPoint101",
+    "nodes": [
+      {
+        "kind": "dataProductAccessPoint",
+        "id": "dataProductAccessPoint101",
+        "dataProduct": "sales::products::OrdersProduct",
+        "accessPointGroup": "core",
+        "accessPoint": "daily_orders",
+        "dataProductId": "ORDERS_PRODUCT",
+        "deploymentId": "deployment-1234"
+      }
+    ]
+  }
+}

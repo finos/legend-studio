@@ -15,11 +15,17 @@
  */
 
 import { ChevronLeftIcon, ChevronRightIcon, clsx } from '@finos/legend-art';
-import type { AnyNodeDefinition } from '@finos/legend-cube';
+import {
+  type AnyNodeDefinition,
+  DataProductAccessPointSource,
+} from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { useDrag } from 'react-dnd';
-import { READ_ONLY_CUBE_TITLE } from '../../__lib__/LegendCubeLabels.js';
+import {
+  OTHER_SOURCE_KIND_TITLE,
+  READ_ONLY_CUBE_TITLE,
+} from '../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../__lib__/LegendCubeTesting.js';
 import type { CubeEditorState } from '../../stores/CubeEditorState.js';
 import {
@@ -34,7 +40,7 @@ export const PALETTE_EMPTY_HINT = 'Drag items onto the canvas.';
 /** What an item does, for its tooltip */
 const describeItem = (definition: AnyNodeDefinition): string =>
   definition.kind === 'source'
-    ? 'Click, or drop it on the canvas, to pick a table'
+    ? `Click, or drop it on the canvas, to pick ${definition.type === DataProductAccessPointSource.TYPE ? 'an access point' : 'a table'}`
     : 'Drag it onto a node to add it after that node, or onto the canvas to add it on its own; click to add it on its own';
 
 const CubePaletteItem = observer(
@@ -45,19 +51,28 @@ const CubePaletteItem = observer(
   }) => {
     const { editorState, definition, collapsed } = props;
     const { readOnly } = editorState;
+    // a source of the other kind than the cube's can't be added (PLAN §6.8)
+    const otherKind =
+      !readOnly &&
+      definition.kind === 'source' &&
+      !editorState.canAddNode(definition.type);
+    const disabled = readOnly || otherKind;
     const ref = useRef<HTMLDivElement>(null);
     const [, dragConnector] = useDrag<CubePaletteDragItem>(
       () => ({
         type: CUBE_DND_TYPE.PALETTE_ITEM,
         item: { nodeType: definition.type },
-        canDrag: () => !editorState.readOnly,
+        canDrag: () =>
+          !editorState.readOnly &&
+          (definition.kind !== 'source' ||
+            editorState.canAddNode(definition.type)),
       }),
-      [editorState, definition.type],
+      [editorState, definition.type, definition.kind],
     );
     dragConnector(ref);
     const label = `${definition.label}${definition.beta ? ' (BETA)' : ''}`;
     const add = (): void => {
-      if (!readOnly) {
+      if (!disabled) {
         editorState.addNode(definition.type);
       }
     };
@@ -66,21 +81,23 @@ const CubePaletteItem = observer(
       <div
         ref={ref}
         role="button"
-        tabIndex={readOnly ? -1 : 0}
-        aria-disabled={readOnly}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
         aria-label={label}
         className={clsx(
           'flex h-8 shrink-0 items-center gap-2 px-3 text-base',
-          readOnly
+          disabled
             ? 'cursor-not-allowed text-[var(--color-text-disabled)]'
             : 'cursor-grab hover:bg-[var(--color-bg-hover)]',
         )}
         title={
           readOnly
             ? READ_ONLY_CUBE_TITLE
-            : collapsed
-              ? `${label}: ${describeItem(definition)}`
-              : describeItem(definition)
+            : otherKind
+              ? OTHER_SOURCE_KIND_TITLE
+              : collapsed
+                ? `${label}: ${describeItem(definition)}`
+                : describeItem(definition)
         }
         onClick={add}
         onKeyDown={(event) => {
@@ -145,7 +162,7 @@ export const CubePalette = observer(
           role="group"
           aria-label="Palette"
         >
-          {registry.sources.map((definition) => (
+          {editorState.offeredSources.map((definition) => (
             <CubePaletteItem
               key={definition.type}
               editorState={editorState}

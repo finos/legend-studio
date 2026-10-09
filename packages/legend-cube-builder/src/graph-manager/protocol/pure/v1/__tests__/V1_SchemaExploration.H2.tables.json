@@ -1,0 +1,294 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [],
+      "name": "ProbeDb",
+      "package": "cube::direct",
+      "schemas": [
+        {
+          "name": "DBPROBE",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "\"MY COL\"",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "\"A:B\"",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "\"MY TABLE\"",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "LINE_ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "DECOY_COL",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 10
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "ORDER",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "LINE_ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "RIGHT_COL",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 10
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "ORDER.LINES",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "ORDER_ID",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "CUSTOMER_ID",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 5
+                  }
+                },
+                {
+                  "name": "FREIGHT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "AMOUNT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Decimal",
+                    "precision": 0,
+                    "scale": 0
+                  }
+                },
+                {
+                  "name": "QTY",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Numeric",
+                    "precision": 0,
+                    "scale": 0
+                  }
+                },
+                {
+                  "name": "DBL",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Double"
+                  }
+                },
+                {
+                  "name": "FLT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Float"
+                  }
+                },
+                {
+                  "name": "BIG",
+                  "nullable": true,
+                  "type": {
+                    "_type": "BigInt"
+                  }
+                },
+                {
+                  "name": "SMALL",
+                  "nullable": true,
+                  "type": {
+                    "_type": "SmallInt"
+                  }
+                },
+                {
+                  "name": "TINY",
+                  "nullable": true,
+                  "type": {
+                    "_type": "TinyInt"
+                  }
+                },
+                {
+                  "name": "FLAG",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Bit"
+                  }
+                },
+                {
+                  "name": "B",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Bit"
+                  }
+                },
+                {
+                  "name": "CODE",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Char",
+                    "size": 3
+                  }
+                },
+                {
+                  "name": "ORDER_DATE",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Date"
+                  }
+                },
+                {
+                  "name": "SHIPPED_AT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Timestamp"
+                  }
+                },
+                {
+                  "name": "SHIPPED_TZ",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Timestamp"
+                  }
+                },
+                {
+                  "name": "SHIP_TIME",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "BIN",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "NOTES",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Other"
+                  }
+                },
+                {
+                  "name": "LONGTXT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 1000000000
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "ORDERS",
+              "primaryKey": ["ORDER_ID"]
+            },
+            {
+              "columns": [
+                {
+                  "name": "lowerCol",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "UPPERCOL",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "mixedCase",
+              "primaryKey": []
+            },
+            {
+              "columns": [
+                {
+                  "name": "ORDER_ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "CUSTOMER_ID",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 5
+                  }
+                },
+                {
+                  "name": "AMOUNT",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Decimal",
+                    "precision": 0,
+                    "scale": 0
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "FRENCH_ORDERS",
+              "primaryKey": []
+            }
+          ],
+          "tabularFunctions": [],
+          "views": []
+        }
+      ],
+      "stereotypes": []
+    }
+  ]
+}

@@ -24,6 +24,7 @@ import {
   Query,
 } from '@finos/legend-cube';
 import { act, fireEvent, screen, within } from '@testing-library/react';
+import { OTHER_SOURCE_KIND_TITLE } from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import {
   TEST__findCanvasNode,
@@ -141,6 +142,7 @@ describe('Cube palette', () => {
       ),
     ).toEqual([
       TABLE,
+      'Data Product (BETA)',
       'separator',
       SORT,
       FILTER,
@@ -154,7 +156,11 @@ describe('Cube palette', () => {
     ]);
     expect(within(paletteItem(FILTER)).getByText(FILTER)).toBeDefined();
     expect(paletteItem(FILTER).querySelector('svg')).not.toBeNull();
-    expect(within(list).queryByText('BETA')).toBeNull();
+    // only the data product source is in beta
+    expect(within(list).getAllByText('BETA')).toHaveLength(1);
+    expect(
+      within(paletteItem('Data Product (BETA)')).getByText('BETA'),
+    ).toBeDefined();
   });
 
   test('Marks a node type in beta', async () => {
@@ -170,6 +176,34 @@ describe('Cube palette', () => {
     expect(
       within(paletteItem('Beta Filter (BETA)')).getByText('BETA'),
     ).toBeDefined();
+  });
+
+  test("Disables, with the reason, a source of another kind than the cube's, and hides data products from a host without a catalog", async () => {
+    const editorState = await render(
+      new CubeDocument().withContext({ model: CUBE_NORTHWIND_MODEL }),
+    );
+    const dataProduct = paletteItem('Data Product (BETA)');
+    expect(dataProduct.getAttribute('aria-disabled')).toBe('true');
+    expect(dataProduct.title).toBe(OTHER_SOURCE_KIND_TITLE);
+    fireEvent.click(dataProduct);
+    expect(editorState.sourcePicker.isOpen).toBe(false);
+    expect(paletteItem(TABLE).getAttribute('aria-disabled')).toBe('false');
+    expect(paletteItem(TABLE).title).toBe(
+      'Click, or drop it on the canvas, to pick a table',
+    );
+  });
+
+  test('Has no Data Product item on a host without a data product catalog', async () => {
+    const { host } = TEST__createCubeHost();
+    await render(undefined, {
+      host: { ...host, dataProductCatalog: undefined },
+    });
+    expect(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.PALETTE)).queryByRole(
+        'button',
+        { name: 'Data Product (BETA)' },
+      ),
+    ).toBeNull();
   });
 
   test('Collapses to icons, with the label in the tooltip, and remembers it for the user', async () => {

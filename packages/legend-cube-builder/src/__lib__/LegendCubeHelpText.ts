@@ -15,6 +15,7 @@
  */
 
 import {
+  DataProductAccessPointSource,
   Distinct,
   Drop,
   Filter,
@@ -34,6 +35,9 @@ import {
 
 export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
   [RelationalTableSource.TYPE]: 'Sources data from relational database table.',
+  /** Added by Cube: the original has no data product source (PLAN §6.8) */
+  [DataProductAccessPointSource.TYPE]:
+    'Sources data from an access point of a deployed data product.',
   [Distinct.TYPE]: 'Removes duplicate rows from the previous data set.',
   [Drop.TYPE]:
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',

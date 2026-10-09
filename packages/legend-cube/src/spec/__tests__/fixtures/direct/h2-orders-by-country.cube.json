@@ -1,0 +1,104 @@
+{
+  "formatVersion": 1,
+  "name": "Orders by country (H2)",
+  "context": {
+    "model": {
+      "_type": "cubeDirectConnection",
+      "connection": {
+        "_type": "RelationalDatabaseConnection",
+        "type": "H2",
+        "databaseType": "H2",
+        "datasourceSpecification": {
+          "_type": "h2Local",
+          "testDataSetupSqls": [
+            "drop schema if exists CUBE_SPEC_SAMPLE cascade",
+            "create schema CUBE_SPEC_SAMPLE",
+            "create table CUBE_SPEC_SAMPLE.ORDERS (ORDER_ID INT PRIMARY KEY, CUSTOMER_ID VARCHAR(5) NOT NULL)",
+            "insert into CUBE_SPEC_SAMPLE.ORDERS values (1, 'ALFKI'), (2, 'ANATR'), (3, 'ALFKI')",
+            "create table CUBE_SPEC_SAMPLE.CUSTOMERS (CUSTOMER_ID VARCHAR(5) PRIMARY KEY, COUNTRY VARCHAR(15))",
+            "insert into CUBE_SPEC_SAMPLE.CUSTOMERS values ('ALFKI', 'Germany'), ('ANATR', 'Mexico')"
+          ]
+        },
+        "authenticationStrategy": {
+          "_type": "h2Default"
+        }
+      }
+    },
+    "runtime": "cube::direct::Runtime"
+  },
+  "query": {
+    "selected": "filter101",
+    "nodes": [
+      {
+        "kind": "relational",
+        "id": "relational101",
+        "database": "cube::direct::Database",
+        "schema": "\"CUBE_SPEC_SAMPLE\"",
+        "table": "\"ORDERS\"",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Int"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": false
+          }
+        ]
+      },
+      {
+        "kind": "relational",
+        "id": "relational102",
+        "database": "cube::direct::Database",
+        "schema": "\"CUBE_SPEC_SAMPLE\"",
+        "table": "\"CUSTOMERS\"",
+        "schemaSnapshot": [
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [5]
+            },
+            "nullable": false
+          },
+          {
+            "name": "COUNTRY",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [15]
+            },
+            "nullable": true
+          }
+        ]
+      },
+      {
+        "kind": "join",
+        "id": "join101",
+        "inputs": ["relational101", "relational102"],
+        "joinType": "INNER",
+        "leftColumns": ["CUSTOMER_ID"],
+        "rightColumns": ["CUSTOMER_ID"]
+      },
+      {
+        "kind": "filter",
+        "id": "filter101",
+        "inputs": ["join101"],
+        "filter": {
+          "column": "COUNTRY",
+          "operator": "Equal",
+          "value": {
+            "kind": "string",
+            "value": "Germany"
+          }
+        }
+      }
+    ]
+  }
+}

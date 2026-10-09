@@ -59,7 +59,7 @@ export const CubeCanvasContextMenu = observer(
     );
     return (
       <MenuContent ref={ref}>
-        {registry.sources.map(paletteItem)}
+        {editorState.offeredSources.map(paletteItem)}
         <MenuContentDivider />
         {registry.transforms.map(paletteItem)}
         <MenuContentDivider />

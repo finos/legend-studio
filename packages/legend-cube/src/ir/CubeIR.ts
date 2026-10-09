@@ -72,6 +72,16 @@ export type IR =
       readonly path: readonly [string, string, string];
       readonly origin?: Origin;
     }
+  /**
+   * A data product's access point (`#P{dp.ap}#`, PLAN §6.8): never one with
+   * parameters, so it has none
+   */
+  | {
+      readonly k: 'dataProductAccessor';
+      /** The data product's element path, then the access point's id; its group is not part of it */
+      readonly path: readonly [string, string];
+      readonly origin?: Origin;
+    }
   /** A packageable element, such as the runtime; never a type */
   | { readonly k: 'elementPtr'; readonly path: string }
   /** A type argument, e.g. of `cast`: `@String`, `@meta::pure::precisePrimitives::Varchar(15)` */
@@ -212,6 +222,14 @@ export const storeAccessor = (
   origin?: Origin,
 ): IR =>
   origin ? { k: 'storeAccessor', path, origin } : { k: 'storeAccessor', path };
+
+export const dataProductAccessor = (
+  path: readonly [string, string],
+  origin?: Origin,
+): IR =>
+  origin
+    ? { k: 'dataProductAccessor', path, origin }
+    : { k: 'dataProductAccessor', path };
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
 

@@ -210,7 +210,8 @@ export const CubeCanvas = observer(
     const [, dropConnector] = useDrop<CubePaletteDragItem>(
       () => ({
         accept: [CUBE_DND_TYPE.PALETTE_ITEM],
-        canDrop: () => !editorState.readOnly,
+        canDrop: (item) =>
+          !editorState.readOnly && editorState.canAddNode(item.nodeType),
         // a node under the pointer, whether it took the drop or refused it,
         // keeps it from the canvas
         drop: (item, monitor) =>
@@ -240,7 +241,10 @@ export const CubeCanvas = observer(
                 No tables yet:{' '}
                 <button
                   className="text-[var(--color-accent)] underline disabled:text-[var(--color-text-disabled)] disabled:no-underline"
-                  disabled={editorState.readOnly}
+                  title={editorState.sourcePicker.disabledReason}
+                  disabled={
+                    editorState.sourcePicker.disabledReason !== undefined
+                  }
                   onClick={() => editorState.sourcePicker.open()}
                 >
                   add a table

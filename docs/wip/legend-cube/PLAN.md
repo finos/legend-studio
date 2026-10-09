@@ -930,8 +930,8 @@ Adding a source kind means two registrations and nothing else; the graph, infere
 untouched (§6.7's promise). **Not built yet:** the core half exists (`SourceDefinition`), but the builder has no
 `SourceKindAdapter`; it is wired to relational tables. A new source kind today also touches `CubeEditorState`
 (re-checking tables, the picker's opening), `CubeSourcePickerState`, `CubeJoinDraft` (where a column comes from),
-`CubeSourceEditor`, and the port's `resolveSchemas` and `CubeModelOutline`. The seam is built with the first new
-source kind (M3, after the sources-modal design and M2.0):
+`CubeSourceEditor`, and the port's `resolveSchemas` and `CubeModelOutline`. The builder's picker half is built with
+the direct connection, and the core half with data products (§6.8; M2.0 no longer gates either):
 
 - **Core:** a `SourceDefinition` (§4.5), covering coordinates, codec, validate, describe, `emit` (an IR relation
   expression, e.g. an accessor), and the execution requirements it contributes (runtime, and later mapping or
@@ -1149,6 +1149,88 @@ resolution, and which access modes Cube exposes.
 
 **Unknowns:** consumer vs producer environment, the meaning of the `metadata` flag, and whether end users should see
 ingest datasets directly.
+
+### 6.8 The next sources: settled so far (user, 2026-10-08)
+
+The user put the database entry points and data product access points first, with a local test setup that mocks what
+open source lacks (the data product backends, and Depot at the scale of thousands of projects). Research behind this
+(local evidence `sources-v2/`): the open-source engine rejects every data product construct (`#P`, data product and
+compute elements, a LakehouseRuntime with an environment and a warehouse) ✅; when two model contexts define the same
+element path, the engine silently keeps the first ✅; EMIT models served from a mock depot type and execute through
+SDLC pointers once their test data becomes LocalH2 setup SQL ✅. Cube copies the original's experience, not its
+internals (user, 2026-10-08): questions for the original app's team are about its UI only, in
+[QUESTIONS.md](QUESTIONS.md); checks that need an internal deployment are kept outside the repo.
+
+- **Build order:** the direct connection first (closest to the pasted-model path and testable on a laptop), then data
+  products, then Depot databases (user, 2026-10-08: data products moved ahead of Depot databases), each once its mocks
+  land. The direct connection builds the picker half of the §6.1
+  seam (a dialog with one tab per kind); the core half (a new `SourceDefinition`) comes with data products, the first
+  source that isn't a relational table.
+- **Depot databases, for now:** project → version → Database → table, with a runtime from the same project. A global
+  search across projects' Databases comes later as a second mode of the same picker (the open-source Depot only
+  matches element paths and doesn't page, so it leans on an internal Depot route; local evidence
+  `sources-v2/db-depot.md`).
+- **Direct-connection types:** H2 and DuckDB first, the only ones testable on a laptop (the local engine has no vault
+  for credentials). Postgres comes right after, to test a real server database.
+- **Direct connection:** the cube saves the full connection (protocol JSON) once, as its model
+  (`context.model = {_type: <a Cube-owned kind>, connection}`), and each table stays an ordinary relational source
+  (schema and table) on a fixed generated Database path. This amends the first wording, which had the connection saved
+  on each source as in the original app: a cube has one connection anyway, the layout is internal, and Cube never reads
+  the original's saved queries (§1.2). Cube builds the executable model (a Database with the used tables, the
+  connection, a mapping-less runtime) only when it calls the engine, by introspecting just those tables with
+  `schemaExploration`. A saved connection holds auth references, never a secret. The saved format stays at version 1:
+  the change is additive, and an older reader reports the model kind as unsupported.
+- **The source dialog (DP-3, user, 2026-10-09):** two palette items, "Relational Database Table" and "Data Product"
+  (beta), open one "Add a source" dialog with three tabs, "Model", "Database connection" and "Data product", each item
+  on its own tab; a cube's fixed model selects the tab and disables the others. A host without a connection explorer
+  or a data product catalog shows neither that tab nor, for data products, the palette item. Each tab implements one
+  small interface (`CubeSourcePickerTab`: availability, busy state, Add, open and close, and whether a cube's fixed
+  context is its own).
+- **The direct-connection tab:** The form starts with a prefilled H2 sample and has no
+  box for pasting connection JSON. Setup SQL and DuckDB file paths are always offered, as Paste Pure model already
+  allows: the engine accepts them from any client (hosting.md notes the exposure; revisit with Postgres). Once a table
+  is added the connection is fixed until every table is removed (no "Edit connection" until QUESTIONS.md U8 is
+  answered); reopening the dialog lists the connection's schemas at once.
+- **Columns the engine can't type** (it reports them as `Other`: on H2 REAL, TIME, BINARY, CLOB, UUID and arrays; on
+  DuckDB HUGEINT, TIME, BLOB, UUID and arrays) are hidden, and the picker shows "N columns hidden".
+- **One model context per cube:** the first source fixes it; every other source must come from the same context. For a
+  depot project that means the same project at the same version, since the engine keeps the first of two definitions.
+- **Databases and data products are kept apart:** a cube uses one or the other, never both (a query has one runtime).
+- **Data product list:** the marketplace search service when Query is configured for it (a new config field and the
+  marketplace client), falling back to the lakehouse contract server's lite list. The first version uses the lite
+  list only, as Legend Query does; search is a follow-up.
+- **Warehouse (DP-2, user, 2026-10-09):** the cube's saved warehouse wins, else the viewer's remembered one, else the
+  default consumer warehouse (`LAKEHOUSE_CONSUMER_DEFAULT_WH`). The first Add saves the warehouse into the cube and
+  remembers it for the viewer's next cubes. Editing a saved cube's warehouse is a follow-up.
+- **Data products (user, 2026-10-09):**
+  - **Saved shape (DP-1):** a Cube-owned model kind, `context.model = {_type: 'cubeDataProduct', groupId, artifactId,
+versionId, environmentType, warehouse?}`, and the fixed runtime path `cube::dataProduct::Runtime`. Each source
+    saves its data product, access point group, access point, the catalog's product id and the deployment id. The
+    engine adapter builds, per run, `combination[SDLC pointer at the saved version, a model holding only a
+LakehouseRuntime at the fixed path]` with the viewer's environment and the warehouse.
+  - **Selection (DP-5):** as Data Cube's: a Mode select (Production, Production (parallel)), then a deployed data
+    product, then one of its access points, then the warehouse. No development deployments in this phase; a saved
+    development cube is refused by name.
+  - **Access points:** Lakehouse access points without parameters can be added; parameterized, function, model-group
+    and undeployed ones are listed disabled with the reason. Columns come from the deployed artifact's
+    `lambdaGenericType`, with no engine call.
+  - **One project per cube:** once a cube has a data product source, the tab offers only that project's products at
+    that version, and reopens on the cube's data product with its access points shown. Joining access points of one
+    project, often two of the same data product, is the demo's case; cross-project joins aren't needed.
+  - **Redeploys (DP-4):** nothing this round; a cube stays on its saved version.
+  - **The environment:** as Legend Query resolves it (`resolveLakehouseEnvAndWarehouse`): the environment Query
+    remembers for the viewer, else the viewer's first entitlement environment. Query adds the production-parallel
+    realm (`-pp`) for a snapshot version; Cube also adds it for a production-parallel deployment, as Data Cube does.
+    Query's runtime dialog can remember an environment with a realm already on it, so Cube drops that realm first
+    and lets the cube's class decide: a production deployment never runs in the production-parallel realm.
+  - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
+    inside an internal deployment. Follow-ups, each with its tests: marketplace search with paging guards and stale
+    answers, sample rows, access badges, marketplace links, re-checking saved sources, warehouse edits and staleness,
+    error polish, the stand-in engine checks against the test-setup mocks, and their verify workflow.
+- **Compute elements:** deferred.
+- **M2.0 no longer gates the sources:** depot Databases are typed by the engine through the pointer and data products by
+  their deployed artifact, so neither needs legend-graph's precise types. M2.0 stays a separate legend-graph PR, needed
+  when Cube types tables locally (§11.3).
 
 ---
 
@@ -2365,20 +2447,57 @@ Also check and record:
   from `react-reflex` when the editor panel opens or a splitter moves (Appendix B), and the Query ServiceWorker's
   "fetching the script" errors. Anything else is recorded.
 
+**Part B2: sources, manual, in the UI** (the direct connection and data products, §6.8)
+
+Prerequisites: as Part B. Data products also need a Query configured with a lakehouse and a depot that serve deployed
+data products (an internal deployment); without a lakehouse the page shows no Data Product item.
+
+Direct connection:
+
+1. Open the dialog from the palette's **Relational Database Table**, and click the **Database connection** tab. The
+   form starts on H2 with a sample setup SQL. Click **Test connection**: schema `CUBE_SAMPLE` is chosen, and its
+   tables list CUSTOMERS (3 columns) and ORDERS (4 columns).
+2. Add **ORDERS**; open the dialog again (it reopens on the Database connection tab, with the Model and Data product
+   tabs disabled) and add **CUSTOMERS**. Click ORDERS: the Source panel shows the connection's summary ("H2: an H2
+   database in the engine's H2 server, 6 setup statements, authentication h2Default"), never its setup SQL.
+3. Join them on `CUSTOMER_ID` (Inner), make the Join the node Execute runs (Cmd/Ctrl-click it, or **Select**), and
+   press **F9**: 4 rows, with CUSTOMERS' `COMPANY_NAME` and `COUNTRY` columns. Add a Filter `COUNTRY` **is** `Germany`
+   after the Join, select it and press **F9**: 2 rows, `ORDER_ID` 10248 and 10251.
+4. On a new cube (reload), choose **DuckDB**, leave the file empty (in memory), give setup SQL such as
+   `drop schema if exists s cascade; create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
+   with `;`), **Test connection**, add `t` and press **F9**: 1 row.
+5. **Export (dev)** and **Import (dev)** the H2 cube: the same graph comes back, and **F9** gives the same rows.
+
+Data products:
+
+1. The palette shows **Data Product** with a BETA badge. Click it: the dialog opens on the **Data product** tab, Mode
+   **Production**. The deployed products list; search narrows it.
+2. Pick a product: its access points show by group. A parameterized one is disabled and says why. The warehouse
+   reads `LAKEHOUSE_CONSUMER_DEFAULT_WH` (or the one you last used); change it if needed.
+3. Add an access point. Open the dialog again: it opens on the same product with its access points shown, the Mode
+   and warehouse are fixed, and only that project's products at that version are listed. Add a second access point of
+   the same product.
+4. Join the two on a shared key and press **F9**: rows come back. **Show Pure** shows two `#P{…}#` accessors and
+   `->from(cube::dataProduct::Runtime)`.
+5. On a new cube, choose Mode **Production (parallel)**, add an access point and press **F9**.
+6. **Export (dev)** and **Import (dev)** the first cube: the same graph comes back, and **F9** gives the same rows.
+
+Record the deployment, the products and access points used, and any console errors.
+
 ### 11.3 After the slice (recommended order, outline)
 
-| #    | Milestone                                  | Contents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ---- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M2.0 | legend-graph types (D12)                   | Fix legend-graph's precise primitives as their own PR to master: resolve by full path as well as short name, fix the `Timestamp` path (now a relational class), deprecate the phantom `Decimal`/`Date`/`Time` precise constants, keep parameters through `getLambdaRelationType`, fix its batch variant. Then rebase `CubeType` on legend-graph's `GenericType`; the core may depend on legend-graph's metamodel (never `V1_*`); update §3.3 and Appendix A (§2.2). Must land before M3, which brings legend-graph-typed sources |
-| M2   | Simple unary transforms + Join autofix     | Rename (§7.5 + collision fix; regex replaced, see Appendix A), the **Join rename autofix** (collision-free names), Restrict (input order), Sort (+ "Sort only affects output at the sink" warning), Distinct, Limit, Drop, Slice (`[start, stop)`); the database workarounds of §11.4 (row numbers for Drop and Slice on SQL Server, Sybase and Sybase IQ, for Drop on DB2, MemSQL and ClickHouse and for every Limit on Sybase IQ; a padded Distinct on SQL Server and Sybase IQ); grid quick actions (Sort by / Filter by X)   |
-| M3   | Entry points, sources modal, depot catalog | D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                                                                |
-| M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family), `aggregate()` for global groups; Concat with precise-strict schema equality + widen autofix; a conformance suite comparing local inference with `lambdaRelationType` for every node type                                                                                                                                                                                                                                                            |
-| M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas)                                                                                                                                                                                                                                                                                                                                                      |
-| M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                               |
-| M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                        |
-| M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                             |
-| M9   | More sources                               | Services → Pure functions → data products (mapping modes first; `#P` against mocks) → ingest (`#I` against mocks), with parameter forms (§17.6)                                                                                                                                                                                                                                                                                                                                                                                  |
-| —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| #    | Milestone                                  | Contents                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M2.0 | legend-graph types (D12)                   | Fix legend-graph's precise primitives as their own PR to master: resolve by full path as well as short name, fix the `Timestamp` path (now a relational class), deprecate the phantom `Decimal`/`Date`/`Time` precise constants, keep parameters through `getLambdaRelationType`, fix its batch variant. Then rebase `CubeType` on legend-graph's `GenericType`; the core may depend on legend-graph's metamodel (never `V1_*`); update §3.3 and Appendix A (§2.2). Needed when Cube types tables locally; no longer gates M3's sources (user, 2026-10-08, §6.8) |
+| M2   | Simple unary transforms + Join autofix     | Rename (§7.5 + collision fix; regex replaced, see Appendix A), the **Join rename autofix** (collision-free names), Restrict (input order), Sort (+ "Sort only affects output at the sink" warning), Distinct, Limit, Drop, Slice (`[start, stop)`); the database workarounds of §11.4 (row numbers for Drop and Slice on SQL Server, Sybase and Sybase IQ, for Drop on DB2, MemSQL and ClickHouse and for every Limit on Sybase IQ; a padded Distinct on SQL Server and Sybase IQ); grid quick actions (Sort by / Filter by X)                                   |
+| M3   | Entry points, sources modal, depot catalog | The direct connection first, then data products (§6.8, moved up from M9). D7 follow-up: entry links (setup action, editor menu, deep links `/cube/new?…`), source-modal redesign, final look; the depot catalog (§6.3) with an SDLC-pointer model context and exact-store runtime filter; SNAPSHOT handling                                                                                                                                                                                                                                                      |
+| M4   | Group and Concat                           | Aggregations (§10 with the §5.7 result-type rules, availability per family), `aggregate()` for global groups; Concat with precise-strict schema equality + widen autofix; a conformance suite comparing local inference with `lambdaRelationType` for every node type                                                                                                                                                                                                                                                                                            |
+| M5   | Partition (windows)                        | §8.6 `let` isolation, array form, `size()` counts, sort required for ranking, frames decision; a **dialect harness** (`generatePlan` per database type over golden lambdas)                                                                                                                                                                                                                                                                                                                                                                                      |
+| M6   | Extend and Difference                      | Expression editor (Monaco), JSON-canonical expression storage + display text, engine typing over an empty model with cached types, plan-time validation; Difference emulation with §7.12 semantics                                                                                                                                                                                                                                                                                                                                                               |
+| M7   | Grid and presentation                      | Server-side mode (enterprise SSRM) with lambda-derived drill-down, CSV and XLSX export, the context menu, stats, §13 column formatting with the §21 fixes                                                                                                                                                                                                                                                                                                                                                                                                        |
+| M8   | Persistence                                | Engine Cube store PR (§10.6), Studio client, `CubeStore` port, Save/Load/Copy/Paste, `/cube/:cubeId`, modified state, `beforeunload`                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| M9   | More sources                               | Services → Pure functions → ingest (`#I` against mocks), with parameter forms (§17.6); data products moved to M3 (§6.8)                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| —    | Out of scope                               | Publishing and service registration (§15); V0 import                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 M2 comes before M3 because it is cheap, testable headlessly, and gives the POC real breadth while the entry points
 and sources modal are designed. M3 can run in parallel if desired.
@@ -2618,6 +2737,11 @@ This subsection overrides the sections it names until they are updated (see "Sup
    must match what this plan verified on the engine, and the data must reach the browser somehow. Data Cube already
    uses `@duckdb/duckdb-wasm` (1.31.0), which is the precedent to study. First step: a research note with the options
    and a recommendation, no code.
+10. **The next sources, still open** (2026-10-08; settled parts in §6.8): versions (recommended: `latest` resolved to a
+    concrete version at pick time, since the engine caches `latest`; SNAPSHOT opt-in, item 5), and access badges for
+    data products the viewer isn't entitled to.
+
+Questions about the original app's UI that the spec leaves open are in [QUESTIONS.md](QUESTIONS.md).
 
 ---
 

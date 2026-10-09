@@ -23,6 +23,7 @@ import {
   CompressIcon,
   DataCubeIcon,
   FilterIcon,
+  PackageIcon,
   PencilIcon,
   QuestionSquareIcon,
   SortIcon,
@@ -35,6 +36,7 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
 /** The icon each node type's icon name draws (PLAN §11.4) */
 const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   table: TableIcon,
+  dataProduct: PackageIcon,
   filter: FilterIcon,
   join: ArrowsJoinIcon,
   limit: AlignTopIcon,

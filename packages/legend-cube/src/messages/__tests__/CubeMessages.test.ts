@@ -140,6 +140,12 @@ test(unitTest('Messages added by Cube'), () => {
   ).toBe(
     'Sources from different databases are not supported yet; "other::Db" differs from "test::Northwind".',
   );
+  expect(MESSAGES.MESSAGE_TABLE_AFTER_DATA_PRODUCT).toBe(
+    'Database tables and data products cannot be mixed in one query; this query reads from data products.',
+  );
+  expect(MESSAGES.MESSAGE_DATA_PRODUCT_AFTER_TABLE).toBe(
+    'Database tables and data products cannot be mixed in one query; this query reads from database tables.',
+  );
   expect(
     MESSAGES.MESSAGE_FILTER_OPERATOR_UNSUPPORTED(
       'contains',

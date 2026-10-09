@@ -1,0 +1,74 @@
+{
+  "formatVersion": 1,
+  "name": "Order events",
+  "context": {
+    "model": {
+      "_type": "cubeDataProduct",
+      "groupId": "com.example.sales",
+      "artifactId": "orders-products",
+      "versionId": "1.4.0",
+      "environmentType": "PRODUCTION"
+    },
+    "runtime": "cube::dataProduct::Runtime"
+  },
+  "query": {
+    "selected": "dataProductAccessPoint101",
+    "nodes": [
+      {
+        "kind": "dataProductAccessPoint",
+        "id": "dataProductAccessPoint101",
+        "dataProduct": "sales::products::OrdersProduct",
+        "accessPointGroup": "core",
+        "accessPoint": "order_events",
+        "dataProductId": "ORDERS_PRODUCT",
+        "deploymentId": "deployment-1234",
+        "schemaSnapshot": [
+          {
+            "name": "EVENT_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::BigInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "NOTE",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [200]
+            },
+            "nullable": true
+          },
+          {
+            "name": "AMOUNT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Numeric",
+              "params": [10, 2]
+            },
+            "nullable": true
+          },
+          {
+            "name": "AT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Timestamp"
+            },
+            "nullable": false
+          },
+          {
+            "name": "PAYLOAD",
+            "type": {
+              "path": "meta::pure::metamodel::variant::Variant"
+            },
+            "nullable": true
+          },
+          {
+            "name": "SHAPE",
+            "type": {
+              "path": "example::geo::Polygon"
+            },
+            "nullable": true
+          }
+        ]
+      }
+    ]
+  }
+}

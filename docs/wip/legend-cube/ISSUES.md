@@ -127,6 +127,34 @@ Title: Duplicate columns from rename/select return HTTP 500 with no source infor
 compilation error (400) with the call's source information, like other typing errors.
 ```
 
+## Direct connections and data products
+
+### The engine's schema exploration mistypes some columns
+
+On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`. Cube keeps the
+engine's types (precision isn't enforced in Cube), and no test asserts them. An engine issue to file.
+
+### Engine errors can echo setup SQL
+
+A failed exploration's message may quote the connection's setup SQL. Cube shows the first line and the rest on demand,
+in the tab only; it never logs it.
+
+### Data products can't run on the open-source engine
+
+The open-source engine rejects every data product construct (`#P`, a LakehouseRuntime with an environment and a
+warehouse), so data product runs are tested with fakes and, on the engine, with stand-in functions only. The first
+real run is in an internal deployment (Part B2).
+
+### Saved data product sources aren't checked again
+
+A data product cube opens on its saved column snapshots; Refresh and the re-check on import don't read the artifact
+again yet (a planned follow-up). A redeployed product doesn't change a cube, which stays on its saved version.
+
+### The lite list is read whole
+
+The data product list reads the lakehouse's lite list through `getAllLiteDataProducts`, as Legend Query does, which
+pages until the server says it's done and takes no abort signal. Paging guards and marketplace search are follow-ups.
+
 ## Test gaps
 
 None hides a known bug.

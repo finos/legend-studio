@@ -1,0 +1,46 @@
+{
+  "formatVersion": 1,
+  "name": "Kept for a later version",
+  "context": {
+    "model": {
+      "_type": "cubeDataProduct",
+      "groupId": "com.example.sales",
+      "artifactId": "orders-products",
+      "versionId": "1.4.0",
+      "environmentType": "PRODUCTION",
+      "warehouse": "CUBE_SAMPLE_WH",
+      "laterModelKey": {
+        "nested": [1, null]
+      }
+    },
+    "runtime": "cube::dataProduct::Runtime"
+  },
+  "query": {
+    "selected": "dataProductAccessPoint101",
+    "nodes": [
+      {
+        "kind": "dataProductAccessPoint",
+        "id": "dataProductAccessPoint101",
+        "dataProduct": "sales::products::OrdersProduct",
+        "accessPointGroup": "core",
+        "accessPoint": "daily_orders",
+        "dataProductId": "ORDERS_PRODUCT",
+        "deploymentId": "deployment-1234",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::BigInt"
+            },
+            "nullable": false,
+            "laterColumnKey": "kept"
+          }
+        ],
+        "laterNodeKey": true,
+        "__proto__": {
+          "polluted": true
+        }
+      }
+    ]
+  }
+}

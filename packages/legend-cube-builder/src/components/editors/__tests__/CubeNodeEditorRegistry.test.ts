@@ -53,6 +53,8 @@ describe('Node editor registries', () => {
   test('Carries the help text and the Select tooltip verbatim (spec §17.9)', () => {
     expect(CUBE_NODE_HELP_TEXT).toEqual({
       relational: 'Sources data from relational database table.',
+      dataProductAccessPoint:
+        'Sources data from an access point of a deployed data product.',
       distinct: 'Removes duplicate rows from the previous data set.',
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
       filter:

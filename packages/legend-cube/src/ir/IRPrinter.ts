@@ -179,6 +179,8 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return `~[${ir.specs.map(colSpecBody).join(', ')}]`;
     case 'storeAccessor':
       return `#>{${ir.path.join('.')}}#`;
+    case 'dataProductAccessor':
+      return `#P{${ir.path.join('.')}}#`;
     case 'elementPtr':
       return ir.path;
     case 'genericType':

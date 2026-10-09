@@ -51,7 +51,8 @@ const TRANSFORMS = [
   'Take rows <x> to <y>',
   'Join Another Input',
 ];
-const PALETTE = ['Relational Database Table', ...TRANSFORMS];
+const TABLE = 'Relational Database Table';
+const PALETTE = [TABLE, 'Data Product (BETA)', ...TRANSFORMS];
 const ITEMS = [...PALETTE, 'Select', 'Remove', 'Swap Inputs'];
 
 const render = async (document?: CubeDocument): Promise<CubeEditorState> => {
@@ -129,7 +130,8 @@ describe('Canvas context menu', () => {
     await TEST__findCanvasNode('join101');
     let items = await openMenu(canvasPane());
     expect([...items.keys()]).toEqual(ITEMS);
-    expect(enabledItems(items)).toEqual(PALETTE);
+    // a cube of tables takes no data product
+    expect(enabledItems(items)).toEqual([TABLE, ...TRANSFORMS]);
     await closeMenu();
 
     act(() => editorState.importDocument(new CubeDocument(), false));

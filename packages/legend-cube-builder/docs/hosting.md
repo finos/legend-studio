@@ -11,6 +11,8 @@ interface CubeHost {
   readonly applicationStore: GenericLegendApplicationStore;
   readonly engine: CubeEngine;
   readonly modelCatalog: LocalModelCatalog;
+  readonly connectionExplorer?: CubeConnectionExplorer | undefined;
+  readonly dataProductCatalog?: CubeDataProductCatalog | undefined;
 }
 ```
 
@@ -23,12 +25,23 @@ interface CubeHost {
   and caches each model's outline: its tables, for the source picker, and its runtimes' connections with their
   database types, which Drop, Slice, Limit and Distinct need on some databases (PLAN §11.4). Users can also paste a Pure
   model.
+- **Direct database connections (optional):** `buildCubeConnectionExplorer(config, tracerService)` builds the explorer
+  that reads the database behind a connection through the engine's schema exploration
+  (`/pure/v1/utilities/database/schemaExploration`), with its own client configured as the engine's. Without one,
+  the source picker offers no database connection. H2 and DuckDB only for now, and only secret-free authentication: a
+  cube saves its connection, so it never holds a password or token.
+- **Data products (optional, beta):** `buildCubeDataProductCatalog(services)` lists the deployed data products of a
+  class from the lakehouse's lite list and reads a product's access points from its deployed artifact and definition in
+  the depot. Pass `buildCubeLakehouseEnvironment(services)` to `buildCubeEngine` as `lakehouseEnvironment`, so data
+  product cubes run in the viewer's lakehouse environment. `services` holds the host's lakehouse contract and depot
+  clients, its token getter and the viewer's id; Legend Query builds them only when its `lakehouse` is configured.
 
 Render the page with `<CubeEditor host={host} />`, and pass `initialDocument` to open a given cube. The page's state
 lives as long as the page; Legend Query makes a new host on each visit.
 
-**The bundled model runs only on an engine that allows LocalH2.** It sets up Northwind in an in-memory H2 database
-through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't run.
+**The bundled model, and H2 connections, run only on an engine that allows LocalH2.** It sets up Northwind in an
+in-memory H2 database through its connection's `testDataSetupSqls`. On an engine that forbids LocalH2, its queries don't
+run.
 
 ## Shortcuts
 

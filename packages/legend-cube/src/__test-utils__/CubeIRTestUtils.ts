@@ -51,6 +51,7 @@ const label = (node: IR): string | undefined => {
     case 'literal':
     case 'enumValue':
     case 'storeAccessor':
+    case 'dataProductAccessor':
       return printIR(node);
     default:
       return undefined;
@@ -59,7 +60,7 @@ const label = (node: IR): string | undefined => {
 
 /**
  * Every IR node that can carry an origin (func, property, literal, enumValue
- * and storeAccessor), in tree order, as `<label>@<nodeId>:<role>`, or
+ * and the accessors), in tree order, as `<label>@<nodeId>:<role>`, or
  * `<label>@-` without one; e.g. `filter@filter101:filter`, `.CITY@filter101:column`,
  * `'France'@filter101:value`. Tests compare the whole list, so each site's
  * role is pinned.

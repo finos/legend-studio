@@ -79,5 +79,20 @@ would serve it.
   model. If the test comparing with it fails, the engine's typing changed: check the change, then record the file
   again by hand.
 
+### Direct connections
+
+- `TEST__createCubeHost()` also gives `connections`, a fake connection explorer
+  (`src/__test-utils__/FakeCubeConnectionExplorer.ts`) whose `listSchemas` answers `CUBE_DIRECT` and whose `listTables`
+  answers `FAKE_DIRECT_TABLES`, each a Jest mock.
+- On the engine, `V1_createEngineBackedCubeEngine()` also spies `buildDatabase` (schema exploration), and
+  `V1_createEngineBackedCubeConnectionExplorer()` gives a real explorer. `directH2Connection(schema)` and
+  `directDuckDBConnection(schema)` (`src/__test-utils__/CubeDirectConnectionFixtures.ts`) build small databases from
+  setup SQL.
+- **Setup SQL runs on every pooled connection**, so a setup must first drop what it creates. Each engine test file
+  still uses its own schema names, so files never depend on each other's data.
+- **Never assert an engine answer that is a known defect.** Schema exploration types H2's and DuckDB's `DECIMAL(10,2)`
+  as `Numeric(0,0)` and DuckDB's `VARCHAR(5)` as `Varchar(0)`; only the core's DuckDB sample
+  (`packages/legend-cube/src/spec/__tests__/fixtures/direct/`) holds those types, and no engine test reads it.
+
 The engine tests in `src/__tests__/` import `V1_*` classes there, as an exception to the V1 rule: they need both the
 `v1/` adapter and `stores/`, which the import-hierarchy lint rule keeps apart.

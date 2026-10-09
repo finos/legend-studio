@@ -32,6 +32,7 @@ import { emitRestrict } from '../ir/emitters/RestrictEmitter.js';
 import { emitSlice } from '../ir/emitters/SliceEmitter.js';
 import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
+import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
@@ -42,7 +43,12 @@ import { RESTRICT_CODEC } from '../spec/codecs/RestrictCodec.js';
 import { SLICE_CODEC } from '../spec/codecs/SliceCodec.js';
 import { SORT_CODEC } from '../spec/codecs/SortCodec.js';
 import { RELATIONAL_TABLE_SOURCE_CODEC } from '../spec/codecs/RelationalTableSourceCodec.js';
+import { DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC } from '../spec/codecs/DataProductAccessPointSourceCodec.js';
 import type { NodeSpecCodec } from '../spec/NodeSpecCodec.js';
+import {
+  DataProductAccessPointSource,
+  sourcesAreOneKind,
+} from './sources/DataProductAccessPointSource.js';
 import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
@@ -120,6 +126,23 @@ export const RELATIONAL_TABLE_SOURCE_DEFINITION: SourceDefinition<RelationalTabl
     queryRules: [relationalSourcesShareDatabase],
     emit: (node) => emitRelationalTableSource(node),
     spec: RELATIONAL_TABLE_SOURCE_CODEC,
+  };
+
+/** A data product's access point (PLAN §6.8), in beta */
+export const DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION: SourceDefinition<DataProductAccessPointSource> =
+  {
+    kind: 'source',
+    type: DataProductAccessPointSource.TYPE,
+    label: 'Data Product',
+    icon: 'dataProduct',
+    beta: true,
+    fromCoordinates: (id, coordinates) =>
+      DataProductAccessPointSource.fromCoordinates(id, coordinates),
+    resolve: (node, resolution) => node.withResolution(resolution),
+    // once, here: the registry joins every definition's rules
+    queryRules: [sourcesAreOneKind],
+    emit: (node) => emitDataProductAccessPointSource(node),
+    spec: DATA_PRODUCT_ACCESS_POINT_SOURCE_CODEC,
   };
 
 export const SORT_DEFINITION: TransformDefinition<Sort> = {
@@ -273,6 +296,7 @@ export class NodeRegistry {
 export const createNodeRegistry = (): NodeRegistry =>
   new NodeRegistry([
     RELATIONAL_TABLE_SOURCE_DEFINITION,
+    DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     SORT_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,

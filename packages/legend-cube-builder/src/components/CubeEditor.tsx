@@ -86,8 +86,8 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
           </span>
         )}
         <CubeButton
-          title={readOnly ? READ_ONLY_CUBE_TITLE : undefined}
-          disabled={readOnly}
+          title={editorState.sourcePicker.disabledReason}
+          disabled={editorState.sourcePicker.disabledReason !== undefined}
           onClick={() => editorState.sourcePicker.open()}
         >
           Add table

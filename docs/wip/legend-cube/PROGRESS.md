@@ -31,10 +31,13 @@ See PLAN.md §11 for the deliverables and "done when" of each step.
 - [x] **M1.7** Thin end-to-end headless: `v1/` serializer, relation-type adapter, engine port, Cube Northwind fixture, engine-roundtrip acceptance (part A)
 - [x] **M1.8a** Editor state and page without canvas (picker, grid with execute/stale/limit, Show Pure, export/import spec, undo)
 - [x] **M1.8b** Canvas and editors (canvas, palette, DnD, Join/Filter/Source panels, shortcuts)
-- [x] **M1.9** Slice acceptance (part B, manual) and hardening (accepted and signed off 2026-10-08; follow-up PR to open)
-- [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. Before M3
-- [ ] M2 Rename + Join autofix + simple unary transforms
-- [ ] M3 Entry points, sources modal, depot catalog (user to design entry points and the sources modal first)
+- [x] **M1.9** Slice acceptance (part B, manual) and hardening (accepted and signed off 2026-10-08; merged as #5634, `3260216a6`)
+- [ ] **M2.0** legend-graph types (D12): fix legend-graph's precise primitives (own PR), then rebase `CubeType` on legend-graph's `GenericType`. No longer gates the sources (PLAN §6.8)
+- [x] M2 Rename + Join autofix + simple unary transforms (merged as #5644, `0335b3f5f`)
+- [ ] M3 Sources: the direct connection first (H2 and DuckDB; PLAN §6.8), then data products, then Depot databases; entry points and the sources modal
+  - The direct connection (H2 and DuckDB) and a thin end-to-end data product slice (beta) go in one PR, #5641, so data
+    products can be tested inside an internal deployment (user, 2026-10-09). Part B2 (PLAN §11.2) is the manual check
+    of both. The data product follow-ups (PLAN §6.8) come in the next PR, then Depot databases.
 - [ ] M4 Group, Concat · M5 Partition (windows) · M6 Extend, Difference · M7 Grid and presentation
 - [ ] M8 Persistence (engine Cube store) · M9 More sources (services → functions → data products → ingest)
 
@@ -71,13 +74,16 @@ M1.9 build order (requirements B1–B19, without the e2e and the optional steps;
 6. ✅ **Part B acceptance, 2026-10-08:** the user ran all of PLAN §11.2 Part B by hand and reported that it passed,
    on `cubeV1` at `4064209a6` (code and tests as at the acceptance head `92afa6f9f`), in Chrome, against the local
    IntelliJ engine (commit `93d92b4`); docker CORS waived. **M1 review sign-off** (PLAN §11.1): the finos approval of
-   #5591 (Yasirmod17, 2026-10-08) and the user's OK on 2026-10-08. Next: the follow-up PR.
+   #5591 (Yasirmod17, 2026-10-08) and the user's OK on 2026-10-08. The follow-up PR, #5634, merged on 2026-10-08 as
+   `3260216a6`.
 
 **In parallel:** M1.9 merged on 2026-10-08 as #5634 (`3260216a6`). M2, the simple unary operations, runs on
 `cube-ops`, a branch from master, with its status in [PROGRESS-M2.md](PROGRESS-M2.md) and its decisions in PLAN §11.4;
 each operation follows the editor contract in PLAN §7.4. Also planned: test setup and a DuckDB WASM study (low
-priority, research first: PLAN §12.2 item 9); new sources wait on the user's design. Decimal precision stays for a
-later PR (user, 2026-10-07).
+priority, research first: PLAN §12.2 item 9). The next sources (databases from Depot and direct connections, deployed data
+products) and their local test setup are being designed with the user: settled parts in PLAN §6.8, open ones in §12.2
+item 10, UI questions for the original app in [QUESTIONS.md](QUESTIONS.md). Decimal precision stays for a later PR
+(user, 2026-10-07).
 
 ## Milestone notes
 
@@ -218,7 +224,7 @@ The user wants a first merge so that new sources and new operations can be built
     already handles; a new IR or literal kind needs its own case there.
   - An operation's editor follows the editor contract in PLAN §7.4 (a draft, an editor, help text, an icon; a
     registry test checks each type has them).
-  - New sources wait on the entry-points and sources-modal design (before M3) and on M2.0.
+  - New sources: the design is under way with the user (PLAN §6.8); M2.0 no longer gates them (user, 2026-10-08).
 
 ## Open items
 
