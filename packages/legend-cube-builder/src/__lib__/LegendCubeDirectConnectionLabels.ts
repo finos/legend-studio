@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { CubeConnectionDatasourceKind } from '../graph-manager/CubeConnectionExplorer.js';
+
 // The text of the source picker's database connection tab (PLAN §6.8)
 
 /**
@@ -43,3 +45,28 @@ export const CUBE_DIRECT_MESSAGE = {
   NO_SCHEMA_FOUND: 'The database has no schema Cube can read',
   NO_TABLE_SCHEMA: 'The engine gave no schema for this table',
 } as const;
+
+export const CUBE_DIRECT_HELP_TEXT = {
+  SETUP_SQL:
+    "The engine runs these statements on every connection, so they should first drop what they create. A statement ends with a line ending in ';'. A statement that returns rows, such as a select, fails.",
+  DUCKDB_PATH:
+    "A DuckDB file on the engine's host; leave it empty for an in-memory database.",
+  FIXED_CONNECTION:
+    "All of the cube's tables come from this connection: to use another one, remove them first.",
+} as const;
+
+export const CUBE_DIRECT_DATASOURCE_LABELS: Readonly<
+  Record<CubeConnectionDatasourceKind, string>
+> = {
+  [CubeConnectionDatasourceKind.LOCAL_H2]:
+    "an H2 database in the engine's H2 server",
+  [CubeConnectionDatasourceKind.DUCKDB_IN_MEMORY]:
+    'an in-memory DuckDB database',
+  [CubeConnectionDatasourceKind.DUCKDB_FILE]: 'a DuckDB file',
+};
+
+/** How many of a table's columns Cube leaves out, or nothing when it keeps them all */
+export const getHiddenColumnsLabel = (count: number): string | undefined =>
+  count === 0
+    ? undefined
+    : `${count} ${count === 1 ? 'column' : 'columns'} hidden`;
