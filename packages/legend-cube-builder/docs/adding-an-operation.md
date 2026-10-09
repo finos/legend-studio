@@ -86,6 +86,8 @@ how they map back, or the warning goes missing or shows on the wrong column.
 - An engine test of the operation in `src/__tests__/LegendCubeOperations.engine-roundtrip-test.ts` (see
   [Testing](./testing.md)): its lambda as the engine parses the printed Pure, its typing against Cube's inferred
   schema, and what it returns, not its text.
+- A case of the new node type in `src/__tests__/CubeInferenceConformance.engine-roundtrip-test.ts`, whose coverage
+  test fails until there is one: the engine must type every node of the case as Cube infers it.
 
 The `v1/` adapter (`V1_CubeLambdaSerializer`) needs no change while the operation's emitter uses only IR and literal
 kinds it already writes. A new kind of IR node or literal needs its own case there, with a test in

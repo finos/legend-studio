@@ -12,15 +12,15 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
-| Step   | **M4.1 in progress**: PLAN §11.5 and this file                                                                                      |
-| Tests  | As at M2's merge: 1853 core, 740 builder (core group), 236 Query, 167 builder engine-roundtrip                                      |
+| Step   | M4.1–M4.2 done (the settled decisions; the conformance suite on M2's node types); **M4.3 next**                                     |
+| Tests  | 1853 core, 750 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.2)                                           |
 
 ## Steps
 
 See PLAN §11.5 for each step's deliverable and when it is done.
 
-- [ ] **M4.1** The settled decisions (PLAN §11.5) and this file
-- [ ] **M4.2** The conformance suite on M2's node types
+- [x] **M4.1** The settled decisions (PLAN §11.5) and this file
+- [x] **M4.2** The conformance suite on M2's node types
 - [ ] **M4.3** The aggregation model (core)
 - [ ] **M4.4** Group in the core
 - [ ] **M4.5** Group in the builder, and registered
@@ -40,8 +40,11 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step | Commit | Subject |
-| ---- | ------ | ------- |
+| Step     | Commit      | Subject                                                          |
+| -------- | ----------- | ---------------------------------------------------------------- |
+| M2 merge | `8c1d3f74e` | docs: record Legend Cube M2's merge                              |
+| M4.1     | `95339aeb9` | docs: settle Legend Cube M4 (Group and Concat)                   |
+| M4.2     | (this one)  | test: hold Legend Cube's inference to the engine's, node by node |
 
 ## Step notes
 
@@ -78,6 +81,21 @@ The user answered all eight questions on the recommendation (2026-10-09):
 - Q7 Conformance nullability: exact, with the columns where Cube may be wider declared per case; replaces PLAN §12.1's
   one-way rule.
 - Q8 Concat wording: ports First and Second, and the new help text.
+
+**M4.2, the conformance suite (2026-10-09).** `CubeInferenceConformance.engine-roundtrip-test.ts` resolves the
+tables of 19 cases in one engine call and types every node of every case in one `typeLambdas` batch (about 0.1 s):
+the sources (ORDERS, ALLTYPES), Filter (an And with a negated Is Empty; Is Not Empty on ALLTYPES), the four Joins on
+CUSTOMER_ID, a FULL join on keys of differing parameters and one on a nullable key, a LEFT join then Restrict, Rename,
+Sort and Limit, the Join autofix (ORDER_DETAILS and PRODUCTS), Sort on two keys, Restrict then Rename, Restrict then
+Distinct, Limit, Drop and Slice after a Sort, and a chain on ALLTYPES. `TEST__typingDifferences`
+(`CubeOperationsTestUtils.ts`) compares names, positions, precise types with parameters and nullability exactly;
+`TEST__expectEngineTyping` now uses it one-way, as does the corpus test, which types every node each sample can run,
+not only the one it runs. Run with no exception declared, the suite found 13 differences, all columns the engine
+types not nullable where Cube says nullable: padded columns of the LEFT, RIGHT and FULL joins, the FULL merged keys,
+and the padded column carried through the nodes after the LEFT join. Each is declared in its case's `widerNullable`
+with the reason; no M2 node differs otherwise. Proofs: removing every Distinct fails the coverage test, and dropping
+the LEFT join's declared column fails the typing test (each run on a temporary copy of the test, then deleted). A
+core-group test pins the comparator's rules (10 tests). The builder guides say a new operation needs a case.
 
 ## Open items
 

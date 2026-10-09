@@ -2827,7 +2827,7 @@ nodes may turn invalid (visible, undoable).
 `QueryEmitter.canEmit` accepts, Cube's schema against the engine's type of `emitTypingLambda(nodeId)`, in one
 `typeLambdas` batch: names in position, `type.fullName`, nullability exact but for each case's `widerNullable` columns
 (Q7). A guard fails when a type `createNodeRegistry()` registers (`NodeRegistry.ts:273-285`) has no case.
-`TEST__expectEngineTyping` (`CubeOperationsTestUtils.ts:148-177`) stays one-way for M2's tests. The engine is created
+`TEST__expectEngineTyping` stays one-way for M2's tests; both use `TEST__typingDifferences` (`CubeOperationsTestUtils.ts`). The engine is created
 inside the test, never in `beforeAll`; the suite runs against the moving CI engine image, so its failure message says
 the engine's typing may have changed. Cases: the ALLTYPES families and FREIGHT, Filter, the four Joins, the Join
 autofix, every M2 operation, every aggregation × family, keys listed in a non-input order, a global aggregate, a Group
