@@ -166,6 +166,9 @@ export class CubeEditorState implements CommandRegistrar {
       analysis: computed,
       emitter: computed,
       canUndo: computed,
+      hasEditsToApply: computed,
+      executeEdited: action,
+      undoEdited: action,
       isDialogOpen: computed,
       applyDocument: action,
       undo: action,
@@ -367,25 +370,62 @@ export class CubeEditorState implements CommandRegistrar {
    * The page's keyboard shortcuts, while it is open (spec §17.12). Each does
    * nothing when its button can't be used, and nothing while a Cube dialog
    * is open, since a dialog doesn't stop the app's shortcuts (user's choice,
-   * 2026-10-07). Undo leaves Ctrl+Z to a text field that has the focus.
+   * 2026-10-07), or while something opened from the node editor holds it
+   * open. Like their buttons, they finish the node editor first (PLAN §11.6):
+   * F9 runs the edited query, and Ctrl+Z undoes what finishing applied. Undo
+   * leaves Ctrl+Z to a text field that has the focus.
    */
   registerCommands(): void {
-    const { commandService, alertUnhandledError } = this.host.applicationStore;
+    const { commandService } = this.host.applicationStore;
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.EXECUTE,
       trigger: () =>
         !this.isDialogOpen &&
-        this.execution.canExecute &&
-        !this.execution.isRunning,
-      action: () => {
-        flowResult(this.execution.execute()).catch(alertUnhandledError);
-      },
+        !this.nodeEditor.isHeld &&
+        !this.execution.isRunning &&
+        (this.execution.canExecute || this.hasEditsToApply),
+      action: () => this.executeEdited(),
     });
     commandService.registerCommand({
       key: LEGEND_CUBE_COMMAND_KEY.UNDO,
-      trigger: () => !this.isDialogOpen && this.canUndo && !isTypingText(),
-      action: () => this.undo(),
+      trigger: () =>
+        !this.isDialogOpen &&
+        !this.nodeEditor.isHeld &&
+        (this.canUndo || this.hasEditsToApply) &&
+        !isTypingText(),
+      action: () => this.undoEdited(),
     });
+  }
+
+  /** The node editor has edits that closing it would apply */
+  get hasEditsToApply(): boolean {
+    return this.nodeEditor.hasChanges && !this.readOnly;
+  }
+
+  /**
+   * Execute, as its button and F9 do (spec §17.5): finishes the node editor
+   * first, so the edits run, then runs the query if it can; runs nothing
+   * when the edits had to be dropped, since the run would not be what the
+   * user edited
+   */
+  executeEdited(): void {
+    if (!this.nodeEditor.finishApplied() || !this.execution.canExecute) {
+      return;
+    }
+    flowResult(this.execution.execute()).catch(
+      this.host.applicationStore.alertUnhandledError,
+    );
+  }
+
+  /**
+   * Undo, as its button and Ctrl+Z do: finishes the node editor first, then
+   * undoes the last change, which drops the edits it just applied; when the
+   * edits had to be dropped instead, that was the undo
+   */
+  undoEdited(): void {
+    if (this.nodeEditor.finishApplied()) {
+      this.undo();
+    }
   }
 
   deregisterCommands(): void {

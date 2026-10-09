@@ -158,6 +158,7 @@ export enum CUBE_EDITOR_CLOSED_REASON {
   NODE_CHANGED = 'nodeChanged',
   NODE_REMOVED = 'nodeRemoved',
   CUBE_REPLACED = 'cubeReplaced',
+  CANNOT_APPLY = 'cannotApply',
 }
 
 /** The notice of a node editor that closed by itself, dropping its edits (M1.8b) */
@@ -170,7 +171,9 @@ export const getEditorClosedNotice = (
       ? `${nodeId} changed`
       : reason === CUBE_EDITOR_CLOSED_REASON.NODE_REMOVED
         ? `${nodeId} was removed`
-        : 'Another cube was opened';
+        : reason === CUBE_EDITOR_CLOSED_REASON.CANNOT_APPLY
+          ? `The query can't take the changes to ${nodeId}`
+          : 'Another cube was opened';
   return `${cause}, so the editor of ${nodeId} closed without applying its changes.`;
 };
 

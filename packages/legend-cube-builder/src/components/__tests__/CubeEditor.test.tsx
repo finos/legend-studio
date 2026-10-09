@@ -26,6 +26,7 @@ import {
   Query,
   RelationalTableSource,
   Schema,
+  serializeCubeSpec,
 } from '@finos/legend-cube';
 import {
   act,
@@ -249,7 +250,7 @@ describe('Cube page', () => {
     }
   });
 
-  test('Opens the node editor beside the page, and says in the graph region when it closed dropping edits', async () => {
+  test('Opens the node editor beside the page, has Undo apply its edits before undoing them, and says in the graph region when it closed dropping edits', async () => {
     await renderPage(
       new CubeDocument({
         context: CONTEXT,
@@ -268,18 +269,20 @@ describe('Cube page', () => {
       }),
     );
     fireEvent.click(await TEST__findCanvasNode('join101'));
-    const editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    let editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
     // beside the graph and the results, in a group of its own
     expect(
       editor
         .closest(`[data-orientation="vertical"]`)
         ?.getAttribute('data-testid'),
     ).toBe(mockPanelGroupTestId);
+    const keyRows = (): HTMLElement[] =>
+      within(
+        within(editor).getByRole('list', { name: 'Join columns' }),
+      ).getAllByRole('listitem');
     const pickKeys = (left: string, right: string): void => {
       fireEvent.click(within(editor).getByText('Add join columns'));
-      const position = within(
-        within(editor).getByRole('list', { name: 'Join columns' }),
-      ).getAllByRole('listitem').length;
+      const position = keyRows().length;
       fireEvent.change(
         within(editor).getByLabelText(`Left join column ${position}`),
         { target: { value: left } },
@@ -293,11 +296,33 @@ describe('Cube page', () => {
     fireEvent.click(within(editor).getByText('Apply'));
     pickKeys('SHIP_CITY', 'CITY');
     const graph = screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
+    // Undo applies the edits, then undoes them: nothing is dropped, so no notice
     fireEvent.click(within(graph).getByText('Undo'));
     expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(
+      within(graph).queryByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE),
+    ).toBeNull();
+    fireEvent.click(await TEST__findCanvasNode('join101'));
+    editor = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    expect(keyRows()).toHaveLength(1);
+    expect(
+      within(editor).getByLabelText<HTMLSelectElement>('Left join column 1')
+        .value,
+    ).toBe('CUSTOMER_ID');
+    // opening another cube drops the edits
+    pickKeys('SHIP_CITY', 'CITY');
+    fireEvent.click(within(graph).getByText('Import (dev)'));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText('Cube spec'), {
+      target: { value: serializeCubeSpec(withOrders()) },
+    });
+    fireEvent.click(within(dialog).getByText('Import'));
+    await waitFor(() =>
+      expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull(),
+    );
     const notice = within(graph).getByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE);
     expect(notice.textContent).toContain(
-      'join101 changed, so the editor of join101 closed without applying its changes.',
+      'Another cube was opened, so the editor of join101 closed without applying its changes.',
     );
     fireEvent.click(within(notice).getByText('Dismiss'));
     expect(

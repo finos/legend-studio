@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { beforeEach, describe, expect, test } from '@jest/globals';
+import { beforeEach, describe, expect, jest, test } from '@jest/globals';
 import {
   collectKeyedCommandConfigEntriesFromConfig,
   type KeyedCommandConfigEntry,
@@ -28,7 +28,14 @@ import {
   Limit,
   Query,
 } from '@finos/legend-cube';
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { guaranteeNonNullable } from '@finos/legend-shared';
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import {
   LEGEND_CUBE_COMMAND_CONFIG,
   LEGEND_CUBE_COMMAND_KEY,
@@ -48,6 +55,7 @@ import {
 } from '../../__test-utils__/CubeTestApplication.js';
 import type { FakeCubeEngine } from '../../__test-utils__/FakeCubeEngine.js';
 import type { CubeResult } from '../../graph-manager/CubeEngine.js';
+import { CubeEditorState } from '../../stores/CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeEditor } from '../CubeEditor.js';
 
@@ -91,6 +99,7 @@ const renderPage = async (
 ): Promise<{
   fake: FakeCubeEngine;
   host: ReturnType<typeof TEST__createCubeHost>['host'];
+  editorState: CubeEditorState;
   unmount: () => void;
 }> => {
   // the plugin is installed before the application store is made
@@ -101,12 +110,25 @@ const renderPage = async (
     { result: ORDERS_RESULT },
     applicationStore,
   );
-  const { unmount } = await TEST__renderInCubeApplication(
-    <CubeEditor host={host} initialDocument={document} />,
-    applicationStore,
-    LEGEND_CUBE_TEST_ID.EDITOR,
-  );
-  return { fake, host, unmount };
+  // the page makes its own state: it is caught as the page registers its commands
+  const spy = jest.spyOn(CubeEditorState.prototype, 'registerCommands');
+  try {
+    const { unmount } = await TEST__renderInCubeApplication(
+      <CubeEditor host={host} initialDocument={document} />,
+      applicationStore,
+      LEGEND_CUBE_TEST_ID.EDITOR,
+    );
+    return {
+      fake,
+      host,
+      editorState: guaranteeNonNullable(
+        spy.mock.contexts[0] as CubeEditorState | undefined,
+      ),
+      unmount,
+    };
+  } finally {
+    spy.mockRestore();
+  }
 };
 
 const pressF9 = (target: Element | Document = document): void => {
@@ -124,6 +146,59 @@ const graph = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRAPH_REGION);
 const toolbar = (): HTMLElement =>
   screen.getByTestId(LEGEND_CUBE_TEST_ID.GRID_TOOLBAR);
+
+/** ORDERS, then a Limit of the size, which Execute runs */
+const limitDocument = (size: number | undefined): CubeDocument =>
+  new CubeDocument({
+    context: CONTEXT,
+    query: new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+        new Limit('limit101', size),
+      ],
+      [new Connection('relational101', 'limit101', 'tds')],
+      'limit101',
+    ),
+  });
+
+/** The size field of the open Limit editor */
+const sizeField = (): HTMLInputElement =>
+  within(screen.getByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).getByLabelText(
+    'Rows to keep',
+  );
+
+/** Opens the Limit's editor and types a size, without applying it */
+const typeSize = async (
+  text: string,
+  focus = false,
+): Promise<HTMLInputElement> => {
+  fireEvent.click(await TEST__findCanvasNode('limit101'));
+  await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+  const size = sizeField();
+  if (focus) {
+    size.focus();
+  }
+  fireEvent.change(size, { target: { value: text } });
+  return size;
+};
+
+/** The Limit sizes in the lambda of the first run */
+const takesRun = (fake: FakeCubeEngine): string[] => {
+  const takes: string[] = [];
+  const visit = (node: unknown): void => {
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+    } else if (typeof node === 'object' && node !== null) {
+      const ir = node as IR & { origin?: { role: string } };
+      if (ir.k === 'literal' && ir.origin?.role === 'take') {
+        takes.push(String(ir.value.value));
+      }
+      Object.values(node).forEach(visit);
+    }
+  };
+  visit(fake.execute.mock.calls[0]?.[1]);
+  return takes;
+};
 
 beforeEach(() => {
   localStorage.clear();
@@ -261,49 +336,123 @@ describe('Cube keyboard shortcuts', () => {
     expect(await selected('limit101')).toBe('true');
   });
 
-  test('Runs the stored Limit on F9 while its new size is not applied', async () => {
-    const { fake } = await renderPage(
-      new CubeDocument({
-        context: CONTEXT,
-        query: new Query(
-          [
-            northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
-            new Limit('limit101', 10),
-          ],
-          [new Connection('relational101', 'limit101', 'tds')],
-          'limit101',
-        ),
-      }),
-    );
-    fireEvent.click(await TEST__findCanvasNode('limit101'));
-    const panel = await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
-    const size = within(panel).getByLabelText<HTMLInputElement>('Rows to keep');
-    size.focus();
-    fireEvent.change(size, { target: { value: '5' } });
+  test('Applies the typed size of a Limit on F9 and runs it, as one undo step', async () => {
+    const { fake } = await renderPage(limitDocument(10));
+    const size = await typeSize('5', true);
     pressF9(size);
     await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
-    // the Limit's own size in the lambda that ran: the stored 10, not the typed 5
-    const takes: string[] = [];
-    const visit = (node: unknown): void => {
-      if (Array.isArray(node)) {
-        node.forEach(visit);
-      } else if (typeof node === 'object' && node !== null) {
-        const ir = node as IR & { origin?: { role: string } };
-        if (ir.k === 'literal' && ir.origin?.role === 'take') {
-          takes.push(String(ir.value.value));
-        }
-        Object.values(node).forEach(visit);
-      }
-    };
-    visit(fake.execute.mock.calls[0]?.[1]);
-    expect(takes).toEqual(['10']);
-    expect(size.value).toBe('5');
+    expect(takesRun(fake)).toEqual(['5']);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    const undo = within(graph()).getByText<HTMLButtonElement>('Undo');
+    expect(undo.disabled).toBe(false);
+    fireEvent.click(undo);
+    expect(undo.disabled).toBe(true);
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    expect(sizeField().value).toBe('10');
+  });
+
+  test('Runs on F9 a query that only the edits in the open editor make valid, and does nothing without them', async () => {
+    const { fake, host } = await renderPage(limitDocument(undefined));
+    const { commandService } = host.applicationStore;
+    expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.EXECUTE)).toBe(
+      false,
+    );
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    await screen.findByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR);
+    pressF9();
+    expect(fake.execute).not.toHaveBeenCalled();
+    fireEvent.change(sizeField(), { target: { value: '5' } });
+    pressF9();
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(takesRun(fake)).toEqual(['5']);
+  });
+
+  test('Does nothing on F9, Ctrl+Z, Execute or Undo while something opened from the node editor holds it open', async () => {
+    const { fake, host, editorState } = await renderPage(limitDocument(10));
+    const { commandService } = host.applicationStore;
+    await typeSize('5');
+    let release: () => void = () => undefined;
+    act(() => {
+      release = editorState.nodeEditor.holdOpen();
+    });
+    pressF9();
+    pressUndo();
+    expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.EXECUTE)).toBe(
+      false,
+    );
+    expect(commandService.runCommand(LEGEND_CUBE_COMMAND_KEY.UNDO)).toBe(false);
+    fireEvent.click(within(toolbar()).getByText('Execute'));
+    fireEvent.click(within(graph()).getByText('Undo'));
+    expect(fake.execute).not.toHaveBeenCalled();
+    expect(sizeField().value).toBe('5');
+    expect(editorState.history).toHaveLength(0);
+    act(() => release());
+    pressF9();
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(takesRun(fake)).toEqual(['5']);
+  });
+
+  test('Applies the edits in the open editor on Ctrl+Z, then undoes only them, closing the editor without a notice', async () => {
+    const { editorState } = await renderPage(limitDocument(10));
+    const limit = editorState.document.query.getNode('limit101');
+    fireEvent.click(await TEST__findCanvasNode('relational101'), {
+      ctrlKey: true,
+    });
+    await typeSize('5');
+    pressUndo();
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
     expect(
-      within(panel).getByRole<HTMLButtonElement>('button', { name: 'Apply' })
-        .disabled,
-    ).toBe(false);
+      within(graph()).queryByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE),
+    ).toBeNull();
+    expect(editorState.document.query.getNode('limit101')).toBe(limit);
+    // the change before the edits stays
+    expect(
+      (await TEST__findCanvasNode('relational101')).getAttribute(
+        'aria-current',
+      ),
+    ).toBe('true');
+    expect(editorState.history).toHaveLength(1);
+  });
+
+  test('Drops the edits in the open editor on Ctrl+Z when there is nothing else to undo', async () => {
+    const { editorState } = await renderPage(limitDocument(10));
+    const limit = editorState.document.query.getNode('limit101');
+    await typeSize('5');
+    expect(document.activeElement?.tagName).not.toBe('INPUT');
+    pressUndo();
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(
+      within(graph()).queryByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE),
+    ).toBeNull();
+    expect(editorState.document.query.getNode('limit101')).toBe(limit);
+    expect(editorState.history).toHaveLength(0);
+  });
+
+  test('Enables Undo while the open editor has edits and there is no history, and Undo then leaves the cube as it was', async () => {
+    const { editorState } = await renderPage(limitDocument(10));
+    const limit = editorState.document.query.getNode('limit101');
+    const undo = within(graph()).getByText<HTMLButtonElement>('Undo');
+    expect(undo.disabled).toBe(true);
+    await typeSize('5');
+    expect(undo.disabled).toBe(false);
+    fireEvent.click(undo);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    expect(
+      within(graph()).queryByTestId(LEGEND_CUBE_TEST_ID.EDITOR_NOTICE),
+    ).toBeNull();
+    expect(editorState.document.query.getNode('limit101')).toBe(limit);
+    expect(undo.disabled).toBe(true);
+  });
+
+  test('Applies the edits in the open editor when Execute is clicked, and runs them', async () => {
+    const { fake } = await renderPage(limitDocument(10));
+    await typeSize('5');
+    fireEvent.click(within(toolbar()).getByText('Execute'));
+    await waitFor(() => expect(fake.execute).toHaveBeenCalledTimes(1));
+    expect(takesRun(fake)).toEqual(['5']);
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
     expect(within(graph()).getByText<HTMLButtonElement>('Undo').disabled).toBe(
-      true,
+      false,
     );
   });
 

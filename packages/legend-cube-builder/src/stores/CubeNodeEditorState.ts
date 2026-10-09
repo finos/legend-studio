@@ -65,9 +65,11 @@ export const isSameNodeContent = (
 };
 
 /**
- * The node editor in the side panel (PLAN §7.4, spec §17.5). Opening it
- * never changes which node Execute runs. Edits go to a draft, and only Apply,
- * or closing the panel, stores them, as one undo step; Cancel drops them.
+ * The node editor (PLAN §7.4, §11.6, spec §17.5). Opening it never changes
+ * which node Execute runs. Edits go to a draft, and only Apply, or closing
+ * the editor, stores them, as one undo step; Cancel drops them. Every close
+ * that applies goes through `finish`, which first lets the editor's fields
+ * commit text typed but not yet stored.
  *
  * The panel follows the cube (user's choice, 2026-10-07): when the node it
  * shows is replaced or removed underneath it, by Undo, a re-check or a
@@ -84,13 +86,22 @@ export class CubeNodeEditorState {
   draft: CubeNodeDraft | undefined;
   /** Why the panel closed by itself, until it opens again or is dismissed */
   notice: string | undefined;
+  /** How many dropdowns, pickers or dialogs opened from the editor hold it open */
+  private holds = 0;
+  /** What commits the editor's pending input, e.g. a field's text not yet stored */
+  private readonly flushers = new Set<() => void>();
 
   private readonly disposeSync: IReactionDisposer;
 
   constructor(editorState: CubeEditorState) {
-    makeObservable<CubeNodeEditorState, 'nodeKey' | 'sync'>(this, {
+    makeObservable<CubeNodeEditorState, 'nodeKey' | 'holds' | 'sync'>(this, {
       nodeId: observable,
       nodeKey: observable,
+      holds: observable,
+      isHeld: computed,
+      holdOpen: action,
+      finish: action,
+      finishApplied: action,
       draft: observable.ref,
       notice: observable,
       node: computed,
@@ -141,7 +152,10 @@ export class CubeNodeEditorState {
     );
   }
 
-  /** Opens the panel on a node, closing (and so applying) the one it showed */
+  /**
+   * Opens the editor on a node, finishing (and so applying) the one it showed;
+   * does nothing while that one is held open
+   */
   open(nodeId: string): void {
     if (nodeId === this.nodeId) {
       this.notice = undefined;
@@ -151,9 +165,11 @@ export class CubeNodeEditorState {
     if (!node) {
       return;
     }
-    this.close();
     this.notice = undefined;
-    this.bind(node);
+    if (this.finish()) {
+      // the node as the cube has it once the other editor finished
+      this.bind(this.editorState.document.query.getNode(nodeId) ?? node);
+    }
   }
 
   /**
@@ -357,6 +373,84 @@ export class CubeNodeEditorState {
   close(): void {
     this.apply();
     this.reset();
+  }
+
+  /**
+   * Whether a dropdown, picker or dialog opened from the editor is open: then
+   * nothing outside it closes the editor, and the page's shortcuts wait
+   * (spec §17.5)
+   */
+  get isHeld(): boolean {
+    return this.holds > 0;
+  }
+
+  /**
+   * Holds the editor open while something opened from it is open; call the
+   * returned function, once, when that closes
+   */
+  holdOpen(): () => void {
+    this.holds += 1;
+    let released = false;
+    return action(() => {
+      if (!released) {
+        released = true;
+        this.holds -= 1;
+      }
+    });
+  }
+
+  /**
+   * Has `finish` commit the editor's pending input first, e.g. by moving the
+   * focus out of a field that stores its text on blur; returns the function
+   * that removes it
+   */
+  addFlusher(flush: () => void): () => void {
+    this.flushers.add(flush);
+    return () => {
+      this.flushers.delete(flush);
+    };
+  }
+
+  /**
+   * Finishes with the editor as anything but Cancel does (PLAN §11.6): commits
+   * its pending input, then closes it, applying the edits as one undo step.
+   * Edits the query can't take close it with a notice instead of vanishing.
+   * Does nothing while something opened from the editor holds it open.
+   */
+  private finishWith(): 'held' | 'dropped' | 'closed' {
+    if (this.nodeId === undefined) {
+      return 'closed';
+    }
+    if (this.isHeld) {
+      return 'held';
+    }
+    this.flushers.forEach((flush) => flush());
+    const { edited } = this;
+    if (
+      edited !== undefined &&
+      this.hasChanges &&
+      !this.editorState.readOnly &&
+      !this.editorState.document.query.canReplace(edited)
+    ) {
+      this.discard(CUBE_EDITOR_CLOSED_REASON.CANNOT_APPLY);
+      return 'dropped';
+    }
+    this.close();
+    return 'closed';
+  }
+
+  /** Finishes with the editor (`finishWith`); says whether it is closed */
+  finish(): boolean {
+    return this.finishWith() !== 'held';
+  }
+
+  /**
+   * Finishes with the editor (`finishWith`); says whether its edits, if any,
+   * are now in the cube, so what comes next acts on them: false while it is
+   * held open, or when its edits had to be dropped
+   */
+  finishApplied(): boolean {
+    return this.finishWith() === 'closed';
   }
 
   /** Closes the panel, dropping the draft */

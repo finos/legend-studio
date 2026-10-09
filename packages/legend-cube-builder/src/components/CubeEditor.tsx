@@ -98,8 +98,8 @@ const CubeGraphHeader = observer((props: { editorState: CubeEditorState }) => {
               ? READ_ONLY_CUBE_TITLE
               : `Undo the last change (${UNDO_SHORTCUT_LABEL})`
           }
-          disabled={!editorState.canUndo}
-          onClick={() => editorState.undo()}
+          disabled={!editorState.canUndo && !editorState.hasEditsToApply}
+          onClick={() => editorState.undoEdited()}
         >
           Undo
         </CubeButton>

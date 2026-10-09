@@ -418,13 +418,26 @@ describe('Node editor panel', () => {
     ).toHaveLength(0);
   });
 
-  test('Says so when its node is removed with edits pending, the removal being the one undo step', async () => {
+  test("Applies its edits before Remove from its node's menu, as their own undo step", async () => {
     const editorState = await render(keylessJoin());
     await openPanel('join101');
     editJoinKeys();
     fireEvent.contextMenu(await TEST__findCanvasNode('join101'));
     const menu = await screen.findByRole('menu');
     fireEvent.click(within(menu).getByRole('button', { name: 'Remove' }));
+    expect(editorState.document.query.getNode('join101')).toBeUndefined();
+    expect(editorState.history).toHaveLength(2);
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(screen.queryByTestId(LEGEND_CUBE_TEST_ID.NODE_EDITOR)).toBeNull();
+    act(() => editorState.undo());
+    expect(storedJoin(editorState).leftColumns).toEqual(['CUSTOMER_ID']);
+  });
+
+  test('Says so when its node is removed underneath it with edits pending, the removal being the one undo step', async () => {
+    const editorState = await render(keylessJoin());
+    await openPanel('join101');
+    editJoinKeys();
+    act(() => editorState.removeNode('join101'));
     expect(editorState.document.query.getNode('join101')).toBeUndefined();
     expect(editorState.history).toHaveLength(1);
     expect(editorState.nodeEditor.notice).toBe(

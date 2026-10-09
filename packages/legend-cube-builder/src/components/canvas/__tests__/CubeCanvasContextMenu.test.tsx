@@ -20,7 +20,14 @@ import {
   LayerGroupIcon,
   QuestionSquareIcon,
 } from '@finos/legend-art';
-import { Concat, CubeDocument, type Join } from '@finos/legend-cube';
+import {
+  Concat,
+  Connection,
+  CubeDocument,
+  type Join,
+  Limit,
+  Query,
+} from '@finos/legend-cube';
 import {
   act,
   fireEvent,
@@ -41,6 +48,7 @@ import {
 } from '../../../__test-utils__/CubePageTestUtils.js';
 import { TEST__createCubeHost } from '../../../__test-utils__/CubeTestApplication.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubePalette } from '../../palette/CubePalette.js';
 import { CubeCanvas } from '../CubeCanvas.js';
@@ -214,6 +222,90 @@ describe('Canvas context menu', () => {
     expect(enabledItems(items)).toEqual(['Select']);
     fireEvent.click(items.get('Select') as HTMLButtonElement);
     expect(editorState.document.query.selected).toBe('join101');
+  });
+});
+
+describe('Canvas context menu, with the node editor open', () => {
+  /** The slice, then a Limit of 10 after its Filter, which Execute runs */
+  const limitedSlice = (): CubeDocument => {
+    const query = sliceQuery();
+    return new CubeDocument({
+      context: CONTEXT,
+      query: new Query(
+        [...query.nodes, new Limit('limit101', 10)],
+        [...query.connections, new Connection('filter101', 'limit101', 'tds')],
+        'limit101',
+      ),
+    });
+  };
+
+  /** Opens the Limit's editor and types a size, without applying it */
+  const typeSize = async (
+    editorState: CubeEditorState,
+    text: string,
+  ): Promise<void> => {
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    act(() =>
+      (editorState.nodeEditor.draft as CubeRowCountDraft<Limit>).setSizeText(
+        text,
+      ),
+    );
+  };
+
+  const storedSize = (editorState: CubeEditorState): number | undefined =>
+    (editorState.document.query.getNode('limit101') as Limit).size;
+
+  test.each<[string, string, (query: Query) => void]>([
+    [
+      'Remove',
+      'filter101',
+      (query) => expect(query.getNode('filter101')).toBeUndefined(),
+    ],
+    [
+      'Swap Inputs',
+      'join101',
+      (query) =>
+        expect(query.getInputIds('join101')).toEqual([
+          'relational102',
+          'relational101',
+        ]),
+    ],
+    ['Select', 'join101', (query) => expect(query.selected).toBe('join101')],
+    [
+      'Filter by Column',
+      'relational101',
+      (query) =>
+        expect(query.getInputIds('filter102')).toEqual(['relational101']),
+    ],
+  ])(
+    'Applies the open editor before %s on another node, as its own undo step',
+    async (label, nodeId, expectDone) => {
+      const editorState = await render(limitedSlice());
+      await typeSize(editorState, '5');
+      const items = await openMenu(await TEST__findCanvasNode(nodeId));
+      fireEvent.click(items.get(label) as HTMLButtonElement);
+      expect(storedSize(editorState)).toBe(5);
+      expectDone(editorState.document.query);
+      expect(editorState.nodeEditor.nodeId).toBeUndefined();
+      expect(editorState.nodeEditor.notice).toBeUndefined();
+      expect(editorState.history).toHaveLength(2);
+    },
+  );
+
+  test('Does nothing from the menu while something opened from the node editor holds it open', async () => {
+    const editorState = await render(limitedSlice());
+    await typeSize(editorState, '5');
+    act(() => {
+      editorState.nodeEditor.holdOpen();
+    });
+    const items = await openMenu(await TEST__findCanvasNode('filter101'));
+    fireEvent.click(items.get('Remove') as HTMLButtonElement);
+    const { query } = editorState.document;
+    expect(query.getNode('filter101')).toBeDefined();
+    expect(storedSize(editorState)).toBe(10);
+    expect(editorState.nodeEditor.nodeId).toBe('limit101');
+    expect(editorState.nodeEditor.hasChanges).toBe(true);
+    expect(editorState.history).toHaveLength(0);
   });
 });
 

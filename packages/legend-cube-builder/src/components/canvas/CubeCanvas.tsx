@@ -135,7 +135,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
           return;
         }
         if (event.ctrlKey || event.metaKey) {
-          editorState.select(flowNode.id);
+          // applies and closes the open editor first, opening none (spec §17.5)
+          if (editorState.nodeEditor.finish()) {
+            editorState.select(flowNode.id);
+          }
         } else {
           editorState.nodeEditor.open(flowNode.id);
         }
@@ -160,7 +163,9 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
         }
         event.preventDefault();
         if (event.ctrlKey || event.metaKey) {
-          editorState.select(nodeId);
+          if (editorState.nodeEditor.finish()) {
+            editorState.select(nodeId);
+          }
         } else {
           editorState.nodeEditor.open(nodeId);
         }
@@ -168,6 +173,10 @@ const CubeCanvasFlow = observer((props: { editorState: CubeEditorState }) => {
       isValidConnection={(connection) =>
         !readOnly && isCubeCanvasConnectionValid(query, connection)
       }
+      // a connection changes the query, so the open editor applies first,
+      // whether the handles are dragged or clicked
+      onConnectStart={() => editorState.nodeEditor.finish()}
+      onClickConnectStart={() => editorState.nodeEditor.finish()}
       onConnect={(connection) => {
         if (connection.targetHandle) {
           editorState.connect(

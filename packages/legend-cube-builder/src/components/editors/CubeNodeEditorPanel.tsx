@@ -23,6 +23,7 @@ import {
   UnknownNode,
 } from '@finos/legend-cube';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useRef } from 'react';
 import {
   CUBE_NODE_HELP_TEXT,
   SELECT_NODE_TOOLTIP,
@@ -56,6 +57,22 @@ export const CubeNodeEditorPanel = observer(
   (props: { editorState: CubeEditorState }) => {
     const { editorState } = props;
     const { nodeEditor, readOnly } = editorState;
+    const rootRef = useRef<HTMLDivElement>(null);
+    // finishing first moves the focus out of a field in the editor, so text
+    // typed but not yet stored (a filter value is stored on blur) is applied
+    useEffect(
+      () =>
+        nodeEditor.addFlusher(() => {
+          const focused = document.activeElement;
+          if (
+            focused instanceof HTMLElement &&
+            rootRef.current?.contains(focused)
+          ) {
+            focused.blur();
+          }
+        }),
+      [nodeEditor],
+    );
     const { node, draft, edited } = nodeEditor;
     if (!node || !draft || !edited) {
       return null;
@@ -83,6 +100,7 @@ export const CubeNodeEditorPanel = observer(
     const warnings = editorState.getNodeWarnings(node);
     return (
       <div
+        ref={rootRef}
         className="flex h-full flex-col border-l border-[var(--color-border-default)] bg-[var(--color-bg-panel)]"
         data-testid={LEGEND_CUBE_TEST_ID.NODE_EDITOR}
       >
@@ -138,7 +156,7 @@ export const CubeNodeEditorPanel = observer(
                 : 'Close'
             }
             aria-label="Close the editor"
-            onClick={() => nodeEditor.close()}
+            onClick={() => nodeEditor.finish()}
           >
             <TimesIcon />
           </button>

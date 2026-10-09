@@ -32,7 +32,9 @@ import { CubeNodeIcon } from '../CubeNodeIcon.js';
  * to the node it was opened on. On a node, a palette item is added after it;
  * around the nodes, on its own. Every item shows, disabled when it can't be
  * done, so Swap Inputs can be found. The node comes through props: a menu
- * opened around the nodes has none.
+ * opened around the nodes has none. Each item finishes the node editor
+ * first, so its edits are applied, never dropped (PLAN §11.6), except Swap
+ * Inputs on the edited node, which its editor applies and follows.
  */
 export const CubeCanvasContextMenu = observer(
   forwardRef<
@@ -42,11 +44,18 @@ export const CubeCanvasContextMenu = observer(
     const { editorState, nodeId } = props;
     const { query } = editorState.document;
     const { registry } = editorState;
+    const finishing =
+      (run: () => void): (() => void) =>
+      () => {
+        if (editorState.nodeEditor.finish()) {
+          run();
+        }
+      };
     const paletteItem = (definition: AnyNodeDefinition): React.ReactNode => (
       <MenuContentItem
         key={definition.type}
         disabled={!editorState.canAddNode(definition.type, nodeId)}
-        onClick={() => editorState.addNode(definition.type, nodeId)}
+        onClick={finishing(() => editorState.addNode(definition.type, nodeId))}
       >
         <MenuContentItemIcon>
           <CubeNodeIcon icon={definition.icon} />
@@ -66,20 +75,31 @@ export const CubeCanvasContextMenu = observer(
         <MenuContentItem
           title="Execute runs the query up to this node"
           disabled={nodeId === undefined || !query.canSelect(nodeId)}
-          onClick={() => nodeId !== undefined && editorState.select(nodeId)}
+          onClick={finishing(
+            () => nodeId !== undefined && editorState.select(nodeId),
+          )}
         >
           Select
         </MenuContentItem>
         <MenuContentItem
           disabled={nodeId === undefined || !editorState.canRemoveNode(nodeId)}
-          onClick={() => nodeId !== undefined && editorState.removeNode(nodeId)}
+          onClick={finishing(
+            () => nodeId !== undefined && editorState.removeNode(nodeId),
+          )}
         >
           Remove
         </MenuContentItem>
         <MenuContentItem
           title="Swap the node's two inputs, e.g. a Join's Left and Right"
           disabled={nodeId === undefined || !editorState.canSwapInputs(nodeId)}
-          onClick={() => nodeId !== undefined && editorState.swapInputs(nodeId)}
+          onClick={
+            nodeId !== undefined && nodeId === editorState.nodeEditor.nodeId
+              ? // its own editor applies, swaps and stays open on it
+                () => editorState.nodeEditor.swapInputs()
+              : finishing(
+                  () => nodeId !== undefined && editorState.swapInputs(nodeId),
+                )
+          }
         >
           Swap Inputs
         </MenuContentItem>

@@ -55,7 +55,11 @@ export const CubeCanvasNode = observer(
     const [, dragConnector] = useDrag<CubeNodeDragItem>(
       () => ({
         type: CUBE_DND_TYPE.NODE,
-        item: { nodeId: node.id },
+        // the drop changes the query, so the open editor applies first
+        item: () => {
+          editorState.nodeEditor.finish();
+          return { nodeId: node.id };
+        },
         canDrag: () => !editorState.readOnly,
       }),
       [editorState, node.id],

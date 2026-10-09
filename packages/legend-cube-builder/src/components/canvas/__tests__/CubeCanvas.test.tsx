@@ -25,6 +25,7 @@ import {
   CubeDocument,
   Filter,
   Join,
+  Limit,
   Query,
   type Schema,
   UnknownNode,
@@ -61,6 +62,7 @@ import {
   CubeEngineErrorKind,
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import type { CubeRowCountDraft } from '../../../stores/editors/CubeRowCountDraft.js';
 import { CUBE_NORTHWIND_MODEL } from '../../../stores/fixtures/CubeNorthwindModel.js';
 import { CubeCanvas, isCubeCanvasConnectionValid } from '../CubeCanvas.js';
 import {
@@ -485,41 +487,41 @@ describe('Cube canvas', () => {
   });
 });
 
-describe('Cube canvas, more', () => {
-  /**
-   * Runs `run` with what React Flow's click-to-connect needs and jsdom
-   * lacks: with nothing laid out, React Flow then takes the clicked handle
-   */
-  const withClickConnect = async (run: () => Promise<void>): Promise<void> => {
-    const added: [object, string][] = [];
-    const stub = (target: object, name: string, value: unknown): void => {
-      if (!(name in target)) {
-        Object.defineProperty(target, name, {
-          configurable: true,
-          writable: true,
-          value,
-        });
-        added.push([target, name]);
-      }
-    };
-    stub(document, 'elementFromPoint', (): Element | null => null);
-    stub(globalThis, 'structuredClone', (value: unknown): unknown =>
-      JSON.parse(JSON.stringify(value)),
-    );
-    try {
-      await run();
-    } finally {
-      added.forEach(([target, name]) => {
-        delete (target as Record<string, unknown>)[name];
+/**
+ * Runs `run` with what React Flow's click-to-connect needs and jsdom
+ * lacks: with nothing laid out, React Flow then takes the clicked handle
+ */
+const withClickConnect = async (run: () => Promise<void>): Promise<void> => {
+  const added: [object, string][] = [];
+  const stub = (target: object, name: string, value: unknown): void => {
+    if (!(name in target)) {
+      Object.defineProperty(target, name, {
+        configurable: true,
+        writable: true,
+        value,
       });
+      added.push([target, name]);
     }
   };
+  stub(document, 'elementFromPoint', (): Element | null => null);
+  stub(globalThis, 'structuredClone', (value: unknown): unknown =>
+    JSON.parse(JSON.stringify(value)),
+  );
+  try {
+    await run();
+  } finally {
+    added.forEach(([target, name]) => {
+      delete (target as Record<string, unknown>)[name];
+    });
+  }
+};
 
-  const handle = (nodeId: string, handleId: string): Element =>
-    document.querySelector(
-      `.react-flow__node[data-id="${nodeId}"] .react-flow__handle[data-handleid="${handleId}"]`,
-    ) as Element;
+const handle = (nodeId: string, handleId: string): Element =>
+  document.querySelector(
+    `.react-flow__node[data-id="${nodeId}"] .react-flow__handle[data-handleid="${handleId}"]`,
+  ) as Element;
 
+describe('Cube canvas, more', () => {
   test('Leaves the mouse on a node body to the HTML drag, so React Flow neither moves the node nor pans', async () => {
     await renderCanvas(new CubeDocument({ query: sliceQuery() }));
     await TEST__findCanvasNode('join101');
@@ -598,7 +600,8 @@ describe('Cube canvas, more', () => {
     ) as HTMLElement;
     fireEvent.keyDown(filter, { key: ' ', ctrlKey: true });
     expect(state.document.query.selected).toBe('relational101');
-    expect(state.nodeEditor.nodeId).toBe('join101');
+    // which closes the open editor, opening none
+    expect(state.nodeEditor.nodeId).toBeUndefined();
     // other keys do nothing
     fireEvent.keyDown(filter, { key: 'Delete' });
     expect(state.document.query.getNode('relational101')).toBeDefined();
@@ -658,6 +661,128 @@ describe('Cube canvas, more', () => {
       'filter999',
     ]);
   });
+});
+
+describe('Finishing the node editor from the canvas', () => {
+  /** ORDERS, then a Limit of 10, which Execute runs, and CUSTOMERS on its own */
+  const limitDocument = (): CubeDocument =>
+    new CubeDocument({
+      context: CONTEXT,
+      query: new Query(
+        [
+          northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+          new Limit('limit101', 10),
+          northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        ],
+        [new Connection('relational101', 'limit101', 'tds')],
+        'limit101',
+      ),
+    });
+
+  /** Opens the Limit's editor and types a size, without applying it */
+  const typeSize = async (state: CubeEditorState, text: string) => {
+    fireEvent.click(await TEST__findCanvasNode('limit101'));
+    act(() =>
+      (state.nodeEditor.draft as CubeRowCountDraft<Limit>).setSizeText(text),
+    );
+  };
+
+  const storedSize = (state: CubeEditorState): number | undefined =>
+    (state.document.query.getNode('limit101') as Limit).size;
+
+  const nodeWrapper = (nodeId: string): HTMLElement =>
+    document.querySelector<HTMLElement>(
+      `.react-flow__node[data-id="${nodeId}"]`,
+    ) as HTMLElement;
+
+  test('Applies the open editor on Ctrl-click on another node, as its own undo step, then selects that node, opening no editor', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    fireEvent.click(await TEST__findCanvasNode('relational102'), {
+      ctrlKey: true,
+    });
+    expect(storedSize(state)).toBe(5);
+    expect(state.document.query.selected).toBe('relational102');
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.notice).toBeUndefined();
+    expect(state.history).toHaveLength(2);
+    act(() => state.undo());
+    expect(state.document.query.selected).toBe('limit101');
+    expect(storedSize(state)).toBe(5);
+  });
+
+  test('Applies the open editor on Ctrl+Enter on a focused node, then selects that node, opening no editor', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    const customers = nodeWrapper('relational102');
+    customers.focus();
+    fireEvent.keyDown(customers, { key: 'Enter', ctrlKey: true });
+    expect(storedSize(state)).toBe(5);
+    expect(state.document.query.selected).toBe('relational102');
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.history).toHaveLength(2);
+  });
+
+  test('Does nothing on Ctrl-click or Ctrl+Enter while something opened from the node editor holds it open', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    act(() => {
+      state.nodeEditor.holdOpen();
+    });
+    fireEvent.click(await TEST__findCanvasNode('relational102'), {
+      ctrlKey: true,
+    });
+    fireEvent.keyDown(nodeWrapper('relational102'), {
+      key: 'Enter',
+      ctrlKey: true,
+    });
+    expect(state.document.query.selected).toBe('limit101');
+    expect(state.nodeEditor.nodeId).toBe('limit101');
+    expect(state.nodeEditor.hasChanges).toBe(true);
+    expect(storedSize(state)).toBe(10);
+    expect(state.history).toHaveLength(0);
+  });
+
+  test('Applies the open editor when a node starts being dragged', async () => {
+    const state = await renderCanvas(limitDocument());
+    await typeSize(state, '5');
+    const customers = await TEST__findCanvasNode('relational102');
+    fireEvent.dragStart(customers);
+    expect(storedSize(state)).toBe(5);
+    expect(state.nodeEditor.nodeId).toBeUndefined();
+    expect(state.nodeEditor.notice).toBeUndefined();
+    fireEvent.dragEnd(customers);
+    expect(state.history).toHaveLength(1);
+  });
+
+  test('Applies the open editor when two handles are clicked to connect them, the edits first', () =>
+    withClickConnect(async () => {
+      const state = await renderCanvas(
+        new CubeDocument({
+          context: CONTEXT,
+          query: new Query(
+            [
+              northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS),
+              new Limit('limit101', 10),
+              northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+              new Join('join101'),
+            ],
+            [new Connection('relational101', 'limit101', 'tds')],
+            'limit101',
+          ),
+        }),
+      );
+      await typeSize(state, '5');
+      fireEvent.click(handle('relational102', CUBE_OUTPUT_HANDLE_ID));
+      fireEvent.click(handle('join101', 'rightTds'));
+      expect(storedSize(state)).toBe(5);
+      expect(state.nodeEditor.nodeId).toBeUndefined();
+      expect(state.nodeEditor.notice).toBeUndefined();
+      expect(state.document.query.connections).toContainEqual(
+        new Connection('relational102', 'join101', 'rightTds'),
+      );
+      expect(state.history).toHaveLength(2);
+    }));
 });
 
 describe('Connecting by dragging between handles', () => {
