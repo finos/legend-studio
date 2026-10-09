@@ -28,9 +28,13 @@ export * from './graph-manager/CubeEngine.js';
 export { getRuntimesForDatabase } from './graph-manager/CubeModelOutlineHelper.js';
 export {
   buildCubeConnectionExplorer,
+  buildCubeDataProductCatalog,
   buildCubeEngine,
+  buildCubeLakehouseEnvironment,
   type CubeEngineConfig,
+  type CubeLakehouseServices,
 } from './graph-manager/protocol/pure/CubeEngineBuilder.js';
+export type { CubeLakehouseEnvironment } from './graph-manager/CubeLakehouseEnvironment.js';
 export type { CubeHost } from './stores/CubeHost.js';
 export {
   BUNDLED_MODELS,

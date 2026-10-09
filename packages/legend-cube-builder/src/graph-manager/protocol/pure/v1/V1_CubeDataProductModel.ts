@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { IR } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
 import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
@@ -42,6 +43,24 @@ const pointerOf = (project: CubeDataProductProject): PlainObject => ({
     artifactId: project.artifactId,
   },
 });
+
+/** Whether a lambda reads a data product's access point, anywhere in it */
+export const V1_hasCubeDataProductAccessor = (ir: IR): boolean => {
+  const visit = (value: unknown): boolean => {
+    if (Array.isArray(value)) {
+      return value.some(visit);
+    }
+    if (!value || typeof value !== 'object') {
+      return false;
+    }
+    const node = value as PlainObject;
+    if (node.k === 'dataProductAccessor') {
+      return true;
+    }
+    return node.k !== 'raw' && Object.values(node).some(visit);
+  };
+  return visit(ir);
+};
 
 /** The model typing runs on: the project alone, with no runtime */
 export const V1_buildCubeDataProductTypingContext = (

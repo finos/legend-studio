@@ -33,6 +33,15 @@ import type {
   CubeDirectDatabaseType,
 } from '../../../CubeConnectionExplorer.js';
 import {
+  checkCubeDataProductModel,
+  CUBE_DATA_PRODUCT_RUNTIME_PATH,
+  type CubeDataProductProject,
+  getCubeDataProductProject,
+  getEffectiveCubeWarehouse,
+  isCubeDataProductModel,
+} from '../../../CubeDataProduct.js';
+import type { CubeLakehouseEnvironment } from '../../../CubeLakehouseEnvironment.js';
+import {
   CUBE_DIRECT_DATABASE_PATH,
   CUBE_DIRECT_MODEL_TYPE,
   CUBE_DIRECT_RUNTIME_PATH,
@@ -51,6 +60,11 @@ import {
   V1_canonicalCubeDirectConnection,
   V1_checkCubeDirectConnection,
 } from './V1_CubeDirectConnection.js';
+import {
+  V1_buildCubeDataProductExecutionContext,
+  V1_buildCubeDataProductTypingContext,
+  V1_hasCubeDataProductAccessor,
+} from './V1_CubeDataProductModel.js';
 import {
   V1_buildCubeDirectModelContext,
   V1_collectCubeStoreAccessors,
@@ -95,6 +109,13 @@ const captureNodeOf = (executionLambda: IR): NodeId | undefined => {
     executionLambda.k === 'lambda' ? executionLambda.body[0] : undefined;
   return from?.k === 'func' ? from.origin?.nodeId : undefined;
 };
+
+/** Why a lambda can't run on the cube's model: data products and database tables are kept apart (PLAN §6.8) */
+const DATA_PRODUCT_ONLY = 'Only a data product cube can read data products';
+const TABLES_IN_DATA_PRODUCT_CUBE =
+  "A data product cube can't read database tables";
+const NO_LAKEHOUSE =
+  "This page can't run data products: its host has no lakehouse";
 
 /** The message for a model of a kind this version can't run (PLAN §8.7) */
 export const V1_unsupportedModelMessage = (type: string): string =>
@@ -167,10 +188,34 @@ export class V1_LegendCubeEngine implements CubeEngine {
    */
   private readonly directTables = new Map<string, V1_CubeDirectTable>();
 
-  constructor(config: V1_CubeEngineConfig, tracerService: TracerService) {
+  /** The viewer's lakehouse environment, which data product runs need */
+  private readonly lakehouseEnvironment: CubeLakehouseEnvironment | undefined;
+
+  constructor(
+    config: V1_CubeEngineConfig,
+    tracerService: TracerService,
+    options?: { lakehouseEnvironment?: CubeLakehouseEnvironment | undefined },
+  ) {
     this.client = new V1_EngineServerClient(config);
     // every call throws without one
     this.client.setTracerService(tracerService);
+    this.lakehouseEnvironment = options?.lakehouseEnvironment;
+  }
+
+  /** A data product model's project, or an unsupported-model error naming its problems */
+  private dataProductProjectOf(
+    model: ModelContext,
+    nodeId?: NodeId,
+  ): CubeDataProductProject {
+    const project = getCubeDataProductProject(model);
+    if (!project) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        checkCubeDataProductModel(model).join('\n'),
+        nodeId,
+      );
+    }
+    return project;
   }
 
   /** The model's Pure text, or an unsupported-model error for any other kind */
@@ -264,6 +309,14 @@ export class V1_LegendCubeEngine implements CubeEngine {
   }
 
   async loadModel(model: ModelContext): Promise<CubeModelOutline> {
+    if (isCubeDataProductModel(model)) {
+      this.dataProductProjectOf(model);
+      // its access points are listed through the data product catalog
+      return {
+        databases: [],
+        runtimes: [{ path: CUBE_DATA_PRODUCT_RUNTIME_PATH, storePaths: [] }],
+      };
+    }
     if (model._type === CUBE_DIRECT_MODEL_TYPE) {
       const connection = this.directConnectionOf(model);
       // its tables are listed through the connection explorer; its one
@@ -304,19 +357,90 @@ export class V1_LegendCubeEngine implements CubeEngine {
         lambda([], [storeAccessor(path, { nodeId, role: EmitRole.ACCESSOR })]),
       ]),
     );
+    if (isCubeDataProductModel(model)) {
+      return Promise.resolve(
+        new Map(
+          [...accessors.keys()].map((nodeId) => [
+            nodeId,
+            new CubeEngineError(
+              CubeEngineErrorKind.UNSUPPORTED_MODEL,
+              TABLES_IN_DATA_PRODUCT_CUBE,
+              nodeId,
+            ),
+          ]),
+        ),
+      );
+    }
     // a table is read again from its database whenever it is resolved
     return model._type === CUBE_DIRECT_MODEL_TYPE
       ? this.typeDirect(model, lambdas, true)
       : this.typeAll(model, lambdas);
   }
 
-  typeLambdas(
+  async typeLambdas(
     model: ModelContext,
     lambdas: ReadonlyMap<NodeId, IR>,
   ): Promise<Map<NodeId, Schema | CubeEngineError>> {
-    return model._type === CUBE_DIRECT_MODEL_TYPE
-      ? this.typeDirect(model, lambdas, false)
-      : this.typeAll(model, lambdas);
+    const isDataProductCube = isCubeDataProductModel(model);
+    // a lambda reading the other kind of source is refused before any call
+    const refused = new Map<NodeId, CubeEngineError>();
+    const typable = new Map<NodeId, IR>();
+    lambdas.forEach((ir, nodeId) => {
+      const problem = isDataProductCube
+        ? V1_collectCubeStoreAccessors(ir).length
+          ? TABLES_IN_DATA_PRODUCT_CUBE
+          : undefined
+        : V1_hasCubeDataProductAccessor(ir)
+          ? DATA_PRODUCT_ONLY
+          : undefined;
+      if (problem) {
+        refused.set(
+          nodeId,
+          new CubeEngineError(CubeEngineErrorKind.COMPILE, problem, nodeId),
+        );
+      } else {
+        typable.set(nodeId, ir);
+      }
+    });
+    const typed = isDataProductCube
+      ? await this.typeDataProduct(model, typable)
+      : model._type === CUBE_DIRECT_MODEL_TYPE
+        ? await this.typeDirect(model, typable, false)
+        : await this.typeAll(model, typable);
+    // in the order the lambdas were given
+    return new Map(
+      [...lambdas.keys()].map((nodeId) => [
+        nodeId,
+        (refused.get(nodeId) ?? typed.get(nodeId)) as Schema | CubeEngineError,
+      ]),
+    );
+  }
+
+  /**
+   * Types lambdas on a data product cube: on its project at its saved
+   * version, with no runtime. The open-source engine reads no data product,
+   * so there every lambda fails as the engine says
+   */
+  private async typeDataProduct(
+    model: ModelContext,
+    lambdas: ReadonlyMap<NodeId, IR>,
+  ): Promise<Map<NodeId, Schema | CubeEngineError>> {
+    let project: CubeDataProductProject;
+    try {
+      project = this.dataProductProjectOf(model);
+    } catch (error) {
+      return new Map(
+        [...lambdas.keys()].map((nodeId) => [
+          nodeId,
+          new CubeEngineError(
+            (error as CubeEngineError).kind,
+            (error as CubeEngineError).detail,
+            nodeId,
+          ),
+        ]),
+      );
+    }
+    return this.typeOn(V1_buildCubeDataProductTypingContext(project), lambdas);
   }
 
   /**
@@ -495,8 +619,21 @@ export class V1_LegendCubeEngine implements CubeEngine {
   ): Promise<CubeResult> {
     const captureId = captureNodeOf(executionLambda);
     const startedAt = Date.now();
-    const context =
-      model._type === CUBE_DIRECT_MODEL_TYPE
+    const isDataProductCube = isCubeDataProductModel(model);
+    if (!isDataProductCube && V1_hasCubeDataProductAccessor(executionLambda)) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        DATA_PRODUCT_ONLY,
+        captureId,
+      );
+    }
+    const context = isDataProductCube
+      ? await this.dataProductExecutionContext(
+          model,
+          executionLambda,
+          captureId,
+        )
+      : model._type === CUBE_DIRECT_MODEL_TYPE
         ? await this.directExecutionContext(
             model,
             executionLambda,
@@ -506,7 +643,7 @@ export class V1_LegendCubeEngine implements CubeEngine {
         : model;
     let text: string;
     try {
-      if (model._type !== CUBE_DIRECT_MODEL_TYPE) {
+      if (model._type !== CUBE_DIRECT_MODEL_TYPE && !isDataProductCube) {
         this.textOf(model);
       }
       const body = stringifyLosslessJSON({
@@ -547,6 +684,50 @@ export class V1_LegendCubeEngine implements CubeEngine {
       }
       throw error;
     }
+  }
+
+  /**
+   * The model a run on a data product cube runs on (PLAN §6.8): its project at
+   * the saved version, and a lakehouse runtime at Cube's fixed path, in the
+   * viewer's environment, with the cube's warehouse, else the default
+   */
+  private async dataProductExecutionContext(
+    model: ModelContext,
+    executionLambda: IR,
+    captureId: NodeId | undefined,
+  ): Promise<PlainObject> {
+    const project = this.dataProductProjectOf(model, captureId);
+    if (V1_collectCubeStoreAccessors(executionLambda).length) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        TABLES_IN_DATA_PRODUCT_CUBE,
+        captureId,
+      );
+    }
+    if (!this.lakehouseEnvironment) {
+      throw new CubeEngineError(
+        CubeEngineErrorKind.UNSUPPORTED_MODEL,
+        NO_LAKEHOUSE,
+        captureId,
+      );
+    }
+    let environment: string;
+    try {
+      environment = await this.lakehouseEnvironment.resolveEnvironment(project);
+    } catch (error) {
+      throw error instanceof CubeEngineError
+        ? new CubeEngineError(error.kind, error.detail, captureId)
+        : new CubeEngineError(
+            CubeEngineErrorKind.EXECUTION,
+            error instanceof Error ? error.message : String(error),
+            captureId,
+          );
+    }
+    return V1_buildCubeDataProductExecutionContext(
+      project,
+      environment,
+      getEffectiveCubeWarehouse(project, undefined),
+    );
   }
 
   /**

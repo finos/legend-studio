@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
+import type { DepotServerClient } from '@finos/legend-server-depot';
+import type { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import type { TracerService } from '@finos/legend-shared';
 import type { CubeConnectionExplorer } from '../../CubeConnectionExplorer.js';
+import type { CubeDataProductCatalog } from '../../CubeDataProductCatalog.js';
 import type { CubeEngine } from '../../CubeEngine.js';
+import type { CubeLakehouseEnvironment } from '../../CubeLakehouseEnvironment.js';
+import { V1_CubeLakehouseEnvironmentResolver } from './v1/V1_CubeLakehouseEnvironmentResolver.js';
 import { V1_LegendCubeConnectionExplorer } from './v1/V1_LegendCubeConnectionExplorer.js';
+import { V1_LegendCubeDataProductCatalog } from './v1/V1_LegendCubeDataProductCatalog.js';
 import {
   type V1_CubeEngineConfig,
   V1_LegendCubeEngine,
@@ -33,7 +39,11 @@ export type CubeEngineConfig = V1_CubeEngineConfig;
 export const buildCubeEngine = (
   config: CubeEngineConfig,
   tracerService: TracerService,
-): CubeEngine => new V1_LegendCubeEngine(config, tracerService);
+  options?: {
+    /** Data product cubes run only with one */
+    lakehouseEnvironment?: CubeLakehouseEnvironment | undefined;
+  },
+): CubeEngine => new V1_LegendCubeEngine(config, tracerService, options);
 
 /**
  * The connection explorer of a host that offers direct connections (PLAN
@@ -44,3 +54,32 @@ export const buildCubeConnectionExplorer = (
   tracerService: TracerService,
 ): CubeConnectionExplorer =>
   new V1_LegendCubeConnectionExplorer(config, tracerService);
+
+/** What a host gives Cube to read its deployed data products (PLAN §6.8) */
+export interface CubeLakehouseServices {
+  readonly contractServerClient: LakehouseContractServerClient;
+  readonly depotServerClient: DepotServerClient;
+  readonly getAccessToken: () => string | undefined;
+  /** The viewer, whose lakehouse environment data product runs use */
+  readonly currentUser: string;
+}
+
+/** The deployed data products of a host with a lakehouse and a depot */
+export const buildCubeDataProductCatalog = (
+  services: CubeLakehouseServices,
+): CubeDataProductCatalog =>
+  new V1_LegendCubeDataProductCatalog(
+    services.contractServerClient,
+    services.depotServerClient,
+    services.getAccessToken,
+  );
+
+/** The viewer's lakehouse environment, which the engine needs to run data product cubes */
+export const buildCubeLakehouseEnvironment = (
+  services: CubeLakehouseServices,
+): CubeLakehouseEnvironment =>
+  new V1_CubeLakehouseEnvironmentResolver(
+    services.contractServerClient,
+    services.getAccessToken,
+    services.currentUser,
+  );
