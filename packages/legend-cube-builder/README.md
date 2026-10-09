@@ -8,8 +8,9 @@ stores, the engine port with its `v1/` adapter, and the bundled model catalog. L
 `/query/cube`.
 
 **Status:** work in progress, version 0.0.x. This version has relational tables (from a model or a direct connection to H2
-or DuckDB), the access points of deployed data products (beta), Join, Sort, Filter, Restrict, Rename, Distinct, Drop,
-Limit and Slice, with one model, one runtime and one database or data product project per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
+or DuckDB), the access points of deployed data products and the data sets of deployed ingest definitions (both beta),
+Join, Group, Concat, Sort, Filter, Restrict, Rename, Distinct, Drop, Limit and Slice, with one model, one runtime and
+one database, data product project or producer deployment per query. A cube is kept only through Export and Import of its spec, marked "(dev)", until
 the Cube store exists. A pasted model is kept in the cube. Nothing links to the page yet, there is no redo, and Cube sends no telemetry.
 
 ## Layout
@@ -18,7 +19,7 @@ the Cube store exists. A pasted model is kept in the cube. Nothing links to the 
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/components/`                     | the page, `CubeEditor`, and its parts: `canvas/`, `palette/`, `editors/`, `source-picker/`, `grid/`, `show-pure/`, `spec-transfer/`                     |
 | `src/stores/`                         | the MobX state of the page, its parts and the side panel; `editors/` (node drafts); `LocalModelCatalog` and `fixtures/` (the bundled model); `CubeHost` |
-| `src/graph-manager/`                  | the engine port (`CubeEngine.ts`), the connection explorer and data product catalog ports, and their builders                                           |
+| `src/graph-manager/`                  | the engine port (`CubeEngine.ts`), the connection explorer, data product catalog and ingest catalog ports, and their builders                           |
 | `src/graph-manager/protocol/pure/v1/` | the engine adapter, `V1_LegendCubeEngine`: the lambda serializer, the result and relation-type readers, the error mapping                               |
 | `src/__lib__/`                        | labels, help text, the command config and test ids                                                                                                      |
 | `src/__test-utils__/`                 | the fake engine and the helpers of the tests                                                                                                            |
@@ -46,6 +47,8 @@ The engine-backed tests in `src/__tests__/` are an exception: they need both the
   warehouse rule) and `CubeDataProductCatalog.ts` (the catalog port and its classes), with
   `buildCubeDataProductCatalog`, `buildCubeLakehouseEnvironment`, `CubeLakehouseServices`, `CubeLakehouseEnvironment`
   and `getCubeRememberedWarehouse`;
+- ingest data sets: everything in `CubeIngest.ts` (the model kind, its runtime path, the saved settings) and
+  `CubeIngestCatalog.ts` (the catalog port and its classes), with `buildCubeIngestCatalog`;
 - `LocalModelCatalog` and `BUNDLED_MODELS`;
 - `LEGEND_CUBE_COMMAND_CONFIG` and `LEGEND_CUBE_COMMAND_KEY`, the page's shortcuts;
 - `LEGEND_CUBE_TEST_ID`;
@@ -58,16 +61,16 @@ yet.
 
 ## Sources
 
-A cube reads relational tables (from a model, or from a database through a direct connection) or the access points of
-deployed data products (beta), never both (PLAN §6.8). The "Add a source" dialog has a tab per way to find a source,
-each implementing `CubeSourcePickerTab` (`src/stores/source-picker/`): Model, Database connection and Data product. A
-host offers the last two by giving the page a `connectionExplorer` and a `dataProductCatalog` (see
-[hosting](./docs/hosting.md)).
+A cube reads one kind of source: relational tables (from a model, or from a database through a direct connection), the
+access points of deployed data products, or the data sets of deployed ingest definitions (both beta; PLAN §6.7, §6.8).
+The "Add a source" dialog has a tab per way to find a source, each implementing `CubeSourcePickerTab`
+(`src/stores/source-picker/`): Model, Database connection, Data product and Ingest. A host offers the last three by
+giving the page a `connectionExplorer`, a `dataProductCatalog` and an `ingestCatalog` (see [hosting](./docs/hosting.md)).
 
 A new kind of source needs, in the core, a `SourceDefinition` (node, codec, emitter and its query rules) and, in the
 builder, a tab, a Source panel editor, help text and an icon, and its branch in the engine's implementation, which
-builds the model each call runs on from the cube's saved model kind (`src/graph-manager/CubeDirectConnection.ts` and
-`CubeDataProduct.ts` are the two examples).
+builds the model each call runs on from the cube's saved model kind (`src/graph-manager/CubeDirectConnection.ts`,
+`CubeDataProduct.ts` and `CubeIngest.ts` are the examples).
 
 ## Documentation
 

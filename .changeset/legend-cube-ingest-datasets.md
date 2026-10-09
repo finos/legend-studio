@@ -5,4 +5,4 @@
 '@finos/legend-application-query-bootstrap': patch
 ---
 
-Add ingest data sets as a Legend Cube source (beta, in progress): the `#I` accessor, the core ingest data set source, one kind of source per cube across tables, data products and ingest data sets, and typing a data set from what its ingest definition declares, the `cubeIngest` model and its runs, and the ingest catalog. Legend Query reads the optional `lakehouse.platformUrl`.
+Legend Cube reads the data sets of deployed ingest definitions (beta), as Data Cube's producer source picks them: an Ingest tab and an "Ingest Dataset" palette item (Mode, the viewer's environment, a producer deployment, one of its definitions, a data set), typed from what the definition declares, and run through the `#I` accessor on a lakehouse runtime with the cube's warehouse, which the data set's panel edits. A cube reads one kind of source: tables, data products or ingest data sets. Legend Query offers it when its optional `lakehouse.platformUrl` is set.

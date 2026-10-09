@@ -186,7 +186,7 @@ the sum passes 2,147,483,647, though Pure types the result as Integer (a long). 
 `sum(cast("t_0".I as bigint))` on SQL Server would match the Pure type.
 ```
 
-## Direct connections and data products
+## Direct connections, data products and ingest data sets
 
 ### The engine's schema exploration mistypes some columns
 
@@ -227,6 +227,24 @@ redeployed meanwhile shows on Refresh. A redeployed product never moves a cube t
 - **Marketplace search** (when Query's `marketplace.serverUrl` is set) reads one page of 100 matches. On a cube whose
   data products are fixed to one project, a typed search keeps that page's rows from the project, so it can show few of
   them; the cube's own products show when the search is empty.
+
+### Ingest data sets can't be read or run on the open-source engine
+
+The open-source engine can't parse an ingest definition's grammar and can't type or run `#I{…}#`, so ingest data sets
+are tested with a fake catalog and, on the engine, with stand-in functions only (testing.md). The ingest servers'
+answers, the parse of a real definition, the environment name and the warehouse are first checked in an internal
+deployment (PLAN §11.2 Part B2).
+
+### Ingest definitions: what Cube leaves out for now
+
+- **No project version.** A definition is read from the ingest server by URN, through its grammar and the engine's
+  parse, as Data Cube does. Cube doesn't know the version it was deployed from; reading it from Depot at that version
+  is the TODO (PLAN §6.7).
+- **Only SDLC-deployed definitions** (`alloy-git` URNs) are listed; ad hoc (`rest-api`) ones, and producers' own
+  user-id environments, are left out. The tab counts the definitions it doesn't show.
+- **Materialized views** (a data set whose source is a function) are listed disabled.
+- **A data set re-checked on import** keeps its saved columns, with a warning, when its definition can't be read again
+  (e.g. no longer deployed); the run then fails as the lakehouse answers.
 
 ## Test gaps
 
