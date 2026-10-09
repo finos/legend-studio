@@ -44,6 +44,7 @@ const EXPECTED_ICONS: Readonly<Record<string, React.FC>> = {
   slice: AlignMiddleIcon,
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
+  group: DataCubeIcon.TableGroupBy,
   rename: PencilIcon,
   sort: SortIcon,
 };

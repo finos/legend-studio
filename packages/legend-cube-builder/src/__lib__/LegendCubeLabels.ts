@@ -180,6 +180,16 @@ export const SLICE_RANGE_HINT =
 export const DISTINCT_EDITOR_TEXT =
   'Keeps one row of each set of identical rows. There is nothing to set.';
 
+/** Why the Group editor can't take a column as a key (PLAN §11.5) */
+export const CUBE_GROUP_COLUMN_DISABLED_REASON = "can't be grouped";
+
+/** What the Group editor says about its aggregations (PLAN §11.5; Count counts non-empty values, D4) */
+export const GROUP_EDITOR_NOTES = [
+  'Count counts the values that are not empty; Count Rows counts every row.',
+  'Distinct Value is the value when the group has exactly one distinct value that is not empty, and empty otherwise.',
+  'With no group column, the result is one row, even when there are no rows.',
+];
+
 /** Under the Rename editor's rows: the rule for new column names (PLAN §11.4) */
 export const COLUMN_NAME_RULES_HINT =
   'Names can\'t start or end with a space, or contain " or \\ or control characters, and have at most 128 characters.';

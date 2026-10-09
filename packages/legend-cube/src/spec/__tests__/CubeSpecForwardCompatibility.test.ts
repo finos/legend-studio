@@ -19,7 +19,6 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -1910,8 +1909,7 @@ describe(unitTest('Saved spec: operations added since a version'), () => {
 });
 
 describe(unitTest('Saved spec: groups, added in M4'), () => {
-  // Group is registered in M4.5 (PLAN §11.5): until then it is read with this registry
-  const GROUP_REGISTRY = TEST__registryWithGroup();
+  const GROUP_REGISTRY = createNodeRegistry();
   /** The registry of the version before M4: every M2 operation, but no Group */
   const M2_REGISTRY = new NodeRegistry(
     [...GROUP_REGISTRY.sources, ...GROUP_REGISTRY.transforms].filter(

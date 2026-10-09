@@ -19,6 +19,7 @@ import {
   Distinct,
   Drop,
   Filter,
+  Group,
   Join,
   Limit,
   RelationalTableSource,
@@ -33,6 +34,7 @@ import type { CubeNodeDraft } from '../../stores/editors/CubeNodeDraft.js';
 import { CubeDataProductSourceEditor } from './CubeDataProductSourceEditor.js';
 import { CubeDistinctEditor } from './CubeDistinctEditor.js';
 import { CubeFilterEditor } from './CubeFilterEditor.js';
+import { CubeGroupEditor } from './CubeGroupEditor.js';
 import { CubeJoinEditor } from './CubeJoinEditor.js';
 import { CubeRenameEditor } from './CubeRenameEditor.js';
 import { CubeRestrictEditor } from './CubeRestrictEditor.js';
@@ -73,6 +75,7 @@ export const CUBE_NODE_EDITORS: ReadonlyMap<
   [RelationalTableSource.TYPE, CubeSourceEditor],
   [DataProductAccessPointSource.TYPE, CubeDataProductSourceEditor],
   [Sort.TYPE, CubeSortEditor],
+  [Group.TYPE, CubeGroupEditor],
   [Filter.TYPE, CubeFilterEditor],
   [Restrict.TYPE, CubeRestrictEditor],
   [Rename.TYPE, CubeRenameEditor],

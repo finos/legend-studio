@@ -19,6 +19,7 @@ import {
   Distinct,
   Drop,
   Filter,
+  Group,
   Join,
   Limit,
   RelationalTableSource,
@@ -43,6 +44,8 @@ export const CUBE_NODE_HELP_TEXT: Readonly<Record<string, string>> = {
     'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
   [Filter.TYPE]:
     'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
+  [Group.TYPE]:
+    'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
   [Join.TYPE]:
     'Joins two previous data sets using specified columns as join keys.',
   [Limit.TYPE]:

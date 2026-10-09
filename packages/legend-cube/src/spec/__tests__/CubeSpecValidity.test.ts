@@ -16,7 +16,6 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TEST_DATABASE } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -301,10 +300,10 @@ const errorsOf = (
   return validityOf(document.query);
 };
 
-/** Group is registered in M4.5 (PLAN §11.5): until then its specs are read with a registry that has it */
+/** A spec's query, its `group101` read as a Group */
 const decodeGroupSpec = (json: JsonObject): Query => {
   const { query } = decodeCubeSpec(json, {
-    registry: TEST__registryWithGroup(),
+    registry: createNodeRegistry(),
   }).document;
   expect(query.getNode('group101')).toBeInstanceOf(Group);
   return query;
@@ -313,7 +312,7 @@ const decodeGroupSpec = (json: JsonObject): Query => {
 /** As `errorsOf`, for a spec whose `group101` must be read as a Group */
 const groupErrorsOf = (json: JsonObject): Record<string, readonly string[]> => {
   decodeGroupSpec(json);
-  return errorsOf(json, TEST__registryWithGroup());
+  return errorsOf(json, createNodeRegistry());
 };
 
 /** The value of the comparison `filter101` holds, as decoded */

@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                  |
-| ------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge    |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                      |
-| Step   | M4.1–M4.4 done (the settled decisions; the conformance suite; the aggregation model; Group in the core, not registered); **M4.5 next** |
-| Tests  | 2069 core, 751 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.4)                                              |
+| Item   | State                                                                                                                                |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge  |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                    |
+| Step   | M4.1–M4.5 done (decisions; conformance suite; aggregation model; Group in the core; Group in the builder, registered); **M4.6 next** |
+| Tests  | 2069 core, 751 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.4)                                            |
 
 ## Steps
 
@@ -23,7 +23,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.2** The conformance suite on M2's node types
 - [x] **M4.3** The aggregation model (core)
 - [x] **M4.4** Group in the core
-- [ ] **M4.5** Group in the builder, and registered
+- [x] **M4.5** Group in the builder, and registered
 - [ ] **M4.6** Group on the engine and in the browser
 - [ ] **M4.7** The grid's 'Group by "X"'
 - [ ] **M4.8** Group around the databases
@@ -41,13 +41,15 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step     | Commit      | Subject                                                          |
-| -------- | ----------- | ---------------------------------------------------------------- |
-| M2 merge | `8c1d3f74e` | docs: record Legend Cube M2's merge                              |
-| M4.1     | `95339aeb9` | docs: settle Legend Cube M4 (Group and Concat)                   |
-| M4.2     | `cb6837dd6` | test: hold Legend Cube's inference to the engine's, node by node |
-| M4.3     | `4c7398dca` | feat: add the aggregations Legend Cube's Group will use          |
-| M4.4     | (this one)  | feat: add Group to Legend Cube's core                            |
+| Step       | Commit      | Subject                                                                     |
+| ---------- | ----------- | --------------------------------------------------------------------------- |
+| M2 merge   | `8c1d3f74e` | docs: record Legend Cube M2's merge                                         |
+| M4.1       | `95339aeb9` | docs: settle Legend Cube M4 (Group and Concat)                              |
+| M4.2       | `cb6837dd6` | test: hold Legend Cube's inference to the engine's, node by node            |
+| M4.3       | `4c7398dca` | feat: add the aggregations Legend Cube's Group will use                     |
+| M4.4       | `eefb1dfb5` | feat: add Group to Legend Cube's core                                       |
+| Video rule | `1f7c21c13` | docs: end every Legend Cube milestone that changes the UI with a demo video |
+| M4.5       | (this one)  | feat: add Group by Column to Legend Cube's builder                          |
 
 ## Step notes
 
@@ -127,6 +129,24 @@ the 7 survivors, 2 are equivalent (a guard that only narrows a type; the encoded
 or code added (a key repeated in another case, aggregations kept with exactly their three fields, the emitter's three
 guards), each shown to fail its mutant in the copy. Settled: a nameless aggregation with no auto-name is read as `''`
 and its empty name reported once its function and column are valid. The constructor now uses `isStringList`.
+
+**M4.5, Group in the builder (2026-10-09).** Group is registered after Sort (core registry; the builder's draft and
+editor registries, help text from spec §17.9, icon `DataCubeIcon.TableGroupBy`), with the pinned lists updated
+(`Nodes.test.ts` with Group's definition test, the palette, the canvas menu, help texts, icons); the M4.4 test registry
+is gone. `CubeGroupDraft`: keys stored in input order on any tick or untick, a saved order kept until then (Q2); rows
+whose name follows column and function until typed, the empty name of a row with no auto-name included (Q3); Count set
+when a column is picked first; Count rows clears the column; `isBuiltGroupRow` decides which rows build: a column,
+Count rows, or a function this version doesn't know with no column (Rank, kept per Q4). `CubeGroupEditor`: the "Group
+columns" checkboxes (VARIANT and OPAQUE disabled unless already ticked, so a bad saved key can be unticked), rows of
+column, function (the column type's functions, then Count Rows) and name, each problem marked on the control it is
+about, a "Clear column" button for a saved Count rows holding one, "Add aggregation" never disabled, the notes.
+`findColumnOrigins` follows a Group's keys and its Distinct Value, Min and Max outputs. A Group joins
+`operations.cube.json` (on its own ORDERS node, since a node feeds one other). Conformance: every allowed (function,
+family) cell on ALLTYPES by a key and over all rows, keys out of input order, FREIGHT, a Group of a Group, a Group
+after a LEFT join; Group types exactly as the engine does but for the declared Sum and Average. Tests by workflow
+`m45-tests-verify` (5 agents): the draft (22), the editor (19), Join origins (6). The review found 11 issues, all fixed
+(the six behaviour fixes above, each shown by a revert in the isolated copy to fail a test, and five small ones);
+mutants: 40, 39 killed, 1 equivalent while validation reports one problem per row.
 
 ## Open items
 

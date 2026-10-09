@@ -42,6 +42,7 @@ const CONTEXT = { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME };
 /** The palette's transforms, in menu order */
 const TRANSFORMS = [
   'Sort by Column',
+  'Group by Column',
   'Filter by Column',
   'Restrict Columns',
   'Rename Columns',

@@ -16,7 +16,9 @@
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
   buildSchemasAndValidity,
+  type ColumnAggregation,
   ColumnComparisonFilter,
   CompositeFilter,
   CompositeFilterOperator,
@@ -27,6 +29,8 @@ import {
   Filter,
   FilterOperator,
   fixJoinDuplicates,
+  getAvailableAggregations,
+  Group,
   Join,
   JoinType,
   Limit,
@@ -137,6 +141,66 @@ const ALLTYPES: CaseTable = ['relational101', 'ALLTYPES', 'CUBETEST'];
 const ON_CUSTOMER = [['CUSTOMER_ID', 'CUSTOMER_ID']] as const;
 const ordersByIdDesc = (): Sort =>
   new Sort('sort101', [{ column: 'ORDER_ID', direction: DESC }]);
+
+/** The aggregations whose outputs the engine types as never null, though a group of empty values gives none (PLAN §5.7) */
+const NULLABLE_ONLY_TO_CUBE: readonly string[] = [
+  AggregationFunction.SUM,
+  AggregationFunction.AVERAGE,
+];
+
+/** The names of a group's Sum and Average outputs, which a case declares wider */
+const sumsAndAverages = (
+  aggregations: readonly ColumnAggregation[],
+): string[] =>
+  aggregations
+    .filter((aggregation) =>
+      NULLABLE_ONLY_TO_CUBE.includes(aggregation.function),
+    )
+    .map(({ name }) => name);
+
+const aggregation = (
+  fn: AggregationFunction,
+  column: string | undefined,
+  name: string,
+): ColumnAggregation => ({ column, function: fn, name });
+
+/**
+ * Every function each column of the table offers (spec §10.1), and Count
+ * rows: one output per (column, function), named `<column>_<function>`. An
+ * unresolved table (the coverage test) gives Count rows alone.
+ */
+const everyAggregation = (
+  table: RelationalTableSource,
+): ColumnAggregation[] => [
+  aggregation(AggregationFunction.COUNT_ROWS, undefined, 'Count Rows'),
+  ...(table.resolution.kind === 'resolved'
+    ? table.resolution.schema.columns.flatMap((column) =>
+        getAvailableAggregations(column.type).map((fn) =>
+          aggregation(fn, column.name, `${column.name}_${fn}`),
+        ),
+      )
+    : []),
+];
+
+/** Every function of every ALLTYPES column, by a key or over all the rows */
+const everyAlltypesAggregation =
+  (columns: string[]) =>
+  (sources: ReadonlyMap<string, RelationalTableSource>): Query =>
+    chain(
+      new Group(
+        'group101',
+        columns,
+        everyAggregation(source(sources, 'relational101')),
+      ),
+    )(sources);
+
+const ORDERS_AGGREGATIONS = [
+  aggregation(AggregationFunction.COUNT_ROWS, undefined, 'n'),
+  aggregation(AggregationFunction.SUM, 'FREIGHT', 'freight total'),
+  aggregation(AggregationFunction.AVERAGE, 'ORDER_ID', 'average id'),
+  aggregation(AggregationFunction.MAX, 'ORDER_DATE', 'last order'),
+  aggregation(AggregationFunction.DISTINCT_VALUE, 'SHIP_REGION', 'region'),
+];
 
 const CASES: readonly ConformanceCase[] = [
   { name: 'orders', tables: [ORDERS], build: chain() },
@@ -300,6 +364,119 @@ const CASES: readonly ConformanceCase[] = [
     name: 'slice',
     tables: [ORDERS],
     build: chain(ordersByIdDesc(), new Slice('slice101', 2, 5)),
+  },
+  {
+    // every (function, family) cell on ALLTYPES, grouped by a key
+    name: 'group-every-aggregation',
+    tables: [ALLTYPES],
+    build: everyAlltypesAggregation(['B']),
+    widerNullable: {
+      group101: [
+        'TI_Sum',
+        'SI_Sum',
+        'BI_Sum',
+        'ID_Sum',
+        'F_Sum',
+        'D_Sum',
+        'DEC_Sum',
+        'NUM_Sum',
+        'TI_Average',
+        'SI_Average',
+        'BI_Average',
+        'ID_Average',
+        'F_Average',
+        'D_Average',
+        'DEC_Average',
+        'NUM_Average',
+      ],
+    },
+  },
+  {
+    // and over all the rows: aggregate()
+    name: 'aggregate-every-aggregation',
+    tables: [ALLTYPES],
+    build: everyAlltypesAggregation([]),
+    widerNullable: {
+      group101: [
+        'TI_Sum',
+        'SI_Sum',
+        'BI_Sum',
+        'ID_Sum',
+        'F_Sum',
+        'D_Sum',
+        'DEC_Sum',
+        'NUM_Sum',
+        'TI_Average',
+        'SI_Average',
+        'BI_Average',
+        'ID_Average',
+        'F_Average',
+        'D_Average',
+        'DEC_Average',
+        'NUM_Average',
+      ],
+    },
+  },
+  {
+    // keys listed in another order than the input's, FREIGHT a Double
+    name: 'group-keys-in-their-order',
+    tables: [ORDERS],
+    build: chain(
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY', 'SHIP_REGION'],
+        ORDERS_AGGREGATIONS,
+      ),
+    ),
+    widerNullable: { group101: sumsAndAverages(ORDERS_AGGREGATIONS) },
+  },
+  {
+    // a group of a group: Integer, Float, StrictDate and Varchar inputs
+    name: 'group-of-a-group',
+    tables: [ORDERS],
+    build: chain(
+      new Group(
+        'group101',
+        ['SHIP_COUNTRY', 'EMPLOYEE_ID'],
+        ORDERS_AGGREGATIONS,
+      ),
+      new Group(
+        'group102',
+        ['SHIP_COUNTRY'],
+        [
+          aggregation(AggregationFunction.SUM, 'n', 'orders'),
+          aggregation(AggregationFunction.MAX, 'freight total', 'most freight'),
+          aggregation(AggregationFunction.MIN, 'average id', 'least average'),
+          aggregation(AggregationFunction.MAX, 'last order', 'latest order'),
+          aggregation(AggregationFunction.COUNT, 'region', 'regions'),
+        ],
+      ),
+    ),
+    widerNullable: {
+      group101: sumsAndAverages(ORDERS_AGGREGATIONS),
+      group102: ['orders'],
+    },
+  },
+  {
+    // a key padded by a LEFT join: the engine types it as its table has it
+    name: 'group-after-a-left-join',
+    tables: [ORDERS, CUSTOMERS],
+    build: joined(
+      ON_CUSTOMER,
+      JoinType.LEFT_OUTER,
+      new Group(
+        'group101',
+        ['COMPANY_NAME'],
+        [
+          aggregation(AggregationFunction.COUNT_ROWS, undefined, 'orders'),
+          aggregation(AggregationFunction.MAX, 'ORDER_DATE', 'last order'),
+        ],
+      ),
+    ),
+    widerNullable: {
+      join101: ['COMPANY_NAME'],
+      group101: ['COMPANY_NAME'],
+    },
   },
   {
     name: 'alltypes-operations',

@@ -16,13 +16,18 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  AggregationFunction,
   buildSchemasAndValidity,
   Connection,
+  Group,
   Join,
   JoinType,
+  PRIMITIVE_TYPE_PATH,
+  PrimitiveType,
   Query,
   Rename,
   Restrict,
+  SchemaColumn,
 } from '@finos/legend-cube';
 import {
   CUSTOMERS_COLUMNS,
@@ -331,5 +336,264 @@ describe('Where a column comes from', () => {
     expect(
       isUntypedColumn(undefined, valid, analysis, 'join101', 'SHIP_REGION'),
     ).toBe(false);
+  });
+});
+
+describe("Where a Group's column comes from", () => {
+  /** ORDERS, then these nodes one after another, captured at the last */
+  const ordersThrough = (...nodes: (Rename | Group | Restrict)[]): Query =>
+    new Query(
+      [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS), ...nodes],
+      nodes.map(
+        (node, index) =>
+          new Connection(
+            nodes[index - 1]?.id ?? 'relational101',
+            node.id,
+            'tds',
+          ),
+      ),
+      nodes[nodes.length - 1]?.id ?? 'relational101',
+    );
+
+  /** ORDERS by ship country, with an aggregation of each function */
+  const byCountry = (): Group =>
+    new Group(
+      'group101',
+      ['SHIP_COUNTRY'],
+      [
+        {
+          column: 'SHIP_REGION',
+          function: AggregationFunction.DISTINCT_VALUE,
+          name: 'Only region',
+        },
+        {
+          column: 'ORDER_DATE',
+          function: AggregationFunction.MIN,
+          name: 'First order',
+        },
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.MAX,
+          name: 'Top freight',
+        },
+        {
+          column: 'ORDER_ID',
+          function: AggregationFunction.COUNT,
+          name: 'Orders',
+        },
+        {
+          column: 'CUSTOMER_ID',
+          function: AggregationFunction.DISTINCT_COUNT,
+          name: 'Customers',
+        },
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.SUM,
+          name: 'Total freight',
+        },
+        {
+          column: 'FREIGHT',
+          function: AggregationFunction.AVERAGE,
+          name: 'Average freight',
+        },
+        {
+          column: undefined,
+          function: AggregationFunction.COUNT_ROWS,
+          name: 'Rows',
+        },
+      ],
+    );
+
+  /** Each table column the node's output column comes from, as [table source id, column] */
+  const originsOf = (
+    query: Query,
+    nodeId: string,
+    column: string,
+  ): string[][] =>
+    findColumnOrigins(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((origin) => [origin.source.id, origin.column]);
+
+  const sourcesOf = (query: Query, nodeId: string, column: string): string[] =>
+    findColumnSources(
+      query,
+      buildSchemasAndValidity(query),
+      nodeId,
+      column,
+    ).map((source) => source.id);
+
+  test('The group is valid, so its output has every column asked about', () => {
+    const query = ordersThrough(byCountry());
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('group101')).toEqual([]);
+    expect(analysis.schemas.get('group101')?.names()).toEqual([
+      'SHIP_COUNTRY',
+      'Only region',
+      'First order',
+      'Top freight',
+      'Orders',
+      'Customers',
+      'Total freight',
+      'Average freight',
+      'Rows',
+    ]);
+  });
+
+  test("Follows a Group's key back to its table column under the same name", () => {
+    const query = ordersThrough(byCountry());
+    expect(originsOf(query, 'group101', 'SHIP_COUNTRY')).toEqual([
+      ['relational101', 'SHIP_COUNTRY'],
+    ]);
+    expect(sourcesOf(query, 'group101', 'SHIP_COUNTRY')).toEqual([
+      'relational101',
+    ]);
+    // an input column that is no key is gone from the group's output
+    expect(originsOf(query, 'group101', 'SHIP_CITY')).toEqual([]);
+    // as is a column the group aggregates
+    expect(originsOf(query, 'group101', 'FREIGHT')).toEqual([]);
+  });
+
+  test('Follows a Distinct Value, Min or Max back to the table column it aggregates', () => {
+    const query = ordersThrough(byCountry());
+    expect(originsOf(query, 'group101', 'Only region')).toEqual([
+      ['relational101', 'SHIP_REGION'],
+    ]);
+    expect(originsOf(query, 'group101', 'First order')).toEqual([
+      ['relational101', 'ORDER_DATE'],
+    ]);
+    expect(originsOf(query, 'group101', 'Top freight')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    expect(sourcesOf(query, 'group101', 'Top freight')).toEqual([
+      'relational101',
+    ]);
+  });
+
+  test("Finds no table for a Count, Distinct Count, Sum, Average or Count rows, which is no column's value", () => {
+    const query = ordersThrough(byCountry());
+    expect(originsOf(query, 'group101', 'Orders')).toEqual([]);
+    expect(originsOf(query, 'group101', 'Customers')).toEqual([]);
+    expect(originsOf(query, 'group101', 'Total freight')).toEqual([]);
+    expect(originsOf(query, 'group101', 'Average freight')).toEqual([]);
+    expect(originsOf(query, 'group101', 'Rows')).toEqual([]);
+    expect(sourcesOf(query, 'group101', 'Total freight')).toEqual([]);
+  });
+
+  test("Follows a Group's columns back through a Rename before it, to the table's names", () => {
+    const query = ordersThrough(
+      new Rename('rename101', [
+        { from: 'SHIP_REGION', to: 'Region' },
+        { from: 'FREIGHT', to: 'Cost' },
+      ]),
+      new Group(
+        'group101',
+        ['Region'],
+        [
+          {
+            column: 'Cost',
+            function: AggregationFunction.MAX,
+            name: 'Top cost',
+          },
+          {
+            column: 'Cost',
+            function: AggregationFunction.SUM,
+            name: 'Total cost',
+          },
+        ],
+      ),
+    );
+    expect(buildSchemasAndValidity(query).validity.get('group101')).toEqual([]);
+    expect(originsOf(query, 'group101', 'Region')).toEqual([
+      ['relational101', 'SHIP_REGION'],
+    ]);
+    expect(originsOf(query, 'group101', 'Top cost')).toEqual([
+      ['relational101', 'FREIGHT'],
+    ]);
+    expect(originsOf(query, 'group101', 'Total cost')).toEqual([]);
+  });
+
+  test("Still tells a Distinct Value of a column Cube typed as a bare String, through a Group feeding a Join, for the Join's 'type unknown' warning", () => {
+    // ORDERS as the engine types it when SHIP_REGION is an OTHER column
+    const ordersColumns = ORDERS_COLUMNS.map((column) =>
+      column.name === 'SHIP_REGION'
+        ? new SchemaColumn(
+            column.name,
+            PrimitiveType.get(PRIMITIVE_TYPE_PATH.STRING),
+            true,
+          )
+        : column,
+    );
+    const query = new Query(
+      [
+        northwindTable('relational101', 'ORDERS', ordersColumns),
+        new Group(
+          'group101',
+          ['SHIP_COUNTRY'],
+          [
+            {
+              column: 'SHIP_REGION',
+              function: AggregationFunction.DISTINCT_VALUE,
+              name: 'Ship region',
+            },
+            {
+              column: 'SHIP_REGION',
+              function: AggregationFunction.COUNT,
+              name: 'Ship regions',
+            },
+          ],
+        ),
+        northwindTable('relational102', 'CUSTOMERS', CUSTOMERS_COLUMNS),
+        new Join('join101', {
+          leftColumns: ['Ship region'],
+          rightColumns: ['REGION'],
+          joinType: JoinType.INNER,
+        }),
+      ],
+      [
+        new Connection('relational101', 'group101', 'tds'),
+        new Connection('group101', 'join101', 'leftTds'),
+        new Connection('relational102', 'join101', 'rightTds'),
+      ],
+      'join101',
+    );
+    const analysis = buildSchemasAndValidity(query);
+    expect(analysis.validity.get('group101')).toEqual([]);
+    expect(analysis.validity.get('join101')).toEqual([]);
+    const outline: CubeModelOutline = {
+      ...FAKE_NORTHWIND_OUTLINE,
+      databases: [
+        {
+          path: NORTHWIND_DATABASE,
+          schemas: [
+            {
+              name: 'NORTHWIND',
+              tables: [
+                {
+                  name: 'ORDERS',
+                  isView: false,
+                  columnCount: 1,
+                  flags: [],
+                  untypedColumns: ['SHIP_REGION'],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    // the Join editor asks of its Left input's column, the group's
+    const [leftId] = query.getInputIds('join101');
+    expect(leftId).toBe('group101');
+    const untyped = (nodeId: string, column: string): boolean =>
+      isUntypedColumn(outline, query, analysis, nodeId, column);
+    expect(untyped('group101', 'Ship region')).toBe(true);
+    expect(untyped('join101', 'Ship region')).toBe(true);
+    // a count of it is no value of it
+    expect(untyped('group101', 'Ship regions')).toBe(false);
+    expect(untyped('group101', 'SHIP_COUNTRY')).toBe(false);
+    expect(untyped('join101', 'REGION')).toBe(false);
   });
 });

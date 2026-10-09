@@ -42,6 +42,7 @@ import {
   DISTINCT_DEFINITION,
   DROP_DEFINITION,
   FILTER_DEFINITION,
+  GROUP_DEFINITION,
   JOIN_DEFINITION,
   LIMIT_DEFINITION,
   NodeRegistry,
@@ -61,6 +62,7 @@ import {
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
+import { Group } from '../transforms/Group.js';
 import { Join, JoinType } from '../transforms/Join.js';
 import { Limit } from '../transforms/Limit.js';
 import { Rename } from '../transforms/Rename.js';
@@ -193,9 +195,10 @@ describe(unitTest('Node registry'), () => {
     expect(dataProduct).toBe(DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION);
     expect(dataProduct?.label).toBe('Data Product');
     expect(dataProduct?.beta).toBe(true);
-    // transforms in the spec's menu order (§7): Sort, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
+    // transforms in the spec's menu order (§7): Sort, Group, Filter, Restrict, Rename, Distinct, Drop, Limit, Slice, then Join
     expect(registry.transforms).toEqual([
       SORT_DEFINITION,
+      GROUP_DEFINITION,
       FILTER_DEFINITION,
       RESTRICT_DEFINITION,
       RENAME_DEFINITION,
@@ -206,6 +209,7 @@ describe(unitTest('Node registry'), () => {
       JOIN_DEFINITION,
     ]);
     expect(registry.get('sort')).toBe(SORT_DEFINITION);
+    expect(registry.get('group')).toBe(GROUP_DEFINITION);
     expect(registry.get('filter')).toBe(FILTER_DEFINITION);
     expect(registry.get('limit')).toBe(LIMIT_DEFINITION);
     expect(registry.get('join')).toBe(JOIN_DEFINITION);
@@ -223,6 +227,19 @@ describe(unitTest('Node registry'), () => {
     expect(sort).toBeInstanceOf(Sort);
     expect(sort.id).toBe('sort101');
     expect(sort.sorts).toEqual([]);
+  });
+
+  test('Creates a group with no key and no aggregation yet', () => {
+    expect(GROUP_DEFINITION.kind).toBe('transform');
+    expect(GROUP_DEFINITION.type).toBe('group');
+    expect(GROUP_DEFINITION.label).toBe('Group by Column');
+    expect(GROUP_DEFINITION.icon).toBe('group');
+    expect(GROUP_DEFINITION.beta).toBe(false);
+    const group = GROUP_DEFINITION.create('group101');
+    expect(group).toBeInstanceOf(Group);
+    expect(group.id).toBe('group101');
+    expect(group.columns).toEqual([]);
+    expect(group.aggregations).toEqual([]);
   });
 
   test('Creates a filter with no filter yet', () => {

@@ -159,7 +159,7 @@ export const SORT_DEFINITION: TransformDefinition<Sort> = {
   spec: SORT_CODEC,
 };
 
-/** Group (spec §7.2, PLAN §11.5); registered with the builder's editor, in M4.5 */
+/** Group (spec §7.2, PLAN §11.5) */
 export const GROUP_DEFINITION: TransformDefinition<Group> = {
   kind: 'transform',
   type: Group.TYPE,
@@ -313,6 +313,7 @@ export const createNodeRegistry = (): NodeRegistry =>
     RELATIONAL_TABLE_SOURCE_DEFINITION,
     DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
     SORT_DEFINITION,
+    GROUP_DEFINITION,
     FILTER_DEFINITION,
     RESTRICT_DEFINITION,
     RENAME_DEFINITION,

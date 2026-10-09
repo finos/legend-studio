@@ -43,6 +43,7 @@ const NODE_ICONS: Readonly<
   slice: AlignMiddleIcon,
   distinct: CompressIcon,
   restrict: DataCubeIcon.TableColumns,
+  group: DataCubeIcon.TableGroupBy,
   rename: PencilIcon,
   sort: SortIcon,
 };

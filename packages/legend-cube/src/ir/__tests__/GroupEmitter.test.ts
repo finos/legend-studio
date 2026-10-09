@@ -17,7 +17,6 @@
 import { describe, expect, test } from '@jest/globals';
 import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -88,9 +87,7 @@ const ordersThen = (...nodes: QueryNode[]): Query => {
   );
 };
 
-/** Group is registered with the builder's editor only in M4.5 */
-const emitterOf = (query: Query): QueryEmitter =>
-  new QueryEmitter(query, TEST__registryWithGroup());
+const emitterOf = (query: Query): QueryEmitter => new QueryEmitter(query);
 
 /** The relation of ORDERS, then a Group with the keys and the aggregations */
 const groupedOrders = (

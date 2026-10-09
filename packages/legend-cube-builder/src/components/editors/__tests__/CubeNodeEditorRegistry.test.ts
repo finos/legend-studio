@@ -59,6 +59,8 @@ describe('Node editor registries', () => {
       drop: 'Reduces the number of rows in the previous data set, removing the specified number of rows from the beginning of the data set.',
       filter:
         'Reduces the number of rows in the previous data set, keeping only rows matching the specified criteria.',
+      group:
+        'Aggregates the data from the previous data set using the specified columns and aggregation functions.',
       join: 'Joins two previous data sets using specified columns as join keys.',
       limit:
         'Reduces the number of rows in the previous data set, keeping the specified number of rows from the beginning of the data set.',

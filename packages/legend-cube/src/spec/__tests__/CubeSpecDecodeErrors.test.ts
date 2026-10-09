@@ -15,7 +15,6 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
-import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { CubeDocument } from '../../graph/CubeDocument.js';
 import {
@@ -1347,7 +1346,6 @@ describe(unitTest('Saved spec decode errors'), () => {
     expect(failureOf(json)).toEqual([path, detail]);
   });
 
-  // Group is registered in M4.5 (PLAN §11.5): until then these pass a registry with it
   test.each<[string, unknown]>([
     ['a group', withGroup(GROUP_101)],
     [
@@ -1378,7 +1376,7 @@ describe(unitTest('Saved spec decode errors'), () => {
     ],
   ])('Reads %s, which the failing cases start from', (_, json) => {
     const { document, readOnly } = decodeCubeSpec(json, {
-      registry: TEST__registryWithGroup(),
+      registry: createNodeRegistry(),
     });
     expect(readOnly).toBe(false);
     expect(document.query.getNode('group101')).toBeInstanceOf(Group);
@@ -1557,7 +1555,7 @@ describe(unitTest('Saved spec decode errors'), () => {
       'must list the 1 input(s) of a group node, in port order',
     ],
   ])('Refuses %s', (_, json, path, detail) => {
-    expect(failureOf(json, TEST__registryWithGroup())).toEqual([path, detail]);
+    expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
   });
 
   test.each<[string, unknown, string, string]>([

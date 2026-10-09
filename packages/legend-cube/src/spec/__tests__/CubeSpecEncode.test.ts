@@ -16,7 +16,6 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
-import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
 import {
   column,
   enumColumn,
@@ -1761,8 +1760,7 @@ describe(unitTest('Saved spec encoding: restricts'), () => {
 });
 
 describe(unitTest('Saved spec encoding: groups'), () => {
-  // Group is registered in M4.5 (PLAN §11.5): until then these pass a registry with it
-  const REGISTRY = TEST__registryWithGroup();
+  const REGISTRY = createNodeRegistry();
 
   /** The saved spec of one unconnected group, `group101`, with these fields of its own */
   const groupSpec = (own: JsonObject): JsonObject => ({

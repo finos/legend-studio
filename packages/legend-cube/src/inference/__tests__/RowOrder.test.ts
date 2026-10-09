@@ -16,7 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
-import { TEST__registryWithGroup } from '../../__test-utils__/CubeTestRegistry.js';
+import { createNodeRegistry } from '../../nodes/NodeRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { Connection } from '../../graph/Connection.js';
 import { Query } from '../../graph/Query.js';
@@ -364,10 +364,9 @@ const errorsOf = (
   query: Query,
   nodeId: string,
 ): readonly string[] | undefined =>
-  buildSchemasAndValidity(
-    query,
-    TEST__registryWithGroup().queryRules,
-  ).validity.get(nodeId);
+  buildSchemasAndValidity(query, createNodeRegistry().queryRules).validity.get(
+    nodeId,
+  );
 
 describe(unitTest('Lost sort orders'), () => {
   test.each<[string, QueryNode[]]>([
