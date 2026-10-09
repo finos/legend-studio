@@ -47,7 +47,7 @@ import {
 } from '../../graph-manager/CubeDataProduct.js';
 import {
   CubeAccessPointGroupAccess,
-  type CubeDataProductCandidate,
+  CubeDataProductCandidate,
   type CubeDataProductDescription,
 } from '../../graph-manager/CubeDataProductCatalog.js';
 import { rememberCubeWarehouse } from '../CubeDataProductWarehouse.js';
@@ -432,6 +432,9 @@ describe('Data product tab', () => {
     expect(tab.environmentType).toBe(PRODUCTION_PARALLEL);
     expect(tab.isListing).toBe(true);
     expect(tab.visibleCandidates).toEqual([]);
+    // nor does Search all show it
+    tab.setShowAllProjects(true);
+    expect(tab.shownCandidates).toEqual([]);
     held.resolve(
       await (search as NonNullable<typeof search>)({
         text: '',
@@ -442,6 +445,93 @@ describe('Data product tab', () => {
     expect(
       tab.visibleCandidates.map((candidate) => candidate.environmentType),
     ).toEqual([PRODUCTION_PARALLEL]);
+  });
+
+  test("Search all shows other projects' and versions' products greyed, with why, from the same list", async () => {
+    const { state, dataProducts } = setUp();
+    const OTHER = new CubeDataProductCandidate({
+      id: 'OTHER_PRODUCT',
+      deploymentId: 'deployment-other',
+      dataProductPath: 'other::OtherProduct',
+      title: 'Other Product',
+      groupId: 'com.example.other',
+      artifactId: 'other-products',
+      versionId: '1.4.0',
+      environmentType: PRODUCTION,
+    });
+    const listed = dataProducts.search.getMockImplementation();
+    dataProducts.search.mockImplementation(async (search, signal) => [
+      ...(await (listed as NonNullable<typeof listed>)(search, signal)),
+      OTHER,
+    ]);
+    let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    tab = await openTab(state);
+    const ids = (): string[] => tab.shownCandidates.map(({ id }) => id);
+    expect(ids()).toEqual(['ORDERS_PRODUCT']);
+    tab.setShowAllProjects(true);
+    expect(ids()).toEqual([
+      'ORDERS_PRODUCT',
+      'RETURNS_PRODUCT',
+      'OTHER_PRODUCT',
+    ]);
+    const [orders, returns, other] = tab.shownCandidates as [
+      CubeDataProductCandidate,
+      CubeDataProductCandidate,
+      CubeDataProductCandidate,
+    ];
+    expect(tab.getCandidateDisabledReason(orders)).toBeUndefined();
+    expect(tab.getCandidateDisabledReason(returns)).toBe(
+      'Deployed from version feature-returns-SNAPSHOT',
+    );
+    expect(tab.getCandidateDisabledReason(other)).toBe(
+      'Belongs to project com.example.other:other-products',
+    );
+    // greyed products can't be picked
+    dataProducts.describe.mockClear();
+    tab.selectCandidate(other);
+    tab.selectCandidate(returns);
+    expect(tab.candidate).toBe(orders);
+    expect(dataProducts.describe).not.toHaveBeenCalled();
+    // no listing more, and a reopening shows the project's own again
+    const listings = dataProducts.search.mock.calls.length;
+    state.sourcePicker.close();
+    tab = await openTab(state);
+    expect(tab.showAllProjects).toBe(false);
+    expect(ids()).toEqual(['ORDERS_PRODUCT']);
+    expect(dataProducts.search.mock.calls.length).toBe(listings);
+  });
+
+  test("Expands the cube's own product on reopening, though Search all is on and another project's product has its path", async () => {
+    const { state, dataProducts } = setUp();
+    let tab = await openTab(state);
+    await pickProduct(tab, 'ORDERS_PRODUCT');
+    await add(state, 'core', 'daily_orders');
+    const reopened = new CubeEditorState(state.host, state.document);
+    const listed = dataProducts.search.getMockImplementation();
+    const held = deferred<readonly CubeDataProductCandidate[]>();
+    dataProducts.search.mockReturnValueOnce(held.promise);
+    tab = await openTab(reopened);
+    tab.setShowAllProjects(true);
+    held.resolve([
+      new CubeDataProductCandidate({
+        id: 'COPY_PRODUCT',
+        deploymentId: 'deployment-copy',
+        dataProductPath: 'sales::products::OrdersProduct',
+        title: 'Orders Product',
+        groupId: 'com.example.copy',
+        artifactId: 'copied-products',
+        versionId: '1.4.0',
+        environmentType: PRODUCTION,
+      }),
+      ...(await (listed as NonNullable<typeof listed>)({
+        text: '',
+        environmentType: PRODUCTION,
+      })),
+    ]);
+    await settle();
+    expect(tab.candidate?.id).toBe('ORDERS_PRODUCT');
   });
 
   test("Starts an emptied cube on the viewer's warehouse, not the previous cube's", async () => {

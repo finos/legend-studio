@@ -77,6 +77,12 @@ export const CUBE_DATA_PRODUCT_TAB_MESSAGE = {
   CUBE_CHANGED:
     'The cube changed while the access point was being added; pick it again.',
   TRUNCATED: 'Too many matching items; list truncated.',
+  OTHER_PROJECT: (groupId: string, artifactId: string) =>
+    `Belongs to project ${groupId}:${artifactId}`,
+  OTHER_VERSION: (versionId: string) => `Deployed from version ${versionId}`,
+  OTHER_ENVIRONMENT: 'Deployed to another environment',
+  NONE_IN_PROJECT:
+    "No data product of the cube's project matches; Search all shows the others.",
 } as const;
 
 /** How long typing pauses before the text is searched on a server */
@@ -124,6 +130,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   environmentType = CubeDataProductEnvironmentType.PRODUCTION;
   search = '';
+  /** On a cube with a project, whether the list shows other projects' products too, greyed */
+  showAllProjects = false;
   /** The class's deployed products; none until listed */
   candidates: readonly CubeDataProductCandidate[] | undefined;
   /** The class the products were listed for */
@@ -172,6 +180,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     >(this, {
       environmentType: observable,
       search: observable,
+      showAllProjects: observable,
+      shownCandidates: computed,
+      setShowAllProjects: action,
       candidates: observable.ref,
       listedEnvironmentType: observable,
       listedText: observable,
@@ -289,6 +300,54 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     );
   }
 
+  /**
+   * The products the list shows: on a cube with a project, its project's
+   * only, unless Search all shows every listed product of the class, those
+   * of other projects or versions greyed
+   */
+  get shownCandidates(): readonly CubeDataProductCandidate[] {
+    if (!this.fixedProject || !this.showAllProjects) {
+      return this.visibleCandidates;
+    }
+    const search = this.search.trim().toLowerCase();
+    const { searchesOnServer } = this;
+    return (this.candidates ?? []).filter(
+      (candidate) =>
+        candidate.environmentType === this.environmentType &&
+        (searchesOnServer ||
+          [candidate.title, candidate.id, candidate.description ?? '']
+            .join('\n')
+            .toLowerCase()
+            .includes(search)),
+    );
+  }
+
+  /** Why a listed product can't be picked on this cube: it isn't of the cube's project, version or class */
+  getCandidateDisabledReason(
+    candidate: CubeDataProductCandidate,
+  ): string | undefined {
+    const project = this.fixedProject;
+    if (!project || isFromProject(candidate, project)) {
+      return undefined;
+    }
+    if (
+      candidate.groupId !== project.groupId ||
+      candidate.artifactId !== project.artifactId
+    ) {
+      return CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_PROJECT(
+        candidate.groupId,
+        candidate.artifactId,
+      );
+    }
+    return candidate.versionId !== project.versionId
+      ? CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_VERSION(candidate.versionId)
+      : CUBE_DATA_PRODUCT_TAB_MESSAGE.OTHER_ENVIRONMENT;
+  }
+
+  setShowAllProjects(showAllProjects: boolean): void {
+    this.showAllProjects = showAllProjects;
+  }
+
   /** Whether a server's matches listed may be cut short */
   get isTruncated(): boolean {
     return this.listedCutShort;
@@ -344,6 +403,9 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
 
   /** Picks a product and reads its access points; picking it again reads them again after a failure */
   selectCandidate(candidate: CubeDataProductCandidate | undefined): void {
+    if (candidate && this.getCandidateDisabledReason(candidate) !== undefined) {
+      return;
+    }
     if (
       candidate === this.candidate &&
       (candidate === undefined || this.description || this.isDescribing)
@@ -380,6 +442,8 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     const project = this.fixedProject;
     const runtime = this.editorState.dataProductRuntime;
     this.error = undefined;
+    // a cube reopens on its own project's products
+    this.showAllProjects = false;
     if (project) {
       if (this.environmentType !== project.environmentType) {
         this.environmentType = project.environmentType;

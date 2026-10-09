@@ -222,6 +222,28 @@ export const CubeDataProductTab = observer(
           value={tab.search}
           onChange={(event) => tab.setSearch(event.target.value)}
         />
+        {project && (
+          <div
+            className="flex items-center gap-3 text-base"
+            role="radiogroup"
+            aria-label="Data products shown"
+          >
+            {[
+              { label: 'In this project', value: false },
+              { label: 'Search all', value: true },
+            ].map(({ label, value }) => (
+              <label key={label} className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="cube-data-products-shown"
+                  checked={tab.showAllProjects === value}
+                  onChange={() => tab.setShowAllProjects(value)}
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+        )}
         {tab.isListing && (
           <div className="text-base text-[var(--color-text-secondary)]">
             {tab.searchesOnServer
@@ -240,8 +262,9 @@ export const CubeDataProductTab = observer(
           className="max-h-40 overflow-auto rounded-sm border border-[var(--color-border-subtle)]"
           aria-label="Data products"
         >
-          {tab.visibleCandidates.map((candidate) => {
+          {tab.shownCandidates.map((candidate) => {
             const isPicked = tab.candidate === candidate;
+            const reason = tab.getCandidateDisabledReason(candidate);
             return (
               <li key={`${candidate.id}/${candidate.deploymentId}`}>
                 <button
@@ -250,20 +273,30 @@ export const CubeDataProductTab = observer(
                     'bg-[var(--color-bg-selected)]': isPicked,
                   })}
                   aria-pressed={isPicked}
-                  title={candidate.description}
+                  disabled={reason !== undefined}
+                  title={reason ?? candidate.description}
                   onClick={() => tab.selectCandidate(candidate)}
                 >
                   <span className="min-w-0 flex-1 truncate">
                     {candidate.title}
                   </span>
                   <span className="shrink-0 text-sm text-[var(--color-text-muted)]">
-                    {`${candidate.id} · ${candidate.versionId}`}
+                    {reason ?? `${candidate.id} · ${candidate.versionId}`}
                   </span>
                 </button>
               </li>
             );
           })}
         </ul>
+        {project !== undefined &&
+          !tab.showAllProjects &&
+          !tab.isListing &&
+          tab.search.trim().length > 0 &&
+          !tab.shownCandidates.length && (
+            <span className="text-sm text-[var(--color-text-muted)]">
+              {CUBE_DATA_PRODUCT_TAB_MESSAGE.NONE_IN_PROJECT}
+            </span>
+          )}
         {tab.isTruncated && (
           <span className="text-sm text-[var(--color-text-muted)]">
             {CUBE_DATA_PRODUCT_TAB_MESSAGE.TRUNCATED}

@@ -78,6 +78,10 @@ describe('Data product tab', () => {
         .getAllByRole('option')
         .map((option) => option.textContent),
     ).toEqual(['Production', 'Production (parallel)']);
+    // a new cube has no project to keep to
+    expect(
+      within(dialog).queryByRole('radiogroup', { name: 'Data products shown' }),
+    ).toBeNull();
     const products = within(dialog).getByRole('list', {
       name: 'Data products',
     });
@@ -133,6 +137,24 @@ describe('Data product tab', () => {
         "All of the cube's data products come from com.example.sales:orders-products:1.4.0.",
       ),
     ).toBeDefined();
+    // other versions show, greyed, under Search all
+    const shown = within(dialog).getByRole('radiogroup', {
+      name: 'Data products shown',
+    });
+    expect(
+      within(shown).getByLabelText<HTMLInputElement>('In this project').checked,
+    ).toBe(true);
+    expect(
+      within(
+        within(dialog).getByRole('list', { name: 'Data products' }),
+      ).queryByText('Returns Product'),
+    ).toBeNull();
+    fireEvent.click(within(shown).getByLabelText('Search all'));
+    expect(
+      within(dialog)
+        .getByText('Deployed from version feature-returns-SNAPSHOT')
+        .closest('button')?.disabled,
+    ).toBe(true);
     // the cube's tables tabs are disabled
     expect(
       within(dialog).getByRole<HTMLButtonElement>('tab', { name: 'Model' })
