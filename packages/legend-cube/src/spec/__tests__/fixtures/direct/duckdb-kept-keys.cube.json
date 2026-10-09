@@ -1,0 +1,71 @@
+{
+  "formatVersion": 1,
+  "name": "Orders (DuckDB)",
+  "context": {
+    "model": {
+      "_type": "cubeDirectConnection",
+      "connection": {
+        "_type": "RelationalDatabaseConnection",
+        "type": "DuckDB",
+        "databaseType": "DuckDB",
+        "datasourceSpecification": {
+          "_type": "duckDB",
+          "path": "",
+          "testDataSetupSqls": [
+            "drop schema if exists cube_sample cascade",
+            "create schema cube_sample",
+            "create table cube_sample.orders (order_id INTEGER PRIMARY KEY, customer_id VARCHAR(5) NOT NULL)",
+            "insert into cube_sample.orders values (1, 'ALFKI')"
+          ]
+        },
+        "authenticationStrategy": {
+          "_type": "test"
+        },
+        "laterSetting": {
+          "nested": [
+            [1, 2],
+            null,
+            {
+              "deep": true
+            }
+          ],
+          "empty": null
+        },
+        "__proto__": {
+          "polluted": true
+        }
+      },
+      "laterModelKey": "kept"
+    },
+    "runtime": "cube::direct::Runtime"
+  },
+  "query": {
+    "selected": "relational101",
+    "nodes": [
+      {
+        "kind": "relational",
+        "id": "relational101",
+        "database": "cube::direct::Database",
+        "schema": "\"cube_sample\"",
+        "table": "\"orders\"",
+        "schemaSnapshot": [
+          {
+            "name": "order_id",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Int"
+            },
+            "nullable": false
+          },
+          {
+            "name": "customer_id",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [0]
+            },
+            "nullable": false
+          }
+        ]
+      }
+    ]
+  }
+}

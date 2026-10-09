@@ -23,8 +23,10 @@ import { Query } from './Query.js';
 /**
  * Where the query's tables come from: the engine's model context as plain
  * JSON, e.g. `{_type: 'text', code}` for Pure text (a bundled or pasted model,
- * dev only) or `{_type: 'pointer', sdlcInfo}` for a published project (M3).
- * It is kept whole, exactly as saved; only the host reads it (PLAN §6.2.2).
+ * dev only), `{_type: 'pointer', sdlcInfo}` for a published project (M3), or
+ * a host's own kind, e.g. a direct database connection saved once for the
+ * whole cube (PLAN §6.8). It is kept whole, exactly as saved, unknown keys
+ * included; only the host reads it (PLAN §6.2.2).
  */
 export interface ModelContext extends JsonObject {
   readonly _type: string;

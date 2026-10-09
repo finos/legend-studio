@@ -1,4 +1,5 @@
 ---
+'@finos/legend-cube': patch
 '@finos/legend-cube-builder': patch
 ---
 

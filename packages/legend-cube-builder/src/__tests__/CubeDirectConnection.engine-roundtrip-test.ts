@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import {
+  decodeCubeSpec,
   type IR,
   Query,
   QueryEmitter,
@@ -23,6 +24,8 @@ import {
   Schema,
 } from '@finos/legend-cube';
 import type { PlainObject } from '@finos/legend-shared';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 import {
   directDuckDBConnection,
   directH2Connection,
@@ -36,6 +39,7 @@ import {
   type AccessorPath,
   CubeEngineErrorKind,
 } from '../graph-manager/CubeEngine.js';
+import { getRuntimesForDatabase } from '../graph-manager/CubeModelOutlineHelper.js';
 import { V1_createEngineBackedCubeEngine } from '../graph-manager/protocol/pure/v1/__test-utils__/V1_CubeEngineTestUtils.js';
 
 // A direct-connection cube on the engine (PLAN §6.8): its tables read from
@@ -150,5 +154,90 @@ describe('A direct-connection cube whose setup fails', () => {
     expect((error as { detail: string }).detail.split('\n')[0]).toBe(
       "The database refused a statement: check the connection's setup SQL",
     );
+  });
+});
+
+/** A direct-connection sample of the core's saved specs */
+const readSample = (file: string): unknown =>
+  JSON.parse(
+    readFileSync(
+      resolve(
+        __dirname,
+        '../../../legend-cube/src/spec/__tests__/fixtures/direct',
+        file,
+      ),
+      'utf-8',
+    ),
+  );
+
+describe('Direct-connection spec samples, on the engine', () => {
+  test('Opens the H2 sample with the schemas the engine gives its tables, and runs it', async () => {
+    const { engine } = V1_createEngineBackedCubeEngine();
+    const { document } = decodeCubeSpec(
+      readSample('h2-orders-by-country.cube.json'),
+    );
+    const { context, query } = document;
+    if (!context?.runtime) {
+      throw new Error('The sample has no context');
+    }
+    const sources = query.nodes.filter(
+      (node): node is RelationalTableSource =>
+        node instanceof RelationalTableSource,
+    );
+    const outline = await engine.loadModel(context.model);
+    sources.forEach((source) =>
+      expect(
+        getRuntimesForDatabase(outline, source.database).map(
+          (runtime) => runtime.path,
+        ),
+      ).toEqual([context.runtime]),
+    );
+    const typed = await engine.resolveSchemas(
+      context.model,
+      new Map(
+        sources.map((source) => [
+          source.id,
+          [source.database, source.schema, source.table] as const,
+        ]),
+      ),
+    );
+    sources.forEach((source) => {
+      const schema = typed.get(source.id);
+      expect(schema).toBeInstanceOf(Schema);
+      // no drift: the saved snapshot is the engine's schema
+      expect(
+        source.resolution.kind === 'resolved' &&
+          source.resolution.schema.isIdenticalTo(schema as Schema),
+      ).toBe(true);
+    });
+    const result = await engine.execute(
+      context.model,
+      new QueryEmitter(query).emitExecutionLambda({
+        rowLimit: 10,
+        runtime: context.runtime,
+      }),
+    );
+    // the orders from Germany
+    const orderId = result.columns.indexOf('ORDER_ID');
+    expect(result.rows.map((row) => row[orderId])).toEqual(['1', '3']);
+  });
+
+  test("Refuses the DuckDB sample, whose connection has settings Cube doesn't know, without calling the engine", async () => {
+    const { engine, calls } = V1_createEngineBackedCubeEngine();
+    const { document } = decodeCubeSpec(
+      readSample('duckdb-kept-keys.cube.json'),
+    );
+    const model = document.context?.model;
+    if (!model) {
+      throw new Error('The sample has no context');
+    }
+    const error = await engine
+      .loadModel(model)
+      .catch((caught: unknown) => caught);
+    expect(error).toMatchObject({
+      kind: CubeEngineErrorKind.UNSUPPORTED_MODEL,
+    });
+    expect((error as { detail: string }).detail).toContain('"laterSetting"');
+    Object.values(calls).forEach((call) => expect(call).not.toHaveBeenCalled());
   });
 });
