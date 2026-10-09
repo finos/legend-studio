@@ -37,7 +37,14 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { CONCAT_EDITOR_TEXT } from '../../../__lib__/LegendCubeLabels.js';
+import {
+  CONCAT_EDITOR_TEXT,
+  CONCAT_RENAME_FIX_TEXT,
+  CONCAT_RENAME_FIX_TITLE,
+  getConcatRestrictFixText,
+  getConcatRestrictFixTitle,
+  READ_ONLY_CUBE_TITLE,
+} from '../../../__lib__/LegendCubeLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import {
@@ -727,4 +734,314 @@ describe('Concat editor', () => {
     ).toBeNull();
     expect(problems()).toEqual([]);
   });
+});
+
+describe('Concat editor, its autofixes (PLAN §11.5, Q6)', () => {
+  const button = (name: string): HTMLButtonElement =>
+    within(panel()).getByRole<HTMLButtonElement>('button', { name });
+
+  /** The items of a fix's list of columns */
+  const fixList = (name: string): string[] =>
+    within(within(panel()).getByRole('list', { name }))
+      .getAllByRole('listitem')
+      .map((item) => item.textContent ?? '');
+
+  /** Neither fix is offered: no text, no list, no button */
+  const expectNoFix = (): void => {
+    const editor = panel();
+    expect(within(editor).queryByText(CONCAT_RENAME_FIX_TEXT)).toBeNull();
+    expect(within(editor).queryByText(/which can be dropped:$/u)).toBeNull();
+    ['Columns to rename', 'Columns to drop'].forEach((name) =>
+      expect(within(editor).queryByRole('list', { name })).toBeNull(),
+    );
+    ['Rename them', 'Drop them'].forEach((name) =>
+      expect(within(editor).queryByRole('button', { name })).toBeNull(),
+    );
+  };
+
+  /** The second input has REGION where the first has CITY */
+  const regionForCity = (): Query =>
+    concatOf(customers(), suppliers(['COMPANY_NAME', 'REGION', 'COUNTRY']));
+
+  /** The second input has SUPPLIER_ID before the first input's columns */
+  const supplierIdToo = (): Query =>
+    concatOf(customers(), suppliers(['SUPPLIER_ID', ...COMPANY_CITY_COUNTRY]));
+
+  const MATCHED = [
+    ['1', 'COMPANY_NAME Varchar(40)', 'COMPANY_NAME Varchar(40)'],
+    ['2', 'CITY Varchar(15)?', 'CITY Varchar(15)?'],
+    ['3', 'COUNTRY Varchar(15)?', 'COUNTRY Varchar(15)?'],
+  ];
+
+  test("Offers to give the second input's differing names the first input's, then adds a Rename before it, as one undo step", async () => {
+    const editorState = await render(regionForCity());
+    await openConcat();
+    const regionMarks = [
+      '2 First name: The second input has REGION here',
+      '2 Second name: The first input has CITY here',
+    ];
+    expect(marks()).toEqual(regionMarks);
+    expect(within(panel()).getByText(CONCAT_RENAME_FIX_TEXT)).toBeDefined();
+    expect(CONCAT_RENAME_FIX_TEXT).toBe(
+      "The second input's columns can take the first input's names:",
+    );
+    expect(fixList('Columns to rename')).toEqual(['REGION → CITY']);
+    expect(button('Rename them').disabled).toBe(false);
+    expect(button('Rename them').title).toBe(CONCAT_RENAME_FIX_TITLE);
+    expect(CONCAT_RENAME_FIX_TITLE).toBe(
+      "Add a Rename before the second input that gives these columns the first input's names, as one step to undo",
+    );
+    // the counts match: nothing to drop
+    expect(
+      within(panel()).queryByRole('button', { name: 'Drop them' }),
+    ).toBeNull();
+    const before = editorState.document.query;
+    fireEvent.click(button('Rename them'));
+    const { query } = editorState.document;
+    expect(query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'rename101',
+    ]);
+    expect(query.getInputIds('rename101')).toEqual(['restrict102']);
+    expect((query.getNode('rename101') as Rename).mappings).toEqual([
+      { from: 'REGION', to: 'CITY' },
+    ]);
+    expect(editorState.history).toHaveLength(1);
+    expect(editorState.history.at(-1)?.query === before).toBe(true);
+    expect(await TEST__findCanvasNode('rename101')).toBeDefined();
+    // the panel goes on, on the concat, now valid, with nothing marked or to fix
+    expect(editorState.nodeEditor.nodeId).toBe('concat101');
+    expect(editorState.nodeEditor.notice).toBeUndefined();
+    expect(positions()).toEqual(MATCHED);
+    expect(marks()).toEqual([]);
+    expect(problems()).toEqual([]);
+    expect(editorState.analysis.validity.get('concat101')).toEqual([]);
+    expectNoFix();
+    // Undo brings back the marks, the problems and the fix
+    act(() => editorState.undo());
+    expect(editorState.document.query.getNode('rename101')).toBeUndefined();
+    expect(editorState.nodeEditor.nodeId).toBe('concat101');
+    expect(marks()).toEqual(regionMarks);
+    expect(problems()).toEqual([
+      SPEC_MESSAGE,
+      'Column 2 is "CITY" in the first input and "REGION" in the second: columns are matched by position.',
+    ]);
+    expect(fixList('Columns to rename')).toEqual(['REGION → CITY']);
+    expect(button('Rename them').disabled).toBe(false);
+  });
+
+  test('Offers to rename a column whose name differs only in case', async () => {
+    const editorState = await render(
+      concatOf(
+        customers(),
+        arm(
+          2,
+          northwindTable('relational102', 'SUPPLIERS', SUPPLIERS_COLUMNS),
+          COMPANY_CITY_COUNTRY,
+          [{ from: 'CITY', to: 'city' }],
+        ),
+      ),
+    );
+    await openConcat();
+    expect(marks()).toEqual([
+      '2 First name: The second input has city here',
+      '2 Second name: The first input has CITY here',
+    ]);
+    expect(fixList('Columns to rename')).toEqual(['city → CITY']);
+    fireEvent.click(button('Rename them'));
+    // after the Rename the second input already had
+    expect(editorState.document.query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'rename103',
+    ]);
+    expect(editorState.document.query.getInputIds('rename103')).toEqual([
+      'rename102',
+    ]);
+    expect(marks()).toEqual([]);
+    expect(problems()).toEqual([]);
+    expectNoFix();
+  });
+
+  test('Keeps the node Execute runs selected, even the input the Rename goes after', async () => {
+    const editorState = await render(regionForCity());
+    act(() => editorState.select('restrict102'));
+    await openConcat();
+    fireEvent.click(button('Rename them'));
+    expect(editorState.document.query.selected).toBe('restrict102');
+    expect(editorState.history).toHaveLength(2);
+  });
+
+  test('Offers to drop the columns only the second input has, naming it, then adds a Restrict before it, as one undo step', async () => {
+    const editorState = await render(supplierIdToo());
+    await openConcat();
+    const text =
+      "The second input has columns the first doesn't, which can be dropped:";
+    expect(getConcatRestrictFixText('second', 'first')).toBe(text);
+    expect(within(panel()).getByText(text)).toBeDefined();
+    expect(fixList('Columns to drop')).toEqual(['SUPPLIER_ID']);
+    expect(button('Drop them').disabled).toBe(false);
+    expect(button('Drop them').title).toBe(
+      getConcatRestrictFixTitle('second', 'first'),
+    );
+    expect(getConcatRestrictFixTitle('second', 'first')).toBe(
+      "Add a Restrict before the second input that keeps only the first input's columns, as one step to undo",
+    );
+    // the counts differ: nothing to rename
+    expect(
+      within(panel()).queryByRole('button', { name: 'Rename them' }),
+    ).toBeNull();
+    const before = editorState.document.query;
+    fireEvent.click(button('Drop them'));
+    const { query } = editorState.document;
+    expect(query.getInputIds('concat101')).toEqual([
+      'restrict101',
+      'restrict103',
+    ]);
+    expect(query.getInputIds('restrict103')).toEqual(['restrict102']);
+    expect((query.getNode('restrict103') as Restrict).columns).toEqual(
+      COMPANY_CITY_COUNTRY,
+    );
+    expect(editorState.history).toHaveLength(1);
+    expect(editorState.history.at(-1)?.query === before).toBe(true);
+    expect(await TEST__findCanvasNode('restrict103')).toBeDefined();
+    expect(editorState.nodeEditor.nodeId).toBe('concat101');
+    expect(positions()).toEqual(MATCHED);
+    expect(marks()).toEqual([]);
+    expect(problems()).toEqual([]);
+    expect(editorState.analysis.validity.get('concat101')).toEqual([]);
+    expectNoFix();
+    act(() => editorState.undo());
+    expect(problems()).toEqual([
+      SPEC_MESSAGE,
+      'The first input has 3 columns and the second 4.',
+    ]);
+    expect(fixList('Columns to drop')).toEqual(['SUPPLIER_ID']);
+    expect(button('Drop them').disabled).toBe(false);
+  });
+
+  test('Names the first input when it is the wider one, and adds the Restrict before it', async () => {
+    const editorState = await render(
+      concatOf(
+        customers([
+          'CUSTOMER_ID',
+          'COMPANY_NAME',
+          'CONTACT_NAME',
+          'CITY',
+          'COUNTRY',
+        ]),
+        suppliers(),
+      ),
+    );
+    await openConcat();
+    const text =
+      "The first input has columns the second doesn't, which can be dropped:";
+    expect(getConcatRestrictFixText('first', 'second')).toBe(text);
+    expect(within(panel()).getByText(text)).toBeDefined();
+    expect(fixList('Columns to drop')).toEqual(['CUSTOMER_ID', 'CONTACT_NAME']);
+    expect(button('Drop them').title).toBe(
+      getConcatRestrictFixTitle('first', 'second'),
+    );
+    expect(getConcatRestrictFixTitle('first', 'second')).toBe(
+      "Add a Restrict before the first input that keeps only the second input's columns, as one step to undo",
+    );
+    fireEvent.click(button('Drop them'));
+    const { query } = editorState.document;
+    expect(query.getInputIds('concat101')).toEqual([
+      'restrict103',
+      'restrict102',
+    ]);
+    expect(query.getInputIds('restrict103')).toEqual(['restrict101']);
+    expect(editorState.history).toHaveLength(1);
+    expect(positions()).toEqual(MATCHED);
+    expect(problems()).toEqual([]);
+    expectNoFix();
+  });
+
+  test.each<{ name: string; query: () => Query; problems: number }>([
+    {
+      name: 'matching inputs',
+      query: () => concatOf(customers(), suppliers()),
+      problems: 0,
+    },
+    {
+      name: 'types that differ, under the same names',
+      query: () =>
+        concatOf(
+          customers(['CONTACT_NAME', 'CITY', 'COUNTRY']),
+          ordersAs([
+            ['SHIP_NAME', 'CONTACT_NAME'],
+            ['SHIP_CITY', 'CITY'],
+            ['SHIP_COUNTRY', 'COUNTRY'],
+          ]),
+        ),
+      problems: 2,
+    },
+    {
+      name: 'a name whose type differs too',
+      query: () =>
+        concatOf(customers(), suppliers(['SUPPLIER_ID', 'CITY', 'COUNTRY'])),
+      problems: 2,
+    },
+    {
+      name: 'a wider input whose kept columns have other types',
+      query: () =>
+        concatOf(
+          customers(['CONTACT_NAME', 'CITY', 'COUNTRY']),
+          ordersAs([
+            ['ORDER_ID', 'ORDER_ID'],
+            ['SHIP_NAME', 'CONTACT_NAME'],
+            ['SHIP_CITY', 'CITY'],
+            ['SHIP_COUNTRY', 'COUNTRY'],
+          ]),
+        ),
+      problems: 2,
+    },
+    {
+      name: 'the same columns in another order',
+      query: () =>
+        concatOf(
+          customers(),
+          ordersAs([
+            ['SHIP_NAME', 'COMPANY_NAME'],
+            ['SHIP_CITY', 'COUNTRY'],
+            ['SHIP_COUNTRY', 'CITY'],
+          ]),
+        ),
+      problems: 2,
+    },
+  ])('Offers no fix for $name', async ({ query, problems: count }) => {
+    await render(query());
+    await openConcat();
+    // the comparison shows, so the fix would show with it
+    expect(comparison()).toBeDefined();
+    expect(problems()).toHaveLength(count);
+    expectNoFix();
+  });
+
+  test.each([
+    { fix: 'Rename them', list: 'Columns to rename', query: regionForCity },
+    { fix: 'Drop them', list: 'Columns to drop', query: supplierIdToo },
+  ])(
+    'Shows the fix in a read-only cube, "$fix" disabled',
+    async ({ fix, list, query }) => {
+      const editorState = await render(new Query());
+      await TEST__importDocument(
+        editorState,
+        new CubeDocument({ context: CONTEXT, query: query() }),
+        true,
+      );
+      await openConcat();
+      expect(fixList(list)).toHaveLength(1);
+      expect(button(fix).disabled).toBe(true);
+      expect(button(fix).title).toBe(READ_ONLY_CUBE_TITLE);
+      const { document } = editorState;
+      fireEvent.click(button(fix));
+      act(() => {
+        editorState.nodeEditor.renameConcatInput();
+        editorState.nodeEditor.restrictConcatInput();
+      });
+      expect(editorState.document === document).toBe(true);
+      expect(within(panel()).getByRole('list', { name: list })).toBeDefined();
+    },
+  );
 });

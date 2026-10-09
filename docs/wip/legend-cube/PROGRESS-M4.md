@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                              |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644 |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                  |
-| Step   | M4.1–M4.11 done (Group complete; Concat in the core, the builder, on the engine and the databases); **M4.12 next** (Concat's autofixes)                            |
-| Tests  | 2278 core, 992 builder (core group), 241 Query, 386 builder engine-roundtrip (after M4.11)                                                                         |
+| Item   | State                                                                                                                                                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644                                |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                                 |
+| Step   | M4.1–M4.12 done (Group complete; Concat in the core, the builder, on the engine and the databases, its autofixes); **M4.13 next** (Convert types), then the PR is marked ready (user, 2026-10-09) |
+| Tests  | 2345 core, 1026 builder (core group), 241 Query, 387 builder engine-roundtrip (after M4.12)                                                                                                       |
 
 ## Steps
 
@@ -30,7 +30,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.9** Concat in the core
 - [x] **M4.10** Concat in the builder, and registered
 - [x] **M4.11** Concat on the engine and around the databases
-- [ ] **M4.12** Concat's Rename and Restrict autofixes
+- [x] **M4.12** Concat's Rename and Restrict autofixes
 - [ ] **M4.13** Concat's Convert types setting
 - [ ] **M4.14** Docs and changeset
 - [ ] **M4.15** Verification and the browser rehearsal
@@ -57,7 +57,8 @@ Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the 
 | M4.10      | `1a5460950` | feat: add Concatenate Another Input to Legend Cube's builder                |
 | Rebase     | `ccadc49b4` | test: leave data product sources out of Legend Cube's conformance guard     |
 | Rebase     | `8ae0cadff` | docs: record Legend Cube M4's rebase on master                              |
-| M4.11      | (this one)  | test: run Legend Cube's Concat on the engine and plan it on each database   |
+| M4.11      | `a997a5cc1` | test: run Legend Cube's Concat on the engine and plan it on each database   |
+| M4.12      | (this one)  | feat: add Concat's Rename and Restrict autofixes to Legend Cube             |
 
 ## Step notes
 
@@ -248,6 +249,25 @@ input's Sort and Limit in a subquery of its own with its TOP, LIMIT or FETCH (Sy
 ORDER BY on the union; a Limit after a Concat taken from the whole union; a Group after it outside the union. A
 Drop inside an input plans as it does alone (`limit m,-1` on Snowflake, Redshift, Hive, BigQuery and Composite, as
 PLAN §8 records), so no workaround and no ISSUES draft.
+
+**M4.12, Concat's autofixes (2026-10-09).** Core `ConcatAutofix.ts` (as `JoinAutofix.ts`): `planConcatRename` maps
+each name of the second input that differs from the first input's at its position (case-only included) to the first's,
+refused when a renamed name folds to another first-input column (a reorder), when M2's Rename refuses it, or when the
+Concat would still be invalid (types); `planConcatRestrict` keeps the narrower input's names in the wider input when
+they are there in order, naming the dropped columns. `renameConcatInput` and `restrictConcatInput` splice the node
+before the right input as one query change, the selection kept. The node editor's `canRenameConcatInput` /
+`renameConcatInput` and `canRestrictConcatInput` / `restrictConcatInput` apply them as one undo step, the panel
+staying on the concat; the Concat editor shows each fix with its changes ('REGION → CITY', the dropped columns) and a
+'Rename them' or 'Drop them' button. Engine: three conformance cases (the Rename, the Restrict on either input), and
+a run whose suppliers' REGION comes back under CITY ('New Orleans Cajun Delights', LA). Browser (:9002): both fixes
+turn a Concat valid and run 120 rows. Tests by workflow `m412-tests-verify` (run `wf_18e9362c-e17`, 4 agents): the
+core (67), the store (21), the editor (12). Mutants: 65, 53 killed; of the 12 survivors, 9 are equivalent (guards
+that Rename, Restrict or the validity check repeat, and buttons whose disabled state matches read-only whenever the
+editor shows), S04 (the store passing the schemas swapped) is killed by a new test, and S03 and S08 (the fix not made
+from the panel's edits) can't be seen until Concat has a draft (M4.13).
+
+**After M4.13 (user, 2026-10-09):** the PR is marked ready for review once the changeset and description are updated
+and every gate is green; M4.15's verification, M4.16's video and later checks follow as fixes on the open PR.
 
 ## Open items
 

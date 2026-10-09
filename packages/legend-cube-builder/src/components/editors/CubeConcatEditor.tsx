@@ -17,6 +17,8 @@
 import { clsx } from '@finos/legend-art';
 import {
   CONCAT_PORT_LABELS,
+  planConcatRename,
+  planConcatRestrict,
   type Schema,
   type SchemaColumn,
 } from '@finos/legend-cube';
@@ -26,12 +28,18 @@ import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import {
   CONCAT_EDITOR_TEXT,
+  CONCAT_RENAME_FIX_TEXT,
+  CONCAT_RENAME_FIX_TITLE,
   CUBE_TABLE_FLAG_LABELS,
   getColumnTypeLabel,
+  getConcatRestrictFixText,
+  getConcatRestrictFixTitle,
   getConcatUntypedWarning,
+  READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import { CubeTableFlag } from '../../graph-manager/CubeEngine.js';
 import { isUntypedColumn } from '../../stores/editors/CubeJoinDraft.js';
+import { CubeButton } from '../CubeButton.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 const TYPE_UNKNOWN = CUBE_TABLE_FLAG_LABELS[CubeTableFlag.TYPE_UNKNOWN];
@@ -105,15 +113,58 @@ const CubeConcatCell = (props: {
 };
 
 /**
+ * An autofix the Concat editor offers: what it will do, the columns it
+ * changes, and its button
+ */
+const CubeConcatFix = (props: {
+  text: string;
+  label: string;
+  changes: readonly string[];
+  button: string;
+  title: string;
+  readOnly: boolean;
+  disabled: boolean;
+  onFix: () => void;
+}) => {
+  const { text, label, changes, button, title, readOnly, disabled, onFix } =
+    props;
+  return (
+    <div className="break-words text-sm text-[var(--color-status-warn)]">
+      <div>{text}</div>
+      <ul aria-label={label}>
+        {changes.map((change) => (
+          <li key={change} className="font-mono">
+            {change}
+          </li>
+        ))}
+      </ul>
+      <div className="mt-1">
+        <CubeButton
+          title={readOnly ? READ_ONLY_CUBE_TITLE : title}
+          disabled={disabled}
+          onClick={onFix}
+        >
+          {button}
+        </CubeButton>
+      </div>
+    </div>
+  );
+};
+
+/**
  * The Concat editor (spec §17.6, PLAN §11.5): what Concat requires, then its
  * inputs' columns side by side, by position, each name or type that differs
  * from the other input's marked, and a column only one input has. Nullability
- * is shown, never compared. A column whose real type Cube doesn't know is
- * warned about. Concat has nothing to set until Convert types (M4.13); the
- * panel lists its problems.
+ * is shown, never compared. When an M2 node spliced in before an input makes
+ * it valid, a button adds it (Q6): a Rename that gives the second input's
+ * columns the first input's names, or a Restrict that drops the columns only
+ * the wider input has. A column whose real type Cube doesn't know is warned
+ * about. Concat has nothing to set until Convert types (M4.13); the panel
+ * lists its problems.
  */
 export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
-  const { editorState, draft, inputSchemas } = props;
+  const { editorState, draft, inputSchemas, readOnly } = props;
+  const { nodeEditor } = editorState;
   const [first, second] = inputSchemas as [Schema, Schema];
   const [firstLabel, secondLabel] = CONCAT_PORT_LABELS as [string, string];
   const { query } = editorState.document;
@@ -127,6 +178,13 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
     { length: Math.max(first.columns.length, second.columns.length) },
     (_, index) => index,
   );
+  const rename = planConcatRename(first, second);
+  const restrict = planConcatRestrict(first, second);
+  const [restricted, other] = (
+    restrict?.input === 1
+      ? [secondLabel, firstLabel]
+      : [firstLabel, secondLabel]
+  ).map((label) => label.toLowerCase()) as [string, string];
   // each column of either input whose real type Cube doesn't know, once
   const untyped = [first, second].flatMap((schema, side) => {
     const inputId = inputIds[side];
@@ -187,6 +245,30 @@ export const CubeConcatEditor = observer((props: CubeNodeEditorProps) => {
           ))}
         </tbody>
       </table>
+      {rename && (
+        <CubeConcatFix
+          text={CONCAT_RENAME_FIX_TEXT}
+          label="Columns to rename"
+          changes={rename.map(({ from, to }) => `${from} → ${to}`)}
+          button="Rename them"
+          title={CONCAT_RENAME_FIX_TITLE}
+          readOnly={readOnly}
+          disabled={!nodeEditor.canRenameConcatInput}
+          onFix={() => nodeEditor.renameConcatInput()}
+        />
+      )}
+      {restrict && (
+        <CubeConcatFix
+          text={getConcatRestrictFixText(restricted, other)}
+          label="Columns to drop"
+          changes={restrict.dropped}
+          button="Drop them"
+          title={getConcatRestrictFixTitle(restricted, other)}
+          readOnly={readOnly}
+          disabled={!nodeEditor.canRestrictConcatInput}
+          onFix={() => nodeEditor.restrictConcatInput()}
+        />
+      )}
       {untyped.length > 0 && (
         <div
           className="break-words text-sm text-[var(--color-status-warn)]"

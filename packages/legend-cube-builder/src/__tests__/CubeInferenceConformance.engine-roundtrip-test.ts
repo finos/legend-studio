@@ -41,7 +41,9 @@ import {
   type QueryNode,
   type RelationalTableSource,
   Rename,
+  renameConcatInput,
   Restrict,
+  restrictConcatInput,
   Schema,
   Slice,
   Sort,
@@ -200,6 +202,24 @@ const ORDERS: CaseTable = ['relational101', 'ORDERS'];
 const CUSTOMERS: CaseTable = ['relational102', 'CUSTOMERS'];
 const ALLTYPES: CaseTable = ['relational101', 'ALLTYPES', 'CUBETEST'];
 const ON_CUSTOMER = [['CUSTOMER_ID', 'CUSTOMER_ID']] as const;
+/**
+ * The query with a Concat autofix (M4.12) applied to concat101, once its
+ * inputs' schemas are known; as built, while the tables aren't resolved (only
+ * its node types are wanted then)
+ */
+const withConcatFix =
+  (fix: typeof renameConcatInput) =>
+  (query: Query): Query => {
+    const { schemas } = buildSchemasAndValidity(
+      query,
+      createNodeRegistry().queryRules,
+    );
+    const [first, second] = query
+      .getInputIds('concat101')
+      .map((id) => (id === undefined ? undefined : schemas.get(id)));
+    return first && second ? fix(query, 'concat101', first, second) : query;
+  };
+
 const CUSTOMERS_FIRST: CaseTable = ['relational101', 'CUSTOMERS'];
 const SUPPLIERS: CaseTable = ['relational102', 'SUPPLIERS'];
 const COMPANY_CITY_COUNTRY = ['COMPANY_NAME', 'CITY', 'COUNTRY'];
@@ -608,6 +628,52 @@ const CASES: readonly ConformanceCase[] = [
       ),
       new Sort('sort102', [{ column: 'COUNTRY', direction: ASC }]),
     ),
+  },
+  {
+    // M4.12's Rename before the second input: REGION takes CITY's name
+    name: 'concat-autofix-rename',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: (sources) =>
+      withConcatFix(renameConcatInput)(
+        concatenated(
+          [new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+          [new Restrict('restrict102', ['COMPANY_NAME', 'REGION', 'COUNTRY'])],
+        )(sources),
+      ),
+  },
+  {
+    // M4.12's Restrict before the wider input, the second
+    name: 'concat-autofix-restrict-second',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: (sources) =>
+      withConcatFix(restrictConcatInput)(
+        concatenated(
+          [new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+          [
+            new Restrict('restrict102', [
+              'SUPPLIER_ID',
+              ...COMPANY_CITY_COUNTRY,
+            ]),
+          ],
+        )(sources),
+      ),
+  },
+  {
+    // and the first
+    name: 'concat-autofix-restrict-first',
+    tables: [CUSTOMERS_FIRST, SUPPLIERS],
+    build: (sources) =>
+      withConcatFix(restrictConcatInput)(
+        concatenated(
+          [
+            new Restrict('restrict101', [
+              'CUSTOMER_ID',
+              ...COMPANY_CITY_COUNTRY,
+            ]),
+          ],
+          [new Restrict('restrict102', COMPANY_CITY_COUNTRY)],
+        )(sources),
+      ),
   },
   {
     // a Concat of a Concat, on its second input

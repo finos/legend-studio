@@ -186,6 +186,24 @@ export const DISTINCT_EDITOR_TEXT =
 export const CONCAT_EDITOR_TEXT =
   'Gives the rows of both inputs, keeping duplicates, in no particular order. Both must have the same columns, matched by position: the same names, in the same order, with the same types.';
 
+/** What the Concat editor's Rename autofix says it will do (PLAN §11.5, Q6) */
+export const CONCAT_RENAME_FIX_TEXT =
+  "The second input's columns can take the first input's names:";
+export const CONCAT_RENAME_FIX_TITLE =
+  "Add a Rename before the second input that gives these columns the first input's names, as one step to undo";
+
+/** What the Concat editor's Restrict autofix says it will do, for the input it drops columns from (PLAN §11.5, Q6) */
+export const getConcatRestrictFixText = (
+  input: string,
+  other: string,
+): string =>
+  `The ${input} input has columns the ${other} doesn't, which can be dropped:`;
+export const getConcatRestrictFixTitle = (
+  input: string,
+  other: string,
+): string =>
+  `Add a Restrict before the ${input} input that keeps only the ${other} input's columns, as one step to undo`;
+
 /** The Concat editor's warning on columns whose real type Cube doesn't know (PLAN §8.7) */
 export const getConcatUntypedWarning = (columns: readonly string[]): string =>
   `${CUBE_TABLE_FLAG_LABELS[CubeTableFlag.TYPE_UNKNOWN].label}: Cube doesn't know the real type of ${columns.join(', ')}, so the database may not combine the inputs' values`;

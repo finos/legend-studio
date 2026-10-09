@@ -16,10 +16,14 @@
 
 import {
   canFixJoinDuplicates,
+  canRenameConcatInput,
+  canRestrictConcatInput,
   fixJoinDuplicates,
   type NodeRegistry,
   type Query,
   type QueryNode,
+  renameConcatInput,
+  restrictConcatInput,
   type Schema,
 } from '@finos/legend-cube';
 import {
@@ -95,9 +99,13 @@ export class CubeNodeEditorState {
       open: action,
       canSwapInputs: computed,
       canRenameDuplicateColumns: computed,
+      canRenameConcatInput: computed,
+      canRestrictConcatInput: computed,
       apply: action,
       swapInputs: action,
       renameDuplicateColumns: action,
+      renameConcatInput: action,
+      restrictConcatInput: action,
       close: action,
       cancel: action,
       discard: action,
@@ -257,6 +265,92 @@ export class CubeNodeEditorState {
     const fixed = fixJoinDuplicates(query, node.id, leftSchema, rightSchema);
     this.editorState.applyQuery(fixed);
     this.bind(fixed.getNode(node.id) ?? node);
+  }
+
+  /**
+   * The query with the draft applied and the node's input schemas, when the
+   * node is the one the panel was opened on and the cube can be changed
+   */
+  private get fixable():
+    | { node: QueryNode; query: Query; inputSchemas: (Schema | undefined)[] }
+    | undefined {
+    const { node } = this;
+    return node && node.key === this.nodeKey && !this.editorState.readOnly
+      ? { node, ...this.queryWithEdits }
+      : undefined;
+  }
+
+  /**
+   * Applies a fix of the query made from the draft applied, as one undo step,
+   * then goes on editing the node
+   */
+  private applyFix(
+    fix: (
+      query: Query,
+      nodeId: string,
+      inputSchemas: (Schema | undefined)[],
+    ) => Query,
+  ): void {
+    const { fixable } = this;
+    if (!fixable) {
+      return;
+    }
+    const { node, query, inputSchemas } = fixable;
+    const fixed = fix(query, node.id, inputSchemas);
+    this.editorState.applyQuery(fixed);
+    this.bind(fixed.getNode(node.id) ?? node);
+  }
+
+  /**
+   * Whether the concat being edited can be fixed by a Rename before its
+   * second input (PLAN §11.5, Q6), and the cube isn't read-only
+   */
+  get canRenameConcatInput(): boolean {
+    const { fixable } = this;
+    return (
+      fixable !== undefined &&
+      canRenameConcatInput(
+        fixable.query,
+        fixable.node.id,
+        fixable.inputSchemas[0],
+        fixable.inputSchemas[1],
+      )
+    );
+  }
+
+  /** Adds the Rename before the concat's second input, as one undo step */
+  renameConcatInput(): void {
+    if (this.canRenameConcatInput) {
+      this.applyFix((query, nodeId, [first, second]) =>
+        renameConcatInput(query, nodeId, first, second),
+      );
+    }
+  }
+
+  /**
+   * Whether the concat being edited can be fixed by a Restrict before its
+   * wider input (PLAN §11.5, Q6), and the cube isn't read-only
+   */
+  get canRestrictConcatInput(): boolean {
+    const { fixable } = this;
+    return (
+      fixable !== undefined &&
+      canRestrictConcatInput(
+        fixable.query,
+        fixable.node.id,
+        fixable.inputSchemas[0],
+        fixable.inputSchemas[1],
+      )
+    );
+  }
+
+  /** Adds the Restrict before the concat's wider input, as one undo step */
+  restrictConcatInput(): void {
+    if (this.canRestrictConcatInput) {
+      this.applyFix((query, nodeId, [first, second]) =>
+        restrictConcatInput(query, nodeId, first, second),
+      );
+    }
   }
 
   /** Applies the draft, then closes the panel (spec §17.5: edits commit on close) */

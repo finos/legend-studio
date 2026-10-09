@@ -41,6 +41,7 @@ import {
   QueryEmitter,
   type RelationalTableSource,
   Rename,
+  renameConcatInput,
   Restrict,
   Slice,
   Sort,
@@ -1463,6 +1464,37 @@ describe('Concat on the engine', () => {
     expect((await TEST__runQuery(engine, query, ROW_LIMIT)).rows).toHaveLength(
       921,
     );
+  });
+
+  test("Runs after its Rename autofix, each supplier's REGION under CITY", async () => {
+    const [customers, suppliers] = await tables('CUSTOMERS', 'SUPPLIERS');
+    const query = concatOf(
+      [customers, new Restrict('restrict101', COMPANY_CITY_COUNTRY)],
+      [
+        suppliers,
+        new Restrict('restrict102', ['COMPANY_NAME', 'REGION', 'COUNTRY']),
+      ],
+    );
+    const { schemas } = buildSchemasAndValidity(
+      query,
+      createNodeRegistry().queryRules,
+    );
+    const fixed = renameConcatInput(
+      query,
+      'concat101',
+      schemas.get('restrict101'),
+      schemas.get('restrict102'),
+    );
+    await TEST__expectEngineTyping(engine, fixed);
+    const result = await TEST__runQuery(engine, fixed, ROW_LIMIT);
+    expect(result.rows).toHaveLength(120);
+    const names = TEST__columnValues(result, 'COMPANY_NAME');
+    // a supplier whose REGION is LA, and whose CITY is New Orleans
+    expect(
+      TEST__columnValues(result, 'CITY')[
+        names.indexOf('New Orleans Cajun Delights')
+      ],
+    ).toBe('LA');
   });
 
   test('Counts the rows of both inputs in a Group after it', async () => {

@@ -58,6 +58,7 @@ export * from './nodes/transforms/Sort.js';
 export * from './nodes/transforms/Aggregation.js';
 export * from './nodes/transforms/Group.js';
 export * from './nodes/transforms/Concat.js';
+export * from './nodes/transforms/ConcatAutofix.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 
