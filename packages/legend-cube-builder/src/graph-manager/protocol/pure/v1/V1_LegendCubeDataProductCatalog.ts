@@ -43,6 +43,7 @@ import {
 import {
   type CubeAccessPointLocation,
   type CubeDataProductCatalog,
+  type CubeMarketplaceLinkTarget,
   CubeDataProductCandidate,
   type CubeDataProductDescription,
 } from '../../../CubeDataProductCatalog.js';
@@ -227,6 +228,10 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
   private readonly getAccessToken: () => string | undefined;
   /** The marketplace's search API; with it, searches run there */
   private readonly marketplaceServerClient: MarketplaceServerClient | undefined;
+  /** Builds a product's marketplace page, as the host's marketplace names it */
+  private readonly marketplaceLink:
+    | ((target: CubeMarketplaceLinkTarget) => string | undefined)
+    | undefined;
   /** Each class's list, read once per page visit */
   private readonly lists = new Map<
     CubeDataProductEnvironmentType,
@@ -247,11 +252,15 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     depotServerClient: DepotServerClient,
     getAccessToken: () => string | undefined,
     marketplaceServerClient?: MarketplaceServerClient | undefined,
+    marketplaceLink?:
+      | ((target: CubeMarketplaceLinkTarget) => string | undefined)
+      | undefined,
   ) {
     this.contractServerClient = contractServerClient;
     this.depotServerClient = depotServerClient;
     this.getAccessToken = getAccessToken;
     this.marketplaceServerClient = marketplaceServerClient;
+    this.marketplaceLink = marketplaceLink;
   }
 
   get searchesOnServer(): boolean {
@@ -569,8 +578,8 @@ export class V1_LegendCubeDataProductCatalog implements CubeDataProductCatalog {
     );
   }
 
-  /** Links come later: the host has no marketplace link yet */
-  getMarketplaceLink(): string | undefined {
-    return undefined;
+  /** The product's page in the host's marketplace, as the host builds it; none without one */
+  getMarketplaceLink(target: CubeMarketplaceLinkTarget): string | undefined {
+    return this.marketplaceLink?.(target);
   }
 }

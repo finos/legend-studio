@@ -19,6 +19,7 @@ import {
   buildCubeDataProductCatalog,
   buildCubeEngine,
   buildCubeLakehouseEnvironment,
+  CubeDataProductEnvironmentType,
   getCubeRememberedWarehouse,
   type CubeConnectionExplorer,
   type CubeDataProductCatalog,
@@ -31,6 +32,7 @@ import {
 import { DepotServerClient } from '@finos/legend-server-depot';
 import { LakehouseContractServerClient } from '@finos/legend-server-lakehouse';
 import { MarketplaceServerClient } from '@finos/legend-server-marketplace';
+import { EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl } from '../../__lib__/LegendQueryNavigation.js';
 import { LegendQueryUserDataHelper } from '../../__lib__/LegendQueryUserDataHelper.js';
 import type { LegendQueryApplicationConfig } from '../../application/LegendQueryApplicationConfig.js';
 import type { LegendQueryApplicationStore } from '../LegendQueryBaseStore.js';
@@ -87,6 +89,23 @@ export const buildLegendQueryCubeLakehouseServices = (
       LegendQueryUserDataHelper.getLakehouseUserInfo(
         applicationStore.userDataService,
       )?.env,
+    // the marketplace of the deployment's class, where its deployment is;
+    // Query's own links choose by a SNAPSHOT version instead
+    getMarketplaceLink: (target) => {
+      const marketplaceUrl =
+        target.environmentType ===
+        CubeDataProductEnvironmentType.PRODUCTION_PARALLEL
+          ? config.marketplaceProductionParallelUrl
+          : config.marketplaceApplicationUrl;
+      return marketplaceUrl
+        ? EXTERNAL_APPLICATION_NAVIGATION__generateMarketplaceDataProductUrl(
+            marketplaceUrl,
+            target.dataProductId,
+            target.deploymentId,
+            target.accessPointGroup,
+          )
+        : undefined;
+    },
   };
 };
 

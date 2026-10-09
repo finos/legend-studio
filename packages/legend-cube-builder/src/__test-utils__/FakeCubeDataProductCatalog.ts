@@ -189,7 +189,7 @@ export const createFakeCubeDataProductCatalog = (
     CubeDataProductCatalog['getMarketplaceLink']
   >(
     (target) =>
-      `https://marketplace.test/dataProduct/deployed/${target.dataProductId}/${target.deploymentId}`,
+      `https://marketplace.test/dataProduct/deployed/${target.dataProductId}/${target.deploymentId}${target.accessPointGroup ? `#${target.accessPointGroup}` : ''}`,
   );
   return {
     catalog: {

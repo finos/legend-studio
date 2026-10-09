@@ -241,6 +241,46 @@ describe('Legend Query as the Cube host', () => {
     ).toBeUndefined();
   });
 
+  test("Links data products to Query's marketplace of the deployment's class", () => {
+    const lakehouse = { url: 'https://lakehouse.test' };
+    const target = {
+      dataProductId: 'ORDERS_PRODUCT',
+      deploymentId: '1234',
+      environmentType: CubeDataProductEnvironmentType.PRODUCTION,
+      accessPointGroup: 'Core Group',
+    };
+    const catalog = guaranteeNonNullable(
+      new LegendQueryCubeHost(
+        createApplicationStore({
+          lakehouse,
+          marketplace: {
+            url: 'https://marketplace.test',
+            productionParallelUrl: 'https://marketplace-parallel.test',
+          },
+        }),
+      ).dataProductCatalog,
+    );
+    expect(catalog.getMarketplaceLink(target)).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/1234#apg-core-group',
+    );
+    expect(
+      catalog.getMarketplaceLink({
+        ...target,
+        environmentType: CubeDataProductEnvironmentType.PRODUCTION_PARALLEL,
+        accessPointGroup: undefined,
+      }),
+    ).toBe(
+      'https://marketplace-parallel.test/dataProduct/deployed/ORDERS_PRODUCT/1234',
+    );
+    // without a marketplace, no link
+    expect(
+      guaranteeNonNullable(
+        new LegendQueryCubeHost(createApplicationStore({ lakehouse }))
+          .dataProductCatalog,
+      ).getMarketplaceLink(target),
+    ).toBeUndefined();
+  });
+
   test('Prefers the lakehouse environment Query remembers for the viewer', () => {
     const applicationStore = createApplicationStore({
       lakehouse: { url: 'https://lakehouse.test' },

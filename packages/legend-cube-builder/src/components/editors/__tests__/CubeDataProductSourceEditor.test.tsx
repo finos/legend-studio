@@ -27,8 +27,11 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
-import { runInAction } from 'mobx';
-import { CUBE_SNAPSHOT_VERSION_LABEL } from '../../../__lib__/LegendCubeDataProductLabels.js';
+import { flowResult, runInAction } from 'mobx';
+import {
+  CUBE_SNAPSHOT_VERSION_LABEL,
+  getCubeWarehouseErrorHint,
+} from '../../../__lib__/LegendCubeDataProductLabels.js';
 import { LEGEND_CUBE_TEST_ID } from '../../../__lib__/LegendCubeTesting.js';
 import { TEST__findCanvasNode } from '../../../__test-utils__/CubeCanvasTestUtils.js';
 import { TEST__renderInCubeApplication } from '../../../__test-utils__/CubePageTestUtils.js';
@@ -39,8 +42,13 @@ import {
   CUBE_DATA_PRODUCT_RUNTIME_PATH,
   CubeDataProductEnvironmentType,
 } from '../../../graph-manager/CubeDataProduct.js';
+import {
+  CubeEngineError,
+  CubeEngineErrorKind,
+} from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
 import { CubeCanvas } from '../../canvas/CubeCanvas.js';
+import { CubeGridRegion } from '../../grid/CubeGridRegion.js';
 import { CubeNodeEditorPanel } from '../CubeNodeEditorPanel.js';
 
 /** A data product cube of one access point, daily_orders, on CUBE_WH */
@@ -95,6 +103,7 @@ const renderPanel = async (
         <CubeCanvas editorState={editorState} />
       </div>
       <CubeNodeEditorPanel editorState={editorState} />
+      <CubeGridRegion editorState={editorState} />
     </div>,
     host.applicationStore,
     LEGEND_CUBE_TEST_ID.CANVAS,
@@ -177,5 +186,50 @@ describe('Source panel of a data product cube', () => {
       within(panel()).getByRole('table', { name: 'Columns' }),
     ).not.toBeNull();
     expect(fake.resolveSchemas).not.toHaveBeenCalled();
+  });
+
+  test("Says, in the run's error and beside the warehouse, when the warehouse refused the run, until it changes", async () => {
+    const { editorState, fake } = await renderPanel();
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'SQL compilation error:\nNo active warehouse selected in the current session',
+        'dataProductAccessPoint101',
+      ),
+    );
+    await act(() => flowResult(editorState.execution.execute()));
+    const hint = getCubeWarehouseErrorHint('CUBE_WH');
+    expect(
+      within(screen.getByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR)).getByText(
+        hint,
+      ),
+    ).not.toBeNull();
+    expect(within(panel()).getByText(hint)).not.toBeNull();
+    fireEvent.change(warehouseInput(), { target: { value: 'NEW_WH' } });
+    fireEvent.click(applyButton());
+    expect(
+      screen.queryByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR),
+    ).toBeNull();
+    expect(within(panel()).queryByText(hint)).toBeNull();
+    expect(screen.queryByText(getCubeWarehouseErrorHint('NEW_WH'))).toBeNull();
+  });
+
+  test("Links a run refused for access to the data to the access point group's page in the marketplace, in the run's error", async () => {
+    const { editorState, fake } = await renderPanel();
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Insufficient privileges to operate on table ORDERS',
+        'dataProductAccessPoint101',
+      ),
+    );
+    await act(() => flowResult(editorState.execution.execute()));
+    const link = within(
+      screen.getByTestId(LEGEND_CUBE_TEST_ID.EXECUTION_ERROR),
+    ).getByRole<HTMLAnchorElement>('link', { name: 'Request access' });
+    expect(link.href).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/1234#core',
+    );
+    expect(link.target).toBe('_blank');
   });
 });

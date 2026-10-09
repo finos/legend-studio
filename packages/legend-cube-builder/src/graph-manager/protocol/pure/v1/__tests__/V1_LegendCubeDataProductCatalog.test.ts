@@ -355,6 +355,37 @@ describe('Data product catalog, on the lakehouse and the depot', () => {
     expect(entity).toHaveBeenCalledTimes(2);
   });
 
+  test("Links through the host's link function, and has none without one", () => {
+    const contract = new LakehouseContractServerClient({
+      baseUrl: 'http://lakehouse.test',
+    });
+    const depot = new DepotServerClient({ serverUrl: 'http://depot.test' });
+    const link = jest.fn(() => 'https://marketplace.test/page');
+    const target = {
+      dataProductId: 'ORDERS_PRODUCT',
+      deploymentId: '1234',
+      environmentType: PRODUCTION_PARALLEL,
+      accessPointGroup: 'core',
+    };
+    expect(
+      new V1_LegendCubeDataProductCatalog(
+        contract,
+        depot,
+        () => 'token',
+        undefined,
+        link,
+      ).getMarketplaceLink(target),
+    ).toBe('https://marketplace.test/page');
+    expect(link).toHaveBeenCalledWith(target);
+    expect(
+      new V1_LegendCubeDataProductCatalog(
+        contract,
+        depot,
+        () => 'token',
+      ).getMarketplaceLink(target),
+    ).toBeUndefined();
+  });
+
   test('Says when a product has no deployed artifact', async () => {
     const { catalog, generations } = setUp();
     generations.mockImplementationOnce(async () => []);

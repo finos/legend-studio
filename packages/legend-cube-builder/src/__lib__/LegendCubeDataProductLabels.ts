@@ -48,3 +48,16 @@ export const CUBE_DATA_PRODUCT_RECHECK_MESSAGE = {
   NO_ANSWER: 'The data product catalog gave no columns for this access point',
   NO_CATALOG: "This Legend deployment doesn't serve data products",
 } as const;
+
+/** Beside a run's error that says the cube's warehouse can't be used */
+export const getCubeWarehouseErrorHint = (warehouse: string): string =>
+  `The run couldn't use the warehouse ${warehouse}. Pick another one in a data product source's panel.`;
+
+/** A link to ask for access to an access point group in the marketplace */
+export const getCubeRequestAccessLabel = (
+  accessPointGroup: string | undefined,
+  dataProductName: string | undefined,
+): string =>
+  accessPointGroup && dataProductName
+    ? `Request access to ${accessPointGroup} in ${dataProductName}`
+    : 'Request access';

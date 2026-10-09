@@ -27,13 +27,17 @@ import {
   CUBE_DATA_PRODUCT_ENVIRONMENT_LABELS,
   CUBE_SNAPSHOT_VERSION_LABEL,
   CUBE_WAREHOUSE_APPLY_TITLE,
+  getCubeWarehouseErrorHint,
 } from '../../__lib__/LegendCubeDataProductLabels.js';
 import {
   CUBE_PENDING_LABEL,
   getColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
-import type { CubeDataProductRuntimeState } from '../../stores/CubeDataProductRuntimeState.js';
+import {
+  CubeDataProductRunErrorKind,
+  type CubeDataProductRuntimeState,
+} from '../../stores/CubeDataProductRuntimeState.js';
 import { CubeButton } from '../CubeButton.js';
 import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
@@ -139,6 +143,17 @@ export const CubeDataProductSourceEditor = observer(
               </dt>
               <dd className="min-w-0">
                 <CubeWarehouseControl runtime={runtime} readOnly={readOnly} />
+                {runtime.runErrorKind ===
+                  CubeDataProductRunErrorKind.WAREHOUSE && (
+                  <span
+                    className="mt-1 block text-sm text-[var(--color-status-error)]"
+                    role="alert"
+                  >
+                    {getCubeWarehouseErrorHint(
+                      runtime.effectiveWarehouse ?? '',
+                    )}
+                  </span>
+                )}
               </dd>
             </>
           )}

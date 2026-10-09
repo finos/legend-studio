@@ -15,9 +15,21 @@
  */
 
 import { beforeEach, describe, expect, test } from '@jest/globals';
-import { CubeDocument, type ModelContext } from '@finos/legend-cube';
-import { flowResult } from 'mobx';
+import {
+  Connection,
+  CubeDocument,
+  type DataProductAccessPointSource,
+  Join,
+  type ModelContext,
+  Query,
+} from '@finos/legend-cube';
+import { flowResult, runInAction } from 'mobx';
 import { LEGEND_CUBE_USER_DATA_KEY } from '../../__lib__/LegendCubeLabels.js';
+import {
+  NORTHWIND_RUNTIME,
+  northwindTable,
+  ORDERS_COLUMNS,
+} from '../../__test-utils__/CubeNorthwindTestQueries.js';
 import { TEST__createCubeHost } from '../../__test-utils__/CubeTestApplication.js';
 import {
   createCubeDataProductModel,
@@ -30,8 +42,13 @@ import {
   CubeEngineErrorKind,
   type CubeResult,
 } from '../../graph-manager/CubeEngine.js';
+import {
+  classifyCubeDataProductRunError,
+  CubeDataProductRunErrorKind,
+} from '../CubeDataProductRuntimeState.js';
 import { getCubeRememberedWarehouse } from '../CubeDataProductWarehouse.js';
 import { CubeEditorState } from '../CubeEditorState.js';
+import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
 import { CubeSourcePickerTabKey } from '../source-picker/CubeSourcePickerTab.js';
 
 const PROJECT = {
@@ -272,5 +289,164 @@ describe("A data product cube's warehouse", () => {
       new CubeEditorState(host, cubeOf(createCubeDataProductModel(PROJECT)))
         .dataProductRuntime.isSnapshot,
     ).toBe(false);
+  });
+
+  test('Reads a run refused for its warehouse from the whole error, and one refused for access to the data, on data product cubes only', async () => {
+    const { state, fake } = await setUpCube();
+    const capture = state.document.query.selected as string;
+    const runFailing = async (detail: string): Promise<void> => {
+      fake.execute.mockRejectedValueOnce(
+        new CubeEngineError(CubeEngineErrorKind.EXECUTION, detail, capture),
+      );
+      await flowResult(state.execution.execute());
+    };
+    // the database's words on a later line
+    await runFailing(
+      'SQL compilation error:\nNo active warehouse selected in the current session',
+    );
+    expect(state.dataProductRuntime.runErrorKind).toBe(
+      CubeDataProductRunErrorKind.WAREHOUSE,
+    );
+    await runFailing('Insufficient privileges to operate on table ORDERS');
+    expect(state.dataProductRuntime.runErrorKind).toBe(
+      CubeDataProductRunErrorKind.ENTITLEMENT,
+    );
+    // about both: the warehouse
+    await runFailing(
+      'Insufficient privileges: the role lacks the operate privilege on the warehouse',
+    );
+    expect(state.dataProductRuntime.runErrorKind).toBe(
+      CubeDataProductRunErrorKind.WAREHOUSE,
+    );
+    await runFailing('Column ORDER_ID is ambiguous');
+    expect(state.dataProductRuntime.runErrorKind).toBeUndefined();
+    expect(
+      classifyCubeDataProductRunError(
+        new CubeEngineError(
+          CubeEngineErrorKind.EXECUTION,
+          'Insufficient privileges',
+        ),
+      ),
+    ).toBe(CubeDataProductRunErrorKind.ENTITLEMENT);
+    // a cube of tables refused the same way
+    const tables = new CubeEditorState(
+      state.host,
+      new CubeDocument({
+        context: { model: CUBE_NORTHWIND_MODEL, runtime: NORTHWIND_RUNTIME },
+        query: new Query(
+          [northwindTable('relational101', 'ORDERS', ORDERS_COLUMNS)],
+          [],
+          'relational101',
+        ),
+      }),
+    );
+    runInAction(() => {
+      tables.execution.error = new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Insufficient privileges to operate on table ORDERS',
+        'relational101',
+      );
+    });
+    expect(tables.dataProductRuntime.runErrorKind).toBeUndefined();
+  });
+
+  test('Links each access point group the refused node reads to its page in the marketplace, once each', async () => {
+    const { state, fake, dataProducts } = await setUpCube();
+    const tab = state.sourcePicker.dataProductTab;
+    state.sourcePicker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    await settle();
+    tab.selectAccessPoint('reference', 'customers');
+    await flowResult(state.sourcePicker.confirm());
+    state.sourcePicker.open(CubeSourcePickerTabKey.DATA_PRODUCT);
+    await settle();
+    tab.selectAccessPoint('core', 'daily_orders');
+    await flowResult(state.sourcePicker.confirm());
+    const [orders, customers, moreOrders] = state.document.query.nodes as [
+      DataProductAccessPointSource,
+      DataProductAccessPointSource,
+      DataProductAccessPointSource,
+    ];
+    const join = new Join('join101', {
+      leftColumns: ['CUSTOMER_ID'],
+      rightColumns: ['CUSTOMER_ID'],
+    });
+    state.applyDocument(
+      state.document.withQuery(
+        new Query(
+          [orders, customers, moreOrders, join],
+          [
+            new Connection(orders.id, join.id, 'leftTds'),
+            new Connection(customers.id, join.id, 'rightTds'),
+          ],
+          join.id,
+        ),
+      ),
+    );
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Insufficient privileges to operate on table CUSTOMERS',
+        join.id,
+      ),
+    );
+    await flowResult(state.execution.execute());
+    expect(
+      state.dataProductRuntime.accessRequestLinks.map(({ label, url }) => [
+        label,
+        url,
+      ]),
+    ).toEqual([
+      [
+        'Request access to core in OrdersProduct',
+        'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/deployment-orders_product#core',
+      ],
+      [
+        'Request access to reference in OrdersProduct',
+        'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/deployment-orders_product#reference',
+      ],
+    ]);
+    // a node reading one group: one link, plainly named
+    state.select(orders.id);
+    fake.execute.mockRejectedValueOnce(
+      new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Insufficient privileges',
+        orders.id,
+      ),
+    );
+    await flowResult(state.execution.execute());
+    expect(
+      state.dataProductRuntime.accessRequestLinks.map(({ label }) => label),
+    ).toEqual(['Request access']);
+    // two access points of one group, upstream of the refused node: one link
+    const selfJoin = new Join('join102', {
+      leftColumns: ['ORDER_ID'],
+      rightColumns: ['ORDER_ID'],
+    });
+    state.applyDocument(
+      state.document.withQuery(
+        new Query(
+          [orders, customers, moreOrders, selfJoin],
+          [
+            new Connection(orders.id, selfJoin.id, 'leftTds'),
+            new Connection(moreOrders.id, selfJoin.id, 'rightTds'),
+          ],
+          selfJoin.id,
+        ),
+      ),
+    );
+    runInAction(() => {
+      state.execution.error = new CubeEngineError(
+        CubeEngineErrorKind.EXECUTION,
+        'Insufficient privileges',
+        selfJoin.id,
+      );
+    });
+    expect(
+      state.dataProductRuntime.accessRequestLinks.map(({ label }) => label),
+    ).toEqual(['Request access']);
+    // no marketplace, no link
+    dataProducts.getMarketplaceLink.mockReturnValue(undefined);
+    expect(state.dataProductRuntime.accessRequestLinks).toEqual([]);
   });
 });

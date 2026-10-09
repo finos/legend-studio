@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
+import { DataProductAccessPointSource } from '@finos/legend-cube';
+import {
+  isExecutionEntitlementError,
+  isExecutionWarehouseError,
+} from '@finos/legend-graph';
 import { action, computed, makeObservable, observable } from 'mobx';
+import { getCubeRequestAccessLabel } from '../__lib__/LegendCubeDataProductLabels.js';
 import {
   type CubeDataProductProject,
   getCubeDataProductProject,
@@ -22,11 +28,42 @@ import {
   isCubeSnapshotVersion,
   withCubeDataProductWarehouse,
 } from '../graph-manager/CubeDataProduct.js';
+import type { CubeEngineError } from '../graph-manager/CubeEngine.js';
 import {
   getCubeRememberedWarehouse,
   rememberCubeWarehouse,
 } from './CubeDataProductWarehouse.js';
 import type { CubeEditorState } from './CubeEditorState.js';
+
+/** What a failed run on a data product cube lacked (PLAN §6.8) */
+export enum CubeDataProductRunErrorKind {
+  /** the warehouse it ran on: another one may work */
+  WAREHOUSE = 'warehouse',
+  /** access to the data: the marketplace takes requests */
+  ENTITLEMENT = 'entitlement',
+}
+
+/**
+ * What a run's error says it lacked, as Legend Query reads it: the
+ * warehouse first, since a message about both is about the warehouse, then
+ * access to the data; none for any other error. Read from the whole detail,
+ * since the database's words may follow its first line
+ */
+export const classifyCubeDataProductRunError = (
+  error: CubeEngineError,
+): CubeDataProductRunErrorKind | undefined =>
+  isExecutionWarehouseError(error.detail)
+    ? CubeDataProductRunErrorKind.WAREHOUSE
+    : isExecutionEntitlementError(error.detail)
+      ? CubeDataProductRunErrorKind.ENTITLEMENT
+      : undefined;
+
+/** A marketplace page where the viewer can ask for access */
+export interface CubeAccessRequestLink {
+  readonly key: string;
+  readonly label: string;
+  readonly url: string;
+}
 
 /**
  * Where a data product cube runs (PLAN §6.8, DP-2): its deployment class
@@ -48,6 +85,8 @@ export class CubeDataProductRuntimeState {
       project: computed,
       isSnapshot: computed,
       canEditWarehouse: computed,
+      runErrorKind: computed,
+      accessRequestLinks: computed,
       remember: action,
       setWarehouse: action,
     });
@@ -83,6 +122,74 @@ export class CubeDataProductRuntimeState {
 
   get canEditWarehouse(): boolean {
     return !this.editorState.readOnly && this.project !== undefined;
+  }
+
+  /** What the last run's error says it lacked; none on a cube of tables */
+  get runErrorKind(): CubeDataProductRunErrorKind | undefined {
+    const { error } = this.editorState.execution;
+    return this.project && error
+      ? classifyCubeDataProductRunError(error)
+      : undefined;
+  }
+
+  /**
+   * After a run refused for lack of access, where to ask for it: one link
+   * per access point group the failed node reads, each opening that group in
+   * the marketplace; none when the host has no marketplace
+   */
+  get accessRequestLinks(): readonly CubeAccessRequestLink[] {
+    const { project } = this;
+    const { error } = this.editorState.execution;
+    const catalog = this.editorState.host.dataProductCatalog;
+    const { query } = this.editorState.document;
+    const failed = error?.nodeId ?? query.selected;
+    if (
+      this.runErrorKind !== CubeDataProductRunErrorKind.ENTITLEMENT ||
+      !project ||
+      !catalog ||
+      failed === undefined
+    ) {
+      return [];
+    }
+    const groups = new Map<string, DataProductAccessPointSource>();
+    query.nodes.forEach((node) => {
+      if (
+        node instanceof DataProductAccessPointSource &&
+        (node.id === failed || query.isUpstreamOf(node.id, failed))
+      ) {
+        groups.set(
+          JSON.stringify([
+            node.dataProductId,
+            node.deploymentId,
+            node.accessPointGroup,
+          ]),
+          node,
+        );
+      }
+    });
+    const several = groups.size > 1;
+    return [...groups].flatMap(([key, node]) => {
+      const url = catalog.getMarketplaceLink({
+        dataProductId: node.dataProductId,
+        deploymentId: node.deploymentId,
+        environmentType: project.environmentType,
+        accessPointGroup: node.accessPointGroup,
+      });
+      return url
+        ? [
+            {
+              key,
+              label: several
+                ? getCubeRequestAccessLabel(
+                    node.accessPointGroup,
+                    node.dataProductName,
+                  )
+                : getCubeRequestAccessLabel(undefined, undefined),
+              url,
+            },
+          ]
+        : [];
+    });
   }
 
   /** Remembers the warehouse for the viewer's next cubes */
