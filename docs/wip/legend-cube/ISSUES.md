@@ -131,7 +131,7 @@ compilation error (400) with the call's source information, like other typing er
 
 ### The engine's schema exploration mistypes some columns
 
-On H2, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`. Cube keeps the
+On H2 and DuckDB, `DECIMAL(10,2)` comes back as `Numeric(0,0)`; on DuckDB, `VARCHAR(5)` comes back as `Varchar(0)`. Cube keeps the
 engine's types (precision isn't enforced in Cube), and no test asserts them. An engine issue to file.
 
 ### Engine errors can echo setup SQL

@@ -1218,8 +1218,9 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
     that version, and reopens on the cube's data product with its access points shown. Joining access points of one
     project, often two of the same data product, is the demo's case; cross-project joins aren't needed.
   - **Redeploys (DP-4):** nothing this round; a cube stays on its saved version.
-  - **The environment:** resolved as Legend Query does (`resolveLakehouseEnvAndWarehouse`): the viewer's first
-    entitlement environment, with the production-parallel realm for production-parallel or snapshot versions.
+  - **The environment:** as Legend Query resolves it (`resolveLakehouseEnvAndWarehouse`): the environment Query
+    remembers for the viewer, else the viewer's first entitlement environment. Query adds the production-parallel
+    realm (`-pp`) for a snapshot version; Cube also adds it for a production-parallel deployment, as Data Cube does.
   - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
     inside an internal deployment. Follow-ups, each with its tests: marketplace search with paging guards and stale
     answers, sample rows, access badges, marketplace links, re-checking saved sources, warehouse edits and staleness,
@@ -2457,9 +2458,11 @@ Direct connection:
 2. Add **ORDERS**; open the dialog again (it reopens on the Database connection tab, with the Model and Data product
    tabs disabled) and add **CUSTOMERS**. Click ORDERS: the Source panel shows the connection's summary ("H2: an H2
    database in the engine's H2 server, 6 setup statements, authentication h2Default"), never its setup SQL.
-3. Join them on `CUSTOMER_ID` (Inner) and press **F9**: 4 rows.
+3. Join them on `CUSTOMER_ID` (Inner), make the Join the node Execute runs (Cmd/Ctrl-click it, or **Select**), and
+   press **F9**: 4 rows, with CUSTOMERS' `COMPANY_NAME` and `COUNTRY` columns. Add a Filter `COUNTRY` **is** `Germany`
+   after the Join, select it and press **F9**: 2 rows, `ORDER_ID` 10248 and 10251.
 4. On a new cube (reload), choose **DuckDB**, leave the file empty (in memory), give setup SQL such as
-   `create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
+   `drop schema if exists s cascade; create schema s; create table s.t (a INTEGER); insert into s.t values (1);` (one statement per line, each ending
    with `;`), **Test connection**, add `t` and press **F9**: 1 row.
 5. **Export (dev)** and **Import (dev)** the H2 cube: the same graph comes back, and **F9** gives the same rows.
 
