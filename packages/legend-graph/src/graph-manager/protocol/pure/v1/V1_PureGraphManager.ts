@@ -210,6 +210,7 @@ import {
   V1_transformQuerySearchSpecification,
   V1_buildSourceInformation,
   V1_buildExecutionContextInfo,
+  V1_buildEngineError,
 } from './engine/V1_EngineHelper.js';
 import {
   V1_buildExecutionResult,
@@ -348,7 +349,10 @@ import { V1_transformTablePointer } from './transformation/pureGraph/from/V1_Dat
 import { EngineError } from '../../../action/EngineError.js';
 import type {
   BatchLambdasRelationTypeResult,
+  BatchLambdasResolvedRelationTypeResult,
   LambdasReturnTypeResult,
+  ResolvedRelationTypeResult,
+  UnresolvedRelationColumn,
 } from '../../../AbstractPureGraphManager.js';
 import { V1_SnowflakeApp } from './model/packageableElements/function/V1_SnowflakeApp.js';
 import { V1_SnowflakeM2MUdf } from './model/packageableElements/function/V1_SnowflakeM2MUdf.js';
@@ -373,6 +377,7 @@ import type { TestDebug } from '../../../../graph/metamodel/pure/test/result/Deb
 import { V1_buildDebugTestsResult } from './engine/test/V1_DebugTestsResult.js';
 import type { V1_GraphManagerEngine } from './engine/V1_GraphManagerEngine.js';
 import type { RelationTypeMetadata } from '../../../action/relation/RelationTypeMetadata.js';
+import type { RelationType } from '../../../../graph/metamodel/pure/packageableElements/relation/RelationType.js';
 import type { CodeCompletionResult } from '../../../action/compilation/Completion.js';
 import { V1_CompleteCodeInput } from './engine/compilation/V1_CompleteCodeInput.js';
 import type { DeploymentResult } from '../../../action/DeploymentResult.js';
@@ -440,6 +445,7 @@ import {
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
+  V1_buildResolvedRelationTypeFromV1RelationType,
 } from './helpers/V1_AccessorHelper.js';
 import {
   V1_DataProductAccessor,
@@ -2172,6 +2178,53 @@ export class V1_PureGraphManager extends AbstractPureGraphManager {
     return this.engine.getBatchLambdasRelationTypeFromRawInput(
       this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
     );
+  }
+
+  override async getLambdaResolvedRelationType(
+    lambda: RawLambda,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<ResolvedRelationTypeResult> {
+    return V1_buildResolvedRelationTypeFromV1RelationType(
+      await this.engine.getLambdaV1RelationType(
+        this.buildLambdaReturnTypeInput(lambda, graph, options),
+      ),
+      graph,
+    );
+  }
+
+  override async getBatchLambdasResolvedRelationType(
+    lambdas: Map<string, RawLambda>,
+    graph: PureModel,
+    options?: { keepSourceInformation?: boolean },
+  ): Promise<BatchLambdasResolvedRelationTypeResult> {
+    const response = await this.engine.getBatchLambdasV1RelationType(
+      this.buildBatchLambdasRelationTypeInput(lambdas, graph, options),
+    );
+    const results = new Map<string, RelationType>();
+    const unresolvedColumns = new Map<string, UnresolvedRelationColumn[]>();
+    const errors = new Map<string, EngineError>();
+    response.errors?.forEach((engineError, key) =>
+      errors.set(key, V1_buildEngineError(engineError)),
+    );
+    response.results.forEach((v1RelationType, key) => {
+      try {
+        const resolved = V1_buildResolvedRelationTypeFromV1RelationType(
+          v1RelationType,
+          graph,
+        );
+        results.set(key, resolved.relationType);
+        if (resolved.unresolvedColumns.length) {
+          unresolvedColumns.set(key, resolved.unresolvedColumns);
+        }
+      } catch (error) {
+        assertErrorThrown(error);
+        // a relation type we can't build fails only its own lambda, like an
+        // engine error, so the other lambdas still get their relation type
+        errors.set(key, new EngineError(error.message));
+      }
+    });
+    return { results, unresolvedColumns, errors };
   }
 
   getCodeComplete(

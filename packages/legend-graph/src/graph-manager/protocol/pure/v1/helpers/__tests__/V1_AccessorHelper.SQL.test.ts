@@ -16,13 +16,17 @@
 
 import { beforeAll, describe, expect, test } from '@jest/globals';
 import { deserialize } from 'serializr';
-import { guaranteeNonNullable } from '@finos/legend-shared';
+import { guaranteeNonNullable, guaranteeType } from '@finos/legend-shared';
 import { unitTest } from '@finos/legend-shared/test';
 import { RawLambda } from '../../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
 import {
   V1_buildRelationTypeFromV1RelationType,
+  V1_buildResolvedRelationTypeFromV1RelationType,
   V1_resolveAccessorsFromRawLambda,
 } from '../V1_AccessorHelper.js';
+import { CORE_PURE_PATH } from '../../../../../../graph/MetaModelConst.js';
+import { PrecisePrimitiveType } from '../../../../../../graph/metamodel/pure/packageableElements/domain/PrimitiveType.js';
+import { PrimitiveInstanceValue } from '../../../../../../graph/metamodel/pure/valueSpecification/InstanceValue.js';
 import { V1_relationTypeModelSchema } from '../../transformation/pureProtocol/serializationHelpers/V1_TypeSerializationHelper.js';
 import {
   V1_DataProductAccessor,
@@ -298,5 +302,82 @@ describe(unitTest('V1_buildRelationTypeFromV1RelationType'), () => {
       { tag: 'doc', value: 'line one\nline two', multiLine: true },
       { tag: 'todo', value: 'single line', multiLine: false },
     ]);
+  });
+});
+
+describe(unitTest('V1_buildResolvedRelationTypeFromV1RelationType'), () => {
+  // `my::Color` isn't in the graph, as when its project isn't loaded
+  const buildV1RelationTypeWithUnknownColumnType = () =>
+    deserialize(V1_relationTypeModelSchema, {
+      _type: 'relationType',
+      columns: [
+        {
+          name: 'NAME',
+          genericType: {
+            rawType: {
+              _type: 'packageableType',
+              fullPath: 'meta::pure::precisePrimitives::Varchar',
+            },
+            typeArguments: [],
+            typeVariableValues: [{ _type: 'integer', value: 9 }],
+          },
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+        },
+        {
+          name: 'COLOR',
+          genericType: {
+            rawType: { _type: 'packageableType', fullPath: 'my::Color' },
+            typeArguments: [],
+            typeVariableValues: [],
+          },
+          multiplicity: { lowerBound: 0, upperBound: 1 },
+          taggedValues: [
+            {
+              tag: { profile: 'meta::pure::profiles::doc', value: 'doc' },
+              value: 'paint colour',
+            },
+          ],
+        },
+      ],
+    });
+
+  test('types a column whose type is not in the graph as Any and reports it', () => {
+    const { relationType, unresolvedColumns } =
+      V1_buildResolvedRelationTypeFromV1RelationType(
+        buildV1RelationTypeWithUnknownColumnType(),
+        graphManagerState.graph,
+      );
+
+    expect(relationType.columns.map((column) => column.name)).toEqual([
+      'NAME',
+      'COLOR',
+    ]);
+    const nameType = guaranteeNonNullable(relationType.columns[0]).genericType
+      .value;
+    expect(nameType.rawType).toBe(PrecisePrimitiveType.VARCHAR);
+    expect(
+      guaranteeType(nameType.typeVariableValues?.[0], PrimitiveInstanceValue)
+        .values,
+    ).toEqual([9]);
+
+    const color = guaranteeNonNullable(relationType.columns[1]);
+    expect(color.genericType.value.rawType.path).toBe(CORE_PURE_PATH.ANY);
+    expect(color.multiplicity.lowerBound).toBe(0);
+    expect(color.multiplicity.upperBound).toBe(1);
+    expect(color.taggedValues.map((taggedValue) => taggedValue.value)).toEqual([
+      'paint colour',
+    ]);
+    expect(unresolvedColumns).toEqual([
+      { name: 'COLOR', typePath: 'my::Color' },
+    ]);
+  });
+
+  test('V1_buildRelationTypeFromV1RelationType still throws on such a column', () => {
+    expect(() =>
+      V1_buildRelationTypeFromV1RelationType(
+        buildV1RelationTypeWithUnknownColumnType(),
+        graphManagerState.graph,
+      ),
+    ).toThrow('my::Color');
   });
 });

@@ -29,6 +29,7 @@ import { type V1_PureModelContextData } from '../model/context/V1_PureModelConte
 import {
   type V1_LambdaReturnTypeInput,
   type V1_BatchLambdaRelationTypeInput,
+  type V1_BatchLambdaRelationTypeResult,
 } from './compilation/V1_LambdaReturnType.js';
 import type { V1_RawLambda } from '../model/rawValueSpecification/V1_RawLambda.js';
 import { type V1_GenerationOutput } from './generation/V1_GenerationOutput.js';
@@ -96,6 +97,7 @@ import type { PostValidationAssertionResult } from '../../../../../DSL_Service_E
 import { type V1_DebugTestsResult } from './test/V1_DebugTestsResult.js';
 import type { TEMPORARY__AbstractEngineConfig } from '../../../../action/TEMPORARY__AbstractEngineConfig.js';
 import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
+import type { V1_RelationType } from '../model/packageableElements/type/V1_RelationType.js';
 import type { V1_CompleteCodeInput } from './compilation/V1_CompleteCodeInput.js';
 import type { CodeCompletionResult } from '../../../../action/compilation/Completion.js';
 import type { DeploymentResult } from '../../../../action/DeploymentResult.js';
@@ -240,6 +242,14 @@ export interface V1_GraphManagerEngine {
   getBatchLambdasRelationTypeFromRawInput(
     rawInput: V1_BatchLambdaRelationTypeInput,
   ): Promise<BatchLambdasRelationTypeResult>;
+
+  getLambdaV1RelationType(
+    input: V1_LambdaReturnTypeInput,
+  ): Promise<V1_RelationType>;
+
+  getBatchLambdasV1RelationType(
+    input: V1_BatchLambdaRelationTypeInput,
+  ): Promise<V1_BatchLambdaRelationTypeResult>;
 
   getCodeCompletion(
     rawInput: V1_CompleteCodeInput,

@@ -55,6 +55,7 @@ import {
   type PlainObject,
 } from '@finos/legend-shared';
 import {
+  CORE_PURE_PATH,
   ELEMENT_PATH_DELIMITER,
   MILESTONE_INGEST_COLUMNS,
   PRECISE_PRIMITIVE_TYPE,
@@ -70,7 +71,11 @@ import {
   RelationRowTestData,
 } from '../../../../../graph/metamodel/pure/data/EmbeddedData.js';
 import type { RawLambda } from '../../../../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
-import type { AbstractPureGraphManager } from '../../../../AbstractPureGraphManager.js';
+import type {
+  AbstractPureGraphManager,
+  ResolvedRelationTypeResult,
+  UnresolvedRelationColumn,
+} from '../../../../AbstractPureGraphManager.js';
 import type { PureModel } from '../../../../../graph/PureModel.js';
 import type { ConcreteFunctionDefinition } from '../../../../../graph/metamodel/pure/packageableElements/function/ConcreteFunctionDefinition.js';
 import { V1_deserializeValueSpecification } from '../transformation/pureProtocol/serializationHelpers/V1_ValueSpecificationSerializer.js';
@@ -303,11 +308,61 @@ const buildMinimalGraphBuilderContext = (
     new LogService(),
   ).build();
 
+const buildRelationColumnFromV1RelationTypeColumn = (
+  col: V1_RelationTypeColumn,
+  genericType: GenericTypeReference,
+  graph: PureModel,
+  context: V1_GraphBuilderContext,
+): RelationColumn => {
+  const relationColumn = new RelationColumn(col.name, genericType);
+  relationColumn.multiplicity = graph.getMultiplicity(
+    col.multiplicity.lowerBound,
+    col.multiplicity.upperBound,
+  );
+  relationColumn.stereotypes = (col.stereotypes ?? [])
+    .map((stereotypePtr) =>
+      returnUndefOnError(() =>
+        StereotypeExplicitReference.create(
+          getStereotype(
+            graph.getProfile(stereotypePtr.profile),
+            stereotypePtr.value,
+          ),
+        ),
+      ),
+    )
+    .filter((s): s is StereotypeExplicitReference => s !== undefined);
+  relationColumn.taggedValues = (col.taggedValues ?? [])
+    .map((taggedValue) =>
+      returnUndefOnError(() => V1_buildTaggedValue(taggedValue, context)),
+    )
+    .filter((tv): tv is TaggedValue => tv !== undefined);
+  return relationColumn;
+};
+
+/**
+ * Throws if the column's type isn't in the graph.
+ */
+const resolveV1RelationTypeColumnGenericType = (
+  col: V1_RelationTypeColumn,
+  graph: PureModel,
+  context: V1_GraphBuilderContext,
+): GenericTypeReference =>
+  returnUndefOnError(() =>
+    context.resolveGenericTypeFromProtocolWithRelationType(col.genericType),
+  ) ??
+  GenericTypeExplicitReference.create(
+    new GenericType(graph.getType(V1_getGenericTypeFullPath(col.genericType))),
+  );
+
 // TODO: move to pure graph
 /**
  * Builds a metamodel `RelationType` from a raw `V1_RelationType`, resolving
  * each column's generic type (including nested `typeVariableValues` such as
  * the `100` in `VarChar(100)`) against the supplied `PureModel`.
+ *
+ * Throws if a column's type isn't in the graph; see
+ * {@link V1_buildResolvedRelationTypeFromV1RelationType} for a version that
+ * doesn't.
  */
 export const V1_buildRelationTypeFromV1RelationType = (
   v1RelationType: V1_RelationType,
@@ -316,43 +371,57 @@ export const V1_buildRelationTypeFromV1RelationType = (
 ): RelationType => {
   const context = buildMinimalGraphBuilderContext(graph);
   const relationType = new RelationType(relationTypeName ?? RelationType.ID);
-  relationType.columns = v1RelationType.columns.map((col) => {
-    const genericTypeRef = returnUndefOnError(() =>
-      context.resolveGenericTypeFromProtocolWithRelationType(col.genericType),
-    );
-    const relationColumn = new RelationColumn(
-      col.name,
-      genericTypeRef ??
-        GenericTypeExplicitReference.create(
-          new GenericType(
-            graph.getType(V1_getGenericTypeFullPath(col.genericType)),
-          ),
-        ),
-    );
-    relationColumn.multiplicity = graph.getMultiplicity(
-      col.multiplicity.lowerBound,
-      col.multiplicity.upperBound,
-    );
-    relationColumn.stereotypes = (col.stereotypes ?? [])
-      .map((stereotypePtr) =>
-        returnUndefOnError(() =>
-          StereotypeExplicitReference.create(
-            getStereotype(
-              graph.getProfile(stereotypePtr.profile),
-              stereotypePtr.value,
-            ),
-          ),
-        ),
-      )
-      .filter((s): s is StereotypeExplicitReference => s !== undefined);
-    relationColumn.taggedValues = (col.taggedValues ?? [])
-      .map((taggedValue) =>
-        returnUndefOnError(() => V1_buildTaggedValue(taggedValue, context)),
-      )
-      .filter((tv): tv is TaggedValue => tv !== undefined);
-    return relationColumn;
-  });
+  relationType.columns = v1RelationType.columns.map((col) =>
+    buildRelationColumnFromV1RelationTypeColumn(
+      col,
+      resolveV1RelationTypeColumnGenericType(col, graph, context),
+      graph,
+      context,
+    ),
+  );
   return relationType;
+};
+
+// TODO: move to pure graph
+/**
+ * Like {@link V1_buildRelationTypeFromV1RelationType}, but a column whose
+ * type isn't in the graph (for example an enum that isn't loaded) doesn't
+ * fail the relation type: the column is typed `Any`, keeps its name,
+ * multiplicity, stereotypes and tagged values, and is listed in
+ * `unresolvedColumns` with the type path the engine sent, so callers can warn.
+ */
+export const V1_buildResolvedRelationTypeFromV1RelationType = (
+  v1RelationType: V1_RelationType,
+  graph: PureModel,
+  relationTypeName?: string | undefined,
+): ResolvedRelationTypeResult => {
+  const context = buildMinimalGraphBuilderContext(graph);
+  const relationType = new RelationType(relationTypeName ?? RelationType.ID);
+  const unresolvedColumns: UnresolvedRelationColumn[] = [];
+  relationType.columns = v1RelationType.columns.map((col) => {
+    let genericType = returnUndefOnError(() =>
+      resolveV1RelationTypeColumnGenericType(col, graph, context),
+    );
+    if (!genericType) {
+      unresolvedColumns.push({
+        name: col.name,
+        typePath:
+          returnUndefOnError(() =>
+            V1_getGenericTypeFullPath(col.genericType),
+          ) ?? '',
+      });
+      genericType = GenericTypeExplicitReference.create(
+        new GenericType(graph.getType(CORE_PURE_PATH.ANY)),
+      );
+    }
+    return buildRelationColumnFromV1RelationTypeColumn(
+      col,
+      genericType,
+      graph,
+      context,
+    );
+  });
+  return { relationType, unresolvedColumns };
 };
 
 // TODO: move to pure graph

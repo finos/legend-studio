@@ -543,6 +543,9 @@ export {
   AbstractPureGraphManager,
   type LambdasReturnTypeResult,
   type BatchLambdasRelationTypeResult,
+  type BatchLambdasResolvedRelationTypeResult,
+  type ResolvedRelationTypeResult,
+  type UnresolvedRelationColumn,
   type ExecutionOptions,
   type GraphBuilderOptions,
   type TEMPORARY__EngineSetupConfig,
@@ -960,6 +963,7 @@ export {
   V1_buildRelationElementsDataFromAccessors,
   V1_buildRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
+  V1_buildResolvedRelationTypeFromV1RelationType,
 } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';
 export { Store } from './graph/metamodel/pure/packageableElements/store/Store.js';
 export { Database } from './graph/metamodel/pure/packageableElements/store/relational/model/Database.js';
