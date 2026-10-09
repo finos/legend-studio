@@ -82,6 +82,16 @@ export type IR =
       readonly path: readonly [string, string];
       readonly origin?: Origin;
     }
+  /**
+   * A data set of a deployed ingest definition (`#I{definition.dataSet}#`):
+   * read as data, never its metadata
+   */
+  | {
+      readonly k: 'ingestAccessor';
+      /** The ingest definition's element path, then the data set's name */
+      readonly path: readonly [string, string];
+      readonly origin?: Origin;
+    }
   /** A packageable element, such as the runtime; never a type */
   | { readonly k: 'elementPtr'; readonly path: string }
   /** A type argument, e.g. of `cast`: `@String`, `@meta::pure::precisePrimitives::Varchar(15)` */
@@ -230,6 +240,14 @@ export const dataProductAccessor = (
   origin
     ? { k: 'dataProductAccessor', path, origin }
     : { k: 'dataProductAccessor', path };
+
+export const ingestAccessor = (
+  path: readonly [string, string],
+  origin?: Origin,
+): IR =>
+  origin
+    ? { k: 'ingestAccessor', path, origin }
+    : { k: 'ingestAccessor', path };
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
 

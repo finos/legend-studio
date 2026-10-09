@@ -52,6 +52,7 @@ const label = (node: IR): string | undefined => {
     case 'enumValue':
     case 'storeAccessor':
     case 'dataProductAccessor':
+    case 'ingestAccessor':
       return printIR(node);
     default:
       return undefined;

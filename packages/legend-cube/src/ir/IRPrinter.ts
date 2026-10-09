@@ -181,6 +181,8 @@ export const printIR = (ir: IR, options: IRPrintOptions = {}): string => {
       return `#>{${ir.path.join('.')}}#`;
     case 'dataProductAccessor':
       return `#P{${ir.path.join('.')}}#`;
+    case 'ingestAccessor':
+      return `#I{${ir.path.join('.')}}#`;
     case 'elementPtr':
       return ir.path;
     case 'genericType':
