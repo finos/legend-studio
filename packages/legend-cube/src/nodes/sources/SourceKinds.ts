@@ -18,6 +18,7 @@ import type { Query } from '../../graph/Query.js';
 import type { QueryRule } from '../../inference/SchemaInference.js';
 import { MESSAGE_SOURCE_KINDS_MIXED } from '../../messages/CubeMessages.js';
 import { DataProductAccessPointSource } from './DataProductAccessPointSource.js';
+import { IngestDatasetSource } from './IngestDatasetSource.js';
 import { RelationalTableSource } from './RelationalTableSource.js';
 
 /**
@@ -31,6 +32,7 @@ const SOURCE_KINDS: readonly {
 }[] = [
   { name: 'database tables', types: [RelationalTableSource.TYPE] },
   { name: 'data products', types: [DataProductAccessPointSource.TYPE] },
+  { name: 'ingest data sets', types: [IngestDatasetSource.TYPE] },
 ];
 
 /** The index of a node type's kind in SOURCE_KINDS, or -1 for a node of none */
