@@ -77,10 +77,6 @@ import {
   TEST__buildGraphWithEntities,
 } from '../__test-utils__/GraphManagerTestUtils.js';
 import { RawLambda } from '../../graph/metamodel/pure/rawValueSpecification/RawLambda.js';
-import {
-  RelationTypeMetadata,
-  RelationTypeColumnMetadata,
-} from '../action/relation/RelationTypeMetadata.js';
 import { Multiplicity } from '../../graph/metamodel/pure/packageableElements/domain/Multiplicity.js';
 
 // ──────────────────────────────────────────────────────────
@@ -1000,19 +996,20 @@ describe(
       },
     });
 
-    const createMockRelationTypeMetadata = (
+    const createMockRelationType = (
       columns: { name: string; type: string }[],
-    ): RelationTypeMetadata => {
-      const metadata = new RelationTypeMetadata();
-      metadata.columns = columns.map(
+    ): RelationType => {
+      const relationType = new RelationType(RelationType.ID);
+      relationType.columns = columns.map(
         (col) =>
-          new RelationTypeColumnMetadata(
-            col.type,
+          new RelationColumn(
             col.name,
-            new Multiplicity(1, 1),
+            GenericTypeExplicitReference.create(
+              new GenericType(graphManagerState.graph.getType(col.type)),
+            ),
           ),
       );
-      return metadata;
+      return relationType;
     };
 
     test('creates IngestionAccessor from first matview dataset when no non-matview datasets exist and tableName not specified', async () => {
@@ -1043,14 +1040,17 @@ describe(
         createMatViewDataSet('matview_ds2'),
       ];
 
-      const mockMetadata = createMockRelationTypeMetadata([
+      const mockRelationType = createMockRelationType([
         { name: 'id', type: 'Integer' },
         { name: 'amount', type: 'Float' },
       ]);
 
       const spy = jest
-        .spyOn(graphManagerState.graphManager, 'getLambdaRelationType')
-        .mockResolvedValue(mockMetadata);
+        .spyOn(graphManagerState.graphManager, 'getLambdaResolvedRelationType')
+        .mockResolvedValue({
+          relationType: mockRelationType,
+          unresolvedColumns: [],
+        });
 
       const accessor = guaranteeNonNullable(
         await createAccessorFromPackageableElement(ingest),
@@ -1083,15 +1083,18 @@ describe(
         createMatViewDataSet('matview_ds2'),
       ];
 
-      const mockMetadata = createMockRelationTypeMetadata([
+      const mockRelationType = createMockRelationType([
         { name: 'name', type: 'String' },
         { name: 'active', type: 'Boolean' },
         { name: 'score', type: 'Decimal' },
       ]);
 
       const spy = jest
-        .spyOn(graphManagerState.graphManager, 'getLambdaRelationType')
-        .mockResolvedValue(mockMetadata);
+        .spyOn(graphManagerState.graphManager, 'getLambdaResolvedRelationType')
+        .mockResolvedValue({
+          relationType: mockRelationType,
+          unresolvedColumns: [],
+        });
 
       const accessor = guaranteeNonNullable(
         await createAccessorFromPackageableElement(ingest, {
@@ -1163,7 +1166,7 @@ describe(
 
       const spy = jest.spyOn(
         graphManagerState.graphManager,
-        'getLambdaRelationType',
+        'getLambdaResolvedRelationType',
       );
 
       // Should use the non-matview dataset (regular_ds) via the sync path
@@ -1178,7 +1181,7 @@ describe(
       expect(guaranteeNonNullable(accessor.relationType.columns[0]).name).toBe(
         'id',
       );
-      // Should NOT have called getLambdaRelationType since it fell through
+      // Should NOT have called getLambdaResolvedRelationType since it fell through
       expect(spy).not.toHaveBeenCalled();
 
       spy.mockRestore();

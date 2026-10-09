@@ -962,6 +962,7 @@ export {
   V1_resolveAccessorsFromRawLambda,
   V1_buildRelationElementsDataFromAccessors,
   V1_buildRelationTypeFromAccessPointImplementation,
+  V1_buildResolvedRelationTypeFromAccessPointImplementation,
   V1_buildRelationTypeFromV1RelationType,
   V1_buildResolvedRelationTypeFromV1RelationType,
 } from './graph-manager/protocol/pure/v1/helpers/V1_AccessorHelper.js';

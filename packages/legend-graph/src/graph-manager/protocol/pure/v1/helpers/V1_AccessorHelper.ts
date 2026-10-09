@@ -63,7 +63,6 @@ import {
 } from '../../../../../graph/MetaModelConst.js';
 import { extractElementNameFromPath } from '../../../../../graph/MetaModelUtils.js';
 import { GRAPH_MANAGER_EVENT } from '../../../../../__lib__/GraphManagerEvent.js';
-import type { RelationTypeMetadata } from '../../../../action/relation/RelationTypeMetadata.js';
 import { V1_deserializeIngestDefinitionContent } from '../transformation/pureProtocol/serializationHelpers/V1_IngestSerializationHelper.js';
 import {
   RelationElement,
@@ -424,29 +423,60 @@ export const V1_buildResolvedRelationTypeFromV1RelationType = (
   return { relationType, unresolvedColumns };
 };
 
+const getAccessPointImplementationV1RelationType = (
+  apImpl: V1_AccessPointImplementation,
+): V1_RelationType | undefined =>
+  apImpl.lambdaGenericType?.typeArguments
+    .map((typeArg) => typeArg.rawType)
+    .find(
+      (rawType): rawType is V1_RelationType =>
+        rawType instanceof V1_RelationType,
+    );
+
 // TODO: move to pure graph
 /**
  * Builds a metamodel `RelationType` from the cached `lambdaGenericType` on a
  * `V1_AccessPointImplementation`. Returns `undefined` if the implementation
  * does not carry a relation-typed generic type.
  *
- * Column types are resolved against the supplied `PureModel`.
+ * Column types are resolved against the supplied `PureModel`; throws if one
+ * isn't in it. See
+ * {@link V1_buildResolvedRelationTypeFromAccessPointImplementation} for a
+ * version that doesn't.
  */
 export const V1_buildRelationTypeFromAccessPointImplementation = (
   apImpl: V1_AccessPointImplementation,
   graph: PureModel,
   relationTypeName?: string | undefined,
 ): RelationType | undefined => {
-  const v1RelationType = apImpl.lambdaGenericType?.typeArguments
-    .map((typeArg) => typeArg.rawType)
-    .find(
-      (rawType): rawType is V1_RelationType =>
-        rawType instanceof V1_RelationType,
-    );
+  const v1RelationType = getAccessPointImplementationV1RelationType(apImpl);
   if (!v1RelationType) {
     return undefined;
   }
   return V1_buildRelationTypeFromV1RelationType(
+    v1RelationType,
+    graph,
+    relationTypeName ?? apImpl.id,
+  );
+};
+
+// TODO: move to pure graph
+/**
+ * Like {@link V1_buildRelationTypeFromAccessPointImplementation}, but a
+ * column whose type isn't in the graph is typed `Any` and listed in
+ * `unresolvedColumns`, as in
+ * {@link V1_buildResolvedRelationTypeFromV1RelationType}.
+ */
+export const V1_buildResolvedRelationTypeFromAccessPointImplementation = (
+  apImpl: V1_AccessPointImplementation,
+  graph: PureModel,
+  relationTypeName?: string | undefined,
+): ResolvedRelationTypeResult | undefined => {
+  const v1RelationType = getAccessPointImplementationV1RelationType(apImpl);
+  if (!v1RelationType) {
+    return undefined;
+  }
+  return V1_buildResolvedRelationTypeFromV1RelationType(
     v1RelationType,
     graph,
     relationTypeName ?? apImpl.id,
@@ -523,24 +553,27 @@ export const V1_createAccessorFromPackageableElementWithNonFunctionSources = (
   return undefined;
 };
 
-const buildRelationTypeFromMetadata = (
-  metadata: RelationTypeMetadata,
+const getLambdaRelationTypeForAccessor = async (
+  lambda: RawLambda,
   context: V1_GraphBuilderContext,
-): RelationType => {
+  graphManager: AbstractPureGraphManager,
+): Promise<RelationType> => {
+  const resolved = await graphManager.getLambdaResolvedRelationType(
+    lambda,
+    context.graph,
+  );
+  // a column whose type isn't in the graph is typed `Any` rather than failing
+  // the whole accessor
+  if (resolved.unresolvedColumns.length) {
+    context.logService.warn(
+      LogEvent.create(GRAPH_MANAGER_EVENT.GRAPH_BUILDER_FAILURE),
+      `Can't resolve the type of accessor column(s) ${resolved.unresolvedColumns
+        .map((column) => `'${column.name}' (type '${column.typePath}')`)
+        .join(', ')}: typing them as '${CORE_PURE_PATH.ANY}'`,
+    );
+  }
   const relationType = new RelationType('__data_product__');
-  relationType.columns = metadata.columns.map((col) => {
-    const v1GenericType = buildV1GenericType(col.type);
-    const resolvedGenericType =
-      returnUndefOnError(() =>
-        context.resolveGenericTypeFromProtocolWithRelationType(v1GenericType),
-      ) ??
-      context.resolveGenericTypeFromProtocolWithRelationType(
-        buildV1GenericType(PRIMITIVE_TYPE.STRING),
-      );
-    const relationColumn = new RelationColumn(col.name, resolvedGenericType);
-    relationColumn.multiplicity = col.multiplicity;
-    return relationColumn;
-  });
+  relationType.columns = resolved.relationType.columns;
   return relationType;
 };
 
@@ -576,13 +609,10 @@ export const V1_createAccessorFromPackageableElement = async (
         : element.TEMPORARY_MATVIEW_FUNCTION_DATA_SETS[0];
     }
     if (matviewDataSet) {
-      const relationTypeMetadata = await graphManager.getLambdaRelationType(
+      const relationType = await getLambdaRelationTypeForAccessor(
         matviewDataSet.source.function,
-        context.graph,
-      );
-      const relationType = buildRelationTypeFromMetadata(
-        relationTypeMetadata,
         context,
+        graphManager,
       );
       addMilestonedColumnsForWriteMode(
         relationType,
@@ -623,13 +653,10 @@ export const V1_buildDataProductAccessor = async (
   if (!accessPoint) {
     return undefined;
   }
-  const relationTypeMetadata = await graphManager.getLambdaRelationType(
+  const relationType = await getLambdaRelationTypeForAccessor(
     accessPoint.func,
-    context.graph,
-  );
-  const relationType = buildRelationTypeFromMetadata(
-    relationTypeMetadata,
     context,
+    graphManager,
   );
   return new DataProductAccessor(
     element.path,

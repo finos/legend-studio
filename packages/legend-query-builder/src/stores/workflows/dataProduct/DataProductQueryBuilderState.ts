@@ -49,7 +49,7 @@ import {
   GenericTypeExplicitReference,
   findLakehouseAccessPointGroup,
   type PureModel,
-  V1_buildRelationTypeFromAccessPointImplementation,
+  V1_buildResolvedRelationTypeFromAccessPointImplementation,
   LegendSDLC,
   DataProductAccessType,
 } from '@finos/legend-graph';
@@ -78,12 +78,19 @@ import { compareLabelFn } from '@finos/legend-art';
 import { QueryBuilderEmbeddedFromExecutionContextState } from '../../QueryBuilderExecutionContextState.js';
 import type { DataProductAccessInfo } from '../../data-access/DataProductAccessInfo.js';
 
+/**
+ * @param relationType the access point's relation type, used when the
+ * artifact doesn't provide one: pass the `relationType` returned by
+ * `graphManager.getLambdaResolvedRelationType`. Passing the
+ * `RelationTypeMetadata` from `getLambdaRelationType` still works but is
+ * deprecated: its columns lose their type parameters and multiplicity.
+ */
 export const resolveDataProductAccessor = (
   dataProduct: DataProduct,
   accessPoint: LakehouseAccessPoint,
   graph: PureModel,
   artifact: V1_DataProductArtifact | undefined,
-  relationMetadata?: RelationTypeMetadata | undefined,
+  relationType?: RelationType | RelationTypeMetadata | undefined,
 ): DataProductAccessor => {
   if (artifact) {
     const artifactGroup = artifact.accessPointGroups.find((apg) =>
@@ -95,12 +102,13 @@ export const resolveDataProductAccessor = (
       (apImpl) => apImpl.id === accessPoint.id,
     );
     if (artifactImpl) {
+      // a column whose type isn't in the graph is typed `Any`
       const builtRelationType =
-        V1_buildRelationTypeFromAccessPointImplementation(
+        V1_buildResolvedRelationTypeFromAccessPointImplementation(
           artifactImpl,
           graph,
           accessPoint.title ?? accessPoint.id,
-        );
+        )?.relationType;
       if (builtRelationType) {
         return new DataProductAccessor(
           dataProduct.path,
@@ -112,9 +120,14 @@ export const resolveDataProductAccessor = (
       }
     }
   }
-  const relationType = new RelationType(accessPoint.title ?? accessPoint.id);
-  if (relationMetadata) {
-    relationType.columns = relationMetadata.columns.map(
+  const accessorRelationType = new RelationType(
+    accessPoint.title ?? accessPoint.id,
+  );
+  if (relationType instanceof RelationType) {
+    accessorRelationType.columns = relationType.columns;
+  } else if (relationType) {
+    // @deprecated: kept for callers that still pass `RelationTypeMetadata`
+    accessorRelationType.columns = relationType.columns.map(
       (col) =>
         new RelationColumn(
           col.name,
@@ -132,7 +145,7 @@ export const resolveDataProductAccessor = (
     dataProduct.path,
     groupResult?.group.id,
     accessPoint.id,
-    relationType,
+    accessorRelationType,
     dataProduct,
   );
 };
@@ -725,18 +738,20 @@ export class DataProductQueryBuilderState extends QueryBuilderState {
     }
 
     if (val instanceof LakehouseAccessPoint) {
-      const relationMetadata = !this.dataProductArtifact
-        ? await this.graphManagerState.graphManager.getLambdaRelationType(
-            val.func,
-            this.graphManagerState.graph,
-          )
+      const engineRelationType = !this.dataProductArtifact
+        ? (
+            await this.graphManagerState.graphManager.getLambdaResolvedRelationType(
+              val.func,
+              this.graphManagerState.graph,
+            )
+          ).relationType
         : undefined;
       const accessor = resolveDataProductAccessor(
         this.dataProduct,
         val,
         this.graphManagerState.graph,
         this.dataProductArtifact,
-        relationMetadata,
+        engineRelationType,
       );
       this.changeSourceElement(accessor);
       this.executionContextState.setMapping(undefined);
