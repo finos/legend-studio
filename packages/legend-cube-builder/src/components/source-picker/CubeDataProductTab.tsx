@@ -23,6 +23,7 @@ import {
 } from '../../__lib__/LegendCubeDataProductLabels.js';
 import {
   CUBE_PENDING_LABEL,
+  NULL_CELL_TEXT,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import type { CubeDataProductEnvironmentType } from '../../graph-manager/CubeDataProduct.js';
@@ -31,7 +32,10 @@ import {
   type CubeDataProductTabState,
   CUBE_DATA_PRODUCT_TAB_MESSAGE,
 } from '../../stores/source-picker/CubeDataProductTabState.js';
+import type { CubeAccessPoint } from '../../graph-manager/CubeDataProductCatalog.js';
+import type { CubeResultValue } from '../../graph-manager/CubeEngine.js';
 import { CubeButton } from '../CubeButton.js';
+import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import { CubePickerStep } from './CubePickerStep.js';
 
 const INPUT_CLASS =
@@ -58,6 +62,83 @@ const CubeDataProductTabAlert: React.FC<{
     )}
     {children}
   </div>
+);
+
+/** A sample value as the preview shows it; an empty one plainly */
+const CubeSampleValue: React.FC<{ value: CubeResultValue }> = ({ value }) =>
+  value === null ? (
+    <span className="text-[var(--color-text-muted)]">{NULL_CELL_TEXT}</span>
+  ) : (
+    <>{String(value)}</>
+  );
+
+/**
+ * The picked access point, from the deployed artifact alone (PLAN §6.8):
+ * its description, its columns, up to five of the artifact's sample rows,
+ * and its product's page in the marketplace
+ */
+const CubeAccessPointPreview: React.FC<{
+  accessPoint: CubeAccessPoint;
+  marketplaceLink: string | undefined;
+}> = ({ accessPoint, marketplaceLink }) => (
+  <section
+    className="flex flex-col gap-1 rounded-sm border border-[var(--color-border-default)] p-2"
+    aria-label="Access point preview"
+  >
+    <div className="flex items-center gap-2">
+      <span className="min-w-0 flex-1 truncate font-medium">
+        {accessPoint.title ?? accessPoint.id}
+      </span>
+      {marketplaceLink !== undefined && (
+        <a
+          className="shrink-0 text-base text-[var(--color-accent)] underline"
+          href={marketplaceLink}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open in Marketplace
+        </a>
+      )}
+    </div>
+    <span className="text-base text-[var(--color-text-secondary)]">
+      {accessPoint.description ?? 'No description'}
+    </span>
+    {accessPoint.schema && (
+      <CubeSchemaColumnsTable schema={accessPoint.schema} />
+    )}
+    {accessPoint.sampleRows.length && accessPoint.schema ? (
+      <div className="overflow-x-auto">
+        <table className="text-base" aria-label="Sample rows">
+          <thead>
+            <tr className="text-left text-[var(--color-text-secondary)]">
+              {accessPoint.schema.columns.map((column) => (
+                <th key={column.name} className="pr-3 font-normal">
+                  {column.name}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {accessPoint.sampleRows.map((row, index) => (
+              // eslint-disable-next-line react/no-array-index-key -- sample rows have no identity
+              <tr key={index}>
+                {row.map((value, column) => (
+                  // eslint-disable-next-line react/no-array-index-key -- by position, as the columns
+                  <td key={column} className="whitespace-nowrap pr-3">
+                    <CubeSampleValue value={value} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <span className="text-base text-[var(--color-text-muted)]">
+        No sample rows in the deployed artifact
+      </span>
+    )}
+  </section>
 );
 
 /**
@@ -200,6 +281,12 @@ export const CubeDataProductTab = observer(
               </li>
             ))}
           </ul>
+        )}
+        {tab.accessPoint?.isPickable === true && (
+          <CubeAccessPointPreview
+            accessPoint={tab.accessPoint}
+            marketplaceLink={tab.marketplaceLink}
+          />
         )}
         <div className="flex items-center gap-2">
           <label className="w-20 shrink-0 text-base" htmlFor={warehouseId}>

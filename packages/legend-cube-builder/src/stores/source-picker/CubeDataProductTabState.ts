@@ -186,6 +186,7 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
       searchesOnServer: computed,
       fixedProject: computed,
       isSnapshot: computed,
+      marketplaceLink: computed,
       visibleCandidates: computed,
       isTruncated: computed,
       accessPoint: computed,
@@ -236,6 +237,23 @@ export class CubeDataProductTabState implements CubeSourcePickerTab {
     return project
       ? isCubeSnapshotVersion(project.versionId)
       : this.candidate?.isSnapshot === true;
+  }
+
+  /**
+   * The picked product's page in the host's marketplace, on the picked
+   * access point's group once there is one; built from the listed product,
+   * whose id and deployment the marketplace knows
+   */
+  get marketplaceLink(): string | undefined {
+    const { candidate } = this;
+    return candidate
+      ? this.catalog?.getMarketplaceLink({
+          dataProductId: candidate.id,
+          deploymentId: candidate.deploymentId,
+          environmentType: candidate.environmentType,
+          accessPointGroup: this.accessPointKey?.group,
+        })
+      : undefined;
   }
 
   /** The cube's first data product, which the tab reopens on */

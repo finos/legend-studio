@@ -31,7 +31,6 @@ import {
 } from '../../__lib__/LegendCubeDataProductLabels.js';
 import {
   CUBE_PENDING_LABEL,
-  getColumnTypeLabel,
   READ_ONLY_CUBE_TITLE,
 } from '../../__lib__/LegendCubeLabels.js';
 import {
@@ -39,7 +38,7 @@ import {
   type CubeDataProductRuntimeState,
 } from '../../stores/CubeDataProductRuntimeState.js';
 import { CubeButton } from '../CubeButton.js';
-import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /**
@@ -110,12 +109,30 @@ export const CubeDataProductSourceEditor = observer(
     const refreshing = editorState.isPendingSource(source);
     const runtime = editorState.dataProductRuntime;
     const { project } = runtime;
+    const marketplaceLink = project
+      ? editorState.host.dataProductCatalog?.getMarketplaceLink({
+          dataProductId: source.dataProductId,
+          deploymentId: source.deploymentId,
+          environmentType: project.environmentType,
+          accessPointGroup: source.accessPointGroup,
+        })
+      : undefined;
     return (
       <div className="relative flex flex-col gap-2">
         <dl className="grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 text-base">
           <dt className="text-[var(--color-text-secondary)]">Data product</dt>
           <dd className="min-w-0 break-all" title={source.dataProduct}>
             {source.dataProductName}
+            {marketplaceLink !== undefined && (
+              <a
+                className="ml-2 text-[var(--color-accent)] underline"
+                href={marketplaceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open in Marketplace
+              </a>
+            )}
           </dd>
           <dt className="text-[var(--color-text-secondary)]">Access point</dt>
           <dd className="min-w-0 break-all">{source.accessPoint}</dd>
@@ -178,30 +195,7 @@ export const CubeDataProductSourceEditor = observer(
         </div>
         <PanelLoadingIndicator isLoading={refreshing} />
         {resolution.kind === 'resolved' ? (
-          <table className="w-full text-base" aria-label="Columns">
-            <thead>
-              <tr className="text-left text-[var(--color-text-secondary)]">
-                <th className="font-normal">Column</th>
-                <th className="font-normal">Type</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resolution.schema.columns.map((column) => (
-                <tr key={column.name}>
-                  <td className="break-all pr-2">{column.name}</td>
-                  <td title={column.type.fullName}>
-                    <span className="flex items-center gap-1">
-                      <CubeColumnTypeIcon
-                        type={column.type}
-                        className="text-[var(--color-text-secondary)]"
-                      />
-                      {getColumnTypeLabel(column)}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <CubeSchemaColumnsTable schema={resolution.schema} />
         ) : (
           <div className="text-base text-[var(--color-text-secondary)]">
             {resolution.kind === 'failed'

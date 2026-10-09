@@ -94,6 +94,7 @@ export const fakeDescriptionOf = (
         new CubeAccessPoint({
           id: 'daily_orders',
           title: 'Daily orders',
+          description: 'One row per order',
           schema: FAKE_DAILY_ORDERS_SCHEMA,
           sampleRows: [['1', 'ALFKI', 'EMEA', '12.34']],
         }),

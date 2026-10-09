@@ -147,6 +147,17 @@ describe('Source panel of a data product cube', () => {
     expect(within(panel()).queryByText(CUBE_SNAPSHOT_VERSION_LABEL)).toBeNull();
   });
 
+  test("Links the access point's group to its product's page in the marketplace", async () => {
+    await renderPanel();
+    expect(
+      within(panel()).getByRole<HTMLAnchorElement>('link', {
+        name: 'Open in Marketplace',
+      }).href,
+    ).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/1234#core',
+    );
+  });
+
   test('Allows no warehouse edit on a cube saved by a newer version', async () => {
     await renderPanel({ readOnly: true });
     expect(warehouseInput().disabled).toBe(true);

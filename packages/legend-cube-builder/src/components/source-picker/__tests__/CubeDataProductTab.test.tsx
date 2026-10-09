@@ -184,6 +184,50 @@ describe('Data product tab', () => {
     expect(within(dialog).queryByText('searching data products')).toBeNull();
   });
 
+  test('Previews a picked access point from its artifact alone: description, typed columns, sample rows, and its page in the marketplace', async () => {
+    const { fake, dataProducts } = await renderPage();
+    const dialog = await openFromPalette();
+    fireEvent.click(within(dialog).getByText('Orders Product'));
+    const accessPoints = await within(dialog).findByRole('list', {
+      name: 'Access points',
+    });
+    expect(
+      within(dialog).queryByRole('region', { name: 'Access point preview' }),
+    ).toBeNull();
+    fireEvent.click(within(accessPoints).getByText('Daily orders'));
+    let preview = within(dialog).getByRole('region', {
+      name: 'Access point preview',
+    });
+    expect(within(preview).getByText('One row per order')).not.toBeNull();
+    const columns = within(preview).getByRole('table', { name: 'Columns' });
+    expect(within(columns).getByText('Varchar(10)')).not.toBeNull();
+    expect(within(columns).getByText('Numeric(10,2)')).not.toBeNull();
+    const samples = within(preview).getByRole('table', { name: 'Sample rows' });
+    expect(within(samples).getByText('ALFKI')).not.toBeNull();
+    expect(
+      within(preview).getByRole<HTMLAnchorElement>('link', {
+        name: 'Open in Marketplace',
+      }).href,
+    ).toBe(
+      'https://marketplace.test/dataProduct/deployed/ORDERS_PRODUCT/deployment-orders_product#core',
+    );
+    // one with no description nor sample rows, on a host with no marketplace
+    dataProducts.getMarketplaceLink.mockReturnValue(undefined);
+    fireEvent.click(within(accessPoints).getByText('customers'));
+    preview = within(dialog).getByRole('region', {
+      name: 'Access point preview',
+    });
+    expect(within(preview).getByText('No description')).not.toBeNull();
+    expect(
+      within(preview).getByText('No sample rows in the deployed artifact'),
+    ).not.toBeNull();
+    expect(
+      within(preview).queryByRole('link', { name: 'Open in Marketplace' }),
+    ).toBeNull();
+    expect(fake.execute).not.toHaveBeenCalled();
+    expect(fake.typeLambdas).not.toHaveBeenCalled();
+  });
+
   test('Says when the picked product is at a moving SNAPSHOT version', async () => {
     await renderPage();
     const dialog = await openFromPalette();

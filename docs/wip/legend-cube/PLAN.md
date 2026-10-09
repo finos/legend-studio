@@ -1226,9 +1226,9 @@ LakehouseRuntime at the fixed path]` with the viewer's environment and the wareh
     and lets the cube's class decide: a production deployment never runs in the production-parallel realm.
   - **Shipped first as a thin end-to-end slice** in the direct connection's PR (user, 2026-10-09), so it can be tested
     inside an internal deployment. Follow-ups, each with its tests (#5652): marketplace search with paging guards and
-    stale answers (done), warehouse edits and staleness (done), re-checking saved sources (done), sample rows, access
-    badges, marketplace links, error polish, the stand-in engine checks against the test-setup mocks, and their verify
-    workflow.
+    stale answers (done), warehouse edits and staleness (done), re-checking saved sources (done), error polish (done),
+    sample rows and marketplace links (done), access badges, the stand-in engine checks against the test-setup mocks,
+    and their verify workflow.
 - **Compute elements:** deferred.
 - **M2.0 no longer gates the sources:** depot Databases are typed by the engine through the pointer and data products by
   their deployed artifact, so neither needs legend-graph's precise types. M2.0 stays a separate legend-graph PR, needed

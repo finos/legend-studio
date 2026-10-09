@@ -26,13 +26,10 @@ import {
   CUBE_DIRECT_CONNECTION_FALLBACK_LABEL,
   getCubeConnectionSummaryLabel,
 } from '../../__lib__/LegendCubeDirectConnectionLabels.js';
-import {
-  CUBE_PENDING_LABEL,
-  getColumnTypeLabel,
-} from '../../__lib__/LegendCubeLabels.js';
+import { CUBE_PENDING_LABEL } from '../../__lib__/LegendCubeLabels.js';
 import { getCubeDirectConnection } from '../../graph-manager/CubeDirectConnection.js';
 import { CubeButton } from '../CubeButton.js';
-import { CubeColumnTypeIcon } from './CubeColumnPicker.js';
+import { CubeSchemaColumnsTable } from '../CubeSchemaColumnsTable.js';
 import type { CubeNodeEditorProps } from './CubeNodeEditorRegistry.js';
 
 /**
@@ -95,30 +92,7 @@ export const CubeSourceEditor = observer((props: CubeNodeEditorProps) => {
       </div>
       <PanelLoadingIndicator isLoading={refreshing} />
       {resolution.kind === 'resolved' ? (
-        <table className="w-full text-base" aria-label="Columns">
-          <thead>
-            <tr className="text-left text-[var(--color-text-secondary)]">
-              <th className="font-normal">Column</th>
-              <th className="font-normal">Type</th>
-            </tr>
-          </thead>
-          <tbody>
-            {resolution.schema.columns.map((column) => (
-              <tr key={column.name}>
-                <td className="break-all pr-2">{column.name}</td>
-                <td title={column.type.fullName}>
-                  <span className="flex items-center gap-1">
-                    <CubeColumnTypeIcon
-                      type={column.type}
-                      className="text-[var(--color-text-secondary)]"
-                    />
-                    {getColumnTypeLabel(column)}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <CubeSchemaColumnsTable schema={resolution.schema} />
       ) : (
         <div className="text-base text-[var(--color-text-secondary)]">
           {resolution.kind === 'failed'
