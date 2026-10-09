@@ -31,12 +31,18 @@ export const CUBE_DATA_PRODUCT_RUNTIME_PATH = 'cube::dataProduct::Runtime';
 /** The warehouse a run uses when neither the cube nor the viewer has one (PLAN §6.8) */
 export const CUBE_DEFAULT_CONSUMER_WAREHOUSE = 'LAKEHOUSE_CONSUMER_DEFAULT_WH';
 
-/** The deployment classes a data product's environment can be of */
+/**
+ * The deployment classes Cube reads data products from: production and
+ * production-parallel, as Data Cube's selection offers. Development
+ * deployments are not supported in this phase (user, 2026-10-09)
+ */
 export enum CubeDataProductEnvironmentType {
   PRODUCTION = 'PRODUCTION',
   PRODUCTION_PARALLEL = 'PRODUCTION_PARALLEL',
-  DEVELOPMENT = 'DEVELOPMENT',
 }
+
+/** The wire name of the development class, which Cube refuses by name */
+const DEVELOPMENT_ENVIRONMENT_TYPE = 'DEVELOPMENT';
 
 /** What a data product cube's model holds */
 export interface CubeDataProductProject {
@@ -88,7 +94,9 @@ export const checkCubeDataProductModel = (
       problems.push(`The data product's project has no ${key}`);
     }
   });
-  if (!ENVIRONMENT_TYPES.includes(model.environmentType as string)) {
+  if (model.environmentType === DEVELOPMENT_ENVIRONMENT_TYPE) {
+    problems.push(`Cube doesn't read development data products yet`);
+  } else if (!ENVIRONMENT_TYPES.includes(model.environmentType as string)) {
     problems.push(
       `Cube doesn't know the environment type "${String(model.environmentType)}"`,
     );

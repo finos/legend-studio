@@ -80,11 +80,16 @@ describe("A data product cube's model", () => {
     ).toBeUndefined();
   });
 
-  test('Runs a saved development cube as development', () => {
-    expect(
-      getCubeDataProductProject(withField('environmentType', 'DEVELOPMENT'))
-        ?.environmentType,
-    ).toBe(CubeDataProductEnvironmentType.DEVELOPMENT);
+  test('Refuses a development data product, which this phase does not read', () => {
+    const model = withField('environmentType', 'DEVELOPMENT');
+    expect(checkCubeDataProductModel(model)).toEqual([
+      `Cube doesn't read development data products yet`,
+    ]);
+    expect(getCubeDataProductProject(model)).toBeUndefined();
+    expect(Object.values(CubeDataProductEnvironmentType)).toEqual([
+      'PRODUCTION',
+      'PRODUCTION_PARALLEL',
+    ]);
   });
 
   test('Refuses a warehouse that is not a name', () => {

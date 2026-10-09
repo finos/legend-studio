@@ -7,7 +7,7 @@
       "groupId": "com.example.sales",
       "artifactId": "orders-products",
       "versionId": "feature-returns-SNAPSHOT",
-      "environmentType": "DEVELOPMENT",
+      "environmentType": "PRODUCTION",
       "warehouse": "CUBE_SAMPLE_WH"
     },
     "runtime": "cube::dataProduct::Runtime"
