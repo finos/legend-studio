@@ -49,6 +49,28 @@ export const CUBE_DIRECT_MESSAGE = {
   NO_TABLE_SCHEMA: 'The engine gave no schema for this table',
 } as const;
 
+const formatCount = (value: number): string => value.toLocaleString('en-US');
+
+/** The text of loading a CSV into an in-memory DuckDB connection */
+export const CUBE_CSV_MESSAGE = {
+  EMPTY: 'The CSV is empty: its first row must name the columns',
+  UNCLOSED_QUOTE: (line: number): string =>
+    `The quoted value that starts on line ${line} is never closed`,
+  RAGGED_ROW: (row: number, values: number, columns: number): string =>
+    `Row ${formatCount(row)} has ${formatCount(values)} ${values === 1 ? 'value' : 'values'}, but the header names ${formatCount(columns)} ${columns === 1 ? 'column' : 'columns'}`,
+  TOO_MANY_ROWS: (rows: number, max: number): string =>
+    `The CSV has ${formatCount(rows)} rows; Cube loads at most ${formatCount(max)}, since the cube saves them and every run loads them again`,
+  TOO_LONG: (max: number): string =>
+    `The CSV is too long: Cube loads at most ${formatCount(max)} characters`,
+  ADDED: (table: string, rows: number, columns: number): string =>
+    `Added table ${table}: ${formatCount(rows)} ${rows === 1 ? 'row' : 'rows'}, ${formatCount(columns)} ${columns === 1 ? 'column' : 'columns'}. Test the connection to list it.`,
+  UNREADABLE_FILE: (name: string): string =>
+    `Cube couldn't read the file ${name}`,
+} as const;
+
+export const CUBE_CSV_HELP_TEXT =
+  "Paste a CSV, or choose a file, with a header row. Cube adds it to the setup SQL as a table of the csv schema, guessing each column's type from its values; edit the SQL to change them. Up to 10,000 rows: the cube saves them.";
+
 export const CUBE_DIRECT_HELP_TEXT = {
   SETUP_SQL:
     "The engine runs these statements on every connection, so they should first drop what they create. A statement ends with a line ending in ';'. A statement that returns rows, such as a select, fails.",

@@ -31,6 +31,7 @@ import {
   within,
 } from '@testing-library/react';
 import {
+  CUBE_CSV_MESSAGE,
   CUBE_DIRECT_HELP_TEXT,
   CUBE_DIRECT_MESSAGE,
 } from '../../../__lib__/LegendCubeDirectConnectionLabels.js';
@@ -48,6 +49,7 @@ import {
   CubeEngineErrorKind,
 } from '../../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../../../stores/CubeEditorState.js';
+import { buildCubeCsvTable } from '../../../stores/source-picker/CubeCsvSetupSql.js';
 import { CubeDirectConnectionTabState } from '../../../stores/source-picker/CubeDirectConnectionTabState.js';
 import { CubeDirectConnectionTab } from '../CubeDirectConnectionTab.js';
 
@@ -203,5 +205,69 @@ describe('Database connection tab', () => {
       'disabled',
       true,
     );
+  });
+});
+
+describe('Loading a CSV in the database connection tab', () => {
+  const chooseDuckDb = (): void => {
+    fireEvent.change(screen.getByLabelText('Database'), {
+      target: { value: CubeDirectDatabaseType.DUCKDB },
+    });
+  };
+
+  test('Offers it for DuckDB only', () => {
+    renderTab();
+    expect(screen.queryByText('Load a CSV')).toBeNull();
+    chooseDuckDb();
+    expect(screen.getByText('Load a CSV')).toBeTruthy();
+    expect(screen.getByLabelText('CSV file')).toHaveProperty('type', 'file');
+  });
+
+  test('Writes a pasted CSV into the setup SQL as a table, and says what it added', () => {
+    renderTab();
+    chooseDuckDb();
+    const add = screen.getByRole('button', { name: 'Add to setup SQL' });
+    expect(add).toHaveProperty('disabled', true);
+    fireEvent.change(screen.getByLabelText('CSV'), {
+      target: { value: 'id,city\n1,Paris\n2,Lima\n' },
+    });
+    fireEvent.change(screen.getByLabelText('Table'), {
+      target: { value: 'cities' },
+    });
+    fireEvent.click(add);
+    expect(screen.getByLabelText('Setup SQL')).toHaveProperty(
+      'value',
+      buildCubeCsvTable('id,city\n1,Paris\n2,Lima\n', 'cities').sql,
+    );
+    expect(screen.getByRole('status').textContent).toBe(
+      'Added table csv.cities: 2 rows, 2 columns. Test the connection to list it.',
+    );
+    expect(screen.getByLabelText('CSV')).toHaveProperty('value', '');
+  });
+
+  test('Shows why a CSV is refused', () => {
+    renderTab();
+    chooseDuckDb();
+    fireEvent.change(screen.getByLabelText('CSV'), {
+      target: { value: 'a,"b\n' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Add to setup SQL' }));
+    expect(screen.getByRole('status').textContent).toBe(
+      CUBE_CSV_MESSAGE.UNCLOSED_QUOTE(1),
+    );
+  });
+
+  test("Reads a chosen file into the CSV box, its name as the table's", async () => {
+    renderTab();
+    chooseDuckDb();
+    fireEvent.change(screen.getByLabelText('CSV file'), {
+      target: {
+        files: [new File(['code\nA\n'], 'codes.csv', { type: 'text/csv' })],
+      },
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText('CSV')).toHaveProperty('value', 'code\nA\n'),
+    );
+    expect(screen.getByLabelText('Table')).toHaveProperty('value', 'codes');
   });
 });

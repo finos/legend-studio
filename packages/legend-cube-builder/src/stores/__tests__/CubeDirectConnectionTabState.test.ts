@@ -25,6 +25,7 @@ import {
 import { guaranteeNonNullable } from '@finos/legend-shared';
 import { flowResult } from 'mobx';
 import {
+  CUBE_CSV_MESSAGE,
   CUBE_DIRECT_MESSAGE,
   CUBE_DIRECT_SAMPLE_SETUP_SQL,
 } from '../../__lib__/LegendCubeDirectConnectionLabels.js';
@@ -46,6 +47,7 @@ import {
 } from '../../graph-manager/CubeEngine.js';
 import { CubeEditorState } from '../CubeEditorState.js';
 import { CUBE_NORTHWIND_MODEL } from '../fixtures/CubeNorthwindModel.js';
+import { buildCubeCsvTable } from '../source-picker/CubeCsvSetupSql.js';
 import {
   CubeDirectConnectionTabState,
   splitCubeSetupSql,
@@ -452,5 +454,83 @@ describe('Database connection tab', () => {
     );
     expect(withoutExplorer.isOffered).toBe(false);
     expect(withoutExplorer.connection).toBeUndefined();
+  });
+});
+
+describe('Loading a CSV into an in-memory DuckDB database', () => {
+  const CSV = 'id,city\n1,Paris\n2,Lima\n';
+
+  test('Is offered for DuckDB only, once there is CSV text, and before the cube has a connection', () => {
+    const { tab } = setUp();
+    tab.setCsvText(CSV);
+    expect(tab.canAddCsv).toBe(false);
+    expect(tab.addCsv()).toBe(false);
+    tab.setDatabaseType(CubeDirectDatabaseType.DUCKDB);
+    expect(tab.canAddCsv).toBe(true);
+    tab.setCsvText('  \n');
+    expect(tab.canAddCsv).toBe(false);
+    const saved = setUp(
+      new CubeDocument().withContext({
+        model: createCubeDirectModel({
+          _type: 'saved',
+          databaseType: 'DuckDB',
+        }),
+        runtime: CUBE_DIRECT_RUNTIME_PATH,
+      }),
+    ).tab;
+    saved.setCsvText(CSV);
+    expect(saved.canAddCsv).toBe(false);
+  });
+
+  test("Writes the CSV into the setup SQL as a table, in place of the H2 sample, then after the viewer's own SQL", () => {
+    const { tab } = setUp();
+    tab.setDatabaseType(CubeDirectDatabaseType.DUCKDB);
+    tab.setCsvText(CSV);
+    tab.setCsvTableName('cities');
+    expect(tab.addCsv()).toBe(true);
+    expect(tab.setupSqlText).toBe(buildCubeCsvTable(CSV, 'cities').sql);
+    expect(tab.setupSqls).toHaveLength(4);
+    expect(tab.csvText).toBe('');
+    expect(tab.csvTableName).toBe('');
+    expect(tab.csvNote).toEqual({
+      message:
+        'Added table csv.cities: 2 rows, 2 columns. Test the connection to list it.',
+      isError: false,
+    });
+    tab.setCsvText('code\nA\n');
+    tab.setCsvTableName('codes');
+    expect(tab.csvNote).toBeUndefined();
+    tab.addCsv();
+    expect(tab.setupSqlText).toBe(
+      `${buildCubeCsvTable(CSV, 'cities').sql}\n${buildCubeCsvTable('code\nA\n', 'codes').sql}`,
+    );
+  });
+
+  test('Says why a CSV is refused, keeping its text and the setup SQL', () => {
+    const { tab } = setUp();
+    tab.setDatabaseType(CubeDirectDatabaseType.DUCKDB);
+    tab.setSetupSqlText('create schema s;');
+    tab.setCsvText('a,b\n1\n');
+    expect(tab.addCsv()).toBe(false);
+    expect(tab.csvNote).toEqual({
+      message: CUBE_CSV_MESSAGE.RAGGED_ROW(1, 1, 2),
+      isError: true,
+    });
+    expect(tab.csvText).toBe('a,b\n1\n');
+    expect(tab.setupSqlText).toBe('create schema s;');
+  });
+
+  test("Reads a chosen file as the CSV, its name as the table's", async () => {
+    const { tab } = setUp();
+    tab.setDatabaseType(CubeDirectDatabaseType.DUCKDB);
+    await flowResult(
+      tab.loadCsvFile(new File([CSV], 'Sales 2024.csv', { type: 'text/csv' })),
+    );
+    expect(tab.csvText).toBe(CSV);
+    expect(tab.csvTableName).toBe('Sales 2024');
+    expect(tab.addCsv()).toBe(true);
+    expect(tab.setupSqlText).toContain(
+      'create table csv.Sales_2024 (id INTEGER, city VARCHAR);',
+    );
   });
 });
