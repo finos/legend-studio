@@ -76,14 +76,14 @@ const asList = (value: unknown): unknown[] =>
 const asString = (value: unknown): string =>
   typeof value === 'string' ? value : '';
 
-/** A name as the database stores it: the engine quotes some names */
-const unquote = (name: string): string =>
+/** A name as the database stores it: the engine quotes some names, and Cube all of them */
+export const V1_unquoteCubeName = (name: string): string =>
   name.length >= 2 && name.startsWith('"') && name.endsWith('"')
     ? name.slice(1, -1)
     : name;
 
 /** A name as a Database stores it; Pure can't quote a name holding a quote */
-const quote = (name: string): string => `"${name}"`;
+export const V1_quoteCubeName = (name: string): string => `"${name}"`;
 
 /** A name Cube can write in Pure: one holding a double quote can't be */
 const isWritable = (name: string): boolean => !name.includes('"');
@@ -160,23 +160,25 @@ const tablesOf = (schema: PlainObject): Map<string, PlainObject> =>
   new Map(
     asList(schema.tables)
       .map(asObject)
-      .map((table) => [unquote(asString(table.name)), table]),
+      .map((table) => [V1_unquoteCubeName(asString(table.name)), table]),
   );
 
 /** A schema of the answer, by name as the database stores it */
 const findSchema = (response: unknown, name: string): PlainObject | undefined =>
-  schemasOf(response).find((schema) => unquote(asString(schema.name)) === name);
+  schemasOf(response).find(
+    (schema) => V1_unquoteCubeName(asString(schema.name)) === name,
+  );
 
 const isHidden = (column: PlainObject): boolean =>
   asString(asObject(column.type)._type) === OTHER_TYPE ||
-  !isWritable(unquote(asString(column.name)));
+  !isWritable(V1_unquoteCubeName(asString(column.name)));
 
 const describeTable = (name: string, table: PlainObject): CubeExploredTable => {
   const columns = asList(table.columns).map(asObject);
   const kept = columns.filter((column) => !isHidden(column));
   return {
     name,
-    storedName: quote(name),
+    storedName: V1_quoteCubeName(name),
     columnCount: kept.length,
     hiddenColumnCount: columns.length - kept.length,
     // the engine types a CHAR(n) column with a length of 1
@@ -193,7 +195,7 @@ export const V1_readExploredSchemaNames = (
   response: unknown,
 ): readonly string[] =>
   schemasOf(response)
-    .map((schema) => unquote(asString(schema.name)))
+    .map((schema) => V1_unquoteCubeName(asString(schema.name)))
     .filter((name) => isWritable(name) && !isSystemSchema(name));
 
 /** A schema's tables, for the picker; views are offered as tables */
@@ -215,19 +217,19 @@ const buildTable = (name: string, table: PlainObject): PlainObject => {
     .map(asObject)
     .filter((column) => !isHidden(column));
   const columnNames = new Set(
-    columns.map((column) => unquote(asString(column.name))),
+    columns.map((column) => V1_unquoteCubeName(asString(column.name))),
   );
   return {
     ...table,
-    name: quote(name),
+    name: V1_quoteCubeName(name),
     columns: columns.map((column) => ({
       ...column,
-      name: quote(unquote(asString(column.name))),
+      name: V1_quoteCubeName(V1_unquoteCubeName(asString(column.name))),
     })),
     primaryKey: asList(table.primaryKey)
-      .map((key) => unquote(asString(key)))
+      .map((key) => V1_unquoteCubeName(asString(key)))
       .filter((key) => columnNames.has(key))
-      .map(quote),
+      .map(V1_quoteCubeName),
   };
 };
 
@@ -256,7 +258,9 @@ export const V1_buildExploredDatabase = (
       return;
     }
     const built = schemas.get(schemaName) ?? [];
-    if (!built.some((existing) => existing.name === quote(tableName))) {
+    if (
+      !built.some((existing) => existing.name === V1_quoteCubeName(tableName))
+    ) {
       built.push(buildTable(tableName, table));
       explored.push(describeTable(tableName, table));
     }
@@ -266,7 +270,7 @@ export const V1_buildExploredDatabase = (
     database: {
       ...element,
       schemas: Array.from(schemas.entries()).map(([name, builtTables]) => ({
-        name: quote(name),
+        name: V1_quoteCubeName(name),
         tables: builtTables,
         views: [],
         tabularFunctions: [],

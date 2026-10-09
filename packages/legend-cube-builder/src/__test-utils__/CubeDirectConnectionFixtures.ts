@@ -24,25 +24,31 @@ import type { PlainObject } from '@finos/legend-shared';
 export const DIRECT_H2_SCHEMA = 'CUBE_DIRECT';
 export const DIRECT_DUCKDB_SCHEMA = 'cube_direct';
 
-/** An H2 database the engine creates in its own H2 server */
-export const DIRECT_H2_CONNECTION: PlainObject = {
+/**
+ * An H2 database the engine creates in its own H2 server, in the schema given:
+ * each test file uses its own, as files run at once against one engine
+ */
+export const directH2Connection = (schema: string): PlainObject => ({
   _type: 'RelationalDatabaseConnection',
   type: 'H2',
   databaseType: 'H2',
   datasourceSpecification: {
     _type: 'h2Local',
     testDataSetupSqls: [
-      `drop schema if exists ${DIRECT_H2_SCHEMA} cascade`,
-      `create schema ${DIRECT_H2_SCHEMA}`,
-      `create table ${DIRECT_H2_SCHEMA}.ORDERS (ORDER_ID INT PRIMARY KEY, CUSTOMER_ID VARCHAR(5) NOT NULL, AMOUNT DECIMAL(10,2))`,
-      `insert into ${DIRECT_H2_SCHEMA}.ORDERS values (1, 'ALFKI', 12.34), (2, 'ANATR', 5.00)`,
+      `drop schema if exists ${schema} cascade`,
+      `create schema ${schema}`,
+      `create table ${schema}.ORDERS (ORDER_ID INT PRIMARY KEY, CUSTOMER_ID VARCHAR(5) NOT NULL, AMOUNT DECIMAL(10,2))`,
+      `insert into ${schema}.ORDERS values (1, 'ALFKI', 12.34), (2, 'ANATR', 5.00)`,
     ],
   },
   authenticationStrategy: { _type: 'h2Default' },
-};
+});
 
-/** An in-memory DuckDB database (an empty path), so no file is read or written */
-export const DIRECT_DUCKDB_CONNECTION: PlainObject = {
+/**
+ * An in-memory DuckDB database (an empty path), so no file is read or
+ * written, in the schema given
+ */
+export const directDuckDBConnection = (schema: string): PlainObject => ({
   _type: 'RelationalDatabaseConnection',
   type: 'DuckDB',
   databaseType: 'DuckDB',
@@ -50,11 +56,15 @@ export const DIRECT_DUCKDB_CONNECTION: PlainObject = {
     _type: 'duckDB',
     path: '',
     testDataSetupSqls: [
-      `drop schema if exists ${DIRECT_DUCKDB_SCHEMA} cascade`,
-      `create schema ${DIRECT_DUCKDB_SCHEMA}`,
-      `create table ${DIRECT_DUCKDB_SCHEMA}.orders (order_id INTEGER PRIMARY KEY, customer_id VARCHAR(5) NOT NULL, amount DECIMAL(10,2))`,
-      `insert into ${DIRECT_DUCKDB_SCHEMA}.orders values (1, 'ALFKI', 12.34), (2, 'ANATR', 5.00)`,
+      `drop schema if exists ${schema} cascade`,
+      `create schema ${schema}`,
+      `create table ${schema}.orders (order_id INTEGER PRIMARY KEY, customer_id VARCHAR(5) NOT NULL, amount DECIMAL(10,2))`,
+      `insert into ${schema}.orders values (1, 'ALFKI', 12.34), (2, 'ANATR', 5.00)`,
     ],
   },
   authenticationStrategy: { _type: 'test' },
-};
+});
+
+export const DIRECT_H2_CONNECTION = directH2Connection(DIRECT_H2_SCHEMA);
+export const DIRECT_DUCKDB_CONNECTION =
+  directDuckDBConnection(DIRECT_DUCKDB_SCHEMA);

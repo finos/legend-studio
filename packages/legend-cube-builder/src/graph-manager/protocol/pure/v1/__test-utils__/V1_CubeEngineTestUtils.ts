@@ -30,6 +30,7 @@ import {
   CUBE_ENGINE_TEST__jsonToGrammar_lambda,
   CUBE_ENGINE_TEST__lambdaRelationTypeBatch,
 } from '../../../../../__test-utils__/CubeEngineTestSupport.js';
+import { CUBE_ENGINE_TEST__schemaExploration } from '../../../../../__test-utils__/CubeConnectionTestSupport.js';
 import { V1_LegendCubeEngine } from '../V1_LegendCubeEngine.js';
 
 // The real Cube engine, its client's calls routed to the engine on :6300 by
@@ -72,7 +73,10 @@ const rethrowAsClientError = (error: unknown): never => {
 export const V1_createEngineBackedCubeEngine = (): {
   engine: V1_LegendCubeEngine;
   calls: Record<
-    'grammarToJSON_model' | 'batchLambdasRelationType' | 'runQuery',
+    | 'grammarToJSON_model'
+    | 'batchLambdasRelationType'
+    | 'runQuery'
+    | 'buildDatabase',
     jest.Mock
   >;
 } => {
@@ -108,6 +112,12 @@ export const V1_createEngineBackedCubeEngine = (): {
       }
       return response as unknown as Response;
     });
+  // a direct-connection cube reads its tables through schema exploration
+  const buildDatabase = jest
+    .spyOn(client, 'buildDatabase')
+    .mockImplementation(async (input) =>
+      CUBE_ENGINE_TEST__schemaExploration(input).catch(rethrowAsClientError),
+    );
   jest
     .spyOn(client, 'JSONToGrammar_lambda')
     .mockImplementation(async (lambda, renderStyle) =>
@@ -122,6 +132,7 @@ export const V1_createEngineBackedCubeEngine = (): {
       batchLambdasRelationType:
         batchLambdasRelationType as unknown as jest.Mock,
       runQuery: runQuery as unknown as jest.Mock,
+      buildDatabase: buildDatabase as unknown as jest.Mock,
     },
   };
 };
