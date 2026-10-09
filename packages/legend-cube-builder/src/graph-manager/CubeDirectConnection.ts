@@ -15,7 +15,10 @@
  */
 
 import type { ModelContext } from '@finos/legend-cube';
-import type { CubeDirectConnection } from './CubeConnectionExplorer.js';
+import type {
+  CubeDirectConnection,
+  CubeExploredTable,
+} from './CubeConnectionExplorer.js';
 
 // A direct-connection cube (PLAN §6.8) saves its connection once, as its
 // model, and its tables stay ordinary relational sources of one generated
@@ -49,3 +52,16 @@ export const getCubeDirectConnection = (
   !Array.isArray(model.connection)
     ? (model.connection as CubeDirectConnection)
     : undefined;
+
+/**
+ * The coordinates of a table read from the connection's database, every name
+ * quoted as the built Database stores it
+ */
+export const getCubeDirectTableCoordinates = (
+  schema: string,
+  table: CubeExploredTable,
+): { database: string; schema: string; table: string } => ({
+  database: CUBE_DIRECT_DATABASE_PATH,
+  schema: `"${schema}"`,
+  table: table.storedName,
+});
