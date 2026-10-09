@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                                                                                         |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-ops`, on master `d36aefbfc` (2026-10-08; #5634, M1.9, merged as `3260216a6`)                                                                                                            |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                                             |
-| Step   | M2.1–M2.17 done: every operation, the Sort warning, database workarounds, grid quick actions, docs, verification, the rehearsal, the rebase and the PLAN fold; the PR to finos master is next |
-| Tests  | 1853 core, 740 builder (core group), 236 Query, 167 builder engine-roundtrip (after M2.17's rebase)                                                                                           |
+| Item   | State                                                                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------------------------------ |
+| Branch | `cube-ops`, merged into finos master on 2026-10-09 as #5644 (`0335b3f5f`)                                                |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                        |
+| Step   | **M2 done and merged** (2026-10-09, #5644 squash-merged as `0335b3f5f`, approved by Yasirmod17). M4 follows on `cube-m4` |
+| Tests  | 1853 core, 740 builder (core group), 236 Query, 167 builder engine-roundtrip (after M2.17's rebase)                      |
 
 ## Steps
 
@@ -39,7 +39,7 @@ See PLAN §11.4 for each step's deliverable.
 
 ## Commits
 
-Hashes after M2.17's rebase onto master `d36aefbfc`.
+Hashes after M2.17's rebase onto master `d36aefbfc`. #5644 squash-merged them into one commit on master, `0335b3f5f`.
 
 | Step               | Commit      | Subject                                                                            |
 | ------------------ | ----------- | ---------------------------------------------------------------------------------- |
@@ -64,7 +64,8 @@ Hashes after M2.17's rebase onto master `d36aefbfc`.
 | M2.16              | `ebfeecc25` | fix: correct what Legend Cube M2's second verification found                       |
 | M2.16              | `7570ee603` | fix: take every Sybase IQ Limit and ClickHouse Drop by row numbers in Legend Cube  |
 | M2.16              | `80b6b9d35` | docs: record Legend Cube M2's verification and fold its decisions into the plan    |
-| M2.17              | (this one)  | docs: record Legend Cube M2's rebase onto master and re-apply the DuckDB WASM note |
+| M2.17              | `ef5a4db9b` | docs: record Legend Cube M2's rebase onto master and re-apply the DuckDB WASM note |
+| M2.17              | `d015099bd` | docs: fence Legend Cube's engine issue drafts and update the M2 milestone row      |
 
 Browser checks: M2.4 to M2.14 ran in the app's browser pane on :9002 (Chrome 152, as M2.4 recorded); the M2.16
 rehearsal in Playwright's headless Chromium 149.0.7827.55.
@@ -420,6 +421,12 @@ every check again. Two things were set up first. The root `yarn build` leaves th
 `lib/tailwind.css` as a stub, so `build:tailwindcss` ran before it. The page also opens a second webpack-dev-server
 hot-reload socket to :9001 (the Query config's port), which fails when no server listens there; the rehearsal now
 counts that as dev-server noise, and the worktree's dev server passes `--client-web-socket-url` for its own socket.
+
+**PR and merge (2026-10-08 to 2026-10-09).** #5644 opened from the fork's `cube-ops` at `ef5a4db9b`; every CI check
+passed there, the `engine-roundtrip` group included. `d015099bd` (docs only) followed, with the PR description's
+findings line corrected; three `core` test shards were still running on it at the merge. Yasirmod17 approved, and
+the user squash-merged it as `0335b3f5f` on 2026-10-09, on top of #5632. A demo video of M2's features
+(`demo-m2.mjs` in the evidence folder's `demo/`, Chromium 149, :9002) is attached to the PR.
 
 ## Open items
 

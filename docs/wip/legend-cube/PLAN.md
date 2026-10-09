@@ -2509,7 +2509,7 @@ and sources modal are designed. M3 can run in parallel if desired.
 
 ### 11.4 M2: simple unary operations
 
-M2 is built on the branch `cube-ops`, on master since #5634 (M1.9) merged as `3260216a6`. Its status is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
+M2 was built on the branch `cube-ops`, on master since #5634 (M1.9) merged as `3260216a6`, and merged on 2026-10-09 as #5644 (`0335b3f5f`). Its status is in [PROGRESS-M2.md](PROGRESS-M2.md), not in PROGRESS.md. Requirements: `m2-requirements` (5 readers, a merge, a
 critic and a finalize step), 140 checklist items, a 17-step build order and 5 questions; the full result is kept in the
 local evidence folder. The engine facts below were probed on the local engine (`93d92b4`) at compile and plan time ✅.
 
