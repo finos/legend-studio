@@ -1,0 +1,62 @@
+{
+  "formatVersion": 1,
+  "name": "Orders on a snapshot",
+  "context": {
+    "model": {
+      "_type": "cubeDataProduct",
+      "groupId": "com.example.sales",
+      "artifactId": "orders-products",
+      "versionId": "feature-returns-SNAPSHOT",
+      "environmentType": "DEVELOPMENT",
+      "warehouse": "CUBE_SAMPLE_WH"
+    },
+    "runtime": "cube::dataProduct::Runtime"
+  },
+  "query": {
+    "selected": "dataProductAccessPoint101",
+    "nodes": [
+      {
+        "kind": "dataProductAccessPoint",
+        "id": "dataProductAccessPoint101",
+        "dataProduct": "sales::products::OrdersProduct",
+        "accessPointGroup": "core",
+        "accessPoint": "daily_orders",
+        "dataProductId": "ORDERS_PRODUCT",
+        "deploymentId": "deployment-1234",
+        "schemaSnapshot": [
+          {
+            "name": "ORDER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::BigInt"
+            },
+            "nullable": false
+          },
+          {
+            "name": "CUSTOMER_ID",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [10]
+            },
+            "nullable": false
+          },
+          {
+            "name": "REGION",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Varchar",
+              "params": [20]
+            },
+            "nullable": true
+          },
+          {
+            "name": "AMOUNT",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Numeric",
+              "params": [10, 2]
+            },
+            "nullable": true
+          }
+        ]
+      }
+    ]
+  }
+}

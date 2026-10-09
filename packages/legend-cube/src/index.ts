@@ -84,6 +84,7 @@ export * from './spec/SpecReader.js';
 export * from './spec/NodeSpecCodec.js';
 export * from './spec/codecs/SchemaSnapshotCodec.js';
 export * from './spec/codecs/RelationalTableSourceCodec.js';
+export * from './spec/codecs/DataProductAccessPointSourceCodec.js';
 export * from './spec/codecs/JoinCodec.js';
 export * from './spec/codecs/FilterCodec.js';
 export * from './spec/codecs/DistinctCodec.js';
