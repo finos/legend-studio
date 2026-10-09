@@ -159,6 +159,10 @@ export const MESSAGE_AGGREGATION_OUTPUT_NAME_IS_INPUT_COLUMN = (
 ): string =>
   `Aggregation output name ${quote(name)} cannot be the same as input column name.`;
 
+/** Added by Cube: an output name follows the column-name rule (PLAN §11.4, §11.5) */
+export const MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID =
+  'Aggregation output name is not valid column name.';
+
 export const MESSAGE_SORT_DIRECTION_EMPTY = 'Sort direction cannot be empty.';
 
 export const MESSAGE_SORT_DIRECTION_UNKNOWN = (direction: string): string =>
@@ -212,6 +216,13 @@ export const MESSAGE_FILTER_VALUE_OUT_OF_RANGE = (
   value: string,
   type: string,
 ): string => `Filter value ${quote(value)} is out of range for ${type}.`;
+
+/** Added by Cube: VARIANT and a type Cube doesn't know can't be compared, so not grouped either (PLAN §11.5) */
+export const MESSAGE_GROUP_COLUMN_NOT_GROUPABLE = (
+  column: string,
+  typeName: string,
+): string =>
+  `Group column ${quote(column)} of type ${typeName} cannot be grouped.`;
 
 /** Added by Cube: Variant and unknown types can't be compared, so not sorted either (PLAN §11.4) */
 export const MESSAGE_SORT_COLUMN_NOT_SORTABLE = (

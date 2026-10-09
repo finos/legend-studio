@@ -55,6 +55,7 @@ export * from './nodes/transforms/Restrict.js';
 export * from './nodes/transforms/Rename.js';
 export * from './nodes/transforms/Slice.js';
 export * from './nodes/transforms/Sort.js';
+export * from './nodes/transforms/Aggregation.js';
 export * from './nodes/UnknownNode.js';
 export * from './nodes/NodeRegistry.js';
 

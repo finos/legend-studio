@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
-| Step   | M4.1–M4.2 done (the settled decisions; the conformance suite on M2's node types); **M4.3 next**                                     |
-| Tests  | 1853 core, 750 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.2)                                           |
+| Step   | M4.1–M4.3 done (the settled decisions; the conformance suite; the aggregation model); **M4.4 next**                                 |
+| Tests  | 1915 core, 750 builder (core group), 236 Query, 169 builder engine-roundtrip (after M4.3)                                           |
 
 ## Steps
 
@@ -21,7 +21,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 
 - [x] **M4.1** The settled decisions (PLAN §11.5) and this file
 - [x] **M4.2** The conformance suite on M2's node types
-- [ ] **M4.3** The aggregation model (core)
+- [x] **M4.3** The aggregation model (core)
 - [ ] **M4.4** Group in the core
 - [ ] **M4.5** Group in the builder, and registered
 - [ ] **M4.6** Group on the engine and in the browser
@@ -44,7 +44,8 @@ Filled in as steps land.
 | -------- | ----------- | ---------------------------------------------------------------- |
 | M2 merge | `8c1d3f74e` | docs: record Legend Cube M2's merge                              |
 | M4.1     | `95339aeb9` | docs: settle Legend Cube M4 (Group and Concat)                   |
-| M4.2     | (this one)  | test: hold Legend Cube's inference to the engine's, node by node |
+| M4.2     | `cb6837dd6` | test: hold Legend Cube's inference to the engine's, node by node |
+| M4.3     | (this one)  | feat: add the aggregations Legend Cube's Group will use          |
 
 ## Step notes
 
@@ -96,6 +97,19 @@ and the padded column carried through the nodes after the LEFT join. Each is dec
 with the reason; no M2 node differs otherwise. Proofs: removing every Distinct fails the coverage test, and dropping
 the LEFT join's declared column fails the typing test (each run on a temporary copy of the test, then deleted). A
 core-group test pins the comparator's rules (10 tests). The builder guides say a new operation needs a case.
+
+**M4.3, the aggregation model (2026-10-09).** `src/nodes/transforms/Aggregation.ts`: the functions as saved
+(`AggregationFunction`, Count rows as `CountRows`), how each is shown, `getAvailableAggregations` per family, the
+result type (`getAggregationResultType`, PLAN §5.7) and nullability, the auto-name, and `validateColumnAggregation`,
+one row at a time with the spec's messages and two of Cube's (`… is not valid column name.`; `Group column "X" of type
+<T> cannot be grouped.` for M4.4). Enumerations, VARIANT and a type Cube doesn't know get Count only, through the
+switch's default. Check (`m43-verify`, 2 agents): a review against the spec, PLAN and the probes, which also probed
+the unmeasured cells (Min and Max over `Date` give `Date` ✅; evidence `m4-verify/review/types-unmeasured.out`); and
+44 mutants in an isolated copy (`m4-verify/mutants/`), 38 killed. Of the 6 survivors, 2 were dead code, removed (a
+default branch, now carrying the Count-only types, and a blank-name guard), and 4 had tests added: names that meet
+only when folded (fullwidth, `ß` and `SS`) and the order of the name rules. Also added: Count rows' name rules. Left
+for later steps, in PLAN §11.5's open gaps: M5's functions per use, M4.5's column on a switch to Count rows, and
+auto-names over 128 code points.
 
 ## Open items
 

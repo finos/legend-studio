@@ -164,6 +164,12 @@ test(unitTest('Messages added by Cube'), () => {
   expect(MESSAGES.MESSAGE_FILTER_VALUE_BACKSLASH('starts with')).toBe(
     'Filter values for "starts with" cannot contain a backslash (\\) yet.',
   );
+  expect(MESSAGES.MESSAGE_AGGREGATION_OUTPUT_NAME_INVALID).toBe(
+    'Aggregation output name is not valid column name.',
+  );
+  expect(
+    MESSAGES.MESSAGE_GROUP_COLUMN_NOT_GROUPABLE('PAYLOAD', 'Variant'),
+  ).toBe('Group column "PAYLOAD" of type Variant cannot be grouped.');
   expect(MESSAGES.MESSAGE_SORT_COLUMN_NOT_SORTABLE('PAYLOAD', 'Variant')).toBe(
     'Sort column "PAYLOAD" of type Variant cannot be sorted.',
   );

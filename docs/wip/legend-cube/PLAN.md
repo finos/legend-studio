@@ -2906,8 +2906,7 @@ on the Cube fixture, which copies that model with corrections that don't touch t
   editor without settings carries Concat's autofix buttons (M4.12) before M4.13 gives it a draft; whether
   `CubeColumnPicker` keeps a stored order; what a nameless saved aggregation reads as when its column is missing or its
   function unknown or empty (no auto-name exists; M4.4, whose codec suites also allow that a nameless spec isn't written
-  back unchanged); Min and Max over `Date`; VARIANT, OPAQUE and enum rows (none in the fixture); the PCT manifests; Rank
-  and DenseRank against Q4 (M5); copying Q2 and Q3 to QUESTIONS.md U12, which exists only on `cubeV1` and `cube-direct`.
+  back unchanged); VARIANT, OPAQUE and enum rows (none in the fixture); the PCT manifests; Rank and DenseRank against Q4 (M5: `validateColumnAggregation` then takes the functions each use allows, so Rank stays unknown in a Group); the editor clears a row's column when it switches to Count rows, which refuses even a blank one (M4.5); an auto-name over 128 code points (a column of 114 or more plus ` Distinct Count`) is shown invalid, never cut (M4.5); copying Q2 and Q3 to QUESTIONS.md U12, which exists only on `cubeV1` and `cube-direct`.
 
 **Supersessions** (applied in M4.16; kept as the record of what M4 changed):
 
