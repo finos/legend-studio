@@ -193,6 +193,18 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
         origin,
       );
     }
+    case 'dataProductAccessor':
+      // stamped on the outer instance only: the value is sent as legend-graph
+      // sends it, which Query and Data Cube already send to the engine
+      return stamped(
+        {
+          _type: 'classInstance',
+          type: 'P',
+          multiplicity: { lowerBound: 1, upperBound: 1 },
+          value: { path: [...ir.path], parameters: [] },
+        },
+        ir.origin ?? inherited,
+      );
     case 'elementPtr':
       return stamped(
         { _type: 'packageableElementPtr', fullPath: ir.path },

@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
+import { listOrigins } from '../../__test-utils__/CubeIRTestUtils.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import type { LiteralValue } from '../../values/LiteralValue.js';
 import {
@@ -22,7 +23,9 @@ import {
   colSpecArray,
   collection,
   columnAccess,
+  dataProductAccessor,
   elementPtr,
+  EmitRole,
   enumValue,
   func,
   genericType,
@@ -338,6 +341,26 @@ describe(unitTest('IR printer'), () => {
       printIR(genericType('meta::pure::precisePrimitives::Numeric', [10, 2])),
     ).toBe('@meta::pure::precisePrimitives::Numeric(10, 2)');
     expect(printIR(enumValue('a::Region', 'EMEA'))).toBe('a::Region.EMEA');
+  });
+
+  test("Prints a data product's access point, never redacted, whatever its origin", () => {
+    const accessor = dataProductAccessor(['a::sales::Orders', 'daily'], {
+      nodeId: 'dataProduct101',
+      role: EmitRole.ACCESSOR,
+    });
+    expect(printIR(accessor)).toBe('#P{a::sales::Orders.daily}#');
+    const limited = func('limit', [accessor, integer('5')]);
+    expect(printIR(limited, { redactLiterals: true })).toBe(
+      '#P{a::sales::Orders.daily}#->limit(?)',
+    );
+    expect(listOrigins(limited)).toEqual([
+      'limit@-',
+      '#P{a::sales::Orders.daily}#@dataProduct101:accessor',
+      '5@-',
+    ]);
+    expect(
+      listOrigins(dataProductAccessor(['a::sales::Orders', 'daily'])),
+    ).toEqual(['#P{a::sales::Orders.daily}#@-']);
   });
 
   test('Quotes enumeration values that are not identifiers', () => {
