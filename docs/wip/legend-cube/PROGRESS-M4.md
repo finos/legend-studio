@@ -8,12 +8,12 @@
 
 ## Current state
 
-| Item   | State                                                                                                                               |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
-| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
-| Step   | M4.1–M4.10 done (Group complete; Concat in the core and the builder); **M4.11 next** (Concat on the engine and the databases)       |
-| Tests  | 2223 core, 831 builder (core group), 236 Query, 262 builder engine-roundtrip (after M4.9; M4.10 before the rebase)                  |
+| Item   | State                                                                                                                                                              |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Branch | `cube-m4`, rebased after M4.10 on finos master `e01552380` (#5641, direct connections and data products); first branched from `d1c3f3ae6` after M2 merged as #5644 |
+| Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                                                  |
+| Step   | M4.1–M4.10 done (Group complete; Concat in the core and the builder); **M4.11 next** (Concat on the engine and the databases)                                      |
+| Tests  | 2278 core, 992 builder (core group), 241 Query, 297 builder engine-roundtrip (after M4.10 and the rebase)                                                          |
 
 ## Steps
 
@@ -39,22 +39,24 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 
 ## Commits
 
-Filled in as steps land.
+Filled in as steps land. Rebased on master `e01552380` (#5641) after M4.10: the hashes are the rebased ones.
 
 | Step       | Commit      | Subject                                                                     |
 | ---------- | ----------- | --------------------------------------------------------------------------- |
-| M2 merge   | `8c1d3f74e` | docs: record Legend Cube M2's merge                                         |
-| M4.1       | `95339aeb9` | docs: settle Legend Cube M4 (Group and Concat)                              |
-| M4.2       | `cb6837dd6` | test: hold Legend Cube's inference to the engine's, node by node            |
-| M4.3       | `4c7398dca` | feat: add the aggregations Legend Cube's Group will use                     |
-| M4.4       | `eefb1dfb5` | feat: add Group to Legend Cube's core                                       |
-| Video rule | `1f7c21c13` | docs: end every Legend Cube milestone that changes the UI with a demo video |
-| M4.5       | `8165c6598` | feat: add Group by Column to Legend Cube's builder                          |
-| M4.6       | `84c9f999c` | test: run Legend Cube's Group on the engine and in the browser              |
-| M4.7       | `d2e700fa7` | feat: add Group by to Legend Cube's grid quick actions                      |
-| M4.8       | `3242636e2` | test: pin how each database plans Legend Cube's Group                       |
-| M4.9       | `8616f433f` | feat: add Concat to Legend Cube's core                                      |
-| M4.10      | (this one)  | feat: add Concatenate Another Input to Legend Cube's builder                |
+| M2 merge   | `38bdecd96` | docs: record Legend Cube M2's merge                                         |
+| M4.1       | `d5efd8b64` | docs: settle Legend Cube M4 (Group and Concat)                              |
+| M4.2       | `c09967e03` | test: hold Legend Cube's inference to the engine's, node by node            |
+| M4.3       | `4514dee9e` | feat: add the aggregations Legend Cube's Group will use                     |
+| M4.4       | `6a83028a7` | feat: add Group to Legend Cube's core                                       |
+| Video rule | `87c00c554` | docs: end every Legend Cube milestone that changes the UI with a demo video |
+| M4.5       | `8ca87464c` | feat: add Group by Column to Legend Cube's builder                          |
+| M4.6       | `c19ea96ea` | test: run Legend Cube's Group on the engine and in the browser              |
+| M4.7       | `52fadf5fa` | feat: add Group by to Legend Cube's grid quick actions                      |
+| M4.8       | `c940c85d3` | test: pin how each database plans Legend Cube's Group                       |
+| M4.9       | `1c78ae348` | feat: add Concat to Legend Cube's core                                      |
+| M4.10      | `1a5460950` | feat: add Concatenate Another Input to Legend Cube's builder                |
+| Rebase     | `ccadc49b4` | test: leave data product sources out of Legend Cube's conformance guard     |
+| Rebase     | (this one)  | docs: record Legend Cube M4's rebase on master                              |
 
 ## Step notes
 
@@ -224,6 +226,14 @@ item, edges labelled First and Second, a mismatched Concat's marks and messages,
 (14), the panel (3), origins through a Concat (5), the canvas (2). Review fixes: the editor text no longer implies an
 order; long names wrap in the warning and the Problems list; a failed table's message isn't repeated as a Problem
 (pinned). Mutants: 42, 41 killed, the survivor (Problems for every type) killed by that test.
+
+**Rebase on master (2026-10-09).** At the user's request, after M4.10, `cube-m4` was rebased on master `e01552380`,
+which merged #5641 (direct database connections and data products' access points). The conflicts were lists both
+sides add to (the registry and its pinned test, help texts, icons, the editor registry) and the docs (PROGRESS,
+ISSUES), each resolved by keeping both; `git range-diff` shows no M4 change altered. One semantic fix:
+`dataProductAccessPoint`, now registered, is left out of the conformance guard, since the open-source engine doesn't
+read data products (its stand-in engine test checks its types). After the rebase: `yarn install` (three workspace
+dependencies of the builder) and `yarn build:ts`, then every gate green.
 
 ## Open items
 
