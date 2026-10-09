@@ -706,6 +706,7 @@ describe(unitTest('Query emission'), () => {
       'captureSort',
       'limit',
       'from',
+      'let',
     ]);
     expect(new Set(roles).size).toBe(roles.length);
     roles.forEach((role) => expect(role).not.toContain(':'));

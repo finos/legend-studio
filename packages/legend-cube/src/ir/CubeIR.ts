@@ -109,9 +109,17 @@ export type IR =
       readonly value: string;
       readonly origin?: Origin;
     }
-  /** For window isolation (from M5) */
-  | { readonly k: 'let'; readonly name: string; readonly value: IR }
-  | { readonly k: 'block'; readonly statements: readonly IR[] }
+  /**
+   * `let <name> = <value>`, a statement of a lambda with several, which the
+   * last one reads as `$<name>`: how a window is isolated from what follows
+   * it (window isolation, PLAN §8.6)
+   */
+  | {
+      readonly k: 'let';
+      readonly name: string;
+      readonly value: IR;
+      readonly origin?: Origin;
+    }
   /** Protocol JSON passed through as is (Extend expressions, from M6) */
   | { readonly k: 'raw'; readonly json: unknown };
 
@@ -189,6 +197,8 @@ export enum EmitRole {
   LIMIT = 'limit',
   /** the capture node: `from(runtime)` */
   FROM = 'from',
+  /** a window node that isn't the capture: the `let` that binds it (PLAN §8.6) */
+  LET = 'let',
 }
 
 // -------------------- constructors --------------------
@@ -271,6 +281,10 @@ export const ingestAccessor = (
 });
 
 export const elementPtr = (path: string): IR => ({ k: 'elementPtr', path });
+
+/** `let <name> = <value>`; `variable(name)` reads it */
+export const letBinding = (name: string, value: IR, origin?: Origin): IR =>
+  origin ? { k: 'let', name, value, origin } : { k: 'let', name, value };
 
 export const genericType = (
   path: string,

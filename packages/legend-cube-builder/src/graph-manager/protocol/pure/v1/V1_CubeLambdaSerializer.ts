@@ -256,10 +256,23 @@ const serialize = (ir: IR, inherited: Origin | undefined): PlainObject => {
         origin,
       );
     }
-    case 'let':
-    case 'block':
-      // window isolation (PLAN §8.6) comes with Partition, in M5
-      throw new Error(`Can't send "${ir.k}" yet`);
+    case 'let': {
+      // `let n = v` is the engine's `letFunction('n', v)`; the name is
+      // stamped too, so an error the engine reports on it lands on the node
+      // the let binds (PLAN §8.6)
+      const origin = ir.origin ?? inherited;
+      return stamped(
+        {
+          _type: 'func',
+          function: 'letFunction',
+          parameters: [
+            stamped({ _type: 'string', value: ir.name }, origin),
+            serialize(ir.value, origin),
+          ],
+        },
+        origin,
+      );
+    }
     case 'raw':
       return ir.json as PlainObject;
     default: {

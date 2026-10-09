@@ -12,7 +12,7 @@
 | ------ | --------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4-followup`, PR #5653, after M4's follow-ups (user, 2026-10-09), rebased on master `5e424277b` (#5656)   |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                               |
-| Step   | M5.1 done; next M5.2                                                                                            |
+| Step   | M5.1–M5.2 done; next M5.3                                                                                       |
 | Tests  | 2486 core, 1198 builder (core group), 245 Query, 436 builder engine-roundtrip (after the rebase on `5e424277b`) |
 
 ## Steps
@@ -20,7 +20,7 @@
 See PLAN §11.6 for each step's deliverable and when it is done.
 
 - [x] **M5.1** The settled decisions (PLAN §11.6) and this file
-- [ ] **M5.2** `let` in the IR, the serializer and the printer
+- [x] **M5.2** `let` in the IR, the serializer and the printer
 - [ ] **M5.3** The isolation pass in `QueryEmitter`, and the adapter's engine test
 - [ ] **M5.4** The window functions in the aggregation model, and the messages
 - [ ] **M5.5** Partition in the core
@@ -38,10 +38,11 @@ See PLAN §11.6 for each step's deliverable and when it is done.
 
 Filled in as steps land.
 
-| Step   | Commit     | Subject                                        |
-| ------ | ---------- | ---------------------------------------------- |
-| Rebase | (none)     | rebased on master `5e424277b` (#5656)          |
-| M5.1   | (this one) | docs: settle Legend Cube M5 (window functions) |
+| Step   | Commit      | Subject                                                 |
+| ------ | ----------- | ------------------------------------------------------- |
+| Rebase | (none)      | rebased on master `5e424277b` (#5656)                   |
+| M5.1   | `9652c569a` | docs: settle Legend Cube M5 (window functions)          |
+| M5.2   | (this one)  | feat: write the lets that isolate Legend Cube's windows |
 
 ## Step notes
 
@@ -61,6 +62,11 @@ The full result is `m5-requirements-result.json` in the local evidence folder, w
 - The user asked for M5 to continue on `cube-m4-followup` and #5653 rather than a branch and PR of its own, as no
   reviewer is free. The branch was rebased on #5656 first (no conflicts); the gates passed on it.
 - Folded in from M4.15: PLAN §8.8's Sort row and §12.2 item 2 name Group and Concat among the nodes that lose the order.
+
+**M5.2 (2026-10-09).** The IR's `let` carries an origin (role `let`), and `letBinding` builds one; the IR's `block`
+is gone, since a block is a lambda with several statements. The serializer writes `letFunction('<name>', <value>)`,
+the name stamped with the let's origin as the engine's own parse places it. The engine parses `printIR`'s let form
+(two window extends bound by a let, a filter on the rank, then `from()`, sort and limit) to Cube's JSON exactly.
 
 ## Open items
 
