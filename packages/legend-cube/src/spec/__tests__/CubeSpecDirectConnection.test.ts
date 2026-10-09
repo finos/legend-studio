@@ -42,8 +42,9 @@ import { CubeSpecDecodeError } from '../SpecReader.js';
 // tables are ordinary relational sources of the one Database the engine's
 // implementation builds. The samples sit in their own folder, which the
 // corpus tests (all Northwind) don't read. Their snapshots hold the types the
-// engine gives today, defects included: H2's DECIMAL(10,2) as Numeric(0,0),
-// DuckDB's VARCHAR(5) as Varchar(0)
+// engine gives today, defects included (DuckDB's DECIMAL(10,2) as
+// Numeric(0,0) and VARCHAR(5) as Varchar(0)), but the sample the engine tests
+// run, the H2 one, has none: those tests would fail once the engine is fixed
 
 const FIXTURES = resolve(__dirname, 'fixtures', 'direct');
 const FILES = readdirSync(FIXTURES)

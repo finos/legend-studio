@@ -11,12 +11,12 @@
         "datasourceSpecification": {
           "_type": "h2Local",
           "testDataSetupSqls": [
-            "drop schema if exists CUBE_SAMPLE cascade",
-            "create schema CUBE_SAMPLE",
-            "create table CUBE_SAMPLE.ORDERS (ORDER_ID INT PRIMARY KEY, CUSTOMER_ID VARCHAR(5) NOT NULL, AMOUNT DECIMAL(10,2))",
-            "insert into CUBE_SAMPLE.ORDERS values (1, 'ALFKI', 12.34), (2, 'ANATR', 5.00), (3, 'ALFKI', 7.50)",
-            "create table CUBE_SAMPLE.CUSTOMERS (CUSTOMER_ID VARCHAR(5) PRIMARY KEY, COUNTRY VARCHAR(15))",
-            "insert into CUBE_SAMPLE.CUSTOMERS values ('ALFKI', 'Germany'), ('ANATR', 'Mexico')"
+            "drop schema if exists CUBE_SPEC_SAMPLE cascade",
+            "create schema CUBE_SPEC_SAMPLE",
+            "create table CUBE_SPEC_SAMPLE.ORDERS (ORDER_ID INT PRIMARY KEY, CUSTOMER_ID VARCHAR(5) NOT NULL)",
+            "insert into CUBE_SPEC_SAMPLE.ORDERS values (1, 'ALFKI'), (2, 'ANATR'), (3, 'ALFKI')",
+            "create table CUBE_SPEC_SAMPLE.CUSTOMERS (CUSTOMER_ID VARCHAR(5) PRIMARY KEY, COUNTRY VARCHAR(15))",
+            "insert into CUBE_SPEC_SAMPLE.CUSTOMERS values ('ALFKI', 'Germany'), ('ANATR', 'Mexico')"
           ]
         },
         "authenticationStrategy": {
@@ -33,7 +33,7 @@
         "kind": "relational",
         "id": "relational101",
         "database": "cube::direct::Database",
-        "schema": "\"CUBE_SAMPLE\"",
+        "schema": "\"CUBE_SPEC_SAMPLE\"",
         "table": "\"ORDERS\"",
         "schemaSnapshot": [
           {
@@ -50,14 +50,6 @@
               "params": [5]
             },
             "nullable": false
-          },
-          {
-            "name": "AMOUNT",
-            "type": {
-              "path": "meta::pure::precisePrimitives::Numeric",
-              "params": [0, 0]
-            },
-            "nullable": true
           }
         ]
       },
@@ -65,7 +57,7 @@
         "kind": "relational",
         "id": "relational102",
         "database": "cube::direct::Database",
-        "schema": "\"CUBE_SAMPLE\"",
+        "schema": "\"CUBE_SPEC_SAMPLE\"",
         "table": "\"CUSTOMERS\"",
         "schemaSnapshot": [
           {

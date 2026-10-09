@@ -14,8 +14,8 @@
           "testDataSetupSqls": [
             "drop schema if exists cube_sample cascade",
             "create schema cube_sample",
-            "create table cube_sample.orders (order_id INTEGER PRIMARY KEY, customer_id VARCHAR(5) NOT NULL)",
-            "insert into cube_sample.orders values (1, 'ALFKI')"
+            "create table cube_sample.orders (order_id INTEGER PRIMARY KEY, customer_id VARCHAR(5) NOT NULL, amount DECIMAL(10,2))",
+            "insert into cube_sample.orders values (1, 'ALFKI', 12.34)"
           ]
         },
         "authenticationStrategy": {
@@ -63,6 +63,14 @@
               "params": [0]
             },
             "nullable": false
+          },
+          {
+            "name": "amount",
+            "type": {
+              "path": "meta::pure::precisePrimitives::Numeric",
+              "params": [0, 0]
+            },
+            "nullable": true
           }
         ]
       }
