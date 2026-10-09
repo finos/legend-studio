@@ -131,6 +131,33 @@ export const MESSAGE_DIFFERENCE_COLUMN_NOT_NUMERIC = (name: string): string =>
 export const MESSAGE_INPUT_SCHEMAS_DIFFER =
   'Both input schemas must be identical.';
 
+/** Added by Cube: the column counts a Concat's inputs differ in, after MESSAGE_INPUT_SCHEMAS_DIFFER (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_COUNT = (
+  first: number,
+  second: number,
+): string =>
+  `The first input has ${first} ${first === 1 ? 'column' : 'columns'} and the second ${second}.`;
+
+/** Added by Cube: a position where a Concat's inputs name their columns differently (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_NAME = (
+  position: number,
+  first: string,
+  second: string,
+): string =>
+  `Column ${position} is ${quote(first)} in the first input and ${quote(second)} in the second: columns are matched by position.`;
+
+/** Added by Cube: a Concat's inputs have the same columns in another order (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_ORDER =
+  'The inputs have the same columns in a different order: columns are matched by position.';
+
+/** Added by Cube: a column a Concat's inputs give different types (PLAN §11.5) */
+export const MESSAGE_CONCAT_COLUMN_TYPE = (
+  column: string,
+  firstType: string,
+  secondType: string,
+): string =>
+  `Column ${quote(column)} is ${firstType} in the first input and ${secondType} in the second.`;
+
 // ---------------------------------------- Aggregations / sorts ----------------------------------------
 
 export const MESSAGE_AGGREGATION_FUNCTION_EMPTY =

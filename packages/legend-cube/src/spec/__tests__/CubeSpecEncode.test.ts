@@ -22,6 +22,7 @@ import {
   resolvedTable,
   TEST_DATABASE,
 } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -50,6 +51,7 @@ import {
   UNRESOLVED,
 } from '../../graph/QueryNode.js';
 import {
+  CONCAT_DEFINITION,
   createNodeRegistry,
   DROP_DEFINITION,
   GROUP_DEFINITION,
@@ -62,6 +64,7 @@ import {
   AggregationFunction,
   type ColumnAggregation,
 } from '../../nodes/transforms/Aggregation.js';
+import { Concat } from '../../nodes/transforms/Concat.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -2134,6 +2137,153 @@ describe(unitTest('Saved spec encoding: slices'), () => {
     );
     expect(encodeCubeSpec(document)).toStrictEqual(
       sliceSpec({ start: 1, stop: 2, note: 'page' }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec encoding: concats'), () => {
+  // Concat is registered with the builder in M4.10 (PLAN §11.5)
+  const REGISTRY = TEST__registryWithConcat();
+
+  /** The saved spec of `concat101`, after these nodes, with these inputs and fields of its own */
+  const concatSpec = (
+    own: JsonObject,
+    inputs: readonly (string | null)[] = [null, null],
+    nodes: readonly JsonObject[] = [],
+  ): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'concat101',
+      nodes: [...nodes, { kind: 'concat', id: 'concat101', inputs, ...own }],
+    },
+  });
+
+  /** A document with this one unconnected concat */
+  const concatDocument = (concat: Concat): CubeDocument =>
+    documentOf([concat], [], concat.id);
+
+  /** ORDERS and its archive, feeding the concat on these ports */
+  const concatOfTables = (
+    concat: Concat,
+    ports: { relational101?: string; relational102?: string },
+  ): CubeDocument =>
+    documentOf(
+      [
+        table('relational101', 'ORDERS'),
+        table('relational102', 'ORDERS_ARCHIVE'),
+        concat,
+      ],
+      Object.entries(ports).map(([source, port]) =>
+        edge(source, concat.id, port),
+      ),
+      concat.id,
+    );
+  const TABLE_SPECS = [
+    tableSpec('relational101', 'ORDERS'),
+    tableSpec('relational102', 'ORDERS_ARCHIVE'),
+  ];
+
+  test('Always writes widenTypes, false included, for a new concat', () => {
+    // PLAN §11.5: the setting's key ships with the kind
+    expectEncoded(
+      concatDocument(CONCAT_DEFINITION.create('concat101')),
+      concatSpec({ widenTypes: false }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes widenTypes on as true', () => {
+    expectEncoded(
+      concatDocument(new Concat('concat101', true)),
+      concatSpec({ widenTypes: true }),
+      REGISTRY,
+    );
+  });
+
+  test('Writes its inputs in port order, not in node order, and null for an unconnected port', () => {
+    expectEncoded(
+      concatOfTables(new Concat('concat101'), {
+        relational102: 'tds1',
+        relational101: 'tds2',
+      }),
+      concatSpec(
+        { widenTypes: false },
+        ['relational102', 'relational101'],
+        TABLE_SPECS,
+      ),
+      REGISTRY,
+    );
+    expectEncoded(
+      concatOfTables(new Concat('concat101'), { relational101: 'tds2' }),
+      concatSpec({ widenTypes: false }, [null, 'relational101'], TABLE_SPECS),
+      REGISTRY,
+    );
+  });
+
+  test('Writes a concat whose inputs swapped as it stands, its setting kept', () => {
+    // swapping is allowed (spec §4.4): the output's names then come from the
+    // new first input
+    const { query } = concatOfTables(new Concat('concat101', true), {
+      relational101: 'tds1',
+      relational102: 'tds2',
+    });
+    expectEncoded(
+      new CubeDocument({ query: query.swapInputs('concat101') }),
+      concatSpec(
+        { widenTypes: true },
+        ['relational102', 'relational101'],
+        TABLE_SPECS,
+      ),
+      REGISTRY,
+    );
+  });
+
+  test('Writes widenTypes from the node, not from its rest', () => {
+    expect(
+      encodeCubeSpec(
+        concatDocument(
+          new Concat('concat101', false, { widenTypes: true, note: 'n' }),
+        ),
+        REGISTRY,
+      ),
+    ).toStrictEqual(concatSpec({ widenTypes: false, note: 'n' }));
+  });
+
+  test('Reads back its inputs, widenTypes on, and its rest, written after its own keys', () => {
+    const document = concatOfTables(
+      new Concat('concat101', true, {
+        note: 'kept',
+        zeta: [null, { flag: false }],
+      }),
+      { relational101: 'tds1', relational102: 'tds2' },
+    );
+    const json = concatSpec(
+      { widenTypes: true, note: 'kept', zeta: [null, { flag: false }] },
+      ['relational101', 'relational102'],
+      TABLE_SPECS,
+    );
+    expectEncoded(document, json, REGISTRY);
+    const { query } = decodeCubeSpec(json, { registry: REGISTRY }).document;
+    const node = query.getNode('concat101');
+    expect(node).toBeInstanceOf(Concat);
+    expect((node as Concat).widenTypes).toBe(true);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(query.getInputIds('concat101')).toEqual([
+      'relational101',
+      'relational102',
+    ]);
+  });
+
+  test("Refuses to save a concat with a registry that doesn't know Concat", () => {
+    const withoutConcat = new NodeRegistry(
+      [...REGISTRY.sources, ...REGISTRY.transforms].filter(
+        (definition) => definition.type !== Concat.TYPE,
+      ),
+    );
+    expect(() =>
+      encodeCubeSpec(concatDocument(new Concat('concat101')), withoutConcat),
+    ).toThrow(
+      new Error(`Can't save node "concat101": its type "concat" is unknown`),
     );
   });
 });

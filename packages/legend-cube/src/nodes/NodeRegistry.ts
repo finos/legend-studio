@@ -23,6 +23,7 @@ import type { QueryRule } from '../inference/SchemaInference.js';
 import type { RelationExpr } from '../ir/CubeIR.js';
 import type { EmitContext } from '../ir/EmitContext.js';
 import { emitFilter } from '../ir/emitters/FilterEmitter.js';
+import { emitConcat } from '../ir/emitters/ConcatEmitter.js';
 import { emitDistinct } from '../ir/emitters/DistinctEmitter.js';
 import { emitGroup } from '../ir/emitters/GroupEmitter.js';
 import { emitDrop } from '../ir/emitters/DropEmitter.js';
@@ -35,6 +36,7 @@ import { emitSort } from '../ir/emitters/SortEmitter.js';
 import { emitRelationalTableSource } from '../ir/emitters/RelationalTableSourceEmitter.js';
 import { emitDataProductAccessPointSource } from '../ir/emitters/DataProductAccessPointSourceEmitter.js';
 import { FILTER_CODEC } from '../spec/codecs/FilterCodec.js';
+import { CONCAT_CODEC } from '../spec/codecs/ConcatCodec.js';
 import { DISTINCT_CODEC } from '../spec/codecs/DistinctCodec.js';
 import { GROUP_CODEC } from '../spec/codecs/GroupCodec.js';
 import { DROP_CODEC } from '../spec/codecs/DropCodec.js';
@@ -55,6 +57,7 @@ import {
   RelationalTableSource,
   relationalSourcesShareDatabase,
 } from './sources/RelationalTableSource.js';
+import { Concat } from './transforms/Concat.js';
 import { Distinct } from './transforms/Distinct.js';
 import { Drop } from './transforms/Drop.js';
 import { Filter } from './transforms/Filter.js';
@@ -246,6 +249,18 @@ export const SLICE_DEFINITION: TransformDefinition<Slice> = {
   create: (id) => new Slice(id, Slice.DEFAULT_START, Slice.DEFAULT_STOP),
   emit: emitSlice,
   spec: SLICE_CODEC,
+};
+
+/** Concat (spec §7.10, PLAN §11.5); registered with the builder's editor, in M4.10 */
+export const CONCAT_DEFINITION: TransformDefinition<Concat> = {
+  kind: 'transform',
+  type: Concat.TYPE,
+  label: 'Concatenate Another Input',
+  icon: 'concat',
+  beta: false,
+  create: (id) => new Concat(id),
+  emit: emitConcat,
+  spec: CONCAT_CODEC,
 };
 
 export const JOIN_DEFINITION: TransformDefinition<Join> = {

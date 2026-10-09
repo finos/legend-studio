@@ -12,8 +12,8 @@
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | Branch | `cube-m4`, from finos master `d1c3f3ae6` (after M2 merged as #5644, `0335b3f5f`); its first commit, `8c1d3f74e`, records that merge |
 | Engine | Local legend-engine `93d92b4` on `localhost:6300`                                                                                   |
-| Step   | M4.1–M4.8 done (Group complete: core, builder, engine, browser, grid's Group by, databases); **M4.9 next** (Concat)                 |
-| Tests  | 2070 core, 805 builder (core group), 236 Query, 262 builder engine-roundtrip (after M4.8)                                           |
+| Step   | M4.1–M4.9 done (Group complete; Concat in the core); **M4.10 next** (Concat in the builder, and registered)                         |
+| Tests  | 2223 core, 805 builder (core group), 236 Query, 262 builder engine-roundtrip (after M4.9)                                           |
 
 ## Steps
 
@@ -27,7 +27,7 @@ See PLAN §11.5 for each step's deliverable and when it is done.
 - [x] **M4.6** Group on the engine and in the browser
 - [x] **M4.7** The grid's 'Group by "X"'
 - [x] **M4.8** Group around the databases
-- [ ] **M4.9** Concat in the core
+- [x] **M4.9** Concat in the core
 - [ ] **M4.10** Concat in the builder, and registered
 - [ ] **M4.11** Concat on the engine and around the databases
 - [ ] **M4.12** Concat's Rename and Restrict autofixes
@@ -52,7 +52,8 @@ Filled in as steps land.
 | M4.5       | `8165c6598` | feat: add Group by Column to Legend Cube's builder                          |
 | M4.6       | `84c9f999c` | test: run Legend Cube's Group on the engine and in the browser              |
 | M4.7       | `d2e700fa7` | feat: add Group by to Legend Cube's grid quick actions                      |
-| M4.8       | (this one)  | test: pin how each database plans Legend Cube's Group                       |
+| M4.8       | `3242636e2` | test: pin how each database plans Legend Cube's Group                       |
+| M4.9       | (this one)  | feat: add Concat to Legend Cube's core                                      |
 
 ## Step notes
 
@@ -190,12 +191,28 @@ A `select` before the group doesn't help (the engine folds it in); grouping by a
 user's call whether Cube works around it. ISSUES drafts: the alias shadow, `max()` over a Boolean for Distinct Value
 (SQL Server, Sybase, Postgres), and SQL Server's `int` sum overflow; all plan-only.
 
+**M4.9, Concat in the core (2026-10-09).** `Concat.ts` (validation, schema, First and Second), four messages in
+`CubeMessages.ts`, `ConcatEmitter.ts` (role `concat`), `ConcatCodec.ts` (`widenTypes`, always written) and
+`CONCAT_DEFINITION`, not yet in `createNodeRegistry()`: tests pass `TEST__registryWithConcat()`
+(`__test-utils__/CubeTestRegistry.ts`), which gives the default registry once it holds Concat, so M4.10 can register
+it and then drop the helper. The messages and the key are settled in PLAN §11.5. Tests (workflow `m49-tests-verify`,
+run `wf_8e6ecad8-699`, 5 agents: three writers on disjoint files, a reviewer with engine probes, a mutation tester):
+`Concat.test.ts`, `ConcatEmitter.test.ts`, row order, messages and the four saved-spec suites. On the engine (H2,
+evidence `m4-verify/m49-review/`): nullability is OR'ed both ways, as Cube's schema; a column-count mismatch types as
+the shorter relation and fails only when run (an NPE), which Cube refuses before; a reorder, a case-only name and two
+Varchar lengths are 400s; SmallInt with Integer, which Cube refuses until Convert types, types and runs as Integer.
+Review fixes: a type message names the paths when both types share a short name (two enumerations `a::Region` and
+`b::Region`); the emitter refuses a third input; `CONCAT_DEFINITION`'s fields are pinned. Mutants: 59 run, 54 killed. Of the 5 survivors, 2 are equivalent (the second
+input's names, and a nullability fallback, both unreachable once validation passes) and 3 (the definition's label,
+icon and beta) are killed by the new definition test; so are 4 more mutants of the fixes (evidence
+`m4-verify/mutants/results-m49/`).
+
 ## Open items
 
 | Item                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Gaps to probe         | ALLTYPES' expected values (M4.6); a Cube-emitted `groupBy` and a widened Concat through the serializer; whether engine errors land on the Group's `aggregation` role or the Concat; how PLAN §7.4's editor without settings carries Concat's autofix buttons before M4.13 gives it a draft; VARIANT or OPAQUE keys, two enumerations, enum rows; Group and Concat SQL on DuckDB; whether `CubeColumnPicker` keeps a stored key order; the PCT manifests (PLAN §11.5, "Risks and open gaps")                                                                                                                                             |
-| Alias shadow          | After renames that reuse a column's old name, nine database types GROUP BY the alias that a subquery column shadows (ISSUES); a workaround (group by a temporary key, then rename) is the user's call                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Alias shadow          | Settled (user, 2026-10-09): engine issue only, no Cube workaround (PLAN §11.5, item 9); the dialect test pins each database's GROUP BY                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Grid numbers          | A Sum of a 32-bit REAL column such as FREIGHT shows float noise (`587.9800033569336`); number formatting is M7's (§13)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | cube-direct           | Agree with the cube-direct session which branch lands first; the second rebases. Both touch PLAN.md, PROGRESS.md, the builder's `testing.md` (cube-direct appends "Direct connections"; M4 adds a conformance section beside it) and `hosting.md`, and possibly the builder's `index.ts` and `V1_CubeEngineTestUtils.ts`. M4 leaves `V1_LegendCubeEngine.ts` alone (cube-direct routes `typeLambdas` there for direct models). cube-direct predates M2 and already conflicts with it in PLAN.md, PROGRESS.md, `hosting.md` and `CubeSourceEditor.tsx`. Its samples sit in `fixtures/direct/`, which the corpus engine test doesn't read |
 | QUESTIONS.md U12      | The Group editor question exists only on `cubeV1` and `cube-direct`; copy Q2 and Q3's answers there after those merge                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |

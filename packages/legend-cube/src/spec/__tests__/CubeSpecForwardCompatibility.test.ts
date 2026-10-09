@@ -19,6 +19,7 @@ import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { describeDocument } from '../../__test-utils__/CubeSpecTestUtils.js';
 import { column, resolvedTable } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { FilterOperator } from '../../filter/FilterOperator.js';
 import {
@@ -41,6 +42,7 @@ import {
   RELATIONAL_TABLE_SOURCE_DEFINITION,
 } from '../../nodes/NodeRegistry.js';
 import { RelationalTableSource } from '../../nodes/sources/RelationalTableSource.js';
+import { Concat } from '../../nodes/transforms/Concat.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { Join, JoinType } from '../../nodes/transforms/Join.js';
@@ -2062,6 +2064,190 @@ describe(unitTest('Saved spec: groups, added in M4'), () => {
         inputs: ['relational101'],
         columns: ['COUNTRY'],
         aggregations: [],
+        note: 'kept',
+      }),
+    );
+  });
+});
+
+describe(unitTest('Saved spec: concats, added in M4'), () => {
+  // Concat is registered with the builder in M4.10 (PLAN §11.5)
+  const CONCAT_REGISTRY = TEST__registryWithConcat();
+  /** The registry of the version before M4: every M2 operation, but no Group and no Concat */
+  const M2_REGISTRY = new NodeRegistry(
+    [...CONCAT_REGISTRY.sources, ...CONCAT_REGISTRY.transforms].filter(
+      (definition) =>
+        definition.type !== Group.TYPE && definition.type !== Concat.TYPE,
+    ),
+  );
+
+  /** RELATIONAL's archive: the same columns, so the two concatenate */
+  const ARCHIVE = {
+    ...RELATIONAL,
+    id: 'relational102',
+    table: 'ORDERS_ARCHIVE',
+  };
+
+  /** A saved spec: `relational101` and `relational102` feeding `concat101`, which has these fields of its own */
+  const concatSpec = (own: JsonObject): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'concat101',
+      nodes: [
+        RELATIONAL,
+        ARCHIVE,
+        {
+          kind: 'concat',
+          id: 'concat101',
+          inputs: ['relational101', 'relational102'],
+          ...own,
+        },
+      ],
+    },
+  });
+
+  test.each<[string, JsonObject]>([
+    ['a concat', { widenTypes: true, note: 'kept' }],
+    // an error only where Concat is known
+    ['a concat without widenTypes', {}],
+    [
+      'a concat whose widenTypes is a value no version knows',
+      { widenTypes: 'family' },
+    ],
+  ])(
+    'Reads %s as an Unknown node in the M2 version, without Concat, editable, and re-saves it verbatim',
+    (_, own) => {
+      const json = concatSpec(own);
+      const { document, readOnly } = decodeCubeSpec(json, {
+        registry: M2_REGISTRY,
+      });
+      expect(readOnly).toBe(false);
+      const node = document.query.getNode('concat101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('concat');
+      expect(node.ports).toEqual(['in0', 'in1']);
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> concat101.in0',
+        'relational102 -> concat101.in1',
+      ]);
+      expect(JSON.stringify(encodeCubeSpec(document, M2_REGISTRY))).toBe(
+        JSON.stringify(json),
+      );
+      // a new node would not take the saved node's id
+      expect(document.query.generateId(Concat.TYPE)).not.toBe('concat101');
+    },
+  );
+
+  test('Reads a concat as a Concat in this version, its unknown keys kept', () => {
+    const json = concatSpec({
+      widenTypes: true,
+      note: 'kept',
+      zeta: [null, { flag: false }],
+    });
+    const node = decodeCubeSpec(json, {
+      registry: CONCAT_REGISTRY,
+    }).document.query.getNode('concat101');
+    expect(node).toBeInstanceOf(Concat);
+    expect((node as Concat).widenTypes).toBe(true);
+    expect(node?.rest).toEqual({ note: 'kept', zeta: [null, { flag: false }] });
+    expect(reSave(json, CONCAT_REGISTRY)).toBe(JSON.stringify(json));
+  });
+
+  test.each<[string, JsonValue]>([
+    ['a string', 'text'],
+    ['a string that spells a boolean', 'true'],
+    ['a number', 1],
+    ['0', 0],
+    ['null', null],
+    ['an object', { mode: 'family' }],
+    ['a list', [true]],
+  ])(
+    'Keeps a concat whose widenTypes is %s as an Unknown node, re-saved verbatim',
+    (_, widenTypes) => {
+      // a later version could write another kind of conversion, which could
+      // change the rows or the types (PLAN §11.5): with false, the same
+      // concat is read as a Concat, and is valid
+      const readable = decodeCubeSpec(
+        concatSpec({ widenTypes: false, note: 'kept' }),
+        { registry: CONCAT_REGISTRY },
+      ).document.query;
+      expect(readable.getNode('concat101')).toBeInstanceOf(Concat);
+      expect(
+        buildSchemasAndValidity(
+          readable,
+          CONCAT_REGISTRY.queryRules,
+        ).validity.get('concat101'),
+      ).toEqual([]);
+
+      const json = concatSpec({ widenTypes, note: 'kept' });
+      const { document, readOnly } = decodeCubeSpec(json, {
+        registry: CONCAT_REGISTRY,
+      });
+      expect(readOnly).toBe(false);
+      const node = document.query.getNode('concat101') as UnknownNode;
+      expect(node).toBeInstanceOf(UnknownNode);
+      expect(node.savedKind).toBe('concat');
+      // the whole node as saved, but its id and inputs, which the query holds
+      expect(JSON.stringify(node.json)).toBe(
+        JSON.stringify({ kind: 'concat', widenTypes, note: 'kept' }),
+      );
+      expect(node.ports).toEqual(['in0', 'in1']);
+      expect(describeConnections(document.query)).toEqual([
+        'relational101 -> concat101.in0',
+        'relational102 -> concat101.in1',
+      ]);
+      expect(reSave(json, CONCAT_REGISTRY)).toBe(JSON.stringify(json));
+
+      // it is invalid and can't run, but its inputs can
+      const { validity } = buildSchemasAndValidity(
+        document.query,
+        CONCAT_REGISTRY.queryRules,
+      );
+      expect(validity.get('concat101')).toEqual([
+        'This graph node is invalid.',
+      ]);
+      expect(validity.get('relational101')).toEqual([]);
+      expect(validity.get('relational102')).toEqual([]);
+      const emitter = new QueryEmitter(document.query, CONCAT_REGISTRY);
+      expect(emitter.canEmit('concat101')).toBe(false);
+      expect(emitter.canEmit('relational101')).toBe(true);
+      expect(emitter.canEmit('relational102')).toBe(true);
+    },
+  );
+
+  test('Keeps the unknown keys of a concat whose setting changes or whose inputs swap', () => {
+    const document = decodeCubeSpec(
+      concatSpec({ widenTypes: false, note: 'kept' }),
+      { registry: CONCAT_REGISTRY },
+    ).document;
+    const saved = (query: Query): string =>
+      JSON.stringify(
+        savedNode(
+          encodeCubeSpec(document.withQuery(query), CONCAT_REGISTRY),
+          'concat101',
+        ),
+      );
+    const concat = document.query.getNode('concat101') as Concat;
+    const converting = concat.withWidenTypes(true);
+    expect(converting.rest).toEqual({ note: 'kept' });
+    expect(saved(document.query.replace(converting))).toBe(
+      JSON.stringify({
+        kind: 'concat',
+        id: 'concat101',
+        inputs: ['relational101', 'relational102'],
+        widenTypes: true,
+        note: 'kept',
+      }),
+    );
+    // the setting doesn't name its inputs, so it stays as it is
+    const swapped = document.query.swapInputs('concat101');
+    expect(swapped.getNode('concat101')?.rest).toEqual({ note: 'kept' });
+    expect(saved(swapped)).toBe(
+      JSON.stringify({
+        kind: 'concat',
+        id: 'concat101',
+        inputs: ['relational102', 'relational101'],
+        widenTypes: false,
         note: 'kept',
       }),
     );

@@ -37,6 +37,7 @@ import { RELATIONAL_TABLE_SOURCE_CODEC } from '../../spec/codecs/RelationalTable
 import type { JsonObject } from '../../utils/Json.js';
 import {
   type AnyNodeDefinition,
+  CONCAT_DEFINITION,
   createNodeRegistry,
   DATA_PRODUCT_ACCESS_POINT_SOURCE_DEFINITION,
   DISTINCT_DEFINITION,
@@ -59,6 +60,7 @@ import {
   RelationalTableSource,
   type SnapshotColumnRest,
 } from '../sources/RelationalTableSource.js';
+import { Concat } from '../transforms/Concat.js';
 import { Distinct } from '../transforms/Distinct.js';
 import { Drop } from '../transforms/Drop.js';
 import { Filter } from '../transforms/Filter.js';
@@ -240,6 +242,18 @@ describe(unitTest('Node registry'), () => {
     expect(group.id).toBe('group101');
     expect(group.columns).toEqual([]);
     expect(group.aggregations).toEqual([]);
+  });
+
+  test('Creates a concat that converts no types', () => {
+    expect(CONCAT_DEFINITION.kind).toBe('transform');
+    expect(CONCAT_DEFINITION.type).toBe('concat');
+    expect(CONCAT_DEFINITION.label).toBe('Concatenate Another Input');
+    expect(CONCAT_DEFINITION.icon).toBe('concat');
+    expect(CONCAT_DEFINITION.beta).toBe(false);
+    const concat = CONCAT_DEFINITION.create('concat101');
+    expect(concat).toBeInstanceOf(Concat);
+    expect(concat.id).toBe('concat101');
+    expect(concat.widenTypes).toBe(false);
   });
 
   test('Creates a filter with no filter yet', () => {

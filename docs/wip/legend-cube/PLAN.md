@@ -2736,6 +2736,10 @@ This subsection overrides the sections it names until they are updated (see "Sup
    duplicates, in no particular order. Both must have the same columns: the same names, in the same order, with the
    same types."
 
+9. **The alias shadow** (user, 2026-10-09, after M4.8): after renames that reuse a column's old name, nine database
+   types are written `GROUP BY` the alias that a column of the subquery shadows; Cube doesn't work around it. The
+   engine issue is drafted in ISSUES.md and `LegendCubeDialects.engine-roundtrip-test.ts` pins each database's form.
+
 **Decided without asking** (from the requirements, for review):
 
 - Output names: the spec's rules (§10.3), compared folded (`foldColumnName`), plus `isValidColumnName` (a `"` fails at
@@ -2811,10 +2815,11 @@ nodes may turn invalid (visible, undoable).
   ancestor (`getLeastCommonAncestor`, `TypeCompatibility.ts:128`; the registry's roots Number, String, Date and
   Boolean have no parent, so there is none across them). Nullability is never compared.
 - Messages: `Both input schemas must be identical.` (`CubeMessages.ts:123`), then Cube's, for every differing position
-  (texts settled in M4.9): `The first input has <n1> columns and the second <n2>.`,
+  (settled in M4.9): `The first input has <n1> columns and the second <n2>.` (`1 column` when n1 is 1),
   `Column <i> is "<a>" in the first input and "<b>" in the second: columns are matched by position.`,
   `The inputs have the same columns in a different order: columns are matched by position.`,
-  `Column "<c>" is <T1> in the first input and <T2> in the second.`
+  `Column "<c>" is <T1> in the first input and <T2> in the second.` (short names, or paths when both share one, as
+  two enumerations `a::Region` and `b::Region` can)
 - Schema: the first input's names and types (the ancestor where widened), `nullable1 || nullable2` ✅.
 - Convert types: Varchar lengths give String, SmallInt and Int Integer, Int and Float4 Number, StrictDate and Timestamp
   Date; never VARIANT, OPAQUE or two enumerations. Emitted on the input that needs it as
@@ -2823,8 +2828,8 @@ nodes may turn invalid (visible, undoable).
   Timestamp as midnight timestamps 💭 (Join refuses that pair as keys).
 - Autofixes in a core `ConcatAutofix.ts` (as `JoinAutofix.ts`): one query change and one undo step each, the selection
   kept, the panel's edits applied first; the Rename is refused when a new name folds to an untouched column.
-- Saved: `{kind: 'concat', id, inputs, widenTypes}` (the key's name proposed, settled in M4.9), always written,
-  `false` included; an unknown value makes an Unknown node.
+- Saved: `{kind: 'concat', id, inputs, widenTypes}` (settled in M4.9), always written, `false` included; a missing key
+  is a decode error, and a value that isn't true or false makes an Unknown node.
 - Emitted: `<first>->concatenate(<second>)`, role `concat`, asserting both inputs' column count and names. Row order:
   none (a Sort on either input gets the full-loss warning). `describe()`: `Concatenate additional input`, plus
   `, converting types` with the setting on.

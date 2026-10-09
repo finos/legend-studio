@@ -16,6 +16,7 @@
 
 import { describe, expect, test } from '@jest/globals';
 import { TEST_DATABASE } from '../../__test-utils__/CubeTestNodes.js';
+import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import {
   FILTER_OPERATOR_DESCRIPTIONS,
@@ -25,6 +26,7 @@ import { ColumnComparisonFilter } from '../../filter/FilterTree.js';
 import type { Query } from '../../graph/Query.js';
 import { buildSchemasAndValidity } from '../../inference/SchemaInference.js';
 import {
+  ERR_INCOMPLETE,
   ERR_SCHEMAS,
   MESSAGE_AGGREGATION_FUNCTION_DISALLOWS_COLUMN,
   MESSAGE_AGGREGATION_FUNCTION_EMPTY,
@@ -37,12 +39,17 @@ import {
   MESSAGE_CANNOT_BE_EMPTY,
   MESSAGE_CANNOT_HAVE_DUPLICATES,
   MESSAGE_COMPOSITE_FILTER_EMPTY,
+  MESSAGE_CONCAT_COLUMN_COUNT,
+  MESSAGE_CONCAT_COLUMN_NAME,
+  MESSAGE_CONCAT_COLUMN_ORDER,
+  MESSAGE_CONCAT_COLUMN_TYPE,
   MESSAGE_DIFFERENT_DATABASES,
   MESSAGE_DOES_NOT_HAVE_A_NAME,
   MESSAGE_FILTER_EMPTY,
   MESSAGE_FILTER_OPERATOR_UNSUPPORTED,
   MESSAGE_FILTER_VALUE_INVALID,
   MESSAGE_FILTER_VALUE_OUT_OF_RANGE,
+  MESSAGE_INPUT_SCHEMAS_DIFFER,
   MESSAGE_JOIN_COLUMN_COUNTS_DIFFER,
   MESSAGE_LEFT_JOIN_COLUMNS_EMPTY,
   MESSAGE_MUST_BE_WHOLE_NUMBER,
@@ -56,6 +63,7 @@ import {
   type NodeRegistry,
 } from '../../nodes/NodeRegistry.js';
 import type { ColumnAggregation } from '../../nodes/transforms/Aggregation.js';
+import { Concat } from '../../nodes/transforms/Concat.js';
 import { Filter } from '../../nodes/transforms/Filter.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import type { JsonObject, JsonValue } from '../../utils/Json.js';
@@ -971,4 +979,320 @@ describe(unitTest('Saved spec validity: groups'), () => {
       });
     },
   );
+});
+
+describe(unitTest('Saved spec validity: concats'), () => {
+  // Concat is registered with the builder in M4.10 (PLAN §11.5)
+  const REGISTRY = TEST__registryWithConcat();
+
+  const INTEGER = { path: 'Integer' };
+  const varchar = (length: number): JsonObject => ({
+    path: `${PRECISE}Varchar`,
+    params: [length],
+  });
+  const numeric = (precision: number, scale: number): JsonObject => ({
+    path: `${PRECISE}Numeric`,
+    params: [precision, scale],
+  });
+
+  /** A saved snapshot column */
+  const snapshotColumn = (
+    name: string,
+    type: JsonObject,
+    nullable = true,
+  ): JsonObject => ({ name, type, nullable });
+
+  const ORDER_ID = snapshotColumn('ORDER_ID', INTEGER, false);
+  const SHIP_CITY = snapshotColumn('SHIP_CITY', varchar(15));
+  const FREIGHT = snapshotColumn('FREIGHT', numeric(10, 2));
+  /** The first input's columns, which the second's are checked against */
+  const ORDERS = [ORDER_ID, SHIP_CITY, FREIGHT];
+
+  /**
+   * A saved spec: ORDERS (`relational101`) and its archive (`relational102`),
+   * with these columns, feeding `concat101` on these inputs
+   */
+  const concatSpec = (
+    first: JsonObject[],
+    second: JsonObject[],
+    {
+      widenTypes = false,
+      inputs = ['relational101', 'relational102'],
+      database = TEST_DATABASE,
+    }: {
+      widenTypes?: boolean;
+      inputs?: (string | null)[];
+      database?: string;
+    } = {},
+  ): JsonObject => ({
+    formatVersion: 1,
+    query: {
+      selected: 'concat101',
+      nodes: [
+        {
+          kind: 'relational',
+          id: 'relational101',
+          database: TEST_DATABASE,
+          schema: 'NORTHWIND',
+          table: 'ORDERS',
+          schemaSnapshot: first,
+        },
+        {
+          kind: 'relational',
+          id: 'relational102',
+          database,
+          schema: 'NORTHWIND',
+          table: 'ORDERS_ARCHIVE',
+          schemaSnapshot: second,
+        },
+        { kind: 'concat', id: 'concat101', inputs, widenTypes },
+      ],
+    },
+  });
+
+  /** As `errorsOf`, for a spec whose `concat101` must be read as a Concat */
+  const concatErrorsOf = (
+    json: JsonObject,
+  ): Record<string, readonly string[]> => {
+    const { query } = decodeCubeSpec(json, { registry: REGISTRY }).document;
+    expect(query.getNode('concat101')).toBeInstanceOf(Concat);
+    return errorsOf(json, REGISTRY);
+  };
+
+  // PLAN §11.5: matched by position; the count first, then the names, then
+  // the types, each only once the one before matches; nullability never
+  // compared. The spec's message first, then Cube's for every position.
+  const CONCATS: [string, JsonObject[], JsonObject[], string[]][] = [
+    ['the same columns', ORDERS, ORDERS, []],
+    [
+      'columns that differ only in nullability',
+      ORDERS,
+      ORDERS.map((saved) => ({ ...saved, nullable: !saved.nullable })),
+      [],
+    ],
+    [
+      // two enumerations are equal when their paths are
+      'an enumeration saved with other values in each input',
+      [
+        snapshotColumn('REGION', {
+          path: 'test::Region',
+          values: ['EMEA', 'APAC'],
+        }),
+      ],
+      [snapshotColumn('REGION', { path: 'test::Region', values: ['EMEA'] })],
+      [],
+    ],
+    [
+      'a first input with more columns',
+      ORDERS,
+      [ORDER_ID, SHIP_CITY],
+      [MESSAGE_INPUT_SCHEMAS_DIFFER, MESSAGE_CONCAT_COLUMN_COUNT(3, 2)],
+    ],
+    [
+      'a first input of one column',
+      [ORDER_ID],
+      ORDERS,
+      [MESSAGE_INPUT_SCHEMAS_DIFFER, MESSAGE_CONCAT_COLUMN_COUNT(1, 3)],
+    ],
+    [
+      'columns that differ in count and in name',
+      ORDERS,
+      [ORDER_ID, snapshotColumn('CITY', varchar(15))],
+      [MESSAGE_INPUT_SCHEMAS_DIFFER, MESSAGE_CONCAT_COLUMN_COUNT(3, 2)],
+    ],
+    [
+      'names that differ at two positions',
+      ORDERS,
+      [
+        ORDER_ID,
+        snapshotColumn('CITY', varchar(15)),
+        snapshotColumn('COST', numeric(10, 2)),
+      ],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NAME(2, 'SHIP_CITY', 'CITY'),
+        MESSAGE_CONCAT_COLUMN_NAME(3, 'FREIGHT', 'COST'),
+      ],
+    ],
+    [
+      'a name in another case',
+      ORDERS,
+      [ORDER_ID, snapshotColumn('ship_city', varchar(15)), FREIGHT],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NAME(2, 'SHIP_CITY', 'ship_city'),
+      ],
+    ],
+    [
+      'the same columns in another order',
+      ORDERS,
+      [FREIGHT, ORDER_ID, SHIP_CITY],
+      [MESSAGE_INPUT_SCHEMAS_DIFFER, MESSAGE_CONCAT_COLUMN_ORDER],
+    ],
+    [
+      'names in another order, one in another case',
+      ORDERS,
+      [SHIP_CITY, snapshotColumn('order_id', INTEGER, false), FREIGHT],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NAME(1, 'ORDER_ID', 'SHIP_CITY'),
+        MESSAGE_CONCAT_COLUMN_NAME(2, 'SHIP_CITY', 'order_id'),
+      ],
+    ],
+    [
+      'types that differ at two positions',
+      ORDERS,
+      [
+        snapshotColumn('ORDER_ID', { path: `${PRECISE}SmallInt` }, false),
+        snapshotColumn('SHIP_CITY', varchar(40)),
+        FREIGHT,
+      ],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_TYPE('ORDER_ID', 'Integer', 'SmallInt'),
+        MESSAGE_CONCAT_COLUMN_TYPE('SHIP_CITY', 'Varchar(15)', 'Varchar(40)'),
+      ],
+    ],
+    [
+      // strict, though the engine accepts it (PLAN §11.5, Q5)
+      'a type beside its own ancestor',
+      ORDERS,
+      [ORDER_ID, snapshotColumn('SHIP_CITY', { path: 'String' }), FREIGHT],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_TYPE('SHIP_CITY', 'Varchar(15)', 'String'),
+      ],
+    ],
+    [
+      'a type with other parameters',
+      ORDERS,
+      [ORDER_ID, SHIP_CITY, snapshotColumn('FREIGHT', numeric(12, 2))],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_TYPE('FREIGHT', 'Numeric(10,2)', 'Numeric(12,2)'),
+      ],
+    ],
+    [
+      'names and types that differ',
+      ORDERS,
+      [
+        snapshotColumn('ORDER_ID', { path: `${PRECISE}SmallInt` }, false),
+        snapshotColumn('CITY', varchar(15)),
+        FREIGHT,
+      ],
+      [
+        MESSAGE_INPUT_SCHEMAS_DIFFER,
+        MESSAGE_CONCAT_COLUMN_NAME(2, 'SHIP_CITY', 'CITY'),
+      ],
+    ],
+  ];
+
+  test.each(CONCATS)(
+    'Reads a document with a concat of %s, and reports it through inference',
+    (_, first, second, errors) => {
+      expect(concatErrorsOf(concatSpec(first, second))).toStrictEqual({
+        relational101: [],
+        relational102: [],
+        concat101: errors,
+      });
+    },
+  );
+
+  test.each(CONCATS)(
+    'Reports a concat of %s alike with widenTypes on, which converts no type until M4.13',
+    (_, first, second, errors) => {
+      // PLAN §11.5: the setting is kept and saved; its conversion comes later
+      expect(
+        concatErrorsOf(concatSpec(first, second, { widenTypes: true })),
+      ).toStrictEqual({
+        relational101: [],
+        relational102: [],
+        concat101: errors,
+      });
+    },
+  );
+
+  test('Reports each message in its exact words', () => {
+    // PLAN §11.5: every message checked exactly, end to end
+    const concatOf = (second: JsonObject[]): readonly string[] =>
+      concatErrorsOf(concatSpec(ORDERS, second)).concat101 ?? [];
+    const DIFFER = 'Both input schemas must be identical.';
+    expect(
+      concatErrorsOf(concatSpec([ORDER_ID], ORDERS)).concat101,
+    ).toStrictEqual([DIFFER, 'The first input has 1 column and the second 3.']);
+    expect(concatOf([ORDER_ID, SHIP_CITY])).toStrictEqual([
+      DIFFER,
+      'The first input has 3 columns and the second 2.',
+    ]);
+    expect(
+      concatOf([ORDER_ID, snapshotColumn('ship_city', varchar(15)), FREIGHT]),
+    ).toStrictEqual([
+      DIFFER,
+      'Column 2 is "SHIP_CITY" in the first input and "ship_city" in the second: columns are matched by position.',
+    ]);
+    expect(concatOf([FREIGHT, ORDER_ID, SHIP_CITY])).toStrictEqual([
+      DIFFER,
+      'The inputs have the same columns in a different order: columns are matched by position.',
+    ]);
+    expect(
+      concatOf([ORDER_ID, snapshotColumn('SHIP_CITY', varchar(40)), FREIGHT]),
+    ).toStrictEqual([
+      DIFFER,
+      'Column "SHIP_CITY" is Varchar(15) in the first input and Varchar(40) in the second.',
+    ]);
+  });
+
+  test("Gives a valid concat the first input's columns, each nullable when either input's is", () => {
+    const { query } = decodeCubeSpec(
+      concatSpec(
+        [ORDER_ID, SHIP_CITY, { ...FREIGHT, nullable: false }],
+        [ORDER_ID, { ...SHIP_CITY, nullable: false }, FREIGHT],
+      ),
+      { registry: REGISTRY },
+    ).document;
+    const { schemas, validity } = buildSchemasAndValidity(query);
+    expect(validity.get('concat101')).toEqual([]);
+    expect(
+      schemas
+        .get('concat101')
+        ?.columns.map(
+          ({ name, type, nullable }) =>
+            `${name} ${type.displayName}${nullable ? '?' : ''}`,
+        ),
+    ).toEqual([
+      'ORDER_ID Integer',
+      'SHIP_CITY Varchar(15)?',
+      'FREIGHT Numeric(10,2)?',
+    ]);
+  });
+
+  test.each<[string, (string | null)[]]>([
+    ['its second input', ['relational101', null]],
+    ['its first input', [null, 'relational102']],
+    ['either input', [null, null]],
+  ])(
+    'Reads a concat without %s, and reports it incomplete, as a join',
+    (_, inputs) => {
+      // even when the inputs' columns would differ (spec §16)
+      expect(
+        concatErrorsOf(concatSpec(ORDERS, [ORDER_ID], { inputs })),
+      ).toStrictEqual({
+        relational101: [],
+        relational102: [],
+        concat101: [ERR_INCOMPLETE],
+      });
+    },
+  );
+
+  test('Reads a concat of sources on different databases, and reports only the second source', () => {
+    expect(
+      concatErrorsOf(concatSpec(ORDERS, ORDERS, { database: OTHER_DATABASE })),
+    ).toStrictEqual({
+      relational101: [],
+      relational102: [
+        MESSAGE_DIFFERENT_DATABASES(OTHER_DATABASE, TEST_DATABASE),
+      ],
+      concat101: [ERR_SCHEMAS],
+    });
+  });
 });

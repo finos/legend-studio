@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, test } from '@jest/globals';
+import { TEST__registryWithConcat } from '../../__test-utils__/CubeTestRegistry.js';
 import { unitTest } from '../../__test-utils__/CubeTestUtils.js';
 import { CubeDocument } from '../../graph/CubeDocument.js';
 import {
@@ -22,6 +23,7 @@ import {
   FILTER_DEFINITION,
   NodeRegistry,
 } from '../../nodes/NodeRegistry.js';
+import { Concat } from '../../nodes/transforms/Concat.js';
 import { Group } from '../../nodes/transforms/Group.js';
 import { UnknownNode } from '../../nodes/UnknownNode.js';
 import type { JsonObject } from '../../utils/Json.js';
@@ -131,6 +133,12 @@ const GROUP_101 = {
   aggregations: [COUNT_ORDERS, { function: 'CountRows', name: 'Count Rows' }],
 };
 const AGGREGATIONS = 'query.nodes[0].aggregations';
+const CONCAT_101 = {
+  kind: 'concat',
+  id: 'concat101',
+  inputs: [null, null],
+  widenTypes: false,
+};
 const ORDER_ID = {
   name: 'ORDER_ID',
   type: { path: 'Integer' },
@@ -173,6 +181,9 @@ const withGroup = (node: unknown): Record<string, unknown> =>
 /** A document whose one node is `group101` with these aggregations */
 const withAggregations = (aggregations: unknown): Record<string, unknown> =>
   withGroup({ ...GROUP_101, aggregations });
+/** A document whose one node is this concat, `concat101` */
+const withConcat = (node: unknown): Record<string, unknown> =>
+  withNodes([node], 'concat101');
 const withContext = (context: unknown): Record<string, unknown> => ({
   formatVersion: 1,
   context,
@@ -1556,6 +1567,88 @@ describe(unitTest('Saved spec decode errors'), () => {
     ],
   ])('Refuses %s', (_, json, path, detail) => {
     expect(failureOf(json, createNodeRegistry())).toEqual([path, detail]);
+  });
+
+  // Concat is registered with the builder in M4.10 (PLAN §11.5)
+  test.each<[string, unknown, boolean]>([
+    ['a concat', withConcat(CONCAT_101), false],
+    [
+      'a concat that converts types',
+      withConcat({ ...CONCAT_101, widenTypes: true }),
+      true,
+    ],
+    [
+      'a concat with a key this version does not know',
+      withConcat({ ...CONCAT_101, note: 'kept' }),
+      false,
+    ],
+  ])('Reads %s, which the failing cases start from', (_, json, widenTypes) => {
+    const { document, readOnly } = decodeCubeSpec(json, {
+      registry: TEST__registryWithConcat(),
+    });
+    expect(readOnly).toBe(false);
+    const node = document.query.getNode('concat101');
+    expect(node).toBeInstanceOf(Concat);
+    expect((node as Concat).widenTypes).toBe(widenTypes);
+  });
+
+  test.each<[string, unknown, string, string]>([
+    [
+      // the key ships with the kind (PLAN §11.5), so it is never left out
+      'a concat without widenTypes',
+      withConcat({ kind: 'concat', id: 'concat101', inputs: [null, null] }),
+      'query.nodes[0].widenTypes',
+      'is required',
+    ],
+    [
+      'a concat without widenTypes, with a key this version does not know',
+      withConcat({
+        kind: 'concat',
+        id: 'concat101',
+        inputs: [null, null],
+        note: 'kept',
+      }),
+      'query.nodes[0].widenTypes',
+      'is required',
+    ],
+    [
+      'a concat without widenTypes after its first input',
+      withNodes(
+        [
+          RELATIONAL_101,
+          { kind: 'concat', id: 'concat101', inputs: ['relational101', null] },
+        ],
+        'concat101',
+      ),
+      'query.nodes[1].widenTypes',
+      'is required',
+    ],
+    [
+      'a concat without inputs',
+      withConcat({ kind: 'concat', id: 'concat101', widenTypes: false }),
+      'query.nodes[0].inputs',
+      'must list the 2 input(s) of a concat node, in port order',
+    ],
+    [
+      'a concat with one input',
+      withConcat({ ...CONCAT_101, inputs: [null] }),
+      'query.nodes[0].inputs',
+      'must list the 2 input(s) of a concat node, in port order',
+    ],
+    [
+      'a concat with three inputs',
+      withConcat({ ...CONCAT_101, inputs: [null, null, null] }),
+      'query.nodes[0].inputs',
+      'must list the 2 input(s) of a concat node, in port order',
+    ],
+    [
+      'a concat input that is a number',
+      withConcat({ ...CONCAT_101, inputs: [null, 1] }),
+      'query.nodes[0].inputs[1]',
+      'must be a node id or null',
+    ],
+  ])('Refuses %s', (_, json, path, detail) => {
+    expect(failureOf(json, TEST__registryWithConcat())).toEqual([path, detail]);
   });
 
   test.each<[string, unknown, string, string]>([

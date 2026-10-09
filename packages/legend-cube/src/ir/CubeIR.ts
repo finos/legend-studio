@@ -155,6 +155,8 @@ export enum EmitRole {
   GROUP = 'group',
   /** a Group: an aggregation's column read or `1` (Count rows), and its reduce */
   AGGREGATION = 'aggregation',
+  /** a Concat: its concatenate call */
+  CONCAT = 'concat',
   /** a Limit, Drop or Slice: the sort by its input's order, written just before it */
   SORT = 'sort',
   /** a Sort: one of its keys, wherever the order is written */
